@@ -1,0 +1,40 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RadioCard Component renders RadioCard component with provided props 1`] = `
+<div>
+  <label
+    class="wcpay-component-radio-card checked"
+  >
+    <div
+      class="wcpay-component-radio-card__label"
+    >
+      <svg />
+      Pineapple pizza
+      <input
+        checked=""
+        name="pizzas"
+        type="radio"
+        value="pineapple"
+      />
+    </div>
+    <p>
+      Sweet pizza
+    </p>
+  </label>
+  <label
+    class="wcpay-component-radio-card"
+  >
+    <div
+      class="wcpay-component-radio-card__label"
+    >
+      <svg />
+      Pizza
+      <input
+        name="pizzas"
+        type="radio"
+        value="pizza"
+      />
+    </div>
+  </label>
+</div>
+`;

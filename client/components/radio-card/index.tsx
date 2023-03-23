@@ -37,7 +37,7 @@ const RadioCard: React.FC< Props > = ( {
 				const checked = value === selected;
 
 				return (
-					<div
+					<label
 						key={ value }
 						className={ classNames(
 							'wcpay-component-radio-card',
@@ -52,12 +52,12 @@ const RadioCard: React.FC< Props > = ( {
 								type="radio"
 								name={ name }
 								value={ value }
-								checked={ checked }
+								checked={ !! checked }
 								onChange={ handleChange }
 							/>
 						</div>
 						{ checked && content }
-					</div>
+					</label>
 				);
 			} ) }
 		</>

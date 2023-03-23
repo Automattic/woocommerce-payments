@@ -141,6 +141,4 @@ class WC_Payments_Onboarding_Service {
 		// Ensure dev mode is enabled immediately.
 		WC_Payments::mode()->dev();
 	}
-
-
 }
