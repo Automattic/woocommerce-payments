@@ -5,13 +5,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
-import {
-	Card,
-	CardBody,
-	CardFooter,
-	CardDivider,
-	Button,
-} from '@wordpress/components';
+import { Card, CardBody, CardFooter, CardDivider } from '@wordpress/components';
 import moment from 'moment';
 import React, { useContext } from 'react';
 
@@ -44,6 +38,7 @@ declare const window: any;
 
 interface PaymentDetailsSummaryProps {
 	charge: Charge;
+	metadata: Record< string, any >;
 	isLoading: boolean;
 	fraudOutcome?: FraudOutcome;
 }
@@ -56,7 +51,33 @@ const placeholderValues = {
 	refunded: null,
 };
 
-const composePaymentSummaryItems = ( { charge }: { charge: Charge } ) =>
+const isTapToPay = ( model: string ) => {
+	if ( model === 'COTS_DEVICE' ) {
+		return true;
+	}
+
+	return false;
+};
+
+const getTapToPayChannel = ( platform: string ) => {
+	if ( platform === 'ios' ) {
+		return __( 'Tap to Pay on iPhone', 'woocommerce-payments' );
+	}
+
+	if ( platform === 'android' ) {
+		__( 'Tap to Pay on Android', 'woocommerce-payments' );
+	}
+
+	return __( 'Tap to Pay', 'woocommerce-payments' );
+};
+
+const composePaymentSummaryItems = ( {
+	charge,
+	metadata,
+}: {
+	charge: Charge;
+	metadata: Record< string, any >;
+} ) =>
 	[
 		{
 			title: __( 'Date', 'woocommerce-payments' ),
@@ -71,7 +92,11 @@ const composePaymentSummaryItems = ( { charge }: { charge: Charge } ) =>
 			title: __( 'Channel', 'woocommerce-payments' ),
 			content: (
 				<span>
-					{ getChargeChannel( charge.payment_method_details?.type ) }
+					{ isTapToPay( metadata?.reader_model )
+						? getTapToPayChannel( metadata?.platform )
+						: getChargeChannel(
+								charge.payment_method_details?.type
+						  ) }
 				</span>
 			),
 		},
@@ -112,6 +137,7 @@ const composePaymentSummaryItems = ( { charge }: { charge: Charge } ) =>
 
 const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	charge,
+	metadata,
 	isLoading,
 	fraudOutcome,
 } ) => {
@@ -297,7 +323,10 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 			<CardBody>
 				<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
 					<HorizontalList
-						items={ composePaymentSummaryItems( { charge } ) }
+						items={ composePaymentSummaryItems( {
+							charge,
+							metadata,
+						} ) }
 					/>
 				</LoadableBlock>
 			</CardBody>
