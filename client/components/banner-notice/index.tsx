@@ -3,12 +3,12 @@
  */
 import * as React from 'react';
 import { Flex, FlexItem, Icon, Notice, Button } from '@wordpress/components';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies.
  */
 import './styles.scss';
-import classNames from 'classnames';
 
 /**
  * Props for the BannerNotice component.
