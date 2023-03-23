@@ -392,7 +392,7 @@ class WC_Payments_Webhook_Processing_Service {
 	 *
 	 * @param array $event_body The event that triggered the webhook.
 	 *
-	 * @throws Invalid_Webhook_Data_Exception           Required parameters not found.
+	 * @throws Invalid_Webhook_Data_Exception   Required parameters not found.
 	 * @throws Invalid_Payment_Method_Exception When unable to resolve charge ID to order.
 	 */
 	private function process_webhook_payment_intent_failed( $event_body ) {
@@ -480,7 +480,7 @@ class WC_Payments_Webhook_Processing_Service {
 			'id'            => $intent_id,
 			'status'        => $intent_status,
 			'charge_id'     => $charge_id,
-			'fraud_outcome' => $metadata['fraud_outcome'],
+			'fraud_outcome' => $metadata['fraud_outcome'] ?? '',
 		];
 		$this->order_service->update_order_status_from_intent( $order, $intent_data );
 

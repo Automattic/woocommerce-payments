@@ -422,7 +422,7 @@ class WC_Payments_Order_Service {
 	 * @return string
 	 */
 	public function get_intent_id_for_order( $order ) : string {
-		$order = wc_get_order( $order );
+		$order = $this->get_order( $order );
 		return $order->get_meta( self::INTENT_ID_META_KEY, true );
 	}
 
@@ -433,6 +433,7 @@ class WC_Payments_Order_Service {
 	 * @param  mixed    $intent_id The value to be set.
 	 */
 	public function set_intent_id_for_order( $order, $intent_id ) {
+		$order = $this->get_order( $order );
 		$order->update_meta_data( self::INTENT_ID_META_KEY, $intent_id );
 		$order->save_meta_data();
 		/**
@@ -450,7 +451,7 @@ class WC_Payments_Order_Service {
 	 * @return string
 	 */
 	public function get_payment_method_id_for_order( $order ) : string {
-		$order = wc_get_order( $order );
+		$order = $this->get_order( $order );
 		return $order->get_meta( self::PAYMENT_METHOD_ID_META_KEY, true );
 	}
 
@@ -461,6 +462,7 @@ class WC_Payments_Order_Service {
 	 * @param  mixed $payment_method_id The value to be set.
 	 */
 	public function set_payment_method_id_for_order( $order, $payment_method_id ) {
+		$order = $this->get_order( $order );
 		$order->update_meta_data( self::PAYMENT_METHOD_ID_META_KEY, $payment_method_id );
 		$order->save_meta_data();
 		/**
@@ -478,6 +480,7 @@ class WC_Payments_Order_Service {
 	 * @param  mixed $charge_id The value to be set.
 	 */
 	public function set_charge_id_for_order( $order, $charge_id ) {
+		$order = $this->get_order( $order );
 		$order->update_meta_data( self::CHARGE_ID_META_KEY, $charge_id );
 		$order->save_meta_data();
 	}
@@ -489,7 +492,7 @@ class WC_Payments_Order_Service {
 	 * @return string
 	 */
 	public function get_charge_id_for_order( $order ) : string {
-		$order = wc_get_order( $order );
+		$order = $this->get_order( $order );
 		return $order->get_meta( self::CHARGE_ID_META_KEY, true );
 	}
 
@@ -500,6 +503,7 @@ class WC_Payments_Order_Service {
 	 * @param  mixed $intention_status The value to be set.
 	 */
 	public function set_intention_status_for_order( $order, $intention_status ) {
+		$order = $this->get_order( $order );
 		$order->update_meta_data( self::INTENTION_STATUS_META_KEY, $intention_status );
 		$order->save_meta_data();
 	}
@@ -511,7 +515,7 @@ class WC_Payments_Order_Service {
 	 * @return string
 	 */
 	public function get_intention_status_for_order( $order ) : string {
-		$order = wc_get_order( $order );
+		$order = $this->get_order( $order );
 		return $order->get_meta( self::INTENTION_STATUS_META_KEY, true );
 	}
 
@@ -522,6 +526,7 @@ class WC_Payments_Order_Service {
 	 * @param  mixed $customer_id The value to be set.
 	 */
 	public function set_customer_id_for_order( $order, $customer_id ) {
+		$order = $this->get_order( $order );
 		$order->update_meta_data( self::CUSTOMER_ID_META_KEY, $customer_id );
 		$order->save_meta_data();
 	}
@@ -533,7 +538,7 @@ class WC_Payments_Order_Service {
 	 * @return string
 	 */
 	public function get_customer_id_for_order( $order ) : string {
-		$order = wc_get_order( $order );
+		$order = $this->get_order( $order );
 		return $order->get_meta( self::CUSTOMER_ID_META_KEY, true );
 	}
 
@@ -544,6 +549,7 @@ class WC_Payments_Order_Service {
 	 * @param  mixed $wcpay_intent_currency The value to be set.
 	 */
 	public function set_wcpay_intent_currency_for_order( $order, $wcpay_intent_currency ) {
+		$order = $this->get_order( $order );
 		$order->update_meta_data( self::WCPAY_INTENT_CURRENCY_META_KEY, $wcpay_intent_currency );
 		$order->save_meta_data();
 	}
@@ -555,7 +561,7 @@ class WC_Payments_Order_Service {
 	 * @return string
 	 */
 	public function get_wcpay_intent_currency_for_order( $order ) : string {
-		$order = wc_get_order( $order );
+		$order = $this->get_order( $order );
 		return $order->get_meta( self::WCPAY_INTENT_CURRENCY_META_KEY, true );
 	}
 
@@ -566,6 +572,7 @@ class WC_Payments_Order_Service {
 	 * @param  mixed $wcpay_refund_id The value to be set.
 	 */
 	public function set_wcpay_refund_id_for_order( $order, $wcpay_refund_id ) {
+		$order = $this->get_order( $order );
 		$order->update_meta_data( self::WCPAY_REFUND_ID_META_KEY, $wcpay_refund_id );
 		$order->save_meta_data();
 	}
@@ -577,7 +584,7 @@ class WC_Payments_Order_Service {
 	 * @return string
 	 */
 	public function get_wcpay_refund_id_for_order( $order ) : string {
-		$order = wc_get_order( $order );
+		$order = $this->get_order( $order );
 		return $order->get_meta( self::WCPAY_REFUND_ID_META_KEY, true );
 	}
 
@@ -588,6 +595,7 @@ class WC_Payments_Order_Service {
 	 * @param  mixed $wcpay_refund_status The value to be set.
 	 */
 	public function set_wcpay_refund_status_for_order( $order, $wcpay_refund_status ) {
+		$order = $this->get_order( $order );
 		$order->update_meta_data( self::WCPAY_REFUND_STATUS_META_KEY, $wcpay_refund_status );
 		$order->save_meta_data();
 	}
@@ -599,7 +607,7 @@ class WC_Payments_Order_Service {
 	 * @return string
 	 */
 	public function get_wcpay_refund_status_for_order( $order ) : string {
-		$order = wc_get_order( $order );
+		$order = $this->get_order( $order );
 		return $order->get_meta( self::WCPAY_REFUND_STATUS_META_KEY, true );
 	}
 
@@ -610,6 +618,7 @@ class WC_Payments_Order_Service {
 	 * @param  mixed $fraud_outcome_status The value to be set.
 	 */
 	public function set_fraud_outcome_status_for_order( $order, $fraud_outcome_status ) {
+		$order = $this->get_order( $order );
 		$order->update_meta_data( self::WCPAY_FRAUD_OUTCOME_STATUS_META_KEY, $fraud_outcome_status );
 		$order->save_meta_data();
 	}
@@ -622,7 +631,7 @@ class WC_Payments_Order_Service {
 	 * @return string
 	 */
 	public function get_fraud_outcome_status_for_order( $order ) : string {
-		$order = wc_get_order( $order );
+		$order = $this->get_order( $order );
 		return $order->get_meta( self::WCPAY_FRAUD_OUTCOME_STATUS_META_KEY, true );
 	}
 
@@ -1307,5 +1316,23 @@ class WC_Payments_Order_Service {
 				'is_test_mode' => WC_Payments::mode()->is_test(),
 			]
 		);
+	}
+
+	/**
+	 * If an order object is passed in, return that, else try to get the order.
+	 * This is needed due to mocked orders cannot be retrieved from the database in tests.
+	 *
+	 * @param mixed $order The order to be returned.
+	 *
+	 * @return WC_Order
+	 *
+	 * @throws New exception?
+	 */
+	private function get_order( $order ) {
+		$order = is_a( $order, 'WC_Order' ) ? $order : wc_get_order( $order );
+		if ( ! is_a( $order, 'WC_Order' ) ) {
+			// TODO: Throw exception?
+		}
+		return $order;
 	}
 }
