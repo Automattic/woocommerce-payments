@@ -1,11 +1,9 @@
 .wcpay-component-tip-box {
 	display: grid;
-	grid-template-columns: 16px 1fr;
+	grid-template-columns: 24px 1fr;
 	column-gap: $gap-small;
-	padding: $gap;
+	padding: $gap-small $gap;
 	margin: $gap 0;
-	font-size: 12px;
-	line-height: 16px;
 
 	&:first-child {
 		margin-top: 0;
@@ -25,8 +23,8 @@
 		background-color: $wp-blue-0;
 	}
 
-	svg {
-		margin-top: $gap-smallest;
+	&__content {
+		align-self: center;
 	}
 
 	a {
