@@ -8,7 +8,7 @@ $is-success: #00a32a;
 $is-success-hover: #00982a;
 
 .wcpay-banner-notice.components-notice {
-	padding: 12px 0 12px 17px;
+	padding: 11px 0 11px 17px;
 	border-left: none;
 	border-radius: 2px;
 	justify-content: flex-start;
@@ -27,6 +27,7 @@ $is-success-hover: #00982a;
 	}
 	.components-notice__content {
 		margin-top: 2px;
+		margin-bottom: 2px;
 	}
 	.wcpay-banner-notice__content__actions {
 		padding-top: 12px;
