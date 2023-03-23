@@ -143,7 +143,7 @@ describe( 'Payment Intent hooks', () => {
 			);
 
 			expect( result ).toEqual( {
-				data: paymentIntentMock.charge,
+				data: paymentIntentMock,
 				error: {},
 				isLoading: false,
 			} );
