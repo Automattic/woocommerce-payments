@@ -8,7 +8,7 @@ import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
  * Internal dependencies
  */
 import './../style.scss';
-import BannerNotice from '../../../components/banner-notice';
+import BannerNotice from 'wcpay/components/banner-notice';
 import TipIcon from 'wcpay/icons';
 
 const FraudProtectionRuleCardNotice = ( { type, children } ) => {
