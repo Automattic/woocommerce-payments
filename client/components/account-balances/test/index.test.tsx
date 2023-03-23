@@ -13,7 +13,6 @@ import AccountBalancesTabPanel from '../balances-tab-panel';
 import { getGreeting, getCurrencyTabTitle } from '../utils';
 import { useCurrentWpUser } from '../hooks';
 import { useAllDepositsOverviews } from 'wcpay/data';
-import { AccountOverview } from 'wcpay/types/account-overview';
 
 const mockUser = {
 	id: 123,
