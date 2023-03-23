@@ -8,6 +8,7 @@
 use WCPay\Constants\Fraud_Outcome_Status;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Exceptions\Order_Not_Found_Exception;
 
 /**
  * WC_Payments_Order_Service unit tests.
@@ -993,5 +994,14 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->attach_intent_info_to_order( $this->order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency );
 
 		$this->assertEquals( $intent_id, $this->order->get_meta( '_intent_id', true ) );
+	}
+
+	/**
+	 * Several methods use the private method get_order to get the order being worked on. If an order is not found
+	 * then an exception is thrown. This test attempt to confirm that exception gets thrown.
+	 */
+	public function test_get_order_throws_exception() {
+		$this->order_service->set_intent_id_for_order( 'fake_order', '' );
+		$this->expectException( Order_Not_Found_Exception::class );
 	}
 }

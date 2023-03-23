@@ -128,6 +128,7 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @return void
 	 *
 	 * @throws Invalid_Webhook_Data_Exception
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function process( array $event_body ) {
 		// Extract information about the webhook event.

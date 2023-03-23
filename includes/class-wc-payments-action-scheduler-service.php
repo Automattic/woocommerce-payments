@@ -62,6 +62,8 @@ class WC_Payments_Action_Scheduler_Service {
 	 * @param array $order_id  The ID of the order that has been created.
 	 *
 	 * @return bool
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function track_new_order_action( $order_id ) {
 		return $this->track_order( $order_id, false );
@@ -74,6 +76,8 @@ class WC_Payments_Action_Scheduler_Service {
 	 * @param int $order_id  The ID of the order which has been updated.
 	 *
 	 * @return bool
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function track_update_order_action( $order_id ) {
 		return $this->track_order( $order_id, true );
@@ -86,6 +90,8 @@ class WC_Payments_Action_Scheduler_Service {
 	 * @param bool  $is_update Is this an update event. If false, it is assumed this is a creation event.
 	 *
 	 * @return bool
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	private function track_order( $order_id, $is_update = false ) {
 		// Get the order details.

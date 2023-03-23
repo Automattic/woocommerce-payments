@@ -8,6 +8,7 @@
 use WCPay\Constants\Fraud_Outcome_Status;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Logger;
 
 defined( 'ABSPATH' ) || exit;
@@ -419,7 +420,10 @@ class WC_Payments_Order_Service {
 	 * Get the payment metadata for intent id.
 	 *
 	 * @param  mixed $order The order Id or order object.
+	 *
 	 * @return string
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function get_intent_id_for_order( $order ) : string {
 		$order = $this->get_order( $order );
@@ -431,6 +435,8 @@ class WC_Payments_Order_Service {
 	 *
 	 * @param  WC_Order $order The order object.
 	 * @param  mixed    $intent_id The value to be set.
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function set_intent_id_for_order( $order, $intent_id ) {
 		$order = $this->get_order( $order );
@@ -448,7 +454,10 @@ class WC_Payments_Order_Service {
 	 * Get the payment metadata for payment method id.
 	 *
 	 * @param  mixed $order The order Id or order object.
+	 *
 	 * @return string
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function get_payment_method_id_for_order( $order ) : string {
 		$order = $this->get_order( $order );
@@ -460,6 +469,8 @@ class WC_Payments_Order_Service {
 	 *
 	 * @param  mixed $order The order.
 	 * @param  mixed $payment_method_id The value to be set.
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function set_payment_method_id_for_order( $order, $payment_method_id ) {
 		$order = $this->get_order( $order );
@@ -478,6 +489,8 @@ class WC_Payments_Order_Service {
 	 *
 	 * @param  mixed $order The order.
 	 * @param  mixed $charge_id The value to be set.
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function set_charge_id_for_order( $order, $charge_id ) {
 		$order = $this->get_order( $order );
@@ -489,7 +502,10 @@ class WC_Payments_Order_Service {
 	 * Get the payment metadata for charge id.
 	 *
 	 * @param  mixed $order The order Id or order object.
+	 *
 	 * @return string
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function get_charge_id_for_order( $order ) : string {
 		$order = $this->get_order( $order );
@@ -501,6 +517,8 @@ class WC_Payments_Order_Service {
 	 *
 	 * @param  mixed $order The order.
 	 * @param  mixed $intention_status The value to be set.
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function set_intention_status_for_order( $order, $intention_status ) {
 		$order = $this->get_order( $order );
@@ -512,7 +530,10 @@ class WC_Payments_Order_Service {
 	 * Get the payment metadata for intention status.
 	 *
 	 * @param  mixed $order The order Id or order object.
+	 *
 	 * @return string
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function get_intention_status_for_order( $order ) : string {
 		$order = $this->get_order( $order );
@@ -524,6 +545,8 @@ class WC_Payments_Order_Service {
 	 *
 	 * @param  mixed $order The order.
 	 * @param  mixed $customer_id The value to be set.
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function set_customer_id_for_order( $order, $customer_id ) {
 		$order = $this->get_order( $order );
@@ -535,7 +558,10 @@ class WC_Payments_Order_Service {
 	 * Get the payment metadata for customer id.
 	 *
 	 * @param  mixed $order The order Id or order object.
+	 *
 	 * @return string
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function get_customer_id_for_order( $order ) : string {
 		$order = $this->get_order( $order );
@@ -547,6 +573,8 @@ class WC_Payments_Order_Service {
 	 *
 	 * @param  mixed $order The order.
 	 * @param  mixed $wcpay_intent_currency The value to be set.
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function set_wcpay_intent_currency_for_order( $order, $wcpay_intent_currency ) {
 		$order = $this->get_order( $order );
@@ -558,7 +586,10 @@ class WC_Payments_Order_Service {
 	 * Get the payment metadata for intent currency.
 	 *
 	 * @param  mixed $order The order Id or order object.
+	 *
 	 * @return string
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function get_wcpay_intent_currency_for_order( $order ) : string {
 		$order = $this->get_order( $order );
@@ -570,6 +601,8 @@ class WC_Payments_Order_Service {
 	 *
 	 * @param  mixed $order The order.
 	 * @param  mixed $wcpay_refund_id The value to be set.
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function set_wcpay_refund_id_for_order( $order, $wcpay_refund_id ) {
 		$order = $this->get_order( $order );
@@ -581,7 +614,10 @@ class WC_Payments_Order_Service {
 	 * Get the payment metadata for refund id.
 	 *
 	 * @param  mixed $order The order Id or order object.
+	 *
 	 * @return string
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function get_wcpay_refund_id_for_order( $order ) : string {
 		$order = $this->get_order( $order );
@@ -593,6 +629,8 @@ class WC_Payments_Order_Service {
 	 *
 	 * @param  mixed $order The order.
 	 * @param  mixed $wcpay_refund_status The value to be set.
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function set_wcpay_refund_status_for_order( $order, $wcpay_refund_status ) {
 		$order = $this->get_order( $order );
@@ -604,7 +642,10 @@ class WC_Payments_Order_Service {
 	 * Get the payment metadata for refund status.
 	 *
 	 * @param  mixed $order The order Id or order object.
+	 *
 	 * @return string
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function get_wcpay_refund_status_for_order( $order ) : string {
 		$order = $this->get_order( $order );
@@ -616,6 +657,8 @@ class WC_Payments_Order_Service {
 	 *
 	 * @param  mixed $order The order.
 	 * @param  mixed $fraud_outcome_status The value to be set.
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function set_fraud_outcome_status_for_order( $order, $fraud_outcome_status ) {
 		$order = $this->get_order( $order );
@@ -629,6 +672,8 @@ class WC_Payments_Order_Service {
 	 * @param  mixed $order The order Id or order object.
 	 *
 	 * @return string
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function get_fraud_outcome_status_for_order( $order ) : string {
 		$order = $this->get_order( $order );
@@ -645,6 +690,8 @@ class WC_Payments_Order_Service {
 	 * @param string   $customer_id Customer ID.
 	 * @param string   $charge_id Charge ID.
 	 * @param string   $currency Currency code.
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency ) {
 		// first, let's save all the metadata that needed for refunds, required for status change etc.
@@ -1326,12 +1373,15 @@ class WC_Payments_Order_Service {
 	 *
 	 * @return WC_Order
 	 *
-	 * @throws New exception?
+	 * @throws Order_Not_Found_Exception
 	 */
 	private function get_order( $order ) {
 		$order = is_a( $order, 'WC_Order' ) ? $order : wc_get_order( $order );
 		if ( ! is_a( $order, 'WC_Order' ) ) {
-			// TODO: Throw exception?
+			throw new Order_Not_Found_Exception(
+				__( 'The requested order was not found.', 'woocommerce-payments' ),
+				'order_not_found'
+			);
 		}
 		return $order;
 	}

@@ -407,9 +407,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
 			update_option( 'woocommerce_order_action_capture_charge_added', 1 );
 		}
-		add_action( 'shutdown', function() {
-			update_option( 'woocommerce_order_action_capture_charge_added', 0 );
-		} );
+		add_action(
+			'shutdown',
+			function() {
+				update_option( 'woocommerce_order_action_capture_charge_added', 0 );
+			}
+		);
 		add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
 
 		add_action( 'wp_ajax_update_order_status', [ $this, 'update_order_status' ] );
@@ -976,6 +979,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @throws \WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception When request class filter filed to extend request class because of incompatibility.
 	 * @throws \WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception When immutable parameter gets changed in request class.
 	 * @throws \WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception When you send incorrect request value via setters.
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function process_payment_for_order( $cart, $payment_information, $scheduled_subscription_payment = false ) {
 		$order                                       = $payment_information->get_order();
@@ -1436,6 +1440,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param  WC_Order $order Order object.
 	 * @return bool
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function can_refund_order( $order ) {
 		return $order && $this->order_service->get_charge_id_for_order( $order );
@@ -1451,8 +1457,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool|WP_Error - Whether the refund went through. Returns a WP_Error if an Exception occurs during execution.
 	 */
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
-		$order    = wc_get_order( $order_id );
-		$currency = $this->order_service->get_wcpay_intent_currency_for_order( $order );
+		$order = wc_get_order( $order_id );
 
 		if ( ! $order ) {
 			return false;
@@ -1476,6 +1481,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		$charge_id = $this->order_service->get_charge_id_for_order( $order );
+		$currency  = $this->order_service->get_wcpay_intent_currency_for_order( $order );
 
 		try {
 			// If the payment method is Interac, the refund already exists (refunded via Mobile app).
@@ -1571,6 +1577,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param WC_Order $order The order to check.
 	 * @return boolean
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function has_refund_failed( $order ) {
 		return 'failed' === $this->order_service->get_wcpay_refund_status_for_order( $order );
@@ -1580,7 +1588,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Gets the payment method type used for an order, if any
 	 *
 	 * @param WC_Order $order The order to get the payment method type for.
+	 *
 	 * @return string
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	private function get_payment_method_type_for_order( $order ): string {
 		if ( $this->order_service->get_payment_method_id_for_order( $order ) ) {
@@ -2647,7 +2658,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$charge_id = '';
 			}
 
-
 			if ( Payment_Intent_Status::SUCCEEDED === $status ) {
 				$this->remove_session_processing_order( $order->get_id() );
 			}
@@ -2776,6 +2786,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param int           $order_id  The ID of the order that has been created.
 	 * @param WC_Order|null $order     The order that has been created.
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function schedule_order_tracking( $order_id, $order = null ) {
 		$this->maybe_schedule_subscription_order_tracking( $order_id, $order );
@@ -2925,21 +2937,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				]
 			);
 		}
-	}
-
-	/**
-	 * Add a url to the admin order page that links directly to the transactions detail view.
-	 *
-	 * @since 1.4.0
-	 *
-	 * @param WC_Order $order The context passed into this function when the user view the order details page in WordPress admin.
-	 * @return string
-	 */
-	public function get_transaction_url( $order ) {
-		$intent_id = $this->order_service->get_intent_id_for_order( $order );
-		$charge_id = $this->order_service->get_charge_id_for_order( $order );
-
-		return WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 	}
 
 	/**
