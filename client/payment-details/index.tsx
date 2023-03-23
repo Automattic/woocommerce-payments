@@ -29,6 +29,7 @@ import {
 	usePaymentIntentWithChargeFallback,
 } from 'wcpay/data/payment-intents';
 import { useLatestFraudOutcome } from '../data/fraud-outcomes';
+import { PaymentIntent } from '../types/payment-intents';
 
 const PaymentDetails: React.FC< PaymentDetailsProps > = ( props ) => {
 	if ( 'card_reader_fee' === props.query.transaction_type ) {
@@ -66,6 +67,9 @@ const PaymentChargeDetails: React.FC< PaymentChargeDetailsProps > = ( {
 	const charge =
 		( isPaymentIntent( data ) ? data.charge : data ) || ( {} as Charge );
 	const metadata = isPaymentIntent( data ) ? data.metadata : {};
+	const paymentIntent = isPaymentIntent( data )
+		? data
+		: ( {} as PaymentIntent );
 
 	useEffect( () => {
 		if ( ! isCharge( data ) ) {
@@ -111,6 +115,7 @@ const PaymentChargeDetails: React.FC< PaymentChargeDetailsProps > = ( {
 					metadata={ metadata }
 					isLoading={ isLoading }
 					fraudOutcome={ latestFraudOutcome }
+					paymentIntent={ paymentIntent }
 				/>
 			</ErrorBoundary>
 			{ ! isChargeId && wcpaySettings.featureFlags.paymentTimeline && (

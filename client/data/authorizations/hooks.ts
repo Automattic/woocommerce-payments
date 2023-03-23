@@ -75,19 +75,27 @@ export const useAuthorization = (
 	requiresCapture = true
 ): {
 	isLoading: boolean;
+	isRequesting: boolean;
 	doCaptureAuthorization: () => void;
 	doCancelAuthorization: () => void;
 	authorization?: Authorization;
 } => {
-	const { authorization, isLoading } = useSelect( ( select ) => {
-		const { getAuthorization, isResolving } = select( STORE_NAME );
-		return {
-			authorization: requiresCapture
-				? getAuthorization( paymentIntentId )
-				: null,
-			isLoading: isResolving( 'getAuthorization', [ paymentIntentId ] ),
-		};
-	} );
+	const { authorization, isRequesting, isLoading } = useSelect(
+		( select ) => {
+			const { getAuthorization, getIsRequesting, isResolving } = select(
+				STORE_NAME
+			);
+			return {
+				authorization: requiresCapture
+					? getAuthorization( paymentIntentId )
+					: null,
+				isLoading: isResolving( 'getAuthorization', [
+					paymentIntentId,
+				] ),
+				isRequesting: getIsRequesting(),
+			};
+		}
+	);
 
 	const {
 		submitCaptureAuthorization,
@@ -103,6 +111,7 @@ export const useAuthorization = (
 	return {
 		authorization,
 		isLoading,
+		isRequesting,
 		doCaptureAuthorization,
 		doCancelAuthorization,
 	};

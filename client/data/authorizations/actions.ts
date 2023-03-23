@@ -72,6 +72,12 @@ export function updateAuthorizationsSummary(
 	};
 }
 
+export function setIsRequestingAuthorization(
+	data: boolean
+): { type: string; data: boolean } {
+	return { type: TYPES.SET_IS_REQUESTING_AUTHORIZATION, data };
+}
+
 export function* submitCaptureAuthorization(
 	paymentIntentId: string,
 	orderId: number
@@ -80,6 +86,8 @@ export function* submitCaptureAuthorization(
 		yield dispatch( STORE_NAME, 'startResolution', 'getAuthorization', [
 			paymentIntentId,
 		] );
+
+		yield dispatch( STORE_NAME, 'setIsRequestingAuthorization', true );
 
 		const result = yield apiFetch( {
 			path: `/wc/v3/payments/orders/${ orderId }/capture_authorization`,
@@ -116,6 +124,13 @@ export function* submitCaptureAuthorization(
 			'invalidateResolutionForStoreSelector',
 			'getTimeline'
 		);
+
+		yield dispatch(
+			STORE_NAME,
+			'invalidateResolutionForStoreSelector',
+			'getPaymentIntent'
+		);
+
 		// Create success notice.
 		yield dispatch(
 			'core/notices',
@@ -146,6 +161,7 @@ export function* submitCaptureAuthorization(
 		yield dispatch( STORE_NAME, 'finishResolution', 'getAuthorization', [
 			paymentIntentId,
 		] );
+		yield dispatch( STORE_NAME, 'setIsRequestingAuthorization', false );
 	}
 }
 
@@ -157,6 +173,8 @@ export function* submitCancelAuthorization(
 		yield dispatch( STORE_NAME, 'startResolution', 'getAuthorization', [
 			paymentIntentId,
 		] );
+
+		yield dispatch( STORE_NAME, 'setIsRequestingAuthorization', true );
 
 		const result = yield apiFetch( {
 			path: `/wc/v3/payments/orders/${ orderId }/cancel_authorization`,
@@ -193,6 +211,13 @@ export function* submitCancelAuthorization(
 			'invalidateResolutionForStoreSelector',
 			'getTimeline'
 		);
+
+		yield dispatch(
+			STORE_NAME,
+			'invalidateResolutionForStoreSelector',
+			'getPaymentIntent'
+		);
+
 		// Create success notice.
 		yield dispatch(
 			'core/notices',
@@ -223,6 +248,8 @@ export function* submitCancelAuthorization(
 		yield dispatch( STORE_NAME, 'finishResolution', 'getAuthorization', [
 			paymentIntentId,
 		] );
+
+		yield dispatch( STORE_NAME, 'setIsRequestingAuthorization', false );
 	}
 }
 

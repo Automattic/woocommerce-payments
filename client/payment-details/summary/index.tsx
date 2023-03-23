@@ -16,6 +16,7 @@ import {
 	getChargeAmounts,
 	getChargeStatus,
 	getChargeChannel,
+	isOnHoldByFraudTools,
 } from 'utils/charge';
 import PaymentStatusChip from 'components/payment-status-chip';
 import PaymentMethodDetails from 'components/payment-method-details';
@@ -33,6 +34,7 @@ import wcpayTracks from 'tracks';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import { FraudOutcome } from '../../types/fraud-outcome';
 import CancelAuthorizationButton from '../../components/cancel-authorization-button';
+import { PaymentIntent } from '../../types/payment-intents';
 
 declare const window: any;
 
@@ -41,6 +43,7 @@ interface PaymentDetailsSummaryProps {
 	metadata: Record< string, any >;
 	isLoading: boolean;
 	fraudOutcome?: FraudOutcome;
+	paymentIntent?: PaymentIntent;
 }
 
 const placeholderValues = {
@@ -140,6 +143,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	metadata,
 	isLoading,
 	fraudOutcome,
+	paymentIntent,
 } ) => {
 	const balance = charge.amount
 		? getChargeAmounts( charge )
@@ -166,6 +170,11 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		shouldFetchAuthorization
 	);
 
+	const isFraudOutcomeReview = isOnHoldByFraudTools(
+		fraudOutcome,
+		paymentIntent
+	);
+
 	return (
 		<Card>
 			<CardBody>
@@ -187,7 +196,8 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								<PaymentStatusChip
 									status={ getChargeStatus(
 										charge,
-										fraudOutcome
+										fraudOutcome,
+										paymentIntent
 									) }
 								/>
 							</Loadable>
@@ -267,41 +277,47 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 						</div>
 					</div>
 					<div className="payment-details-summary__section">
-						<div className="payment-details-summary__fraud-outcome-action">
-							<CancelAuthorizationButton
-								orderId={ charge.order?.number || 0 }
-								paymentIntentId={ charge.payment_intent || '' }
-								onClick={ () => {
-									wcpayTracks.recordEvent(
-										'payments_transactions_details_cancel_charge_button_click',
-										{
-											payment_intent_id:
-												charge.payment_intent,
-										}
-									);
-								} }
-							>
-								{ __( 'Block transaction' ) }
-							</CancelAuthorizationButton>
+						{ ! isLoading && isFraudOutcomeReview && (
+							<div className="payment-details-summary__fraud-outcome-action">
+								<CancelAuthorizationButton
+									orderId={ charge.order?.number || 0 }
+									paymentIntentId={
+										charge.payment_intent || ''
+									}
+									onClick={ () => {
+										wcpayTracks.recordEvent(
+											'payments_transactions_details_cancel_charge_button_click',
+											{
+												payment_intent_id:
+													charge.payment_intent,
+											}
+										);
+									} }
+								>
+									{ __( 'Block transaction' ) }
+								</CancelAuthorizationButton>
 
-							<CaptureAuthorizationButton
-								buttonIsPrimary
-								orderId={ charge.order?.number || 0 }
-								paymentIntentId={ charge.payment_intent || '' }
-								buttonIsSmall={ false }
-								onClick={ () => {
-									wcpayTracks.recordEvent(
-										'payments_transactions_details_capture_charge_button_click',
-										{
-											payment_intent_id:
-												charge.payment_intent,
-										}
-									);
-								} }
-							>
-								{ __( 'Approve Transaction' ) }
-							</CaptureAuthorizationButton>
-						</div>
+								<CaptureAuthorizationButton
+									buttonIsPrimary
+									orderId={ charge.order?.number || 0 }
+									paymentIntentId={
+										charge.payment_intent || ''
+									}
+									buttonIsSmall={ false }
+									onClick={ () => {
+										wcpayTracks.recordEvent(
+											'payments_transactions_details_capture_charge_button_click',
+											{
+												payment_intent_id:
+													charge.payment_intent,
+											}
+										);
+									} }
+								>
+									{ __( 'Approve Transaction' ) }
+								</CaptureAuthorizationButton>
+							</div>
+						) }
 						<div className="payment-details-summary__id">
 							<Loadable
 								isLoading={ isLoading }
