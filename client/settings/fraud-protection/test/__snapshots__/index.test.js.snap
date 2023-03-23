@@ -9,10 +9,38 @@ exports[`FraudProtection renders 1`] = `
       class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
     >
       <h4>
-        Set your payment risk level
+        <span
+          id="fraud-protection-card-title"
+        >
+          Set your payment risk level
+        </span>
       </h4>
       <fieldset>
         <ul>
+          <li>
+            <div
+              class="fraud-protection-single-radio-wrapper"
+            >
+              <input
+                class="fraud-protection-single-radio-wrapper__item"
+                id="fraud-protection__basic-level"
+                name="fraud-protection-level-select"
+                type="radio"
+                value="basic"
+              />
+              <label
+                class="fraud-protection-single-radio-wrapper__item"
+                for="fraud-protection__basic-level"
+              >
+                Basic
+              </label>
+            </div>
+            <p
+              class="fraud-protection__text--help-text"
+            >
+              Provides the base level of platform protection.
+            </p>
+          </li>
           <li>
             <div
               class="fraud-protection-single-radio-wrapper"
