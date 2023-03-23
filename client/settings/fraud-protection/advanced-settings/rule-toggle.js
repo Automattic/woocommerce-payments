@@ -21,6 +21,7 @@ const FraudProtectionRuleToggle = ( {
 	const {
 		advancedFraudProtectionSettings,
 		setAdvancedFraudProtectionSettings,
+		setProtectionSettingsChanged,
 	} = useContext( FraudPreventionSettingsContext );
 
 	const [ toggleState, setToggleState ] = useState( false );
@@ -55,11 +56,13 @@ const FraudProtectionRuleToggle = ( {
 			setAdvancedFraudProtectionSettings(
 				advancedFraudProtectionSettings
 			);
+			setProtectionSettingsChanged( ( prev ) => ! prev );
 		}
 	}, [
 		setting,
 		toggleState,
 		checkState,
+		setProtectionSettingsChanged,
 		advancedFraudProtectionSettings,
 		setAdvancedFraudProtectionSettings,
 	] );

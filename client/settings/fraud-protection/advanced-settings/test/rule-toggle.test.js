@@ -22,6 +22,7 @@ describe( 'Fraud protection rule toggle tests', () => {
 				},
 			},
 			setAdvancedFraudProtectionSettings: jest.fn(),
+			setProtectionSettingsChanged: jest.fn(),
 		};
 	} );
 
