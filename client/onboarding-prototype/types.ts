@@ -17,4 +17,4 @@ export type OnboardingFields = {
 	go_live_timeframe?: string;
 };
 
-export type OnboardingSteps = 'personal' | 'business' | 'store';
+export type OnboardingSteps = 'mode' | 'personal' | 'business' | 'store';

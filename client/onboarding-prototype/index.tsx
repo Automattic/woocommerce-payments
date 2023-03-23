@@ -12,6 +12,7 @@ import { Stepper } from 'components/stepper';
 import { OnboardingSteps } from './types';
 import { fromDotNotation } from './utils';
 import { OnboardingForm } from './form';
+import ModeChoice from './steps/mode-choice';
 import PersonalDetails from './steps/personal-details';
 import BusinessDetails from './steps/business-details';
 import StoreDetails from './steps/store-details';
@@ -44,6 +45,9 @@ const OnboardingStepper = () => {
 
 	return (
 		<Stepper onComplete={ handleComplete }>
+			<Step name="mode">
+				<ModeChoice />
+			</Step>
 			<Step name="personal">
 				<OnboardingForm>
 					<PersonalDetails />
