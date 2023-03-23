@@ -1,0 +1,34 @@
+.wcpay-component-radio-card {
+	cursor: initial;
+	display: block;
+	padding: $gap-large;
+	background-color: #fff;
+	margin-bottom: $gap-large;
+	border-radius: 3px;
+	border: 1px solid $light-gray-500;
+
+	&.checked {
+		box-shadow: 0 0 0 1px #007cba;
+	}
+
+	&__label {
+		display: grid;
+		grid-template-columns: 24px 1fr 20px;
+		column-gap: $gap-smaller;
+		align-items: center;
+		font-weight: bold;
+
+		svg {
+			fill: #bbb;
+		}
+
+		input[type='radio'] {
+			transform: scale( 1.25 );
+			margin: 0;
+
+			&:focus {
+				box-shadow: none;
+			}
+		}
+	}
+}
