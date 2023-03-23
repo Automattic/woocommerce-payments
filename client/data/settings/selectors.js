@@ -1,5 +1,10 @@
 /** @format */
 
+/**
+ * Internal dependencies
+ */
+import { ProtectionLevel } from '../../settings/fraud-protection/advanced-settings/constants';
+
 const EMPTY_OBJ = {};
 const EMPTY_ARR = [];
 
@@ -201,9 +206,10 @@ export const getPlatformCheckoutLocations = ( state ) => {
 	);
 };
 
-// TODO: Finish implementation once server API endpoints are deployed.
 export const getCurrentProtectionLevel = ( state ) => {
-	return getSettings( state ).current_protection_level || 'standard';
+	return (
+		getSettings( state ).current_protection_level || ProtectionLevel.BASIC
+	);
 };
 
 export const getAdvancedFraudProtectionSettings = ( state ) => {

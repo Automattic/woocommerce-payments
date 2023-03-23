@@ -1,6 +1,6 @@
 {
   "name": "woocommerce-payments",
-  "version": "5.6.0",
+  "version": "5.6.2",
   "main": "webpack.config.js",
   "author": "Automattic",
   "license": "GPL-3.0-or-later",
@@ -82,6 +82,7 @@
     "@pmmmwh/react-refresh-webpack-plugin": "0.5.7",
     "@testing-library/jest-dom": "5.14.1",
     "@testing-library/react": "11.2.5",
+    "@testing-library/react-hooks": "8.0.1",
     "@testing-library/user-event": "10.4.1",
     "@types/intl-tel-input": "17.0.4",
     "@types/lodash": "4.14.170",
