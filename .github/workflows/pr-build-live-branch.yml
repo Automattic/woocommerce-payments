@@ -124,7 +124,7 @@ jobs:
          
           :rocket: [Launch a JN site with this branch](https://jurassic.ninja/create/?jetpack-beta&shortlived&nojetpack&woocommerce&branches.woocommerce-payments=${PR_HEAD_REF}) :rocket:
           
-          :information_source: [Install this Tampermonkey script](https://github.com/Automattic/woocommerce-payments/tree/develop/bin/wcpay-live-branches) to get more options.
+          :information_source: Install this [Tampermonkey script](https://github.com/Automattic/woocommerce-payments/tree/develop/bin/wcpay-live-branches) to get more options.
           
           ---
 
