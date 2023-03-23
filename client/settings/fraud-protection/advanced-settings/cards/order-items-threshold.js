@@ -15,17 +15,16 @@ import FraudProtectionRuleDescription from '../rule-description';
 import FraudPreventionSettingsContext from '../context';
 
 const OrderItemsThresholdCustomForm = ( { setting } ) => {
-	const {
-		advancedFraudProtectionSettings,
-		setAdvancedFraudProtectionSettings,
-	} = useContext( FraudPreventionSettingsContext );
+	const { protectionSettingsUI, setProtectionSettingsUI } = useContext(
+		FraudPreventionSettingsContext
+	);
 
 	const minItemsTemp = parseInt(
-		advancedFraudProtectionSettings[ setting ].min_items,
+		protectionSettingsUI[ setting ].min_items,
 		10
 	);
 	const maxItemsTemp = parseInt(
-		advancedFraudProtectionSettings[ setting ].max_items,
+		protectionSettingsUI[ setting ].max_items,
 		10
 	);
 
@@ -37,15 +36,15 @@ const OrderItemsThresholdCustomForm = ( { setting } ) => {
 	);
 
 	useEffect( () => {
-		advancedFraudProtectionSettings[ setting ].min_items = minItemsCount;
-		advancedFraudProtectionSettings[ setting ].max_items = maxItemsCount;
-		setAdvancedFraudProtectionSettings( advancedFraudProtectionSettings );
+		protectionSettingsUI[ setting ].min_items = minItemsCount;
+		protectionSettingsUI[ setting ].max_items = maxItemsCount;
+		setProtectionSettingsUI( protectionSettingsUI );
 	}, [
 		setting,
 		minItemsCount,
 		maxItemsCount,
-		advancedFraudProtectionSettings,
-		setAdvancedFraudProtectionSettings,
+		protectionSettingsUI,
+		setProtectionSettingsUI,
 	] );
 
 	const isItemRangeEmpty =
