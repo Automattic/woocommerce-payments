@@ -16,21 +16,21 @@ const getNoticeText = ( filterType, blocking ) => {
 	if ( 'all_except' === filterType ) {
 		return blocking
 			? __(
-					'Orders from these countries will be blocked by the filter: ',
+					'Orders from the following countries will be blocked by the filter: ',
 					'woocommerce-payments'
 			  )
 			: __(
-					'Orders from these countries will be screened by the filter: ',
+					'Orders from the following countries will be screened by the filter: ',
 					'woocommerce-payments'
 			  );
 	} else if ( 'specific' === filterType ) {
 		return blocking
 			? __(
-					'Orders outside from these countries will be blocked by the filter: ',
+					'Orders from outside of the following countries will be blocked by the filter: ',
 					'woocommerce-payments'
 			  )
 			: __(
-					'Orders outside from these countries will be screened by the filter: ',
+					'Orders from outside of the following countries will be screened by the filter: ',
 					'woocommerce-payments'
 			  );
 	}

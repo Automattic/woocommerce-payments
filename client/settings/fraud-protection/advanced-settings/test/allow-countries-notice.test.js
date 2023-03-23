@@ -65,7 +65,7 @@ describe( 'Allowed countries rule card notice tests', () => {
 		);
 		expect( container ).toMatchSnapshot();
 		expect( container.baseElement ).toHaveTextContent(
-			/Orders outside from these countries will be screened by the filter: Canada, United States/i
+			/Orders from outside of the following countries will be screened by the filter: Canada, United States/i
 		);
 	} );
 	test( 'renders correctly when specific countries are allowed, others will be blocked', () => {
@@ -84,7 +84,7 @@ describe( 'Allowed countries rule card notice tests', () => {
 		);
 		expect( container ).toMatchSnapshot();
 		expect( container.baseElement ).toHaveTextContent(
-			/Orders outside from these countries will be blocked by the filter: Canada, United States/i
+			/Orders from outside of the following countries will be blocked by the filter: Canada, United States/i
 		);
 	} );
 	test( 'renders correctly when countries except some are allowed, others will be hold', () => {
@@ -103,7 +103,7 @@ describe( 'Allowed countries rule card notice tests', () => {
 		);
 		expect( container ).toMatchSnapshot();
 		expect( container.baseElement ).toHaveTextContent(
-			/Orders from these countries will be screened by the filter: Canada, United States/i
+			/Orders from the following countries will be screened by the filter: Canada, United States/i
 		);
 	} );
 	test( 'renders correctly when countries except some are allowed, others will be blocked', () => {
@@ -122,7 +122,7 @@ describe( 'Allowed countries rule card notice tests', () => {
 		);
 		expect( container ).toMatchSnapshot();
 		expect( container.baseElement ).toHaveTextContent(
-			/Orders from these countries will be blocked by the filter: Canada, United States/i
+			/Orders from the following countries will be blocked by the filter: Canada, United States/i
 		);
 	} );
 } );
