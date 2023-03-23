@@ -17,17 +17,19 @@ export type OnboardingFields = {
 	go_live_timeframe?: string;
 };
 
-export interface ProgressiveOnboardingEligibleResult {
+export interface EligibleResult {
 	result: string;
 	data: Array< string >;
 }
 
-export interface ProgressiveOnboardingEligibleFields {
-	country?: string;
-	type?: string;
-	mcc?: string;
-	annual_revenue?: string;
-	go_live_timeframe?: string;
+export interface EligibleData {
+	business: {
+		country: string;
+		type: string;
+		mcc: string;
+		annual_revenue: string;
+		go_live_timeframe: string;
+	};
 }
 
-export type OnboardingSteps = 'personal' | 'business' | 'store';
+export type OnboardingSteps = 'personal' | 'business' | 'store' | 'loading';
