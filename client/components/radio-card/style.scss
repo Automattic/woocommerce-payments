@@ -13,7 +13,7 @@
 
 	&__label {
 		display: grid;
-		grid-template-columns: 24px 1fr 20px;
+		grid-template-columns: 24px 1fr 25px;
 		column-gap: $gap-smaller;
 		align-items: center;
 		font-weight: bold;
@@ -23,8 +23,12 @@
 		}
 
 		input[type='radio'] {
-			transform: scale( 1.25 );
 			margin: 0;
+			justify-self: flex-end;
+
+			@media ( min-width: 783px ) {
+				transform: scale( 1.25 );
+			}
 
 			&:focus {
 				box-shadow: none;
