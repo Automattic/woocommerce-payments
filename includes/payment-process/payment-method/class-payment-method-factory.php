@@ -23,11 +23,12 @@ class Payment_Method_Factory {
 	/**
 	 * Retrieves the payment method from a request.
 	 *
-	 * @param array $request The request object, normally equal to $_POST.
-	 * @return Payment_Method
+	 * @param array $request    The request object, normally equal to $_POST.
+	 * @param bool  $ignore_new Sometimes this should just check for a saved payment method.
+	 * @return Payment_Method|null
 	 * @throws Exception If something smeels.
 	 */
-	public function from_request( array $request ) {
+	public function from_request( array $request, bool $ignore_new = false ) {
 		// Check if WCPay is the chosen gateway.
 		if ( ! isset( $request['payment_method'] ) || WC_Payment_Gateway_WCPay::GATEWAY_ID !== $request['payment_method'] ) {
 			throw new Exception( 'WooCommerce Payments is not used during checkout, cannot retrieve payment method.' );
@@ -38,6 +39,11 @@ class Payment_Method_Factory {
 		$token_id   = isset( $request[ $token_name ] ) ? $request[ $token_name ] : 'new';
 
 		if ( 'new' === $token_id ) {
+			// In some cases, ex. UPE, a new payment method might be chosen, but not available in the request.
+			if ( $ignore_new ) {
+				return null;
+			}
+
 			// There must be a new payment method entered.
 			if ( empty( $request[ self::NEW_PAYMENT_METHOD_INPUT ] ) ) {
 				throw new Exception( 'A new payment method was selected, but not entered.' );
