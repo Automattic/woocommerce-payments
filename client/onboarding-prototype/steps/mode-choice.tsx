@@ -4,6 +4,7 @@
 import React, { useState } from 'react';
 import { Button } from '@wordpress/components';
 import { Icon, store, tool, payment, globe, shortcode } from '@wordpress/icons';
+import { addQueryArgs } from '@wordpress/url';
 import ScheduledIcon from 'gridicons/dist/scheduled';
 
 /**
@@ -19,11 +20,17 @@ const ModeChoice: React.FC = () => {
 	const liveStrings = strings.steps.mode.live;
 	const testStrings = strings.steps.mode.test;
 
-	const [ selected, setSelected ] = useState( 'live' );
+	const [ selected, setSelected ] = useState< 'live' | 'test' >( 'live' );
 	const { nextStep } = useStepperContext();
 
 	const handleContinue = () => {
-		nextStep();
+		if ( selected === 'live' ) return nextStep();
+
+		const { connectUrl } = wcpaySettings;
+		const url = addQueryArgs( connectUrl, {
+			test_mode: true,
+		} );
+		window.location.href = url;
 	};
 
 	return (
@@ -31,7 +38,7 @@ const ModeChoice: React.FC = () => {
 			<RadioCard
 				name="onboarding-mode"
 				selected={ selected }
-				onChange={ setSelected }
+				onChange={ setSelected as ( value: string ) => void }
 				options={ [
 					{
 						label: liveStrings.label,
