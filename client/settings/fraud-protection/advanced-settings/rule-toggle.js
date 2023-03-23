@@ -19,8 +19,8 @@ const FraudProtectionRuleToggle = ( {
 	children,
 } ) => {
 	const {
-		advancedFraudProtectionSettings,
-		setAdvancedFraudProtectionSettings,
+		protectionSettingsUI,
+		setProtectionSettingsUI,
 		setProtectionSettingsChanged,
 	} = useContext( FraudPreventionSettingsContext );
 
@@ -29,47 +29,32 @@ const FraudProtectionRuleToggle = ( {
 
 	// Set initial states from saved settings.
 	useEffect( () => {
-		if (
-			advancedFraudProtectionSettings &&
-			advancedFraudProtectionSettings[ setting ]
-		) {
-			setToggleState(
-				advancedFraudProtectionSettings[ setting ].enabled
-			);
-			setCheckState( advancedFraudProtectionSettings[ setting ].block );
+		if ( protectionSettingsUI && protectionSettingsUI[ setting ] ) {
+			setToggleState( protectionSettingsUI[ setting ].enabled );
+			setCheckState( protectionSettingsUI[ setting ].block );
 		}
-	}, [
-		advancedFraudProtectionSettings,
-		setToggleState,
-		setCheckState,
-		setting,
-	] );
+	}, [ protectionSettingsUI, setToggleState, setCheckState, setting ] );
 
 	// Set global object values from input changes.
 	useEffect( () => {
-		if (
-			advancedFraudProtectionSettings &&
-			advancedFraudProtectionSettings[ setting ]
-		) {
-			advancedFraudProtectionSettings[ setting ].enabled = toggleState;
-			advancedFraudProtectionSettings[ setting ].block = checkState;
-			setAdvancedFraudProtectionSettings(
-				advancedFraudProtectionSettings
-			);
-			setProtectionSettingsChanged( ( prev ) => ! prev );
+		if ( protectionSettingsUI && protectionSettingsUI[ setting ] ) {
+			protectionSettingsUI[ setting ].enabled = toggleState;
+			protectionSettingsUI[ setting ].block = checkState;
+			setProtectionSettingsUI( protectionSettingsUI );
+      setProtectionSettingsChanged( ( prev ) => ! prev );
 		}
 	}, [
 		setting,
 		toggleState,
 		checkState,
 		setProtectionSettingsChanged,
-		advancedFraudProtectionSettings,
-		setAdvancedFraudProtectionSettings,
+		protectionSettingsUI,
+		setProtectionSettingsUI,
 	] );
 
 	// Render view.
 	return (
-		advancedFraudProtectionSettings && (
+		protectionSettingsUI && (
 			<div className="fraud-protection-rule-toggle">
 				<strong>
 					{ __( 'Enable filtering', 'woocommerce-payments' ) }

@@ -18,10 +18,10 @@ describe( 'Address mismatch card', () => {
 	};
 	const setSettings = jest.fn();
 	const contextValue = {
-		advancedFraudProtectionSettings: settings,
-		setAdvancedFraudProtectionSettings: setSettings,
+		protectionSettingsUI: settings,
+		setProtectionSettingsUI: setSettings,
 		protectionSettingsChanged: false,
-		setProtectionSettingsChanged: jest.fn(),
+		setProtectionSettingsChanged:
 	};
 	test( 'renders correctly', () => {
 		settings.address_mismatch.enabled = false;

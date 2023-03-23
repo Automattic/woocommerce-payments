@@ -26,8 +26,8 @@ describe( 'AVS mismatch card', () => {
 		};
 		const setSettings = jest.fn();
 		const contextValue = {
-			advancedFraudProtectionSettings: settings,
-			setAdvancedFraudProtectionSettings: setSettings,
+			protectionSettingsUI: settings,
+			setProtectionSettingsUI: setSettings,
 			protectionSettingsChanged: false,
 			setProtectionSettingsChanged: jest.fn(),
 		};
@@ -57,8 +57,8 @@ describe( 'AVS mismatch card', () => {
 		};
 		const setSettings = jest.fn();
 		const contextValue = {
-			advancedFraudProtectionSettings: settings,
-			setAdvancedFraudProtectionSettings: setSettings,
+			protectionSettingsUI: settings,
+			setProtectionSettingsUI: setSettings,
 			protectionSettingsChanged: false,
 			setProtectionSettingsChanged: jest.fn(),
 		};
