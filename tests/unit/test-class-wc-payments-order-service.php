@@ -1001,7 +1001,8 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 * then an exception is thrown. This test attempt to confirm that exception gets thrown.
 	 */
 	public function test_get_order_throws_exception() {
-		$this->order_service->set_intent_id_for_order( 'fake_order', '' );
 		$this->expectException( Order_Not_Found_Exception::class );
+		$this->expectExceptionMessage( 'The requested order was not found.' );
+		$this->order_service->set_intent_id_for_order( 'fake_order', '' );
 	}
 }
