@@ -12,3 +12,5 @@ tests/e2e/deps
 docs/dependencies.md
 docs/metadata.md
 docs/renovate.md
+
+includes/core/server/README.md
