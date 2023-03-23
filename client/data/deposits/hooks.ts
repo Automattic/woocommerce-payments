@@ -58,12 +58,15 @@ export const useAllDepositsOverviews = (): AccountOverview.OverviewsResponse =>
 			getAllDepositsOverviews,
 			getAllDepositsOverviewsError,
 			isResolving,
+			hasFinishedResolution,
 		} = select( STORE_NAME );
 
 		return {
 			overviews: getAllDepositsOverviews(),
 			overviewError: getAllDepositsOverviewsError(),
-			isLoading: isResolving( 'getAllDepositsOverviews' ),
+			isLoading:
+				! hasFinishedResolution( 'getAllDepositsOverviews' ) ||
+				isResolving( 'getAllDepositsOverviews' ),
 		};
 	} );
 
