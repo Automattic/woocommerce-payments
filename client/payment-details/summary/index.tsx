@@ -51,9 +51,15 @@ const isTapToPay = ( model: string ) => {
 };
 
 const getTapToPayChannel = ( platform: string ) => {
-	return platform === 'ios'
-		? __( 'Tap to Pay on iPhone', 'woocommerce-payments' )
-		: __( 'Tap to Pay on Android', 'woocommerce-payments' );
+	if ( platform === 'ios' ) {
+		return __( 'Tap to Pay on iPhone', 'woocommerce-payments' );
+	}
+
+	if ( platform === 'android' ) {
+		__( 'Tap to Pay on Android', 'woocommerce-payments' );
+	}
+
+	return __( 'Tap to Pay', 'woocommerce-payments' );
 };
 
 const composePaymentSummaryItems = ( {
@@ -77,8 +83,8 @@ const composePaymentSummaryItems = ( {
 			title: __( 'Channel', 'woocommerce-payments' ),
 			content: (
 				<span>
-					{ isTapToPay( metadata?.reader_model || '' )
-						? getTapToPayChannel( metadata?.platform || '' )
+					{ isTapToPay( metadata?.reader_model )
+						? getTapToPayChannel( metadata?.platform )
 						: getChargeChannel(
 								charge.payment_method_details?.type
 						  ) }

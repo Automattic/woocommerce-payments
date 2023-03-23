@@ -23,12 +23,18 @@ export interface PaymentChargeDetailsProps {
 	id: string;
 }
 
+/*
+ * Type guard method to indentify if the type of the `charge` object is PaymentIntent
+ */
 export const isPaymentIntent = (
 	data: PaymentIntent | Charge
 ): data is PaymentIntent => {
 	return ( data as PaymentIntent ).charge !== undefined;
 };
 
+/*
+ * Type guard method to indentify if the type of the `charge` object is Charge
+ */
 export const isCharge = ( data: PaymentIntent | Charge ): data is Charge => {
 	return ( data as PaymentIntent ).charge === undefined;
 };
