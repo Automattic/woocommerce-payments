@@ -96,6 +96,20 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
+			$this->rest_base . '/(?P<order_id>\w+)/cancel_authorization',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'cancel_authorization' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+				'args'                => [
+					'payment_intent_id' => [
+						'required' => true,
+					],
+				],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
 			$this->rest_base . '/(?P<order_id>\w+)/create_terminal_intent',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
@@ -261,6 +275,21 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				return new WP_Error( 'wcpay_payment_uncapturable', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
 			}
 
+			$current_user = wp_get_current_user();
+
+			$order->add_meta_data(
+				'fraud_outcome_manual_entry',
+				[
+					'type'     => 'fraud_outcome_manual_approve',
+					'user'     => [
+						'id'       => $current_user->ID,
+						'username' => $current_user->user_login,
+					],
+					'action'   => 'approved',
+					'datetime' => time(),
+				]
+			);
+
 			$result = $this->gateway->capture_charge( $order, false );
 
 			if ( Payment_Intent_Status::SUCCEEDED !== $result['status'] ) {
@@ -278,6 +307,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			// Actualize order status.
 			$charge = $intent->get_charge();
 			$this->order_service->mark_payment_capture_completed( $order, $intent_id, $result['status'], $charge->get_id() );
+			$order->save_meta_data();
 
 			return rest_ensure_response(
 				[
@@ -442,5 +472,93 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 		}
 
 		return $capture_method;
+	}
+
+	/**
+	 * Cancels an authorization.
+	 * Use-cases: Merchants manually capturing a payment when they enable "capture later" option.
+	 *
+	 * @param  WP_REST_Request $request Full data about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function cancel_authorization( WP_REST_Request $request ) {
+		try {
+			$intent_id = $request['payment_intent_id'];
+			$order_id  = $request['order_id'];
+
+			// Do not process non-existing orders.
+			$order = wc_get_order( $order_id );
+			if ( false === $order ) {
+				return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
+			}
+
+			// Do not process orders with refund(s).
+			if ( 0 < $order->get_total_refunded() ) {
+				return new WP_Error(
+					'wcpay_refunded_order_uncapturable',
+					__( 'Payment cannot be captured for partially or fully refunded orders.', 'woocommerce-payments' ),
+					[ 'status' => 400 ]
+				);
+			}
+
+			// Do not process intents that can't be captured.
+			$request = Get_Intention::create( $intent_id );
+			$intent  = $request->send( 'wcpay_get_intent_request', $order );
+
+			$intent_metadata          = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
+			$intent_meta_order_id_raw = $intent_metadata['order_id'] ?? '';
+			$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
+			if ( $intent_meta_order_id !== $order->get_id() ) {
+				Logger::error( 'Payment capture rejected due to failed validation: order id on intent is incorrect or missing.' );
+				return new WP_Error( 'wcpay_intent_order_mismatch', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
+			}
+			if ( ! in_array( $intent->get_status(), [ Payment_Intent_Status::REQUIRES_CAPTURE ], true ) ) {
+				return new WP_Error( 'wcpay_payment_uncapturable', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
+			}
+
+			$current_user = wp_get_current_user();
+
+			$order->add_meta_data(
+				'fraud_outcome_manual_entry',
+				[
+					'type'     => 'fraud_outcome_manual_block',
+					'user'     => [
+						'id'       => $current_user->ID,
+						'username' => $current_user->user_login,
+					],
+					'action'   => 'blocked',
+					'datetime' => time(),
+				]
+			);
+
+			$result = $this->gateway->cancel_authorization( $order );
+
+			if ( Payment_Intent_Status::SUCCEEDED !== $result['status'] ) {
+				return new WP_Error(
+					'wcpay_capture_error',
+					sprintf(
+					// translators: %s: the error message.
+						__( 'Payment capture failed to complete with the following message: %s', 'woocommerce-payments' ),
+						$result['message'] ?? __( 'Unknown error', 'woocommerce-payments' )
+					),
+					[ 'status' => $result['http_code'] ?? 502 ]
+				);
+			}
+
+			// Update order status.
+			$charge = $intent->get_charge();
+			// $this->order_service->mark_payment_capture_completed( $order, $intent_id, $result['status'], $charge->get_id() );
+			$order->save_meta_data();
+
+			return rest_ensure_response(
+				[
+					'status' => $result['status'],
+					'id'     => $result['id'],
+				]
+			);
+		} catch ( \Throwable $e ) {
+			Logger::error( 'Failed to capture an authorization via REST API: ' . $e );
+			return new WP_Error( 'wcpay_server_error', __( 'Unexpected server error', 'woocommerce-payments' ), [ 'status' => 500 ] );
+		}
 	}
 }

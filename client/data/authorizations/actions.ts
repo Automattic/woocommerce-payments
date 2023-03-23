@@ -149,6 +149,83 @@ export function* submitCaptureAuthorization(
 	}
 }
 
+export function* submitCancelAuthorization(
+	paymentIntentId: string,
+	orderId: number
+): Generator< unknown | Authorization > {
+	try {
+		yield dispatch( STORE_NAME, 'startResolution', 'getAuthorization', [
+			paymentIntentId,
+		] );
+
+		const result = yield apiFetch( {
+			path: `/wc/v3/payments/orders/${ orderId }/cancel_authorization`,
+			method: 'post',
+			data: {
+				payment_intent_id: paymentIntentId,
+			},
+		} );
+
+		const authorization = {
+			payment_intent_id: ( result as CaptureAuthorizationApiResponse ).id,
+			captured:
+				( result as CaptureAuthorizationApiResponse ).status ===
+				'succeeded',
+		};
+
+		yield updateAuthorization( authorization as Authorization );
+
+		// Need to invalidate the resolution so that the components will render again.
+		yield dispatch(
+			STORE_NAME,
+			'invalidateResolutionForStoreSelector',
+			'getAuthorizations'
+		);
+
+		yield dispatch(
+			STORE_NAME,
+			'invalidateResolutionForStoreSelector',
+			'getAuthorizationsSummary'
+		);
+
+		yield dispatch(
+			STORE_NAME,
+			'invalidateResolutionForStoreSelector',
+			'getTimeline'
+		);
+		// Create success notice.
+		yield dispatch(
+			'core/notices',
+			'createSuccessNotice',
+			sprintf(
+				// translators: %s Order id
+				__(
+					'Payment for order #%s canceled successfully.',
+					'woocommerce-payments'
+				),
+				orderId
+			)
+		);
+	} catch ( error ) {
+		yield dispatch(
+			'core/notices',
+			'createErrorNotice',
+			sprintf(
+				// translators: %s Order id
+				__(
+					'There has been an error canceling the payment for order #%s. Please try again later.',
+					'woocommerce-payments'
+				),
+				orderId
+			)
+		);
+	} finally {
+		yield dispatch( STORE_NAME, 'finishResolution', 'getAuthorization', [
+			paymentIntentId,
+		] );
+	}
+}
+
 export function updateErrorForAuthorizationsSummary(
 	query: Query,
 	error: Error

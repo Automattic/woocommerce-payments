@@ -197,6 +197,7 @@ describe( 'PaymentDetailsSummary', () => {
 			},
 			isLoading: false,
 			doCaptureAuthorization: jest.fn(),
+			doCancelAuthorization: jest.fn(),
 		} );
 		const charge = getBaseCharge();
 		charge.captured = false;

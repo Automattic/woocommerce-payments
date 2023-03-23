@@ -45,6 +45,7 @@ describe( 'CaptureAuthorizationButton', () => {
 	test( 'should render normal status', () => {
 		mockUseAuthorization.mockReturnValue( {
 			doCaptureAuthorization: jest.fn(),
+			doCancelAuthorization: jest.fn(),
 			isLoading: false,
 			authorization: {} as Authorization,
 		} );
@@ -64,6 +65,7 @@ describe( 'CaptureAuthorizationButton', () => {
 
 		mockUseAuthorization.mockReturnValue( {
 			doCaptureAuthorization: doCaptureAuthorizationMock,
+			doCancelAuthorization: jest.fn(),
 			isLoading: false,
 			authorization: mockAuthorization,
 		} );
@@ -81,6 +83,7 @@ describe( 'CaptureAuthorizationButton', () => {
 
 		mockUseAuthorization.mockReturnValue( {
 			doCaptureAuthorization: doCaptureAuthorizationMock,
+			doCancelAuthorization: jest.fn(),
 			isLoading: true,
 			authorization: mockAuthorization,
 		} );

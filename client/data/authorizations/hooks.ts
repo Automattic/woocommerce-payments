@@ -76,6 +76,7 @@ export const useAuthorization = (
 ): {
 	isLoading: boolean;
 	doCaptureAuthorization: () => void;
+	doCancelAuthorization: () => void;
 	authorization?: Authorization;
 } => {
 	const { authorization, isLoading } = useSelect( ( select ) => {
@@ -88,9 +89,21 @@ export const useAuthorization = (
 		};
 	} );
 
-	const { submitCaptureAuthorization } = useDispatch( STORE_NAME );
+	const {
+		submitCaptureAuthorization,
+		submitCancelAuthorization,
+	} = useDispatch( STORE_NAME );
+
 	const doCaptureAuthorization = () =>
 		submitCaptureAuthorization( paymentIntentId, orderId );
 
-	return { authorization, isLoading, doCaptureAuthorization };
+	const doCancelAuthorization = () =>
+		submitCancelAuthorization( paymentIntentId, orderId );
+
+	return {
+		authorization,
+		isLoading,
+		doCaptureAuthorization,
+		doCancelAuthorization,
+	};
 };
