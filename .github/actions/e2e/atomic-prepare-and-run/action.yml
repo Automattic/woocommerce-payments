@@ -1,0 +1,29 @@
+name: 'Prepare repo and run Atomic E2E Tests'
+description: 'Runs E2E tests with retry & upload logs and screenshots'
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Set up repository"
+      uses: ./.github/actions/setup-repo
+    
+    # Cache node dependencies
+    - name: "Cache node modules"
+      id: node-cache
+      uses: actions/cache@v3
+      with:
+        path: ./node_modules
+        key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
+
+    - name: "Install dependencies"
+      shell: bash
+      if: ${{ steps.node-cache.outputs.cache-hit == false }}
+      run: npm ci
+
+    - name: "Set up E2E environment"
+      shell: bash
+      run: |
+        mkdir screenshots
+
+    - name: "Run tests, upload screenshots & logs"
+      uses: ./.github/actions/e2e/run-log-tests

@@ -36,10 +36,9 @@ describe( 'Admin Order Analytics', () => {
 		// Go to Action Scheduler
 		await merchantWCP.openActionScheduler( 'pending', orderId );
 		const importOrderRun = await page.$x(
-			'//code[contains(text(), "0 => ' +
-				orderId +
-				'")]/ancestor::tr//span[contains(@class, "run")]/a'
+			`//tr[contains(., "0 => ${ orderId }") and contains(., "${ actionSchedulerHook }")]//span[contains(@class, "run")]/a`
 		);
+
 		// Run the Action Scheduler task to update the order stats
 		await importOrderRun[ 0 ].evaluate( ( link ) => link.click() );
 
