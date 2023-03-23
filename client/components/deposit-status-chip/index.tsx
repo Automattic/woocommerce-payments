@@ -29,7 +29,7 @@ type DepositStatusChip = {
  *
  * Based off of the Chip component found components/chip.
  *
- * @param {AccountOverview.Overview} props Deposits overview
+ * @param {DepositStatusChip} props Status and isCompat flag.
  * @return {JSX.Element} Rendered element with deposits overview
  */
 const DepositStatusChip: React.FC< DepositStatusChip > = ( {
