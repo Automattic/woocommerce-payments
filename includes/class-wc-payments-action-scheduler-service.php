@@ -7,6 +7,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Exceptions\Order_Not_Found_Exception;
+
 /**
  * Class which handles setting up all ActionScheduler hooks.
  */

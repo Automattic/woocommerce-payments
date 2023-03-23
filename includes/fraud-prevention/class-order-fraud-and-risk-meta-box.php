@@ -40,7 +40,7 @@ class Order_Fraud_And_Risk_Meta_Box {
 	/**
 	 * Displays the contents of the Fraud & Risk meta box.
 	 *
-	 * @param WC_Order $order The order we are working with.
+	 * @param \WC_Order $order The order we are working with.
 	 *
 	 * @return void
 	 */

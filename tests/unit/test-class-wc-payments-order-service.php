@@ -648,16 +648,8 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 * Tests if the payment was blocked through the fraud rules.
 	 */
 	public function test_mark_order_blocked_for_fraud() {
-		// Arrange: Create the intent data.
-		$intent_data = [
-			'intent_id'     => 'pi_mock',
-			'intent_status' => Payment_Intent_Status::CANCELED,
-			'charge_id'     => 'ch_mock',
-			'fraud_outcome' => Fraud_Outcome_Status::BLOCK,
-		];
-
 		// Act: Attempt to mark the payment/order expired/cancelled.
-		$this->order_service->mark_order_blocked_for_fraud( $this->order, $intent_data );
+		$this->order_service->mark_order_blocked_for_fraud( $this->order, 'pi_mock', Payment_Intent_Status::CANCELED );
 
 		// Assert: Check to make sure the intent_status meta was set.
 		$this->assertEquals( Payment_Intent_Status::CANCELED, $this->order_service->get_intention_status_for_order( $this->order ) );
@@ -674,7 +666,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
 
 		// Assert: Applying the same data multiple times does not cause duplicate actions.
-		$this->order_service->mark_order_blocked_for_fraud( $this->order, $intent_data );
+		$this->order_service->mark_order_blocked_for_fraud( $this->order, 'pi_mock', Payment_Intent_Status::CANCELED );
 		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertCount( 1, $notes_2 );
 	}
