@@ -195,7 +195,7 @@ const SettingsManager = () => {
 				</SettingsSection>
 			) }
 			<SettingsSection
-				id="express-checkout"
+				id="express-checkouts"
 				description={ ExpressCheckoutDescription }
 			>
 				<LoadableSettingsSection numLines={ 20 }>

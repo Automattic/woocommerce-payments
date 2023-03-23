@@ -79,7 +79,7 @@ const ExpressCheckout = () => {
 					{ isPlatformCheckoutFeatureFlagEnabled && (
 						<li
 							className="express-checkout"
-							id="express-checkout-woopay"
+							id="express-checkouts-woopay"
 						>
 							<div className="express-checkout__checkbox">
 								{ isStripeLinkEnabled ? (
@@ -198,7 +198,7 @@ const ExpressCheckout = () => {
 					) }
 					<li
 						className="express-checkout"
-						id="express-checkout-apple-google-pay"
+						id="express-checkouts-apple-google-pay"
 					>
 						<div className="express-checkout__checkbox">
 							<CheckboxControl
@@ -328,7 +328,7 @@ const ExpressCheckout = () => {
 					{ displayLinkPaymentMethod && (
 						<li
 							className="express-checkout"
-							id="express-checkout-link"
+							id="express-checkouts-link"
 						>
 							<div className="express-checkout__checkbox">
 								{ isPlatformCheckoutEnabled ? (
