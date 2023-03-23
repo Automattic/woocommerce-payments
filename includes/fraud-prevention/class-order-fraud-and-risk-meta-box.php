@@ -7,6 +7,7 @@
 
 namespace WCPay\Fraud_Prevention;
 
+use WC_Payments_Features;
 use WC_Payments_Utils;
 use WCPay\Constants\Fraud_Outcome_Status;
 
@@ -25,16 +26,12 @@ class Order_Fraud_And_Risk_Meta_Box {
 	 * Maybe add the meta box.
 	 */
 	public function maybe_add_meta_box() {
-		// TODO: Check to see if Fraud tools are enabled.
-		$fraud_tools_enabled = true;
-		if ( ! $fraud_tools_enabled ) {
+		// If fraud settings are off, or if we cannot get the screen ID, exit.
+		if ( ! WC_Payments_Features::is_fraud_protection_settings_enabled() || ! function_exists( '\wc_get_page_screen_id' ) ) {
 			return;
 		}
 
 		// Get the order edit screen to be able to add the meta box to.
-		if ( ! function_exists( '\wc_get_page_screen_id' ) ) {
-			return;
-		}
 		$wc_screen_id = \wc_get_page_screen_id( 'shop-order' );
 
 		add_meta_box( 'wcpay_order_fraud_and_risk_meta_box', __( 'Fraud &amp; Risk', 'woocommerce-payments' ), [ $this, 'display_order_fraud_and_risk_meta_box_message' ], $wc_screen_id, 'side', 'default' );
@@ -81,8 +78,8 @@ class Order_Fraud_And_Risk_Meta_Box {
 				break;
 
 			case Fraud_Outcome_Status::BLOCK:
-				$status          = __( 'Blocked', 'woocommerce-payments' );
 				// TODO: Are we going to cancel the orders? The note states we are, but if we do, we do not allow them to correct mistakes and could create a lot of additional orders.
+				$status          = __( 'Blocked', 'woocommerce-payments' );
 				$description     = __( 'The payment for this order was blocked by your risk filtering, and the order has been cancelled.', 'woocommerce-payments' );
 				$callout         = __( 'View payment details', 'woocommerce-payments' );
 				$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );

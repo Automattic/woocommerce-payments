@@ -542,9 +542,7 @@ class WC_Payments {
 
 			new WC_Payments_Status( self::get_wc_payments_http(), self::get_account_service() );
 
-			// TODO: Need to have an actual check here once the feature flag is created.
-			$fraud_and_risk_tools_enabled = true;
-			if ( $fraud_and_risk_tools_enabled ) {
+			if ( WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
 				new WCPay\Fraud_Prevention\Order_Fraud_And_Risk_Meta_Box();
 			}
 		}
