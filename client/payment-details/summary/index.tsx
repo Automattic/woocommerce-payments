@@ -37,8 +37,16 @@ import './style.scss';
 import { Charge } from 'wcpay/types/charges';
 import wcpayTracks from 'tracks';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
+import { FraudOutcome } from '../../types/fraud-outcome';
+import CancelAuthorizationButton from '../../components/cancel-authorization-button';
 
 declare const window: any;
+
+interface PaymentDetailsSummaryProps {
+	charge: Charge;
+	isLoading: boolean;
+	fraudOutcome?: FraudOutcome;
+}
 
 const placeholderValues = {
 	amount: 0,
@@ -102,13 +110,11 @@ const composePaymentSummaryItems = ( { charge }: { charge: Charge } ) =>
 		},
 	].filter( Boolean );
 
-const PaymentDetailsSummary = ( {
+const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	charge,
 	isLoading,
-}: {
-	charge: Charge;
-	isLoading: boolean;
-} ): JSX.Element => {
+	fraudOutcome,
+} ) => {
 	const balance = charge.amount
 		? getChargeAmounts( charge )
 		: placeholderValues;
@@ -153,7 +159,10 @@ const PaymentDetailsSummary = ( {
 									{ charge.currency || 'USD' }
 								</span>
 								<PaymentStatusChip
-									status={ getChargeStatus( charge ) }
+									status={ getChargeStatus(
+										charge,
+										fraudOutcome
+									) }
 								/>
 							</Loadable>
 						</p>
@@ -233,12 +242,39 @@ const PaymentDetailsSummary = ( {
 					</div>
 					<div className="payment-details-summary__section">
 						<div className="payment-details-summary__fraud-outcome-action">
-							<Button isDestructive>
+							<CancelAuthorizationButton
+								orderId={ charge.order?.number || 0 }
+								paymentIntentId={ charge.payment_intent || '' }
+								onClick={ () => {
+									wcpayTracks.recordEvent(
+										'payments_transactions_details_cancel_charge_button_click',
+										{
+											payment_intent_id:
+												charge.payment_intent,
+										}
+									);
+								} }
+							>
 								{ __( 'Block transaction' ) }
-							</Button>
-							<Button isPrimary>
+							</CancelAuthorizationButton>
+
+							<CaptureAuthorizationButton
+								buttonIsPrimary
+								orderId={ charge.order?.number || 0 }
+								paymentIntentId={ charge.payment_intent || '' }
+								buttonIsSmall={ false }
+								onClick={ () => {
+									wcpayTracks.recordEvent(
+										'payments_transactions_details_capture_charge_button_click',
+										{
+											payment_intent_id:
+												charge.payment_intent,
+										}
+									);
+								} }
+							>
 								{ __( 'Approve Transaction' ) }
-							</Button>
+							</CaptureAuthorizationButton>
 						</div>
 						<div className="payment-details-summary__id">
 							<Loadable
@@ -285,6 +321,7 @@ const PaymentDetailsSummary = ( {
 										) }
 									</b>
 								</div>
+
 								<div className="payment-details-capture-notice__button">
 									<CaptureAuthorizationButton
 										orderId={ charge.order?.number || 0 }
@@ -312,13 +349,12 @@ const PaymentDetailsSummary = ( {
 	);
 };
 
-export default ( props: {
-	charge: Charge;
-	isLoading: boolean;
-} ): JSX.Element => {
-	return (
-		<WCPaySettingsContext.Provider value={ window.wcpaySettings }>
-			<PaymentDetailsSummary { ...props } />
-		</WCPaySettingsContext.Provider>
-	);
-};
+const PaymentDetailsSummaryWrapper: React.FC< PaymentDetailsSummaryProps > = (
+	props
+) => (
+	<WCPaySettingsContext.Provider value={ window.wcpaySettings }>
+		<PaymentDetailsSummary { ...props } />
+	</WCPaySettingsContext.Provider>
+);
+
+export default PaymentDetailsSummaryWrapper;

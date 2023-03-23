@@ -11,6 +11,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { Dispute } from 'types/disputes';
 import { Charge, ChargeAmounts } from 'types/charges';
+import { FraudOutcome } from '../../types/fraud-outcome';
 
 const failedOutcomeTypes = [ 'issuer_declined', 'invalid' ];
 const blockedOutcomeTypes = [ 'blocked' ];
@@ -52,8 +53,35 @@ export const isChargePartiallyRefunded = (
 	charge: Charge = <Charge>{}
 ): boolean => isChargeRefunded( charge ) && ! isChargeFullyRefunded( charge );
 
+export const isChargeOnHoldByFraudTools = (
+	charge: Charge,
+	fraudOutcome: FraudOutcome
+): boolean => {
+	return ! charge.captured && fraudOutcome.status === 'review';
+};
+
+export const isChargeBlockedByFraudTools = (
+	charge: Charge,
+	fraudOutcome: FraudOutcome
+): boolean => {
+	return charge.refunded && fraudOutcome.status === 'block';
+};
+
 /* TODO: implement authorization and SCA charge statuses */
-export const getChargeStatus = ( charge: Charge = <Charge>{} ): string => {
+export const getChargeStatus = (
+	charge: Charge = <Charge>{},
+	fraudOutcome?: FraudOutcome
+): string => {
+	if ( fraudOutcome ) {
+		if ( isChargeOnHoldByFraudTools( charge, fraudOutcome ) ) {
+			return 'fraud_outcome_review';
+		}
+
+		if ( isChargeBlockedByFraudTools( charge, fraudOutcome ) ) {
+			return 'fraud_outcome_blocked';
+		}
+	}
+
 	if ( isChargeFailed( charge ) ) {
 		return 'failed';
 	}

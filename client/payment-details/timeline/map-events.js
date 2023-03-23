@@ -891,7 +891,65 @@ const mapEventToTimelineItems = ( event ) => {
 					]
 				),
 			];
-		case 'fraud-outcome-review':
+		case 'fraud_outcome_manual_approve':
+			return [
+				getMainTimelineItem(
+					event,
+					createInterpolateElement(
+						sprintf(
+							// translators: %s: the username that approved the payment, <a> - link to the user
+							__(
+								'Payment was approved by <a>%s</a>',
+								'woocommerce-payments'
+							),
+							event.user.username
+						),
+						{
+							a: (
+								<Link
+									href={ getAdminUrl( {
+										page: 'wc-admin',
+										path: '/payments/transactions',
+										type: 'charge',
+										filter: 'advanced',
+									} ) }
+								/>
+							),
+						}
+					),
+					<CheckmarkIcon className="is-success" />
+				),
+			];
+		case 'fraud_outcome_manual_block':
+			return [
+				getMainTimelineItem(
+					event,
+					createInterpolateElement(
+						sprintf(
+							// translators: %s: the username that approved the payment, <a> - link to the user
+							__(
+								'Payment was blocked by <a>%s</a>',
+								'woocommerce-payments'
+							),
+							event.user.username
+						),
+						{
+							a: (
+								<Link
+									href={ getAdminUrl( {
+										page: 'wc-admin',
+										path: '/payments/transactions',
+										type: 'charge',
+										filter: 'advanced',
+									} ) }
+								/>
+							),
+						}
+					),
+					<CrossIcon className="is-error" />
+				),
+			];
+		case 'fraud_outcome_review':
 			return [
 				getMainTimelineItem(
 					event,
@@ -910,7 +968,7 @@ const mapEventToTimelineItems = ( event ) => {
 					]
 				),
 			];
-		case 'fraud-outcome-block':
+		case 'fraud_outcome_block':
 			return [
 				getMainTimelineItem(
 					event,
@@ -942,6 +1000,8 @@ const mapEventToTimelineItems = ( event ) => {
  * @return {Array} Array of view items
  */
 export default ( timelineEvents ) => {
+	console.log( { timelineEvents } );
+
 	if ( ! timelineEvents ) {
 		return [];
 	}

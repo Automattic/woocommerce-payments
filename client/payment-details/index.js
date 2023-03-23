@@ -20,6 +20,7 @@ import {
 	getIsChargeId,
 	usePaymentIntentWithChargeFallback,
 } from 'wcpay/data/payment-intents';
+import { useLatestFraudOutcome } from '../data/fraud-outcomes';
 
 const PaymentDetails = ( props ) => {
 	if ( 'card_reader_fee' === props.query.transaction_type ) {
@@ -40,8 +41,15 @@ const PaymentChargeDetails = ( { id } ) => {
 		error,
 		isLoading: isLoadingData,
 	} = usePaymentIntentWithChargeFallback( id );
+
+	const {
+		data: latestFraudOutcome,
+		isLoading: isLoadingLatestFraudOutcome,
+	} = useLatestFraudOutcome( id );
+
 	const isChargeId = getIsChargeId( id );
-	const isLoading = isChargeId || isLoadingData;
+	const isLoading =
+		isChargeId || isLoadingData || isLoadingLatestFraudOutcome;
 
 	const testModeNotice = <TestModeNotice topic={ topics.paymentDetails } />;
 
@@ -83,6 +91,7 @@ const PaymentChargeDetails = ( { id } ) => {
 				<PaymentDetailsSummary
 					charge={ data }
 					isLoading={ isLoading }
+					fraudOutcome={ latestFraudOutcome }
 				/>
 			</ErrorBoundary>
 			{ ! isChargeId && wcpaySettings.featureFlags.paymentTimeline && (
