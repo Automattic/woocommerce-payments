@@ -1,8 +1,4 @@
-const {
-	createSimpleProduct,
-	uiUnblocked,
-	shopper,
-} = require( '@woocommerce/e2e-utils' );
+const { uiUnblocked, shopper } = require( '@woocommerce/e2e-utils' );
 const {
 	setupProductCheckout,
 	fillCardDetails,
@@ -14,7 +10,6 @@ const { shopperWCP } = require( '../../../utils' );
 describe( 'Shopper > Pay for Order', () => {
 	beforeAll( async () => {
 		await shopper.login();
-		await createSimpleProduct();
 		await setupProductCheckout(
 			config.get( 'addresses.customer.billing' )
 		);
@@ -27,6 +22,7 @@ describe( 'Shopper > Pay for Order', () => {
 	it( 'should be able to pay for a failed order', async () => {
 		// try to pay with a declined card
 		const declinedCard = config.get( 'cards.declined' );
+		await shopperWCP.selectNewPaymentMethod();
 		await fillCardDetails( page, declinedCard );
 		await expect( page ).toClick( '#place_order' );
 		await uiUnblocked();
