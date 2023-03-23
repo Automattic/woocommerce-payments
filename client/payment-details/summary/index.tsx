@@ -5,7 +5,13 @@
  */
 import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
-import { Card, CardBody, CardFooter, CardDivider } from '@wordpress/components';
+import {
+	Card,
+	CardBody,
+	CardFooter,
+	CardDivider,
+	Button,
+} from '@wordpress/components';
 import moment from 'moment';
 import React, { useContext } from 'react';
 
@@ -226,6 +232,14 @@ const PaymentDetailsSummary = ( {
 						</div>
 					</div>
 					<div className="payment-details-summary__section">
+						<div className="payment-details-summary__fraud-outcome-action">
+							<Button isDestructive>
+								{ __( 'Block transaction' ) }
+							</Button>
+							<Button isPrimary>
+								{ __( 'Approve Transaction' ) }
+							</Button>
+						</div>
 						<div className="payment-details-summary__id">
 							<Loadable
 								isLoading={ isLoading }

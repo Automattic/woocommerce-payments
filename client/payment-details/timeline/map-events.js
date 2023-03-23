@@ -28,6 +28,7 @@ import {
 } from 'utils/currency';
 import { formatFee } from 'utils/fees';
 import { getAdminUrl } from 'wcpay/utils';
+import { ShieldIcon } from 'wcpay/icons';
 
 /**
  * Creates a timeline item about a payment status change
@@ -887,6 +888,44 @@ const mapEventToTimelineItems = ( event ) => {
 								),
 							}
 						),
+					]
+				),
+			];
+		case 'fraud-outcome-review':
+			return [
+				getMainTimelineItem(
+					event,
+					__(
+						'Payment was screened by your fraud filters and placed in review.',
+						'woocommerce-payments'
+					),
+					<ShieldIcon className="is-fraud-outcome-review" />,
+					[
+						event.ruleset_results.map( ( result, index ) => (
+							<p key={ index }>
+								Place in review if the shipping address differs
+								from the billing address
+							</p>
+						) ),
+					]
+				),
+			];
+		case 'fraud-outcome-block':
+			return [
+				getMainTimelineItem(
+					event,
+					__(
+						'Payment was screened by your fraud filters and blocked.',
+						'woocommerce-payments'
+					),
+					<CrossIcon className="is-error" />,
+					[
+						event.ruleset_results.map( ( result, index ) => (
+							<p key={ index }>
+								Place in review if the shipping address differs
+								from the billing address
+							</p>
+						) ),
 					]
 				),
 			];
