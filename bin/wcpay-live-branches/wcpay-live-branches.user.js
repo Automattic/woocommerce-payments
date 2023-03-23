@@ -387,8 +387,20 @@
 		 */
 		function appendHtml( el, contents ) {
 			const $el = $( el );
+			const wooColor = '#7F54B3'; // https://woocommerce.com/brand-and-logo-guidelines/
+			const styles = $( '<style>' ).text( `
+				#wcpay-live-branches {
+					border: 3px dotted ${ wooColor };
+					padding: 10px;
+				}
+
+				#wcpay-live-branches h2 {
+					color: ${ wooColor };
+				}
+			`);
 			const liveBranches = $( '<div id="wcpay-live-branches" />' ).append(
-				`<h2>WCPay Live Branches</h2> ${ contents }`
+				styles,
+				`<h2>🚀 WCPay Live Branches 🚀</h2>${ contents }`
 			);
 			$( '#wcpay-live-branches' ).remove();
 			$el.append( liveBranches );

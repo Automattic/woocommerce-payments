@@ -7,6 +7,7 @@
 * Install Tampermonkey or equivalent user script extension.
 * Click https://github.com/Automattic/woocommerce-payments/raw/develop/bin/wcpay-live-branches/wcpay-live-branches.user.js
 * Once installed, it should be able to auto-update.
+* Expect to see the new `WCPay Live Branches` heading in the PR description [like this](https://user-images.githubusercontent.com/10045087/227102466-6c9e5918-07ae-42cd-9dd9-20d1e355091d.png).
 
 ### Development
 
