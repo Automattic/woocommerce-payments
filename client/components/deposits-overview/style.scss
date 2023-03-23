@@ -18,4 +18,12 @@
 			color: $gray-700;
 		}
 	}
+	&__footer {
+		:not( :first-child ) {
+			margin-left: 12px;
+		}
+		a:not( .components-button ) {
+			text-decoration: none;
+		}
+	}
 }

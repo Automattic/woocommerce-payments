@@ -10,6 +10,7 @@ import { Card, CardHeader } from '@wordpress/components';
 import { useAllDepositsOverviews } from 'wcpay/data';
 import strings from './strings';
 import NextDepositDetails from './next-deposit';
+import DepositsOverviewFooter from './footer';
 
 interface OverviewProps {
 	overview?: AccountOverview.Overview;
@@ -34,6 +35,8 @@ const DepositsOverviewDetails: React.FunctionComponent< OverviewProps > = ( {
 			<p>Deposits History Section Goes here</p>
 
 			<p>Deposits Card Footer/Action Goes here</p>
+
+			<DepositsOverviewFooter />
 		</Card>
 	);
 };

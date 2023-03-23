@@ -12,4 +12,12 @@ export default {
 			'woocommerce-payments'
 		),
 	},
+	allDepositsButton: __(
+		'View full deposits history',
+		'woocommerce-payments'
+	),
+	changeDepositSchedule: __(
+		'Change deposit schedule',
+		'woocommerce-payments'
+	),
 };
