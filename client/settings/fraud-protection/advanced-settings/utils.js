@@ -3,22 +3,21 @@
  */
 import { CheckOperators, Checks, Outcomes, Rules } from './constants';
 
-const getSupportedCountriesType = () => {
-	const relatedSettingsWrapper =
-		window.wcSettings.admin.preloadSettings.general;
-	return relatedSettingsWrapper.woocommerce_allowed_countries;
+export const getSupportedCountriesType = () => {
+	return window.wcSettings.admin.preloadSettings.general
+		.woocommerce_allowed_countries;
 };
-const getSettingCountries = () => {
-	const relatedSettingsWrapper =
-		window.wcSettings.admin.preloadSettings.general;
+export const getSettingCountries = () => {
 	const supportedCountriesType = getSupportedCountriesType();
 	switch ( supportedCountriesType ) {
 		case 'all':
 			return [];
 		case 'all_except':
-			return relatedSettingsWrapper.woocommerce_all_except_countries;
+			return window.wcSettings.admin.preloadSettings.general
+				.woocommerce_all_except_countries;
 		case 'specific':
-			return relatedSettingsWrapper.woocommerce_specific_allowed_countries;
+			return window.wcSettings.admin.preloadSettings.general
+				.woocommerce_specific_allowed_countries;
 	}
 };
 

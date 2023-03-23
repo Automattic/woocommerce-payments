@@ -183,7 +183,6 @@ Object {
           class="fraud-protection-rule-card-notice-text"
         >
           Orders from these countries will be blocked by the filter: 
-          <br />
           <strong>
             Canada, United States
           </strong>
@@ -235,7 +234,6 @@ Object {
         class="fraud-protection-rule-card-notice-text"
       >
         Orders from these countries will be blocked by the filter: 
-        <br />
         <strong>
           Canada, United States
         </strong>
@@ -344,7 +342,6 @@ Object {
           class="fraud-protection-rule-card-notice-text"
         >
           Orders from these countries will be screened by the filter: 
-          <br />
           <strong>
             Canada, United States
           </strong>
@@ -396,7 +393,6 @@ Object {
         class="fraud-protection-rule-card-notice-text"
       >
         Orders from these countries will be screened by the filter: 
-        <br />
         <strong>
           Canada, United States
         </strong>
@@ -505,7 +501,6 @@ Object {
           class="fraud-protection-rule-card-notice-text"
         >
           Orders outside from these countries will be blocked by the filter: 
-          <br />
           <strong>
             Canada, United States
           </strong>
@@ -557,7 +552,6 @@ Object {
         class="fraud-protection-rule-card-notice-text"
       >
         Orders outside from these countries will be blocked by the filter: 
-        <br />
         <strong>
           Canada, United States
         </strong>
@@ -666,7 +660,6 @@ Object {
           class="fraud-protection-rule-card-notice-text"
         >
           Orders outside from these countries will be screened by the filter: 
-          <br />
           <strong>
             Canada, United States
           </strong>
@@ -718,7 +711,6 @@ Object {
         class="fraud-protection-rule-card-notice-text"
       >
         Orders outside from these countries will be screened by the filter: 
-        <br />
         <strong>
           Canada, United States
         </strong>

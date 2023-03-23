@@ -10,6 +10,31 @@ import { __ } from '@wordpress/i18n';
  */
 import FraudPreventionSettingsContext from './context';
 import FraudProtectionRuleCardNotice from './rule-card-notice';
+import { getSettingCountries, getSupportedCountriesType } from './utils';
+
+const getNoticeText = ( filterType, blocking ) => {
+	if ( 'all_except' === filterType ) {
+		return blocking
+			? __(
+					'Orders from these countries will be blocked by the filter: ',
+					'woocommerce-payments'
+			  )
+			: __(
+					'Orders from these countries will be screened by the filter: ',
+					'woocommerce-payments'
+			  );
+	} else if ( 'specific' === filterType ) {
+		return blocking
+			? __(
+					'Orders outside from these countries will be blocked by the filter: ',
+					'woocommerce-payments'
+			  )
+			: __(
+					'Orders outside from these countries will be screened by the filter: ',
+					'woocommerce-payments'
+			  );
+	}
+};
 
 const AllowedCountriesNotice = ( { setting } ) => {
 	const { protectionSettingsUI, protectionSettingsChanged } = useContext(
@@ -22,67 +47,32 @@ const AllowedCountriesNotice = ( { setting } ) => {
 		setIsBlocking( protectionSettingsUI[ setting ]?.block ?? false );
 	}, [ protectionSettingsUI, setting, protectionSettingsChanged ] );
 
-	const coreSettingsContainer =
-		window.wcSettings.admin.preloadSettings.general;
-	const areAllCountriesAllowed =
-		'all' === coreSettingsContainer.woocommerce_allowed_countries;
-	const countriesAllowedToSellTo =
-		coreSettingsContainer.woocommerce_specific_allowed_countries;
-	const countriesNotAllowedToSellTo =
-		coreSettingsContainer.woocommerce_all_except_countries;
-	const isSellingToSpecificCountries =
-		'specific' === coreSettingsContainer.woocommerce_allowed_countries;
+	const supportedCountriesType = getSupportedCountriesType();
+	const settingCountries = getSettingCountries();
 
-	return areAllCountriesAllowed ? (
-		<FraudProtectionRuleCardNotice type={ 'warning' }>
-			{ __(
-				'Enabling this filter will not have any effect because you are selling to all countries.',
-				'woocommerce-payments'
-			) }
-		</FraudProtectionRuleCardNotice>
-	) : (
+	if ( 'all' === supportedCountriesType ) {
+		return (
+			<FraudProtectionRuleCardNotice type={ 'warning' }>
+				{ __(
+					'Enabling this filter will not have any effect because you are selling to all countries.',
+					'woocommerce-payments'
+				) }
+			</FraudProtectionRuleCardNotice>
+		);
+	}
+	return (
 		<FraudProtectionRuleCardNotice type={ 'info' }>
-			{ isSellingToSpecificCountries ? (
-				<>
-					{ isBlocking
-						? __(
-								'Orders outside from these countries will be blocked by the filter: ',
-								'woocommerce-payments'
-						  )
-						: __(
-								'Orders outside from these countries will be screened by the filter: ',
-								'woocommerce-payments'
-						  ) }
-					<br />
-					<strong>
-						{ countriesAllowedToSellTo
-							.map( ( d ) => {
-								return window.wcSettings.countries[ d ];
-							} )
-							.join( ', ' ) }
-					</strong>
-				</>
-			) : (
-				<>
-					{ isBlocking
-						? __(
-								'Orders from these countries will be blocked by the filter: ',
-								'woocommerce-payments'
-						  )
-						: __(
-								'Orders from these countries will be screened by the filter: ',
-								'woocommerce-payments'
-						  ) }
-					<br />
-					<strong>
-						{ countriesNotAllowedToSellTo
-							.map( ( d ) => {
-								return window.wcSettings.countries[ d ];
-							} )
-							.join( ', ' ) }
-					</strong>
-				</>
-			) }
+			{ getNoticeText( supportedCountriesType, isBlocking ) }
+			<strong>
+				{ settingCountries
+					.map( ( countryCode ) => {
+						return (
+							window.wcSettings.countries[ countryCode ] ?? false
+						);
+					} )
+					.filter( ( element ) => element )
+					.join( ', ' ) }
+			</strong>
 		</FraudProtectionRuleCardNotice>
 	);
 };
