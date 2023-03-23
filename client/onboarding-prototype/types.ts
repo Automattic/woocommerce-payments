@@ -19,7 +19,6 @@ export type OnboardingFields = {
 
 export interface EligibleResult {
 	result: string;
-	data: Array< string >;
 }
 
 export interface EligibleData {
