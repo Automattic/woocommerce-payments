@@ -16,6 +16,7 @@ import PersonalDetails from './steps/personal-details';
 import BusinessDetails from './steps/business-details';
 import StoreDetails from './steps/store-details';
 import strings from './strings';
+import './style.scss';
 
 interface Props {
 	name: OnboardingSteps;
@@ -64,9 +65,11 @@ const OnboardingStepper = () => {
 
 const OnboardingPrototype: React.FC = () => {
 	return (
-		<OnboardingContextProvider>
-			<OnboardingStepper />
-		</OnboardingContextProvider>
+		<div className="wcpay-onboarding-prototype">
+			<OnboardingContextProvider>
+				<OnboardingStepper />
+			</OnboardingContextProvider>
+		</div>
 	);
 };
 
