@@ -452,6 +452,7 @@ class WC_Payments_Webhook_Processing_Service {
 		if ( ! $order ) {
 			return;
 		}
+
 		// Update missing intents because webhook can be delivered before order is processed on the client.
 		$meta_data_to_update = [
 			'_intent_id'         => $intent_id,
@@ -464,6 +465,11 @@ class WC_Payments_Webhook_Processing_Service {
 		$mandate_id = $event_data['object']['charges']['data'][0]['payment_method_details']['card']['mandate'] ?? null;
 		if ( $mandate_id ) {
 			$meta_data_to_update['_stripe_mandate_id'] = $mandate_id;
+		}
+
+		$application_fee_amount = $charges_data[0]['application_fee_amount'] ?? null;
+		if ( $application_fee_amount ) {
+			$meta_data_to_update['_wcpay_transaction_fee'] = WC_Payments_Utils::interpret_stripe_amount( $application_fee_amount, $currency );
 		}
 
 		foreach ( $meta_data_to_update as $key => $value ) {

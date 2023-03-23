@@ -765,6 +765,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$this->attach_exchange_info_to_order( $order, $charge_id );
 				$this->update_order_status_from_intent( $order, $intent_id, $status, $charge_id );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
+				$this->order_service->attach_transaction_fee_to_order( $order, $charge );
 
 				self::remove_upe_payment_intent_from_session();
 
