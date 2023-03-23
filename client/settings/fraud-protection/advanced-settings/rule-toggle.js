@@ -41,7 +41,7 @@ const FraudProtectionRuleToggle = ( {
 			protectionSettingsUI[ setting ].enabled = toggleState;
 			protectionSettingsUI[ setting ].block = checkState;
 			setProtectionSettingsUI( protectionSettingsUI );
-      setProtectionSettingsChanged( ( prev ) => ! prev );
+			setProtectionSettingsChanged( ( prev ) => ! prev );
 		}
 	}, [
 		setting,

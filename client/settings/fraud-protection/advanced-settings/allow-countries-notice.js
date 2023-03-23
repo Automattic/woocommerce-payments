@@ -12,22 +12,15 @@ import FraudPreventionSettingsContext from './context';
 import FraudProtectionRuleCardNotice from './rule-card-notice';
 
 const AllowedCountriesNotice = ( { setting } ) => {
-	const {
-		advancedFraudProtectionSettings,
-		protectionSettingsChanged,
-	} = useContext( FraudPreventionSettingsContext );
+	const { protectionSettingsUI, protectionSettingsChanged } = useContext(
+		FraudPreventionSettingsContext
+	);
 	const [ isBlocking, setIsBlocking ] = useState(
-		advancedFraudProtectionSettings[ setting ]?.block ?? false
+		protectionSettingsUI[ setting ]?.block ?? false
 	);
 	useEffect( () => {
-		setIsBlocking(
-			advancedFraudProtectionSettings[ setting ]?.block ?? false
-		);
-	}, [
-		advancedFraudProtectionSettings,
-		setting,
-		protectionSettingsChanged,
-	] );
+		setIsBlocking( protectionSettingsUI[ setting ]?.block ?? false );
+	}, [ protectionSettingsUI, setting, protectionSettingsChanged ] );
 
 	const coreSettingsContainer =
 		window.wcSettings.admin.preloadSettings.general;
