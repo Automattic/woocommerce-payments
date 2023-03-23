@@ -17,7 +17,7 @@ declare module '@woocommerce/explat' {
 	const Experiment: ( props: ExperimentProps ) => JSX.Element;
 }
 
-declare module 'interpolate-components' {
+declare module '@automattic/interpolate-components' {
 	interface InterpolateComponentsParams {
 		mixedString: string;
 		components: Record< string, React.ReactNode >;
@@ -152,5 +152,3 @@ declare module '@woocommerce/csv-export' {
 		params: Record< string, any >
 	) => string;
 }
-
-declare module '*.svg';

@@ -19,13 +19,13 @@ fi
 
 # Variables
 BLOG_ID=${E2E_BLOG_ID-111}
-WC_GUEST_EMAIL=$(<"$E2E_ROOT/config/test.json" jq -r '.users.guest.email')
-WC_CUSTOMER_EMAIL=$(<"$E2E_ROOT/config/test.json" jq -r '.users.customer.email')
-WC_CUSTOMER_USERNAME=$(<"$E2E_ROOT/config/test.json" jq -r '.users.customer.username')
-WC_CUSTOMER_PASSWORD=$(<"$E2E_ROOT/config/test.json" jq -r '.users.customer.password')
-WP_ADMIN=$(<"$E2E_ROOT/config/test.json" jq -r '.users.admin.username')
-WP_ADMIN_PASSWORD=$(<"$E2E_ROOT/config/test.json" jq -r '.users.admin.password')
-WP_ADMIN_EMAIL=$(<"$E2E_ROOT/config/test.json" jq -r '.users.admin.email')
+WC_GUEST_EMAIL=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.guest.email')
+WC_CUSTOMER_EMAIL=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.customer.email')
+WC_CUSTOMER_USERNAME=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.customer.username')
+WC_CUSTOMER_PASSWORD=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.customer.password')
+WP_ADMIN=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.admin.username')
+WP_ADMIN_PASSWORD=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.admin.password')
+WP_ADMIN_EMAIL=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.admin.email')
 SITE_TITLE="WooCommerce Payments E2E site"
 SITE_URL=$WP_URL
 
@@ -311,6 +311,9 @@ mkdir -p $WCP_ROOT/screenshots
 
 echo "Disabling rate limiter for card declined in E2E tests"
 cli wp option add wcpay_session_rate_limiter_disabled_wcpay_card_declined_registry yes
+
+echo "Setting up a coupon for E2E tests"
+cli wp wc --user=admin shop_coupon create --code=free --amount=100 --discount_type=percent --individual_use=true --free_shipping=true
 
 # Log test configuration for visibility
 echo

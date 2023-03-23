@@ -15,7 +15,7 @@ import {
 	EmptyStateTableHeaders,
 } from '../empty-state-table/list';
 import EmptyStateTable from 'empty-state-table';
-import ListBanner from '../empty-state-table/deposits-banner.svg';
+import ListBanner from 'assets/images/deposits-banner.svg?asset';
 import { Experiment } from '@woocommerce/explat';
 
 const DepositsPage = () => {
@@ -32,7 +32,17 @@ const DepositsPage = () => {
 		<EmptyStateTable
 			headers={ EmptyStateTableHeaders }
 			title="Deposit history"
-			content={ <EmptyStateList listBanner={ ListBanner } /> }
+			content={
+				<EmptyStateList
+					listBanner={ ( props ) => (
+						<img
+							src={ ListBanner }
+							alt="deposits banner"
+							{ ...props }
+						/>
+					) }
+				/>
+			}
 		/>
 	);
 

@@ -54,6 +54,10 @@ declare const wcpaySettings: {
 	restUrl: string;
 	shouldUseExplicitPrice: boolean;
 	numDisputesNeedingResponse: string;
+	fraudProtection: {
+		isWelcomeTourDismissed?: boolean;
+	};
+	accountDefaultCurrency: string;
 };
 
 declare const wcTracks: any;

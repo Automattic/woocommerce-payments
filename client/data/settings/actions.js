@@ -244,7 +244,12 @@ export function updatePlatformCheckoutLocations( locations ) {
 	} );
 }
 
-// TODO: Finish implementation once server API endpoints are deployed.
 export function updateProtectionLevel( level ) {
 	return updateSettingsValues( { current_protection_level: level } );
+}
+
+export function updateAdvancedFraudProtectionSettings( settings ) {
+	return updateSettingsValues( {
+		advanced_fraud_protection_settings: settings,
+	} );
 }

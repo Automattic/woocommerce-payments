@@ -529,6 +529,11 @@ class WC_Payments_Admin {
 			'restUrl'                          => get_rest_url( null, '' ), // rest url to concatenate when merchant use Plain permalinks.
 			'numDisputesNeedingResponse'       => $this->get_disputes_awaiting_response_count(),
 			'isFraudProtectionSettingsEnabled' => WC_Payments_Features::is_fraud_protection_settings_enabled(),
+			'fraudProtection'                  => [
+				'isWelcomeTourDismissed' => WC_Payments_Features::is_fraud_protection_welcome_tour_dismissed(),
+			],
+			'accountDefaultCurrency'           => $this->account->get_account_default_currency(),
+			'frtDiscoverBannerSettings'        => get_option( 'wcpay_frt_discover_banner_settings', '' ),
 		];
 
 		wp_localize_script(
