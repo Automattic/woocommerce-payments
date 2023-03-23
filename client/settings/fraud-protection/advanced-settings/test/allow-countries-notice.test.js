@@ -10,13 +10,13 @@ import AllowedCountriesNotice from '../allow-countries-notice';
 import FraudPreventionSettingsContext from '../context';
 
 const mockContext = {
-	advancedFraudProtectionSettings: {
+	protectionSettingsUI: {
 		test_key: {
 			enabled: false,
 			block: false,
 		},
 	},
-	setAdvancedFraudProtectionSettings: jest.fn(),
+	setProtectionSettingsUI: jest.fn(),
 	setProtectionSettingsChanged: jest.fn(),
 };
 
@@ -56,7 +56,7 @@ describe( 'Allowed countries rule card notice tests', () => {
 			'CA',
 			'US',
 		];
-		mockContext.advancedFraudProtectionSettings.test_key.block = false;
+		mockContext.protectionSettingsUI.test_key.block = false;
 
 		const container = render(
 			<FraudPreventionSettingsContext.Provider value={ mockContext }>
@@ -75,7 +75,7 @@ describe( 'Allowed countries rule card notice tests', () => {
 			'CA',
 			'US',
 		];
-		mockContext.advancedFraudProtectionSettings.test_key.block = true;
+		mockContext.protectionSettingsUI.test_key.block = true;
 
 		const container = render(
 			<FraudPreventionSettingsContext.Provider value={ mockContext }>
@@ -94,7 +94,7 @@ describe( 'Allowed countries rule card notice tests', () => {
 			'CA',
 			'US',
 		];
-		mockContext.advancedFraudProtectionSettings.test_key.block = false;
+		mockContext.protectionSettingsUI.test_key.block = false;
 
 		const container = render(
 			<FraudPreventionSettingsContext.Provider value={ mockContext }>
@@ -113,7 +113,7 @@ describe( 'Allowed countries rule card notice tests', () => {
 			'CA',
 			'US',
 		];
-		mockContext.advancedFraudProtectionSettings.test_key.block = true;
+		mockContext.protectionSettingsUI.test_key.block = true;
 
 		const container = render(
 			<FraudPreventionSettingsContext.Provider value={ mockContext }>

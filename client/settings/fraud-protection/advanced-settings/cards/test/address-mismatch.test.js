@@ -21,7 +21,7 @@ describe( 'Address mismatch card', () => {
 		protectionSettingsUI: settings,
 		setProtectionSettingsUI: setSettings,
 		protectionSettingsChanged: false,
-		setProtectionSettingsChanged:
+		setProtectionSettingsChanged: jest.fn(),
 	};
 	test( 'renders correctly', () => {
 		settings.address_mismatch.enabled = false;
