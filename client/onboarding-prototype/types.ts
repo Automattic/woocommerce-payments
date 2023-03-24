@@ -18,7 +18,7 @@ export type OnboardingFields = {
 };
 
 export interface EligibleResult {
-	result: string;
+	result: 'eligible' | 'not_eligible';
 }
 
 export interface EligibleData {
