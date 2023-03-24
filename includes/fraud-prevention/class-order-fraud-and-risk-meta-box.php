@@ -73,38 +73,46 @@ class Order_Fraud_And_Risk_Meta_Box {
 
 		switch ( $outcome_status ) {
 			case Fraud_Outcome_Status::ALLOW:
+				$icon_url    = plugins_url( 'assets/images/icons/check-green.svg', WCPAY_PLUGIN_FILE );
+				$icon_alt    = __( 'Green check mark', 'woocommerce-payments' );
 				$status      = __( 'No action taken', 'woocommerce-payments' );
 				$description = __( 'The payment for this order passed your risk filtering.', 'woocommerce-payments' );
-				echo '<p class="wcpay-fraud-risk-meta-passed">' . esc_html( $status ) . '</p><p>' . esc_html( $description ) . '</p>';
+				echo '<p class="wcpay-fraud-risk-meta-allow"><img src="' . esc_url( $icon_url ) . '" alt="' . esc_html( $icon_alt ) . '"> ' . esc_html( $status ) . '</p><p>' . esc_html( $description ) . '</p>';
 				break;
 
 			case Fraud_Outcome_Status::REVIEW:
+				$icon_url        = plugins_url( 'assets/images/icons/shield-stroke-orange.svg', WCPAY_PLUGIN_FILE );
+				$icon_alt        = __( 'Orange shield outline', 'woocommerce-payments' );
 				$status          = __( 'Held for review', 'woocommerce-payments' );
 				$description     = __( 'The payment for this order was held for review by your risk filtering. You can review the details and determine whether to approve or block the payment.', 'woocommerce-payments' );
 				$callout         = __( 'Review payment', 'woocommerce-payments' );
 				$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
-				echo '<p class="wcpay-fraud-risk-meta-held">' . esc_html( $status ) . '</p><p>' . esc_html( $description ) . '</p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
+				echo '<p class="wcpay-fraud-risk-meta-review"><img src="' . esc_url( $icon_url ) . '" alt="' . esc_html( $icon_alt ) . '"> ' . esc_html( $status ) . '</p><p>' . esc_html( $description ) . '</p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
 				break;
 
 			case Fraud_Outcome_Status::REVIEW_ALLOWED:
+				$icon_url        = plugins_url( 'assets/images/icons/check-green.svg', WCPAY_PLUGIN_FILE );
+				$icon_alt        = __( 'Green check mark', 'woocommerce-payments' );
 				$status          = __( 'Held for review', 'woocommerce-payments' );
 				$description     = __( 'Need text to display once allowed.', 'woocommerce-payments' );
 				$callout         = __( 'Review payment', 'woocommerce-payments' );
 				$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
-				echo '<p class="wcpay-fraud-risk-meta-held">' . esc_html( $status ) . '</p><p>' . esc_html( $description ) . '</p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
+				echo '<p class="wcpay-fraud-risk-meta-allow"><img src="' . esc_url( $icon_url ) . '" alt="' . esc_html( $icon_alt ) . '"> ' . esc_html( $status ) . '</p><p>' . esc_html( $description ) . '</p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
 				break;
 
 			case Fraud_Outcome_Status::BLOCK:
 				// TODO: Are we going to cancel the orders? The note states we are, but if we do, we do not allow them to correct mistakes and could create a lot of additional orders.
+				$icon_url        = plugins_url( 'assets/images/icons/shield-stroke-red.svg', WCPAY_PLUGIN_FILE );
+				$icon_alt        = __( 'Red shield outline', 'woocommerce-payments' );
 				$status          = __( 'Blocked', 'woocommerce-payments' );
 				$description     = __( 'The payment for this order was blocked by your risk filtering, and the order has been cancelled.', 'woocommerce-payments' );
 				$callout         = __( 'View payment details', 'woocommerce-payments' );
 				$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 				// TODO: There is no transaction url returned due to there's no intent or charge ID.
-				echo '<p class="wcpay-fraud-risk-meta-blocked">' . esc_html( $status ) . '</p><p>' . esc_html( $description ) . '</p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
+				echo '<p class="wcpay-fraud-risk-meta-blocked"><img src="' . esc_url( $icon_url ) . '" alt="' . esc_html( $icon_alt ) . '"> ' . esc_html( $status ) . '</p><p>' . esc_html( $description ) . '</p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
 				break;
 
-			case Fraud_Outcome_Status::REVIEW:
+			case 'not_wcpay':
 				$description = __( 'Risk filtering is only available for orders that are processed with WooCommerce Payments.', 'woocommerce-payments' );
 				$callout     = __( 'Learn more', 'woocommerce-payments' );
 				$callout_url = '';
