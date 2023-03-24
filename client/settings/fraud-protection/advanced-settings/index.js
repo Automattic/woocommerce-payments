@@ -12,7 +12,11 @@ import { dispatch } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { useCurrentProtectionLevel, useSettings } from '../../../data';
+import {
+	useCurrentProtectionLevel,
+	useAdvancedFraudProtectionSettings,
+	useSettings,
+} from '../../../data';
 import ErrorBoundary from '../../../components/error-boundary';
 import { getAdminUrl } from '../../../utils';
 import SettingsLayout from 'wcpay/settings/settings-layout';
@@ -59,23 +63,23 @@ const SaveFraudProtectionSettingsButton = ( { children } ) => {
 };
 
 const FraudProtectionAdvancedSettingsPage = () => {
-	const { settings, saveSettings, isLoading } = useSettings();
+	const { saveSettings, isLoading, isSaving } = useSettings();
 	const [
 		currentProtectionLevel,
 		updateProtectionLevel,
 	] = useCurrentProtectionLevel();
-	const [ isSavingSettings, setIsSavingSettings ] = useState( false );
-	const [ validationError, setValidationError ] = useState( null );
 	const [
 		advancedFraudProtectionSettings,
-		setAdvancedFraudProtectionSettings,
-	] = useState( {} );
+		updateAdvancedFraudProtectionSettings,
+	] = useAdvancedFraudProtectionSettings();
+	const [ validationError, setValidationError ] = useState( null );
+	const [ protectionSettingsUI, setProtectionSettingsUI ] = useState( {} );
 
 	useEffect( () => {
-		setAdvancedFraudProtectionSettings(
-			readRuleset( settings.advanced_fraud_protection_settings )
+		setProtectionSettingsUI(
+			readRuleset( advancedFraudProtectionSettings )
 		);
-	}, [ settings ] );
+	}, [ advancedFraudProtectionSettings ] );
 
 	useLayoutEffect( () => {
 		const saveButton = document.querySelector(
@@ -106,10 +110,9 @@ const FraudProtectionAdvancedSettingsPage = () => {
 	};
 
 	const handleSaveSettings = async () => {
-		if ( validateSettings( advancedFraudProtectionSettings ) ) {
-			setIsSavingSettings( true );
+		if ( validateSettings( protectionSettingsUI ) ) {
 			if ( ProtectionLevel.ADVANCED !== currentProtectionLevel ) {
-				await updateProtectionLevel( ProtectionLevel.ADVANCED );
+				updateProtectionLevel( ProtectionLevel.ADVANCED );
 				dispatch( 'core/notices' ).createSuccessNotice(
 					__(
 						'Current protection level is set to "advanced".',
@@ -117,14 +120,10 @@ const FraudProtectionAdvancedSettingsPage = () => {
 					)
 				);
 			}
-			settings.advanced_fraud_protection_settings = writeRuleset(
-				advancedFraudProtectionSettings
+			updateAdvancedFraudProtectionSettings(
+				writeRuleset( protectionSettingsUI )
 			);
-			await saveSettings( settings );
-			wcpayTracks.recordEvent(
-				'wcpay_fraud_protection_advanced_settings_saved'
-			);
-			setIsSavingSettings( false );
+			await saveSettings();
 		} else {
 			window.scrollTo( {
 				top: 0,
@@ -147,8 +146,8 @@ const FraudProtectionAdvancedSettingsPage = () => {
 	return (
 		<FraudPreventionSettingsContext.Provider
 			value={ {
-				advancedFraudProtectionSettings,
-				setAdvancedFraudProtectionSettings,
+				protectionSettingsUI,
+				setProtectionSettingsUI,
 			} }
 		>
 			<SettingsLayout displayBanner={ false }>
@@ -175,8 +174,7 @@ const FraudProtectionAdvancedSettingsPage = () => {
 								</Notice>
 							</div>
 						) }
-						{ 'error' ===
-							settings.advanced_fraud_protection_settings && (
+						{ 'error' === advancedFraudProtectionSettings && (
 							<div className="fraud-protection-advanced-settings-error-notice">
 								<Notice status="error" isDismissible={ false }>
 									{ __(
@@ -215,13 +213,12 @@ const FraudProtectionAdvancedSettingsPage = () => {
 				<div className="fraud-protection-header-save-button">
 					<Button
 						isPrimary
-						isBusy={ isSavingSettings }
+						isBusy={ isSaving }
 						onClick={ handleSaveSettings }
 						disabled={
-							isSavingSettings ||
+							isSaving ||
 							isLoading ||
-							'error' ===
-								settings.advanced_fraud_protection_settings
+							'error' === advancedFraudProtectionSettings
 						}
 					>
 						{ __( 'Save Changes', 'woocommerce-payments' ) }
