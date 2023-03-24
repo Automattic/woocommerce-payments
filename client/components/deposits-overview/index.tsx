@@ -10,6 +10,7 @@ import { Card, CardHeader } from '@wordpress/components';
 import { useAllDepositsOverviews } from 'wcpay/data';
 import strings from './strings';
 import NextDepositDetails from './next-deposit';
+import RecentDeposits from './recent-deposits';
 
 const DepositsOverview = (): JSX.Element => {
 	const {
@@ -20,15 +21,16 @@ const DepositsOverview = (): JSX.Element => {
 	const { currencies, account } = overviews;
 
 	const overview = currencies[ 0 ]; // TODO: To handle multiple currencies we'll need to fetch the currently selected currency.
-
+	const currency = 'usd'; // TODO: hardcoded curency for recent deposits.
 	return (
 		<Card>
 			<CardHeader>{ strings.heading }</CardHeader>
 			<NextDepositDetails isLoading={ isLoading } overview={ overview } />
 
-			<p>Deposits History Section Goes here</p>
-
-			<p>Deposits Card Footer/Action Goes here</p>
+			<RecentDeposits
+				currency={ currency }
+				account={ overviews.account }
+			/>
 		</Card>
 	);
 };

@@ -12,11 +12,19 @@ export default {
 			'woocommerce-payments'
 		),
 	},
+	recentDeposits: {
+		title: __( 'Deposit history', 'woocommerce-payments' ),
+		description: __(
+			'Your deposits are dispatched automatically.',
+			'woocommerce-payments'
+		),
+	},
 	tableHeaders: {
 		nextDepositDate: __(
 			'Estimated dispatch date',
 			'woocommerce-payments'
 		),
+		recentDepositDate: __( 'Dispatch date', 'woocommerce-payments' ),
 		status: __( 'Status', 'woocommerce-payments' ),
 		amount: __( 'Amount', 'woocommerce-payments' ),
 	},
