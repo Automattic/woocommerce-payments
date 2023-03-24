@@ -73,6 +73,10 @@ const FraudProtectionAdvancedSettingsPage = () => {
 	] = useAdvancedFraudProtectionSettings();
 	const [ validationError, setValidationError ] = useState( null );
 	const [ protectionSettingsUI, setProtectionSettingsUI ] = useState( {} );
+	const [
+		protectionSettingsChanged,
+		setProtectionSettingsChanged,
+	] = useState( false );
 
 	useEffect( () => {
 		setProtectionSettingsUI(
@@ -147,6 +151,8 @@ const FraudProtectionAdvancedSettingsPage = () => {
 			value={ {
 				protectionSettingsUI,
 				setProtectionSettingsUI,
+				protectionSettingsChanged,
+				setProtectionSettingsChanged,
 			} }
 		>
 			<SettingsLayout displayBanner={ false }>
