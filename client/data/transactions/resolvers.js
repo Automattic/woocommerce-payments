@@ -17,6 +17,10 @@ import {
 	updateErrorForTransactions,
 	updateTransactionsSummary,
 	updateErrorForTransactionsSummary,
+	updateFraudOutcomeTransactions,
+	updateErrorForFraudOutcomeTransactions,
+	updateFraudOutcomeTransactionsSummary,
+	updateErrorForFraudOutcomeTransactionsSummary,
 } from './actions';
 import { formatDateValue } from 'utils';
 
@@ -97,4 +101,112 @@ export function* getTransactionsSummary( query ) {
 	} catch ( e ) {
 		yield updateErrorForTransactionsSummary( query, null, e );
 	}
+}
+
+/**
+ * Retrieves the blocked transactions.
+ *
+ * @param { string } status Fraud outcome status to be filtered.
+ * @param { string } query Data on which to parameterize the selection.
+ */
+export function* getFraudOutcomeTransactions( status, query ) {
+	const path = addQueryArgs( `${ NAMESPACE }/transactions/fraud-outcomes`, {
+		page: query.paged,
+		pagesize: query.perPage,
+		sort: query.orderby,
+		direction: query.order,
+		status,
+		...formatQueryFilters( query ),
+	} );
+
+	try {
+		const results = yield apiFetch( { path } );
+		yield updateFraudOutcomeTransactions(
+			status,
+			query,
+			results.data || []
+		);
+	} catch ( e ) {
+		if ( 'wcpay_fraud_outcome_not_found' === e.code ) {
+			yield updateFraudOutcomeTransactions( status, query, [] );
+			return;
+		}
+
+		yield dispatch(
+			'core/notices',
+			'createErrorNotice',
+			__( 'Error retrieving transactions.', 'woocommerce-payments' )
+		);
+		yield updateErrorForFraudOutcomeTransactions( status, query, e );
+	}
+}
+
+/**
+ * Retrieves the on review transactions.
+ *
+ * @param { string } status Fraud outcome status to be filtered.
+ * @param { string } query Data on which to parameterize the selection.
+ */
+export function* getFraudOutcomeTransactionsSummary( status, query ) {
+	// @todo Remove feature flag
+	if ( ! wcpaySettings.isFraudProtectionSettingsEnabled ) return;
+
+	const path = addQueryArgs(
+		`${ NAMESPACE }/transactions/fraud-outcomes/summary`,
+		{
+			page: query.paged,
+			pagesize: query.perPage,
+			sort: query.orderby,
+			direction: query.order,
+			status,
+			...formatQueryFilters( query ),
+		}
+	);
+
+	const summaryFallback = {
+		count: 0,
+		total: 0,
+	};
+
+	try {
+		const result = yield apiFetch( { path } );
+		yield updateFraudOutcomeTransactionsSummary(
+			status,
+			query,
+			result || summaryFallback
+		);
+	} catch ( e ) {
+		if ( 'wcpay_fraud_outcome_not_found' === e.code ) {
+			yield updateFraudOutcomeTransactionsSummary(
+				status,
+				query,
+				summaryFallback
+			);
+			return;
+		}
+
+		yield dispatch(
+			'core/notices',
+			'createErrorNotice',
+			__(
+				'Error retrieving on review transactions.',
+				'woocommerce-payments'
+			)
+		);
+		yield updateErrorForFraudOutcomeTransactionsSummary( status, query, e );
+	}
+}
+
+export function getFraudOutcomeTransactionsExport( status, query ) {
+	const path = addQueryArgs(
+		`${ NAMESPACE }/transactions/fraud-outcomes/download`,
+		{
+			sort: query.orderby,
+			direction: query.order,
+			status,
+			...formatQueryFilters( query ),
+		}
+	);
+
+	return path;
 }
