@@ -294,4 +294,13 @@ class WC_Payments_API_Intention implements \JsonSerializable {
 	public function is_successful() {
 		return in_array( $this->get_status(), WC_Payment_Gateway_WCPay::SUCCESSFUL_INTENT_STATUS, true );
 	}
+
+	/**
+	 * Returns the intent's payment method type.
+	 *
+	 * @return string|null The payment method type, if any. Ex. 'card'.
+	 */
+	public function get_payment_method_type() {
+
+	}
 }

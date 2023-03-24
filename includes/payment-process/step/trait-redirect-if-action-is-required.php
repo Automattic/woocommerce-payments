@@ -1,6 +1,6 @@
 <?php
 /**
- * Trait Redirect_if_Action_is_Required
+ * Trait Redirect_If_Action_Is_Required
  *
  * @package WooCommerce\Payments
  */
@@ -19,7 +19,7 @@ use WCPay\Payment_Process\Order_Payment;
  * IMPORTANT!
  * This trait requires $this->account to be an instance of WC_Payment_Account.
  */
-trait Redirect_if_Action_is_Required {
+trait Redirect_If_Action_Is_Required {
 	/**
 	 * Redirects to the right screen for the next action. That could be just a redirect,
 	 * or a more complicated hash change, which will trigger a modal on checkout.

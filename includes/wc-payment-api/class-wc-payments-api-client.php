@@ -541,11 +541,12 @@ class WC_Payments_API_Client {
 	 *
 	 * @param string $setup_intent_id ID of the setup intent.
 	 *
-	 * @return array
+	 * @return WC_Payments_API_Setup_Intention
 	 * @throws API_Exception - When fetch of setup intent fails.
 	 */
 	public function get_setup_intent( $setup_intent_id ) {
-		return $this->request( [], self::SETUP_INTENTS_API . '/' . $setup_intent_id, self::GET );
+		$intent = $this->request( [], self::SETUP_INTENTS_API . '/' . $setup_intent_id, self::GET );
+		return $this->deserialize_setup_intention_object_from_array( $intent );
 	}
 
 	/**
@@ -2523,6 +2524,40 @@ class WC_Payments_API_Client {
 			$last_payment_error,
 			$metadata,
 			$processing
+		);
+
+		return $intent;
+	}
+
+	/**
+	 * De-serialize a setup intention array into a setup intention object
+	 *
+	 * @param array $intention_array - The intention array to de-serialize.
+	 *
+	 * @return WC_Payments_API_Setup_Intention
+	 * @throws API_Exception - Unable to deserialize intention array.
+	 */
+	public function deserialize_setup_intention_object_from_array( array $intention_array ) {
+		// TODO: Throw an exception if the response array doesn't contain mandatory properties.
+		$created = new DateTime();
+		$created->setTimestamp( $intention_array['created'] );
+
+		$next_action      = ! empty( $intention_array['next_action'] ) ? $intention_array['next_action'] : [];
+		$last_setup_error = ! empty( $intention_array['last_setup_error'] ) ? $intention_array['last_setup_error'] : [];
+		$metadata         = ! empty( $intention_array['metadata'] ) ? $intention_array['metadata'] : [];
+		$customer         = $intention_array['customer'] ?? $charge_array['customer'] ?? null;
+		$payment_method   = $intention_array['payment_method'] ?? null;
+
+		$intent = new WC_Payments_API_Setup_Intention(
+			$intention_array['id'],
+			$customer,
+			$payment_method,
+			$created,
+			$intention_array['status'],
+			$intention_array['client_secret'],
+			$next_action,
+			$last_setup_error,
+			$metadata
 		);
 
 		return $intent;

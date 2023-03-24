@@ -24,7 +24,7 @@ use WCPay\Payment_Process\Payment_Method\New_Payment_Method;
  * Performs a standard payment with a positive amount.
  */
 class Standard_Payment_Step extends Abstract_Step {
-	use Redirect_if_Action_is_Required;
+	use Redirect_If_Action_Is_Required;
 
 	/**
 	 * The active gateway.

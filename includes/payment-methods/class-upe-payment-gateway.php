@@ -746,9 +746,14 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 */
 	public function process_redirect_payment( $order_id, $intent_id, $save_payment_method ) {
 		if ( false ) {
+			// do not forget to log what type of payment is being processed.
+
 			// load order, return if not an order.
 			// load user_id
 			// load intent ID
+
+			// update-order-details
+			// remove-upe-payment-intent-from-session
 
 			// use the response array, and wp_safe_redirect to it's `redirect` property.
 		}
