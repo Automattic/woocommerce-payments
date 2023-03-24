@@ -53,10 +53,16 @@ const PaymentChargeDetails: React.FC< PaymentChargeDetailsProps > = ( {
 		isLoading: isLoadingData,
 	} = usePaymentIntentWithChargeFallback( id ) as PaymentChargeDetails;
 
+	const paymentIntent = isPaymentIntent( data )
+		? data
+		: ( {} as PaymentIntent );
+
+	const orderId = paymentIntent?.metadata?.order_id;
+
 	const {
 		data: latestFraudOutcome,
 		isLoading: isLoadingLatestFraudOutcome,
-	} = useLatestFraudOutcome( id );
+	} = useLatestFraudOutcome( orderId );
 
 	const isChargeId = getIsChargeId( id );
 	const isLoading =
@@ -67,9 +73,6 @@ const PaymentChargeDetails: React.FC< PaymentChargeDetailsProps > = ( {
 	const charge =
 		( isPaymentIntent( data ) ? data.charge : data ) || ( {} as Charge );
 	const metadata = isPaymentIntent( data ) ? data.metadata : {};
-	const paymentIntent = isPaymentIntent( data )
-		? data
-		: ( {} as PaymentIntent );
 
 	useEffect( () => {
 		if ( ! isCharge( data ) ) {

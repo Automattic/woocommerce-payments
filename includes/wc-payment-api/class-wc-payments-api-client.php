@@ -2130,7 +2130,7 @@ class WC_Payments_API_Client {
 	public function get_latest_fraud_outcome( $id ) {
 		$response = $this->request(
 			[],
-			self::FRAUD_OUTCOME_API . '/payment_intent_id/' . $id,
+			self::FRAUD_OUTCOME_API . '/order_id/' . $id,
 			self::GET
 		);
 

@@ -365,27 +365,36 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 												.add( 7, 'days' )
 										) }
 									</b>
+									{ isFraudOutcomeReview &&
+										`. ${ __(
+											'Approving this transaction will capture the charge.',
+											'woocommerce-payments'
+										) }` }
 								</div>
 
-								<div className="payment-details-capture-notice__button">
-									<CaptureAuthorizationButton
-										orderId={ charge.order?.number || 0 }
-										paymentIntentId={
-											charge.payment_intent || ''
-										}
-										buttonIsPrimary={ true }
-										buttonIsSmall={ false }
-										onClick={ () => {
-											wcpayTracks.recordEvent(
-												'payments_transactions_details_capture_charge_button_click',
-												{
-													payment_intent_id:
-														charge.payment_intent,
-												}
-											);
-										} }
-									/>
-								</div>
+								{ ! isFraudOutcomeReview && (
+									<div className="payment-details-capture-notice__button">
+										<CaptureAuthorizationButton
+											orderId={
+												charge.order?.number || 0
+											}
+											paymentIntentId={
+												charge.payment_intent || ''
+											}
+											buttonIsPrimary={ true }
+											buttonIsSmall={ false }
+											onClick={ () => {
+												wcpayTracks.recordEvent(
+													'payments_transactions_details_capture_charge_button_click',
+													{
+														payment_intent_id:
+															charge.payment_intent,
+													}
+												);
+											} }
+										/>
+									</div>
+								) }
 							</div>
 						</CardFooter>
 					</Loadable>

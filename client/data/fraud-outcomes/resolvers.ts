@@ -17,6 +17,10 @@ import {
 import { FraudOutcome } from '../../types/fraud-outcome';
 
 export function* getLatestFraudOutcome( id: string ): Generator< unknown > {
+	if ( ! id ) {
+		return;
+	}
+
 	try {
 		const result = yield apiFetch( {
 			path: `${ NAMESPACE }/fraud_outcomes/${ id }/latest`,
