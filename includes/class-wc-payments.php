@@ -11,6 +11,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use Automattic\WooCommerce\StoreApi\StoreApi;
 use Automattic\WooCommerce\StoreApi\RoutesController;
+use Automattic\WooCommerce\StoreApi\Routes\V1\AbstractCartRoute;
+use Automattic\WooCommerce\StoreApi\SchemaController;
+use Automattic\WooCommerce\StoreApi\Schemas\ExtendSchema;
+use Automattic\WooCommerce\StoreApi\Formatters;
+use Automattic\WooCommerce\StoreApi\Formatters\MoneyFormatter;
+use Automattic\WooCommerce\StoreApi\Formatters\HtmlFormatter;
+use Automattic\WooCommerce\StoreApi\Formatters\CurrencyFormatter;
 use WCPay\Core\Mode;
 use WCPay\Core\Server\Request;
 use WCPay\Logger;
@@ -39,6 +46,18 @@ use WCPay\WC_Payments_UPE_Checkout;
 use WCPay\WooPay\Service\Checkout_Service;
 use WCPay\Core\WC_Payments_Customer_Service_API;
 use WCPay\Blocks_Data_Extractor;
+
+class WooPay_Store_Api_Token extends AbstractCartRoute {
+	public function get_path() {
+	}
+
+	public function get_args() {
+	}
+
+	public function get_cart_token() {
+		return parent::get_cart_token();
+	}
+}
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -1373,11 +1392,27 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/compat/blocks/class-blocks-data-extractor.php';
 		$blocks_data_extractor = new Blocks_Data_Extractor();
 
+
+		try {
+			$formatters = new Formatters();
+			$formatters->register( 'money', MoneyFormatter::class );
+			$formatters->register( 'html', HtmlFormatter::class );
+			$formatters->register( 'currency', CurrencyFormatter::class );
+			$extend_schema = new ExtendSchema( $formatters );
+			$schema_controller = new SchemaController( $extend_schema );
+			$cart_route = new WooPay_Store_Api_Token( $schema_controller, $schema_controller->get( 'cart' ) );
+			$store_api_token = $cart_route->get_cart_token();
+		} catch ( Exception $e ) {
+			throw $e;
+		}
+
+		$session_nonce = wp_create_nonce( 'wc_store_api' );
 		$body = [
 			'wcpay_version'        => WCPAY_VERSION_NUMBER,
 			'user_id'              => $user->ID,
 			'customer_id'          => $customer_id,
-			'session_nonce'        => wp_create_nonce( 'wc_store_api' ),
+			'session_nonce'        => $session_nonce,
+			'token'				   => $store_api_token,
 			'email'                => $email,
 			'session_cookie_name'  => $session_cookie_name,
 			'session_cookie_value' => wp_unslash( $_COOKIE[ $session_cookie_name ] ?? '' ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
