@@ -8,6 +8,7 @@
 namespace WCPay\Fraud_Prevention;
 
 use WC_Payments_Features;
+use WC_Payments_Order_Service;
 use WC_Payments_Utils;
 use WCPay\Constants\Fraud_Outcome_Status;
 
@@ -16,10 +17,21 @@ use WCPay\Constants\Fraud_Outcome_Status;
  */
 class Order_Fraud_And_Risk_Meta_Box {
 	/**
-	 * Constructor.
+	 * The Order Service.
+	 *
+	 * @var WC_Payments_Order_Service
 	 */
-	public function __construct() {
+	private $order_service;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param WC_Payments_Order_Service $order_service The order service.
+	 */
+	public function __construct( WC_Payments_Order_Service $order_service ) {
 		add_action( 'add_meta_boxes', [ $this, 'maybe_add_meta_box' ] );
+
+		$this->order_service = $order_service;
 	}
 
 	/**
@@ -45,10 +57,15 @@ class Order_Fraud_And_Risk_Meta_Box {
 	 * @return void
 	 */
 	public function display_order_fraud_and_risk_meta_box_message( $order ) {
-		$order          = wc_get_order( $order );
-		$intent_id      = $order->get_meta( '_intent_id' );
-		$charge_id      = $order->get_meta( '_charge_id' );
-		$outcome_status = $order->get_meta( '_wcpay_fraud_outcome_status' );
+		$order = wc_get_order( $order );
+
+		if ( ! $order ) {
+			return;
+		}
+
+		$intent_id      = $this->order_service->get_intent_id_for_order( $order );
+		$charge_id      = $this->order_service->get_charge_id_for_order( $order );
+		$outcome_status = $this->order_service->get_fraud_outcome_status_for_order( $order );
 
 		if ( 'woocommerce_payments' !== $order->get_payment_method() ) {
 			$outcome_status = 'not_wcpay';
