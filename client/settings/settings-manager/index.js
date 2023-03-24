@@ -160,7 +160,11 @@ const SettingsManager = () => {
 			return;
 		}
 
-		const headerOffset = 110; // header size + margin
+		const headerElement = document.querySelector(
+			'.woocommerce-layout__header'
+		);
+		const headerSize = headerElement ? headerElement.clientHeight : 60;
+		const headerOffset = headerSize + 50; // header size + margin
 		const elementPosition = element.getBoundingClientRect().top;
 		const offsetPosition =
 			elementPosition + window.pageYOffset - headerOffset;
