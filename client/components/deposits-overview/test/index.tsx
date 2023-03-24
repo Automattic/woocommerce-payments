@@ -194,6 +194,7 @@ describe( 'Deposits Overview footer renders', () => {
 		const { container, getByText } = render( <DepositsOverviewFooter /> );
 		expect( container ).toMatchSnapshot();
 
+		// Check that the button and link is rendered.
 		getByText( 'View full deposits history' );
 		getByText( 'Change deposit schedule' );
 	} );
