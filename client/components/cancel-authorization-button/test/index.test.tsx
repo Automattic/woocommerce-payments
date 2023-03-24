@@ -9,7 +9,7 @@ import React from 'react';
 /**
  * Internal dependencies
  */
-import CaptureAuthorizationButton from '../';
+import CancelAuthorizationButton from '../';
 import { useAuthorization } from 'wcpay/data';
 import { Authorization } from 'wcpay/types/authorizations';
 
@@ -21,30 +21,30 @@ const mockUseAuthorization = useAuthorization as jest.MockedFunction<
 	typeof useAuthorization
 >;
 
-function renderCaptureAuthorizationButton(
+function renderCancelAuthorizationButton(
 	orderId: number,
 	paymentIntentId: string,
-	buttonIsPrimary: boolean,
-	buttonIsSmall: boolean
+	isDestructive = true,
+	isSmall = false
 ) {
 	return render(
-		<CaptureAuthorizationButton
+		<CancelAuthorizationButton
 			orderId={ orderId }
 			paymentIntentId={ paymentIntentId }
-			buttonIsPrimary={ buttonIsPrimary }
-			buttonIsSmall={ buttonIsSmall }
+			isDestructive={ isDestructive }
+			isSmall={ isSmall }
 		/>
 	);
 }
 const defaultUseAuthorization = {
-	doCaptureAuthorization: jest.fn(),
 	doCancelAuthorization: jest.fn(),
+	doCaptureAuthorization: jest.fn(),
 	isLoading: false,
 	isRequesting: false,
 	authorization: {} as Authorization,
 };
 
-describe( 'CaptureAuthorizationButton', () => {
+describe( 'CancelAuthorizationButton', () => {
 	afterEach( () => {
 		jest.clearAllMocks();
 	} );
@@ -52,45 +52,41 @@ describe( 'CaptureAuthorizationButton', () => {
 	test( 'should render normal status', () => {
 		mockUseAuthorization.mockReturnValue( defaultUseAuthorization );
 
-		const { container } = renderCaptureAuthorizationButton(
+		const { container } = renderCancelAuthorizationButton(
 			42,
-			'paymentIntentId',
-			false,
-			true
+			'paymentIntentId'
 		);
 
 		expect( container ).toMatchSnapshot();
 	} );
 
 	test( 'should transition to busy state when clicked', async () => {
-		const doCaptureAuthorizationMock = jest.fn();
+		const doCancelAuthorizationMock = jest.fn();
 
 		mockUseAuthorization.mockReturnValue( {
 			...defaultUseAuthorization,
-			doCaptureAuthorization: doCaptureAuthorizationMock,
+			doCancelAuthorization: doCancelAuthorizationMock,
 		} );
 
-		const { container, rerender } = renderCaptureAuthorizationButton(
+		const { container, rerender } = renderCancelAuthorizationButton(
 			42,
-			'paymentIntentId',
-			false,
-			true
+			'paymentIntentId'
 		);
 
-		expect( doCaptureAuthorizationMock.mock.calls.length ).toBe( 0 );
+		expect( doCancelAuthorizationMock.mock.calls.length ).toBe( 0 );
 
 		await user.click( screen.getByRole( 'button' ) );
 
 		mockUseAuthorization.mockReturnValue( {
 			...defaultUseAuthorization,
 			isLoading: true,
-			doCaptureAuthorization: doCaptureAuthorizationMock,
+			doCancelAuthorization: doCancelAuthorizationMock,
 		} );
 
-		expect( doCaptureAuthorizationMock.mock.calls.length ).toBe( 1 );
+		expect( doCancelAuthorizationMock.mock.calls.length ).toBe( 1 );
 
 		rerender(
-			<CaptureAuthorizationButton
+			<CancelAuthorizationButton
 				orderId={ 42 }
 				paymentIntentId={ 'paymentIntentId' }
 			/>
@@ -107,7 +103,7 @@ describe( 'CaptureAuthorizationButton', () => {
 			isRequesting: true,
 		} );
 
-		const { container } = renderCaptureAuthorizationButton(
+		const { container } = renderCancelAuthorizationButton(
 			42,
 			'paymentIntentId',
 			false,

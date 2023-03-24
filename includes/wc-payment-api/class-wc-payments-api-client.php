@@ -75,6 +75,7 @@ class WC_Payments_API_Client {
 	const AUTHORIZATIONS_API           = 'authorizations';
 	const FRAUD_OUTCOMES_API           = 'fraud_outcomes';
 	const FRAUD_RULESET_API            = 'fraud_ruleset';
+	const FRAUD_OUTCOME_API            = 'fraud_outcomes';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -92,6 +93,52 @@ class WC_Payments_API_Client {
 		'country',
 		'customer_name',
 		'customer_email',
+	];
+
+	const EVENT_AUTHORIZED            = 'authorized';
+	const EVENT_AUTHORIZATION_VOIDED  = 'authorization_voided';
+	const EVENT_AUTHORIZATION_EXPIRED = 'authorization_expired';
+	const EVENT_CAPTURED              = 'captured';
+	const EVENT_PARTIAL_REFUND        = 'partial_refund';
+	const EVENT_FULL_REFUND           = 'full_refund';
+	const EVENT_REFUND_FAILURE        = 'refund_failed';
+	const EVENT_FAILED                = 'failed';
+	// const EVENT_BLOCKED                = 'blocked'; // no event for this.
+	const EVENT_DISPUTE_NEEDS_RESPONSE = 'dispute_needs_response';
+	const EVENT_DISPUTE_IN_REVIEW      = 'dispute_in_review';
+	const EVENT_DISPUTE_WON            = 'dispute_won';
+	const EVENT_DISPUTE_LOST           = 'dispute_lost';
+	// const EVENT_DISPUTE_ACCEPTED       = 'dispute_accepted'; // set as 'lost' in the API.
+	const EVENT_DISPUTE_WARNING_CLOSED  = 'dispute_warning_closed';
+	const EVENT_DISPUTE_CHARGE_REFUNDED = 'dispute_charge_refunded';
+	const EVENT_FINANCING_PAYDOWN       = 'financing_paydown';
+	const ARN_UNAVAILABLE_STATUS        = 'unavailable';
+	const EVENT_FRAUD_OUTCOME_REVIEW    = 'fraud_outcome_review';
+	const EVENT_FRAUD_OUTCOME_BLOCK     = 'fraud_outcome_block';
+
+	/**
+	 * An array used to determine the order of events in case they share the same timestamp
+	 *
+	 * @var array
+	 */
+	private static $events_order = [
+		self::EVENT_AUTHORIZED,
+		self::EVENT_AUTHORIZATION_VOIDED,
+		self::EVENT_AUTHORIZATION_EXPIRED,
+		self::EVENT_FRAUD_OUTCOME_REVIEW,
+		self::EVENT_FRAUD_OUTCOME_BLOCK,
+		self::EVENT_CAPTURED,
+		self::EVENT_PARTIAL_REFUND,
+		self::EVENT_FULL_REFUND,
+		self::EVENT_REFUND_FAILURE,
+		self::EVENT_FAILED,
+		// self::EVENT_BLOCKED, uncomment when needed.
+		self::EVENT_DISPUTE_NEEDS_RESPONSE,
+		self::EVENT_DISPUTE_IN_REVIEW,
+		self::EVENT_DISPUTE_WON,
+		self::EVENT_DISPUTE_LOST,
+		// self::EVENT_DISPUTE_ACCEPTED, uncommented when needed.
+		self::EVENT_FINANCING_PAYDOWN,
 	];
 
 	/**
@@ -1188,7 +1235,40 @@ class WC_Payments_API_Client {
 	 * @throws Exception - Exception thrown on request failure.
 	 */
 	public function get_timeline( $intention_id ) {
-		return $this->request( [], self::TIMELINE_API . '/' . $intention_id, self::GET );
+		$timeline = $this->request( [], self::TIMELINE_API . '/' . $intention_id, self::GET );
+
+		$has_fraud_outcome_event = false;
+
+		foreach ( $timeline['data'] as $event ) {
+			if ( in_array( $event['type'], [ self::EVENT_FRAUD_OUTCOME_REVIEW, self::EVENT_FRAUD_OUTCOME_BLOCK ], true ) ) {
+				$has_fraud_outcome_event = true;
+				break;
+			}
+		}
+
+		if ( $has_fraud_outcome_event ) {
+			$intent            = $this->get_intent( $intention_id );
+			$order             = wc_get_order( $intent->get_metadata()['order_id'] );
+			$manual_entry_meta = $order->get_meta( 'fraud_outcome_manual_entry', true );
+
+			if ( ! empty( $manual_entry_meta ) ) {
+				$timeline['data'][] = $manual_entry_meta;
+
+				// Sort by date desc, then by type desc as specified in events_order.
+				usort(
+					$timeline['data'],
+					function( $a, $b ) {
+						$result = $b['datetime'] <=> $a['datetime'];
+						if ( 0 !== $result ) {
+							return $result;
+						}
+						return array_search( $b['type'], self::$events_order, true ) <=> array_search( $a['type'], self::$events_order, true );
+					}
+				);
+			}
+		}
+
+		return $timeline;
 	}
 
 	/**
@@ -2148,6 +2228,29 @@ class WC_Payments_API_Client {
 			self::FRAUD_RULESET_API,
 			self::GET
 		);
+
+		return $response;
+	}
+
+	/**
+	 * Gets the latest fraud outcome for a given payment intent id.
+	 *
+	 * @param string $id Payment intent id.
+	 *
+	 * @throws API_Exception - If not connected or request failed.
+	 *
+	 * @return array The response object.
+	 */
+	public function get_latest_fraud_outcome( $id ) {
+		$response = $this->request(
+			[],
+			self::FRAUD_OUTCOME_API . '/order_id/' . $id,
+			self::GET
+		);
+
+		if ( is_array( $response ) && count( $response ) > 0 ) {
+			return $response[0];
+		}
 
 		return $response;
 	}
