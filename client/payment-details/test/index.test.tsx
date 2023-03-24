@@ -108,6 +108,9 @@ const chargeMock = {
 			getAuthorization: jest.fn().mockReturnValue( {
 				created: '2022-09-27 17:07:09',
 			} ),
+			getLatestFraudOutcome: jest.fn().mockReturnValue( {} ),
+			getLatestFraudOutcomeError: jest.fn().mockReturnValue( null ),
+			getIsRequesting: jest.fn().mockReturnValue( false ),
 		} )
 	)
 );

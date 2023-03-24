@@ -24,7 +24,7 @@ interface Authorizations {
 	authorizations: Authorization[];
 	authorizationsError?: string;
 	isLoading: boolean;
-	isRequesting: boolean;
+	isRequesting?: boolean;
 }
 
 export interface AuthorizationsSummary {

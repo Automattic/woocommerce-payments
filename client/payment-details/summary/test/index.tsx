@@ -213,6 +213,7 @@ describe( 'PaymentDetailsSummary', () => {
 				payment_intent_id: 'pi_mock',
 			},
 			isLoading: false,
+			isRequesting: false,
 			doCaptureAuthorization: jest.fn(),
 			doCancelAuthorization: jest.fn(),
 		} );

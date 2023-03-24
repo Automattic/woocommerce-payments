@@ -1000,8 +1000,6 @@ const mapEventToTimelineItems = ( event ) => {
  * @return {Array} Array of view items
  */
 export default ( timelineEvents ) => {
-	console.log( { timelineEvents } );
-
 	if ( ! timelineEvents ) {
 		return [];
 	}
