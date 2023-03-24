@@ -510,6 +510,8 @@ export const composeFeeBreakdown = ( event ) => {
 };
 
 const getManualFraudOutcomeTimelineItem = ( event, status ) => {
+	if ( ! wcpaySettings.isFraudProtectionSettingsEnabled ) return [];
+
 	const isBlock = 'block' === status;
 
 	const headline = isBlock
@@ -524,21 +526,26 @@ const getManualFraudOutcomeTimelineItem = ( event, status ) => {
 		<CheckmarkIcon className="is-success" />
 	);
 
-	return getMainTimelineItem(
-		event,
-		createInterpolateElement( sprintf( headline, event.user.username ), {
-			a: (
-				// eslint-disable-next-line jsx-a11y/anchor-has-content
-				<a
-					href={ addQueryArgs( 'user-edit.php', {
-						user_id: event.user.id,
-					} ) }
-					tabIndex={ -1 }
-				/>
+	return [
+		getMainTimelineItem(
+			event,
+			createInterpolateElement(
+				sprintf( headline, event.user.username ),
+				{
+					a: (
+						// eslint-disable-next-line jsx-a11y/anchor-has-content
+						<a
+							href={ addQueryArgs( 'user-edit.php', {
+								user_id: event.user.id,
+							} ) }
+							tabIndex={ -1 }
+						/>
+					),
+				}
 			),
-		} ),
-		icon
-	);
+			icon
+		),
+	];
 };
 
 const buildAutomaticFraudOutcomeRuleset = ( event ) => {
@@ -552,6 +559,8 @@ const buildAutomaticFraudOutcomeRuleset = ( event ) => {
 };
 
 const getAutomaticFraudOutcomeTimelineItem = ( event, status ) => {
+	if ( ! wcpaySettings.isFraudProtectionSettingsEnabled ) return [];
+
 	const isBlock = 'block' === status;
 
 	const headline = isBlock
@@ -570,9 +579,11 @@ const getAutomaticFraudOutcomeTimelineItem = ( event, status ) => {
 		<ShieldIcon className="is-fraud-outcome-review" />
 	);
 
-	return getMainTimelineItem( event, headline, icon, [
-		buildAutomaticFraudOutcomeRuleset( event ),
-	] );
+	return [
+		getMainTimelineItem( event, headline, icon, [
+			buildAutomaticFraudOutcomeRuleset( event ),
+		] ),
+	];
 };
 
 /**
@@ -960,13 +971,13 @@ const mapEventToTimelineItems = ( event ) => {
 				),
 			];
 		case 'fraud_outcome_manual_approve':
-			return [ getManualFraudOutcomeTimelineItem( event, 'allow' ) ];
+			return getManualFraudOutcomeTimelineItem( event, 'allow' );
 		case 'fraud_outcome_manual_block':
-			return [ getManualFraudOutcomeTimelineItem( event, 'block' ) ];
+			return getManualFraudOutcomeTimelineItem( event, 'block' );
 		case 'fraud_outcome_review':
-			return [ getAutomaticFraudOutcomeTimelineItem( event, 'review' ) ];
+			return getAutomaticFraudOutcomeTimelineItem( event, 'review' );
 		case 'fraud_outcome_block':
-			return [ getAutomaticFraudOutcomeTimelineItem( event, 'block' ) ];
+			return getAutomaticFraudOutcomeTimelineItem( event, 'block' );
 		default:
 			return [];
 	}

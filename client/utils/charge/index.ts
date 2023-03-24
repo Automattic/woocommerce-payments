@@ -59,6 +59,7 @@ export const isOnHoldByFraudTools = (
 	paymentIntent?: PaymentIntent
 ): boolean => {
 	return (
+		wcpaySettings.isFraudProtectionSettingsEnabled &&
 		paymentIntent?.status === 'requires_capture' &&
 		fraudOutcome?.status === 'review'
 	);
@@ -68,7 +69,11 @@ export const isBlockedByFraudTools = (
 	fraudOutcome?: FraudOutcome,
 	paymentIntent?: PaymentIntent
 ): boolean => {
-	return paymentIntent?.status === 'canceled' && !! fraudOutcome;
+	return (
+		wcpaySettings.isFraudProtectionSettingsEnabled &&
+		paymentIntent?.status === 'canceled' &&
+		!! fraudOutcome
+	);
 };
 
 /* TODO: implement authorization and SCA charge statuses */

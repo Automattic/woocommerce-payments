@@ -20,11 +20,20 @@ export const latestFraudOutcomeMock: FraudOutcome = {
 	status: 'review',
 };
 
+declare const global: {
+	wcpaySettings: {
+		isFraudProtectionSettingsEnabled: boolean;
+	};
+};
+
 describe( 'Fraud outcomes hooks', () => {
 	let selectors: Record< string, () => any >;
 
 	beforeEach( () => {
 		selectors = {};
+		global.wcpaySettings = {
+			isFraudProtectionSettingsEnabled: false,
+		};
 
 		const selectMock = jest.fn( ( storeName ) =>
 			STORE_NAME === storeName ? selectors : {}
@@ -36,12 +45,16 @@ describe( 'Fraud outcomes hooks', () => {
 	} );
 
 	describe( 'useLatestFraudOutcome', () => {
-		it( 'should return the correct data', async () => {
+		it( 'should return the correct data with the feature flag enabled', async () => {
+			global.wcpaySettings.isFraudProtectionSettingsEnabled = true;
+
 			selectors = {
 				getLatestFraudOutcome: jest
 					.fn()
 					.mockReturnValue( latestFraudOutcomeMock ),
-				getLatestFraudOutcomeError: jest.fn().mockReturnValue( {} ),
+				getLatestFraudOutcomeError: jest
+					.fn()
+					.mockReturnValue( undefined ),
 				isResolving: jest.fn().mockReturnValue( false ),
 			};
 
@@ -49,7 +62,25 @@ describe( 'Fraud outcomes hooks', () => {
 
 			expect( result ).toEqual( {
 				data: latestFraudOutcomeMock,
-				error: {},
+				error: undefined,
+				isLoading: false,
+			} );
+		} );
+
+		it( 'should return the correct data with the feature flag disabled', async () => {
+			selectors = {
+				getLatestFraudOutcome: jest.fn().mockReturnValue( {} ),
+				getLatestFraudOutcomeError: jest
+					.fn()
+					.mockReturnValue( undefined ),
+				isResolving: jest.fn().mockReturnValue( false ),
+			};
+
+			const result = useLatestFraudOutcome( paymentIntentId );
+
+			expect( result ).toEqual( {
+				data: {},
+				error: undefined,
 				isLoading: false,
 			} );
 		} );

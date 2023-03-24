@@ -34,6 +34,6 @@ export type FraudOutcomesActions =
 
 export interface LatestFraudOutcomeResponse {
 	data: FraudOutcome;
-	error: ApiError;
+	error?: ApiError;
 	isLoading: boolean;
 }

@@ -58,7 +58,7 @@ const PaymentChargeDetails: React.FC< PaymentChargeDetailsProps > = ( {
 	const isLoadingFraudOutcome =
 		isLoadingLatestFraudOutcome ||
 		( ! Object.keys( latestFraudOutcome || {} ).length &&
-			! Object.keys( latestFraudOutcomeError || {} ).length );
+			'undefined' !== typeof latestFraudOutcomeError );
 
 	const isChargeId = getIsChargeId( id );
 	const isLoading = isChargeId || isLoadingData || isLoadingFraudOutcome;
