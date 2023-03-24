@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Payment_Process\Step\Check_Attached_Intent_Success_Step;
+
 /**
  * Class handling order success page.
  */
@@ -96,7 +98,7 @@ class WC_Payments_Order_Success_Page {
 	 * @return string
 	 */
 	public function add_notice_previous_successful_intent( $text ) {
-		if ( isset( $_GET[ WC_Payment_Gateway_WCPay::FLAG_PREVIOUS_SUCCESSFUL_INTENT ] ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_GET[ Check_Attached_Intent_Success_Step::FLAG_PREVIOUS_SUCCESSFUL_INTENT ] ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
 			$text .= sprintf(
 				'<div class="woocommerce-info">%s</div>',
 				esc_attr__( 'We prevented multiple payments for the same order. If this was a mistake and you wish to try again, please create a new order.', 'woocommerce-payments' )

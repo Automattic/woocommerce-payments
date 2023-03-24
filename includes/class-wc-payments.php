@@ -1656,4 +1656,13 @@ class WC_Payments {
 	public static function get_order_service() {
 		return self::$order_service;
 	}
+
+	/**
+	 * Returns the transaction rate limiter instance.
+	 *
+	 * @return Session_Rate_Limiter
+	 */
+	public static function get_transaction_rate_limiter() {
+		return self::$failed_transaction_rate_limiter;
+	}
 }

@@ -4,6 +4,7 @@
  *
  * @package WooCommerce\Payments
  */
+
 namespace WCPay\Payment_Process\Step;
 
 use WC_Payments_API_Intention;

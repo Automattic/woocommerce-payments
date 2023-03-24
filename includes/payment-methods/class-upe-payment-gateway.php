@@ -487,6 +487,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			}
 
 
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$payment->set_var( 'fraud_prevention_token', $_POST['wcpay-fraud-prevention-token'] ?? '' ); // Empty string to force checks. Null means skip.
+
+
 			if ( $is_using_saved_pm_and_there_is_no_intent ) {
 				// fall back to the full parent process.
 			}
