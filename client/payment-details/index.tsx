@@ -17,7 +17,7 @@ import ErrorBoundary from 'components/error-boundary';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import PaymentCardReaderChargeDetails from './readers';
 import {
-	PaymentChargeDetails,
+	PaymentChargeDetailsResponse,
 	isPaymentIntent,
 	isCharge,
 	PaymentDetailsProps,
@@ -31,19 +31,6 @@ import {
 import { useLatestFraudOutcome } from '../data/fraud-outcomes';
 import { PaymentIntent } from '../types/payment-intents';
 
-const PaymentDetails: React.FC< PaymentDetailsProps > = ( props ) => {
-	if ( 'card_reader_fee' === props.query.transaction_type ) {
-		return (
-			<PaymentCardReaderChargeDetails
-				chargeId={ props.query.id }
-				transactionId={ props.query.transaction_id }
-			/>
-		);
-	}
-
-	return <PaymentChargeDetails id={ props.query.id } />;
-};
-
 const PaymentChargeDetails: React.FC< PaymentChargeDetailsProps > = ( {
 	id,
 } ) => {
@@ -51,7 +38,9 @@ const PaymentChargeDetails: React.FC< PaymentChargeDetailsProps > = ( {
 		data,
 		error,
 		isLoading: isLoadingData,
-	} = usePaymentIntentWithChargeFallback( id ) as PaymentChargeDetails;
+	} = usePaymentIntentWithChargeFallback(
+		id
+	) as PaymentChargeDetailsResponse;
 
 	const paymentIntent = isPaymentIntent( data )
 		? data
@@ -68,8 +57,8 @@ const PaymentChargeDetails: React.FC< PaymentChargeDetailsProps > = ( {
 	// Additional loading state prevent flashing while the data is not available.
 	const isLoadingFraudOutcome =
 		isLoadingLatestFraudOutcome ||
-		( ! Object.keys( latestFraudOutcome ).length &&
-			! Object.keys( latestFraudOutcomeError ).length );
+		( ! Object.keys( latestFraudOutcome || {} ).length &&
+			! Object.keys( latestFraudOutcomeError || {} ).length );
 
 	const isChargeId = getIsChargeId( id );
 	const isLoading = isChargeId || isLoadingData || isLoadingFraudOutcome;
@@ -140,6 +129,19 @@ const PaymentChargeDetails: React.FC< PaymentChargeDetailsProps > = ( {
 			</ErrorBoundary>
 		</Page>
 	);
+};
+
+const PaymentDetails: React.FC< PaymentDetailsProps > = ( props ) => {
+	if ( 'card_reader_fee' === props.query.transaction_type ) {
+		return (
+			<PaymentCardReaderChargeDetails
+				chargeId={ props.query.id }
+				transactionId={ props.query.transaction_id }
+			/>
+		);
+	}
+
+	return <PaymentChargeDetails id={ props.query.id } />;
 };
 
 export default PaymentDetails;
