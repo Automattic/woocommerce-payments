@@ -124,6 +124,9 @@ const FraudProtectionAdvancedSettingsPage = () => {
 				writeRuleset( protectionSettingsUI )
 			);
 			await saveSettings();
+			wcpayTracks.recordEvent(
+				'wcpay_fraud_protection_advanced_settings_saved'
+			);
 		} else {
 			window.scrollTo( {
 				top: 0,
