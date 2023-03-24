@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import apiFetch from '@wordpress/api-fetch';
 import { mocked } from 'ts-jest/utils';
 /**
@@ -71,18 +71,27 @@ describe( 'Loading', () => {
 
 		render( <Loading /> );
 
-		await expect( apiFetch ).toHaveBeenCalledWith( {
-			data: {
-				business: {
-					country: 'US',
-					type: 'individual',
-					mcc: 'computers_peripherals_and_software',
-					annual_revenue: 'less_than_250k',
-					go_live_timeframe: 'within_1month',
+		await waitFor( () => {
+			expect( apiFetch ).toHaveBeenCalledWith( {
+				data: {
+					business: {
+						country: 'US',
+						type: 'individual',
+						mcc: 'computers_peripherals_and_software',
+						annual_revenue: 'less_than_250k',
+						go_live_timeframe: 'within_1month',
+					},
 				},
-			},
-			method: 'POST',
-			path: `/wc/v3/payments/onboarding/router/po_eligible`,
+				method: 'POST',
+				path: `/wc/v3/payments/onboarding/router/po_eligible`,
+			} );
 		} );
+
+		expect( window.location.href ).toContain( 'progressive' );
+		expect( window.location.href ).toContain( 'country' );
+		expect( window.location.href ).toContain( 'mcc' );
+		expect( window.location.href ).toContain( 'annual_revenue' );
+		expect( window.location.href ).toContain( 'business_type' );
+		expect( window.location.href ).toContain( 'go_live_timeframe' );
 	} );
 } );
