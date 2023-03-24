@@ -18,7 +18,7 @@ const DepositsOverview = (): JSX.Element => {
 		isLoading,
 	} = useAllDepositsOverviews() as AccountOverview.OverviewsResponse;
 
-	const { currencies, account } = overviews;
+	const { currencies } = overviews;
 
 	const overview = currencies[ 0 ]; // TODO: To handle multiple currencies we'll need to fetch the currently selected currency.
 
