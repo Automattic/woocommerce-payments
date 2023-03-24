@@ -5,7 +5,7 @@
 import { useSelect } from '@wordpress/data';
 import { PaymentIntent } from '../../types/payment-intents';
 import { getChargeData } from '../charges';
-import { PaymentChargeDetails } from '../../payment-details/types';
+import { PaymentChargeDetailsResponse } from '../../payment-details/types';
 import { STORE_NAME } from '../constants';
 
 export const getIsChargeId = ( id: string ): boolean =>
@@ -13,7 +13,7 @@ export const getIsChargeId = ( id: string ): boolean =>
 
 export const usePaymentIntentWithChargeFallback = (
 	id: string
-): PaymentChargeDetails =>
+): PaymentChargeDetailsResponse =>
 	useSelect(
 		( select ) => {
 			const selectors = select( STORE_NAME );
