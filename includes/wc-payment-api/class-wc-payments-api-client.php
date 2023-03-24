@@ -2552,6 +2552,7 @@ class WC_Payments_API_Client {
 			$intention_array['id'],
 			$customer,
 			$payment_method,
+			$intention_array['payment_method_options'],
 			$created,
 			$intention_array['status'],
 			$intention_array['client_secret'],

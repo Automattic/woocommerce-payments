@@ -55,6 +55,13 @@ class WC_Payments_API_Setup_Intention implements \JsonSerializable {
 	private $payment_method_id;
 
 	/**
+	 * Holds keyed options for specific payment methods.
+	 *
+	 * @var array
+	 */
+	private $payment_method_options;
+
+	/**
 	 * The next action needed of the intention
 	 *
 	 * @var array
@@ -79,20 +86,22 @@ class WC_Payments_API_Setup_Intention implements \JsonSerializable {
 	/**
 	 * WC_Payments_API_Intention constructor.
 	 *
-	 * @param string      $id                 - ID of the intention.
-	 * @param string|null $customer_id        - Stripe ID of the customer.
-	 * @param string|null $payment_method_id  - Stripe ID of the payment method.
-	 * @param DateTime    $created            - Time charge created.
-	 * @param string      $status             - Intention status.
-	 * @param string      $client_secret      - The client secret of the intention.
-	 * @param array       $next_action        - An array containing information for next action to take.
-	 * @param array       $last_setup_error - An array containing details of any errors.
-	 * @param array       $metadata           - An array containing additional metadata of associated charge or order.
+	 * @param string      $id                     - ID of the intention.
+	 * @param string|null $customer_id            - Stripe ID of the customer.
+	 * @param string|null $payment_method_id      - Stripe ID of the payment method.
+	 * @param array       $payment_method_options - Options for Stripe payment methods.
+	 * @param DateTime    $created                - Time charge created.
+	 * @param string      $status                 - Intention status.
+	 * @param string      $client_secret          - The client secret of the intention.
+	 * @param array       $next_action            - An array containing information for next action to take.
+	 * @param array       $last_setup_error       - An array containing details of any errors.
+	 * @param array       $metadata               - An array containing additional metadata of associated charge or order.
 	 */
 	public function __construct(
 		$id,
 		$customer_id,
 		$payment_method_id,
+		$payment_method_options,
 		DateTime $created,
 		$status,
 		$client_secret,
@@ -100,15 +109,16 @@ class WC_Payments_API_Setup_Intention implements \JsonSerializable {
 		$last_setup_error = [],
 		$metadata = []
 	) {
-		$this->id                = $id;
-		$this->created           = $created;
-		$this->status            = $status;
-		$this->client_secret     = $client_secret;
-		$this->next_action       = $next_action;
-		$this->last_setup_error  = $last_setup_error;
-		$this->customer_id       = $customer_id;
-		$this->payment_method_id = $payment_method_id;
-		$this->metadata          = $metadata;
+		$this->id                     = $id;
+		$this->created                = $created;
+		$this->status                 = $status;
+		$this->client_secret          = $client_secret;
+		$this->next_action            = $next_action;
+		$this->last_setup_error       = $last_setup_error;
+		$this->customer_id            = $customer_id;
+		$this->payment_method_id      = $payment_method_id;
+		$this->payment_method_options = $payment_method_options;
+		$this->metadata               = $metadata;
 	}
 
 	/**
@@ -166,6 +176,15 @@ class WC_Payments_API_Setup_Intention implements \JsonSerializable {
 	}
 
 	/**
+	 * Returns the payment method options.
+	 *
+	 * @return array
+	 */
+	public function get_payment_method_options() {
+		return $this->payment_method_options;
+	}
+
+	/**
 	 * Returns the next action of this intention
 	 *
 	 * @return array
@@ -197,12 +216,13 @@ class WC_Payments_API_Setup_Intention implements \JsonSerializable {
 	 */
 	public function jsonSerialize(): array {
 		return [
-			'id'             => $this->get_id(),
-			'created'        => $this->get_created()->getTimestamp(),
-			'customer'       => $this->get_customer_id(),
-			'metadata'       => $this->get_metadata(),
-			'payment_method' => $this->get_payment_method_id(),
-			'status'         => $this->get_status(),
+			'id'                     => $this->get_id(),
+			'created'                => $this->get_created()->getTimestamp(),
+			'customer'               => $this->get_customer_id(),
+			'metadata'               => $this->get_metadata(),
+			'payment_method'         => $this->get_payment_method_id(),
+			'payment_method_options' => $this->get_payment_method_options(),
+			'status'                 => $this->get_status(),
 		];
 	}
 
@@ -221,6 +241,7 @@ class WC_Payments_API_Setup_Intention implements \JsonSerializable {
 	 * @return string|null The payment method type, if any. Ex. 'card'.
 	 */
 	public function get_payment_method_type() {
-
+		$payment_method_options = array_keys( $this->get_payment_method_options() );
+		return $payment_method_options ? $payment_method_options[0] : null;
 	}
 }

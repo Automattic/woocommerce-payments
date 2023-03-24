@@ -103,8 +103,8 @@ class Redirect_UPE_Payment_Step extends Abstract_Step {
 		$payment->set_var( 'intent', $intent );
 
 		// The process cannot be completed without a selected payment method either.
-		$payment_method = $this->gateway->get_selected_payment_method( $intent->get_payment_method_type() );
-		if ( ! $payment_method ) {
+		$payment_method_type = $this->gateway->get_selected_payment_method( $intent->get_payment_method_type() );
+		if ( ! $payment_method_type ) {
 			throw new Process_Payment_Exception(
 				__( 'Could not find an attached payment method.', 'woocommerce-payments' ),
 				'upe_payment_intent_missing'
@@ -112,7 +112,7 @@ class Redirect_UPE_Payment_Step extends Abstract_Step {
 		}
 
 		// Make sure that if the payment method is not reusable, there are no attempts to save it in another step.
-		if ( $payment->is( Payment::SAVE_PAYMENT_METHOD_TO_STORE ) && ! $payment_method->is_reusable() ) {
+		if ( $payment->is( Payment::SAVE_PAYMENT_METHOD_TO_STORE ) && ! $payment_method_type->is_reusable() ) {
 			$payment->unset_flag( Payment::SAVE_PAYMENT_METHOD_TO_STORE );
 		}
 

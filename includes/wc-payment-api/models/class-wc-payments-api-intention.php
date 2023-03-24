@@ -301,6 +301,14 @@ class WC_Payments_API_Intention implements \JsonSerializable {
 	 * @return string|null The payment method type, if any. Ex. 'card'.
 	 */
 	public function get_payment_method_type() {
+		$charge = $this->get_charge();
+		if ( $charge ) {
+			$payment_method_details = $charge->get_payment_method_details();
+			if ( is_array( $payment_method_details ) && ! empty( $payment_method_details ) ) {
+				return $payment_method_details['type'];
+			}
+		}
 
+		return null;
 	}
 }
