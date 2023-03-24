@@ -44,8 +44,6 @@ const Loading: React.FC = () => {
 
 	const handleComplete = async () => {
 		const { connectUrl } = wcpaySettings;
-		// TODO GH-5476 prefill the data for full KYC with addQueryArgs( connectUrl, {prefill: fromDotNotation( data ),} )
-		// that needs server tweaks first.
 		let isEligible;
 		try {
 			isEligible = await isEligibleForPo();
@@ -58,7 +56,9 @@ const Loading: React.FC = () => {
 			? addQueryArgs( connectUrl, {
 					progressive: fromDotNotation( data ),
 			  } )
-			: connectUrl;
+			: addQueryArgs( connectUrl, {
+					prefill: fromDotNotation( data ),
+			  } );
 		window.location.href = resultUrl;
 	};
 
