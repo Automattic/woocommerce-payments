@@ -16,7 +16,6 @@ use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Method;
 use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
-use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Core\Mode;
 use WCPay\Core\Server\Request\Cancel_Intention;
 use WCPay\Core\Server\Request\Capture_Intention;
@@ -981,7 +980,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @throws \WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception When request class filter filed to extend request class because of incompatibility.
 	 * @throws \WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception When immutable parameter gets changed in request class.
 	 * @throws \WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception When you send incorrect request value via setters.
-	 * @throws Order_Not_Found_Exception
 	 */
 	public function process_payment_for_order( $cart, $payment_information, $scheduled_subscription_payment = false ) {
 		$order                                       = $payment_information->get_order();
@@ -1442,8 +1440,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param  WC_Order $order Order object.
 	 * @return bool
-	 *
-	 * @throws Order_Not_Found_Exception
 	 */
 	public function can_refund_order( $order ) {
 		return $order && $this->order_service->get_charge_id_for_order( $order );
@@ -1579,8 +1575,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param WC_Order $order The order to check.
 	 * @return boolean
-	 *
-	 * @throws Order_Not_Found_Exception
 	 */
 	public function has_refund_failed( $order ) {
 		return 'failed' === $this->order_service->get_wcpay_refund_status_for_order( $order );
@@ -1592,8 +1586,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Order $order The order to get the payment method type for.
 	 *
 	 * @return string
-	 *
-	 * @throws Order_Not_Found_Exception
 	 */
 	private function get_payment_method_type_for_order( $order ): string {
 		if ( $this->order_service->get_payment_method_id_for_order( $order ) ) {
@@ -2885,8 +2877,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param int           $order_id  The ID of the order that has been created.
 	 * @param WC_Order|null $order     The order that has been created.
-	 *
-	 * @throws Order_Not_Found_Exception
 	 */
 	public function schedule_order_tracking( $order_id, $order = null ) {
 		$this->maybe_schedule_subscription_order_tracking( $order_id, $order );

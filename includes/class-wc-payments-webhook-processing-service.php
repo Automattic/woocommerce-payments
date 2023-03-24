@@ -11,7 +11,6 @@ use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Database_Cache;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
-use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
 use WCPay\Logger;
 
@@ -129,7 +128,6 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @return void
 	 *
 	 * @throws Invalid_Webhook_Data_Exception
-	 * @throws Order_Not_Found_Exception
 	 */
 	public function process( array $event_body ) {
 		// Extract information about the webhook event.
