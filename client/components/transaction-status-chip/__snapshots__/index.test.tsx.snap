@@ -1,0 +1,41 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Transaction status chip should render the allow chip correctly 1`] = `
+<div>
+  <span
+    class="chip chip-primary is-compact chip--transaction"
+  >
+    Succeeded
+  </span>
+</div>
+`;
+
+exports[`Transaction status chip should render the block chip correctly 1`] = `
+<div>
+  <span
+    class="chip chip-alert is-compact chip--transaction"
+  >
+    Payment blocked
+  </span>
+</div>
+`;
+
+exports[`Transaction status chip should render the review chip correctly 1`] = `
+<div>
+  <span
+    class="chip chip-warning is-compact chip--transaction"
+  >
+    Needs review
+  </span>
+</div>
+`;
+
+exports[`Transaction status chip should render the unknown chip correctly 1`] = `
+<div>
+  <span
+    class="chip chip-light is-compact chip--transaction"
+  >
+    Unknown
+  </span>
+</div>
+`;
