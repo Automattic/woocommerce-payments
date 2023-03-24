@@ -33,3 +33,6 @@ function wcpay_load_payment_process_class( $class_name ) {
 	}
 }
 spl_autoload_register( 'wcpay_load_payment_process_class' );
+
+// Load all steps to make sure there are no syntax errors.
+WCPay\Payment_Process\Payment::get_available_steps();
