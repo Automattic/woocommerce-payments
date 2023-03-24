@@ -435,7 +435,7 @@ class WC_Payments_Order_Service {
 	 * Set the payment metadata for intent id.
 	 *
 	 * @param  WC_Order $order The order object.
-	 * @param  mixed    $intent_id The value to be set.
+	 * @param  string   $intent_id The value to be set.
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
@@ -468,8 +468,8 @@ class WC_Payments_Order_Service {
 	/**
 	 * Set the payment metadata for payment method id.
 	 *
-	 * @param  mixed $order The order.
-	 * @param  mixed $payment_method_id The value to be set.
+	 * @param  mixed  $order The order.
+	 * @param  string $payment_method_id The value to be set.
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
@@ -488,8 +488,8 @@ class WC_Payments_Order_Service {
 	/**
 	 * Set the payment metadata for charge id.
 	 *
-	 * @param  mixed $order The order.
-	 * @param  mixed $charge_id The value to be set.
+	 * @param  mixed  $order The order.
+	 * @param  string $charge_id The value to be set.
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
@@ -516,8 +516,8 @@ class WC_Payments_Order_Service {
 	/**
 	 * Set the payment metadata for intention status.
 	 *
-	 * @param  mixed $order The order.
-	 * @param  mixed $intention_status The value to be set.
+	 * @param  mixed  $order The order.
+	 * @param  string $intention_status The value to be set.
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
@@ -544,8 +544,8 @@ class WC_Payments_Order_Service {
 	/**
 	 * Set the payment metadata for customer id.
 	 *
-	 * @param  mixed $order The order.
-	 * @param  mixed $customer_id The value to be set.
+	 * @param  mixed  $order The order.
+	 * @param  string $customer_id The value to be set.
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
@@ -572,8 +572,8 @@ class WC_Payments_Order_Service {
 	/**
 	 * Set the payment metadata for intent currency.
 	 *
-	 * @param  mixed $order The order.
-	 * @param  mixed $wcpay_intent_currency The value to be set.
+	 * @param  mixed  $order The order.
+	 * @param  string $wcpay_intent_currency The value to be set.
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
@@ -600,8 +600,8 @@ class WC_Payments_Order_Service {
 	/**
 	 * Set the payment metadata for refund id.
 	 *
-	 * @param  mixed $order The order.
-	 * @param  mixed $wcpay_refund_id The value to be set.
+	 * @param  mixed  $order The order.
+	 * @param  string $wcpay_refund_id The value to be set.
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
@@ -628,8 +628,8 @@ class WC_Payments_Order_Service {
 	/**
 	 * Set the payment metadata for refund status.
 	 *
-	 * @param  mixed $order The order.
-	 * @param  mixed $wcpay_refund_status The value to be set.
+	 * @param  mixed  $order The order.
+	 * @param  string $wcpay_refund_status The value to be set.
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
@@ -656,8 +656,8 @@ class WC_Payments_Order_Service {
 	/**
 	 * Set the fraud_outcome_status for an order.
 	 *
-	 * @param  mixed $order The order.
-	 * @param  mixed $fraud_outcome_status The value to be set.
+	 * @param  mixed  $order The order.
+	 * @param  string $fraud_outcome_status The value to be set.
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */

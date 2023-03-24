@@ -1,4 +1,3 @@
-TODO: Maybe update this file.
 # WooCommerce Payments Server Requests
 
 This document outlines the concepts and implementation of WooCommerce Payments server request classes.
