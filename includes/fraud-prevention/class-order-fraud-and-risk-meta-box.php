@@ -116,6 +116,7 @@ class Order_Fraud_And_Risk_Meta_Box {
 				$description = __( 'Risk filtering is only available for orders that are processed with WooCommerce Payments.', 'woocommerce-payments' );
 				$callout     = __( 'Learn more', 'woocommerce-payments' );
 				$callout_url = '';
+				// TODO: Need callout url for Learn more.
 				echo '<p>' . esc_html( $description ) . '</p><a href="' . esc_url( $callout_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
 				break;
 
