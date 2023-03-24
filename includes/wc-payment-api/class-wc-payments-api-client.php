@@ -2119,7 +2119,13 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Gets the latest fraud outcome for a given payment intent id.
 	 *
+	 * @param string $id Payment intent id.
+	 *
+	 * @throws API_Exception - If not connected or request failed.
+	 *
+	 * @return array The response object.
 	 */
 	public function get_latest_fraud_outcome( $id ) {
 		$response = $this->request(
