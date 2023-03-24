@@ -95,7 +95,7 @@ describe( 'Loading', () => {
 		expect( window.location.href ).toContain( 'go_live_timeframe' );
 	} );
 
-	it( 'renders loading screen and sends request to server in case of non-po', async () => {
+	it( 'renders loading screen and sends request to server in case of po not eligible', async () => {
 		data = {
 			country: 'GB',
 			business_type: 'individual',
@@ -128,6 +128,10 @@ describe( 'Loading', () => {
 		} );
 
 		expect( window.location.href ).toContain( 'prefill' );
-		// TODO GH-5476 check for other values
+		expect( window.location.href ).toContain( 'country' );
+		expect( window.location.href ).toContain( 'mcc' );
+		expect( window.location.href ).toContain( 'annual_revenue' );
+		expect( window.location.href ).toContain( 'business_type' );
+		expect( window.location.href ).toContain( 'go_live_timeframe' );
 	} );
 } );
