@@ -3019,6 +3019,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Add a url to the admin order page that links directly to the transactions detail view.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param WC_Order $order The context passed into this function when the user view the order details page in WordPress admin.
+	 * @return string
+	 */
+	public function get_transaction_url( $order ) {
+		$intent_id = $this->order_service->get_intent_id_for_order( $order );
+		$charge_id = $this->order_service->get_charge_id_for_order( $order );
+
+		return WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
+	}
+
+	/**
 	 * Returns a formatted token list for a user.
 	 *
 	 * @param int $user_id The user ID.
