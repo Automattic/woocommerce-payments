@@ -20,7 +20,6 @@ export interface UpdateErrorForLatestFraudOutcomeAction {
 }
 
 export interface LatestFraudOutcomeState {
-	id: string;
 	data?: FraudOutcome;
 	error?: ApiError;
 }
