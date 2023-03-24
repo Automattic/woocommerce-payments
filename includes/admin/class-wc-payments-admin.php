@@ -932,12 +932,12 @@ class WC_Payments_Admin {
 		?>
 		<tr>
 			<td class="label wcpay-transaction-fee">
-				<?php echo wc_help_tip( __( 'This represents the fee WooCommerce Payments collects for the transaction.', 'woocommerce-payments' ) ); ?>
+				<?php echo wc_help_tip( __( 'This represents the fee WooCommerce Payments collects for the transaction.', 'woocommerce-payments' ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 				<?php esc_html_e( 'Transaction Fee:', 'woocommerce-payments' ); ?>
 			</td>
 			<td width="1%"></td>
 			<td class="total">
-				-<?php echo wc_price( $order->get_meta( '_wcpay_transaction_fee' ), [ 'currency' => $order->get_currency() ] ); ?>
+				-<<?php echo wp_kses( wc_price( $order->get_meta( '_wcpay_transaction_fee' ), [ 'currency' => $order->get_currency() ] ) ); ?>
 			</td>
 		</tr>
 		<?php
