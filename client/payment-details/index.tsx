@@ -61,12 +61,18 @@ const PaymentChargeDetails: React.FC< PaymentChargeDetailsProps > = ( {
 
 	const {
 		data: latestFraudOutcome,
+		error: latestFraudOutcomeError,
 		isLoading: isLoadingLatestFraudOutcome,
 	} = useLatestFraudOutcome( orderId );
 
+	// Additional loading state prevent flashing while the data is not available.
+	const isLoadingFraudOutcome =
+		isLoadingLatestFraudOutcome ||
+		( ! Object.keys( latestFraudOutcome ).length &&
+			! Object.keys( latestFraudOutcomeError ).length );
+
 	const isChargeId = getIsChargeId( id );
-	const isLoading =
-		isChargeId || isLoadingData || isLoadingLatestFraudOutcome;
+	const isLoading = isChargeId || isLoadingData || isLoadingFraudOutcome;
 
 	const testModeNotice = <TestModeNotice topic={ topics.paymentDetails } />;
 
