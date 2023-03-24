@@ -60,7 +60,7 @@ const Loading: React.FC = () => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [] );
 
-	// TODO implement in GH-4746 (Full page design for PO)
+	// TODO implement in GH-4744 (Create or extend components needed for PO)
 	return <></>;
 };
 
