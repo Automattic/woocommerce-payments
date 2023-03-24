@@ -2,19 +2,18 @@
  * External dependencies
  */
 import React from 'react';
-import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
  */
-import { OnboardingContextProvider, useOnboardingContext } from './context';
+import { OnboardingContextProvider } from './context';
 import { Stepper } from 'components/stepper';
 import { OnboardingSteps } from './types';
-import { fromDotNotation } from './utils';
 import { OnboardingForm } from './form';
 import PersonalDetails from './steps/personal-details';
 import BusinessDetails from './steps/business-details';
 import StoreDetails from './steps/store-details';
+import Loading from './steps/loading';
 import strings from './strings';
 
 interface Props {
@@ -31,18 +30,8 @@ const Step: React.FC< Props > = ( { name, children } ) => {
 };
 
 const OnboardingStepper = () => {
-	const { data } = useOnboardingContext();
-
-	const handleComplete = () => {
-		const { connectUrl } = wcpaySettings;
-		const url = addQueryArgs( connectUrl, {
-			progressive: fromDotNotation( data ),
-		} );
-		window.location.href = url;
-	};
-
 	return (
-		<Stepper onComplete={ handleComplete }>
+		<Stepper>
 			<Step name="personal">
 				<OnboardingForm>
 					<PersonalDetails />
@@ -57,6 +46,9 @@ const OnboardingStepper = () => {
 				<OnboardingForm>
 					<StoreDetails />
 				</OnboardingForm>
+			</Step>
+			<Step name="loading">
+				<Loading />
 			</Step>
 		</Stepper>
 	);
