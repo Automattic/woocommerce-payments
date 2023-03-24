@@ -18,6 +18,8 @@ export const getSettingCountries = () => {
 		case 'specific':
 			return window.wcSettings.admin.preloadSettings.general
 				.woocommerce_specific_allowed_countries;
+		default:
+			return [];
 	}
 };
 

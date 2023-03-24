@@ -34,6 +34,7 @@ const getNoticeText = ( filterType, blocking ) => {
 					'woocommerce-payments'
 			  );
 	}
+	return null;
 };
 
 const AllowedCountriesNotice = ( { setting } ) => {
