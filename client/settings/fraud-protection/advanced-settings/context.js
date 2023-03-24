@@ -4,8 +4,8 @@
 import { createContext } from 'react';
 
 const FraudPreventionSettingsContext = createContext( {
-	advancedFraudProtectionSettings: false,
-	setAdvancedFraudProtectionSettings: () => {},
+	protectionSettingsUI: false,
+	setProtectionSettingsUI: () => {},
 } );
 
 export default FraudPreventionSettingsContext;
