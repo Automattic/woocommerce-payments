@@ -46,7 +46,15 @@ const Loading: React.FC = () => {
 		const { connectUrl } = wcpaySettings;
 		// TODO GH-5476 prefill the data for full KYC with addQueryArgs( connectUrl, {prefill: fromDotNotation( data ),} )
 		// that needs server tweaks first.
-		const resultUrl = ( await isEligibleForPo() )
+		let isEligible;
+		try {
+			isEligible = await isEligibleForPo();
+		} catch ( error ) {
+			// fall back to full KYC scenario.
+			// TODO maybe log these errors in future, e.g. with tracks.
+			isEligible = false;
+		}
+		const resultUrl = isEligible
 			? addQueryArgs( connectUrl, {
 					progressive: fromDotNotation( data ),
 			  } )
