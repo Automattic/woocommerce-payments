@@ -4,6 +4,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import apiFetch from '@wordpress/api-fetch';
+import { mocked } from 'ts-jest/utils';
 /**
  * Internal dependencies
  */
@@ -11,7 +12,6 @@ import Loading from '../loading';
 
 // Mock Api Fetch module and function
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
-const mockApiFetch = apiFetch as jest.MockedFunction< typeof apiFetch >;
 
 // Mock wcpaySettings
 declare const global: {
@@ -64,14 +64,14 @@ describe( 'Loading', () => {
 			go_live_timeframe: 'within_1month',
 		};
 
-		mockApiFetch.mockResolvedValueOnce( {
+		mocked( apiFetch ).mockResolvedValueOnce( {
 			result: 'eligible',
 			data: [],
 		} );
 
 		render( <Loading /> );
 
-		await expect( mockApiFetch ).toHaveBeenCalledWith( {
+		await expect( mocked( apiFetch ) ).toHaveBeenCalledWith( {
 			data: {
 				business: {
 					country: 'US',
