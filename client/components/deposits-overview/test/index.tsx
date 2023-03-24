@@ -9,6 +9,7 @@ import { render, screen } from '@testing-library/react';
  */
 import DepositsOverview from '..';
 import NextDepositDetails from '../next-deposit';
+import DepositsOverviewFooter from '../footer';
 import { useAllDepositsOverviews, useInstantDeposit } from 'wcpay/data';
 
 jest.mock( 'wcpay/data', () => ( {
@@ -185,5 +186,15 @@ describe( 'Deposits Overview information', () => {
 		);
 		expect( getByText( 'Estimated' ) ).toBeTruthy();
 		expect( getByText( '—' ) ).toBeTruthy();
+	} );
+} );
+
+describe( 'Deposits Overview footer renders', () => {
+	test( 'Component Renders', () => {
+		const { container, getByText } = render( <DepositsOverviewFooter /> );
+		expect( container ).toMatchSnapshot();
+
+		getByText( 'View full deposits history' );
+		getByText( 'Change deposit schedule' );
 	} );
 } );
