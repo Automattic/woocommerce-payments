@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -10,7 +10,7 @@ import { render, screen } from '@testing-library/react';
 import DepositsOverview from '..';
 import NextDepositDetails from '../next-deposit';
 import DepositsOverviewFooter from '../footer';
-import { useAllDepositsOverviews, useInstantDeposit } from 'wcpay/data';
+import { useAllDepositsOverviews } from 'wcpay/data';
 
 jest.mock( 'wcpay/data', () => ( {
 	useAllDepositsOverviews: jest.fn(),
