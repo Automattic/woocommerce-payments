@@ -7,9 +7,18 @@ import { noop } from 'lodash';
 /**
  * Internal dependencies
  */
-import TooltipBase from './tooltip-base';
+import TooltipBase, { TooltipBaseProps } from './tooltip-base';
 
-const Tooltip = ( { isVisible, onHide = noop, ...props } ) => {
+type TooltipProps = TooltipBaseProps & {
+	isVisible?: boolean;
+	onHide?: () => void;
+};
+
+const Tooltip: React.FC< TooltipProps > = ( {
+	isVisible,
+	onHide = noop,
+	...props
+} ) => {
 	const [ isHovered, setIsHovered ] = useState( false );
 	const [ isClicked, setIsClicked ] = useState( false );
 
