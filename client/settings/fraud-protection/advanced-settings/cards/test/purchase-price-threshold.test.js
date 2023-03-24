@@ -22,8 +22,8 @@ describe( 'Purchase price threshold card', () => {
 	};
 	const setSettings = jest.fn();
 	const contextValue = {
-		advancedFraudProtectionSettings: settings,
-		setAdvancedFraudProtectionSettings: setSettings,
+		protectionSettingsUI: settings,
+		setProtectionSettingsUI: setSettings,
 	};
 	test( 'renders correctly', () => {
 		const { container } = render(
