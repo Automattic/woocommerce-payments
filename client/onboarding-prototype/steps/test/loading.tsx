@@ -71,7 +71,7 @@ describe( 'Loading', () => {
 
 		render( <Loading /> );
 
-		await expect( mocked( apiFetch ) ).toHaveBeenCalledWith( {
+		await expect( apiFetch ).toHaveBeenCalledWith( {
 			data: {
 				business: {
 					country: 'US',
