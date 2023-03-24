@@ -12,12 +12,17 @@ export default {
 			'woocommerce-payments'
 		),
 	},
-	allDepositsButton: __(
-		'View full deposits history',
-		'woocommerce-payments'
-	),
+	viewAllDeposits: __( 'View full deposits history', 'woocommerce-payments' ),
 	changeDepositSchedule: __(
 		'Change deposit schedule',
 		'woocommerce-payments'
 	),
+	tableHeaders: {
+		nextDepositDate: __(
+			'Estimated dispatch date',
+			'woocommerce-payments'
+		),
+		status: __( 'Status', 'woocommerce-payments' ),
+		amount: __( 'Amount', 'woocommerce-payments' ),
+	},
 };

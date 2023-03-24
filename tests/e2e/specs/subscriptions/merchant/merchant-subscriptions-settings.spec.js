@@ -1,17 +1,14 @@
 /**
  * External dependencies
  */
-import config from 'config';
+import { describeif, RUN_SUBSCRIPTIONS_TESTS } from '../../../utils';
+
 const { merchant } = require( '@woocommerce/e2e-utils' );
-import { RUN_SUBSCRIPTIONS_TESTS, describeif } from '../../../utils';
 
 describeif( RUN_SUBSCRIPTIONS_TESTS )(
 	'WooCommerce > Settings > Subscriptions',
 	() => {
 		beforeAll( async () => {
-			await page.goto( config.get( 'url' ), {
-				waitUntil: 'networkidle0',
-			} );
 			await merchant.login();
 		} );
 		afterAll( async () => {

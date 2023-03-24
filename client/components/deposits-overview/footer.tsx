@@ -35,7 +35,7 @@ const DepositsOverviewFooter: React.FC = () => {
 		<CardFooter className="wcpay-deposits-overview__footer">
 			<Flex align="center" justify="flex-start">
 				<Button isSecondary={ true } href={ depositListTableUrl }>
-					{ strings.allDepositsButton }
+					{ strings.viewAllDeposits }
 				</Button>
 				<Link type="wp-admin" href={ depositScheduleUrl }>
 					{ strings.changeDepositSchedule }
