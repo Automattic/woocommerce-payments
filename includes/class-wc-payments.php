@@ -1395,9 +1395,6 @@ class WC_Payments {
 
 		try {
 			$formatters = new Formatters();
-			$formatters->register( 'money', MoneyFormatter::class );
-			$formatters->register( 'html', HtmlFormatter::class );
-			$formatters->register( 'currency', CurrencyFormatter::class );
 			$extend_schema = new ExtendSchema( $formatters );
 			$schema_controller = new SchemaController( $extend_schema );
 			$cart_route = new WooPay_Store_Api_Token( $schema_controller, $schema_controller->get( 'cart' ) );
@@ -1412,7 +1409,7 @@ class WC_Payments {
 			'user_id'              => $user->ID,
 			'customer_id'          => $customer_id,
 			'session_nonce'        => $session_nonce,
-			'token'				   => $store_api_token,
+			'store_api_token'      => $store_api_token,
 			'email'                => $email,
 			'session_cookie_name'  => $session_cookie_name,
 			'session_cookie_value' => wp_unslash( $_COOKIE[ $session_cookie_name ] ?? '' ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
