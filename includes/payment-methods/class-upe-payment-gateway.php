@@ -748,6 +748,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		if ( false ) {
 			// load order, return if not an order.
 			// load user_id
+			// load intent ID
+
+			// use the response array, and wp_safe_redirect to it's `redirect` property.
 		}
 
 		// =========================================

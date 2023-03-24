@@ -24,6 +24,8 @@ use WCPay\Payment_Process\Payment_Method\New_Payment_Method;
  * Performs a standard payment with a positive amount.
  */
 class Standard_Payment_Step extends Abstract_Step {
+	use Redirect_if_Action_is_Required;
+
 	/**
 	 * The active gateway.
 	 *
@@ -107,7 +109,7 @@ class Standard_Payment_Step extends Abstract_Step {
 				$this->bail_if_action_is_required( $payment, $intent );
 			} else {
 				// Redirect if there is an action needed.
-				$this->redirect_if_action_is_required( $payment, $intent );
+				$payment->complete( $this->redirect_if_action_is_required( $payment, $intent ) );
 			}
 
 			return;
@@ -199,55 +201,6 @@ class Standard_Payment_Step extends Abstract_Step {
 		// Mark the payment as failed.
 		$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id );
 		$payment->complete( [] ); // @todo: Subs don't require a response here.
-	}
-
-	/**
-	 * Redirects to the right screen for the next action. That could be just a redirect,
-	 * or a more complicated hash change, which will trigger a modal on checkout.
-	 *
-	 * @param Order_Payment             $payment A payment, being processed.
-	 * @param WC_Payments_API_Intention $intent  The intention, returned from the server.
-	 */
-	protected function redirect_if_action_is_required( Order_Payment $payment, WC_Payments_API_Intention $intent ) {
-		$next_action = $intent->get_next_action();
-
-		if (
-			isset( $next_action['type'] )
-			&& 'redirect_to_url' === $next_action['type']
-			&& ! empty( $next_action['redirect_to_url']['url'] )
-		) {
-			return $payment->complete(
-				[
-					'result'   => 'success',
-					'redirect' => $next_action['redirect_to_url']['url'],
-				]
-			);
-		}
-
-		// @todo: Utils are static and hard to mock here. Replace with a standard method.
-		$encrypted_secret = WC_Payments_Utils::encrypt_client_secret(
-			$this->account->get_stripe_account_id(),
-			$intent->get_client_secret()
-		);
-
-		$redirect = sprintf(
-			'#wcpay-confirm-%s:%s:%s:%s',
-			'pi', // @todo: Setup intents should have `si` here.
-			$payment->get_order()->get_id(),
-			$encrypted_secret,
-			// Include a new nonce for update_order_status to ensure the update order
-			// status call works when a guest user creates an account during checkout.
-			wp_create_nonce( 'wcpay_update_order_status_nonce' )
-		);
-
-		$response = [
-			'result'         => 'success',
-			'redirect'       => $redirect,
-			// Include the payment method ID so the Blocks integration can save cards.
-			'payment_method' => $payment->get_payment_method()->get_id(),
-		];
-
-		$payment->complete( $response );
 	}
 
 	/**
