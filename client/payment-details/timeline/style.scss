@@ -21,4 +21,11 @@
 			background: #d67709;
 		}
 	}
+
+	.fraud-outcome-ruleset-item + .fraud-outcome-ruleset-item {
+		color: #50575e;
+		font-size: 14px;
+		line-height: 20px;
+		margin-top: 16px;
+	}
 }

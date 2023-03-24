@@ -6,6 +6,7 @@
 import { flatMap } from 'lodash';
 import { __, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
+import { addQueryArgs } from '@wordpress/url';
 import moment from 'moment';
 import { createInterpolateElement } from '@wordpress/element';
 import { Link } from '@woocommerce/components';
@@ -29,6 +30,7 @@ import {
 import { formatFee } from 'utils/fees';
 import { getAdminUrl } from 'wcpay/utils';
 import { ShieldIcon } from 'wcpay/icons';
+import { fraudOutcomeRulesetMapping } from './mappings';
 
 /**
  * Creates a timeline item about a payment status change
@@ -507,6 +509,72 @@ export const composeFeeBreakdown = ( event ) => {
 	return <ul className="fee-breakdown-list"> { list } </ul>;
 };
 
+const getManualFraudOutcomeTimelineItem = ( event, status ) => {
+	const isBlock = 'block' === status;
+
+	const headline = isBlock
+		? // translators: %s: the username that approved the payment, <a> - link to the user
+		  __( 'Payment was blocked by <a>%s</a>', 'woocommerce-payments' )
+		: // translators: %s: the username that approved the payment, <a> - link to the user
+		  __( 'Payment was approved by <a>%s</a>', 'woocommerce-payments' );
+
+	const icon = isBlock ? (
+		<CrossIcon className="is-error" />
+	) : (
+		<CheckmarkIcon className="is-success" />
+	);
+
+	return getMainTimelineItem(
+		event,
+		createInterpolateElement( sprintf( headline, event.user.username ), {
+			a: (
+				// eslint-disable-next-line jsx-a11y/anchor-has-content
+				<a
+					href={ addQueryArgs( 'user-edit.php', {
+						user_id: event.user.id,
+					} ) }
+					tabIndex={ -1 }
+				/>
+			),
+		} ),
+		icon
+	);
+};
+
+const buildAutomaticFraudOutcomeRuleset = ( event ) => {
+	const rulesetResults = Object.entries( event.ruleset_results || {} );
+
+	return rulesetResults.map( ( [ rule, status ] ) => (
+		<p key={ rule } className="fraud-outcome-ruleset-item">
+			{ fraudOutcomeRulesetMapping[ status ][ rule ] }
+		</p>
+	) );
+};
+
+const getAutomaticFraudOutcomeTimelineItem = ( event, status ) => {
+	const isBlock = 'block' === status;
+
+	const headline = isBlock
+		? __(
+				'Payment was screened by your fraud filters and blocked.',
+				'woocommerce-payments'
+		  )
+		: __(
+				'Payment was screened by your fraud filters and placed in review.',
+				'woocommerce-payments'
+		  );
+
+	const icon = isBlock ? (
+		<CrossIcon className="is-error" />
+	) : (
+		<ShieldIcon className="is-fraud-outcome-review" />
+	);
+
+	return getMainTimelineItem( event, headline, icon, [
+		buildAutomaticFraudOutcomeRuleset( event ),
+	] );
+};
+
 /**
  * Formats an event into one or more payment timeline items
  *
@@ -892,101 +960,13 @@ const mapEventToTimelineItems = ( event ) => {
 				),
 			];
 		case 'fraud_outcome_manual_approve':
-			return [
-				getMainTimelineItem(
-					event,
-					createInterpolateElement(
-						sprintf(
-							// translators: %s: the username that approved the payment, <a> - link to the user
-							__(
-								'Payment was approved by <a>%s</a>',
-								'woocommerce-payments'
-							),
-							event.user.username
-						),
-						{
-							a: (
-								<Link
-									href={ getAdminUrl( {
-										page: 'wc-admin',
-										path: '/payments/transactions',
-										type: 'charge',
-										filter: 'advanced',
-									} ) }
-								/>
-							),
-						}
-					),
-					<CheckmarkIcon className="is-success" />
-				),
-			];
+			return [ getManualFraudOutcomeTimelineItem( event, 'allow' ) ];
 		case 'fraud_outcome_manual_block':
-			return [
-				getMainTimelineItem(
-					event,
-					createInterpolateElement(
-						sprintf(
-							// translators: %s: the username that approved the payment, <a> - link to the user
-							__(
-								'Payment was blocked by <a>%s</a>',
-								'woocommerce-payments'
-							),
-							event.user.username
-						),
-						{
-							a: (
-								<Link
-									href={ getAdminUrl( {
-										page: 'wc-admin',
-										path: '/payments/transactions',
-										type: 'charge',
-										filter: 'advanced',
-									} ) }
-								/>
-							),
-						}
-					),
-					<CrossIcon className="is-error" />
-				),
-			];
+			return [ getManualFraudOutcomeTimelineItem( event, 'block' ) ];
 		case 'fraud_outcome_review':
-			return [
-				getMainTimelineItem(
-					event,
-					__(
-						'Payment was screened by your fraud filters and placed in review.',
-						'woocommerce-payments'
-					),
-					<ShieldIcon className="is-fraud-outcome-review" />,
-					[
-						event.ruleset_results.map( ( result, index ) => (
-							<p key={ index }>
-								Place in review if the shipping address differs
-								from the billing address
-							</p>
-						) ),
-					]
-				),
-			];
+			return [ getAutomaticFraudOutcomeTimelineItem( event, 'review' ) ];
 		case 'fraud_outcome_block':
-			return [
-				getMainTimelineItem(
-					event,
-					__(
-						'Payment was screened by your fraud filters and blocked.',
-						'woocommerce-payments'
-					),
-					<CrossIcon className="is-error" />,
-					[
-						event.ruleset_results.map( ( result, index ) => (
-							<p key={ index }>
-								Place in review if the shipping address differs
-								from the billing address
-							</p>
-						) ),
-					]
-				),
-			];
+			return [ getAutomaticFraudOutcomeTimelineItem( event, 'block' ) ];
 		default:
 			return [];
 	}
