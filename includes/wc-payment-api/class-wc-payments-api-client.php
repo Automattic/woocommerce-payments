@@ -19,6 +19,8 @@ use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Database_Cache;
 use WCPay\Core\Server\Request;
+use WCPay\Core\Server\Response;
+use WCPay\Core\Server\Request\List_Fraud_Outcome_Transactions;
 
 /**
  * Communicates with WooCommerce Payments API.
@@ -71,6 +73,7 @@ class WC_Payments_API_Client {
 	const VAT_API                      = 'vat';
 	const LINKS_API                    = 'links';
 	const AUTHORIZATIONS_API           = 'authorizations';
+	const FRAUD_OUTCOMES_API           = 'fraud_outcomes';
 	const FRAUD_RULESET_API            = 'fraud_ruleset';
 
 	/**
@@ -712,6 +715,117 @@ class WC_Payments_API_Client {
 		}
 
 		return $transactions;
+	}
+
+	/**
+	 * Retrieves transaction list for a given fraud outcome status.
+	 *
+	 * @param List_Fraud_Outcome_Transactions $request Fraud outcome transactions request.
+	 *
+	 * @return array
+	 */
+	public function list_fraud_outcome_transactions( $request ) {
+		$fraud_outcomes = $request->send( 'wcpay_list_fraud_outcome_transactions_request' );
+
+		$page      = $request->get_param( 'page' );
+		$page_size = $request->get_param( 'pagesize' );
+
+		// Handles the pagination.
+		$fraud_outcomes = array_slice( $fraud_outcomes, ( max( $page, 1 ) - 1 ) * $page_size, $page_size );
+
+		return [
+			'data' => $fraud_outcomes,
+		];
+	}
+
+	/**
+	 * Retrieves transactions summary for a given fraud outcome status.
+	 *
+	 * @param List_Fraud_Outcome_Transactions $request Fraud outcome transactions request.
+	 *
+	 * @return array
+	 */
+	public function list_fraud_outcome_transactions_summary( $request ) {
+		$fraud_outcomes = $request->send( 'wcpay_list_fraud_outcome_transactions_summary_request' );
+
+		$total      = 0;
+		$currencies = [];
+
+		foreach ( $fraud_outcomes as $outcome ) {
+			$total       += $outcome['amount'];
+			$currencies[] = strtolower( $outcome['currency'] );
+		}
+
+		return [
+			'count'      => count( $fraud_outcomes ),
+			'total'      => (int) $total,
+			'currencies' => array_unique( $currencies ),
+		];
+	}
+
+	/**
+	 * Fetch transactions search options for provided query.
+	 *
+	 * @param List_Fraud_Outcome_Transactions $request Fraud outcome transactions request.
+	 *
+	 * @return array|WP_Error Search results.
+	 */
+	public function get_fraud_outcome_transactions_search_autocomplete( $request ) {
+		$fraud_outcomes = $request->send( 'wcpay_get_fraud_outcome_transactions_search_autocomplete_request' );
+
+		$search_term = $request->get_param( 'search_term' );
+
+		$order = wc_get_order( $search_term );
+
+		$results = array_filter(
+			$fraud_outcomes,
+			function ( $outcome ) use ( $search_term ) {
+				return preg_match( "/{$search_term}/i", $outcome['customer_name'] );
+			}
+		);
+
+		$results = array_map(
+			function ( $result ) {
+				return [
+					'key'   => 'customer-' . $result['order_id'],
+					'label' => $result['customer_name'],
+				];
+			},
+			$fraud_outcomes
+		);
+
+		if ( $order ) {
+			if ( function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order ) ) {
+				$prefix = __( 'Subscription #', 'woocommerce-payments' );
+			} else {
+				$prefix = __( 'Order #', 'woocommerce-payments' );
+			}
+
+			array_unshift(
+				$results,
+				[
+					'key'   => 'order-' . $order->get_id(),
+					'label' => $prefix . $search_term,
+				]
+			);
+		}
+
+		return $results;
+	}
+
+	/**
+	 * Retrieves transactions summary for a given fraud outcome status.
+	 *
+	 * @param List_Fraud_Outcome_Transactions $request Fraud outcome transactions request.
+	 *
+	 * @return array
+	 */
+	public function get_fraud_outcome_transactions_export( $request ) {
+		$fraud_outcomes = $request->send( 'wcpay_get_fraud_outcome_transactions_export_request' );
+
+		return [
+			'data' => $fraud_outcomes,
+		];
 	}
 
 	/**
