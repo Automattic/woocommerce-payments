@@ -1007,12 +1007,19 @@ class WC_Payments_Account {
 		// Pre-fill from new KYC flow experiment in treatment mode.
 		$prefill         = isset( $_GET['prefill'] ) ? wc_clean( wp_unslash( $_GET['prefill'] ) ) : [];
 		$prefill_country = $prefill['country'] ?? null;
+		$business_type   = $prefill['business_type'] ?? null;
 		$prefill_rest    = [
-			'business_type' => $prefill['type'] ?? null,
-			'company'       => [
-				'structure' => $prefill['structure'] ?? null,
-			],
+			'url'           => $prefill['url'] ?? null,
+			'business_type' => $business_type,
+			'email'         => $prefill['email'] ?? null,
+			'individual'    => $prefill['individual'] ?? null,
+			'phone'         => $prefill['phone'] ?? null,
+			'business_name' => $prefill['business_name'] ?? null,
+			'mcc'           => $prefill['mcc'] ?? null,
 		];
+		if ( 'company' === $business_type ) {
+			$prefill_rest['company'] = $prefill['company'] ?? null;
+		}
 
 		$country = $prefill_country ?? WC()->countries->get_base_country();
 		if ( ! array_key_exists( $country, WC_Payments_Utils::supported_countries() ) ) {
