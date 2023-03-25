@@ -20,6 +20,8 @@ class Check {
 	const OPERATOR_GT         = 'greater_than';
 	const OPERATOR_LTE        = 'less_or_equal';
 	const OPERATOR_LT         = 'less_than';
+	const OPERATOR_IN         = 'in';
+	const OPERATOR_NOT_IN     = 'not_in';
 
 	// Checklist operators.
 	const LIST_OPERATOR_AND = 'and';
@@ -37,6 +39,8 @@ class Check {
 		self::OPERATOR_GTE,
 		self::OPERATOR_LT,
 		self::OPERATOR_LTE,
+		self::OPERATOR_IN,
+		self::OPERATOR_NOT_IN,
 	];
 
 	/**

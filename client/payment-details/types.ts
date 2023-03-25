@@ -5,7 +5,7 @@ import { Charge } from '../types/charges';
 import { PaymentIntent } from '../types/payment-intents';
 import { ApiError } from 'wcpay/types/errors';
 
-export interface PaymentChargeDetails {
+export interface PaymentChargeDetailsResponse {
 	data: PaymentIntent | Charge;
 	error: ApiError;
 	isLoading: boolean;
