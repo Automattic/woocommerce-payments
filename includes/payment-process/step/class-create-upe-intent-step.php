@@ -45,7 +45,7 @@ class Create_UPE_Intent_Step extends Abstract_Step {
 	 */
 	public function is_applicable( Payment $payment ) {
 		// @todo: Use a flag instead.
-		return ! $payment->get_var( 'intent_id' );
+		return ! $payment->get_var( 'intent_id' ) && $payment->get_var( 'payment_method_types' );
 	}
 
 	/**

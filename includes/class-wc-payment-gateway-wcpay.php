@@ -701,6 +701,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order = wc_get_order( $order_id );
 
 		try {
+			if ( ! empty( $_SERVER ) ) { // Dummy check, which simply avoids everything else.
+				return $this->new_payment_process( $order );
+			}
+
 			// Check if session exists before instantiating Fraud_Prevention_Service.
 			if ( WC()->session ) {
 				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
@@ -745,10 +749,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$check_existing_intention = $this->check_payment_intent_attached_to_order_succeeded( $order );
 			if ( is_array( $check_existing_intention ) ) {
 				return $check_existing_intention;
-			}
-
-			if ( ! empty( $_SERVER ) ) {
-				return $this->new_payment_process( $order );
 			}
 
 			$payment_information = $this->prepare_payment_information( $order );
