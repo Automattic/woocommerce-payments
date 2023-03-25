@@ -15,7 +15,7 @@ use WCPay\Payment_Process\Step\{ Metadata_Step, Abstract_Step, Add_Token_To_Orde
 /**
  * Main class, representing payments.
  */
-abstract class Payment {
+class Payment {
 	/**
 	 * Indicates if the payment is merchant-initiated.
 	 * If the flag is not present, it means that it's a standard

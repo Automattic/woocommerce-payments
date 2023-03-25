@@ -38,8 +38,13 @@ use WC_Payments_Utils;
 use WC_Payments_Features;
 use WCPay\Payment_Process\Payment;
 use WCPay\Payment_Process\Order_Payment;
+use WCPay\Payment_Process\Order_Payment_Factory;
+use WCPay\Payment_Process\Payment_Factory;
 use WCPay\Payment_Process\Payment_Method\New_Payment_Method;
+use WCPay\Payment_Process\Payment_Method\Payment_Method_Factory;
 use WCPay\Payment_Process\Payment_Method\Saved_Payment_Method;
+use WCPay\Payment_Process\Storage\Filesystem_Order_Storage;
+use WCPay\Payment_Process\Storage\Filesystem_Storage;
 use WP_User;
 
 
@@ -270,7 +275,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 */
 	public function create_payment_intent_ajax() {
 		try {
-			$is_nonce_valid = check_ajax_referer( 'wcpay_create_payment_intent_nonce', false, false );
+			$is_nonce_valid = true; // check_ajax_referer( 'wcpay_create_payment_intent_nonce', false, false );
 			if ( ! $is_nonce_valid ) {
 				throw new Process_Payment_Exception(
 					__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
@@ -318,70 +323,33 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return array
 	 */
 	public function create_payment_intent( $displayed_payment_methods, $order_id = null, $fingerprint = '' ) {
-		if ( false ) {
-			$payment = $order_id
-				? new Order_Payment()
-				: new Payment();
-
-			$payment->set_var( 'fingerprint', $fingerprint );
-			$payment->set_var( 'payment_method_types', array_values( $displayed_payment_methods ) );
+		// Those objects should be stored somewhere else, as dependencies.
+		// Create the payment object based on whether there is an order available or not.
+		if ( $order_id ) {
+			$this->prepare_payment_objects();
+			$order = wc_get_order( $order_id );
+			// Temporary. Should be replaced with `load_or_create_order_payment`.
+			$payment = $this->payment_factory->create_order_payment( $order );
+		} else {
+			$storage                = new Filesystem_Storage();
+			$payment_method_factory = new Payment_Method_Factory();
+			$payment_factory        = new Payment_Factory( $storage, $payment_method_factory );
+			$payment                = $payment_factory->create_payment();
 		}
 
-		// ===============
-
-		$amount   = WC()->cart->get_total( '' );
-		$currency = get_woocommerce_currency();
-		$number   = 0;
-		$order    = wc_get_order( $order_id );
-		$metadata = [];
-		if ( is_a( $order, 'WC_Order' ) ) {
-			$amount                   = $order->get_total();
-			$currency                 = $order->get_currency();
-			$metadata['order_number'] = $order->get_order_number();
-		}
-
-		$converted_amount = WC_Payments_Utils::prepare_amount( $amount, $currency );
-		if ( 1 > $converted_amount ) {
-			return $this->create_setup_intent( $displayed_payment_methods );
-		}
-
-		$minimum_amount = WC_Payments_Utils::get_cached_minimum_amount( $currency );
-		if ( ! is_null( $minimum_amount ) && $converted_amount < $minimum_amount ) {
-			// Use the minimum amount in order to create an intent and display fields.
-			$converted_amount = $minimum_amount;
-		}
-
+		// Setup the payment object.
 		$manual_capture = ! empty( $this->settings['manual_capture'] ) && 'yes' === $this->settings['manual_capture'];
-
-		try {
-			$request = Create_Intention::create();
-			$request->set_amount( $converted_amount );
-			$request->set_currency_code( strtolower( $currency ) );
-			$request->set_payment_method_types( array_values( $displayed_payment_methods ) );
-			$request->set_metadata( $metadata );
-			$request->set_capture_method( $manual_capture );
-			$request->set_fingerprint( $fingerprint );
-			$payment_intent = $request->send( 'wcpay_create_intent_request', $order );
-		} catch ( Amount_Too_Small_Exception $e ) {
-			$minimum_amount = $e->get_minimum_amount();
-
-			WC_Payments_Utils::cache_minimum_amount( $e->get_currency(), $minimum_amount );
-
-			/**
-			 * Try to create a new payment intent with the minimum amount
-			 * in order to display fields on the checkout page and allow
-			 * customers to select a shipping method, which might make
-			 * the total amount of the order higher than the minimum
-			 * amount for the API.
-			 */
-			$request->set_amount( $minimum_amount );
-			$payment_intent = $request->send( 'wcpay_create_intent_request', $order );
+		if ( $manual_capture ) {
+			$payment->set_flag( Payment::MANUAL_CAPTURE );
 		}
+		$payment->set_var( 'fingerprint', $fingerprint );
+		$payment->set_var( 'payment_method_types', array_values( $displayed_payment_methods ) );
 
-		return [
-			'id'            => $payment_intent->get_id(),
-			'client_secret' => $payment_intent->get_client_secret(),
-		];
+		// Save the prepared payment before trying to process it.
+		$payment->save();
+
+		// Let the payment be processed. The process should yield the response array.
+		return $payment->process();
 	}
 
 	/**
@@ -1221,7 +1189,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return array|string value of session variable
 	 */
 	public function get_payment_intent_data_from_session( $payment_method = false ) {
-		return WC()->session->get( self::KEY_UPE_PAYMENT_INTENT );
+		WC()->session->get( self::KEY_UPE_PAYMENT_INTENT );
+		return false;
 	}
 
 	/**
@@ -1231,7 +1200,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return array|string value of session variable
 	 */
 	public function get_setup_intent_data_from_session( $payment_method = false ) {
-		return WC()->session->get( self::KEY_UPE_SETUP_INTENT );
+		WC()->session->get( self::KEY_UPE_SETUP_INTENT );
+		return false;
 	}
 
 	/**

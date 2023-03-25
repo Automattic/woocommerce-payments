@@ -50,7 +50,7 @@ class Create_UPE_Intent_Step extends Abstract_Step {
 	 * @param Payment $payment The payment, which we're working with.
 	 */
 	public function action( Payment $payment ) {
-		$metadata = [];
+		$metadata = $payment->get_var( 'metadata' ) ?? [];
 
 		if ( $payment instanceof Order_Payment ) {
 			$order = $payment->get_order();
@@ -64,6 +64,7 @@ class Create_UPE_Intent_Step extends Abstract_Step {
 			$currency = get_woocommerce_currency();
 		}
 
+		// The metadata should be set/updated. @todo: This might be possible through the metadata step.
 		$payment->set_var( 'metadata', $metadata );
 
 		$converted_amount = WC_Payments_Utils::prepare_amount( $amount, $currency );

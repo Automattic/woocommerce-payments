@@ -25,7 +25,7 @@ function wcpay_load_payment_process_class( $class_name ) {
 	$last     = array_pop( $parts );
 	$template = __DIR__ . '/' . implode( '/', $parts ) . '/%s-' . $last . '.php';
 
-	foreach ( [ 'class', 'interface' ] as $type ) {
+	foreach ( [ 'class', 'interface', 'trait' ] as $type ) {
 		$path = sprintf( $template, $type );
 		if ( file_exists( $path ) ) {
 			require_once $path;
@@ -35,4 +35,6 @@ function wcpay_load_payment_process_class( $class_name ) {
 spl_autoload_register( 'wcpay_load_payment_process_class' );
 
 // Load all steps to make sure there are no syntax errors.
-WCPay\Payment_Process\Payment::get_available_steps();
+foreach ( WCPay\Payment_Process\Payment::get_available_steps() as $class_name ) {
+	// class_exists( $class_name );
+}

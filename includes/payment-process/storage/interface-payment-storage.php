@@ -28,6 +28,7 @@ interface Payment_Storage {
 	 * Loads a payment from the storage.
 	 *
 	 * @param Payment $payment The payment object.
+	 * @return void
 	 * @throws \Exception      In case the payment could not be loaded.
 	 */
 	public function load( Payment $payment );
