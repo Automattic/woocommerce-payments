@@ -13,6 +13,7 @@ require_once dirname( __FILE__ ) . '/models/class-rule.php';
 use WC_Payments;
 use WC_Payments_Account;
 use WC_Payments_Features;
+use WC_Payments_API_Client;
 use WCPay\Fraud_Prevention\Models\Check;
 use WCPay\Fraud_Prevention\Models\Rule;
 
@@ -67,6 +68,22 @@ class Fraud_Risk_Tools {
 		$this->payments_account = $payments_account;
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			add_action( 'admin_menu', [ $this, 'init_advanced_settings_page' ] );
+		}
+
+		// Adds the required parameter on server.
+		if ( WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
+			add_filter(
+				'wcpay_api_request_params',
+				function( $params, $api, $method ) {
+					if ( false !== strpos( $api, WC_Payments_API_Client::INTENTIONS_API ) && WC_Payments_API_Client::POST === $method ) {
+						$params['fraud_settings_enabled'] = 'true';
+					}
+
+					return $params;
+				},
+				10,
+				3
+			);
 		}
 	}
 
