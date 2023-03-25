@@ -1447,7 +1447,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function update_order_status_from_intent( $order, $intent_id, $intent_status, $charge_id ) {
 		switch ( $intent_status ) {
 			case Payment_Intent_Status::SUCCEEDED:
-				$this->remove_session_processing_order( $order->get_id() );
 				$this->order_service->mark_payment_completed( $order, $intent_id, $intent_status, $charge_id );
 				break;
 			case Payment_Intent_Status::PROCESSING:

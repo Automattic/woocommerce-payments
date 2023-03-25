@@ -584,120 +584,32 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @throws Process_Payment_Exception When the payment intent has an error.
 	 */
 	public function process_redirect_payment( $order_id, $intent_id, $save_payment_method ) {
-		if ( false ) {
-			// do not forget to log what type of payment is being processed.
+		$this->prepare_payment_objects();
 
-			// load order, return if not an order.
-			// load user_id
-			// load intent ID
+		// Load the order and the payment.
+		$order   = wc_get_order( $order_id );
+		$payment = $this->payment_factory->create_order_payment( $order );
+		$payment->set_order( $order );
 
-			// update-order-details
-			// remove-upe-payment-intent-from-session
+		// Setup the payment.
+		$payment->set_var( 'intent_id', $intent_id );
 
-			// use the response array, and wp_safe_redirect to it's `redirect` property.
+		if ( $save_payment_method ) {
+			$payment->set_flag( Payment::SAVE_PAYMENT_METHOD_TO_STORE );
 		}
 
-		// =========================================
+		// restore the remove-upe-payment-intent-from-session step.
 
 		try {
-			$order = wc_get_order( $order_id );
+			$response = $payment->process();
+			wp_safe_redirect( $response['redirect'] );
+		} catch ( Exception $e ) {
+			echo $e->getMessage();
+			exit;
+		}
 
-			if ( ! is_object( $order ) ) {
-				return;
-			}
+		try {
 
-			if ( $order->has_status(
-				[
-					Order_Status::PROCESSING,
-					Order_Status::COMPLETED,
-					Order_Status::ON_HOLD,
-				]
-			) ) {
-				return;
-			}
-
-			Logger::log( "Begin processing UPE redirect payment for order $order_id for the amount of {$order->get_total()}" );
-
-			// Get user/customer for order.
-			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
-
-			$payment_needed = 0 < $order->get_total();
-
-			// Get payment intent to confirm status.
-			if ( $payment_needed ) {
-				$request = Get_Intention::create( $intent_id );
-
-				$intent                 = $request->send( 'wcpay_get_intent_request', $order );
-				$client_secret          = $intent->get_client_secret();
-				$status                 = $intent->get_status();
-				$charge                 = $intent->get_charge();
-				$charge_id              = $charge ? $charge->get_id() : null;
-				$currency               = $intent->get_currency();
-				$payment_method_id      = $intent->get_payment_method_id();
-				$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
-				$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : null;
-				$error                  = $intent->get_last_payment_error();
-			} else {
-				$intent                 = $this->payments_api_client->get_setup_intent( $intent_id );
-				$client_secret          = $intent['client_secret'];
-				$status                 = $intent['status'];
-				$charge_id              = '';
-				$currency               = $order->get_currency();
-				$payment_method_id      = $intent['payment_method'];
-				$payment_method_details = false;
-				$payment_method_options = array_keys( $intent['payment_method_options'] );
-				$payment_method_type    = $payment_method_options ? $payment_method_options[0] : null;
-				$error                  = $intent['last_setup_error'];
-			}
-
-			if ( ! empty( $error ) ) {
-				Logger::log( 'Error when processing payment: ' . $error['message'] );
-				throw new Process_Payment_Exception(
-					__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
-					'upe_payment_intent_error'
-				);
-			} else {
-				$payment_method = $this->get_selected_payment_method( $payment_method_type );
-				if ( ! $payment_method ) {
-					return;
-				}
-
-				if ( $save_payment_method && $payment_method->is_reusable() ) {
-					try {
-						$token = $payment_method->get_payment_token_for_user( $user, $payment_method_id );
-						$this->add_token_to_order( $order, $token );
-					} catch ( Exception $e ) {
-						// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
-						Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
-					}
-				}
-
-				$this->order_service->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method_id, $customer_id, $charge_id, $currency );
-				$this->attach_exchange_info_to_order( $order, $charge_id );
-				$this->update_order_status_from_intent( $order, $intent_id, $status, $charge_id );
-				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
-
-				self::remove_upe_payment_intent_from_session();
-
-				if ( Payment_Intent_Status::REQUIRES_ACTION === $status ) {
-					// I don't think this case should be possible, but just in case...
-					$next_action = $intent->get_next_action();
-					if ( isset( $next_action['type'] ) && 'redirect_to_url' === $next_action['type'] && ! empty( $next_action['redirect_to_url']['url'] ) ) {
-						wp_safe_redirect( $next_action['redirect_to_url']['url'] );
-						exit;
-					} else {
-						$redirect_url = sprintf(
-							'#wcpay-confirm-%s:%s:%s:%s',
-							$payment_needed ? 'pi' : 'si',
-							$order_id,
-							WC_Payments_Utils::encrypt_client_secret( $this->account->get_stripe_account_id(), $client_secret ),
-							wp_create_nonce( 'wcpay_update_order_status_nonce' )
-						);
-						wp_safe_redirect( $redirect_url );
-						exit;
-					}
-				}
-			}
 		} catch ( Exception $e ) {
 			Logger::log( 'Error: ' . $e->getMessage() );
 
