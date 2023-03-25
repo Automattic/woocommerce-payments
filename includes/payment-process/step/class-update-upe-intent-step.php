@@ -87,7 +87,7 @@ class Update_UPE_Intent_Step extends Abstract_Step {
 	 */
 	protected function request_intent_update_from_server( Order_Payment $payment ) {
 		$order           = $payment->get_order();
-		$intent_id       = $payment->get_var( 'payment_intent_id' );
+		$intent_id       = $payment->get_var( 'intent_id' );
 		$selected        = (string) $payment->get_var( 'selected_upe_payment_type' );
 		$payment_methods = $this->gateway->get_selected_upe_payment_methods( $selected, $this->gateway->get_payment_method_ids_enabled_at_checkout( null, true ) ?? [] );
 
@@ -96,7 +96,7 @@ class Update_UPE_Intent_Step extends Abstract_Step {
 			$request->set_currency_code( strtolower( $order->get_currency() ) );
 			$request->set_amount( WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() ) );
 			$request->set_metadata( $payment->get_var( 'metadata' ) );
-			$request->set_level3( $payment->get_var( 'metadata' ) );
+			$request->set_level3( $this->gateway->get_level3_data_from_order( $order ) );
 			$request->set_payment_method_types( $payment_methods );
 			$payment_country = $payment->get_var( 'payment_country' );
 			if ( $payment_country ) {

@@ -89,7 +89,7 @@ class Update_Order_Step extends Abstract_Step {
 		}
 
 		// Attach the intent, exchange info, update the status, and add a notification note.
-		$this->order_service->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method->get_id(), $payment->get_var( 'customer_id' ), $charge_id, $currency );
+		$this->order_service->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method ? $payment_method->get_id() : null, $payment->get_var( 'customer_id' ), $charge_id, $currency );
 		$this->gateway->attach_exchange_info_to_order( $order, $charge_id );
 		$this->gateway->update_order_status_from_intent( $order, $intent_id, $status, $charge_id );
 		$this->gateway->maybe_add_customer_notification_note( $order, $processing );

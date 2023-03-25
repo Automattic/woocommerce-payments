@@ -202,9 +202,9 @@ class Payment {
 	/**
 	 * Changes the payment method, used for the payment.
 	 *
-	 * @param Payment_Method $payment_method The used payment method.
+	 * @param Payment_Method $payment_method The used payment method. Optional.
 	 */
-	public function set_payment_method( Payment_Method $payment_method ) {
+	public function set_payment_method( Payment_Method $payment_method = null ) {
 		$this->payment_method = $payment_method;
 	}
 
@@ -288,6 +288,8 @@ class Payment {
 			 * This allows each step to collect the necessary data.
 			 * Note: This step is in the initial loop, because follow-up
 			 * steps might depend on the data, collected by previous ones.
+			 *
+			 * @todo: Prevent this.
 			 */
 			$step->collect_data( $this );
 

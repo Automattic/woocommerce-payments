@@ -75,6 +75,11 @@ class Redirect_UPE_Payment_Step extends Abstract_Step {
 			return false;
 		}
 
+		// @todo: Replace this with a proper flag.
+		if ( $payment->get_var( 'payment_method_types' ) ) {
+			return; // This is meant for process_payment.
+		}
+
 		// The order needs to be awaiting payment for this step to work.
 		return ! $payment->get_order()->has_status(
 			[

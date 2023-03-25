@@ -69,7 +69,12 @@ class Store_Metadata_Step extends Abstract_Step {
 		}
 
 		$order = $payment->get_order();
-		$this->order_service->set_payment_method_id_for_order( $order, $payment->get_payment_method()->get_id() );
+
+		// UPE orders might have a customer, and mode, but not have a payment method yet.
+		if ( ! is_null( $payment->get_payment_method() ) ) {
+			$this->order_service->set_payment_method_id_for_order( $order, $payment->get_payment_method()->get_id() );
+		}
+
 		$this->order_service->set_customer_id_for_order( $order, $payment->get_var( 'customer_id' ) );
 
 		// @todo: Store the test/live mode in the payment object.

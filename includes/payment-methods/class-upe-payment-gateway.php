@@ -445,180 +445,47 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @throws Exception Error processing the payment.
 	 */
 	public function process_payment( $order_id ) {
-		if ( false ) {
-			// phpcs:ignore WordPress.Security.NonceVerification
-			$payment_method = $this->payment_method_factory->from_request( $_POST, true );
-			$payment->set_payment_method( $payment_method );
+		// phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
-			if ( ! $payment_method instanceof Saved_Payment_Method && New_Payment_Method::should_be_saved( $_POST ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-				$payment->set_flag( Payment::SAVE_PAYMENT_METHOD_TO_STORE );
-			}
+		$order = wc_get_order( $order_id );
 
+		// @todo: Should be replaced with load_or_create_order_payment.
+		// Create/load the payment object.
+		$this->prepare_payment_objects();
+		$payment = $this->payment_factory->create_order_payment( $order );
 
-			// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-			$payment->set_var( 'fraud_prevention_token', $_POST['wcpay-fraud-prevention-token'] ?? '' ); // Empty string to force checks. Null means skip.
+		// Setup the payment object.
+		$payment->set_order( $order );
 
-
-			if ( $is_using_saved_pm_and_there_is_no_intent ) {
-				// fall back to the full parent process.
-			}
-			// verify fraud
-			// check-failed-transactions-limit
-			// verify-minimum-amount-step
-			// customer-details-step
-			// metadata
-			// check-session-against-processing-order
-			// check attached intent succeeded
-
-			$payment = $this->order_payment_factory->load_order_payment( $order_id );
-
-			$payment_intent_id = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			// @todo: Throw exception.
-			$selected_upe_payment_type = ! empty( $_POST['wcpay_selected_upe_payment_type'] ) ? wc_clean( wp_unslash( $_POST['wcpay_selected_upe_payment_type'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			$payment_country           = ! empty( $_POST['wcpay_payment_country'] ) ? wc_clean( wp_unslash( $_POST['wcpay_payment_country'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-
-			$payment->set_var( 'payment_intent_id', $payment_intent_id );
-			$payment->set_var( 'selected_upe_payment_type', $selected_upe_payment_type );
-			$payment->set_var( 'payment_country', $payment_country );
-
-			// update-order-step
-			// bump-transaction-limiter-step
-
-			// the fallback to parent process payment should be here.
+		$payment_method = $this->payment_method_factory->from_request( $_POST, true );
+		$payment->set_payment_method( $payment_method );
+		if ( ! $payment_method instanceof Saved_Payment_Method && New_Payment_Method::should_be_saved( $_POST ) ) {
+			$payment->set_flag( Payment::SAVE_PAYMENT_METHOD_TO_STORE );
 		}
 
-		// ===============
+		$payment->set_var( 'fraud_prevention_token', $_POST['wcpay-fraud-prevention-token'] ?? '' ); // Empty string to force checks. Null means skip.
 
-		$payment_intent_id         = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$order                     = wc_get_order( $order_id );
-		$amount                    = $order->get_total();
-		$currency                  = $order->get_currency();
-		$converted_amount          = WC_Payments_Utils::prepare_amount( $amount, $currency );
-		$payment_needed            = 0 < $converted_amount;
-		$selected_upe_payment_type = ! empty( $_POST['wcpay_selected_upe_payment_type'] ) ? wc_clean( wp_unslash( $_POST['wcpay_selected_upe_payment_type'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$payment_type              = $this->is_payment_recurring( $order_id ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
-		$save_payment_method       = $payment_type->equals( Payment_Type::RECURRING() ) || ! empty( $_POST[ 'wc-' . $this->id . '-new-payment-method' ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$payment_country           = ! empty( $_POST['wcpay_payment_country'] ) ? wc_clean( wp_unslash( $_POST['wcpay_payment_country'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_intent_id = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : null;
+		$payment->set_var( 'intent_id', $payment_intent_id );
 
-		$existing_intention = ( Get_Intention::create( $payment_intent_id ) )->send( 'temp' );
+		$selected_upe_payment_type = ! empty( $_POST['wcpay_selected_upe_payment_type'] ) ? wc_clean( wp_unslash( $_POST['wcpay_selected_upe_payment_type'] ) ) : '';
+		$payment->set_var( 'selected_upe_payment_type', $selected_upe_payment_type );
 
-		if ( $payment_intent_id ) {
-			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
+		$payment_method_types = $this->get_selected_upe_payment_methods( (string) $selected_upe_payment_type, $this->get_payment_method_ids_enabled_at_checkout( null, true ) ?? [] );
+		$payment->set_var( 'payment_method_types', $payment_method_types );
 
-			if ( $payment_needed ) {
-				// Check if session exists before instantiating Fraud_Prevention_Service.
-				if ( WC()->session ) {
-					$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
-					// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-					if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $_POST['wcpay-fraud-prevention-token'] ?? null ) ) {
-						throw new Process_Payment_Exception(
-							__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
-							'fraud_prevention_enabled'
-						);
-					}
-				}
+		$payment_country = ! empty( $_POST['wcpay_payment_country'] ) ? wc_clean( wp_unslash( $_POST['wcpay_payment_country'] ) ) : null;
+		$payment->set_var( 'payment_country', $payment_country );
 
-				if ( $this->failed_transaction_rate_limiter->is_limited() ) {
-					// Throwing an exception instead of adding an error notice
-					// makes the error notice show up both in the regular and block checkout.
-					throw new Exception( __( 'Your payment was not processed.', 'woocommerce-payments' ) );
-				}
+		$response = $payment->process();
 
-				// Try catching the error without reaching the API.
-				$minimum_amount = WC_Payments_Utils::get_cached_minimum_amount( $currency );
-				if ( $minimum_amount > $converted_amount ) {
-					$exception = new Amount_Too_Small_Exception( 'Amount too small', $minimum_amount, $currency, 400 );
-					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $exception ) );
-				}
+		// fall back to the full parent process if a saved PM is used, and there is no intent.
+		// the fallback to parent process payment should be here.
+		// there should be a catch block around here...
 
-				$check_session_order = $this->check_against_session_processing_order( $order );
-				if ( is_array( $check_session_order ) ) {
-					return $check_session_order;
-				}
-				$this->maybe_update_session_processing_order( $order_id );
+		// phpcs:enable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
-				$check_existing_intention = $this->check_payment_intent_attached_to_order_succeeded( $order );
-				if ( is_array( $check_existing_intention ) ) {
-					return $check_existing_intention;
-				}
-
-				// @toDo: This is now not used?
-				$additional_api_parameters = $this->get_mandate_params_for_order( $order );
-
-				try {
-					$payment_methods = $this->get_selected_upe_payment_methods( (string) $selected_upe_payment_type, $this->get_payment_method_ids_enabled_at_checkout( null, true ) ?? [] );
-
-					$request = Update_Intention::create( $payment_intent_id );
-					$request->set_currency_code( strtolower( $currency ) );
-					$request->set_amount( WC_Payments_Utils::prepare_amount( $amount, $currency ) );
-					$request->set_metadata( $this->get_metadata_from_order( $order, $payment_type ) );
-					$request->set_level3( $this->get_level3_data_from_order( $order ) );
-					$request->set_payment_method_types( $payment_methods );
-					if ( $payment_country ) {
-						$request->set_payment_country( $payment_country );
-					}
-					if ( true === $save_payment_method ) {
-						$request->setup_future_usage();
-					}
-					if ( $customer_id ) {
-						$request->set_customer( $customer_id );
-					}
-					$payment_method_options = $this->get_mandate_params_for_order( $order );
-					if ( $payment_method_options ) {
-						$request->setup_future_usage();
-						$request->set_payment_method_options( $payment_method_options );
-					}
-					$updated_payment_intent = $request->send( 'wcpay_update_intention_request', $order, $payment_intent_id );
-				} catch ( Amount_Too_Small_Exception $e ) {
-					// This code would only be reached if the cache has already expired.
-					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
-				}
-
-				$intent_id              = $updated_payment_intent->get_id();
-				$intent_status          = $updated_payment_intent->get_status();
-				$payment_method         = $updated_payment_intent->get_payment_method_id();
-				$charge                 = $updated_payment_intent->get_charge();
-				$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
-				$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : null;
-				$charge_id              = $charge ? $charge->get_id() : null;
-
-				/**
-				 * Attach the intent and exchange info to the order before doing the redirect, just in case the redirect
-				 * either does not complete properly, or the Stripe webhook which processes a successful order hits before
-				 * the redirect completes.
-				 */
-				$this->order_service->attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency );
-				$this->attach_exchange_info_to_order( $order, $charge_id );
-				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
-				$this->update_order_status_from_intent( $order, $intent_id, $intent_status, $charge_id );
-
-				$last_payment_error_code = $updated_payment_intent->get_last_payment_error()['code'] ?? '';
-				if ( $this->should_bump_rate_limiter( $last_payment_error_code ) ) {
-					// UPE method gives us the error of the previous payment attempt, so we use that for the Rate Limiter.
-					$this->failed_transaction_rate_limiter->bump();
-				}
-			}
-		} else {
-			return $this->parent_process_payment( $order_id );
-		}
-
-		return [
-			'result'         => 'success',
-			'payment_needed' => $payment_needed,
-			'redirect_url'   => wp_sanitize_redirect(
-				esc_url_raw(
-					add_query_arg(
-						[
-							'order_id'            => $order_id,
-							'wc_payment_method'   => self::GATEWAY_ID,
-							'_wpnonce'            => wp_create_nonce( 'wcpay_process_redirect_order_nonce' ),
-							'save_payment_method' => $save_payment_method ? 'yes' : 'no',
-						],
-						$this->get_return_url( $order )
-					)
-				)
-			),
-		];
+		return $response;
 	}
 
 	/**
