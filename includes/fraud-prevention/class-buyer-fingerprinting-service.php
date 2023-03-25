@@ -59,7 +59,7 @@ class Buyer_Fingerprinting_Service {
 	 *
 	 * @param string $fingerprint User fingerprint.
 	 *
-	 * @return string[] An array of hashed data for an order.
+	 * @return array An array of hashed data for an order.
 	 */
 	public function get_hashed_data_for_customer( $fingerprint ): array {
 		return array_filter(
