@@ -55,6 +55,12 @@
 			}
 		}
 	}
+
+	.new-account-waiting-period-notice {
+		&.components-notice {
+			margin: 0 24px;
+		}
+	}
 }
 
 @media screen and ( max-width: 605px ) {

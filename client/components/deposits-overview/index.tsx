@@ -5,6 +5,7 @@ import * as React from 'react';
 import { Card, CardHeader, ExternalLink } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
+import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 
 /**
  * Internal dependencies.
@@ -12,6 +13,8 @@ import { createInterpolateElement } from '@wordpress/element';
 import { useAllDepositsOverviews } from 'wcpay/data';
 import strings from './strings';
 import NextDepositDetails from './next-deposit';
+import BannerNotice from 'wcpay/components/banner-notice';
+import './style.scss';
 
 const DepositsOverview = (): JSX.Element => {
 	const {
@@ -41,12 +44,19 @@ const DepositsOverview = (): JSX.Element => {
 	);
 
 	return (
-		<Card>
+		<Card className="wcpay-deposits-overview">
 			<CardHeader>{ strings.heading }</CardHeader>
 			<NextDepositDetails isLoading={ isLoading } overview={ overview } />
 
-			{ completedWaitingPeriod &&
-				userHasNotFinishedNewAccountWaitingPeriodNotice }
+			{ ! completedWaitingPeriod && (
+				<BannerNotice
+					status="warning"
+					icon={ <NoticeOutlineIcon /> }
+					className="new-account-waiting-period-notice"
+					children={ userHasNotFinishedNewAccountWaitingPeriodNotice }
+					isDismissible={ false }
+				/>
+			) }
 
 			<p>Deposits History Section Goes here</p>
 
