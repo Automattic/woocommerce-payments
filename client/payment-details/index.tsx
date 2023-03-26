@@ -17,7 +17,7 @@ import ErrorBoundary from 'components/error-boundary';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import PaymentCardReaderChargeDetails from './readers';
 import {
-	PaymentChargeDetails,
+	PaymentChargeDetailsResponse,
 	isPaymentIntent,
 	isCharge,
 	PaymentDetailsProps,
@@ -28,19 +28,8 @@ import {
 	getIsChargeId,
 	usePaymentIntentWithChargeFallback,
 } from 'wcpay/data/payment-intents';
-
-const PaymentDetails: React.FC< PaymentDetailsProps > = ( props ) => {
-	if ( 'card_reader_fee' === props.query.transaction_type ) {
-		return (
-			<PaymentCardReaderChargeDetails
-				chargeId={ props.query.id }
-				transactionId={ props.query.transaction_id }
-			/>
-		);
-	}
-
-	return <PaymentChargeDetails id={ props.query.id } />;
-};
+import { useLatestFraudOutcome } from '../data/fraud-outcomes';
+import { PaymentIntent } from '../types/payment-intents';
 
 const PaymentChargeDetails: React.FC< PaymentChargeDetailsProps > = ( {
 	id,
@@ -49,10 +38,23 @@ const PaymentChargeDetails: React.FC< PaymentChargeDetailsProps > = ( {
 		data,
 		error,
 		isLoading: isLoadingData,
-	} = usePaymentIntentWithChargeFallback( id ) as PaymentChargeDetails;
+	} = usePaymentIntentWithChargeFallback(
+		id
+	) as PaymentChargeDetailsResponse;
+
+	const paymentIntent = isPaymentIntent( data )
+		? data
+		: ( {} as PaymentIntent );
+
+	const orderId = paymentIntent?.metadata?.order_id;
+
+	const {
+		data: fraudOutcome,
+		isLoading: isLoadingFraudOutcome,
+	} = useLatestFraudOutcome( orderId );
 
 	const isChargeId = getIsChargeId( id );
-	const isLoading = isChargeId || isLoadingData;
+	const isLoading = isChargeId || isLoadingData || isLoadingFraudOutcome;
 
 	const testModeNotice = <TestModeNotice topic={ topics.paymentDetails } />;
 
@@ -103,6 +105,8 @@ const PaymentChargeDetails: React.FC< PaymentChargeDetailsProps > = ( {
 					charge={ charge }
 					metadata={ metadata }
 					isLoading={ isLoading }
+					fraudOutcome={ fraudOutcome }
+					paymentIntent={ paymentIntent }
 				/>
 			</ErrorBoundary>
 			{ ! isChargeId && wcpaySettings.featureFlags.paymentTimeline && (
@@ -118,6 +122,19 @@ const PaymentChargeDetails: React.FC< PaymentChargeDetailsProps > = ( {
 			</ErrorBoundary>
 		</Page>
 	);
+};
+
+const PaymentDetails: React.FC< PaymentDetailsProps > = ( props ) => {
+	if ( 'card_reader_fee' === props.query.transaction_type ) {
+		return (
+			<PaymentCardReaderChargeDetails
+				chargeId={ props.query.id }
+				transactionId={ props.query.transaction_id }
+			/>
+		);
+	}
+
+	return <PaymentChargeDetails id={ props.query.id } />;
 };
 
 export default PaymentDetails;

@@ -37,6 +37,16 @@ export default {
 				'woocommerce-payments'
 			),
 		},
+		loading: {
+			heading: __(
+				'Let’s get you setup for payments',
+				'woocommerce-payments'
+			),
+			subheading: __(
+				'All you need is to confirm your identity with our partner',
+				'woocommerce-payments'
+			),
+		},
 	},
 	fields: {
 		email: __( 'What’s your email address?', 'woocommerce-payments' ),
