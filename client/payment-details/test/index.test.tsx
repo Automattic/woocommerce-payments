@@ -6,6 +6,7 @@
 import { render } from '@testing-library/react';
 import { useSelect } from '@wordpress/data';
 import React from 'react';
+import { useLatestFraudOutcome } from '../../data/fraud-outcomes';
 
 /**
  * Internal dependencies
@@ -35,6 +36,10 @@ jest.mock( '@wordpress/data', () => ( {
 	withDispatch: jest.fn( () => jest.fn() ),
 	withSelect: jest.fn( () => jest.fn() ),
 	useSelect: jest.fn(),
+} ) );
+
+jest.mock( '../../data/fraud-outcomes', () => ( {
+	useLatestFraudOutcome: jest.fn(),
 } ) );
 
 const chargeMock = {
@@ -116,6 +121,16 @@ const chargeMock = {
 		} )
 	)
 );
+
+( useLatestFraudOutcome as jest.Mock ).mockImplementation( () => {
+	return {
+		data: {
+			status: 'allow',
+		},
+		error: '',
+		isLoading: false,
+	};
+} );
 
 global.wcSettings = {
 	countries: {
