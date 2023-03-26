@@ -412,11 +412,16 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
             <p
               class="payment-details-summary__amount"
             >
+              $1,500.00
               <span
-                aria-busy="true"
-                class="is-loadable-placeholder"
+                class="payment-details-summary__amount-currency"
               >
-                Amount placeholder
+                usd
+              </span>
+              <span
+                class="chip chip-light"
+              >
+                Paid
               </span>
             </p>
             <div
@@ -424,21 +429,13 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
             >
               
               <p>
-                <span
-                  aria-busy="true"
-                  class="is-loadable-placeholder"
-                >
-                  Fee amount
-                </span>
+                Fee: 
+                -$74.00
               </p>
               
               <p>
-                <span
-                  aria-busy="true"
-                  class="is-loadable-placeholder"
-                >
-                  Net amount
-                </span>
+                Net: 
+                $1,426.00
               </p>
             </div>
           </div>
@@ -448,12 +445,8 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
             <div
               class="payment-details-summary__id"
             >
-              <span
-                aria-busy="true"
-                class="is-loadable-placeholder"
-              >
-                Payment ID: pi_xxxxxxxxxxxxxxxxxxxxxxxx
-              </span>
+              Payment ID: 
+              pi_mock
             </div>
           </div>
         </div>
@@ -465,16 +458,160 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
       <div
         class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
       >
-        <span
-          aria-busy="true"
-          class="is-loadable-placeholder is-block"
+        <ul
+          class="woocommerce-list woocommerce-list--horizontal"
+          role="menu"
         >
-          <p
-            style="line-height: 4;"
+          <li
+            class="woocommerce-list__item"
           >
-            Block placeholder
-          </p>
-        </span>
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Date
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  Jun 22, 2022, 2:16pm
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Channel
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <span>
+                    Online
+                  </span>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Customer
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <a
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=First%20Name%20(email%40example.com)"
+                  >
+                    First Name
+                  </a>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Order
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <span>
+                    –
+                  </span>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Payment method
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <span
+                    class="payment-method-details"
+                  >
+                    <span
+                      class="payment-method__brand payment-method__brand--visa"
+                    />
+                     •••• 
+                    4242
+                  </span>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Risk evaluation
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  –
+                </span>
+              </div>
+            </div>
+          </li>
+        </ul>
       </div>
     </div>
     <div
@@ -505,12 +642,7 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
       <div
         class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
-        <span
-          aria-busy="true"
-          class="is-loadable-placeholder"
-        >
-          Payment method
-        </span>
+        Payment method
       </div>
       <div
         class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
@@ -527,23 +659,13 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
               <h4
                 class="payment-method-detail__label"
               >
-                <span
-                  aria-busy="true"
-                  class="is-loadable-placeholder is-block"
-                >
-                  Number
-                </span>
+                Number
               </h4>
               <p
                 class="payment-method-detail__value"
               >
-                <span
-                  aria-busy="true"
-                  class="is-loadable-placeholder"
-                >
-                  •••• 
-                  4242
-                </span>
+                •••• 
+                4242
               </p>
             </div>
             <div
@@ -552,22 +674,12 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
               <h4
                 class="payment-method-detail__label"
               >
-                <span
-                  aria-busy="true"
-                  class="is-loadable-placeholder is-block"
-                >
-                  Expires
-                </span>
+                Expires
               </h4>
               <p
                 class="payment-method-detail__value"
               >
-                <span
-                  aria-busy="true"
-                  class="is-loadable-placeholder"
-                >
-                  12 / 2099
-                </span>
+                12 / 2099
               </p>
             </div>
             <div
@@ -576,22 +688,12 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
               <h4
                 class="payment-method-detail__label"
               >
-                <span
-                  aria-busy="true"
-                  class="is-loadable-placeholder is-block"
-                >
-                  Type
-                </span>
+                Type
               </h4>
               <p
                 class="payment-method-detail__value"
               >
-                <span
-                  aria-busy="true"
-                  class="is-loadable-placeholder"
-                >
-                  Visa credit card
-                </span>
+                Visa credit card
               </p>
             </div>
             <div
@@ -600,22 +702,12 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
               <h4
                 class="payment-method-detail__label"
               >
-                <span
-                  aria-busy="true"
-                  class="is-loadable-placeholder is-block"
-                >
-                  ID
-                </span>
+                ID
               </h4>
               <p
                 class="payment-method-detail__value"
               >
-                <span
-                  aria-busy="true"
-                  class="is-loadable-placeholder"
-                >
-                  pm_mock
-                </span>
+                pm_mock
               </p>
             </div>
           </div>
@@ -628,21 +720,45 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
               <h4
                 class="payment-method-detail__label"
               >
-                <span
-                  aria-busy="true"
-                  class="is-loadable-placeholder is-block"
-                >
-                  Owner
-                </span>
+                Owner
               </h4>
               <p
                 class="payment-method-detail__value"
               >
-                <span
-                  aria-busy="true"
-                  class="is-loadable-placeholder"
-                >
-                  First Name
+                First Name
+              </p>
+            </div>
+            <div
+              class="payment-method-detail"
+            >
+              <h4
+                class="payment-method-detail__label"
+              >
+                Owner email
+              </h4>
+              <p
+                class="payment-method-detail__value"
+              >
+                email@example.com
+              </p>
+            </div>
+            <div
+              class="payment-method-detail"
+            >
+              <h4
+                class="payment-method-detail__label"
+              >
+                Address
+              </h4>
+              <p
+                class="payment-method-detail__value"
+              >
+                <span>
+                  Line 1 Street
+                  <br />
+                  Line 2
+                  <br />
+                  City, CA 99999
                 </span>
               </p>
             </div>
@@ -652,22 +768,12 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
               <h4
                 class="payment-method-detail__label"
               >
-                <span
-                  aria-busy="true"
-                  class="is-loadable-placeholder is-block"
-                >
-                  Owner email
-                </span>
+                Origin
               </h4>
               <p
                 class="payment-method-detail__value"
               >
-                <span
-                  aria-busy="true"
-                  class="is-loadable-placeholder"
-                >
-                  email@example.com
-                </span>
+                United States of America
               </p>
             </div>
             <div
@@ -676,28 +782,12 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
               <h4
                 class="payment-method-detail__label"
               >
-                <span
-                  aria-busy="true"
-                  class="is-loadable-placeholder is-block"
-                >
-                  Address
-                </span>
+                CVC check
               </h4>
               <p
                 class="payment-method-detail__value"
               >
-                <span
-                  aria-busy="true"
-                  class="is-loadable-placeholder"
-                >
-                  <span>
-                    Line 1 Street
-                    <br />
-                    Line 2
-                    <br />
-                    City, CA 99999
-                  </span>
-                </span>
+                Passed
               </p>
             </div>
             <div
@@ -706,22 +796,12 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
               <h4
                 class="payment-method-detail__label"
               >
-                <span
-                  aria-busy="true"
-                  class="is-loadable-placeholder is-block"
-                >
-                  Origin
-                </span>
+                Street check
               </h4>
               <p
                 class="payment-method-detail__value"
               >
-                <span
-                  aria-busy="true"
-                  class="is-loadable-placeholder"
-                >
-                  United States of America
-                </span>
+                Passed
               </p>
             </div>
             <div
@@ -730,70 +810,12 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
               <h4
                 class="payment-method-detail__label"
               >
-                <span
-                  aria-busy="true"
-                  class="is-loadable-placeholder is-block"
-                >
-                  CVC check
-                </span>
+                Zip check
               </h4>
               <p
                 class="payment-method-detail__value"
               >
-                <span
-                  aria-busy="true"
-                  class="is-loadable-placeholder"
-                >
-                  Passed
-                </span>
-              </p>
-            </div>
-            <div
-              class="payment-method-detail"
-            >
-              <h4
-                class="payment-method-detail__label"
-              >
-                <span
-                  aria-busy="true"
-                  class="is-loadable-placeholder is-block"
-                >
-                  Street check
-                </span>
-              </h4>
-              <p
-                class="payment-method-detail__value"
-              >
-                <span
-                  aria-busy="true"
-                  class="is-loadable-placeholder"
-                >
-                  Passed
-                </span>
-              </p>
-            </div>
-            <div
-              class="payment-method-detail"
-            >
-              <h4
-                class="payment-method-detail__label"
-              >
-                <span
-                  aria-busy="true"
-                  class="is-loadable-placeholder is-block"
-                >
-                  Zip check
-                </span>
-              </h4>
-              <p
-                class="payment-method-detail__value"
-              >
-                <span
-                  aria-busy="true"
-                  class="is-loadable-placeholder"
-                >
-                  Passed
-                </span>
+                Passed
               </p>
             </div>
           </div>

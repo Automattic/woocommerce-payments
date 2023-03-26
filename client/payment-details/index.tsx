@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card, CardBody } from '@wordpress/components';
 import { getAdminUrl } from 'wcpay/utils';
@@ -49,28 +49,9 @@ const PaymentChargeDetails: React.FC< PaymentChargeDetailsProps > = ( {
 	const orderId = paymentIntent?.metadata?.order_id;
 
 	const {
-		data: latestFraudOutcome,
-		error: latestFraudOutcomeError,
-		isLoading: isLoadingLatestFraudOutcome,
+		data: fraudOutcome,
+		isLoading: isLoadingFraudOutcome,
 	} = useLatestFraudOutcome( orderId );
-
-	// Additional loading state prevent flashing while the data is not available.
-	const [ isLoadingFraudOutcome, setIsLoadingFraudOutcome ] = useState(
-		true
-	);
-
-	useEffect( () => {
-		if (
-			! isLoadingLatestFraudOutcome &&
-			! Object.keys( latestFraudOutcome || {} ).length &&
-			'undefined' !== typeof latestFraudOutcomeError
-		)
-			setIsLoadingFraudOutcome( false );
-	}, [
-		isLoadingLatestFraudOutcome,
-		latestFraudOutcome,
-		latestFraudOutcomeError,
-	] );
 
 	const isChargeId = getIsChargeId( id );
 	const isLoading = isChargeId || isLoadingData || isLoadingFraudOutcome;
@@ -124,7 +105,7 @@ const PaymentChargeDetails: React.FC< PaymentChargeDetailsProps > = ( {
 					charge={ charge }
 					metadata={ metadata }
 					isLoading={ isLoading }
-					fraudOutcome={ latestFraudOutcome }
+					fraudOutcome={ fraudOutcome }
 					paymentIntent={ paymentIntent }
 				/>
 			</ErrorBoundary>
