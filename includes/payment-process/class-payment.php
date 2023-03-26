@@ -7,6 +7,7 @@
 
 namespace WCPay\Payment_Process;
 
+use Exception;
 use WCPay\Payment_Process\Storage\Payment_Storage;
 use WCPay\Payment_Process\Payment_Method\Payment_Method;
 use WCPay\Payment_Process\Payment_Method\Payment_Method_Factory;
@@ -54,6 +55,25 @@ class Payment {
 	const SAVE_PAYMENT_METHOD_TO_PLATFORM = 32;
 
 	/**
+	 * Used for the standard payment flow (non-UPE).
+	 */
+	const STANDARD_FLOW = 'STANDARD_FLOW';
+
+	/**
+	 * UPE flows:
+	 *
+	 * 1. The intent is created through AJAX in order to display fields on checkout.
+	 *    - This does not happen without a customer present (ex. in-person, merchant-initiated, etc.).
+	 * 2. Within `process_payment`, the intent is not ready yet, gets updated.
+	 *    - If it's an off-site payment, or a saved PM is used, there is no intent available.
+	 *    - Intent is not ready yet, but it's a good opportunity to update it, and use checkout data.
+	 * 3. After checkout, there is a redirect, which can finally act on success/failure.
+	 */
+	const UPE_PREPARE_INTENT_FLOW   = 'UPE_PREPARE_INTENT_FLOW';
+	const UPE_PROCESS_PAYMENT_FLOW  = 'UPE_PROCESS_PAYMENT_FLOW';
+	const UPE_PROCESS_REDIRECT_FLOW = 'UPE_PROCESS_REDIRECT_FLOW';
+
+	/**
 	 * Payment storage, used to store the payment.
 	 *
 	 * @var Payment_Storage
@@ -87,6 +107,13 @@ class Payment {
 	 * @var Payment_Method
 	 */
 	protected $payment_method;
+
+	/**
+	 * Stores the type of payment flow, which triggers the process.
+	 *
+	 * @var string
+	 */
+	protected $flow;
 
 	/**
 	 * Holds all variables, related to the payment.
@@ -168,6 +195,30 @@ class Payment {
 	 */
 	public function get_id() {
 		return $this->id;
+	}
+
+	/**
+	 * Sets the payment flow, indicating where the process is invoked.
+	 *
+	 * @param string $flow The flow value, matching a class constant.
+	 * @throws Exception If the flow does not exist.
+	 */
+	public function set_flow( string $flow ) {
+		if ( ! defined( get_class( $this ) . '::' . $flow ) ) {
+			throw new Exception( 'Payment flows must be defined as constants of the Payment class.' );
+		}
+
+		$this->flow = $flow;
+	}
+
+	/**
+	 * Checks if the payment is a part of a specific flow.
+	 *
+	 * @param string $flow The flow value.
+	 * @return bool
+	 */
+	public function is_flow( string $flow ) {
+		return $flow === $this->flow;
 	}
 
 	/**

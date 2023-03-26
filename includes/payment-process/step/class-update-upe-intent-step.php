@@ -53,9 +53,8 @@ class Update_UPE_Intent_Step extends Abstract_Step {
 	 * @return bool
 	 */
 	public function is_applicable( Payment $payment ) {
-		return $payment instanceof Order_Payment
-			&& ! $payment->get_payment_method() instanceof Saved_Payment_Method // Saved PMs fall back to the old process.
-			&& $payment->get_var( 'selected_upe_payment_type' ); // @todo: Use a proper flag for this.
+		return $payment->is_flow( Payment::UPE_PROCESS_PAYMENT_FLOW )
+			&& ! $payment->get_payment_method() instanceof Saved_Payment_Method; // Saved PMs fall back to the old process.
 	}
 
 	/**

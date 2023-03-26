@@ -337,6 +337,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$payment                = $payment_factory->create_payment();
 		}
 
+		// Allows UPE steps to work.
+		$payment->set_flow( Payment::UPE_PREPARE_INTENT_FLOW );
+
 		// Setup the payment object.
 		$manual_capture = ! empty( $this->settings['manual_capture'] ) && 'yes' === $this->settings['manual_capture'];
 		if ( $manual_capture ) {
@@ -453,6 +456,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		// Create/load the payment object.
 		$this->prepare_payment_objects();
 		$payment = $this->payment_factory->create_order_payment( $order );
+
+		// Allows UPE steps to work.
+		$payment->set_flow( Payment::UPE_PROCESS_PAYMENT_FLOW );
 
 		// Setup the payment object.
 		$payment->set_order( $order );
@@ -590,6 +596,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$order   = wc_get_order( $order_id );
 		$payment = $this->payment_factory->create_order_payment( $order );
 		$payment->set_order( $order );
+
+		// Allows UPE steps to work.
+		$payment->set_flow( Payment::UPE_PROCESS_REDIRECT_FLOW );
 
 		// Setup the payment.
 		$payment->set_var( 'intent_id', $intent_id );

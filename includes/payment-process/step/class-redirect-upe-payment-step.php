@@ -70,14 +70,9 @@ class Redirect_UPE_Payment_Step extends Abstract_Step {
 			return false;
 		}
 
-		// This step only matters with the UPE gateway.
-		if ( ! $this->gateway instanceof UPE_Payment_Gateway ) {
+		// This step only matters during UPE redirects.
+		if ( ! $payment->is_flow( Payment::UPE_PROCESS_REDIRECT_FLOW ) ) {
 			return false;
-		}
-
-		// @todo: Replace this with a proper flag.
-		if ( $payment->get_var( 'payment_method_types' ) ) {
-			return; // This is meant for process_payment.
 		}
 
 		// The order needs to be awaiting payment for this step to work.

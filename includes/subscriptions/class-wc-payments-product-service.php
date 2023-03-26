@@ -186,6 +186,11 @@ class WC_Payments_Product_Service {
 	 * @param int $product_id The ID of the product to handle.
 	 */
 	public function maybe_schedule_product_create_or_update( int $product_id ) {
+		// Non-product `wc_get_product` calls throw exceptions, check for product first.
+		$post = get_post( $product_id ); // No redundant calls, this will be cached.
+		if ( 'product' !== $post->post_type ) {
+			return;
+		}
 
 		// Skip products which have already been scheduled or aren't subscriptions.
 		$product = wc_get_product( $product_id );
