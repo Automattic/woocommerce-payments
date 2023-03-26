@@ -249,7 +249,7 @@ class Payment_Information {
 	 * @return string
 	 */
 	public static function get_payment_method_from_request( array $request ): string {
-		foreach ( [ 'wcpay-payment-method', 'wcpay-payment-method-sepa' ] as $key ) {
+		foreach ( [ 'wcpay-payment-method', 'wcpay-payment-method-sepa', 'wc_payment_method' ] as $key ) {
 			if ( ! empty( $request[ $key ] ) ) {
 				$normalized = wc_clean( $request[ $key ] );
 				return is_string( $normalized ) ? $normalized : '';

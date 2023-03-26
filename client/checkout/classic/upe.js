@@ -536,11 +536,14 @@ jQuery( function ( $ ) {
 			return obj;
 		}, {} );
 		try {
-			const response = await api.processCheckout(
-				paymentIntentId,
-				formFields,
-				fingerprint ? fingerprint : ''
-			);
+			const additionalOptions = {
+				wc_payment_intent_id: paymentIntentId,
+				'wcpay-fingerprint': fingerprint ? fingerprint : '',
+			};
+			const response = await api.processCheckout( {
+				...formFields,
+				...additionalOptions,
+			} );
 
 			if ( api.handleDuplicatePayments( response ) ) {
 				return;

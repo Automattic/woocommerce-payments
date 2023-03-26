@@ -43,10 +43,32 @@ jQuery( function ( $ ) {
 		apiRequest
 	);
 
-	const submitForm = ( generatedPaymentMethod ) => {
-		console.log(
-			'submitting form and the pm is: ' + generatedPaymentMethod
-		);
+	const submitForm = async ( $form, { id } ) => {
+		const formFields = $form.serializeArray().reduce( ( obj, field ) => {
+			obj[ field.name ] = field.value;
+			return obj;
+		}, {} );
+		const additionalOptions = {
+			wc_payment_method: id,
+		};
+		await api
+			.processCheckout( {
+				...formFields,
+				...additionalOptions,
+			} )
+			.then( ( response ) => {
+				console.log( 'got response: ' + JSON.stringify( response ) );
+				window.location.href = response.redirect;
+			} );
+		// const paymentSelector = '#wcpay-upe-element';
+
+		// // // Populate form with the payment method.
+		// $( paymentSelector ).val( id );
+
+		// // // Re-submit the form.
+		// $form.submit();
+
+		console.log( 'submitting form and the pm is: ' + JSON.stringify( id ) );
 	};
 
 	$( document.body ).on( 'updated_checkout', () => {
@@ -67,14 +89,16 @@ jQuery( function ( $ ) {
 	} );
 
 	let upeElement;
+	let elements;
 
 	function createPaymentElement( paymentMethodType, domElement ) {
 		const options = {
 			mode: 'payment',
 			currency: 'usd',
 			amount: 1000,
+			paymentMethodCreation: 'manual',
 		};
-		const elements = api.getStripe().elements( options );
+		elements = api.getStripe().elements( options );
 		upeElement = elements.create( 'payment' );
 		upeElement.mount( domElement );
 	}
@@ -84,42 +108,38 @@ jQuery( function ( $ ) {
 	const checkoutEvents = wcpayPaymentMethods
 		.map( ( method ) => `checkout_place_order_${ method }` )
 		.join( ' ' );
-	$( 'form.checkout' ).on( checkoutEvents, function () {
-		const request = api.generatePaymentMethodRequest( {
-			type: 'payment',
-			card: upeElement,
-		} );
-		// Populate payment method owner details.
-		const billingName = $( '#billing_first_name' ).length
-			? (
-					$( '#billing_first_name' ).val() +
-					' ' +
-					$( '#billing_last_name' ).val()
-			  ).trim()
-			: undefined;
-
-		request.setBillingDetail( 'name', billingName );
-		request.setBillingDetail( 'email', $( '#billing_email' ).val() );
-		request.setBillingDetail( 'phone', $( '#billing_phone' ).val() );
-		request.setAddressDetail( 'city', $( '#billing_city' ).val() );
-		request.setAddressDetail( 'country', $( '#billing_country' ).val() );
-		request.setAddressDetail( 'line1', $( '#billing_address_1' ).val() );
-		request.setAddressDetail( 'line2', $( '#billing_address_2' ).val() );
-		request.setAddressDetail(
-			'postal_code',
-			$( '#billing_postcode' ).val()
-		);
-		request.setAddressDetail( 'state', $( '#billing_state' ).val() );
-
-		request
-			.send()
+	$( 'form.checkout' ).on( checkoutEvents, async function () {
+		await elements.submit();
+		api.getStripe()
+			.createPaymentMethod( {
+				elements,
+				params: {
+					billing_details: {
+						name: $( '#billing_first_name' ).length
+							? (
+									$( '#billing_first_name' ).val() +
+									' ' +
+									$( '#billing_last_name' ).val()
+							  ).trim()
+							: undefined,
+						email: $( '#billing_email' ).val(),
+						phone: $( '#billing_phone' ).val(),
+						address: {
+							city: $( '#billing_city' ).val(),
+							country: $( '#billing_country' ).val(),
+							line1: $( '#billing_address_1' ).val(),
+							line2: $( '#billing_address_2' ).val(),
+							postal_code: $( '#billing_postcode' ).val(),
+							state: $( '#billing_state' ).val(),
+						},
+					},
+				},
+			} )
 			.then( ( { paymentMethod } ) => {
-				submitForm( paymentMethod );
-				// $( '#wcpay-payment-method' ).val( paymentMethod.id );
-				// $( 'form.checkout' ).submit();
+				submitForm( $( this ), paymentMethod );
 			} )
 			.catch( ( error ) => {
-				console.log( 'error occurred: ' + error );
+				console.log( 'error occurred: ' + JSON.stringify( error ) );
 			} );
 	} );
 } );
