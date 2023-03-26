@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card, CardBody } from '@wordpress/components';
 import { getAdminUrl } from 'wcpay/utils';
@@ -55,10 +55,22 @@ const PaymentChargeDetails: React.FC< PaymentChargeDetailsProps > = ( {
 	} = useLatestFraudOutcome( orderId );
 
 	// Additional loading state prevent flashing while the data is not available.
-	const isLoadingFraudOutcome =
-		isLoadingLatestFraudOutcome ||
-		( ! Object.keys( latestFraudOutcome || {} ).length &&
-			'undefined' !== typeof latestFraudOutcomeError );
+	const [ isLoadingFraudOutcome, setIsLoadingFraudOutcome ] = useState(
+		true
+	);
+
+	useEffect( () => {
+		if (
+			! isLoadingLatestFraudOutcome &&
+			! Object.keys( latestFraudOutcome || {} ).length &&
+			'undefined' !== typeof latestFraudOutcomeError
+		)
+			setIsLoadingFraudOutcome( false );
+	}, [
+		isLoadingLatestFraudOutcome,
+		latestFraudOutcome,
+		latestFraudOutcomeError,
+	] );
 
 	const isChargeId = getIsChargeId( id );
 	const isLoading = isChargeId || isLoadingData || isLoadingFraudOutcome;
