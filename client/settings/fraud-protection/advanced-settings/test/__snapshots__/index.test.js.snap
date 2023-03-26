@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Advanced fraud protection settings doesn't save when there's validation errors 1`] = `
+exports[`Advanced fraud protection settings doesn't save when there's a validation error 1`] = `
 Object {
   "asFragment": [Function],
   "baseElement": <body>
@@ -19,7 +19,7 @@ Object {
       id="a11y-speak-assertive"
       style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
     >
-      Settings were not saved. Maximum purchase price must be greater than the minimum purchase price.
+      There was an error retrieving your fraud protection settings. Please refresh the page to try again.
     </div>
     <div
       aria-atomic="true"
@@ -330,6 +330,42 @@ Object {
                     You should be especially wary when a customer has an international IP address but uses domestic billing and shipping information. Fraudsters often pretend to live in one location, but live and shop from another.
                   </p>
                 </div>
+                <div
+                  class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+                >
+                  <div
+                    class="fraud-protection-rule-card-notice-icon"
+                  >
+                    <svg
+                      data-testid="rule-card-notice-warning-icon-svg"
+                      fill="none"
+                      height="18"
+                      viewBox="0 0 18 18"
+                      width="18"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        clip-rule="evenodd"
+                        d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
+                        fill="#bd8600"
+                        fill-rule="evenodd"
+                      />
+                      <path
+                        d="M10 4H8V10H10V4Z"
+                        fill="#bd8600"
+                      />
+                      <path
+                        d="M10 12H8V14H10V12Z"
+                        fill="#bd8600"
+                      />
+                    </svg>
+                  </div>
+                  <div
+                    class="fraud-protection-rule-card-notice-text"
+                  >
+                    Enabling this filter will not have any effect because you are selling to all countries.
+                  </div>
+                </div>
               </div>
             </div>
             <div
@@ -414,6 +450,42 @@ Object {
                   <p>
                     Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
                   </p>
+                </div>
+                <div
+                  class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+                >
+                  <div
+                    class="fraud-protection-rule-card-notice-icon"
+                  >
+                    <svg
+                      data-testid="rule-card-notice-warning-icon-svg"
+                      fill="none"
+                      height="18"
+                      viewBox="0 0 18 18"
+                      width="18"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        clip-rule="evenodd"
+                        d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
+                        fill="#bd8600"
+                        fill-rule="evenodd"
+                      />
+                      <path
+                        d="M10 4H8V10H10V4Z"
+                        fill="#bd8600"
+                      />
+                      <path
+                        d="M10 12H8V14H10V12Z"
+                        fill="#bd8600"
+                      />
+                    </svg>
+                  </div>
+                  <div
+                    class="fraud-protection-rule-card-notice-text"
+                  >
+                    Enabling this filter will not have any effect because you are selling to all countries.
+                  </div>
                 </div>
               </div>
             </div>
@@ -1150,6 +1222,42 @@ Object {
                   You should be especially wary when a customer has an international IP address but uses domestic billing and shipping information. Fraudsters often pretend to live in one location, but live and shop from another.
                 </p>
               </div>
+              <div
+                class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+              >
+                <div
+                  class="fraud-protection-rule-card-notice-icon"
+                >
+                  <svg
+                    data-testid="rule-card-notice-warning-icon-svg"
+                    fill="none"
+                    height="18"
+                    viewBox="0 0 18 18"
+                    width="18"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      clip-rule="evenodd"
+                      d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
+                      fill="#bd8600"
+                      fill-rule="evenodd"
+                    />
+                    <path
+                      d="M10 4H8V10H10V4Z"
+                      fill="#bd8600"
+                    />
+                    <path
+                      d="M10 12H8V14H10V12Z"
+                      fill="#bd8600"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="fraud-protection-rule-card-notice-text"
+                >
+                  Enabling this filter will not have any effect because you are selling to all countries.
+                </div>
+              </div>
             </div>
           </div>
           <div
@@ -1234,6 +1342,42 @@ Object {
                 <p>
                   Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
                 </p>
+              </div>
+              <div
+                class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+              >
+                <div
+                  class="fraud-protection-rule-card-notice-icon"
+                >
+                  <svg
+                    data-testid="rule-card-notice-warning-icon-svg"
+                    fill="none"
+                    height="18"
+                    viewBox="0 0 18 18"
+                    width="18"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      clip-rule="evenodd"
+                      d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
+                      fill="#bd8600"
+                      fill-rule="evenodd"
+                    />
+                    <path
+                      d="M10 4H8V10H10V4Z"
+                      fill="#bd8600"
+                    />
+                    <path
+                      d="M10 12H8V14H10V12Z"
+                      fill="#bd8600"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="fraud-protection-rule-card-notice-text"
+                >
+                  Enabling this filter will not have any effect because you are selling to all countries.
+                </div>
               </div>
             </div>
           </div>
@@ -2035,6 +2179,42 @@ Object {
                     You should be especially wary when a customer has an international IP address but uses domestic billing and shipping information. Fraudsters often pretend to live in one location, but live and shop from another.
                   </p>
                 </div>
+                <div
+                  class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+                >
+                  <div
+                    class="fraud-protection-rule-card-notice-icon"
+                  >
+                    <svg
+                      data-testid="rule-card-notice-warning-icon-svg"
+                      fill="none"
+                      height="18"
+                      viewBox="0 0 18 18"
+                      width="18"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        clip-rule="evenodd"
+                        d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
+                        fill="#bd8600"
+                        fill-rule="evenodd"
+                      />
+                      <path
+                        d="M10 4H8V10H10V4Z"
+                        fill="#bd8600"
+                      />
+                      <path
+                        d="M10 12H8V14H10V12Z"
+                        fill="#bd8600"
+                      />
+                    </svg>
+                  </div>
+                  <div
+                    class="fraud-protection-rule-card-notice-text"
+                  >
+                    Enabling this filter will not have any effect because you are selling to all countries.
+                  </div>
+                </div>
               </div>
             </div>
             <div
@@ -2119,6 +2299,42 @@ Object {
                   <p>
                     Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
                   </p>
+                </div>
+                <div
+                  class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+                >
+                  <div
+                    class="fraud-protection-rule-card-notice-icon"
+                  >
+                    <svg
+                      data-testid="rule-card-notice-warning-icon-svg"
+                      fill="none"
+                      height="18"
+                      viewBox="0 0 18 18"
+                      width="18"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        clip-rule="evenodd"
+                        d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
+                        fill="#bd8600"
+                        fill-rule="evenodd"
+                      />
+                      <path
+                        d="M10 4H8V10H10V4Z"
+                        fill="#bd8600"
+                      />
+                      <path
+                        d="M10 12H8V14H10V12Z"
+                        fill="#bd8600"
+                      />
+                    </svg>
+                  </div>
+                  <div
+                    class="fraud-protection-rule-card-notice-text"
+                  >
+                    Enabling this filter will not have any effect because you are selling to all countries.
+                  </div>
                 </div>
               </div>
             </div>
@@ -2645,6 +2861,42 @@ Object {
                   You should be especially wary when a customer has an international IP address but uses domestic billing and shipping information. Fraudsters often pretend to live in one location, but live and shop from another.
                 </p>
               </div>
+              <div
+                class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+              >
+                <div
+                  class="fraud-protection-rule-card-notice-icon"
+                >
+                  <svg
+                    data-testid="rule-card-notice-warning-icon-svg"
+                    fill="none"
+                    height="18"
+                    viewBox="0 0 18 18"
+                    width="18"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      clip-rule="evenodd"
+                      d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
+                      fill="#bd8600"
+                      fill-rule="evenodd"
+                    />
+                    <path
+                      d="M10 4H8V10H10V4Z"
+                      fill="#bd8600"
+                    />
+                    <path
+                      d="M10 12H8V14H10V12Z"
+                      fill="#bd8600"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="fraud-protection-rule-card-notice-text"
+                >
+                  Enabling this filter will not have any effect because you are selling to all countries.
+                </div>
+              </div>
             </div>
           </div>
           <div
@@ -2729,6 +2981,42 @@ Object {
                 <p>
                   Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
                 </p>
+              </div>
+              <div
+                class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+              >
+                <div
+                  class="fraud-protection-rule-card-notice-icon"
+                >
+                  <svg
+                    data-testid="rule-card-notice-warning-icon-svg"
+                    fill="none"
+                    height="18"
+                    viewBox="0 0 18 18"
+                    width="18"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      clip-rule="evenodd"
+                      d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
+                      fill="#bd8600"
+                      fill-rule="evenodd"
+                    />
+                    <path
+                      d="M10 4H8V10H10V4Z"
+                      fill="#bd8600"
+                    />
+                    <path
+                      d="M10 12H8V14H10V12Z"
+                      fill="#bd8600"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="fraud-protection-rule-card-notice-text"
+                >
+                  Enabling this filter will not have any effect because you are selling to all countries.
+                </div>
               </div>
             </div>
           </div>
@@ -3305,6 +3593,42 @@ Object {
                   You should be especially wary when a customer has an international IP address but uses domestic billing and shipping information. Fraudsters often pretend to live in one location, but live and shop from another.
                 </p>
               </div>
+              <div
+                class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+              >
+                <div
+                  class="fraud-protection-rule-card-notice-icon"
+                >
+                  <svg
+                    data-testid="rule-card-notice-warning-icon-svg"
+                    fill="none"
+                    height="18"
+                    viewBox="0 0 18 18"
+                    width="18"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      clip-rule="evenodd"
+                      d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
+                      fill="#bd8600"
+                      fill-rule="evenodd"
+                    />
+                    <path
+                      d="M10 4H8V10H10V4Z"
+                      fill="#bd8600"
+                    />
+                    <path
+                      d="M10 12H8V14H10V12Z"
+                      fill="#bd8600"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="fraud-protection-rule-card-notice-text"
+                >
+                  Enabling this filter will not have any effect because you are selling to all countries.
+                </div>
+              </div>
             </div>
           </div>
           <div
@@ -3389,6 +3713,42 @@ Object {
                 <p>
                   Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
                 </p>
+              </div>
+              <div
+                class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+              >
+                <div
+                  class="fraud-protection-rule-card-notice-icon"
+                >
+                  <svg
+                    data-testid="rule-card-notice-warning-icon-svg"
+                    fill="none"
+                    height="18"
+                    viewBox="0 0 18 18"
+                    width="18"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      clip-rule="evenodd"
+                      d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
+                      fill="#bd8600"
+                      fill-rule="evenodd"
+                    />
+                    <path
+                      d="M10 4H8V10H10V4Z"
+                      fill="#bd8600"
+                    />
+                    <path
+                      d="M10 12H8V14H10V12Z"
+                      fill="#bd8600"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="fraud-protection-rule-card-notice-text"
+                >
+                  Enabling this filter will not have any effect because you are selling to all countries.
+                </div>
               </div>
             </div>
           </div>
@@ -3882,6 +4242,42 @@ Object {
                 You should be especially wary when a customer has an international IP address but uses domestic billing and shipping information. Fraudsters often pretend to live in one location, but live and shop from another.
               </p>
             </div>
+            <div
+              class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+            >
+              <div
+                class="fraud-protection-rule-card-notice-icon"
+              >
+                <svg
+                  data-testid="rule-card-notice-warning-icon-svg"
+                  fill="none"
+                  height="18"
+                  viewBox="0 0 18 18"
+                  width="18"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    clip-rule="evenodd"
+                    d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
+                    fill="#bd8600"
+                    fill-rule="evenodd"
+                  />
+                  <path
+                    d="M10 4H8V10H10V4Z"
+                    fill="#bd8600"
+                  />
+                  <path
+                    d="M10 12H8V14H10V12Z"
+                    fill="#bd8600"
+                  />
+                </svg>
+              </div>
+              <div
+                class="fraud-protection-rule-card-notice-text"
+              >
+                Enabling this filter will not have any effect because you are selling to all countries.
+              </div>
+            </div>
           </div>
         </div>
         <div
@@ -3966,6 +4362,42 @@ Object {
               <p>
                 Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
               </p>
+            </div>
+            <div
+              class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+            >
+              <div
+                class="fraud-protection-rule-card-notice-icon"
+              >
+                <svg
+                  data-testid="rule-card-notice-warning-icon-svg"
+                  fill="none"
+                  height="18"
+                  viewBox="0 0 18 18"
+                  width="18"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    clip-rule="evenodd"
+                    d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
+                    fill="#bd8600"
+                    fill-rule="evenodd"
+                  />
+                  <path
+                    d="M10 4H8V10H10V4Z"
+                    fill="#bd8600"
+                  />
+                  <path
+                    d="M10 12H8V14H10V12Z"
+                    fill="#bd8600"
+                  />
+                </svg>
+              </div>
+              <div
+                class="fraud-protection-rule-card-notice-text"
+              >
+                Enabling this filter will not have any effect because you are selling to all countries.
+              </div>
             </div>
           </div>
         </div>
@@ -4559,6 +4991,42 @@ Object {
                     You should be especially wary when a customer has an international IP address but uses domestic billing and shipping information. Fraudsters often pretend to live in one location, but live and shop from another.
                   </p>
                 </div>
+                <div
+                  class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+                >
+                  <div
+                    class="fraud-protection-rule-card-notice-icon"
+                  >
+                    <svg
+                      data-testid="rule-card-notice-warning-icon-svg"
+                      fill="none"
+                      height="18"
+                      viewBox="0 0 18 18"
+                      width="18"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        clip-rule="evenodd"
+                        d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
+                        fill="#bd8600"
+                        fill-rule="evenodd"
+                      />
+                      <path
+                        d="M10 4H8V10H10V4Z"
+                        fill="#bd8600"
+                      />
+                      <path
+                        d="M10 12H8V14H10V12Z"
+                        fill="#bd8600"
+                      />
+                    </svg>
+                  </div>
+                  <div
+                    class="fraud-protection-rule-card-notice-text"
+                  >
+                    Enabling this filter will not have any effect because you are selling to all countries.
+                  </div>
+                </div>
               </div>
             </div>
             <div
@@ -4643,6 +5111,42 @@ Object {
                   <p>
                     Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
                   </p>
+                </div>
+                <div
+                  class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+                >
+                  <div
+                    class="fraud-protection-rule-card-notice-icon"
+                  >
+                    <svg
+                      data-testid="rule-card-notice-warning-icon-svg"
+                      fill="none"
+                      height="18"
+                      viewBox="0 0 18 18"
+                      width="18"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        clip-rule="evenodd"
+                        d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
+                        fill="#bd8600"
+                        fill-rule="evenodd"
+                      />
+                      <path
+                        d="M10 4H8V10H10V4Z"
+                        fill="#bd8600"
+                      />
+                      <path
+                        d="M10 12H8V14H10V12Z"
+                        fill="#bd8600"
+                      />
+                    </svg>
+                  </div>
+                  <div
+                    class="fraud-protection-rule-card-notice-text"
+                  >
+                    Enabling this filter will not have any effect because you are selling to all countries.
+                  </div>
                 </div>
               </div>
             </div>
@@ -5311,6 +5815,42 @@ Object {
                   You should be especially wary when a customer has an international IP address but uses domestic billing and shipping information. Fraudsters often pretend to live in one location, but live and shop from another.
                 </p>
               </div>
+              <div
+                class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+              >
+                <div
+                  class="fraud-protection-rule-card-notice-icon"
+                >
+                  <svg
+                    data-testid="rule-card-notice-warning-icon-svg"
+                    fill="none"
+                    height="18"
+                    viewBox="0 0 18 18"
+                    width="18"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      clip-rule="evenodd"
+                      d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
+                      fill="#bd8600"
+                      fill-rule="evenodd"
+                    />
+                    <path
+                      d="M10 4H8V10H10V4Z"
+                      fill="#bd8600"
+                    />
+                    <path
+                      d="M10 12H8V14H10V12Z"
+                      fill="#bd8600"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="fraud-protection-rule-card-notice-text"
+                >
+                  Enabling this filter will not have any effect because you are selling to all countries.
+                </div>
+              </div>
             </div>
           </div>
           <div
@@ -5395,6 +5935,42 @@ Object {
                 <p>
                   Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
                 </p>
+              </div>
+              <div
+                class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+              >
+                <div
+                  class="fraud-protection-rule-card-notice-icon"
+                >
+                  <svg
+                    data-testid="rule-card-notice-warning-icon-svg"
+                    fill="none"
+                    height="18"
+                    viewBox="0 0 18 18"
+                    width="18"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      clip-rule="evenodd"
+                      d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
+                      fill="#bd8600"
+                      fill-rule="evenodd"
+                    />
+                    <path
+                      d="M10 4H8V10H10V4Z"
+                      fill="#bd8600"
+                    />
+                    <path
+                      d="M10 12H8V14H10V12Z"
+                      fill="#bd8600"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="fraud-protection-rule-card-notice-text"
+                >
+                  Enabling this filter will not have any effect because you are selling to all countries.
+                </div>
               </div>
             </div>
           </div>

@@ -3,6 +3,26 @@
  */
 import { CheckOperators, Checks, Outcomes, Rules } from './constants';
 
+export const getSupportedCountriesType = () => {
+	return window.wcSettings.admin.preloadSettings.general
+		.woocommerce_allowed_countries;
+};
+export const getSettingCountries = () => {
+	const supportedCountriesType = getSupportedCountriesType();
+	switch ( supportedCountriesType ) {
+		case 'all':
+			return [];
+		case 'all_except':
+			return window.wcSettings.admin.preloadSettings.general
+				.woocommerce_all_except_countries;
+		case 'specific':
+			return window.wcSettings.admin.preloadSettings.general
+				.woocommerce_specific_allowed_countries;
+		default:
+			return [];
+	}
+};
+
 const getRuleBase = ( setting, block ) => {
 	return {
 		key: setting,
@@ -23,16 +43,26 @@ const buildRuleset = ( ruleKey, shouldBlock, ruleConfiguration = {} ) => {
 			break;
 		case Rules.RULE_INTERNATIONAL_IP_ADDRESS:
 			ruleBase.check = {
-				key: Checks.CHECK_IP_COUNTRY_SAME_WITH_ACCOUNT_COUNTRY,
-				operator: CheckOperators.OPERATOR_EQUALS,
-				value: false,
+				key: Checks.CHECK_IP_COUNTRY,
+				operator:
+					// Need to use a reversed operator because we'll be matching the failure here.
+					// Example; if a country is in a ban list, block, or if a country isn't in a allow list, block.
+					'specific' === getSupportedCountriesType()
+						? CheckOperators.OPERATOR_NOT_IN
+						: CheckOperators.OPERATOR_IN,
+				value: getSettingCountries().join( '|' ),
 			};
 			break;
 		case Rules.RULE_INTERNATIONAL_BILLING_ADDRESS:
 			ruleBase.check = {
-				key: Checks.CHECK_BILLING_COUNTRY_SAME_WITH_ACCOUNT_COUNTRY,
-				operator: CheckOperators.OPERATOR_EQUALS,
-				value: false,
+				key: Checks.CHECK_BILLING_COUNTRY,
+				operator:
+					// Need to use a reversed operator because we'll be matching the failure here.
+					// Example; if a country is in a ban list, block, or if a country isn't in a allow list, block.
+					'specific' === getSupportedCountriesType()
+						? CheckOperators.OPERATOR_NOT_IN
+						: CheckOperators.OPERATOR_IN,
+				value: getSettingCountries().join( '|' ),
 			};
 			break;
 		case Rules.RULE_ORDER_ITEMS_THRESHOLD:

@@ -8,7 +8,7 @@ import { Notice } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import TipIcon from 'wcpay/icons';
+import { TipIcon } from 'wcpay/icons';
 import { ProtectionLevel } from '../../advanced-settings/constants';
 
 const ProtectionLevelModalNotice = ( { level } ) => {
