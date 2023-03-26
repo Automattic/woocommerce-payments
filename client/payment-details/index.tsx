@@ -49,16 +49,9 @@ const PaymentChargeDetails: React.FC< PaymentChargeDetailsProps > = ( {
 	const orderId = paymentIntent?.metadata?.order_id;
 
 	const {
-		data: latestFraudOutcome,
-		error: latestFraudOutcomeError,
-		isLoading: isLoadingLatestFraudOutcome,
+		data: fraudOutcome,
+		isLoading: isLoadingFraudOutcome,
 	} = useLatestFraudOutcome( orderId );
-
-	// Additional loading state prevent flashing while the data is not available.
-	const isLoadingFraudOutcome =
-		isLoadingLatestFraudOutcome ||
-		( ! Object.keys( latestFraudOutcome || {} ).length &&
-			'undefined' !== typeof latestFraudOutcomeError );
 
 	const isChargeId = getIsChargeId( id );
 	const isLoading = isChargeId || isLoadingData || isLoadingFraudOutcome;
@@ -112,7 +105,7 @@ const PaymentChargeDetails: React.FC< PaymentChargeDetailsProps > = ( {
 					charge={ charge }
 					metadata={ metadata }
 					isLoading={ isLoading }
-					fraudOutcome={ latestFraudOutcome }
+					fraudOutcome={ fraudOutcome }
 					paymentIntent={ paymentIntent }
 				/>
 			</ErrorBoundary>

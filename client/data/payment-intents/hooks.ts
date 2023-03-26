@@ -37,6 +37,7 @@ export const usePaymentIntentWithChargeFallback = (
 				getPaymentIntent,
 				getPaymentIntentError,
 				isResolving,
+				hasFinishedResolution,
 			} = selectors;
 
 			const paymentIntent: PaymentIntent = getPaymentIntent( id );
@@ -44,7 +45,9 @@ export const usePaymentIntentWithChargeFallback = (
 			return {
 				data: paymentIntent || ( {} as PaymentIntent ),
 				error: getPaymentIntentError( id ),
-				isLoading: isResolving( 'getPaymentIntent', [ id ] ),
+				isLoading:
+					isResolving( 'getPaymentIntent', [ id ] ) ||
+					! hasFinishedResolution( 'getPaymentIntent', [ id ] ),
 			};
 		},
 		[ id ]

@@ -551,11 +551,13 @@ const getManualFraudOutcomeTimelineItem = ( event, status ) => {
 const buildAutomaticFraudOutcomeRuleset = ( event ) => {
 	const rulesetResults = Object.entries( event.ruleset_results || {} );
 
-	return rulesetResults.map( ( [ rule, status ] ) => (
-		<p key={ rule } className="fraud-outcome-ruleset-item">
-			{ fraudOutcomeRulesetMapping[ status ][ rule ] }
-		</p>
-	) );
+	return rulesetResults
+		.filter( ( [ , status ] ) => 'allow' !== status )
+		.map( ( [ rule, status ] ) => (
+			<p key={ rule } className="fraud-outcome-ruleset-item">
+				{ fraudOutcomeRulesetMapping[ status ][ rule ] }
+			</p>
+		) );
 };
 
 const getAutomaticFraudOutcomeTimelineItem = ( event, status ) => {
