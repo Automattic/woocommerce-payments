@@ -146,16 +146,20 @@ const buildRuleset = ( ruleKey, shouldBlock, ruleConfiguration = {} ) => {
 					? {
 							key: Checks.CHECK_ORDER_TOTAL,
 							operator: CheckOperators.OPERATOR_LT,
-							value:
+							value: parseInt(
 								parseFloat( ruleConfiguration.min_amount ) *
-								100,
+									100,
+								10
+							),
 					  }
 					: {
 							key: Checks.CHECK_ORDER_TOTAL,
 							operator: CheckOperators.OPERATOR_GT,
-							value:
+							value: parseInt(
 								parseFloat( ruleConfiguration.max_amount ) *
-								100,
+									100,
+								10
+							),
 					  };
 			}
 			break;
