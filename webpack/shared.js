@@ -20,6 +20,7 @@ module.exports = {
 			checkout: './client/checkout/classic/index.js',
 			upe_checkout: './client/checkout/classic/upe.js',
 			upe_split_checkout: './client/checkout/classic/upe-split.js',
+			new_upe_checkout: './client/checkout/classic/new-upe.js',
 			'payment-request': './client/payment-request/index.js',
 			'subscription-edit-page': './client/subscription-edit-page.js',
 			tos: './client/tos/index.js',

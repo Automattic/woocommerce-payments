@@ -325,6 +325,7 @@ jQuery( function ( $ ) {
 			};
 		}
 
+		console.log( 'upeSettings are: ' + JSON.stringify( upeSettings ) );
 		upeElement = elements.create( 'payment', {
 			...upeSettings,
 			wallets: {
@@ -435,7 +436,7 @@ jQuery( function ( $ ) {
 		}
 		if ( ! isUPEComplete ) {
 			// If UPE fields are not filled, confirm payment to trigger validation errors
-			const { error } = await api.handlePaymentConfirmation(
+			const { error } = await api.PaymentConfirmation(
 				elements,
 				{
 					return_url: returnUrl,
