@@ -10,7 +10,7 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import Tooltip from '..';
+import { HoverTooltip } from '..';
 
 jest.useFakeTimers();
 
@@ -18,13 +18,13 @@ describe( 'Tooltip', () => {
 	it( 'does not render its content when hidden', () => {
 		const handleHideMock = jest.fn();
 		render(
-			<Tooltip
+			<HoverTooltip
 				isVisible={ false }
 				content="Tooltip content"
 				onHide={ handleHideMock }
 			>
 				<span>Trigger element</span>
-			</Tooltip>
+			</HoverTooltip>
 		);
 
 		jest.runAllTimers();
@@ -39,13 +39,13 @@ describe( 'Tooltip', () => {
 	it( 'renders its content when opened', () => {
 		const handleHideMock = jest.fn();
 		render(
-			<Tooltip
+			<HoverTooltip
 				isVisible
 				content="Tooltip content"
 				onHide={ handleHideMock }
 			>
 				<span>Trigger element</span>
-			</Tooltip>
+			</HoverTooltip>
 		);
 
 		jest.runAllTimers();
@@ -58,9 +58,9 @@ describe( 'Tooltip', () => {
 	it( 'renders its content when clicked', () => {
 		const handleHideMock = jest.fn();
 		render(
-			<Tooltip content="Tooltip content" onHide={ handleHideMock }>
+			<HoverTooltip content="Tooltip content" onHide={ handleHideMock }>
 				<span>Trigger element</span>
-			</Tooltip>
+			</HoverTooltip>
 		);
 
 		jest.runAllTimers();
@@ -87,12 +87,18 @@ describe( 'Tooltip', () => {
 		const handleHide2Mock = jest.fn();
 		render(
 			<>
-				<Tooltip content="Tooltip 1 content" onHide={ handleHide1Mock }>
+				<HoverTooltip
+					content="Tooltip 1 content"
+					onHide={ handleHide1Mock }
+				>
 					<span>Open tooltip 1</span>
-				</Tooltip>
-				<Tooltip content="Tooltip 2 content" onHide={ handleHide2Mock }>
+				</HoverTooltip>
+				<HoverTooltip
+					content="Tooltip 2 content"
+					onHide={ handleHide2Mock }
+				>
 					<span>Open tooltip 2</span>
-				</Tooltip>
+				</HoverTooltip>
 			</>
 		);
 
