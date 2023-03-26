@@ -9,7 +9,6 @@ import { useSelect } from '@wordpress/data';
  */
 import { STORE_NAME } from '../constants';
 import { LatestFraudOutcomeResponse } from './types';
-import { FraudOutcome } from '../../types/fraud-outcome';
 
 export const useLatestFraudOutcome = (
 	id: string
@@ -18,13 +17,14 @@ export const useLatestFraudOutcome = (
 		( select ) => {
 			const {
 				isResolving,
+				hasFinishedResolution,
 				getLatestFraudOutcome,
 				getLatestFraudOutcomeError,
 			} = select( STORE_NAME );
 
 			if ( ! id || ! wcpaySettings.isFraudProtectionSettingsEnabled ) {
 				return {
-					data: {} as FraudOutcome,
+					data: undefined,
 					error: undefined,
 					isLoading: false,
 				};
@@ -33,7 +33,9 @@ export const useLatestFraudOutcome = (
 			return {
 				data: getLatestFraudOutcome( id ),
 				error: getLatestFraudOutcomeError( id ),
-				isLoading: isResolving( 'getLatestFraudOutcome', [ id ] ),
+				isLoading:
+					isResolving( 'getLatestFraudOutcome', [ id ] ) ||
+					! hasFinishedResolution( 'getLatestFraudOutcome', [ id ] ),
 			};
 		},
 		[ id ]

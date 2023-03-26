@@ -56,6 +56,7 @@ describe( 'Fraud outcomes hooks', () => {
 					.fn()
 					.mockReturnValue( undefined ),
 				isResolving: jest.fn().mockReturnValue( false ),
+				hasFinishedResolution: jest.fn().mockReturnValue( true ),
 			};
 
 			const result = useLatestFraudOutcome( paymentIntentId );
@@ -74,12 +75,13 @@ describe( 'Fraud outcomes hooks', () => {
 					.fn()
 					.mockReturnValue( undefined ),
 				isResolving: jest.fn().mockReturnValue( false ),
+				hasFinishedResolution: jest.fn().mockReturnValue( true ),
 			};
 
 			const result = useLatestFraudOutcome( paymentIntentId );
 
 			expect( result ).toEqual( {
-				data: {},
+				data: undefined,
 				error: undefined,
 				isLoading: false,
 			} );
