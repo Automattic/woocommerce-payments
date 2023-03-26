@@ -96,7 +96,7 @@ export const ClickTooltip: React.FC< TooltipProps > = ( {
 
 	return (
 		<button
-			className="wcpay-tooltip__content-wrapper"
+			className="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
 			onClick={ handleMouseClick }
 			type={ 'button' }
 		>
