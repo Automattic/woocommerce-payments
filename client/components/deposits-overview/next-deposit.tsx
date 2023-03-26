@@ -9,7 +9,6 @@ import { calendar } from '@wordpress/icons';
  * Internal dependencies.
  */
 import strings from './strings';
-import './style.scss';
 import Loadable from 'components/loadable';
 import { getNextDeposit } from './utils';
 import DepositStatusChip from 'components/deposit-status-chip';
