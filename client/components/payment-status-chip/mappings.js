@@ -57,5 +57,13 @@ export default {
 		type: 'alert',
 		message: __( 'Payment blocked', 'woocommerce-payments' ),
 	},
+	fraud_outcome_review: {
+		type: 'warning',
+		message: __( 'Needs review', 'woocommerce-payments' ),
+	},
+	fraud_outcome_block: {
+		type: 'alert',
+		message: __( 'Payment blocked', 'woocommerce-payments' ),
+	},
 	...formattedDisputeStatuses,
 };

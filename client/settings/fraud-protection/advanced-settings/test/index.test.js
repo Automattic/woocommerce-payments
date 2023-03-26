@@ -56,6 +56,17 @@ describe( 'Advanced fraud protection settings', () => {
 			protectionLevelState.state,
 			protectionLevelState.updateState,
 		] );
+		global.wcSettings = {
+			admin: {
+				preloadSettings: {
+					general: {
+						woocommerce_allowed_countries: 'all',
+						woocommerce_all_except_countries: [],
+						woocommerce_specific_allowed_countries: [],
+					},
+				},
+			},
+		};
 		useAdvancedFraudProtectionSettings.mockReturnValue( [
 			protectionSettings.state,
 			protectionSettings.updateState,

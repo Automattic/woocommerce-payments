@@ -18,9 +18,11 @@ const FraudProtectionRuleToggle = ( {
 	helpText,
 	children,
 } ) => {
-	const { protectionSettingsUI, setProtectionSettingsUI } = useContext(
-		FraudPreventionSettingsContext
-	);
+	const {
+		protectionSettingsUI,
+		setProtectionSettingsUI,
+		setProtectionSettingsChanged,
+	} = useContext( FraudPreventionSettingsContext );
 
 	const [ toggleState, setToggleState ] = useState( false );
 	const [ checkState, setCheckState ] = useState( false );
@@ -39,11 +41,13 @@ const FraudProtectionRuleToggle = ( {
 			protectionSettingsUI[ setting ].enabled = toggleState;
 			protectionSettingsUI[ setting ].block = checkState;
 			setProtectionSettingsUI( protectionSettingsUI );
+			setProtectionSettingsChanged( ( prev ) => ! prev );
 		}
 	}, [
 		setting,
 		toggleState,
 		checkState,
+		setProtectionSettingsChanged,
 		protectionSettingsUI,
 		setProtectionSettingsUI,
 	] );
