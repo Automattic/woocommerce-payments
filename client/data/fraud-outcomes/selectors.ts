@@ -18,11 +18,9 @@ const getLatestFraudOutcomeState = ( { fraudOutcomes }: State, id: string ) => {
 export const getLatestFraudOutcome = (
 	state: State,
 	id: string
-): FraudOutcome =>
-	getLatestFraudOutcomeState( state, id )?.data || ( {} as FraudOutcome );
+): FraudOutcome | undefined => getLatestFraudOutcomeState( state, id )?.data;
 
 export const getLatestFraudOutcomeError = (
 	state: State,
 	id: string
-): ApiError =>
-	getLatestFraudOutcomeState( state, id )?.error || ( {} as ApiError );
+): ApiError | undefined => getLatestFraudOutcomeState( state, id )?.error;

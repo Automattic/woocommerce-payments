@@ -33,7 +33,7 @@ export type FraudOutcomesActions =
 	| UpdateErrorForLatestFraudOutcomeAction;
 
 export interface LatestFraudOutcomeResponse {
-	data: FraudOutcome;
+	data?: FraudOutcome;
 	error?: ApiError;
 	isLoading: boolean;
 }
