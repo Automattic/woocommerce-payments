@@ -50,6 +50,7 @@ const PaymentOrderDetails: React.FC< PaymentOrderDetailsProps > = ( {
 			charge={ charge }
 			isLoading={ isLoading }
 			fraudOutcome={ fraudOutcome }
+			showTimeline={ ! shouldRedirect }
 		/>
 	);
 };
