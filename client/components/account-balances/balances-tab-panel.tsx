@@ -3,6 +3,7 @@
  */
 import * as React from 'react';
 import { Flex, TabPanel } from '@wordpress/components';
+import { sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
@@ -11,6 +12,11 @@ import { useAllDepositsOverviews } from 'wcpay/data';
 import { getCurrencyTabTitle } from './utils';
 import BalanceBlock from './balance-block';
 import BalanceTooltip from './balance-tooltip';
+import {
+	documentationUrls,
+	fundTooltipStrings,
+	learnMoreString,
+} from './strings';
 
 /**
  * BalanceTab
@@ -87,7 +93,34 @@ const AccountBalancesTabPanel: React.FC = () => {
 						tooltip={
 							<BalanceTooltip
 								type="available"
-								isNegativeBalance={ tab.availableFunds < 0 }
+								content={
+									tab.availableFunds < 0 ? (
+										<>
+											{ fundTooltipStrings.available }{ ' ' }
+											<a
+												target="_blank"
+												rel="noopener noreferrer"
+												href={
+													documentationUrls.depositSchedule
+												}
+											>
+												{ learnMoreString }
+											</a>
+										</>
+									) : (
+										<a
+											target="_blank"
+											rel="noopener noreferrer"
+											href={
+												documentationUrls.negativeBalance
+											}
+										>
+											{
+												fundTooltipStrings.availableNegativeBalance
+											}
+										</a>
+									)
+								}
 							/>
 						}
 					/>
@@ -96,14 +129,53 @@ const AccountBalancesTabPanel: React.FC = () => {
 						amount={ tab.pendingFunds }
 						currencyCode={ tab.currencyCode }
 						isLoading={ isLoading }
-						tooltip={ <BalanceTooltip type="pending" /> }
+						tooltip={
+							<BalanceTooltip
+								type="pending"
+								content={
+									<>
+										{ sprintf(
+											fundTooltipStrings.pending,
+											tab.delayDays
+										) }{ ' ' }
+										<a
+											target="_blank"
+											rel="noopener noreferrer"
+											href={
+												documentationUrls.depositSchedule
+											}
+										>
+											{ learnMoreString }
+										</a>
+									</>
+								}
+							/>
+						}
 					/>
 					<BalanceBlock
 						type="reserved"
 						amount={ tab.reservedFunds }
 						currencyCode={ tab.currencyCode }
 						isLoading={ isLoading }
-						tooltip={ <BalanceTooltip type="reserved" /> }
+						tooltip={
+							<BalanceTooltip
+								type="reserved"
+								content={
+									<>
+										{ fundTooltipStrings.reserved }{ ' ' }
+										<a
+											target="_blank"
+											rel="noopener noreferrer"
+											href={
+												documentationUrls.reservedFunds
+											}
+										>
+											{ learnMoreString }
+										</a>
+									</>
+								}
+							/>
+						}
 					/>
 				</Flex>
 			) }

@@ -3,90 +3,24 @@
  */
 import React from 'react';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
-import { sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import { ClickTooltip } from 'components/tooltip';
-import {
-	documentationUrls,
-	fundLabelStrings,
-	fundTooltipStrings,
-	learnMoreString,
-} from './strings';
+import { fundLabelStrings } from './strings';
 import { balanceType } from './balance-block';
 
 type BalanceTooltipProps = {
 	type: balanceType;
-	delayDays?: number;
-	isNegativeBalance?: boolean;
+	content: React.ReactNode;
 };
 
 const BalanceTooltip: React.FC< BalanceTooltipProps > = ( {
 	type,
-	delayDays,
-	isNegativeBalance,
+	content,
 } ) => {
-	let content = null;
 	const tooltipButtonLabel = `${ fundLabelStrings[ type ] } tooltip`;
-
-	if ( type === 'available' ) {
-		content = (
-			<>
-				{ fundTooltipStrings.available }{ ' ' }
-				<a
-					target="_blank"
-					rel="noopener noreferrer"
-					href={ documentationUrls.depositSchedule }
-				>
-					{ learnMoreString }
-				</a>
-			</>
-		);
-	}
-
-	if ( type === 'available' && isNegativeBalance ) {
-		content = (
-			<a
-				target="_blank"
-				rel="noopener noreferrer"
-				href={ documentationUrls.negativeBalance }
-			>
-				{ fundTooltipStrings.availableNegativeBalance }
-			</a>
-		);
-	}
-
-	if ( type === 'pending' ) {
-		content = (
-			<>
-				{ sprintf( fundTooltipStrings.pending, delayDays ) }{ ' ' }
-				<a
-					target="_blank"
-					rel="noopener noreferrer"
-					href={ documentationUrls.depositSchedule }
-				>
-					{ learnMoreString }
-				</a>
-			</>
-		);
-	}
-
-	if ( type === 'reserved' ) {
-		content = (
-			<>
-				{ fundTooltipStrings.reserved }{ ' ' }
-				<a
-					target="_blank"
-					rel="noopener noreferrer"
-					href={ documentationUrls.reservedFunds }
-				>
-					{ learnMoreString }
-				</a>
-			</>
-		);
-	}
 
 	return (
 		<ClickTooltip content={ content }>

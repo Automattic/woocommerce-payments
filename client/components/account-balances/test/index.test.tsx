@@ -298,11 +298,7 @@ describe( 'BalanceTooltip', () => {
 		const expectedTooltipText = fundTooltipStrings.available;
 
 		render(
-			<BalanceTooltip
-				type="available"
-				isNegativeBalance={ false }
-				delayDays={ 2 }
-			/>
+			<BalanceTooltip type="available" content={ expectedTooltipText } />
 		);
 
 		const tooltipButton = screen.getByRole( 'button', {
@@ -317,11 +313,7 @@ describe( 'BalanceTooltip', () => {
 		const expectedTooltipText = fundTooltipStrings.availableNegativeBalance;
 
 		render(
-			<BalanceTooltip
-				type="available"
-				isNegativeBalance
-				delayDays={ 2 }
-			/>
+			<BalanceTooltip type="available" content={ expectedTooltipText } />
 		);
 
 		const tooltipButton = screen.getByRole( 'button', {
@@ -340,7 +332,9 @@ describe( 'BalanceTooltip', () => {
 			delayDays.toString()
 		);
 
-		render( <BalanceTooltip type="pending" delayDays={ delayDays } /> );
+		render(
+			<BalanceTooltip type="pending" content={ expectedTooltipText } />
+		);
 
 		const tooltipButton = screen.getByRole( 'button', {
 			name: 'Pending funds tooltip',
@@ -353,7 +347,9 @@ describe( 'BalanceTooltip', () => {
 	test( 'renders the correct tooltip text for the reserved balance', () => {
 		const expectedTooltipText = fundTooltipStrings.reserved;
 
-		render( <BalanceTooltip type="reserved" delayDays={ 2 } /> );
+		render(
+			<BalanceTooltip type="reserved" content={ expectedTooltipText } />
+		);
 
 		const tooltipButton = screen.getByRole( 'button', {
 			name: 'Reserved funds tooltip',
