@@ -1,0 +1,16 @@
+.chip--transaction {
+	border-radius: 4px;
+	font-size: 13px;
+	line-height: 18px;
+	padding: 1px 8px;
+
+	&.chip-warning {
+		background-color: #FCF9E8;
+		color: #614200;
+	}
+
+	&.chip-alert {
+		background-color: #FCF0F1;
+		color: #8A2424;
+	}
+}
