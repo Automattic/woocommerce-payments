@@ -14,23 +14,23 @@ import {
 export const fraudOutcomeRulesetMapping = {
 	[ Outcomes.REVIEW ]: {
 		[ Rules.RULE_ADDRESS_MISMATCH ]: __(
-			'Place in review if the shipping address differs from the billing address',
+			'Place in review if the shipping address country differs from the billing address country',
 			'woocommerce-payments'
 		),
 		[ Rules.RULE_INTERNATIONAL_IP_ADDRESS ]: __(
-			'Place in review if the billing address is outside your supported countries',
+			'Place in review if the country resolved from customer IP is not listed in your selling countries',
 			'woocommerce-payments'
 		),
 		[ Rules.RULE_INTERNATIONAL_BILLING_ADDRESS ]: __(
-			'Place in review if the shipping address differs from the billing address',
+			'Place in review if the billing address is not listed in your selling countries',
 			'woocommerce-payments'
 		),
 		[ Rules.RULE_ORDER_ITEMS_THRESHOLD ]: __(
-			'Place in review if the shipping address differs from the billing address',
+			'Place in review if the items count is not in your defined range',
 			'woocommerce-payments'
 		),
 		[ Rules.RULE_PURCHASE_PRICE_THRESHOLD ]: __(
-			'Place in review if the shipping address differs from the billing address',
+			'Place in review if the purchase price is not in your defined range',
 			'woocommerce-payments'
 		),
 	},
@@ -40,19 +40,19 @@ export const fraudOutcomeRulesetMapping = {
 			'woocommerce-payments'
 		),
 		[ Rules.RULE_INTERNATIONAL_IP_ADDRESS ]: __(
-			'Block if the billing address is outside your supported countries',
+			'Block if the country resolved from customer IP is not listed in your selling countries',
 			'woocommerce-payments'
 		),
 		[ Rules.RULE_INTERNATIONAL_BILLING_ADDRESS ]: __(
-			'Block if the shipping address differs from the billing address',
+			'Block if the billing address is not listed in your selling countries',
 			'woocommerce-payments'
 		),
 		[ Rules.RULE_ORDER_ITEMS_THRESHOLD ]: __(
-			'Block if the shipping address differs from the billing address',
+			'Block if the items count is not in your defined range',
 			'woocommerce-payments'
 		),
 		[ Rules.RULE_PURCHASE_PRICE_THRESHOLD ]: __(
-			'Block if the shipping address differs from the billing address',
+			'Block if the purchase price is not in your defined range',
 			'woocommerce-payments'
 		),
 	},

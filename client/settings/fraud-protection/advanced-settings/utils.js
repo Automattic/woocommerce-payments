@@ -50,7 +50,7 @@ const buildRuleset = ( ruleKey, shouldBlock, ruleConfiguration = {} ) => {
 					'specific' === getSupportedCountriesType()
 						? CheckOperators.OPERATOR_NOT_IN
 						: CheckOperators.OPERATOR_IN,
-				value: getSettingCountries().join( '|' ),
+				value: getSettingCountries().join( '|' ).toLowerCase(),
 			};
 			break;
 		case Rules.RULE_INTERNATIONAL_BILLING_ADDRESS:
@@ -62,7 +62,7 @@ const buildRuleset = ( ruleKey, shouldBlock, ruleConfiguration = {} ) => {
 					'specific' === getSupportedCountriesType()
 						? CheckOperators.OPERATOR_NOT_IN
 						: CheckOperators.OPERATOR_IN,
-				value: getSettingCountries().join( '|' ),
+				value: getSettingCountries().join( '|' ).toLowerCase(),
 			};
 			break;
 		case Rules.RULE_ORDER_ITEMS_THRESHOLD:
@@ -121,12 +121,20 @@ const buildRuleset = ( ruleKey, shouldBlock, ruleConfiguration = {} ) => {
 						{
 							key: Checks.CHECK_ORDER_TOTAL,
 							operator: CheckOperators.OPERATOR_LT,
-							value: parseFloat( ruleConfiguration.min_amount ),
+							value: parseInt(
+								parseFloat( ruleConfiguration.min_amount ) *
+									100,
+								10
+							),
 						},
 						{
 							key: Checks.CHECK_ORDER_TOTAL,
 							operator: CheckOperators.OPERATOR_GT,
-							value: parseFloat( ruleConfiguration.max_amount ),
+							value: parseInt(
+								parseFloat( ruleConfiguration.max_amount ) *
+									100,
+								10
+							),
 						},
 					],
 				};
@@ -138,12 +146,20 @@ const buildRuleset = ( ruleKey, shouldBlock, ruleConfiguration = {} ) => {
 					? {
 							key: Checks.CHECK_ORDER_TOTAL,
 							operator: CheckOperators.OPERATOR_LT,
-							value: parseFloat( ruleConfiguration.min_amount ),
+							value: parseInt(
+								parseFloat( ruleConfiguration.min_amount ) *
+									100,
+								10
+							),
 					  }
 					: {
 							key: Checks.CHECK_ORDER_TOTAL,
 							operator: CheckOperators.OPERATOR_GT,
-							value: parseFloat( ruleConfiguration.max_amount ),
+							value: parseInt(
+								parseFloat( ruleConfiguration.max_amount ) *
+									100,
+								10
+							),
 					  };
 			}
 			break;
@@ -259,8 +275,8 @@ export const readRuleset = ( rulesetConfig ) => {
 				parsedUIConfig[ rule.key ] = {
 					enabled: true,
 					block: rule.outcome === Outcomes.BLOCK,
-					min_amount: minAmount.value ?? '',
-					max_amount: maxAmount.value ?? '',
+					min_amount: minAmount.value ? minAmount.value / 100 : '',
+					max_amount: maxAmount.value ? maxAmount.value / 100 : '',
 				};
 				break;
 		}

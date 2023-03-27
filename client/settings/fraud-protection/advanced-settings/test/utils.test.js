@@ -147,12 +147,12 @@ describe( 'Ruleset adapter utilities test', () => {
 						{
 							key: Checks.CHECK_ORDER_TOTAL,
 							operator: CheckOperators.OPERATOR_LT,
-							value: 1,
+							value: 100,
 						},
 						{
 							key: Checks.CHECK_ORDER_TOTAL,
 							operator: CheckOperators.OPERATOR_GT,
-							value: 10,
+							value: 1000,
 						},
 					],
 				},
@@ -180,7 +180,7 @@ describe( 'Ruleset adapter utilities test', () => {
 						{
 							key: Checks.CHECK_ORDER_TOTAL,
 							operator: CheckOperators.OPERATOR_LT,
-							value: 1,
+							value: 100,
 						},
 					],
 				},
@@ -221,7 +221,7 @@ describe( 'Ruleset adapter utilities test', () => {
 				check: {
 					key: Checks.CHECK_ORDER_TOTAL,
 					operator: CheckOperators.OPERATOR_LT,
-					value: 1,
+					value: 100,
 				},
 			},
 		];
@@ -267,7 +267,7 @@ describe( 'Ruleset adapter utilities test', () => {
 				check: {
 					key: Checks.CHECK_ORDER_TOTAL,
 					operator: 'exp',
-					value: 1,
+					value: 100,
 				},
 			},
 		];
@@ -289,7 +289,7 @@ describe( 'Ruleset adapter utilities test', () => {
 				check: {
 					key: Checks.CHECK_ORDER_TOTAL,
 					operator: CheckOperators.OPERATOR_LT,
-					value: 1,
+					value: 100,
 				},
 			},
 		];
@@ -312,7 +312,7 @@ describe( 'Ruleset adapter utilities test', () => {
 			[ Rules.RULE_PURCHASE_PRICE_THRESHOLD ]: {
 				enabled: true,
 				block: false,
-				min_amount: 1,
+				min_amount: 0.01,
 				max_amount: '',
 			},
 		} );
@@ -456,7 +456,7 @@ describe( 'Ruleset adapter utilities test', () => {
 					check: {
 						key: Checks.CHECK_BILLING_COUNTRY,
 						operator: checkOperator,
-						value: checkValue,
+						value: checkValue.toLowerCase(),
 					},
 				},
 			];
@@ -499,7 +499,7 @@ describe( 'Ruleset adapter utilities test', () => {
 					check: {
 						key: Checks.CHECK_IP_COUNTRY,
 						operator: checkOperator,
-						value: checkValue,
+						value: checkValue.toLowerCase(),
 					},
 				},
 			];
@@ -601,12 +601,12 @@ describe( 'Ruleset adapter utilities test', () => {
 							{
 								key: Checks.CHECK_ORDER_TOTAL,
 								operator: CheckOperators.OPERATOR_LT,
-								value: minAmount,
+								value: minAmount * 100,
 							},
 							{
 								key: Checks.CHECK_ORDER_TOTAL,
 								operator: CheckOperators.OPERATOR_GT,
-								value: maxAmount,
+								value: maxAmount * 100,
 							},
 						],
 					},
@@ -621,7 +621,10 @@ describe( 'Ruleset adapter utilities test', () => {
 							'' !== maxAmount
 								? CheckOperators.OPERATOR_GT
 								: CheckOperators.OPERATOR_LT,
-						value: '' !== maxAmount ? maxAmount : minAmount,
+						value:
+							'' !== maxAmount
+								? maxAmount * 100
+								: minAmount * 100,
 					},
 				} );
 			} else {
