@@ -43,29 +43,6 @@ jQuery( function ( $ ) {
 		apiRequest
 	);
 
-	const processCheckout = async ( $form, { id } ) => {
-		const fields = {
-			...$form.serializeArray().reduce( ( obj, field ) => {
-				obj[ field.name ] = field.value;
-				return obj;
-			}, {} ),
-			wc_payment_method: id,
-		};
-		await api.processCheckout( fields ).then( ( response ) => {
-			console.log( 'got response: ' + JSON.stringify( response ) );
-			window.location.href = response.redirect;
-		} );
-		// const paymentSelector = '#wcpay-upe-element';
-
-		// // // Populate form with the payment method.
-		// $( paymentSelector ).val( id );
-
-		// // // Re-submit the form.
-		// $form.submit();
-
-		console.log( 'submitting form and the pm is: ' + JSON.stringify( id ) );
-	};
-
 	$( document.body ).on( 'updated_checkout', () => {
 		$( '.wcpay-upe-element' )
 			.toArray()
@@ -83,6 +60,21 @@ jQuery( function ( $ ) {
 			} );
 	} );
 
+	/**
+	 * Block UI to indicate processing and avoid duplicate submission.
+	 *
+	 * @param {Object} $form The jQuery object for the form.
+	 */
+	const blockUI = ( $form ) => {
+		$form.addClass( 'processing' ).block( {
+			message: null,
+			overlayCSS: {
+				background: '#fff',
+				opacity: 0.6,
+			},
+		} );
+	};
+
 	let upeElement;
 	let elements;
 
@@ -98,43 +90,64 @@ jQuery( function ( $ ) {
 		upeElement.mount( domElement );
 	}
 
+	const handleEverything = async ( $form ) => {
+		blockUI( $form );
+		elements.submit().then( ( result ) => {
+			if ( result.error ) {
+				console.log(
+					'error occurred during Stripe UI element validation: ' +
+						JSON.stringify( result.error )
+				);
+			}
+		} );
+		const pm = await api.getStripe().createPaymentMethod( {
+			elements,
+			params: {
+				billing_details: {
+					name: $( '#billing_first_name' ).length
+						? (
+								$( '#billing_first_name' ).val() +
+								' ' +
+								$( '#billing_last_name' ).val()
+						  ).trim()
+						: undefined,
+					email: $( '#billing_email' ).val(),
+					phone: $( '#billing_phone' ).val(),
+					address: {
+						city: $( '#billing_city' ).val(),
+						country: $( '#billing_country' ).val(),
+						line1: $( '#billing_address_1' ).val(),
+						line2: $( '#billing_address_2' ).val(),
+						postal_code: $( '#billing_postcode' ).val(),
+						state: $( '#billing_state' ).val(),
+					},
+				},
+			},
+		} );
+
+		try {
+			const fields = {
+				...$form.serializeArray().reduce( ( obj, field ) => {
+					obj[ field.name ] = field.value;
+					return obj;
+				}, {} ),
+				wc_payment_method: pm.paymentMethod.id,
+			};
+
+			const response = await api.processCheckout( fields );
+			window.location.href = response.redirect;
+		} catch ( error ) {
+			console.log( 'error catched: ' + JSON.stringify( error ) );
+		}
+	};
+
 	// Handle the checkout form when WooCommerce Payments is chosen.
 	const wcpayPaymentMethods = [ PAYMENT_METHOD_NAME_CARD ].filter( Boolean );
 	const checkoutEvents = wcpayPaymentMethods
 		.map( ( method ) => `checkout_place_order_${ method }` )
 		.join( ' ' );
-	$( 'form.checkout' ).on( checkoutEvents, async function () {
-		await elements.submit();
-		api.getStripe()
-			.createPaymentMethod( {
-				elements,
-				params: {
-					billing_details: {
-						name: $( '#billing_first_name' ).length
-							? (
-									$( '#billing_first_name' ).val() +
-									' ' +
-									$( '#billing_last_name' ).val()
-							  ).trim()
-							: undefined,
-						email: $( '#billing_email' ).val(),
-						phone: $( '#billing_phone' ).val(),
-						address: {
-							city: $( '#billing_city' ).val(),
-							country: $( '#billing_country' ).val(),
-							line1: $( '#billing_address_1' ).val(),
-							line2: $( '#billing_address_2' ).val(),
-							postal_code: $( '#billing_postcode' ).val(),
-							state: $( '#billing_state' ).val(),
-						},
-					},
-				},
-			} )
-			.then( ( { paymentMethod } ) => {
-				processCheckout( $( this ), paymentMethod );
-			} )
-			.catch( ( error ) => {
-				console.log( 'error occurred: ' + JSON.stringify( error ) );
-			} );
+	$( 'form.checkout' ).on( checkoutEvents, function () {
+		handleEverything( $( this ) );
+		return false;
 	} );
 } );
