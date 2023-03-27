@@ -14,6 +14,7 @@ import BalanceBlock from './balance-block';
 import BalanceTooltip from './balance-tooltip';
 import {
 	documentationUrls,
+	fundLabelStrings,
 	fundTooltipStrings,
 	learnMoreString,
 } from './strings';
@@ -87,12 +88,13 @@ const AccountBalancesTabPanel: React.FC = () => {
 				<Flex gap={ 0 } className="wcpay-account-balances__balances">
 					<BalanceBlock
 						type="available"
+						title={ fundLabelStrings.available }
 						amount={ tab.availableFunds }
 						currencyCode={ tab.currencyCode }
 						isLoading={ isLoading }
 						tooltip={
 							<BalanceTooltip
-								type="available"
+								label={ `${ fundLabelStrings.available } tooltip` }
 								content={
 									tab.availableFunds < 0 ? (
 										<>
@@ -126,12 +128,13 @@ const AccountBalancesTabPanel: React.FC = () => {
 					/>
 					<BalanceBlock
 						type="pending"
+						title={ fundLabelStrings.pending }
 						amount={ tab.pendingFunds }
 						currencyCode={ tab.currencyCode }
 						isLoading={ isLoading }
 						tooltip={
 							<BalanceTooltip
-								type="pending"
+								label={ `${ fundLabelStrings.pending } tooltip` }
 								content={
 									<>
 										{ sprintf(
@@ -154,12 +157,13 @@ const AccountBalancesTabPanel: React.FC = () => {
 					/>
 					<BalanceBlock
 						type="reserved"
+						title={ fundLabelStrings.reserved }
 						amount={ tab.reservedFunds }
 						currencyCode={ tab.currencyCode }
 						isLoading={ isLoading }
 						tooltip={
 							<BalanceTooltip
-								type="reserved"
+								label={ `${ fundLabelStrings.reserved } tooltip` }
 								content={
 									<>
 										{ fundTooltipStrings.reserved }{ ' ' }

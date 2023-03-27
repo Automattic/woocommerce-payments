@@ -8,26 +8,22 @@ import HelpOutlineIcon from 'gridicons/dist/help-outline';
  * Internal dependencies
  */
 import { ClickTooltip } from 'components/tooltip';
-import { fundLabelStrings } from './strings';
-import { balanceType } from './balance-block';
 
 type BalanceTooltipProps = {
-	type: balanceType;
+	label: string;
 	content: React.ReactNode;
 };
 
 const BalanceTooltip: React.FC< BalanceTooltipProps > = ( {
-	type,
+	label,
 	content,
 } ) => {
-	const tooltipButtonLabel = `${ fundLabelStrings[ type ] } tooltip`;
-
 	return (
 		<ClickTooltip content={ content }>
 			<div
 				className="wcpay-account-balances__balances__item__tooltip-button"
 				role="button"
-				aria-label={ tooltipButtonLabel }
+				aria-label={ label }
 			>
 				<HelpOutlineIcon
 					size={ 18 }

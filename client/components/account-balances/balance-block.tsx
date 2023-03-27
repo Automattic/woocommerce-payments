@@ -8,7 +8,6 @@ import * as React from 'react';
  */
 import { formatCurrency } from 'wcpay/utils/currency';
 import Loadable from 'components/loadable';
-import { fundLabelStrings } from './strings';
 import BalanceTooltip from './balance-tooltip';
 
 /**
@@ -22,6 +21,7 @@ export type balanceType = 'pending' | 'available' | 'reserved';
  * @typedef {Object} BalanceBlockProps
  *
  * @property {balanceType} type										Type of the balance block. eg "available".
+ * @property {string} title											The balance title.
  * @property {string} currencyCode									Currency code of the balance block.
  * @property {React.ReactElement< typeof BalanceTooltip >} tooltip	The tooltip element.
  * @property {number} [amount]										Optional. The balance amount.
@@ -29,6 +29,7 @@ export type balanceType = 'pending' | 'available' | 'reserved';
  */
 interface BalanceBlockProps {
 	type: balanceType;
+	title: string;
 	currencyCode: string;
 	tooltip: React.ReactElement< typeof BalanceTooltip >;
 	amount?: number;
@@ -36,18 +37,15 @@ interface BalanceBlockProps {
 }
 
 /**
- * Renders a balance block including a title and amount.
+ * Renders a balance block including a title, amount and tooltip.
  *
  * @param {BalanceBlockProps} props   Balance block props. See `BalanceBlockProps` interface.
- * @param {balanceType} props.type    The balance type. eg "available".
- * @param {string} props.currencyCode Currency code of the balance block.
- * @param {number} [props.amount]     Optional. The balance amount.
- * @param {boolean} [props.isLoading] Optional. Whether the balance block is loading.
  *
  * @return {JSX.Element} Rendered balance element.
  */
 const BalanceBlock: React.FC< BalanceBlockProps > = ( {
 	type,
+	title,
 	currencyCode,
 	tooltip,
 	amount = 0,
@@ -60,7 +58,7 @@ const BalanceBlock: React.FC< BalanceBlockProps > = ( {
 				id={ titleElementID }
 				className="wcpay-account-balances__balances__item__title"
 			>
-				<span>{ fundLabelStrings[ type ] }</span>
+				<span>{ title }</span>
 				{ tooltip }
 			</p>
 			<p
