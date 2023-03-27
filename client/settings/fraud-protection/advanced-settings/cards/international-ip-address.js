@@ -12,6 +12,7 @@ import interpolateComponents from '@automattic/interpolate-components';
 import FraudProtectionRuleCard from '../rule-card';
 import FraudProtectionRuleDescription from '../rule-description';
 import FraudProtectionRuleToggle from '../rule-toggle';
+import AllowedCountriesNotice from '../allow-countries-notice';
 
 const InternationalIPAddressRuleCard = () => {
 	return (
@@ -45,6 +46,7 @@ const InternationalIPAddressRuleCard = () => {
 					'woocommerce-payments'
 				) }
 			</FraudProtectionRuleDescription>
+			<AllowedCountriesNotice setting={ 'international_ip_address' } />
 		</FraudProtectionRuleCard>
 	);
 };

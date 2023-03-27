@@ -31,6 +31,10 @@ describe( 'submitCaptureAuthorization', () => {
 		);
 
 		expect( generator.next().value ).toEqual(
+			dispatch( 'wc/payments', 'setIsRequestingAuthorization', true )
+		);
+
+		expect( generator.next().value ).toEqual(
 			apiFetch( {
 				path: `/wc/v3/payments/orders/${ mockOrderId }/capture_authorization`,
 				method: 'post',
@@ -76,6 +80,14 @@ describe( 'submitCaptureAuthorization', () => {
 
 		expect( generator.next().value ).toEqual(
 			dispatch(
+				'wc/payments',
+				'invalidateResolutionForStoreSelector',
+				'getPaymentIntent'
+			)
+		);
+
+		expect( generator.next().value ).toEqual(
+			dispatch(
 				'core/notices',
 				'createSuccessNotice',
 				'Payment for order #254 captured successfully.'
@@ -86,6 +98,10 @@ describe( 'submitCaptureAuthorization', () => {
 			dispatch( 'wc/payments', 'finishResolution', 'getAuthorization', [
 				mockPaymentIntentId,
 			] )
+		);
+
+		expect( generator.next().value ).toEqual(
+			dispatch( 'wc/payments', 'setIsRequestingAuthorization', false )
 		);
 
 		expect( generator.next().done ).toStrictEqual( true );

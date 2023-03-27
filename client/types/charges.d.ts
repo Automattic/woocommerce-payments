@@ -82,6 +82,8 @@ export interface Charge {
 	refunded: boolean;
 	refunds: null | ChargeRefunds;
 	status: string;
+	reader_model?: string;
+	platform?: string;
 }
 
 export interface ChargeAmounts {

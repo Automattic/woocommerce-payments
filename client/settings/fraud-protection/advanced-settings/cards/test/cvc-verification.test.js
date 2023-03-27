@@ -26,8 +26,10 @@ describe( 'CVC verification card', () => {
 		};
 		const setSettings = jest.fn();
 		const contextValue = {
-			advancedFraudProtectionSettings: settings,
-			setAdvancedFraudProtectionSettings: setSettings,
+			protectionSettingsUI: settings,
+			setProtectionSettingsUI: setSettings,
+			protectionSettingsChanged: false,
+			setProtectionSettingsChanged: jest.fn(),
 		};
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>

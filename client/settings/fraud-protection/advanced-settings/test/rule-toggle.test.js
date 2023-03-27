@@ -15,13 +15,14 @@ describe( 'Fraud protection rule toggle tests', () => {
 
 	beforeEach( () => {
 		mockContext = {
-			advancedFraudProtectionSettings: {
+			protectionSettingsUI: {
 				test_rule: {
 					enabled: false,
 					block: false,
 				},
 			},
-			setAdvancedFraudProtectionSettings: jest.fn(),
+			setProtectionSettingsUI: jest.fn(),
+			setProtectionSettingsChanged: jest.fn(),
 		};
 	} );
 
@@ -55,7 +56,7 @@ describe( 'Fraud protection rule toggle tests', () => {
 		).not.toBeInTheDocument();
 	} );
 	test( 'renders correctly when enabled', () => {
-		mockContext.advancedFraudProtectionSettings.test_rule.enabled = true;
+		mockContext.protectionSettingsUI.test_rule.enabled = true;
 		const container = render(
 			<FraudPreventionSettingsContext.Provider value={ mockContext }>
 				<FraudProtectionRuleToggle
@@ -80,8 +81,8 @@ describe( 'Fraud protection rule toggle tests', () => {
 		expect( container.queryByText( 'test content' ) ).toBeInTheDocument();
 	} );
 	test( 'renders correctly when enabled and blocked', () => {
-		mockContext.advancedFraudProtectionSettings.test_rule.enabled = true;
-		mockContext.advancedFraudProtectionSettings.test_rule.block = true;
+		mockContext.protectionSettingsUI.test_rule.enabled = true;
+		mockContext.protectionSettingsUI.test_rule.block = true;
 		const container = render(
 			<FraudPreventionSettingsContext.Provider value={ mockContext }>
 				<FraudProtectionRuleToggle
@@ -119,19 +120,19 @@ describe( 'Fraud protection rule toggle tests', () => {
 		);
 		const activationToggle = container.getByLabelText( 'Test rule toggle' );
 		expect(
-			mockContext.advancedFraudProtectionSettings.test_rule.enabled
+			mockContext.protectionSettingsUI.test_rule.enabled
 		).toBeFalsy();
 		activationToggle.click();
 		expect(
-			mockContext.advancedFraudProtectionSettings.test_rule.enabled
+			mockContext.protectionSettingsUI.test_rule.enabled
 		).toBeTruthy();
 		activationToggle.click();
 		expect(
-			mockContext.advancedFraudProtectionSettings.test_rule.enabled
+			mockContext.protectionSettingsUI.test_rule.enabled
 		).toBeFalsy();
 	} );
 	test( 'sets the value correctly when block is selected', () => {
-		mockContext.advancedFraudProtectionSettings.test_rule.enabled = true;
+		mockContext.protectionSettingsUI.test_rule.enabled = true;
 		const container = render(
 			<FraudPreventionSettingsContext.Provider value={ mockContext }>
 				<FraudProtectionRuleToggle
@@ -144,16 +145,10 @@ describe( 'Fraud protection rule toggle tests', () => {
 			</FraudPreventionSettingsContext.Provider>
 		);
 		const activationToggle = container.getByLabelText( 'Block Payment' );
-		expect(
-			mockContext.advancedFraudProtectionSettings.test_rule.block
-		).toBeFalsy();
+		expect( mockContext.protectionSettingsUI.test_rule.block ).toBeFalsy();
 		activationToggle.click();
-		expect(
-			mockContext.advancedFraudProtectionSettings.test_rule.block
-		).toBeTruthy();
+		expect( mockContext.protectionSettingsUI.test_rule.block ).toBeTruthy();
 		activationToggle.click();
-		expect(
-			mockContext.advancedFraudProtectionSettings.test_rule.block
-		).toBeFalsy();
+		expect( mockContext.protectionSettingsUI.test_rule.block ).toBeFalsy();
 	} );
 } );

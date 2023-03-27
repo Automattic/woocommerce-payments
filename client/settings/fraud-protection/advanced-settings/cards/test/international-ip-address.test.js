@@ -18,8 +18,21 @@ describe( 'International IP address card', () => {
 	};
 	const setSettings = jest.fn();
 	const contextValue = {
-		advancedFraudProtectionSettings: settings,
-		setAdvancedFraudProtectionSettings: setSettings,
+		protectionSettingsUI: settings,
+		setProtectionSettingsUI: setSettings,
+		protectionSettingsChanged: false,
+		setProtectionSettingsChanged: jest.fn(),
+	};
+	global.wcSettings = {
+		admin: {
+			preloadSettings: {
+				general: {
+					woocommerce_allowed_countries: 'all',
+					woocommerce_all_except_countries: [],
+					woocommerce_specific_allowed_countries: [],
+				},
+			},
+		},
 	};
 	test( 'renders correctly', () => {
 		const { container } = render(
