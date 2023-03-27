@@ -11,7 +11,7 @@ use Exception;
 use WCPay\Payment_Process\Storage\Payment_Storage;
 use WCPay\Payment_Process\Payment_Method\Payment_Method;
 use WCPay\Payment_Process\Payment_Method\Payment_Method_Factory;
-use WCPay\Payment_Process\Step\{ Metadata_Step, Abstract_Step, Add_Token_To_Order_Step, Bump_Transaction_Limiter_Step, Check_Attached_Intent_Success_Step, Check_Session_Against_Processing_Order_Step, Complete_Without_Payment_Step, Create_UPE_Intent_Step, Customer_Details_Step, Redirect_UPE_Payment_Step, Save_Payment_Method_Step, Setup_Payment_Step, Standard_Payment_Step, Store_Metadata_Step, Update_Order_Step, Update_Saved_Payment_Method_Step, Update_UPE_Intent_Step, Verify_Fraud_Token_Step, Verify_Minimum_Amount_Step };
+use WCPay\Payment_Process\Step\{ Metadata_Step, Abstract_Step, Add_Token_To_Order_Step, Bump_Transaction_Limiter_Step, Check_Attached_Intent_Success_Step, Check_Session_Against_Processing_Order_Step, Complete_Without_Payment_Step, Create_UPE_Intent_Step, Customer_Details_Step, Load_Intent_After_Authentication_Step, Redirect_UPE_Payment_Step, Save_Payment_Method_Step, Setup_Payment_Step, Standard_Payment_Step, Store_Metadata_Step, Update_Order_Step, Update_Saved_Payment_Method_Step, Update_UPE_Intent_Step, Verify_Fraud_Token_Step, Verify_Minimum_Amount_Step };
 
 /**
  * Main class, representing payments.
@@ -58,6 +58,11 @@ class Payment {
 	 * Used for the standard payment flow (non-UPE).
 	 */
 	const STANDARD_FLOW = 'STANDARD_FLOW';
+
+	/**
+	 * Used to check the status of an intent, after SCA authentication.
+	 */
+	const POST_CHECKOUT_REDIRECT_FLOW = 'POST_CHECKOUT_REDIRECT_FLOW';
 
 	/**
 	 * UPE flows:
@@ -291,6 +296,7 @@ class Payment {
 				Customer_Details_Step::class, // Prepare & act.
 				Bump_Transaction_Limiter_Step::class, // Act & Complete.
 				Verify_Fraud_Token_Step::class, // Action.
+				Load_Intent_After_Authentication_Step::class, // Action.
 				Check_Session_Against_Processing_Order_Step::class, // Act & Complete.
 				Check_Attached_Intent_Success_Step::class, // Action.
 				Create_UPE_Intent_Step::class, // Action.

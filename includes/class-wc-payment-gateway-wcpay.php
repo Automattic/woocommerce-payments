@@ -701,28 +701,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order = wc_get_order( $order_id );
 
 		try {
-			if ( ! empty( $_SERVER ) ) { // Dummy check, which simply avoids everything else.
-				return $this->new_payment_process( $order );
-			}
-
-			// Check if session exists before instantiating Fraud_Prevention_Service.
-			if ( WC()->session ) {
-				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
-				// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-				if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $_POST['wcpay-fraud-prevention-token'] ?? null ) ) {
-					throw new Process_Payment_Exception(
-						__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
-						'fraud_prevention_enabled'
-					);
-				}
-			}
-
-			if ( $this->failed_transaction_rate_limiter->is_limited() ) {
-				throw new Process_Payment_Exception(
-					__( 'Your payment was not processed.', 'woocommerce-payments' ),
-					'rate_limiter_enabled'
-				);
-			}
+			return $this->new_payment_process( $order );
 
 			// The request is a preflight check from WooPay.
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -739,20 +718,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
-
-			$check_session_order = $this->check_against_session_processing_order( $order );
-			if ( is_array( $check_session_order ) ) {
-				return $check_session_order;
-			}
-			$this->maybe_update_session_processing_order( $order_id );
-
-			$check_existing_intention = $this->check_payment_intent_attached_to_order_succeeded( $order );
-			if ( is_array( $check_existing_intention ) ) {
-				return $check_existing_intention;
-			}
-
-			$payment_information = $this->prepare_payment_information( $order );
-			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
 			/**
 			 * TODO: Determine how to do this update with Order_Service.
@@ -761,10 +726,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			 */
 			if ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) {
 				$order->update_status( Order_Status::FAILED );
-			}
-
-			if ( $e instanceof API_Exception && $this->should_bump_rate_limiter( $e->get_error_code() ) ) {
-				$this->failed_transaction_rate_limiter->bump();
 			}
 
 			if ( ! empty( $payment_information ) ) {
@@ -2517,7 +2478,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * - regular checkout
 	 * - Pay for Order page
 	 *
-	 * @throws Exception - If nonce is invalid.
+	 * @throws Process_Payment_Exception - If nonce is invalid.
 	 */
 	public function update_order_status() {
 		try {
@@ -2538,92 +2499,26 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			$intent_id          = $this->order_service->get_intent_id_for_order( $order );
+			$this->prepare_payment_objects();
+			$payment = $this->payment_factory->create_order_payment( $order );
+			$payment->set_order( $order );
+			$payment->set_flow( Payment::POST_CHECKOUT_REDIRECT_FLOW );
+
 			$intent_id_received = isset( $_POST['intent_id'] )
-			? sanitize_text_field( wp_unslash( $_POST['intent_id'] ) )
-			/* translators: This will be used to indicate an unknown value for an ID. */
-			: __( 'unknown', 'woocommerce-payments' );
+				? sanitize_text_field( wp_unslash( $_POST['intent_id'] ) )
+				/* translators: This will be used to indicate an unknown value for an ID. */
+				: __( 'unknown', 'woocommerce-payments' );
+			$payment->set_var( 'intent_id', $intent_id_received );
 
-			if ( empty( $intent_id ) ) {
-				throw new Intent_Authentication_Exception(
-					__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
-					'empty_intent_id'
-				);
+			// @todo: This is a weird way to do it.
+			// The parameter was used to transfer the PM to store. The PM is in the intent, and will be used in `Save_Payment_Method_Step`.
+			if ( isset( $_POST['payment_method_id'] ) && wp_unslash( $_POST['payment_method_id'] ) ) {
+				$payment->set_flag( Payment::SAVE_PAYMENT_METHOD_TO_STORE );
 			}
 
-			$payment_method_id = isset( $_POST['payment_method_id'] ) ? wc_clean( wp_unslash( $_POST['payment_method_id'] ) ) : '';
-			if ( 'null' === $payment_method_id ) {
-				$payment_method_id = '';
-			}
-
-			// Check that the intent saved in the order matches the intent used as part of the
-			// authentication process. The ID of the intent used is sent with
-			// the AJAX request. We are about to use the status of the intent saved in
-			// the order, so we need to make sure the intent that was used for authentication
-			// is the same as the one we're using to update the status.
-			if ( $intent_id !== $intent_id_received ) {
-				throw new Intent_Authentication_Exception(
-					__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
-					'intent_id_mismatch'
-				);
-			}
-
-			$amount = $order->get_total();
-
-			if ( $amount > 0 ) {
-				// An exception is thrown if an intent can't be found for the given intent ID.
-				$request = Get_Intention::create( $intent_id );
-				$intent  = $request->send( 'wcpay_get_intent_request', $order );
-
-				$status    = $intent->get_status();
-				$charge    = $intent->get_charge();
-				$charge_id = ! empty( $charge ) ? $charge->get_id() : null;
-
-				$this->attach_exchange_info_to_order( $order, $charge_id );
-				$this->order_service->attach_intent_info_to_order( $order, $intent_id, $status, $intent->get_payment_method_id(), $intent->get_customer_id(), $charge_id, $intent->get_currency() );
-			} else {
-				// For $0 orders, fetch the Setup Intent instead.
-				$intent    = $this->payments_api_client->get_setup_intent( $intent_id );
-				$status    = $intent['status'];
-				$charge_id = '';
-			}
-
-			switch ( $status ) {
-				case Payment_Intent_Status::SUCCEEDED:
-					$this->remove_session_processing_order( $order->get_id() );
-					$this->order_service->mark_payment_completed( $order, $intent_id, $status, $charge_id );
-					break;
-				case Payment_Intent_Status::PROCESSING:
-				case Payment_Intent_Status::REQUIRES_CAPTURE:
-					$this->order_service->mark_payment_authorized( $order, $intent_id, $status, $charge_id );
-					break;
-				case Payment_Intent_Status::REQUIRES_PAYMENT_METHOD:
-					$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id );
-					break;
-			}
-
-			if ( in_array( $status, self::SUCCESSFUL_INTENT_STATUS, true ) ) {
-				wc_reduce_stock_levels( $order_id );
-				WC()->cart->empty_cart();
-
-				if ( ! empty( $payment_method_id ) ) {
-					try {
-						$token = $this->token_service->add_payment_method_to_user( $payment_method_id, wp_get_current_user() );
-						$this->add_token_to_order( $order, $token );
-					} catch ( Exception $e ) {
-						// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
-						Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
-					}
-				}
-
-				// Send back redirect URL in the successful case.
-				echo wp_json_encode(
-					[
-						'return_url' => $this->get_return_url( $order ),
-					]
-				);
-				wp_die();
-			}
+			// Send back redirect URL in the successful case.
+			echo wp_json_encode( $payment->process() );
+			wp_die();
 		} catch ( Intent_Authentication_Exception $e ) {
 			$error_code = $e->get_error_code();
 

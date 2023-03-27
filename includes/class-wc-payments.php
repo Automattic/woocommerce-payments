@@ -1651,7 +1651,7 @@ class WC_Payments {
 	/**
 	 * Returns an instance of the token service.
 	 *
-	 * @return WC_Payments_Token_Service
+	 * @return WC_Payments_Order_Service
 	 */
 	public static function get_order_service() {
 		return self::$order_service;

@@ -1,6 +1,6 @@
 <?php
 /**
- * Class Dump_Transaction_Limiter_Step
+ * Class Bump_Transaction_Limiter_Step
  *
  * @package WooCommerce\Payments
  */
