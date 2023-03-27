@@ -275,7 +275,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 */
 	public function create_payment_intent_ajax() {
 		try {
-			$is_nonce_valid = true; // check_ajax_referer( 'wcpay_create_payment_intent_nonce', false, false );
+			$is_nonce_valid = check_ajax_referer( 'wcpay_create_payment_intent_nonce', false, false );
 			if ( ! $is_nonce_valid ) {
 				throw new Process_Payment_Exception(
 					__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
@@ -297,7 +297,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			}
 
 			if ( strpos( $response['id'], 'pi_' ) === 0 ) { // response is a payment intent (could possibly be a setup intent).
-				$this->add_upe_payment_intent_to_session( $response['id'], $response['client_secret'] );
+				$this->add_upe_payment_intent_to_session( $response['id'], $response['client_secret'], $response['payment_id'] );
 			}
 
 			wp_send_json_success( $response, 200 );
@@ -328,8 +328,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		if ( $order_id ) {
 			$this->prepare_payment_objects();
 			$order = wc_get_order( $order_id );
-			// Temporary. Should be replaced with `load_or_create_order_payment`.
-			$payment = $this->payment_factory->create_order_payment( $order );
+			$payment = $this->payment_factory->load_or_create_order_payment( $order );
 		} else {
 			$storage                = new Filesystem_Storage();
 			$payment_method_factory = new Payment_Method_Factory();
@@ -352,7 +351,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment->save();
 
 		// Let the payment be processed. The process should yield the response array.
-		return $payment->process();
+		$response               = $payment->process();
+		$response['payment_id'] = $payment->get_id(); // Used to store the payment in session.
+		return $response;
 	}
 
 	/**
@@ -451,11 +452,32 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		// phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
 		$order = wc_get_order( $order_id );
-
-		// @todo: Should be replaced with load_or_create_order_payment.
-		// Create/load the payment object.
 		$this->prepare_payment_objects();
-		$payment = $this->payment_factory->create_order_payment( $order );
+
+		// Check if there is an ID to laod.
+		$payment = null;
+		$session_data = $this->get_payment_intent_data_from_session();
+		if ( $session_data ) {
+			$session_data = explode( '-', $session_data );
+			if ( 4 <= count( $session_data ) ) {
+				$payment_id = $session_data['3'];
+				if ( ! empty( $payment_id ) ) {
+					$storage                = new Filesystem_Storage();
+					$payment_method_factory = new Payment_Method_Factory();
+					$payment_factory        = new Payment_Factory( $storage, $payment_method_factory );
+					$payment                = $payment_factory->load_payment( $payment_id );
+
+					if ( ! $payment instanceof Order_Payment ) {
+						$payment = $this->payment_factory->covert_payment_to_order_payment( $payment, $order );
+					}
+				}
+			}
+		}
+
+		if ( is_null( $payment ) ) {
+			// Create/load the payment object.
+			$payment = $this->payment_factory->load_or_create_order_payment( $order );
+		}
 
 		// Allows UPE steps to work.
 		$payment->set_flow( Payment::UPE_PROCESS_PAYMENT_FLOW );
@@ -478,8 +500,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment_method_types = $this->get_selected_upe_payment_methods( (string) $selected_upe_payment_type, $this->get_payment_method_ids_enabled_at_checkout( null, true ) ?? [] );
 		$payment->set_payment_method_types( $payment_method_types );
 
-		$payment_country = ! empty( $_POST['wcpay_payment_country'] ) ? wc_clean( wp_unslash( $_POST['wcpay_payment_country'] ) ) : null;
-		$payment->set_payment_country( $payment_country );
+		if ( ! empty( $_POST['wcpay_payment_country'] ) ) {
+			$payment->set_payment_country( wc_clean( wp_unslash( $_POST['wcpay_payment_country'] ) ) );
+		}
 
 		$response = $payment->process();
 
@@ -592,7 +615,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 		// Load the order and the payment.
 		$order   = wc_get_order( $order_id );
-		$payment = $this->payment_factory->create_order_payment( $order );
+		$payment = $this->payment_factory->load_or_create_order_payment( $order );
 
 		// Allows UPE steps to work.
 		$payment->set_flow( Payment::UPE_PROCESS_REDIRECT_FLOW );
@@ -974,8 +997,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return array|string value of session variable
 	 */
 	public function get_payment_intent_data_from_session( $payment_method = false ) {
-		WC()->session->get( self::KEY_UPE_PAYMENT_INTENT );
-		return false;
+		return WC()->session->get( self::KEY_UPE_PAYMENT_INTENT );;
 	}
 
 	/**
@@ -985,8 +1007,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return array|string value of session variable
 	 */
 	public function get_setup_intent_data_from_session( $payment_method = false ) {
-		WC()->session->get( self::KEY_UPE_SETUP_INTENT );
-		return false;
+		return WC()->session->get( self::KEY_UPE_SETUP_INTENT );
 	}
 
 	/**
@@ -994,15 +1015,16 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 *
 	 * @param string $intent_id     The payment intent id.
 	 * @param string $client_secret The payment intent client secret.
+	 * @param string $payment_id    The ID of a payment.
 	 */
-	private function add_upe_payment_intent_to_session( string $intent_id = '', string $client_secret = '' ) {
+	private function add_upe_payment_intent_to_session( string $intent_id = '', string $client_secret = '', string $payment_id ) {
 		$cart_hash = 'undefined';
 
 		if ( isset( $_COOKIE['woocommerce_cart_hash'] ) ) {
 			$cart_hash = sanitize_text_field( wp_unslash( $_COOKIE['woocommerce_cart_hash'] ) );
 		}
 
-		$value = $cart_hash . '-' . $intent_id . '-' . $client_secret;
+		$value = $cart_hash . '-' . $intent_id . '-' . $client_secret . '-' . $payment_id;
 
 		WC()->session->set( self::KEY_UPE_PAYMENT_INTENT, $value );
 	}
@@ -1021,9 +1043,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 *
 	 * @param string $intent_id     The setup intent id.
 	 * @param string $client_secret The setup intent client secret.
+	 * @param string $payment_id    The ID of a payment.
 	 */
-	private function add_upe_setup_intent_to_session( string $intent_id = '', string $client_secret = '' ) {
-		$value = $intent_id . '-' . $client_secret;
+	private function add_upe_setup_intent_to_session( string $intent_id = '', string $client_secret = '', string $payment_id ) {
+		$value = $intent_id . '-' . $client_secret . '-' . $payment_id;
 
 		WC()->session->set( self::KEY_UPE_SETUP_INTENT, $value );
 	}

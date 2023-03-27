@@ -97,6 +97,19 @@ class Filesystem_Storage implements Payment_Storage {
 	}
 
 	/**
+	 * Deletes a payment from storage.
+	 *
+	 * @param Payment $payment The payment object.
+	 * @return bool Whether it was possible to delete the payment.
+	 */
+	public function delete( Payment $payment ) {
+		$path = $this->generate_path( $payment );
+		$fs   = $this->get_filesystem();
+
+		return $fs->delete( $path );
+	}
+
+	/**
 	 * Attempts to read a file, and parse its content to JSON.
 	 *
 	 * @param string $path The path to the file.

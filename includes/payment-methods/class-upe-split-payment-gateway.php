@@ -244,7 +244,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 			}
 
 			if ( strpos( $response['id'], 'pi_' ) === 0 ) { // response is a payment intent (could possibly be a setup intent).
-				$this->add_upe_payment_intent_to_session( $response['id'], $response['client_secret'] );
+				$this->add_upe_payment_intent_to_session( $response['id'], $response['client_secret'], $response['payment_id'] );
 			}
 
 			wp_send_json_success( $response, 200 );
@@ -368,15 +368,16 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 *
 	 * @param string $intent_id     The payment intent id.
 	 * @param string $client_secret The payment intent client secret.
+	 * @param string $payment_id    ID of a payment process.
 	 */
-	private function add_upe_payment_intent_to_session( string $intent_id = '', string $client_secret = '' ) {
+	private function add_upe_payment_intent_to_session( string $intent_id = '', string $client_secret = '', string $payment_id ) {
 		$cart_hash = 'undefined';
 
 		if ( isset( $_COOKIE['woocommerce_cart_hash'] ) ) {
 			$cart_hash = sanitize_text_field( wp_unslash( $_COOKIE['woocommerce_cart_hash'] ) );
 		}
 
-		$value = $cart_hash . '-' . $intent_id . '-' . $client_secret;
+		$value = $cart_hash . '-' . $intent_id . '-' . $client_secret . '-' . $payment_id;
 
 		WC()->session->set( $this->get_payment_intent_session_key(), $value );
 	}

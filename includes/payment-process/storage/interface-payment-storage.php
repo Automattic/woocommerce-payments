@@ -32,4 +32,12 @@ interface Payment_Storage {
 	 * @throws \Exception      In case the payment could not be loaded.
 	 */
 	public function load( Payment $payment );
+
+	/**
+	 * Deletes a payment from storage.
+	 *
+	 * @param Payment $payment The payment object.
+	 * @return bool Whether it was possible to delete the payment.
+	 */
+	public function delete( Payment $payment );
 }

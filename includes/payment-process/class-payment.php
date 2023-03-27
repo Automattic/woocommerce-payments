@@ -186,6 +186,10 @@ class Payment {
 	 * @param array $data The pre-existing payment data.
 	 */
 	public function load_data( array $data ) {
+		if ( isset( $data['id'] ) ) {
+			$this->id = $data['id'];
+		}
+
 		if ( isset( $data['flags'] ) ) {
 			$this->flags = $data['flags'];
 		}
@@ -214,6 +218,7 @@ class Payment {
 			: null;
 
 		return [
+			'id'             => $this->id,
 			'flags'          => $this->flags,
 			'payment_method' => $payment_method,
 			'vars'           => $this->vars,
@@ -226,6 +231,13 @@ class Payment {
 	 */
 	public function save() {
 		$this->payment_storage->store( $this );
+	}
+
+	/**
+	 * Deletes the payment from storage.
+	 */
+	public function delete() {
+		$this->payment_storage->delete( $this );
 	}
 
 	/**

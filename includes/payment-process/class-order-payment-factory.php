@@ -80,4 +80,25 @@ class Order_Payment_Factory {
 		$payment->save();
 		return $payment;
 	}
+
+	/**
+	 * Converts a non-order payment to an order payment.
+	 *
+	 * @param Payment  $payment An existing payment, even if it does not belong to an order.
+	 * @param WC_Order $order   An order that the new payment should belong to.
+	 * @return Order_Payment    The converted payment.
+	 */
+	public function covert_payment_to_order_payment( Payment $payment, WC_Order $order ) {
+		$order_payment = new Order_Payment( $this->payment_storage, $this->payment_method_factory );
+		$order_payment->set_order( $order );
+		$order_payment->load_data( $payment->get_data() );
+
+		// Save the new payment.
+		$order_payment->save();
+
+		// Delete the previous payment.
+		$payment->delete();
+
+		return $order_payment;
+	}
 }
