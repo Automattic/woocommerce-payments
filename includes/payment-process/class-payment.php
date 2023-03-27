@@ -186,24 +186,16 @@ class Payment {
 	 * @param array $data The pre-existing payment data.
 	 */
 	public function load_data( array $data ) {
-		if ( isset( $data['id'] ) ) {
-			$this->id = $data['id'];
+		// Scalar props.
+		foreach ( [ 'id', 'flags', 'vars', 'logs' ] as $key ) {
+			if ( isset( $data[ $key ] ) && ! empty( $data[ $key ] ) ) {
+				$this->$key = $data[ $key ];
+			}
 		}
 
-		if ( isset( $data['flags'] ) ) {
-			$this->flags = $data['flags'];
-		}
-
-		if ( isset( $data['vars'] ) ) {
-			$this->vars = $data['vars'];
-		}
-
+		// Some props need objects.
 		if ( isset( $data['payment_method'] ) && ! empty( $data['payment_method'] ) ) {
 			$this->payment_method = $this->payment_method_factory->from_storage( $data['payment_method'] );
-		}
-
-		if ( isset( $data['logs'] ) && ! empty( $data['logs'] ) ) {
-			$this->logger->set_logs( $data['logs'] );
 		}
 	}
 
@@ -331,9 +323,8 @@ class Payment {
 	 * Returns all possible steps, needed for the payment.
 	 *
 	 * @return string[] An array of class names.
-	 * @todo Make this private and non-static. It's only public and static to allow this early.
 	 */
-	public static function get_available_steps() {
+	protected function get_all_available_steps() {
 		/**
 		 * Allows the list of payment steps, and their order to be modified.
 		 *
@@ -370,51 +361,60 @@ class Payment {
 	}
 
 	/**
-	 * Processes the payment, once all external set-up is done.
+	 * Generates a list of all steps, applicable for the current payment.
 	 *
-	 * @return mixed The result of the successful action call.
+	 * This method is only executed once for a given payment in the context
+	 * of a given flow. If the payment is stored, and loaded, it will not
+	 * be executed again, as the list of steps will already have been determined.
+	 *
+	 * @return Abstract_Step[]
 	 * @throws \Exception If there is no flow set for the payment.
 	 */
-	public function process() {
+	protected function get_steps() {
 		// The flow is required, make sure it's set.
 		if ( ! $this->flow ) {
 			throw new \Exception( 'Processing payments requires a flow to be set' );
 		}
 
+		$steps = [];
+		foreach ( $this->get_all_available_steps() as $class_name ) {
+			// Ignore steps, which do not use the base class.
+			if ( ! is_subclass_of( $class_name, Abstract_Step::class ) ) {
+				continue;
+			}
+
+			// Instantiate the step and check if the step is applicable to the process.
+			$step = new $class_name();
+			if ( $step->is_applicable( $this ) ) {
+				$steps[] = $step;
+			}
+		}
+
+		return $steps;
+	}
+
+	/**
+	 * Processes the payment, once all external set-up is done.
+	 *
+	 * @return mixed The result of the successful action call.
+	 */
+	public function process() {
 		// Clear any previous responses.
 		$this->response = null;
 
+		// Preload all steps, applicable to the process.
+		$steps = $this->get_steps();
+
+		// Allow all steps to collect data.
 		$this->current_stage = static::STAGE_PREPARE;
-		// Contains all steps, applicable to the payment.
-		$steps = [];
-		foreach ( static::get_available_steps() as $class_name ) {
-			if ( ! is_subclass_of( $class_name, Abstract_Step::class ) ) {
-				// Ignore steps, which do not use the base class.
-				continue;
-			}
-
-			$step = new $class_name();
-
-			// Allow logs.
-			$this->current_step = $step;
-
-			// Check if the step is applicable to the process.
-			if ( ! $step->is_applicable( $this ) ) {
-				continue;
-			}
-
+		foreach ( $steps as $step ) {
 			/**
 			 * Stage 1: Collect data.
 			 *
-			 * This allows each step to collect the necessary data.
-			 * Note: This step is in the initial loop, because follow-up
-			 * steps might depend on the data, collected by previous ones.
-			 *
-			 * @todo: Prevent this.
+			 * This allows each step to collect the necessary data,
+			 * and ensure its there before actions start getting performed.
 			 */
-			$step->collect_data( $this );
-
-			$steps[] = $step;
+			$this->run_step( $step, 'collect_data' );
 		}
 
 		/**
@@ -429,10 +429,7 @@ class Payment {
 		 */
 		$this->current_stage = static::STAGE_ACTION;
 		foreach ( $steps as $step ) {
-			// Allow logs.
-			$this->current_step = $step;
-
-			$step->action( $this );
+			$this->run_step( $step, 'action' );
 
 			// Once there's a response, there should be no further action.
 			if ( ! is_null( $this->response ) ) {
@@ -448,21 +445,31 @@ class Payment {
 		 */
 		$this->current_stage = static::STAGE_COMPLETE;
 		foreach ( $steps as $step ) {
-			// Allow logs.
-			$this->current_step = $step;
-
-			$step->complete( $this );
+			$this->run_step( $step, 'complete' );
 		}
 
-		// Whatever was updated during the process, save the order.
-		if ( $this instanceof Order_Payment ) {
-			$this->order->save();
-		}
-
-		// Save the payment process as well.
+		// Save the payment process as well as all changes.
 		$this->save();
 
 		return $this->response;
+	}
+
+	/**
+	 * Runs the stage-specific method of a particular step.
+	 *
+	 * @param Abstract_Step $step   The current step.
+	 * @param string        $method The method to run.
+	 */
+	protected function run_step( Abstract_Step $step, string $method ) {
+		// Allow logs.
+		$this->current_step = $step;
+
+		$this->logger->enter_step( get_class( $step ) . '::' . $method );
+
+		// Call the method.
+		call_user_func( [ $step, $method ], $this );
+
+		$this->logger->finish_step( get_class( $step ) . '::' . $method );
 	}
 
 	/**

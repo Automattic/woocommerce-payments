@@ -86,4 +86,22 @@ class Logger {
 
 		$this->logs[] = $log;
 	}
+
+	/**
+	 * Logs that a step has been entered.
+	 *
+	 * @param string $step The freetext step identifier.
+	 */
+	public function enter_step( string $step ) {
+		$this->logs[] = sprintf( 'Starting %s', $step );
+	}
+
+	/**
+	 * Logs that a step has been completed.
+	 *
+	 * @param string $step The freetext step identifier.
+	 */
+	public function finish_step( string $step ) {
+		$this->logs[] = sprintf( 'Finished %s', $step );
+	}
 }

@@ -39,4 +39,17 @@ class Order_Payment extends Payment {
 	public function get_order() {
 		return $this->order;
 	}
+
+
+	/**
+	 * Processes the payment, once all external set-up is done.
+	 *
+	 * @return mixed The result of the successful action call.
+	 */
+	public function process() {
+		parent::process();
+
+		// Whatever was updated during the process, save the order.
+		$this->order->save();
+	}
 }

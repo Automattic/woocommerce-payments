@@ -99,6 +99,11 @@ class Customer_Details_Step extends Abstract_Step {
 
 		$order = $payment->get_order();
 
+		// In case the object was destroyed in-between `collect_data` and `action`.
+		if ( ! $this->user ) {
+			$this->user = get_user_by( 'id', $payment->get_user_id() );
+		}
+
 		if ( null === $this->customer_id ) {
 			// Create a new customer.
 			$customer_data     = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $this->user->ID ) );
