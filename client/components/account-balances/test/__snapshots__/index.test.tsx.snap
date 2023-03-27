@@ -59,7 +59,7 @@ exports[`AccountBalances renders 1`] = `
           >
             <p
               class="wcpay-account-balances__balances__item__title"
-              id="wcpay-account-balances-usd-available-title"
+              id="wcpay-account-balances-usd-available"
             >
               <span>
                 Available funds
@@ -94,7 +94,7 @@ exports[`AccountBalances renders 1`] = `
               </button>
             </p>
             <p
-              aria-labelledby="wcpay-account-balances-usd-available-title"
+              aria-labelledby="wcpay-account-balances-usd-available"
               class="wcpay-account-balances__balances__item__amount"
             >
               $2.00
@@ -105,7 +105,7 @@ exports[`AccountBalances renders 1`] = `
           >
             <p
               class="wcpay-account-balances__balances__item__title"
-              id="wcpay-account-balances-usd-pending-title"
+              id="wcpay-account-balances-usd-pending"
             >
               <span>
                 Pending funds
@@ -140,7 +140,7 @@ exports[`AccountBalances renders 1`] = `
               </button>
             </p>
             <p
-              aria-labelledby="wcpay-account-balances-usd-pending-title"
+              aria-labelledby="wcpay-account-balances-usd-pending"
               class="wcpay-account-balances__balances__item__amount"
             >
               $1.00
@@ -151,7 +151,7 @@ exports[`AccountBalances renders 1`] = `
           >
             <p
               class="wcpay-account-balances__balances__item__title"
-              id="wcpay-account-balances-usd-reserved-title"
+              id="wcpay-account-balances-usd-reserved"
             >
               <span>
                 Reserved funds
@@ -186,7 +186,7 @@ exports[`AccountBalances renders 1`] = `
               </button>
             </p>
             <p
-              aria-labelledby="wcpay-account-balances-usd-reserved-title"
+              aria-labelledby="wcpay-account-balances-usd-reserved"
               class="wcpay-account-balances__balances__item__amount"
             >
               $0.00

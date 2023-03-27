@@ -87,7 +87,7 @@ const AccountBalancesTabPanel: React.FC = () => {
 			{ ( tab: BalanceTab ) => (
 				<Flex gap={ 0 } className="wcpay-account-balances__balances">
 					<BalanceBlock
-						type="available"
+						id={ `wcpay-account-balances-${ tab.currencyCode }-available` }
 						title={ fundLabelStrings.available }
 						amount={ tab.availableFunds }
 						currencyCode={ tab.currencyCode }
@@ -127,7 +127,7 @@ const AccountBalancesTabPanel: React.FC = () => {
 						}
 					/>
 					<BalanceBlock
-						type="pending"
+						id={ `wcpay-account-balances-${ tab.currencyCode }-pending` }
 						title={ fundLabelStrings.pending }
 						amount={ tab.pendingFunds }
 						currencyCode={ tab.currencyCode }
@@ -156,7 +156,7 @@ const AccountBalancesTabPanel: React.FC = () => {
 						}
 					/>
 					<BalanceBlock
-						type="reserved"
+						id={ `wcpay-account-balances-${ tab.currencyCode }-reserved` }
 						title={ fundLabelStrings.reserved }
 						amount={ tab.reservedFunds }
 						currencyCode={ tab.currencyCode }

@@ -11,16 +11,11 @@ import Loadable from 'components/loadable';
 import BalanceTooltip from './balance-tooltip';
 
 /**
- * balanceType
- */
-type balanceType = 'pending' | 'available' | 'reserved';
-
-/**
  * BalanceBlockProps
  *
  * @typedef {Object} BalanceBlockProps
  *
- * @property {balanceType} type										Type of the balance block. eg "available".
+ * @property {string} id											The balance block id. Used to link the title and amount.
  * @property {string} title											The balance title.
  * @property {string} currencyCode									Currency code of the balance block.
  * @property {React.ReactElement< typeof BalanceTooltip >} tooltip	The tooltip element.
@@ -28,7 +23,7 @@ type balanceType = 'pending' | 'available' | 'reserved';
  * @property {boolean} [isLoading]									Optional. Whether the balance block is loading.
  */
 interface BalanceBlockProps {
-	type: balanceType;
+	id: string;
 	title: string;
 	currencyCode: string;
 	tooltip: React.ReactElement< typeof BalanceTooltip >;
@@ -44,18 +39,17 @@ interface BalanceBlockProps {
  * @return {JSX.Element} Rendered balance element.
  */
 const BalanceBlock: React.FC< BalanceBlockProps > = ( {
-	type,
+	id,
 	title,
 	currencyCode,
 	tooltip,
 	amount = 0,
 	isLoading = false,
 } ) => {
-	const titleElementID = `wcpay-account-balances-${ currencyCode }-${ type }-title`;
 	return (
 		<div className="wcpay-account-balances__balances__item">
 			<p
-				id={ titleElementID }
+				id={ id }
 				className="wcpay-account-balances__balances__item__title"
 			>
 				<span>{ title }</span>
@@ -63,7 +57,7 @@ const BalanceBlock: React.FC< BalanceBlockProps > = ( {
 			</p>
 			<p
 				className="wcpay-account-balances__balances__item__amount"
-				aria-labelledby={ titleElementID }
+				aria-labelledby={ id }
 			>
 				<Loadable
 					isLoading={ isLoading }
