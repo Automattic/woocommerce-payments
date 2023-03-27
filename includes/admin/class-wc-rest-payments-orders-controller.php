@@ -68,6 +68,15 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	public function register_routes() {
 		register_rest_route(
 			$this->namespace,
+			$this->rest_base . '/(?P<order_id>\w+)',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_order' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
 			$this->rest_base . '/(?P<order_id>\w+)/capture_terminal_payment',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
@@ -531,6 +540,24 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			Logger::error( 'Failed to cancel an authorization via REST API: ' . $e );
 			return new WP_Error( 'wcpay_server_error', __( 'Unexpected server error', 'woocommerce-payments' ), [ 'status' => 500 ] );
 		}
+	}
+
+	/**
+	 * Returns the order data
+	 *
+	 * @param  WP_REST_Request $request Full data about the request.
+	 *
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function get_order( $request ) {
+		$order_id = $request['order_id'];
+		$order    = wc_get_order( $order_id );
+
+		if ( false === $order ) {
+			return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
+		}
+
+		return rest_ensure_response( $order->get_data() );
 	}
 
 	/**

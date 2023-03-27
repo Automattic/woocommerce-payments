@@ -21,6 +21,7 @@ import * as documents from './documents';
 import * as paymentIntents from './payment-intents';
 import * as authorizations from './authorizations';
 import * as fraudOutcomes from './fraud-outcomes';
+import * as orders from './orders';
 
 // Extracted into wrapper function to facilitate testing.
 export const initStore = () =>
@@ -39,6 +40,7 @@ export const initStore = () =>
 			paymentIntents: paymentIntents.reducer,
 			authorizations: authorizations.reducer,
 			fraudOutcomes: fraudOutcomes.reducer,
+			orders: orders.reducer,
 		} ),
 		actions: {
 			...deposits.actions,
@@ -54,6 +56,7 @@ export const initStore = () =>
 			...paymentIntents.actions,
 			...authorizations.actions,
 			...fraudOutcomes.actions,
+			...orders.actions,
 		},
 		controls,
 		selectors: {
@@ -70,6 +73,7 @@ export const initStore = () =>
 			...paymentIntents.selectors,
 			...authorizations.selectors,
 			...fraudOutcomes.selectors,
+			...orders.selectors,
 		},
 		resolvers: {
 			...deposits.resolvers,
@@ -85,5 +89,6 @@ export const initStore = () =>
 			...paymentIntents.resolvers,
 			...authorizations.resolvers,
 			...fraudOutcomes.resolvers,
+			...orders.resolvers,
 		},
 	} );
