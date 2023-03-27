@@ -83,6 +83,8 @@ class WC_REST_Payments_Charges_Controller extends WC_Payments_REST_Controller {
 		$currency        = $order->get_currency();
 		$billing_details = WC_Payments_Utils::get_billing_details_from_order( $order );
 		$date_created    = $order->get_date_created();
+		$intent_id       = $order->get_meta( '_intent_id' );
+		$intent_status   = $order->get_meta( '_intent_status' );
 
 		$charge = [
 			'id'                     => $order->get_id(),
@@ -103,7 +105,7 @@ class WC_REST_Payments_Charges_Controller extends WC_Payments_REST_Controller {
 			'order'                  => WC_Payments::get_payments_api_client()->build_order_info( $order ),
 			'paid'                   => false,
 			'paydown'                => null,
-			'payment_intent'         => $order->get_meta( '_intent_id' ) ?? null,
+			'payment_intent'         => ! empty( $intent_id ) ? $intent_id : null,
 			'payment_method_details' => [
 				'card' => [
 					'country' => $order->get_billing_country(),
@@ -114,7 +116,7 @@ class WC_REST_Payments_Charges_Controller extends WC_Payments_REST_Controller {
 			],
 			'refunded'               => false,
 			'refunds'                => null,
-			'status'                 => $order->get_meta( '_intent_status' ) ?? $order->get_status(),
+			'status'                 => ! empty( $intent_status ) ? $intent_status : $order->get_status(),
 		];
 
 		$charge = WC_Payments::get_payments_api_client()->add_formatted_address_to_charge_object( $charge );
