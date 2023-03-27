@@ -461,8 +461,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment->set_flow( Payment::UPE_PROCESS_PAYMENT_FLOW );
 
 		// Setup the payment object.
-		$payment->set_order( $order );
-
 		$payment_method = $this->payment_method_factory->from_request( $_POST, true );
 		$payment->set_payment_method( $payment_method );
 		if ( ! $payment_method instanceof Saved_Payment_Method && New_Payment_Method::should_be_saved( $_POST ) ) {
@@ -595,7 +593,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		// Load the order and the payment.
 		$order   = wc_get_order( $order_id );
 		$payment = $this->payment_factory->create_order_payment( $order );
-		$payment->set_order( $order );
 
 		// Allows UPE steps to work.
 		$payment->set_flow( Payment::UPE_PROCESS_REDIRECT_FLOW );

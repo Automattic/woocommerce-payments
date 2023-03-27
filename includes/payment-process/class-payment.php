@@ -297,7 +297,7 @@ class Payment {
 				Bump_Transaction_Limiter_Step::class, // Act & Complete.
 				Verify_Fraud_Token_Step::class, // Action.
 				Load_Intent_After_Authentication_Step::class, // Action.
-				Check_Session_Against_Processing_Order_Step::class, // Act & Complete.
+				// Check_Session_Against_Processing_Order_Step::class, // Act & Complete.
 				Check_Attached_Intent_Success_Step::class, // Action.
 				Create_UPE_Intent_Step::class, // Action.
 				Redirect_UPE_Payment_Step::class, // Action.
@@ -319,8 +319,14 @@ class Payment {
 	 * Processes the payment, once all external set-up is done.
 	 *
 	 * @return mixed The result of the successful action call.
+	 * @throws Exception If there is no flow set for the payment.
 	 */
 	public function process() {
+		// The flow is required, make sure it's set.
+		if ( ! $this->flow ) {
+			throw new \Exception( 'Processing payments requires a flow to be set' );
+		}
+
 		// Clear any previous responses.
 		$this->response = null;
 
