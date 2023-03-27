@@ -86,4 +86,14 @@ class New_UPE_Payment_Gateway extends UPE_Split_Payment_Gateway {
 			<div class="wcpay-upe-element" data-payment-method-type="<?php echo esc_attr( $this->stripe_id ); ?>"></div>
 		<?php
 	}
+
+	/**
+	 * Renders the credit card input fields needed to get the user's payment information on the checkout page.
+	 *
+	 * We also add the JavaScript which drives the UI.
+	 */
+	public function payment_fields() {
+		do_action( 'wc_payments_set_gateway', $this->get_selected_stripe_payment_type_id() );
+		do_action( 'wc_payments_add_upe_payment_fields' );
+	}
 }

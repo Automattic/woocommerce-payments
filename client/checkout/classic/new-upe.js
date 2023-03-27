@@ -82,16 +82,29 @@ jQuery( function ( $ ) {
 		const options = {
 			mode: 'payment',
 			currency: 'usd',
+			// TODO: get the amount from the order
 			amount: 1000,
 			paymentMethodCreation: 'manual',
+			paymentMethodTypes: [ paymentMethodType ],
 		};
 		elements = api.getStripe().elements( options );
+		gatewayUPEComponents[ paymentMethodType ].elements = elements;
 		upeElement = elements.create( 'payment' );
 		upeElement.mount( domElement );
+		gatewayUPEComponents[ paymentMethodType ].upeElement = upeElement;
+		upeElement.on( 'change', ( event ) => {
+			const selectedUPEPaymentType =
+				'link' !== event.value.type ? event.value.type : 'card';
+			gatewayUPEComponents[ selectedUPEPaymentType ].country =
+				event.value.country;
+			gatewayUPEComponents[ selectedUPEPaymentType ].isUPEComplete =
+				event.complete;
+		} );
 	}
 
-	const handleEverything = async ( $form ) => {
+	const handleEverything = async ( $form, paymentMethodType ) => {
 		blockUI( $form );
+		elements = gatewayUPEComponents[ paymentMethodType ].elements;
 		elements.submit().then( ( result ) => {
 			if ( result.error ) {
 				console.log(
@@ -147,7 +160,51 @@ jQuery( function ( $ ) {
 		.map( ( method ) => `checkout_place_order_${ method }` )
 		.join( ' ' );
 	$( 'form.checkout' ).on( checkoutEvents, function () {
-		handleEverything( $( this ) );
+		const paymentMethodType = getSelectedPaymentMethod();
+
+		handleEverything( $( this ), paymentMethodType );
 		return false;
 	} );
+
+	function getSelectedPaymentMethod() {
+		const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
+		const gatewayCardId = getUPEConfig( 'gatewayId' );
+		let selectedGatewayId = null;
+
+		// Handle payment method selection on the Checkout page or Add Payment Method page where class names differ.
+
+		if ( null !== document.querySelector( 'li.wc_payment_method' ) ) {
+			selectedGatewayId = document
+				.querySelector(
+					'li.wc_payment_method input.input-radio:checked'
+				)
+				.getAttribute( 'id' );
+		} else if (
+			null !== document.querySelector( 'li.woocommerce-PaymentMethod' )
+		) {
+			selectedGatewayId = document
+				.querySelector(
+					'li.woocommerce-PaymentMethod input.input-radio:checked'
+				)
+				.getAttribute( 'id' );
+		}
+
+		if ( 'payment_method_woocommerce_payments' === selectedGatewayId ) {
+			selectedGatewayId = 'payment_method_woocommerce_payments_card';
+		}
+
+		let selectedPaymentMethod = null;
+
+		for ( const paymentMethodType in paymentMethodsConfig ) {
+			if (
+				`payment_method_${ gatewayCardId }_${ paymentMethodType }` ===
+				selectedGatewayId
+			) {
+				selectedPaymentMethod = paymentMethodType;
+				break;
+			}
+		}
+
+		return selectedPaymentMethod;
+	}
 } );
