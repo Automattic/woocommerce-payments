@@ -19,6 +19,9 @@ use WCPay\Payment_Process\Step\{ Metadata_Step, Abstract_Step, Add_Token_To_Orde
  * Main class, representing payments.
  */
 class Payment {
+	use Payment_Vars;
+	use Logger;
+
 	/**
 	 * Indicates if the payment is merchant-initiated.
 	 * If the flag is not present, it means that it's a standard
@@ -130,11 +133,37 @@ class Payment {
 	protected $vars = [];
 
 	/**
-	 * Holds the response, which should be provided at the end.
+	 * Holds the response, which should be provided at the end of `process()`.
 	 *
 	 * @var mixed
 	 */
 	protected $response;
+
+	/**
+	 * Holds logs of the process.
+	 *
+	 * @var string[]
+	 */
+	protected $logs = [];
+
+	/**
+	 * The current payment processing stage.
+	 *
+	 * @var string
+	 */
+	protected $current_stage = 'initialization';
+
+	// Constants, used for `current_stage`.
+	const STAGE_PREPARE  = 'preparation';
+	const STAGE_ACTION   = 'action';
+	const STAGE_COMPLETE = 'completion stage';
+
+	/**
+	 * The current step, which is being executed.
+	 *
+	 * @var Step
+	 */
+	protected $current_step;
 
 	/**
 	 * Instantiates the class.
@@ -160,8 +189,16 @@ class Payment {
 			$this->flags = $data['flags'];
 		}
 
+		if ( isset( $data['vars'] ) ) {
+			$this->vars = $data['vars'];
+		}
+
 		if ( isset( $data['payment_method'] ) && ! empty( $data['payment_method'] ) ) {
 			$this->payment_method = $this->payment_method_factory->from_storage( $data['payment_method'] );
+		}
+
+		if ( isset( $data['logs'] ) && ! empty( $data['logs'] ) ) {
+			$this->logs = $data['logs'];
 		}
 	}
 
@@ -178,6 +215,8 @@ class Payment {
 		return [
 			'flags'          => $this->flags,
 			'payment_method' => $payment_method,
+			'vars'           => $this->vars,
+			'logs'           => $this->logs,
 		];
 	}
 
@@ -332,6 +371,7 @@ class Payment {
 		// Clear any previous responses.
 		$this->response = null;
 
+		$this->current_stage = static::STAGE_PREPARE;
 		// Contains all steps, applicable to the payment.
 		$steps = [];
 		foreach ( static::get_available_steps() as $class_name ) {
@@ -341,6 +381,9 @@ class Payment {
 			}
 
 			$step = new $class_name();
+
+			// Allow logs.
+			$this->current_step = $step;
 
 			// Check if the step is applicable to the process.
 			if ( ! $step->is_applicable( $this ) ) {
@@ -371,7 +414,11 @@ class Payment {
 		 * This was `Complete_Without_Payment_Step` can complete the processing,
 		 * and other steps (ex. intent creation) will be skipped. Order is important.
 		 */
+		$this->current_stage = static::STAGE_ACTION;
 		foreach ( $steps as $step ) {
+			// Allow logs.
+			$this->current_step = $step;
+
 			$step->action( $this );
 
 			// Once there's a response, there should be no further action.
@@ -386,7 +433,11 @@ class Payment {
 		 * This allows each step to go ahead and save the necessary data
 		 * like payment tokens, meta, update subscriptions and etc.
 		 */
+		$this->current_stage = static::STAGE_COMPLETE;
 		foreach ( $steps as $step ) {
+			// Allow logs.
+			$this->current_step = $step;
+
 			$step->complete( $this );
 		}
 
@@ -394,6 +445,9 @@ class Payment {
 		if ( $this instanceof Order_Payment ) {
 			$this->order->save();
 		}
+
+		// Save the payment process as well.
+		$this->save();
 
 		return $this->response;
 	}
@@ -415,7 +469,7 @@ class Payment {
 	 * @param string $key Key of the value.
 	 * @return mixed|null
 	 */
-	public function get_var( $key ) {
+	protected function get_var( $key ) {
 		return isset( $this->vars[ $key ] ) ? $this->vars[ $key ] : null;
 	}
 
@@ -431,191 +485,12 @@ class Payment {
 	 * @param string $key   Name of the value.
 	 * @param mixed  $value Value to set.
 	 */
-	public function set_var( $key, $value ) {
+	protected function set_var( $key, $value ) {
+		// Prepare the previous value for logs.
+		$previous = isset( $this->vars[ $key ] ) ? $this->vars[ $key ] : null;
+
+		// Store the change, and log it.
 		$this->vars[ $key ] = $value;
-	}
-
-	/**
-	 * Updates the payment/setup intent, used for the payment.
-	 *
-	 * The ID is generally used as an input parameter, before
-	 * the full object is retrieved, and available for follow-up steps.
-	 *
-	 * @param string $intent_id The ID of the intent.
-	 */
-	public function set_intent_id( string $intent_id ) {
-		$this->set_var( 'intent_id', $intent_id );
-	}
-
-	/**
-	 * Returns the payment/setup intent ID, if one is set.
-	 *
-	 * @return string|null
-	 */
-	public function get_intent_id() {
-		return $this->get_var( 'intent_id' );
-	}
-
-	/**
-	 * Stores a full payment/setup intent object within the process.
-	 * This generally happens in the main (action) part of the process.
-	 *
-	 * @param WC_Payments_API_Intention|WC_Payments_API_Setup_Intention $intent The intent object.
-	 */
-	public function set_intent( $intent ) {
-		$this->set_var( 'intent', $intent );
-	}
-
-	/**
-	 * Returns the intent object, if set.
-	 *
-	 * @return WC_Payments_API_Intention|WC_Payments_API_Setup_Intention|null
-	 */
-	public function get_intent() {
-		return $this->get_var( 'intent' );
-	}
-
-	/**
-	 * Sets the metadata, used for the payment.
-	 *
-	 * @param array $metadata Generated metadata.
-	 */
-	public function set_metadata( array $metadata ) {
-		$this->set_var( 'metadata', $metadata );
-	}
-
-	/**
-	 * Retrieves the prepared metadata.
-	 *
-	 * @return array|null
-	 */
-	public function get_metadata() {
-		return $this->get_var( 'metadata' );
-	}
-
-	/**
-	 * Stores a customer ID.
-	 *
-	 * @param string $customer_id The Stripe-formatted customer ID.
-	 */
-	public function set_customer_id( string $customer_id ) {
-		$this->set_var( 'customer_id', $customer_id );
-	}
-
-	/**
-	 * Retrieves the customer ID, if any.
-	 *
-	 * @return string|null
-	 */
-	public function get_customer_id() {
-		return $this->get_var( 'customer_id' );
-	}
-
-	/**
-	 * Stores a user ID.
-	 *
-	 * @param int $user_id The WP user ID.
-	 */
-	public function set_user_id( int $user_id = null ) {
-		$this->set_var( 'user_id', $user_id );
-	}
-
-	/**
-	 * Retrieves the user ID, if any.
-	 *
-	 * @return int|null
-	 */
-	public function get_user_id() {
-		return $this->get_var( 'user_id' );
-	}
-
-	/**
-	 * Sets the payment method types.
-	 *
-	 * @param string[] $payment_method_types The allowed payment method types.
-	 */
-	public function set_payment_method_types( array $payment_method_types ) {
-		$this->set_var( 'payment_method_types', $payment_method_types );
-	}
-
-	/**
-	 * Retrieves the payment method types.
-	 *
-	 * @return string[]|null
-	 */
-	public function get_payment_method_types() {
-		return $this->get_var( 'payment_method_types' );
-	}
-
-	/**
-	 * Sets the fingerprint.
-	 *
-	 * @param string $fingerprint The fingerprint.
-	 */
-	public function set_fingerprint( string $fingerprint ) {
-		$this->set_var( 'fingerprint', $fingerprint );
-	}
-
-	/**
-	 * Retrieves the fingerprint.
-	 *
-	 * @return string
-	 */
-	public function get_fingerprint() {
-		return $this->get_var( 'fingerprint' );
-	}
-
-	/**
-	 * Sets the selected UPE payment type.
-	 *
-	 * @param string $selected_upe_payment_type The type.
-	 */
-	public function set_selected_upe_payment_type( string $selected_upe_payment_type ) {
-		$this->set_var( 'selected_upe_payment_type', $selected_upe_payment_type );
-	}
-
-	/**
-	 * Retrieves the selected UPE payment type.
-	 *
-	 * @return string|null
-	 */
-	public function get_selected_upe_payment_type() {
-		return $this->get_var( 'selected_upe_payment_type' );
-	}
-
-	/**
-	 * Sets the payment country.
-	 *
-	 * @param string $payment_country The country.
-	 */
-	public function set_payment_country( string $payment_country ) {
-		$this->set_var( 'payment_country', $payment_country );
-	}
-
-	/**
-	 * Retrieves the payment country.
-	 *
-	 * @return string|null
-	 */
-	public function get_payment_country() {
-		return $this->get_var( 'payment_country' );
-	}
-
-	/**
-	 * Sets the fraud prevention token.
-	 *
-	 * @param string $fraud_prevention_token The token.
-	 */
-	public function set_fraud_prevention_token( string $fraud_prevention_token ) {
-		$this->set_var( 'fraud_prevention_token', $fraud_prevention_token );
-	}
-
-	/**
-	 * Retrieves the fraud prevention token.
-	 *
-	 * @return string|null
-	 */
-	public function get_fraud_prevention_token() {
-		return $this->get_var( 'fraud_prevention_token' );
+		$this->log_var_change( $key, $previous, $value );
 	}
 }
