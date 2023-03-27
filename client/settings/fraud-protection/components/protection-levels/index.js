@@ -130,7 +130,12 @@ const ProtectionLevels = () => {
 								size={ 18 }
 								title="Standard level help icon"
 								className="fraud-protection__help-icon"
-								onClick={ () => setStandardModalOpen( true ) }
+								onClick={ () => {
+									wcpayTracks.recordEvent(
+										'wcpay_fraud_protection_standard_modal_viewed'
+									);
+									setStandardModalOpen( true );
+								} }
 							/>
 							<StandardFraudProtectionModal
 								level={ ProtectionLevel.STANDARD }
@@ -171,7 +176,12 @@ const ProtectionLevels = () => {
 								size={ 18 }
 								title="High level help icon"
 								className="fraud-protection__help-icon"
-								onClick={ () => setHighModalOpen( true ) }
+								onClick={ () => {
+									wcpayTracks.recordEvent(
+										'wcpay_fraud_protection_high_modal_viewed'
+									);
+									setHighModalOpen( true );
+								} }
 							/>
 							<HighFraudProtectionModal
 								level={ ProtectionLevel.HIGH }
