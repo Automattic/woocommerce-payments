@@ -8,8 +8,6 @@
 namespace WCPay\Payment_Process;
 
 use Exception;
-use WC_Payments_API_Intention;
-use WC_Payments_API_Setup_Intention;
 use WCPay\Payment_Process\Storage\Payment_Storage;
 use WCPay\Payment_Process\Payment_Method\Payment_Method;
 use WCPay\Payment_Process\Payment_Method\Payment_Method_Factory;
@@ -20,7 +18,6 @@ use WCPay\Payment_Process\Step\{ Metadata_Step, Abstract_Step, Add_Token_To_Orde
  */
 class Payment {
 	use Payment_Vars;
-	use Logger;
 
 	/**
 	 * Indicates if the payment is merchant-initiated.
@@ -140,11 +137,11 @@ class Payment {
 	protected $response;
 
 	/**
-	 * Holds logs of the process.
+	 * Holds the logger object.
 	 *
-	 * @var string[]
+	 * @var Logger
 	 */
-	protected $logs = [];
+	protected $logger;
 
 	/**
 	 * The current payment processing stage.
@@ -161,7 +158,7 @@ class Payment {
 	/**
 	 * The current step, which is being executed.
 	 *
-	 * @var Step
+	 * @var Abstract_Step
 	 */
 	protected $current_step;
 
@@ -175,8 +172,12 @@ class Payment {
 		Payment_Storage $storage,
 		Payment_Method_Factory $payment_method_factory
 	) {
+		// Dependencies.
 		$this->payment_storage        = $storage;
 		$this->payment_method_factory = $payment_method_factory;
+
+		// Sub-object.
+		$this->logger = new Logger();
 	}
 
 	/**
@@ -198,7 +199,7 @@ class Payment {
 		}
 
 		if ( isset( $data['logs'] ) && ! empty( $data['logs'] ) ) {
-			$this->logs = $data['logs'];
+			$this->logger->set_logs( $data['logs'] );
 		}
 	}
 
@@ -216,7 +217,7 @@ class Payment {
 			'flags'          => $this->flags,
 			'payment_method' => $payment_method,
 			'vars'           => $this->vars,
-			'logs'           => $this->logs,
+			'logs'           => $this->logger->get_logs(),
 		];
 	}
 
@@ -491,6 +492,6 @@ class Payment {
 
 		// Store the change, and log it.
 		$this->vars[ $key ] = $value;
-		$this->log_var_change( $key, $previous, $value );
+		$this->logger->var_changed( $key, $previous, $value, $this->current_stage, $this->current_step );
 	}
 }
