@@ -5,20 +5,12 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 
 /**
  * Fraud_Prevention_Service_Test unit tests.
  */
 class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
-
-	/**
-	 * WC_Session mock object.
-	 *
-	 * @var PHPUnit_Framework_MockObject_MockObject|WC_Session
-	 */
-	private $session_mock;
 
 	/**
 	 * Mock WC_Payments_Account.
@@ -71,7 +63,7 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 			'check'   => [
 				'key'      => 'order_total',
 				'operator' => 'greater_than',
-				'value'    => 1000,
+				'value'    => 100000,
 			],
 		],
 	];
@@ -97,7 +89,7 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 			'check'   => [
 				'key'      => 'order_total',
 				'operator' => 'greater_than',
-				'value'    => 1000,
+				'value'    => 100000,
 			],
 		],
 		[
