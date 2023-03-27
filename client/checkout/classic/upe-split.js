@@ -568,15 +568,10 @@ jQuery( function ( $ ) {
 		try {
 			const upeComponents = gatewayUPEComponents[ paymentMethodType ];
 			formFields.wcpay_payment_country = upeComponents.country;
-			const additionalOptions = {
-				wc_payment_intent_id: upeComponents.paymentIntentId,
-				'wcpay-fingerprint': fingerprint ? fingerprint : '',
-			};
+			formFields.wc_payment_intent_id = upeComponents.paymentIntentId;
+			formFields.wcpay_fingerprint = upeComponents.fingerprint;
 
-			const response = await api.processCheckout( {
-				...formFields,
-				...additionalOptions,
-			} );
+			const response = await api.processCheckout( formFields );
 			const redirectUrl = response.redirect_url;
 			const upeConfig = {
 				elements: upeComponents.elements,

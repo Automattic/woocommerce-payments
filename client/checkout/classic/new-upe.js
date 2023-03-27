@@ -43,23 +43,18 @@ jQuery( function ( $ ) {
 		apiRequest
 	);
 
-	const submitForm = async ( $form, { id } ) => {
-		const formFields = $form.serializeArray().reduce( ( obj, field ) => {
-			obj[ field.name ] = field.value;
-			return obj;
-		}, {} );
-		const additionalOptions = {
+	const processCheckout = async ( $form, { id } ) => {
+		const fields = {
+			...$form.serializeArray().reduce( ( obj, field ) => {
+				obj[ field.name ] = field.value;
+				return obj;
+			}, {} ),
 			wc_payment_method: id,
 		};
-		await api
-			.processCheckout( {
-				...formFields,
-				...additionalOptions,
-			} )
-			.then( ( response ) => {
-				console.log( 'got response: ' + JSON.stringify( response ) );
-				window.location.href = response.redirect;
-			} );
+		await api.processCheckout( fields ).then( ( response ) => {
+			console.log( 'got response: ' + JSON.stringify( response ) );
+			window.location.href = response.redirect;
+		} );
 		// const paymentSelector = '#wcpay-upe-element';
 
 		// // // Populate form with the payment method.
@@ -136,7 +131,7 @@ jQuery( function ( $ ) {
 				},
 			} )
 			.then( ( { paymentMethod } ) => {
-				submitForm( $( this ), paymentMethod );
+				processCheckout( $( this ), paymentMethod );
 			} )
 			.catch( ( error ) => {
 				console.log( 'error occurred: ' + JSON.stringify( error ) );
