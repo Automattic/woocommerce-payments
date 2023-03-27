@@ -930,9 +930,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->prepare_payment_objects();
 
 		/**
-		 * Preparation part, defining the payment. Should be replaced with `load_or_create_order_payment` after initial development.
+		 * Preparation part, defining the payment.
 		 */
-		$payment = $this->payment_factory->create_order_payment( $order );
+		$payment = $this->payment_factory->load_or_create_order_payment( $order );
 		$payment->set_flow( Payment::STANDARD_FLOW );
 
 		// phpcs:ignore WordPress.Security.NonceVerification
@@ -2501,7 +2501,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			$this->prepare_payment_objects();
-			$payment = $this->payment_factory->create_order_payment( $order );
+			$payment = $this->payment_factory->load_or_create_order_payment( $order );
 			$payment->set_flow( Payment::POST_CHECKOUT_REDIRECT_FLOW );
 
 			$intent_id_received = isset( $_POST['intent_id'] )

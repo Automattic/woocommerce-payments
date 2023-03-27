@@ -30,8 +30,13 @@ trait Logger {
 		$log = [
 			'event' => is_null( $previous ) ? 'var_set' : 'var_change',
 			'stage' => $this->current_stage,
-			'key'   => $key,
 		];
+
+		if ( ! is_null( $this->current_step ) ) {
+			$log['step'] = $this->current_step->get_id();
+		}
+
+		$log['key'] = $key;
 
 		if ( ! is_null( $previous ) ) {
 			$log['previous'] = $previous;
