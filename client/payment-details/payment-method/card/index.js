@@ -36,7 +36,7 @@ const formatPaymentMethodDetails = ( charge ) => {
 		cvc_check: cvcCheck,
 		address_line1_check: line1Check,
 		address_postal_code_check: postalCodeCheck,
-	} = checks;
+	} = checks || {};
 
 	// Format the date, MM/YYYY. No translations needed.
 	const date = month && year ? month + ' / ' + year : undefined;
