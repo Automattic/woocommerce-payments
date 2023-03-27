@@ -87,7 +87,7 @@ class Load_Intent_After_Authentication_Step extends Abstract_Step {
 
 		// Load the payment/setup intent, and make it available for the rest of the process.
 		$intent = $this->get_intent_from_server( $payment );
-		$payment->set_var( 'intent', $intent );
+		$payment->set_intent( $intent );
 
 		$payment->complete(
 			[
@@ -119,7 +119,7 @@ class Load_Intent_After_Authentication_Step extends Abstract_Step {
 		// the AJAX request. We are about to use the status of the intent saved in
 		// the order, so we need to make sure the intent that was used for authentication
 		// is the same as the one we're using to update the status.
-		if ( $stored_intent_id !== $payment->get_var( 'intent_id' ) ) {
+		if ( $stored_intent_id !== $payment->get_intent_id() ) {
 			throw new Intent_Authentication_Exception(
 				__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
 				'intent_id_mismatch'
@@ -137,11 +137,11 @@ class Load_Intent_After_Authentication_Step extends Abstract_Step {
 		$order = $payment->get_order();
 		if ( $order->get_total() > 0 ) {
 			// An exception is thrown if an intent can't be found for the given intent ID.
-			$request = Get_Intention::create( $payment->get_var( 'intent_id' ) );
+			$request = Get_Intention::create( $payment->get_intent_id() );
 			return $request->send( 'wcpay_get_intent_request', $order );
 		} else {
 			// For $0 orders, fetch the Setup Intent instead.
-			return $this->payments_api_client->get_setup_intent( $payment->get_var( 'intent_id' ) );
+			return $this->payments_api_client->get_setup_intent( $payment->get_intent_id() );
 		}
 	}
 }

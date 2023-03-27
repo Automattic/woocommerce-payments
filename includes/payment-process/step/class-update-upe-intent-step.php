@@ -71,7 +71,7 @@ class Update_UPE_Intent_Step extends Abstract_Step {
 		if ( $order->get_total() > 0 ) {
 			// Setup intents already contain enough information, only update Payment intents.
 			$intent = $this->request_intent_update_from_server( $payment );
-			$payment->set_var( 'intent', $intent );
+			$payment->set_intent( $intent );
 		}
 
 		$payment->complete( $this->get_redirect_array( $payment ) );
@@ -87,26 +87,26 @@ class Update_UPE_Intent_Step extends Abstract_Step {
 	 */
 	protected function request_intent_update_from_server( Order_Payment $payment ) {
 		$order           = $payment->get_order();
-		$intent_id       = $payment->get_var( 'intent_id' );
-		$selected        = (string) $payment->get_var( 'selected_upe_payment_type' );
+		$intent_id       = $payment->get_intent_id();
+		$selected        = (string) $payment->get_selected_upe_payment_type();
 		$payment_methods = $this->gateway->get_selected_upe_payment_methods( $selected, $this->gateway->get_payment_method_ids_enabled_at_checkout( null, true ) ?? [] );
 
 		try {
 			$request = Update_Intention::create( $intent_id );
 			$request->set_currency_code( strtolower( $order->get_currency() ) );
 			$request->set_amount( WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() ) );
-			$request->set_metadata( $payment->get_var( 'metadata' ) );
+			$request->set_metadata( $payment->get_metadata() );
 			$request->set_level3( $this->gateway->get_level3_data_from_order( $order ) );
 			$request->set_payment_method_types( $payment_methods );
-			$payment_country = $payment->get_var( 'payment_country' );
+			$payment_country = $payment->get_payment_country();
 			if ( $payment_country ) {
 				$request->set_payment_country( $payment_country );
 			}
 			if ( $payment->is( Payment::SAVE_PAYMENT_METHOD_TO_STORE ) ) {
 				$request->setup_future_usage();
 			}
-			if ( $payment->get_var( 'customer_id' ) ) {
-				$request->set_customer( $payment->get_var( 'customer_id' ) );
+			if ( $payment->get_customer_id() ) {
+				$request->set_customer( $payment->get_customer_id() );
 			}
 			$payment_method_options = $this->gateway->get_mandate_params_for_order( $order );
 			if ( $payment_method_options ) {

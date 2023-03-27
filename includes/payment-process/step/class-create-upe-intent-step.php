@@ -61,7 +61,7 @@ class Create_UPE_Intent_Step extends Abstract_Step {
 	 * @param Payment $payment The payment, which we're working with.
 	 */
 	public function action( Payment $payment ) {
-		$metadata = $payment->get_var( 'metadata' ) ?? [];
+		$metadata = $payment->get_metadata() ?? [];
 
 		if ( $payment instanceof Order_Payment ) {
 			$order = $payment->get_order();
@@ -76,7 +76,7 @@ class Create_UPE_Intent_Step extends Abstract_Step {
 		}
 
 		// The metadata should be set/updated. @todo: This might be possible through the metadata step.
-		$payment->set_var( 'metadata', $metadata );
+		$payment->set_metadata( $metadata );
 
 		$converted_amount = WC_Payments_Utils::prepare_amount( $amount, $currency );
 		$minimum_amount   = WC_Payments_Utils::get_cached_minimum_amount( $currency );
@@ -95,7 +95,7 @@ class Create_UPE_Intent_Step extends Abstract_Step {
 		}
 
 		// Store the intent within the payment object.
-		$payment->set_var( 'intent', $intent );
+		$payment->set_intent( $intent );
 
 		// ToDo: This should probably not be called `complete`, as nothing is really completed yet.
 		$payment->complete(
@@ -123,10 +123,10 @@ class Create_UPE_Intent_Step extends Abstract_Step {
 			$request = Create_Intention::create();
 			$request->set_amount( $converted_amount );
 			$request->set_currency_code( strtolower( $currency ) );
-			$request->set_payment_method_types( $payment->get_var( 'payment_method_types' ) );
-			$request->set_metadata( $payment->get_var( 'metadata' ) );
+			$request->set_payment_method_types( $payment->get_payment_method_types() );
+			$request->set_metadata( $payment->get_metadata() );
 			$request->set_capture_method( $payment->is( Payment::MANUAL_CAPTURE ) );
-			$request->set_fingerprint( $payment->get_var( 'fingerprint' ) );
+			$request->set_fingerprint( $payment->get_fingerprint() );
 			$payment_intent = $request->send( 'wcpay_create_intent_request', $order );
 		} catch ( Amount_Too_Small_Exception $e ) {
 			$minimum_amount = $e->get_amount();
@@ -164,7 +164,7 @@ class Create_UPE_Intent_Step extends Abstract_Step {
 
 		$request = Create_Setup_Intention::create();
 		$request->set_customer( $customer_id );
-		$request->set_payment_method_types( $payment->get_var( 'payment_method_types' ) );
+		$request->set_payment_method_types( $payment->get_payment_method_types() );
 		$setup_intent = $request->send( 'wcpay_create_setup_intention_request' );
 
 		// @todo: Add an actual setup intent object...

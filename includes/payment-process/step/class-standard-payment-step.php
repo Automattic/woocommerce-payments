@@ -94,7 +94,7 @@ class Standard_Payment_Step extends Abstract_Step {
 		$status = $intent->get_status();
 
 		// Store the intent in the payment, so it's available for follow-up steps.
-		$payment->set_var( 'intent', $intent );
+		$payment->set_intent( $intent );
 
 		// @todo: Remove this in favor of a separate WooPay code path.
 		if ( $intent->get_payment_method_id() !== $payment->get_payment_method()->get_id() ) {
@@ -148,9 +148,9 @@ class Standard_Payment_Step extends Abstract_Step {
 		$request->set_amount( WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
 		$request->set_currency_code( strtolower( $order->get_currency() ) );
 		$request->set_payment_method( $payment->get_payment_method()->get_id() );
-		$request->set_customer( $payment->get_var( 'customer_id' ) );
+		$request->set_customer( $payment->get_customer_id() );
 		$request->set_capture_method( $payment->is( Payment::MANUAL_CAPTURE ) );
-		$request->set_metadata( $payment->get_var( 'metadata' ) );
+		$request->set_metadata( $payment->get_metadata() );
 		$request->set_level3( $this->gateway->get_level3_data_from_order( $order ) );
 		$request->set_off_session( $payment->is( Payment::MERCHANT_INITIATED ) );
 		$request->set_payment_methods( $payment_methods );
@@ -196,7 +196,7 @@ class Standard_Payment_Step extends Abstract_Step {
 		 * @param string   $charge_id      ID of the charge.
 		 * @param string   $currency       Currency code.
 		 */
-		do_action( 'woocommerce_woocommerce_payments_payment_requires_action', $order, $intent_id, $payment_method, $payment->get_var( 'customer_id' ), $charge_id, strtolower( $order->get_currency() ) );
+		do_action( 'woocommerce_woocommerce_payments_payment_requires_action', $order, $intent_id, $payment_method, $payment->get_customer_id(), $charge_id, strtolower( $order->get_currency() ) );
 
 		// Mark the payment as failed.
 		$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id );

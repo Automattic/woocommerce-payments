@@ -955,7 +955,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->maybe_prepare_subscription_payment( $payment, $order );
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		$payment->set_var( 'fraud_prevention_token', $_POST['wcpay-fraud-prevention-token'] ?? '' ); // Empty string to force checks. Null means skip.
+		$payment->set_fraud_prevention_token( $_POST['wcpay-fraud-prevention-token'] ?? '' ); // Empty string to force checks. Null means skip.
 
 		/**
 		 * Fun part: Processing the payment.
@@ -2508,7 +2508,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				? sanitize_text_field( wp_unslash( $_POST['intent_id'] ) )
 				/* translators: This will be used to indicate an unknown value for an ID. */
 				: __( 'unknown', 'woocommerce-payments' );
-			$payment->set_var( 'intent_id', $intent_id_received );
+			$payment->set_intent_id( $intent_id_received );
 
 			// @todo: This is a weird way to do it.
 			// The parameter was used to transfer the PM to store. The PM is in the intent, and will be used in `Save_Payment_Method_Step`.

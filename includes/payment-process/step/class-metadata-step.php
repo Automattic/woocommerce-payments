@@ -85,6 +85,6 @@ class Metadata_Step extends Abstract_Step {
 		$metadata = apply_filters( 'wcpay_metadata_from_order', $metadata, $order, $payment );
 
 		// Store within the payment.
-		$payment->set_var( 'metadata', $metadata );
+		$payment->set_metadata( $metadata );
 	}
 }

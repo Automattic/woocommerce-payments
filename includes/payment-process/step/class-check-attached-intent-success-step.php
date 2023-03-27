@@ -105,7 +105,7 @@ class Check_Attached_Intent_Success_Step extends Abstract_Step {
 		}
 
 		// The rest will be done by other steps.
-		$payment->set_var( 'intent', $intent );
+		$payment->set_intent( $intent );
 
 		$return_url = $this->gateway->get_return_url( $order );
 		$return_url = add_query_arg( self::FLAG_PREVIOUS_SUCCESSFUL_INTENT, 'yes', $return_url );

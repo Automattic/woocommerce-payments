@@ -89,7 +89,7 @@ class Update_Order_Step extends Abstract_Step {
 		}
 
 		// Attach the intent, exchange info, update the status, and add a notification note.
-		$this->order_service->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method ? $payment_method->get_id() : null, $payment->get_var( 'customer_id' ), $charge_id, $currency );
+		$this->order_service->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method ? $payment_method->get_id() : null, $payment->get_customer_id(), $charge_id, $currency );
 		$this->gateway->attach_exchange_info_to_order( $order, $charge_id );
 		// @todo: For some payments (ex. update status after 3DS), `REQUIRES_PAYMENT_METHOD` should fail the order, instead of marking it as started.
 		$this->gateway->update_order_status_from_intent( $order, $intent_id, $status, $charge_id );
@@ -149,7 +149,7 @@ class Update_Order_Step extends Abstract_Step {
 	 * @return WC_Payments_API_Intention
 	 */
 	protected function get_intent_from_payment( Order_Payment $payment ) {
-		return $payment->get_var( 'intent' );
+		return $payment->get_intent();
 	}
 
 	/**

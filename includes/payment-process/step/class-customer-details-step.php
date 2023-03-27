@@ -83,8 +83,8 @@ class Customer_Details_Step extends Abstract_Step {
 		// Determine the customer making the payment, create one if we don't have one already.
 		$this->customer_id = $this->customer_service->get_customer_id_by_user_id( $this->user->ID );
 
-		$payment->set_var( 'user_id', $this->user->ID );
-		$payment->set_var( 'customer_id', $this->customer_id );
+		$payment->set_user_id( $this->user->ID );
+		$payment->set_customer_id( $this->customer_id );
 	}
 
 	/**
@@ -103,7 +103,7 @@ class Customer_Details_Step extends Abstract_Step {
 			// Create a new customer.
 			$customer_data     = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $this->user->ID ) );
 			$this->customer_id = $this->customer_service->create_customer_for_user( $this->user, $customer_data );
-			$payment->set_var( 'customer_id', $this->customer_id );
+			$payment->set_customer_id( $this->customer_id );
 		} else { // carried over from WC_Payment_Gateway_WCPay::manage_customer_details_for_order().
 			// Update the existing customer with the current order details.
 			$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $this->user->ID ) );

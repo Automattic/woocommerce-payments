@@ -69,7 +69,7 @@ class Save_Payment_Method_Step extends Abstract_Step {
 	 * @return WC_Payments_API_Intention
 	 */
 	protected function get_intent_from_payment( Order_Payment $payment ) {
-		return $payment->get_var( 'intent' );
+		return $payment->get_intent();
 	}
 
 	/**
@@ -79,7 +79,7 @@ class Save_Payment_Method_Step extends Abstract_Step {
 	 * @return WP_User
 	 */
 	protected function get_user_from_payment( Order_Payment $payment ) {
-		return get_user_by( 'id', $payment->get_var( 'user_id' ) );
+		return get_user_by( 'id', $payment->get_user_id() );
 	}
 
 	/**

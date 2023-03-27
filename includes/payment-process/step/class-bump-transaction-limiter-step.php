@@ -60,7 +60,7 @@ class Bump_Transaction_Limiter_Step extends Abstract_Step {
 	public function complete( Payment $payment ) {
 		// @todo: This error code might come from an exception in the main gateway, not just the intent?
 		// UPE method gives us the error of the previous payment attempt, so we use that for the Rate Limiter.
-		$intent     = $payment->get_var( 'intent' );
+		$intent     = $payment->get_intent();
 		$error_code = $intent->get_last_payment_error()['code'] ?? '';
 
 		if ( $this->should_bump_rate_limiter( $error_code ) ) {

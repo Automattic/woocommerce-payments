@@ -345,8 +345,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		if ( $manual_capture ) {
 			$payment->set_flag( Payment::MANUAL_CAPTURE );
 		}
-		$payment->set_var( 'fingerprint', $fingerprint );
-		$payment->set_var( 'payment_method_types', array_values( $displayed_payment_methods ) );
+		$payment->set_fingerprint( $fingerprint );
+		$payment->set_payment_method_types( array_values( $displayed_payment_methods ) );
 
 		// Save the prepared payment before trying to process it.
 		$payment->save();
@@ -467,19 +467,19 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$payment->set_flag( Payment::SAVE_PAYMENT_METHOD_TO_STORE );
 		}
 
-		$payment->set_var( 'fraud_prevention_token', $_POST['wcpay-fraud-prevention-token'] ?? '' ); // Empty string to force checks. Null means skip.
+		$payment->set_fraud_prevention_token( $_POST['wcpay-fraud-prevention-token'] ?? '' ); // Empty string to force checks. Null means skip.
 
 		$payment_intent_id = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : null;
-		$payment->set_var( 'intent_id', $payment_intent_id );
+		$payment->set_intent_id( $payment_intent_id );
 
 		$selected_upe_payment_type = ! empty( $_POST['wcpay_selected_upe_payment_type'] ) ? wc_clean( wp_unslash( $_POST['wcpay_selected_upe_payment_type'] ) ) : '';
-		$payment->set_var( 'selected_upe_payment_type', $selected_upe_payment_type );
+		$payment->set_selected_upe_payment_type( $selected_upe_payment_type );
 
 		$payment_method_types = $this->get_selected_upe_payment_methods( (string) $selected_upe_payment_type, $this->get_payment_method_ids_enabled_at_checkout( null, true ) ?? [] );
-		$payment->set_var( 'payment_method_types', $payment_method_types );
+		$payment->set_payment_method_types( $payment_method_types );
 
 		$payment_country = ! empty( $_POST['wcpay_payment_country'] ) ? wc_clean( wp_unslash( $_POST['wcpay_payment_country'] ) ) : null;
-		$payment->set_var( 'payment_country', $payment_country );
+		$payment->set_payment_country( $payment_country );
 
 		$response = $payment->process();
 
@@ -598,7 +598,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment->set_flow( Payment::UPE_PROCESS_REDIRECT_FLOW );
 
 		// Setup the payment.
-		$payment->set_var( 'intent_id', $intent_id );
+		$payment->set_intent_id( $intent_id );
 
 		if ( $save_payment_method ) {
 			$payment->set_flag( Payment::SAVE_PAYMENT_METHOD_TO_STORE );

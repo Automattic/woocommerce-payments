@@ -45,7 +45,7 @@ class Verify_Fraud_Token_Step extends Abstract_Step {
 	 */
 	public function is_applicable( Payment $payment ) {
 		// Entry points should set a non-null token to enable checks.
-		return is_string( $payment->get_var( 'fraud_prevention_token' ) );
+		return is_string( $payment->get_fraud_prevention_token() );
 	}
 
 	/**
@@ -66,7 +66,7 @@ class Verify_Fraud_Token_Step extends Abstract_Step {
 		}
 
 		// Finally, verify the token.
-		$token = $payment->get_var( 'fraud_prevention_token' );
+		$token = $payment->get_fraud_prevention_token();
 		if ( ! $this->fraud_prevention_service->verify_token( $token ) ) {
 			throw new Process_Payment_Exception(
 				__( 'We are not able to process this payment. Please refresh the page and try again.', 'woocommerce-payments' ),

@@ -84,7 +84,7 @@ class Setup_Payment_Step extends Abstract_Step {
 		$save_user_in_platform_checkout = false;
 		if ( $payment->is( Payment::SAVE_PAYMENT_METHOD_TO_PLATFORM ) ) {
 			$order                          = $payment->get_order();
-			$metadata                       = $payment->get_var( 'metadata' );
+			$metadata                       = $payment->get_metadata();
 			$save_user_in_platform_checkout = true;
 
 			$order_metadata = [
@@ -97,13 +97,13 @@ class Setup_Payment_Step extends Abstract_Step {
 			);
 			// prioritize metadata from mobile app.
 			$order_metadata = array_merge( (array) $order_metadata, (array) $metadata );
-			$payment->set_var( 'metadata', $order_metadata );
+			$payment->set_metadata( $order_metadata );
 
 			do_action( 'woocommerce_payments_save_user_in_platform_checkout' );
 		}
 
 		$intent = $this->request_intent_from_server( $payment, $save_user_in_platform_checkout );
-		$payment->set_var( 'intent', $intent );
+		$payment->set_intent( $intent );
 	}
 
 	/**
@@ -115,9 +115,9 @@ class Setup_Payment_Step extends Abstract_Step {
 	 */
 	protected function request_intent_from_server( Order_Payment $payment, bool $save_user_in_platform_checkout ) {
 		$request = Create_And_Confirm_Setup_Intention::create();
-		$request->set_customer( $payment->get_var( 'customer_id' ) );
+		$request->set_customer( $payment->get_customer_id() );
 		$request->set_payment_method( $payment->get_payment_method()->get_id() );
-		$request->set_metadata( $payment->get_var( 'metadata' ) );
+		$request->set_metadata( $payment->get_metadata() );
 
 		/**
 		 * Allows the create and confirm setup intention request to be modified.

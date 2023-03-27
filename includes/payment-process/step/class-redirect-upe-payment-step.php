@@ -100,7 +100,7 @@ class Redirect_UPE_Payment_Step extends Abstract_Step {
 		// The process can only continue if the intent exists, and was successful.
 		$intent = $this->get_intent_object( $payment );
 		$this->check_intent_for_errors( $intent );
-		$payment->set_var( 'intent', $intent );
+		$payment->set_intent( $intent );
 
 		// The process cannot be completed without a selected payment method either.
 		$payment_method_type = $this->gateway->get_selected_payment_method( $intent->get_payment_method_type() );
@@ -138,10 +138,10 @@ class Redirect_UPE_Payment_Step extends Abstract_Step {
 
 		// Get payment or setup intent to check the status of the payment.
 		if ( 0 < $order->get_total() ) { // It's a payment only for positive amounts.
-			$request = Get_Intention::create( $payment->get_var( 'intent_id' ) );
+			$request = Get_Intention::create( $payment->get_intent_id() );
 			$intent  = $request->send( 'wcpay_get_intent_request', $order );
 		} else {
-			$intent = $this->payments_api_client->get_setup_intent( $payment->get_var( 'intent_id' ) );
+			$intent = $this->payments_api_client->get_setup_intent( $payment->get_intent_id() );
 		}
 
 		// If there is no intention for any reason, bail.
