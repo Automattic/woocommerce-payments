@@ -10,7 +10,7 @@ namespace WCPay\Fraud_Prevention;
 use WC_Payments_Features;
 use WC_Payments_Order_Service;
 use WC_Payments_Utils;
-use WCPay\Constants\Fraud_Outcome_Status;
+use WCPay\Constants\Fraud_Meta_Box_Type;
 
 /**
  * Class Order_Fraud_And_Risk_Meta_Box
@@ -63,16 +63,16 @@ class Order_Fraud_And_Risk_Meta_Box {
 			return;
 		}
 
-		$intent_id      = $this->order_service->get_intent_id_for_order( $order );
-		$charge_id      = $this->order_service->get_charge_id_for_order( $order );
-		$outcome_status = $this->order_service->get_fraud_outcome_status_for_order( $order );
+		$intent_id     = $this->order_service->get_intent_id_for_order( $order );
+		$charge_id     = $this->order_service->get_charge_id_for_order( $order );
+		$meta_box_type = $this->order_service->get_fraud_meta_box_type_for_order( $order );
 
 		if ( 'woocommerce_payments' !== $order->get_payment_method() ) {
-			$outcome_status = 'not_wcpay';
+			$meta_box_type = Fraud_Meta_Box_Type::NOT_WCPAY;
 		}
 
-		switch ( $outcome_status ) {
-			case Fraud_Outcome_Status::ALLOW:
+		switch ( $meta_box_type ) {
+			case Fraud_Meta_Box_Type::ALLOW:
 				$icon_url    = plugins_url( 'assets/images/icons/check-green.svg', WCPAY_PLUGIN_FILE );
 				$icon_alt    = __( 'Green check mark', 'woocommerce-payments' );
 				$status      = __( 'No action taken', 'woocommerce-payments' );
@@ -80,7 +80,7 @@ class Order_Fraud_And_Risk_Meta_Box {
 				echo '<p class="wcpay-fraud-risk-meta-allow"><img src="' . esc_url( $icon_url ) . '" alt="' . esc_html( $icon_alt ) . '"> ' . esc_html( $status ) . '</p><p>' . esc_html( $description ) . '</p>';
 				break;
 
-			case Fraud_Outcome_Status::REVIEW:
+			case Fraud_Meta_Box_Type::REVIEW:
 				$icon_url        = plugins_url( 'assets/images/icons/shield-stroke-orange.svg', WCPAY_PLUGIN_FILE );
 				$icon_alt        = __( 'Orange shield outline', 'woocommerce-payments' );
 				$status          = __( 'Held for review', 'woocommerce-payments' );
@@ -90,7 +90,7 @@ class Order_Fraud_And_Risk_Meta_Box {
 				echo '<p class="wcpay-fraud-risk-meta-review"><img src="' . esc_url( $icon_url ) . '" alt="' . esc_html( $icon_alt ) . '"> ' . esc_html( $status ) . '</p><p>' . esc_html( $description ) . '</p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
 				break;
 
-			case Fraud_Outcome_Status::REVIEW_ALLOWED:
+			case Fraud_Meta_Box_Type::REVIEW_ALLOWED:
 				$icon_url        = plugins_url( 'assets/images/icons/check-green.svg', WCPAY_PLUGIN_FILE );
 				$icon_alt        = __( 'Green check mark', 'woocommerce-payments' );
 				$status          = __( 'Held for review', 'woocommerce-payments' );
@@ -100,7 +100,7 @@ class Order_Fraud_And_Risk_Meta_Box {
 				echo '<p class="wcpay-fraud-risk-meta-allow"><img src="' . esc_url( $icon_url ) . '" alt="' . esc_html( $icon_alt ) . '"> ' . esc_html( $status ) . '</p><p>' . esc_html( $description ) . '</p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
 				break;
 
-			case Fraud_Outcome_Status::BLOCK:
+			case Fraud_Meta_Box_Type::BLOCK:
 				$icon_url    = plugins_url( 'assets/images/icons/shield-stroke-red.svg', WCPAY_PLUGIN_FILE );
 				$icon_alt    = __( 'Red shield outline', 'woocommerce-payments' );
 				$status      = __( 'Blocked', 'woocommerce-payments' );
@@ -109,7 +109,7 @@ class Order_Fraud_And_Risk_Meta_Box {
 				echo '<p class="wcpay-fraud-risk-meta-blocked"><img src="' . esc_url( $icon_url ) . '" alt="' . esc_html( $icon_alt ) . '"> ' . esc_html( $status ) . '</p><p>' . esc_html( $description ) . '</p>';
 				break;
 
-			case 'not_wcpay':
+			case Fraud_Meta_Box_Type::NOT_WCPAY:
 				$description = __( 'Risk filtering is only available for orders that are processed with WooCommerce Payments.', 'woocommerce-payments' );
 				$callout     = __( 'Learn more', 'woocommerce-payments' );
 				$callout_url = '';

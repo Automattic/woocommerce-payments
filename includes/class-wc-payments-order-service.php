@@ -5,10 +5,11 @@
  * @package WooCommerce\Payments
  */
 
-use WCPay\Constants\Fraud_Outcome_Status;
+use WCPay\Constants\Fraud_Meta_Box_Type;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Exceptions\Order_Not_Found_Exception;
+use WCPay\Fraud_Prevention\Models\Rule;
 use WCPay\Logger;
 
 defined( 'ABSPATH' ) || exit;
@@ -53,6 +54,13 @@ class WC_Payments_Order_Service {
 	 * @const string
 	 */
 	const CUSTOMER_ID_META_KEY = '_stripe_customer_id';
+
+	/**
+	 * Meta key used to store WCPay fraud meta box type.
+	 *
+	 * @const string
+	 */
+	const WCPAY_FRAUD_META_BOX_TYPE_META_KEY = '_wcpay_fraud_meta_box_type';
 
 	/**
 	 * Meta key used to store WCPay fraud outcome status.
@@ -121,7 +129,7 @@ class WC_Payments_Order_Service {
 				break;
 			case Payment_Intent_Status::PROCESSING:
 			case Payment_Intent_Status::REQUIRES_CAPTURE:
-				if ( Fraud_Outcome_Status::REVIEW === $intent_data['fraud_outcome'] ) {
+				if ( Rule::FRAUD_OUTCOME_REVIEW === $intent_data['fraud_outcome'] ) {
 					$this->mark_order_held_for_review_for_fraud( $order, $intent_data );
 				} else {
 					$this->mark_payment_authorized( $order, $intent_data );
@@ -264,7 +272,8 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		$this->set_fraud_outcome_status_for_order( $order, Fraud_Outcome_Status::BLOCK );
+		$this->set_fraud_outcome_status_for_order( $order, Rule::FRAUD_OUTCOME_BLOCK );
+		$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::BLOCK );
 		$order->add_order_note( $note );
 		$this->complete_order_processing( $order, $intent_status );
 	}
@@ -682,6 +691,34 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Set the fraud_meta_box_type for an order.
+	 *
+	 * @param  mixed  $order The order.
+	 * @param  string $fraud_meta_box_type The value to be set.
+	 *
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function set_fraud_meta_box_type_for_order( $order, $fraud_meta_box_type ) {
+		$order = $this->get_order( $order );
+		$order->update_meta_data( self::WCPAY_FRAUD_META_BOX_TYPE_META_KEY, $fraud_meta_box_type );
+		$order->save_meta_data();
+	}
+
+	/**
+	 * Get the fraud_meta_box_type for an order.
+	 *
+	 * @param  mixed $order The order Id or order object.
+	 *
+	 * @return string
+	 *
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function get_fraud_meta_box_type_for_order( $order ) : string {
+		$order = $this->get_order( $order );
+		return $order->get_meta( self::WCPAY_FRAUD_META_BOX_TYPE_META_KEY, true );
+	}
+
+	/**
 	 * Given the payment intent data, adds it to the given order as metadata and parses any notes that need to be added
 	 *
 	 * @param WC_Order $order The order.
@@ -729,9 +766,10 @@ class WC_Payments_Order_Service {
 		 * If auth/capture is enabled and the transaction is allowed, it will be 'allow'.
 		 * If it was held for review for any reason, it will be 'review'.
 		 */
-		if ( '' !== $intent_data['fraud_outcome'] ) {
-			$fraud_outcome_status = Order_Status::ON_HOLD === $order->get_status() ? Fraud_Outcome_Status::REVIEW_ALLOWED : Fraud_Outcome_Status::ALLOW;
-			$this->set_fraud_outcome_status_for_order( $order, $fraud_outcome_status );
+		if ( '' !== $intent_data['fraud_outcome'] && Rule::is_valid_fraud_outcome_status( $intent_data['fraud_outcome'] ) ) {
+			$fraud_meta_box_type = Order_Status::ON_HOLD === $order->get_status() ? Fraud_Meta_Box_Type::REVIEW_ALLOWED : Fraud_Meta_Box_Type::ALLOW;
+			$this->set_fraud_outcome_status_for_order( $order, $intent_data['fraud_outcome'] );
+			$this->set_fraud_meta_box_type_for_order( $order, $fraud_meta_box_type );
 		}
 
 		$this->update_order_status( $order, 'payment_complete', $intent_data['intent_id'] );
@@ -754,8 +792,9 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		if ( Fraud_Outcome_Status::ALLOW === $intent_data['fraud_outcome'] ) {
-			$order->update_meta_data( '_wcpay_fraud_outcome_status', Fraud_Outcome_Status::ALLOW );
+		if ( Rule::FRAUD_OUTCOME_ALLOW === $intent_data['fraud_outcome'] ) {
+			$this->set_fraud_outcome_status_for_order( $order, Rule::FRAUD_OUTCOME_ALLOW );
+			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::ALLOW );
 		}
 
 		$this->update_order_status( $order, Order_Status::ON_HOLD );
@@ -785,9 +824,10 @@ class WC_Payments_Order_Service {
 		 * If auth/capture is enabled and the transaction is allowed, it will be 'allow'.
 		 * If it was held for review for any reason, it will be 'review'.
 		 */
-		if ( '' !== $intent_data['fraud_outcome'] ) {
-			$fraud_outcome_status = Fraud_Outcome_Status::REVIEW === $this->get_fraud_outcome_status_for_order( $order ) ? Fraud_Outcome_Status::REVIEW_ALLOWED : Fraud_Outcome_Status::ALLOW;
-			$this->set_fraud_outcome_status_for_order( $order, $fraud_outcome_status );
+		if ( '' !== $intent_data['fraud_outcome'] && Rule::is_valid_fraud_outcome_status( $intent_data['fraud_outcome'] ) ) {
+			$fraud_meta_box_type = Rule::FRAUD_OUTCOME_REVIEW === $this->get_fraud_outcome_status_for_order( $order ) ? Fraud_Meta_Box_Type::REVIEW_ALLOWED : Fraud_Meta_Box_Type::ALLOW;
+			$this->set_fraud_outcome_status_for_order( $order, $intent_data['fraud_outcome'] );
+			$this->set_fraud_meta_box_type_for_order( $order, $fraud_meta_box_type );
 		}
 
 		$this->update_order_status( $order, 'payment_complete', $intent_data['intent_id'] );
@@ -829,7 +869,8 @@ class WC_Payments_Order_Service {
 		}
 
 		$this->update_order_status( $order, Order_Status::ON_HOLD );
-		$this->set_fraud_outcome_status_for_order( $order, Fraud_Outcome_Status::REVIEW );
+		$this->set_fraud_outcome_status_for_order( $order, Rule::FRAUD_OUTCOME_REVIEW );
+		$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::REVIEW );
 		$order->add_order_note( $note );
 		$this->set_intention_status_for_order( $order, $intent_data['intent_status'] );
 	}

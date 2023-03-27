@@ -1,6 +1,6 @@
 <?php
 /**
- * Class Fraud_Outcome_Status
+ * Class Fraud_Meta_Box_Type
  *
  * @package WooCommerce\Payments
  */
@@ -12,11 +12,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * This class gives a list of all the possible fraud outcome status constants.
+ * This class gives a list of all the possible fraud meta mbox type constants.
  *
  * @psalm-immutable
  */
-class Fraud_Outcome_Status extends Base_Constant {
+class Fraud_Meta_Box_Type extends Base_Constant {
 	const ALLOW          = 'allow';
 	const REVIEW         = 'review';
 	const REVIEW_ALLOWED = 'review_allowed';
