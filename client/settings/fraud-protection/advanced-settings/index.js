@@ -129,7 +129,10 @@ const FraudProtectionAdvancedSettingsPage = () => {
 			);
 			await saveSettings();
 			wcpayTracks.recordEvent(
-				'wcpay_fraud_protection_advanced_settings_saved'
+				'wcpay_fraud_protection_advanced_settings_saved',
+				{
+					advancedFraudProtectionSettings: advancedFraudProtectionSettings,
+				}
 			);
 		} else {
 			window.scrollTo( {
