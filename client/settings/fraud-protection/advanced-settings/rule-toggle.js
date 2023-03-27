@@ -9,7 +9,7 @@ import { CheckboxControl, Icon, ToggleControl } from '@wordpress/components';
  * Internal dependencies
  */
 import './../style.scss';
-import Tooltip from '../../../components/tooltip';
+import { HoverTooltip } from 'components/tooltip';
 import FraudPreventionSettingsContext from './context';
 
 const FraudProtectionRuleToggle = ( {
@@ -18,9 +18,11 @@ const FraudProtectionRuleToggle = ( {
 	helpText,
 	children,
 } ) => {
-	const { protectionSettingsUI, setProtectionSettingsUI } = useContext(
-		FraudPreventionSettingsContext
-	);
+	const {
+		protectionSettingsUI,
+		setProtectionSettingsUI,
+		setProtectionSettingsChanged,
+	} = useContext( FraudPreventionSettingsContext );
 
 	const [ toggleState, setToggleState ] = useState( false );
 	const [ checkState, setCheckState ] = useState( false );
@@ -39,11 +41,13 @@ const FraudProtectionRuleToggle = ( {
 			protectionSettingsUI[ setting ].enabled = toggleState;
 			protectionSettingsUI[ setting ].block = checkState;
 			setProtectionSettingsUI( protectionSettingsUI );
+			setProtectionSettingsChanged( ( prev ) => ! prev );
 		}
 	}, [
 		setting,
 		toggleState,
 		checkState,
+		setProtectionSettingsChanged,
 		protectionSettingsUI,
 		setProtectionSettingsUI,
 	] );
@@ -81,7 +85,7 @@ const FraudProtectionRuleToggle = ( {
 									setCheckState( ( state ) => ! state )
 								}
 							></CheckboxControl>
-							<Tooltip
+							<HoverTooltip
 								content={ __(
 									'WooCommerce Payments will automatically cancel orders that match this filter.',
 									'woocommerce-payments'
@@ -111,7 +115,7 @@ const FraudProtectionRuleToggle = ( {
 										}
 									></Icon>
 								</div>
-							</Tooltip>
+							</HoverTooltip>
 						</div>
 					</div>
 				) }
