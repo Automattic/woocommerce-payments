@@ -19,7 +19,7 @@ type NextDepositTableData = {
  * - amount: A formatted string representing the amount of the next scheduled deposit in the currency specified in the overview object.
  */
 export const getNextDeposit = (
-	overview: AccountOverview.Overview
+	overview?: AccountOverview.Overview
 ): NextDepositTableData => {
 	if ( ! overview ) {
 		return {

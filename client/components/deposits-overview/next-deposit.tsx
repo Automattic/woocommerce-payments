@@ -17,7 +17,7 @@ import { getDepositDate } from 'deposits/utils';
 
 type NextDepositProps = {
 	isLoading: boolean;
-	overview: AccountOverview.Overview;
+	overview?: AccountOverview.Overview;
 };
 
 /**

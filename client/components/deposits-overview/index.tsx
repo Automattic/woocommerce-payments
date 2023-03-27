@@ -10,13 +10,10 @@ import { Card, CardHeader } from '@wordpress/components';
 import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
 import strings from './strings';
 import NextDepositDetails from './next-deposit';
+import DepositsOverviewFooter from './footer';
 
 const DepositsOverview = (): JSX.Element => {
 	const { account, overview, isLoading } = useSelectedCurrencyOverview();
-
-	if ( isLoading ) {
-		return <DepositsOverviewDetails isLoading={ isLoading } />;
-	}
 
 	return (
 		<Card>
@@ -26,6 +23,8 @@ const DepositsOverview = (): JSX.Element => {
 			<p>Deposits History Section Goes here</p>
 
 			<p>Deposits Card Footer/Action Goes here</p>
+
+			<DepositsOverviewFooter />
 		</Card>
 	);
 };
