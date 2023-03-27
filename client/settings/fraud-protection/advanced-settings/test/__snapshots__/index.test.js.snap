@@ -19,7 +19,7 @@ Object {
       id="a11y-speak-assertive"
       style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
     >
-      There was an error retrieving your fraud protection settings. Please refresh the page to try again.
+                Maximum purchase price must be greater than the minimum purchase price.  
     </div>
     <div
       aria-atomic="true"
@@ -331,39 +331,37 @@ Object {
                   </p>
                 </div>
                 <div
-                  class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+                  class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
                 >
                   <div
-                    class="fraud-protection-rule-card-notice-icon"
+                    class="components-notice__content"
                   >
-                    <svg
-                      data-testid="rule-card-notice-warning-icon-svg"
-                      fill="none"
-                      height="18"
-                      viewBox="0 0 18 18"
-                      width="18"
-                      xmlns="http://www.w3.org/2000/svg"
+                    <div
+                      class="components-flex css-1nh0b0-Flex eboqfv50"
                     >
-                      <path
-                        clip-rule="evenodd"
-                        d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
-                        fill="#bd8600"
-                        fill-rule="evenodd"
-                      />
-                      <path
-                        d="M10 4H8V10H10V4Z"
-                        fill="#bd8600"
-                      />
-                      <path
-                        d="M10 12H8V14H10V12Z"
-                        fill="#bd8600"
-                      />
-                    </svg>
-                  </div>
-                  <div
-                    class="fraud-protection-rule-card-notice-text"
-                  >
-                    Enabling this filter will not have any effect because you are selling to all countries.
+                      <div
+                        class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                      >
+                        <svg
+                          class="gridicon gridicons-notice-outline"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <g>
+                            <path
+                              d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                            />
+                          </g>
+                        </svg>
+                      </div>
+                      <div
+                        class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                      >
+                        Enabling this filter will not have any effect because you are selling to all countries.
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -452,39 +450,37 @@ Object {
                   </p>
                 </div>
                 <div
-                  class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+                  class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
                 >
                   <div
-                    class="fraud-protection-rule-card-notice-icon"
+                    class="components-notice__content"
                   >
-                    <svg
-                      data-testid="rule-card-notice-warning-icon-svg"
-                      fill="none"
-                      height="18"
-                      viewBox="0 0 18 18"
-                      width="18"
-                      xmlns="http://www.w3.org/2000/svg"
+                    <div
+                      class="components-flex css-1nh0b0-Flex eboqfv50"
                     >
-                      <path
-                        clip-rule="evenodd"
-                        d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
-                        fill="#bd8600"
-                        fill-rule="evenodd"
-                      />
-                      <path
-                        d="M10 4H8V10H10V4Z"
-                        fill="#bd8600"
-                      />
-                      <path
-                        d="M10 12H8V14H10V12Z"
-                        fill="#bd8600"
-                      />
-                    </svg>
-                  </div>
-                  <div
-                    class="fraud-protection-rule-card-notice-text"
-                  >
-                    Enabling this filter will not have any effect because you are selling to all countries.
+                      <div
+                        class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                      >
+                        <svg
+                          class="gridicon gridicons-notice-outline"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <g>
+                            <path
+                              d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                            />
+                          </g>
+                        </svg>
+                      </div>
+                      <div
+                        class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                      >
+                        Enabling this filter will not have any effect because you are selling to all countries.
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1223,39 +1219,37 @@ Object {
                 </p>
               </div>
               <div
-                class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
               >
                 <div
-                  class="fraud-protection-rule-card-notice-icon"
+                  class="components-notice__content"
                 >
-                  <svg
-                    data-testid="rule-card-notice-warning-icon-svg"
-                    fill="none"
-                    height="18"
-                    viewBox="0 0 18 18"
-                    width="18"
-                    xmlns="http://www.w3.org/2000/svg"
+                  <div
+                    class="components-flex css-1nh0b0-Flex eboqfv50"
                   >
-                    <path
-                      clip-rule="evenodd"
-                      d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
-                      fill="#bd8600"
-                      fill-rule="evenodd"
-                    />
-                    <path
-                      d="M10 4H8V10H10V4Z"
-                      fill="#bd8600"
-                    />
-                    <path
-                      d="M10 12H8V14H10V12Z"
-                      fill="#bd8600"
-                    />
-                  </svg>
-                </div>
-                <div
-                  class="fraud-protection-rule-card-notice-text"
-                >
-                  Enabling this filter will not have any effect because you are selling to all countries.
+                    <div
+                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                    >
+                      <svg
+                        class="gridicon gridicons-notice-outline"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                          />
+                        </g>
+                      </svg>
+                    </div>
+                    <div
+                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                    >
+                      Enabling this filter will not have any effect because you are selling to all countries.
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1344,39 +1338,37 @@ Object {
                 </p>
               </div>
               <div
-                class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
               >
                 <div
-                  class="fraud-protection-rule-card-notice-icon"
+                  class="components-notice__content"
                 >
-                  <svg
-                    data-testid="rule-card-notice-warning-icon-svg"
-                    fill="none"
-                    height="18"
-                    viewBox="0 0 18 18"
-                    width="18"
-                    xmlns="http://www.w3.org/2000/svg"
+                  <div
+                    class="components-flex css-1nh0b0-Flex eboqfv50"
                   >
-                    <path
-                      clip-rule="evenodd"
-                      d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
-                      fill="#bd8600"
-                      fill-rule="evenodd"
-                    />
-                    <path
-                      d="M10 4H8V10H10V4Z"
-                      fill="#bd8600"
-                    />
-                    <path
-                      d="M10 12H8V14H10V12Z"
-                      fill="#bd8600"
-                    />
-                  </svg>
-                </div>
-                <div
-                  class="fraud-protection-rule-card-notice-text"
-                >
-                  Enabling this filter will not have any effect because you are selling to all countries.
+                    <div
+                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                    >
+                      <svg
+                        class="gridicon gridicons-notice-outline"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                          />
+                        </g>
+                      </svg>
+                    </div>
+                    <div
+                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                    >
+                      Enabling this filter will not have any effect because you are selling to all countries.
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1893,7 +1885,7 @@ Object {
       id="a11y-speak-polite"
       style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
     >
-                For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.  Learn more   
+                Enabling this filter will not have any effect because you are selling to all countries.   
     </div>
     <div>
       <div>
@@ -2180,39 +2172,37 @@ Object {
                   </p>
                 </div>
                 <div
-                  class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+                  class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
                 >
                   <div
-                    class="fraud-protection-rule-card-notice-icon"
+                    class="components-notice__content"
                   >
-                    <svg
-                      data-testid="rule-card-notice-warning-icon-svg"
-                      fill="none"
-                      height="18"
-                      viewBox="0 0 18 18"
-                      width="18"
-                      xmlns="http://www.w3.org/2000/svg"
+                    <div
+                      class="components-flex css-1nh0b0-Flex eboqfv50"
                     >
-                      <path
-                        clip-rule="evenodd"
-                        d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
-                        fill="#bd8600"
-                        fill-rule="evenodd"
-                      />
-                      <path
-                        d="M10 4H8V10H10V4Z"
-                        fill="#bd8600"
-                      />
-                      <path
-                        d="M10 12H8V14H10V12Z"
-                        fill="#bd8600"
-                      />
-                    </svg>
-                  </div>
-                  <div
-                    class="fraud-protection-rule-card-notice-text"
-                  >
-                    Enabling this filter will not have any effect because you are selling to all countries.
+                      <div
+                        class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                      >
+                        <svg
+                          class="gridicon gridicons-notice-outline"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <g>
+                            <path
+                              d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                            />
+                          </g>
+                        </svg>
+                      </div>
+                      <div
+                        class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                      >
+                        Enabling this filter will not have any effect because you are selling to all countries.
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2301,39 +2291,37 @@ Object {
                   </p>
                 </div>
                 <div
-                  class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+                  class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
                 >
                   <div
-                    class="fraud-protection-rule-card-notice-icon"
+                    class="components-notice__content"
                   >
-                    <svg
-                      data-testid="rule-card-notice-warning-icon-svg"
-                      fill="none"
-                      height="18"
-                      viewBox="0 0 18 18"
-                      width="18"
-                      xmlns="http://www.w3.org/2000/svg"
+                    <div
+                      class="components-flex css-1nh0b0-Flex eboqfv50"
                     >
-                      <path
-                        clip-rule="evenodd"
-                        d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
-                        fill="#bd8600"
-                        fill-rule="evenodd"
-                      />
-                      <path
-                        d="M10 4H8V10H10V4Z"
-                        fill="#bd8600"
-                      />
-                      <path
-                        d="M10 12H8V14H10V12Z"
-                        fill="#bd8600"
-                      />
-                    </svg>
-                  </div>
-                  <div
-                    class="fraud-protection-rule-card-notice-text"
-                  >
-                    Enabling this filter will not have any effect because you are selling to all countries.
+                      <div
+                        class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                      >
+                        <svg
+                          class="gridicon gridicons-notice-outline"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <g>
+                            <path
+                              d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                            />
+                          </g>
+                        </svg>
+                      </div>
+                      <div
+                        class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                      >
+                        Enabling this filter will not have any effect because you are selling to all countries.
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2862,39 +2850,37 @@ Object {
                 </p>
               </div>
               <div
-                class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
               >
                 <div
-                  class="fraud-protection-rule-card-notice-icon"
+                  class="components-notice__content"
                 >
-                  <svg
-                    data-testid="rule-card-notice-warning-icon-svg"
-                    fill="none"
-                    height="18"
-                    viewBox="0 0 18 18"
-                    width="18"
-                    xmlns="http://www.w3.org/2000/svg"
+                  <div
+                    class="components-flex css-1nh0b0-Flex eboqfv50"
                   >
-                    <path
-                      clip-rule="evenodd"
-                      d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
-                      fill="#bd8600"
-                      fill-rule="evenodd"
-                    />
-                    <path
-                      d="M10 4H8V10H10V4Z"
-                      fill="#bd8600"
-                    />
-                    <path
-                      d="M10 12H8V14H10V12Z"
-                      fill="#bd8600"
-                    />
-                  </svg>
-                </div>
-                <div
-                  class="fraud-protection-rule-card-notice-text"
-                >
-                  Enabling this filter will not have any effect because you are selling to all countries.
+                    <div
+                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                    >
+                      <svg
+                        class="gridicon gridicons-notice-outline"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                          />
+                        </g>
+                      </svg>
+                    </div>
+                    <div
+                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                    >
+                      Enabling this filter will not have any effect because you are selling to all countries.
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -2983,39 +2969,37 @@ Object {
                 </p>
               </div>
               <div
-                class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
               >
                 <div
-                  class="fraud-protection-rule-card-notice-icon"
+                  class="components-notice__content"
                 >
-                  <svg
-                    data-testid="rule-card-notice-warning-icon-svg"
-                    fill="none"
-                    height="18"
-                    viewBox="0 0 18 18"
-                    width="18"
-                    xmlns="http://www.w3.org/2000/svg"
+                  <div
+                    class="components-flex css-1nh0b0-Flex eboqfv50"
                   >
-                    <path
-                      clip-rule="evenodd"
-                      d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
-                      fill="#bd8600"
-                      fill-rule="evenodd"
-                    />
-                    <path
-                      d="M10 4H8V10H10V4Z"
-                      fill="#bd8600"
-                    />
-                    <path
-                      d="M10 12H8V14H10V12Z"
-                      fill="#bd8600"
-                    />
-                  </svg>
-                </div>
-                <div
-                  class="fraud-protection-rule-card-notice-text"
-                >
-                  Enabling this filter will not have any effect because you are selling to all countries.
+                    <div
+                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                    >
+                      <svg
+                        class="gridicon gridicons-notice-outline"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                          />
+                        </g>
+                      </svg>
+                    </div>
+                    <div
+                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                    >
+                      Enabling this filter will not have any effect because you are selling to all countries.
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -3339,7 +3323,7 @@ Object {
       id="a11y-speak-polite"
       style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
     >
-                For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.  Learn more   
+                Enabling this filter will not have any effect because you are selling to all countries.   
     </div>
     <div>
       <div
@@ -3594,39 +3578,37 @@ Object {
                 </p>
               </div>
               <div
-                class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
               >
                 <div
-                  class="fraud-protection-rule-card-notice-icon"
+                  class="components-notice__content"
                 >
-                  <svg
-                    data-testid="rule-card-notice-warning-icon-svg"
-                    fill="none"
-                    height="18"
-                    viewBox="0 0 18 18"
-                    width="18"
-                    xmlns="http://www.w3.org/2000/svg"
+                  <div
+                    class="components-flex css-1nh0b0-Flex eboqfv50"
                   >
-                    <path
-                      clip-rule="evenodd"
-                      d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
-                      fill="#bd8600"
-                      fill-rule="evenodd"
-                    />
-                    <path
-                      d="M10 4H8V10H10V4Z"
-                      fill="#bd8600"
-                    />
-                    <path
-                      d="M10 12H8V14H10V12Z"
-                      fill="#bd8600"
-                    />
-                  </svg>
-                </div>
-                <div
-                  class="fraud-protection-rule-card-notice-text"
-                >
-                  Enabling this filter will not have any effect because you are selling to all countries.
+                    <div
+                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                    >
+                      <svg
+                        class="gridicon gridicons-notice-outline"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                          />
+                        </g>
+                      </svg>
+                    </div>
+                    <div
+                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                    >
+                      Enabling this filter will not have any effect because you are selling to all countries.
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -3715,39 +3697,37 @@ Object {
                 </p>
               </div>
               <div
-                class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
               >
                 <div
-                  class="fraud-protection-rule-card-notice-icon"
+                  class="components-notice__content"
                 >
-                  <svg
-                    data-testid="rule-card-notice-warning-icon-svg"
-                    fill="none"
-                    height="18"
-                    viewBox="0 0 18 18"
-                    width="18"
-                    xmlns="http://www.w3.org/2000/svg"
+                  <div
+                    class="components-flex css-1nh0b0-Flex eboqfv50"
                   >
-                    <path
-                      clip-rule="evenodd"
-                      d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
-                      fill="#bd8600"
-                      fill-rule="evenodd"
-                    />
-                    <path
-                      d="M10 4H8V10H10V4Z"
-                      fill="#bd8600"
-                    />
-                    <path
-                      d="M10 12H8V14H10V12Z"
-                      fill="#bd8600"
-                    />
-                  </svg>
-                </div>
-                <div
-                  class="fraud-protection-rule-card-notice-text"
-                >
-                  Enabling this filter will not have any effect because you are selling to all countries.
+                    <div
+                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                    >
+                      <svg
+                        class="gridicon gridicons-notice-outline"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                          />
+                        </g>
+                      </svg>
+                    </div>
+                    <div
+                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                    >
+                      Enabling this filter will not have any effect because you are selling to all countries.
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -4243,39 +4223,37 @@ Object {
               </p>
             </div>
             <div
-              class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+              class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
             >
               <div
-                class="fraud-protection-rule-card-notice-icon"
+                class="components-notice__content"
               >
-                <svg
-                  data-testid="rule-card-notice-warning-icon-svg"
-                  fill="none"
-                  height="18"
-                  viewBox="0 0 18 18"
-                  width="18"
-                  xmlns="http://www.w3.org/2000/svg"
+                <div
+                  class="components-flex css-1nh0b0-Flex eboqfv50"
                 >
-                  <path
-                    clip-rule="evenodd"
-                    d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
-                    fill="#bd8600"
-                    fill-rule="evenodd"
-                  />
-                  <path
-                    d="M10 4H8V10H10V4Z"
-                    fill="#bd8600"
-                  />
-                  <path
-                    d="M10 12H8V14H10V12Z"
-                    fill="#bd8600"
-                  />
-                </svg>
-              </div>
-              <div
-                class="fraud-protection-rule-card-notice-text"
-              >
-                Enabling this filter will not have any effect because you are selling to all countries.
+                  <div
+                    class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                  >
+                    <svg
+                      class="gridicon gridicons-notice-outline"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <g>
+                        <path
+                          d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                        />
+                      </g>
+                    </svg>
+                  </div>
+                  <div
+                    class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                  >
+                    Enabling this filter will not have any effect because you are selling to all countries.
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -4364,39 +4342,37 @@ Object {
               </p>
             </div>
             <div
-              class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+              class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
             >
               <div
-                class="fraud-protection-rule-card-notice-icon"
+                class="components-notice__content"
               >
-                <svg
-                  data-testid="rule-card-notice-warning-icon-svg"
-                  fill="none"
-                  height="18"
-                  viewBox="0 0 18 18"
-                  width="18"
-                  xmlns="http://www.w3.org/2000/svg"
+                <div
+                  class="components-flex css-1nh0b0-Flex eboqfv50"
                 >
-                  <path
-                    clip-rule="evenodd"
-                    d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
-                    fill="#bd8600"
-                    fill-rule="evenodd"
-                  />
-                  <path
-                    d="M10 4H8V10H10V4Z"
-                    fill="#bd8600"
-                  />
-                  <path
-                    d="M10 12H8V14H10V12Z"
-                    fill="#bd8600"
-                  />
-                </svg>
-              </div>
-              <div
-                class="fraud-protection-rule-card-notice-text"
-              >
-                Enabling this filter will not have any effect because you are selling to all countries.
+                  <div
+                    class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                  >
+                    <svg
+                      class="gridicon gridicons-notice-outline"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <g>
+                        <path
+                          d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                        />
+                      </g>
+                    </svg>
+                  </div>
+                  <div
+                    class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                  >
+                    Enabling this filter will not have any effect because you are selling to all countries.
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -4719,7 +4695,7 @@ Object {
       id="a11y-speak-polite"
       style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
     >
-                For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.  Learn more   
+                Enabling this filter will not have any effect because you are selling to all countries.   
     </div>
     <div>
       <div>
@@ -4992,39 +4968,37 @@ Object {
                   </p>
                 </div>
                 <div
-                  class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+                  class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
                 >
                   <div
-                    class="fraud-protection-rule-card-notice-icon"
+                    class="components-notice__content"
                   >
-                    <svg
-                      data-testid="rule-card-notice-warning-icon-svg"
-                      fill="none"
-                      height="18"
-                      viewBox="0 0 18 18"
-                      width="18"
-                      xmlns="http://www.w3.org/2000/svg"
+                    <div
+                      class="components-flex css-1nh0b0-Flex eboqfv50"
                     >
-                      <path
-                        clip-rule="evenodd"
-                        d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
-                        fill="#bd8600"
-                        fill-rule="evenodd"
-                      />
-                      <path
-                        d="M10 4H8V10H10V4Z"
-                        fill="#bd8600"
-                      />
-                      <path
-                        d="M10 12H8V14H10V12Z"
-                        fill="#bd8600"
-                      />
-                    </svg>
-                  </div>
-                  <div
-                    class="fraud-protection-rule-card-notice-text"
-                  >
-                    Enabling this filter will not have any effect because you are selling to all countries.
+                      <div
+                        class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                      >
+                        <svg
+                          class="gridicon gridicons-notice-outline"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <g>
+                            <path
+                              d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                            />
+                          </g>
+                        </svg>
+                      </div>
+                      <div
+                        class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                      >
+                        Enabling this filter will not have any effect because you are selling to all countries.
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -5113,39 +5087,37 @@ Object {
                   </p>
                 </div>
                 <div
-                  class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+                  class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
                 >
                   <div
-                    class="fraud-protection-rule-card-notice-icon"
+                    class="components-notice__content"
                   >
-                    <svg
-                      data-testid="rule-card-notice-warning-icon-svg"
-                      fill="none"
-                      height="18"
-                      viewBox="0 0 18 18"
-                      width="18"
-                      xmlns="http://www.w3.org/2000/svg"
+                    <div
+                      class="components-flex css-1nh0b0-Flex eboqfv50"
                     >
-                      <path
-                        clip-rule="evenodd"
-                        d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
-                        fill="#bd8600"
-                        fill-rule="evenodd"
-                      />
-                      <path
-                        d="M10 4H8V10H10V4Z"
-                        fill="#bd8600"
-                      />
-                      <path
-                        d="M10 12H8V14H10V12Z"
-                        fill="#bd8600"
-                      />
-                    </svg>
-                  </div>
-                  <div
-                    class="fraud-protection-rule-card-notice-text"
-                  >
-                    Enabling this filter will not have any effect because you are selling to all countries.
+                      <div
+                        class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                      >
+                        <svg
+                          class="gridicon gridicons-notice-outline"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <g>
+                            <path
+                              d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                            />
+                          </g>
+                        </svg>
+                      </div>
+                      <div
+                        class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                      >
+                        Enabling this filter will not have any effect because you are selling to all countries.
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -5816,39 +5788,37 @@ Object {
                 </p>
               </div>
               <div
-                class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
               >
                 <div
-                  class="fraud-protection-rule-card-notice-icon"
+                  class="components-notice__content"
                 >
-                  <svg
-                    data-testid="rule-card-notice-warning-icon-svg"
-                    fill="none"
-                    height="18"
-                    viewBox="0 0 18 18"
-                    width="18"
-                    xmlns="http://www.w3.org/2000/svg"
+                  <div
+                    class="components-flex css-1nh0b0-Flex eboqfv50"
                   >
-                    <path
-                      clip-rule="evenodd"
-                      d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
-                      fill="#bd8600"
-                      fill-rule="evenodd"
-                    />
-                    <path
-                      d="M10 4H8V10H10V4Z"
-                      fill="#bd8600"
-                    />
-                    <path
-                      d="M10 12H8V14H10V12Z"
-                      fill="#bd8600"
-                    />
-                  </svg>
-                </div>
-                <div
-                  class="fraud-protection-rule-card-notice-text"
-                >
-                  Enabling this filter will not have any effect because you are selling to all countries.
+                    <div
+                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                    >
+                      <svg
+                        class="gridicon gridicons-notice-outline"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                          />
+                        </g>
+                      </svg>
+                    </div>
+                    <div
+                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                    >
+                      Enabling this filter will not have any effect because you are selling to all countries.
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -5937,39 +5907,37 @@ Object {
                 </p>
               </div>
               <div
-                class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
               >
                 <div
-                  class="fraud-protection-rule-card-notice-icon"
+                  class="components-notice__content"
                 >
-                  <svg
-                    data-testid="rule-card-notice-warning-icon-svg"
-                    fill="none"
-                    height="18"
-                    viewBox="0 0 18 18"
-                    width="18"
-                    xmlns="http://www.w3.org/2000/svg"
+                  <div
+                    class="components-flex css-1nh0b0-Flex eboqfv50"
                   >
-                    <path
-                      clip-rule="evenodd"
-                      d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
-                      fill="#bd8600"
-                      fill-rule="evenodd"
-                    />
-                    <path
-                      d="M10 4H8V10H10V4Z"
-                      fill="#bd8600"
-                    />
-                    <path
-                      d="M10 12H8V14H10V12Z"
-                      fill="#bd8600"
-                    />
-                  </svg>
-                </div>
-                <div
-                  class="fraud-protection-rule-card-notice-text"
-                >
-                  Enabling this filter will not have any effect because you are selling to all countries.
+                    <div
+                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                    >
+                      <svg
+                        class="gridicon gridicons-notice-outline"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                          />
+                        </g>
+                      </svg>
+                    </div>
+                    <div
+                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                    >
+                      Enabling this filter will not have any effect because you are selling to all countries.
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
