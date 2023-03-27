@@ -543,24 +543,6 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Returns the order data
-	 *
-	 * @param  WP_REST_Request $request Full data about the request.
-	 *
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
-	 */
-	public function get_order( $request ) {
-		$order_id = $request['order_id'];
-		$order    = wc_get_order( $order_id );
-
-		if ( false === $order ) {
-			return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
-		}
-
-		return rest_ensure_response( $order->get_data() );
-	}
-
-	/**
 	 * Adds the fraud_outcome_manual_entry meta to the order.
 	 *
 	 * @param \WC_Order $order  Order object.
