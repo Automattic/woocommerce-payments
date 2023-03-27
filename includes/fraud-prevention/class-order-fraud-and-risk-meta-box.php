@@ -101,15 +101,12 @@ class Order_Fraud_And_Risk_Meta_Box {
 				break;
 
 			case Fraud_Outcome_Status::BLOCK:
-				// TODO: Are we going to cancel the orders? The note states we are, but if we do, we do not allow them to correct mistakes and could create a lot of additional orders.
-				$icon_url        = plugins_url( 'assets/images/icons/shield-stroke-red.svg', WCPAY_PLUGIN_FILE );
-				$icon_alt        = __( 'Red shield outline', 'woocommerce-payments' );
-				$status          = __( 'Blocked', 'woocommerce-payments' );
-				$description     = __( 'The payment for this order was blocked by your risk filtering, and the order has been cancelled.', 'woocommerce-payments' );
-				$callout         = __( 'View payment details', 'woocommerce-payments' );
-				$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
-				// TODO: There is no transaction url returned due to there's no intent or charge ID.
-				echo '<p class="wcpay-fraud-risk-meta-blocked"><img src="' . esc_url( $icon_url ) . '" alt="' . esc_html( $icon_alt ) . '"> ' . esc_html( $status ) . '</p><p>' . esc_html( $description ) . '</p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
+				$icon_url    = plugins_url( 'assets/images/icons/shield-stroke-red.svg', WCPAY_PLUGIN_FILE );
+				$icon_alt    = __( 'Red shield outline', 'woocommerce-payments' );
+				$status      = __( 'Blocked', 'woocommerce-payments' );
+				$description = __( 'The payment for this order was blocked by your risk filtering. There is no pending authorization, and the order can be cancelled to reduce any held stock.', 'woocommerce-payments' );
+				// There is currently no url to review the transaction due to we do not have an intent to add to the transactions page to link to.
+				echo '<p class="wcpay-fraud-risk-meta-blocked"><img src="' . esc_url( $icon_url ) . '" alt="' . esc_html( $icon_alt ) . '"> ' . esc_html( $status ) . '</p><p>' . esc_html( $description ) . '</p>';
 				break;
 
 			case 'not_wcpay':
