@@ -121,45 +121,37 @@ const CardDetails = ( { charge = {}, isLoading } ) => {
 	return (
 		<div className="payment-method-details">
 			<div className="payment-method-details__column">
-				{
-					<Detail
-						isLoading={ isLoading }
-						label={ __( 'Number', 'woocommerce-payments' ) }
-					>
-						{ last4 ? (
-							<>&bull;&bull;&bull;&bull;&nbsp;{ last4 }</>
-						) : (
-							'–'
-						) }
-					</Detail>
-				}
+				<Detail
+					isLoading={ isLoading }
+					label={ __( 'Number', 'woocommerce-payments' ) }
+				>
+					{ last4 ? (
+						<>&bull;&bull;&bull;&bull;&nbsp;{ last4 }</>
+					) : (
+						'–'
+					) }
+				</Detail>
 
-				{
-					<Detail
-						isLoading={ isLoading }
-						label={ __( 'Expires', 'woocommerce-payments' ) }
-					>
-						{ date ?? '–' }
-					</Detail>
-				}
+				<Detail
+					isLoading={ isLoading }
+					label={ __( 'Expires', 'woocommerce-payments' ) }
+				>
+					{ date ?? '–' }
+				</Detail>
 
-				{
-					<Detail
-						isLoading={ isLoading }
-						label={ __( 'Type', 'woocommerce-payments' ) }
-					>
-						{ cardType ?? '–' }
-					</Detail>
-				}
+				<Detail
+					isLoading={ isLoading }
+					label={ __( 'Type', 'woocommerce-payments' ) }
+				>
+					{ cardType ?? '–' }
+				</Detail>
 
-				{
-					<Detail
-						isLoading={ isLoading }
-						label={ __( 'ID', 'woocommerce-payments' ) }
-					>
-						{ !! id ? id : '–' }
-					</Detail>
-				}
+				<Detail
+					isLoading={ isLoading }
+					label={ __( 'ID', 'woocommerce-payments' ) }
+				>
+					{ !! id ? id : '–' }
+				</Detail>
 			</div>
 
 			<div className="payment-method-details__column">

@@ -68,15 +68,6 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	public function register_routes() {
 		register_rest_route(
 			$this->namespace,
-			$this->rest_base . '/(?P<order_id>\w+)',
-			[
-				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ $this, 'get_order' ],
-				'permission_callback' => [ $this, 'check_permission' ],
-			]
-		);
-		register_rest_route(
-			$this->namespace,
 			$this->rest_base . '/(?P<order_id>\w+)/capture_terminal_payment',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
