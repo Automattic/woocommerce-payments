@@ -21,7 +21,7 @@ type NextDepositTableData = {
 export const getNextDeposit = (
 	overview: AccountOverview.Overview
 ): NextDepositTableData => {
-	if ( ! overview ) {
+	if ( ! overview?.nextScheduled ) {
 		return {
 			date: 0,
 			status: 'estimated',
