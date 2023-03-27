@@ -65,7 +65,7 @@ exports[`AccountBalances renders 1`] = `
                 Available funds
               </span>
               <button
-                class="wcpay-tooltip__content-wrapper"
+                class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
                 type="button"
               >
                 <div
@@ -111,7 +111,7 @@ exports[`AccountBalances renders 1`] = `
                 Pending funds
               </span>
               <button
-                class="wcpay-tooltip__content-wrapper"
+                class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
                 type="button"
               >
                 <div
@@ -157,7 +157,7 @@ exports[`AccountBalances renders 1`] = `
                 Reserved funds
               </span>
               <button
-                class="wcpay-tooltip__content-wrapper"
+                class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
                 type="button"
               >
                 <div
