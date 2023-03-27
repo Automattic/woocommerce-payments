@@ -31,7 +31,7 @@ describe( 'Fraud Outcomes selectors', () => {
 
 		it( 'should return an empty object if the id is not present in the state', () => {
 			const result = getLatestFraudOutcome( stateMock, 'not-found' );
-			expect( result ).toEqual( {} );
+			expect( result ).toEqual( undefined );
 		} );
 	} );
 
@@ -46,7 +46,7 @@ describe( 'Fraud Outcomes selectors', () => {
 
 		it( 'should return an empty object if the id is not present in the state', () => {
 			const result = getLatestFraudOutcomeError( stateMock, 'not-found' );
-			expect( result ).toEqual( {} );
+			expect( result ).toEqual( undefined );
 		} );
 	} );
 } );
