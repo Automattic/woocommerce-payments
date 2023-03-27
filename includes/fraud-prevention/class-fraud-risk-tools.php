@@ -13,6 +13,7 @@ require_once dirname( __FILE__ ) . '/models/class-rule.php';
 use WC_Payments;
 use WC_Payments_Account;
 use WC_Payments_Features;
+use WC_Payments_API_Client;
 use WCPay\Fraud_Prevention\Models\Check;
 use WCPay\Fraud_Prevention\Models\Rule;
 
@@ -67,6 +68,22 @@ class Fraud_Risk_Tools {
 		$this->payments_account = $payments_account;
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			add_action( 'admin_menu', [ $this, 'init_advanced_settings_page' ] );
+		}
+
+		// Adds the required parameter on server.
+		if ( WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
+			add_filter(
+				'wcpay_api_request_params',
+				function( $params, $api, $method ) {
+					if ( false !== strpos( $api, WC_Payments_API_Client::INTENTIONS_API ) && WC_Payments_API_Client::POST === $method ) {
+						$params['fraud_settings_enabled'] = 'true';
+					}
+
+					return $params;
+				},
+				10,
+				3
+			);
 		}
 	}
 
@@ -132,9 +149,9 @@ class Fraud_Risk_Tools {
 				self::RULE_INTERNATIONAL_IP_ADDRESS,
 				Rule::FRAUD_OUTCOME_REVIEW,
 				Check::check(
-					'ip_country_same_with_account_country',
-					Check::OPERATOR_EQUALS,
-					false
+					'ip_country',
+					self::get_selling_locations_type_operator(),
+					self::get_selling_locations_string()
 				)
 			),
 			// REVIEW An order exceeds $1,000.00 or 10 items.
@@ -173,9 +190,9 @@ class Fraud_Risk_Tools {
 				self::RULE_INTERNATIONAL_IP_ADDRESS,
 				Rule::FRAUD_OUTCOME_BLOCK,
 				Check::check(
-					'ip_country_same_with_account_country',
-					Check::OPERATOR_EQUALS,
-					false
+					'ip_country',
+					self::get_selling_locations_type_operator(),
+					self::get_selling_locations_string()
 				)
 			),
 			// BLOCK An order exceeds $1,000.00.
@@ -215,9 +232,9 @@ class Fraud_Risk_Tools {
 				self::RULE_INTERNATIONAL_BILLING_ADDRESS,
 				Rule::FRAUD_OUTCOME_REVIEW,
 				Check::check(
-					'billing_country_same_with_account_country',
-					Check::OPERATOR_EQUALS,
-					false
+					'billing_country',
+					self::get_selling_locations_type_operator(),
+					self::get_selling_locations_string()
 				)
 			),
 		];
@@ -269,5 +286,37 @@ class Fraud_Risk_Tools {
 			},
 			$array
 		);
+	}
+
+	/**
+	 * Returns the check operator for international checks according to the WC Core selling locations setting.
+	 *
+	 * @return  string  The related operator.
+	 */
+	private static function get_selling_locations_type_operator() {
+		$selling_locations_type = get_option( 'woocommerce_allowed_countries', 'all' );
+		if ( 'specific' === $selling_locations_type ) {
+				return Check::OPERATOR_NOT_IN;
+		}
+		return Check::OPERATOR_IN;
+	}
+
+	/**
+	 * Returns the countries to sell to, or not, as a | delimited string array.
+	 *
+	 * @return  string  The array imploded with | character.
+	 */
+	private static function get_selling_locations_string() {
+		$selling_locations_type = get_option( 'woocommerce_allowed_countries', 'all' );
+		switch ( $selling_locations_type ) {
+			case 'specific':
+				return implode( '|', get_option( 'woocommerce_specific_allowed_countries', [] ) );
+			case 'all_except':
+				return implode( '|', get_option( 'woocommerce_all_except_countries', [] ) );
+			case 'all':
+				return '';
+			default:
+				return '';
+		}
 	}
 }

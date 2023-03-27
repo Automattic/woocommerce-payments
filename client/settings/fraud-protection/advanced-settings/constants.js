@@ -23,10 +23,8 @@ export const Rules = {
 
 export const Checks = {
 	CHECK_BILLING_SHIPPING_ADDRESS_SAME: 'billing_shipping_address_same',
-	CHECK_IP_COUNTRY_SAME_WITH_ACCOUNT_COUNTRY:
-		'ip_country_same_with_account_country',
-	CHECK_BILLING_COUNTRY_SAME_WITH_ACCOUNT_COUNTRY:
-		'billing_country_same_with_account_country',
+	CHECK_IP_COUNTRY: 'ip_country',
+	CHECK_BILLING_COUNTRY: 'billing_country',
 	CHECK_ORDERS_SINCE_H: 'orders_since_%dh',
 	CHECK_ITEM_COUNT: 'item_count',
 	CHECK_ORDER_TOTAL: 'order_total',
@@ -41,4 +39,6 @@ export const CheckOperators = {
 	OPERATOR_GT: 'greater_than',
 	OPERATOR_LTE: 'less_or_equal',
 	OPERATOR_LT: 'less_than',
+	OPERATOR_IN: 'in',
+	OPERATOR_NOT_IN: 'not_in',
 };

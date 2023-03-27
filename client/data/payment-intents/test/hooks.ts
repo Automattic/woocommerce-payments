@@ -132,6 +132,7 @@ describe( 'Payment Intent hooks', () => {
 					.fn()
 					.mockReturnValue( paymentIntentMock ),
 				getPaymentIntentError: jest.fn().mockReturnValue( {} ),
+				hasFinishedResolution: jest.fn().mockReturnValue( true ),
 			};
 
 			const result = usePaymentIntentWithChargeFallback(
@@ -143,7 +144,7 @@ describe( 'Payment Intent hooks', () => {
 			);
 
 			expect( result ).toEqual( {
-				data: paymentIntentMock.charge,
+				data: paymentIntentMock,
 				error: {},
 				isLoading: false,
 			} );
