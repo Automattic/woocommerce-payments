@@ -1228,27 +1228,40 @@ class WC_Payments_API_Client {
 	/**
 	 * Get timeline of events for an intention
 	 *
-	 * @param string $intention_id The payment intention ID.
+	 * @param string $id The payment intention ID or order ID.
 	 *
 	 * @return array
 	 *
 	 * @throws Exception - Exception thrown on request failure.
 	 */
-	public function get_timeline( $intention_id ) {
-		$timeline = $this->request( [], self::TIMELINE_API . '/' . $intention_id, self::GET );
+	public function get_timeline( $id ) {
+		$timeline = $this->request( [], self::TIMELINE_API . '/' . $id, self::GET );
 
 		$has_fraud_outcome_event = false;
 
-		foreach ( $timeline['data'] as $event ) {
-			if ( in_array( $event['type'], [ self::EVENT_FRAUD_OUTCOME_REVIEW, self::EVENT_FRAUD_OUTCOME_BLOCK ], true ) ) {
-				$has_fraud_outcome_event = true;
-				break;
+		if ( ! empty( $timeline ) && ! empty( $timeline['data'] ) && is_array( $timeline['data'] ) ) {
+			foreach ( $timeline['data'] as $event ) {
+				if ( in_array( $event['type'], [ self::EVENT_FRAUD_OUTCOME_REVIEW, self::EVENT_FRAUD_OUTCOME_BLOCK ], true ) ) {
+					$has_fraud_outcome_event = true;
+					break;
+				}
 			}
 		}
 
 		if ( $has_fraud_outcome_event ) {
-			$intent            = $this->get_intent( $intention_id );
-			$order             = wc_get_order( $intent->get_metadata()['order_id'] );
+			$order_id = $id;
+
+			if ( ! is_numeric( $order_id ) ) {
+				$intent   = $this->get_intent( $id );
+				$order_id = $intent->get_metadata()['order_id'];
+			}
+
+			$order = wc_get_order( $order_id );
+
+			if ( false === $order ) {
+				return $timeline;
+			}
+
 			$manual_entry_meta = $order->get_meta( 'fraud_outcome_manual_entry', true );
 
 			if ( ! empty( $manual_entry_meta ) ) {
@@ -2623,7 +2636,7 @@ class WC_Payments_API_Client {
 	 *
 	 * @return array
 	 */
-	private function add_formatted_address_to_charge_object( array $charge ) : array {
+	public function add_formatted_address_to_charge_object( array $charge ) : array {
 		$has_billing_details = isset( $charge['billing_details'] );
 
 		if ( $has_billing_details ) {
@@ -2669,7 +2682,7 @@ class WC_Payments_API_Client {
 	 * @param WC_Order $order The order.
 	 * @return array
 	 */
-	private function build_order_info( WC_Order $order ): array {
+	public function build_order_info( WC_Order $order ): array {
 		$order_info = [
 			'number'       => $order->get_order_number(),
 			'url'          => $order->get_edit_order_url(),

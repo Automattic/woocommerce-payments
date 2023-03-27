@@ -3,33 +3,27 @@
 exports[`Blocked fraud outcome transactions columns should render the column correctly 1`] = `
 Array [
   Object {
-    "display": <a
-      className="woocommerce-table__clickable-cell"
-      href="post.php?post=123&action=edit"
-      tabIndex={-1}
+    "display": <ClickableCell
+      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=123"
     >
       Mar 20, 2023 / 4:08PM
-    </a>,
+    </ClickableCell>,
     "value": "Mar 20, 2023 / 4:08PM",
   },
   Object {
-    "display": <a
-      className="woocommerce-table__clickable-cell"
-      href="post.php?post=123&action=edit"
-      tabIndex={-1}
+    "display": <ClickableCell
+      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=123"
     >
       $11.00
-    </a>,
+    </ClickableCell>,
     "value": 1100,
   },
   Object {
-    "display": <a
-      className="woocommerce-table__clickable-cell"
-      href="post.php?post=123&action=edit"
-      tabIndex={-1}
+    "display": <ClickableCell
+      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=123"
     >
       Mock Customer
-    </a>,
+    </ClickableCell>,
     "value": "Mock Customer",
   },
   Object {

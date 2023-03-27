@@ -11,3 +11,8 @@ export const getChargeError = ( state, id ) => {
 		? state.charges[ id ].error
 		: {};
 };
+
+export const getChargeFromOrder = ( state, id ) => getCharge( state, id );
+
+export const getChargeFromOrderError = ( state, id ) =>
+	getChargeError( state, id );
