@@ -9,7 +9,7 @@ import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
  */
 import './../style.scss';
 import BannerNotice from 'wcpay/components/banner-notice';
-import TipIcon from 'wcpay/icons';
+import { TipIcon } from 'wcpay/icons';
 
 const FraudProtectionRuleCardNotice = ( { type, children } ) => {
 	const supportedTypes = [ 'error', 'warning', 'info' ];
