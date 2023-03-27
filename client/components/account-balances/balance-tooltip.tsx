@@ -8,7 +8,7 @@ import { sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import Tooltip from 'components/tooltip';
+import { ClickTooltip } from 'components/tooltip';
 import {
 	documentationUrls,
 	fundLabelStrings,
@@ -89,7 +89,7 @@ const BalanceTooltip: React.FC< BalanceTooltipProps > = ( {
 	}
 
 	return (
-		<Tooltip content={ content } ignoreMouseHover>
+		<ClickTooltip content={ content }>
 			<div
 				className="wcpay-account-balances__balances__item__tooltip-button"
 				role="button"
@@ -100,7 +100,7 @@ const BalanceTooltip: React.FC< BalanceTooltipProps > = ( {
 					className="wcpay-account-balances__balances__item__tooltip-button__icon"
 				/>
 			</div>
-		</Tooltip>
+		</ClickTooltip>
 	);
 };
 
