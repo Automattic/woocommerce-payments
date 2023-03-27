@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * This class gives a list of all the possible fraud meta mbox type constants.
+ * This class gives a list of all the possible fraud meta box type constants.
  *
  * @psalm-immutable
  */
