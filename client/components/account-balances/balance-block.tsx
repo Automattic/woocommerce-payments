@@ -13,7 +13,7 @@ import BalanceTooltip from './balance-tooltip';
 /**
  * balanceType
  */
-export type balanceType = 'pending' | 'available' | 'reserved';
+type balanceType = 'pending' | 'available' | 'reserved';
 
 /**
  * BalanceBlockProps
