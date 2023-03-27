@@ -21,18 +21,17 @@ export type balanceType = 'pending' | 'available' | 'reserved';
  *
  * @typedef {Object} BalanceBlockProps
  *
- * @property {balanceType} type    		 Type of the balance block. eg "available".
- * @property {string} currencyCode 		 Currency code of the balance block.
- * @property {number} [amount]     		 Optional. The balance amount.
- * @property {boolean} [isLoading] 		 Optional. Whether the balance block is loading.
- * @property {number} delayDays    		 The account's pending period in days.
- * @property {boolean} [isNegativeBalance] Optional. Whether the balance is negative.
+ * @property {balanceType} type										Type of the balance block. eg "available".
+ * @property {string} currencyCode									Currency code of the balance block.
+ * @property {React.ReactElement< typeof BalanceTooltip >} tooltip	The tooltip element.
+ * @property {number} [amount]										Optional. The balance amount.
+ * @property {boolean} [isLoading]									Optional. Whether the balance block is loading.
  */
 interface BalanceBlockProps {
 	type: balanceType;
 	currencyCode: string;
-	amount?: number;
 	tooltip: React.ReactElement< typeof BalanceTooltip >;
+	amount?: number;
 	isLoading?: boolean;
 }
 
