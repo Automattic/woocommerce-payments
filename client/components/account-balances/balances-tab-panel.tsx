@@ -21,7 +21,6 @@ import BalanceBlock from './balance-block';
  * @param {string} currencyCode   Currency code of the tab.
  * @param {number} availableFunds Available funds of the tab.
  * @param {number} pendingFunds   Pending funds of the tab.
- * @param {number} reservedFunds  Reserved funds of the tab.
  */
 type BalanceTab = {
 	name: string;
