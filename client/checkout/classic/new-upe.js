@@ -91,9 +91,8 @@ jQuery( function ( $ ) {
 	function createPaymentElement( paymentMethodType, domElement ) {
 		const options = {
 			mode: 'payment',
-			currency: 'eur',
-			// TODO: get the amount from the order
-			amount: 1000,
+			currency: getUPEConfig( 'currency' ).toLowerCase(),
+			amount: Number( getUPEConfig( 'cartTotal' ) ),
 			paymentMethodCreation: 'manual',
 			paymentMethodTypes: [ paymentMethodType ],
 		};

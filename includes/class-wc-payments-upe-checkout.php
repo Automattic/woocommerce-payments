@@ -111,10 +111,14 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		$payment_fields['wcBlocksUPEAppearance']    = get_transient( UPE_Payment_Gateway::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
 		$payment_fields['cartContainsSubscription'] = $this->gateway->is_subscription_item_in_cart();
 
-		if ( WC_Payments_Features::is_upe_legacy_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+		if ( WC_Payments_Features::is_upe_legacy_enabled() ) {
 			$payment_fields['checkoutTitle']        = $this->gateway->get_checkout_title();
 			$payment_fields['upePaymentIntentData'] = $this->gateway->get_payment_intent_data_from_session();
 			$payment_fields['upeSetupIntentData']   = $this->gateway->get_setup_intent_data_from_session();
+		} elseif ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+			$payment_fields['checkoutTitle'] = $this->gateway->get_checkout_title();
+			$payment_fields['currency']      = get_woocommerce_currency();
+			$payment_fields['cartTotal']     = number_format( WC()->cart->total, 2, '', '' );
 		}
 
 		$enabled_billing_fields = [];
