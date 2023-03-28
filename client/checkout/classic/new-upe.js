@@ -9,7 +9,17 @@ import { getUPEConfig } from 'wcpay/utils/checkout';
 import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import apiRequest from '../utils/request';
-import { PAYMENT_METHOD_NAME_CARD } from '../constants.js';
+import {
+	PAYMENT_METHOD_NAME_BANCONTACT,
+	PAYMENT_METHOD_NAME_BECS,
+	PAYMENT_METHOD_NAME_CARD,
+	PAYMENT_METHOD_NAME_EPS,
+	PAYMENT_METHOD_NAME_GIROPAY,
+	PAYMENT_METHOD_NAME_IDEAL,
+	PAYMENT_METHOD_NAME_P24,
+	PAYMENT_METHOD_NAME_SEPA,
+	PAYMENT_METHOD_NAME_SOFORT,
+} from '../constants.js';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
@@ -81,7 +91,7 @@ jQuery( function ( $ ) {
 	function createPaymentElement( paymentMethodType, domElement ) {
 		const options = {
 			mode: 'payment',
-			currency: 'usd',
+			currency: 'eur',
 			// TODO: get the amount from the order
 			amount: 1000,
 			paymentMethodCreation: 'manual',
@@ -93,8 +103,7 @@ jQuery( function ( $ ) {
 		upeElement.mount( domElement );
 		gatewayUPEComponents[ paymentMethodType ].upeElement = upeElement;
 		upeElement.on( 'change', ( event ) => {
-			const selectedUPEPaymentType =
-				'link' !== event.value.type ? event.value.type : 'card';
+			const selectedUPEPaymentType = event.value.type;
 			gatewayUPEComponents[ selectedUPEPaymentType ].country =
 				event.value.country;
 			gatewayUPEComponents[ selectedUPEPaymentType ].isUPEComplete =
@@ -137,6 +146,7 @@ jQuery( function ( $ ) {
 				},
 			},
 		} );
+		console.log( 'pm created: ' + JSON.stringify( pm ) );
 
 		try {
 			const fields = {
@@ -155,7 +165,17 @@ jQuery( function ( $ ) {
 	};
 
 	// Handle the checkout form when WooCommerce Payments is chosen.
-	const wcpayPaymentMethods = [ PAYMENT_METHOD_NAME_CARD ].filter( Boolean );
+	const wcpayPaymentMethods = [
+		PAYMENT_METHOD_NAME_BANCONTACT,
+		PAYMENT_METHOD_NAME_BECS,
+		PAYMENT_METHOD_NAME_EPS,
+		PAYMENT_METHOD_NAME_GIROPAY,
+		PAYMENT_METHOD_NAME_IDEAL,
+		PAYMENT_METHOD_NAME_P24,
+		PAYMENT_METHOD_NAME_SEPA,
+		PAYMENT_METHOD_NAME_SOFORT,
+		PAYMENT_METHOD_NAME_CARD,
+	];
 	const checkoutEvents = wcpayPaymentMethods
 		.map( ( method ) => `checkout_place_order_${ method }` )
 		.join( ' ' );
