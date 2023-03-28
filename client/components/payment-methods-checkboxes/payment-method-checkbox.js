@@ -20,7 +20,7 @@ import LoadableCheckboxControl from 'components/loadable-checkbox';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 import PaymentMethodsMap from '../../payment-methods-map';
 import Pill from '../pill';
-import { ClickTooltip } from 'components/tooltip';
+import { HoverTooltip } from 'components/tooltip';
 import './payment-method-checkbox.scss';
 import { useManualCapture } from 'wcpay/data';
 
@@ -29,7 +29,7 @@ const PaymentMethodDescription = ( { name } ) => {
 	if ( ! description ) return null;
 
 	return (
-		<ClickTooltip content={ description }>
+		<HoverTooltip content={ description }>
 			<div className="payment-method-checkbox__info">
 				<VisuallyHidden>
 					{ __(
@@ -39,7 +39,7 @@ const PaymentMethodDescription = ( { name } ) => {
 				</VisuallyHidden>
 				<Icon icon="info-outline" />
 			</div>
-		</ClickTooltip>
+		</HoverTooltip>
 	);
 };
 
@@ -112,7 +112,7 @@ const PaymentMethodCheckbox = ( {
 						) }
 					</span>
 					{ upeCapabilityStatuses.PENDING_APPROVAL === status && (
-						<ClickTooltip
+						<HoverTooltip
 							content={ __(
 								'This payment method is pending approval. Once approved, you will be able to use it.',
 								'woocommerce-payments'
@@ -126,10 +126,10 @@ const PaymentMethodCheckbox = ( {
 									'woocommerce-payments'
 								) }
 							</Pill>
-						</ClickTooltip>
+						</HoverTooltip>
 					) }
 					{ upeCapabilityStatuses.PENDING_VERIFICATION === status && (
-						<ClickTooltip
+						<HoverTooltip
 							content={ sprintf(
 								__(
 									"%s won't be visible to your customers until you provide the required " +
@@ -150,10 +150,10 @@ const PaymentMethodCheckbox = ( {
 									'woocommerce-payments'
 								) }
 							</Pill>
-						</ClickTooltip>
+						</HoverTooltip>
 					) }
 					{ disabled && (
-						<ClickTooltip
+						<HoverTooltip
 							content={ sprintf(
 								__(
 									'To use %s, please contact WooCommerce support.',
@@ -168,11 +168,11 @@ const PaymentMethodCheckbox = ( {
 									'woocommerce-payments'
 								) }
 							</Pill>
-						</ClickTooltip>
+						</HoverTooltip>
 					) }
 				</div>
 				<div className={ 'payment-method-checkbox__pills-right' }>
-					<ClickTooltip
+					<HoverTooltip
 						content={ formatMethodFeesTooltip(
 							accountFees[ name ]
 						) }
@@ -193,7 +193,7 @@ const PaymentMethodCheckbox = ( {
 								) }
 							</span>
 						</Pill>
-					</ClickTooltip>
+					</HoverTooltip>
 					<PaymentMethodDescription name={ name } />
 				</div>
 			</div>

@@ -9,7 +9,7 @@ import classNames from 'classnames';
  * Internal dependencies
  */
 import Pill from '../pill';
-import { ClickTooltip, HoverTooltip } from 'components/tooltip';
+import { HoverTooltip } from 'components/tooltip';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import LoadableCheckboxControl from '../loadable-checkbox';
 import { __, sprintf } from '@wordpress/i18n';
@@ -157,7 +157,7 @@ const PaymentMethod = ( {
 				</div>
 				{ accountFees && accountFees[ id ] && (
 					<div className="payment-method__fees">
-						<ClickTooltip
+						<HoverTooltip
 							maxWidth={ '300px' }
 							content={ formatMethodFeesTooltip(
 								accountFees[ id ]
@@ -180,7 +180,7 @@ const PaymentMethod = ( {
 									) }
 								</span>
 							</Pill>
-						</ClickTooltip>
+						</HoverTooltip>
 					</div>
 				) }
 			</div>
