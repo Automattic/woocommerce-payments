@@ -615,8 +615,8 @@ class WC_Payments_Utils {
 	 * Returns the correct id to be used on the transaction URL
 	 * The primary ID is prioritized and it fallbacks to the fallback ID
 	 *
-	 * @param string $primary_id  Payment intent ID.
-	 * @param string $fallback_id Charge ID.
+	 * @param string $primary_id  Usually the Payment Intent ID, but can be an order ID.
+	 * @param string $fallback_id Usually the Charge ID.
 	 *
 	 * @return string
 	 */
