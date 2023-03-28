@@ -20,6 +20,8 @@ use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Payment_Process\Payment;
 use WCPay\Payment_Process\Payment_Method\New_Payment_Method;
+use WCPay\Payment_Process\Order_Payment_Factory;
+use WCPay\Payment_Process\Payment_Method\Saved_Payment_Method;
 
 /**
  * Gateway class for WooCommerce Payments, with added compatibility with WooCommerce Subscriptions.
@@ -27,6 +29,13 @@ use WCPay\Payment_Process\Payment_Method\New_Payment_Method;
 trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 	use WC_Payments_Subscriptions_Utilities;
+
+	/**
+	 * A factory for payment objects.
+	 *
+	 * @var Order_Payment_Factory
+	 */
+	protected $payment_factory;
 
 	/**
 	 * Retrieve payment token from a subscription or order.
@@ -324,34 +333,37 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		}
 
 		try {
-			$payment_information = new Payment_Information( '', $renewal_order, Payment_Type::RECURRING(), $token, Payment_Initiated_By::MERCHANT() );
-			$this->process_payment_for_order( null, $payment_information, true );
+			$this->prepare_payment_objects();
+			$payment = $this->payment_factory->load_or_create_order_payment( $renewal_order );
+			$payment->set_flow( Payment::SCHEDULED_SUBSCRIPTION_PAYMENT_FLOW );
+			$payment->set_flag( Payment::RECURRING );
+			$payment->set_flag( Payment::MERCHANT_INITIATED );
+			$payment->set_payment_method( new Saved_Payment_Method( $token ) );
+			$payment->process();
 		} catch ( API_Exception $e ) {
 			Logger::error( 'Error processing subscription renewal: ' . $e->getMessage() );
 			// TODO: Update to use Order_Service->mark_payment_failed.
 			$renewal_order->update_status( 'failed' );
 
-			if ( ! empty( $payment_information ) ) {
-				$note = sprintf(
-					WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the failed payment amount, %2: error message  */
-						__(
-							'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
-							'woocommerce-payments'
-						),
-						[
-							'strong' => '<strong>',
-							'code'   => '<code>',
-						]
+			$note = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the failed payment amount, %2: error message  */
+					__(
+						'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
+						'woocommerce-payments'
 					),
-					WC_Payments_Explicit_Price_Formatter::get_explicit_price(
-						wc_price( $amount, [ 'currency' => WC_Payments_Utils::get_order_intent_currency( $renewal_order ) ] ),
-						$renewal_order
-					),
-					esc_html( rtrim( $e->getMessage(), '.' ) )
-				);
-				$renewal_order->add_order_note( $note );
-			}
+					[
+						'strong' => '<strong>',
+						'code'   => '<code>',
+					]
+				),
+				WC_Payments_Explicit_Price_Formatter::get_explicit_price(
+					wc_price( $amount, [ 'currency' => WC_Payments_Utils::get_order_intent_currency( $renewal_order ) ] ),
+					$renewal_order
+				),
+				esc_html( rtrim( $e->getMessage(), '.' ) )
+			);
+			$renewal_order->add_order_note( $note );
 		}
 	}
 

@@ -68,6 +68,11 @@ class Payment {
 	const POST_CHECKOUT_REDIRECT_FLOW = 'POST_CHECKOUT_REDIRECT_FLOW';
 
 	/**
+	 * Used for scheduled subscription payments.
+	 */
+	const SCHEDULED_SUBSCRIPTION_PAYMENT_FLOW = 'SCHEDULED_SUBSCRIPTION_PAYMENT_FLOW';
+
+	/**
 	 * UPE flows:
 	 *
 	 * 1. The intent is created through AJAX in order to display fields on checkout.

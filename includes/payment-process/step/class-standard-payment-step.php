@@ -165,6 +165,13 @@ class Standard_Payment_Step extends Abstract_Step {
 			$this->add_fingerprint_to_request( $request );
 		}
 
+		if ( $payment->is_flow( Payment::SCHEDULED_SUBSCRIPTION_PAYMENT_FLOW ) ) {
+			$mandate = $this->gateway->get_mandate_param_for_renewal_order( $order );
+			if ( $mandate ) {
+				$request->set_mandate( $mandate );
+			}
+		}
+
 		/**
 		 * Allows the request for creating and confirming intents to be modified.
 		 *
