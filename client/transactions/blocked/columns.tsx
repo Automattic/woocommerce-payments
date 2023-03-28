@@ -6,7 +6,6 @@ import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 import { TableCardColumn, TableCardBodyColumn } from '@woocommerce/components';
-import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
@@ -14,6 +13,8 @@ import { addQueryArgs } from '@wordpress/url';
 import { formatExplicitCurrency } from 'utils/currency';
 import TransactionStatusChip from '../../components/transaction-status-chip';
 import { FraudOutcomeTransaction } from '../../data';
+import { getDetailsURL } from '../../components/details-link';
+import ClickableCell from '../../components/clickable-cell';
 
 interface Column extends TableCardColumn {
 	key: 'created' | 'amount' | 'customer' | 'status';
@@ -24,12 +25,6 @@ interface Column extends TableCardColumn {
 const rowDataFallback: TableCardBodyColumn = {
 	display: null,
 };
-
-const getDetailsURL = ( id: string ) =>
-	addQueryArgs( 'post.php', {
-		post: id,
-		action: 'edit',
-	} );
 
 export const getBlockedListColumns = (): Column[] =>
 	[
@@ -70,20 +65,17 @@ export const getBlockedListColumns = (): Column[] =>
 export const getBlockedListRowContent = (
 	data: FraudOutcomeTransaction
 ): Record< string, TableCardBodyColumn > => {
-	const detailsURL = getDetailsURL( data.order_id.toString() );
+	const detailsURL = getDetailsURL(
+		data.order_id.toString(),
+		'transactions'
+	);
 	const formattedCreatedDate = dateI18n(
 		'M j, Y / g:iA',
 		moment.utc( data.created ).local().toISOString()
 	);
 
 	const clickable = ( children: JSX.Element | string ) => (
-		<a
-			href={ detailsURL }
-			tabIndex={ -1 }
-			className="woocommerce-table__clickable-cell"
-		>
-			{ children }
-		</a>
+		<ClickableCell href={ detailsURL }>{ children }</ClickableCell>
 	);
 
 	return {

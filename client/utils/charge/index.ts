@@ -66,12 +66,13 @@ export const isOnHoldByFraudTools = (
 };
 
 export const isBlockedByFraudTools = (
+	charge?: Charge,
 	fraudOutcome?: FraudOutcome,
 	paymentIntent?: PaymentIntent
 ): boolean => {
 	return (
 		wcpaySettings.isFraudProtectionSettingsEnabled &&
-		paymentIntent?.status === 'canceled' &&
+		( paymentIntent?.status === 'canceled' || ! charge?.payment_intent ) &&
 		!! fraudOutcome
 	);
 };
@@ -86,7 +87,7 @@ export const getChargeStatus = (
 		return 'fraud_outcome_review';
 	}
 
-	if ( isBlockedByFraudTools( fraudOutcome, paymentIntent ) ) {
+	if ( isBlockedByFraudTools( charge, fraudOutcome, paymentIntent ) ) {
 		return 'fraud_outcome_block';
 	}
 
