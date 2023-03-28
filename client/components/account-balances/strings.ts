@@ -39,17 +39,11 @@ export const fundTooltipStrings = {
 		'The amount of funds still in the %d day pending period.',
 		'woocommerce-payments'
 	),
-	reserved: __(
-		'The amount of funds being held in reserve.',
-		'woocommerce-payments'
-	),
 };
 
 export const documentationUrls = {
 	depositSchedule:
 		'https://woocommerce.com/document/woocommerce-payments/deposits/deposit-schedule',
-	reservedFunds:
-		'https://woocommerce.com/document/woocommerce-payments/our-policies/reserves',
 	negativeBalance:
 		'https://woocommerce.com/document/woocommerce-payments/fees-and-debits/account-showing-negative-balance',
 };

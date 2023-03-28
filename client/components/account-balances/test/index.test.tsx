@@ -352,22 +352,4 @@ describe( 'BalanceTooltip', () => {
 
 		screen.getByText( expectedTooltipText );
 	} );
-
-	test( 'renders the correct tooltip text for the reserved balance', () => {
-		const expectedTooltipText = fundTooltipStrings.reserved;
-
-		render(
-			<BalanceTooltip
-				label="Reserved funds tooltip"
-				content={ expectedTooltipText }
-			/>
-		);
-
-		const tooltipButton = screen.getByRole( 'button', {
-			name: 'Reserved funds tooltip',
-		} );
-		fireEvent.click( tooltipButton );
-
-		screen.getByText( expectedTooltipText );
-	} );
 } );
