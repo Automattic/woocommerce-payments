@@ -544,24 +544,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Fetch a single charge with provided id.
-	 *
-	 * @param string $charge_id id of requested charge.
-	 * @return array charge object.
-	 */
-	public function get_charge( $charge_id ) {
-		$charge = $this->request( [], self::CHARGES_API . '/' . $charge_id, self::GET );
-
-		if ( is_wp_error( $charge ) ) {
-			return $charge;
-		}
-
-		$charge = $this->add_additional_info_to_charge( $charge );
-
-		return $charge;
-	}
-
-	/**
 	 * List disputes
 	 *
 	 * @param int    $page The page index to retrieve.
