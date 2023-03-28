@@ -39,9 +39,9 @@ import { PaymentIntent } from '../../types/payment-intents';
 declare const window: any;
 
 interface PaymentDetailsSummaryProps {
-	charge: Charge;
-	metadata: Record< string, any >;
 	isLoading: boolean;
+	charge?: Charge;
+	metadata?: Record< string, any >;
 	fraudOutcome?: FraudOutcome;
 	paymentIntent?: PaymentIntent;
 }
@@ -75,8 +75,8 @@ const getTapToPayChannel = ( platform: string ) => {
 };
 
 const composePaymentSummaryItems = ( {
-	charge,
-	metadata,
+	charge = {} as Charge,
+	metadata = {},
 }: {
 	charge: Charge;
 	metadata: Record< string, any >;
@@ -139,8 +139,8 @@ const composePaymentSummaryItems = ( {
 	].filter( Boolean );
 
 const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
-	charge,
-	metadata,
+	charge = {} as Charge,
+	metadata = {},
 	isLoading,
 	fraudOutcome,
 	paymentIntent,

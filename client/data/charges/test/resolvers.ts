@@ -9,7 +9,9 @@ import { apiFetch, dispatch } from '@wordpress/data-controls';
  * Internal dependencies
  */
 import { updateCharge, updateErrorForCharge } from '../actions';
-import { getCharge } from '../resolvers';
+import { getCharge, getChargeFromOrder } from '../resolvers';
+
+const orderId = '42';
 
 const errorResponse = { code: 'error' };
 
@@ -21,8 +23,15 @@ const chargeResponse = {
 	},
 };
 
+const orderResponse = {
+	data: {
+		id: orderId,
+		total: '8903',
+	},
+};
+
 describe( 'getCharge resolver', () => {
-	let generator = null;
+	let generator: Generator< unknown >;
 
 	beforeEach( () => {
 		generator = getCharge( 'test_ch_1' );
@@ -54,6 +63,44 @@ describe( 'getCharge resolver', () => {
 			);
 			expect( generator.next().value ).toEqual(
 				updateErrorForCharge( 'test_ch_1', null, errorResponse )
+			);
+		} );
+	} );
+} );
+
+describe( 'getChargeFromOrder resolver', () => {
+	let generator: Generator< unknown >;
+
+	beforeEach( () => {
+		generator = getChargeFromOrder( orderId );
+		expect( generator.next().value ).toEqual(
+			apiFetch( { path: `/wc/v3/payments/charges/order/${ orderId }` } )
+		);
+	} );
+
+	afterEach( () => {
+		expect( generator.next().done ).toStrictEqual( true );
+	} );
+
+	describe( 'on success', () => {
+		test( 'should update state with charge data', () => {
+			expect( generator.next( orderResponse.data ).value ).toEqual(
+				updateCharge( orderResponse.data.id, orderResponse.data )
+			);
+		} );
+	} );
+
+	describe( 'on error', () => {
+		test( 'should update state with error on error', () => {
+			expect( generator.throw( errorResponse ).value ).toEqual(
+				dispatch(
+					'core/notices',
+					'createErrorNotice',
+					expect.any( String )
+				)
+			);
+			expect( generator.next().value ).toEqual(
+				updateErrorForCharge( orderId, null, errorResponse )
 			);
 		} );
 	} );
