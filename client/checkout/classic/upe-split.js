@@ -28,6 +28,7 @@ import {
 	getTerms,
 	isWCPayChosen,
 	getPaymentIntentFromSession,
+	getSelectedUPEGatewayPaymentMethod,
 } from '../utils/upe';
 import { decryptClientSecret } from '../utils/encryption';
 import enableStripeLinkPaymentMethod from '../stripe-link';
@@ -325,7 +326,6 @@ jQuery( function ( $ ) {
 			};
 		}
 
-		console.log( 'upeSettings are: ' + JSON.stringify( upeSettings ) );
 		upeElement = elements.create( 'payment', {
 			...upeSettings,
 			wallets: {
@@ -800,51 +800,6 @@ export function isUsingSavedPaymentMethod( paymentMethodType ) {
 		null !== document.querySelector( savedPaymentSelector ) &&
 		! document.querySelector( savedPaymentSelector ).checked
 	);
-}
-
-/**
- * Finds selected payment gateway and returns matching Stripe payment method for gateway.
- *
- * @return {string} Stripe payment method type
- */
-export function getSelectedUPEGatewayPaymentMethod() {
-	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
-	const gatewayCardId = getUPEConfig( 'gatewayId' );
-	let selectedGatewayId = null;
-
-	// Handle payment method selection on the Checkout page or Add Payment Method page where class names differ.
-
-	if ( null !== document.querySelector( 'li.wc_payment_method' ) ) {
-		selectedGatewayId = document
-			.querySelector( 'li.wc_payment_method input.input-radio:checked' )
-			.getAttribute( 'id' );
-	} else if (
-		null !== document.querySelector( 'li.woocommerce-PaymentMethod' )
-	) {
-		selectedGatewayId = document
-			.querySelector(
-				'li.woocommerce-PaymentMethod input.input-radio:checked'
-			)
-			.getAttribute( 'id' );
-	}
-
-	if ( 'payment_method_woocommerce_payments' === selectedGatewayId ) {
-		selectedGatewayId = 'payment_method_woocommerce_payments_card';
-	}
-
-	let selectedPaymentMethod = null;
-
-	for ( const paymentMethodType in paymentMethodsConfig ) {
-		if (
-			`payment_method_${ gatewayCardId }_${ paymentMethodType }` ===
-			selectedGatewayId
-		) {
-			selectedPaymentMethod = paymentMethodType;
-			break;
-		}
-	}
-
-	return selectedPaymentMethod;
 }
 
 /**

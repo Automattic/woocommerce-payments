@@ -20,17 +20,14 @@ import {
 	PAYMENT_METHOD_NAME_SEPA,
 	PAYMENT_METHOD_NAME_SOFORT,
 } from '../constants.js';
+import { getSelectedUPEGatewayPaymentMethod } from '../utils/upe';
+import showErrorCheckout from '../utils/show-error-checkout';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
 
-	const paymentMethods = getUPEConfig( 'paymentMethodsConfig' );
-	const publishableKey = getUPEConfig( 'publishableKey' );
-	const isUPEEnabled = getUPEConfig( 'isUPEEnabled' );
-	const isUPESplitEnabled = getUPEConfig( 'isUPESplitEnabled' );
-	const isStripeLinkEnabled =
-		paymentMethods.link !== undefined && paymentMethods.card !== undefined;
 	const gatewayUPEComponents = {};
+	const paymentMethods = getUPEConfig( 'paymentMethodsConfig' );
 	for ( const paymentMethodType in paymentMethods ) {
 		gatewayUPEComponents[ paymentMethodType ] = {
 			elements: null,
@@ -42,13 +39,10 @@ jQuery( function ( $ ) {
 
 	const api = new WCPayAPI(
 		{
-			publishableKey,
+			publishableKey: getUPEConfig( 'publishableKey' ),
 			accountId: getUPEConfig( 'accountId' ),
 			forceNetworkSavedCards: getUPEConfig( 'forceNetworkSavedCards' ),
 			locale: getUPEConfig( 'locale' ),
-			isUPEEnabled,
-			isUPESplitEnabled,
-			isStripeLinkEnabled,
 		},
 		apiRequest
 	);
@@ -65,7 +59,10 @@ jQuery( function ( $ ) {
 				if ( stripeElement ) {
 					stripeElement.mount( domElement );
 				} else {
-					createPaymentElement( paymentMethodType, domElement );
+					createAndMountPaymentElement(
+						paymentMethodType,
+						domElement
+					);
 				}
 			} );
 	} );
@@ -85,10 +82,10 @@ jQuery( function ( $ ) {
 		} );
 	};
 
-	let upeElement;
-	let elements;
-
-	function createPaymentElement( paymentMethodType, domElement ) {
+	async function createAndMountPaymentElement(
+		paymentMethodType,
+		domElement
+	) {
 		const options = {
 			mode: 'payment',
 			currency: getUPEConfig( 'currency' ).toLowerCase(),
@@ -96,11 +93,13 @@ jQuery( function ( $ ) {
 			paymentMethodCreation: 'manual',
 			paymentMethodTypes: [ paymentMethodType ],
 		};
-		elements = api.getStripe().elements( options );
+		const elements = api.getStripe().elements( options );
 		gatewayUPEComponents[ paymentMethodType ].elements = elements;
-		upeElement = elements.create( 'payment' );
+
+		const upeElement = elements.create( 'payment' );
 		upeElement.mount( domElement );
 		gatewayUPEComponents[ paymentMethodType ].upeElement = upeElement;
+
 		upeElement.on( 'change', ( event ) => {
 			const selectedUPEPaymentType = event.value.type;
 			gatewayUPEComponents[ selectedUPEPaymentType ].country =
@@ -110,15 +109,12 @@ jQuery( function ( $ ) {
 		} );
 	}
 
-	const handleEverything = async ( $form, paymentMethodType ) => {
+	const handleCheckout = async ( $form, paymentMethodType ) => {
 		blockUI( $form );
-		elements = gatewayUPEComponents[ paymentMethodType ].elements;
+		const elements = gatewayUPEComponents[ paymentMethodType ].elements;
 		elements.submit().then( ( result ) => {
 			if ( result.error ) {
-				console.log(
-					'error occurred during Stripe UI element validation: ' +
-						JSON.stringify( result.error )
-				);
+				showErrorCheckout( result.error.message );
 			}
 		} );
 		const pm = await api.getStripe().createPaymentMethod( {
@@ -145,7 +141,6 @@ jQuery( function ( $ ) {
 				},
 			},
 		} );
-		console.log( 'pm created: ' + JSON.stringify( pm ) );
 
 		try {
 			const fields = {
@@ -159,7 +154,7 @@ jQuery( function ( $ ) {
 			const response = await api.processCheckout( fields );
 			window.location.href = response.redirect;
 		} catch ( error ) {
-			console.log( 'error catched: ' + JSON.stringify( error ) );
+			showErrorCheckout( error.message );
 		}
 	};
 
@@ -179,51 +174,9 @@ jQuery( function ( $ ) {
 		.map( ( method ) => `checkout_place_order_${ method }` )
 		.join( ' ' );
 	$( 'form.checkout' ).on( checkoutEvents, function () {
-		const paymentMethodType = getSelectedPaymentMethod();
+		const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
 
-		handleEverything( $( this ), paymentMethodType );
+		handleCheckout( $( this ), paymentMethodType );
 		return false;
 	} );
-
-	function getSelectedPaymentMethod() {
-		const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
-		const gatewayCardId = getUPEConfig( 'gatewayId' );
-		let selectedGatewayId = null;
-
-		// Handle payment method selection on the Checkout page or Add Payment Method page where class names differ.
-
-		if ( null !== document.querySelector( 'li.wc_payment_method' ) ) {
-			selectedGatewayId = document
-				.querySelector(
-					'li.wc_payment_method input.input-radio:checked'
-				)
-				.getAttribute( 'id' );
-		} else if (
-			null !== document.querySelector( 'li.woocommerce-PaymentMethod' )
-		) {
-			selectedGatewayId = document
-				.querySelector(
-					'li.woocommerce-PaymentMethod input.input-radio:checked'
-				)
-				.getAttribute( 'id' );
-		}
-
-		if ( 'payment_method_woocommerce_payments' === selectedGatewayId ) {
-			selectedGatewayId = 'payment_method_woocommerce_payments_card';
-		}
-
-		let selectedPaymentMethod = null;
-
-		for ( const paymentMethodType in paymentMethodsConfig ) {
-			if (
-				`payment_method_${ gatewayCardId }_${ paymentMethodType }` ===
-				selectedGatewayId
-			) {
-				selectedPaymentMethod = paymentMethodType;
-				break;
-			}
-		}
-
-		return selectedPaymentMethod;
-	}
 } );
