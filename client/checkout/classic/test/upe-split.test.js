@@ -4,9 +4,10 @@
 import * as CheckoutUtils from 'utils/checkout';
 import {
 	isUsingSavedPaymentMethod,
-	getSelectedUPEGatewayPaymentMethod,
 	getSetupIntentFromSession,
 } from '../upe-split';
+
+import { getSelectedUPEGatewayPaymentMethod } from 'wcpay/checkout/utils/upe';
 
 describe( 'UPE split checkout', () => {
 	describe( 'isUsingSavedPaymentMethod', () => {
