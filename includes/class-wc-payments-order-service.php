@@ -667,7 +667,7 @@ class WC_Payments_Order_Service {
 			}
 		} catch ( Exception $e ) {
 			// Log the error and don't block checkout.
-			Logger::log( 'Error when saving application fee for the order ' . $order->get_id() . ': ' . $e->getMessage() );
+			Logger::log( 'Error saving transaction fee into metadata for the order ' . $order->get_id() . ': ' . $e->getMessage() );
 		}
 
 	}
