@@ -178,15 +178,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 				$this->mock_charge_id,
 				'USD'
 			);
-		$this->mock_gateway
-			->expects( $this->once() )
-			->method( 'update_order_status_from_intent' )
-			->with(
-				$this->isInstanceOf( WC_Order::class ),
-				$this->mock_intent_id,
-				Payment_Intent_Status::SUCCEEDED,
-				'ch_mock'
-			);
+
 		$this->mock_gateway
 			->expects( $this->never() )
 			->method( 'capture_charge' );
@@ -251,15 +243,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 				$this->mock_charge_id,
 				'USD'
 			);
-		$this->mock_gateway
-			->expects( $this->once() )
-			->method( 'update_order_status_from_intent' )
-			->with(
-				$this->isInstanceOf( WC_Order::class ),
-				$this->mock_intent_id,
-				Payment_Intent_Status::SUCCEEDED,
-				'ch_mock'
-			);
+
 		$this->mock_gateway
 			->expects( $this->never() )
 			->method( 'capture_charge' );
@@ -547,11 +531,10 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_capture_authorization_success() {
+		// Arrange: Create a mock order.
 		$order = $this->create_mock_order();
-		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
-		$order->set_payment_method_title( 'WooCommerce Payments' );
-		$order->save();
 
+		// Arrange: Create a mock intent to work with.
 		$mock_intent = WC_Helper_Intention::create_intention(
 			[
 				'status'   => Payment_Intent_Status::REQUIRES_CAPTURE,
@@ -561,11 +544,13 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
+		// Arrange: Create a mock request for an intent.
 		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $this->mock_intent_id );
 		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $mock_intent );
 
+		// Assert: We assert that capture_charge is called.
 		$this->mock_gateway
 			->expects( $this->once() )
 			->method( 'capture_charge' )
@@ -577,6 +562,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 				]
 			);
 
+		// Arrange: Create the request to capture the authorization.
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_body_params(
 			[
@@ -585,9 +571,11 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
+		// Act: Send the request to capture the authorization.
 		$response      = $this->controller->capture_authorization( $request );
 		$response_data = $response->get_data();
 
+		// Assert: Confirm we have a 200 response and our expected status info.
 		$this->assertSame( 200, $response->status );
 		$this->assertSame(
 			[
@@ -597,10 +585,13 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			$response_data
 		);
 
-		$result_order = wc_get_order( $order->get_id() );
-		$this->assertSame( 'woocommerce_payments', $result_order->get_payment_method() );
-		$this->assertSame( 'WooCommerce Payments', $result_order->get_payment_method_title() );
-		$this->assertSame( 'processing', $result_order->get_status() );
+		/**
+		 * This is commented out due to we are not able to accurately get the order status from this process.
+		 * This is due to the order status is updated in the capture_charge method, which is mocked. The capture_charge
+		 * method calls order_service->update_order_status_from_intent, which updates the status.
+		 * $result_order = wc_get_order( $order->get_id() );
+		 * $this->assertSame( 'processing', $result_order->get_status() );
+		*/
 	}
 
 	public function test_capture_authorization_succeeded_intent_throws_error() {
@@ -670,10 +661,6 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->order_service
 			->expects( $this->never() )
 			->method( 'attach_intent_info_to_order' );
-
-		$this->mock_gateway
-			->expects( $this->never() )
-			->method( 'update_order_status_from_intent' );
 
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_body_params(
