@@ -15,11 +15,8 @@ use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 use WCPay\Logger;
 use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
-use WCPay\Payment_Methods\Link_Payment_Method;
-use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Database_Cache;
 use WCPay\Core\Server\Request;
-use WCPay\Core\Server\Response;
 use WCPay\Core\Server\Request\List_Fraud_Outcome_Transactions;
 
 /**
@@ -357,27 +354,6 @@ class WC_Payments_API_Client {
 		);
 
 		return $this->request( $query, self::TRANSACTIONS_API . '/summary', self::GET );
-	}
-
-	/**
-	 * Retrieves transaction list for a given fraud outcome status.
-	 *
-	 * @param List_Fraud_Outcome_Transactions $request Fraud outcome transactions request.
-	 *
-	 * @return array
-	 */
-	public function list_fraud_outcome_transactions( $request ) {
-		$fraud_outcomes = $request->send( 'wcpay_list_fraud_outcome_transactions_request' );
-
-		$page      = $request->get_param( 'page' );
-		$page_size = $request->get_param( 'pagesize' );
-
-		// Handles the pagination.
-		$fraud_outcomes = array_slice( $fraud_outcomes, ( max( $page, 1 ) - 1 ) * $page_size, $page_size );
-
-		return [
-			'data' => $fraud_outcomes,
-		];
 	}
 
 	/**
