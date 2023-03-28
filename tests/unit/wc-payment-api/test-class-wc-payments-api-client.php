@@ -1090,35 +1090,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $response['platform_checkout_eligible'] );
 	}
 
-	/** Test a successful fetch of a list of documents
-	 *
-	 * @throws Exception
-	 */
-	public function test_list_documents_success() {
-		$this->set_http_mock_response(
-			200,
-			[
-				'data' => [
-					[
-						'document_id' => 'vat_invoice_1',
-						'date'        => '2020-01-02 17:46:02',
-						'type'        => 'vat_invoice',
-						'period_from' => '2020-01-01 00:00:00',
-						'period_to'   => '2020-01-31 23:59:59',
-					],
-				],
-			]
-		);
-
-		$documents = $this->payments_api_client->list_documents();
-
-		$this->assertSame( 'vat_invoice_1', $documents['data'][0]['document_id'] );
-		$this->assertSame( '2020-01-02 17:46:02', $documents['data'][0]['date'] );
-		$this->assertSame( 'vat_invoice', $documents['data'][0]['type'] );
-		$this->assertSame( '2020-01-01 00:00:00', $documents['data'][0]['period_from'] );
-		$this->assertSame( '2020-01-31 23:59:59', $documents['data'][0]['period_to'] );
-	}
-
 	/**
 	 * Test a sucessful fetch of documents summary
 	 *
@@ -1237,36 +1208,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 
 		$this->payments_api_client->get_authorization( $payment_intent_id );
 	}
-
-	/**
-	 * Test a successful fetch of a list of authorizations.
-	 *
-	 * @throws Exception In case of test failure.
-	 */
-	public function test_list_authorizations_success() {
-		$payment_intent_id_1 = 'pi_123dytycd';
-		$payment_intent_id_2 = 'pi_123dbap';
-
-		$this->set_http_mock_response(
-			200,
-			[
-				'data' => [
-					[
-						'payment_intent_id' => $payment_intent_id_1,
-					],
-					[
-						'payment_intent_id' => $payment_intent_id_2,
-					],
-				],
-			]
-		);
-
-		$authorizations = $this->payments_api_client->list_authorizations();
-
-		$this->assertSame( $payment_intent_id_1, $authorizations['data'][0]['payment_intent_id'] );
-		$this->assertSame( $payment_intent_id_2, $authorizations['data'][1]['payment_intent_id'] );
-	}
-
 	/**
 	 * Test a successful fetch of authorizations summary.
 	 *
