@@ -30,6 +30,11 @@ const mockAccount: AccountOverview.Account = {
 
 declare const global: {
 	wcpaySettings: {
+		accountStatus: {
+			deposits: {
+				completed_waiting_period: boolean;
+			};
+		};
 		accountDefaultCurrency: string;
 		zeroDecimalCurrencies: string[];
 		currencyData: Record< string, any >;
@@ -113,6 +118,11 @@ const mockOverviews = ( currencies: AccountOverview.Overview[] ) => {
 describe( 'Deposits Overview information', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
+			accountStatus: {
+				deposits: {
+					completed_waiting_period: true,
+				},
+			},
 			accountDefaultCurrency: 'USD',
 			zeroDecimalCurrencies: [],
 			connect: {
@@ -186,6 +196,22 @@ describe( 'Deposits Overview information', () => {
 		);
 		expect( getByText( 'Estimated' ) ).toBeTruthy();
 		expect( getByText( '—' ) ).toBeTruthy();
+	} );
+
+	test( 'Confirm new account waiting period notice does not show', () => {
+		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = true;
+		const { getByText } = render( <DepositsOverview /> );
+		expect(
+			getByText( 'Your first deposit is held for seven business days' )
+		).toBeFalsy();
+	} );
+
+	test( 'Confirm new account waiting period notice shows', () => {
+		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = false;
+		const { getByText } = render( <DepositsOverview /> );
+		expect(
+			getByText( 'Your first deposit is held for seven business days' )
+		).toBeTruthy();
 	} );
 } );
 
