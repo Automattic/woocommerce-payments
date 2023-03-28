@@ -95,7 +95,11 @@ class Update_Order_Step extends Abstract_Step {
 		$this->gateway->update_order_status_from_intent( $order, $intent_id, $status, $charge_id );
 		$this->gateway->maybe_add_customer_notification_note( $order, $processing );
 
-		// ToDo: Only do this for successful intents.
+		// ToDo: Verify if this check should happen here.
+		if ( Payment::STATUS_SUCCESSFUL !== $payment->get_status() ) {
+			return;
+		}
+
 		wc_reduce_stock_levels( $payment->get_order()->get_id() );
 
 		// For standard (non-merchant-initiated) payments, clear the cart as well.

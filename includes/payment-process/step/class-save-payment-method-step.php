@@ -94,6 +94,7 @@ class Save_Payment_Method_Step extends Abstract_Step {
 
 		// Failing payment methods should not be saved.
 		$intent = $this->get_intent_from_payment( $payment );
+		// Todo: Replace with Payment::STATUS_SUCCESSFUL !== $payment->get_status().
 		if ( ! $intent->is_successful() ) {
 			return;
 		}

@@ -387,6 +387,7 @@ class Payment {
 				Step\Store_Metadata_Step::class, // Complete.
 				Step\Update_Order_Step::class, // Complete.
 				Step\Add_Token_To_Order_Step::class, // Complete.
+				Step\Cleanup_Step::class, // Complete.
 			]
 		);
 	}

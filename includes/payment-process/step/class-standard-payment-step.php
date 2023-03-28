@@ -107,9 +107,10 @@ class Standard_Payment_Step extends Abstract_Step {
 			if ( $payment->is( Payment::MERCHANT_INITIATED ) ) {
 				// Off-session payments, requiring action, make it impossible to continue.
 				$this->bail_if_action_is_required( $payment, $intent );
+				$payment->complete( [], Payment::STATUS_FAILED ); // @todo: Subs don't require a response here.
 			} else {
 				// Redirect if there is an action needed.
-				$payment->complete( $this->redirect_if_action_is_required( $payment, $intent ) );
+				$payment->complete( $this->redirect_if_action_is_required( $payment, $intent ), Payment::STATUS_INTERRUPTED );
 			}
 
 			return;
@@ -199,8 +200,7 @@ class Standard_Payment_Step extends Abstract_Step {
 		do_action( 'woocommerce_woocommerce_payments_payment_requires_action', $order, $intent_id, $payment_method, $payment->get_customer_id(), $charge_id, strtolower( $order->get_currency() ) );
 
 		// Mark the payment as failed.
-		$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id );
-		$payment->complete( [] ); // @todo: Subs don't require a response here.
+		$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id ); // @todo: Do this in the update order step!
 	}
 
 	/**

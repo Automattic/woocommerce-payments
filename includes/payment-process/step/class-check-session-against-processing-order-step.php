@@ -197,9 +197,15 @@ class Check_Session_Against_Processing_Order_Step extends Abstract_Step {
 	public function complete( Payment $payment ) {
 		global $wp;
 
-		if ( is_order_received_page() && isset( $wp->query_vars['order-received'] ) ) {
+		// ToDo: Restore this when complete is also called on the cart.
+		if ( false && is_order_received_page() && isset( $wp->query_vars['order-received'] ) ) {
 			$order_id = absint( $wp->query_vars['order-received'] );
 			$this->remove_session_processing_order( $order_id );
+		}
+
+		// Cleanup at the end of checkout.
+		if ( $payment instanceof Order_Payment ) {
+			$this->remove_session_processing_order( $payment->get_order()->get_id() );
 		}
 	}
 }
