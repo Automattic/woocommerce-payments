@@ -1,0 +1,5 @@
+Significance: patch
+Type: update
+Comment: Remove a trigger from the e2e tests Atomic workflow
+
+

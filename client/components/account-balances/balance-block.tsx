@@ -13,7 +13,7 @@ import { fundLabelStrings } from './strings';
 /**
  * balanceType
  */
-type balanceType = 'pending' | 'available' | 'reserved';
+type balanceType = 'pending' | 'available';
 
 /**
  * BalanceBlockProps
