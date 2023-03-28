@@ -11,7 +11,8 @@ use Exception;
 use WCPay\Payment_Process\Storage\Payment_Storage;
 use WCPay\Payment_Process\Payment_Method\Payment_Method;
 use WCPay\Payment_Process\Payment_Method\Payment_Method_Factory;
-use WCPay\Payment_Process\Step\{ Metadata_Step, Abstract_Step, Add_Token_To_Order_Step, Bump_Transaction_Limiter_Step, Check_Attached_Intent_Success_Step, Check_Session_Against_Processing_Order_Step, Complete_Without_Payment_Step, Create_UPE_Intent_Step, Customer_Details_Step, Load_Intent_After_Authentication_Step, Redirect_UPE_Payment_Step, Save_Payment_Method_Step, Setup_Payment_Step, Standard_Payment_Step, Store_Metadata_Step, Update_Order_Step, Update_Saved_Payment_Method_Step, Update_UPE_Intent_Step, Verify_Fraud_Token_Step, Verify_Minimum_Amount_Step };
+use WCPay\Payment_Process\Step;
+use WCPay\Payment_Process\Step\Abstract_Step;
 
 /**
  * Main class, representing payments.
@@ -81,6 +82,16 @@ class Payment {
 	const UPE_PROCESS_REDIRECT_FLOW = 'UPE_PROCESS_REDIRECT_FLOW';
 
 	/**
+	 * Possible payment stati.
+	 *
+	 * @todo: Those will need a better description once well determined.
+	 */
+	const STATUS_PENDING     = 'PENDING';
+	const STATUS_SUCCESSFUL  = 'SUCCESSFUL';
+	const STATUS_INTERRUPTED = 'INTERRUPTED';
+	const STATUS_FAILED      = 'FAILED';
+
+	/**
 	 * Payment storage, used to store the payment.
 	 *
 	 * @var Payment_Storage
@@ -137,6 +148,13 @@ class Payment {
 	protected $response;
 
 	/**
+	 * Holds the status of the payment.
+	 *
+	 * @var string
+	 */
+	protected $status;
+
+	/**
 	 * Holds the logger object.
 	 *
 	 * @var Logger
@@ -158,7 +176,7 @@ class Payment {
 	/**
 	 * The current step, which is being executed.
 	 *
-	 * @var Abstract_Step
+	 * @var Step\Abstract_Step
 	 */
 	protected $current_step;
 
@@ -178,6 +196,9 @@ class Payment {
 
 		// Sub-object.
 		$this->logger = new Logger();
+
+		// Defaults.
+		$this->status = static::STATUS_PENDING;
 	}
 
 	/**
@@ -187,7 +208,7 @@ class Payment {
 	 */
 	public function load_data( array $data ) {
 		// Scalar props.
-		foreach ( [ 'id', 'flags', 'vars', 'logs' ] as $key ) {
+		foreach ( [ 'id', 'flags', 'vars', 'logs', 'status' ] as $key ) {
 			if ( isset( $data[ $key ] ) && ! empty( $data[ $key ] ) ) {
 				$this->$key = $data[ $key ];
 			}
@@ -212,6 +233,7 @@ class Payment {
 		return [
 			'id'             => $this->id,
 			'flags'          => $this->flags,
+			'status'         => $this->status,
 			'payment_method' => $payment_method,
 			'vars'           => $this->vars,
 			'logs'           => $this->logger->get_logs(),
@@ -270,6 +292,15 @@ class Payment {
 	 */
 	public function is_flow( string $flow ) {
 		return $flow === $this->flow;
+	}
+
+	/**
+	 * Retrieves the status of the payment.
+	 *
+	 * @return string
+	 */
+	public function get_status() {
+		return $this->status;
 	}
 
 	/**
@@ -337,25 +368,25 @@ class Payment {
 		return apply_filters(
 			'wcpay_payment_available_steps',
 			[
-				Metadata_Step::class, // Prepare.
-				Customer_Details_Step::class, // Prepare & act.
-				Bump_Transaction_Limiter_Step::class, // Act & Complete.
-				Verify_Fraud_Token_Step::class, // Action.
-				Load_Intent_After_Authentication_Step::class, // Action.
-				// Check_Session_Against_Processing_Order_Step::class, // Act & Complete.
-				Check_Attached_Intent_Success_Step::class, // Action.
-				Create_UPE_Intent_Step::class, // Action.
-				Redirect_UPE_Payment_Step::class, // Action.
-				Update_UPE_Intent_Step::class, // Action.
-				Complete_Without_Payment_Step::class, // Action.
-				Verify_Minimum_Amount_Step::class, // Action.
-				Standard_Payment_Step::class, // Action.
-				Setup_Payment_Step::class, // Action.
-				Update_Saved_Payment_Method_Step::class, // Complete.
-				Save_Payment_Method_Step::class, // Complete.
-				Store_Metadata_Step::class, // Complete.
-				Update_Order_Step::class, // Complete.
-				Add_Token_To_Order_Step::class, // Complete.
+				Step\Metadata_Step::class, // Prepare.
+				Step\Customer_Details_Step::class, // Prepare & act.
+				Step\Bump_Transaction_Limiter_Step::class, // Act & Complete.
+				Step\Verify_Fraud_Token_Step::class, // Action.
+				Step\Load_Intent_After_Authentication_Step::class, // Action.
+				// Step\Check_Session_Against_Processing_Order_Step::class, // Act & Complete.
+				Step\Check_Attached_Intent_Success_Step::class, // Action.
+				Step\Create_UPE_Intent_Step::class, // Action.
+				Step\Redirect_UPE_Payment_Step::class, // Action.
+				Step\Update_UPE_Intent_Step::class, // Action.
+				Step\Complete_Without_Payment_Step::class, // Action.
+				Step\Verify_Minimum_Amount_Step::class, // Action.
+				Step\Standard_Payment_Step::class, // Action.
+				Step\Setup_Payment_Step::class, // Action.
+				Step\Update_Saved_Payment_Method_Step::class, // Complete.
+				Step\Save_Payment_Method_Step::class, // Complete.
+				Step\Store_Metadata_Step::class, // Complete.
+				Step\Update_Order_Step::class, // Complete.
+				Step\Add_Token_To_Order_Step::class, // Complete.
 			]
 		);
 	}
@@ -385,9 +416,11 @@ class Payment {
 
 			// Instantiate the step and check if the step is applicable to the process.
 			$step = new $class_name();
-			if ( $step->is_applicable( $this ) ) {
-				$steps[] = $step;
+			if ( ! $step->is_applicable( $this ) ) {
+				continue;
 			}
+
+			$steps[] = $step;
 		}
 
 		return $steps;
@@ -477,10 +510,12 @@ class Payment {
 	 *
 	 * Completion steps will still be performed after this call.
 	 *
-	 * @param mixed $response The response, which will be provided by `process()` above.
+	 * @param mixed  $response The response, which will be provided by `process()` above.
+	 * @param string $status   The updated status of the payment (Optional).
 	 */
-	public function complete( $response ) {
+	public function complete( $response, $status = self::STATUS_SUCCESSFUL ) {
 		$this->response = $response;
+		$this->status   = $status;
 	}
 
 	/**

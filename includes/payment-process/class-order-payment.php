@@ -47,9 +47,11 @@ class Order_Payment extends Payment {
 	 * @return mixed The result of the successful action call.
 	 */
 	public function process() {
-		parent::process();
+		$response = parent::process();
 
 		// Whatever was updated during the process, save the order.
 		$this->order->save();
+
+		return $response;
 	}
 }

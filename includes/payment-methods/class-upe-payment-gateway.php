@@ -997,7 +997,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return array|string value of session variable
 	 */
 	public function get_payment_intent_data_from_session( $payment_method = false ) {
-		return WC()->session->get( self::KEY_UPE_PAYMENT_INTENT );;
+		return WC()->session->get( self::KEY_UPE_PAYMENT_INTENT );
 	}
 
 	/**
