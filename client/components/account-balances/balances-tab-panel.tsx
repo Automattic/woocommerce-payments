@@ -29,7 +29,6 @@ import {
  * @param {string} currencyCode   Currency code of the tab.
  * @param {number} availableFunds Available funds of the tab.
  * @param {number} pendingFunds   Pending funds of the tab.
- * @param {number} reservedFunds  Reserved funds of the tab.
  * @param {number} delayDays	  The account's pending period in days.
  */
 type BalanceTab = {
@@ -38,7 +37,6 @@ type BalanceTab = {
 	currencyCode: string;
 	availableFunds: number;
 	pendingFunds: number;
-	reservedFunds: number;
 	delayDays: number;
 };
 
@@ -61,7 +59,6 @@ const AccountBalancesTabPanel: React.FC = () => {
 			currencyCode: wcpaySettings.accountDefaultCurrency,
 			availableFunds: 0,
 			pendingFunds: 0,
-			reservedFunds: 0,
 			delayDays: 0,
 		},
 	];
@@ -76,7 +73,6 @@ const AccountBalancesTabPanel: React.FC = () => {
 				currencyCode: overview.currency,
 				availableFunds: overview.available.amount,
 				pendingFunds: overview.pending.amount,
-				reservedFunds: 0, // TODO: Add reserve funds to the overview object.
 				delayDays: account.deposits_schedule.delay_days,
 			} )
 		);
@@ -146,32 +142,6 @@ const AccountBalancesTabPanel: React.FC = () => {
 											rel="noopener noreferrer"
 											href={
 												documentationUrls.depositSchedule
-											}
-										>
-											{ learnMoreString }
-										</a>
-									</>
-								}
-							/>
-						}
-					/>
-					<BalanceBlock
-						id={ `wcpay-account-balances-${ tab.currencyCode }-reserved` }
-						title={ fundLabelStrings.reserved }
-						amount={ tab.reservedFunds }
-						currencyCode={ tab.currencyCode }
-						isLoading={ isLoading }
-						tooltip={
-							<BalanceTooltip
-								label={ `${ fundLabelStrings.reserved } tooltip` }
-								content={
-									<>
-										{ fundTooltipStrings.reserved }{ ' ' }
-										<a
-											target="_blank"
-											rel="noopener noreferrer"
-											href={
-												documentationUrls.reservedFunds
 											}
 										>
 											{ learnMoreString }

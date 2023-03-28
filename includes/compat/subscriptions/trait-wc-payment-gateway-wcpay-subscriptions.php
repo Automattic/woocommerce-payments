@@ -690,6 +690,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 *
 	 * @param int           $order_id  The ID of the order that has been created.
 	 * @param WC_Order|null $order     The order that has been created.
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function maybe_schedule_subscription_order_tracking( $order_id, $order = null ) {
 		if ( ! $this->is_subscriptions_enabled() ) {
