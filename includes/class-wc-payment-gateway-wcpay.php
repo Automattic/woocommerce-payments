@@ -737,8 +737,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				];
 			}
 
-			UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
-
 			$check_session_order = $this->check_against_session_processing_order( $order );
 			if ( is_array( $check_session_order ) ) {
 				return $check_session_order;
@@ -819,8 +817,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 				$order->add_order_note( $note );
 			}
-
-			UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
 
 			// Re-throw the exception after setting everything up.
 			// This makes the error notice show up both in the regular and block checkout.
@@ -2938,6 +2934,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				[ 'order_id' => $order_id ]
 			);
 		}
+	}
+
+	/**
+	 * Fetches intent details and using the status checks if intent is being processed already.
+	 *
+	 * @param string $intent_id Payment Intent ID.
+	 * @return bool
+	 */
+	public function is_intent_being_processed( string $intent_id ) {
+		$intent_status = $this->payments_api_client->get_intent( $intent_id )->get_status();
+		return Payment_Intent_Status::REQUIRES_PAYMENT_METHOD !== $intent_status;
 	}
 
 	/**

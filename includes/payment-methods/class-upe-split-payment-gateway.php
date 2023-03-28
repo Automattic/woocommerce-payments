@@ -368,26 +368,28 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 *
 	 * @param string $intent_id     The payment intent id.
 	 * @param string $client_secret The payment intent client secret.
+	 *
+	 * @return void
 	 */
 	private function add_upe_payment_intent_to_session( string $intent_id = '', string $client_secret = '' ) {
-		$cart_hash = 'undefined';
-
-		if ( isset( $_COOKIE['woocommerce_cart_hash'] ) ) {
-			$cart_hash = sanitize_text_field( wp_unslash( $_COOKIE['woocommerce_cart_hash'] ) );
+		$woocommerce = WC();
+		if ( isset( $woocommerce->session ) ) {
+			$cart_hash = isset( $woocommerce->cart ) ? $woocommerce->cart->get_cart_hash() : 'undefined';
+			$value     = sprintf( '%s-%s-%s', $cart_hash, $intent_id, $client_secret );
+			$woocommerce->session->set( $this->get_payment_intent_session_key(), $value );
 		}
-
-		$value = $cart_hash . '-' . $intent_id . '-' . $client_secret;
-
-		WC()->session->set( $this->get_payment_intent_session_key(), $value );
 	}
 
 	/**
 	 * Removes all UPE payment intents from WC session.
+	 *
+	 * @return void
 	 */
 	public static function remove_upe_payment_intent_from_session() {
-		if ( isset( WC()->session ) ) {
+		$woocommerce = WC();
+		if ( isset( $woocommerce->session ) ) {
 			foreach ( WC_Payments::get_payment_method_map() as $id => $payment_method ) {
-				WC()->session->__unset( self::KEY_UPE_PAYMENT_INTENT . '_' . $payment_method->get_id() );
+				$woocommerce->session->set( self::KEY_UPE_PAYMENT_INTENT . '_' . $payment_method->get_id(), null );
 			}
 		}
 	}
@@ -445,10 +447,16 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 * Returns payment intent session data.
 	 *
 	 * @param false|string $payment_method Stripe payment method.
-	 * @return array|string value of session variable
+	 * @return string|null
 	 */
 	public function get_payment_intent_data_from_session( $payment_method = false ) {
-		return WC()->session->get( $this->get_payment_intent_session_key( $payment_method ) );
+		/**
+		 * The referenced methods' type inference is not allowing to extrapolate expected type, hence we specify them here.
+		 *
+		 * @var string|null $intent_data
+		 */
+		$intent_data = WC()->session->get( $this->get_payment_intent_session_key( $payment_method ) );
+		return $intent_data;
 	}
 
 	/**

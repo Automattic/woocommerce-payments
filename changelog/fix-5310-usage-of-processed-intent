@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Reworked UPE intent cache invalidation, added order notes creation when during payment update of intent fails.

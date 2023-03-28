@@ -11,6 +11,7 @@ use Exception;
 use WC_Payments;
 use WC_Payments_Account;
 use WC_Payments_Customer_Service;
+use WC_Payments_DB;
 use WC_Payments_Utils;
 use WC_Payments_Features;
 use WCPay\Constants\Payment_Method;
@@ -76,7 +77,8 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		add_action( 'wc_payments_add_upe_payment_fields', [ $this, 'payment_fields' ] );
 		add_action( 'woocommerce_after_account_payment_methods', [ $this->gateway, 'remove_upe_setup_intent_from_session' ], 10, 0 );
 		add_action( 'woocommerce_subscription_payment_method_updated', [ $this->gateway, 'remove_upe_setup_intent_from_session' ], 10, 0 );
-		add_action( 'woocommerce_order_payment_status_changed', [ get_class( $this->gateway ), 'remove_upe_payment_intent_from_session' ], 10, 0 );
+		// `woocommerce_order_payment_status_changed` was previously used; aims to clean intent caching in regular and failed state scenarios.
+		add_action( 'woocommerce_order_status_changed', [ get_class( $this->gateway ), 'remove_upe_payment_intent_from_session' ], 10, 0 );
 		add_action( 'wp', [ $this->gateway, 'maybe_process_upe_redirect' ] );
 		add_action( 'wc_ajax_wcpay_log_payment_error', [ $this->gateway, 'log_payment_error_ajax' ] );
 		add_action( 'wp_ajax_save_upe_appearance', [ $this->gateway, 'save_upe_appearance_ajax' ] );
@@ -113,7 +115,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 
 		if ( WC_Payments_Features::is_upe_legacy_enabled() ) {
 			$payment_fields['checkoutTitle']        = $this->gateway->get_checkout_title();
-			$payment_fields['upePaymentIntentData'] = $this->gateway->get_payment_intent_data_from_session();
+			$payment_fields['upePaymentIntentData'] = $this->get_payment_intent_data_from_session();
 			$payment_fields['upeSetupIntentData']   = $this->gateway->get_setup_intent_data_from_session();
 		}
 
@@ -159,6 +161,30 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 			}
 		}
 		return $payment_fields;
+	}
+
+	/**
+	 * This method extracts payment intent data and assumes failed state of operating flow, when the intent already
+	 * bound to an order or intent is processed but order state is not updated yet. Hence, we'll do some checks to
+	 * ensure buyers session stores a usable intent.
+	 *
+	 * Note: I know we should not enter a failed state, but real-live environments behaviour is unpredictable.
+	 *
+	 * @return string|null
+	 */
+	private function get_payment_intent_data_from_session() {
+		$intent_data = $this->gateway->get_payment_intent_data_from_session();
+		if ( $intent_data ) {
+			// Extract the intent and ensure it's not bound to an order yet nor being processed.
+			list( $cart_hash, $intent_id, $client_secret ) = explode( '-', $intent_data, 3 );
+			$order = ( new WC_Payments_DB() )->order_from_intent_id( $intent_id );
+			if ( $order || $this->gateway->is_intent_being_processed( $intent_id ) ) {
+				// Clean the cache, to recover it from failed state of our flows.
+				$this->gateway->remove_upe_payment_intent_from_session();
+				$intent_data = null;
+			}
+		}
+		return $intent_data;
 	}
 
 	/**

@@ -7,35 +7,35 @@
 
 namespace WCPay\Payment_Methods;
 
-use WCPay\Constants\Payment_Method;
-use WCPay\Core\Server\Request\Create_Intention;
-use WCPay\Core\Server\Request\Create_Setup_Intention;
-use WCPay\Core\Server\Request\Get_Charge;
-use WCPay\Core\Server\Request\Get_Intention;
-use WCPay\Core\Server\Request\Update_Intention;
-use WCPay\Constants\Order_Status;
-use WCPay\Constants\Payment_Intent_Status;
-use WCPay\Exceptions\Amount_Too_Small_Exception;
-use WCPay\Exceptions\Add_Payment_Method_Exception;
-use WCPay\Exceptions\Process_Payment_Exception;
-use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
-use WCPay\Logger;
-use WCPay\Constants\Payment_Type;
-use WCPay\Session_Rate_Limiter;
 use Exception;
 use WC_Order;
+use WC_Payment_Gateway_WCPay;
+use WC_Payment_Token_CC;
+use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments;
 use WC_Payments_Account;
 use WC_Payments_Action_Scheduler_Service;
 use WC_Payments_API_Client;
 use WC_Payments_Customer_Service;
-use WC_Payment_Gateway_WCPay;
-use WC_Payments_Order_Service;
-use WC_Payment_Token_CC;
-use WC_Payments_Token_Service;
-use WC_Payment_Token_WCPay_SEPA;
-use WC_Payments_Utils;
 use WC_Payments_Features;
+use WC_Payments_Order_Service;
+use WC_Payments_Token_Service;
+use WC_Payments_Utils;
+use WCPay\Constants\Order_Status;
+use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Payment_Method;
+use WCPay\Constants\Payment_Type;
+use WCPay\Core\Server\Request\Create_Intention;
+use WCPay\Core\Server\Request\Create_Setup_Intention;
+use WCPay\Core\Server\Request\Get_Charge;
+use WCPay\Core\Server\Request\Get_Intention;
+use WCPay\Core\Server\Request\Update_Intention;
+use WCPay\Exceptions\Add_Payment_Method_Exception;
+use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Exceptions\Process_Payment_Exception;
+use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
+use WCPay\Logger;
+use WCPay\Session_Rate_Limiter;
 use WP_User;
 
 
@@ -185,7 +185,24 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$selected_upe_payment_type = ! empty( $_POST['wcpay_selected_upe_payment_type'] ) ? wc_clean( wp_unslash( $_POST['wcpay_selected_upe_payment_type'] ) ) : '';
 			$payment_country           = ! empty( $_POST['wcpay_payment_country'] ) ? wc_clean( wp_unslash( $_POST['wcpay_payment_country'] ) ) : null;
 
-			wp_send_json_success( $this->update_payment_intent( $payment_intent_id, $order_id, $save_payment_method, $selected_upe_payment_type, $payment_country, $fingerprint ), 200 );
+			try {
+				$updated_payment_intent = $this->update_payment_intent(
+					$payment_intent_id,
+					$order_id,
+					$save_payment_method,
+					$selected_upe_payment_type,
+					$payment_country,
+					$fingerprint
+				);
+			} catch ( Exception $e ) {
+				// If something goes on with API, forget the cached intent as we have no clues what exactly is wrong.
+				// It might be connectivity issues, intent state not allowing the update or post update period.
+				// This update is not necessary related to an order, hence we'll not attempt to mark any orders as failed.
+				self::remove_upe_payment_intent_from_session();
+				throw $e;
+			}
+
+			wp_send_json_success( $updated_payment_intent, 200 );
 		} catch ( Exception $e ) {
 			// Send back error so it can be displayed to the customer.
 			wp_send_json_error(
@@ -543,6 +560,16 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				} catch ( Amount_Too_Small_Exception $e ) {
 					// This code would only be reached if the cache has already expired.
 					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
+				} catch ( Exception $e ) {
+					try {
+						$intent = Get_Intention::create( $payment_intent_id )->send( 'wcpay_get_intention_request' );
+						$charge = $intent->get_charge();
+						$this->order_service->mark_payment_failed( $order, $payment_intent_id, $intent->get_status(), $charge ? $charge->get_id() : '', $e->getMessage() );
+					} catch ( Exception $get_intent_exception ) {
+						// Do nothing - something happens on API side as both update and get requests failed.
+						unset( $get_intent_exception );
+					}
+					throw $e;
 				}
 
 				$intent_id              = $updated_payment_intent->get_id();
@@ -570,7 +597,14 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				}
 			}
 		} else {
-			return $this->parent_process_payment( $order_id );
+			try {
+				return $this->parent_process_payment( $order_id );
+			} catch ( Exception $e ) {
+				// The invoked method already handles order status changes on success and partially on failure.
+				// But, not all exceptions are triggering order status changes, so we have to clear intent cache.
+				// The intent caching is UPE-specific, so we have to keep it in the UPE-gateways only.
+				self::remove_upe_payment_intent_from_session();
+			}
 		}
 
 		return [
@@ -763,10 +797,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 				$this->order_service->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method_id, $customer_id, $charge_id, $currency );
 				$this->attach_exchange_info_to_order( $order, $charge_id );
-				$this->update_order_status_from_intent( $order, $intent_id, $status, $charge_id );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
-
-				self::remove_upe_payment_intent_from_session();
+				$this->update_order_status_from_intent( $order, $intent_id, $status, $charge_id );
 
 				if ( Payment_Intent_Status::REQUIRES_ACTION === $status ) {
 					// I don't think this case should be possible, but just in case...
@@ -797,8 +829,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			/* translators: localized exception message */
 			$message = sprintf( __( 'UPE payment failed: %s', 'woocommerce-payments' ), $e->getMessage() );
 			$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id, $message );
-
-			self::remove_upe_payment_intent_from_session();
 
 			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
 			wp_safe_redirect( wc_get_checkout_url() );
@@ -1122,12 +1152,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			$this->order_service->mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $error_message );
 
-			self::remove_upe_payment_intent_from_session();
-
 			wp_send_json_success();
 		} catch ( Exception $e ) {
-			self::remove_upe_payment_intent_from_session();
-
 			wp_send_json_error(
 				[
 					'error' => [
@@ -1142,10 +1168,16 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * Returns payment intent session data.
 	 *
 	 * @param false|string $payment_method Stripe payment method.
-	 * @return array|string value of session variable
+	 * @return string|null
 	 */
 	public function get_payment_intent_data_from_session( $payment_method = false ) {
-		return WC()->session->get( self::KEY_UPE_PAYMENT_INTENT );
+		/**
+		 * The referenced methods' type inference is not allowing to extrapolate expected type, hence we specify them here.
+		 *
+		 * @var string|null $intent_data
+		 */
+		$intent_data = WC()->session->get( self::KEY_UPE_PAYMENT_INTENT );
+		return $intent_data;
 	}
 
 	/**
@@ -1163,25 +1195,27 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 *
 	 * @param string $intent_id     The payment intent id.
 	 * @param string $client_secret The payment intent client secret.
+	 *
+	 * @return void
 	 */
 	private function add_upe_payment_intent_to_session( string $intent_id = '', string $client_secret = '' ) {
-		$cart_hash = 'undefined';
-
-		if ( isset( $_COOKIE['woocommerce_cart_hash'] ) ) {
-			$cart_hash = sanitize_text_field( wp_unslash( $_COOKIE['woocommerce_cart_hash'] ) );
+		$woocommerce = WC();
+		if ( isset( $woocommerce->session ) ) {
+			$cart_hash = isset( $woocommerce->cart ) ? $woocommerce->cart->get_cart_hash() : 'undefined';
+			$value     = sprintf( '%s-%s-%s', $cart_hash, $intent_id, $client_secret );
+			$woocommerce->session->set( self::KEY_UPE_PAYMENT_INTENT, $value );
 		}
-
-		$value = $cart_hash . '-' . $intent_id . '-' . $client_secret;
-
-		WC()->session->set( self::KEY_UPE_PAYMENT_INTENT, $value );
 	}
 
 	/**
 	 * Removes the payment intent created for UPE from WC session.
+	 *
+	 * @return void
 	 */
 	public static function remove_upe_payment_intent_from_session() {
-		if ( isset( WC()->session ) ) {
-			WC()->session->__unset( self::KEY_UPE_PAYMENT_INTENT );
+		$woocommerce = WC();
+		if ( isset( $woocommerce->session ) && $woocommerce->session->__isset( self::KEY_UPE_PAYMENT_INTENT ) ) {
+			$woocommerce->session->set( self::KEY_UPE_PAYMENT_INTENT, null );
 		}
 	}
 
