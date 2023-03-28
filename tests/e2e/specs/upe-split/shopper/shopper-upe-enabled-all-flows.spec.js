@@ -20,7 +20,7 @@ describe( 'Enabled Split UPE', () => {
 		await merchant.login();
 		await merchantWCP.activateSplitUpe();
 		// enable SEPA
-		await merchantWCP.enablePaymentMethod( sepaPaymentMethod );
+		await merchantWCP.enablePaymentMethod( [ sepaPaymentMethod ] );
 		await merchant.logout();
 		await shopper.login();
 		await shopperWCP.changeAccountCurrencyTo( 'EUR' );
@@ -31,7 +31,7 @@ describe( 'Enabled Split UPE', () => {
 		await shopperWCP.logout();
 		await merchant.login();
 		//disable SEPA
-		await merchantWCP.disablePaymentMethod( sepaPaymentMethod );
+		await merchantWCP.disablePaymentMethod( [ sepaPaymentMethod ] );
 		await merchantWCP.deactivateSplitUpe();
 		await merchant.logout();
 	} );
