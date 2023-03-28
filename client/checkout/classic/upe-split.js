@@ -436,7 +436,7 @@ jQuery( function ( $ ) {
 		}
 		if ( ! isUPEComplete ) {
 			// If UPE fields are not filled, confirm payment to trigger validation errors
-			const { error } = await api.PaymentConfirmation(
+			const { error } = await api.handlePaymentConfirmation(
 				elements,
 				{
 					return_url: returnUrl,

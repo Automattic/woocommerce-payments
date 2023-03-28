@@ -390,7 +390,6 @@ export const merchantWCP = {
 		} );
 
 		if ( await page.$( '#_wcpay_feature_upe_deferred_intent:checked' ) ) {
-			console.log( 'Enhanced UPE is not checked, checking it' );
 			await expect( page ).toClick( 'label', {
 				text: 'Enable Split UPE checkout with deferred intent creation',
 			} );

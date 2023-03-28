@@ -108,7 +108,6 @@ jQuery( function ( $ ) {
 		if ( ! fingerprint ) {
 			try {
 				const { visitorId } = await getFingerprint();
-				console.log( 'visitorId', visitorId );
 				fingerprint = visitorId;
 			} catch ( error ) {
 				// Do not mount element if fingerprinting is not available
