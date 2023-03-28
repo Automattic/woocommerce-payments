@@ -658,7 +658,7 @@ class WC_Payments_Order_Service {
 	 */
 	public function attach_transaction_fee_to_order( $order, $charge ) {
 		try {
-			if ( $charge && $charge->get_application_fee_amount() ) {
+			if ( $charge && null !== $charge->get_application_fee_amount() ) {
 				$order->add_meta_data(
 					self::WCPAY_TRANSACTION_FEE_META_KEY,
 					WC_Payments_Utils::interpret_stripe_amount( $charge->get_application_fee_amount(), $charge->get_currency() ),
