@@ -38,6 +38,12 @@ const partiallyRefundedCharge = {
 };
 
 describe( 'Charge utilities', () => {
+	beforeEach( () => {
+		global.wcpaySettings = {
+			isFraudProtectionSettingsEnabled: false,
+		};
+	} );
+
 	describe( 'isCharge methods', () => {
 		test( 'should identify a captured successful charge as successful', () => {
 			expect( utils.isChargeSuccessful( paidCharge ) ).toEqual( true );

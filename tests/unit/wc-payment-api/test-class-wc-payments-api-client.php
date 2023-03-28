@@ -1939,6 +1939,30 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 12, $disputes_summary['data']['count'] );
 	}
 
+	public function get_onboarding_po_eligible() {
+		$this->set_http_mock_response(
+			200,
+			[
+				'result' => 'eligible',
+				'data'   => [],
+			]
+		);
+
+		$po_eligible = $this->payments_api_client->get_onboarding_po_eligible(
+			[
+				'business' => [
+					'country'           => 'US',
+					'type'              => 'company',
+					'mcc'               => 'computers_peripherals_and_software',
+					'annual_revenue'    => 'less_than_250k',
+					'go_live_timeframe' => 'within_1month',
+				],
+			]
+		);
+		$this->assertSame( 'eligible', $po_eligible['result'] );
+	}
+
+
 	public function test_get_platform_checkout_eligibility_success() {
 		$this->set_http_mock_response(
 			200,
