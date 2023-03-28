@@ -62,61 +62,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Test a successful call to create_intention with fraud prevention enabled.
-	 *
-	 * @throws Exception - In the event of test failure.
-	 */
-	public function test_create_intention_with_fingerprinting_data() {
-		$expected_amount = 123;
-		$expected_status = Payment_Intent_Status::SUCCEEDED;
-
-		$mock_fingerprinting   = $this->createMock( Buyer_Fingerprinting_Service::class );
-		$mock_fraud_prevention = $this->createMock( Fraud_Prevention_Service::class );
-
-		Buyer_Fingerprinting_Service::set_instance( $mock_fingerprinting );
-		Fraud_Prevention_Service::set_instance( $mock_fraud_prevention );
-
-		$mock_fraud_prevention
-			->expects( $this->never() )
-			->method( 'is_enabled' );
-
-		$mock_fingerprinting
-			->expects( $this->once() )
-			->method( 'get_hashed_data_for_customer' );
-
-		$this->set_http_mock_response(
-			200,
-			[
-				'id'            => 'test_intention_id',
-				'amount'        => $expected_amount,
-				'created'       => 1557224304,
-				'status'        => $expected_status,
-				'charges'       => [
-					'total_count' => 1,
-					'data'        => [
-						[
-							'id'                     => 'test_charge_id',
-							'amount'                 => $expected_amount,
-							'created'                => 1557224305,
-							'status'                 => Payment_Intent_Status::SUCCEEDED,
-							'payment_method_details' => [],
-						],
-					],
-				],
-				'client_secret' => 'test_client_secret',
-				'currency'      => 'usd',
-			]
-		);
-
-		$this->payments_api_client->create_intention(
-			$expected_amount,
-			'usd',
-			'pm_123456789',
-			1
-		);
-	}
-
-	/**
 	 * Test a successful call to create_setup_intent.
 	 *
 	 * @throws Exception - In the event of test failure.

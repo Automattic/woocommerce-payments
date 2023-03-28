@@ -21,6 +21,7 @@ use WCPay\Core\Server\Request\Cancel_Intention;
 use WCPay\Core\Server\Request\Capture_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
+use WCPay\Core\Server\Request\Create_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Update_Intention;
@@ -2958,17 +2959,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function create_intent( WC_Order $order, array $payment_methods, string $capture_method = 'automatic', array $metadata = [], string $customer_id = null ) {
 		$currency         = strtolower( $order->get_currency() );
 		$converted_amount = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
+		$order_number     = $order->get_order_number();
+		if ( $order_number ) {
+			$metadata['order_number'] = $order_number;
+		}
 
 		try {
-			$intent = $this->payments_api_client->create_intention(
-				$converted_amount,
-				$currency,
-				$payment_methods,
-				$order->get_order_number(),
-				$capture_method,
-				$metadata,
-				$customer_id
-			);
+			$request = Create_Intention::create();
+			$request->set_amount( $converted_amount );
+			$request->set_customer( $customer_id );
+			$request->set_currency_code( $currency );
+			$request->set_metadata( $metadata );
+			$request->set_payment_method_types( $payment_methods );
+			$request->set_capture_method( $capture_method );
+			$intent = $request->send( 'wcpay_create_intent_request', $order );
 
 			return [
 				'id' => ! empty( $intent ) ? $intent->get_id() : null,
