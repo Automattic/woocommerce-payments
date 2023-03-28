@@ -113,7 +113,7 @@ const FraudProtectionAdvancedSettingsPage = () => {
 			.every( Boolean );
 	};
 
-	const handleSaveSettings = async () => {
+	const handleSaveSettings = () => {
 		if ( validateSettings( protectionSettingsUI ) ) {
 			if ( ProtectionLevel.ADVANCED !== currentProtectionLevel ) {
 				updateProtectionLevel( ProtectionLevel.ADVANCED );
@@ -124,15 +124,16 @@ const FraudProtectionAdvancedSettingsPage = () => {
 					)
 				);
 			}
-			updateAdvancedFraudProtectionSettings(
-				writeRuleset( protectionSettingsUI )
-			);
-			await saveSettings();
+
+			const settings = writeRuleset( protectionSettingsUI );
+
+			updateAdvancedFraudProtectionSettings( settings );
+
+			saveSettings();
+
 			wcpayTracks.recordEvent(
 				'wcpay_fraud_protection_advanced_settings_saved',
-				{
-					advancedFraudProtectionSettings: advancedFraudProtectionSettings,
-				}
+				{ settings: JSON.stringify( settings ) }
 			);
 		} else {
 			window.scrollTo( {
