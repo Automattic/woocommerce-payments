@@ -197,6 +197,10 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
+		if ( Rule::FRAUD_OUTCOME_REVIEW === $this->get_fraud_outcome_status_for_order( $order ) ) {
+			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::REVIEW_FAILED );
+		}
+
 		$order->add_order_note( $note );
 		$this->complete_order_processing( $order, $intent_status );
 	}
@@ -222,6 +226,10 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
+		if ( Rule::FRAUD_OUTCOME_REVIEW === $this->get_fraud_outcome_status_for_order( $order ) ) {
+			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::REVIEW_EXPIRED );
+		}
+
 		$this->update_order_status( $order, Order_Status::CANCELLED );
 		$order->add_order_note( $note );
 		$this->complete_order_processing( $order, $intent_status );
@@ -245,6 +253,10 @@ class WC_Payments_Order_Service {
 		if ( $this->order_note_exists( $order, $note ) ) {
 			$this->complete_order_processing( $order );
 			return;
+		}
+
+		if ( Rule::FRAUD_OUTCOME_REVIEW === $this->get_fraud_outcome_status_for_order( $order ) ) {
+			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::REVIEW_CANCELLED );
 		}
 
 		$this->update_order_status( $order, Order_Status::CANCELLED );
@@ -852,6 +864,7 @@ class WC_Payments_Order_Service {
 
 		$order->add_order_note( $note );
 		$this->set_intention_status_for_order( $order, $intent_data['intent_status'] );
+		$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::PAYMENT_STARTED );
 	}
 
 	/**
