@@ -1416,13 +1416,28 @@ class WC_Payments_Order_Service {
 	 * @throws Order_Not_Found_Exception
 	 */
 	private function get_order( $order ) {
-		$order = is_a( $order, 'WC_Order' ) ? $order : wc_get_order( $order );
-		if ( ! is_a( $order, 'WC_Order' ) ) {
+		$order = $this->is_order_type_object( $order ) ? $order : wc_get_order( $order );
+		if ( ! $this->is_order_type_object( $order ) ) {
 			throw new Order_Not_Found_Exception(
 				__( 'The requested order was not found.', 'woocommerce-payments' ),
 				'order_not_found'
 			);
 		}
 		return $order;
+	}
+
+	/**
+	 * Checks to see if the given argument is an order type object.
+	 *
+	 * @param mixed $order The order to be checked.
+	 *
+	 * @return bool
+	 */
+	private function is_order_type_object( $order ): bool {
+		if ( is_a( $order, 'WC_Order' ) || is_a( $order, 'WC_Order_Refund' ) ) {
+			return true;
+		}
+
+		return false;
 	}
 }
