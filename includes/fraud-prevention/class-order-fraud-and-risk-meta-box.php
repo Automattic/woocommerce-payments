@@ -101,12 +101,14 @@ class Order_Fraud_And_Risk_Meta_Box {
 				break;
 
 			case Fraud_Meta_Box_Type::BLOCK:
-				$icon_url    = plugins_url( 'assets/images/icons/shield-stroke-red.svg', WCPAY_PLUGIN_FILE );
-				$icon_alt    = __( 'Red shield outline', 'woocommerce-payments' );
-				$status      = __( 'Blocked', 'woocommerce-payments' );
-				$description = __( 'The payment for this order was blocked by your risk filtering. There is no pending authorization, and the order can be cancelled to reduce any held stock.', 'woocommerce-payments' );
+				$icon_url        = plugins_url( 'assets/images/icons/shield-stroke-red.svg', WCPAY_PLUGIN_FILE );
+				$icon_alt        = __( 'Red shield outline', 'woocommerce-payments' );
+				$status          = __( 'Blocked', 'woocommerce-payments' );
+				$description     = __( 'The payment for this order was blocked by your risk filtering. There is no pending authorization, and the order can be cancelled to reduce any held stock.', 'woocommerce-payments' );
+				$callout         = __( 'View more details', 'woocommerce-payments' );
+				$transaction_url = WC_Payments_Utils::compose_transaction_url( $order->get_id(), '' );
 				// There is currently no url to review the transaction due to we do not have an intent to add to the transactions page to link to.
-				echo '<p class="wcpay-fraud-risk-meta-blocked"><img src="' . esc_url( $icon_url ) . '" alt="' . esc_html( $icon_alt ) . '"> ' . esc_html( $status ) . '</p><p>' . esc_html( $description ) . '</p>';
+				echo '<p class="wcpay-fraud-risk-meta-blocked"><img src="' . esc_url( $icon_url ) . '" alt="' . esc_html( $icon_alt ) . '"> ' . esc_html( $status ) . '</p><p>' . esc_html( $description ) . '</p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
 				break;
 
 			case Fraud_Meta_Box_Type::NOT_WCPAY:

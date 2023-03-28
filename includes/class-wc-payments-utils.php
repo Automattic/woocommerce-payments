@@ -613,27 +613,27 @@ class WC_Payments_Utils {
 
 	/**
 	 * Returns the correct id to be used on the transaction URL
-	 * The Payment Intent ID is prioritized and it fallbacks to the charge ID
+	 * The primary ID is prioritized and it fallbacks to the fallback ID
 	 *
-	 * @param string $intent_id Payment intent ID.
-	 * @param string $charge_id Charge ID.
+	 * @param string $primary_id  Payment intent ID.
+	 * @param string $fallback_id Charge ID.
 	 *
 	 * @return string
 	 */
-	public static function get_transaction_url_id( $intent_id, $charge_id ) {
-		return ! empty( $intent_id ) ? $intent_id : $charge_id;
+	public static function get_transaction_url_id( $primary_id, $fallback_id ) {
+		return ! empty( $primary_id ) ? $primary_id : $fallback_id;
 	}
 
 	/**
 	 * Composes url for transaction details page.
 	 *
-	 * @param string $intent_id Payment Intent ID.
-	 * @param string $charge_id Charge ID.
+	 * @param string $primary_id  Usually the Payment Intent ID, but can be an order ID.
+	 * @param string $fallback_id Usually the Charge ID.
 	 *
 	 * @return string Transaction details page url.
 	 */
-	public static function compose_transaction_url( $intent_id, $charge_id ) {
-		if ( empty( $charge_id ) && empty( $intent_id ) ) {
+	public static function compose_transaction_url( $primary_id, $fallback_id ) {
+		if ( empty( $fallback_id ) && empty( $primary_id ) ) {
 			return '';
 		}
 
@@ -641,7 +641,7 @@ class WC_Payments_Utils {
 			[
 				'page' => 'wc-admin',
 				'path' => '/payments/transactions/details',
-				'id'   => self::get_transaction_url_id( $intent_id, $charge_id ),
+				'id'   => self::get_transaction_url_id( $primary_id, $fallback_id ),
 			],
 			admin_url( 'admin.php' )
 		);

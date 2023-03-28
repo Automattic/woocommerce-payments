@@ -266,7 +266,7 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		$note = $this->generate_fraud_blocked_note( $order, $intent_id );
+		$note = $this->generate_fraud_blocked_note( $order );
 		if ( $this->order_note_exists( $order, $note ) ) {
 			$this->complete_order_processing( $order );
 			return;
@@ -1114,12 +1114,11 @@ class WC_Payments_Order_Service {
 	 * Generates the fraud blocked order note.
 	 *
 	 * @param WC_Order $order     Order object.
-	 * @param string   $intent_id The ID of the intent associated with this order.
 	 *
 	 * @return string
 	 */
-	private function generate_fraud_blocked_note( $order, $intent_id ): string {
-		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, '' );
+	private function generate_fraud_blocked_note( $order ): string {
+		$transaction_url = WC_Payments_Utils::compose_transaction_url( $order->get_id(), '' );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the blocked amount, %2: transaction ID of the payment */
