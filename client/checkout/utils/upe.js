@@ -114,3 +114,39 @@ export const getSelectedUPEGatewayPaymentMethod = () => {
 
 	return selectedPaymentMethod;
 };
+
+export const getHiddenBillingFields = ( enabledBillingFields ) => {
+	return {
+		name:
+			enabledBillingFields.includes( 'billing_first_name' ) ||
+			enabledBillingFields.includes( 'billing_last_name' )
+				? 'never'
+				: 'auto',
+		email: enabledBillingFields.includes( 'billing_email' )
+			? 'never'
+			: 'auto',
+		phone: enabledBillingFields.includes( 'billing_phone' )
+			? 'never'
+			: 'auto',
+		address: {
+			country: enabledBillingFields.includes( 'billing_country' )
+				? 'never'
+				: 'auto',
+			line1: enabledBillingFields.includes( 'billing_address_1' )
+				? 'never'
+				: 'auto',
+			line2: enabledBillingFields.includes( 'billing_address_2' )
+				? 'never'
+				: 'auto',
+			city: enabledBillingFields.includes( 'billing_city' )
+				? 'never'
+				: 'auto',
+			state: enabledBillingFields.includes( 'billing_state' )
+				? 'never'
+				: 'auto',
+			postalCode: enabledBillingFields.includes( 'billing_postcode' )
+				? 'never'
+				: 'auto',
+		},
+	};
+};

@@ -29,6 +29,7 @@ import {
 	isWCPayChosen,
 	getPaymentIntentFromSession,
 	getSelectedUPEGatewayPaymentMethod,
+	getHiddenBillingFields,
 } from '../utils/upe';
 import { decryptClientSecret } from '../utils/encryption';
 import enableStripeLinkPaymentMethod from '../stripe-link';
@@ -47,7 +48,6 @@ jQuery( function ( $ ) {
 	const isUPEEnabled = getUPEConfig( 'isUPEEnabled' );
 	const isUPESplitEnabled = getUPEConfig( 'isUPESplitEnabled' );
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
-	const enabledBillingFields = getUPEConfig( 'enabledBillingFields' );
 	const isStripeLinkEnabled =
 		paymentMethodsConfig.link !== undefined &&
 		paymentMethodsConfig.card !== undefined;
@@ -83,40 +83,6 @@ jQuery( function ( $ ) {
 		apiRequest
 	);
 	let fingerprint = null;
-
-	const hiddenBillingFields = {
-		name:
-			enabledBillingFields.includes( 'billing_first_name' ) ||
-			enabledBillingFields.includes( 'billing_last_name' )
-				? 'never'
-				: 'auto',
-		email: enabledBillingFields.includes( 'billing_email' )
-			? 'never'
-			: 'auto',
-		phone: enabledBillingFields.includes( 'billing_phone' )
-			? 'never'
-			: 'auto',
-		address: {
-			country: enabledBillingFields.includes( 'billing_country' )
-				? 'never'
-				: 'auto',
-			line1: enabledBillingFields.includes( 'billing_address_1' )
-				? 'never'
-				: 'auto',
-			line2: enabledBillingFields.includes( 'billing_address_2' )
-				? 'never'
-				: 'auto',
-			city: enabledBillingFields.includes( 'billing_city' )
-				? 'never'
-				: 'auto',
-			state: enabledBillingFields.includes( 'billing_state' )
-				? 'never'
-				: 'auto',
-			postalCode: enabledBillingFields.includes( 'billing_postcode' )
-				? 'never'
-				: 'auto',
-		},
-	};
 
 	/**
 	 * Block UI to indicate processing and avoid duplicate submission.
@@ -322,7 +288,9 @@ jQuery( function ( $ ) {
 		}
 		if ( isCheckout && ! ( isOrderPay || isChangingPayment ) ) {
 			upeSettings.fields = {
-				billingDetails: hiddenBillingFields,
+				billingDetails: getHiddenBillingFields(
+					getUPEConfig( 'enabledBillingFields' )
+				),
 			};
 		}
 

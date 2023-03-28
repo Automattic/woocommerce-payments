@@ -20,26 +20,18 @@ import {
 	PAYMENT_METHOD_NAME_SEPA,
 	PAYMENT_METHOD_NAME_SOFORT,
 } from '../constants.js';
-import { getSelectedUPEGatewayPaymentMethod, getTerms } from '../utils/upe';
+import {
+	getHiddenBillingFields,
+	getSelectedUPEGatewayPaymentMethod,
+	getTerms,
+} from '../utils/upe';
 import showErrorCheckout from '../utils/show-error-checkout';
 import { getAppearance } from '../upe-styles';
 import { getFingerprint } from '../utils/fingerprint';
 
 jQuery( function ( $ ) {
-	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
-
-	let fingerprint = null;
-	const gatewayUPEComponents = {};
 	const paymentMethods = getUPEConfig( 'paymentMethodsConfig' );
-	for ( const paymentMethodType in paymentMethods ) {
-		gatewayUPEComponents[ paymentMethodType ] = {
-			elements: null,
-			upeElement: null,
-			isUPEComplete: null,
-			country: null,
-		};
-	}
-
+	const gatewayUPEComponents = {};
 	const api = new WCPayAPI(
 		{
 			publishableKey: getUPEConfig( 'publishableKey' ),
@@ -50,6 +42,34 @@ jQuery( function ( $ ) {
 		apiRequest
 	);
 
+	let fingerprint = null;
+	let appearance = getUPEConfig( 'upeAppearance' );
+
+	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
+	initAppearance();
+	initStripeElements();
+
+	function initAppearance() {
+		if ( ! appearance ) {
+			appearance = getAppearance();
+			api.saveUPEAppearance( appearance );
+		}
+	}
+
+	function initStripeElements() {
+		for ( const paymentMethodType in paymentMethods ) {
+			gatewayUPEComponents[ paymentMethodType ] = {
+				elements: null,
+				upeElement: null,
+			};
+		}
+	}
+
+	/**
+	 * This is the entry-point of this file, which is responsible for mounting the UPE elements.
+	 * It is called when the page is loaded.
+	 *
+	 */
 	$( document.body ).on( 'updated_checkout', () => {
 		$( '.wcpay-upe-element' )
 			.toArray()
@@ -57,10 +77,10 @@ jQuery( function ( $ ) {
 				const paymentMethodType = $( domElement ).data(
 					'payment-method-type'
 				);
-				const stripeElement =
+				const upeElement =
 					gatewayUPEComponents[ paymentMethodType ].upeElement;
-				if ( stripeElement ) {
-					stripeElement.mount( domElement );
+				if ( upeElement ) {
+					upeElement.mount( domElement );
 				} else {
 					createAndMountPaymentElement(
 						paymentMethodType,
@@ -85,17 +105,17 @@ jQuery( function ( $ ) {
 		} );
 	};
 
+	/**
+	 * Creates the UPE element and mounts it to the DOM element.
+	 * No Stripe PaymentIntent is created at this point.
+	 *
+	 * @param {string} paymentMethodType The type of payment method, e.g. 'card', 'giropay', etc.
+	 * @param {string} domElement The selector of the DOM element of particular payment method to mount the UPE element to.
+	 */
 	async function createAndMountPaymentElement(
 		paymentMethodType,
 		domElement
 	) {
-		let appearance = getUPEConfig( 'upeAppearance' );
-
-		if ( ! appearance ) {
-			appearance = getAppearance();
-			api.saveUPEAppearance( appearance );
-		}
-
 		const options = {
 			mode: 'payment',
 			currency: getUPEConfig( 'currency' ).toLowerCase(),
@@ -120,52 +140,8 @@ jQuery( function ( $ ) {
 		const elements = api.getStripe().elements( options );
 		gatewayUPEComponents[ paymentMethodType ].elements = elements;
 
-		const upeSettings = {};
-
-		if ( getUPEConfig( 'cartContainsSubscription' ) ) {
-			upeSettings.terms = getTerms( paymentMethods, 'always' );
-		}
-		const enabledBillingFields = getUPEConfig( 'enabledBillingFields' );
-		const hiddenBillingFields = {
-			name:
-				enabledBillingFields.includes( 'billing_first_name' ) ||
-				enabledBillingFields.includes( 'billing_last_name' )
-					? 'never'
-					: 'auto',
-			email: enabledBillingFields.includes( 'billing_email' )
-				? 'never'
-				: 'auto',
-			phone: enabledBillingFields.includes( 'billing_phone' )
-				? 'never'
-				: 'auto',
-			address: {
-				country: enabledBillingFields.includes( 'billing_country' )
-					? 'never'
-					: 'auto',
-				line1: enabledBillingFields.includes( 'billing_address_1' )
-					? 'never'
-					: 'auto',
-				line2: enabledBillingFields.includes( 'billing_address_2' )
-					? 'never'
-					: 'auto',
-				city: enabledBillingFields.includes( 'billing_city' )
-					? 'never'
-					: 'auto',
-				state: enabledBillingFields.includes( 'billing_state' )
-					? 'never'
-					: 'auto',
-				postalCode: enabledBillingFields.includes( 'billing_postcode' )
-					? 'never'
-					: 'auto',
-			},
-		};
-
-		upeSettings.fields = {
-			billingDetails: hiddenBillingFields,
-		};
-
 		const upeElement = elements.create( 'payment', {
-			...upeSettings,
+			...getUpeSettings(),
 			wallets: {
 				applePay: 'never',
 				googlePay: 'never',
@@ -174,14 +150,22 @@ jQuery( function ( $ ) {
 
 		upeElement.mount( domElement );
 		gatewayUPEComponents[ paymentMethodType ].upeElement = upeElement;
+	}
 
-		upeElement.on( 'change', ( event ) => {
-			const selectedUPEPaymentType = event.value.type;
-			gatewayUPEComponents[ selectedUPEPaymentType ].country =
-				event.value.country;
-			gatewayUPEComponents[ selectedUPEPaymentType ].isUPEComplete =
-				event.complete;
-		} );
+	function getUpeSettings() {
+		const upeSettings = {
+			fields: {
+				billingDetails: getHiddenBillingFields(
+					getUPEConfig( 'enabledBillingFields' )
+				),
+			},
+		};
+
+		if ( getUPEConfig( 'cartContainsSubscription' ) ) {
+			upeSettings.terms = getTerms( paymentMethods, 'always' );
+		}
+
+		return upeSettings;
 	}
 
 	const handleCheckout = async ( $form, paymentMethodType ) => {
