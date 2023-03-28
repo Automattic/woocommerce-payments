@@ -89,12 +89,20 @@ jQuery( function ( $ ) {
 		paymentMethodType,
 		domElement
 	) {
+		let appearance = getUPEConfig( 'upeAppearance' );
+
+		if ( ! appearance ) {
+			appearance = getAppearance();
+			api.saveUPEAppearance( appearance );
+		}
+
 		const options = {
 			mode: 'payment',
 			currency: getUPEConfig( 'currency' ).toLowerCase(),
 			amount: Number( getUPEConfig( 'cartTotal' ) ),
 			paymentMethodCreation: 'manual',
 			paymentMethodTypes: [ paymentMethodType ],
+			appearance: appearance,
 		};
 
 		if ( ! fingerprint ) {
@@ -110,12 +118,6 @@ jQuery( function ( $ ) {
 			}
 		}
 
-		let appearance = getUPEConfig( 'upeAppearance' );
-
-		if ( ! appearance ) {
-			appearance = getAppearance();
-			api.saveUPEAppearance( appearance );
-		}
 		const elements = api.getStripe().elements( options );
 		gatewayUPEComponents[ paymentMethodType ].elements = elements;
 
