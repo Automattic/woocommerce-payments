@@ -249,24 +249,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Cancel an intention
-	 *
-	 * @param string $intention_id - The ID of the intention to cancel.
-	 *
-	 * @return WC_Payments_API_Intention
-	 * @throws API_Exception - Exception thrown on intention cancellation failure.
-	 */
-	public function cancel_intention( $intention_id ) {
-		$response_array = $this->request(
-			[],
-			self::INTENTIONS_API . '/' . $intention_id . '/cancel',
-			self::POST
-		);
-
-		return $this->deserialize_intention_object_from_array( $response_array );
-	}
-
-	/**
 	 * Fetch a single intent with provided id.
 	 *
 	 * @param string $intent_id intent id.

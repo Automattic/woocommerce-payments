@@ -116,42 +116,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Test a successful call to cancel intention.
-	 *
-	 * @throws Exception - In the event of test failure.
-	 */
-	public function test_cancel_intention_success() {
-		$expected_status = Payment_Intent_Status::CANCELED;
-
-		$this->set_http_mock_response(
-			200,
-			[
-				'id'            => 'test_intention_id',
-				'amount'        => 123,
-				'created'       => 1557224304,
-				'status'        => $expected_status,
-				'charges'       => [
-					'total_count' => 1,
-					'data'        => [
-						[
-							'id'                     => 'test_charge_id',
-							'amount'                 => 123,
-							'created'                => 1557224305,
-							'status'                 => Payment_Intent_Status::SUCCEEDED,
-							'payment_method_details' => [],
-						],
-					],
-				],
-				'client_secret' => 'test_client_secret',
-				'currency'      => 'usd',
-			]
-		);
-
-		$result = $this->payments_api_client->cancel_intention( 'test_intention_id' );
-		$this->assertEquals( $expected_status, $result->get_status() );
-	}
-
-	/**
 	 * Test a successful fetch of a single transaction.
 	 *
 	 * @throws Exception In case of test failure.
