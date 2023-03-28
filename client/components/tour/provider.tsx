@@ -56,7 +56,7 @@ const WcPayTourContextProvider: React.FC< TourProps > = ( {
 
 		return () => {
 			document.body.classList.remove( 'modal-open' );
-			document.documentElement.classList.add( 'modal-smooth-scroll' );
+			document.documentElement.classList.remove( 'modal-smooth-scroll' );
 
 			if ( scrollRestoration.current ) {
 				history.scrollRestoration = scrollRestoration.current;
