@@ -215,29 +215,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Updates an intention's metadata and sets receipt email to empty.
-	 * Unlike `update_intention`, this method allows updating metadata without
-	 * requiring amount, currency, and other mandatory params to be present.
-	 *
-	 * @param string $intention_id - The ID of the intention to update.
-	 * @param array  $metadata     - Metadata values to be sent along with payment intent creation.
-	 *
-	 * @return WC_Payments_API_Intention
-	 * @throws API_Exception - Exception thrown on intention creation failure.
-	 */
-	public function prepare_intention_for_capture( $intention_id, $metadata ) {
-		// 'receipt_email' is set to prevent Stripe from sending receipts (when intent is created outside WCPay).
-		$request = [
-			'receipt_email' => '',
-			'metadata'      => $metadata,
-		];
-
-		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API . '/' . $intention_id, self::POST );
-
-		return $this->deserialize_intention_object_from_array( $response_array );
-	}
-
-	/**
 	 * Refund a charge
 	 *
 	 * @param string $charge_id - The charge to refund.
