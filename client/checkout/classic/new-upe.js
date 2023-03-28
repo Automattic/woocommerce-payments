@@ -20,12 +20,15 @@ import {
 	PAYMENT_METHOD_NAME_SEPA,
 	PAYMENT_METHOD_NAME_SOFORT,
 } from '../constants.js';
-import { getSelectedUPEGatewayPaymentMethod } from '../utils/upe';
+import { getSelectedUPEGatewayPaymentMethod, getTerms } from '../utils/upe';
 import showErrorCheckout from '../utils/show-error-checkout';
+import { getAppearance } from '../upe-styles';
+import { getFingerprint } from '../utils/fingerprint';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
 
+	let fingerprint = null;
 	const gatewayUPEComponents = {};
 	const paymentMethods = getUPEConfig( 'paymentMethodsConfig' );
 	for ( const paymentMethodType in paymentMethods ) {
@@ -93,10 +96,81 @@ jQuery( function ( $ ) {
 			paymentMethodCreation: 'manual',
 			paymentMethodTypes: [ paymentMethodType ],
 		};
+
+		if ( ! fingerprint ) {
+			try {
+				const { visitorId } = await getFingerprint();
+				console.log( 'visitorId', visitorId );
+				fingerprint = visitorId;
+			} catch ( error ) {
+				// Do not mount element if fingerprinting is not available
+				showErrorCheckout( error.message );
+
+				return;
+			}
+		}
+
+		let appearance = getUPEConfig( 'upeAppearance' );
+
+		if ( ! appearance ) {
+			appearance = getAppearance();
+			api.saveUPEAppearance( appearance );
+		}
 		const elements = api.getStripe().elements( options );
 		gatewayUPEComponents[ paymentMethodType ].elements = elements;
 
-		const upeElement = elements.create( 'payment' );
+		const upeSettings = {};
+
+		if ( getUPEConfig( 'cartContainsSubscription' ) ) {
+			upeSettings.terms = getTerms( paymentMethods, 'always' );
+		}
+		const enabledBillingFields = getUPEConfig( 'enabledBillingFields' );
+		const hiddenBillingFields = {
+			name:
+				enabledBillingFields.includes( 'billing_first_name' ) ||
+				enabledBillingFields.includes( 'billing_last_name' )
+					? 'never'
+					: 'auto',
+			email: enabledBillingFields.includes( 'billing_email' )
+				? 'never'
+				: 'auto',
+			phone: enabledBillingFields.includes( 'billing_phone' )
+				? 'never'
+				: 'auto',
+			address: {
+				country: enabledBillingFields.includes( 'billing_country' )
+					? 'never'
+					: 'auto',
+				line1: enabledBillingFields.includes( 'billing_address_1' )
+					? 'never'
+					: 'auto',
+				line2: enabledBillingFields.includes( 'billing_address_2' )
+					? 'never'
+					: 'auto',
+				city: enabledBillingFields.includes( 'billing_city' )
+					? 'never'
+					: 'auto',
+				state: enabledBillingFields.includes( 'billing_state' )
+					? 'never'
+					: 'auto',
+				postalCode: enabledBillingFields.includes( 'billing_postcode' )
+					? 'never'
+					: 'auto',
+			},
+		};
+
+		upeSettings.fields = {
+			billingDetails: hiddenBillingFields,
+		};
+
+		const upeElement = elements.create( 'payment', {
+			...upeSettings,
+			wallets: {
+				applePay: 'never',
+				googlePay: 'never',
+			},
+		} );
+
 		upeElement.mount( domElement );
 		gatewayUPEComponents[ paymentMethodType ].upeElement = upeElement;
 
@@ -149,6 +223,7 @@ jQuery( function ( $ ) {
 					return obj;
 				}, {} ),
 				wc_payment_method: pm.paymentMethod.id,
+				wcpay_fingerprint: fingerprint,
 			};
 
 			const response = await api.processCheckout( fields );
