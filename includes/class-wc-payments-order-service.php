@@ -1411,7 +1411,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @param mixed $order The order to be returned.
 	 *
-	 * @return WC_Order
+	 * @return WC_Order|WC_Order_Refund
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
