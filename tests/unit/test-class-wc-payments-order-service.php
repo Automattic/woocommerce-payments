@@ -747,7 +747,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$mock_order = $this->createMock( 'WC_Order' );
 		$mock_order
 			->expects( $this->never() )
-			->method( 'add_meta_data' );
+			->method( 'update_meta_data' );
 		$this->order_service->attach_transaction_fee_to_order( $mock_order, new WC_Payments_API_Charge( 'ch_mock', 1500, new DateTime(), null, null, null, null, null, [], [], 'eur' ) );
 	}
 }
