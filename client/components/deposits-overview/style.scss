@@ -18,7 +18,6 @@
 			color: $gray-700;
 		}
 	}
-
 	&__table {
 		color: $gray-900;
 		align-items: center;
@@ -55,10 +54,17 @@
 			}
 		}
 	}
-
 	.new-account-waiting-period-notice {
 		&.components-notice {
 			margin: 0 24px;
+		}
+	}
+	&__footer {
+		:not( :first-child ) {
+			margin-left: 12px;
+		}
+		a:not( .components-button ) {
+			text-decoration: none;
 		}
 	}
 }

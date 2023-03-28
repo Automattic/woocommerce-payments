@@ -186,12 +186,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				$charge_id,
 				$intent->get_currency()
 			);
-			$this->gateway->update_order_status_from_intent(
-				$order,
-				$intent_id,
-				$intent_status,
-				$charge_id
-			);
+			$this->order_service->update_order_status_from_intent( $order, $intent );
 
 			// Certain payments (eg. Interac) are captured on the client-side (mobile app).
 			// The client may send us the captured intent to link it to its WC order.
@@ -291,9 +286,6 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				);
 			}
 
-			// Actualize order status.
-			$charge = $intent->get_charge();
-			$this->order_service->mark_payment_capture_completed( $order, $intent_id, $result['status'], $charge->get_id() );
 			$order->save_meta_data();
 
 			return rest_ensure_response(

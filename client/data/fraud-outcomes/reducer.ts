@@ -29,6 +29,7 @@ const receiveFraudOutcomes = (
 					[ id ]: {
 						...state.latestFraudOutcome[ id ],
 						data: ( action as UpdateLatestFraudOutcomeAction ).data,
+						error: undefined,
 					},
 				},
 			};
@@ -38,6 +39,7 @@ const receiveFraudOutcomes = (
 				latestFraudOutcome: {
 					[ id ]: {
 						...state.latestFraudOutcome[ id ],
+						data: undefined,
 						error: ( action as UpdateErrorForLatestFraudOutcomeAction )
 							.error,
 					},

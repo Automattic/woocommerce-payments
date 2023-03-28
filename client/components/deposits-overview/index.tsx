@@ -14,6 +14,7 @@ import { useAllDepositsOverviews } from 'wcpay/data';
 import strings from './strings';
 import NextDepositDetails from './next-deposit';
 import BannerNotice from 'wcpay/components/banner-notice';
+import DepositsOverviewFooter from './footer';
 import './style.scss';
 
 const DepositsOverview = (): JSX.Element => {
@@ -61,6 +62,8 @@ const DepositsOverview = (): JSX.Element => {
 			<p>Deposits History Section Goes here</p>
 
 			<p>Deposits Card Footer/Action Goes here</p>
+
+			<DepositsOverviewFooter />
 		</Card>
 	);
 };
