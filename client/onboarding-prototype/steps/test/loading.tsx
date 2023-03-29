@@ -31,6 +31,16 @@ jest.mock( '../../context', () => ( {
 	} ) ),
 } ) );
 
+const checkLinkToContainNecessaryParams = ( link: string ) => {
+	expect( link ).toContain( 'prefill' );
+	expect( link ).toContain( 'progressive' );
+	expect( link ).toContain( 'country' );
+	expect( link ).toContain( 'mcc' );
+	expect( link ).toContain( 'annual_revenue' );
+	expect( link ).toContain( 'business_type' );
+	expect( link ).toContain( 'go_live_timeframe' );
+};
+
 describe( 'Loading', () => {
 	const originalWindowLocation = window.location;
 
@@ -87,12 +97,7 @@ describe( 'Loading', () => {
 			} );
 		} );
 
-		expect( window.location.href ).toContain( 'progressive' );
-		expect( window.location.href ).toContain( 'country' );
-		expect( window.location.href ).toContain( 'mcc' );
-		expect( window.location.href ).toContain( 'annual_revenue' );
-		expect( window.location.href ).toContain( 'business_type' );
-		expect( window.location.href ).toContain( 'go_live_timeframe' );
+		checkLinkToContainNecessaryParams( window.location.href );
 	} );
 
 	it( 'renders loading screen and sends request to server in case of po not eligible', async () => {
@@ -127,11 +132,6 @@ describe( 'Loading', () => {
 			} );
 		} );
 
-		expect( window.location.href ).toContain( 'prefill' );
-		expect( window.location.href ).toContain( 'country' );
-		expect( window.location.href ).toContain( 'mcc' );
-		expect( window.location.href ).toContain( 'annual_revenue' );
-		expect( window.location.href ).toContain( 'business_type' );
-		expect( window.location.href ).toContain( 'go_live_timeframe' );
+		checkLinkToContainNecessaryParams( window.location.href );
 	} );
 } );

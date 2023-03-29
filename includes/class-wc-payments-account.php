@@ -1004,49 +1004,31 @@ class WC_Payments_Account {
 		$current_user = wp_get_current_user();
 		$return_url   = $this->get_onboarding_return_url( $wcpay_connect_from );
 
-		// Pre-fill from new KYC flow experiment in treatment mode.
-		$prefill         = isset( $_GET['prefill'] ) ? wc_clean( wp_unslash( $_GET['prefill'] ) ) : [];
-		$prefill_country = $prefill['country'] ?? null;
-		$business_type   = $prefill['business_type'] ?? null;
-		$prefill_rest    = [
-			'url'           => $prefill['url'] ?? null,
-			'business_type' => $business_type,
-			'email'         => $prefill['email'] ?? null,
-			'individual'    => $prefill['individual'] ?? null,
-			'phone'         => $prefill['phone'] ?? null,
-			'business_name' => $prefill['business_name'] ?? null,
-			'mcc'           => $prefill['mcc'] ?? null,
-		];
-		if ( 'company' === $business_type ) {
-			$prefill_rest['company'] = $prefill['company'] ?? null;
-		}
+		// Flags to enable progressive onboarding and collect payout requirements.
+		$progressive                 = isset( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
+		$collect_payout_requirements = isset( $_GET['collect_payout_requirements'] ) && 'true' === $_GET['collect_payout_requirements'];
 
-		$country = $prefill_country ?? WC()->countries->get_base_country();
-		if ( ! array_key_exists( $country, WC_Payments_Utils::supported_countries() ) ) {
-			$country = null;
+		// Onboarding data prefill.
+		$account_data  = isset( $_GET['prefill'] ) ? wc_clean( wp_unslash( $_GET['prefill'] ) ) : [];
+		$business_type = $account_data['business_type'] ?? null;
+		if ( ! $progressive ) {
+			if ( 'individual' === $business_type ) {
+				$account_data['individual']['phone'] = $account_data['phone'] ?? null;
+			}
+			if ( 'company' === $business_type ) {
+				$account_data['business_profile']['support_phone'] = $account_data['phone'] ?? null;
+			}
 		}
-
-		// Progressive onboarding prefill.
-		$progressive_onboarding      = isset( $_GET['progressive'] ) ? wc_clean( wp_unslash( $_GET['progressive'] ) ) : [];
-		$collect_payout_requirements = isset( $_GET['collect_payout_requirements'] ) && (bool) $_GET['collect_payout_requirements'];
 
 		$onboarding_data = $this->payments_api_client->get_onboarding_data(
 			$return_url,
-			array_merge(
-				[
-					'email'         => $current_user->user_email,
-					'business_name' => get_bloginfo( 'name' ),
-					'url'           => get_home_url(),
-					'country'       => $country,
-				],
-				array_filter( $prefill_rest )
-			),
 			[
 				'site_username' => $current_user->user_login,
 				'site_locale'   => get_locale(),
 			],
 			$this->get_actioned_notes(),
-			array_filter( $progressive_onboarding ),
+			array_filter( $account_data ),
+			$progressive,
 			$collect_payout_requirements
 		);
 

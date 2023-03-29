@@ -52,13 +52,10 @@ const Loading: React.FC = () => {
 			// TODO maybe log these errors in future, e.g. with tracks.
 			isEligible = false;
 		}
-		const resultUrl = isEligible
-			? addQueryArgs( connectUrl, {
-					progressive: fromDotNotation( data ),
-			  } )
-			: addQueryArgs( connectUrl, {
-					prefill: fromDotNotation( data ),
-			  } );
+		const resultUrl = addQueryArgs( connectUrl, {
+			prefill: fromDotNotation( data ),
+			progressive: isEligible,
+		} );
 		window.location.href = resultUrl;
 	};
 
