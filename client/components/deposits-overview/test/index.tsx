@@ -209,9 +209,9 @@ describe( 'Deposits Overview information', () => {
 	test( 'Confirm new account waiting period notice shows', () => {
 		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = false;
 		const { getByText } = render( <DepositsOverview /> );
-		expect(
-			getByText( 'Your first deposit is held for seven business days' )
-		).toBeTruthy();
+		getByText( /Your first deposit is held for seven business days/, {
+			ignore: '.a11y-speak-region',
+		} );
 	} );
 } );
 
