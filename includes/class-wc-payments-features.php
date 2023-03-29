@@ -59,8 +59,11 @@ class WC_Payments_Features {
 			return true;
 		}
 
+		$upe_split_flag_value    = '1' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' );
+		$upe_deferred_flag_value = '1' === get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, '0' );
+
 		// if the merchant is not eligible for the Split UPE, but they have the flag enabled, fallback to the "legacy" UPE (for now).
-		return ( '1' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' ) || '1' === get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, '0' ) )
+		return ( $upe_split_flag_value || $upe_deferred_flag_value )
 			&& ! self::is_upe_split_eligible();
 	}
 
@@ -263,6 +266,8 @@ class WC_Payments_Features {
 		return array_filter(
 			[
 				'upe'                     => self::is_upe_enabled(),
+				'upeSplit'                => self::is_upe_split_enabled(),
+				'upeDeferred'             => self::is_upe_deferred_intent_enabled(),
 				'upeSettingsPreview'      => self::is_upe_settings_preview_enabled(),
 				'multiCurrency'           => self::is_customer_multi_currency_enabled(),
 				'accountOverviewTaskList' => self::is_account_overview_task_list_enabled(),
