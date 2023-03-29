@@ -100,18 +100,11 @@ const FRTDiscoverabilityBanner = () => {
 
 export default FRTDiscoverabilityBanner;
 
-export const WooHomescreenFRTBanner = () => {
-	return (
+registerPlugin( 'wc-payments-homescreen-fraud-protection-slotfill-banner', {
+	render: () => (
 		<Fill name="woocommerce_homescreen_experimental_header_banner_item">
 			<FRTDiscoverabilityBanner />
 		</Fill>
-	);
-};
-
-registerPlugin( 'woocommerce-fraud-protection-banner', {
-	render: () => {
-		console.log( 'frttt' );
-		return <WooHomescreenFRTBanner />;
-	},
+	),
 	scope: 'woocommerce-admin',
 } );
