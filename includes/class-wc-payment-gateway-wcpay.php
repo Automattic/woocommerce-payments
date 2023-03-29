@@ -1180,6 +1180,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$intent_id     = $intent['id'];
 			$status        = $intent['status'];
 			$charge_id     = '';
+			$charge        = null;
 			$client_secret = $intent['client_secret'];
 			$currency      = $order->get_currency();
 			$next_action   = $intent['next_action'];
