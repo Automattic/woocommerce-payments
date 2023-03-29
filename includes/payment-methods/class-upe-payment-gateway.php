@@ -742,7 +742,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$client_secret          = $intent['client_secret'];
 				$status                 = $intent['status'];
 				$charge_id              = '';
-				$charge 				= null;
+				$charge                 = null;
 				$currency               = $order->get_currency();
 				$payment_method_id      = $intent['payment_method'];
 				$payment_method_details = false;
