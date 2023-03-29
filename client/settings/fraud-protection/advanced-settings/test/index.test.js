@@ -56,6 +56,17 @@ describe( 'Advanced fraud protection settings', () => {
 			protectionLevelState.state,
 			protectionLevelState.updateState,
 		] );
+		global.wcSettings = {
+			admin: {
+				preloadSettings: {
+					general: {
+						woocommerce_allowed_countries: 'all',
+						woocommerce_all_except_countries: [],
+						woocommerce_specific_allowed_countries: [],
+					},
+				},
+			},
+		};
 		useAdvancedFraudProtectionSettings.mockReturnValue( [
 			protectionSettings.state,
 			protectionSettings.updateState,
@@ -110,8 +121,12 @@ describe( 'Advanced fraud protection settings', () => {
 			check: {
 				operator: 'or',
 				checks: [
-					{ key: 'order_total', operator: 'less_than', value: 10 },
-					{ key: 'order_total', operator: 'greater_than', value: 1 },
+					{ key: 'order_total', operator: 'less_than', value: 1000 },
+					{
+						key: 'order_total',
+						operator: 'greater_than',
+						value: 100,
+					},
 				],
 			},
 		} );
@@ -153,8 +168,12 @@ describe( 'Advanced fraud protection settings', () => {
 			check: {
 				operator: 'or',
 				checks: [
-					{ key: 'order_total', operator: 'less_than', value: 1 },
-					{ key: 'order_total', operator: 'greater_than', value: 10 },
+					{ key: 'order_total', operator: 'less_than', value: 100 },
+					{
+						key: 'order_total',
+						operator: 'greater_than',
+						value: 1000,
+					},
 				],
 			},
 		} );
@@ -207,8 +226,12 @@ describe( 'Advanced fraud protection settings', () => {
 			check: {
 				operator: 'or',
 				checks: [
-					{ key: 'order_total', operator: 'less_than', value: 1 },
-					{ key: 'order_total', operator: 'greater_than', value: 10 },
+					{ key: 'order_total', operator: 'less_than', value: 100 },
+					{
+						key: 'order_total',
+						operator: 'greater_than',
+						value: 1000,
+					},
 				],
 			},
 		} );
@@ -265,8 +288,12 @@ describe( 'Advanced fraud protection settings', () => {
 			check: {
 				operator: 'or',
 				checks: [
-					{ key: 'order_total', operator: 'less_than', value: 1 },
-					{ key: 'order_total', operator: 'greater_than', value: 10 },
+					{ key: 'order_total', operator: 'less_than', value: 100 },
+					{
+						key: 'order_total',
+						operator: 'greater_than',
+						value: 1000,
+					},
 				],
 			},
 		} );
