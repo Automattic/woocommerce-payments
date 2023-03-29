@@ -28,6 +28,10 @@ export default {
 	depositHistory: {
 		title: __( 'Deposit history', 'woocommerce-payments' ),
 		descriptions: {
+			suspended: __(
+				'Your deposits are {{strong}}temporarily suspended{{/strong}} ({{suspendLink}}learn more{{/suspendLink}})',
+				'woocommerce-payments'
+			),
 			daily: __(
 				'Your deposits are dispatched {{strong}}automatically every day{{/strong}}',
 				'woocommerce-payments'

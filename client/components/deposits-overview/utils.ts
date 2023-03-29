@@ -58,6 +58,21 @@ export const getDepositScheduleDescription = (
 	const schedule = account.deposits_schedule;
 	let description = '';
 
+	// Check if the account is blocked.
+	const isCustomDepositSchedulesEnabled =
+		wcpaySettings?.featureFlags?.customDepositSchedules;
+
+	const areDepositsBlocked =
+		wcpaySettings?.accountStatus?.depositsStatus === 'blocked';
+
+	const showSuspendedNotice =
+		areDepositsBlocked ||
+		( ! isCustomDepositSchedulesEnabled && 'manual' === schedule.interval );
+
+	if ( showSuspendedNotice ) {
+		return strings.depositHistory.descriptions.suspended;
+	}
+
 	switch ( schedule.interval ) {
 		case 'daily':
 			description = strings.depositHistory.descriptions.daily;
