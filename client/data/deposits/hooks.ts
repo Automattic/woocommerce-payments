@@ -36,9 +36,7 @@ export const useDeposit = (
 export const useDepositIncludesLoan = (
 	depositId?: string
 ): {
-	transactions: Transaction[];
 	includesFinancingPayout: boolean;
-	includesFinancingPaydown: boolean;
 	isLoading: boolean;
 } => {
 	const hasActiveLoan = wcpaySettings.accountLoans.has_active_loan;
@@ -48,38 +46,27 @@ export const useDepositIncludesLoan = (
 			// Using a conditional select here to avoid fetching transactions if there is no active loan.
 			if ( ! depositId || ! hasActiveLoan ) {
 				return {
-					transactions: [],
 					includesFinancingPayout: false,
-					includesFinancingPaydown: false,
 					isLoading: false,
 				};
 			}
 
 			const { getTransactions, isResolving } = select( STORE_NAME );
-			const query: Query & {
-				depositId: string;
-			} = {
+			const query = {
 				depositId,
 				page: '1',
-				per_page: '100',
+				typeIs: 'financing_payout',
+				perPage: '1',
 				orderby: 'date',
 				order: 'desc',
 			};
-			const transactions = getTransactions( query ) as Transaction[];
+			const financingPayoutTransactions = getTransactions(
+				query
+			) as Transaction[];
 			const isLoading = !! isResolving( 'getTransactions', [ query ] );
 
-			const types = transactions.map( ( { type } ) => type );
-			const includesFinancingPayout = types.includes(
-				'financing_payout'
-			);
-			const includesFinancingPaydown = types.includes(
-				'financing_paydown'
-			);
-
 			return {
-				transactions,
-				includesFinancingPayout,
-				includesFinancingPaydown,
+				includesFinancingPayout: financingPayoutTransactions.length > 0,
 				isLoading,
 			};
 		},
