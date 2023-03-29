@@ -208,10 +208,14 @@ describe( 'Deposits Overview information', () => {
 
 	test( 'Confirm new account waiting period notice shows', () => {
 		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = false;
-		const { getByText } = render( <DepositsOverview /> );
+		const { getByText, getByRole } = render( <DepositsOverview /> );
 		getByText( /Your first deposit is held for seven business days/, {
 			ignore: '.a11y-speak-region',
 		} );
+		expect( getByRole( 'link', { name: /Why\?/ } ) ).toHaveAttribute(
+			'href',
+			'https://woocommerce.com/document/woocommerce-payments/deposits/deposit-schedule/#section-1'
+		);
 	} );
 } );
 
