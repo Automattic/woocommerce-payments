@@ -10,7 +10,6 @@ import { calendar } from '@wordpress/icons';
  */
 import strings from './strings';
 import './style.scss';
-import Loadable from 'components/loadable';
 import DepositStatusChip from 'components/deposit-status-chip';
 import { getDepositDate } from 'deposits/utils';
 import { CachedDeposit } from 'wcpay/types/deposits';
@@ -86,7 +85,7 @@ const RecentDeposits: React.FC< RecentDepositsProps > = ( {
 	const recentDeposits = GetRecentDeposits( currency );
 	const isLoading = recentDeposits.isLoading;
 
-	if ( isLoading ) {
+	if ( isLoading || recentDeposits.deposits.length === 0 ) {
 		return <></>;
 	}
 	return (
