@@ -753,12 +753,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
+			// We set this variable to be used in following checks.
+			$blocked_due_to_fraud_rules = $e instanceof API_Exception && 'wcpay_blocked_by_fraud_rule' === $e->get_error_code();
+
 			/**
 			 * TODO: Determine how to do this update with Order_Service.
 			 * It seems that the status only needs to change in certain instances, and within those instances the intent
 			 * information is not added to the order, as shown by tests.
 			 */
-			if ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) {
+			if ( ! $blocked_due_to_fraud_rules && ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) ) {
 				$order->update_status( Order_Status::FAILED );
 			}
 
@@ -766,7 +769,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$this->failed_transaction_rate_limiter->bump();
 			}
 
-			if ( ! empty( $payment_information ) ) {
+			if ( $blocked_due_to_fraud_rules ) {
+				$this->order_service->mark_order_blocked_for_fraud( $order, '', Payment_Intent_Status::CANCELED );
+			} elseif ( ! empty( $payment_information ) ) {
+				/**
+				 * TODO: Move the contents of this else into the Order_Service.
+				 */
 				/* translators: %1: the failed payment amount, %2: error message  */
 				$error_message = __(
 					'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
@@ -804,6 +812,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( $e instanceof Process_Payment_Exception && 'rate_limiter_enabled' === $e->get_error_code() ) {
+				/**
+				 * TODO: Move the contents of this into the Order_Service.
+				 */
 				$note = sprintf(
 					WC_Payments_Utils::esc_interpolated_html(
 						/* translators: %1: the failed payment amount */
@@ -1252,7 +1263,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$this->order_service->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
 		$this->attach_exchange_info_to_order( $order, $charge_id );
-		$this->update_order_status_from_intent( $order, $intent_id, $status, $charge_id );
+		if ( Payment_Intent_Status::SUCCEEDED === $status ) {
+			$this->remove_session_processing_order( $order->get_id() );
+		}
+		$this->order_service->update_order_status_from_intent( $order, $intent );
 
 		$this->maybe_add_customer_notification_note( $order, $processing );
 
@@ -1378,34 +1392,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Parse the payment intent data and add any necessary notes to the order and update the order status accordingly.
-	 *
-	 * @param WC_Order $order The order to update.
-	 * @param string   $intent_id The intent ID.
-	 * @param string   $intent_status Intent status.
-	 * @param string   $charge_id Charge ID.
-	 */
-	public function update_order_status_from_intent( $order, $intent_id, $intent_status, $charge_id ) {
-		switch ( $intent_status ) {
-			case Payment_Intent_Status::SUCCEEDED:
-				$this->remove_session_processing_order( $order->get_id() );
-				$this->order_service->mark_payment_completed( $order, $intent_id, $intent_status, $charge_id );
-				break;
-			case Payment_Intent_Status::PROCESSING:
-			case Payment_Intent_Status::REQUIRES_CAPTURE:
-				$this->order_service->mark_payment_authorized( $order, $intent_id, $intent_status, $charge_id );
-				break;
-			case Payment_Intent_Status::REQUIRES_ACTION:
-			case Payment_Intent_Status::REQUIRES_PAYMENT_METHOD:
-				$this->order_service->mark_payment_started( $order, $intent_id, $intent_status, $charge_id );
-				break;
-			default:
-				Logger::error( 'Uncaught payment intent status of ' . $intent_status . ' passed for order id: ' . $order->get_id() );
-				break;
-		}
-	}
-
-	/**
 	 * Saves the payment token to the order.
 	 *
 	 * @param WC_Order         $order The order.
@@ -1459,8 +1445,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool|WP_Error - Whether the refund went through. Returns a WP_Error if an Exception occurs during execution.
 	 */
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
-		$order    = wc_get_order( $order_id );
-		$currency = $this->order_service->get_wcpay_intent_currency_for_order( $order );
+		$order = wc_get_order( $order_id );
 
 		if ( ! $order ) {
 			return false;
@@ -1484,6 +1469,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		$charge_id = $this->order_service->get_charge_id_for_order( $order );
+		$currency  = $this->order_service->get_wcpay_intent_currency_for_order( $order );
 
 		try {
 			// If the payment method is Interac, the refund already exists (refunded via Mobile app).
@@ -1588,6 +1574,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Gets the payment method type used for an order, if any
 	 *
 	 * @param WC_Order $order The order to get the payment method type for.
+	 *
 	 * @return string
 	 */
 	private function get_payment_method_type_for_order( $order ): string {
@@ -1980,9 +1967,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		$charge    = $intent->get_charge();
-		$charge_id = $charge ? $charge->get_id() : null;
-		$this->update_order_status_from_intent( $order, $intent_id, $intent_status, $charge_id );
+		if ( Payment_Intent_Status::SUCCEEDED === $intent_status ) {
+			$this->remove_session_processing_order( $order->get_id() );
+		}
+		$this->order_service->update_order_status_from_intent( $order, $intent );
 
 		$return_url = $this->get_return_url( $order );
 		$return_url = add_query_arg( self::FLAG_PREVIOUS_SUCCESSFUL_INTENT, 'yes', $return_url );
@@ -2447,7 +2435,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$status                   = null;
 		$error_message            = null;
 		$http_code                = null;
-		$currency                 = $this->order_service->get_wcpay_intent_currency_for_order( $order );
 
 		try {
 			$intent_id = $order->get_transaction_id();
@@ -2473,7 +2460,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$intent = $capture_intention_request->send( 'wcpay_capture_intent_request', $order );
 
 			$status    = $intent->get_status();
-			$currency  = $intent->get_currency();
 			$http_code = 200;
 		} catch ( API_Exception $e ) {
 			try {
@@ -2504,7 +2490,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->attach_exchange_info_to_order( $order, $charge_id );
 
 		if ( Payment_Intent_Status::SUCCEEDED === $status ) {
-			$this->order_service->mark_payment_capture_completed( $order, $intent_id, $status, $charge_id );
+			$this->order_service->update_order_status_from_intent( $order, $intent );
 		} elseif ( $is_authorization_expired ) {
 			$this->order_service->mark_payment_capture_expired( $order, $intent_id, Payment_Intent_Status::CANCELED, $charge_id );
 		} else {
@@ -2765,19 +2751,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$charge_id = '';
 			}
 
-			switch ( $status ) {
-				case Payment_Intent_Status::SUCCEEDED:
-					$this->remove_session_processing_order( $order->get_id() );
-					$this->order_service->mark_payment_completed( $order, $intent_id, $status, $charge_id );
-					break;
-				case Payment_Intent_Status::PROCESSING:
-				case Payment_Intent_Status::REQUIRES_CAPTURE:
-					$this->order_service->mark_payment_authorized( $order, $intent_id, $status, $charge_id );
-					break;
-				case Payment_Intent_Status::REQUIRES_PAYMENT_METHOD:
-					$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id );
-					break;
+			if ( Payment_Intent_Status::SUCCEEDED === $status ) {
+				$this->remove_session_processing_order( $order->get_id() );
 			}
+			$this->order_service->update_order_status_from_intent( $order, $intent );
 
 			if ( in_array( $status, self::SUCCESSFUL_INTENT_STATUS, true ) ) {
 				wc_reduce_stock_levels( $order_id );

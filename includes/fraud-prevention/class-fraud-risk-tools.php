@@ -170,7 +170,7 @@ class Fraud_Risk_Tools {
 				Check::check(
 					'order_total',
 					Check::OPERATOR_GT,
-					1000
+					1000 * 100
 				)
 			),
 		];
@@ -202,7 +202,7 @@ class Fraud_Risk_Tools {
 				Check::check(
 					'order_total',
 					Check::OPERATOR_GT,
-					1000
+					1000 * 100
 				)
 			),
 			// REVIEW An order has less than 2 items or more than 10 items.
