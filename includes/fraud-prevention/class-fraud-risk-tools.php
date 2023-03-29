@@ -98,7 +98,6 @@ class Fraud_Risk_Tools {
 			return;
 		}
 
-		// Skip registering the page if Stripe isn't connected.
 		if ( ! $this->payments_account->is_stripe_connected() ) {
 			return;
 		}
