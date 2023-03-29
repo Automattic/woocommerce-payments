@@ -1,0 +1,49 @@
+.wcpay-component-phone-number-control.components-text-control__input {
+	background-color: #fff;
+	color: $gray-80;
+	margin: 0 1px;
+	padding: 0;
+	display: flex;
+	align-items: stretch;
+
+	&.focused {
+		border-color: $blue-50;
+		box-shadow: 0 0 0 1px $blue-50;
+	}
+
+	select,
+	input,
+	button {
+		border: 0;
+		margin: 0;
+		background-color: transparent;
+
+		@media screen and ( min-width: 783px ) {
+			font-size: 13px;
+		}
+	}
+
+	select {
+		padding-right: $gap;
+		appearance: none;
+		background-image: url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M13.125 8.7 9 12l-4.125-3.3.675-.9L9 10.5l3.375-2.7.75 .9z'%3E%3C/path%3E%3C/svg%3E" );
+		background-position: right 4px bottom 54%;
+
+		&:focus {
+			border-radius: 2px;
+			box-shadow: 0 0 0 2px $blue-50;
+		}
+	}
+
+	button {
+		cursor: text;
+	}
+
+	input {
+		flex: 1;
+
+		&:focus {
+			box-shadow: none;
+		}
+	}
+}
