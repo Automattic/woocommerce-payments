@@ -1310,6 +1310,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order->save();
 
 		$setup_intent = [
+			'id'                     => 'pi_mock',
 			'client_secret'          => $client_secret,
 			'status'                 => $intent_status,
 			'payment_method'         => $payment_method_id,
