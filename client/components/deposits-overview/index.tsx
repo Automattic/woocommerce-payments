@@ -11,6 +11,7 @@ import { useAllDepositsOverviews } from 'wcpay/data';
 import strings from './strings';
 import NextDepositDetails from './next-deposit';
 import DepositsOverviewFooter from './footer';
+import DepositOverviewSectionHeading from './section-heading';
 
 const DepositsOverview = (): JSX.Element => {
 	const {
@@ -25,6 +26,11 @@ const DepositsOverview = (): JSX.Element => {
 	return (
 		<Card>
 			<CardHeader>{ strings.heading }</CardHeader>
+			<DepositOverviewSectionHeading
+				title={ strings.nextDeposit.title }
+				description={ strings.nextDeposit.description }
+				isLoading={ isLoading }
+			/>
 			<NextDepositDetails isLoading={ isLoading } overview={ overview } />
 
 			<p>Deposits History Section Goes here</p>
