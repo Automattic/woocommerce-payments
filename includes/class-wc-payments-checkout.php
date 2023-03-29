@@ -212,12 +212,13 @@ class WC_Payments_Checkout {
 	 */
 	public function add_pay_for_order_params_to_js_config( $order ) {
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
-		if ( isset( $_GET['pay_for_order'] ) ) {
+		if ( isset( $_GET['pay_for_order'] ) && isset( $_GET['key'] ) ) {
 			add_filter(
 				'wcpay_payment_fields_js_config',
 				function( $js_config ) use ( $order ) {
 					$js_config['order_id']      = $order->get_id();
 					$js_config['pay_for_order'] = sanitize_text_field( wp_unslash( $_GET['pay_for_order'] ) );
+					$js_config['key']           = sanitize_text_field( wp_unslash( $_GET['key'] ) );
 
 					return $js_config;
 				}
