@@ -38,6 +38,16 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service = new WC_Payments_Order_Service( $this->createMock( WC_Payments_API_Client::class ) );
 		$this->order         = WC_Helper_Order::create_order();
+
+		// Turn on fraud settings.
+		update_option( 'wcpay_fraud_protection_settings_active', '1' );
+	}
+
+	public function tear_down() {
+		// Disable fraud settings.
+		update_option( 'wcpay_fraud_protection_settings_active', 0 );
+
+		parent::tear_down();
 	}
 
 	/**
@@ -423,7 +433,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( false, $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
 		$this->assertEquals( Fraud_Meta_Box_Type::PAYMENT_STARTED, $this->order_service->get_fraud_meta_box_type_for_order( $this->order ) );
 
-		// Assert: Check that the order status was updated to on hold.
+		// Assert: Check that the order status was not updated.
 		$this->assertTrue( $this->order->has_status( Order_Status::PENDING ) );
 
 		// Assert: Check that the notes were updated.
@@ -472,8 +482,9 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Check to make sure the intent_status meta was not set.
 		$this->assertEquals( '', $this->order_service->get_intention_status_for_order( $this->order ) );
 
-		// Assert: Confirm that the fraud outcome status was not set.
+		// Assert: Confirm that the fraud outcome status and fraud meta box type meta were not set/set correctly.
 		$this->assertEquals( false, $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
+		$this->assertEquals( false, $this->order_service->get_fraud_meta_box_type_for_order( $this->order ) );
 
 		// Assert: Check that the order status was not updated.
 		$this->assertTrue( $this->order->has_status( Order_Status::ON_HOLD ) );
@@ -481,6 +492,45 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Check that the notes were not updated.
 		$updated_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertEquals( $expected_notes, $updated_notes );
+
+		// Assert: Check that the order was unlocked.
+		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
+	}
+
+	/**
+	 * Tests if mark_payment_started does not set the fraud meta box type for the order.
+	 * Public method update_order_status_from_intent calls private method mark_payment_started.
+	 */
+	public function test_mark_payment_started_does_not_add_fraud_meta_box_type_if_fraud_settings_disabled() {
+		// Arrange: Create intention with provided args, turn off fraud settings.
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_ACTION ] );
+		update_option( 'wcpay_fraud_protection_settings_active', 0 );
+
+		// Act: Attempt to mark the payment started.
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+
+		// Assert: Check to make sure the intent_status meta was not set.
+		$this->assertEquals( Payment_Intent_Status::REQUIRES_ACTION, $this->order_service->get_intention_status_for_order( $this->order ) );
+
+		// Assert: Confirm that the fraud outcome status was set and the fraud meta box type was not set.
+		$this->assertEquals( false, $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
+		$this->assertEquals( false, $this->order_service->get_fraud_meta_box_type_for_order( $this->order ) );
+
+		// Assert: Check that the order status was not updated.
+		$this->assertTrue( $this->order->has_status( Order_Status::PENDING ) );
+
+		// Assert: Check that the notes were updated.
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertStringContainsString( 'started</strong> using WooCommerce Payments', $notes[0]->content );
+		$this->assertStringContainsString( 'Payments (<code>pi_mock</code>)', $notes[0]->content );
+
+		// Assert: Check that the order was unlocked.
+		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
+
+		// Assert: Applying the same data multiple times does not cause duplicate actions.
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertEquals( count( $notes ), count( $notes_2 ) );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );

@@ -862,9 +862,12 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
+		if ( WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
+			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::PAYMENT_STARTED );
+		}
+
 		$order->add_order_note( $note );
 		$this->set_intention_status_for_order( $order, $intent_data['intent_status'] );
-		$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::PAYMENT_STARTED );
 	}
 
 	/**
