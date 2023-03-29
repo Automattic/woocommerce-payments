@@ -27,3 +27,19 @@ export function* getCharge( id ) {
 		yield updateErrorForCharge( id, null, e );
 	}
 }
+
+export function* getChargeFromOrder( id ) {
+	try {
+		const results = yield apiFetch( {
+			path: `${ NAMESPACE }/charges/order/${ id }`,
+		} );
+		yield updateCharge( id, results );
+	} catch ( e ) {
+		yield dispatch(
+			'core/notices',
+			'createErrorNotice',
+			__( 'Error retrieving transaction.', 'woocommerce-payments' )
+		);
+		yield updateErrorForCharge( id, null, e );
+	}
+}

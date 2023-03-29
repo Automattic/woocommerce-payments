@@ -19,6 +19,8 @@ use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Database_Cache;
 use WCPay\Core\Server\Request;
+use WCPay\Core\Server\Response;
+use WCPay\Core\Server\Request\List_Fraud_Outcome_Transactions;
 
 /**
  * Communicates with WooCommerce Payments API.
@@ -71,7 +73,9 @@ class WC_Payments_API_Client {
 	const VAT_API                      = 'vat';
 	const LINKS_API                    = 'links';
 	const AUTHORIZATIONS_API           = 'authorizations';
+	const FRAUD_OUTCOMES_API           = 'fraud_outcomes';
 	const FRAUD_RULESET_API            = 'fraud_ruleset';
+	const FRAUD_OUTCOME_API            = 'fraud_outcomes';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -89,6 +93,52 @@ class WC_Payments_API_Client {
 		'country',
 		'customer_name',
 		'customer_email',
+	];
+
+	const EVENT_AUTHORIZED            = 'authorized';
+	const EVENT_AUTHORIZATION_VOIDED  = 'authorization_voided';
+	const EVENT_AUTHORIZATION_EXPIRED = 'authorization_expired';
+	const EVENT_CAPTURED              = 'captured';
+	const EVENT_PARTIAL_REFUND        = 'partial_refund';
+	const EVENT_FULL_REFUND           = 'full_refund';
+	const EVENT_REFUND_FAILURE        = 'refund_failed';
+	const EVENT_FAILED                = 'failed';
+	// const EVENT_BLOCKED                = 'blocked'; // no event for this.
+	const EVENT_DISPUTE_NEEDS_RESPONSE = 'dispute_needs_response';
+	const EVENT_DISPUTE_IN_REVIEW      = 'dispute_in_review';
+	const EVENT_DISPUTE_WON            = 'dispute_won';
+	const EVENT_DISPUTE_LOST           = 'dispute_lost';
+	// const EVENT_DISPUTE_ACCEPTED       = 'dispute_accepted'; // set as 'lost' in the API.
+	const EVENT_DISPUTE_WARNING_CLOSED  = 'dispute_warning_closed';
+	const EVENT_DISPUTE_CHARGE_REFUNDED = 'dispute_charge_refunded';
+	const EVENT_FINANCING_PAYDOWN       = 'financing_paydown';
+	const ARN_UNAVAILABLE_STATUS        = 'unavailable';
+	const EVENT_FRAUD_OUTCOME_REVIEW    = 'fraud_outcome_review';
+	const EVENT_FRAUD_OUTCOME_BLOCK     = 'fraud_outcome_block';
+
+	/**
+	 * An array used to determine the order of events in case they share the same timestamp
+	 *
+	 * @var array
+	 */
+	private static $events_order = [
+		self::EVENT_AUTHORIZED,
+		self::EVENT_AUTHORIZATION_VOIDED,
+		self::EVENT_AUTHORIZATION_EXPIRED,
+		self::EVENT_FRAUD_OUTCOME_REVIEW,
+		self::EVENT_FRAUD_OUTCOME_BLOCK,
+		self::EVENT_CAPTURED,
+		self::EVENT_PARTIAL_REFUND,
+		self::EVENT_FULL_REFUND,
+		self::EVENT_REFUND_FAILURE,
+		self::EVENT_FAILED,
+		// self::EVENT_BLOCKED, uncomment when needed.
+		self::EVENT_DISPUTE_NEEDS_RESPONSE,
+		self::EVENT_DISPUTE_IN_REVIEW,
+		self::EVENT_DISPUTE_WON,
+		self::EVENT_DISPUTE_LOST,
+		// self::EVENT_DISPUTE_ACCEPTED, uncommented when needed.
+		self::EVENT_FINANCING_PAYDOWN,
 	];
 
 	/**
@@ -715,6 +765,117 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Retrieves transaction list for a given fraud outcome status.
+	 *
+	 * @param List_Fraud_Outcome_Transactions $request Fraud outcome transactions request.
+	 *
+	 * @return array
+	 */
+	public function list_fraud_outcome_transactions( $request ) {
+		$fraud_outcomes = $request->send( 'wcpay_list_fraud_outcome_transactions_request' );
+
+		$page      = $request->get_param( 'page' );
+		$page_size = $request->get_param( 'pagesize' );
+
+		// Handles the pagination.
+		$fraud_outcomes = array_slice( $fraud_outcomes, ( max( $page, 1 ) - 1 ) * $page_size, $page_size );
+
+		return [
+			'data' => $fraud_outcomes,
+		];
+	}
+
+	/**
+	 * Retrieves transactions summary for a given fraud outcome status.
+	 *
+	 * @param List_Fraud_Outcome_Transactions $request Fraud outcome transactions request.
+	 *
+	 * @return array
+	 */
+	public function list_fraud_outcome_transactions_summary( $request ) {
+		$fraud_outcomes = $request->send( 'wcpay_list_fraud_outcome_transactions_summary_request' );
+
+		$total      = 0;
+		$currencies = [];
+
+		foreach ( $fraud_outcomes as $outcome ) {
+			$total       += $outcome['amount'];
+			$currencies[] = strtolower( $outcome['currency'] );
+		}
+
+		return [
+			'count'      => count( $fraud_outcomes ),
+			'total'      => (int) $total,
+			'currencies' => array_unique( $currencies ),
+		];
+	}
+
+	/**
+	 * Fetch transactions search options for provided query.
+	 *
+	 * @param List_Fraud_Outcome_Transactions $request Fraud outcome transactions request.
+	 *
+	 * @return array|WP_Error Search results.
+	 */
+	public function get_fraud_outcome_transactions_search_autocomplete( $request ) {
+		$fraud_outcomes = $request->send( 'wcpay_get_fraud_outcome_transactions_search_autocomplete_request' );
+
+		$search_term = $request->get_param( 'search_term' );
+
+		$order = wc_get_order( $search_term );
+
+		$results = array_filter(
+			$fraud_outcomes,
+			function ( $outcome ) use ( $search_term ) {
+				return preg_match( "/{$search_term}/i", $outcome['customer_name'] );
+			}
+		);
+
+		$results = array_map(
+			function ( $result ) {
+				return [
+					'key'   => 'customer-' . $result['order_id'],
+					'label' => $result['customer_name'],
+				];
+			},
+			$fraud_outcomes
+		);
+
+		if ( $order ) {
+			if ( function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order ) ) {
+				$prefix = __( 'Subscription #', 'woocommerce-payments' );
+			} else {
+				$prefix = __( 'Order #', 'woocommerce-payments' );
+			}
+
+			array_unshift(
+				$results,
+				[
+					'key'   => 'order-' . $order->get_id(),
+					'label' => $prefix . $search_term,
+				]
+			);
+		}
+
+		return $results;
+	}
+
+	/**
+	 * Retrieves transactions summary for a given fraud outcome status.
+	 *
+	 * @param List_Fraud_Outcome_Transactions $request Fraud outcome transactions request.
+	 *
+	 * @return array
+	 */
+	public function get_fraud_outcome_transactions_export( $request ) {
+		$fraud_outcomes = $request->send( 'wcpay_get_fraud_outcome_transactions_export_request' );
+
+		return [
+			'data' => $fraud_outcomes,
+		];
+	}
+
+	/**
 	 * Initiates transactions export via API.
 	 *
 	 * @param array  $filters    The filters to be used in the query.
@@ -1067,14 +1228,60 @@ class WC_Payments_API_Client {
 	/**
 	 * Get timeline of events for an intention
 	 *
-	 * @param string $intention_id The payment intention ID.
+	 * @param string $id The payment intention ID or order ID.
 	 *
 	 * @return array
 	 *
 	 * @throws Exception - Exception thrown on request failure.
 	 */
-	public function get_timeline( $intention_id ) {
-		return $this->request( [], self::TIMELINE_API . '/' . $intention_id, self::GET );
+	public function get_timeline( $id ) {
+		$timeline = $this->request( [], self::TIMELINE_API . '/' . $id, self::GET );
+
+		$has_fraud_outcome_event = false;
+
+		if ( ! empty( $timeline ) && ! empty( $timeline['data'] ) && is_array( $timeline['data'] ) ) {
+			foreach ( $timeline['data'] as $event ) {
+				if ( in_array( $event['type'], [ self::EVENT_FRAUD_OUTCOME_REVIEW, self::EVENT_FRAUD_OUTCOME_BLOCK ], true ) ) {
+					$has_fraud_outcome_event = true;
+					break;
+				}
+			}
+		}
+
+		if ( $has_fraud_outcome_event ) {
+			$order_id = $id;
+
+			if ( ! is_numeric( $order_id ) ) {
+				$intent   = $this->get_intent( $id );
+				$order_id = $intent->get_metadata()['order_id'];
+			}
+
+			$order = wc_get_order( $order_id );
+
+			if ( false === $order ) {
+				return $timeline;
+			}
+
+			$manual_entry_meta = $order->get_meta( 'fraud_outcome_manual_entry', true );
+
+			if ( ! empty( $manual_entry_meta ) ) {
+				$timeline['data'][] = $manual_entry_meta;
+
+				// Sort by date desc, then by type desc as specified in events_order.
+				usort(
+					$timeline['data'],
+					function( $a, $b ) {
+						$result = $b['datetime'] <=> $a['datetime'];
+						if ( 0 !== $result ) {
+							return $result;
+						}
+						return array_search( $b['type'], self::$events_order, true ) <=> array_search( $a['type'], self::$events_order, true );
+					}
+				);
+			}
+		}
+
+		return $timeline;
 	}
 
 	/**
@@ -2039,6 +2246,48 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Gets the latest fraud outcome for a given payment intent id.
+	 *
+	 * @param string $id Payment intent id.
+	 *
+	 * @throws API_Exception - If not connected or request failed.
+	 *
+	 * @return array The response object.
+	 */
+	public function get_latest_fraud_outcome( $id ) {
+		$response = $this->request(
+			[],
+			self::FRAUD_OUTCOME_API . '/order_id/' . $id,
+			self::GET
+		);
+
+		if ( is_array( $response ) && count( $response ) > 0 ) {
+			return $response[0];
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Get if the merchant is eligible for Progressive Onboarding.
+	 *
+	 * @param array $business_info Business information.
+	 *
+	 * @return array HTTP response on success.
+	 *
+	 * @throws API_Exception - If not connected to server or request failed.
+	 */
+	public function get_onboarding_po_eligible( $business_info ) {
+		return $this->request(
+			[
+				'business' => $business_info,
+			],
+			self::ONBOARDING_API . '/router/po_eligible',
+			self::POST
+		);
+	}
+
+	/**
 	 * Sends a request object.
 	 *
 	 * @param  Request $request The request to send.
@@ -2387,7 +2636,7 @@ class WC_Payments_API_Client {
 	 *
 	 * @return array
 	 */
-	private function add_formatted_address_to_charge_object( array $charge ) : array {
+	public function add_formatted_address_to_charge_object( array $charge ) : array {
 		$has_billing_details = isset( $charge['billing_details'] );
 
 		if ( $has_billing_details ) {
@@ -2433,7 +2682,7 @@ class WC_Payments_API_Client {
 	 * @param WC_Order $order The order.
 	 * @return array
 	 */
-	private function build_order_info( WC_Order $order ): array {
+	public function build_order_info( WC_Order $order ): array {
 		$order_info = [
 			'number'       => $order->get_order_number(),
 			'url'          => $order->get_edit_order_url(),
