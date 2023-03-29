@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`BannerBody renders 1`] = `
+<div>
+  <p
+    class="discoverability-card__body"
+  >
+    A new range of tools have been added to WooCommerce Payments to help 
+    <strong>
+      reduce fraudulent transactions
+    </strong>
+     on your store. In addition to purchase verification, new risk filters are now available to screen incoming transactions - better protecting your store from fraudsters.
+  </p>
+</div>
+`;

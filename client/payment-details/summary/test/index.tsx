@@ -11,6 +11,8 @@ import React from 'react';
 import PaymentDetailsSummary from '../';
 import { Charge } from 'wcpay/types/charges';
 import { useAuthorization } from 'wcpay/data';
+import { paymentIntentMock } from '../../../data/payment-intents/test/hooks';
+import { latestFraudOutcomeMock } from '../../../data/fraud-outcomes/test/hooks';
 
 declare const global: {
 	wcpaySettings: {
@@ -23,6 +25,7 @@ declare const global: {
 		featureFlags: {
 			isAuthAndCaptureEnabled: boolean;
 		};
+		isFraudProtectionSettingsEnabled: boolean;
 	};
 };
 
@@ -78,9 +81,25 @@ const getBaseCharge = (): Charge =>
 		},
 	} as any );
 
-function renderCharge( charge: Charge, isLoading = false ) {
+const getBaseMetadata = () => ( {
+	platform: 'ios',
+	reader_id: 'APPLEBUILTINSIMULATOR-1',
+	reader_model: 'COTS_DEVICE',
+} );
+
+function renderCharge(
+	charge: Charge,
+	metadata = {},
+	isLoading = false,
+	props = {}
+) {
 	const { container } = render(
-		<PaymentDetailsSummary charge={ charge } isLoading={ isLoading } />
+		<PaymentDetailsSummary
+			charge={ charge }
+			metadata={ metadata }
+			isLoading={ isLoading }
+			{ ...props }
+		/>
 	);
 	return container;
 }
@@ -108,6 +127,7 @@ describe( 'PaymentDetailsSummary', () => {
 					precision: 2,
 				},
 			},
+			isFraudProtectionSettingsEnabled: false,
 		};
 	} );
 
@@ -160,6 +180,13 @@ describe( 'PaymentDetailsSummary', () => {
 		expect( renderCharge( charge ) ).toMatchSnapshot();
 	} );
 
+	test( 'renders the Tap to Pay channel from metadata', () => {
+		const charge = getBaseCharge();
+		const metadata = getBaseMetadata();
+
+		expect( renderCharge( charge, metadata ) ).toMatchSnapshot();
+	} );
+
 	test( 'renders a charge with subscriptions', () => {
 		global.wcpaySettings.isSubscriptionsActive = true;
 
@@ -196,7 +223,9 @@ describe( 'PaymentDetailsSummary', () => {
 				payment_intent_id: 'pi_mock',
 			},
 			isLoading: false,
+			isRequesting: false,
 			doCaptureAuthorization: jest.fn(),
+			doCancelAuthorization: jest.fn(),
 		} );
 		const charge = getBaseCharge();
 		charge.captured = false;
@@ -212,6 +241,57 @@ describe( 'PaymentDetailsSummary', () => {
 		).toHaveTextContent(
 			'You need to capture this charge before Sep 26, 2019 / 5:24PM'
 		);
+
+		expect( container ).toMatchSnapshot();
+	} );
+
+	test( 'renders the fraud outcome buttons', () => {
+		global.wcpaySettings.isFraudProtectionSettingsEnabled = true;
+
+		mockUseAuthorization.mockReturnValueOnce( {
+			authorization: {
+				captured: false,
+				charge_id: 'ch_mock',
+				amount: 1000,
+				currency: 'usd',
+				created: '2019-09-19 17:24:00',
+				order_id: 123,
+				risk_level: 1,
+				customer_country: 'US',
+				customer_email: 'test@example.com',
+				customer_name: 'Test Customer',
+				payment_intent_id: 'pi_mock',
+			},
+			isLoading: false,
+			isRequesting: false,
+			doCaptureAuthorization: jest.fn(),
+			doCancelAuthorization: jest.fn(),
+		} );
+		const charge = getBaseCharge();
+		charge.captured = false;
+
+		const container = renderCharge( charge, {}, false, {
+			paymentIntent: paymentIntentMock,
+			fraudOutcome: latestFraudOutcomeMock,
+		} );
+
+		expect(
+			screen.getByRole( 'button', { name: /Approve Transaction/i } )
+		).toBeInTheDocument();
+
+		expect(
+			screen.getByRole( 'button', { name: /Block Transaction/i } )
+		).toBeInTheDocument();
+
+		expect(
+			screen.queryByRole( 'button', { name: /Capture/i } )
+		).not.toBeInTheDocument();
+
+		expect(
+			screen.getByText(
+				/Approving this transaction will capture the charge./
+			)
+		).toBeInTheDocument();
 
 		expect( container ).toMatchSnapshot();
 	} );

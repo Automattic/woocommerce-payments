@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Update international filters to use selling locations settings instead stripe account country
