@@ -37,8 +37,6 @@ class Fraud_Risk_Tools {
 	 */
 	private $payments_account;
 
-	const WCPAY_FRAUD_PROTECTION_BANNER = 'wcpay-fraud-protection-banner';
-
 	/**
 	 * Main Fraud_Risk_Tools Instance.
 	 *
