@@ -27,6 +27,11 @@
 				margin-right: 4px;
 			}
 		}
+
+		.wcpay-pill {
+			margin-left: $gap-smaller;
+			padding: 2px $gap-smaller;
+		}
 	}
 
 	&__express-checkouts {
