@@ -120,6 +120,9 @@ class WC_Payments_Order_Service {
 		}
 
 		switch ( $intent_data['intent_status'] ) {
+			case Payment_Intent_Status::CANCELED:
+				$this->mark_payment_capture_cancelled( $order, $intent_data );
+				break;
 			case Payment_Intent_Status::SUCCEEDED:
 				if ( Payment_Intent_Status::REQUIRES_CAPTURE === $this->get_intention_status_for_order( $order ) ) {
 					$this->mark_payment_capture_completed( $order, $intent_data );
@@ -231,25 +234,28 @@ class WC_Payments_Order_Service {
 	 * Updates an order to cancelled status, while adding a note with a link to the transaction.
 	 *
 	 * @param WC_Order $order         Order object.
-	 * @param string   $intent_id     The ID of the intent associated with this order.
-	 * @param string   $intent_status The status of the intent related to this order.
+	 * @param array    $intent_data   The intent data associated with this order.
 	 *
 	 * @return void
 	 */
-	public function mark_payment_capture_cancelled( $order, $intent_id, $intent_status ) {
-		if ( ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
-			return;
-		}
-
+	public function mark_payment_capture_cancelled( $order, $intent_data ) {
 		$note = $this->generate_capture_cancelled_note();
 		if ( $this->order_note_exists( $order, $note ) ) {
 			$this->complete_order_processing( $order );
 			return;
 		}
 
+		/**
+		 * If we have a status for the fraud outcome, we want to add the proper meta data.
+		 */
+		if ( '' !== $intent_data['fraud_outcome'] && Rule::is_valid_fraud_outcome_status( $intent_data['fraud_outcome'] ) ) {
+			$this->set_fraud_outcome_status_for_order( $order, $intent_data['fraud_outcome'] );
+			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::REVIEW_BLOCKED );
+		}
+
 		$this->update_order_status( $order, Order_Status::CANCELLED );
 		$order->add_order_note( $note );
-		$this->complete_order_processing( $order, $intent_status );
+		$this->complete_order_processing( $order, $intent_data['intent_status'] );
 	}
 
 	/**
