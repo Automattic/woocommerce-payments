@@ -3,8 +3,9 @@
  */
 import { useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card } from '@wordpress/components';
+import { Card, Fill } from '@wordpress/components';
 import { useDispatch } from '@wordpress/data';
+import { registerPlugin } from '@wordpress/plugins';
 
 /**
  * Internal dependencies
@@ -98,3 +99,19 @@ const FRTDiscoverabilityBanner = () => {
 };
 
 export default FRTDiscoverabilityBanner;
+
+export const WooHomescreenFRTBanner = () => {
+	return (
+		<Fill name="woocommerce_homescreen_experimental_header_banner_item">
+			<FRTDiscoverabilityBanner />
+		</Fill>
+	);
+};
+
+registerPlugin( 'woocommerce-fraud-protection-banner', {
+	render: () => {
+		console.log( 'frttt' );
+		return <WooHomescreenFRTBanner />;
+	},
+	scope: 'woocommerce-admin',
+} );

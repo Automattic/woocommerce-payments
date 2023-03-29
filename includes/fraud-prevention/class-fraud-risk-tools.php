@@ -70,7 +70,6 @@ class Fraud_Risk_Tools {
 		$this->payments_account = $payments_account;
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			add_action( 'admin_menu', [ $this, 'init_advanced_settings_page' ] );
-			add_action( 'admin_enqueue_scripts', [ $this, 'render_wc_home_discoverability_banner_script' ] );
 		}
 
 		// Adds the required parameter on server.
@@ -128,21 +127,6 @@ class Fraud_Risk_Tools {
 			]
 		);
 		remove_submenu_page( 'wc-admin&path=/payments/overview', 'wc-admin&path=/payments/fraud-protection' );
-	}
-
-	/**
-	 * Enqueues the scripts of fraud and risk tools discoverability banner
-	 *
-	 * @return  void
-	 */
-	public function render_wc_home_discoverability_banner_script() {
-		// Skip enqueueing the scripts if the fraud and risk tools feature is not enabled.
-		if ( ! WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
-			return;
-		}
-
-		WC_Payments::register_script_with_dependencies( self::WCPAY_FRAUD_PROTECTION_BANNER, 'dist/fraud-protection-banner', [ 'wp-plugins' ] );
-		wp_enqueue_script( self::WCPAY_FRAUD_PROTECTION_BANNER );
 	}
 
 	/**
