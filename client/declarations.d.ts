@@ -21,3 +21,12 @@ declare module '*?asset' {
 type ReactImgFuncComponent = React.FunctionComponent<
 	React.ImgHTMLAttributes< HTMLImageElement >
 >;
+
+declare module '@woocommerce/components' {
+	type PillProps = {
+		children: React.ReactNode;
+		className?: string;
+	};
+
+	const Pill: ( props: PillProps ) => JSX.Element;
+}
