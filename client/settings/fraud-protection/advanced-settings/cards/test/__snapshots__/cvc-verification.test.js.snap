@@ -4,6 +4,7 @@ exports[`CVC verification card renders correctly when CVC check is disabled 1`] 
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="cvc-verification-card"
   >
     <div
       class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -78,6 +79,7 @@ exports[`CVC verification card renders correctly when CVC check is enabled 1`] =
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="cvc-verification-card"
   >
     <div
       class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"

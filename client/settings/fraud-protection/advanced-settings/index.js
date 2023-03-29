@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { sprintf, __ } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
@@ -38,6 +38,37 @@ import { ProtectionLevel } from './constants';
 import { readRuleset, writeRuleset } from './utils';
 import wcpayTracks from 'tracks';
 
+const observerMapping = {
+	'avs-mismatch-card': {
+		event:
+			'wcpay_fraud_protection_advanced_settings_card_avs_mismatch_viewed',
+	},
+	'cvc-verification-card': {
+		event:
+			'wcpay_fraud_protection_advanced_settings_card_cvc_verification_viewed',
+	},
+	'international-ip-address-card': {
+		event:
+			'wcpay_fraud_protection_advanced_settings_card_international_ip_address_card_viewed',
+	},
+	'international-billing-address': {
+		event:
+			'wcpay_fraud_protection_advanced_settings_card_international_billing_address_viewed',
+	},
+	'address-mismatch-card': {
+		event:
+			'wcpay_fraud_protection_advanced_settings_card_address_mismatch_viewed',
+	},
+	'purchase-price-threshold-card': {
+		event:
+			'wcpay_fraud_protection_advanced_settings_card_price_threshold_viewed',
+	},
+	'order-items-threshold-card': {
+		event:
+			'wcpay_fraud_protection_advanced_settings_card_items_threshold_viewed',
+	},
+};
+
 const Breadcrumb = () => (
 	<h2 className="fraud-protection-header-breadcrumb">
 		<Link
@@ -64,6 +95,9 @@ const SaveFraudProtectionSettingsButton = ( { children } ) => {
 
 const FraudProtectionAdvancedSettingsPage = () => {
 	const { saveSettings, isLoading, isSaving } = useSettings();
+
+	const cardObserver = useRef( null );
+
 	const [
 		currentProtectionLevel,
 		updateProtectionLevel,
@@ -153,6 +187,45 @@ const FraudProtectionAdvancedSettingsPage = () => {
 			wcSettingsMenuItem.parentElement.classList.add( 'current' );
 		}
 	}, [] );
+
+	// Intersection observer callback for tracking card viewed events.
+	const observerCallback = ( entries ) => {
+		entries.forEach( ( entry ) => {
+			const { target, intersectionRatio } = entry;
+
+			if ( 0 < intersectionRatio ) {
+				// element is at least partially visible.
+				const { id } = target;
+				const { event } = observerMapping[ id ] || {};
+
+				if ( event ) {
+					wcpayTracks.recordEvent( event );
+				}
+
+				cardObserver.current?.unobserve(
+					document.getElementById( target.id )
+				);
+			}
+		} );
+	};
+
+	useEffect( () => {
+		if ( isLoading ) return;
+
+		cardObserver.current = new IntersectionObserver( observerCallback );
+
+		Object.keys( observerMapping ).forEach( ( selector ) => {
+			const element = document.getElementById( selector );
+
+			if ( element ) {
+				cardObserver.current?.observe( element );
+			}
+		} );
+
+		return () => {
+			cardObserver.current?.disconnect();
+		};
+	}, [ isLoading ] );
 
 	return (
 		<FraudPreventionSettingsContext.Provider

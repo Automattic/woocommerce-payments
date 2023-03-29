@@ -27,6 +27,7 @@ const InternationalBillingAddressRuleCard = () => (
 				supportedCountriesLink: <Link href="#" />,
 			},
 		} ) }
+		ID="international-billing-address"
 	>
 		<FraudProtectionRuleToggle
 			setting={ 'international_billing_address' }

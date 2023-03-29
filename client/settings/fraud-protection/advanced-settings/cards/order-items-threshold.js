@@ -137,6 +137,7 @@ const OrderItemsThresholdRuleCard = () => (
 			'This filter compares the amount of items in an order to the minimum and maximum counts that you specify.',
 			'woocommerce-payments'
 		) }
+		ID="order-items-threshold-card"
 	>
 		<FraudProtectionRuleToggle
 			setting={ 'order_items_threshold' }

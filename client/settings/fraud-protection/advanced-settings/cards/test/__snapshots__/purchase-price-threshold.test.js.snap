@@ -4,6 +4,7 @@ exports[`Purchase price threshold card renders correctly 1`] = `
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="purchase-price-threshold-card"
   >
     <div
       class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -87,6 +88,7 @@ exports[`Purchase price threshold card renders correctly when enabled 1`] = `
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="purchase-price-threshold-card"
   >
     <div
       class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -348,6 +350,7 @@ exports[`Purchase price threshold card renders correctly when enabled and checke
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="purchase-price-threshold-card"
   >
     <div
       class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -624,6 +627,7 @@ exports[`Purchase price threshold card renders like disabled when checked, but n
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="purchase-price-threshold-card"
   >
     <div
       class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"

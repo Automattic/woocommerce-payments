@@ -28,6 +28,7 @@ const InternationalIPAddressRuleCard = () => {
 					supportedCountriesLink: <Link href="#" />,
 				},
 			} ) }
+			ID="international-ip-address-card"
 		>
 			<FraudProtectionRuleToggle
 				setting={ 'international_ip_address' }
