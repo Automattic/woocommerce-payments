@@ -16,6 +16,7 @@ import {
 	CachedDeposit,
 	DepositsSummaryCache,
 } from 'wcpay/types/deposits';
+import { Transaction } from 'wcpay/data/transactions';
 
 export const useDeposit = (
 	id: string
@@ -31,6 +32,60 @@ export const useDeposit = (
 		},
 		[ id ]
 	);
+
+export const useDepositIncludesLoan = (
+	depositId?: string
+): {
+	transactions: Transaction[];
+	includesFinancingPayout: boolean;
+	includesFinancingPaydown: boolean;
+	isLoading: boolean;
+} => {
+	const hasActiveLoan = wcpaySettings.accountLoans.has_active_loan;
+
+	return useSelect(
+		( select ) => {
+			// Using a conditional select here to avoid fetching transactions if there is no active loan.
+			if ( ! depositId || ! hasActiveLoan ) {
+				return {
+					transactions: [],
+					includesFinancingPayout: false,
+					includesFinancingPaydown: false,
+					isLoading: false,
+				};
+			}
+
+			const { getTransactions, isResolving } = select( STORE_NAME );
+			const query: Query & {
+				depositId: string;
+			} = {
+				depositId,
+				page: '1',
+				per_page: '100',
+				orderby: 'date',
+				order: 'desc',
+			};
+			const transactions = getTransactions( query ) as Transaction[];
+			const isLoading = !! isResolving( 'getTransactions', [ query ] );
+
+			const types = transactions.map( ( { type } ) => type );
+			const includesFinancingPayout = types.includes(
+				'financing_payout'
+			);
+			const includesFinancingPaydown = types.includes(
+				'financing_paydown'
+			);
+
+			return {
+				transactions,
+				includesFinancingPayout,
+				includesFinancingPaydown,
+				isLoading,
+			};
+		},
+		[ depositId, hasActiveLoan ]
+	);
+};
 
 export const useDepositsOverview = (): {
 	overviewError: unknown;
