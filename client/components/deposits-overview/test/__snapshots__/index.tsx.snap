@@ -1,5 +1,30 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Deposits Overview footer renders Component Renders 1`] = `
+<div>
+  <div
+    class="components-flex components-card__footer is-size-medium wcpay-deposits-overview__footer e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
+  >
+    <div
+      class="components-flex css-18koiq9-Flex eboqfv50"
+    >
+      <a
+        class="components-button is-secondary"
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits"
+      >
+        View full deposits history
+      </a>
+      <a
+        data-link-type="wp-admin"
+        href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments#deposit-schedule"
+      >
+        Change deposit schedule
+      </a>
+    </div>
+  </div>
+</div>
+`;
+
 exports[`Deposits Overview information Component Renders 1`] = `
 <div>
   <div
@@ -88,6 +113,26 @@ exports[`Deposits Overview information Component Renders 1`] = `
     <p>
       Deposits Card Footer/Action Goes here
     </p>
+    <div
+      class="components-flex components-card__footer is-size-medium wcpay-deposits-overview__footer e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
+    >
+      <div
+        class="components-flex css-18koiq9-Flex eboqfv50"
+      >
+        <a
+          class="components-button is-secondary"
+          href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits"
+        >
+          View full deposits history
+        </a>
+        <a
+          data-link-type="wp-admin"
+          href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments#deposit-schedule"
+        >
+          Change deposit schedule
+        </a>
+      </div>
+    </div>
   </div>
 </div>
 `;
