@@ -3,13 +3,11 @@
  */
 import React from 'react';
 import { render } from '@testing-library/react';
-import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
-import { useSettings } from 'wcpay/data';
-import FraudProtectionTour from '.';
+import FraudProtectionTour from './';
 
 declare const global: {
 	wcpaySettings: {
@@ -19,38 +17,28 @@ declare const global: {
 	};
 };
 
-jest.mock( 'wcpay/data', () => ( { useSettings: jest.fn() } ) );
-jest.mock( '@wordpress/data', () => ( { useDispatch: jest.fn() } ) );
+jest.mock( 'wcpay/data', () => ( {
+	useSettings: jest.fn().mockReturnValue( { isLoading: false } ),
+} ) );
 
-const DefaultStructure: React.FC = () => (
-	<>
-		<div id="wpcontent">Content</div>
-		<div id="fraud-protection-card-title">Card title</div>
-		<div id="fraud-protection-level-select_advanced-level">
-			Advanced level
-		</div>
-		<div id="toplevel_page_wc-admin-path--payments-overview">
-			Payments overview
-		</div>
+jest.mock( '@wordpress/data', () => ( {
+	useDispatch: jest.fn( () => ( {
+		createNotice: jest.fn(),
+		updateOptions: jest.fn(),
+	} ) ),
+} ) );
 
-		<FraudProtectionTour />
-	</>
-);
+jest.mock( '@woocommerce/components', () => ( {
+	TourKit: () => <div>Tour Component</div>,
+} ) );
 
 describe( 'FraudProtectionTour', () => {
 	beforeEach( () => {
-		( useSettings as jest.Mock ).mockReturnValue( { isLoading: false } );
-		( useDispatch as jest.Mock ).mockReturnValue( {
-			updateOptions: jest.fn(),
-		} );
-
 		global.wcpaySettings = {
 			fraudProtection: {
 				isWelcomeTourDismissed: false,
 			},
 		};
-
-		window.scrollTo = jest.fn();
 	} );
 
 	afterAll( () => {
@@ -58,7 +46,7 @@ describe( 'FraudProtectionTour', () => {
 	} );
 
 	it( 'should render the tour component correctly', () => {
-		const { baseElement } = render( <DefaultStructure /> );
+		const { baseElement } = render( <FraudProtectionTour /> );
 
 		expect( baseElement ).toMatchSnapshot();
 	} );
@@ -70,7 +58,7 @@ describe( 'FraudProtectionTour', () => {
 			},
 		};
 
-		const { baseElement } = render( <DefaultStructure /> );
+		const { baseElement } = render( <FraudProtectionTour /> );
 
 		expect( baseElement ).toMatchSnapshot();
 	} );

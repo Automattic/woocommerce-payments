@@ -27,6 +27,10 @@ jest.mock( '@wordpress/data', () => ( {
 	useDispatch: jest.fn(),
 } ) );
 
+jest.mock( '@woocommerce/components', () => ( {
+	TourKit: () => <div>Tour Component</div>,
+} ) );
+
 describe( 'FraudProtection', () => {
 	beforeEach( () => {
 		useCurrentProtectionLevel.mockReturnValue( 'standard' );
@@ -45,8 +49,6 @@ describe( 'FraudProtection', () => {
 		useSettings.mockReturnValue( { isLoading: false } );
 		useDispatch.mockReturnValue( { updateOptions: jest.fn() } );
 
-		window.scrollTo = jest.fn();
-
 		global.wcpaySettings = {
 			fraudProtection: {
 				isWelcomeTourDismissed: false,
@@ -54,9 +56,23 @@ describe( 'FraudProtection', () => {
 		};
 	} );
 
-	it( 'renders', () => {
+	it( 'should render correctly', () => {
 		const { container: fraudProtectionSettings } = render(
 			<WCPaySettingsContext.Provider>
+				<FraudProtection />
+			</WCPaySettingsContext.Provider>
+		);
+
+		expect( fraudProtectionSettings ).toMatchSnapshot();
+	} );
+
+	it( 'should render with the welcome tour dismissed', () => {
+		global.wcpaySettings.fraudProtection.isWelcomeTourDismissed = true;
+
+		const { container: fraudProtectionSettings } = render(
+			<WCPaySettingsContext.Provider
+				value={ { isWelcomeTourDismissed: true } }
+			>
 				<FraudProtection />
 			</WCPaySettingsContext.Provider>
 		);
