@@ -419,9 +419,9 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Check to make sure the intent_status meta was set.
 		$this->assertEquals( $intent->get_status(), $this->order_service->get_intention_status_for_order( $this->order ) );
 
-		// Assert: Confirm that the fraud outcome status and fraud meta box type meta were not set.
+		// Assert: Confirm that the fraud outcome status and fraud meta box type meta were not set/set correctly.
 		$this->assertEquals( false, $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
-		$this->assertEquals( false, $this->order_service->get_fraud_meta_box_type_for_order( $this->order ) );
+		$this->assertEquals( Fraud_Meta_Box_Type::PAYMENT_STARTED, $this->order_service->get_fraud_meta_box_type_for_order( $this->order ) );
 
 		// Assert: Check that the order status was updated to on hold.
 		$this->assertTrue( $this->order->has_status( Order_Status::PENDING ) );
@@ -545,15 +545,20 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 * Tests if the payment capture was noted failed.
 	 */
 	public function test_mark_payment_capture_failed() {
-		// Arrange: Create the intent and get the charge.
+		// Arrange: Create the intent and get the charge. Set the fraud outcome status.
 		$intent = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_ACTION ] );
 		$charge = $intent->get_charge();
+		$this->order_service->set_fraud_outcome_status_for_order( $this->order, Rule::FRAUD_OUTCOME_REVIEW );
 
 		// Act: Attempt to mark the payment capture failed.
 		$this->order_service->mark_payment_capture_failed( $this->order, $intent->get_id(), $intent->get_status(), $charge->get_id() );
 
 		// Assert: Check to make sure the intent_status meta was set.
 		$this->assertEquals( Payment_Intent_Status::REQUIRES_ACTION, $this->order_service->get_intention_status_for_order( $this->order ) );
+
+		// Assert: Confirm that the fraud outcome status has not been changed, and that the fraud meta box type meta was set correctly.
+		$this->assertEquals( Rule::FRAUD_OUTCOME_REVIEW, $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
+		$this->assertEquals( Fraud_Meta_Box_Type::REVIEW_FAILED, $this->order_service->get_fraud_meta_box_type_for_order( $this->order ) );
 
 		// Assert: Check that the order status was not updated.
 		$this->assertTrue( $this->order->has_status( [ Order_Status::PENDING ] ) );
@@ -597,17 +602,22 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 * Tests if the payment capture was marked expired succefully.
 	 */
 	public function test_mark_payment_capture_expired() {
-		// Arrange: Create the intent, get the proper order status variations, and get the charge.
+		// Arrange: Create the intent, get the proper order status variations, and get the charge. Set the fraud outcome status.
 		$intent            = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::CANCELED ] ); // Stripe uses single 'l'.
 		$order_status      = Order_Status::CANCELLED; // WCPay uses double 'l'.
 		$wc_order_statuses = wc_get_order_statuses(); // WooCommerce uses single 'l' for US English.
 		$charge            = $intent->get_charge();
+		$this->order_service->set_fraud_outcome_status_for_order( $this->order, Rule::FRAUD_OUTCOME_REVIEW );
 
 		// Act: Attempt to mark the payment/order expired/cancelled.
 		$this->order_service->mark_payment_capture_expired( $this->order, $intent->get_id(), $intent->get_status(), $charge->get_id() );
 
 		// Assert: Check to make sure the intent_status meta was set.
 		$this->assertEquals( Payment_Intent_Status::CANCELED, $this->order_service->get_intention_status_for_order( $this->order ) );
+
+		// Assert: Confirm that the fraud outcome status has not been changed, and that the fraud meta box type meta was set correctly.
+		$this->assertEquals( Rule::FRAUD_OUTCOME_REVIEW, $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
+		$this->assertEquals( Fraud_Meta_Box_Type::REVIEW_EXPIRED, $this->order_service->get_fraud_meta_box_type_for_order( $this->order ) );
 
 		// Assert: Check that the order status was updated to cancelled status.
 		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
@@ -631,16 +641,21 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 * Tests if the payment capture was marked cancelled succefully.
 	 */
 	public function test_mark_payment_capture_cancelled() {
-		// Arrange: Create the intent, get the proper order status variations.
+		// Arrange: Create the intent, get the proper order status variations. Set the fraud outcome status.
 		$intent            = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::CANCELED ] ); // Stripe uses single 'l'.
 		$order_status      = Order_Status::CANCELLED; // WCPay uses double 'l'.
 		$wc_order_statuses = wc_get_order_statuses(); // WooCommerce uses single 'l' for US English.
+		$this->order_service->set_fraud_outcome_status_for_order( $this->order, Rule::FRAUD_OUTCOME_REVIEW );
 
 		// Act: Attempt to mark the payment/order expired/cancelled.
 		$this->order_service->mark_payment_capture_cancelled( $this->order, $intent->get_id(), $intent->get_status() );
 
 		// Assert: Check to make sure the intent_status meta was set.
 		$this->assertEquals( Payment_Intent_Status::CANCELED, $this->order_service->get_intention_status_for_order( $this->order ) );
+
+		// Assert: Confirm that the fraud outcome status has not been changed, and that the fraud meta box type meta was set correctly.
+		$this->assertEquals( Rule::FRAUD_OUTCOME_REVIEW, $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
+		$this->assertEquals( Fraud_Meta_Box_Type::REVIEW_CANCELLED, $this->order_service->get_fraud_meta_box_type_for_order( $this->order ) );
 
 		// Assert: Check that the order status was updated to cancelled status.
 		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
