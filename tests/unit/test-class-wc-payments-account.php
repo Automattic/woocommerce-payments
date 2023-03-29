@@ -7,7 +7,6 @@
 
 use Automattic\WooCommerce\Admin\Notes\Notes;
 use WCPay\Core\Server\Request\Get_Account;
-use WCPay\Core\Server\Response;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Database_Cache;
 
@@ -173,16 +172,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn(
-				new Response(
-					[
-						'account_id'               => 'acc_test',
-						'live_publishable_key'     => 'pk_test_',
-						'test_publishable_key'     => 'pk_live_',
-						'has_pending_requirements' => true,
-						'current_deadline'         => 12345,
-						'is_live'                  => true,
-					]
-				)
+				[
+					'account_id'               => 'acc_test',
+					'live_publishable_key'     => 'pk_test_',
+					'test_publishable_key'     => 'pk_live_',
+					'has_pending_requirements' => true,
+					'current_deadline'         => 12345,
+					'is_live'                  => true,
+				]
 			);
 
 		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_onboarding() );
@@ -219,16 +216,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn(
-				new Response(
-					[
-						'account_id'               => 'acc_test',
-						'live_publishable_key'     => 'pk_test_',
-						'test_publishable_key'     => 'pk_live_',
-						'has_pending_requirements' => true,
-						'current_deadline'         => 12345,
-						'is_live'                  => true,
-					]
-				)
+				[
+					'account_id'               => 'acc_test',
+					'live_publishable_key'     => 'pk_test_',
+					'test_publishable_key'     => 'pk_live_',
+					'has_pending_requirements' => true,
+					'current_deadline'         => 12345,
+					'is_live'                  => true,
+				]
 			);
 
 		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_onboarding() );
@@ -258,16 +253,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$request2->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn(
-				new Response(
-					[
-						'account_id'               => 'acc_test',
-						'live_publishable_key'     => 'pk_test_',
-						'test_publishable_key'     => 'pk_live_',
-						'has_pending_requirements' => true,
-						'current_deadline'         => 12345,
-						'is_live'                  => true,
-					]
-				)
+				[
+					'account_id'               => 'acc_test',
+					'live_publishable_key'     => 'pk_test_',
+					'test_publishable_key'     => 'pk_live_',
+					'has_pending_requirements' => true,
+					'current_deadline'         => 12345,
+					'is_live'                  => true,
+				]
 			);
 
 		// Simulate the account details cache not being there and then timing out.
@@ -352,16 +345,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn(
-				new Response(
-					[
-						'account_id'               => 'acc_test',
-						'live_publishable_key'     => 'pk_test_',
-						'test_publishable_key'     => 'pk_live_',
-						'has_pending_requirements' => true,
-						'current_deadline'         => 12345,
-						'is_live'                  => true,
-					]
-				)
+				[
+					'account_id'               => 'acc_test',
+					'live_publishable_key'     => 'pk_test_',
+					'test_publishable_key'     => 'pk_live_',
+					'has_pending_requirements' => true,
+					'current_deadline'         => 12345,
+					'is_live'                  => true,
+				]
 			);
 
 		$this->assertTrue( $this->wcpay_account->try_is_stripe_connected() );
@@ -403,16 +394,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn(
-				new Response(
-					[
-						'account_id'               => 'acc_test',
-						'live_publishable_key'     => 'pk_test_',
-						'test_publishable_key'     => 'pk_live_',
-						'has_pending_requirements' => true,
-						'current_deadline'         => 12345,
-						'is_live'                  => true,
-					]
-				)
+				[
+					'account_id'               => 'acc_test',
+					'live_publishable_key'     => 'pk_test_',
+					'test_publishable_key'     => 'pk_live_',
+					'has_pending_requirements' => true,
+					'current_deadline'         => 12345,
+					'is_live'                  => true,
+				]
 			);
 
 		$this->assertTrue( $this->wcpay_account->is_stripe_connected( false ) );
@@ -462,7 +451,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn(
-				new Response( [] )
+				[]
 			);
 
 		$this->assertFalse( $this->wcpay_account->is_stripe_account_valid() );
@@ -547,16 +536,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn(
-				new Response(
-					[
-						'account_id'               => 'acc_test',
-						'live_publishable_key'     => 'pk_live_',
-						'test_publishable_key'     => 'pk_test_',
-						'has_pending_requirements' => true,
-						'current_deadline'         => 12345,
-						'is_live'                  => true,
-					]
-				)
+				[
+					'account_id'               => 'acc_test',
+					'live_publishable_key'     => 'pk_live_',
+					'test_publishable_key'     => 'pk_test_',
+					'has_pending_requirements' => true,
+					'current_deadline'         => 12345,
+					'is_live'                  => true,
+				]
 			);
 
 		$this->assertEquals( 'pk_live_', $this->wcpay_account->get_publishable_key( false ) );
@@ -569,16 +556,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn(
-				new Response(
-					[
-						'account_id'               => 'acc_test',
-						'live_publishable_key'     => 'pk_live_',
-						'test_publishable_key'     => 'pk_test_',
-						'has_pending_requirements' => true,
-						'current_deadline'         => 12345,
-						'is_live'                  => true,
-					]
-				)
+				[
+					'account_id'               => 'acc_test',
+					'live_publishable_key'     => 'pk_live_',
+					'test_publishable_key'     => 'pk_test_',
+					'has_pending_requirements' => true,
+					'current_deadline'         => 12345,
+					'is_live'                  => true,
+				]
 			);
 
 		$this->assertEquals( 'pk_test_', $this->wcpay_account->get_publishable_key( true ) );
@@ -604,16 +589,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn(
-				new Response(
-					[
-						'account_id'               => 'acc_test',
-						'live_publishable_key'     => 'pk_live_',
-						'test_publishable_key'     => 'pk_test_',
-						'has_pending_requirements' => true,
-						'current_deadline'         => 12345,
-						'is_live'                  => true,
-					]
-				)
+				[
+					'account_id'               => 'acc_test',
+					'live_publishable_key'     => 'pk_live_',
+					'test_publishable_key'     => 'pk_test_',
+					'has_pending_requirements' => true,
+					'current_deadline'         => 12345,
+					'is_live'                  => true,
+				]
 			);
 
 		$this->assertEquals( 'acc_test', $this->wcpay_account->get_stripe_account_id() );
