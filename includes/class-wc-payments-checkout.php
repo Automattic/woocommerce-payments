@@ -206,6 +206,27 @@ class WC_Payments_Checkout {
 	}
 
 	/**
+	 * Add the Pay for order params to the JS config.
+	 *
+	 * @param WC_Order $order The pay-for-order order.
+	 */
+	public function add_pay_for_order_params_to_js_config( $order ) {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_GET['pay_for_order'] ) ) {
+			add_filter(
+				'wcpay_payment_fields_js_config',
+				function( $js_config ) use ( $order ) {
+					$js_config['order_id']      = $order->get_id();
+					$js_config['pay_for_order'] = sanitize_text_field( wp_unslash( $_GET['pay_for_order'] ) );
+
+					return $js_config;
+				}
+			);
+		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+	}
+
+	/**
 	 * Renders the credit card input fields needed to get the user's payment information on the checkout page.
 	 *
 	 * We also add the JavaScript which drives the UI.
