@@ -3,6 +3,7 @@
  */
 import * as React from 'react';
 import { Card, CardHeader } from '@wordpress/components';
+import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies.
@@ -12,6 +13,7 @@ import strings from './strings';
 import NextDepositDetails from './next-deposit';
 import DepositsOverviewFooter from './footer';
 import DepositOverviewSectionHeading from './section-heading';
+import { getDepositScheduleDescription } from './utils';
 
 const DepositsOverview = (): JSX.Element => {
 	const {
@@ -19,7 +21,7 @@ const DepositsOverview = (): JSX.Element => {
 		isLoading,
 	} = useAllDepositsOverviews() as AccountOverview.OverviewsResponse;
 
-	const { currencies } = overviews;
+	const { currencies, account } = overviews;
 
 	const overview = currencies[ 0 ]; // TODO: To handle multiple currencies we'll need to fetch the currently selected currency.
 
@@ -33,7 +35,15 @@ const DepositsOverview = (): JSX.Element => {
 			/>
 			<NextDepositDetails isLoading={ isLoading } overview={ overview } />
 
-			<p>Deposits History Section Goes here</p>
+			{ ! isLoading && (
+				<DepositOverviewSectionHeading
+					title={ strings.depositHistory.title }
+					description={ interpolateComponents( {
+						mixedString: getDepositScheduleDescription( account ),
+						components: { strong: <strong /> },
+					} ) }
+				/>
+			) }
 
 			<p>Deposits Card Footer/Action Goes here</p>
 

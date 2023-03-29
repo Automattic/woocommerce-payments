@@ -25,4 +25,27 @@ export default {
 		status: __( 'Status', 'woocommerce-payments' ),
 		amount: __( 'Amount', 'woocommerce-payments' ),
 	},
+	depositHistory: {
+		title: __( 'Deposit history', 'woocommerce-payments' ),
+		descriptions: {
+			daily: __(
+				'Your deposits are dispatched {{strong}}automatically every day{{/strong}}',
+				'woocommerce-payments'
+			),
+			/** translators: %s: is the day of the week. eg "Friday" */
+			weekly: __(
+				'Your deposits are dispatched {{strong}}automatically every %s{{/strong}}',
+				'woocommerce-payments'
+			),
+			/** translators: %s: is the day of the month. eg "15th" */
+			monthly: __(
+				'Your deposits are dispatched {{strong}}automatically on the %s of every month{{/strong}}',
+				'woocommerce-payments'
+			),
+			lastDayOfMonth: __(
+				'Your deposits are dispatched {{strong}}automatically on the last day of every month{{/strong}}',
+				'woocommerce-payments'
+			),
+		},
+	},
 };
