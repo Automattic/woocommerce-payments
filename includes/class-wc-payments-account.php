@@ -1013,9 +1013,15 @@ class WC_Payments_Account {
 		$business_type = $account_data['business_type'] ?? null;
 		if ( ! $progressive ) {
 			if ( 'individual' === $business_type ) {
+				if ( ! isset( $account_data['individual'] ) ) {
+					$account_data['individual'] = [];
+				}
 				$account_data['individual']['phone'] = $account_data['phone'] ?? null;
 			}
 			if ( 'company' === $business_type ) {
+				if ( ! isset( $account_data['business_profile'] ) ) {
+					$account_data['business_profile'] = [];
+				}
 				$account_data['business_profile']['support_phone'] = $account_data['phone'] ?? null;
 			}
 		}
