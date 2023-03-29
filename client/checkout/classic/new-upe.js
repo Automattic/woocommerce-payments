@@ -208,7 +208,7 @@ jQuery( function ( $ ) {
 					return obj;
 				}, {} ),
 				wc_payment_method: pm.paymentMethod.id,
-				wcpay_fingerprint: fingerprint,
+				'wcpay-fingerprint': fingerprint ? fingerprint : '',
 			};
 
 			const response = await api.processCheckout( fields );
