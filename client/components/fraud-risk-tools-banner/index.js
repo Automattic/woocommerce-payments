@@ -3,7 +3,7 @@
  */
 import { useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card, Fill } from '@wordpress/components';
+import { Card } from '@wordpress/components';
 import { useDispatch } from '@wordpress/data';
 import { registerPlugin } from '@wordpress/plugins';
 
@@ -101,10 +101,14 @@ const FRTDiscoverabilityBanner = () => {
 export default FRTDiscoverabilityBanner;
 
 registerPlugin( 'wc-payments-homescreen-fraud-protection-slotfill-banner', {
-	render: () => (
-		<Fill name="woocommerce_homescreen_experimental_header_banner_item">
-			<FRTDiscoverabilityBanner />
-		</Fill>
-	),
+	render: () => {
+		// Important: Use Fill from WC core, not the one within WCPay.
+		const Fill = window.wp.components.Fill;
+		return (
+			<Fill name="woocommerce_homescreen_experimental_header_banner_item">
+				<FRTDiscoverabilityBanner />
+			</Fill>
+		);
+	},
 	scope: 'woocommerce-admin',
 } );
