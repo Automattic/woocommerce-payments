@@ -1009,21 +1009,27 @@ class WC_Payments_Account {
 		$collect_payout_requirements = isset( $_GET['collect_payout_requirements'] ) && 'true' === $_GET['collect_payout_requirements'];
 
 		// Onboarding data prefill.
-		$account_data  = isset( $_GET['prefill'] ) ? wc_clean( wp_unslash( $_GET['prefill'] ) ) : [];
-		$business_type = $account_data['business_type'] ?? null;
-		if ( ! $progressive ) {
-			if ( 'individual' === $business_type ) {
-				if ( ! isset( $account_data['individual'] ) ) {
-					$account_data['individual'] = [];
-				}
-				$account_data['individual']['phone'] = $account_data['phone'] ?? null;
-			}
-			if ( 'company' === $business_type ) {
-				if ( ! isset( $account_data['business_profile'] ) ) {
-					$account_data['business_profile'] = [];
-				}
-				$account_data['business_profile']['support_phone'] = $account_data['phone'] ?? null;
-			}
+		$prefill_data = isset( $_GET['prefill'] ) ? wc_clean( wp_unslash( $_GET['prefill'] ) ) : [];
+		if ( $prefill_data ) {
+			$business_type = $prefill_data['business_type'] ?? null;
+			$account_data  = [
+				'country'       => $prefill_data['country'] ?? null,
+				'email'         => $prefill_data['email'] ?? null,
+				'business_name' => $prefill_data['business_name'] ?? null,
+				'url'           => $prefill_data['url'] ?? null,
+				'mcc'           => $prefill_data['mcc'] ?? '5045', // TODO GH-5476 roll back to null after testing.
+				'business_type' => $business_type,
+				'company'       => [
+					'structure' => 'company' === $business_type ? ( isset( $prefill_data['company']['structure'] ) ? ( $prefill_data['company']['structure'] ?? null ) : null ) : null,
+				],
+				'individual'    => [
+					'first_name' => isset( $prefill_data['individual']['first_name'] ) ? ( $prefill_data['individual']['first_name'] ?? null ) : null,
+					'last_name'  => isset( $prefill_data['individual']['last_name'] ) ? ( $prefill_data['individual']['last_name'] ?? null ) : null,
+					'phone'      => ! $progressive && 'individual' === $business_type ? ( $prefill_data['phone'] ?? null ) : null,
+				],
+			];
+		} else {
+			$account_data = [];
 		}
 
 		$onboarding_data = $this->payments_api_client->get_onboarding_data(
