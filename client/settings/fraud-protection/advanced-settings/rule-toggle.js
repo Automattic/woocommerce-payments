@@ -53,7 +53,7 @@ const FraudProtectionRuleToggle = ( {
 	] );
 
 	const renderTooltip = () => (
-		<Tooltip
+		<HoverTooltip
 			content={ __(
 				'WooCommerce Payments will automatically cancel orders that match this filter.',
 				'woocommerce-payments'
@@ -83,7 +83,7 @@ const FraudProtectionRuleToggle = ( {
 					}
 				></Icon>
 			</div>
-		</Tooltip>
+		</HoverTooltip>
 	);
 
 	// Render view.
