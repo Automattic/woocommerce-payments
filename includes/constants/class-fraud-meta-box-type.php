@@ -19,6 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Fraud_Meta_Box_Type extends Base_Constant {
 	const ALLOW            = 'allow';
 	const BLOCK            = 'block';
+	const NOT_CARD         = 'not_card';
 	const NOT_WCPAY        = 'not_wcpay';
 	const PAYMENT_STARTED  = 'payment_started';
 	const REVIEW           = 'review';

@@ -63,11 +63,14 @@ class Order_Fraud_And_Risk_Meta_Box {
 			return;
 		}
 
-		$intent_id     = $this->order_service->get_intent_id_for_order( $order );
-		$charge_id     = $this->order_service->get_charge_id_for_order( $order );
-		$meta_box_type = $this->order_service->get_fraud_meta_box_type_for_order( $order );
+		$intent_id      = $this->order_service->get_intent_id_for_order( $order );
+		$charge_id      = $this->order_service->get_charge_id_for_order( $order );
+		$meta_box_type  = $this->order_service->get_fraud_meta_box_type_for_order( $order );
+		$payment_method = $order->get_payment_method();
 
-		if ( 'woocommerce_payments' !== $order->get_payment_method() ) {
+		if ( strstr( $payment_method, 'woocommerce_payments_' ) ) {
+			$meta_box_type = Fraud_Meta_Box_Type::NOT_CARD;
+		} elseif ( 'woocommerce_payments' !== $order->get_payment_method() ) {
 			$meta_box_type = Fraud_Meta_Box_Type::NOT_WCPAY;
 		}
 
@@ -106,7 +109,7 @@ class Order_Fraud_And_Risk_Meta_Box {
 				break;
 
 			case Fraud_Meta_Box_Type::NOT_WCPAY:
-				$description = __( 'Risk filtering is only available for orders that are processed with WooCommerce Payments.', 'woocommerce-payments' );
+				$description = __( 'Risk filtering is only available for orders that are paid for with credit cards through WooCommerce Payments.', 'woocommerce-payments' );
 				$callout     = __( 'Learn more', 'woocommerce-payments' );
 				$callout_url = '';
 				// TODO: Need callout url for Learn more.
