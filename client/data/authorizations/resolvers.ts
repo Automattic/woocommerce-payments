@@ -31,7 +31,7 @@ export function* getAuthorizations( query: Query ): Generator< unknown > {
 		paged = 1,
 		per_page: perPage = 25,
 		orderby = 'created',
-		order = 'desc',
+		order = 'asc',
 	} = query;
 
 	if ( orderby === 'capture_by' ) {
@@ -119,6 +119,6 @@ export function* getAuthorizationsSummary( query: Query ): any {
 				'woocommerce-payments'
 			)
 		);
-		yield updateErrorForAuthorizationsSummary( query, e );
+		yield updateErrorForAuthorizationsSummary( query, e as Error );
 	}
 }
