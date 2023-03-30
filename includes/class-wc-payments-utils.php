@@ -847,4 +847,17 @@ class WC_Payments_Utils {
 	public static function is_hpos_tables_usage_enabled() {
 		return class_exists( '\Automattic\WooCommerce\Utilities\OrderUtil' ) && \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
 	}
+
+	/**
+	 * Get the core request class name as WordPress 6.2 introduces a breaking namespace change.
+	 *
+	 * @see https://github.com/WordPress/wordpress-develop/commit/d7dd42d72fe5b10460072e7c78d36c130857e427
+	 *
+	 * @return string The request class name.
+	 */
+	public static function get_wpcore_request_class(): string {
+		return version_compare( get_bloginfo( 'version' ), '6.2', '>=' )
+			? '\\WpOrg\\Requests\\Requests'
+			: '\\Requests';
+	}
 }
