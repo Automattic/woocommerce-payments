@@ -4,8 +4,13 @@
 import { useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card } from '@wordpress/components';
-import { useDispatch } from '@wordpress/data';
+import { useDispatch, useSelect } from '@wordpress/data';
 import { registerPlugin } from '@wordpress/plugins';
+import {
+	OPTIONS_STORE_NAME,
+	ONBOARDING_STORE_NAME,
+	getVisibleTasks,
+} from '@woocommerce/data';
 
 /**
  * Internal dependencies
@@ -100,15 +105,83 @@ const FRTDiscoverabilityBanner = () => {
 
 export default FRTDiscoverabilityBanner;
 
-registerPlugin( 'wc-payments-homescreen-fraud-protection-slotfill-banner', {
-	render: () => {
-		// Important: Use Fill from WC core, not the one within WCPay.
-		const Fill = window.wp.components.Fill;
-		return (
+const FRTDiscoverabilityBannerFill = () => {
+	const ADMIN_INSTALL_TIMESTAMP_OPTION_NAME =
+		'woocommerce_admin_install_timestamp';
+	const ONBOARDING_TASKLIST_ID = 'setup';
+	const DAY_IN_SECONDS = 24 * 60 * 60;
+
+	const getStoreAgeInDays = useSelect( ( select ) => {
+		const {
+			getOption,
+			hasFinishedResolution: hasFinishedOptionResolution,
+		} = select( OPTIONS_STORE_NAME );
+
+		// Get admin install timestamp.
+		const adminInstallTimestamp =
+			getOption( ADMIN_INSTALL_TIMESTAMP_OPTION_NAME ) || 0;
+		// Calculate store age in days.
+		const storeAgeInDays = Math.floor(
+			( Math.floor( Date.now() / 1000 ) - adminInstallTimestamp ) /
+				DAY_IN_SECONDS
+		);
+
+		const isLoading = ! hasFinishedOptionResolution( 'getOption', [
+			ADMIN_INSTALL_TIMESTAMP_OPTION_NAME,
+		] );
+
+		return {
+			storeAgeInDays,
+			isLoading,
+		};
+	} );
+
+	const getTaskCompletionStatus = useSelect( ( select ) => {
+		const {
+			getTaskList,
+			hasFinishedResolution: hasFinishedOnboardingResolution,
+		} = select( ONBOARDING_STORE_NAME );
+
+		// Get task list.
+		const taskList = getTaskList( ONBOARDING_TASKLIST_ID );
+		const visibleTasks = getVisibleTasks( taskList?.tasks || [] );
+		const isLoading = ! hasFinishedOnboardingResolution( 'getTaskList', [
+			ONBOARDING_TASKLIST_ID,
+		] );
+
+		// Tasklist completion conditions: Tasklist is hidden or all tasks inside are marked as completed.
+		const allTasksAreCompleted =
+			taskList?.isHidden ||
+			0 === visibleTasks?.filter( ( task ) => ! task.isComplete ).length;
+
+		return {
+			allTasksAreCompleted,
+			isLoading,
+		};
+	} );
+
+	// Should only show the banner when all tasks are completed, or 30 days after the installation.
+	const shouldShowBanner =
+		! getTaskCompletionStatus.isLoading &&
+		! getStoreAgeInDays.isLoading &&
+		( getTaskCompletionStatus.getCompletedAllTasks ||
+			30 < getStoreAgeInDays.storeAgeInDays );
+
+	// Important: Use Fill from WC core, not the one within WCPay.
+	const Fill = window.wp.components.Fill;
+
+	return (
+		shouldShowBanner && (
 			<Fill name="woocommerce_homescreen_experimental_header_banner_item">
 				<FRTDiscoverabilityBanner />
 			</Fill>
-		);
+		)
+	);
+};
+
+registerPlugin( 'wc-payments-homescreen-fraud-protection-slotfill-banner', {
+	render: () => {
+		return <FRTDiscoverabilityBannerFill />;
 	},
 	scope: 'woocommerce-admin',
 } );
