@@ -8,7 +8,7 @@ import { dateI18n } from '@wordpress/date';
 import { Card, CardBody, CardFooter, CardDivider } from '@wordpress/components';
 import moment from 'moment';
 import React, { useContext } from 'react';
-import { createInterpolateElement } from '@wordpress/element/build-types';
+import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies.
@@ -354,22 +354,22 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 						<CardFooter className="payment-details-capture-notice">
 							<div className="payment-details-capture-notice__section">
 								<div className="payment-details-capture-notice__text">
-									{ `${ createInterpolateElement(
+									{ createInterpolateElement(
 										__(
-											'You need to <a>capture</a> this charge before',
+											'You need to <a>capture</a> this charge before ',
 											'woocommerce-payments'
 										),
 										{
 											a: (
-												// eslint-disable-next-line jsx-a11y/anchor-has-content
+												// eslint-disable-next-line jsx-a11y/anchor-has-content, react/jsx-no-target-blank
 												<a
 													href="https://woocommerce.com/document/woocommerce-payments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
 													target="_blank"
-													rel="noopener noreferrer"
+													rel="noreferer"
 												/>
 											),
 										}
-									) } ` }
+									) }
 									<b>
 										{ dateI18n(
 											'M j, Y / g:iA',
