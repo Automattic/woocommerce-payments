@@ -43,13 +43,15 @@ exports[`Deposits Overview information Component Renders 1`] = `
       >
         Next deposits
       </span>
-      <span
+      <div
         class="wcpay-deposits-overview__heading__description"
       >
-        <span>
+        <span
+          class="wcpay-deposits-overview__heading__description__text"
+        >
           The amount may change while payments are still accumulating
         </span>
-      </span>
+      </div>
     </div>
     <div
       class="wcpay-deposits-overview__table"
@@ -117,17 +119,17 @@ exports[`Deposits Overview information Component Renders 1`] = `
       >
         Deposit history
       </span>
-      <span
+      <div
         class="wcpay-deposits-overview__heading__description"
       >
         Your deposits are dispatched 
         <strong>
           automatically every Monday
         </strong>
-      </span>
+      </div>
     </div>
     <p>
-      Deposits Card Footer/Action Goes here
+      Deposit history table will go here
     </p>
     <div
       class="components-flex components-card__footer is-size-medium wcpay-deposits-overview__footer e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
