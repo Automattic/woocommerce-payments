@@ -704,80 +704,84 @@ Object {
                         </div>
                       </div>
                     </div>
-                    <strong>
-                      Advanced
-                    </strong>
                     <div
-                      class="fraud-protection-rule-toggle-checkbox-container"
+                      class="fraud-protection-rule-toggle-block"
                     >
+                      <strong>
+                        Advanced
+                      </strong>
                       <div
-                        class="components-base-control fraud-protection-rule-toggle-checkbox css-wdf2ti-Wrapper e1puf3u0"
+                        class="fraud-protection-rule-toggle-checkbox-container"
                       >
                         <div
-                          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-                        >
-                          <span
-                            class="components-checkbox-control__input-container"
-                          >
-                            <input
-                              checked=""
-                              class="components-checkbox-control__input"
-                              id="inspector-checkbox-control-0"
-                              type="checkbox"
-                              value="1"
-                            />
-                            <svg
-                              aria-hidden="true"
-                              class="components-checkbox-control__checked"
-                              focusable="false"
-                              height="24"
-                              role="img"
-                              viewBox="0 0 24 24"
-                              width="24"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
-                              />
-                            </svg>
-                          </span>
-                          <label
-                            class="components-checkbox-control__label"
-                            for="inspector-checkbox-control-0"
-                          >
-                            Block Payment
-                          </label>
-                        </div>
-                      </div>
-                      <button
-                        class="wcpay-tooltip__content-wrapper"
-                        type="button"
-                      >
-                        <div
-                          class="wcpay-tooltip__content-wrapper"
+                          class="components-base-control fraud-protection-rule-toggle-checkbox css-wdf2ti-Wrapper e1puf3u0"
                         >
                           <div
-                            class="fraud-protection-rule-toggle-checkbox-container-help"
+                            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
                           >
-                            <svg
-                              aria-hidden="true"
-                              fill="none"
-                              focusable="false"
-                              height="16"
-                              role="img"
-                              viewBox="3 3 18 18"
-                              width="16"
-                              xmlns="http://www.w3.org/2000/svg"
+                            <span
+                              class="components-checkbox-control__input-container"
                             >
-                              <path
-                                d="M9.75 10.25C9.75 9.00736 10.7574 8 12 8C13.2426 8 14.25 9.00736 14.25 10.25C14.25 														11.4083 13.3748 12.3621 12.2496 12.4863C12.1124 12.5015 12 12.6119 12 12.75V14M12 														15V16.5M20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 														7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z"
-                                stroke="#1E1E1E"
-                                stroke-width="1.5"
+                              <input
+                                checked=""
+                                class="components-checkbox-control__input"
+                                id="inspector-checkbox-control-0"
+                                type="checkbox"
+                                value="1"
                               />
-                            </svg>
+                              <svg
+                                aria-hidden="true"
+                                class="components-checkbox-control__checked"
+                                focusable="false"
+                                height="24"
+                                role="img"
+                                viewBox="0 0 24 24"
+                                width="24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
+                                />
+                              </svg>
+                            </span>
+                            <label
+                              class="components-checkbox-control__label"
+                              for="inspector-checkbox-control-0"
+                            >
+                              Block Payment
+                            </label>
                           </div>
                         </div>
-                      </button>
+                        <button
+                          class="wcpay-tooltip__content-wrapper"
+                          type="button"
+                        >
+                          <div
+                            class="wcpay-tooltip__content-wrapper"
+                          >
+                            <div
+                              class="fraud-protection-rule-toggle-checkbox-container-help"
+                            >
+                              <svg
+                                aria-hidden="true"
+                                fill="none"
+                                focusable="false"
+                                height="16"
+                                role="img"
+                                viewBox="3 3 18 18"
+                                width="16"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M9.75 10.25C9.75 9.00736 10.7574 8 12 8C13.2426 8 14.25 9.00736 14.25 10.25C14.25 														11.4083 13.3748 12.3621 12.2496 12.4863C12.1124 12.5015 12 12.6119 12 12.75V14M12 														15V16.5M20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 														7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z"
+                                  stroke="#1E1E1E"
+                                  stroke-width="1.5"
+                                />
+                              </svg>
+                            </div>
+                          </div>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -871,6 +875,22 @@ Object {
                 </div>
               </div>
             </div>
+            <footer
+              class="fraud-protection-advanced-settings__footer"
+            >
+              <a
+                class="components-button is-secondary"
+                href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
+              >
+                Back to Payments Settings
+              </a>
+              <button
+                class="components-button is-primary"
+                type="button"
+              >
+                Save Changes
+              </button>
+            </footer>
           </div>
         </div>
       </div>
@@ -1551,80 +1571,84 @@ Object {
                       </div>
                     </div>
                   </div>
-                  <strong>
-                    Advanced
-                  </strong>
                   <div
-                    class="fraud-protection-rule-toggle-checkbox-container"
+                    class="fraud-protection-rule-toggle-block"
                   >
+                    <strong>
+                      Advanced
+                    </strong>
                     <div
-                      class="components-base-control fraud-protection-rule-toggle-checkbox css-wdf2ti-Wrapper e1puf3u0"
+                      class="fraud-protection-rule-toggle-checkbox-container"
                     >
                       <div
-                        class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-                      >
-                        <span
-                          class="components-checkbox-control__input-container"
-                        >
-                          <input
-                            checked=""
-                            class="components-checkbox-control__input"
-                            id="inspector-checkbox-control-0"
-                            type="checkbox"
-                            value="1"
-                          />
-                          <svg
-                            aria-hidden="true"
-                            class="components-checkbox-control__checked"
-                            focusable="false"
-                            height="24"
-                            role="img"
-                            viewBox="0 0 24 24"
-                            width="24"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
-                            />
-                          </svg>
-                        </span>
-                        <label
-                          class="components-checkbox-control__label"
-                          for="inspector-checkbox-control-0"
-                        >
-                          Block Payment
-                        </label>
-                      </div>
-                    </div>
-                    <button
-                      class="wcpay-tooltip__content-wrapper"
-                      type="button"
-                    >
-                      <div
-                        class="wcpay-tooltip__content-wrapper"
+                        class="components-base-control fraud-protection-rule-toggle-checkbox css-wdf2ti-Wrapper e1puf3u0"
                       >
                         <div
-                          class="fraud-protection-rule-toggle-checkbox-container-help"
+                          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
                         >
-                          <svg
-                            aria-hidden="true"
-                            fill="none"
-                            focusable="false"
-                            height="16"
-                            role="img"
-                            viewBox="3 3 18 18"
-                            width="16"
-                            xmlns="http://www.w3.org/2000/svg"
+                          <span
+                            class="components-checkbox-control__input-container"
                           >
-                            <path
-                              d="M9.75 10.25C9.75 9.00736 10.7574 8 12 8C13.2426 8 14.25 9.00736 14.25 10.25C14.25 														11.4083 13.3748 12.3621 12.2496 12.4863C12.1124 12.5015 12 12.6119 12 12.75V14M12 														15V16.5M20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 														7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z"
-                              stroke="#1E1E1E"
-                              stroke-width="1.5"
+                            <input
+                              checked=""
+                              class="components-checkbox-control__input"
+                              id="inspector-checkbox-control-0"
+                              type="checkbox"
+                              value="1"
                             />
-                          </svg>
+                            <svg
+                              aria-hidden="true"
+                              class="components-checkbox-control__checked"
+                              focusable="false"
+                              height="24"
+                              role="img"
+                              viewBox="0 0 24 24"
+                              width="24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
+                              />
+                            </svg>
+                          </span>
+                          <label
+                            class="components-checkbox-control__label"
+                            for="inspector-checkbox-control-0"
+                          >
+                            Block Payment
+                          </label>
                         </div>
                       </div>
-                    </button>
+                      <button
+                        class="wcpay-tooltip__content-wrapper"
+                        type="button"
+                      >
+                        <div
+                          class="wcpay-tooltip__content-wrapper"
+                        >
+                          <div
+                            class="fraud-protection-rule-toggle-checkbox-container-help"
+                          >
+                            <svg
+                              aria-hidden="true"
+                              fill="none"
+                              focusable="false"
+                              height="16"
+                              role="img"
+                              viewBox="3 3 18 18"
+                              width="16"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M9.75 10.25C9.75 9.00736 10.7574 8 12 8C13.2426 8 14.25 9.00736 14.25 10.25C14.25 														11.4083 13.3748 12.3621 12.2496 12.4863C12.1124 12.5015 12 12.6119 12 12.75V14M12 														15V16.5M20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 														7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z"
+                                stroke="#1E1E1E"
+                                stroke-width="1.5"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1718,6 +1742,22 @@ Object {
               </div>
             </div>
           </div>
+          <footer
+            class="fraud-protection-advanced-settings__footer"
+          >
+            <a
+              class="components-button is-secondary"
+              href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
+            >
+              Back to Payments Settings
+            </a>
+            <button
+              class="components-button is-primary"
+              type="button"
+            >
+              Save Changes
+            </button>
+          </footer>
         </div>
       </div>
     </div>
@@ -2437,6 +2477,23 @@ Object {
                 </div>
               </div>
             </div>
+            <footer
+              class="fraud-protection-advanced-settings__footer"
+            >
+              <a
+                class="components-button is-secondary"
+                href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
+              >
+                Back to Payments Settings
+              </a>
+              <button
+                class="components-button is-primary"
+                disabled=""
+                type="button"
+              >
+                Save Changes
+              </button>
+            </footer>
           </div>
         </div>
       </div>
@@ -3074,6 +3131,23 @@ Object {
               </div>
             </div>
           </div>
+          <footer
+            class="fraud-protection-advanced-settings__footer"
+          >
+            <a
+              class="components-button is-secondary"
+              href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
+            >
+              Back to Payments Settings
+            </a>
+            <button
+              class="components-button is-primary"
+              disabled=""
+              type="button"
+            >
+              Save Changes
+            </button>
+          </footer>
         </div>
       </div>
     </div>
@@ -3761,6 +3835,22 @@ Object {
               </div>
             </div>
           </div>
+          <footer
+            class="fraud-protection-advanced-settings__footer"
+          >
+            <a
+              class="components-button is-secondary"
+              href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
+            >
+              Back to Payments Settings
+            </a>
+            <button
+              class="components-button is-primary"
+              type="button"
+            >
+              Save Changes
+            </button>
+          </footer>
         </div>
       </div>
     </div>
@@ -4365,6 +4455,22 @@ Object {
             </div>
           </div>
         </div>
+        <footer
+          class="fraud-protection-advanced-settings__footer"
+        >
+          <a
+            class="components-button is-secondary"
+            href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
+          >
+            Back to Payments Settings
+          </a>
+          <button
+            class="components-button is-primary"
+            type="button"
+          >
+            Save Changes
+          </button>
+        </footer>
       </div>
     </div>
   </div>,
@@ -5058,80 +5164,84 @@ Object {
                         </div>
                       </div>
                     </div>
-                    <strong>
-                      Advanced
-                    </strong>
                     <div
-                      class="fraud-protection-rule-toggle-checkbox-container"
+                      class="fraud-protection-rule-toggle-block"
                     >
+                      <strong>
+                        Advanced
+                      </strong>
                       <div
-                        class="components-base-control fraud-protection-rule-toggle-checkbox css-wdf2ti-Wrapper e1puf3u0"
+                        class="fraud-protection-rule-toggle-checkbox-container"
                       >
                         <div
-                          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-                        >
-                          <span
-                            class="components-checkbox-control__input-container"
-                          >
-                            <input
-                              checked=""
-                              class="components-checkbox-control__input"
-                              id="inspector-checkbox-control-1"
-                              type="checkbox"
-                              value="1"
-                            />
-                            <svg
-                              aria-hidden="true"
-                              class="components-checkbox-control__checked"
-                              focusable="false"
-                              height="24"
-                              role="img"
-                              viewBox="0 0 24 24"
-                              width="24"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
-                              />
-                            </svg>
-                          </span>
-                          <label
-                            class="components-checkbox-control__label"
-                            for="inspector-checkbox-control-1"
-                          >
-                            Block Payment
-                          </label>
-                        </div>
-                      </div>
-                      <button
-                        class="wcpay-tooltip__content-wrapper"
-                        type="button"
-                      >
-                        <div
-                          class="wcpay-tooltip__content-wrapper"
+                          class="components-base-control fraud-protection-rule-toggle-checkbox css-wdf2ti-Wrapper e1puf3u0"
                         >
                           <div
-                            class="fraud-protection-rule-toggle-checkbox-container-help"
+                            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
                           >
-                            <svg
-                              aria-hidden="true"
-                              fill="none"
-                              focusable="false"
-                              height="16"
-                              role="img"
-                              viewBox="3 3 18 18"
-                              width="16"
-                              xmlns="http://www.w3.org/2000/svg"
+                            <span
+                              class="components-checkbox-control__input-container"
                             >
-                              <path
-                                d="M9.75 10.25C9.75 9.00736 10.7574 8 12 8C13.2426 8 14.25 9.00736 14.25 10.25C14.25 														11.4083 13.3748 12.3621 12.2496 12.4863C12.1124 12.5015 12 12.6119 12 12.75V14M12 														15V16.5M20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 														7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z"
-                                stroke="#1E1E1E"
-                                stroke-width="1.5"
+                              <input
+                                checked=""
+                                class="components-checkbox-control__input"
+                                id="inspector-checkbox-control-1"
+                                type="checkbox"
+                                value="1"
                               />
-                            </svg>
+                              <svg
+                                aria-hidden="true"
+                                class="components-checkbox-control__checked"
+                                focusable="false"
+                                height="24"
+                                role="img"
+                                viewBox="0 0 24 24"
+                                width="24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
+                                />
+                              </svg>
+                            </span>
+                            <label
+                              class="components-checkbox-control__label"
+                              for="inspector-checkbox-control-1"
+                            >
+                              Block Payment
+                            </label>
                           </div>
                         </div>
-                      </button>
+                        <button
+                          class="wcpay-tooltip__content-wrapper"
+                          type="button"
+                        >
+                          <div
+                            class="wcpay-tooltip__content-wrapper"
+                          >
+                            <div
+                              class="fraud-protection-rule-toggle-checkbox-container-help"
+                            >
+                              <svg
+                                aria-hidden="true"
+                                fill="none"
+                                focusable="false"
+                                height="16"
+                                role="img"
+                                viewBox="3 3 18 18"
+                                width="16"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M9.75 10.25C9.75 9.00736 10.7574 8 12 8C13.2426 8 14.25 9.00736 14.25 10.25C14.25 														11.4083 13.3748 12.3621 12.2496 12.4863C12.1124 12.5015 12 12.6119 12 12.75V14M12 														15V16.5M20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 														7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z"
+                                  stroke="#1E1E1E"
+                                  stroke-width="1.5"
+                                />
+                              </svg>
+                            </div>
+                          </div>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -5225,6 +5335,22 @@ Object {
                 </div>
               </div>
             </div>
+            <footer
+              class="fraud-protection-advanced-settings__footer"
+            >
+              <a
+                class="components-button is-secondary"
+                href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
+              >
+                Back to Payments Settings
+              </a>
+              <button
+                class="components-button is-primary"
+                type="button"
+              >
+                Save Changes
+              </button>
+            </footer>
           </div>
         </div>
       </div>
@@ -5837,80 +5963,84 @@ Object {
                       </div>
                     </div>
                   </div>
-                  <strong>
-                    Advanced
-                  </strong>
                   <div
-                    class="fraud-protection-rule-toggle-checkbox-container"
+                    class="fraud-protection-rule-toggle-block"
                   >
+                    <strong>
+                      Advanced
+                    </strong>
                     <div
-                      class="components-base-control fraud-protection-rule-toggle-checkbox css-wdf2ti-Wrapper e1puf3u0"
+                      class="fraud-protection-rule-toggle-checkbox-container"
                     >
                       <div
-                        class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-                      >
-                        <span
-                          class="components-checkbox-control__input-container"
-                        >
-                          <input
-                            checked=""
-                            class="components-checkbox-control__input"
-                            id="inspector-checkbox-control-1"
-                            type="checkbox"
-                            value="1"
-                          />
-                          <svg
-                            aria-hidden="true"
-                            class="components-checkbox-control__checked"
-                            focusable="false"
-                            height="24"
-                            role="img"
-                            viewBox="0 0 24 24"
-                            width="24"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
-                            />
-                          </svg>
-                        </span>
-                        <label
-                          class="components-checkbox-control__label"
-                          for="inspector-checkbox-control-1"
-                        >
-                          Block Payment
-                        </label>
-                      </div>
-                    </div>
-                    <button
-                      class="wcpay-tooltip__content-wrapper"
-                      type="button"
-                    >
-                      <div
-                        class="wcpay-tooltip__content-wrapper"
+                        class="components-base-control fraud-protection-rule-toggle-checkbox css-wdf2ti-Wrapper e1puf3u0"
                       >
                         <div
-                          class="fraud-protection-rule-toggle-checkbox-container-help"
+                          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
                         >
-                          <svg
-                            aria-hidden="true"
-                            fill="none"
-                            focusable="false"
-                            height="16"
-                            role="img"
-                            viewBox="3 3 18 18"
-                            width="16"
-                            xmlns="http://www.w3.org/2000/svg"
+                          <span
+                            class="components-checkbox-control__input-container"
                           >
-                            <path
-                              d="M9.75 10.25C9.75 9.00736 10.7574 8 12 8C13.2426 8 14.25 9.00736 14.25 10.25C14.25 														11.4083 13.3748 12.3621 12.2496 12.4863C12.1124 12.5015 12 12.6119 12 12.75V14M12 														15V16.5M20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 														7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z"
-                              stroke="#1E1E1E"
-                              stroke-width="1.5"
+                            <input
+                              checked=""
+                              class="components-checkbox-control__input"
+                              id="inspector-checkbox-control-1"
+                              type="checkbox"
+                              value="1"
                             />
-                          </svg>
+                            <svg
+                              aria-hidden="true"
+                              class="components-checkbox-control__checked"
+                              focusable="false"
+                              height="24"
+                              role="img"
+                              viewBox="0 0 24 24"
+                              width="24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
+                              />
+                            </svg>
+                          </span>
+                          <label
+                            class="components-checkbox-control__label"
+                            for="inspector-checkbox-control-1"
+                          >
+                            Block Payment
+                          </label>
                         </div>
                       </div>
-                    </button>
+                      <button
+                        class="wcpay-tooltip__content-wrapper"
+                        type="button"
+                      >
+                        <div
+                          class="wcpay-tooltip__content-wrapper"
+                        >
+                          <div
+                            class="fraud-protection-rule-toggle-checkbox-container-help"
+                          >
+                            <svg
+                              aria-hidden="true"
+                              fill="none"
+                              focusable="false"
+                              height="16"
+                              role="img"
+                              viewBox="3 3 18 18"
+                              width="16"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M9.75 10.25C9.75 9.00736 10.7574 8 12 8C13.2426 8 14.25 9.00736 14.25 10.25C14.25 														11.4083 13.3748 12.3621 12.2496 12.4863C12.1124 12.5015 12 12.6119 12 12.75V14M12 														15V16.5M20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 														7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z"
+                                stroke="#1E1E1E"
+                                stroke-width="1.5"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -6004,6 +6134,22 @@ Object {
               </div>
             </div>
           </div>
+          <footer
+            class="fraud-protection-advanced-settings__footer"
+          >
+            <a
+              class="components-button is-secondary"
+              href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
+            >
+              Back to Payments Settings
+            </a>
+            <button
+              class="components-button is-primary"
+              type="button"
+            >
+              Save Changes
+            </button>
+          </footer>
         </div>
       </div>
     </div>

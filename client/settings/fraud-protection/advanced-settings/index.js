@@ -146,6 +146,21 @@ const FraudProtectionAdvancedSettingsPage = () => {
 		}
 	}, [] );
 
+	const renderSaveButton = () => (
+		<Button
+			isPrimary
+			isBusy={ isSaving }
+			onClick={ handleSaveSettings }
+			disabled={
+				isSaving ||
+				isLoading ||
+				'error' === advancedFraudProtectionSettings
+			}
+		>
+			{ __( 'Save Changes', 'woocommerce-payments' ) }
+		</Button>
+	);
+
 	return (
 		<FraudPreventionSettingsContext.Provider
 			value={ {
@@ -211,23 +226,31 @@ const FraudProtectionAdvancedSettingsPage = () => {
 						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
 							<OrderItemsThresholdRuleCard />
 						</LoadableBlock>
+
+						<footer className="fraud-protection-advanced-settings__footer">
+							<Button
+								href={ getAdminUrl( {
+									page: 'wc-settings',
+									tab: 'checkout',
+									section: 'woocommerce_payments',
+								} ) }
+								isSecondary
+								disabled={ isSaving || isLoading }
+							>
+								{ __(
+									'Back to Payments Settings',
+									'woocommerce-payments'
+								) }
+							</Button>
+
+							{ renderSaveButton() }
+						</footer>
 					</div>
 				</ErrorBoundary>
 			</SettingsLayout>
 			<SaveFraudProtectionSettingsButton>
 				<div className="fraud-protection-header-save-button">
-					<Button
-						isPrimary
-						isBusy={ isSaving }
-						onClick={ handleSaveSettings }
-						disabled={
-							isSaving ||
-							isLoading ||
-							'error' === advancedFraudProtectionSettings
-						}
-					>
-						{ __( 'Save Changes', 'woocommerce-payments' ) }
-					</Button>
+					{ renderSaveButton() }
 				</div>
 			</SaveFraudProtectionSettingsButton>
 		</FraudPreventionSettingsContext.Provider>
