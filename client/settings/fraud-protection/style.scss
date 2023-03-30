@@ -160,6 +160,11 @@
 				color: #1d2327;
 			}
 		}
+
+		&-block {
+			margin-bottom: 24px;
+		}
+
 		&-checkbox {
 			& > div {
 				margin-bottom: 0;
@@ -183,7 +188,11 @@
 		}
 		&-children {
 			&-container {
-				margin-bottom: 16px;
+				margin-bottom: 24px;
+
+				.components-base-control__help {
+					margin-bottom: 0;
+				}
 			}
 			&-horizontal-form {
 				display: flex;
@@ -205,8 +214,7 @@
 			padding: 16px 24px;
 		}
 		&-header {
-			margin: 0;
-			margin-bottom: 4px;
+			margin: 0 0 4px 0;
 			font-size: 20px;
 			line-height: 28px;
 			font-weight: 400;
