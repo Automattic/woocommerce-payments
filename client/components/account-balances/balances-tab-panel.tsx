@@ -93,6 +93,18 @@ const AccountBalancesTabPanel: React.FC = () => {
 								label={ `${ fundLabelStrings.available } tooltip` }
 								content={
 									tab.availableFunds < 0 ? (
+										<a
+											target="_blank"
+											rel="noopener noreferrer"
+											href={
+												documentationUrls.negativeBalance
+											}
+										>
+											{
+												fundTooltipStrings.availableNegativeBalance
+											}
+										</a>
+									) : (
 										<>
 											{ fundTooltipStrings.available }{ ' ' }
 											<a
@@ -105,18 +117,6 @@ const AccountBalancesTabPanel: React.FC = () => {
 												{ learnMoreString }
 											</a>
 										</>
-									) : (
-										<a
-											target="_blank"
-											rel="noopener noreferrer"
-											href={
-												documentationUrls.negativeBalance
-											}
-										>
-											{
-												fundTooltipStrings.availableNegativeBalance
-											}
-										</a>
 									)
 								}
 							/>
