@@ -383,7 +383,6 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											moment
 												.utc( authorization.created )
 												.add( 7, 'days' )
-												.locale( 'es' )
 												.fromNow( true )
 										) }
 									</b>
