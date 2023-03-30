@@ -9,7 +9,7 @@ import { CheckboxControl, Icon, ToggleControl } from '@wordpress/components';
  * Internal dependencies
  */
 import './../style.scss';
-import Tooltip from '../../../components/tooltip';
+import { HoverTooltip } from 'components/tooltip';
 import FraudPreventionSettingsContext from './context';
 
 const FraudProtectionRuleToggle = ( {
