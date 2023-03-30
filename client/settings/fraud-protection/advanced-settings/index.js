@@ -7,20 +7,24 @@ import { sprintf, __ } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
 import { LoadableBlock } from 'wcpay/components/loadable';
 import { Button, Notice } from '@wordpress/components';
+import { dispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
-import './../style.scss';
+import {
+	useCurrentProtectionLevel,
+	useAdvancedFraudProtectionSettings,
+	useSettings,
+} from '../../../data';
+import ErrorBoundary from '../../../components/error-boundary';
+import { getAdminUrl } from '../../../utils';
 import SettingsLayout from 'wcpay/settings/settings-layout';
 import AVSMismatchRuleCard from './cards/avs-mismatch';
 import CVCVerificationRuleCard from './cards/cvc-verification';
 import InternationalIPAddressRuleCard from './cards/international-ip-address';
 import InternationalBillingAddressRuleCard from './cards/international-billing-address';
 import AddressMismatchRuleCard from './cards/address-mismatch';
-import OrderVelocityRuleCard, {
-	OrderVelocityValidation,
-} from './cards/order-velocity';
 import PurchasePriceThresholdRuleCard, {
 	PurchasePriceThresholdValidation,
 } from './cards/purchase-price-threshold';
@@ -28,9 +32,10 @@ import OrderItemsThresholdRuleCard, {
 	OrderItemsThresholdValidation,
 } from './cards/order-items-threshold';
 import FraudPreventionSettingsContext from './context';
-import { useSettings } from '../../../data';
-import ErrorBoundary from 'wcpay/components/error-boundary';
-import { getAdminUrl } from 'wcpay/utils';
+import './../style.scss';
+
+import { ProtectionLevel } from './constants';
+import { readRuleset, writeRuleset } from './utils';
 
 const Breadcrumb = () => (
 	<h2 className="fraud-protection-header-breadcrumb">
@@ -57,19 +62,27 @@ const SaveFraudProtectionSettingsButton = ( { children } ) => {
 };
 
 const FraudProtectionAdvancedSettingsPage = () => {
-	const { settings, saveSettings, isLoading } = useSettings();
-	const [ isSavingSettings, setIsSavingSettings ] = useState( false );
-	const [ validationError, setValidationError ] = useState( null );
+	const { saveSettings, isLoading, isSaving } = useSettings();
+	const [
+		currentProtectionLevel,
+		updateProtectionLevel,
+	] = useCurrentProtectionLevel();
 	const [
 		advancedFraudProtectionSettings,
-		setAdvancedFraudProtectionSettings,
-	] = useState( {} );
+		updateAdvancedFraudProtectionSettings,
+	] = useAdvancedFraudProtectionSettings();
+	const [ validationError, setValidationError ] = useState( null );
+	const [ protectionSettingsUI, setProtectionSettingsUI ] = useState( {} );
+	const [
+		protectionSettingsChanged,
+		setProtectionSettingsChanged,
+	] = useState( false );
 
 	useEffect( () => {
-		setAdvancedFraudProtectionSettings(
-			settings.advanced_fraud_protection_settings
+		setProtectionSettingsUI(
+			readRuleset( advancedFraudProtectionSettings )
 		);
-	}, [ settings ] );
+	}, [ advancedFraudProtectionSettings ] );
 
 	useLayoutEffect( () => {
 		const saveButton = document.querySelector(
@@ -86,7 +99,6 @@ const FraudProtectionAdvancedSettingsPage = () => {
 		setValidationError( null );
 		const validators = {
 			order_items_threshold: OrderItemsThresholdValidation,
-			order_velocity: OrderVelocityValidation,
 			purchase_price_threshold: PurchasePriceThresholdValidation,
 		};
 
@@ -101,10 +113,20 @@ const FraudProtectionAdvancedSettingsPage = () => {
 	};
 
 	const handleSaveSettings = async () => {
-		if ( validateSettings( settings.advanced_fraud_protection_settings ) ) {
-			setIsSavingSettings( true );
-			await saveSettings( settings );
-			setIsSavingSettings( false );
+		if ( validateSettings( protectionSettingsUI ) ) {
+			if ( ProtectionLevel.ADVANCED !== currentProtectionLevel ) {
+				updateProtectionLevel( ProtectionLevel.ADVANCED );
+				dispatch( 'core/notices' ).createSuccessNotice(
+					__(
+						'Current protection level is set to "advanced".',
+						'woocommerce-payments'
+					)
+				);
+			}
+			updateAdvancedFraudProtectionSettings(
+				writeRuleset( protectionSettingsUI )
+			);
+			await saveSettings();
 		} else {
 			window.scrollTo( {
 				top: 0,
@@ -124,11 +146,28 @@ const FraudProtectionAdvancedSettingsPage = () => {
 		}
 	}, [] );
 
+	const renderSaveButton = () => (
+		<Button
+			isPrimary
+			isBusy={ isSaving }
+			onClick={ handleSaveSettings }
+			disabled={
+				isSaving ||
+				isLoading ||
+				'error' === advancedFraudProtectionSettings
+			}
+		>
+			{ __( 'Save Changes', 'woocommerce-payments' ) }
+		</Button>
+	);
+
 	return (
 		<FraudPreventionSettingsContext.Provider
 			value={ {
-				advancedFraudProtectionSettings,
-				setAdvancedFraudProtectionSettings,
+				protectionSettingsUI,
+				setProtectionSettingsUI,
+				protectionSettingsChanged,
+				setProtectionSettingsChanged,
 			} }
 		>
 			<SettingsLayout displayBanner={ false }>
@@ -155,6 +194,17 @@ const FraudProtectionAdvancedSettingsPage = () => {
 								</Notice>
 							</div>
 						) }
+						{ 'error' === advancedFraudProtectionSettings && (
+							<div className="fraud-protection-advanced-settings-error-notice">
+								<Notice status="error" isDismissible={ false }>
+									{ __(
+										'There was an error retrieving your fraud protection settings.' +
+											' Please refresh the page to try again.',
+										'woocommerce-payments'
+									) }
+								</Notice>
+							</div>
+						) }
 						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
 							<AVSMismatchRuleCard />
 						</LoadableBlock>
@@ -171,27 +221,36 @@ const FraudProtectionAdvancedSettingsPage = () => {
 							<AddressMismatchRuleCard />
 						</LoadableBlock>
 						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-							<OrderVelocityRuleCard />
-						</LoadableBlock>
-						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
 							<PurchasePriceThresholdRuleCard />
 						</LoadableBlock>
 						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
 							<OrderItemsThresholdRuleCard />
 						</LoadableBlock>
+
+						<footer className="fraud-protection-advanced-settings__footer">
+							<Button
+								href={ getAdminUrl( {
+									page: 'wc-settings',
+									tab: 'checkout',
+									section: 'woocommerce_payments',
+								} ) }
+								isSecondary
+								disabled={ isSaving || isLoading }
+							>
+								{ __(
+									'Back to Payments Settings',
+									'woocommerce-payments'
+								) }
+							</Button>
+
+							{ renderSaveButton() }
+						</footer>
 					</div>
 				</ErrorBoundary>
 			</SettingsLayout>
 			<SaveFraudProtectionSettingsButton>
 				<div className="fraud-protection-header-save-button">
-					<Button
-						isPrimary
-						isBusy={ isSavingSettings }
-						onClick={ handleSaveSettings }
-						disabled={ isSavingSettings || isLoading }
-					>
-						{ __( 'Save Changes', 'woocommerce-payments' ) }
-					</Button>
+					{ renderSaveButton() }
 				</div>
 			</SaveFraudProtectionSettingsButton>
 		</FraudPreventionSettingsContext.Provider>

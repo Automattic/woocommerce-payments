@@ -231,6 +231,10 @@ class WC_Payments_Account {
 				'tpv'                  => (int) ( $account['progressive_onboarding']['tpv'] ?? 0 ),
 				'firstTransactionDate' => $account['progressive_onboarding']['first_transaction_date'] ?? null,
 			],
+			'fraudProtection'       => [
+				'declineOnAVSFailure' => $account['fraud_mitigation_settings']['avs_check_enabled'] ?? null,
+				'declineOnCVCFailure' => $account['fraud_mitigation_settings']['cvc_check_enabled'] ?? null,
+			],
 		];
 	}
 

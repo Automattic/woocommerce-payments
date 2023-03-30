@@ -19,31 +19,30 @@ const getFloatValue = ( value ) => {
 };
 
 const PurchasePriceThresholdCustomForm = ( { setting } ) => {
-	const {
-		advancedFraudProtectionSettings,
-		setAdvancedFraudProtectionSettings,
-	} = useContext( FraudPreventionSettingsContext );
+	const { protectionSettingsUI, setProtectionSettingsUI } = useContext(
+		FraudPreventionSettingsContext
+	);
 
 	const minAmountTemp = parseFloat(
-		advancedFraudProtectionSettings[ setting ].min_amount
+		protectionSettingsUI[ setting ].min_amount
 	);
 	const maxAmountTemp = parseFloat(
-		advancedFraudProtectionSettings[ setting ].max_amount
+		protectionSettingsUI[ setting ].max_amount
 	);
 
 	const [ minAmount, setMinAmount ] = useState( minAmountTemp ?? '' );
 	const [ maxAmount, setMaxAmount ] = useState( maxAmountTemp ?? '' );
 
 	useEffect( () => {
-		advancedFraudProtectionSettings[ setting ].min_amount = minAmount;
-		advancedFraudProtectionSettings[ setting ].max_amount = maxAmount;
-		setAdvancedFraudProtectionSettings( advancedFraudProtectionSettings );
+		protectionSettingsUI[ setting ].min_amount = minAmount;
+		protectionSettingsUI[ setting ].max_amount = maxAmount;
+		setProtectionSettingsUI( protectionSettingsUI );
 	}, [
 		setting,
 		minAmount,
 		maxAmount,
-		advancedFraudProtectionSettings,
-		setAdvancedFraudProtectionSettings,
+		protectionSettingsUI,
+		setProtectionSettingsUI,
 	] );
 
 	const areInputsEmpty =

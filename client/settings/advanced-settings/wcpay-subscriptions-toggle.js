@@ -9,7 +9,7 @@ import { useEffect, useRef } from '@wordpress/element';
  * Internal dependencies
  */
 import { useWCPaySubscriptions } from 'wcpay/data';
-import interpolateComponents from 'interpolate-components';
+import interpolateComponents from '@automattic/interpolate-components';
 
 const WCPaySubscriptionsToggle = () => {
 	const [

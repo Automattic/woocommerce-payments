@@ -15,9 +15,6 @@ describe( 'Fraud protection rule card notice tests', () => {
 			</FraudProtectionRuleCardNotice>
 		);
 		expect( container ).toMatchSnapshot();
-		expect(
-			container.queryByTestId( 'rule-card-notice-info-icon-svg' )
-		).toBeInTheDocument();
 	} );
 	test( 'renders warning box correctly', () => {
 		const container = render(
@@ -26,9 +23,6 @@ describe( 'Fraud protection rule card notice tests', () => {
 			</FraudProtectionRuleCardNotice>
 		);
 		expect( container ).toMatchSnapshot();
-		expect(
-			container.queryByTestId( 'rule-card-notice-warning-icon-svg' )
-		).toBeInTheDocument();
 	} );
 	test( 'renders error box correctly', () => {
 		const container = render(
@@ -37,16 +31,19 @@ describe( 'Fraud protection rule card notice tests', () => {
 			</FraudProtectionRuleCardNotice>
 		);
 		expect( container ).toMatchSnapshot();
-		expect(
-			container.queryByTestId( 'rule-card-notice-error-icon-svg' )
-		).toBeInTheDocument();
 	} );
 	test( "doesn't render box when type is missing", () => {
-		const container = render(
+		const testValue = 'This is the test content';
+		const { queryByText } = render(
 			<FraudProtectionRuleCardNotice>
-				This is the test content
+				{ testValue }
 			</FraudProtectionRuleCardNotice>
 		);
-		expect( container.baseElement.innerHTML ).toEqual( '<div></div>' );
+
+		expect(
+			queryByText( testValue, {
+				ignore: '.a11y-speak-region',
+			} )
+		).not.toBeInTheDocument();
 	} );
 } );

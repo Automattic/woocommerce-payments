@@ -17,4 +17,18 @@ export type OnboardingFields = {
 	go_live_timeframe?: string;
 };
 
-export type OnboardingSteps = 'personal' | 'business' | 'store';
+export interface EligibleResult {
+	result: 'eligible' | 'not_eligible';
+}
+
+export interface EligibleData {
+	business: {
+		country: string;
+		type: string;
+		mcc: string;
+		annual_revenue: string;
+		go_live_timeframe: string;
+	};
+}
+
+export type OnboardingSteps = 'personal' | 'business' | 'store' | 'loading';

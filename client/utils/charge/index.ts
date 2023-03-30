@@ -11,6 +11,8 @@ import { __ } from '@wordpress/i18n';
  */
 import { Dispute } from 'types/disputes';
 import { Charge, ChargeAmounts } from 'types/charges';
+import { FraudOutcome } from '../../types/fraud-outcome';
+import { PaymentIntent } from '../../types/payment-intents';
 
 const failedOutcomeTypes = [ 'issuer_declined', 'invalid' ];
 const blockedOutcomeTypes = [ 'blocked' ];
@@ -52,8 +54,43 @@ export const isChargePartiallyRefunded = (
 	charge: Charge = <Charge>{}
 ): boolean => isChargeRefunded( charge ) && ! isChargeFullyRefunded( charge );
 
+export const isOnHoldByFraudTools = (
+	fraudOutcome?: FraudOutcome,
+	paymentIntent?: PaymentIntent
+): boolean => {
+	return (
+		wcpaySettings.isFraudProtectionSettingsEnabled &&
+		paymentIntent?.status === 'requires_capture' &&
+		fraudOutcome?.status === 'review'
+	);
+};
+
+export const isBlockedByFraudTools = (
+	charge?: Charge,
+	fraudOutcome?: FraudOutcome,
+	paymentIntent?: PaymentIntent
+): boolean => {
+	return (
+		wcpaySettings.isFraudProtectionSettingsEnabled &&
+		( paymentIntent?.status === 'canceled' || ! charge?.payment_intent ) &&
+		!! fraudOutcome
+	);
+};
+
 /* TODO: implement authorization and SCA charge statuses */
-export const getChargeStatus = ( charge: Charge = <Charge>{} ): string => {
+export const getChargeStatus = (
+	charge: Charge = <Charge>{},
+	fraudOutcome?: FraudOutcome,
+	paymentIntent?: PaymentIntent
+): string => {
+	if ( isOnHoldByFraudTools( fraudOutcome, paymentIntent ) ) {
+		return 'fraud_outcome_review';
+	}
+
+	if ( isBlockedByFraudTools( charge, fraudOutcome, paymentIntent ) ) {
+		return 'fraud_outcome_block';
+	}
+
 	if ( isChargeFailed( charge ) ) {
 		return 'failed';
 	}
