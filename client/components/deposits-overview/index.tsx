@@ -3,8 +3,6 @@
  */
 import * as React from 'react';
 import { Card, CardHeader } from '@wordpress/components';
-import interpolateComponents from '@automattic/interpolate-components';
-import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies.
@@ -39,19 +37,7 @@ const DepositsOverview = (): JSX.Element => {
 			{ ! isLoading && (
 				<DepositOverviewSectionHeading
 					title={ strings.depositHistory.title }
-					description={ interpolateComponents( {
-						mixedString: getDepositScheduleDescription( account ),
-						components: {
-							strong: <strong />,
-							suspendLink: (
-								<Link
-									href={
-										'https://woocommerce.com/document/payments/faq/deposits-suspended/'
-									}
-								/>
-							),
-						},
-					} ) }
+					description={ getDepositScheduleDescription( account ) }
 				/>
 			) }
 

@@ -1,8 +1,11 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { sprintf } from '@wordpress/i18n';
 import moment from 'moment';
+import interpolateComponents from '@automattic/interpolate-components';
+import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -54,24 +57,39 @@ export const getNextDeposit = (
  */
 export const getDepositScheduleDescription = (
 	account: AccountOverview.Account
-): string => {
+): JSX.Element => {
 	const schedule = account.deposits_schedule;
-	let description = '';
 
-	// Check if the account is blocked.
+	/*
+	 * Check if the account is blocked.
+	 *
+	 * Accounts that have a manual interval prior to the custom deposit schedule
+	 * feature, are considered suspended. This will change once manual deposits are supported.
+	 */
 	const isCustomDepositSchedulesEnabled =
 		wcpaySettings?.featureFlags?.customDepositSchedules;
 
-	const areDepositsBlocked =
-		wcpaySettings?.accountStatus?.depositsStatus === 'blocked';
-
 	const showSuspendedNotice =
-		areDepositsBlocked ||
+		account.deposits_blocked ||
 		( ! isCustomDepositSchedulesEnabled && 'manual' === schedule.interval );
 
 	if ( showSuspendedNotice ) {
-		return strings.depositHistory.descriptions.suspended;
+		return interpolateComponents( {
+			mixedString: strings.depositHistory.descriptions.suspended,
+			components: {
+				strong: <strong />,
+				suspendLink: (
+					<Link
+						href={
+							'https://woocommerce.com/document/payments/faq/deposits-suspended/'
+						}
+					/>
+				),
+			},
+		} );
 	}
+
+	let description = '';
 
 	switch ( schedule.interval ) {
 		case 'daily':
@@ -107,10 +125,12 @@ export const getDepositScheduleDescription = (
 				} )
 			);
 			break;
-		default:
-			// This should never happen, but if it does, return an empty string.
-			return '';
 	}
 
-	return description;
+	return interpolateComponents( {
+		mixedString: description,
+		components: {
+			strong: <strong />,
+		},
+	} );
 };
