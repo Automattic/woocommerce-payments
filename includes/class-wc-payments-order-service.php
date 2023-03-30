@@ -248,7 +248,7 @@ class WC_Payments_Order_Service {
 		/**
 		 * If we have a status for the fraud outcome, we want to add the proper meta data.
 		 */
-		if ( '' !== $intent_data['fraud_outcome'] && Rule::is_valid_fraud_outcome_status( $intent_data['fraud_outcome'] ) ) {
+		if ( isset( $intent_data['fraud_outcome'] ) && Rule::is_valid_fraud_outcome_status( $intent_data['fraud_outcome'] ) ) {
 			$this->set_fraud_outcome_status_for_order( $order, $intent_data['fraud_outcome'] );
 			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::REVIEW_BLOCKED );
 		}
@@ -1370,7 +1370,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @return array The data we need to continue processing.
 	 */
-	private function get_intent_data( $intent ): array {
+	public function get_intent_data( $intent ): array {
 		$intent_data = [];
 		if ( is_array( $intent ) ) {
 			$intent_data = [
