@@ -1,6 +1,10 @@
 .fraud-protection {
 	&-advanced-settings {
 		&-layout {
+			margin: 0 auto;
+			max-width: 680px;
+			width: 100%;
+
 			.is-loadable-placeholder.is-block {
 				margin-top: 2em;
 			}
