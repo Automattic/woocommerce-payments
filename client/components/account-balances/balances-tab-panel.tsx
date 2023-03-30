@@ -21,7 +21,6 @@ import BalanceBlock from './balance-block';
  * @param {string} currencyCode   Currency code of the tab.
  * @param {number} availableFunds Available funds of the tab.
  * @param {number} pendingFunds   Pending funds of the tab.
- * @param {number} reservedFunds  Reserved funds of the tab.
  */
 type BalanceTab = {
 	name: string;
@@ -29,7 +28,6 @@ type BalanceTab = {
 	currencyCode: string;
 	availableFunds: number;
 	pendingFunds: number;
-	reservedFunds: number;
 };
 
 /**
@@ -51,7 +49,6 @@ const AccountBalancesTabPanel: React.FC = () => {
 			currencyCode: wcpaySettings.accountDefaultCurrency,
 			availableFunds: 0,
 			pendingFunds: 0,
-			reservedFunds: 0,
 		},
 	];
 
@@ -63,9 +60,8 @@ const AccountBalancesTabPanel: React.FC = () => {
 				name: overview.currency,
 				title: getCurrencyTabTitle( overview.currency ),
 				currencyCode: overview.currency,
-				availableFunds: overview.available.amount,
-				pendingFunds: overview.pending.amount,
-				reservedFunds: 0, // TODO: Add reserve funds to the overview object.
+				availableFunds: overview.available?.amount ?? 0,
+				pendingFunds: overview.pending?.amount ?? 0,
 			} )
 		);
 	}
@@ -83,12 +79,6 @@ const AccountBalancesTabPanel: React.FC = () => {
 					<BalanceBlock
 						type="pending"
 						amount={ tab.pendingFunds }
-						currencyCode={ tab.currencyCode }
-						isLoading={ isLoading }
-					/>
-					<BalanceBlock
-						type="reserved"
-						amount={ tab.reservedFunds }
 						currencyCode={ tab.currencyCode }
 						isLoading={ isLoading }
 					/>

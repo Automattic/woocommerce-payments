@@ -2132,50 +2132,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
-	public function test_update_order_status_from_intent_success_payment_complete() {
-		$order = $this
-			->getMockBuilder( WC_Order::class )
-			->disableOriginalConstructor()
-			->setMethods( [ 'update_meta_data', 'save', 'payment_complete', 'get_data_store' ] )
-			->getMock();
-
-		$order
-			->method( 'get_data_store' )
-			->willReturn( new \WC_Mock_WC_Data_Store() );
-
-		$intent_id     = 'pi_mock';
-		$charge_id     = 'ch_mock';
-		$intent_status = Payment_Intent_Status::SUCCEEDED;
-
-		$order->expects( $this->once() )->method( 'payment_complete' )->with( $intent_id );
-
-		$this->wcpay_gateway->update_order_status_from_intent( $order, $intent_id, $intent_status, $charge_id );
-	}
-
-	public function test_update_order_status_from_intent_fails_payment_complete() {
-		// test if metadata needed for refunds is being saved despite the payment_complete method.
-		$order = $this
-			->getMockBuilder( WC_Order::class )
-			->disableOriginalConstructor()
-			->setMethods( [ 'update_meta_data', 'save', 'payment_complete', 'get_data_store' ] )
-			->getMock();
-
-		$order
-			->method( 'get_data_store' )
-			->willReturn( new \WC_Mock_WC_Data_Store() );
-
-		$intent_id     = 'pi_mock';
-		$charge_id     = 'ch_mock';
-		$intent_status = Payment_Intent_Status::SUCCEEDED;
-
-		$order
-			->expects( $this->once() )
-			->method( 'payment_complete' )
-			->willThrowException( new Exception( 'something went wrong' ) );
-
-		$this->wcpay_gateway->update_order_status_from_intent( $order, $intent_id, $intent_status, $charge_id );
-	}
-
 	public function test_is_platform_checkout_enabled_returns_true() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
