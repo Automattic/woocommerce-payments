@@ -296,7 +296,7 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 
 	public function test_it_gets_the_correct_for_specific_allowed_selling_locations_type() {
 		update_option( 'woocommerce_allowed_countries', 'specific' );
-		update_option( 'woocommerce_specific_allowed_countries', ['US', 'CA'] );
+		update_option( 'woocommerce_specific_allowed_countries', [ 'US', 'CA' ] );
 
 		$settings = $this->fraud_risk_tools->get_standard_protection_settings();
 
@@ -305,7 +305,7 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 
 	public function test_it_gets_the_correct_for_all_except_selling_locations_type() {
 		update_option( 'woocommerce_allowed_countries', 'all_except' );
-		update_option( 'woocommerce_all_except_countries', ['US', 'CA'] );
+		update_option( 'woocommerce_all_except_countries', [ 'US', 'CA' ] );
 
 		$settings = $this->fraud_risk_tools->get_standard_protection_settings();
 
