@@ -44,7 +44,7 @@ class Checkout_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_exception_will_throw_if_base_request_parameter_is_invalid() {
 		$this->expectException( Extend_Request_Exception::class );
-		$this->checkout_service->create_intention_request( new Generic( 'api', Requests::POST ), $this->payment_information );
+		$this->checkout_service->create_intention_request( new Generic( 'api', 'POST' ), $this->payment_information );
 	}
 	public function test_exception_will_throw_if_create_intention_request_is_called_directly() {
 		$this->expectException( Extend_Request_Exception::class );
