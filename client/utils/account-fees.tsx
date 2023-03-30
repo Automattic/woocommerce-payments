@@ -353,6 +353,13 @@ export const getTransactionsPaymentMethodName = (
 			);
 		case 'sofort':
 			return __( 'Sofort transactions', 'woocommerce-payments' );
+		case 'affirm':
+			return __( 'Affirm transactions', 'woocommerce-payments' );
+		case 'afterpay_clearpay':
+			return __(
+				'Afterpay/Clearpay transactions',
+				'woocommerce-payments'
+			);
 		default:
 			return __( 'Unknown transactions', 'woocommerce-payments' );
 	}

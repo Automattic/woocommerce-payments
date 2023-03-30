@@ -66,7 +66,9 @@ export interface Transaction {
 		| 'mastercard'
 		| 'unionpay'
 		| 'visa'
-		| 'link';
+		| 'link'
+		| 'affirm'
+		| 'afterpay_clearpay';
 	loan_id?: string;
 	metadata?: {
 		charge_type: 'card_reader_fee';

@@ -30,6 +30,8 @@ import {
 	PAYMENT_METHOD_NAME_P24,
 	PAYMENT_METHOD_NAME_SEPA,
 	PAYMENT_METHOD_NAME_SOFORT,
+	PAYMENT_METHOD_NAME_AFFIRM,
+	PAYMENT_METHOD_NAME_AFTERPAY,
 } from '../constants.js';
 
 const upeMethods = {
@@ -42,6 +44,8 @@ const upeMethods = {
 	p24: PAYMENT_METHOD_NAME_P24,
 	sepa_debit: PAYMENT_METHOD_NAME_SEPA,
 	sofort: PAYMENT_METHOD_NAME_SOFORT,
+	affirm: PAYMENT_METHOD_NAME_AFFIRM,
+	afterpay_clearpay: PAYMENT_METHOD_NAME_AFTERPAY,
 };
 
 const enabledPaymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
