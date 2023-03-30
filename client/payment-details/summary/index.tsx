@@ -356,7 +356,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								<div className="payment-details-capture-notice__text">
 									{ createInterpolateElement(
 										__(
-											'You need to <a>capture</a> this charge before ',
+											'You need to <a>capture</a> this charge in ',
 											'woocommerce-payments'
 										),
 										{
@@ -370,13 +370,19 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											),
 										}
 									) }
-									<b>
-										{ dateI18n(
+									<b
+										title={ dateI18n(
 											'M j, Y / g:iA',
 											moment
 												.utc( authorization.created )
 												.add( 7, 'days' )
 										) }
+									>
+										{ moment
+											.utc( authorization.created )
+											.add( 7, 'days' )
+											.locale( 'es' )
+											.fromNow() }
 									</b>
 									{ isFraudOutcomeReview &&
 										`. ${ __(
