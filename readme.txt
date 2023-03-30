@@ -40,7 +40,7 @@ Our global support team is available to answer questions you may have about WooC
 
 * WordPress 5.9 or newer.
 * WooCommerce 7.3 or newer.
-* PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
+* PHP 7.2 or newer is recommended.
 
 = Try it now =
 
