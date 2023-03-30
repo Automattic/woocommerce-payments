@@ -912,6 +912,22 @@ Object {
                 </div>
               </div>
             </div>
+            <footer
+              class="fraud-protection-advanced-settings__footer"
+            >
+              <a
+                class="components-button is-secondary"
+                href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
+              >
+                Back to Payments Settings
+              </a>
+              <button
+                class="components-button is-primary"
+                type="button"
+              >
+                Save Changes
+              </button>
+            </footer>
           </div>
         </div>
       </div>
@@ -1800,6 +1816,22 @@ Object {
               </div>
             </div>
           </div>
+          <footer
+            class="fraud-protection-advanced-settings__footer"
+          >
+            <a
+              class="components-button is-secondary"
+              href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
+            >
+              Back to Payments Settings
+            </a>
+            <button
+              class="components-button is-primary"
+              type="button"
+            >
+              Save Changes
+            </button>
+          </footer>
         </div>
       </div>
     </div>
@@ -2560,6 +2592,23 @@ Object {
                 </div>
               </div>
             </div>
+            <footer
+              class="fraud-protection-advanced-settings__footer"
+            >
+              <a
+                class="components-button is-secondary"
+                href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
+              >
+                Back to Payments Settings
+              </a>
+              <button
+                class="components-button is-primary"
+                disabled=""
+                type="button"
+              >
+                Save Changes
+              </button>
+            </footer>
           </div>
         </div>
       </div>
@@ -3238,6 +3287,23 @@ Object {
               </div>
             </div>
           </div>
+          <footer
+            class="fraud-protection-advanced-settings__footer"
+          >
+            <a
+              class="components-button is-secondary"
+              href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
+            >
+              Back to Payments Settings
+            </a>
+            <button
+              class="components-button is-primary"
+              disabled=""
+              type="button"
+            >
+              Save Changes
+            </button>
+          </footer>
         </div>
       </div>
     </div>
@@ -3966,6 +4032,22 @@ Object {
               </div>
             </div>
           </div>
+          <footer
+            class="fraud-protection-advanced-settings__footer"
+          >
+            <a
+              class="components-button is-secondary"
+              href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
+            >
+              Back to Payments Settings
+            </a>
+            <button
+              class="components-button is-primary"
+              type="button"
+            >
+              Save Changes
+            </button>
+          </footer>
         </div>
       </div>
     </div>
@@ -4611,6 +4693,22 @@ Object {
             </div>
           </div>
         </div>
+        <footer
+          class="fraud-protection-advanced-settings__footer"
+        >
+          <a
+            class="components-button is-secondary"
+            href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
+          >
+            Back to Payments Settings
+          </a>
+          <button
+            class="components-button is-primary"
+            type="button"
+          >
+            Save Changes
+          </button>
+        </footer>
       </div>
     </div>
   </div>,
@@ -5512,6 +5610,22 @@ Object {
                 </div>
               </div>
             </div>
+            <footer
+              class="fraud-protection-advanced-settings__footer"
+            >
+              <a
+                class="components-button is-secondary"
+                href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
+              >
+                Back to Payments Settings
+              </a>
+              <button
+                class="components-button is-primary"
+                type="button"
+              >
+                Save Changes
+              </button>
+            </footer>
           </div>
         </div>
       </div>
@@ -6332,6 +6446,22 @@ Object {
               </div>
             </div>
           </div>
+          <footer
+            class="fraud-protection-advanced-settings__footer"
+          >
+            <a
+              class="components-button is-secondary"
+              href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
+            >
+              Back to Payments Settings
+            </a>
+            <button
+              class="components-button is-primary"
+              type="button"
+            >
+              Save Changes
+            </button>
+          </footer>
         </div>
       </div>
     </div>
