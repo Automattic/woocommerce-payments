@@ -29,7 +29,7 @@ export default {
 		title: __( 'Deposit history', 'woocommerce-payments' ),
 		descriptions: {
 			suspended: __(
-				'Your deposits are {{strong}}temporarily suspended{{/strong}} ({{suspendLink}}learn more{{/suspendLink}})',
+				'Your deposits are {{strong}}temporarily suspended{{/strong}} {{suspendLink}}Learn more{{/suspendLink}}',
 				'woocommerce-payments'
 			),
 			daily: __(
