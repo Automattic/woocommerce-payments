@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { sprintf, __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import { Card, CardBody, CardFooter, CardDivider } from '@wordpress/components';
 import moment from 'moment';
@@ -356,7 +356,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								<div className="payment-details-capture-notice__text">
 									{ createInterpolateElement(
 										__(
-											'You need to <a>capture</a> this charge in ',
+											'You need to <a>capture</a> this charge in',
 											'woocommerce-payments'
 										),
 										{
@@ -378,11 +378,14 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 												.add( 7, 'days' )
 										) }
 									>
-										{ moment
-											.utc( authorization.created )
-											.add( 7, 'days' )
-											.locale( 'es' )
-											.fromNow() }
+										{ sprintf(
+											__( ' %s', 'woocommerce-payments' ),
+											moment
+												.utc( authorization.created )
+												.add( 7, 'days' )
+												.locale( 'es' )
+												.fromNow( true )
+										) }
 									</b>
 									{ isFraudOutcomeReview &&
 										`. ${ __(
