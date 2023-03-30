@@ -371,7 +371,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( 'Pending payment to On hold', $notes[1]->content );
 		$this->assertStringContainsString( 'held for review</strong> by one or more risk filters', $notes[0]->content );
-		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock" target="_blank" rel="noopener noreferrer">View more details', $notes[0]->content );
+		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock&status_is=review&type_is=order_note" target="_blank" rel="noopener noreferrer">View more details', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
@@ -679,7 +679,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( 'blocked</strong> by one or more risk filters', $notes[0]->content );
-		$this->assertStringContainsString( '/payments/transactions/details&id=' . $this->order->get_id() . '" target="_blank" rel="noopener noreferrer">View more details', $notes[0]->content );
+		$this->assertStringContainsString( '/payments/transactions/details&id=' . $this->order->get_id() . '&status_is=block&type_is=order_note" target="_blank" rel="noopener noreferrer">View more details', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
