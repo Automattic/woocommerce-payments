@@ -3,7 +3,7 @@ Contributors: woocommerce, automattic
 Tags: payment gateway, payment, apple pay, credit card, google pay
 Requires at least: 5.9
 Tested up to: 6.1
-Requires PHP: 7.0
+Requires PHP: 7.2
 Stable tag: 5.6.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
