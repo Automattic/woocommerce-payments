@@ -2547,7 +2547,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		if ( Payment_Intent_Status::CANCELED === $status ) {
-			$this->order_service->mark_payment_capture_cancelled( $order, $intent->get_id(), $status );
+			$this->order_service->update_order_status_from_intent( $order, $intent );
 		} else {
 			if ( ! empty( $error_message ) ) {
 				$note = sprintf(

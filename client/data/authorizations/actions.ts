@@ -122,6 +122,18 @@ export function* submitCaptureAuthorization(
 		yield dispatch(
 			STORE_NAME,
 			'invalidateResolutionForStoreSelector',
+			'getFraudOutcomeTransactions'
+		);
+
+		yield dispatch(
+			STORE_NAME,
+			'invalidateResolutionForStoreSelector',
+			'getFraudOutcomeTransactionsSummary'
+		);
+
+		yield dispatch(
+			STORE_NAME,
+			'invalidateResolutionForStoreSelector',
 			'getTimeline'
 		);
 
@@ -204,6 +216,18 @@ export function* submitCancelAuthorization(
 			STORE_NAME,
 			'invalidateResolutionForStoreSelector',
 			'getAuthorizationsSummary'
+		);
+
+		yield dispatch(
+			STORE_NAME,
+			'invalidateResolutionForStoreSelector',
+			'getFraudOutcomeTransactions'
+		);
+
+		yield dispatch(
+			STORE_NAME,
+			'invalidateResolutionForStoreSelector',
+			'getFraudOutcomeTransactionsSummary'
 		);
 
 		yield dispatch(

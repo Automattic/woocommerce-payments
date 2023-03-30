@@ -20,6 +20,7 @@ class Fraud_Meta_Box_Type extends Base_Constant {
 	const ALLOW          = 'allow';
 	const REVIEW         = 'review';
 	const REVIEW_ALLOWED = 'review_allowed';
+	const REVIEW_BLOCKED = 'review_blocked';
 	const BLOCK          = 'block';
 	const NOT_WCPAY      = 'not_wcpay';
 }
