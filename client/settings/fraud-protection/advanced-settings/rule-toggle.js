@@ -55,7 +55,7 @@ const FraudProtectionRuleToggle = ( {
 	const renderTooltip = () => (
 		<HoverTooltip
 			content={ __(
-				'WooCommerce Payments will automatically cancel orders that match this filter.',
+				'If enabled, WooCommerce Payments will automatically block payments for orders that match this filter.',
 				'woocommerce-payments'
 			) }
 		>
