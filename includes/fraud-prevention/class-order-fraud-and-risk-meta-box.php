@@ -100,6 +100,16 @@ class Order_Fraud_And_Risk_Meta_Box {
 				echo '<p class="wcpay-fraud-risk-meta-allow"><img src="' . esc_url( $icon_url ) . '" alt="' . esc_html( $icon_alt ) . '"> ' . esc_html( $status ) . '</p><p>' . esc_html( $description ) . '</p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
 				break;
 
+			case Fraud_Meta_Box_Type::REVIEW_BLOCKED:
+				$icon_url        = plugins_url( 'assets/images/icons/shield-stroke-red.svg', WCPAY_PLUGIN_FILE );
+				$icon_alt        = __( 'Red shield outline', 'woocommerce-payments' );
+				$status          = __( 'Held for review', 'woocommerce-payments' );
+				$description     = __( 'This transaction was held for review by your risk filters, and the charge was manually blocked after review.', 'woocommerce-payments' );
+				$callout         = __( 'Review payment', 'woocommerce-payments' );
+				$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
+				echo '<p class="wcpay-fraud-risk-meta-blocked"><img src="' . esc_url( $icon_url ) . '" alt="' . esc_html( $icon_alt ) . '"> ' . esc_html( $status ) . '</p><p>' . esc_html( $description ) . '</p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
+				break;
+
 			case Fraud_Meta_Box_Type::BLOCK:
 				$icon_url        = plugins_url( 'assets/images/icons/shield-stroke-red.svg', WCPAY_PLUGIN_FILE );
 				$icon_alt        = __( 'Red shield outline', 'woocommerce-payments' );
