@@ -59,6 +59,7 @@ declare const wcpaySettings: {
 		isWelcomeTourDismissed?: boolean;
 	};
 	accountDefaultCurrency: string;
+	isFraudProtectionSettingsEnabled: boolean;
 };
 
 declare const wcTracks: any;

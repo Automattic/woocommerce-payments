@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -12,10 +12,10 @@ import NextDepositDetails from '../next-deposit';
 import {
 	useAllDepositsOverviews,
 	useDeposits,
-	useInstantDeposit,
 } from 'wcpay/data';
 import { CachedDeposit } from 'wcpay/types/deposits';
 import RecentDeposits from 'wcpay/components/deposits-overview/recent-deposits';
+import DepositsOverviewFooter from '../footer';
 
 jest.mock( 'wcpay/data', () => ( {
 	useAllDepositsOverviews: jest.fn(),
@@ -254,5 +254,16 @@ describe( 'Deposits Overview information', () => {
 		);
 
 		expect( container ).toBeEmptyDOMElement();
+	} );
+} );
+
+describe( 'Deposits Overview footer renders', () => {
+	test( 'Component Renders', () => {
+		const { container, getByText } = render( <DepositsOverviewFooter /> );
+		expect( container ).toMatchSnapshot();
+
+		// Check that the button and link is rendered.
+		getByText( 'View full deposits history' );
+		getByText( 'Change deposit schedule' );
 	} );
 } );

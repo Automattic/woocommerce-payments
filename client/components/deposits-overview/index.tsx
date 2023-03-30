@@ -11,6 +11,7 @@ import { useAllDepositsOverviews } from 'wcpay/data';
 import strings from './strings';
 import NextDepositDetails from './next-deposit';
 import RecentDeposits from './recent-deposits';
+import DepositsOverviewFooter from './footer';
 
 const DepositsOverview = (): JSX.Element => {
 	const {
@@ -18,7 +19,7 @@ const DepositsOverview = (): JSX.Element => {
 		isLoading,
 	} = useAllDepositsOverviews() as AccountOverview.OverviewsResponse;
 
-	const { currencies, account } = overviews;
+	const { currencies } = overviews;
 
 	const overview = currencies[ 0 ]; // TODO: To handle multiple currencies we'll need to fetch the currently selected currency.
 	const currency = 'usd'; // TODO: hardcoded curency for recent deposits.
@@ -31,6 +32,8 @@ const DepositsOverview = (): JSX.Element => {
 				currency={ currency }
 				account={ overviews.account }
 			/>
+
+			<DepositsOverviewFooter />
 		</Card>
 	);
 };

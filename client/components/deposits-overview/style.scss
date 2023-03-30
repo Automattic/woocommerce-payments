@@ -18,7 +18,6 @@
 			color: $gray-700;
 		}
 	}
-
 	&__table {
 		color: $gray-900;
 		align-items: center;
@@ -53,6 +52,14 @@
 			&:last-child {
 				margin-left: auto;
 			}
+		}
+	}
+	&__footer {
+		:not( :first-child ) {
+			margin-left: 12px;
+		}
+		a:not( .components-button ) {
+			text-decoration: none;
 		}
 	}
 }
