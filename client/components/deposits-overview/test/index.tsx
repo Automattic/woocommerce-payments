@@ -10,10 +10,12 @@ import { render } from '@testing-library/react';
 import DepositsOverview from '..';
 import NextDepositDetails from '../next-deposit';
 import DepositsOverviewFooter from '../footer';
-import { useAllDepositsOverviews } from 'wcpay/data';
+import { useAllDepositsOverviews, useDepositIncludesLoan } from 'wcpay/data';
+import strings from '../strings';
 
 jest.mock( 'wcpay/data', () => ( {
 	useAllDepositsOverviews: jest.fn(),
+	useDepositIncludesLoan: jest.fn(),
 	useInstantDeposit: jest.fn(),
 } ) );
 
@@ -98,6 +100,9 @@ const createMockOverview = (
 const mockUseAllDepositsOverviews = useAllDepositsOverviews as jest.MockedFunction<
 	typeof useAllDepositsOverviews
 >;
+const mockUseDepositIncludesLoan = useDepositIncludesLoan as jest.MockedFunction<
+	typeof useDepositIncludesLoan
+>;
 
 // Mocks the DepositsOverviews hook to return the given currencies.
 const mockOverviews = ( currencies: AccountOverview.Overview[] ) => {
@@ -137,6 +142,10 @@ describe( 'Deposits Overview information', () => {
 				},
 			},
 		};
+		mockUseDepositIncludesLoan.mockReturnValue( {
+			includesFinancingPayout: false,
+			isLoading: false,
+		} );
 	} );
 	afterEach( () => {
 		jest.clearAllMocks();
@@ -186,6 +195,52 @@ describe( 'Deposits Overview information', () => {
 		);
 		expect( getByText( 'Estimated' ) ).toBeTruthy();
 		expect( getByText( '—' ) ).toBeTruthy();
+	} );
+
+	test( 'Renders capital loan notice if deposit includes financing payout', () => {
+		const overview = createMockOverview( 'usd', 100, 0, 'rubbish' );
+		mockUseDepositIncludesLoan.mockReturnValue( {
+			includesFinancingPayout: true,
+			isLoading: false,
+		} );
+
+		const { getByRole, getByText } = render(
+			<NextDepositDetails isLoading={ false } overview={ overview } />
+		);
+
+		getByText( strings.notices.depositIncludesLoan, {
+			exact: false,
+			ignore: '.a11y-speak-region',
+		} );
+		expect(
+			getByRole( 'link', {
+				name: 'Learn more',
+			} )
+		).toHaveAttribute( 'href', strings.documentationUrls.capital );
+	} );
+
+	test( `Doesn't render capital loan notice if deposit does not include financing payout`, () => {
+		const overview = createMockOverview( 'usd', 100, 0, 'rubbish' );
+		mockUseDepositIncludesLoan.mockReturnValue( {
+			includesFinancingPayout: false,
+			isLoading: false,
+		} );
+
+		const { queryByRole, queryByText } = render(
+			<NextDepositDetails isLoading={ false } overview={ overview } />
+		);
+
+		expect(
+			queryByText( strings.notices.depositIncludesLoan, {
+				exact: false,
+				ignore: '.a11y-speak-region',
+			} )
+		).toBeFalsy();
+		expect(
+			queryByRole( 'link', {
+				name: 'Learn more',
+			} )
+		).toBeFalsy();
 	} );
 } );
 
