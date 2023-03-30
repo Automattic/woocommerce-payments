@@ -69,7 +69,77 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 	];
 
 	/**
-	 * Advanced protection level
+	 * Standard protection level with specific selling locations
+	 *
+	 * @var array
+	 */
+	private $standard_protection_level_with_specific_selling_locations = [
+		[
+			'key'     => 'international_ip_address',
+			'outcome' => 'review',
+			'check'   => [
+				'key'      => 'ip_country',
+				'operator' => 'not_in',
+				'value'    => 'US|CA',
+			],
+		],
+		[
+			'key'     => 'order_items_threshold',
+			'outcome' => 'review',
+			'check'   => [
+				'key'      => 'item_count',
+				'operator' => 'greater_than',
+				'value'    => 10,
+			],
+		],
+		[
+			'key'     => 'purchase_price_threshold',
+			'outcome' => 'review',
+			'check'   => [
+				'key'      => 'order_total',
+				'operator' => 'greater_than',
+				'value'    => 100000,
+			],
+		],
+	];
+
+	/**
+	 * Standard protection level with all except selling locations
+	 *
+	 * @var array
+	 */
+	private $standard_protection_level_with_all_except_selling_locations = [
+		[
+			'key'     => 'international_ip_address',
+			'outcome' => 'review',
+			'check'   => [
+				'key'      => 'ip_country',
+				'operator' => 'in',
+				'value'    => 'US|CA',
+			],
+		],
+		[
+			'key'     => 'order_items_threshold',
+			'outcome' => 'review',
+			'check'   => [
+				'key'      => 'item_count',
+				'operator' => 'greater_than',
+				'value'    => 10,
+			],
+		],
+		[
+			'key'     => 'purchase_price_threshold',
+			'outcome' => 'review',
+			'check'   => [
+				'key'      => 'order_total',
+				'operator' => 'greater_than',
+				'value'    => 100000,
+			],
+		],
+	];
+
+	/**
+	 * High protection level
 	 *
 	 * @var array
 	 */
@@ -131,6 +201,59 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 		],
 	];
 
+	/**
+	 * Advanced protection level
+	 *
+	 * @var array
+	 */
+	private $advanced_protection_level = [
+		[
+			'key'     => 'international_ip_address',
+			'outcome' => 'block',
+			'check'   => [
+				'key'      => 'ip_country',
+				'operator' => 'in',
+				'value'    => '',
+			],
+		],
+		[
+			'key'     => 'purchase_price_threshold',
+			'outcome' => 'review',
+			'check'   => [
+				'key'      => 'order_total',
+				'operator' => 'greater_than',
+				'value'    => 100000,
+			],
+		],
+		[
+			'key'     => 'order_items_threshold',
+			'outcome' => 'review',
+			'check'   => [
+				'key'      => 'item_count',
+				'operator' => 'greater_than',
+				'value'    => 100000,
+			],
+		],
+		[
+			'key'     => 'address_mismatch',
+			'outcome' => 'review',
+			'check'   => [
+				'key'      => 'billing_shipping_address_same',
+				'operator' => 'equals',
+				'value'    => true,
+			],
+		],
+		[
+			'key'     => 'international_billing_address',
+			'outcome' => 'review',
+			'check'   => [
+				'key'      => 'billing_country',
+				'operator' => 'in',
+				'value'    => '',
+			],
+		],
+	];
+
 	public function set_up() {
 		parent::set_up();
 
@@ -163,6 +286,32 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $this->high_protection_level, $settings );
 	}
 
+	public function test_it_gets_high_protection_empty_allowed_countries_settings() {
+		update_option( 'woocommerce_allowed_countries', '' );
+
+		$settings = $this->fraud_risk_tools->get_high_protection_settings();
+
+		$this->assertSame( $this->high_protection_level, $settings );
+	}
+
+	public function test_it_gets_the_correct_for_specific_allowed_selling_locations_type() {
+		update_option( 'woocommerce_allowed_countries', 'specific' );
+		update_option( 'woocommerce_specific_allowed_countries', ['US', 'CA'] );
+
+		$settings = $this->fraud_risk_tools->get_standard_protection_settings();
+
+		$this->assertSame( $this->standard_protection_level_with_specific_selling_locations, $settings );
+	}
+
+	public function test_it_gets_the_correct_for_all_except_selling_locations_type() {
+		update_option( 'woocommerce_allowed_countries', 'all_except' );
+		update_option( 'woocommerce_all_except_countries', ['US', 'CA'] );
+
+		$settings = $this->fraud_risk_tools->get_standard_protection_settings();
+
+		$this->assertSame( $this->standard_protection_level_with_all_except_selling_locations, $settings );
+	}
+
 	/**
 	 * @dataProvider get_matching_protection_level_provider
 	 */
@@ -179,6 +328,7 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 			'basic'    => [ $this->basic_protection_level, 'basic' ],
 			'standard' => [ $this->standard_protection_level, 'standard' ],
 			'high'     => [ $this->high_protection_level, 'high' ],
+			'advanced' => [ $this->advanced_protection_level, 'advanced' ],
 		];
 	}
 }
