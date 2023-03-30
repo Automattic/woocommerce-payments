@@ -231,34 +231,6 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Updates an order to cancelled status, while adding a note with a link to the transaction.
-	 *
-	 * @param WC_Order $order         Order object.
-	 * @param array    $intent_data   The intent data associated with this order.
-	 *
-	 * @return void
-	 */
-	public function mark_payment_capture_cancelled( $order, $intent_data ) {
-		$note = $this->generate_capture_cancelled_note();
-		if ( $this->order_note_exists( $order, $note ) ) {
-			$this->complete_order_processing( $order );
-			return;
-		}
-
-		/**
-		 * If we have a status for the fraud outcome, we want to add the proper meta data.
-		 */
-		if ( isset( $intent_data['fraud_outcome'] ) && Rule::is_valid_fraud_outcome_status( $intent_data['fraud_outcome'] ) ) {
-			$this->set_fraud_outcome_status_for_order( $order, $intent_data['fraud_outcome'] );
-			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::REVIEW_BLOCKED );
-		}
-
-		$this->update_order_status( $order, Order_Status::CANCELLED );
-		$order->add_order_note( $note );
-		$this->complete_order_processing( $order, $intent_data['intent_status'] );
-	}
-
-	/**
 	 * Leaves order status as Pending, adds fraud meta data, and adds the fraud blocked note.
 	 *
 	 * @param WC_Order $order         Order object.
@@ -747,6 +719,36 @@ class WC_Payments_Order_Service {
 		$this->set_customer_id_for_order( $order, $customer_id );
 		$this->set_wcpay_intent_currency_for_order( $order, $currency );
 		$order->save();
+	}
+
+	/**
+	 * Updates an order to cancelled status, while adding a note with a link to the transaction.
+	 *
+	 * @param WC_Order $order         Order object.
+	 * @param array    $intent_data   The intent data associated with this order.
+	 *
+	 * @return void
+	 */
+	private function mark_payment_capture_cancelled( $order, $intent_data ) {
+		$note = $this->generate_capture_cancelled_note();
+		if ( $this->order_note_exists( $order, $note ) ) {
+			$this->complete_order_processing( $order );
+			return;
+		}
+
+		/**
+		 * If we have a status for the fraud outcome, we want to add the proper meta data.
+		 */
+		if ( isset( $intent_data['fraud_outcome'] ) && Rule::is_valid_fraud_outcome_status( $intent_data['fraud_outcome'] ) ) {
+			if ( Rule::FRAUD_OUTCOME_REVIEW === $intent_data['fraud_outcome'] ) {
+				$this->set_fraud_outcome_status_for_order( $order, $intent_data['fraud_outcome'] );
+				$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::REVIEW_BLOCKED );
+			}
+		}
+
+		$this->update_order_status( $order, Order_Status::CANCELLED );
+		$order->add_order_note( $note );
+		$this->complete_order_processing( $order, $intent_data['intent_status'] );
 	}
 
 	/**
@@ -1370,7 +1372,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @return array The data we need to continue processing.
 	 */
-	public function get_intent_data( $intent ): array {
+	private function get_intent_data( $intent ): array {
 		$intent_data = [];
 		if ( is_array( $intent ) ) {
 			$intent_data = [
