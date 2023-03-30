@@ -19,7 +19,7 @@ use WCPay\Payment_Process\Payment;
  *
  * This will prevent a second payment for an order, which is already paid.
  */
-class Check_Session_Against_Processing_Order_Step extends Abstract_Step {
+final class Check_Session_Against_Processing_Order_Step extends Abstract_Step {
 	/**
 	 * Key name for saving the current processing order_id to WC Session with the purpose
 	 * of preventing duplicate payments in a single order.
@@ -55,15 +55,6 @@ class Check_Session_Against_Processing_Order_Step extends Abstract_Step {
 	public function __construct() {
 		$this->gateway = WC_Payments::get_gateway();
 		$this->session = WC()->session;
-	}
-
-	/**
-	 * Returns the ID of the step.
-	 *
-	 * @return string
-	 */
-	public function get_id() {
-		return 'check-session-against-processing-order';
 	}
 
 	/**

@@ -20,22 +20,13 @@ use WCPay\Payment_Process\Payment;
  * Handles the creation of intents in order to display fields on the checkout page.
  * At this point typically there is no order, and even if there was one, it might change.
  */
-class Create_UPE_Intent_Step extends Abstract_Step {
+final class Create_UPE_Intent_Step extends Abstract_Step {
 	/**
 	 * Holds the WCPay customer service.
 	 *
 	 * @var WC_Payments_Customer_Service
 	 */
 	protected $customer_service;
-
-	/**
-	 * Returns the ID of the step.
-	 *
-	 * @return string
-	 */
-	public function get_id() {
-		return 'create-upe-intent';
-	}
 
 	/**
 	 * Checks if the step is applicable.

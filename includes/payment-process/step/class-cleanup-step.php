@@ -15,16 +15,7 @@ use WCPay\Payment_Process\Payment;
 /**
  * Cleans up everything at the end.
  */
-class Cleanup_Step extends Abstract_Step {
-	/**
-	 * Returns the ID of the step.
-	 *
-	 * @return string
-	 */
-	public function get_id() {
-		return 'cleanup';
-	}
-
+final class Cleanup_Step extends Abstract_Step {
 	/**
 	 * Checks if the step is applicable.
 	 *

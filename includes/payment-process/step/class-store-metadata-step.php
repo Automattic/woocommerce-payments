@@ -14,7 +14,7 @@ use WCPay\Payment_Process\Order_Payment;
 /**
  * Step for storing order metadata.
  */
-class Store_Metadata_Step extends Abstract_Step {
+final class Store_Metadata_Step extends Abstract_Step {
 	/**
 	 * The mode object for the gateway.
 	 *
@@ -35,15 +35,6 @@ class Store_Metadata_Step extends Abstract_Step {
 	public function __construct() {
 		$this->order_service = WC_Payments::get_order_service();
 		$this->mode          = WC_Payments::mode();
-	}
-
-	/**
-	 * Returns the ID of the step.
-	 *
-	 * @return string
-	 */
-	public function get_id() {
-		return 'store-metadata';
 	}
 
 	/**

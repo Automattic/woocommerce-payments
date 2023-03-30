@@ -48,15 +48,6 @@ class Setup_Payment_Step extends Abstract_Step {
 	}
 
 	/**
-	 * Returns the ID of the step.
-	 *
-	 * @return string
-	 */
-	public function get_id() {
-		return 'setup-payment';
-	}
-
-	/**
 	 * Checks if the step is applicable.
 	 *
 	 * @param Payment $payment A payment, which is being processed.

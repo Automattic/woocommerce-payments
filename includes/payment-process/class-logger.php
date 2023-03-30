@@ -73,7 +73,7 @@ class Logger {
 		];
 
 		if ( ! is_null( $step ) ) {
-			$log['step'] = $step->get_id();
+			$log['step'] = get_class( $step );
 		}
 
 		$log['key'] = $key;

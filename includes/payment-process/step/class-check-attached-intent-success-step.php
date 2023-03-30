@@ -21,7 +21,7 @@ use WCPay\Payment_Process\Payment;
  * If there is an intent attached, and it is already in a successful state,
  * this means that the payment should already be completed.
  */
-class Check_Attached_Intent_Success_Step extends Abstract_Step {
+final class Check_Attached_Intent_Success_Step extends Abstract_Step {
 	/**
 	 * Flag to indicate that a previous intention attached to the order was successful.
 	 */
@@ -39,15 +39,6 @@ class Check_Attached_Intent_Success_Step extends Abstract_Step {
 	 */
 	public function __construct() {
 		$this->gateway = WC_Payments::get_gateway();
-	}
-
-	/**
-	 * Returns the ID of the step.
-	 *
-	 * @return string
-	 */
-	public function get_id() {
-		return 'check-attached-intent-success';
 	}
 
 	/**

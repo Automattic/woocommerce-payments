@@ -24,7 +24,7 @@ use WCPay\Payment_Methods\UPE_Payment_Gateway;
  * Handles the creation of intents in order to display fields on the checkout page.
  * At this point typically there is no order, and even if there was one, it might change.
  */
-class Redirect_UPE_Payment_Step extends Abstract_Step {
+final class Redirect_UPE_Payment_Step extends Abstract_Step {
 	use Redirect_If_Action_Is_Required;
 
 	/**
@@ -51,14 +51,6 @@ class Redirect_UPE_Payment_Step extends Abstract_Step {
 		$this->gateway             = WC_Payments::get_gateway();
 	}
 
-	/**
-	 * Returns the ID of the step.
-	 *
-	 * @return string
-	 */
-	public function get_id() {
-		return 'redirect-upe-payment';
-	}
 	/**
 	 * Checks if the step is applicable to the given payment process.
 	 *

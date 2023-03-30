@@ -18,7 +18,7 @@ use WCPay\Payment_Process\Payment_Method\Saved_Payment_Method;
 /**
  * In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
  */
-class Complete_Without_Payment_Step extends Abstract_Step {
+final class Complete_Without_Payment_Step extends Abstract_Step {
 	/**
 	 * The active gateway.
 	 *
@@ -32,15 +32,6 @@ class Complete_Without_Payment_Step extends Abstract_Step {
 	public function __construct() {
 		// @todo: Change this with proper dependencies.
 		$this->gateway = WC_Payments::get_gateway();
-	}
-
-	/**
-	 * Returns the ID of the step.
-	 *
-	 * @return string
-	 */
-	public function get_id() {
-		return 'complete-without-payment';
 	}
 
 	/**

@@ -18,17 +18,8 @@ use WCPay\Payment_Process\Payment_Method\Saved_Payment_Method;
 /**
  * Associates payment tokens with orders and subscriptions.
  */
-class Add_Token_To_Order_Step extends Abstract_Step {
+final class Add_Token_To_Order_Step extends Abstract_Step {
 	use WC_Payments_Subscriptions_Utilities;
-
-	/**
-	 * Returns the ID of the step.
-	 *
-	 * @return string
-	 */
-	public function get_id() {
-		return 'add-token-to-order';
-	}
 
 	/**
 	 * Checks if the step is applicable.

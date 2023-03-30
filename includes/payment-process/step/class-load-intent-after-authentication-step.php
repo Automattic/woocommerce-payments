@@ -20,7 +20,7 @@ use WCPay\Payment_Process\Payment;
  * This step is used to update the order status after the user has
  * been asked to authenticate their payment.
  */
-class Load_Intent_After_Authentication_Step extends Abstract_Step {
+final class Load_Intent_After_Authentication_Step extends Abstract_Step {
 	/**
 	 * Order service.
 	 *
@@ -49,15 +49,6 @@ class Load_Intent_After_Authentication_Step extends Abstract_Step {
 		$this->order_service       = WC_Payments::get_order_service();
 		$this->gateway             = WC_Payments::get_gateway();
 		$this->payments_api_client = WC_Payments::get_payments_api_client();
-	}
-
-	/**
-	 * Returns the ID of the step.
-	 *
-	 * @return string
-	 */
-	public function get_id() {
-		return 'load-intent-after-authentication';
 	}
 
 	/**

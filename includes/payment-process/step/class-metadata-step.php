@@ -16,17 +16,8 @@ use WCPay\Payment_Process\Payment;
 /**
  * Prepares metadata from the order.
  */
-class Metadata_Step extends Abstract_Step {
+final class Metadata_Step extends Abstract_Step {
 	use WC_Payments_Subscriptions_Utilities;
-
-	/**
-	 * Returns the ID of the step.
-	 *
-	 * @return string
-	 */
-	public function get_id() {
-		return 'metadata';
-	}
 
 	/**
 	 * Checks if the step is applicable.

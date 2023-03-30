@@ -17,14 +17,6 @@ use WCPay\Payment_Process\Payment;
  */
 abstract class Abstract_Step {
 	/**
-	 * Returns the ID of the step.
-	 * This will be used for storage and logging.
-	 *
-	 * @return string
-	 */
-	abstract public function get_id();
-
-	/**
 	 * Checks if the step is applicable to a specific payment.
 	 *
 	 * @param Payment $payment The payment, which is being processed.

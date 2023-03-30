@@ -15,16 +15,7 @@ use WCPay\Payment_Process\Payment;
 /**
  * Checks if an order matches the required minimum amount.
  */
-class Verify_Minimum_Amount_Step extends Abstract_Step {
-	/**
-	 * Returns the ID of the step.
-	 *
-	 * @return string
-	 */
-	public function get_id() {
-		return 'verify-minimum-amount';
-	}
-
+final class Verify_Minimum_Amount_Step extends Abstract_Step {
 	/**
 	 * Checks if the step is applicable.
 	 *

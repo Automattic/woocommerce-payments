@@ -19,7 +19,7 @@ use WCPay\Payment_Process\Payment_Method\Saved_Payment_Method;
 /**
  * Updates the order with all the necessary details, incl. its status.
  */
-class Update_Order_Step extends Abstract_Step {
+final class Update_Order_Step extends Abstract_Step {
 	/**
 	 * Gateway object.
 	 *
@@ -40,15 +40,6 @@ class Update_Order_Step extends Abstract_Step {
 	public function __construct() {
 		$this->gateway       = WC_Payments::get_gateway();
 		$this->order_service = WC_Payments::get_order_service();
-	}
-
-	/**
-	 * Returns the ID of the step.
-	 *
-	 * @return string
-	 */
-	public function get_id() {
-		return 'store-order-data';
 	}
 
 	/**

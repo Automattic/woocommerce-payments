@@ -22,22 +22,13 @@ use WCPay\Payment_Process\Payment_Method\Saved_Payment_Method;
  * At this point all order details are finalized, and need to be added to the intent.
  * The intent will be confirmed later, in JavaScript.
  */
-class Update_UPE_Intent_Step extends Abstract_Step {
+final class Update_UPE_Intent_Step extends Abstract_Step {
 	/**
 	 * Holds the WCPay gateway.
 	 *
 	 * @var UPE_Payment_Gateway
 	 */
 	protected $gateway;
-
-	/**
-	 * Returns the ID of the step.
-	 *
-	 * @return string
-	 */
-	public function get_id() {
-		return 'update-upe-intent';
-	}
 
 	/**
 	 * Loads all needed dependencies.

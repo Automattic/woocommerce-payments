@@ -17,7 +17,7 @@ use WCPay\Payment_Process\Payment;
 /**
  * Collects and prepares customer and user data.
  */
-class Customer_Details_Step extends Abstract_Step {
+final class Customer_Details_Step extends Abstract_Step {
 	/**
 	 * The WCPay customer service.
 	 *
@@ -45,13 +45,6 @@ class Customer_Details_Step extends Abstract_Step {
 	public function __construct() {
 		// @todo: Use a proper dependency here.
 		$this->customer_service = WC_Payments::get_customer_service();
-	}
-
-	/**
-	 * Returns the ID of the step.
-	 */
-	public function get_id() {
-		return 'customer-details';
 	}
 
 	/**

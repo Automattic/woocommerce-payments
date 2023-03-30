@@ -41,15 +41,6 @@ class Update_Saved_Payment_Method_Step extends Abstract_Step {
 	}
 
 	/**
-	 * Returns the ID of the step.
-	 *
-	 * @return string
-	 */
-	public function get_id() {
-		return 'update-saved-payment-method';
-	}
-
-	/**
 	 * Checks if the step is applicable to a given payment.
 	 *
 	 * @param Payment $payment A payment, which will be processed.

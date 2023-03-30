@@ -15,7 +15,7 @@ use WCPay\Session_Rate_Limiter;
 /**
  * Bumps the transaction limiter for `Check_Failed_Transactions_Limit_Step`.
  */
-class Bump_Transaction_Limiter_Step extends Abstract_Step {
+final class Bump_Transaction_Limiter_Step extends Abstract_Step {
 	/**
 	 * Session_Rate_Limiter instance for limiting failed transactions.
 	 *
@@ -28,15 +28,6 @@ class Bump_Transaction_Limiter_Step extends Abstract_Step {
 	 */
 	public function __construct() {
 		$this->failed_transaction_rate_limiter = WC_Payments::get_transaction_rate_limiter();
-	}
-
-	/**
-	 * Returns the ID of the step.
-	 *
-	 * @return string
-	 */
-	public function get_id() {
-		return 'bump-transaction-limiter';
 	}
 
 	/**

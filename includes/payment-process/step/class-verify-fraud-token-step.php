@@ -14,7 +14,7 @@ use WCPay\Payment_Process\Payment;
 /**
  * Checks if a fraud prevention token is present, and verifies it.
  */
-class Verify_Fraud_Token_Step extends Abstract_Step {
+final class Verify_Fraud_Token_Step extends Abstract_Step {
 	/**
 	 * Holds the fraud prevention service.
 	 *
@@ -27,15 +27,6 @@ class Verify_Fraud_Token_Step extends Abstract_Step {
 	 */
 	public function __construct() {
 		$this->fraud_prevention_service = Fraud_Prevention_Service::get_instance();
-	}
-
-	/**
-	 * Returns the ID of the step.
-	 *
-	 * @return string
-	 */
-	public function get_id() {
-		return 'verify-fraud-token';
 	}
 
 	/**

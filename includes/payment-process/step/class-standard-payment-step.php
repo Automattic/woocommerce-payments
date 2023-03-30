@@ -23,7 +23,7 @@ use WCPay\Payment_Process\Payment_Method\New_Payment_Method;
 /**
  * Performs a standard payment with a positive amount.
  */
-class Standard_Payment_Step extends Abstract_Step {
+final class Standard_Payment_Step extends Abstract_Step {
 	use Redirect_If_Action_Is_Required;
 
 	/**
@@ -55,15 +55,6 @@ class Standard_Payment_Step extends Abstract_Step {
 		$this->gateway       = WC_Payments::get_gateway();
 		$this->order_service = WC_Payments::$order_service;
 		$this->account       = WC_Payments::get_account_service();
-	}
-
-	/**
-	 * Returns the ID of the step.
-	 *
-	 * @return string
-	 */
-	public function get_id() {
-		return 'standard-payment';
 	}
 
 	/**
