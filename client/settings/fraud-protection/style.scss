@@ -31,6 +31,15 @@
 				padding: 0;
 			}
 		}
+
+		&__footer {
+			display: flex;
+			justify-content: flex-end;
+
+			> .components-button + .components-button {
+				margin-left: 24px;
+			}
+		}
 	}
 	&-header-breadcrumb {
 		margin-top: 0;
