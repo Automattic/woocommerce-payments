@@ -1,4 +1,10 @@
 .wcpay-tooltip {
+	&--click {
+		&__content-wrapper {
+			cursor: pointer;
+		}
+	}
+
 	&__content-wrapper {
 		// ensures that the element needed for position calculations isn't included in the DOM layout
 		display: contents;
