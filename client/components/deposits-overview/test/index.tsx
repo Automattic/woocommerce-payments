@@ -9,10 +9,7 @@ import { render } from '@testing-library/react';
  */
 import DepositsOverview from '..';
 import NextDepositDetails from '../next-deposit';
-import {
-	useAllDepositsOverviews,
-	useDeposits,
-} from 'wcpay/data';
+import { useAllDepositsOverviews, useDeposits } from 'wcpay/data';
 import { CachedDeposit } from 'wcpay/types/deposits';
 import RecentDeposits from 'wcpay/components/deposits-overview/recent-deposits';
 import DepositsOverviewFooter from '../footer';
@@ -232,10 +229,7 @@ describe( 'Deposits Overview information', () => {
 			isLoading: false,
 		} );
 		const { getByText } = render(
-			<RecentDeposits
-				account={ mockAccount }
-				currency={ mockAccount.default_currency }
-			/>
+			<RecentDeposits currency={ mockAccount.default_currency } />
 		);
 		expect( getByText( 'January 2, 2020' ) ).toBeTruthy();
 	} );
@@ -247,10 +241,7 @@ describe( 'Deposits Overview information', () => {
 		} );
 
 		const { container } = render(
-			<RecentDeposits
-				account={ mockAccount }
-				currency={ mockAccount.default_currency }
-			/>
+			<RecentDeposits currency={ mockAccount.default_currency } />
 		);
 
 		expect( container ).toBeEmptyDOMElement();

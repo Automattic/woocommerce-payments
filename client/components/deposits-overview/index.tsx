@@ -28,10 +28,7 @@ const DepositsOverview = (): JSX.Element => {
 			<CardHeader>{ strings.heading }</CardHeader>
 			<NextDepositDetails isLoading={ isLoading } overview={ overview } />
 
-			<RecentDeposits
-				currency={ currency }
-				account={ overviews.account }
-			/>
+			<RecentDeposits currency={ currency } />
 
 			<DepositsOverviewFooter />
 		</Card>

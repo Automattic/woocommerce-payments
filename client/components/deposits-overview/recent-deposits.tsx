@@ -15,7 +15,6 @@ import { getDepositDate } from 'deposits/utils';
 import { CachedDeposit } from 'wcpay/types/deposits';
 import { useDeposits } from 'wcpay/data';
 import { formatCurrency } from 'wcpay/utils/currency';
-import Account = AccountOverview.Account;
 import { Link } from '@woocommerce/components';
 import { getDetailsURL } from 'wcpay/components/details-link';
 
@@ -28,7 +27,6 @@ interface RecentDeposits {
 }
 interface RecentDepositsProps {
 	currency: string | undefined;
-	account: Account | undefined;
 }
 
 const tableClass = 'wcpay-deposits-overview__table';
@@ -80,7 +78,6 @@ const DepositTableRow: React.FC< DepositRowProps > = ( {
  */
 const RecentDeposits: React.FC< RecentDepositsProps > = ( {
 	currency,
-	account,
 }: RecentDepositsProps ): JSX.Element => {
 	const recentDeposits = GetRecentDeposits( currency );
 	const isLoading = recentDeposits.isLoading;
