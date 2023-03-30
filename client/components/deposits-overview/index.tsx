@@ -13,7 +13,7 @@ import NextDepositDetails from './next-deposit';
 import DepositsOverviewFooter from './footer';
 
 const DepositsOverview = (): JSX.Element => {
-	const { account, overview, isLoading } = useSelectedCurrencyOverview();
+	const { overview, isLoading } = useSelectedCurrencyOverview();
 
 	return (
 		<Card>
