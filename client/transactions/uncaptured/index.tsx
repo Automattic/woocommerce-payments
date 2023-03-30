@@ -44,7 +44,7 @@ const getColumns = (): Column[] =>
 			screenReaderLabel: __( 'Authorized on', 'woocommerce-payments' ),
 			required: true,
 			isLeftAligned: true,
-			defaultOrder: 'desc',
+			defaultOrder: 'asc',
 			cellClassName: 'date-time',
 			isSortable: true,
 			defaultSort: true,

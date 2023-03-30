@@ -697,8 +697,8 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$wc_order_statuses = wc_get_order_statuses(); // WooCommerce uses single 'l' for US English.
 		$this->order_service->set_fraud_outcome_status_for_order( $this->order, Rule::FRAUD_OUTCOME_REVIEW );
 
-		// Act: Attempt to mark the payment/order expired/cancelled.
-		$this->order_service->mark_payment_capture_cancelled( $this->order, $intent->get_id(), $intent->get_status() );
+		// Act: Attempt to mark the payment/order cancelled.
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
 
 		// Assert: Check to make sure the intent_status meta was set.
 		$this->assertEquals( Payment_Intent_Status::CANCELED, $this->order_service->get_intention_status_for_order( $this->order ) );
@@ -719,7 +719,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
 
 		// Assert: Applying the same data multiple times does not cause duplicate actions.
-		$this->order_service->mark_payment_capture_cancelled( $this->order, $intent->get_id(), $intent->get_status() );
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
 		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertCount( 2, $notes_2 );
 	}
