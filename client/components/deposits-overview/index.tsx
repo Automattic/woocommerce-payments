@@ -3,6 +3,9 @@
  */
 import * as React from 'react';
 import { Card, CardHeader } from '@wordpress/components';
+import interpolateComponents from '@automattic/interpolate-components';
+import { Link } from '@woocommerce/components';
+import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 
 /**
  * Internal dependencies.
@@ -12,7 +15,8 @@ import strings from './strings';
 import NextDepositDetails from './next-deposit';
 import DepositsOverviewFooter from './footer';
 import DepositOverviewSectionHeading from './section-heading';
-import { getDepositScheduleDescription } from './utils';
+import { getDepositScheduleDescription, areDepositsBlocked } from './utils';
+import BannerNotice from '../banner-notice';
 
 const DepositsOverview = (): JSX.Element => {
 	const {
@@ -27,21 +31,57 @@ const DepositsOverview = (): JSX.Element => {
 	return (
 		<Card>
 			<CardHeader>{ strings.heading }</CardHeader>
-			<DepositOverviewSectionHeading
-				title={ strings.nextDeposit.title }
-				description={ strings.nextDeposit.description }
-				isLoading={ isLoading }
-			/>
-			<NextDepositDetails isLoading={ isLoading } overview={ overview } />
+
+			{ ( isLoading || ! areDepositsBlocked( account ) ) && (
+				<>
+					<DepositOverviewSectionHeading
+						title={ strings.nextDeposit.title }
+						description={ strings.nextDeposit.description }
+						isLoading={ isLoading }
+					/>
+					<NextDepositDetails
+						isLoading={ isLoading }
+						overview={ overview }
+					/>
+				</>
+			) }
 
 			{ ! isLoading && (
 				<DepositOverviewSectionHeading
 					title={ strings.depositHistory.title }
-					description={ getDepositScheduleDescription( account ) }
+					description={
+						// If deposits are blocked, the description should include a banner notice.
+						areDepositsBlocked( account ) ? (
+							<BannerNotice
+								className="wcpay-deposits-overview__notice"
+								status="warning"
+								icon={ <NoticeOutlineIcon /> }
+								isDismissible={ false }
+							>
+								{ interpolateComponents( {
+									mixedString:
+										strings.depositHistory.descriptions
+											.suspended,
+									components: {
+										strong: <strong />,
+										suspendLink: (
+											<Link
+												href={
+													'https://woocommerce.com/document/payments/faq/deposits-suspended/'
+												}
+											/>
+										),
+									},
+								} ) }
+							</BannerNotice>
+						) : (
+							getDepositScheduleDescription( account )
+						)
+					}
 				/>
 			) }
 
-			<p>Deposits Card Footer/Action Goes here</p>
+			<p>Deposit history table will go here</p>
 
 			<DepositsOverviewFooter />
 		</Card>

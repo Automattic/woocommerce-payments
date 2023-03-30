@@ -30,7 +30,7 @@ export default {
 		descriptions: {
 			/** translators: {{strong}}: placeholders are opening and closing strong tags. {{suspendLink}}: is a <a> link element */
 			suspended: __(
-				'Your deposits are {{strong}}temporarily suspended{{/strong}} {{suspendLink}}Learn more{{/suspendLink}}',
+				'Your deposits are {{strong}}temporarily suspended{{/strong}}. {{suspendLink}}Learn more{{/suspendLink}}',
 				'woocommerce-payments'
 			),
 			/** translators: {{strong}}: placeholders are opening and closing strong tags. */

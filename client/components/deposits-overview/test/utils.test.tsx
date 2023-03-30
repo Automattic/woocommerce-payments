@@ -6,7 +6,7 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import { getDepositScheduleDescription } from '../utils';
+import { getDepositScheduleDescription, areDepositsBlocked } from '../utils';
 
 // Mock Overview.Account object.
 const mockAccount: AccountOverview.Account = {
@@ -37,10 +37,6 @@ const mockWcPaySettings = {
 
 // Tests for getDepositScheduleDescription()
 describe( 'getDepositScheduleDescription', () => {
-	beforeEach( () => {
-		global.wcpaySettings = mockWcPaySettings;
-	} );
-
 	test( 'should return the correct description for weekly deposits', () => {
 		const { container } = render(
 			getDepositScheduleDescription( mockAccount )
@@ -103,14 +99,15 @@ describe( 'getDepositScheduleDescription', () => {
 			'Your deposits are dispatched automatically on the last day of every month'
 		);
 	} );
-	test( 'should return the correct description for suspended accounts', () => {
-		mockAccount.deposits_blocked = true;
-		const { container } = render(
-			getDepositScheduleDescription( mockAccount )
-		);
+} );
 
-		expect( container.textContent ).toContain(
-			'Your deposits are temporarily suspended Learn more'
-		);
+describe( 'areDepositsBlocked', () => {
+	beforeEach( () => {
+		global.wcpaySettings = mockWcPaySettings;
+	} );
+
+	test( 'should return true if the account is blocked', () => {
+		mockAccount.deposits_blocked = true;
+		expect( areDepositsBlocked( mockAccount ) ).toBe( true );
 	} );
 } );

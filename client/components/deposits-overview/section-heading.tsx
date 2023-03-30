@@ -43,15 +43,17 @@ const DepositOverviewSectionHeading: React.FC< SectionHeadingProps > = ( {
 			<span className="wcpay-deposits-overview__heading__title">
 				<Loadable isLoading={ isLoading } value={ title } />
 			</span>
-			<span className="wcpay-deposits-overview__heading__description">
+			<div className="wcpay-deposits-overview__heading__description">
 				<Loadable isLoading={ isLoading }>
 					{ typeof description === 'string' ? (
-						<span>{ description }</span>
+						<span className="wcpay-deposits-overview__heading__description__text">
+							{ description }
+						</span>
 					) : (
 						<>{ description }</>
 					) }
 				</Loadable>
-			</span>
+			</div>
 		</div>
 	);
 };

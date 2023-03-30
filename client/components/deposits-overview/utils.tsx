@@ -5,7 +5,6 @@ import React from 'react';
 import { sprintf } from '@wordpress/i18n';
 import moment from 'moment';
 import interpolateComponents from '@automattic/interpolate-components';
-import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -52,43 +51,13 @@ export const getNextDeposit = (
 /**
  * Fetches the description for the deposit schedule from the account object.
  *
- * @param {AccountOverview.Account} account Next Deposit details props.
- * @return {string} Rendered element with section heading.
+ * @param {AccountOverview.Account} account The account object containing information about the deposit schedule.
+ * @return {JSX.Element} The description for the deposit schedule.
  */
 export const getDepositScheduleDescription = (
 	account: AccountOverview.Account
 ): JSX.Element => {
 	const schedule = account.deposits_schedule;
-
-	/*
-	 * Check if the account is blocked.
-	 *
-	 * Accounts that have a manual interval prior to the custom deposit schedule
-	 * feature, are considered suspended. This will change once manual deposits are supported.
-	 */
-	const isCustomDepositSchedulesEnabled =
-		wcpaySettings?.featureFlags?.customDepositSchedules;
-
-	const showSuspendedNotice =
-		account.deposits_blocked ||
-		( ! isCustomDepositSchedulesEnabled && 'manual' === schedule.interval );
-
-	if ( showSuspendedNotice ) {
-		return interpolateComponents( {
-			mixedString: strings.depositHistory.descriptions.suspended,
-			components: {
-				strong: <strong />,
-				suspendLink: (
-					<Link
-						href={
-							'https://woocommerce.com/document/payments/faq/deposits-suspended/'
-						}
-					/>
-				),
-			},
-		} );
-	}
-
 	let description = '';
 
 	switch ( schedule.interval ) {
@@ -133,4 +102,30 @@ export const getDepositScheduleDescription = (
 			strong: <strong />,
 		},
 	} );
+};
+
+/**
+ * Checks if the account deposits are blocked.
+ *
+ * @param {AccountOverview.Account} account The account object containing information about the account.
+ * @return {boolean} Whether the account deposits are blocked.
+ */
+export const areDepositsBlocked = (
+	account: AccountOverview.Account
+): boolean => {
+	const schedule = account.deposits_schedule;
+
+	/*
+	 * Check if the account is blocked.
+	 *
+	 * Accounts that have a manual interval prior to the custom deposit schedule
+	 * feature, are considered suspended. This will change once manual deposits are supported.
+	 */
+	const isCustomDepositSchedulesEnabled =
+		wcpaySettings?.featureFlags?.customDepositSchedules;
+
+	return (
+		account.deposits_blocked ||
+		( ! isCustomDepositSchedulesEnabled && 'manual' === schedule.interval )
+	);
 };
