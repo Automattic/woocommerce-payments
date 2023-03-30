@@ -57,7 +57,7 @@ const DepositTableRow: React.FC< DepositRowProps > = ( {
 			<FlexItem className={ `${ tableClass }__cell` }>
 				<Icon icon={ calendar } size={ 17 } />
 				<Link href={ getDetailsURL( deposit.id, 'deposits' ) }>
-					{ deposit.date ? getDepositDate( deposit.date ) : '-' }
+					{ getDepositDate( deposit ) }
 				</Link>
 			</FlexItem>
 			<FlexItem className={ `${ tableClass }__cell` }>
