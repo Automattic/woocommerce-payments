@@ -12,6 +12,9 @@
 	&__new-feature-pill .woocommerce-pill {
 		color: #3c2861;
 		border: 1px solid #3c2861;
+		font-size: 12px;
+		line-height: 14px;
+		border-radius: 14px;
 		margin: 0;
 	}
 
@@ -21,6 +24,14 @@
 		font-weight: 400;
 		font-size: 20px;
 		line-height: 28px;
+		margin: 16px 0 8px;
+	}
+
+	&__body {
+		color: #271b3d;
+		font-size: 13px;
+		line-height: 16px;
+		margin: 0 0 16px;
 	}
 
 	&__actions {
@@ -32,6 +43,9 @@
 		}
 
 		.components-button {
+			padding-left: 12px;
+			padding-right: 12px;
+
 			& + .components-button {
 				margin: 8px 0 0 0;
 
