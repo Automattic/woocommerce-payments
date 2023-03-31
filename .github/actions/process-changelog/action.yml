@@ -41,7 +41,7 @@ runs:
           echo "Amending the changelog entries." >> $GITHUB_STEP_SUMMARY
         fi
           
-        ~/.composer/vendor/bin/changelogger write --use-version="$RELEASE_VERSION" --release-date="$RELEASE_DATE" $CHANGELOG_FLAG --no-interaction
+        ~/.composer/vendor/bin/changelogger write --use-version="$RELEASE_VERSION" --release-date="$RELEASE_DATE" $CHANGELOG_FLAG --no-interaction --yes
         
         echo "Picking up changelog for version '$RELEASE_VERSION'..."
         CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1; next } p && NF' changelog.txt)
