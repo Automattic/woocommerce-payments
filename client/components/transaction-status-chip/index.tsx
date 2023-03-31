@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import { Pill } from '@woocommerce/components';
+import Chip from '../chip';
 
 /**
  * Internal dependencies
@@ -25,7 +25,15 @@ const TransactionStatusChip: React.FC< TransactionStatusChipProps > = ( {
 	const message = mapping.message || formatStringValue( status );
 	const type = mapping.type || 'light';
 
-	return <Pill className={ type }>{ message }</Pill>;
+	return (
+		<Chip
+			message={ message }
+			type={ type }
+			isCompact
+			{ ...props }
+			className="chip--transaction"
+		/>
+	);
 };
 
 export default TransactionStatusChip;
