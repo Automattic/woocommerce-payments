@@ -109,7 +109,7 @@ export const HighFraudProtectionModal = ( {
 							</li>
 							<li>
 								{ __(
-									'The billing address is a non-domestic address.',
+									"The billing address country doesn't match the country resolved from the IP address.",
 									'woocommerce-payments'
 								) }
 							</li>
@@ -209,6 +209,12 @@ export const StandardFraudProtectionModal = ( {
 							<li>
 								{ __(
 									'An order originates from an IP address outside your country.',
+									'woocommerce-payments'
+								) }
+							</li>
+							<li>
+								{ __(
+									"The billing address country doesn't match the country resolved from the IP address.",
 									'woocommerce-payments'
 								) }
 							</li>
