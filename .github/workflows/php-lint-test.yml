@@ -6,7 +6,7 @@ on:
 
 env:
   WP_VERSION:        latest
-  WC_L2_VERSION: '7.3.0'
+  WC_MIN_VERSION: '7.3.0'
   GUTENBERG_VERSION: latest
   PHP_MIN_VERSION: '7.2'
 
@@ -71,4 +71,4 @@ jobs:
       # run CI checks
       - run: bash bin/run-ci-tests.bash
         env:
-          WC_VERSION: ${{ env.WC_L2_VERSION }}
+          WC_VERSION: ${{ env.WC_MIN_VERSION }}
