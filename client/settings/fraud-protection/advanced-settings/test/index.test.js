@@ -89,6 +89,13 @@ describe( 'Advanced fraud protection settings', () => {
 			protectionSettings.state,
 			protectionSettings.updateState,
 		] );
+		const mockIntersectionObserver = jest.fn();
+		mockIntersectionObserver.mockReturnValue( {
+			observe: () => null,
+			unobserve: () => null,
+			disconnect: () => null,
+		} );
+		window.IntersectionObserver = mockIntersectionObserver;
 	} );
 	afterEach( () => {
 		jest.clearAllMocks();
