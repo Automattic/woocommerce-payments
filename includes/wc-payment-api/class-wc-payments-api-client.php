@@ -1002,26 +1002,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Get one-time dashboard login url
-	 *
-	 * @param string $redirect_url - URL to navigate back to from the dashboard.
-	 *
-	 * @return array An array containing the url field
-	 */
-	public function get_login_data( $redirect_url ) {
-		return $this->request(
-			[
-				'redirect_url' => $redirect_url,
-				'test_mode'    => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
-			],
-			self::ACCOUNTS_API . '/login_links',
-			self::POST,
-			true,
-			true
-		);
-	}
-
-	/**
 	 * Get a one-time capital link.
 	 *
 	 * @param string $type        The type of link to be requested.

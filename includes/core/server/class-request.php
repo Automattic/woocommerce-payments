@@ -619,4 +619,26 @@ abstract class Request {
 			);
 		}
 	}
+
+	/**
+	 * Validate a redirect URL in the allowed_redirect_hosts filter.
+	 *
+	 * @param  string $redirect_url The provided redirect URL.
+	 *
+	 * @return void
+	 * @throws Invalid_Request_Parameter_Exception
+	 */
+	public function validate_redirect_url( string $redirect_url ) {
+		$check_fallback_url = wp_generate_password( 12, false );
+		if ( hash_equals( $check_fallback_url, wp_validate_redirect( $redirect_url, $check_fallback_url ) ) ) {
+			throw new Invalid_Request_Parameter_Exception(
+				sprintf(
+				// Translators: %s is a currency code.
+					__( '%1$s is not a valid redirect URL. Use a URL in the allowed_redirect_hosts filter.', 'woocommerce-payments' ),
+					$redirect_url
+				),
+				'wcpay_core_invalid_request_parameter_invalid_redirect_url'
+			);
+		}
+	}
 }
