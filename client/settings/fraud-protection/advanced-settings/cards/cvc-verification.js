@@ -4,7 +4,7 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
-import { ExternalLink } from '@wordpress/components';
+import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -35,8 +35,12 @@ const CVCVerificationRuleCard = () => {
 							),
 							components: {
 								learnMoreLink: (
-									// eslint-disable-next-line max-len
-									<ExternalLink href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration" />
+									<Link
+										target="_blank"
+										type="external"
+										// eslint-disable-next-line max-len
+										href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+									/>
 								),
 							},
 					  } )

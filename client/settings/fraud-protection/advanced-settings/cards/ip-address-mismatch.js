@@ -4,7 +4,7 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
-import { ExternalLink } from '@wordpress/components';
+import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -24,7 +24,11 @@ const IPAddressMismatchRuleCard = () => (
 			),
 			components: {
 				ipAddressLink: (
-					<ExternalLink href="https://simple.wikipedia.org/wiki/IP_address" />
+					<Link
+						target="_blank"
+						type="external"
+						href="https://simple.wikipedia.org/wiki/IP_address"
+					/>
 				),
 			},
 		} ) }
