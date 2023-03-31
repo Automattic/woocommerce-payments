@@ -21,8 +21,8 @@ export const fraudOutcomeRulesetMapping = {
 			'Place in review if the country resolved from customer IP is not listed in your selling countries',
 			'woocommerce-payments'
 		),
-		[ Rules.RULE_INTERNATIONAL_BILLING_ADDRESS ]: __(
-			'Place in review if the billing address is not listed in your selling countries',
+		[ Rules.RULE_IP_ADDRESS_MISMATCH ]: __(
+			'Place in review if the order originates from a country different from the shipping address country',
 			'woocommerce-payments'
 		),
 		[ Rules.RULE_ORDER_ITEMS_THRESHOLD ]: __(
@@ -43,8 +43,8 @@ export const fraudOutcomeRulesetMapping = {
 			'Block if the country resolved from customer IP is not listed in your selling countries',
 			'woocommerce-payments'
 		),
-		[ Rules.RULE_INTERNATIONAL_BILLING_ADDRESS ]: __(
-			'Block if the billing address is not listed in your selling countries',
+		[ Rules.RULE_IP_ADDRESS_MISMATCH ]: __(
+			'Block if the order originates from a country different from the shipping address country',
 			'woocommerce-payments'
 		),
 		[ Rules.RULE_ORDER_ITEMS_THRESHOLD ]: __(
