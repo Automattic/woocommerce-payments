@@ -38,35 +38,21 @@ import { ProtectionLevel } from './constants';
 import { readRuleset, writeRuleset } from './utils';
 import wcpayTracks from 'tracks';
 
-const observerMapping = {
-	'avs-mismatch-card': {
-		event:
-			'wcpay_fraud_protection_advanced_settings_card_avs_mismatch_viewed',
-	},
-	'cvc-verification-card': {
-		event:
-			'wcpay_fraud_protection_advanced_settings_card_cvc_verification_viewed',
-	},
-	'international-ip-address-card': {
-		event:
-			'wcpay_fraud_protection_advanced_settings_card_international_ip_address_card_viewed',
-	},
-	'ip-address-mismatch': {
-		event:
-			'wcpay_fraud_protection_advanced_settings_card_ip_address_mismatch_card_viewed',
-	},
-	'address-mismatch-card': {
-		event:
-			'wcpay_fraud_protection_advanced_settings_card_address_mismatch_viewed',
-	},
-	'purchase-price-threshold-card': {
-		event:
-			'wcpay_fraud_protection_advanced_settings_card_price_threshold_viewed',
-	},
-	'order-items-threshold-card': {
-		event:
-			'wcpay_fraud_protection_advanced_settings_card_items_threshold_viewed',
-	},
+const observerEventMapping = {
+	'avs-mismatch-card':
+		'wcpay_fraud_protection_advanced_settings_card_avs_mismatch_viewed',
+	'cvc-verification-card':
+		'wcpay_fraud_protection_advanced_settings_card_cvc_verification_viewed',
+	'international-ip-address-card':
+		'wcpay_fraud_protection_advanced_settings_card_international_ip_address_card_viewed',
+	'ip-address-mismatch':
+		'wcpay_fraud_protection_advanced_settings_card_ip_address_mismatch_card_viewed',
+	'address-mismatch-card':
+		'wcpay_fraud_protection_advanced_settings_card_address_mismatch_viewed',
+	'purchase-price-threshold-card':
+		'wcpay_fraud_protection_advanced_settings_card_price_threshold_viewed',
+	'order-items-threshold-card':
+		'wcpay_fraud_protection_advanced_settings_card_items_threshold_viewed',
 };
 
 const Breadcrumb = () => (
@@ -196,14 +182,14 @@ const FraudProtectionAdvancedSettingsPage = () => {
 			if ( 0 < intersectionRatio ) {
 				// element is at least partially visible.
 				const { id } = target;
-				const { event } = observerMapping[ id ] || {};
+				const event = observerEventMapping[ id ] || {};
 
 				if ( event ) {
 					wcpayTracks.recordEvent( event );
 				}
 
 				cardObserver.current?.unobserve(
-					document.getElementById( target.id )
+					document.getElementById( id )
 				);
 			}
 		} );
@@ -214,7 +200,7 @@ const FraudProtectionAdvancedSettingsPage = () => {
 
 		cardObserver.current = new IntersectionObserver( observerCallback );
 
-		Object.keys( observerMapping ).forEach( ( selector ) => {
+		Object.keys( observerEventMapping ).forEach( ( selector ) => {
 			const element = document.getElementById( selector );
 
 			if ( element ) {

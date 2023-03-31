@@ -27,7 +27,7 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( { query } ) => {
 			'wcpay_fraud_protection_order_details_link_clicked',
 			{ status: statusIs, type: typeIs }
 		);
-
+		// Remove the tracking queries on page load so we don't track refreshes or back button reloads.
 		updateQueryString( {
 			status_is: undefined,
 			type_is: undefined,
