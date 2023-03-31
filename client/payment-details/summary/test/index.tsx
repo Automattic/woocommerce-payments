@@ -210,13 +210,14 @@ describe( 'PaymentDetailsSummary', () => {
 	} );
 
 	test( 'renders capture section correctly', () => {
+		const creationDate = new Date().toISOString();
 		mockUseAuthorization.mockReturnValueOnce( {
 			authorization: {
 				captured: false,
 				charge_id: 'ch_mock',
 				amount: 1000,
 				currency: 'usd',
-				created: new Date().toISOString(),
+				created: creationDate,
 				order_id: 123,
 				risk_level: 1,
 				customer_country: 'US',
@@ -245,7 +246,7 @@ describe( 'PaymentDetailsSummary', () => {
 		).toMatch(
 			`You need to <a href=\"https://woocommerce.com/document/woocommerce-payments/settings-guide/authorize-and-capture/#capturing-authorized-orders\" target=\"_blank\" rel=\"noreferer\">capture</a> this charge in<b title=\"${ dateI18n(
 				'M j, Y / g:iA',
-				moment.utc( new Date().toISOString() ).add( 7, 'days' )
+				moment.utc( creationDate ).add( 7, 'days' )
 			) }\"> 7 days</b>`
 		);
 
