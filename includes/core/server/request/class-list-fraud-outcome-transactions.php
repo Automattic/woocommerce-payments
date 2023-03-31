@@ -107,6 +107,10 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 		$search    = $params['search'];
 		$direction = $params['direction'];
 
+		if ( ! is_array( $response ) ) {
+			return $response;
+		}
+
 		$fraud_outcomes = array_reduce(
 			$response,
 			function ( $result, $current ) use ( $search ) {
