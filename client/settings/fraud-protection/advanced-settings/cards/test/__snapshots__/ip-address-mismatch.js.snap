@@ -17,7 +17,7 @@ exports[`International billing address card renders correctly 1`] = `
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens for customer IP (Internet Protocol) addresses that are in a different country than the customer indicated in their billing address.
+          This filter screens for customer's IP (Internet Protocol) address to see if it is in a different country than indicated in their billing address.
         </p>
       </div>
     </div>
@@ -75,7 +75,7 @@ exports[`International billing address card renders correctly 1`] = `
           How does this filter protect me?
         </strong>
         <p>
-          Fraudulent transactions often use fake address to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
+          Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
         </p>
       </div>
     </div>
@@ -100,7 +100,7 @@ exports[`International billing address card renders correctly when enabled 1`] =
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens for customer IP (Internet Protocol) addresses that are in a different country than the customer indicated in their billing address.
+          This filter screens for customer's IP (Internet Protocol) address to see if it is in a different country than indicated in their billing address.
         </p>
       </div>
     </div>
@@ -224,7 +224,7 @@ exports[`International billing address card renders correctly when enabled 1`] =
           How does this filter protect me?
         </strong>
         <p>
-          Fraudulent transactions often use fake address to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
+          Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
         </p>
       </div>
     </div>
@@ -249,7 +249,7 @@ exports[`International billing address card renders correctly when enabled and c
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens for customer IP (Internet Protocol) addresses that are in a different country than the customer indicated in their billing address.
+          This filter screens for customer's IP (Internet Protocol) address to see if it is in a different country than indicated in their billing address.
         </p>
       </div>
     </div>
@@ -388,7 +388,7 @@ exports[`International billing address card renders correctly when enabled and c
           How does this filter protect me?
         </strong>
         <p>
-          Fraudulent transactions often use fake address to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
+          Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
         </p>
       </div>
     </div>
@@ -413,7 +413,7 @@ exports[`International billing address card renders like disabled when checked, 
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens for customer IP (Internet Protocol) addresses that are in a different country than the customer indicated in their billing address.
+          This filter screens for customer's IP (Internet Protocol) address to see if it is in a different country than indicated in their billing address.
         </p>
       </div>
     </div>
@@ -471,7 +471,7 @@ exports[`International billing address card renders like disabled when checked, 
           How does this filter protect me?
         </strong>
         <p>
-          Fraudulent transactions often use fake address to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
+          Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
         </p>
       </div>
     </div>

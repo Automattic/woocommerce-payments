@@ -15,8 +15,8 @@ const IPAddressMismatchRuleCard = () => (
 	<FraudProtectionRuleCard
 		title={ __( 'IP Address Mismatch', 'woocommerce-payments' ) }
 		description={ __(
-			'This filter screens for customer IP (Internet Protocol) addresses that are in a different ' +
-				'country than the customer indicated in their billing address.',
+			"This filter screens for customer's IP (Internet Protocol) address to see if it is in a different " +
+				'country than indicated in their billing address.',
 			'woocommerce-payments'
 		) }
 	>
@@ -32,7 +32,7 @@ const IPAddressMismatchRuleCard = () => (
 		></FraudProtectionRuleToggle>
 		<FraudProtectionRuleDescription>
 			{ __(
-				'Fraudulent transactions often use fake address to place orders. If the IP address seems to be in ' +
+				'Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in ' +
 					'one country, but the billing address is in another, that could signal potential fraud.',
 				'woocommerce-payments'
 			) }
