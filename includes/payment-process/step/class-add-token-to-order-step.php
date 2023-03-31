@@ -43,9 +43,6 @@ final class Add_Token_To_Order_Step extends Abstract_Step {
 		}
 
 		$payment_method = $payment->get_payment_method();
-		if ( ! $payment_method instanceof Saved_Payment_Method ) {
-			return;
-		}
 
 		// We need to make sure the saved payment method is saved to the order so we can
 		// charge the payment method for a future payment.

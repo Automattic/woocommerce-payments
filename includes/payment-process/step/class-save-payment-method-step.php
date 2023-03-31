@@ -48,19 +48,12 @@ class Save_Payment_Method_Step extends Abstract_Step {
 			return false;
 		}
 
-		return true;
-	}
+		// Failing payment methods should not be saved.
+		if ( ! $payment->get_intent()->is_successful() ) {
+			return false;
+		}
 
-	/**
-	 * Retrieves the intent from the payment with the correct return class.
-	 *
-	 * If this is needed too often, we might need to switch away from vars.
-	 *
-	 * @param Order_Payment $payment Payment object.
-	 * @return WC_Payments_API_Intention
-	 */
-	protected function get_intent_from_payment( Order_Payment $payment ) {
-		return $payment->get_intent();
+		return true;
 	}
 
 	/**
@@ -83,13 +76,7 @@ class Save_Payment_Method_Step extends Abstract_Step {
 			return; // keep IDEs happy.
 		}
 
-		// Failing payment methods should not be saved.
-		$intent = $this->get_intent_from_payment( $payment );
-		// Todo: Replace with Payment::STATUS_SUCCESSFUL !== $payment->get_status().
-		if ( ! $intent->is_successful() ) {
-			return;
-		}
-
+		$intent = $payment->get_intent();
 		// @todo: This should support SetupIntents as well.
 		$user = $this->get_user_from_payment( $payment );
 

@@ -398,51 +398,28 @@ class Payment {
 	}
 
 	/**
-	 * Generates a list of all steps, applicable for the current payment.
+	 * Processes the payment, once all external set-up is done.
 	 *
-	 * This method is only executed once for a given payment in the context
-	 * of a given flow. If the payment is stored, and loaded, it will not
-	 * be executed again, as the list of steps will already have been determined.
-	 *
-	 * @return Abstract_Step[]
-	 * @throws \Exception If there is no flow set for the payment.
+	 * @return mixed The result of the successful action call.
+	 * @throws \Exception If there is no flow set.
 	 */
-	protected function get_steps() {
+	public function process() {
 		// The flow is required, make sure it's set.
 		if ( ! $this->flow ) {
 			throw new \Exception( 'Processing payments requires a flow to be set' );
 		}
 
+		// Instantiate all steps.
 		$steps = [];
 		foreach ( $this->get_all_available_steps() as $class_name ) {
 			// Ignore steps, which do not use the base class.
-			if ( ! is_subclass_of( $class_name, Abstract_Step::class ) ) {
-				continue;
+			if ( is_subclass_of( $class_name, Abstract_Step::class ) ) {
+				$steps[] = new $class_name();
 			}
-
-			// Instantiate the step and check if the step is applicable to the process.
-			$step = new $class_name();
-			if ( ! $step->is_applicable( $this ) ) {
-				continue;
-			}
-
-			$steps[] = $step;
 		}
 
-		return $steps;
-	}
-
-	/**
-	 * Processes the payment, once all external set-up is done.
-	 *
-	 * @return mixed The result of the successful action call.
-	 */
-	public function process() {
 		// Clear any previous responses.
 		$this->response = null;
-
-		// Preload all steps, applicable to the process.
-		$steps = $this->get_steps();
 
 		// Allow all steps to collect data.
 		$this->current_stage = static::STAGE_PREPARE;
@@ -453,7 +430,9 @@ class Payment {
 			 * This allows each step to collect the necessary data,
 			 * and ensure its there before actions start getting performed.
 			 */
-			$this->run_step( $step, 'collect_data' );
+			if ( $step->is_applicable( $this ) ) {
+				$this->run_step( $step, 'collect_data' );
+			}
 		}
 
 		/**
@@ -468,11 +447,13 @@ class Payment {
 		 */
 		$this->current_stage = static::STAGE_ACTION;
 		foreach ( $steps as $step ) {
-			$this->run_step( $step, 'action' );
+			if ( $step->is_applicable( $this ) ) {
+				$this->run_step( $step, 'action' );
 
-			// Once there's a response, there should be no further action.
-			if ( ! is_null( $this->response ) ) {
-				break;
+				// Once there's a response, there should be no further action.
+				if ( ! is_null( $this->response ) ) {
+					break;
+				}
 			}
 		}
 
@@ -484,7 +465,9 @@ class Payment {
 		 */
 		$this->current_stage = static::STAGE_COMPLETE;
 		foreach ( $steps as $step ) {
-			$this->run_step( $step, 'complete' );
+			if ( $step->is_applicable( $this ) ) {
+				$this->run_step( $step, 'complete' );
+			}
 		}
 
 		// Save the payment process as well as all changes.
