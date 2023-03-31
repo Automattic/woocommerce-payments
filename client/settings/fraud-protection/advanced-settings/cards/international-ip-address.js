@@ -4,6 +4,7 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
+import { ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -20,11 +21,14 @@ const InternationalIPAddressRuleCard = () => {
 			title={ __( 'International IP Address', 'woocommerce-payments' ) }
 			description={ interpolateComponents( {
 				mixedString: __(
-					'This filter screens for IP addresses outside of your ' +
+					'This filter screens for {{ipAddressLink}}IP addresses{{/ipAddressLink}} outside of your ' +
 						'{{supportedCountriesLink}}supported countries{{/supportedCountriesLink}}.',
 					'woocommerce-payments'
 				),
 				components: {
+					ipAddressLink: (
+						<ExternalLink href="https://simple.wikipedia.org/wiki/IP_address" />
+					),
 					supportedCountriesLink: (
 						// eslint-disable-next-line jsx-a11y/anchor-has-content
 						<a
@@ -32,7 +36,7 @@ const InternationalIPAddressRuleCard = () => {
 								page: 'wc-settings',
 								tab: 'general',
 							} ) }
-						></a>
+						/>
 					),
 				},
 			} ) }

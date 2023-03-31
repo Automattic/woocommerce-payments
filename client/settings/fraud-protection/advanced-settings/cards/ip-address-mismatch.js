@@ -3,6 +3,8 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
+import interpolateComponents from '@automattic/interpolate-components';
+import { ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -14,11 +16,18 @@ import FraudProtectionRuleToggle from '../rule-toggle';
 const IPAddressMismatchRuleCard = () => (
 	<FraudProtectionRuleCard
 		title={ __( 'IP Address Mismatch', 'woocommerce-payments' ) }
-		description={ __(
-			"This filter screens for customer's IP (Internet Protocol) address to see if it is in a different " +
-				'country than indicated in their billing address.',
-			'woocommerce-payments'
-		) }
+		description={ interpolateComponents( {
+			mixedString: __(
+				"This filter screens for customer's {{ipAddressLink}}IP address{{/ipAddressLink}} to see if it is in a different " +
+					'country than indicated in their billing address.',
+				'woocommerce-payments'
+			),
+			components: {
+				ipAddressLink: (
+					<ExternalLink href="https://simple.wikipedia.org/wiki/IP_address" />
+				),
+			},
+		} ) }
 	>
 		<FraudProtectionRuleToggle
 			setting={ 'ip_address_mismatch' }
