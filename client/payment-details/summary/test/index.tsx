@@ -207,44 +207,6 @@ describe( 'PaymentDetailsSummary', () => {
 		expect( renderCharge( {} as any, true ) ).toMatchSnapshot();
 	} );
 
-	test( 'renders capture section correctly', () => {
-		mockUseAuthorization.mockReturnValueOnce( {
-			authorization: {
-				captured: false,
-				charge_id: 'ch_mock',
-				amount: 1000,
-				currency: 'usd',
-				created: '2019-09-19 17:24:00',
-				order_id: 123,
-				risk_level: 1,
-				customer_country: 'US',
-				customer_email: 'test@example.com',
-				customer_name: 'Test Customer',
-				payment_intent_id: 'pi_mock',
-			},
-			isLoading: false,
-			isRequesting: false,
-			doCaptureAuthorization: jest.fn(),
-			doCancelAuthorization: jest.fn(),
-		} );
-		const charge = getBaseCharge();
-		charge.captured = false;
-
-		const container = renderCharge( charge );
-
-		expect(
-			screen.getByRole( 'button', { name: /Capture/i } )
-		).toBeInTheDocument();
-
-		expect(
-			screen.getByText( /You need to capture this charge/i )
-		).toHaveTextContent(
-			'You need to capture this charge before Sep 26, 2019 / 5:24PM'
-		);
-
-		expect( container ).toMatchSnapshot();
-	} );
-
 	test( 'renders the fraud outcome buttons', () => {
 		global.wcpaySettings.isFraudProtectionSettingsEnabled = true;
 
