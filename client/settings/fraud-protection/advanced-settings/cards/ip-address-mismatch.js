@@ -19,7 +19,7 @@ const IPAddressMismatchRuleCard = () => (
 				'country than indicated in their billing address.',
 			'woocommerce-payments'
 		) }
-		ID="ip-address-mismatch"
+		id="ip-address-mismatch"
 	>
 		<FraudProtectionRuleToggle
 			setting={ 'ip_address_mismatch' }

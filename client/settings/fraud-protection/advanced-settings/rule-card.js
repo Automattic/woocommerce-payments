@@ -10,9 +10,9 @@ import { Card } from '@wordpress/components';
 import './../style.scss';
 import CardBody from '../../card-body';
 
-const FraudProtectionRuleCard = ( { title, description, children, ID } ) => {
+const FraudProtectionRuleCard = ( { title, description, children, id } ) => {
 	return (
-		<Card id={ ID } className="fraud-protection-rule-card">
+		<Card id={ id } className="fraud-protection-rule-card">
 			<CardBody className="fraud-protection-rule-card-header-container">
 				<div>
 					<p className="fraud-protection-rule-card-header">

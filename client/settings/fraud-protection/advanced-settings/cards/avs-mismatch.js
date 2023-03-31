@@ -25,7 +25,7 @@ const AVSMismatchRuleCard = () => {
 					'file with the card issuer.',
 				'woocommerce-payments'
 			) }
-			ID="avs-mismatch-card"
+			id="avs-mismatch-card"
 		>
 			<FraudProtectionRuleDescription>
 				{ __(

@@ -128,7 +128,7 @@ const PurchasePriceThresholdRuleCard = () => (
 			'This filter compares the purchase price of an order to the minimum and maximum purchase amounts that you specify.',
 			'woocommerce-payments'
 		) }
-		ID="purchase-price-threshold-card"
+		id="purchase-price-threshold-card"
 	>
 		<FraudProtectionRuleToggle
 			setting={ 'purchase_price_threshold' }

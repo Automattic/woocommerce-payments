@@ -19,7 +19,7 @@ const AddressMismatchRuleCard = () => (
 				'billing information (street, state, post code, and country).',
 			'woocommerce-payments'
 		) }
-		ID="address-mismatch-card"
+		id="address-mismatch-card"
 	>
 		<FraudProtectionRuleToggle
 			setting={ 'address_mismatch' }
