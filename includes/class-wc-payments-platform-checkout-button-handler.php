@@ -490,6 +490,11 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 			return false;
 		}
 
+		// WooPay is not enabled.
+		if ( ! $this->is_woopay_enabled() ) {
+			return false;
+		}
+
 		// Page not supported.
 		if ( ! $this->is_product() && ! $this->is_cart() && ! $this->is_checkout() ) {
 			return false;
@@ -555,6 +560,8 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 			</div>
 		</div>
 		<?php
+
+		return true;
 	}
 
 	/**
