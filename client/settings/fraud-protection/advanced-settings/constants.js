@@ -16,7 +16,7 @@ export const Outcomes = {
 export const Rules = {
 	RULE_ADDRESS_MISMATCH: 'address_mismatch',
 	RULE_INTERNATIONAL_IP_ADDRESS: 'international_ip_address',
-	RULE_INTERNATIONAL_BILLING_ADDRESS: 'international_billing_address',
+	RULE_IP_ADDRESS_MISMATCH: 'ip_address_mismatch',
 	RULE_ORDER_ITEMS_THRESHOLD: 'order_items_threshold',
 	RULE_PURCHASE_PRICE_THRESHOLD: 'purchase_price_threshold',
 };
@@ -24,8 +24,7 @@ export const Rules = {
 export const Checks = {
 	CHECK_BILLING_SHIPPING_ADDRESS_SAME: 'billing_shipping_address_same',
 	CHECK_IP_COUNTRY: 'ip_country',
-	CHECK_BILLING_COUNTRY: 'billing_country',
-	CHECK_ORDERS_SINCE_H: 'orders_since_%dh',
+	CHECK_IP_BILLING_COUNTRY_SAME: 'ip_billing_country_same',
 	CHECK_ITEM_COUNT: 'item_count',
 	CHECK_ORDER_TOTAL: 'order_total',
 };

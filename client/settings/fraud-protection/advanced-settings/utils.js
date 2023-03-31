@@ -68,16 +68,11 @@ const buildRuleset = ( ruleKey, shouldBlock, ruleConfiguration = {} ) => {
 				value: getSettingCountries().join( '|' ).toLowerCase(),
 			};
 			break;
-		case Rules.RULE_INTERNATIONAL_BILLING_ADDRESS:
+		case Rules.RULE_IP_ADDRESS_MISMATCH:
 			ruleBase.check = {
-				key: Checks.CHECK_BILLING_COUNTRY,
-				operator:
-					// Need to use a reversed operator because we'll be matching the failure here.
-					// Example; if a country is in a ban list, block, or if a country isn't in a allow list, block.
-					'specific' === getSupportedCountriesType()
-						? CheckOperators.OPERATOR_NOT_IN
-						: CheckOperators.OPERATOR_IN,
-				value: getSettingCountries().join( '|' ).toLowerCase(),
+				key: Checks.CHECK_IP_BILLING_COUNTRY_SAME,
+				operator: CheckOperators.OPERATOR_EQUALS,
+				value: false,
 			};
 			break;
 		case Rules.RULE_ORDER_ITEMS_THRESHOLD:
@@ -211,7 +206,7 @@ export const readRuleset = ( rulesetConfig ) => {
 			enabled: false,
 			block: false,
 		},
-		[ Rules.RULE_INTERNATIONAL_BILLING_ADDRESS ]: {
+		[ Rules.RULE_IP_ADDRESS_MISMATCH ]: {
 			enabled: false,
 			block: false,
 		},
@@ -244,7 +239,7 @@ export const readRuleset = ( rulesetConfig ) => {
 					block: rule.outcome === Outcomes.BLOCK,
 				};
 				break;
-			case Rules.RULE_INTERNATIONAL_BILLING_ADDRESS:
+			case Rules.RULE_IP_ADDRESS_MISMATCH:
 				parsedUIConfig[ rule.key ] = {
 					enabled: true,
 					block: rule.outcome === Outcomes.BLOCK,

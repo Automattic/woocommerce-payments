@@ -53,11 +53,11 @@ class Fraud_Risk_Tools {
 	}
 
 	// Rule names.
-	const RULE_ADDRESS_MISMATCH              = 'address_mismatch';
-	const RULE_INTERNATIONAL_IP_ADDRESS      = 'international_ip_address';
-	const RULE_INTERNATIONAL_BILLING_ADDRESS = 'international_billing_address';
-	const RULE_ORDER_ITEMS_THRESHOLD         = 'order_items_threshold';
-	const RULE_PURCHASE_PRICE_THRESHOLD      = 'purchase_price_threshold';
+	const RULE_ADDRESS_MISMATCH         = 'address_mismatch';
+	const RULE_INTERNATIONAL_IP_ADDRESS = 'international_ip_address';
+	const RULE_IP_ADDRESS_MISMATCH      = 'ip_address_mismatch';
+	const RULE_ORDER_ITEMS_THRESHOLD    = 'order_items_threshold';
+	const RULE_PURCHASE_PRICE_THRESHOLD = 'purchase_price_threshold';
 
 	/**
 	 * Class constructor.
@@ -227,14 +227,14 @@ class Fraud_Risk_Tools {
 					false
 				)
 			),
-			// REVIEW An order is shipping or billing to a non-domestic address.
+			// REVIEW An order is originated from a different country than the shipping country.
 			new Rule(
-				self::RULE_INTERNATIONAL_BILLING_ADDRESS,
+				self::RULE_IP_ADDRESS_MISMATCH,
 				Rule::FRAUD_OUTCOME_REVIEW,
 				Check::check(
-					'billing_country',
-					self::get_selling_locations_type_operator(),
-					self::get_selling_locations_string()
+					'ip_billing_country_same',
+					Check::OPERATOR_EQUALS,
+					false
 				)
 			),
 		];
