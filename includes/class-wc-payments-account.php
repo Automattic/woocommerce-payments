@@ -1017,7 +1017,7 @@ class WC_Payments_Account {
 				'email'         => $prefill_data['email'] ?? null,
 				'business_name' => $prefill_data['business_name'] ?? null,
 				'url'           => $prefill_data['url'] ?? null,
-				'mcc'           => $prefill_data['mcc'] ?? '5045', // TODO GH-5476 roll back to null after testing.
+				'mcc'           => $prefill_data['mcc'] ?? null,
 				'business_type' => $business_type,
 				'company'       => [
 					'structure' => 'company' === $business_type ? ( isset( $prefill_data['company']['structure'] ) ? ( $prefill_data['company']['structure'] ?? null ) : null ) : null,
