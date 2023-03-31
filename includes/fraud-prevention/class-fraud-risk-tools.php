@@ -325,19 +325,17 @@ class Fraud_Risk_Tools {
 	 *
 	 * @param int    $amount The amount to be converted.
 	 * @param string $from   The currency to be converted from.
+	 * @param string $to     The currency to be converted to.
 	 *
 	 * @return int
 	 */
-	private static function get_converted_amount( $amount, $from ) {
-		$from_currency      = strtoupper( $from );
-		$default_currency   = WC_Payments_Multi_Currency()->get_default_currency();
+	private static function get_converted_amount( $amount, $from, $to ) {
+		$to_currency   = strtoupper( $to );
+		$from_currency = strtoupper( $from );
+
 		$enabled_currencies = WC_Payments_Multi_Currency()->get_enabled_currencies();
 
-		if ( empty( $default_currency ) || empty( $enabled_currencies ) ) {
-			return $amount;
-		}
-
-		if ( strtoupper( $default_currency->get_code() ) === $from_currency ) {
+		if ( empty( $enabled_currencies ) || $to_currency === $from_currency ) {
 			return $amount;
 		}
 
@@ -353,14 +351,20 @@ class Fraud_Risk_Tools {
 	 * Returns the formatted converted amount from a given currency to the default currency.
 	 * The final format is "AMOUNT|CURRENCY".
 	 *
-	 * @param int    $amount The amount to be converted.
-	 * @param string $from   The currency to be converted from.
+	 * @param int    $amount        The amount to be converted.
+	 * @param string $base_currency The currency to be converted from.
 	 *
 	 * @return string
 	 */
-	private static function get_formatted_converted_amount( $amount, $from ) {
-		$amount = self::get_converted_amount( $amount, $from );
+	private static function get_formatted_converted_amount( $amount, $base_currency ) {
+		$default_currency = WC_Payments_Multi_Currency()->get_default_currency();
+		$target_currency  = $base_currency;
 
-		return implode( '|', [ $amount, strtolower( $from ) ] );
+		if ( ! empty( $default_currency ) ) {
+			$target_currency = $default_currency->get_code();
+			$amount          = self::get_converted_amount( $amount, $base_currency, $target_currency );
+		}
+
+		return implode( '|', [ $amount, strtolower( $target_currency ) ] );
 	}
 }
