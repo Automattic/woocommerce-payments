@@ -380,6 +380,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 									>
 										{ sprintf(
 											__( ' %s', 'woocommerce-payments' ),
+											// Wrapped in __()   to ensure translation of relative time strings inserted by moment.fromNow() ( e.g. "days", "hours", "minutes", etc. )
 											moment
 												.utc( authorization.created )
 												.add( 7, 'days' )
