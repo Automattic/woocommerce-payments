@@ -9,7 +9,7 @@ const defaultUIConfig = {
 		block: false,
 		enabled: false,
 	},
-	international_billing_address: {
+	ip_address_mismatch: {
 		block: false,
 		enabled: false,
 	},
@@ -62,17 +62,17 @@ describe( 'Ruleset adapter utilities test', () => {
 	test( 'converts an international billing address ruleset to matching UI config', () => {
 		const ruleset = [
 			{
-				key: Rules.RULE_INTERNATIONAL_BILLING_ADDRESS,
+				key: Rules.RULE_IP_ADDRESS_MISMATCH,
 				outcome: Outcomes.BLOCK,
 				check: {
-					key: Checks.CHECK_BILLING_COUNTRY,
-					operator: CheckOperators.OPERATOR_IN,
-					value: 'US|CA',
+					key: Checks.CHECK_IP_BILLING_COUNTRY_SAME,
+					operator: CheckOperators.OPERATOR_EQUALS,
+					value: false,
 				},
 			},
 		];
 		const expected = Object.assign( {}, defaultUIConfig, {
-			international_billing_address: {
+			ip_address_mismatch: {
 				block: true,
 				enabled: true,
 			},
@@ -421,42 +421,23 @@ describe( 'Ruleset adapter utilities test', () => {
 			expect( output ).toEqual( expected );
 		}
 	);
-	test.each( [
-		[ true, 'all', 'in', '' ],
-		[ true, 'all_except', 'in', 'TR|BR' ],
-		[ true, 'specific', 'not_in', 'US|CA' ],
-		[ false, 'all', 'in', '' ],
-	] )(
-		'converts enabled international billing address filter to ruleset, blocking %s',
-		( block, allowType, checkOperator, checkValue ) => {
-			global.wcSettings = {
-				admin: {
-					preloadSettings: {
-						general: {
-							woocommerce_allowed_countries: allowType,
-							woocommerce_specific_allowed_countries: [
-								'US',
-								'CA',
-							],
-							woocommerce_all_except_countries: [ 'TR', 'BR' ],
-						},
-					},
-				},
-			};
+	test.each( [ true, false ] )(
+		'converts enabled ip address mismatch filter to ruleset, blocking %s',
+		( block ) => {
 			const config = Object.assign( {}, defaultUIConfig, {
-				[ Rules.RULE_INTERNATIONAL_BILLING_ADDRESS ]: {
+				[ Rules.RULE_IP_ADDRESS_MISMATCH ]: {
 					enabled: true,
 					block: block,
 				},
 			} );
 			const expected = [
 				{
-					key: Rules.RULE_INTERNATIONAL_BILLING_ADDRESS,
+					key: Rules.RULE_IP_ADDRESS_MISMATCH,
 					outcome: block ? Outcomes.BLOCK : Outcomes.REVIEW,
 					check: {
-						key: Checks.CHECK_BILLING_COUNTRY,
-						operator: checkOperator,
-						value: checkValue.toLowerCase(),
+						key: Checks.CHECK_IP_BILLING_COUNTRY_SAME,
+						operator: CheckOperators.OPERATOR_EQUALS,
+						value: false,
 					},
 				},
 			];
