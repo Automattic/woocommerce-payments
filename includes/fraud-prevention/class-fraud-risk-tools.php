@@ -343,7 +343,7 @@ class Fraud_Risk_Tools {
 
 		if ( array_key_exists( $from_currency, $enabled_currencies ) ) {
 			$currency = $enabled_currencies[ $from_currency ];
-			$amount   = round( $amount * ( 1 / (float) $currency->get_rate() ) );
+			$amount   = (int) round( $amount * ( 1 / (float) $currency->get_rate() ) );
 		}
 
 		return $amount;
