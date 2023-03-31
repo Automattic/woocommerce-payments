@@ -7,11 +7,11 @@ import { render } from '@testing-library/react';
  * Internal dependencies
  */
 import FraudPreventionSettingsContext from '../../context';
-import InternationalBillingAddressRuleCard from '../international-billing-address';
+import IPAddressMismatchRuleCard from '../ip-address-mismatch';
 
 describe( 'International billing address card', () => {
 	const settings = {
-		international_billing_address: {
+		ip_address_mismatch: {
 			enabled: false,
 			block: false,
 		},
@@ -37,36 +37,36 @@ describe( 'International billing address card', () => {
 	test( 'renders correctly', () => {
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>
-				<InternationalBillingAddressRuleCard />
+				<IPAddressMismatchRuleCard />
 			</FraudPreventionSettingsContext.Provider>
 		);
 		expect( container ).toMatchSnapshot();
 	} );
 	test( 'renders correctly when enabled', () => {
-		settings.international_billing_address.enabled = true;
+		settings.ip_address_mismatch.enabled = true;
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>
-				<InternationalBillingAddressRuleCard />
+				<IPAddressMismatchRuleCard />
 			</FraudPreventionSettingsContext.Provider>
 		);
 		expect( container ).toMatchSnapshot();
 	} );
 	test( 'renders correctly when enabled and checked', () => {
-		settings.international_billing_address.enabled = true;
-		settings.international_billing_address.block = true;
+		settings.ip_address_mismatch.enabled = true;
+		settings.ip_address_mismatch.block = true;
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>
-				<InternationalBillingAddressRuleCard />
+				<IPAddressMismatchRuleCard />
 			</FraudPreventionSettingsContext.Provider>
 		);
 		expect( container ).toMatchSnapshot();
 	} );
 	test( 'renders like disabled when checked, but not enabled', () => {
-		settings.international_billing_address.enabled = false;
-		settings.international_billing_address.block = true;
+		settings.ip_address_mismatch.enabled = false;
+		settings.ip_address_mismatch.block = true;
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>
-				<InternationalBillingAddressRuleCard />
+				<IPAddressMismatchRuleCard />
 			</FraudPreventionSettingsContext.Provider>
 		);
 		expect( container ).toMatchSnapshot();
