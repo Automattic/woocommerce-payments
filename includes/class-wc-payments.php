@@ -555,19 +555,6 @@ class WC_Payments {
 			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account );
 		}
 
-		$is_woopay_express_checkout_enabled = WC_Payments_Features::is_woopay_express_checkout_enabled();
-
-		if ( $is_woopay_express_checkout_enabled || self::get_gateway()->get_option( 'payment_request' ) ) {
-			add_action( 'woocommerce_after_add_to_cart_quantity', [ __CLASS__, 'display_express_checkout_separator_if_necessary' ], 2 );
-			add_action( 'woocommerce_proceed_to_checkout', [ __CLASS__, 'display_express_checkout_separator_if_necessary' ], 2 );
-			add_action( 'woocommerce_checkout_before_customer_details', [ __CLASS__, 'display_express_checkout_separator_if_necessary' ], 2 );
-
-			if ( self::get_gateway()->get_option( 'payment_request' ) ) {
-				// Load separator on the Pay for Order page.
-				add_action( 'before_woocommerce_pay_form', [ __CLASS__, 'display_express_checkout_separator_if_necessary' ], 2 );
-			}
-		}
-
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'set_plugin_activation_timestamp' ] );
 
@@ -1610,22 +1597,6 @@ class WC_Payments {
 		}
 
 		return new $class_name( self::get_payments_api_client(), self::get_wc_payments_http(), $id );
-	}
-
-	/**
-	 * Display express checkout separator only when express buttons are displayed.
-	 *
-	 * @return void
-	 */
-	public static function display_express_checkout_separator_if_necessary() {
-		$woopay          = self::$platform_checkout_button_handler->is_woopay_enabled() && self::$platform_checkout_button_handler->should_show_platform_checkout_button();
-		$payment_request = self::$payment_request_button_handler->should_show_payment_request_button();
-		$should_hide     = $payment_request && ! $woopay;
-		if ( $woopay || $payment_request ) {
-			?>
-			<p id="wcpay-payment-request-button-separator" style="margin-top:1.5em;text-align:center;<?php echo $should_hide ? 'display:none;' : ''; ?>">&mdash; <?php esc_html_e( 'OR', 'woocommerce-payments' ); ?> &mdash;</p>
-			<?php
-		}
 	}
 
 	/**

@@ -94,12 +94,12 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 * @return void
 	 */
 	public function display_express_checkout_separator_if_necessary() {
-		$woopay          = self::$platform_checkout_button_handler->display_platform_checkout_button_html();
-		$payment_request = self::$payment_request_button_handler->display_payment_request_button_html();
+		$woopay          = self::$platform_checkout_button_handler->is_woopay_enabled() && self::$platform_checkout_button_handler->should_show_platform_checkout_button();
+		$payment_request = self::$payment_request_button_handler->should_show_payment_request_button();
 		$should_hide     = $payment_request && ! $woopay;
 		if ( $woopay || $payment_request ) {
 			?>
-			<p id="wcpay-payment-request-button-separator" style="margin-top:1.5em;text-align:center;<?php echo $should_hide ? 'display:none;' : ''; ?>">&mdash; <?php esc_html_e( 'ORhey', 'woocommerce-payments' ); ?> &mdash;</p>
+			<p id="wcpay-payment-request-button-separator" style="margin-top:1.5em;text-align:center;<?php echo $should_hide ? 'display:none;' : ''; ?>">&mdash; <?php esc_html_e( 'OR', 'woocommerce-payments' ); ?> &mdash;</p>
 			<?php
 		}
 	}
@@ -110,8 +110,8 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 * @return void
 	 */
 	public function display_express_checkout_buttons() {
-		self::$payment_request_button_handler->display_payment_request_button_html();
 		self::$platform_checkout_button_handler->display_platform_checkout_button_html();
+		self::$payment_request_button_handler->display_payment_request_button_html();
 		self::display_express_checkout_separator_if_necessary();
 	}
 
