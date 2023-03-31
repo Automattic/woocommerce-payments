@@ -11,7 +11,6 @@ import interpolateComponents from '@automattic/interpolate-components';
  */
 import { formatCurrency } from 'utils/currency';
 import strings from './strings';
-import { getDepositMonthlyAnchorLabel } from 'wcpay/deposits/utils';
 
 type NextDepositTableData = {
 	date: number;
@@ -42,66 +41,10 @@ export const getNextDeposit = (
 	const { currency, nextScheduled } = overview;
 
 	return {
-		date: nextScheduled.date ?? 0,
-		status: nextScheduled.status ?? 'estimated',
-		amount: formatCurrency( nextScheduled.amount ?? 0, currency ),
+		date: nextScheduled?.date ?? 0,
+		status: nextScheduled?.status ?? 'estimated',
+		amount: formatCurrency( nextScheduled?.amount ?? 0, currency ),
 	};
-};
-
-/**
- * Fetches the description for the deposit schedule from the account object.
- *
- * @param {AccountOverview.Account} account The account object containing information about the deposit schedule.
- * @return {JSX.Element} The description for the deposit schedule.
- */
-export const getDepositScheduleDescription = (
-	account: AccountOverview.Account
-): JSX.Element => {
-	const schedule = account.deposits_schedule;
-	let description = '';
-
-	switch ( schedule.interval ) {
-		case 'daily':
-			description = strings.depositHistory.descriptions.daily;
-			break;
-		case 'weekly':
-			const dayOfWeek = moment()
-				.locale( 'en' )
-				.day( schedule.weekly_anchor )
-				.locale( moment.locale() )
-				.format( 'dddd' );
-
-			description = sprintf(
-				strings.depositHistory.descriptions[ schedule.interval ],
-				dayOfWeek
-			);
-			break;
-		case 'monthly':
-			const monthlyAnchor = schedule.monthly_anchor;
-
-			// If the monthly anchor is 31, it means the deposit is scheduled for the last day of the month and has special handling.
-			if ( monthlyAnchor === 31 ) {
-				description =
-					strings.depositHistory.descriptions.lastDayOfMonth;
-				break;
-			}
-
-			description = sprintf(
-				strings.depositHistory.descriptions[ schedule.interval ],
-				getDepositMonthlyAnchorLabel( {
-					monthlyAnchor: schedule.monthly_anchor,
-					capitalize: false,
-				} )
-			);
-			break;
-	}
-
-	return interpolateComponents( {
-		mixedString: description,
-		components: {
-			strong: <strong />,
-		},
-	} );
 };
 
 /**

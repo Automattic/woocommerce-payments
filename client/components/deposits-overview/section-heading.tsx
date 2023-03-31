@@ -19,7 +19,8 @@ import Loadable from '../loadable';
  */
 type SectionHeadingProps = {
 	title: string;
-	description: string | React.ReactNode;
+	text?: string | React.ReactNode;
+	children?: React.ReactNode;
 	isLoading?: boolean;
 };
 
@@ -35,7 +36,8 @@ type SectionHeadingProps = {
  */
 const DepositOverviewSectionHeading: React.FC< SectionHeadingProps > = ( {
 	title,
-	description,
+	text = '',
+	children = null,
 	isLoading = false,
 } ): JSX.Element => {
 	return (
@@ -45,12 +47,12 @@ const DepositOverviewSectionHeading: React.FC< SectionHeadingProps > = ( {
 			</span>
 			<div className="wcpay-deposits-overview__heading__description">
 				<Loadable isLoading={ isLoading }>
-					{ typeof description === 'string' ? (
+					{ text !== '' ? (
 						<span className="wcpay-deposits-overview__heading__description__text">
-							{ description }
+							{ text }
 						</span>
 					) : (
-						<>{ description }</>
+						<>{ children }</>
 					) }
 				</Loadable>
 			</div>
