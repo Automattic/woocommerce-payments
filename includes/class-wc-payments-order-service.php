@@ -1100,8 +1100,15 @@ class WC_Payments_Order_Service {
 	 * @return string
 	 */
 	private function generate_fraud_held_for_review_note( $order, $intent_id, $charge_id ): string {
-		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
-		$note            = sprintf(
+		$transaction_url = WC_Payments_Utils::compose_transaction_url(
+			$intent_id,
+			$charge_id,
+			$query_args  = [
+				'status_is' => 'review',
+				'type_is'   => 'order_note',
+			]
+		);
+		$note = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
 				__( '&#x26D4; A payment of %1$s was <strong>held for review</strong> by one or more risk filters.<br><br><a>View more details</a>.', 'woocommerce-payments' ),
@@ -1126,8 +1133,15 @@ class WC_Payments_Order_Service {
 	 * @return string
 	 */
 	private function generate_fraud_blocked_note( $order ): string {
-		$transaction_url = WC_Payments_Utils::compose_transaction_url( $order->get_id(), '' );
-		$note            = sprintf(
+		$transaction_url = WC_Payments_Utils::compose_transaction_url(
+			$order->get_id(),
+			'',
+			$query_args  = [
+				'status_is' => 'block',
+				'type_is'   => 'order_note',
+			]
+		);
+		$note = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the blocked amount, %2: transaction ID of the payment */
 				__( '&#x1F6AB; A payment of %1$s was <strong>blocked</strong> by one or more risk filters.<br><br><a>View more details</a>.', 'woocommerce-payments' ),

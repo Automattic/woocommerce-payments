@@ -4,6 +4,11 @@
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 
+/**
+ * Internal dependencies
+ */
+import wcpayTracks from 'tracks';
+
 const BannerActions = ( {
 	remindMeCount,
 	handleRemindOnClick,
@@ -14,6 +19,11 @@ const BannerActions = ( {
 			<Button
 				href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
 				isPrimary
+				onClick={ () => {
+					wcpayTracks.recordEvent(
+						'wcpay_fraud_protection_banner_learn_more_button_clicked'
+					);
+				} }
 			>
 				{ __( 'Learn more', 'woocommerce-payments' ) }
 			</Button>
