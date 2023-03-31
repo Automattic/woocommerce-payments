@@ -41,9 +41,9 @@ export const getNextDeposit = (
 	const { currency, nextScheduled } = overview;
 
 	return {
-		date: nextScheduled?.date ?? 0,
-		status: nextScheduled?.status ?? 'estimated',
-		amount: formatCurrency( nextScheduled?.amount ?? 0, currency ),
+		date: nextScheduled.date ?? 0,
+		status: nextScheduled.status ?? 'estimated',
+		amount: formatCurrency( nextScheduled.amount ?? 0, currency ),
 	};
 };
 
