@@ -717,7 +717,7 @@ exports[`PaymentDetailsSummary renders capture section correctly 1`] = `
           </a>
            this charge in
           <b
-            title="Apr 7, 2023 / 7:44AM"
+            title="Apr 7, 2023 / 8:50AM"
           >
              7 days
           </b>
