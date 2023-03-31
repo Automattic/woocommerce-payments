@@ -12,6 +12,25 @@ import OrderItemsThresholdRuleCard, {
 } from '../order-items-threshold';
 
 describe( 'Order items threshold card', () => {
+	beforeEach( () => {
+		global.wcpaySettings = {
+			storeCurrency: 'USD',
+			connect: {
+				country: 'US',
+			},
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
+		};
+	} );
+
 	const settings = {
 		order_items_threshold: {
 			enabled: false,
