@@ -896,7 +896,7 @@ class WC_Payments_Order_Service {
 	 * @param WC_Order               $order The order to update.
 	 * @param WC_Payments_API_Charge $charge The charge to get the application_fee_amount from.
 	 */
-	public function attach_transaction_fee_to_order( WC_Order $order, ?WC_Payments_API_Charge $charge ) {
+	public function attach_transaction_fee_to_order( $order, $charge ) {
 		try {
 			if ( $charge && null !== $charge->get_application_fee_amount() ) {
 				$order->update_meta_data(
