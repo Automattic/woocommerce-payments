@@ -12,11 +12,16 @@
 	}
 
 	&__label {
+		cursor: pointer;
 		display: grid;
 		grid-template-columns: 24px 1fr 25px;
-		column-gap: $gap-smaller;
+		column-gap: $gap-small;
 		align-items: center;
 		font-weight: bold;
+
+		&:not( :last-child ) {
+			margin-bottom: $gap;
+		}
 
 		svg {
 			fill: #bbb;

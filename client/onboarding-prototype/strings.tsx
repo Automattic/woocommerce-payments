@@ -19,52 +19,12 @@ export default {
 			),
 			live: {
 				label: __(
-					'I’m ready to setup payments for my store',
+					'I’d like to set up payments for my store',
 					'woocommerce-payments'
 				),
-				paymentMethods: __(
-					'Offer card payments, Apple Pay, Sofort, iDeal and many more.',
+				note: __(
+					'You’ll need to provide details to verify that you’re the owner of the account. If you’re setting up payments for someone else, choose the test payments option.',
 					'woocommerce-payments'
-				),
-				internationalMarkets: __(
-					'Sell to international markets and accept over 135 currencies with local payment methods.',
-					'woocommerce-payments'
-				),
-				managePayments: __(
-					'Manage payments and your store all from one place.',
-					'woocommerce-payments'
-				),
-				tip: createInterpolateElement(
-					__(
-						'In order to receive payouts with <a>WooCommerce Payments</a>, you’ll need to share business details to verify who you are.',
-						'woocommerce-payments'
-					),
-					{
-						a: (
-							// eslint-disable-next-line jsx-a11y/anchor-has-content
-							<a
-								href="https://woocommerce.com/payments/"
-								target="_blank"
-								rel="noopener noreferrer"
-							/>
-						),
-					}
-				),
-				tos: createInterpolateElement(
-					__(
-						'By clicking “Continue” you agree to the <a>Terms of Service</a>.',
-						'woocommerce-payments'
-					),
-					{
-						a: (
-							// eslint-disable-next-line jsx-a11y/anchor-has-content
-							<a
-								href="https://wordpress.com/tos"
-								target="_blank"
-								rel="noopener noreferrer"
-							/>
-						),
-					}
 				),
 			},
 			test: {
@@ -72,13 +32,9 @@ export default {
 					'I’d like to setup test payments',
 					'woocommerce-payments'
 				),
-				setup: __(
-					'Setup WooCommerce Payments in test mode. ',
-					'woocommerce-payments'
-				),
-				testData: createInterpolateElement(
+				note: createInterpolateElement(
 					__(
-						'No need to use actual information, just setup with <a>our test data</a>.',
+						'This option will set up WooCommerce Payments in development mode. You can use <a>our test data</a> to set up. When you’re ready to launch your store, switching to live payments is easy.',
 						'woocommerce-payments'
 					),
 					{
@@ -91,14 +47,6 @@ export default {
 							/>
 						),
 					}
-				),
-				payments: __(
-					'Test WooCommerce Payments on a site that will not need to process real payments.',
-					'woocommerce-payments'
-				),
-				tip: __(
-					'Note: You will be redirected to our partner’s website to setup a test account.',
-					'woocommerce-payments'
 				),
 			},
 		},

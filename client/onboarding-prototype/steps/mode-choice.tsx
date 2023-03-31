@@ -3,17 +3,14 @@
  */
 import React, { useState } from 'react';
 import { Button } from '@wordpress/components';
-import { Icon, store, tool, payment, globe, shortcode } from '@wordpress/icons';
+import { Icon, store, tool } from '@wordpress/icons';
 import { addQueryArgs } from '@wordpress/url';
-import ScheduledIcon from 'gridicons/dist/scheduled';
 
 /**
  * Internal dependencies
  */
 import RadioCard from 'components/radio-card';
-import TipBox from 'components/tip-box';
 import { useStepperContext } from 'components/stepper';
-import HowToReg from 'components/icons/how-to-reg';
 import strings from '../strings';
 
 const ModeChoice: React.FC = () => {
@@ -45,20 +42,9 @@ const ModeChoice: React.FC = () => {
 						value: 'live',
 						icon: <Icon icon={ store } />,
 						content: (
-							<>
-								<div className="onboarding-mode__sentences live">
-									<Icon icon={ payment } />
-									{ liveStrings.paymentMethods }
-									<Icon icon={ globe } />
-									{ liveStrings.internationalMarkets }
-									<ScheduledIcon />
-									{ liveStrings.managePayments }
-								</div>
-								<TipBox color="purple">
-									{ liveStrings.tip }
-								</TipBox>
-								{ liveStrings.tos }
-							</>
+							<div className="onboarding-mode__note">
+								{ liveStrings.note }
+							</div>
 						),
 					},
 					{
@@ -66,19 +52,9 @@ const ModeChoice: React.FC = () => {
 						value: 'test',
 						icon: <Icon icon={ tool } />,
 						content: (
-							<>
-								<div className="onboarding-mode__sentences test">
-									<Icon icon={ shortcode } />
-									{ testStrings.setup }
-									<HowToReg />
-									<span>{ testStrings.testData }</span>
-									<Icon icon={ payment } />
-									{ testStrings.payments }
-								</div>
-								<TipBox color="blue">
-									{ testStrings.tip }
-								</TipBox>
-							</>
+							<div className="onboarding-mode__note">
+								{ testStrings.note }
+							</div>
 						),
 					},
 				] }

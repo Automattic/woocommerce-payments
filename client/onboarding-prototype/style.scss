@@ -2,28 +2,9 @@
 	a {
 		text-decoration: none;
 	}
-}
-.onboarding-mode__sentences {
-	display: grid;
-	grid-template-columns: 18px 1fr;
-	padding: $gap-large $gap-small;
-	column-gap: $gap-small;
-	row-gap: $gap;
 
-	&.live {
-		fill: $studio-woocommerce-purple-50;
+	.onboarding-mode__note {
+		background-color: $wp-blue-0;
+		padding: $gap-small $gap;
 	}
-
-	&.test {
-		fill: $gutenberg-blue;
-	}
-
-	svg {
-		width: 18px;
-		height: 18px;
-	}
-}
-
-.wcpay-component-tip-box {
-	margin-top: 0;
 }

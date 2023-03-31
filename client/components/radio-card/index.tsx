@@ -46,8 +46,6 @@ const RadioCard: React.FC< Props > = ( {
 						) }
 					>
 						<div className="wcpay-component-radio-card__label">
-							{ icon }
-							{ label }
 							<input
 								type="radio"
 								name={ name }
@@ -55,6 +53,8 @@ const RadioCard: React.FC< Props > = ( {
 								checked={ !! checked }
 								onChange={ handleChange }
 							/>
+							{ label }
+							{ icon }
 						</div>
 						{ checked && content }
 					</label>

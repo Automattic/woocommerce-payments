@@ -8,14 +8,14 @@ exports[`RadioCard Component renders RadioCard component with provided props 1`]
     <div
       class="wcpay-component-radio-card__label"
     >
-      <svg />
-      Pineapple pizza
       <input
         checked=""
         name="pizzas"
         type="radio"
         value="pineapple"
       />
+      Pineapple pizza
+      <svg />
     </div>
     <p>
       Sweet pizza
@@ -27,13 +27,13 @@ exports[`RadioCard Component renders RadioCard component with provided props 1`]
     <div
       class="wcpay-component-radio-card__label"
     >
-      <svg />
-      Pizza
       <input
         name="pizzas"
         type="radio"
         value="pizza"
       />
+      Pizza
+      <svg />
     </div>
   </label>
 </div>
