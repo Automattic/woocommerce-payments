@@ -253,10 +253,7 @@ export const BasicFraudProtectionModal = ( {
 		<>
 			{ isBasicModalOpen && (
 				<Modal
-					title={ __(
-						'Standard filter level',
-						'woocommerce-payments'
-					) }
+					title={ __( 'Basic filter level', 'woocommerce-payments' ) }
 					isDismissible={ true }
 					shouldCloseOnClickOutside={ true }
 					shouldCloseOnEsc={ true }

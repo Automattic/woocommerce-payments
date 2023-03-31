@@ -18,6 +18,7 @@ import {
 	FraudProtectionHelpText,
 	HighFraudProtectionModal,
 	StandardFraudProtectionModal,
+	BasicFraudProtectionModal,
 } from '../index';
 import interpolateComponents from '@automattic/interpolate-components';
 import { Button } from '@wordpress/components';
@@ -87,10 +88,10 @@ const ProtectionLevels = () => {
 								className="fraud-protection__help-icon"
 								onClick={ () => setBasicModalOpen( true ) }
 							/>
-							<StandardFraudProtectionModal
+							<BasicFraudProtectionModal
 								level={ ProtectionLevel.BASIC }
-								isStandardModalOpen={ isBasicModalOpen }
-								setStandardModalOpen={ setBasicModalOpen }
+								isBasicModalOpen={ isBasicModalOpen }
+								setBasicModalOpen={ setBasicModalOpen }
 							/>
 						</div>
 						<FraudProtectionHelpText
