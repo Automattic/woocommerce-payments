@@ -135,16 +135,18 @@
 	}
 
 	.wcpay-pill {
-		margin-left: $gap-smaller;
-		padding: 2px $gap-smaller;
+		> .woocommerce-pill {
+			margin-left: $gap-smaller;
+			padding: 2px $gap-smaller;
+		}
 
-		&.payment-status-pending-approval,
-		&.payment-status-pending-verification {
+		&.payment-status-pending-approval > .woocommerce-pill,
+		&.payment-status-pending-verification > .woocommerce-pill {
 			border: 0 solid transparent;
 			background: #f0b849;
 			color: #1f1f1f;
 		}
-		&.payment-status-inactive {
+		&.payment-status-inactive > .woocommerce-pill {
 			border: 0 solid transparent;
 			background: #cc1818;
 			color: #fff;
