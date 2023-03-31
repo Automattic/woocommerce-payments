@@ -13,9 +13,9 @@ import BannerNotice from 'components/banner-notice';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 
 /**
- * Renders the deposit schedule section.
+ * Renders a notice informing the user that their deposits are suspended.
  *
- * @return {JSX.Element} Rendered element with the deposit schedule section.
+ * @return {JSX.Element} Rendered notice.
  */
 function SuspendedDepositNotice(): JSX.Element {
 	return (
@@ -26,6 +26,7 @@ function SuspendedDepositNotice(): JSX.Element {
 			status="warning"
 		>
 			{ interpolateComponents( {
+				/** translators: {{strong}}: placeholders are opening and closing strong tags. {{suspendLink}}: is a <a> link element */
 				mixedString: __(
 					'Your deposits are {{strong}}temporarily suspended{{/strong}}. {{suspendLink}}Learn more{{/suspendLink}}',
 					'woocommerce-payments'

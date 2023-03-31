@@ -18,12 +18,12 @@ import { getDepositMonthlyAnchorLabel } from 'wcpay/deposits/utils';
 type DepositsScheduleProps = AccountOverview.Account[ 'deposits_schedule' ];
 
 /**
- * Renders the Next Deposit details component.
+ * Renders the Deposit Schedule details component.
  *
- * This component included the next deposit heading, table and notice.
+ * eg "Your deposits are dispatched automatically every day"
  *
  * @param {DepositsScheduleProps} depositsSchedule The account's deposit schedule.
- * @return {JSX.Element} Rendered element with Next Deposit details.
+ * @return {JSX.Element} Rendered element with Deposit Schedule details.
  */
 const DepositSchedule: React.FC< DepositsScheduleProps > = (
 	depositsSchedule: DepositsScheduleProps
@@ -31,6 +31,7 @@ const DepositSchedule: React.FC< DepositsScheduleProps > = (
 	switch ( depositsSchedule.interval ) {
 		case 'daily':
 			return interpolateComponents( {
+				/** translators: {{strong}}: placeholders are opening and closing strong tags. */
 				mixedString: __(
 					'Your deposits are dispatched {{strong}}automatically every day{{/strong}}',
 					'woocommerce-payments'
@@ -48,6 +49,7 @@ const DepositSchedule: React.FC< DepositsScheduleProps > = (
 
 			return interpolateComponents( {
 				mixedString: sprintf(
+					/** translators: %s: is the day of the week. eg "Friday". {{strong}}: placeholders are opening and closing strong tags.*/
 					__(
 						'Your deposits are dispatched {{strong}}automatically every %s{{/strong}}',
 						'woocommerce-payments'
@@ -64,6 +66,7 @@ const DepositSchedule: React.FC< DepositsScheduleProps > = (
 			// If the monthly anchor is 31, it means the deposit is scheduled for the last day of the month and has special handling.
 			if ( monthlyAnchor === 31 ) {
 				return interpolateComponents( {
+					/** translators: {{strong}}: placeholders are opening and closing strong tags. */
 					mixedString: __(
 						'Your deposits are dispatched {{strong}}automatically on the last day of every month{{/strong}}',
 						'woocommerce-payments'
@@ -76,6 +79,7 @@ const DepositSchedule: React.FC< DepositsScheduleProps > = (
 
 			return interpolateComponents( {
 				mixedString: sprintf(
+					/** translators: %s: is the day of the month. eg "15th". {{strong}}: placeholders are opening and closing strong tags.*/
 					__(
 						'Your deposits are dispatched {{strong}}automatically on the %s of every month{{/strong}}',
 						'woocommerce-payments'

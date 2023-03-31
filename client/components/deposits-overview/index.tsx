@@ -48,12 +48,12 @@ const DepositsOverview = (): JSX.Element => {
 			{ ! isLoading &&
 				( areDepositsBlocked( account ) ? (
 					<DepositOverviewSectionHeading
-						title={ strings.depositHistory.title }
+						title={ strings.depositHistoryHeading }
 						children={ <SuspendedDepositNotice /> }
 					/>
 				) : (
 					<DepositOverviewSectionHeading
-						title={ strings.depositHistory.title }
+						title={ strings.depositHistoryHeading }
 						text={
 							<DepositSchedule { ...account.deposits_schedule } />
 						}
