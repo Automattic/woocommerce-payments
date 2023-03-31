@@ -124,7 +124,9 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 					<BannerNotice
 						status="warning"
 						icon={ <InfoOutlineIcon /> }
-						children={ interpolateComponents( {
+						isDismissible={ false }
+					>
+						{ interpolateComponents( {
 							mixedString:
 								strings.notices.depositIncludesLoan +
 								__(
@@ -144,8 +146,7 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 								),
 							},
 						} ) }
-						isDismissible={ false }
-					/>
+					</BannerNotice>
 				</div>
 			) }
 		</>
