@@ -13,13 +13,8 @@ jest.mock( '@wordpress/data', () => ( {
 } ) );
 
 describe( 'FRTDiscoverabilityBanner', () => {
-	beforeEach( () => {
-		global.wcpaySettings = {
-			isFraudProtectionSettingsEnabled: true,
-		};
-	} );
-
 	it( 'renders', () => {
+		global.wcpaySettings = {};
 		const { container: frtBanner } = render( <FRTDiscoverabilityBanner /> );
 
 		expect( frtBanner ).toMatchSnapshot();
@@ -27,7 +22,6 @@ describe( 'FRTDiscoverabilityBanner', () => {
 
 	it( 'renders with dont show again button if remindMeCount greater than or equal to 3', () => {
 		global.wcpaySettings = {
-			...global.wcpaySettings,
 			frtDiscoverBannerSettings: JSON.stringify( {
 				remindMeCount: 3,
 				remindMeAt: null,
@@ -42,7 +36,6 @@ describe( 'FRTDiscoverabilityBanner', () => {
 
 	it( 'renders without dont show again button if remindMeCount greater than 0 but less than 3', () => {
 		global.wcpaySettings = {
-			...global.wcpaySettings,
 			frtDiscoverBannerSettings: JSON.stringify( {
 				remindMeCount: 2,
 				remindMeAt: null,
@@ -63,7 +56,6 @@ describe( 'FRTDiscoverabilityBanner', () => {
 		const remindMeAt = new Date( '2023-03-11T11:33:37.000Z' ).getTime();
 
 		global.wcpaySettings = {
-			...global.wcpaySettings,
 			frtDiscoverBannerSettings: JSON.stringify( {
 				remindMeCount: 1,
 				remindMeAt: remindMeAt,
@@ -84,7 +76,6 @@ describe( 'FRTDiscoverabilityBanner', () => {
 		const remindMeAt = new Date( '2023-03-15T12:33:37.000Z' ).getTime();
 
 		global.wcpaySettings = {
-			...global.wcpaySettings,
 			frtDiscoverBannerSettings: JSON.stringify( {
 				remindMeCount: 1,
 				remindMeAt: remindMeAt,
@@ -101,7 +92,6 @@ describe( 'FRTDiscoverabilityBanner', () => {
 		const remindMeAt = new Date( '2023-03-14T12:33:37.000Z' ).getTime();
 
 		global.wcpaySettings = {
-			...global.wcpaySettings,
 			frtDiscoverBannerSettings: JSON.stringify( {
 				remindMeCount: 3,
 				remindMeAt: remindMeAt,

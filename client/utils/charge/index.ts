@@ -59,7 +59,6 @@ export const isOnHoldByFraudTools = (
 	paymentIntent?: PaymentIntent
 ): boolean => {
 	return (
-		wcpaySettings.isFraudProtectionSettingsEnabled &&
 		paymentIntent?.status === 'requires_capture' &&
 		fraudOutcome?.status === 'review'
 	);
@@ -71,7 +70,6 @@ export const isBlockedByFraudTools = (
 	paymentIntent?: PaymentIntent
 ): boolean => {
 	return (
-		wcpaySettings.isFraudProtectionSettingsEnabled &&
 		( paymentIntent?.status === 'canceled' || ! charge?.payment_intent ) &&
 		!! fraudOutcome
 	);

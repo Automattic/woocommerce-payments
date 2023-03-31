@@ -93,7 +93,6 @@ describe( 'Overview page', () => {
 				accountOverviewTaskList: true,
 			},
 			accountLoans: {},
-			isFraudProtectionSettingsEnabled: true,
 			frtDiscoverBannerSettings: JSON.stringify( {
 				remindMeCount: 0,
 				remindMeAt: null,
@@ -105,19 +104,6 @@ describe( 'Overview page', () => {
 	} );
 
 	it( 'Skips rendering task list when there are no tasks', () => {
-		const { container } = render( <OverviewPage /> );
-
-		expect(
-			container.querySelector( '.woocommerce-experimental-list' )
-		).toBeNull();
-	} );
-
-	it( 'Skips rendering task list when accountOverviewTaskList feature flag is off', () => {
-		global.wcpaySettings = {
-			...global.wcpaySettings,
-			featureFlags: {},
-		};
-
 		const { container } = render( <OverviewPage /> );
 
 		expect(
@@ -293,20 +279,7 @@ describe( 'Overview page', () => {
 		} );
 	} );
 
-	it( 'does not render FRTDiscoverabilityBanner if feature flag option is false', () => {
-		global.wcpaySettings = {
-			...global.wcpaySettings,
-			isFraudProtectionSettingsEnabled: false,
-		};
-
-		render( <OverviewPage /> );
-
-		expect(
-			screen.queryByText( 'Enhanced fraud protection for your store' )
-		).not.toBeInTheDocument();
-	} );
-
-	it( 'renders FRTDiscoverabilityBanner if feature flag option is true', () => {
+	it( 'renders FRTDiscoverabilityBanner', () => {
 		render( <OverviewPage /> );
 
 		expect(
