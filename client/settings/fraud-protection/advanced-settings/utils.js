@@ -23,6 +23,21 @@ export const getSettingCountries = () => {
 	}
 };
 
+const buildFormattedRulePrice = ( price ) => {
+	const convertedPrice = parseInt( parseFloat( price ) * 100, 10 );
+	const defaultCurrency = wcpaySettings.storeCurrency || 'usd';
+
+	return [ convertedPrice, defaultCurrency ].join( '|' );
+};
+
+const readFormattedRulePrice = ( value ) => {
+	if ( ! value ) return '';
+
+	const [ amount ] = value.toString().split( '|' );
+
+	return Number( amount ) / 100;
+};
+
 const getRuleBase = ( setting, block ) => {
 	return {
 		key: setting,
@@ -116,19 +131,15 @@ const buildRuleset = ( ruleKey, shouldBlock, ruleConfiguration = {} ) => {
 						{
 							key: Checks.CHECK_ORDER_TOTAL,
 							operator: CheckOperators.OPERATOR_LT,
-							value: parseInt(
-								parseFloat( ruleConfiguration.min_amount ) *
-									100,
-								10
+							value: buildFormattedRulePrice(
+								ruleConfiguration.min_amount
 							),
 						},
 						{
 							key: Checks.CHECK_ORDER_TOTAL,
 							operator: CheckOperators.OPERATOR_GT,
-							value: parseInt(
-								parseFloat( ruleConfiguration.max_amount ) *
-									100,
-								10
+							value: buildFormattedRulePrice(
+								ruleConfiguration.max_amount
 							),
 						},
 					],
@@ -141,19 +152,15 @@ const buildRuleset = ( ruleKey, shouldBlock, ruleConfiguration = {} ) => {
 					? {
 							key: Checks.CHECK_ORDER_TOTAL,
 							operator: CheckOperators.OPERATOR_LT,
-							value: parseInt(
-								parseFloat( ruleConfiguration.min_amount ) *
-									100,
-								10
+							value: buildFormattedRulePrice(
+								ruleConfiguration.min_amount
 							),
 					  }
 					: {
 							key: Checks.CHECK_ORDER_TOTAL,
 							operator: CheckOperators.OPERATOR_GT,
-							value: parseInt(
-								parseFloat( ruleConfiguration.max_amount ) *
-									100,
-								10
+							value: buildFormattedRulePrice(
+								ruleConfiguration.max_amount
 							),
 					  };
 			}
@@ -270,8 +277,8 @@ export const readRuleset = ( rulesetConfig ) => {
 				parsedUIConfig[ rule.key ] = {
 					enabled: true,
 					block: rule.outcome === Outcomes.BLOCK,
-					min_amount: minAmount.value ? minAmount.value / 100 : '',
-					max_amount: maxAmount.value ? maxAmount.value / 100 : '',
+					min_amount: readFormattedRulePrice( minAmount.value ),
+					max_amount: readFormattedRulePrice( maxAmount.value ),
 				};
 				break;
 		}

@@ -12,6 +12,25 @@ import PurchasePriceThresholdRuleCard, {
 } from '../purchase-price-threshold';
 
 describe( 'Purchase price threshold card', () => {
+	beforeEach( () => {
+		global.wcpaySettings = {
+			storeCurrency: 'USD',
+			connect: {
+				country: 'US',
+			},
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
+		};
+	} );
+
 	const settings = {
 		purchase_price_threshold: {
 			enabled: false,
