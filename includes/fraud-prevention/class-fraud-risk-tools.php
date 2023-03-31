@@ -170,7 +170,7 @@ class Fraud_Risk_Tools {
 				Check::check(
 					'order_total',
 					Check::OPERATOR_GT,
-					implode( '|', [ 1000 * 100, 'usd' ] )
+					self::get_formatted_converted_amount( 1000 * 100, 'usd' )
 				)
 			),
 		];
@@ -202,7 +202,7 @@ class Fraud_Risk_Tools {
 				Check::check(
 					'order_total',
 					Check::OPERATOR_GT,
-					implode( '|', [ 1000 * 100, 'usd' ] )
+					self::get_formatted_converted_amount( 1000 * 100, 'usd' )
 				)
 			),
 			// REVIEW An order has less than 2 items or more than 10 items.
@@ -318,5 +318,49 @@ class Fraud_Risk_Tools {
 			default:
 				return '';
 		}
+	}
+
+	/**
+	 * Returns the converted amount from a given currency to the default currency.
+	 *
+	 * @param int    $amount The amount to be converted.
+	 * @param string $from   The currency to be converted from.
+	 *
+	 * @return int
+	 */
+	private static function get_converted_amount( $amount, $from ) {
+		$from_currency      = strtoupper( $from );
+		$default_currency   = WC_Payments_Multi_Currency()->get_default_currency();
+		$enabled_currencies = WC_Payments_Multi_Currency()->get_enabled_currencies();
+
+		if ( empty( $default_currency ) || empty( $enabled_currencies ) ) {
+			return $amount;
+		}
+
+		if ( strtoupper( $default_currency->get_code() ) === $from_currency ) {
+			return $amount;
+		}
+
+		if ( array_key_exists( $from_currency, $enabled_currencies ) ) {
+			$currency = $enabled_currencies[ $from_currency ];
+			$amount   = round( $amount * ( 1 / (float) $currency->get_rate() ) );
+		}
+
+		return $amount;
+	}
+
+	/**
+	 * Returns the formatted converted amount from a given currency to the default currency.
+	 * The final format is "AMOUNT|CURRENCY".
+	 *
+	 * @param int    $amount The amount to be converted.
+	 * @param string $from   The currency to be converted from.
+	 *
+	 * @return string
+	 */
+	private static function get_formatted_converted_amount( $amount, $from ) {
+		$amount = self::get_converted_amount( $amount, $from );
+
+		return implode( '|', [ $amount, strtolower( $from ) ] );
 	}
 }
