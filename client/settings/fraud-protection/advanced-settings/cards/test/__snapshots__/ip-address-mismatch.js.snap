@@ -4,6 +4,7 @@ exports[`International billing address card renders correctly 1`] = `
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="ip-address-mismatch"
   >
     <div
       class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -95,6 +96,7 @@ exports[`International billing address card renders correctly when enabled 1`] =
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="ip-address-mismatch"
   >
     <div
       class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -252,6 +254,7 @@ exports[`International billing address card renders correctly when enabled and c
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="ip-address-mismatch"
   >
     <div
       class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -424,6 +427,7 @@ exports[`International billing address card renders like disabled when checked, 
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="ip-address-mismatch"
   >
     <div
       class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"

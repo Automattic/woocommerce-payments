@@ -24,6 +24,7 @@ const CVCVerificationRuleCard = () => {
 				'This filter checks the security code submitted by the customer against the data on file with the card issuer.',
 				'woocommerce-payments'
 			) }
+			id="cvc-verification-card"
 		>
 			<FraudProtectionRuleCardNotice type="warning">
 				{ declineOnCVCFailure

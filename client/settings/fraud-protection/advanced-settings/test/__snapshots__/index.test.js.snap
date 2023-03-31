@@ -99,6 +99,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="avs-mismatch-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -175,6 +176,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="cvc-verification-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -251,6 +253,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="international-ip-address-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -377,6 +380,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="ip-address-mismatch"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -463,6 +467,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="address-mismatch-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -541,6 +546,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="purchase-price-threshold-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -816,6 +822,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="order-items-threshold-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -983,6 +990,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="avs-mismatch-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -1059,6 +1067,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="cvc-verification-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -1135,6 +1144,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="international-ip-address-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -1261,6 +1271,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="ip-address-mismatch"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -1347,6 +1358,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="address-mismatch-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -1425,6 +1437,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="purchase-price-threshold-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -1700,6 +1713,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="order-items-threshold-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -1932,6 +1946,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="avs-mismatch-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2008,6 +2023,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="cvc-verification-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2084,6 +2100,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="international-ip-address-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2210,6 +2227,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="ip-address-mismatch"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2296,6 +2314,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="address-mismatch-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2374,6 +2393,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="purchase-price-threshold-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2452,6 +2472,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="order-items-threshold-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2603,6 +2624,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="avs-mismatch-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2679,6 +2701,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="cvc-verification-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2755,6 +2778,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="international-ip-address-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2881,6 +2905,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="ip-address-mismatch"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2967,6 +2992,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="address-mismatch-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -3045,6 +3071,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="purchase-price-threshold-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -3123,6 +3150,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="order-items-threshold-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -3324,6 +3352,7 @@ Object {
           </h2>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="avs-mismatch-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -3400,6 +3429,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="cvc-verification-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -3476,6 +3506,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="international-ip-address-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -3602,6 +3633,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="ip-address-mismatch"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -3688,6 +3720,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="address-mismatch-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -3766,6 +3799,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="purchase-price-threshold-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -3844,6 +3878,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="order-items-threshold-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -3961,6 +3996,7 @@ Object {
         </h2>
         <div
           class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+          id="avs-mismatch-card"
         >
           <div
             class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4037,6 +4073,7 @@ Object {
         </div>
         <div
           class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+          id="cvc-verification-card"
         >
           <div
             class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4113,6 +4150,7 @@ Object {
         </div>
         <div
           class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+          id="international-ip-address-card"
         >
           <div
             class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4239,6 +4277,7 @@ Object {
         </div>
         <div
           class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+          id="ip-address-mismatch"
         >
           <div
             class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4325,6 +4364,7 @@ Object {
         </div>
         <div
           class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+          id="address-mismatch-card"
         >
           <div
             class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4403,6 +4443,7 @@ Object {
         </div>
         <div
           class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+          id="purchase-price-threshold-card"
         >
           <div
             class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4481,6 +4522,7 @@ Object {
         </div>
         <div
           class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+          id="order-items-threshold-card"
         >
           <div
             class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4698,6 +4740,7 @@ Object {
             </h2>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="avs-mismatch-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4774,6 +4817,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="cvc-verification-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4850,6 +4894,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="international-ip-address-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4976,6 +5021,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="ip-address-mismatch"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -5062,6 +5108,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="address-mismatch-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -5140,6 +5187,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="purchase-price-threshold-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -5378,6 +5426,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="order-items-threshold-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -5514,6 +5563,7 @@ Object {
           </h2>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="avs-mismatch-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -5590,6 +5640,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="cvc-verification-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -5666,6 +5717,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="international-ip-address-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -5792,6 +5844,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="ip-address-mismatch"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -5878,6 +5931,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="address-mismatch-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -5956,6 +6010,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="purchase-price-threshold-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -6194,6 +6249,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="order-items-threshold-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"

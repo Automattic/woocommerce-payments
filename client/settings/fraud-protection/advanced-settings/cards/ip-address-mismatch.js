@@ -32,6 +32,7 @@ const IPAddressMismatchRuleCard = () => (
 				),
 			},
 		} ) }
+		id="ip-address-mismatch"
 	>
 		<FraudProtectionRuleToggle
 			setting={ 'ip_address_mismatch' }

@@ -44,6 +44,7 @@ const InternationalIPAddressRuleCard = () => {
 					),
 				},
 			} ) }
+			id="international-ip-address-card"
 		>
 			<AllowedCountriesNotice setting={ 'international_ip_address' } />
 			<FraudProtectionRuleToggle
