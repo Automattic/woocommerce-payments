@@ -164,6 +164,7 @@ class Fraud_Risk_Tools {
 					10
 				)
 			),
+			// REVIEW An order exceeds $1,000.00 or 10 items.
 			new Rule(
 				self::RULE_PURCHASE_PRICE_THRESHOLD,
 				Rule::FRAUD_OUTCOME_REVIEW,
@@ -171,6 +172,16 @@ class Fraud_Risk_Tools {
 					'order_total',
 					Check::OPERATOR_GT,
 					self::get_formatted_converted_amount( 1000 * 100, 'usd' )
+				)
+			),
+			// REVIEW An order is originated from a different country than the shipping country.
+			new Rule(
+				self::RULE_IP_ADDRESS_MISMATCH,
+				Rule::FRAUD_OUTCOME_REVIEW,
+				Check::check(
+					'ip_billing_country_same',
+					Check::OPERATOR_EQUALS,
+					false
 				)
 			),
 		];
