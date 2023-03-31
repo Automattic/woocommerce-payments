@@ -25,11 +25,11 @@ exports[`FRTDiscoverabilityBanner renders 1`] = `
       <p
         class="discoverability-card__body"
       >
-        A new range of tools have been added to WooCommerce Payments to help 
+        New features have been added to WooCommerce Payments to help 
         <strong>
           reduce fraudulent transactions
         </strong>
-         on your store. In addition to purchase verification, new risk filters are now available to screen incoming transactions - better protecting your store from fraudsters.
+         on your store. By using a set of rules to evaluate incoming orders, your store is better protected from fraudsters.
       </p>
       <div
         class="discoverability-card__actions"
@@ -73,11 +73,11 @@ exports[`FRTDiscoverabilityBanner renders when remindMeAt timestamp is in the pa
       <p
         class="discoverability-card__body"
       >
-        A new range of tools have been added to WooCommerce Payments to help 
+        New features have been added to WooCommerce Payments to help 
         <strong>
           reduce fraudulent transactions
         </strong>
-         on your store. In addition to purchase verification, new risk filters are now available to screen incoming transactions - better protecting your store from fraudsters.
+         on your store. By using a set of rules to evaluate incoming orders, your store is better protected from fraudsters.
       </p>
       <div
         class="discoverability-card__actions"
@@ -121,11 +121,11 @@ exports[`FRTDiscoverabilityBanner renders with dont show again button if remindM
       <p
         class="discoverability-card__body"
       >
-        A new range of tools have been added to WooCommerce Payments to help 
+        New features have been added to WooCommerce Payments to help 
         <strong>
           reduce fraudulent transactions
         </strong>
-         on your store. In addition to purchase verification, new risk filters are now available to screen incoming transactions - better protecting your store from fraudsters.
+         on your store. By using a set of rules to evaluate incoming orders, your store is better protected from fraudsters.
       </p>
       <div
         class="discoverability-card__actions"
@@ -175,11 +175,11 @@ exports[`FRTDiscoverabilityBanner renders without dont show again button if remi
       <p
         class="discoverability-card__body"
       >
-        A new range of tools have been added to WooCommerce Payments to help 
+        New features have been added to WooCommerce Payments to help 
         <strong>
           reduce fraudulent transactions
         </strong>
-         on your store. In addition to purchase verification, new risk filters are now available to screen incoming transactions - better protecting your store from fraudsters.
+         on your store. By using a set of rules to evaluate incoming orders, your store is better protected from fraudsters.
       </p>
       <div
         class="discoverability-card__actions"
