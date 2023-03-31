@@ -182,7 +182,7 @@ const FraudProtectionAdvancedSettingsPage = () => {
 			if ( 0 < intersectionRatio ) {
 				// element is at least partially visible.
 				const { id } = target;
-				const event = observerEventMapping[ id ] || {};
+				const event = observerEventMapping[ id ] || null;
 
 				if ( event ) {
 					wcpayTracks.recordEvent( event );
