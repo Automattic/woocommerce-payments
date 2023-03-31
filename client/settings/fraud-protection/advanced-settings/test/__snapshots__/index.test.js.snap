@@ -121,16 +121,6 @@ Object {
                 class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
               >
                 <div
-                  class="fraud-protection-rule-description"
-                >
-                  <strong>
-                    How does this filter protect me?
-                  </strong>
-                  <p>
-                    Buyers who can provide the street number and post code on file with the issuing bank are more likely to be the actual account holder. AVS matches, however, are not a guarantee.
-                  </p>
-                </div>
-                <div
                   class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
                 >
                   <div
@@ -161,14 +151,25 @@ Object {
                       >
                         For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                         <a
-                          data-link-type="wc-admin"
-                          href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                          data-link-type="external"
+                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          target="_blank"
                         >
                           Learn more
                         </a>
                       </div>
                     </div>
                   </div>
+                </div>
+                <div
+                  class="fraud-protection-rule-description"
+                >
+                  <strong>
+                    How does this filter protect me?
+                  </strong>
+                  <p>
+                    Buyers who can provide the street number and post code on file with the issuing bank are more likely to be the actual account holder. AVS matches, however, are not a guarantee.
+                  </p>
                 </div>
               </div>
             </div>
@@ -195,16 +196,6 @@ Object {
               <div
                 class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
               >
-                <div
-                  class="fraud-protection-rule-description"
-                >
-                  <strong>
-                    How does this filter protect me?
-                  </strong>
-                  <p>
-                    Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
-                  </p>
-                </div>
                 <div
                   class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
                 >
@@ -236,14 +227,25 @@ Object {
                       >
                         For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                         <a
-                          data-link-type="wc-admin"
-                          href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                          data-link-type="external"
+                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          target="_blank"
                         >
                           Learn more
                         </a>
                       </div>
                     </div>
                   </div>
+                </div>
+                <div
+                  class="fraud-protection-rule-description"
+                >
+                  <strong>
+                    How does this filter protect me?
+                  </strong>
+                  <p>
+                    Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
+                  </p>
                 </div>
               </div>
             </div>
@@ -262,10 +264,17 @@ Object {
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens for IP addresses outside of your 
+                    This filter screens for 
                     <a
-                      data-link-type="wc-admin"
-                      href="#"
+                      data-link-type="external"
+                      href="https://simple.wikipedia.org/wiki/IP_address"
+                      target="_blank"
+                    >
+                      IP addresses
+                    </a>
+                     outside of your 
+                    <a
+                      href="admin.php?page=wc-settings&tab=general"
                     >
                       supported countries
                     </a>
@@ -277,6 +286,40 @@ Object {
               <div
                 class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
               >
+                <div
+                  class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+                >
+                  <div
+                    class="components-notice__content"
+                  >
+                    <div
+                      class="components-flex css-1nh0b0-Flex eboqfv50"
+                    >
+                      <div
+                        class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                      >
+                        <svg
+                          class="gridicon gridicons-notice-outline"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <g>
+                            <path
+                              d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                            />
+                          </g>
+                        </svg>
+                      </div>
+                      <div
+                        class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                      >
+                        Enabling this filter will not have any effect because you are selling to all countries.
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 <div
                   class="fraud-protection-rule-toggle"
                 >
@@ -330,40 +373,6 @@ Object {
                     You should be especially wary when a customer has an international IP address but uses domestic billing and shipping information. Fraudsters often pretend to live in one location, but live and shop from another.
                   </p>
                 </div>
-                <div
-                  class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-                >
-                  <div
-                    class="components-notice__content"
-                  >
-                    <div
-                      class="components-flex css-1nh0b0-Flex eboqfv50"
-                    >
-                      <div
-                        class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                      >
-                        <svg
-                          class="gridicon gridicons-notice-outline"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          width="24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <g>
-                            <path
-                              d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                            />
-                          </g>
-                        </svg>
-                      </div>
-                      <div
-                        class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                      >
-                        Enabling this filter will not have any effect because you are selling to all countries.
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
             <div
@@ -381,7 +390,15 @@ Object {
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens for customer's IP (Internet Protocol) address to see if it is in a different country than indicated in their billing address.
+                    This filter screens for customer's 
+                    <a
+                      data-link-type="external"
+                      href="https://simple.wikipedia.org/wiki/IP_address"
+                      target="_blank"
+                    >
+                      IP address
+                    </a>
+                     to see if it is in a different country than indicated in their billing address.
                   </p>
                 </div>
               </div>
@@ -988,16 +1005,6 @@ Object {
               class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
             >
               <div
-                class="fraud-protection-rule-description"
-              >
-                <strong>
-                  How does this filter protect me?
-                </strong>
-                <p>
-                  Buyers who can provide the street number and post code on file with the issuing bank are more likely to be the actual account holder. AVS matches, however, are not a guarantee.
-                </p>
-              </div>
-              <div
                 class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
               >
                 <div
@@ -1028,14 +1035,25 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
                     </div>
                   </div>
                 </div>
+              </div>
+              <div
+                class="fraud-protection-rule-description"
+              >
+                <strong>
+                  How does this filter protect me?
+                </strong>
+                <p>
+                  Buyers who can provide the street number and post code on file with the issuing bank are more likely to be the actual account holder. AVS matches, however, are not a guarantee.
+                </p>
               </div>
             </div>
           </div>
@@ -1062,16 +1080,6 @@ Object {
             <div
               class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
             >
-              <div
-                class="fraud-protection-rule-description"
-              >
-                <strong>
-                  How does this filter protect me?
-                </strong>
-                <p>
-                  Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
-                </p>
-              </div>
               <div
                 class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
               >
@@ -1103,14 +1111,25 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
                     </div>
                   </div>
                 </div>
+              </div>
+              <div
+                class="fraud-protection-rule-description"
+              >
+                <strong>
+                  How does this filter protect me?
+                </strong>
+                <p>
+                  Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
+                </p>
               </div>
             </div>
           </div>
@@ -1129,10 +1148,17 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for IP addresses outside of your 
+                  This filter screens for 
                   <a
-                    data-link-type="wc-admin"
-                    href="#"
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
+                  >
+                    IP addresses
+                  </a>
+                   outside of your 
+                  <a
+                    href="admin.php?page=wc-settings&tab=general"
                   >
                     supported countries
                   </a>
@@ -1144,6 +1170,40 @@ Object {
             <div
               class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
             >
+              <div
+                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+              >
+                <div
+                  class="components-notice__content"
+                >
+                  <div
+                    class="components-flex css-1nh0b0-Flex eboqfv50"
+                  >
+                    <div
+                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                    >
+                      <svg
+                        class="gridicon gridicons-notice-outline"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                          />
+                        </g>
+                      </svg>
+                    </div>
+                    <div
+                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                    >
+                      Enabling this filter will not have any effect because you are selling to all countries.
+                    </div>
+                  </div>
+                </div>
+              </div>
               <div
                 class="fraud-protection-rule-toggle"
               >
@@ -1197,40 +1257,6 @@ Object {
                   You should be especially wary when a customer has an international IP address but uses domestic billing and shipping information. Fraudsters often pretend to live in one location, but live and shop from another.
                 </p>
               </div>
-              <div
-                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-              >
-                <div
-                  class="components-notice__content"
-                >
-                  <div
-                    class="components-flex css-1nh0b0-Flex eboqfv50"
-                  >
-                    <div
-                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                    >
-                      <svg
-                        class="gridicon gridicons-notice-outline"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        width="24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <g>
-                          <path
-                            d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                          />
-                        </g>
-                      </svg>
-                    </div>
-                    <div
-                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                    >
-                      Enabling this filter will not have any effect because you are selling to all countries.
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
           <div
@@ -1248,7 +1274,15 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for customer's IP (Internet Protocol) address to see if it is in a different country than indicated in their billing address.
+                  This filter screens for customer's 
+                  <a
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
+                  >
+                    IP address
+                  </a>
+                   to see if it is in a different country than indicated in their billing address.
                 </p>
               </div>
             </div>
@@ -1920,16 +1954,6 @@ Object {
                 class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
               >
                 <div
-                  class="fraud-protection-rule-description"
-                >
-                  <strong>
-                    How does this filter protect me?
-                  </strong>
-                  <p>
-                    Buyers who can provide the street number and post code on file with the issuing bank are more likely to be the actual account holder. AVS matches, however, are not a guarantee.
-                  </p>
-                </div>
-                <div
                   class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
                 >
                   <div
@@ -1960,14 +1984,25 @@ Object {
                       >
                         For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                         <a
-                          data-link-type="wc-admin"
-                          href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                          data-link-type="external"
+                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          target="_blank"
                         >
                           Learn more
                         </a>
                       </div>
                     </div>
                   </div>
+                </div>
+                <div
+                  class="fraud-protection-rule-description"
+                >
+                  <strong>
+                    How does this filter protect me?
+                  </strong>
+                  <p>
+                    Buyers who can provide the street number and post code on file with the issuing bank are more likely to be the actual account holder. AVS matches, however, are not a guarantee.
+                  </p>
                 </div>
               </div>
             </div>
@@ -1994,16 +2029,6 @@ Object {
               <div
                 class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
               >
-                <div
-                  class="fraud-protection-rule-description"
-                >
-                  <strong>
-                    How does this filter protect me?
-                  </strong>
-                  <p>
-                    Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
-                  </p>
-                </div>
                 <div
                   class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
                 >
@@ -2035,14 +2060,25 @@ Object {
                       >
                         For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                         <a
-                          data-link-type="wc-admin"
-                          href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                          data-link-type="external"
+                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          target="_blank"
                         >
                           Learn more
                         </a>
                       </div>
                     </div>
                   </div>
+                </div>
+                <div
+                  class="fraud-protection-rule-description"
+                >
+                  <strong>
+                    How does this filter protect me?
+                  </strong>
+                  <p>
+                    Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
+                  </p>
                 </div>
               </div>
             </div>
@@ -2061,10 +2097,17 @@ Object {
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens for IP addresses outside of your 
+                    This filter screens for 
                     <a
-                      data-link-type="wc-admin"
-                      href="#"
+                      data-link-type="external"
+                      href="https://simple.wikipedia.org/wiki/IP_address"
+                      target="_blank"
+                    >
+                      IP addresses
+                    </a>
+                     outside of your 
+                    <a
+                      href="admin.php?page=wc-settings&tab=general"
                     >
                       supported countries
                     </a>
@@ -2076,6 +2119,40 @@ Object {
               <div
                 class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
               >
+                <div
+                  class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+                >
+                  <div
+                    class="components-notice__content"
+                  >
+                    <div
+                      class="components-flex css-1nh0b0-Flex eboqfv50"
+                    >
+                      <div
+                        class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                      >
+                        <svg
+                          class="gridicon gridicons-notice-outline"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <g>
+                            <path
+                              d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                            />
+                          </g>
+                        </svg>
+                      </div>
+                      <div
+                        class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                      >
+                        Enabling this filter will not have any effect because you are selling to all countries.
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 <div
                   class="fraud-protection-rule-toggle"
                 >
@@ -2129,40 +2206,6 @@ Object {
                     You should be especially wary when a customer has an international IP address but uses domestic billing and shipping information. Fraudsters often pretend to live in one location, but live and shop from another.
                   </p>
                 </div>
-                <div
-                  class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-                >
-                  <div
-                    class="components-notice__content"
-                  >
-                    <div
-                      class="components-flex css-1nh0b0-Flex eboqfv50"
-                    >
-                      <div
-                        class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                      >
-                        <svg
-                          class="gridicon gridicons-notice-outline"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          width="24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <g>
-                            <path
-                              d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                            />
-                          </g>
-                        </svg>
-                      </div>
-                      <div
-                        class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                      >
-                        Enabling this filter will not have any effect because you are selling to all countries.
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
             <div
@@ -2180,7 +2223,15 @@ Object {
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens for customer's IP (Internet Protocol) address to see if it is in a different country than indicated in their billing address.
+                    This filter screens for customer's 
+                    <a
+                      data-link-type="external"
+                      href="https://simple.wikipedia.org/wiki/IP_address"
+                      target="_blank"
+                    >
+                      IP address
+                    </a>
+                     to see if it is in a different country than indicated in their billing address.
                   </p>
                 </div>
               </div>
@@ -2574,16 +2625,6 @@ Object {
               class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
             >
               <div
-                class="fraud-protection-rule-description"
-              >
-                <strong>
-                  How does this filter protect me?
-                </strong>
-                <p>
-                  Buyers who can provide the street number and post code on file with the issuing bank are more likely to be the actual account holder. AVS matches, however, are not a guarantee.
-                </p>
-              </div>
-              <div
                 class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
               >
                 <div
@@ -2614,14 +2655,25 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
                     </div>
                   </div>
                 </div>
+              </div>
+              <div
+                class="fraud-protection-rule-description"
+              >
+                <strong>
+                  How does this filter protect me?
+                </strong>
+                <p>
+                  Buyers who can provide the street number and post code on file with the issuing bank are more likely to be the actual account holder. AVS matches, however, are not a guarantee.
+                </p>
               </div>
             </div>
           </div>
@@ -2648,16 +2700,6 @@ Object {
             <div
               class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
             >
-              <div
-                class="fraud-protection-rule-description"
-              >
-                <strong>
-                  How does this filter protect me?
-                </strong>
-                <p>
-                  Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
-                </p>
-              </div>
               <div
                 class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
               >
@@ -2689,14 +2731,25 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
                     </div>
                   </div>
                 </div>
+              </div>
+              <div
+                class="fraud-protection-rule-description"
+              >
+                <strong>
+                  How does this filter protect me?
+                </strong>
+                <p>
+                  Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
+                </p>
               </div>
             </div>
           </div>
@@ -2715,10 +2768,17 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for IP addresses outside of your 
+                  This filter screens for 
                   <a
-                    data-link-type="wc-admin"
-                    href="#"
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
+                  >
+                    IP addresses
+                  </a>
+                   outside of your 
+                  <a
+                    href="admin.php?page=wc-settings&tab=general"
                   >
                     supported countries
                   </a>
@@ -2730,6 +2790,40 @@ Object {
             <div
               class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
             >
+              <div
+                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+              >
+                <div
+                  class="components-notice__content"
+                >
+                  <div
+                    class="components-flex css-1nh0b0-Flex eboqfv50"
+                  >
+                    <div
+                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                    >
+                      <svg
+                        class="gridicon gridicons-notice-outline"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                          />
+                        </g>
+                      </svg>
+                    </div>
+                    <div
+                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                    >
+                      Enabling this filter will not have any effect because you are selling to all countries.
+                    </div>
+                  </div>
+                </div>
+              </div>
               <div
                 class="fraud-protection-rule-toggle"
               >
@@ -2783,40 +2877,6 @@ Object {
                   You should be especially wary when a customer has an international IP address but uses domestic billing and shipping information. Fraudsters often pretend to live in one location, but live and shop from another.
                 </p>
               </div>
-              <div
-                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-              >
-                <div
-                  class="components-notice__content"
-                >
-                  <div
-                    class="components-flex css-1nh0b0-Flex eboqfv50"
-                  >
-                    <div
-                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                    >
-                      <svg
-                        class="gridicon gridicons-notice-outline"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        width="24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <g>
-                          <path
-                            d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                          />
-                        </g>
-                      </svg>
-                    </div>
-                    <div
-                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                    >
-                      Enabling this filter will not have any effect because you are selling to all countries.
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
           <div
@@ -2834,7 +2894,15 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for customer's IP (Internet Protocol) address to see if it is in a different country than indicated in their billing address.
+                  This filter screens for customer's 
+                  <a
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
+                  >
+                    IP address
+                  </a>
+                   to see if it is in a different country than indicated in their billing address.
                 </p>
               </div>
             </div>
@@ -3278,16 +3346,6 @@ Object {
               class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
             >
               <div
-                class="fraud-protection-rule-description"
-              >
-                <strong>
-                  How does this filter protect me?
-                </strong>
-                <p>
-                  Buyers who can provide the street number and post code on file with the issuing bank are more likely to be the actual account holder. AVS matches, however, are not a guarantee.
-                </p>
-              </div>
-              <div
                 class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
               >
                 <div
@@ -3318,14 +3376,25 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
                     </div>
                   </div>
                 </div>
+              </div>
+              <div
+                class="fraud-protection-rule-description"
+              >
+                <strong>
+                  How does this filter protect me?
+                </strong>
+                <p>
+                  Buyers who can provide the street number and post code on file with the issuing bank are more likely to be the actual account holder. AVS matches, however, are not a guarantee.
+                </p>
               </div>
             </div>
           </div>
@@ -3352,16 +3421,6 @@ Object {
             <div
               class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
             >
-              <div
-                class="fraud-protection-rule-description"
-              >
-                <strong>
-                  How does this filter protect me?
-                </strong>
-                <p>
-                  Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
-                </p>
-              </div>
               <div
                 class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
               >
@@ -3393,14 +3452,25 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
                     </div>
                   </div>
                 </div>
+              </div>
+              <div
+                class="fraud-protection-rule-description"
+              >
+                <strong>
+                  How does this filter protect me?
+                </strong>
+                <p>
+                  Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
+                </p>
               </div>
             </div>
           </div>
@@ -3419,10 +3489,17 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for IP addresses outside of your 
+                  This filter screens for 
                   <a
-                    data-link-type="wc-admin"
-                    href="#"
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
+                  >
+                    IP addresses
+                  </a>
+                   outside of your 
+                  <a
+                    href="admin.php?page=wc-settings&tab=general"
                   >
                     supported countries
                   </a>
@@ -3434,6 +3511,40 @@ Object {
             <div
               class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
             >
+              <div
+                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+              >
+                <div
+                  class="components-notice__content"
+                >
+                  <div
+                    class="components-flex css-1nh0b0-Flex eboqfv50"
+                  >
+                    <div
+                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                    >
+                      <svg
+                        class="gridicon gridicons-notice-outline"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                          />
+                        </g>
+                      </svg>
+                    </div>
+                    <div
+                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                    >
+                      Enabling this filter will not have any effect because you are selling to all countries.
+                    </div>
+                  </div>
+                </div>
+              </div>
               <div
                 class="fraud-protection-rule-toggle"
               >
@@ -3487,40 +3598,6 @@ Object {
                   You should be especially wary when a customer has an international IP address but uses domestic billing and shipping information. Fraudsters often pretend to live in one location, but live and shop from another.
                 </p>
               </div>
-              <div
-                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-              >
-                <div
-                  class="components-notice__content"
-                >
-                  <div
-                    class="components-flex css-1nh0b0-Flex eboqfv50"
-                  >
-                    <div
-                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                    >
-                      <svg
-                        class="gridicon gridicons-notice-outline"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        width="24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <g>
-                          <path
-                            d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                          />
-                        </g>
-                      </svg>
-                    </div>
-                    <div
-                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                    >
-                      Enabling this filter will not have any effect because you are selling to all countries.
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
           <div
@@ -3538,7 +3615,15 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for customer's IP (Internet Protocol) address to see if it is in a different country than indicated in their billing address.
+                  This filter screens for customer's 
+                  <a
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
+                  >
+                    IP address
+                  </a>
+                   to see if it is in a different country than indicated in their billing address.
                 </p>
               </div>
             </div>
@@ -3898,16 +3983,6 @@ Object {
             class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
           >
             <div
-              class="fraud-protection-rule-description"
-            >
-              <strong>
-                How does this filter protect me?
-              </strong>
-              <p>
-                Buyers who can provide the street number and post code on file with the issuing bank are more likely to be the actual account holder. AVS matches, however, are not a guarantee.
-              </p>
-            </div>
-            <div
               class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
             >
               <div
@@ -3938,14 +4013,25 @@ Object {
                   >
                     For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                     <a
-                      data-link-type="wc-admin"
-                      href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                      data-link-type="external"
+                      href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                      target="_blank"
                     >
                       Learn more
                     </a>
                   </div>
                 </div>
               </div>
+            </div>
+            <div
+              class="fraud-protection-rule-description"
+            >
+              <strong>
+                How does this filter protect me?
+              </strong>
+              <p>
+                Buyers who can provide the street number and post code on file with the issuing bank are more likely to be the actual account holder. AVS matches, however, are not a guarantee.
+              </p>
             </div>
           </div>
         </div>
@@ -3972,16 +4058,6 @@ Object {
           <div
             class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
           >
-            <div
-              class="fraud-protection-rule-description"
-            >
-              <strong>
-                How does this filter protect me?
-              </strong>
-              <p>
-                Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
-              </p>
-            </div>
             <div
               class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
             >
@@ -4013,14 +4089,25 @@ Object {
                   >
                     For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                     <a
-                      data-link-type="wc-admin"
-                      href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                      data-link-type="external"
+                      href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                      target="_blank"
                     >
                       Learn more
                     </a>
                   </div>
                 </div>
               </div>
+            </div>
+            <div
+              class="fraud-protection-rule-description"
+            >
+              <strong>
+                How does this filter protect me?
+              </strong>
+              <p>
+                Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
+              </p>
             </div>
           </div>
         </div>
@@ -4039,10 +4126,17 @@ Object {
               <p
                 class="fraud-protection-rule-card-description"
               >
-                This filter screens for IP addresses outside of your 
+                This filter screens for 
                 <a
-                  data-link-type="wc-admin"
-                  href="#"
+                  data-link-type="external"
+                  href="https://simple.wikipedia.org/wiki/IP_address"
+                  target="_blank"
+                >
+                  IP addresses
+                </a>
+                 outside of your 
+                <a
+                  href="admin.php?page=wc-settings&tab=general"
                 >
                   supported countries
                 </a>
@@ -4054,6 +4148,40 @@ Object {
           <div
             class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
           >
+            <div
+              class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+            >
+              <div
+                class="components-notice__content"
+              >
+                <div
+                  class="components-flex css-1nh0b0-Flex eboqfv50"
+                >
+                  <div
+                    class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                  >
+                    <svg
+                      class="gridicon gridicons-notice-outline"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <g>
+                        <path
+                          d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                        />
+                      </g>
+                    </svg>
+                  </div>
+                  <div
+                    class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                  >
+                    Enabling this filter will not have any effect because you are selling to all countries.
+                  </div>
+                </div>
+              </div>
+            </div>
             <div
               class="fraud-protection-rule-toggle"
             >
@@ -4107,40 +4235,6 @@ Object {
                 You should be especially wary when a customer has an international IP address but uses domestic billing and shipping information. Fraudsters often pretend to live in one location, but live and shop from another.
               </p>
             </div>
-            <div
-              class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-            >
-              <div
-                class="components-notice__content"
-              >
-                <div
-                  class="components-flex css-1nh0b0-Flex eboqfv50"
-                >
-                  <div
-                    class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                  >
-                    <svg
-                      class="gridicon gridicons-notice-outline"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      width="24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <g>
-                        <path
-                          d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                        />
-                      </g>
-                    </svg>
-                  </div>
-                  <div
-                    class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                  >
-                    Enabling this filter will not have any effect because you are selling to all countries.
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
         <div
@@ -4158,7 +4252,15 @@ Object {
               <p
                 class="fraud-protection-rule-card-description"
               >
-                This filter screens for customer's IP (Internet Protocol) address to see if it is in a different country than indicated in their billing address.
+                This filter screens for customer's 
+                <a
+                  data-link-type="external"
+                  href="https://simple.wikipedia.org/wiki/IP_address"
+                  target="_blank"
+                >
+                  IP address
+                </a>
+                 to see if it is in a different country than indicated in their billing address.
               </p>
             </div>
           </div>
@@ -4618,16 +4720,6 @@ Object {
                 class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
               >
                 <div
-                  class="fraud-protection-rule-description"
-                >
-                  <strong>
-                    How does this filter protect me?
-                  </strong>
-                  <p>
-                    Buyers who can provide the street number and post code on file with the issuing bank are more likely to be the actual account holder. AVS matches, however, are not a guarantee.
-                  </p>
-                </div>
-                <div
                   class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
                 >
                   <div
@@ -4658,14 +4750,25 @@ Object {
                       >
                         For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                         <a
-                          data-link-type="wc-admin"
-                          href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                          data-link-type="external"
+                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          target="_blank"
                         >
                           Learn more
                         </a>
                       </div>
                     </div>
                   </div>
+                </div>
+                <div
+                  class="fraud-protection-rule-description"
+                >
+                  <strong>
+                    How does this filter protect me?
+                  </strong>
+                  <p>
+                    Buyers who can provide the street number and post code on file with the issuing bank are more likely to be the actual account holder. AVS matches, however, are not a guarantee.
+                  </p>
                 </div>
               </div>
             </div>
@@ -4692,16 +4795,6 @@ Object {
               <div
                 class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
               >
-                <div
-                  class="fraud-protection-rule-description"
-                >
-                  <strong>
-                    How does this filter protect me?
-                  </strong>
-                  <p>
-                    Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
-                  </p>
-                </div>
                 <div
                   class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
                 >
@@ -4733,14 +4826,25 @@ Object {
                       >
                         For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                         <a
-                          data-link-type="wc-admin"
-                          href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                          data-link-type="external"
+                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          target="_blank"
                         >
                           Learn more
                         </a>
                       </div>
                     </div>
                   </div>
+                </div>
+                <div
+                  class="fraud-protection-rule-description"
+                >
+                  <strong>
+                    How does this filter protect me?
+                  </strong>
+                  <p>
+                    Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
+                  </p>
                 </div>
               </div>
             </div>
@@ -4759,10 +4863,17 @@ Object {
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens for IP addresses outside of your 
+                    This filter screens for 
                     <a
-                      data-link-type="wc-admin"
-                      href="#"
+                      data-link-type="external"
+                      href="https://simple.wikipedia.org/wiki/IP_address"
+                      target="_blank"
+                    >
+                      IP addresses
+                    </a>
+                     outside of your 
+                    <a
+                      href="admin.php?page=wc-settings&tab=general"
                     >
                       supported countries
                     </a>
@@ -4774,6 +4885,40 @@ Object {
               <div
                 class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
               >
+                <div
+                  class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+                >
+                  <div
+                    class="components-notice__content"
+                  >
+                    <div
+                      class="components-flex css-1nh0b0-Flex eboqfv50"
+                    >
+                      <div
+                        class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                      >
+                        <svg
+                          class="gridicon gridicons-notice-outline"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <g>
+                            <path
+                              d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                            />
+                          </g>
+                        </svg>
+                      </div>
+                      <div
+                        class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                      >
+                        Enabling this filter will not have any effect because you are selling to all countries.
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 <div
                   class="fraud-protection-rule-toggle"
                 >
@@ -4827,40 +4972,6 @@ Object {
                     You should be especially wary when a customer has an international IP address but uses domestic billing and shipping information. Fraudsters often pretend to live in one location, but live and shop from another.
                   </p>
                 </div>
-                <div
-                  class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-                >
-                  <div
-                    class="components-notice__content"
-                  >
-                    <div
-                      class="components-flex css-1nh0b0-Flex eboqfv50"
-                    >
-                      <div
-                        class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                      >
-                        <svg
-                          class="gridicon gridicons-notice-outline"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          width="24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <g>
-                            <path
-                              d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                            />
-                          </g>
-                        </svg>
-                      </div>
-                      <div
-                        class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                      >
-                        Enabling this filter will not have any effect because you are selling to all countries.
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
             <div
@@ -4878,7 +4989,15 @@ Object {
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens for customer's IP (Internet Protocol) address to see if it is in a different country than indicated in their billing address.
+                    This filter screens for customer's 
+                    <a
+                      data-link-type="external"
+                      href="https://simple.wikipedia.org/wiki/IP_address"
+                      target="_blank"
+                    >
+                      IP address
+                    </a>
+                     to see if it is in a different country than indicated in their billing address.
                   </p>
                 </div>
               </div>
@@ -5417,16 +5536,6 @@ Object {
               class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
             >
               <div
-                class="fraud-protection-rule-description"
-              >
-                <strong>
-                  How does this filter protect me?
-                </strong>
-                <p>
-                  Buyers who can provide the street number and post code on file with the issuing bank are more likely to be the actual account holder. AVS matches, however, are not a guarantee.
-                </p>
-              </div>
-              <div
                 class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
               >
                 <div
@@ -5457,14 +5566,25 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
                     </div>
                   </div>
                 </div>
+              </div>
+              <div
+                class="fraud-protection-rule-description"
+              >
+                <strong>
+                  How does this filter protect me?
+                </strong>
+                <p>
+                  Buyers who can provide the street number and post code on file with the issuing bank are more likely to be the actual account holder. AVS matches, however, are not a guarantee.
+                </p>
               </div>
             </div>
           </div>
@@ -5491,16 +5611,6 @@ Object {
             <div
               class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
             >
-              <div
-                class="fraud-protection-rule-description"
-              >
-                <strong>
-                  How does this filter protect me?
-                </strong>
-                <p>
-                  Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
-                </p>
-              </div>
               <div
                 class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
               >
@@ -5532,14 +5642,25 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
                     </div>
                   </div>
                 </div>
+              </div>
+              <div
+                class="fraud-protection-rule-description"
+              >
+                <strong>
+                  How does this filter protect me?
+                </strong>
+                <p>
+                  Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
+                </p>
               </div>
             </div>
           </div>
@@ -5558,10 +5679,17 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for IP addresses outside of your 
+                  This filter screens for 
                   <a
-                    data-link-type="wc-admin"
-                    href="#"
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
+                  >
+                    IP addresses
+                  </a>
+                   outside of your 
+                  <a
+                    href="admin.php?page=wc-settings&tab=general"
                   >
                     supported countries
                   </a>
@@ -5573,6 +5701,40 @@ Object {
             <div
               class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
             >
+              <div
+                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+              >
+                <div
+                  class="components-notice__content"
+                >
+                  <div
+                    class="components-flex css-1nh0b0-Flex eboqfv50"
+                  >
+                    <div
+                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                    >
+                      <svg
+                        class="gridicon gridicons-notice-outline"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                          />
+                        </g>
+                      </svg>
+                    </div>
+                    <div
+                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                    >
+                      Enabling this filter will not have any effect because you are selling to all countries.
+                    </div>
+                  </div>
+                </div>
+              </div>
               <div
                 class="fraud-protection-rule-toggle"
               >
@@ -5626,40 +5788,6 @@ Object {
                   You should be especially wary when a customer has an international IP address but uses domestic billing and shipping information. Fraudsters often pretend to live in one location, but live and shop from another.
                 </p>
               </div>
-              <div
-                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-              >
-                <div
-                  class="components-notice__content"
-                >
-                  <div
-                    class="components-flex css-1nh0b0-Flex eboqfv50"
-                  >
-                    <div
-                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                    >
-                      <svg
-                        class="gridicon gridicons-notice-outline"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        width="24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <g>
-                          <path
-                            d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                          />
-                        </g>
-                      </svg>
-                    </div>
-                    <div
-                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                    >
-                      Enabling this filter will not have any effect because you are selling to all countries.
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
           <div
@@ -5677,7 +5805,15 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for customer's IP (Internet Protocol) address to see if it is in a different country than indicated in their billing address.
+                  This filter screens for customer's 
+                  <a
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
+                  >
+                    IP address
+                  </a>
+                   to see if it is in a different country than indicated in their billing address.
                 </p>
               </div>
             </div>

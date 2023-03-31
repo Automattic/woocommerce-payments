@@ -17,7 +17,15 @@ exports[`International billing address card renders correctly 1`] = `
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens for customer's IP (Internet Protocol) address to see if it is in a different country than indicated in their billing address.
+          This filter screens for customer's 
+          <a
+            data-link-type="external"
+            href="https://simple.wikipedia.org/wiki/IP_address"
+            target="_blank"
+          >
+            IP address
+          </a>
+           to see if it is in a different country than indicated in their billing address.
         </p>
       </div>
     </div>
@@ -100,7 +108,15 @@ exports[`International billing address card renders correctly when enabled 1`] =
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens for customer's IP (Internet Protocol) address to see if it is in a different country than indicated in their billing address.
+          This filter screens for customer's 
+          <a
+            data-link-type="external"
+            href="https://simple.wikipedia.org/wiki/IP_address"
+            target="_blank"
+          >
+            IP address
+          </a>
+           to see if it is in a different country than indicated in their billing address.
         </p>
       </div>
     </div>
@@ -249,7 +265,15 @@ exports[`International billing address card renders correctly when enabled and c
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens for customer's IP (Internet Protocol) address to see if it is in a different country than indicated in their billing address.
+          This filter screens for customer's 
+          <a
+            data-link-type="external"
+            href="https://simple.wikipedia.org/wiki/IP_address"
+            target="_blank"
+          >
+            IP address
+          </a>
+           to see if it is in a different country than indicated in their billing address.
         </p>
       </div>
     </div>
@@ -413,7 +437,15 @@ exports[`International billing address card renders like disabled when checked, 
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens for customer's IP (Internet Protocol) address to see if it is in a different country than indicated in their billing address.
+          This filter screens for customer's 
+          <a
+            data-link-type="external"
+            href="https://simple.wikipedia.org/wiki/IP_address"
+            target="_blank"
+          >
+            IP address
+          </a>
+           to see if it is in a different country than indicated in their billing address.
         </p>
       </div>
     </div>
