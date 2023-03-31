@@ -4,6 +4,8 @@
  */
 import { render, screen } from '@testing-library/react';
 import React from 'react';
+import moment from 'moment';
+import { dateI18n } from '@wordpress/date';
 
 /**
  * Internal dependencies
@@ -214,7 +216,7 @@ describe( 'PaymentDetailsSummary', () => {
 				charge_id: 'ch_mock',
 				amount: 1000,
 				currency: 'usd',
-				created: '2019-09-19 17:24:00',
+				created: new Date().toISOString(),
 				order_id: 123,
 				risk_level: 1,
 				customer_country: 'US',
@@ -237,9 +239,14 @@ describe( 'PaymentDetailsSummary', () => {
 		).toBeInTheDocument();
 
 		expect(
-			screen.getByText( /You need to capture this charge/i )
-		).toHaveTextContent(
-			'You need to capture this charge before Sep 26, 2019 / 5:24PM'
+			container.getElementsByClassName(
+				'payment-details-capture-notice__text'
+			)[ 0 ].innerHTML
+		).toMatch(
+			`You need to <a href=\"https://woocommerce.com/document/woocommerce-payments/settings-guide/authorize-and-capture/#capturing-authorized-orders\" target=\"_blank\" rel=\"noreferer\">capture</a> this charge in<b title=\"${ dateI18n(
+				'M j, Y / g:iA',
+				moment.utc( new Date().toISOString() ).add( 7, 'days' )
+			) }\"> 7 days</b>`
 		);
 
 		expect( container ).toMatchSnapshot();
