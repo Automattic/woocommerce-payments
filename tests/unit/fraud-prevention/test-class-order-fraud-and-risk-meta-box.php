@@ -177,7 +177,7 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 		$this->order_fraud_and_risk_meta_box->display_order_fraud_and_risk_meta_box_message( $this->order );
 
 		// Assert: Check to make sure the expected string has been output.
-		$this->expectOutputString( '<p>Risk filtering is only available for orders that are processed with WooCommerce Payments.</p><a href="" target="_blank" rel="noopener noreferrer">Learn more</a>' );
+		$this->expectOutputString( '<p>Risk filtering is only available for orders that are paid for with credit cards through WooCommerce Payments.</p><a href="" target="_blank" rel="noopener noreferrer">Learn more</a>' );
 	}
 
 	public function test_display_order_fraud_and_risk_meta_box_message_default() {

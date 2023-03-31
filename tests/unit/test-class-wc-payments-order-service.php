@@ -688,14 +688,19 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Tests if the payment capture was marked cancelled succefully.
+	 * Tests if the order is marked with the payment authorized correctly.
+	 * Public method update_order_status_from_intent calls private method mark_payment_cancelled.
+	 *
+	 * @dataProvider mark_payment_cancelled_provider
 	 */
-	public function test_mark_payment_capture_cancelled() {
+	public function test_mark_payment_capture_cancelled( $intent_args, $order_fraud_outcome, $expected_fraud_outcome, $expected_fraud_meta_box ) {
 		// Arrange: Create the intent, get the proper order status variations. Set the fraud outcome status.
-		$intent            = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::CANCELED ] ); // Stripe uses single 'l'.
+		$intent            = WC_Helper_Intention::create_intention( $intent_args ); // Stripe uses single 'l'.
 		$order_status      = Order_Status::CANCELLED; // WCPay uses double 'l'.
 		$wc_order_statuses = wc_get_order_statuses(); // WooCommerce uses single 'l' for US English.
-		$this->order_service->set_fraud_outcome_status_for_order( $this->order, Rule::FRAUD_OUTCOME_REVIEW );
+		if ( $order_fraud_outcome ) {
+			$this->order_service->set_fraud_outcome_status_for_order( $this->order, Rule::FRAUD_OUTCOME_REVIEW );
+		}
 
 		// Act: Attempt to mark the payment/order cancelled.
 		$this->order_service->update_order_status_from_intent( $this->order, $intent );
@@ -704,8 +709,8 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( Payment_Intent_Status::CANCELED, $this->order_service->get_intention_status_for_order( $this->order ) );
 
 		// Assert: Confirm that the fraud outcome status has not been changed, and that the fraud meta box type meta was set correctly.
-		$this->assertEquals( Rule::FRAUD_OUTCOME_REVIEW, $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
-		$this->assertEquals( Fraud_Meta_Box_Type::REVIEW_CANCELLED, $this->order_service->get_fraud_meta_box_type_for_order( $this->order ) );
+		$this->assertEquals( $expected_fraud_outcome, $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
+		$this->assertEquals( $expected_fraud_meta_box, $this->order_service->get_fraud_meta_box_type_for_order( $this->order ) );
 
 		// Assert: Check that the order status was updated to cancelled status.
 		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
@@ -722,6 +727,41 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->update_order_status_from_intent( $this->order, $intent );
 		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertCount( 2, $notes_2 );
+	}
+
+	public function mark_payment_cancelled_provider() {
+		return [
+			'mark_payment_cancelled_no_fraud_outcome' => [
+				'intent_args'             => [
+					'status' => Payment_Intent_Status::CANCELED,
+				],
+				'order_fraud_outcome'     => false,
+				'expected_fraud_outcome'  => '',
+				'expected_fraud_meta_box' => '',
+			],
+			'mark_payment_cancelled_outcome_allow_meta_box_cancelled' => [
+				'intent_args'             => [
+					'status'   => Payment_Intent_Status::CANCELED,
+					'metadata' => [
+						'fraud_outcome' => Rule::FRAUD_OUTCOME_REVIEW,
+					],
+				],
+				'order_fraud_outcome'     => Rule::FRAUD_OUTCOME_ALLOW,
+				'expected_fraud_outcome'  => Rule::FRAUD_OUTCOME_REVIEW,
+				'expected_fraud_meta_box' => Fraud_Meta_Box_Type::REVIEW_CANCELLED,
+			],
+			'mark_payment_cancelled_outcome_review_meta_box_blocked' => [
+				'intent_args'             => [
+					'status'   => Payment_Intent_Status::CANCELED,
+					'metadata' => [
+						'fraud_outcome' => Rule::FRAUD_OUTCOME_REVIEW,
+					],
+				],
+				'order_fraud_outcome'     => Rule::FRAUD_OUTCOME_REVIEW,
+				'expected_fraud_outcome'  => Rule::FRAUD_OUTCOME_REVIEW,
+				'expected_fraud_meta_box' => Fraud_Meta_Box_Type::REVIEW_BLOCKED,
+			],
+		];
 	}
 
 	/**

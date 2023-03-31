@@ -748,10 +748,9 @@ class WC_Payments_Order_Service {
 		 * If we have a status for the fraud outcome, we want to add the proper meta data.
 		 */
 		if ( isset( $intent_data['fraud_outcome'] ) && Rule::is_valid_fraud_outcome_status( $intent_data['fraud_outcome'] ) ) {
-			if ( Rule::FRAUD_OUTCOME_REVIEW === $intent_data['fraud_outcome'] ) {
-				$this->set_fraud_outcome_status_for_order( $order, $intent_data['fraud_outcome'] );
-				$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::REVIEW_BLOCKED );
-			}
+			$fraud_meta_box = Rule::FRAUD_OUTCOME_REVIEW === $this->get_fraud_outcome_status_for_order( $order ) ? Fraud_Meta_Box_Type::REVIEW_BLOCKED : Fraud_Meta_Box_Type::REVIEW_CANCELLED;
+			$this->set_fraud_outcome_status_for_order( $order, $intent_data['fraud_outcome'] );
+			$this->set_fraud_meta_box_type_for_order( $order, $fraud_meta_box );
 		}
 
 		$this->update_order_status( $order, Order_Status::CANCELLED );
