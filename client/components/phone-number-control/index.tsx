@@ -4,6 +4,7 @@
  */
 import React, { useState, useRef } from 'react';
 import { BaseControl } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 import classNames from 'classnames';
 
 /**
@@ -70,7 +71,14 @@ const PhoneNumberInput: React.FC< Props > = ( {
 					}
 				) }
 			>
-				<select value={ countryCode } onChange={ handleSelect }>
+				<select
+					value={ countryCode }
+					onChange={ handleSelect }
+					aria-label={ __(
+						'phone number country code',
+						'woocommerce-payments'
+					) }
+				>
 					{ Object.keys( countryCodes )
 						.sort()
 						.map( ( key ) => (
