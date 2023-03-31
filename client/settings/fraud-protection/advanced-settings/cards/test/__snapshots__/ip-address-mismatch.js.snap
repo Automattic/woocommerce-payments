@@ -12,19 +12,12 @@ exports[`International billing address card renders correctly 1`] = `
         <p
           class="fraud-protection-rule-card-header"
         >
-          International Billing Address
+          IP Address Mismatch
         </p>
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens the customer's billing information for addresses outside of your 
-          <a
-            data-link-type="wc-admin"
-            href="#"
-          >
-            supported countries
-          </a>
-          .
+          This filter screens for customer's IP (Internet Protocol) address to see if it is in a different country than indicated in their billing address.
         </p>
       </div>
     </div>
@@ -64,7 +57,7 @@ exports[`International billing address card renders correctly 1`] = `
               class="components-toggle-control__label"
               for="inspector-toggle-control-0"
             >
-              Screen transactions for international billing addresses
+              Screen transactions where the IP country and billing country don't match
             </label>
           </div>
           <p
@@ -82,42 +75,8 @@ exports[`International billing address card renders correctly 1`] = `
           How does this filter protect me?
         </strong>
         <p>
-          Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
+          Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
         </p>
-      </div>
-      <div
-        class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-      >
-        <div
-          class="components-notice__content"
-        >
-          <div
-            class="components-flex css-1nh0b0-Flex eboqfv50"
-          >
-            <div
-              class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-            >
-              <svg
-                class="gridicon gridicons-notice-outline"
-                height="24"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <g>
-                  <path
-                    d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                  />
-                </g>
-              </svg>
-            </div>
-            <div
-              class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-            >
-              Enabling this filter will not have any effect because you are selling to all countries.
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -136,19 +95,12 @@ exports[`International billing address card renders correctly when enabled 1`] =
         <p
           class="fraud-protection-rule-card-header"
         >
-          International Billing Address
+          IP Address Mismatch
         </p>
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens the customer's billing information for addresses outside of your 
-          <a
-            data-link-type="wc-admin"
-            href="#"
-          >
-            supported countries
-          </a>
-          .
+          This filter screens for customer's IP (Internet Protocol) address to see if it is in a different country than indicated in their billing address.
         </p>
       </div>
     </div>
@@ -188,7 +140,7 @@ exports[`International billing address card renders correctly when enabled 1`] =
               class="components-toggle-control__label"
               for="inspector-toggle-control-1"
             >
-              Screen transactions for international billing addresses
+              Screen transactions where the IP country and billing country don't match
             </label>
           </div>
           <p
@@ -272,42 +224,8 @@ exports[`International billing address card renders correctly when enabled 1`] =
           How does this filter protect me?
         </strong>
         <p>
-          Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
+          Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
         </p>
-      </div>
-      <div
-        class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-      >
-        <div
-          class="components-notice__content"
-        >
-          <div
-            class="components-flex css-1nh0b0-Flex eboqfv50"
-          >
-            <div
-              class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-            >
-              <svg
-                class="gridicon gridicons-notice-outline"
-                height="24"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <g>
-                  <path
-                    d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                  />
-                </g>
-              </svg>
-            </div>
-            <div
-              class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-            >
-              Enabling this filter will not have any effect because you are selling to all countries.
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -326,19 +244,12 @@ exports[`International billing address card renders correctly when enabled and c
         <p
           class="fraud-protection-rule-card-header"
         >
-          International Billing Address
+          IP Address Mismatch
         </p>
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens the customer's billing information for addresses outside of your 
-          <a
-            data-link-type="wc-admin"
-            href="#"
-          >
-            supported countries
-          </a>
-          .
+          This filter screens for customer's IP (Internet Protocol) address to see if it is in a different country than indicated in their billing address.
         </p>
       </div>
     </div>
@@ -378,7 +289,7 @@ exports[`International billing address card renders correctly when enabled and c
               class="components-toggle-control__label"
               for="inspector-toggle-control-2"
             >
-              Screen transactions for international billing addresses
+              Screen transactions where the IP country and billing country don't match
             </label>
           </div>
           <p
@@ -477,42 +388,8 @@ exports[`International billing address card renders correctly when enabled and c
           How does this filter protect me?
         </strong>
         <p>
-          Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
+          Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
         </p>
-      </div>
-      <div
-        class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-      >
-        <div
-          class="components-notice__content"
-        >
-          <div
-            class="components-flex css-1nh0b0-Flex eboqfv50"
-          >
-            <div
-              class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-            >
-              <svg
-                class="gridicon gridicons-notice-outline"
-                height="24"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <g>
-                  <path
-                    d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                  />
-                </g>
-              </svg>
-            </div>
-            <div
-              class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-            >
-              Enabling this filter will not have any effect because you are selling to all countries.
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -531,19 +408,12 @@ exports[`International billing address card renders like disabled when checked, 
         <p
           class="fraud-protection-rule-card-header"
         >
-          International Billing Address
+          IP Address Mismatch
         </p>
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens the customer's billing information for addresses outside of your 
-          <a
-            data-link-type="wc-admin"
-            href="#"
-          >
-            supported countries
-          </a>
-          .
+          This filter screens for customer's IP (Internet Protocol) address to see if it is in a different country than indicated in their billing address.
         </p>
       </div>
     </div>
@@ -583,7 +453,7 @@ exports[`International billing address card renders like disabled when checked, 
               class="components-toggle-control__label"
               for="inspector-toggle-control-3"
             >
-              Screen transactions for international billing addresses
+              Screen transactions where the IP country and billing country don't match
             </label>
           </div>
           <p
@@ -601,42 +471,8 @@ exports[`International billing address card renders like disabled when checked, 
           How does this filter protect me?
         </strong>
         <p>
-          Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
+          Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
         </p>
-      </div>
-      <div
-        class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-      >
-        <div
-          class="components-notice__content"
-        >
-          <div
-            class="components-flex css-1nh0b0-Flex eboqfv50"
-          >
-            <div
-              class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-            >
-              <svg
-                class="gridicon gridicons-notice-outline"
-                height="24"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <g>
-                  <path
-                    d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                  />
-                </g>
-              </svg>
-            </div>
-            <div
-              class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-            >
-              Enabling this filter will not have any effect because you are selling to all countries.
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </div>
