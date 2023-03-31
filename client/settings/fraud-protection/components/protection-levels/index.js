@@ -18,6 +18,7 @@ import {
 	FraudProtectionHelpText,
 	HighFraudProtectionModal,
 	StandardFraudProtectionModal,
+	BasicFraudProtectionModal,
 } from '../index';
 import interpolateComponents from '@automattic/interpolate-components';
 import { Button } from '@wordpress/components';
@@ -27,6 +28,7 @@ import InlineNotice from '../../../../components/inline-notice';
 import wcpayTracks from 'tracks';
 
 const ProtectionLevels = () => {
+	const [ isBasicModalOpen, setBasicModalOpen ] = useState( false );
 	const [ isStandardModalOpen, setStandardModalOpen ] = useState( false );
 	const [ isHighModalOpen, setHighModalOpen ] = useState( false );
 	const { currencies } = useCurrencies();
@@ -85,6 +87,17 @@ const ProtectionLevels = () => {
 							>
 								{ __( 'Basic', 'woocommerce-payments' ) }
 							</label>
+							<HelpOutlineIcon
+								size={ 18 }
+								title="Basic level help icon"
+								className="fraud-protection__help-icon"
+								onClick={ () => setBasicModalOpen( true ) }
+							/>
+							<BasicFraudProtectionModal
+								level={ ProtectionLevel.BASIC }
+								isBasicModalOpen={ isBasicModalOpen }
+								setBasicModalOpen={ setBasicModalOpen }
+							/>
 						</div>
 						<FraudProtectionHelpText
 							level={ ProtectionLevel.BASIC }
