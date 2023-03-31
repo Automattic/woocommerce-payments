@@ -534,6 +534,7 @@ class WC_Payments_Admin {
 			],
 			'accountDefaultCurrency'           => $this->account->get_account_default_currency(),
 			'frtDiscoverBannerSettings'        => get_option( 'wcpay_frt_discover_banner_settings', '' ),
+			'storeCurrency'                    => get_option( 'woocommerce_currency' ),
 		];
 
 		wp_localize_script(

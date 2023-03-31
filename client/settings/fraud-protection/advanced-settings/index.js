@@ -23,7 +23,7 @@ import SettingsLayout from 'wcpay/settings/settings-layout';
 import AVSMismatchRuleCard from './cards/avs-mismatch';
 import CVCVerificationRuleCard from './cards/cvc-verification';
 import InternationalIPAddressRuleCard from './cards/international-ip-address';
-import InternationalBillingAddressRuleCard from './cards/international-billing-address';
+import IPAddressMismatchRuleCard from './cards/ip-address-mismatch';
 import AddressMismatchRuleCard from './cards/address-mismatch';
 import PurchasePriceThresholdRuleCard, {
 	PurchasePriceThresholdValidation,
@@ -215,7 +215,7 @@ const FraudProtectionAdvancedSettingsPage = () => {
 							<InternationalIPAddressRuleCard />
 						</LoadableBlock>
 						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-							<InternationalBillingAddressRuleCard />
+							<IPAddressMismatchRuleCard />
 						</LoadableBlock>
 						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
 							<AddressMismatchRuleCard />
