@@ -91,7 +91,12 @@ const ProtectionLevels = () => {
 								size={ 18 }
 								title="Basic level help icon"
 								className="fraud-protection__help-icon"
-								onClick={ () => setBasicModalOpen( true ) }
+								onClick={ () => {
+									wcpayTracks.recordEvent(
+										'wcpay_fraud_protection_basic_modal_viewed'
+									);
+									setBasicModalOpen( true );
+								} }
 							/>
 							<BasicFraudProtectionModal
 								level={ ProtectionLevel.BASIC }
