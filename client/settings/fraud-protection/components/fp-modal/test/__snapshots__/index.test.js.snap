@@ -119,7 +119,7 @@ exports[`HighFraudProtectionModal renders the high protection level content with
         The shipping and billing addresses don't match.
       </li>
       <li>
-        The billing address is a non-domestic address.
+        The billing address country doesn't match the country resolved from the IP address.
       </li>
     </ul>
     <button
@@ -251,7 +251,7 @@ exports[`HighFraudProtectionModal renders the high protection level content with
         The shipping and billing addresses don't match.
       </li>
       <li>
-        The billing address is a non-domestic address.
+        The billing address country doesn't match the country resolved from the IP address.
       </li>
     </ul>
     <button
@@ -361,6 +361,9 @@ exports[`StandardFraudProtectionModal renders the standard protection level cont
     <ul>
       <li>
         An order originates from an IP address outside your country.
+      </li>
+      <li>
+        The billing address country doesn't match the country resolved from the IP address.
       </li>
       <li>
         An order exceeds 
@@ -480,6 +483,9 @@ exports[`StandardFraudProtectionModal renders the standard protection level cont
     <ul>
       <li>
         An order originates from an IP address outside your country.
+      </li>
+      <li>
+        The billing address country doesn't match the country resolved from the IP address.
       </li>
       <li>
         An order exceeds the equivalent of 
