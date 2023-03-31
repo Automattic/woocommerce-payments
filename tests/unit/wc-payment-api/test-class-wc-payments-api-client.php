@@ -405,44 +405,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( [ 'mock_account' => true ], $result );
 	}
 
-	public function test_get_capital_links() {
-		$this->mock_http_client
-			->expects( $this->once() )
-			->method( 'remote_request' )
-			->with(
-				$this->callback(
-					function ( $data ): bool {
-						$this->validate_default_remote_request_params( $data, 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts/capital_links', 'POST' );
-						$this->assertSame( 'POST', $data['method'] );
-						return true;
-					}
-				),
-				wp_json_encode(
-					[
-						'test_mode'   => false,
-						'type'        => 'capital_financing_offer',
-						'return_url'  => 'https://return.url',
-						'refresh_url' => 'https://refresh.url',
-					]
-				),
-				true,
-				true // get_capital_links should use user token auth.
-			)
-			->willReturn(
-				[
-					'body'     => wp_json_encode( [ 'url' => 'https://capital.url' ] ),
-					'response' => [
-						'code'    => 200,
-						'message' => 'OK',
-					],
-				]
-			);
-
-		$result = $this->payments_api_client->get_capital_link( 'capital_financing_offer', 'https://return.url', 'https://refresh.url' );
-
-		$this->assertEquals( [ 'url' => 'https://capital.url' ], $result );
-	}
-
 	public function test_get_link() {
 		$this->mock_http_client
 			->expects( $this->once() )

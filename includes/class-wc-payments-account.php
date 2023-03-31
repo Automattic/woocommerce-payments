@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use Automattic\WooCommerce\Admin\Notes\DataStore;
 use Automattic\WooCommerce\Admin\Notes\Note;
 use WCPay\Core\Server\Request\Get_Account;
+use WCPay\Core\Server\Request\Get_Account_Capital_Link;
 use WCPay\Core\Server\Request\Get_Account_Login_Data;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
@@ -520,8 +521,12 @@ class WC_Payments_Account {
 		$refresh_url = add_query_arg( [ 'wcpay-loan-offer' => '' ], admin_url( 'admin.php' ) );
 
 		try {
-			$capital_link = $this->payments_api_client->get_capital_link( 'capital_financing_offer', $return_url, $refresh_url );
+			$request = Get_Account_Capital_Link::create();
+			$request->set_type( 'capital_financing_offer' );
+			$request->set_redirect_url( $return_url );
+			$request->set_refresh_url( $refresh_url );
 
+			$capital_link = $request->send( 'wcpay_get_capital_link' );
 			$this->redirect_to( $capital_link['url'] );
 		} catch ( API_Exception $e ) {
 			$error_url = add_query_arg(
