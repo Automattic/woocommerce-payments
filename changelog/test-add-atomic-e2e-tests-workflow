@@ -1,5 +1,0 @@
-Significance: patch
-Type: dev
-Comment: Add new GitHub workflow and tweak E2E tests setup to be able to run tests against an WPCOM Atomic site
-
-

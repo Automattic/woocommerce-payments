@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-Added a confirmation modal when Order Status is changed to Cancel on Edit Order page
