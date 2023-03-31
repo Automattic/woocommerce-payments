@@ -6,6 +6,7 @@
  */
 
 use WCPay\Core\Server\Request;
+use WCPay\Core\Server\Response;
 
 /**
  * This stub assists IDE in recognizing PHPUnit tests.
@@ -63,6 +64,13 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 				)
 			)
 			->willReturn( $response );
+
+		// If the request class does not have a `format_response` method, we can provide the default response here.
+		if ( ! method_exists( $request_class, 'format_response' ) ) {
+			$request
+				->method( 'format_response' )
+				->willReturn( new Response( $response ) );
+		}
 
 		// An anonymous callback, which will be used once and disposed.
 		$fn = function( $existing_request, $class_name ) use ( &$fn, $request ) {
