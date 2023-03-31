@@ -148,7 +148,7 @@ class Order_Fraud_And_Risk_Meta_Box {
 				if ( ! empty( $payment_method_title ) ) {
 					$description = sprintf(
 						/* translators: %s - Payment method title */
-						__( 'Risk filtering is only available for orders processed with WooCommerce Payments, but this order was processed with %s.', 'woocommerce-payments' ),
+						__( 'Risk filtering is only available for orders processed with WooCommerce Payments. This order was processed with %s.', 'woocommerce-payments' ),
 						$payment_method_title
 					);
 				} else {
