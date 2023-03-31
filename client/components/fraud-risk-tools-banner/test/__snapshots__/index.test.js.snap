@@ -36,7 +36,8 @@ exports[`FRTDiscoverabilityBanner renders 1`] = `
       >
         <a
           class="components-button is-primary"
-          href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
+          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/"
+          target="_blank"
         >
           Learn more
         </a>
@@ -84,7 +85,8 @@ exports[`FRTDiscoverabilityBanner renders when remindMeAt timestamp is in the pa
       >
         <a
           class="components-button is-primary"
-          href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
+          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/"
+          target="_blank"
         >
           Learn more
         </a>
@@ -132,7 +134,8 @@ exports[`FRTDiscoverabilityBanner renders with dont show again button if remindM
       >
         <a
           class="components-button is-primary"
-          href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
+          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/"
+          target="_blank"
         >
           Learn more
         </a>
@@ -186,7 +189,8 @@ exports[`FRTDiscoverabilityBanner renders without dont show again button if remi
       >
         <a
           class="components-button is-primary"
-          href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
+          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/"
+          target="_blank"
         >
           Learn more
         </a>
