@@ -170,7 +170,7 @@ class Fraud_Risk_Tools {
 				Check::check(
 					'order_total',
 					Check::OPERATOR_GT,
-					1000 * 100
+					implode( '|', [ 1000 * 100, 'usd' ] )
 				)
 			),
 		];
@@ -202,7 +202,7 @@ class Fraud_Risk_Tools {
 				Check::check(
 					'order_total',
 					Check::OPERATOR_GT,
-					1000 * 100
+					implode( '|', [ 1000 * 100, 'usd' ] )
 				)
 			),
 			// REVIEW An order has less than 2 items or more than 10 items.

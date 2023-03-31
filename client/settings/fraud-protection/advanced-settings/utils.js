@@ -25,7 +25,7 @@ export const getSettingCountries = () => {
 
 const buildFormattedRulePrice = ( price ) => {
 	const convertedPrice = parseInt( parseFloat( price ) * 100, 10 );
-	const defaultCurrency = wcpaySettings.storeCurrency || 'USD';
+	const defaultCurrency = wcpaySettings.storeCurrency || 'usd';
 
 	return [ convertedPrice, defaultCurrency ].join( '|' );
 };
