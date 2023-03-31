@@ -27,6 +27,16 @@ exports[`CVC verification card renders correctly when CVC check is disabled 1`] 
       class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
     >
       <div
+        class="fraud-protection-rule-description"
+      >
+        <strong>
+          How does this filter protect me?
+        </strong>
+        <p>
+          Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
+        </p>
+      </div>
+      <div
         class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
       >
         <div
@@ -60,16 +70,6 @@ exports[`CVC verification card renders correctly when CVC check is disabled 1`] 
           </div>
         </div>
       </div>
-      <div
-        class="fraud-protection-rule-description"
-      >
-        <strong>
-          How does this filter protect me?
-        </strong>
-        <p>
-          Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
-        </p>
-      </div>
     </div>
   </div>
 </div>
@@ -101,6 +101,16 @@ exports[`CVC verification card renders correctly when CVC check is enabled 1`] =
     <div
       class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
     >
+      <div
+        class="fraud-protection-rule-description"
+      >
+        <strong>
+          How does this filter protect me?
+        </strong>
+        <p>
+          Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
+        </p>
+      </div>
       <div
         class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
       >
@@ -141,16 +151,6 @@ exports[`CVC verification card renders correctly when CVC check is enabled 1`] =
             </div>
           </div>
         </div>
-      </div>
-      <div
-        class="fraud-protection-rule-description"
-      >
-        <strong>
-          How does this filter protect me?
-        </strong>
-        <p>
-          Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
-        </p>
       </div>
     </div>
   </div>

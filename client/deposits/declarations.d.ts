@@ -52,6 +52,12 @@ declare module '@woocommerce/components' {
 		};
 	}
 
+	interface PillProps {
+		className: string;
+	}
+
+	const Pill: React.FC< PillProps >;
+
 	interface TourKitOptions {
 		classNames?: string | string[];
 		callbacks?: unknown;
