@@ -26,6 +26,13 @@ const CVCVerificationRuleCard = () => {
 			) }
 			id="cvc-verification-card"
 		>
+			<FraudProtectionRuleDescription>
+				{ __(
+					'Because the card security code appears only on the card and not on receipts or statements, the card security code ' +
+						'provides some assurance that the physical card is in the possession of the buyer.',
+					'woocommerce-payments'
+				) }
+			</FraudProtectionRuleDescription>
 			<FraudProtectionRuleCardNotice type="warning">
 				{ declineOnCVCFailure
 					? interpolateComponents( {
@@ -50,13 +57,6 @@ const CVCVerificationRuleCard = () => {
 							'woocommerce-payments'
 					  ) }
 			</FraudProtectionRuleCardNotice>
-			<FraudProtectionRuleDescription>
-				{ __(
-					'Because the card security code appears only on the card and not on receipts or statements, the card security code ' +
-						'provides some assurance that the physical card is in the possession of the buyer.',
-					'woocommerce-payments'
-				) }
-			</FraudProtectionRuleDescription>
 		</FraudProtectionRuleCard>
 	);
 };

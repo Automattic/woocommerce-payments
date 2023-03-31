@@ -3,8 +3,8 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import interpolateComponents from '@automattic/interpolate-components';
 import { Link } from '@woocommerce/components';
+import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies
@@ -46,7 +46,6 @@ const InternationalIPAddressRuleCard = () => {
 			} ) }
 			id="international-ip-address-card"
 		>
-			<AllowedCountriesNotice setting={ 'international_ip_address' } />
 			<FraudProtectionRuleToggle
 				setting={ 'international_ip_address' }
 				label={ __(
@@ -56,7 +55,7 @@ const InternationalIPAddressRuleCard = () => {
 				helpText={ __(
 					'When enabled, the payment method will not be charged until you review and approve the transaction'
 				) }
-			/>
+			></FraudProtectionRuleToggle>
 			<FraudProtectionRuleDescription>
 				{ __(
 					'You should be especially wary when a customer has an international IP address but uses domestic billing and ' +
@@ -64,6 +63,7 @@ const InternationalIPAddressRuleCard = () => {
 					'woocommerce-payments'
 				) }
 			</FraudProtectionRuleDescription>
+			<AllowedCountriesNotice setting={ 'international_ip_address' } />
 		</FraudProtectionRuleCard>
 	);
 };

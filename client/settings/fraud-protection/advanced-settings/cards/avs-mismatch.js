@@ -27,6 +27,13 @@ const AVSMismatchRuleCard = () => {
 			) }
 			id="avs-mismatch-card"
 		>
+			<FraudProtectionRuleDescription>
+				{ __(
+					'Buyers who can provide the street number and post code on file with the issuing bank ' +
+						'are more likely to be the actual account holder. AVS matches, however, are not a guarantee.',
+					'woocommerce-payments'
+				) }
+			</FraudProtectionRuleDescription>
 			<FraudProtectionRuleCardNotice type="warning">
 				{ declineOnAVSFailure
 					? interpolateComponents( {
@@ -51,13 +58,6 @@ const AVSMismatchRuleCard = () => {
 							'woocommerce-payments'
 					  ) }
 			</FraudProtectionRuleCardNotice>
-			<FraudProtectionRuleDescription>
-				{ __(
-					'Buyers who can provide the street number and post code on file with the issuing bank ' +
-						'are more likely to be the actual account holder. AVS matches, however, are not a guarantee.',
-					'woocommerce-payments'
-				) }
-			</FraudProtectionRuleDescription>
 		</FraudProtectionRuleCard>
 	);
 };
