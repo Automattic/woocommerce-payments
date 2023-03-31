@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import * as React from 'react';
 import { Flex, FlexItem, Icon } from '@wordpress/components';
 import { calendar } from '@wordpress/icons';
 import InfoOutlineIcon from 'gridicons/dist/info-outline';
@@ -18,7 +18,7 @@ import { getNextDeposit } from './utils';
 import DepositStatusChip from 'components/deposit-status-chip';
 import { getDepositDate } from 'deposits/utils';
 import { useDepositIncludesLoan } from 'wcpay/data';
-import BannerNotice from '../banner-notice';
+import BannerNotice from 'wcpay/components/banner-notice';
 
 type NextDepositProps = {
 	isLoading: boolean;
