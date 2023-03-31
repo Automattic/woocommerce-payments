@@ -98,7 +98,7 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 			'check'   => [
 				'key'      => 'order_total',
 				'operator' => 'greater_than',
-				'value'    => 100000,
+				'value'    => '100000|usd',
 			],
 		],
 	];
@@ -133,7 +133,7 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 			'check'   => [
 				'key'      => 'order_total',
 				'operator' => 'greater_than',
-				'value'    => 100000,
+				'value'    => '100000|usd',
 			],
 		],
 	];
