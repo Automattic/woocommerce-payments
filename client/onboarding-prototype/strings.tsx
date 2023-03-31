@@ -2,9 +2,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
 
 export default {
 	steps: {
@@ -14,7 +12,7 @@ export default {
 				'woocommerce-payments'
 			),
 			subheading: __(
-				'What would you like to do?',
+				'Select the option that best fits your needs.',
 				'woocommerce-payments'
 			),
 			live: {
@@ -29,24 +27,12 @@ export default {
 			},
 			test: {
 				label: __(
-					'I’d like to setup test payments',
+					'I’d like to set up test payments',
 					'woocommerce-payments'
 				),
-				note: createInterpolateElement(
-					__(
-						'This option will set up WooCommerce Payments in development mode. You can use <a>our test data</a> to set up. When you’re ready to launch your store, switching to live payments is easy.',
-						'woocommerce-payments'
-					),
-					{
-						a: (
-							// eslint-disable-next-line jsx-a11y/anchor-has-content
-							<a
-								href="https://woocommerce.com/document/woocommerce-payments/testing-and-troubleshooting/dev-mode/"
-								target="_blank"
-								rel="noopener noreferrer"
-							/>
-						),
-					}
+				note: __(
+					'This option will set up WooCommerce Payments in development mode. You can use our test data to set up. When you’re ready to launch your store, switching to live payments is easy.',
+					'woocommerce-payments'
 				),
 			},
 		},
