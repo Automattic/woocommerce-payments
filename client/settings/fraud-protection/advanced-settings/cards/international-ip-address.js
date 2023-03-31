@@ -3,7 +3,6 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Link } from '@woocommerce/components';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**
@@ -13,6 +12,7 @@ import FraudProtectionRuleCard from '../rule-card';
 import FraudProtectionRuleDescription from '../rule-description';
 import FraudProtectionRuleToggle from '../rule-toggle';
 import AllowedCountriesNotice from '../allow-countries-notice';
+import { getAdminUrl } from 'wcpay/utils';
 
 const InternationalIPAddressRuleCard = () => {
 	return (
@@ -25,10 +25,19 @@ const InternationalIPAddressRuleCard = () => {
 					'woocommerce-payments'
 				),
 				components: {
-					supportedCountriesLink: <Link href="#" />,
+					supportedCountriesLink: (
+						// eslint-disable-next-line jsx-a11y/anchor-has-content
+						<a
+							href={ getAdminUrl( {
+								page: 'wc-settings',
+								tab: 'general',
+							} ) }
+						></a>
+					),
 				},
 			} ) }
 		>
+			<AllowedCountriesNotice setting={ 'international_ip_address' } />
 			<FraudProtectionRuleToggle
 				setting={ 'international_ip_address' }
 				label={ __(
@@ -38,7 +47,7 @@ const InternationalIPAddressRuleCard = () => {
 				helpText={ __(
 					'When enabled, the payment method will not be charged until you review and approve the transaction'
 				) }
-			></FraudProtectionRuleToggle>
+			/>
 			<FraudProtectionRuleDescription>
 				{ __(
 					'You should be especially wary when a customer has an international IP address but uses domestic billing and ' +
@@ -46,7 +55,6 @@ const InternationalIPAddressRuleCard = () => {
 					'woocommerce-payments'
 				) }
 			</FraudProtectionRuleDescription>
-			<AllowedCountriesNotice setting={ 'international_ip_address' } />
 		</FraudProtectionRuleCard>
 	);
 };

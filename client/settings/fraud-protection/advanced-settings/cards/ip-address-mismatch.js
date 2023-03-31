@@ -29,7 +29,7 @@ const IPAddressMismatchRuleCard = () => (
 			helpText={ __(
 				'When enabled, the payment method will not be charged until you review and approve the transaction'
 			) }
-		></FraudProtectionRuleToggle>
+		/>
 		<FraudProtectionRuleDescription>
 			{ __(
 				'Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in ' +
