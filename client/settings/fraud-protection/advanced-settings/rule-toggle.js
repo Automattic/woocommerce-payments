@@ -9,7 +9,7 @@ import { CheckboxControl, Icon, ToggleControl } from '@wordpress/components';
  * Internal dependencies
  */
 import './../style.scss';
-import Tooltip from '../../../components/tooltip';
+import { HoverTooltip } from 'components/tooltip';
 import FraudPreventionSettingsContext from './context';
 
 const FraudProtectionRuleToggle = ( {
@@ -85,7 +85,7 @@ const FraudProtectionRuleToggle = ( {
 									setCheckState( ( state ) => ! state )
 								}
 							></CheckboxControl>
-							<Tooltip
+							<HoverTooltip
 								content={ __(
 									'WooCommerce Payments will automatically cancel orders that match this filter.',
 									'woocommerce-payments'
@@ -115,7 +115,7 @@ const FraudProtectionRuleToggle = ( {
 										}
 									></Icon>
 								</div>
-							</Tooltip>
+							</HoverTooltip>
 						</div>
 					</div>
 				) }

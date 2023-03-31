@@ -1,156 +1,17 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`FraudProtectionTour should not render the tour component if it was already dismissed 1`] = `
-<body
-  class=""
->
-  <p
-    class="a11y-speak-intro-text"
-    hidden="hidden"
-    id="a11y-speak-intro-text"
-    style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
-  >
-    Notifications
-  </p>
-  <div
-    aria-atomic="true"
-    aria-live="assertive"
-    aria-relevant="additions text"
-    class="a11y-speak-region"
-    id="a11y-speak-assertive"
-    style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
-  />
-  <div
-    aria-atomic="true"
-    aria-live="polite"
-    aria-relevant="additions text"
-    class="a11y-speak-region"
-    id="a11y-speak-polite"
-    style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
-  />
-  <div>
-    <div
-      id="wpcontent"
-    >
-      Content
-    </div>
-    <div
-      id="fraud-protection-card-title"
-    >
-      Card title
-    </div>
-    <div
-      id="fraud-protection-level-select_advanced-level"
-    >
-      Advanced level
-    </div>
-    <div
-      id="toplevel_page_wc-admin-path--payments-overview"
-    >
-      Payments overview
-    </div>
-  </div>
+<body>
+  <div />
 </body>
 `;
 
 exports[`FraudProtectionTour should render the tour component correctly 1`] = `
-<body
-  class="modal-open"
->
-  <p
-    class="a11y-speak-intro-text"
-    hidden="hidden"
-    id="a11y-speak-intro-text"
-    style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
-  >
-    Notifications
-  </p>
-  <div
-    aria-atomic="true"
-    aria-live="assertive"
-    aria-relevant="additions text"
-    class="a11y-speak-region"
-    id="a11y-speak-assertive"
-    style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
-  />
-  <div
-    aria-atomic="true"
-    aria-live="polite"
-    aria-relevant="additions text"
-    class="a11y-speak-region"
-    id="a11y-speak-polite"
-    style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
-  />
+<body>
   <div>
-    <div
-      id="wpcontent"
-    >
-      Content
+    <div>
+      Tour Component
     </div>
-    <div
-      id="fraud-protection-card-title"
-    >
-      Card title
-    </div>
-    <div
-      id="fraud-protection-level-select_advanced-level"
-    >
-      Advanced level
-    </div>
-    <div
-      id="toplevel_page_wc-admin-path--payments-overview"
-    >
-      Payments overview
-    </div>
-  </div>
-  <div
-    class="tour-modal__overlay"
-  />
-  <div
-    class="tour-modal"
-    style="top: 12px; left: 20px;"
-  >
-    <button
-      aria-label="Close tour modal"
-      class="components-button tour-modal__close-button"
-      type="button"
-    >
-      <span
-        class="dashicon dashicons dashicons-no-alt"
-      />
-    </button>
-    <img
-      alt="Enhanced fraud protection is here 🔒"
-      class="tour-modal__image"
-      height="204"
-      src="assets/images/fraud-protection/tour/enhanced-protection-step.png"
-      srcset="assets/images/fraud-protection/tour/enhanced-protection-step.png, assets/images/fraud-protection/tour/enhanced-protection-step@2x.png 2x"
-      width="350"
-    />
-    <div
-      class="tour-modal__content"
-    >
-      <h3>
-        Enhanced fraud protection is here 🔒
-      </h3>
-      <p>
-        You can now choose a level of protection to have for screening incoming transactions. You will then be able to review any caught transactions and select whether you would like to approve or decline them.
-      </p>
-    </div>
-    <footer
-      class="tour-modal__footer"
-    >
-      <div
-        class="tour-modal__buttons"
-      >
-        <button
-          class="components-button is-primary"
-          type="button"
-        >
-          See what's new
-        </button>
-      </div>
-    </footer>
   </div>
 </body>
 `;
