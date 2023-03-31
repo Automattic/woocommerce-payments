@@ -40,7 +40,7 @@ class Platform_Checkout_Session {
 			return $user;
 		}
 
-		if ( ! self::is_store_api_request() || ! Rest_Authentication::is_signed_with_blog_token() ) {
+		if ( ! self::is_store_api_request() || ! apply_filters( 'wcpay_woopay_is_signed_with_blog_token', Rest_Authentication::is_signed_with_blog_token() ) ) {
 			return $user;
 		}
 
