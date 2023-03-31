@@ -149,7 +149,9 @@ describe( 'PaymentMethodsCheckboxes', () => {
 		);
 
 		expect( page.container ).toContainHTML(
-			'<span class="wcpay-pill payment-status-inactive">Contact WooCommerce Support</span>'
+			'<span class="wcpay-pill payment-status-inactive">' +
+				'<span class="woocommerce-pill css-1qmnemh-Text e15wbhsk0">' +
+				'Contact WooCommerce Support</span></span>'
 		);
 	} );
 
@@ -220,7 +222,9 @@ describe( 'PaymentMethodsCheckboxes', () => {
 		);
 
 		expect( page.container ).not.toContainHTML(
-			'<span class="wcpay-pill payment-status-inactive">Contact WooCommerce Support</span>'
+			'<span class="wcpay-pill payment-status-inactive">' +
+				'<span class="woocommerce-pill css-1qmnemh-Text e15wbhsk0">' +
+				'Contact WooCommerce Support</span></span>'
 		);
 	} );
 } );
