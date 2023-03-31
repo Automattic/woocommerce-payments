@@ -29,7 +29,7 @@ exports[`FRTDiscoverabilityBanner renders 1`] = `
         <strong>
           reduce fraudulent transactions
         </strong>
-         on your store. By using a set of rules to evaluate incoming orders, your store is better protected from fraudsters.
+         on your store. By using a set of customizable rules to evaluate incoming orders, your store is better protected from fraudsters.
       </p>
       <div
         class="discoverability-card__actions"
@@ -77,7 +77,7 @@ exports[`FRTDiscoverabilityBanner renders when remindMeAt timestamp is in the pa
         <strong>
           reduce fraudulent transactions
         </strong>
-         on your store. By using a set of rules to evaluate incoming orders, your store is better protected from fraudsters.
+         on your store. By using a set of customizable rules to evaluate incoming orders, your store is better protected from fraudsters.
       </p>
       <div
         class="discoverability-card__actions"
@@ -125,7 +125,7 @@ exports[`FRTDiscoverabilityBanner renders with dont show again button if remindM
         <strong>
           reduce fraudulent transactions
         </strong>
-         on your store. By using a set of rules to evaluate incoming orders, your store is better protected from fraudsters.
+         on your store. By using a set of customizable rules to evaluate incoming orders, your store is better protected from fraudsters.
       </p>
       <div
         class="discoverability-card__actions"
@@ -179,7 +179,7 @@ exports[`FRTDiscoverabilityBanner renders without dont show again button if remi
         <strong>
           reduce fraudulent transactions
         </strong>
-         on your store. By using a set of rules to evaluate incoming orders, your store is better protected from fraudsters.
+         on your store. By using a set of customizable rules to evaluate incoming orders, your store is better protected from fraudsters.
       </p>
       <div
         class="discoverability-card__actions"

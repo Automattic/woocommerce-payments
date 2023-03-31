@@ -9,7 +9,7 @@ exports[`BannerBody renders 1`] = `
     <strong>
       reduce fraudulent transactions
     </strong>
-     on your store. By using a set of rules to evaluate incoming orders, your store is better protected from fraudsters.
+     on your store. By using a set of customizable rules to evaluate incoming orders, your store is better protected from fraudsters.
   </p>
 </div>
 `;

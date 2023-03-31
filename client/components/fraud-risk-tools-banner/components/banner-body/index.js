@@ -10,7 +10,7 @@ const BannerBody = () => {
 			{ interpolateComponents( {
 				mixedString: __(
 					'New features have been added to WooCommerce Payments to help {{strong}}reduce fraudulent ' +
-						'transactions{{/strong}} on your store. By using a set of rules to evaluate incoming orders, ' +
+						'transactions{{/strong}} on your store. By using a set of customizable rules to evaluate incoming orders, ' +
 						'your store is better protected from fraudsters.',
 					'woocommerce-payments'
 				),
