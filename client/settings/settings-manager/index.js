@@ -122,7 +122,7 @@ const FraudProtectionDescription = () => {
 					'woocommerce-payments'
 				) }
 			</p>
-			<ExternalLink href="#">
+			<ExternalLink href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/">
 				{ __(
 					'Learn more about risk filtering',
 					'woocommerce-payments'
