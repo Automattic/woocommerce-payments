@@ -13,7 +13,7 @@ const USDollarComponent = ( { level } ) => {
 			<li>
 				{ interpolateComponents( {
 					mixedString: __(
-						'An order exceeds {{strong}}$1,000.00{{/strong}}.',
+						'An order exceeds {{strong}}$1,000.00 USD{{/strong}}.',
 						'woocommerce-payments'
 					),
 					components: { strong: <strong /> },
@@ -26,7 +26,7 @@ const USDollarComponent = ( { level } ) => {
 		<li>
 			{ interpolateComponents( {
 				mixedString: __(
-					'An order exceeds {{strong}}$1,000.00{{/strong}} or {{strong}}10 items.{{/strong}}',
+					'An order exceeds {{strong}}$1,000.00 USD{{/strong}} or {{strong}}10 items.{{/strong}}',
 					'woocommerce-payments'
 				),
 				components: { strong: <strong /> },
