@@ -16,8 +16,6 @@ import { paymentIntentMock } from '../../../data/payment-intents/test/hooks';
 import { latestFraudOutcomeMock } from '../../../data/fraud-outcomes/test/hooks';
 
 declare const global: {
-	// eslint-disable-next-line @typescript-eslint/naming-convention
-	Date: Date;
 	wcpaySettings: {
 		isSubscriptionsActive: boolean;
 		zeroDecimalCurrencies: string[];
