@@ -356,7 +356,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								<div className="payment-details-capture-notice__text">
 									{ createInterpolateElement(
 										__(
-											'You need to <a>capture</a> this charge in',
+											'You need to <a>capture</a> this charge in ',
 											'woocommerce-payments'
 										),
 										{
@@ -370,7 +370,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											),
 										}
 									) }
-									<b
+									<abbr
 										title={ dateI18n(
 											'M j, Y / g:iA',
 											moment
@@ -378,15 +378,23 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 												.add( 7, 'days' )
 										) }
 									>
-										{ sprintf(
-											__( ' %s', 'woocommerce-payments' ),
-											// Wrapped in __() to ensure translation of relative time strings inserted by moment.fromNow() (e.g. "days", "hours", "minutes", etc.)
-											moment
-												.utc( authorization.created )
-												.add( 7, 'days' )
-												.fromNow( true )
-										) }
-									</b>
+										<b>
+											{ sprintf(
+												// eslint-disable-next-line @wordpress/i18n-no-placeholders-only
+												__(
+													'%s',
+													'woocommerce-payments'
+												),
+												// Wrapped in __() to ensure translation of relative time strings inserted by moment.fromNow() (e.g. "days", "hours", "minutes", etc.)
+												moment
+													.utc(
+														authorization.created
+													)
+													.add( 7, 'days' )
+													.fromNow( true )
+											) }
+										</b>
+									</abbr>
 									{ isFraudOutcomeReview &&
 										`. ${ __(
 											'Approving this transaction will capture the charge.',
