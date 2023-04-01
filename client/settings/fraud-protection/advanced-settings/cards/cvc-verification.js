@@ -43,8 +43,12 @@ const CVCVerificationRuleCard = () => {
 							),
 							components: {
 								learnMoreLink: (
-									// eslint-disable-next-line max-len
-									<Link href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods" />
+									<Link
+										target="_blank"
+										type="external"
+										// eslint-disable-next-line max-len
+										href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+									/>
 								),
 							},
 					  } )

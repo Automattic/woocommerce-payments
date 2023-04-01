@@ -239,6 +239,10 @@
 	}
 
 	&__help-icon {
+		fill: var(
+			--wp-components-color-accent,
+			var( --wp-admin-theme-color, #007cba )
+		);
 		cursor: pointer;
 	}
 }
