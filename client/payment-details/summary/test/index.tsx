@@ -5,7 +5,6 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import moment from 'moment';
-import { dateI18n } from '@wordpress/date';
 
 /**
  * Internal dependencies
@@ -17,6 +16,8 @@ import { paymentIntentMock } from '../../../data/payment-intents/test/hooks';
 import { latestFraudOutcomeMock } from '../../../data/fraud-outcomes/test/hooks';
 
 declare const global: {
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	Date: Date;
 	wcpaySettings: {
 		isSubscriptionsActive: boolean;
 		zeroDecimalCurrencies: string[];
@@ -209,51 +210,58 @@ describe( 'PaymentDetailsSummary', () => {
 		expect( renderCharge( {} as any, true ) ).toMatchSnapshot();
 	} );
 
-	test( 'renders capture section correctly', () => {
-		jest.useFakeTimers();
-		jest.setSystemTime( new Date( '2023-03-31' ) );
-
-		mockUseAuthorization.mockReturnValueOnce( {
-			authorization: {
-				captured: false,
-				charge_id: 'ch_mock',
-				amount: 1000,
-				currency: 'usd',
-				created: new Date().toISOString(),
-				order_id: 123,
-				risk_level: 1,
-				customer_country: 'US',
-				customer_email: 'test@example.com',
-				customer_name: 'Test Customer',
-				payment_intent_id: 'pi_mock',
-			},
-			isLoading: false,
-			isRequesting: false,
-			doCaptureAuthorization: jest.fn(),
-			doCancelAuthorization: jest.fn(),
+	describe( 'capture notification', () => {
+		beforeAll( () => {
+			// Mock current date and time to fixed value in moment
+			const fixedCurrentDate = new Date( '2023-03-29T05:43:00.000Z' );
+			jest.spyOn( moment, 'now' ).mockImplementation( () =>
+				fixedCurrentDate.getTime()
+			);
 		} );
-		const charge = getBaseCharge();
-		charge.captured = false;
 
-		const container = renderCharge( charge );
+		afterAll( () => {
+			jest.spyOn( moment, 'now' ).mockRestore();
+		} );
 
-		expect(
-			screen.getByRole( 'button', { name: /Capture/i } )
-		).toBeInTheDocument();
+		test( 'renders capture section correctly', () => {
+			mockUseAuthorization.mockReturnValueOnce( {
+				authorization: {
+					captured: false,
+					charge_id: 'ch_mock',
+					amount: 1000,
+					currency: 'usd',
+					created: moment().toISOString(),
+					order_id: 123,
+					risk_level: 1,
+					customer_country: 'US',
+					customer_email: 'test@example.com',
+					customer_name: 'Test Customer',
+					payment_intent_id: 'pi_mock',
+				},
+				isLoading: false,
+				isRequesting: false,
+				doCaptureAuthorization: jest.fn(),
+				doCancelAuthorization: jest.fn(),
+			} );
+			const charge = getBaseCharge();
+			charge.captured = false;
 
-		expect(
-			container.getElementsByClassName(
-				'payment-details-capture-notice__text'
-			)[ 0 ].innerHTML
-		).toMatch(
-			`You need to <a href=\"https://woocommerce.com/document/woocommerce-payments/settings-guide/authorize-and-capture/#capturing-authorized-orders\" target=\"_blank\" rel=\"noreferer\">capture</a> this charge in<b title=\"${ dateI18n(
-				'M j, Y / g:iA',
-				moment.utc( new Date() ).add( 7, 'days' )
-			) }\"> 7 days</b>`
-		);
+			const container = renderCharge( charge );
 
-		expect( container ).toMatchSnapshot();
-		jest.useRealTimers();
+			expect(
+				screen.getByRole( 'button', { name: /Capture/i } )
+			).toBeInTheDocument();
+
+			expect(
+				container.getElementsByClassName(
+					'payment-details-capture-notice__text'
+				)[ 0 ].innerHTML
+			).toMatch(
+				`You need to <a href=\"https://woocommerce.com/document/woocommerce-payments/settings-guide/authorize-and-capture/#capturing-authorized-orders\" target=\"_blank\" rel=\"noreferer\">capture</a> this charge in <abbr title=\"Apr 5, 2023 / 5:43AM\"><b>7 days</b></abbr>`
+			);
+
+			expect( container ).toMatchSnapshot();
+		} );
 	} );
 
 	test( 'renders the fraud outcome buttons', () => {
