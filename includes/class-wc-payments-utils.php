@@ -629,20 +629,24 @@ class WC_Payments_Utils {
 	 *
 	 * @param string $primary_id  Usually the Payment Intent ID, but can be an order ID.
 	 * @param string $fallback_id Usually the Charge ID.
+	 * @param array  $query_args  Optional additonal query args to append to the URL.
 	 *
 	 * @return string Transaction details page url.
 	 */
-	public static function compose_transaction_url( $primary_id, $fallback_id ) {
+	public static function compose_transaction_url( $primary_id, $fallback_id, $query_args = [] ) {
 		if ( empty( $fallback_id ) && empty( $primary_id ) ) {
 			return '';
 		}
 
 		return add_query_arg(
-			[
-				'page' => 'wc-admin',
-				'path' => '/payments/transactions/details',
-				'id'   => self::get_transaction_url_id( $primary_id, $fallback_id ),
-			],
+			array_merge(
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/transactions/details',
+					'id'   => self::get_transaction_url_id( $primary_id, $fallback_id ),
+				],
+				$query_args
+			),
 			admin_url( 'admin.php' )
 		);
 	}

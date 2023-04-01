@@ -287,6 +287,13 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 									}
 									onClick={ () => {
 										wcpayTracks.recordEvent(
+											'wcpay_fraud_protection_transaction_reviewed_merchant_blocked',
+											{
+												payment_intent_id:
+													charge.payment_intent,
+											}
+										);
+										wcpayTracks.recordEvent(
 											'payments_transactions_details_cancel_charge_button_click',
 											{
 												payment_intent_id:
@@ -306,6 +313,13 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 									}
 									buttonIsSmall={ false }
 									onClick={ () => {
+										wcpayTracks.recordEvent(
+											'wcpay_fraud_protection_transaction_reviewed_merchant_approved',
+											{
+												payment_intent_id:
+													charge.payment_intent,
+											}
+										);
 										wcpayTracks.recordEvent(
 											'payments_transactions_details_capture_charge_button_click',
 											{
