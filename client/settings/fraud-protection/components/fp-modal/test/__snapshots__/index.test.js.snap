@@ -90,7 +90,7 @@ exports[`HighFraudProtectionModal renders the high protection level content with
       <li>
         An order exceeds 
         <strong>
-          $1,000.00
+          $1,000.00 USD
         </strong>
         .
       </li>
@@ -368,7 +368,7 @@ exports[`StandardFraudProtectionModal renders the standard protection level cont
       <li>
         An order exceeds 
         <strong>
-          $1,000.00
+          $1,000.00 USD
         </strong>
          or 
         <strong>

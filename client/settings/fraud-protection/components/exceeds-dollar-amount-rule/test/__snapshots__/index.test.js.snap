@@ -17,7 +17,7 @@ exports[`ExceedsDollarAmountRule renders the high level dollar amount rule when 
   <li>
     An order exceeds 
     <strong>
-      $1,000.00
+      $1,000.00 USD
     </strong>
     .
   </li>
@@ -44,7 +44,7 @@ exports[`ExceedsDollarAmountRule renders the standard level dollar amount rule w
   <li>
     An order exceeds 
     <strong>
-      $1,000.00
+      $1,000.00 USD
     </strong>
      or 
     <strong>
