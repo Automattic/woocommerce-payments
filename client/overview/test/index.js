@@ -111,6 +111,19 @@ describe( 'Overview page', () => {
 		).toBeNull();
 	} );
 
+	it( 'Skips rendering task list when accountOverviewTaskList feature flag is off', () => {
+		global.wcpaySettings = {
+			...global.wcpaySettings,
+			featureFlags: {},
+		};
+
+		const { container } = render( <OverviewPage /> );
+
+		expect(
+			container.querySelector( '.woocommerce-experimental-list' )
+		).toBeNull();
+	} );
+
 	it( 'Displays the login error for query param wcpay-login-error=1', () => {
 		getQuery.mockReturnValue( { 'wcpay-login-error': '1' } );
 

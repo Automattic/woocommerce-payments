@@ -158,17 +158,10 @@ export const TransactionsPage: React.FC = () => {
 			className: 'blocked-list',
 		},
 	].filter( ( item ) => {
-		if ( [ 'review-page', 'blocked-page' ].includes( item.name ) ) {
-			return false;
-		}
-
 		if ( 'uncaptured-page' !== item.name ) return true;
 
 		return isAuthAndCaptureEnabled && shouldShowUncapturedTab;
 	} );
-
-	if ( typeof shouldShowUncapturedTab === 'undefined' )
-		return tabsComponentMap[ 'transactions-page' ];
 
 	return (
 		<Page>
