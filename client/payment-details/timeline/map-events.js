@@ -578,9 +578,12 @@ const getAutomaticFraudOutcomeTimelineItem = ( event, status ) => {
 	);
 
 	return [
-		getMainTimelineItem( event, headline, icon, [
-			buildAutomaticFraudOutcomeRuleset( event ),
-		] ),
+		getMainTimelineItem(
+			event,
+			headline,
+			icon,
+			buildAutomaticFraudOutcomeRuleset( event )
+		),
 	];
 };
 
