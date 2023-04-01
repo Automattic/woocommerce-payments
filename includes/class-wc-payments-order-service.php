@@ -83,12 +83,19 @@ class WC_Payments_Order_Service {
 	 */
 	const WCPAY_REFUND_ID_META_KEY = '_wcpay_refund_id';
 
-		/**
+	/**
 	 * Meta key used to store WCPay refund status.
 	 *
 	 * @const string
 	 */
 	const WCPAY_REFUND_STATUS_META_KEY = '_wcpay_refund_status';
+
+	/**
+	 * Meta key used to store WCPay transaction fee.
+	 *
+	 * @const string
+	 */
+	const WCPAY_TRANSACTION_FEE_META_KEY = '_wcpay_transaction_fee';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -881,6 +888,28 @@ class WC_Payments_Order_Service {
 		$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::REVIEW );
 		$order->add_order_note( $note );
 		$this->set_intention_status_for_order( $order, $intent_data['intent_status'] );
+	}
+
+	/**
+	 * Given the charge, adds the application_fee_amount from the charge to the given order as metadata.
+	 *
+	 * @param WC_Order                    $order The order to update.
+	 * @param WC_Payments_API_Charge|null $charge The charge to get the application_fee_amount from.
+	 */
+	public function attach_transaction_fee_to_order( $order, $charge ) {
+		try {
+			if ( $charge && null !== $charge->get_application_fee_amount() ) {
+				$order->update_meta_data(
+					self::WCPAY_TRANSACTION_FEE_META_KEY,
+					WC_Payments_Utils::interpret_stripe_amount( $charge->get_application_fee_amount(), $charge->get_currency() )
+				);
+				$order->save_meta_data();
+			}
+		} catch ( Exception $e ) {
+			// Log the error and don't block checkout.
+			Logger::log( 'Error saving transaction fee into metadata for the order ' . $order->get_id() . ': ' . $e->getMessage() );
+		}
+
 	}
 
 	/**
