@@ -8,7 +8,18 @@ import { STORE_NAME } from '../constants';
 
 export const useCurrencies = () =>
 	useSelect( ( select ) => {
-		const { getCurrencies, isResolving } = select( STORE_NAME );
+		const {
+			getCurrencies,
+			isResolving,
+			getIsMultiCurrencyEnabled,
+		} = select( STORE_NAME );
+
+		if ( ! getIsMultiCurrencyEnabled() ) {
+			return {
+				currencies: {},
+				isLoading: false,
+			};
+		}
 
 		return {
 			currencies: getCurrencies(),

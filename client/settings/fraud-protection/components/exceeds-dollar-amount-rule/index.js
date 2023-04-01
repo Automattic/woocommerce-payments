@@ -72,7 +72,8 @@ const NotUSDollarComponent = ( { level, storeCurrency } ) => {
 };
 
 const ExceedsDollarAmountRule = ( { level, storeCurrency } ) => {
-	const isDefaultCurrencyUSD = 'USD' === storeCurrency.code;
+	const isDefaultCurrencyUSD =
+		! storeCurrency.code || 'USD' === storeCurrency.code;
 
 	if ( isDefaultCurrencyUSD ) {
 		return <USDollarComponent level={ level } />;
