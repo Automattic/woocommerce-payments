@@ -3,7 +3,8 @@
  */
 import * as React from 'react';
 import { ExternalLink, Flex, TabPanel } from '@wordpress/components';
-import { sprintf } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
+import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies.
@@ -12,12 +13,7 @@ import { useAllDepositsOverviews } from 'wcpay/data';
 import { getCurrencyTabTitle } from './utils';
 import BalanceBlock from './balance-block';
 import BalanceTooltip from './balance-tooltip';
-import {
-	documentationUrls,
-	fundLabelStrings,
-	fundTooltipStrings,
-	learnMoreString,
-} from './strings';
+import { documentationUrls, fundLabelStrings } from './strings';
 
 /**
  * BalanceTab
@@ -92,28 +88,37 @@ const AccountBalancesTabPanel: React.FC = () => {
 							<BalanceTooltip
 								label={ `${ fundLabelStrings.available } tooltip` }
 								content={
-									tab.availableFunds < 0 ? (
-										<ExternalLink
-											href={
-												documentationUrls.negativeBalance
-											}
-										>
-											{
-												fundTooltipStrings.availableNegativeBalance
-											}
-										</ExternalLink>
-									) : (
-										<>
-											{ fundTooltipStrings.available }{ ' ' }
-											<ExternalLink
-												href={
-													documentationUrls.depositSchedule
-												}
-											>
-												{ learnMoreString }
-											</ExternalLink>
-										</>
-									)
+									tab.availableFunds < 0
+										? interpolateComponents( {
+												mixedString: __(
+													'{{learnMoreLink}}Learn more{{/learnMoreLink}} about why your account balance may be negative.',
+													'woocommerce-payments'
+												),
+												components: {
+													learnMoreLink: (
+														<ExternalLink
+															href={
+																documentationUrls.negativeBalance
+															}
+														/>
+													),
+												},
+										  } )
+										: interpolateComponents( {
+												mixedString: __(
+													'The amount of funds available to be deposited. {{learnMoreLink}}Learn More.{{/learnMoreLink}}',
+													'woocommerce-payments'
+												),
+												components: {
+													learnMoreLink: (
+														<ExternalLink
+															href={
+																documentationUrls.depositSchedule
+															}
+														/>
+													),
+												},
+										  } )
 								}
 							/>
 						}
@@ -127,21 +132,24 @@ const AccountBalancesTabPanel: React.FC = () => {
 						tooltip={
 							<BalanceTooltip
 								label={ `${ fundLabelStrings.pending } tooltip` }
-								content={
-									<>
-										{ sprintf(
-											fundTooltipStrings.pending,
-											tab.delayDays
-										) }{ ' ' }
-										<ExternalLink
-											href={
-												documentationUrls.depositSchedule
-											}
-										>
-											{ learnMoreString }
-										</ExternalLink>
-									</>
-								}
+								content={ interpolateComponents( {
+									mixedString: sprintf(
+										__(
+											'The amount of funds still in the %d day pending period. {{learnMoreLink}}Learn More.{{/learnMoreLink}}',
+											'woocommerce-payments'
+										),
+										tab.delayDays
+									),
+									components: {
+										learnMoreLink: (
+											<ExternalLink
+												href={
+													documentationUrls.depositSchedule
+												}
+											/>
+										),
+									},
+								} ) }
 							/>
 						}
 					/>

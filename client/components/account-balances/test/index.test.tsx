@@ -14,7 +14,6 @@ import BalanceTooltip from '../balance-tooltip';
 import { getGreeting, getCurrencyTabTitle } from '../utils';
 import { useCurrentWpUser } from '../hooks';
 import { useAllDepositsOverviews } from 'wcpay/data';
-import { fundTooltipStrings } from '../strings';
 
 const mockUser = {
 	id: 123,
