@@ -162,8 +162,9 @@ Object {
                       >
                         For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                         <a
-                          data-link-type="wc-admin"
-                          href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                          data-link-type="external"
+                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          target="_blank"
                         >
                           Learn more
                         </a>
@@ -238,8 +239,9 @@ Object {
                       >
                         For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                         <a
-                          data-link-type="wc-admin"
-                          href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                          data-link-type="external"
+                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          target="_blank"
                         >
                           Learn more
                         </a>
@@ -265,10 +267,17 @@ Object {
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens for IP addresses outside of your 
+                    This filter screens for 
                     <a
-                      data-link-type="wc-admin"
-                      href="#"
+                      data-link-type="external"
+                      href="https://simple.wikipedia.org/wiki/IP_address"
+                      target="_blank"
+                    >
+                      IP addresses
+                    </a>
+                     outside of your 
+                    <a
+                      href="admin.php?page=wc-settings&tab=general"
                     >
                       supported countries
                     </a>
@@ -385,7 +394,15 @@ Object {
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens for customer's IP (Internet Protocol) address to see if it is in a different country than indicated in their billing address.
+                    This filter screens for customer's 
+                    <a
+                      data-link-type="external"
+                      href="https://simple.wikipedia.org/wiki/IP_address"
+                      target="_blank"
+                    >
+                      IP address
+                    </a>
+                     to see if it is in a different country than indicated in their billing address.
                   </p>
                 </div>
               </div>
@@ -1036,8 +1053,9 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
@@ -1112,8 +1130,9 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
@@ -1139,10 +1158,17 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for IP addresses outside of your 
+                  This filter screens for 
                   <a
-                    data-link-type="wc-admin"
-                    href="#"
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
+                  >
+                    IP addresses
+                  </a>
+                   outside of your 
+                  <a
+                    href="admin.php?page=wc-settings&tab=general"
                   >
                     supported countries
                   </a>
@@ -1259,7 +1285,15 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for customer's IP (Internet Protocol) address to see if it is in a different country than indicated in their billing address.
+                  This filter screens for customer's 
+                  <a
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
+                  >
+                    IP address
+                  </a>
+                   to see if it is in a different country than indicated in their billing address.
                 </p>
               </div>
             </div>
@@ -1975,8 +2009,9 @@ Object {
                       >
                         For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                         <a
-                          data-link-type="wc-admin"
-                          href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                          data-link-type="external"
+                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          target="_blank"
                         >
                           Learn more
                         </a>
@@ -2051,8 +2086,9 @@ Object {
                       >
                         For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                         <a
-                          data-link-type="wc-admin"
-                          href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                          data-link-type="external"
+                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          target="_blank"
                         >
                           Learn more
                         </a>
@@ -2078,10 +2114,17 @@ Object {
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens for IP addresses outside of your 
+                    This filter screens for 
                     <a
-                      data-link-type="wc-admin"
-                      href="#"
+                      data-link-type="external"
+                      href="https://simple.wikipedia.org/wiki/IP_address"
+                      target="_blank"
+                    >
+                      IP addresses
+                    </a>
+                     outside of your 
+                    <a
+                      href="admin.php?page=wc-settings&tab=general"
                     >
                       supported countries
                     </a>
@@ -2198,7 +2241,15 @@ Object {
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens for customer's IP (Internet Protocol) address to see if it is in a different country than indicated in their billing address.
+                    This filter screens for customer's 
+                    <a
+                      data-link-type="external"
+                      href="https://simple.wikipedia.org/wiki/IP_address"
+                      target="_blank"
+                    >
+                      IP address
+                    </a>
+                     to see if it is in a different country than indicated in their billing address.
                   </p>
                 </div>
               </div>
@@ -2636,8 +2687,9 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
@@ -2712,8 +2764,9 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
@@ -2739,10 +2792,17 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for IP addresses outside of your 
+                  This filter screens for 
                   <a
-                    data-link-type="wc-admin"
-                    href="#"
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
+                  >
+                    IP addresses
+                  </a>
+                   outside of your 
+                  <a
+                    href="admin.php?page=wc-settings&tab=general"
                   >
                     supported countries
                   </a>
@@ -2859,7 +2919,15 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for customer's IP (Internet Protocol) address to see if it is in a different country than indicated in their billing address.
+                  This filter screens for customer's 
+                  <a
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
+                  >
+                    IP address
+                  </a>
+                   to see if it is in a different country than indicated in their billing address.
                 </p>
               </div>
             </div>
@@ -3347,8 +3415,9 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
@@ -3423,8 +3492,9 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
@@ -3450,10 +3520,17 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for IP addresses outside of your 
+                  This filter screens for 
                   <a
-                    data-link-type="wc-admin"
-                    href="#"
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
+                  >
+                    IP addresses
+                  </a>
+                   outside of your 
+                  <a
+                    href="admin.php?page=wc-settings&tab=general"
                   >
                     supported countries
                   </a>
@@ -3570,7 +3647,15 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for customer's IP (Internet Protocol) address to see if it is in a different country than indicated in their billing address.
+                  This filter screens for customer's 
+                  <a
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
+                  >
+                    IP address
+                  </a>
+                   to see if it is in a different country than indicated in their billing address.
                 </p>
               </div>
             </div>
@@ -3974,8 +4059,9 @@ Object {
                   >
                     For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                     <a
-                      data-link-type="wc-admin"
-                      href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                      data-link-type="external"
+                      href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                      target="_blank"
                     >
                       Learn more
                     </a>
@@ -4050,8 +4136,9 @@ Object {
                   >
                     For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                     <a
-                      data-link-type="wc-admin"
-                      href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                      data-link-type="external"
+                      href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                      target="_blank"
                     >
                       Learn more
                     </a>
@@ -4077,10 +4164,17 @@ Object {
               <p
                 class="fraud-protection-rule-card-description"
               >
-                This filter screens for IP addresses outside of your 
+                This filter screens for 
                 <a
-                  data-link-type="wc-admin"
-                  href="#"
+                  data-link-type="external"
+                  href="https://simple.wikipedia.org/wiki/IP_address"
+                  target="_blank"
+                >
+                  IP addresses
+                </a>
+                 outside of your 
+                <a
+                  href="admin.php?page=wc-settings&tab=general"
                 >
                   supported countries
                 </a>
@@ -4197,7 +4291,15 @@ Object {
               <p
                 class="fraud-protection-rule-card-description"
               >
-                This filter screens for customer's IP (Internet Protocol) address to see if it is in a different country than indicated in their billing address.
+                This filter screens for customer's 
+                <a
+                  data-link-type="external"
+                  href="https://simple.wikipedia.org/wiki/IP_address"
+                  target="_blank"
+                >
+                  IP address
+                </a>
+                 to see if it is in a different country than indicated in their billing address.
               </p>
             </div>
           </div>
@@ -4701,8 +4803,9 @@ Object {
                       >
                         For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                         <a
-                          data-link-type="wc-admin"
-                          href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                          data-link-type="external"
+                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          target="_blank"
                         >
                           Learn more
                         </a>
@@ -4777,8 +4880,9 @@ Object {
                       >
                         For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                         <a
-                          data-link-type="wc-admin"
-                          href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                          data-link-type="external"
+                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          target="_blank"
                         >
                           Learn more
                         </a>
@@ -4804,10 +4908,17 @@ Object {
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens for IP addresses outside of your 
+                    This filter screens for 
                     <a
-                      data-link-type="wc-admin"
-                      href="#"
+                      data-link-type="external"
+                      href="https://simple.wikipedia.org/wiki/IP_address"
+                      target="_blank"
+                    >
+                      IP addresses
+                    </a>
+                     outside of your 
+                    <a
+                      href="admin.php?page=wc-settings&tab=general"
                     >
                       supported countries
                     </a>
@@ -4924,7 +5035,15 @@ Object {
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens for customer's IP (Internet Protocol) address to see if it is in a different country than indicated in their billing address.
+                    This filter screens for customer's 
+                    <a
+                      data-link-type="external"
+                      href="https://simple.wikipedia.org/wiki/IP_address"
+                      target="_blank"
+                    >
+                      IP address
+                    </a>
+                     to see if it is in a different country than indicated in their billing address.
                   </p>
                 </div>
               </div>
@@ -5507,8 +5626,9 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
@@ -5583,8 +5703,9 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
@@ -5610,10 +5731,17 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for IP addresses outside of your 
+                  This filter screens for 
                   <a
-                    data-link-type="wc-admin"
-                    href="#"
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
+                  >
+                    IP addresses
+                  </a>
+                   outside of your 
+                  <a
+                    href="admin.php?page=wc-settings&tab=general"
                   >
                     supported countries
                   </a>
@@ -5730,7 +5858,15 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for customer's IP (Internet Protocol) address to see if it is in a different country than indicated in their billing address.
+                  This filter screens for customer's 
+                  <a
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
+                  >
+                    IP address
+                  </a>
+                   to see if it is in a different country than indicated in their billing address.
                 </p>
               </div>
             </div>
