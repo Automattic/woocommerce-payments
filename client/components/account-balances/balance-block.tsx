@@ -53,7 +53,7 @@ const BalanceBlock: React.FC< BalanceBlockProps > = ( {
 				className="wcpay-account-balances__balances__item__title"
 			>
 				<span>{ title }</span>
-				{ tooltip }
+				{ ! isLoading && tooltip }
 			</p>
 			<p
 				className="wcpay-account-balances__balances__item__amount"
