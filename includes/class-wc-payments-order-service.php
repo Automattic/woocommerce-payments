@@ -83,12 +83,19 @@ class WC_Payments_Order_Service {
 	 */
 	const WCPAY_REFUND_ID_META_KEY = '_wcpay_refund_id';
 
-		/**
+	/**
 	 * Meta key used to store WCPay refund status.
 	 *
 	 * @const string
 	 */
 	const WCPAY_REFUND_STATUS_META_KEY = '_wcpay_refund_status';
+
+	/**
+	 * Meta key used to store WCPay transaction fee.
+	 *
+	 * @const string
+	 */
+	const WCPAY_TRANSACTION_FEE_META_KEY = '_wcpay_transaction_fee';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -884,6 +891,28 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Given the charge, adds the application_fee_amount from the charge to the given order as metadata.
+	 *
+	 * @param WC_Order                    $order The order to update.
+	 * @param WC_Payments_API_Charge|null $charge The charge to get the application_fee_amount from.
+	 */
+	public function attach_transaction_fee_to_order( $order, $charge ) {
+		try {
+			if ( $charge && null !== $charge->get_application_fee_amount() ) {
+				$order->update_meta_data(
+					self::WCPAY_TRANSACTION_FEE_META_KEY,
+					WC_Payments_Utils::interpret_stripe_amount( $charge->get_application_fee_amount(), $charge->get_currency() )
+				);
+				$order->save_meta_data();
+			}
+		} catch ( Exception $e ) {
+			// Log the error and don't block checkout.
+			Logger::log( 'Error saving transaction fee into metadata for the order ' . $order->get_id() . ': ' . $e->getMessage() );
+		}
+
+	}
+
+	/**
 	 * Get content for the success order note.
 	 *
 	 * @param string $intent_id        The payment intent ID related to the intent/order.
@@ -1100,8 +1129,15 @@ class WC_Payments_Order_Service {
 	 * @return string
 	 */
 	private function generate_fraud_held_for_review_note( $order, $intent_id, $charge_id ): string {
-		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
-		$note            = sprintf(
+		$transaction_url = WC_Payments_Utils::compose_transaction_url(
+			$intent_id,
+			$charge_id,
+			$query_args  = [
+				'status_is' => 'review',
+				'type_is'   => 'order_note',
+			]
+		);
+		$note = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
 				__( '&#x26D4; A payment of %1$s was <strong>held for review</strong> by one or more risk filters.<br><br><a>View more details</a>.', 'woocommerce-payments' ),
@@ -1126,8 +1162,15 @@ class WC_Payments_Order_Service {
 	 * @return string
 	 */
 	private function generate_fraud_blocked_note( $order ): string {
-		$transaction_url = WC_Payments_Utils::compose_transaction_url( $order->get_id(), '' );
-		$note            = sprintf(
+		$transaction_url = WC_Payments_Utils::compose_transaction_url(
+			$order->get_id(),
+			'',
+			$query_args  = [
+				'status_is' => 'block',
+				'type_is'   => 'order_note',
+			]
+		);
+		$note = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the blocked amount, %2: transaction ID of the payment */
 				__( '&#x1F6AB; A payment of %1$s was <strong>blocked</strong> by one or more risk filters.<br><br><a>View more details</a>.', 'woocommerce-payments' ),

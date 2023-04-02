@@ -63,7 +63,16 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 			'check'   => [
 				'key'      => 'order_total',
 				'operator' => 'greater_than',
-				'value'    => 100000,
+				'value'    => '100000|usd',
+			],
+		],
+		[
+			'key'     => 'ip_address_mismatch',
+			'outcome' => 'review',
+			'check'   => [
+				'key'      => 'ip_billing_country_same',
+				'operator' => 'equals',
+				'value'    => false,
 			],
 		],
 	];
@@ -98,7 +107,16 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 			'check'   => [
 				'key'      => 'order_total',
 				'operator' => 'greater_than',
-				'value'    => 100000,
+				'value'    => '100000|usd',
+			],
+		],
+		[
+			'key'     => 'ip_address_mismatch',
+			'outcome' => 'review',
+			'check'   => [
+				'key'      => 'ip_billing_country_same',
+				'operator' => 'equals',
+				'value'    => false,
 			],
 		],
 	];
@@ -133,7 +151,16 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 			'check'   => [
 				'key'      => 'order_total',
 				'operator' => 'greater_than',
-				'value'    => 100000,
+				'value'    => '100000|usd',
+			],
+		],
+		[
+			'key'     => 'ip_address_mismatch',
+			'outcome' => 'review',
+			'check'   => [
+				'key'      => 'ip_billing_country_same',
+				'operator' => 'equals',
+				'value'    => false,
 			],
 		],
 	];
@@ -159,7 +186,7 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 			'check'   => [
 				'key'      => 'order_total',
 				'operator' => 'greater_than',
-				'value'    => 100000,
+				'value'    => '100000|usd',
 			],
 		],
 		[
@@ -191,12 +218,12 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 			],
 		],
 		[
-			'key'     => 'international_billing_address',
+			'key'     => 'ip_address_mismatch',
 			'outcome' => 'review',
 			'check'   => [
-				'key'      => 'billing_country',
-				'operator' => 'in',
-				'value'    => '',
+				'key'      => 'ip_billing_country_same',
+				'operator' => 'equals',
+				'value'    => false,
 			],
 		],
 	];
