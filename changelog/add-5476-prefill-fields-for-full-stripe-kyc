@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Prefill Stripe KYC data for non-progressive onboarding scenario

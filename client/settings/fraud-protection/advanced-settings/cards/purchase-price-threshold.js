@@ -8,6 +8,7 @@ import AmountInput from 'wcpay/components/amount-input';
 /**
  * Internal dependencies
  */
+import { getCurrency } from 'utils/currency';
 import FraudProtectionRuleCard from '../rule-card';
 import FraudProtectionRuleToggle from '../rule-toggle';
 import FraudProtectionRuleDescription from '../rule-description';
@@ -52,6 +53,11 @@ const PurchasePriceThresholdCustomForm = ( { setting } ) => {
 		maxAmount &&
 		getFloatValue( minAmount ) > getFloatValue( maxAmount );
 
+	const currency = getCurrency( wcpaySettings.storeCurrency );
+	const { symbol: currencySymbol } = currency?.getCurrencyConfig() || {
+		symbol: '$',
+	};
+
 	return (
 		<div className="fraud-protection-rule-toggle-children-container">
 			<strong>Limits</strong>
@@ -65,7 +71,7 @@ const PurchasePriceThresholdCustomForm = ( { setting } ) => {
 					</label>
 					<AmountInput
 						id={ 'fraud-protection-purchase-price-minimum' }
-						prefix={ '$' }
+						prefix={ currencySymbol }
 						placeholder={ '0.00' }
 						value={ minAmount }
 						onChange={ ( val ) => setMinAmount( val ) }
@@ -84,7 +90,7 @@ const PurchasePriceThresholdCustomForm = ( { setting } ) => {
 					</label>
 					<AmountInput
 						id={ 'fraud-protection-purchase-price-maximum' }
-						prefix={ '$' }
+						prefix={ currencySymbol }
 						placeholder={ '0.00' }
 						value={ maxAmount }
 						onChange={ ( val ) => setMaxAmount( val ) }
@@ -128,6 +134,7 @@ const PurchasePriceThresholdRuleCard = () => (
 			'This filter compares the purchase price of an order to the minimum and maximum purchase amounts that you specify.',
 			'woocommerce-payments'
 		) }
+		id="purchase-price-threshold-card"
 	>
 		<FraudProtectionRuleToggle
 			setting={ 'purchase_price_threshold' }

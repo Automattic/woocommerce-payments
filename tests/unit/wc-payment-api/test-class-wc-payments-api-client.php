@@ -265,11 +265,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 					[
 						'test_mode'                   => false,
 						'return_url'                  => 'http://localhost',
-						'business_data'               => [
-							'a' => 1,
-							'b' => 2,
-							'c' => 3,
-						],
 						'site_data'                   => [
 							'site_username' => 'admin',
 							'site_locale'   => 'en_US',
@@ -301,11 +296,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		// Call the method under test.
 		$result = $this->payments_api_client->get_onboarding_data(
 			'http://localhost',
-			[
-				'a' => 1,
-				'b' => 2,
-				'c' => 3,
-			],
 			[
 				'site_username' => 'admin',
 				'site_locale'   => 'en_US',
