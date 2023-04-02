@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Fix the Request WCPay core class conflict with WP 6.2.
