@@ -128,7 +128,7 @@ class Fraud_Prevention_Models_Check_Test extends WCPAY_UnitTestCase {
 
 		Check::list(
 			Check::LIST_OPERATOR_AND,
-			array_merge( $check->checks, [ [ 'invalid' => 'invalid' ] ] ),
+			array_merge( $check->checks, [ [ 'invalid' => 'invalid' ] ] )
 		);
 	}
 
