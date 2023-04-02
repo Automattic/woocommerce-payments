@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Remove the feature flag for custom deposit schedules, now enabled by default.

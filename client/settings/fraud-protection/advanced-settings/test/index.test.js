@@ -67,10 +67,35 @@ describe( 'Advanced fraud protection settings', () => {
 				},
 			},
 		};
+
+		global.wcpaySettings = {
+			storeCurrency: 'USD',
+			connect: {
+				country: 'US',
+			},
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
+		};
+
 		useAdvancedFraudProtectionSettings.mockReturnValue( [
 			protectionSettings.state,
 			protectionSettings.updateState,
 		] );
+		const mockIntersectionObserver = jest.fn();
+		mockIntersectionObserver.mockReturnValue( {
+			observe: () => null,
+			unobserve: () => null,
+			disconnect: () => null,
+		} );
+		window.IntersectionObserver = mockIntersectionObserver;
 	} );
 	afterEach( () => {
 		jest.clearAllMocks();
