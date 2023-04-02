@@ -295,7 +295,8 @@ describe( 'AccountBalancesTabPanel', () => {
 
 describe( 'BalanceTooltip', () => {
 	test( 'renders the correct tooltip text for the available balance', () => {
-		const expectedTooltipText = fundTooltipStrings.available;
+		const expectedTooltipText =
+			'The amount of funds available to be deposited.';
 
 		render(
 			<BalanceTooltip
@@ -313,7 +314,8 @@ describe( 'BalanceTooltip', () => {
 	} );
 
 	test( 'renders the correct tooltip text for a negative available balance', () => {
-		const expectedTooltipText = fundTooltipStrings.availableNegativeBalance;
+		const expectedTooltipText =
+			'Learn more about why your account balance may be negative.';
 
 		render(
 			<BalanceTooltip
@@ -333,10 +335,7 @@ describe( 'BalanceTooltip', () => {
 	test( 'renders the correct tooltip text for the pending balance', () => {
 		const delayDays = 17;
 		// Insert the delayDays value into the expected tooltip text.
-		const expectedTooltipText = fundTooltipStrings.pending.replace(
-			'%d',
-			delayDays.toString()
-		);
+		const expectedTooltipText = `The amount of funds still in the ${ delayDays } day pending period.`;
 
 		render(
 			<BalanceTooltip
