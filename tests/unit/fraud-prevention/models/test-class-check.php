@@ -118,10 +118,7 @@ class Fraud_Prevention_Models_Check_Test extends WCPAY_UnitTestCase {
 
 		$this->expectException( Fraud_Ruleset_Exception::class );
 
-		Check::list(
-			'invalid-operator',
-			$check->checks,
-		);
+		Check::list( 'invalid-operator', $check->checks );
 	}
 
 	public function test_it_fails_to_create_checklist_invalid_check_item() {
