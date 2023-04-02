@@ -135,10 +135,7 @@ class Fraud_Prevention_Models_Check_Test extends WCPAY_UnitTestCase {
 	public function test_it_creates_a_checklist() {
 		$check = Check::from_array( $this->mock_check_with_checks );
 
-		$checklist = Check::list(
-			Check::LIST_OPERATOR_OR,
-			$check->checks,
-		);
+		$checklist = Check::list( Check::LIST_OPERATOR_OR, $check->checks );
 
 		$this->assertInstanceOf( Check::class, $checklist );
 		$this->assertEquals( $checklist->operator, Check::LIST_OPERATOR_OR );
