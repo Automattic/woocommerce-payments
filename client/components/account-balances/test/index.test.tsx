@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -10,10 +10,11 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import AccountBalances from '../';
 import AccountBalancesHeader from '../header';
 import AccountBalancesTabPanel from '../balances-tab-panel';
-import BalanceTooltip from '../balance-tooltip';
+
 import { getGreeting, getCurrencyTabTitle } from '../utils';
 import { useCurrentWpUser } from '../hooks';
 import { useAllDepositsOverviews } from 'wcpay/data';
+import { documentationUrls } from '../strings';
 
 const mockUser = {
 	id: 123,
@@ -31,7 +32,7 @@ const mockAccount: AccountOverview.Account = {
 	deposits_blocked: false,
 	deposits_disabled: false,
 	deposits_schedule: {
-		delay_days: 0,
+		delay_days: 17,
 		interval: 'weekly',
 		weekly_anchor: 'Monday',
 	},
@@ -290,64 +291,63 @@ describe( 'AccountBalancesTabPanel', () => {
 		expect( jpyAvailableAmount ).toHaveTextContent( '¥90' );
 		expect( jpyPendingAmount ).toHaveTextContent( '¥20' );
 	} );
-} );
 
-describe( 'BalanceTooltip', () => {
 	test( 'renders the correct tooltip text for the available balance', () => {
-		const expectedTooltipText =
-			'The amount of funds available to be deposited.';
+		mockOverviews( [ createMockOverview( 'usd', 10000, 20000 ) ] );
+		render( <AccountBalancesTabPanel /> );
 
-		render(
-			<BalanceTooltip
-				label="Available funds tooltip"
-				content={ expectedTooltipText }
-			/>
-		);
-
+		// Check the tooltips are rendered correctly.
 		const tooltipButton = screen.getByRole( 'button', {
 			name: 'Available funds tooltip',
 		} );
 		fireEvent.click( tooltipButton );
-
-		screen.getByText( expectedTooltipText );
+		const tooltip = screen.getByRole( 'tooltip', {
+			name: /The amount of funds available to be deposited./,
+		} );
+		expect( within( tooltip ).getByRole( 'link' ) ).toHaveAttribute(
+			'href',
+			documentationUrls.depositSchedule
+		);
 	} );
 
 	test( 'renders the correct tooltip text for a negative available balance', () => {
-		const expectedTooltipText =
-			'Learn more about why your account balance may be negative.';
+		mockOverviews( [ createMockOverview( 'usd', 10000, -20000 ) ] );
+		render( <AccountBalancesTabPanel /> );
 
-		render(
-			<BalanceTooltip
-				label="Available funds tooltip"
-				content={ expectedTooltipText }
-			/>
-		);
-
+		// Check the tooltips are rendered correctly.
 		const tooltipButton = screen.getByRole( 'button', {
 			name: 'Available funds tooltip',
 		} );
 		fireEvent.click( tooltipButton );
-
-		screen.getByText( expectedTooltipText );
+		const tooltip = screen.getByRole( 'tooltip', {
+			// Regex optional group for `(opens in a new tab)`.
+			name: /Learn more( \(.*?\))? about why your account balance may be negative./,
+		} );
+		expect( within( tooltip ).getByRole( 'link' ) ).toHaveAttribute(
+			'href',
+			documentationUrls.negativeBalance
+		);
 	} );
 
 	test( 'renders the correct tooltip text for the pending balance', () => {
-		const delayDays = 17;
-		// Insert the delayDays value into the expected tooltip text.
-		const expectedTooltipText = `The amount of funds still in the ${ delayDays } day pending period.`;
+		const delayDays = mockAccount.deposits_schedule.delay_days;
+		mockOverviews( [ createMockOverview( 'usd', 10000, 20000 ) ] );
+		render( <AccountBalancesTabPanel /> );
 
-		render(
-			<BalanceTooltip
-				label="Pending funds tooltip"
-				content={ expectedTooltipText }
-			/>
-		);
-
+		// Check the tooltips are rendered correctly.
 		const tooltipButton = screen.getByRole( 'button', {
 			name: 'Pending funds tooltip',
 		} );
 		fireEvent.click( tooltipButton );
-
-		screen.getByText( expectedTooltipText );
+		const tooltip = screen.getByRole( 'tooltip', {
+			// Using a regex here to allow partial matching of the tooltip text.
+			name: new RegExp(
+				`The amount of funds still in the ${ delayDays } day pending period.`
+			),
+		} );
+		expect( within( tooltip ).getByRole( 'link' ) ).toHaveAttribute(
+			'href',
+			documentationUrls.depositSchedule
+		);
 	} );
 } );
