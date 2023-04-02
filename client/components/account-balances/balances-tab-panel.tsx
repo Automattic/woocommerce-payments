@@ -2,7 +2,7 @@
  * External dependencies
  */
 import * as React from 'react';
-import { Flex, TabPanel } from '@wordpress/components';
+import { ExternalLink, Flex, TabPanel } from '@wordpress/components';
 import { sprintf } from '@wordpress/i18n';
 
 /**
@@ -93,9 +93,7 @@ const AccountBalancesTabPanel: React.FC = () => {
 								label={ `${ fundLabelStrings.available } tooltip` }
 								content={
 									tab.availableFunds < 0 ? (
-										<a
-											target="_blank"
-											rel="noopener noreferrer"
+										<ExternalLink
 											href={
 												documentationUrls.negativeBalance
 											}
@@ -103,19 +101,17 @@ const AccountBalancesTabPanel: React.FC = () => {
 											{
 												fundTooltipStrings.availableNegativeBalance
 											}
-										</a>
+										</ExternalLink>
 									) : (
 										<>
 											{ fundTooltipStrings.available }{ ' ' }
-											<a
-												target="_blank"
-												rel="noopener noreferrer"
+											<ExternalLink
 												href={
 													documentationUrls.depositSchedule
 												}
 											>
 												{ learnMoreString }
-											</a>
+											</ExternalLink>
 										</>
 									)
 								}
@@ -137,15 +133,13 @@ const AccountBalancesTabPanel: React.FC = () => {
 											fundTooltipStrings.pending,
 											tab.delayDays
 										) }{ ' ' }
-										<a
-											target="_blank"
-											rel="noopener noreferrer"
+										<ExternalLink
 											href={
 												documentationUrls.depositSchedule
 											}
 										>
 											{ learnMoreString }
-										</a>
+										</ExternalLink>
 									</>
 								}
 							/>

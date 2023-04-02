@@ -19,7 +19,10 @@ const BalanceTooltip: React.FC< BalanceTooltipProps > = ( {
 	content,
 } ) => {
 	return (
-		<ClickTooltip content={ content }>
+		<ClickTooltip
+			content={ content }
+			className="wcpay-account-balances__balances__item__tooltip"
+		>
 			<div
 				className="wcpay-account-balances__balances__item__tooltip-button"
 				role="button"
