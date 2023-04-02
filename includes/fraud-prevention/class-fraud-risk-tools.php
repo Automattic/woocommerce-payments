@@ -371,7 +371,7 @@ class Fraud_Risk_Tools {
 		$default_currency = $base_currency;
 		$target_currency  = $base_currency;
 
-		if ( class_exists( WC_Payments_Multi_Currency::class ) ) {
+		if ( function_exists( 'WC_Payments_Multi_Currency' ) ) {
 			$default_currency = WC_Payments_Multi_Currency()->get_default_currency();
 
 			if ( ! empty( $default_currency ) ) {
