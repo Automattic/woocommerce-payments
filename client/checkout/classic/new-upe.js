@@ -119,8 +119,9 @@ jQuery( function ( $ ) {
 		paymentMethodType,
 		domElement
 	) {
+		const amount = Number( getUPEConfig( 'cartTotal' ) );
 		const options = {
-			mode: 'payment',
+			mode: 1 > amount ? 'setup' : 'payment',
 			currency: getUPEConfig( 'currency' ).toLowerCase(),
 			amount: Number( getUPEConfig( 'cartTotal' ) ),
 			paymentMethodCreation: 'manual',
