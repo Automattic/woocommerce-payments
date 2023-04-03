@@ -99,6 +99,7 @@ class WC_Payments_Admin {
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ] );
 		add_action( 'woocommerce_admin_field_payment_gateways', [ $this, 'payment_gateways_container' ] );
 		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'show_woopay_payment_method_name_admin' ] );
+		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'display_wcpay_transaction_fee' ] );
 
 		$this->admin_child_pages = [
 			'wc-payments-overview'     => [
@@ -486,54 +487,54 @@ class WC_Payments_Admin {
 		$account_status_data = $this->account->get_account_status_data();
 
 		$wcpay_settings = [
-			'connectUrl'                       => WC_Payments_Account::get_connect_url(),
-			'connect'                          => [
+			'connectUrl'                 => WC_Payments_Account::get_connect_url(),
+			'connect'                    => [
 				'country'            => WC()->countries->get_base_country(),
 				'availableCountries' => WC_Payments_Utils::supported_countries(),
 				'availableStates'    => WC()->countries->get_states(),
 			],
-			'testMode'                         => WC_Payments::mode()->is_test(),
+			'testMode'                   => WC_Payments::mode()->is_test(),
 			// set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
-			'onBoardingDisabled'               => WC_Payments_Account::is_on_boarding_disabled(),
-			'errorMessage'                     => $error_message,
-			'featureFlags'                     => $this->get_frontend_feature_flags(),
-			'isSubscriptionsActive'            => class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ),
+			'onBoardingDisabled'         => WC_Payments_Account::is_on_boarding_disabled(),
+			'errorMessage'               => $error_message,
+			'featureFlags'               => $this->get_frontend_feature_flags(),
+			'isSubscriptionsActive'      => class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ),
 			// used in the settings page by the AccountFees component.
-			'zeroDecimalCurrencies'            => WC_Payments_Utils::zero_decimal_currencies(),
-			'fraudServices'                    => $this->account->get_fraud_services_config(),
-			'isJetpackConnected'               => $this->payments_api_client->is_server_connected(),
-			'isJetpackIdcActive'               => Jetpack_Identity_Crisis::has_identity_crisis(),
-			'accountStatus'                    => $account_status_data,
-			'accountFees'                      => $this->account->get_fees(),
-			'accountLoans'                     => $this->account->get_capital(),
-			'accountEmail'                     => $this->account->get_account_email(),
-			'showUpdateDetailsTask'            => $this->get_should_show_update_business_details_task( $account_status_data ),
-			'wpcomReconnectUrl'                => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
-			'additionalMethodsSetup'           => [
+			'zeroDecimalCurrencies'      => WC_Payments_Utils::zero_decimal_currencies(),
+			'fraudServices'              => $this->account->get_fraud_services_config(),
+			'isJetpackConnected'         => $this->payments_api_client->is_server_connected(),
+			'isJetpackIdcActive'         => Jetpack_Identity_Crisis::has_identity_crisis(),
+			'accountStatus'              => $account_status_data,
+			'accountFees'                => $this->account->get_fees(),
+			'accountLoans'               => $this->account->get_capital(),
+			'accountEmail'               => $this->account->get_account_email(),
+			'showUpdateDetailsTask'      => $this->get_should_show_update_business_details_task( $account_status_data ),
+			'wpcomReconnectUrl'          => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
+			'additionalMethodsSetup'     => [
 				'isUpeEnabled' => WC_Payments_Features::is_upe_enabled(),
 				'upeType'      => WC_Payments_Features::get_enabled_upe_type(),
 			],
-			'multiCurrencySetup'               => [
+			'multiCurrencySetup'         => [
 				'isSetupCompleted' => get_option( 'wcpay_multi_currency_setup_completed' ),
 			],
-			'isMultiCurrencyEnabled'           => WC_Payments_Features::is_customer_multi_currency_enabled(),
-			'isClientEncryptionEligible'       => WC_Payments_Features::is_client_secret_encryption_eligible(),
-			'shouldUseExplicitPrice'           => WC_Payments_Explicit_Price_Formatter::should_output_explicit_price(),
-			'overviewTasksVisibility'          => [
+			'isMultiCurrencyEnabled'     => WC_Payments_Features::is_customer_multi_currency_enabled(),
+			'isClientEncryptionEligible' => WC_Payments_Features::is_client_secret_encryption_eligible(),
+			'shouldUseExplicitPrice'     => WC_Payments_Explicit_Price_Formatter::should_output_explicit_price(),
+			'overviewTasksVisibility'    => [
 				'dismissedTodoTasks'     => get_option( 'woocommerce_dismissed_todo_tasks', [] ),
 				'deletedTodoTasks'       => get_option( 'woocommerce_deleted_todo_tasks', [] ),
 				'remindMeLaterTodoTasks' => get_option( 'woocommerce_remind_me_later_todo_tasks', [] ),
 			],
-			'currentUserEmail'                 => $current_user_email,
-			'currencyData'                     => $currency_data,
-			'restUrl'                          => get_rest_url( null, '' ), // rest url to concatenate when merchant use Plain permalinks.
-			'numDisputesNeedingResponse'       => $this->get_disputes_awaiting_response_count(),
-			'isFraudProtectionSettingsEnabled' => WC_Payments_Features::is_fraud_protection_settings_enabled(),
-			'fraudProtection'                  => [
+			'currentUserEmail'           => $current_user_email,
+			'currencyData'               => $currency_data,
+			'restUrl'                    => get_rest_url( null, '' ), // rest url to concatenate when merchant use Plain permalinks.
+			'numDisputesNeedingResponse' => $this->get_disputes_awaiting_response_count(),
+			'fraudProtection'            => [
 				'isWelcomeTourDismissed' => WC_Payments_Features::is_fraud_protection_welcome_tour_dismissed(),
 			],
-			'accountDefaultCurrency'           => $this->account->get_account_default_currency(),
-			'frtDiscoverBannerSettings'        => get_option( 'wcpay_frt_discover_banner_settings', '' ),
+			'accountDefaultCurrency'     => $this->account->get_account_default_currency(),
+			'frtDiscoverBannerSettings'  => get_option( 'wcpay_frt_discover_banner_settings', '' ),
+			'storeCurrency'              => get_option( 'woocommerce_currency' ),
 		];
 
 		wp_localize_script(
@@ -915,6 +916,30 @@ class WC_Payments_Admin {
 			?>
 		</div>
 
+		<?php
+	}
+
+	/**
+	 * Display the _wcpay_transaction_fee from order metadata to the Order Edit screen on admin.
+	 *
+	 * @param int $order_id order_id.
+	 */
+	public function display_wcpay_transaction_fee( $order_id ) {
+		$order = wc_get_order( $order_id );
+		if ( ! $order || ! $order->get_meta( '_wcpay_transaction_fee' ) ) {
+			return;
+		}
+		?>
+		<tr>
+			<td class="label wcpay-transaction-fee">
+				<?php echo wc_help_tip( __( 'This represents the fee WooCommerce Payments collects for the transaction.', 'woocommerce-payments' ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+				<?php esc_html_e( 'Transaction Fee:', 'woocommerce-payments' ); ?>
+			</td>
+			<td width="1%"></td>
+			<td class="total">
+				-<?php echo wp_kses( wc_price( $order->get_meta( '_wcpay_transaction_fee' ), [ 'currency' => $order->get_currency() ] ), 'post' ); ?>
+			</td>
+		</tr>
 		<?php
 	}
 

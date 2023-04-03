@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Added Transaction Fee to order metadata and display it on Order admin screen.

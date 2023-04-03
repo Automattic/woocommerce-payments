@@ -37,7 +37,7 @@ export const useAuthorizations = ( {
 				paged: pagedQuery ? '1' : paged,
 				per_page: perPageQuery ? '25' : per_page,
 				orderby: orderby || 'created',
-				order: order || 'desc',
+				order: order || 'asc',
 			};
 
 			return {

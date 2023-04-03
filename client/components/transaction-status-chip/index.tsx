@@ -4,11 +4,11 @@
  * External dependencies
  */
 import React from 'react';
+import Chip from '../chip';
 
 /**
  * Internal dependencies
  */
-import Chip from '../chip';
 import transactionStatusMapping, { TransactionStatus } from './mappings';
 import { formatStringValue } from 'utils';
 import './style.scss';
