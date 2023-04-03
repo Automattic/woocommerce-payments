@@ -344,6 +344,7 @@ class WC_Payments_Order_Service {
 	 */
 	public function mark_terminal_payment_completed( $order, $intent_id, $intent_status ) {
 		$this->update_order_status( $order, Order_Status::COMPLETED, $intent_id );
+		$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::TERMINAL_PAYMENT );
 		$this->complete_order_processing( $order, $intent_status );
 	}
 
@@ -794,6 +795,10 @@ class WC_Payments_Order_Service {
 			$this->set_fraud_meta_box_type_for_order( $order, $fraud_meta_box_type );
 		}
 
+		if ( ! $this->intent_has_card_payment_type( $intent_data ) ) {
+			$this->set_fraud_outcome_status_for_order( $order, Fraud_Meta_Box_Type::NOT_CARD );
+		}
+
 		$this->update_order_status( $order, 'payment_complete', $intent_data['intent_id'] );
 		$order->add_order_note( $note );
 		$this->set_intention_status_for_order( $order, $intent_data['intent_status'] );
@@ -873,7 +878,8 @@ class WC_Payments_Order_Service {
 		}
 
 		if ( WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
-			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::PAYMENT_STARTED );
+			$fraud_meta_box_type = $this->intent_has_card_payment_type( $intent_data ) ? Fraud_Meta_Box_Type::PAYMENT_STARTED : Fraud_Meta_Box_Type::NOT_CARD;
+			$this->set_fraud_meta_box_type_for_order( $order, $fraud_meta_box_type );
 		}
 
 		$order->add_order_note( $note );
@@ -1430,18 +1436,22 @@ class WC_Payments_Order_Service {
 		$intent_data = [];
 		if ( is_array( $intent ) ) {
 			$intent_data = [
-				'intent_id'     => $intent['id'],
-				'intent_status' => $intent['status'],
-				'charge_id'     => $intent['charge_id'] ?? '',
-				'fraud_outcome' => $intent['fraud_outcome'] ?? '',
+				'intent_id'           => $intent['id'],
+				'intent_status'       => $intent['status'],
+				'charge_id'           => $intent['charge_id'] ?? '',
+				'fraud_outcome'       => $intent['fraud_outcome'] ?? '',
+				'payment_method_type' => '',
 			];
 		} elseif ( is_object( $intent ) ) {
-			$charge      = $intent->get_charge();
+			$charge               = $intent->get_charge();
+			$payment_method_types = $intent->get_payment_method_types();
+
 			$intent_data = [
-				'intent_id'     => $intent->get_id(),
-				'intent_status' => $intent->get_status(),
-				'charge_id'     => $charge ? $charge->get_id() : null,
-				'fraud_outcome' => $intent->get_metadata()['fraud_outcome'] ?? '',
+				'intent_id'           => $intent->get_id(),
+				'intent_status'       => $intent->get_status(),
+				'charge_id'           => $charge ? $charge->get_id() : null,
+				'fraud_outcome'       => $intent->get_metadata()['fraud_outcome'] ?? '',
+				'payment_method_type' => 1 === count( $payment_method_types ) ? $payment_method_types[0] : '',
 			];
 		}
 		return $intent_data;
@@ -1501,5 +1511,16 @@ class WC_Payments_Order_Service {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Checks to see if the intent data has just card set as the payment method type.
+	 *
+	 * @param array $intent_data The intent data obtained from get_intent_data.
+	 *
+	 * @return bool
+	 */
+	private function intent_has_card_payment_type( $intent_data ): bool {
+		return isset( $intent_data['payment_method_type'] ) && 'card' === $intent_data['payment_method_type'];
 	}
 }

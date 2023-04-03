@@ -28,4 +28,5 @@ class Fraud_Meta_Box_Type extends Base_Constant {
 	const REVIEW_CANCELLED = 'review_cancelled';
 	const REVIEW_EXPIRED   = 'review_expired';
 	const REVIEW_FAILED    = 'review_failed';
+	const TERMINAL_PAYMENT = 'terminal_payment';
 }

@@ -108,17 +108,18 @@ class Order_Fraud_And_Risk_Meta_Box {
 				echo '<p class="wcpay-fraud-risk-meta-blocked"><img src="' . esc_url( $icons['red_shield']['url'] ) . '" alt="' . esc_html( $icons['red_shield']['alt'] ) . '"> ' . esc_html( $statuses['blocked'] ) . '</p><p>' . esc_html( $description ) . '</p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
 				break;
 
+			case Fraud_Meta_Box_Type::NOT_CARD:
 			case Fraud_Meta_Box_Type::NOT_WCPAY:
 				$payment_method_title = $order->get_payment_method_title();
 
 				if ( ! empty( $payment_method_title ) ) {
 					$description = sprintf(
 						/* translators: %s - Payment method title */
-						__( 'Risk filtering is only available for orders processed with WooCommerce Payments. This order was processed with %s.', 'woocommerce-payments' ),
+						__( 'Risk filtering is only available for orders processed using credit cards with WooCommerce Payments. This order was processed with %s.', 'woocommerce-payments' ),
 						$payment_method_title
 					);
 				} else {
-					$description = __( 'Risk filtering is only available for orders processed with WooCommerce Payments.', 'woocommerce-payments' );
+					$description = __( 'Risk filtering is only available for orders processed using credit cards with WooCommerce Payments.', 'woocommerce-payments' );
 				}
 
 				$callout     = __( 'Learn more', 'woocommerce-payments' );
@@ -172,6 +173,11 @@ class Order_Fraud_And_Risk_Meta_Box {
 				$callout         = __( 'Review payment', 'woocommerce-payments' );
 				$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 				echo '<p class="wcpay-fraud-risk-meta-review"><img src="' . esc_url( $icons['orange_shield']['url'] ) . '" alt="' . esc_html( $icons['orange_shield']['alt'] ) . '"> ' . esc_html( $statuses['held_for_review'] ) . '</p><p>' . esc_html( $description ) . '</p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
+				break;
+
+			case Fraud_Meta_Box_Type::TERMINAL_PAYMENT:
+				$description = __( 'The payment for this order was done in person and has bypassed your risk filtering.', 'woocommerce-payments' );
+				echo '<p class="wcpay-fraud-risk-meta-allow"><img src="' . esc_url( $icons['green_check_mark']['url'] ) . '" alt="' . esc_html( $icons['green_check_mark']['alt'] ) . '"> ' . esc_html( $statuses['no_action_taken'] ) . '</p><p>' . esc_html( $description ) . '</p>';
 				break;
 
 			default:
