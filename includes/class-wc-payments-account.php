@@ -522,11 +522,12 @@ class WC_Payments_Account {
 
 		try {
 			$request = Get_Account_Capital_Link::create();
-			$request->set_type( 'capital_financing_offer' );
+			$type    = 'capital_financing_offer';
+			$request->set_type( $type );
 			$request->set_redirect_url( $return_url );
 			$request->set_refresh_url( $refresh_url );
 
-			$capital_link = $request->send( 'wcpay_get_capital_link' );
+			$capital_link = $request->send( 'wcpay_get_account_capital_link', $type, $return_url, $refresh_url );
 			$this->redirect_to( $capital_link['url'] );
 		} catch ( API_Exception $e ) {
 			$error_url = add_query_arg(
