@@ -27,7 +27,10 @@ import {
 } from '../utils/upe';
 import showErrorCheckout from '../utils/show-error-checkout';
 import { getAppearance } from '../upe-styles';
-import { getFingerprint } from '../utils/fingerprint';
+import {
+	appendFingerprintInputToForm,
+	getFingerprint,
+} from '../utils/fingerprint';
 
 jQuery( function ( $ ) {
 	const paymentMethods = getUPEConfig( 'paymentMethodsConfig' );
@@ -168,7 +171,14 @@ jQuery( function ( $ ) {
 		return upeSettings;
 	}
 
-	const handleCheckout = async ( $form, paymentMethodType ) => {
+	let paymentMethodGenerated;
+
+	const handleCheckout = ( $form, paymentMethodType ) => {
+		if ( paymentMethodGenerated ) {
+			paymentMethodGenerated = null;
+			return;
+		}
+
 		blockUI( $form );
 		const elements = gatewayUPEComponents[ paymentMethodType ].elements;
 		elements.submit().then( ( result ) => {
@@ -176,46 +186,47 @@ jQuery( function ( $ ) {
 				showErrorCheckout( result.error.message );
 			}
 		} );
-		const pm = await api.getStripe().createPaymentMethod( {
-			elements,
-			params: {
-				billing_details: {
-					name: $( '#billing_first_name' ).length
-						? (
-								$( '#billing_first_name' ).val() +
-								' ' +
-								$( '#billing_last_name' ).val()
-						  ).trim()
-						: undefined,
-					email: $( '#billing_email' ).val(),
-					phone: $( '#billing_phone' ).val(),
-					address: {
-						city: $( '#billing_city' ).val(),
-						country: $( '#billing_country' ).val(),
-						line1: $( '#billing_address_1' ).val(),
-						line2: $( '#billing_address_2' ).val(),
-						postal_code: $( '#billing_postcode' ).val(),
-						state: $( '#billing_state' ).val(),
+		api.getStripe()
+			.createPaymentMethod( {
+				elements,
+				params: {
+					billing_details: {
+						name: $( '#billing_first_name' ).length
+							? (
+									$( '#billing_first_name' ).val() +
+									' ' +
+									$( '#billing_last_name' ).val()
+							  ).trim()
+							: undefined,
+						email: $( '#billing_email' ).val(),
+						phone: $( '#billing_phone' ).val(),
+						address: {
+							city: $( '#billing_city' ).val(),
+							country: $( '#billing_country' ).val(),
+							line1: $( '#billing_address_1' ).val(),
+							line2: $( '#billing_address_2' ).val(),
+							postal_code: $( '#billing_postcode' ).val(),
+							state: $( '#billing_state' ).val(),
+						},
 					},
 				},
-			},
-		} );
+			} )
+			.then( function ( paymentMethodObject ) {
+				paymentMethodGenerated = true;
 
-		try {
-			const fields = {
-				...$form.serializeArray().reduce( ( obj, field ) => {
-					obj[ field.name ] = field.value;
-					return obj;
-				}, {} ),
-				wc_payment_method: pm.paymentMethod.id,
-				'wcpay-fingerprint': fingerprint ? fingerprint : '',
-			};
-
-			const response = await api.processCheckout( fields );
-			window.location.href = response.redirect;
-		} catch ( error ) {
-			showErrorCheckout( error.message );
-		}
+				appendFingerprintInputToForm( $form, fingerprint );
+				appendPaymentMethodIdToForm(
+					$form,
+					paymentMethodObject.paymentMethod.id
+				);
+				$form.removeClass( 'processing' ).submit();
+			} )
+			.catch( ( error ) => {
+				$form.removeClass( 'processing' ).unblock();
+				showErrorCheckout( error.message );
+			} );
+		// Prevent form submission so that we can fire it once a payment method has been generated.
+		return false;
 	};
 
 	// Handle the checkout form when WooCommerce Payments is chosen.
@@ -235,8 +246,15 @@ jQuery( function ( $ ) {
 		.join( ' ' );
 	$( 'form.checkout' ).on( checkoutEvents, function () {
 		const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
-
-		handleCheckout( $( this ), paymentMethodType );
-		return false;
+		return handleCheckout( $( this ), paymentMethodType );
 	} );
+
+	function appendPaymentMethodIdToForm( $form, paymentMethodId ) {
+		// Remove any existing payment method inputs.
+		$form.find( 'input[name="wc_payment_method"]' ).remove();
+
+		$form.append(
+			`<input type="hidden" name="wc_payment_method" value="${ paymentMethodId }" />`
+		);
+	}
 } );
