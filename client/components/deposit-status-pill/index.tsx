@@ -2,6 +2,7 @@
  * External dependencies
  */
 import * as React from 'react';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -31,7 +32,7 @@ const DepositStatusPill: React.FC< {
 } > = ( { status } ): JSX.Element => {
 	const label = displayStatus[ status as keyof typeof displayStatus ]
 		? displayStatus[ status as keyof typeof displayStatus ]
-		: displayStatus.estimated;
+		: __( 'Unknown', 'woocommerce-payments' );
 
 	const type = status && mappings[ status ] ? mappings[ status ] : 'light';
 

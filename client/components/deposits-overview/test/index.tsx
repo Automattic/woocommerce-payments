@@ -211,7 +211,7 @@ describe( 'Deposits Overview information', () => {
 		const { getByText } = render(
 			<NextDepositDetails isLoading={ false } overview={ overview } />
 		);
-		expect( getByText( 'Estimated' ) ).toBeTruthy();
+		expect( getByText( 'Unknown' ) ).toBeTruthy();
 		expect( getByText( '—' ) ).toBeTruthy();
 	} );
 } );

@@ -95,13 +95,9 @@ exports[`Deposits Overview information Component Renders 1`] = `
           class="components-flex__item wcpay-deposits-overview__table__cell css-1s295sp-Item eboqfv51"
         >
           <span
-            class="wcpay-pill__light"
+            class="woocommerce-pill css-1qmnemh-Text e15wbhsk0"
           >
-            <span
-              class="woocommerce-pill css-1qmnemh-Text e15wbhsk0"
-            >
-              Estimated
-            </span>
+            Estimated
           </span>
         </div>
         <div
@@ -136,19 +132,6 @@ exports[`Deposits Overview information Component Renders 1`] = `
           Change deposit schedule
         </a>
       </div>
-    </div>
-    <div
-      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
-    >
-      <span
-        class="wcpay-pill__success"
-      >
-        <span
-          class="woocommerce-pill css-1qmnemh-Text e15wbhsk0"
-        >
-          In transit
-        </span>
-      </span>
     </div>
   </div>
 </div>
