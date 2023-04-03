@@ -373,26 +373,52 @@ class Payment {
 		return apply_filters(
 			'wcpay_payment_available_steps',
 			[
+				// Prepared state.
+
+				// Verification state: Before we even consider processing anything.
+				verify() {
+					Step\Bump_Transaction_Limiter_Step::action,
+					Step\Verify_Fraud_Token_Step::class, // Action.
+					Step\Check_Session_Against_Processing_Order_Step::action
+					Step\Verify_Minimum_Amount_Step::action, // Action.
+				}
+
+				// Preparation state: Actual preparation.
 				Step\Metadata_Step::class, // Prepare.
 				Step\Customer_Details_Step::class, // Prepare & act.
-				Step\Bump_Transaction_Limiter_Step::class, // Act & Complete.
-				Step\Verify_Fraud_Token_Step::class, // Action.
-				Step\Load_Intent_After_Authentication_Step::class, // Action.
-				// Step\Check_Session_Against_Processing_Order_Step::class, // Act & Complete.
+
+				// Main state
 				Step\Check_Attached_Intent_Success_Step::class, // Action.
-				Step\Create_UPE_Intent_Step::class, // Action.
-				Step\Redirect_UPE_Payment_Step::class, // Action.
-				Step\Update_UPE_Intent_Step::class, // Action.
 				Step\Complete_Without_Payment_Step::class, // Action.
-				Step\Verify_Minimum_Amount_Step::class, // Action.
-				Step\Standard_Payment_Step::class, // Action.
-				Step\Setup_Payment_Step::class, // Action.
-				Step\Update_Saved_Payment_Method_Step::class, // Complete.
-				Step\Save_Payment_Method_Step::class, // Complete.
-				Step\Store_Metadata_Step::class, // Complete.
-				Step\Update_Order_Step::class, // Complete.
-				Step\Add_Token_To_Order_Step::class, // Complete.
-				Step\Cleanup_Step::class, // Complete.
+
+
+				flow_specific {
+					Step\Load_Intent_After_Authentication_Step::class, // POST_CHECKOUT_REDIRECT_FLOW
+					Step\Create_UPE_Intent_Step::class, // Action.
+					Step\Redirect_UPE_Payment_Step::class, // Action.
+					Step\Update_UPE_Intent_Step::class, // Action.
+				} else {
+					Step\Standard_Payment_Step::class, // Action.
+					Step\Setup_Payment_Step::class, // Action.
+				}
+
+
+				if ( success ) {
+					Step\Add_Token_To_Order_Step::class, // Complete.
+					Step\Check_Session_Against_Processing_Order_Step::complete // remove from the order
+					if ( $pm instanceof Saved ) {
+						Step\Update_Saved_Payment_Method_Step::class, // Complete.
+					} else {
+						Step\Save_Payment_Method_Step::class, // Complete.
+					}
+					Step\Store_Metadata_Step::class, // Complete.
+				} else {
+					Bump_Transaction_Limiter_Step::complete
+					Cache_Minimum_Amount
+				} anyway {
+					Step\Update_Order_Step::class, // Complete.
+					Step\Cleanup_Step::class, // Complete.
+				}
 			]
 		);
 	}

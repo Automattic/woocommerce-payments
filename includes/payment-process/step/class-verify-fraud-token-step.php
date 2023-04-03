@@ -45,7 +45,7 @@ final class Verify_Fraud_Token_Step extends Abstract_Step {
 	 * @param Payment $payment Payment proccess.
 	 * @throws Process_Payment_Exception In case the token could not be verified.
 	 */
-	public function collect_data( Payment $payment ) {
+	public function action( Payment $payment ) {
 		if (
 			// The service might not be available if the WC session is not initialized.
 			! $this->fraud_prevention_service
