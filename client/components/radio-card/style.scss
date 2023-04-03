@@ -30,9 +30,14 @@
 		input[type='radio'] {
 			margin: 0;
 			justify-self: flex-end;
+			width: 20px;
+			height: 20px;
+			border-color: $gray-700;
 
-			@media ( min-width: 783px ) {
-				transform: scale( 1.25 );
+			&::before {
+				width: 12px;
+				height: 12px;
+				margin: 3px;
 			}
 
 			&:focus {
