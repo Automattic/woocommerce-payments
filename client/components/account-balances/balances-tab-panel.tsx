@@ -106,7 +106,7 @@ const AccountBalancesTabPanel: React.FC = () => {
 										  } )
 										: interpolateComponents( {
 												mixedString: __(
-													'The amount of funds available to be deposited. {{learnMoreLink}}Learn More.{{/learnMoreLink}}',
+													'The amount of funds available to be deposited. {{learnMoreLink}}Learn more.{{/learnMoreLink}}',
 													'woocommerce-payments'
 												),
 												components: {
@@ -135,8 +135,8 @@ const AccountBalancesTabPanel: React.FC = () => {
 								content={ interpolateComponents( {
 									mixedString: sprintf(
 										_n(
-											'The amount of funds still in the %d day pending period. {{learnMoreLink}}Learn More.{{/learnMoreLink}}',
-											'The amount of funds still in the %d day pending period. {{learnMoreLink}}Learn More.{{/learnMoreLink}}',
+											'The amount of funds still in the %d day pending period. {{learnMoreLink}}Learn more.{{/learnMoreLink}}',
+											'The amount of funds still in the %d day pending period. {{learnMoreLink}}Learn more.{{/learnMoreLink}}',
 											tab.delayDays,
 											'woocommerce-payments'
 										),
