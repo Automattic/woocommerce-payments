@@ -119,9 +119,11 @@ const OverviewPage = () => {
 
 			<TestModeNotice topic={ topics.overview } />
 
-			<ErrorBoundary>
-				<FRTDiscoverabilityBanner />
-			</ErrorBoundary>
+			{ wcpaySettings.isFraudProtectionSettingsEnabled && (
+				<ErrorBoundary>
+					<FRTDiscoverabilityBanner />
+				</ErrorBoundary>
+			) }
 
 			{ showConnectionSuccess && <ConnectionSuccessNotice /> }
 

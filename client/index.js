@@ -255,7 +255,7 @@ addFilter(
 				capability: 'manage_woocommerce',
 			} );
 		}
-		if ( wcpaySettings ) {
+		if ( wcpaySettings && wcpaySettings.isFraudProtectionSettingsEnabled ) {
 			pages.push( {
 				container: FraudProtectionAdvancedSettingsPage,
 				path: '/payments/fraud-protection',
