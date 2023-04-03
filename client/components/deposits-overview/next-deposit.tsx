@@ -12,7 +12,7 @@ import strings from './strings';
 import './style.scss';
 import Loadable from 'components/loadable';
 import { getNextDeposit } from './utils';
-import DepositStatusChip from 'components/deposit-status-chip';
+import DepositStatusPill from 'components/deposit-status-pill';
 import { getDepositDate } from 'deposits/utils';
 
 type NextDepositProps = {
@@ -94,9 +94,8 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 							isLoading={ isLoading }
 							placeholder="Estimated"
 							children={
-								<DepositStatusChip
+								<DepositStatusPill
 									status={ nextDeposit.status }
-									isCompact
 								/>
 							}
 						/>
