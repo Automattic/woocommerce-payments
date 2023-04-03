@@ -40,7 +40,7 @@ export const topics = {
 		'woocommerce-payments'
 	),
 	authorizations: __(
-		'Viewing test uncaptured transactions. To view live uncaptured transactions, disable test mode in WooCommerce Payments settings.',
+		'Viewing test authorizations. To view live authorizations, disable test mode in WooCommerce Payments settings.',
 		'woocommerce-payments'
 	),
 	riskReviewTransactions: __(

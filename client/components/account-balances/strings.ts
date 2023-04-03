@@ -22,7 +22,6 @@ export const greetingStrings = {
 export const fundLabelStrings = {
 	available: __( 'Available funds', 'woocommerce-payments' ),
 	pending: __( 'Pending funds', 'woocommerce-payments' ),
-	reserved: __( 'Reserved funds', 'woocommerce-payments' ),
 };
 
 /** translators: %s is the currency code, e.g. USD. */

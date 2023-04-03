@@ -7,20 +7,22 @@
 
 namespace WCPay\Payment_Methods;
 
+use WCPay\Constants\Order_Status;
+use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Constants\Payment_Method;
+use WCPay\Constants\Payment_Type;
 use WCPay\Core\Server\Request\Create_Intention;
 use WCPay\Core\Server\Request\Create_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Update_Intention;
-use WCPay\Constants\Order_Status;
-use WCPay\Constants\Payment_Intent_Status;
-use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
+use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Exceptions\API_Exception;
+use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Logger;
-use WCPay\Constants\Payment_Type;
 use WCPay\Session_Rate_Limiter;
 use Exception;
 use WC_Order;
@@ -460,6 +462,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 * @throws Exception Error processing the payment.
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function process_payment( $order_id ) {
 		$payment_intent_id         = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -543,6 +546,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				} catch ( Amount_Too_Small_Exception $e ) {
 					// This code would only be reached if the cache has already expired.
 					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
+				} catch ( API_Exception $e ) {
+					if ( 'wcpay_blocked_by_fraud_rule' === $e->get_error_code() ) {
+						$this->order_service->mark_order_blocked_for_fraud( $order, $payment_intent_id, Payment_Intent_Status::CANCELED );
+					}
+					throw $e;
 				}
 
 				$intent_id              = $updated_payment_intent->get_id();
@@ -561,7 +569,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$this->order_service->attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency );
 				$this->attach_exchange_info_to_order( $order, $charge_id );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
-				$this->update_order_status_from_intent( $order, $intent_id, $intent_status, $charge_id );
+				if ( Payment_Intent_Status::SUCCEEDED === $intent_status ) {
+					$this->remove_session_processing_order( $order->get_id() );
+				}
+				$this->order_service->update_order_status_from_intent( $order, $updated_payment_intent );
 
 				$last_payment_error_code = $updated_payment_intent->get_last_payment_error()['code'] ?? '';
 				if ( $this->should_bump_rate_limiter( $last_payment_error_code ) ) {
@@ -731,6 +742,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$client_secret          = $intent['client_secret'];
 				$status                 = $intent['status'];
 				$charge_id              = '';
+				$charge                 = null;
 				$currency               = $order->get_currency();
 				$payment_method_id      = $intent['payment_method'];
 				$payment_method_details = false;
@@ -763,8 +775,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 				$this->order_service->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method_id, $customer_id, $charge_id, $currency );
 				$this->attach_exchange_info_to_order( $order, $charge_id );
-				$this->update_order_status_from_intent( $order, $intent_id, $status, $charge_id );
+				if ( Payment_Intent_Status::SUCCEEDED === $status ) {
+					$this->remove_session_processing_order( $order->get_id() );
+				}
+				$this->order_service->update_order_status_from_intent( $order, $intent );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
+				$this->order_service->attach_transaction_fee_to_order( $order, $charge );
 
 				self::remove_upe_payment_intent_from_session();
 

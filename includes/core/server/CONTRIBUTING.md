@@ -223,10 +223,10 @@ This will expect the request to be called `$total_api_calls` number of times. In
 __Standard mock__
 
 ```php
-$mock_documents = [
-    // add mock objects here...
+$mock_response = [
+    // add mock response here...
 ];
-$request = $this->mock_wcpay_request( List_Documents::class, 1, $mock_documents );
+$request = $this->mock_wcpay_request( List_Documents::class, 1, null, $mock_response );
 $request
   ->expects( $this->once() )
   ->method( 'set_type_is' )
