@@ -30,7 +30,7 @@ const chooseYourFilterLevelStep = {
 		descriptions: {
 			desktop: interpolateComponents( {
 				mixedString: __(
-					'Decide how aggressively you want to filter suspicious payments, from {{strong}}standard{{/strong}} to {{strong}}advanced{{/strong}}.'
+					'Decide how aggressively you want to filter suspicious payments, from {{strong}}basic{{/strong}} to {{strong}}advanced{{/strong}}.'
 				),
 				components: { strong: <strong /> },
 			} ),
