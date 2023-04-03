@@ -3,7 +3,7 @@
  */
 import * as React from 'react';
 import { ExternalLink, Flex, TabPanel } from '@wordpress/components';
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**
@@ -134,8 +134,10 @@ const AccountBalancesTabPanel: React.FC = () => {
 								label={ `${ fundLabelStrings.pending } tooltip` }
 								content={ interpolateComponents( {
 									mixedString: sprintf(
-										__(
+										_n(
 											'The amount of funds still in the %d day pending period. {{learnMoreLink}}Learn More.{{/learnMoreLink}}',
+											'The amount of funds still in the %d day pending period. {{learnMoreLink}}Learn More.{{/learnMoreLink}}',
+											tab.delayDays,
 											'woocommerce-payments'
 										),
 										tab.delayDays
