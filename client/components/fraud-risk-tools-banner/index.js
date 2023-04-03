@@ -12,6 +12,7 @@ import { useDispatch } from '@wordpress/data';
 import { BannerBody, NewPill, BannerActions } from './components';
 import './style.scss';
 import { TIME } from '../../constants';
+import wcpayTracks from 'tracks';
 
 const FRTDiscoverabilityBanner = () => {
 	const { frtDiscoverBannerSettings } = wcpaySettings;
@@ -49,6 +50,8 @@ const FRTDiscoverabilityBanner = () => {
 	};
 
 	useEffect( () => {
+		wcpayTracks.recordEvent( 'wcpay_fraud_protection_banner_rendered' );
+
 		const stringifiedSettings = JSON.stringify( settings );
 
 		updateOptions( {
@@ -59,6 +62,9 @@ const FRTDiscoverabilityBanner = () => {
 	}, [ frtDiscoverBannerSettings, settings, updateOptions ] );
 
 	const handleRemindOnClick = () => {
+		wcpayTracks.recordEvent(
+			'wcpay_fraud_protection_banner_remind_later_button_clicked'
+		);
 		setReminder();
 	};
 

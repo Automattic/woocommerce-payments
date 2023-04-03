@@ -109,7 +109,7 @@ export const HighFraudProtectionModal = ( {
 							</li>
 							<li>
 								{ __(
-									'The billing address is a non-domestic address.',
+									"The billing address country doesn't match the country resolved from the IP address.",
 									'woocommerce-payments'
 								) }
 							</li>
@@ -212,6 +212,12 @@ export const StandardFraudProtectionModal = ( {
 									'woocommerce-payments'
 								) }
 							</li>
+							<li>
+								{ __(
+									"The billing address country doesn't match the country resolved from the IP address.",
+									'woocommerce-payments'
+								) }
+							</li>
 							<ExceedsDollarAmountRule
 								level={ level }
 								storeCurrency={ storeCurrency }
@@ -220,6 +226,80 @@ export const StandardFraudProtectionModal = ( {
 						<Button
 							className="component-modal__button--confirm"
 							onClick={ () => setStandardModalOpen( false ) }
+							isTertiary
+						>
+							{ __( 'Got it', 'woocommerce-payments' ) }
+						</Button>
+					</div>
+				</Modal>
+			) }
+		</>
+	);
+};
+
+export const BasicFraudProtectionModal = ( {
+	level,
+	isBasicModalOpen,
+	setBasicModalOpen,
+} ) => {
+	const { declineOnAVSFailure, declineOnCVCFailure } = window.wcpaySettings
+		?.accountStatus?.fraudProtection ?? {
+		declineOnAVSFailure: true,
+		declineOnCVCFailure: true,
+	};
+
+	const hasActivePlatformChecks = declineOnAVSFailure || declineOnCVCFailure;
+	return (
+		<>
+			{ isBasicModalOpen && (
+				<Modal
+					title={ __( 'Basic filter level', 'woocommerce-payments' ) }
+					isDismissible={ true }
+					shouldCloseOnClickOutside={ true }
+					shouldCloseOnEsc={ true }
+					onRequestClose={ () => setBasicModalOpen( false ) }
+					className="fraud-protection-level-modal"
+				>
+					<div className="components-modal__body--fraud-protection">
+						<ProtectionLevelModalNotice level={ level } />
+						{ hasActivePlatformChecks && (
+							<>
+								<p>
+									{ interpolateComponents( {
+										mixedString: __(
+											'Payments will be {{blocked}}blocked{{/blocked}} if:',
+											'woocommerce-payments'
+										),
+										components: {
+											blocked: (
+												<span className="component-modal__text--blocked" />
+											),
+										},
+									} ) }
+								</p>
+								<ul>
+									{ declineOnAVSFailure && (
+										<li>
+											{ __(
+												'The billing address does not match what is on file with the card issuer.',
+												'woocommerce-payments'
+											) }
+										</li>
+									) }
+									{ declineOnCVCFailure && (
+										<li>
+											{ __(
+												"The card's issuing bank cannot verify the CVV.",
+												'woocommerce-payments'
+											) }
+										</li>
+									) }
+								</ul>
+							</>
+						) }
+						<Button
+							className="component-modal__button--confirm"
+							onClick={ () => setBasicModalOpen( false ) }
 							isTertiary
 						>
 							{ __( 'Got it', 'woocommerce-payments' ) }

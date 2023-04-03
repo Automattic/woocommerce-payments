@@ -31,6 +31,25 @@ const defaultUIConfig = {
 	},
 };
 describe( 'Ruleset adapter utilities test', () => {
+	beforeEach( () => {
+		global.wcpaySettings = {
+			storeCurrency: 'USD',
+			connect: {
+				country: 'US',
+			},
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
+		};
+	} );
+
 	test( 'converts an empty ruleset to default UI config', () => {
 		const ruleset = [];
 		const expected = defaultUIConfig;
@@ -582,12 +601,12 @@ describe( 'Ruleset adapter utilities test', () => {
 							{
 								key: Checks.CHECK_ORDER_TOTAL,
 								operator: CheckOperators.OPERATOR_LT,
-								value: minAmount * 100,
+								value: [ minAmount * 100, 'USD' ].join( '|' ),
 							},
 							{
 								key: Checks.CHECK_ORDER_TOTAL,
 								operator: CheckOperators.OPERATOR_GT,
-								value: maxAmount * 100,
+								value: [ maxAmount * 100, 'USD' ].join( '|' ),
 							},
 						],
 					},
@@ -604,8 +623,8 @@ describe( 'Ruleset adapter utilities test', () => {
 								: CheckOperators.OPERATOR_LT,
 						value:
 							'' !== maxAmount
-								? maxAmount * 100
-								: minAmount * 100,
+								? [ maxAmount * 100, 'USD' ].join( '|' )
+								: [ minAmount * 100, 'USD' ].join( '|' ),
 					},
 				} );
 			} else {
