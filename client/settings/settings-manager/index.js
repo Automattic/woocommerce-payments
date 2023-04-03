@@ -210,13 +210,15 @@ const SettingsManager = () => {
 					</LoadableSettingsSection>
 				</div>
 			</SettingsSection>
-			<SettingsSection description={ FraudProtectionDescription }>
-				<LoadableSettingsSection numLines={ 20 }>
-					<ErrorBoundary>
-						<FraudProtection />
-					</ErrorBoundary>
-				</LoadableSettingsSection>
-			</SettingsSection>
+			{ wcpaySettings.isFraudProtectionSettingsEnabled && (
+				<SettingsSection description={ FraudProtectionDescription }>
+					<LoadableSettingsSection numLines={ 20 }>
+						<ErrorBoundary>
+							<FraudProtection />
+						</ErrorBoundary>
+					</LoadableSettingsSection>
+				</SettingsSection>
+			) }
 			<AdvancedSettings />
 			<SaveSettingsSection disabled={ ! isTransactionInputsValid } />
 		</SettingsLayout>
