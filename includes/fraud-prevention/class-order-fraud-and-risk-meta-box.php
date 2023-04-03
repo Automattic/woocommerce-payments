@@ -86,7 +86,14 @@ class Order_Fraud_And_Risk_Meta_Box {
 				$status          = __( 'Held for review', 'woocommerce-payments' );
 				$description     = __( 'The payment for this order was held for review by your risk filtering. You can review the details and determine whether to approve or block the payment.', 'woocommerce-payments' );
 				$callout         = __( 'Review payment', 'woocommerce-payments' );
-				$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
+				$transaction_url = WC_Payments_Utils::compose_transaction_url(
+					$intent_id,
+					$charge_id,
+					$query_args  = [
+						'status_is' => 'review',
+						'type_is'   => 'meta_box',
+					]
+				);
 				echo '<p class="wcpay-fraud-risk-meta-review"><img src="' . esc_url( $icon_url ) . '" alt="' . esc_html( $icon_alt ) . '"> ' . esc_html( $status ) . '</p><p>' . esc_html( $description ) . '</p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
 				break;
 
@@ -96,7 +103,14 @@ class Order_Fraud_And_Risk_Meta_Box {
 				$status          = __( 'Held for review', 'woocommerce-payments' );
 				$description     = __( 'This transaction was held for review by your risk filters, and the charge was manually approved after review.', 'woocommerce-payments' );
 				$callout         = __( 'Review payment', 'woocommerce-payments' );
-				$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
+				$transaction_url = WC_Payments_Utils::compose_transaction_url(
+					$intent_id,
+					$charge_id,
+					$query_args  = [
+						'status_is' => 'review_allowed',
+						'type_is'   => 'meta_box',
+					]
+				);
 				echo '<p class="wcpay-fraud-risk-meta-allow"><img src="' . esc_url( $icon_url ) . '" alt="' . esc_html( $icon_alt ) . '"> ' . esc_html( $status ) . '</p><p>' . esc_html( $description ) . '</p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
 				break;
 
@@ -116,16 +130,34 @@ class Order_Fraud_And_Risk_Meta_Box {
 				$status          = __( 'Blocked', 'woocommerce-payments' );
 				$description     = __( 'The payment for this order was blocked by your risk filtering. There is no pending authorization, and the order can be cancelled to reduce any held stock.', 'woocommerce-payments' );
 				$callout         = __( 'View more details', 'woocommerce-payments' );
-				$transaction_url = WC_Payments_Utils::compose_transaction_url( $order->get_id(), '' );
+				$transaction_url = WC_Payments_Utils::compose_transaction_url(
+					$order->get_id(),
+					'',
+					$query_args  = [
+						'status_is' => 'block',
+						'type_is'   => 'meta_box',
+					]
+				);
 				// There is currently no url to review the transaction due to we do not have an intent to add to the transactions page to link to.
 				echo '<p class="wcpay-fraud-risk-meta-blocked"><img src="' . esc_url( $icon_url ) . '" alt="' . esc_html( $icon_alt ) . '"> ' . esc_html( $status ) . '</p><p>' . esc_html( $description ) . '</p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
 				break;
 
 			case Fraud_Meta_Box_Type::NOT_WCPAY:
-				$description = __( 'Risk filtering is only available for orders that are processed with WooCommerce Payments.', 'woocommerce-payments' );
+				$payment_method_title = $order->get_payment_method_title();
+
+				if ( ! empty( $payment_method_title ) ) {
+					$description = sprintf(
+						/* translators: %s - Payment method title */
+						__( 'Risk filtering is only available for orders processed with WooCommerce Payments. This order was processed with %s.', 'woocommerce-payments' ),
+						$payment_method_title
+					);
+				} else {
+					$description = __( 'Risk filtering is only available for orders processed with WooCommerce Payments.', 'woocommerce-payments' );
+				}
+
 				$callout     = __( 'Learn more', 'woocommerce-payments' );
-				$callout_url = '';
-				// TODO: Need callout url for Learn more.
+				$callout_url = 'https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/';
+				$callout_url = add_query_arg( 'status_is', 'fraud-meta-box-not-wcpay-learn-more', $callout_url );
 				echo '<p>' . esc_html( $description ) . '</p><a href="' . esc_url( $callout_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
 				break;
 
