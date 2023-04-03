@@ -2,7 +2,7 @@
  * External dependencies
  */
 import * as React from 'react';
-import { Card, CardHeader } from '@wordpress/components';
+import { Card, CardHeader, CardBody } from '@wordpress/components';
 
 /**
  * Internal dependencies.
@@ -25,13 +25,18 @@ const DepositsOverview = (): JSX.Element => {
 	return (
 		<Card>
 			<CardHeader>{ strings.heading }</CardHeader>
-			<NextDepositDetails isLoading={ isLoading } overview={ overview } />
+			<CardBody>
+				<NextDepositDetails
+					isLoading={ isLoading }
+					overview={ overview }
+				/>
 
-			<p>Deposits History Section Goes here</p>
+				<p>Deposits History Section Goes here</p>
 
-			<p>Deposits Card Footer/Action Goes here</p>
+				<p>Deposits Card Footer/Action Goes here</p>
 
-			<DepositsOverviewFooter />
+				<DepositsOverviewFooter />
+			</CardBody>
 		</Card>
 	);
 };
