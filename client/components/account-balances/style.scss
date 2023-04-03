@@ -71,7 +71,7 @@
 	margin-left: 0.5em;
 
 	&__icon {
-		fill: $gray-900;
+		fill: var( --wp-admin-theme-color );
 	}
 }
 
