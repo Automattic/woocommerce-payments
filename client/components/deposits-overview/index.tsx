@@ -32,11 +32,8 @@ const DepositsOverview = (): JSX.Element => {
 				/>
 
 				<p>Deposits History Section Goes here</p>
-
-				<p>Deposits Card Footer/Action Goes here</p>
-
-				<DepositsOverviewFooter />
 			</CardBody>
+			<DepositsOverviewFooter />
 		</Card>
 	);
 };
