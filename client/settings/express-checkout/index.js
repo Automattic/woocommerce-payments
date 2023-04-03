@@ -77,10 +77,7 @@ const ExpressCheckout = () => {
 			<CardBody size={ 0 }>
 				<ul className="express-checkouts-list">
 					{ isPlatformCheckoutFeatureFlagEnabled && (
-						<li
-							className="express-checkout"
-							id="express-checkouts-woopay"
-						>
+						<li className="express-checkout">
 							<div className="express-checkout__checkbox">
 								{ isStripeLinkEnabled ? (
 									<Tooltip
@@ -196,10 +193,7 @@ const ExpressCheckout = () => {
 							</div>
 						</li>
 					) }
-					<li
-						className="express-checkout"
-						id="express-checkouts-apple-google-pay"
-					>
+					<li className="express-checkout">
 						<div className="express-checkout__checkbox">
 							<CheckboxControl
 								label={ __(
@@ -326,10 +320,7 @@ const ExpressCheckout = () => {
 						</div>
 					</li>
 					{ displayLinkPaymentMethod && (
-						<li
-							className="express-checkout"
-							id="express-checkouts-link"
-						>
+						<li className="express-checkout">
 							<div className="express-checkout__checkbox">
 								{ isPlatformCheckoutEnabled ? (
 									<Tooltip

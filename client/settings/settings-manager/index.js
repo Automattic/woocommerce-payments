@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 
@@ -22,7 +22,7 @@ import WCPaySettingsContext from '../wcpay-settings-context';
 import LoadableSettingsSection from '../loadable-settings-section';
 import WcPayUpeContextProvider from '../wcpay-upe-toggle/provider';
 import ErrorBoundary from '../../components/error-boundary';
-import { useDepositDelayDays, useSettings } from '../../data';
+import { useDepositDelayDays } from '../../data';
 import FraudProtection from '../fraud-protection';
 
 const PaymentMethodsDescription = () => (
@@ -140,40 +140,6 @@ const SettingsManager = () => {
 	const [ isTransactionInputsValid, setTransactionInputsValid ] = useState(
 		true
 	);
-	const { isLoading } = useSettings();
-
-	// Simulate scroll to hash on React component.
-	useEffect( () => {
-		if ( isLoading ) {
-			return;
-		}
-
-		const { hash } = window.location;
-
-		if ( ! hash ) {
-			return;
-		}
-
-		const element = document.querySelector( hash );
-
-		if ( ! element ) {
-			return;
-		}
-
-		const headerElement = document.querySelector(
-			'.woocommerce-layout__header'
-		);
-		const headerSize = headerElement ? headerElement.clientHeight : 60;
-		const headerOffset = headerSize + 50; // header size + margin
-		const elementPosition = element.getBoundingClientRect().top;
-		const offsetPosition =
-			elementPosition + window.pageYOffset - headerOffset;
-
-		window.scrollTo( {
-			top: offsetPosition,
-			behavior: 'smooth',
-		} );
-	}, [ isLoading ] );
 
 	return (
 		<SettingsLayout>
@@ -198,10 +164,7 @@ const SettingsManager = () => {
 					</LoadableSettingsSection>
 				</SettingsSection>
 			) }
-			<SettingsSection
-				id="express-checkouts"
-				description={ ExpressCheckoutDescription }
-			>
+			<SettingsSection description={ ExpressCheckoutDescription }>
 				<LoadableSettingsSection numLines={ 20 }>
 					<ErrorBoundary>
 						<ExpressCheckout />
