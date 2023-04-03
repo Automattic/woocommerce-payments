@@ -164,20 +164,6 @@ class WC_Payments {
 	private static $express_checkout_button_display_handler;
 
 	/**
-	 * Instance of WC_Payments_Payment_Request_Button_Handler, created in init function
-	 *
-	 * @var WC_Payments_Payment_Request_Button_Handler
-	 */
-	private static $payment_request_button_handler;
-
-	/**
-	 * Instance of WC_Payments_Platform_Checkout_Button_Handler, created in init function
-	 *
-	 * @var WC_Payments_Platform_Checkout_Button_Handler
-	 */
-	private static $platform_checkout_button_handler;
-
-	/**
 	 * Instance of WC_Payments_Apple_Pay_Registration, created in init function
 	 *
 	 * @var WC_Payments_Apple_Pay_Registration
@@ -495,10 +481,7 @@ class WC_Payments {
 
 		self::maybe_register_platform_checkout_hooks();
 
-		// Payment Request and Apple Pay.
-		self::$payment_request_button_handler   = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway() );
-		self::$platform_checkout_button_handler = new WC_Payments_Platform_Checkout_Button_Handler( self::$account, self::get_gateway(), self::$platform_checkout_util );
-		self::$apple_pay_registration           = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
+		self::$apple_pay_registration = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
 
 		self::$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::$account, self::get_gateway(), self::$platform_checkout_util );
 		self::$express_checkout_button_display_handler->init();
@@ -645,13 +628,13 @@ class WC_Payments {
 
 			$key = array_search( 'link', $payment_methods, true );
 
-			if ( false !== $key && self::$platform_checkout_button_handler->is_woopay_enabled() ) {
+			if ( false !== $key && self::$express_checkout_button_display_handler->is_woopay_enabled() ) {
 				unset( $payment_methods[ $key ] );
 
 				self::get_gateway()->update_option( 'upe_enabled_payment_method_ids', $payment_methods );
 			}
 
-			if ( self::$platform_checkout_button_handler->is_woopay_enabled() ) {
+			if ( self::$express_checkout_button_display_handler->is_woopay_enabled() ) {
 				$gateways[] = self::$legacy_card_gateway;
 			} else {
 				$gateways[] = self::$card_gateway;
