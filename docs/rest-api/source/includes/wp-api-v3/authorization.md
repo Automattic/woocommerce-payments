@@ -6,6 +6,33 @@ An authorization may be captured from one of these pages - Order details, Uncapt
 
 The authorization API allows you to get data related to authorizations.
 
+## Authorization Properties
+
+| Attribute | Type | Description |
+| --------- | ------ | --------------- |
+| `charge_id` | string | Unique identifier of the charge |
+| `transaction_id` | string | Unique identifier of the transaction associated with this charge |
+| `payment_intent_id` | string | Unique identifier of the payment intent associated with this charge |
+| `order_id` | string | Unique identifier of the order associated with this charge |
+| `amount` | integer | Amount intended to be collected by this charge  |
+| `amount_captured` | integer | Amount captured |
+| `amount_refunded` | integer | Amount refunded |
+| `refunded` | boolean | Indicates whether the charge has been fully refunded |
+| `is_captured` | boolean | Indicates whether the charge has been captured |
+| `channel` | string | Channel through which the charge was made. Possible values are `online` or `in_person` |
+| `source` | string | Source of the charge. Value is the Card Brand or Payment Method Type |
+| `source_identifier` | string | Identifier for the source. Value  last four digits of the card in case of card and null for other payment methods |
+| `customer_name` | string | Full name of the customer on Billing Details |
+| `customer_email` | string | Email id of the customer on Billing Details |
+| `customer_country` | string | Country of the customer on Billing Details |
+| `fees` | integer | The amount of transaction fee for the charge |
+| `currency` | string | The currency code of the charge |
+| `risk_level` | integer | An integer indicating the risk level associated with the transaction. Values are 0 (Normal), 1 (Elevated), 2 (Highest)   |
+| `outcome_type` | string | Indicates outcome of the payment. Possible values are `authorized`, `manual_review`, `issuer_declined`, `blocked`, or `invalid` |
+| `status` | string | Indicates status of the charge. Possible values are `succeeded`, `pending`, or `failed` |
+| `created` | string | The date the charge was created |
+| `modified` | string | The date the charge was modified |
+
 ## Get authorizations
 
 _@since v4.9.0_
