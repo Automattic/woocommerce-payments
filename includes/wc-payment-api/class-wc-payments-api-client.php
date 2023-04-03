@@ -2055,7 +2055,8 @@ class WC_Payments_API_Client {
 
 		// Check error codes for 4xx and 5xx responses.
 		if ( 400 <= $response_code ) {
-			$error_type = null;
+			$error_type   = null;
+			$decline_code = null;
 			if ( isset( $response_body['code'] ) && 'amount_too_small' === $response_body['code'] ) {
 				throw new Amount_Too_Small_Exception(
 					$response_body['message'],
@@ -2064,7 +2065,8 @@ class WC_Payments_API_Client {
 					$response_code
 				);
 			} elseif ( isset( $response_body['error'] ) ) {
-				$this->maybe_act_on_fraud_prevention( $response_body['error']['decline_code'] ?? '' );
+				$decline_code = $response_body['error']['decline_code'] ?? '';
+				$this->maybe_act_on_fraud_prevention( $decline_code );
 
 				$error_code    = $response_body['error']['code'] ?? $response_body['error']['type'] ?? null;
 				$error_message = $response_body['error']['message'] ?? null;
@@ -2086,7 +2088,7 @@ class WC_Payments_API_Client {
 			);
 
 			Logger::error( "$error_message ($error_code)" );
-			throw new API_Exception( $message, $error_code, $response_code, $error_type );
+			throw new API_Exception( $message, $error_code, $response_code, $error_type, $decline_code );
 		}
 	}
 
