@@ -26,7 +26,6 @@ declare const global: {
 		featureFlags: {
 			isAuthAndCaptureEnabled: boolean;
 		};
-		isFraudProtectionSettingsEnabled: boolean;
 	};
 };
 
@@ -128,7 +127,6 @@ describe( 'PaymentDetailsSummary', () => {
 					precision: 2,
 				},
 			},
-			isFraudProtectionSettingsEnabled: false,
 		};
 	} );
 
@@ -263,8 +261,6 @@ describe( 'PaymentDetailsSummary', () => {
 	} );
 
 	test( 'renders the fraud outcome buttons', () => {
-		global.wcpaySettings.isFraudProtectionSettingsEnabled = true;
-
 		mockUseAuthorization.mockReturnValueOnce( {
 			authorization: {
 				captured: false,
