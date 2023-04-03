@@ -381,7 +381,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( 'Pending payment to On hold', $notes[1]->content );
 		$this->assertStringContainsString( 'held for review</strong> by one or more risk filters', $notes[0]->content );
-		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock" target="_blank" rel="noopener noreferrer">View more details', $notes[0]->content );
+		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock&status_is=review&type_is=order_note" target="_blank" rel="noopener noreferrer">View more details', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
@@ -784,7 +784,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( 'blocked</strong> by one or more risk filters', $notes[0]->content );
-		$this->assertStringContainsString( '/payments/transactions/details&id=' . $this->order->get_id() . '" target="_blank" rel="noopener noreferrer">View more details', $notes[0]->content );
+		$this->assertStringContainsString( '/payments/transactions/details&id=' . $this->order->get_id() . '&status_is=block&type_is=order_note" target="_blank" rel="noopener noreferrer">View more details', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
@@ -1134,5 +1134,31 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->expectException( Order_Not_Found_Exception::class );
 		$this->expectExceptionMessage( 'The requested order was not found.' );
 		$this->order_service->set_intent_id_for_order( 'fake_order', '' );
+	}
+
+	public function test_attach_transaction_fee_to_order() {
+		$order = WC_Helper_Order::create_order();
+		$this->order_service->attach_transaction_fee_to_order( $order, new WC_Payments_API_Charge( 'ch_mock', 1500, new DateTime(), null, null, null, null, 113, [], [], 'usd' ) );
+		$this->assertEquals( 1.13, $order->get_meta( '_wcpay_transaction_fee', true ) );
+	}
+
+	public function test_attach_transaction_fee_to_order_zero_fee() {
+		$order = WC_Helper_Order::create_order();
+		$this->order_service->attach_transaction_fee_to_order( $order, new WC_Payments_API_Charge( 'ch_mock', 1500, new DateTime(), null, null, null, null, 0, [], [], 'eur' ) );
+		$this->assertEquals( 0, $order->get_meta( '_wcpay_transaction_fee', true ) );
+	}
+
+	public function test_attach_transaction_fee_to_order_zero_decimal_fee() {
+		$order = WC_Helper_Order::create_order();
+		$this->order_service->attach_transaction_fee_to_order( $order, new WC_Payments_API_Charge( 'ch_mock', 1500, new DateTime(), null, null, null, null, 30000, [], [], 'jpy' ) );
+		$this->assertEquals( 30000, $order->get_meta( '_wcpay_transaction_fee', true ) );
+	}
+
+	public function test_attach_transaction_fee_to_order_null_fee() {
+		$mock_order = $this->createMock( 'WC_Order' );
+		$mock_order
+			->expects( $this->never() )
+			->method( 'update_meta_data' );
+		$this->order_service->attach_transaction_fee_to_order( $mock_order, new WC_Payments_API_Charge( 'ch_mock', 1500, new DateTime(), null, null, null, null, null, [], [], 'eur' ) );
 	}
 }

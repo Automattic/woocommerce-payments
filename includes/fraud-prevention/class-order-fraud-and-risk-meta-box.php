@@ -104,15 +104,26 @@ class Order_Fraud_And_Risk_Meta_Box {
 			case Fraud_Meta_Box_Type::BLOCK:
 				$description     = __( 'The payment for this order was blocked by your risk filtering. There is no pending authorization, and the order can be cancelled to reduce any held stock.', 'woocommerce-payments' );
 				$callout         = __( 'View more details', 'woocommerce-payments' );
-				$transaction_url = WC_Payments_Utils::compose_transaction_url( $order->get_id(), '' );
+				$transaction_url = $this->compose_transaction_url_with_tracking( $order->get_id(), '', $meta_box_type );
 				echo '<p class="wcpay-fraud-risk-meta-blocked"><img src="' . esc_url( $icons['red_shield']['url'] ) . '" alt="' . esc_html( $icons['red_shield']['alt'] ) . '"> ' . esc_html( $statuses['blocked'] ) . '</p><p>' . esc_html( $description ) . '</p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
 				break;
 
 			case Fraud_Meta_Box_Type::NOT_WCPAY:
-				$description = __( 'Risk filtering is only available for orders that are paid for with credit cards through WooCommerce Payments.', 'woocommerce-payments' );
+				$payment_method_title = $order->get_payment_method_title();
+
+				if ( ! empty( $payment_method_title ) ) {
+					$description = sprintf(
+						/* translators: %s - Payment method title */
+						__( 'Risk filtering is only available for orders processed with WooCommerce Payments. This order was processed with %s.', 'woocommerce-payments' ),
+						$payment_method_title
+					);
+				} else {
+					$description = __( 'Risk filtering is only available for orders processed with WooCommerce Payments.', 'woocommerce-payments' );
+				}
+
 				$callout     = __( 'Learn more', 'woocommerce-payments' );
-				$callout_url = '';
-				// TODO: Need callout url for Learn more.
+				$callout_url = 'https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/';
+				$callout_url = add_query_arg( 'status_is', 'fraud-meta-box-not-wcpay-learn-more', $callout_url );
 				echo '<p>' . esc_html( $description ) . '</p><a href="' . esc_url( $callout_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
 				break;
 
@@ -124,14 +135,14 @@ class Order_Fraud_And_Risk_Meta_Box {
 			case Fraud_Meta_Box_Type::REVIEW:
 				$description     = __( 'The payment for this order was held for review by your risk filtering. You can review the details and determine whether to approve or block the payment.', 'woocommerce-payments' );
 				$callout         = __( 'Review payment', 'woocommerce-payments' );
-				$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
+				$transaction_url = $this->compose_transaction_url_with_tracking( $intent_id, $charge_id, $meta_box_type );
 				echo '<p class="wcpay-fraud-risk-meta-review"><img src="' . esc_url( $icons['orange_shield']['url'] ) . '" alt="' . esc_html( $icons['orange_shield']['alt'] ) . '"> ' . esc_html( $statuses['held_for_review'] ) . '</p><p>' . esc_html( $description ) . '</p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
 				break;
 
 			case Fraud_Meta_Box_Type::REVIEW_ALLOWED:
 				$description     = __( 'This transaction was held for review by your risk filters, and the charge was manually approved after review.', 'woocommerce-payments' );
 				$callout         = __( 'Review payment', 'woocommerce-payments' );
-				$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
+				$transaction_url = $this->compose_transaction_url_with_tracking( $intent_id, $charge_id, $meta_box_type );
 				echo '<p class="wcpay-fraud-risk-meta-allow"><img src="' . esc_url( $icons['green_check_mark']['url'] ) . '" alt="' . esc_html( $icons['green_check_mark']['alt'] ) . '"> ' . esc_html( $statuses['held_for_review'] ) . '</p><p>' . esc_html( $description ) . '</p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
 				break;
 
@@ -168,5 +179,25 @@ class Order_Fraud_And_Risk_Meta_Box {
 				echo '<p>' . esc_html( $description ) . '</p>';
 				break;
 		}
+	}
+
+	/**
+	 * Composes url for transaction details page.
+	 *
+	 * @param string $primary_id  Usually the Payment Intent ID, but can be an order ID.
+	 * @param string $fallback_id Usually the Charge ID.
+	 * @param array  $status      The status we're wanting to add to the meta box tracking.
+	 *
+	 * @return string Transaction details page url with tracking.
+	 */
+	private function compose_transaction_url_with_tracking( $primary_id, $fallback_id, $status ) {
+		return WC_Payments_Utils::compose_transaction_url(
+			$primary_id,
+			$fallback_id,
+			[
+				'status_is' => $status,
+				'type_is'   => 'meta_box',
+			]
+		);
 	}
 }
