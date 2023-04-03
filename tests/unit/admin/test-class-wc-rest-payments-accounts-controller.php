@@ -7,6 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Server\Request\Get_Account;
+use WCPay\Core\Server\Response;
 use WCPay\Exceptions\API_Exception;
 
 /**
