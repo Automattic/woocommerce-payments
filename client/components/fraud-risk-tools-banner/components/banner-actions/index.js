@@ -4,6 +4,11 @@
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 
+/**
+ * Internal dependencies
+ */
+import wcpayTracks from 'tracks';
+
 const BannerActions = ( {
 	remindMeCount,
 	handleRemindOnClick,
@@ -12,8 +17,14 @@ const BannerActions = ( {
 	return (
 		<div className="discoverability-card__actions">
 			<Button
-				href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
+				href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/"
+				target="_blank"
 				isPrimary
+				onClick={ () => {
+					wcpayTracks.recordEvent(
+						'wcpay_fraud_protection_banner_learn_more_button_clicked'
+					);
+				} }
 			>
 				{ __( 'Learn more', 'woocommerce-payments' ) }
 			</Button>

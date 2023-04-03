@@ -357,6 +357,27 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Retrieves transaction list for a given fraud outcome status.
+	 *
+	 * @param List_Fraud_Outcome_Transactions $request Fraud outcome transactions request.
+	 *
+	 * @return array
+	 */
+	public function list_fraud_outcome_transactions( $request ) {
+		$fraud_outcomes = $request->send( 'wcpay_list_fraud_outcome_transactions_request' );
+
+		$page      = $request->get_param( 'page' );
+		$page_size = $request->get_param( 'pagesize' );
+
+		// Handles the pagination.
+		$fraud_outcomes = array_slice( $fraud_outcomes, ( max( $page, 1 ) - 1 ) * $page_size, $page_size );
+
+		return [
+			'data' => $fraud_outcomes,
+		];
+	}
+
+	/**
 	 * Retrieves transactions summary for a given fraud outcome status.
 	 *
 	 * @param List_Fraud_Outcome_Transactions $request Fraud outcome transactions request.
