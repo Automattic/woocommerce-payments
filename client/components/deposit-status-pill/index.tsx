@@ -17,6 +17,7 @@ const mappings: {
 	in_transit: 'success',
 	paid: 'success',
 	failed: 'danger',
+	canceled: 'danger',
 };
 
 /**
