@@ -399,6 +399,14 @@ export const merchantWCP = {
 			waitUntil: 'networkidle0',
 		} );
 
+		// Skip fraud protection tools tour.
+		const tourKitDismissButton = await page.$(
+			`.woocommerce-tour-kit button`
+		);
+		if ( tourKitDismissButton ) {
+			await tourKitDismissButton.click();
+		}
+
 		await page.$eval( paymentMethod, ( method ) => method.click() );
 		await new Promise( ( resolve ) => setTimeout( resolve, 2000 ) );
 		await expect( page ).toClick( 'button', {
@@ -410,6 +418,14 @@ export const merchantWCP = {
 		await page.goto( WCPAY_PAYMENT_SETTINGS, {
 			waitUntil: 'networkidle0',
 		} );
+
+		// Skip fraud protection tools tour.
+		const tourKitDismissButton = await page.$(
+			`.woocommerce-tour-kit button`
+		);
+		if ( tourKitDismissButton ) {
+			await tourKitDismissButton.click();
+		}
 
 		await page.$eval( paymentMethod, ( method ) => method.click() );
 		await expect( page ).toClick( 'button', {
@@ -535,6 +551,15 @@ export const merchantWCP = {
 
 	openWCPSettings: async () => {
 		await merchant.openSettings( 'checkout', 'woocommerce_payments' );
+	},
+
+	skipFraudProtectionTour: async () => {
+		const tourKitDismissButton = await page.$(
+			`.woocommerce-tour-kit button`
+		);
+		if ( tourKitDismissButton ) {
+			await tourKitDismissButton.click();
+		}
 	},
 
 	wcpSettingsSaveChanges: async () => {
