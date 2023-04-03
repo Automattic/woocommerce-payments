@@ -189,13 +189,16 @@ const GroupedSelectControl: React.FC< GroupedSelectControl > = ( {
 			</label>
 			<button
 				{ ...getToggleButtonProps( {
+					type: 'button',
 					className: classNames(
 						'components-text-control__input wcpay-component-new-select-control__button',
 						{ placeholder }
 					),
 				} ) }
 			>
-				{ selectedItem.name || placeholder }
+				<span className="wcpay-component-new-select-control__button-value">
+					{ selectedItem.name || placeholder }
+				</span>
 				<Icon
 					icon={ chevronDown }
 					className="wcpay-component-new-select-control__button-icon"
@@ -232,7 +235,6 @@ const GroupedSelectControl: React.FC< GroupedSelectControl > = ( {
 											className: classNames(
 												'wcpay-component-new-select-control__item',
 												item.className,
-
 												{
 													'is-highlighted':
 														index ===
@@ -247,7 +249,7 @@ const GroupedSelectControl: React.FC< GroupedSelectControl > = ( {
 										<div className="wcpay-component-new-select-control__item-content">
 											{ item.name }
 										</div>
-										{ item === selectedItem && (
+										{ item.key === selectedItem.key && (
 											<Icon icon={ check } />
 										) }
 										{ ! searchText && isGroup && (
