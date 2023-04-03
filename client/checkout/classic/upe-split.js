@@ -29,7 +29,7 @@ import {
 	isWCPayChosen,
 	getPaymentIntentFromSession,
 	getSelectedUPEGatewayPaymentMethod,
-	getHiddenBillingFields,
+	getUpeSettings,
 } from '../utils/upe';
 import { decryptClientSecret } from '../utils/encryption';
 import enableStripeLinkPaymentMethod from '../stripe-link';
@@ -180,7 +180,6 @@ jQuery( function ( $ ) {
 
 		// If paying from order, we need to create Payment Intent from order not cart.
 		const isOrderPay = getUPEConfig( 'isOrderPay' );
-		const isCheckout = getUPEConfig( 'isCheckout' );
 		let orderId;
 		if ( isOrderPay ) {
 			orderId = getUPEConfig( 'orderId' );
@@ -282,20 +281,8 @@ jQuery( function ( $ ) {
 			} );
 		}
 
-		const upeSettings = {};
-		if ( getUPEConfig( 'cartContainsSubscription' ) ) {
-			upeSettings.terms = getTerms( paymentMethodsConfig, 'always' );
-		}
-		if ( isCheckout && ! ( isOrderPay || isChangingPayment ) ) {
-			upeSettings.fields = {
-				billingDetails: getHiddenBillingFields(
-					getUPEConfig( 'enabledBillingFields' )
-				),
-			};
-		}
-
 		upeElement = elements.create( 'payment', {
-			...upeSettings,
+			...getUpeSettings(),
 			wallets: {
 				applePay: 'never',
 				googlePay: 'never',

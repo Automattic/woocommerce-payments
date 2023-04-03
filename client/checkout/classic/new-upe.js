@@ -21,9 +21,8 @@ import {
 	PAYMENT_METHOD_NAME_SOFORT,
 } from '../constants.js';
 import {
-	getHiddenBillingFields,
 	getSelectedUPEGatewayPaymentMethod,
-	getTerms,
+	getUpeSettings,
 } from '../utils/upe';
 import showErrorCheckout from '../utils/show-error-checkout';
 import { getAppearance } from '../upe-styles';
@@ -154,22 +153,6 @@ jQuery( function ( $ ) {
 
 		upeElement.mount( domElement );
 		gatewayUPEComponents[ paymentMethodType ].upeElement = upeElement;
-	}
-
-	function getUpeSettings() {
-		const upeSettings = {
-			fields: {
-				billingDetails: getHiddenBillingFields(
-					getUPEConfig( 'enabledBillingFields' )
-				),
-			},
-		};
-
-		if ( getUPEConfig( 'cartContainsSubscription' ) ) {
-			upeSettings.terms = getTerms( paymentMethods, 'always' );
-		}
-
-		return upeSettings;
 	}
 
 	let paymentMethodGenerated;

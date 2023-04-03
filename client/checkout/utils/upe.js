@@ -150,3 +150,27 @@ export const getHiddenBillingFields = ( enabledBillingFields ) => {
 		},
 	};
 };
+
+export const getUpeSettings = () => {
+	const upeSettings = {};
+	if ( getUPEConfig( 'cartContainsSubscription' ) ) {
+		upeSettings.terms = getTerms(
+			getUPEConfig( 'paymentMethodsConfig' ),
+			'always'
+		);
+	}
+	if (
+		getUPEConfig( 'isCheckout' ) &&
+		! (
+			getUPEConfig( 'isOrderPay' ) || getUPEConfig( 'isChangingPayment' )
+		)
+	) {
+		upeSettings.fields = {
+			billingDetails: getHiddenBillingFields(
+				getUPEConfig( 'enabledBillingFields' )
+			),
+		};
+	}
+
+	return upeSettings;
+};
