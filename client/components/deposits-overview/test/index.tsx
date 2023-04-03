@@ -122,6 +122,27 @@ const createMockOverview = (
 	};
 };
 
+const createMockNewAccountOverview = (
+	currencyCode: string
+): AccountOverview.Overview => {
+	return {
+		currency: currencyCode,
+		pending: {
+			amount: 0,
+			currency: currencyCode,
+			source_types: [],
+		},
+		available: {
+			amount: 0,
+			currency: currencyCode,
+			source_types: [],
+		},
+		lastPaid: undefined,
+		nextScheduled: undefined,
+		instant: undefined,
+	};
+};
+
 const mockUseAllDepositsOverviews = useAllDepositsOverviews as jest.MockedFunction<
 	typeof useAllDepositsOverviews
 >;
@@ -183,6 +204,12 @@ describe( 'Deposits Overview information', () => {
 
 		const { container } = render( <DepositsOverview /> );
 		expect( container ).toMatchSnapshot();
+	} );
+
+	test( 'Component renders without errors for new account', () => {
+		mockOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
+		const { getByText } = render( <DepositsOverview /> );
+		getByText( '€0.00' );
 	} );
 
 	test( 'Confirm next deposit in EUR amount', () => {

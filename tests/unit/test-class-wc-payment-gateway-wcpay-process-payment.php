@@ -510,6 +510,15 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
+	public function test_exception_will_be_thrown_if_phone_number_is_invalid() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_billing_phone( '+1123456789123456789123' );
+		$order->save();
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Invalid phone number.' );
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+	}
+
 	public function test_connection_exception_thrown() {
 		// Arrange: Reusable data.
 		$error_message = 'Test error.';
