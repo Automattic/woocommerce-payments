@@ -14,6 +14,14 @@ import PaymentMethodsCheckbox from '../payment-method-checkbox';
 import { upeCapabilityStatuses } from '../../../additional-methods-setup/constants';
 import { act } from 'react-dom/test-utils';
 
+jest.mock( '@woocommerce/components', () => {
+	return {
+		Pill: ( { className, children } ) => (
+			<span className={ className }>{ children }</span>
+		),
+	};
+} );
+
 describe( 'PaymentMethodsCheckboxes', () => {
 	it( 'triggers the onChange when clicking the checkbox', () => {
 		const handleChange = jest.fn();
@@ -149,9 +157,7 @@ describe( 'PaymentMethodsCheckboxes', () => {
 		);
 
 		expect( page.container ).toContainHTML(
-			'<span class="wcpay-pill payment-status-inactive">' +
-				'<span class="woocommerce-pill css-1qmnemh-Text e15wbhsk0">' +
-				'Contact WooCommerce Support</span></span>'
+			'<span class="wcpay-pill payment-status-inactive">Contact WooCommerce Support</span>'
 		);
 	} );
 
