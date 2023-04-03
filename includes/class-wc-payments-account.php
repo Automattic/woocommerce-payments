@@ -1130,7 +1130,9 @@ class WC_Payments_Account {
 					// below re-create it if the server tells us on-boarding is still disabled.
 					delete_transient( self::ON_BOARDING_DISABLED_TRANSIENT );
 
-					$account = Get_Account::create()->send( 'wcpay_get_account' );
+					$response = Get_Account::create()->send( 'wcpay_get_account' );
+					$account  = $response->to_array();
+
 				} catch ( API_Exception $e ) {
 					if ( 'wcpay_account_not_found' === $e->get_error_code() ) {
 						// Special case - detect account not connected and cache it.

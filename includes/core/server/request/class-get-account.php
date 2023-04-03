@@ -31,14 +31,4 @@ class Get_Account extends Request {
 	public function get_method(): string {
 		return 'GET';
 	}
-
-	/**
-	 * Formats the response from the server.
-	 *
-	 * @param  mixed $response The response from `WC_Payments_API_Client::request`.
-	 * @return mixed           The same response from REST API.
-	 */
-	public function format_response( $response ) {
-		return $response;
-	}
 }
