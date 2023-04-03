@@ -38,8 +38,8 @@ class Order_Fraud_And_Risk_Meta_Box {
 	 * Maybe add the meta box.
 	 */
 	public function maybe_add_meta_box() {
-		// If fraud settings are off, or if we cannot get the screen ID, exit.
-		if ( ! WC_Payments_Features::is_fraud_protection_settings_enabled() || ! function_exists( '\wc_get_page_screen_id' ) ) {
+		// If we cannot get the screen ID, exit.
+		if ( ! function_exists( '\wc_get_page_screen_id' ) ) {
 			return;
 		}
 
@@ -143,12 +143,21 @@ class Order_Fraud_And_Risk_Meta_Box {
 				break;
 
 			case Fraud_Meta_Box_Type::NOT_WCPAY:
-				$description = __( 'Risk filtering is only available for orders that are processed with WooCommerce Payments.', 'woocommerce-payments' );
+				$payment_method_title = $order->get_payment_method_title();
+
+				if ( ! empty( $payment_method_title ) ) {
+					$description = sprintf(
+						/* translators: %s - Payment method title */
+						__( 'Risk filtering is only available for orders processed with WooCommerce Payments. This order was processed with %s.', 'woocommerce-payments' ),
+						$payment_method_title
+					);
+				} else {
+					$description = __( 'Risk filtering is only available for orders processed with WooCommerce Payments.', 'woocommerce-payments' );
+				}
+
 				$callout     = __( 'Learn more', 'woocommerce-payments' );
-				$callout_url = '';
-				// Add tracking query params.
+				$callout_url = 'https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/';
 				$callout_url = add_query_arg( 'status_is', 'fraud-meta-box-not-wcpay-learn-more', $callout_url );
-				// TODO: Need callout url for Learn more.
 				echo '<p>' . esc_html( $description ) . '</p><a href="' . esc_url( $callout_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
 				break;
 

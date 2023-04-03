@@ -9,7 +9,6 @@ declare const wcpaySettings: {
 	isSubscriptionsActive: boolean;
 	featureFlags: {
 		customSearch: boolean;
-		customDepositSchedules: boolean;
 		isAuthAndCaptureEnabled: boolean;
 		simplifyDepositsUi?: boolean;
 		paymentTimeline: boolean;
@@ -59,7 +58,6 @@ declare const wcpaySettings: {
 		isWelcomeTourDismissed?: boolean;
 	};
 	accountDefaultCurrency: string;
-	isFraudProtectionSettingsEnabled: boolean;
 };
 
 declare const wcTracks: any;
