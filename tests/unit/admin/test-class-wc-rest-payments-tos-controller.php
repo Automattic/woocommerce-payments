@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Core\Server\Request\Add_Account_Tos_Agreement;
 use WCPay\Database_Cache;
 use WCPay\Session_Rate_Limiter;
 
@@ -97,6 +98,7 @@ class WC_REST_Payments_Tos_Controller_Test extends WCPAY_UnitTestCase {
 	public function test_gateway_enabled_on_tos_accepted() {
 		$this->gateway->disable();
 		$this->request->set_body( wp_json_encode( [ 'accept' => true ] ) );
+		$this->mock_wcpay_request( Add_Account_Tos_Agreement::class, 1 );
 
 		// Run the test.
 		$response = $this->controller->handle_tos( $this->request );

@@ -447,43 +447,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( [ 'url' => 'https://login.url' ], $result );
 	}
 
-	public function test_add_tos_agreement() {
-		$this->mock_http_client
-			->expects( $this->once() )
-			->method( 'remote_request' )
-			->with(
-				$this->callback(
-					function ( $data ): bool {
-						$this->validate_default_remote_request_params( $data, 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts/tos_agreements', 'POST' );
-						$this->assertSame( 'POST', $data['method'] );
-						return true;
-					}
-				),
-				wp_json_encode(
-					[
-						'test_mode' => false,
-						'source'    => 'mock_source',
-						'user_name' => 'mock_name',
-					]
-				),
-				true,
-				true // add_tos_agreement should use user token auth.
-			)
-			->willReturn(
-				[
-					'body'     => wp_json_encode( [ 'result' => 'success' ] ),
-					'response' => [
-						'code'    => 200,
-						'message' => 'OK',
-					],
-				]
-			);
-
-		$result = $this->payments_api_client->add_tos_agreement( 'mock_source', 'mock_name' );
-
-		$this->assertEquals( [ 'result' => 'success' ], $result );
-	}
-
 	public function test_get_currency_rates() {
 		$currency_from = 'USD';
 
