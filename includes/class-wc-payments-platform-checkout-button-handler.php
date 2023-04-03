@@ -54,8 +54,6 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		$this->account                     = $account;
 		$this->gateway                     = $gateway;
 		$this->platform_checkout_utilities = $platform_checkout_utilities;
-
-		add_action( 'init', [ $this, 'init' ] );
 	}
 
 	/**

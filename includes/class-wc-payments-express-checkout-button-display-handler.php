@@ -60,8 +60,6 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 		$this->account                     = $account;
 		$this->gateway                     = $gateway;
 		$this->platform_checkout_utilities = $platform_checkout_utilities;
-
-		add_action( 'init', [ $this, 'init' ] );
 	}
 
 	/**
@@ -72,6 +70,9 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	public function init() {
 		self::$payment_request_button_handler   = new WC_Payments_Payment_Request_Button_Handler( $this->account, $this->gateway );
 		self::$platform_checkout_button_handler = new WC_Payments_Platform_Checkout_Button_Handler( $this->account, $this->gateway, $this->platform_checkout_utilities );
+
+		self::$platform_checkout_button_handler->init();
+		self::$payment_request_button_handler->init();
 
 		$is_woopay_express_checkout_enabled = WC_Payments_Features::is_woopay_express_checkout_enabled();
 
@@ -85,7 +86,6 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 				add_action( 'before_woocommerce_pay_form', [ $this, 'display_express_checkout_buttons' ], 1 );
 			}
 		}
-
 	}
 
 	/**
@@ -115,4 +115,12 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 		self::display_express_checkout_separator_if_necessary();
 	}
 
+	/**
+	 * Check if WooPay is enabled
+	 *
+	 * @return bool
+	 */
+	public function is_woopay_enabled() {
+		return self::$platform_checkout_button_handler->is_woopay_enabled();
+	}
 }

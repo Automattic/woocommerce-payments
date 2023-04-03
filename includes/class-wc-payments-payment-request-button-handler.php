@@ -44,8 +44,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 	public function __construct( WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway ) {
 		$this->account = $account;
 		$this->gateway = $gateway;
-
-		add_action( 'init', [ $this, 'init' ] );
 	}
 
 	/**
