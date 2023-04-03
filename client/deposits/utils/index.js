@@ -115,9 +115,6 @@ export const getDepositScheduleDescriptor = ( {
 	},
 	last_deposit: last,
 } ) => {
-	const isCustomDepositSchedulesEnabled =
-		window.wcpaySettings?.featureFlags?.customDepositSchedules;
-
 	const hasCompletedWaitingPeriod =
 		window.wcpaySettings?.accountStatus?.deposits
 			?.completed_waiting_period ?? false;
@@ -125,11 +122,7 @@ export const getDepositScheduleDescriptor = ( {
 	const learnMoreHref =
 		'https://woocommerce.com/document/payments/faq/deposit-schedule/';
 
-	if (
-		disabled ||
-		blocked ||
-		( ! isCustomDepositSchedulesEnabled && 'manual' === schedule.interval )
-	) {
+	if ( disabled || blocked ) {
 		return createInterpolateElement(
 			/* translators: <a> - suspended accounts FAQ URL */
 			__(
