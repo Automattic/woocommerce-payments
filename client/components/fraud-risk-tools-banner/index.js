@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card } from '@wordpress/components';
 import { useDispatch } from '@wordpress/data';
-import { registerPlugin } from '@wordpress/plugins';
 
 /**
  * Internal dependencies
@@ -13,6 +12,7 @@ import { registerPlugin } from '@wordpress/plugins';
 import { BannerBody, NewPill, BannerActions } from './components';
 import './style.scss';
 import { TIME } from '../../constants';
+import wcpayTracks from 'tracks';
 
 const FRTDiscoverabilityBanner = () => {
 	const { frtDiscoverBannerSettings } = wcpaySettings;
@@ -50,6 +50,8 @@ const FRTDiscoverabilityBanner = () => {
 	};
 
 	useEffect( () => {
+		wcpayTracks.recordEvent( 'wcpay_fraud_protection_banner_rendered' );
+
 		const stringifiedSettings = JSON.stringify( settings );
 
 		updateOptions( {
@@ -60,6 +62,9 @@ const FRTDiscoverabilityBanner = () => {
 	}, [ frtDiscoverBannerSettings, settings, updateOptions ] );
 
 	const handleRemindOnClick = () => {
+		wcpayTracks.recordEvent(
+			'wcpay_fraud_protection_banner_remind_later_button_clicked'
+		);
 		setReminder();
 	};
 
@@ -99,16 +104,3 @@ const FRTDiscoverabilityBanner = () => {
 };
 
 export default FRTDiscoverabilityBanner;
-
-registerPlugin( 'wc-payments-homescreen-fraud-protection-slotfill-banner', {
-	render: () => {
-		// Important: Use Fill from WC core, not the one within WCPay.
-		const Fill = window.wp.components.Fill;
-		return (
-			<Fill name="woocommerce_homescreen_experimental_header_banner_item">
-				<FRTDiscoverabilityBanner />
-			</Fill>
-		);
-	},
-	scope: 'woocommerce-admin',
-} );

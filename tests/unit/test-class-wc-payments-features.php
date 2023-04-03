@@ -20,11 +20,12 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 	const FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING = [
 		'_wcpay_feature_upe'                        => 'upe',
+		'_wcpay_feature_upe_split'                  => 'upeSplit',
+		'_wcpay_feature_upe_deferred_intent'        => 'upeDeferred',
 		'_wcpay_feature_upe_settings_preview'       => 'upeSettingsPreview',
 		'_wcpay_feature_customer_multi_currency'    => 'multiCurrency',
 		'_wcpay_feature_documents'                  => 'documents',
 		'_wcpay_feature_account_overview_task_list' => 'accountOverviewTaskList',
-		'_wcpay_feature_custom_deposit_schedules'   => 'customDepositSchedules',
 		'_wcpay_feature_auth_and_capture'           => 'isAuthAndCaptureEnabled',
 		'_wcpay_feature_progressive_onboarding'     => 'progressiveOnboarding',
 	];
@@ -44,9 +45,6 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 		// Restore the cache service in the main class.
 		WC_Payments::set_database_cache( $this->_cache );
-		delete_option( '_wcpay_feature_upe' );
-		delete_option( '_wcpay_feature_upe_split' );
-
 		parent::tear_down();
 	}
 
@@ -160,7 +158,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 	public function test_is_woopay_express_checkout_enabled_returns_false_when_platform_checkout_eligible_is_false() {
 		add_filter(
-			'pre_option__' . WC_Payments_Features::PROGRESSIVE_ONBOARDING_FLAG_NAME,
+			'pre_option_' . WC_Payments_Features::PROGRESSIVE_ONBOARDING_FLAG_NAME,
 			function ( $pre_option, $option, $default ) {
 				return '1';
 			},
@@ -202,32 +200,101 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 	public function test_split_upe_disabled_with_ineligible_merchant() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'capabilities' => [ 'sepa_debit_payments' => 'active' ] ] );
-		update_option( '_wcpay_feature_upe', '0' );
-		update_option( '_wcpay_feature_upe_split', '0' );
+		add_filter(
+			'pre_option_' . WC_Payments_Features::UPE_FLAG_NAME,
+			function ( $pre_option, $option, $default ) {
+				return '0';
+			},
+			10,
+			3
+		);
+		add_filter(
+			'pre_option_' . WC_Payments_Features::UPE_SPLIT_FLAG_NAME,
+			function ( $pre_option, $option, $default ) {
+				return '0';
+			},
+			10,
+			3
+		);
+		add_filter(
+			'pre_option_' . WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME,
+			function ( $pre_option, $option, $default ) {
+				return '0';
+			},
+			10,
+			3
+		);
 
 		$this->assertFalse( WC_Payments_Features::is_upe_enabled() );
 		$this->assertFalse( WC_Payments_Features::is_upe_legacy_enabled() );
 		$this->assertFalse( WC_Payments_Features::is_upe_split_enabled() );
+		$this->assertFalse( WC_Payments_Features::is_upe_deferred_intent_enabled() );
 	}
 
 	public function test_legacy_upe_enabled_with_split_upe_ineligible_merchant() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'capabilities' => [ 'sepa_debit_payments' => 'active' ] ] );
-		update_option( '_wcpay_feature_upe', '0' );
-		update_option( '_wcpay_feature_upe_split', '1' );
+		add_filter(
+			'pre_option_' . WC_Payments_Features::UPE_FLAG_NAME,
+			function ( $pre_option, $option, $default ) {
+				return '0';
+			},
+			10,
+			3
+		);
+		add_filter(
+			'pre_option_' . WC_Payments_Features::UPE_SPLIT_FLAG_NAME,
+			function ( $pre_option, $option, $default ) {
+				return '1';
+			},
+			10,
+			3
+		);
+		add_filter(
+			'pre_option_' . WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME,
+			function ( $pre_option, $option, $default ) {
+				return '1';
+			},
+			10,
+			3
+		);
 
 		$this->assertTrue( WC_Payments_Features::is_upe_enabled() );
 		$this->assertTrue( WC_Payments_Features::is_upe_legacy_enabled() );
 		$this->assertFalse( WC_Payments_Features::is_upe_split_enabled() );
+		$this->assertFalse( WC_Payments_Features::is_upe_deferred_intent_enabled() );
 	}
 
 	public function test_split_upe_enabled_with_eligible_merchant() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'capabilities' => [ 'sepa_debit_payments' => 'inactive' ] ] );
-		update_option( '_wcpay_feature_upe', '0' );
-		update_option( '_wcpay_feature_upe_split', '1' );
+		add_filter(
+			'pre_option_' . WC_Payments_Features::UPE_FLAG_NAME,
+			function ( $pre_option, $option, $default ) {
+				return '0';
+			},
+			10,
+			3
+		);
+		add_filter(
+			'pre_option_' . WC_Payments_Features::UPE_SPLIT_FLAG_NAME,
+			function ( $pre_option, $option, $default ) {
+				return '1';
+			},
+			10,
+			3
+		);
+		add_filter(
+			'pre_option_' . WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME,
+			function ( $pre_option, $option, $default ) {
+				return '1';
+			},
+			10,
+			3
+		);
 
 		$this->assertTrue( WC_Payments_Features::is_upe_enabled() );
 		$this->assertFalse( WC_Payments_Features::is_upe_legacy_enabled() );
 		$this->assertTrue( WC_Payments_Features::is_upe_split_enabled() );
+		$this->assertTrue( WC_Payments_Features::is_upe_deferred_intent_enabled() );
 	}
 
 	public function test_is_fraud_protection_settings_enabled_returns_true() {
