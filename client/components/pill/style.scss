@@ -1,36 +1,36 @@
-.wcpay-pill {
-	> .woocommerce-pill {
+.woocommerce-pill {
+	&.wcpay-pill {
 		border-color: $gray-700;
 		color: $gray-700;
-	}
 
-	&__light > .woocommerce-pill {
-		border: 0;
-		background: #f0f0f1;
-		color: #2c3338;
-	}
+		&__light {
+			border: 0;
+			background: #f0f0f1;
+			color: #2c3338;
+		}
 
-	&__alert > .woocommerce-pill {
-		border: 0;
-		background: #fcf9e8;
-		color: #614200;
-	}
+		&__alert {
+			border: 0;
+			background: #fcf9e8;
+			color: #614200;
+		}
 
-	&__danger > .woocommerce-pill {
-		border: 0;
-		background: #fcf0f1;
-		color: #8a2424;
-	}
+		&__danger {
+			border: 0;
+			background: #fcf0f1;
+			color: #8a2424;
+		}
 
-	&__success > .woocommerce-pill {
-		border: 0;
-		background: #edfaef;
-		color: #005c12;
-	}
+		&__success {
+			border: 0;
+			background: #edfaef;
+			color: #005c12;
+		}
 
-	&__primary > .woocommerce-pill {
-		border: 0;
-		background: #f0f6fc;
-		color: #193a6f;
+		&__primary {
+			border: 0;
+			background: #f0f6fc;
+			color: #193a6f;
+		}
 	}
 }
