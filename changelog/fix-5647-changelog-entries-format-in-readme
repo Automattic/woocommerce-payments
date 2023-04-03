@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: Fix some edge cases in the changelog part of the GitHub workflows
+
+
