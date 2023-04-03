@@ -15,6 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WC_Payments_Features {
 	const UPE_FLAG_NAME                     = '_wcpay_feature_upe';
 	const UPE_SPLIT_FLAG_NAME               = '_wcpay_feature_upe_split';
+	const UPE_DEFERRED_INTENT_FLAG_NAME     = '_wcpay_feature_upe_deferred_intent';
 	const WCPAY_SUBSCRIPTIONS_FLAG_NAME     = '_wcpay_feature_subscriptions';
 	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME = '_wcpay_feature_woopay_express_checkout';
 	const AUTH_AND_CAPTURE_FLAG_NAME        = '_wcpay_feature_auth_and_capture';
@@ -27,7 +28,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_upe_enabled() {
-		return self::is_upe_legacy_enabled() || self::is_upe_split_enabled();
+		return self::is_upe_legacy_enabled() || self::is_upe_split_enabled() || self::is_upe_deferred_intent_enabled();
 	}
 
 	/**
@@ -36,7 +37,7 @@ class WC_Payments_Features {
 	 * @return string
 	 */
 	public static function get_enabled_upe_type() {
-		if ( self::is_upe_split_enabled() ) {
+		if ( self::is_upe_split_enabled() || self::is_upe_deferred_intent_enabled() ) {
 			return 'split';
 		}
 
@@ -58,8 +59,12 @@ class WC_Payments_Features {
 			return true;
 		}
 
+		$upe_split_flag_value    = '1' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' );
+		$upe_deferred_flag_value = '1' === get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, '0' );
+
 		// if the merchant is not eligible for the Split UPE, but they have the flag enabled, fallback to the "legacy" UPE (for now).
-		return '1' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' ) && ! self::is_upe_split_eligible();
+		return ( $upe_split_flag_value || $upe_deferred_flag_value )
+			&& ! self::is_upe_split_eligible();
 	}
 
 	/**
@@ -67,6 +72,13 @@ class WC_Payments_Features {
 	 */
 	public static function is_upe_split_enabled() {
 		return '1' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' ) && self::is_upe_split_eligible();
+	}
+
+	/**
+	 * Checks whether the Split UPE with deferred intent is enabled
+	 */
+	public static function is_upe_deferred_intent_enabled() {
+		return '1' === get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, '0' ) && self::is_upe_split_eligible();
 	}
 
 	/**
@@ -191,15 +203,6 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether custom deposit schedules are enabled.
-	 *
-	 * @return bool
-	 */
-	public static function is_custom_deposit_schedules_enabled() {
-		return '1' === get_option( '_wcpay_feature_custom_deposit_schedules', '1' );
-	}
-
-	/**
 	 * Checks whether WooPay Express Checkout is enabled.
 	 *
 	 * @return bool
@@ -263,12 +266,13 @@ class WC_Payments_Features {
 		return array_filter(
 			[
 				'upe'                     => self::is_upe_enabled(),
+				'upeSplit'                => self::is_upe_split_enabled(),
+				'upeDeferred'             => self::is_upe_deferred_intent_enabled(),
 				'upeSettingsPreview'      => self::is_upe_settings_preview_enabled(),
 				'multiCurrency'           => self::is_customer_multi_currency_enabled(),
 				'accountOverviewTaskList' => self::is_account_overview_task_list_enabled(),
 				'platformCheckout'        => self::is_platform_checkout_eligible(),
 				'documents'               => self::is_documents_section_enabled(),
-				'customDepositSchedules'  => self::is_custom_deposit_schedules_enabled(),
 				'clientSecretEncryption'  => self::is_client_secret_encryption_enabled(),
 				'woopayExpressCheckout'   => self::is_woopay_express_checkout_enabled(),
 				'isAuthAndCaptureEnabled' => self::is_auth_and_capture_enabled(),

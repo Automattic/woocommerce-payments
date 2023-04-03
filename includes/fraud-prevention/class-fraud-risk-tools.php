@@ -53,11 +53,11 @@ class Fraud_Risk_Tools {
 	}
 
 	// Rule names.
-	const RULE_ADDRESS_MISMATCH              = 'address_mismatch';
-	const RULE_INTERNATIONAL_IP_ADDRESS      = 'international_ip_address';
-	const RULE_INTERNATIONAL_BILLING_ADDRESS = 'international_billing_address';
-	const RULE_ORDER_ITEMS_THRESHOLD         = 'order_items_threshold';
-	const RULE_PURCHASE_PRICE_THRESHOLD      = 'purchase_price_threshold';
+	const RULE_ADDRESS_MISMATCH         = 'address_mismatch';
+	const RULE_INTERNATIONAL_IP_ADDRESS = 'international_ip_address';
+	const RULE_IP_ADDRESS_MISMATCH      = 'ip_address_mismatch';
+	const RULE_ORDER_ITEMS_THRESHOLD    = 'order_items_threshold';
+	const RULE_PURCHASE_PRICE_THRESHOLD = 'purchase_price_threshold';
 
 	/**
 	 * Class constructor.
@@ -164,13 +164,24 @@ class Fraud_Risk_Tools {
 					10
 				)
 			),
+			// REVIEW An order exceeds $1,000.00 or 10 items.
 			new Rule(
 				self::RULE_PURCHASE_PRICE_THRESHOLD,
 				Rule::FRAUD_OUTCOME_REVIEW,
 				Check::check(
 					'order_total',
 					Check::OPERATOR_GT,
-					1000 * 100
+					self::get_formatted_converted_amount( 1000 * 100, 'usd' )
+				)
+			),
+			// REVIEW An order is originated from a different country than the shipping country.
+			new Rule(
+				self::RULE_IP_ADDRESS_MISMATCH,
+				Rule::FRAUD_OUTCOME_REVIEW,
+				Check::check(
+					'ip_billing_country_same',
+					Check::OPERATOR_EQUALS,
+					false
 				)
 			),
 		];
@@ -202,7 +213,7 @@ class Fraud_Risk_Tools {
 				Check::check(
 					'order_total',
 					Check::OPERATOR_GT,
-					1000 * 100
+					self::get_formatted_converted_amount( 1000 * 100, 'usd' )
 				)
 			),
 			// REVIEW An order has less than 2 items or more than 10 items.
@@ -227,14 +238,14 @@ class Fraud_Risk_Tools {
 					false
 				)
 			),
-			// REVIEW An order is shipping or billing to a non-domestic address.
+			// REVIEW An order is originated from a different country than the shipping country.
 			new Rule(
-				self::RULE_INTERNATIONAL_BILLING_ADDRESS,
+				self::RULE_IP_ADDRESS_MISMATCH,
 				Rule::FRAUD_OUTCOME_REVIEW,
 				Check::check(
-					'billing_country',
-					self::get_selling_locations_type_operator(),
-					self::get_selling_locations_string()
+					'ip_billing_country_same',
+					Check::OPERATOR_EQUALS,
+					false
 				)
 			),
 		];
@@ -318,5 +329,53 @@ class Fraud_Risk_Tools {
 			default:
 				return '';
 		}
+	}
+
+	/**
+	 * Returns the converted amount from a given currency to the default currency.
+	 *
+	 * @param int    $amount The amount to be converted.
+	 * @param string $from   The currency to be converted from.
+	 * @param string $to     The currency to be converted to.
+	 *
+	 * @return int
+	 */
+	private static function get_converted_amount( $amount, $from, $to ) {
+		$to_currency   = strtoupper( $to );
+		$from_currency = strtoupper( $from );
+
+		$enabled_currencies = WC_Payments_Multi_Currency()->get_enabled_currencies();
+
+		if ( empty( $enabled_currencies ) || $to_currency === $from_currency ) {
+			return $amount;
+		}
+
+		if ( array_key_exists( $from_currency, $enabled_currencies ) ) {
+			$currency = $enabled_currencies[ $from_currency ];
+			$amount   = (int) round( $amount * ( 1 / (float) $currency->get_rate() ) );
+		}
+
+		return $amount;
+	}
+
+	/**
+	 * Returns the formatted converted amount from a given currency to the default currency.
+	 * The final format is "AMOUNT|CURRENCY".
+	 *
+	 * @param int    $amount        The amount to be converted.
+	 * @param string $base_currency The currency to be converted from.
+	 *
+	 * @return string
+	 */
+	private static function get_formatted_converted_amount( $amount, $base_currency ) {
+		$default_currency = WC_Payments_Multi_Currency()->get_default_currency();
+		$target_currency  = $base_currency;
+
+		if ( ! empty( $default_currency ) ) {
+			$target_currency = $default_currency->get_code();
+			$amount          = self::get_converted_amount( $amount, $base_currency, $target_currency );
+		}
+
+		return implode( '|', [ $amount, strtolower( $target_currency ) ] );
 	}
 }
