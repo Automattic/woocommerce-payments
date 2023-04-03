@@ -100,9 +100,6 @@ jobs:
           # 'Stable tag' header in readme.txt;
           sed -i "s/^Stable tag: .*$/Stable tag: $RELEASE_VERSION/" readme.txt
 
-          # Duplicate the generated changelog into the Changelog section from the readme.txt
-          sed -ri "s|(== Changelog ==)|\1\n\n= $RELEASE_VERSION - $RELEASE_DATE =\n$CHANGELOG|" readme.txt
-
       - name: "Commit and push changes"
         env:
           RELEASE_VERSION: ${{ steps.create_branch.outputs.trimmed-version }}
