@@ -537,6 +537,15 @@ export const merchantWCP = {
 		await merchant.openSettings( 'checkout', 'woocommerce_payments' );
 	},
 
+	skipFraudProtectionTour: async () => {
+		const tourKitDismissButton = await page.$(
+			`.woocommerce-tour-kit button`
+		);
+		if ( tourKitDismissButton ) {
+			await tourKitDismissButton.click();
+		}
+	},
+
 	wcpSettingsSaveChanges: async () => {
 		const snackbarSettingsSaved = '.components-snackbar';
 
