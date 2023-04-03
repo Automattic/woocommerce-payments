@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  generate-first-matrix:
+  generate-wc-compat-matrix:
     name: "Generate the matrix for woocommerce compatibility dynamically"
     runs-on: ubuntu-20.04
     outputs:
@@ -28,7 +28,7 @@ jobs:
 
   woocommerce-compatibility:
     name: "WC compatibility"
-    needs: generate-first-matrix
+    needs: generate-wc-compat-matrix
     runs-on: ubuntu-20.04
     env:
       WP_VERSION: ${{ matrix.wordpress }}
@@ -37,7 +37,7 @@ jobs:
     strategy:
       fail-fast:    false
       max-parallel: 10
-      matrix: ${{ fromJSON(needs.generate-first-matrix.outputs.matrix) }}
+      matrix: ${{ fromJSON(needs.generate-wc-compat-matrix.outputs.matrix) }}
     steps:
       # clone the repository
       - uses: actions/checkout@v3
@@ -55,7 +55,7 @@ jobs:
       # run CI checks
       - run: bash bin/run-ci-tests.bash
   
-  generate-second-matrix:
+  generate-wc-compat-beta-matrix:
     name: "Generate the matrix for compatibility-woocommerce-beta dynamically"
     runs-on: ubuntu-20.04
     outputs:
@@ -70,11 +70,11 @@ jobs:
   # a dedicated job, as allowed to fail
   compatibility-woocommerce-beta:
     name: Environment - WC beta
-    needs: generate-second-matrix
+    needs: generate-wc-compat-beta-matrix
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.generate-second-matrix.outputs.matrix) }}
+      matrix: ${{ fromJSON(needs.generate-wc-compat-beta-matrix.outputs.matrix) }}
     env:
       WP_VERSION: ${{ matrix.wordpress }}
       WC_VERSION: ${{ matrix.woocommerce }}
