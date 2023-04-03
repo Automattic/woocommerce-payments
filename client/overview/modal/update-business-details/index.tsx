@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import { Button, Modal, Notice } from '@wordpress/components';
+import moment from 'moment';
 
 /**
  * Internal dependencies
@@ -12,7 +13,6 @@ import strings from './strings';
 import { useState } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
 import { sprintf } from '@wordpress/i18n';
-import moment from 'moment/moment';
 
 interface Props {
 	errorMessages: Array< string >;
