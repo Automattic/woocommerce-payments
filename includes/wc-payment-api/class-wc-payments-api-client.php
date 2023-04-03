@@ -2298,7 +2298,7 @@ class WC_Payments_API_Client {
 		$customer             = $intention_array['customer'] ?? $charge_array['customer'] ?? null;
 		$payment_method       = $intention_array['payment_method'] ?? $intention_array['source'] ?? null;
 		$processing           = $intention_array[ Payment_Intent_Status::PROCESSING ] ?? [];
-		$payment_method_types = $intention_array['payment_method_types'] ?? $intention_array['payment_method_types'] ?? [];
+		$payment_method_types = $intention_array['payment_method_types'] ?? [];
 
 		$charge = ! empty( $charge_array ) ? self::deserialize_charge_object_from_array( $charge_array ) : null;
 
