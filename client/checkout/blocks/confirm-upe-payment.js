@@ -43,6 +43,18 @@ export default async function confirmUPEPayment(
 					},
 				},
 			},
+			shipping: {
+				name,
+				phone: billingData.phone || '-',
+				address: {
+					country: billingData.country || '-',
+					postal_code: billingData.postcode || '-',
+					state: billingData.state || '-',
+					city: billingData.city || '-',
+					line1: billingData.address_1 || '-',
+					line2: billingData.address_2 || '-',
+				},
+			},
 		};
 
 		if ( paymentNeeded ) {

@@ -28,6 +28,7 @@ class Create_And_Confirm_Intention extends Create_Intention {
 		'payment_method',
 		'customer',
 		'metadata',
+		'shipping',
 	];
 
 	const DEFAULT_PARAMS = [
