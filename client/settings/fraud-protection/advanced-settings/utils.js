@@ -23,6 +23,21 @@ export const getSettingCountries = () => {
 	}
 };
 
+const buildFormattedRulePrice = ( price ) => {
+	const convertedPrice = parseInt( parseFloat( price ) * 100, 10 );
+	const defaultCurrency = wcpaySettings.storeCurrency || 'usd';
+
+	return [ convertedPrice, defaultCurrency ].join( '|' );
+};
+
+const readFormattedRulePrice = ( value ) => {
+	if ( ! value ) return '';
+
+	const [ amount ] = value.toString().split( '|' );
+
+	return Number( amount ) / 100;
+};
+
 const getRuleBase = ( setting, block ) => {
 	return {
 		key: setting,
@@ -53,16 +68,11 @@ const buildRuleset = ( ruleKey, shouldBlock, ruleConfiguration = {} ) => {
 				value: getSettingCountries().join( '|' ).toLowerCase(),
 			};
 			break;
-		case Rules.RULE_INTERNATIONAL_BILLING_ADDRESS:
+		case Rules.RULE_IP_ADDRESS_MISMATCH:
 			ruleBase.check = {
-				key: Checks.CHECK_BILLING_COUNTRY,
-				operator:
-					// Need to use a reversed operator because we'll be matching the failure here.
-					// Example; if a country is in a ban list, block, or if a country isn't in a allow list, block.
-					'specific' === getSupportedCountriesType()
-						? CheckOperators.OPERATOR_NOT_IN
-						: CheckOperators.OPERATOR_IN,
-				value: getSettingCountries().join( '|' ).toLowerCase(),
+				key: Checks.CHECK_IP_BILLING_COUNTRY_SAME,
+				operator: CheckOperators.OPERATOR_EQUALS,
+				value: false,
 			};
 			break;
 		case Rules.RULE_ORDER_ITEMS_THRESHOLD:
@@ -121,19 +131,15 @@ const buildRuleset = ( ruleKey, shouldBlock, ruleConfiguration = {} ) => {
 						{
 							key: Checks.CHECK_ORDER_TOTAL,
 							operator: CheckOperators.OPERATOR_LT,
-							value: parseInt(
-								parseFloat( ruleConfiguration.min_amount ) *
-									100,
-								10
+							value: buildFormattedRulePrice(
+								ruleConfiguration.min_amount
 							),
 						},
 						{
 							key: Checks.CHECK_ORDER_TOTAL,
 							operator: CheckOperators.OPERATOR_GT,
-							value: parseInt(
-								parseFloat( ruleConfiguration.max_amount ) *
-									100,
-								10
+							value: buildFormattedRulePrice(
+								ruleConfiguration.max_amount
 							),
 						},
 					],
@@ -146,19 +152,15 @@ const buildRuleset = ( ruleKey, shouldBlock, ruleConfiguration = {} ) => {
 					? {
 							key: Checks.CHECK_ORDER_TOTAL,
 							operator: CheckOperators.OPERATOR_LT,
-							value: parseInt(
-								parseFloat( ruleConfiguration.min_amount ) *
-									100,
-								10
+							value: buildFormattedRulePrice(
+								ruleConfiguration.min_amount
 							),
 					  }
 					: {
 							key: Checks.CHECK_ORDER_TOTAL,
 							operator: CheckOperators.OPERATOR_GT,
-							value: parseInt(
-								parseFloat( ruleConfiguration.max_amount ) *
-									100,
-								10
+							value: buildFormattedRulePrice(
+								ruleConfiguration.max_amount
 							),
 					  };
 			}
@@ -204,7 +206,7 @@ export const readRuleset = ( rulesetConfig ) => {
 			enabled: false,
 			block: false,
 		},
-		[ Rules.RULE_INTERNATIONAL_BILLING_ADDRESS ]: {
+		[ Rules.RULE_IP_ADDRESS_MISMATCH ]: {
 			enabled: false,
 			block: false,
 		},
@@ -237,7 +239,7 @@ export const readRuleset = ( rulesetConfig ) => {
 					block: rule.outcome === Outcomes.BLOCK,
 				};
 				break;
-			case Rules.RULE_INTERNATIONAL_BILLING_ADDRESS:
+			case Rules.RULE_IP_ADDRESS_MISMATCH:
 				parsedUIConfig[ rule.key ] = {
 					enabled: true,
 					block: rule.outcome === Outcomes.BLOCK,
@@ -275,8 +277,8 @@ export const readRuleset = ( rulesetConfig ) => {
 				parsedUIConfig[ rule.key ] = {
 					enabled: true,
 					block: rule.outcome === Outcomes.BLOCK,
-					min_amount: minAmount.value ? minAmount.value / 100 : '',
-					max_amount: maxAmount.value ? maxAmount.value / 100 : '',
+					min_amount: readFormattedRulePrice( minAmount.value ),
+					max_amount: readFormattedRulePrice( maxAmount.value ),
 				};
 				break;
 		}

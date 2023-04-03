@@ -25,18 +25,19 @@ exports[`FRTDiscoverabilityBanner renders 1`] = `
       <p
         class="discoverability-card__body"
       >
-        A new range of tools have been added to WooCommerce Payments to help 
+        New features have been added to WooCommerce Payments to help 
         <strong>
           reduce fraudulent transactions
         </strong>
-         on your store. In addition to purchase verification, new risk filters are now available to screen incoming transactions - better protecting your store from fraudsters.
+         on your store. By using a set of customizable rules to evaluate incoming orders, your store is better protected from fraudsters.
       </p>
       <div
         class="discoverability-card__actions"
       >
         <a
           class="components-button is-primary"
-          href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
+          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/"
+          target="_blank"
         >
           Learn more
         </a>
@@ -73,18 +74,19 @@ exports[`FRTDiscoverabilityBanner renders when remindMeAt timestamp is in the pa
       <p
         class="discoverability-card__body"
       >
-        A new range of tools have been added to WooCommerce Payments to help 
+        New features have been added to WooCommerce Payments to help 
         <strong>
           reduce fraudulent transactions
         </strong>
-         on your store. In addition to purchase verification, new risk filters are now available to screen incoming transactions - better protecting your store from fraudsters.
+         on your store. By using a set of customizable rules to evaluate incoming orders, your store is better protected from fraudsters.
       </p>
       <div
         class="discoverability-card__actions"
       >
         <a
           class="components-button is-primary"
-          href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
+          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/"
+          target="_blank"
         >
           Learn more
         </a>
@@ -121,18 +123,19 @@ exports[`FRTDiscoverabilityBanner renders with dont show again button if remindM
       <p
         class="discoverability-card__body"
       >
-        A new range of tools have been added to WooCommerce Payments to help 
+        New features have been added to WooCommerce Payments to help 
         <strong>
           reduce fraudulent transactions
         </strong>
-         on your store. In addition to purchase verification, new risk filters are now available to screen incoming transactions - better protecting your store from fraudsters.
+         on your store. By using a set of customizable rules to evaluate incoming orders, your store is better protected from fraudsters.
       </p>
       <div
         class="discoverability-card__actions"
       >
         <a
           class="components-button is-primary"
-          href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
+          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/"
+          target="_blank"
         >
           Learn more
         </a>
@@ -175,18 +178,19 @@ exports[`FRTDiscoverabilityBanner renders without dont show again button if remi
       <p
         class="discoverability-card__body"
       >
-        A new range of tools have been added to WooCommerce Payments to help 
+        New features have been added to WooCommerce Payments to help 
         <strong>
           reduce fraudulent transactions
         </strong>
-         on your store. In addition to purchase verification, new risk filters are now available to screen incoming transactions - better protecting your store from fraudsters.
+         on your store. By using a set of customizable rules to evaluate incoming orders, your store is better protected from fraudsters.
       </p>
       <div
         class="discoverability-card__actions"
       >
         <a
           class="components-button is-primary"
-          href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
+          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/"
+          target="_blank"
         >
           Learn more
         </a>
