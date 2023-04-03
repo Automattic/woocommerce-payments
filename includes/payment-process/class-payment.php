@@ -73,6 +73,11 @@ class Payment {
 	const SCHEDULED_SUBSCRIPTION_PAYMENT_FLOW = 'SCHEDULED_SUBSCRIPTION_PAYMENT_FLOW';
 
 	/**
+	 * Used for payments through WooPay.
+	 */
+	const WOOPAY_CHECKOUT_FLOW = 'WOOPAY_CHECKOUT_FLOW';
+
+	/**
 	 * UPE flows:
 	 *
 	 * 1. The intent is created through AJAX in order to display fields on checkout.
@@ -380,6 +385,7 @@ class Payment {
 				Step\Load_Intent_After_Authentication_Step::class, // Action.
 				// Step\Check_Session_Against_Processing_Order_Step::class, // Act & Complete.
 				Step\Check_Attached_Intent_Success_Step::class, // Action.
+				Step\WooPay_Prepare_Intent_Step::class, // Action.
 				Step\Create_UPE_Intent_Step::class, // Action.
 				Step\Redirect_UPE_Payment_Step::class, // Action.
 				Step\Update_UPE_Intent_Step::class, // Action.

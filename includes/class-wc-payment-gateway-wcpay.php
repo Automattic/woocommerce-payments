@@ -701,8 +701,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order = wc_get_order( $order_id );
 
 		try {
-			return $this->new_payment_process( $order );
-
 			// The request is a preflight check from WooPay.
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
 			if ( ! empty( $_POST['is-woopay-preflight-check'] ) ) {
@@ -716,6 +714,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					'redirect' => '',
 				];
 			}
+
+			return $this->new_payment_process( $order );
 
 			UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
 		} catch ( Exception $e ) {
@@ -933,18 +933,29 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		 * Preparation part, defining the payment.
 		 */
 		$payment = $this->payment_factory->load_or_create_order_payment( $order );
-		$payment->set_flow( Payment::STANDARD_FLOW );
 
-		// phpcs:ignore WordPress.Security.NonceVerification
-		$payment_method = $this->payment_method_factory->from_request( $_POST );
-		$payment->set_payment_method( $payment_method );
+		// The sanitize_user call here is deliberate: it seems the most appropriate sanitization function
+		// for a string that will only contain latin alphanumeric characters and underscores.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$platform_checkout_intent_id = sanitize_user( wp_unslash( $_POST['platform-checkout-intent'] ?? '' ), true );
+		if ( ! empty( $platform_checkout_intent_id ) ) {
+			// Determing whether to use the WooPay flow, or not.
+			$payment->set_flow( Payment::WOOPAY_CHECKOUT_FLOW );
+			$payment->set_intent_id( $platform_checkout_intent_id );
+		} else {
+			$payment->set_flow( Payment::STANDARD_FLOW );
+
+			// phpcs:ignore WordPress.Security.NonceVerification
+			$payment_method = $this->payment_method_factory->from_request( $_POST );
+			$payment->set_payment_method( $payment_method );
+
+			if ( $payment_method instanceof New_Payment_Method && New_Payment_Method::should_be_saved( $_POST ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				$payment->set_flag( Payment::SAVE_PAYMENT_METHOD_TO_STORE );
+			}
+		}
 
 		if ( Payment_Capture_Type::MANUAL() === $this->get_capture_type() ) {
 			$payment->set_flag( Payment::MANUAL_CAPTURE );
-		}
-
-		if ( $payment_method instanceof New_Payment_Method && New_Payment_Method::should_be_saved( $_POST ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			$payment->set_flag( Payment::SAVE_PAYMENT_METHOD_TO_STORE );
 		}
 
 		if ( $this->platform_checkout_util->should_save_platform_customer() ) {

@@ -76,8 +76,10 @@ final class Customer_Details_Step extends Abstract_Step {
 		// Determine the customer making the payment, create one if we don't have one already.
 		$this->customer_id = $this->customer_service->get_customer_id_by_user_id( $this->user->ID );
 
-		$payment->set_user_id( $this->user->ID );
-		$payment->set_customer_id( $this->customer_id );
+		if ( $this->customer_id ) {
+			$payment->set_user_id( $this->user->ID );
+			$payment->set_customer_id( $this->customer_id );
+		}
 	}
 
 	/**
