@@ -515,21 +515,20 @@ jQuery( function ( $ ) {
 			return;
 		}
 		blockUI( $form );
-		const upeComponents = gatewayUPEComponents[ paymentMethodType ];
 		// Create object where keys are form field names and keys are form field values
-		const formFields = {
-			...$form.serializeArray().reduce( ( obj, field ) => {
-				obj[ field.name ] = field.value;
-				return obj;
-			}, {} ),
-			wc_payment_intent_id: upeComponents.paymentIntentId,
-			'wcpay-fingerprint': fingerprint ? fingerprint : '',
-		};
+		const formFields = $form.serializeArray().reduce( ( obj, field ) => {
+			obj[ field.name ] = field.value;
+			return obj;
+		}, {} );
 
 		try {
+			const upeComponents = gatewayUPEComponents[ paymentMethodType ];
 			formFields.wcpay_payment_country = upeComponents.country;
-
-			const response = await api.processCheckout( formFields );
+			const response = await api.processCheckout(
+				upeComponents.paymentIntentId,
+				formFields,
+				fingerprint ? fingerprint : ''
+			);
 			const redirectUrl = response.redirect_url;
 			const upeConfig = {
 				elements: upeComponents.elements,

@@ -531,16 +531,16 @@ jQuery( function ( $ ) {
 
 		blockUI( $form );
 		// Create object where keys are form field names and keys are form field values
-		const fields = {
-			...$form.serializeArray().reduce( ( obj, field ) => {
-				obj[ field.name ] = field.value;
-				return obj;
-			}, {} ),
-			wc_payment_intent_id: paymentIntentId,
-			'wcpay-fingerprint': fingerprint ? fingerprint : '',
-		};
+		const formFields = $form.serializeArray().reduce( ( obj, field ) => {
+			obj[ field.name ] = field.value;
+			return obj;
+		}, {} );
 		try {
-			const response = await api.processCheckout( fields );
+			const response = await api.processCheckout(
+				paymentIntentId,
+				formFields,
+				fingerprint ? fingerprint : ''
+			);
 
 			if ( api.handleDuplicatePayments( response ) ) {
 				return;
@@ -552,7 +552,7 @@ jQuery( function ( $ ) {
 				confirmParams: {
 					return_url: redirectUrl,
 					payment_method_data: {
-						billing_details: getBillingDetails( fields ),
+						billing_details: getBillingDetails( formFields ),
 					},
 				},
 			};
