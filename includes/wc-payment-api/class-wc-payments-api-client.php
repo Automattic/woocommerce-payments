@@ -212,23 +212,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Refund a charge
-	 *
-	 * @param string $charge_id - The charge to refund.
-	 * @param int    $amount    - Amount to charge.
-	 *
-	 * @return array
-	 * @throws API_Exception - Exception thrown on refund creation failure.
-	 */
-	public function refund_charge( $charge_id, $amount = null ) {
-		$request           = [];
-		$request['charge'] = $charge_id;
-		$request['amount'] = $amount;
-
-		return $this->request( $request, self::REFUNDS_API, self::POST );
-	}
-
-	/**
 	 * List refunds
 	 *
 	 * @param string $charge_id - The charge to retrieve the list of refunds for.

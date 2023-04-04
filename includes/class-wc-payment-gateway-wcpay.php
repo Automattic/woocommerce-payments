@@ -24,6 +24,7 @@ use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
 use WCPay\Core\Server\Request\Create_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
+use WCPay\Core\Server\Request\Refund_Charge;
 use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
@@ -1503,12 +1504,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				$refund = array_pop( $refunds );
 			} else {
-				if ( null === $amount ) {
-					// If amount is null, the default is the entire charge.
-					$refund = $this->payments_api_client->refund_charge( $charge_id );
-				} else {
-					$refund = $this->payments_api_client->refund_charge( $charge_id, WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
+				$refund_request = Refund_Charge::create( $charge_id );
+				if ( null !== $amount ) {
+					$refund_request->set_amount( WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
 				}
+				$refund = $refund_request->send( 'wcpay_refund_request' );
 			}
 			$currency = strtoupper( $refund['currency'] );
 			Tracker::track_admin( 'wcpay_edit_order_refund_success' );
