@@ -11,16 +11,9 @@ import { useState } from '@wordpress/element';
  */
 import {
 	useCurrentProtectionLevel,
-	useCurrencies,
 	useAdvancedFraudProtectionSettings,
 } from 'wcpay/data';
-import {
-	FraudProtectionHelpText,
-	HighFraudProtectionModal,
-	StandardFraudProtectionModal,
-	BasicFraudProtectionModal,
-} from '../index';
-import interpolateComponents from '@automattic/interpolate-components';
+import { FraudProtectionHelpText, BasicFraudProtectionModal } from '../index';
 import { Button } from '@wordpress/components';
 import { getAdminUrl } from 'wcpay/utils';
 import { ProtectionLevel } from '../../advanced-settings/constants';
@@ -29,10 +22,6 @@ import wcpayTracks from 'tracks';
 
 const ProtectionLevels = () => {
 	const [ isBasicModalOpen, setBasicModalOpen ] = useState( false );
-	const [ isStandardModalOpen, setStandardModalOpen ] = useState( false );
-	const [ isHighModalOpen, setHighModalOpen ] = useState( false );
-	const { currencies } = useCurrencies();
-	const storeCurrency = currencies.default ? currencies.default : {};
 
 	const [
 		currentProtectionLevel,
@@ -106,110 +95,6 @@ const ProtectionLevels = () => {
 						</div>
 						<FraudProtectionHelpText
 							level={ ProtectionLevel.BASIC }
-						/>
-					</li>
-					<li>
-						<div className="fraud-protection-single-radio-wrapper">
-							<input
-								name={ 'fraud-protection-level-select' }
-								id={ 'fraud-protection__standard-level' }
-								value={ ProtectionLevel.STANDARD }
-								type={ 'radio' }
-								className={
-									'fraud-protection-single-radio-wrapper__item'
-								}
-								checked={
-									ProtectionLevel.STANDARD ===
-									currentProtectionLevel
-								}
-								onChange={ () =>
-									handleLevelChange(
-										ProtectionLevel.STANDARD
-									)
-								}
-							/>
-							<label
-								className="fraud-protection-single-radio-wrapper__item"
-								htmlFor="fraud-protection__standard-level"
-							>
-								{ interpolateComponents( {
-									mixedString: __(
-										'Standard {{recommended}}(Recommended){{/recommended}}',
-										'woocommerce-payments'
-									),
-									components: {
-										recommended: (
-											<span className="fraud-protection-single-radio-wrapper__item--recommended" />
-										),
-									},
-								} ) }
-							</label>
-							<HelpOutlineIcon
-								size={ 18 }
-								title="Standard level help icon"
-								className="fraud-protection__help-icon"
-								onClick={ () => {
-									wcpayTracks.recordEvent(
-										'wcpay_fraud_protection_standard_modal_viewed'
-									);
-									setStandardModalOpen( true );
-								} }
-							/>
-							<StandardFraudProtectionModal
-								level={ ProtectionLevel.STANDARD }
-								isStandardModalOpen={ isStandardModalOpen }
-								setStandardModalOpen={ setStandardModalOpen }
-								storeCurrency={ storeCurrency }
-							/>
-						</div>
-						<FraudProtectionHelpText
-							level={ ProtectionLevel.STANDARD }
-						/>
-					</li>
-					<li>
-						<div className="fraud-protection-single-radio-wrapper">
-							<input
-								name={ 'fraud-protection-level-select' }
-								id={ 'fraud-protection__high-level' }
-								value={ ProtectionLevel.HIGH }
-								type={ 'radio' }
-								className={
-									'fraud-protection-single-radio-wrapper__item'
-								}
-								checked={
-									ProtectionLevel.HIGH ===
-									currentProtectionLevel
-								}
-								onChange={ () =>
-									handleLevelChange( ProtectionLevel.HIGH )
-								}
-							/>
-							<label
-								className="fraud-protection-single-radio-wrapper__item"
-								htmlFor="fraud-protection__high-level"
-							>
-								{ __( 'High', 'woocommerce-payments' ) }
-							</label>
-							<HelpOutlineIcon
-								size={ 18 }
-								title="High level help icon"
-								className="fraud-protection__help-icon"
-								onClick={ () => {
-									wcpayTracks.recordEvent(
-										'wcpay_fraud_protection_high_modal_viewed'
-									);
-									setHighModalOpen( true );
-								} }
-							/>
-							<HighFraudProtectionModal
-								level={ ProtectionLevel.HIGH }
-								isHighModalOpen={ isHighModalOpen }
-								setHighModalOpen={ setHighModalOpen }
-								storeCurrency={ storeCurrency }
-							/>
-						</div>
-						<FraudProtectionHelpText
-							level={ ProtectionLevel.HIGH }
 						/>
 					</li>
 					<hr className="fraud-protection__list-divider" />
