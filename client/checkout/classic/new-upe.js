@@ -1,6 +1,4 @@
 /* global jQuery */
-// create payment methods
-// submit order payment
 
 /**
  * Internal dependencies
