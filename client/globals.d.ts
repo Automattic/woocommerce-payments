@@ -8,6 +8,7 @@ declare const wcpaySettings: {
 	connectUrl: string;
 	isSubscriptionsActive: boolean;
 	featureFlags: {
+		customDepositSchedules?: boolean;
 		customSearch: boolean;
 		isAuthAndCaptureEnabled: boolean;
 		simplifyDepositsUi?: boolean;

@@ -122,10 +122,14 @@ exports[`Deposits Overview information Component Renders 1`] = `
       <div
         class="wcpay-deposits-overview__heading__description"
       >
-        Your deposits are dispatched 
-        <strong>
-          automatically every Monday
-        </strong>
+        <span
+          class="wcpay-deposits-overview__heading__description__text"
+        >
+          Your deposits are dispatched 
+          <strong>
+            automatically every Monday
+          </strong>
+        </span>
       </div>
     </div>
     <p>
