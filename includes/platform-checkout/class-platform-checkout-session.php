@@ -8,6 +8,7 @@
 namespace WCPay\Platform_Checkout;
 
 use Automattic\Jetpack\Connection\Rest_Authentication;
+use Automattic\WooCommerce\StoreApi\Utilities\JsonWebToken;
 
 /**
  * Class responsible for handling platform checkout sessions.
@@ -40,30 +41,40 @@ class Platform_Checkout_Session {
 			return $user;
 		}
 
-		if ( ! self::is_store_api_request() || ! apply_filters( 'wcpay_woopay_is_signed_with_blog_token', Rest_Authentication::is_signed_with_blog_token() ) ) {
+		if ( ! self::is_store_api_request() || ! self::is_request_authenticated() ) {
 			return $user;
 		}
 
-		if ( ! isset( $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'] ) || ! is_numeric( $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'] ) ) {
-			return null;
-		}
-
-		return (int) $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'];
+		return self::get_user_id_from_cart_token();
 	}
 
 	/**
-	 * Tells WC to use platform checkout session cookie if the header is present.
+	 * Returns the user ID from the cart token.
 	 *
-	 * @param string $cookie_hash Default cookie hash.
-	 *
-	 * @return string
+	 * @return int User ID.
 	 */
-	public static function determine_session_cookie_for_platform_checkout( $cookie_hash ) {
-		if ( isset( $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'] ) && 0 === (int) $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'] ) {
-			return self::PLATFORM_CHECKOUT_SESSION_COOKIE_NAME;
+	private static function get_user_id_from_cart_token() {
+		if ( ! isset( $_SERVER['HTTP_CART_TOKEN'] ) ) {
+			return 0;
 		}
 
-		return $cookie_hash;
+		$cart_token = wc_clean( wp_unslash( $_SERVER['HTTP_CART_TOKEN'] ) );
+
+		if ( $cart_token ) {
+			$payload = JsonWebToken::get_parts( $cart_token )->payload;
+
+			if ( empty( $payload ) ) {
+				return 0;
+			}
+
+			$session_handler = new \Automattic\WooCommerce\StoreApi\SessionHandler();
+			$session_data    = $session_handler->get_session( $payload->user_id );
+			$customer        = maybe_unserialize( $session_data['customer'] );
+
+			return (int) $customer['id'];
+		}
+
+		return 0;
 	}
 
 	/**
@@ -84,5 +95,28 @@ class Platform_Checkout_Session {
 
 		// Restrict filter to only run on Store API requests.
 		return 0 === strpos( $request_uri, $store_api_url );
+	}
+
+	/**
+	 * Returns true if the request is authenticated.
+	 *
+	 * @return bool  True if request is authenticated.
+	 */
+	private static function is_request_authenticated(): bool {
+		return apply_filters( 'wcpay_woopay_is_signed_with_blog_token', Rest_Authentication::is_signed_with_blog_token() );
+	}
+
+	/**
+	 * Tells WC to use platform checkout session cookie if the header is present.
+	 *
+	 * @param string $cookie_hash Default cookie hash.
+	 *
+	 * @return string
+	 */
+	public static function determine_session_cookie_for_platform_checkout( $cookie_hash ) {
+		if ( self::is_store_api_request() && self::is_request_authenticated() && ( 0 === self::get_user_id_from_cart_token() ) ) {
+			return self::PLATFORM_CHECKOUT_SESSION_COOKIE_NAME;
+		}
+		return $cookie_hash;
 	}
 }
