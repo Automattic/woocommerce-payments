@@ -12,7 +12,6 @@ import strings from './strings';
 import NextDepositDetails from './next-deposit';
 import DepositsOverviewFooter from './footer';
 import DepositOverviewSectionHeading from './section-heading';
-import { areDepositsBlocked } from './utils';
 import DepositSchedule from './deposit-schedule';
 import SuspendedDepositNotice from './suspended-deposit-notice';
 
@@ -31,7 +30,7 @@ const DepositsOverview = (): JSX.Element => {
 			<CardHeader>{ strings.heading }</CardHeader>
 
 			{ /* Only show the next deposit section if the page is loading or if deposits are not blocked. */ }
-			{ ( isLoading || ! areDepositsBlocked( account ) ) && (
+			{ ( isLoading || ! account.deposits_blocked ) && (
 				<>
 					<DepositOverviewSectionHeading
 						title={ strings.nextDeposit.title }
@@ -46,7 +45,7 @@ const DepositsOverview = (): JSX.Element => {
 			) }
 
 			{ ! isLoading &&
-				( areDepositsBlocked( account ) ? (
+				( account.deposits_blocked ? (
 					<DepositOverviewSectionHeading
 						title={ strings.depositHistoryHeading }
 						children={ <SuspendedDepositNotice /> }

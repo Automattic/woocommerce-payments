@@ -46,29 +46,3 @@ export const getNextDeposit = (
 		amount: formatCurrency( nextScheduled.amount ?? 0, currency ),
 	};
 };
-
-/**
- * Checks if the account deposits are blocked.
- *
- * @param {AccountOverview.Account} account The account object containing information about the account.
- * @return {boolean} Whether the account deposits are blocked.
- */
-export const areDepositsBlocked = (
-	account: AccountOverview.Account
-): boolean => {
-	const schedule = account.deposits_schedule;
-
-	/*
-	 * Check if the account is blocked.
-	 *
-	 * Accounts that have a manual interval prior to the custom deposit schedule
-	 * feature, are considered suspended. This will change once manual deposits are supported.
-	 */
-	const isCustomDepositSchedulesEnabled =
-		wcpaySettings?.featureFlags?.customDepositSchedules;
-
-	return (
-		account.deposits_blocked ||
-		( ! isCustomDepositSchedulesEnabled && 'manual' === schedule.interval )
-	);
-};
