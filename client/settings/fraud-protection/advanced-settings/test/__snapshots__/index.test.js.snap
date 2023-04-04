@@ -99,6 +99,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="avs-mismatch-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -161,8 +162,9 @@ Object {
                       >
                         For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                         <a
-                          data-link-type="wc-admin"
-                          href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                          data-link-type="external"
+                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          target="_blank"
                         >
                           Learn more
                         </a>
@@ -174,6 +176,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="cvc-verification-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -236,8 +239,9 @@ Object {
                       >
                         For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                         <a
-                          data-link-type="wc-admin"
-                          href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                          data-link-type="external"
+                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          target="_blank"
                         >
                           Learn more
                         </a>
@@ -249,6 +253,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="international-ip-address-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -262,10 +267,17 @@ Object {
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens for IP addresses outside of your 
+                    This filter screens for 
                     <a
-                      data-link-type="wc-admin"
-                      href="#"
+                      data-link-type="external"
+                      href="https://simple.wikipedia.org/wiki/IP_address"
+                      target="_blank"
+                    >
+                      IP addresses
+                    </a>
+                     outside of your 
+                    <a
+                      href="admin.php?page=wc-settings&tab=general"
                     >
                       supported countries
                     </a>
@@ -368,6 +380,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="ip-address-mismatch"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -376,19 +389,20 @@ Object {
                   <p
                     class="fraud-protection-rule-card-header"
                   >
-                    International Billing Address
+                    IP Address Mismatch
                   </p>
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens the customer's billing information for addresses outside of your 
+                    This filter screens for customer's 
                     <a
-                      data-link-type="wc-admin"
-                      href="#"
+                      data-link-type="external"
+                      href="https://simple.wikipedia.org/wiki/IP_address"
+                      target="_blank"
                     >
-                      supported countries
+                      IP address
                     </a>
-                    .
+                     to see if it is in a different country than indicated in their billing address.
                   </p>
                 </div>
               </div>
@@ -428,7 +442,7 @@ Object {
                         class="components-toggle-control__label"
                         for="inspector-toggle-control-11"
                       >
-                        Screen transactions for international billing addresses
+                        Screen transactions where the IP country and billing country don't match
                       </label>
                     </div>
                     <p
@@ -446,9 +460,10 @@ Object {
                     How does this filter protect me?
                   </strong>
                   <p>
-                    Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
+                    Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
                   </p>
                 </div>
+<<<<<<< HEAD
                 <div
                   class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
                 >
@@ -483,10 +498,13 @@ Object {
                     </div>
                   </div>
                 </div>
+=======
+>>>>>>> develop
               </div>
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="address-mismatch-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -565,6 +583,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="purchase-price-threshold-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -840,6 +859,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="order-items-threshold-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -1007,6 +1027,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="avs-mismatch-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -1069,8 +1090,9 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
@@ -1082,6 +1104,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="cvc-verification-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -1144,8 +1167,9 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
@@ -1157,6 +1181,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="international-ip-address-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -1170,10 +1195,17 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for IP addresses outside of your 
+                  This filter screens for 
                   <a
-                    data-link-type="wc-admin"
-                    href="#"
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
+                  >
+                    IP addresses
+                  </a>
+                   outside of your 
+                  <a
+                    href="admin.php?page=wc-settings&tab=general"
                   >
                     supported countries
                   </a>
@@ -1276,6 +1308,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="ip-address-mismatch"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -1284,19 +1317,20 @@ Object {
                 <p
                   class="fraud-protection-rule-card-header"
                 >
-                  International Billing Address
+                  IP Address Mismatch
                 </p>
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens the customer's billing information for addresses outside of your 
+                  This filter screens for customer's 
                   <a
-                    data-link-type="wc-admin"
-                    href="#"
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
                   >
-                    supported countries
+                    IP address
                   </a>
-                  .
+                   to see if it is in a different country than indicated in their billing address.
                 </p>
               </div>
             </div>
@@ -1336,7 +1370,7 @@ Object {
                       class="components-toggle-control__label"
                       for="inspector-toggle-control-11"
                     >
-                      Screen transactions for international billing addresses
+                      Screen transactions where the IP country and billing country don't match
                     </label>
                   </div>
                   <p
@@ -1354,9 +1388,10 @@ Object {
                   How does this filter protect me?
                 </strong>
                 <p>
-                  Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
+                  Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
                 </p>
               </div>
+<<<<<<< HEAD
               <div
                 class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
               >
@@ -1391,10 +1426,13 @@ Object {
                   </div>
                 </div>
               </div>
+=======
+>>>>>>> develop
             </div>
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="address-mismatch-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -1473,6 +1511,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="purchase-price-threshold-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -1748,6 +1787,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="order-items-threshold-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -1925,7 +1965,7 @@ Object {
       id="a11y-speak-polite"
       style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
     >
-                Enabling this filter will not have any effect because you are selling to all countries.   
+                Enabling this filter will not have any effect because you are selling to all countries.  
     </div>
     <div>
       <div>
@@ -1980,6 +2020,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="avs-mismatch-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2042,8 +2083,9 @@ Object {
                       >
                         For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                         <a
-                          data-link-type="wc-admin"
-                          href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                          data-link-type="external"
+                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          target="_blank"
                         >
                           Learn more
                         </a>
@@ -2055,6 +2097,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="cvc-verification-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2117,8 +2160,9 @@ Object {
                       >
                         For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                         <a
-                          data-link-type="wc-admin"
-                          href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                          data-link-type="external"
+                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          target="_blank"
                         >
                           Learn more
                         </a>
@@ -2130,6 +2174,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="international-ip-address-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2143,10 +2188,17 @@ Object {
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens for IP addresses outside of your 
+                    This filter screens for 
                     <a
-                      data-link-type="wc-admin"
-                      href="#"
+                      data-link-type="external"
+                      href="https://simple.wikipedia.org/wiki/IP_address"
+                      target="_blank"
+                    >
+                      IP addresses
+                    </a>
+                     outside of your 
+                    <a
+                      href="admin.php?page=wc-settings&tab=general"
                     >
                       supported countries
                     </a>
@@ -2249,6 +2301,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="ip-address-mismatch"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2257,19 +2310,20 @@ Object {
                   <p
                     class="fraud-protection-rule-card-header"
                   >
-                    International Billing Address
+                    IP Address Mismatch
                   </p>
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens the customer's billing information for addresses outside of your 
+                    This filter screens for customer's 
                     <a
-                      data-link-type="wc-admin"
-                      href="#"
+                      data-link-type="external"
+                      href="https://simple.wikipedia.org/wiki/IP_address"
+                      target="_blank"
                     >
-                      supported countries
+                      IP address
                     </a>
-                    .
+                     to see if it is in a different country than indicated in their billing address.
                   </p>
                 </div>
               </div>
@@ -2309,7 +2363,7 @@ Object {
                         class="components-toggle-control__label"
                         for="inspector-toggle-control-6"
                       >
-                        Screen transactions for international billing addresses
+                        Screen transactions where the IP country and billing country don't match
                       </label>
                     </div>
                     <p
@@ -2327,9 +2381,10 @@ Object {
                     How does this filter protect me?
                   </strong>
                   <p>
-                    Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
+                    Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
                   </p>
                 </div>
+<<<<<<< HEAD
                 <div
                   class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
                 >
@@ -2364,10 +2419,13 @@ Object {
                     </div>
                   </div>
                 </div>
+=======
+>>>>>>> develop
               </div>
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="address-mismatch-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2446,6 +2504,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="purchase-price-threshold-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2524,6 +2583,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="order-items-threshold-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2675,6 +2735,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="avs-mismatch-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2737,8 +2798,9 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
@@ -2750,6 +2812,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="cvc-verification-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2812,8 +2875,9 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
@@ -2825,6 +2889,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="international-ip-address-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2838,10 +2903,17 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for IP addresses outside of your 
+                  This filter screens for 
                   <a
-                    data-link-type="wc-admin"
-                    href="#"
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
+                  >
+                    IP addresses
+                  </a>
+                   outside of your 
+                  <a
+                    href="admin.php?page=wc-settings&tab=general"
                   >
                     supported countries
                   </a>
@@ -2944,6 +3016,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="ip-address-mismatch"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2952,19 +3025,20 @@ Object {
                 <p
                   class="fraud-protection-rule-card-header"
                 >
-                  International Billing Address
+                  IP Address Mismatch
                 </p>
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens the customer's billing information for addresses outside of your 
+                  This filter screens for customer's 
                   <a
-                    data-link-type="wc-admin"
-                    href="#"
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
                   >
-                    supported countries
+                    IP address
                   </a>
-                  .
+                   to see if it is in a different country than indicated in their billing address.
                 </p>
               </div>
             </div>
@@ -3004,7 +3078,7 @@ Object {
                       class="components-toggle-control__label"
                       for="inspector-toggle-control-6"
                     >
-                      Screen transactions for international billing addresses
+                      Screen transactions where the IP country and billing country don't match
                     </label>
                   </div>
                   <p
@@ -3022,9 +3096,10 @@ Object {
                   How does this filter protect me?
                 </strong>
                 <p>
-                  Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
+                  Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
                 </p>
               </div>
+<<<<<<< HEAD
               <div
                 class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
               >
@@ -3059,10 +3134,13 @@ Object {
                   </div>
                 </div>
               </div>
+=======
+>>>>>>> develop
             </div>
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="address-mismatch-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -3141,6 +3219,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="purchase-price-threshold-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -3219,6 +3298,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="order-items-threshold-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -3397,7 +3477,7 @@ Object {
       id="a11y-speak-polite"
       style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
     >
-                Enabling this filter will not have any effect because you are selling to all countries.   
+                Enabling this filter will not have any effect because you are selling to all countries.  
     </div>
     <div>
       <div
@@ -3420,6 +3500,7 @@ Object {
           </h2>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="avs-mismatch-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -3482,8 +3563,9 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
@@ -3495,6 +3577,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="cvc-verification-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -3557,8 +3640,9 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
@@ -3570,6 +3654,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="international-ip-address-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -3583,10 +3668,17 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for IP addresses outside of your 
+                  This filter screens for 
                   <a
-                    data-link-type="wc-admin"
-                    href="#"
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
+                  >
+                    IP addresses
+                  </a>
+                   outside of your 
+                  <a
+                    href="admin.php?page=wc-settings&tab=general"
                   >
                     supported countries
                   </a>
@@ -3689,6 +3781,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="ip-address-mismatch"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -3697,19 +3790,20 @@ Object {
                 <p
                   class="fraud-protection-rule-card-header"
                 >
-                  International Billing Address
+                  IP Address Mismatch
                 </p>
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens the customer's billing information for addresses outside of your 
+                  This filter screens for customer's 
                   <a
-                    data-link-type="wc-admin"
-                    href="#"
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
                   >
-                    supported countries
+                    IP address
                   </a>
-                  .
+                   to see if it is in a different country than indicated in their billing address.
                 </p>
               </div>
             </div>
@@ -3749,7 +3843,7 @@ Object {
                       class="components-toggle-control__label"
                       for="inspector-toggle-control-1"
                     >
-                      Screen transactions for international billing addresses
+                      Screen transactions where the IP country and billing country don't match
                     </label>
                   </div>
                   <p
@@ -3767,9 +3861,10 @@ Object {
                   How does this filter protect me?
                 </strong>
                 <p>
-                  Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
+                  Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
                 </p>
               </div>
+<<<<<<< HEAD
               <div
                 class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
               >
@@ -3804,10 +3899,13 @@ Object {
                   </div>
                 </div>
               </div>
+=======
+>>>>>>> develop
             </div>
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="address-mismatch-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -3886,6 +3984,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="purchase-price-threshold-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -3964,6 +4063,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="order-items-threshold-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4081,6 +4181,7 @@ Object {
         </h2>
         <div
           class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+          id="avs-mismatch-card"
         >
           <div
             class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4143,8 +4244,9 @@ Object {
                   >
                     For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                     <a
-                      data-link-type="wc-admin"
-                      href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                      data-link-type="external"
+                      href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                      target="_blank"
                     >
                       Learn more
                     </a>
@@ -4156,6 +4258,7 @@ Object {
         </div>
         <div
           class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+          id="cvc-verification-card"
         >
           <div
             class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4218,8 +4321,9 @@ Object {
                   >
                     For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                     <a
-                      data-link-type="wc-admin"
-                      href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                      data-link-type="external"
+                      href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                      target="_blank"
                     >
                       Learn more
                     </a>
@@ -4231,6 +4335,7 @@ Object {
         </div>
         <div
           class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+          id="international-ip-address-card"
         >
           <div
             class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4244,10 +4349,17 @@ Object {
               <p
                 class="fraud-protection-rule-card-description"
               >
-                This filter screens for IP addresses outside of your 
+                This filter screens for 
                 <a
-                  data-link-type="wc-admin"
-                  href="#"
+                  data-link-type="external"
+                  href="https://simple.wikipedia.org/wiki/IP_address"
+                  target="_blank"
+                >
+                  IP addresses
+                </a>
+                 outside of your 
+                <a
+                  href="admin.php?page=wc-settings&tab=general"
                 >
                   supported countries
                 </a>
@@ -4350,6 +4462,7 @@ Object {
         </div>
         <div
           class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+          id="ip-address-mismatch"
         >
           <div
             class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4358,19 +4471,20 @@ Object {
               <p
                 class="fraud-protection-rule-card-header"
               >
-                International Billing Address
+                IP Address Mismatch
               </p>
               <p
                 class="fraud-protection-rule-card-description"
               >
-                This filter screens the customer's billing information for addresses outside of your 
+                This filter screens for customer's 
                 <a
-                  data-link-type="wc-admin"
-                  href="#"
+                  data-link-type="external"
+                  href="https://simple.wikipedia.org/wiki/IP_address"
+                  target="_blank"
                 >
-                  supported countries
+                  IP address
                 </a>
-                .
+                 to see if it is in a different country than indicated in their billing address.
               </p>
             </div>
           </div>
@@ -4410,7 +4524,7 @@ Object {
                     class="components-toggle-control__label"
                     for="inspector-toggle-control-1"
                   >
-                    Screen transactions for international billing addresses
+                    Screen transactions where the IP country and billing country don't match
                   </label>
                 </div>
                 <p
@@ -4428,9 +4542,10 @@ Object {
                 How does this filter protect me?
               </strong>
               <p>
-                Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
+                Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
               </p>
             </div>
+<<<<<<< HEAD
             <div
               class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
             >
@@ -4465,10 +4580,13 @@ Object {
                 </div>
               </div>
             </div>
+=======
+>>>>>>> develop
           </div>
         </div>
         <div
           class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+          id="address-mismatch-card"
         >
           <div
             class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4547,6 +4665,7 @@ Object {
         </div>
         <div
           class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+          id="purchase-price-threshold-card"
         >
           <div
             class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4625,6 +4744,7 @@ Object {
         </div>
         <div
           class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+          id="order-items-threshold-card"
         >
           <div
             class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4801,7 +4921,7 @@ Object {
       id="a11y-speak-polite"
       style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
     >
-                Enabling this filter will not have any effect because you are selling to all countries.   
+                Enabling this filter will not have any effect because you are selling to all countries.  
     </div>
     <div>
       <div>
@@ -4842,6 +4962,7 @@ Object {
             </h2>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="avs-mismatch-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4904,8 +5025,9 @@ Object {
                       >
                         For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                         <a
-                          data-link-type="wc-admin"
-                          href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                          data-link-type="external"
+                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          target="_blank"
                         >
                           Learn more
                         </a>
@@ -4917,6 +5039,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="cvc-verification-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4979,8 +5102,9 @@ Object {
                       >
                         For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                         <a
-                          data-link-type="wc-admin"
-                          href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                          data-link-type="external"
+                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          target="_blank"
                         >
                           Learn more
                         </a>
@@ -4992,6 +5116,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="international-ip-address-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -5005,10 +5130,17 @@ Object {
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens for IP addresses outside of your 
+                    This filter screens for 
                     <a
-                      data-link-type="wc-admin"
-                      href="#"
+                      data-link-type="external"
+                      href="https://simple.wikipedia.org/wiki/IP_address"
+                      target="_blank"
+                    >
+                      IP addresses
+                    </a>
+                     outside of your 
+                    <a
+                      href="admin.php?page=wc-settings&tab=general"
                     >
                       supported countries
                     </a>
@@ -5111,6 +5243,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="ip-address-mismatch"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -5119,19 +5252,20 @@ Object {
                   <p
                     class="fraud-protection-rule-card-header"
                   >
-                    International Billing Address
+                    IP Address Mismatch
                   </p>
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens the customer's billing information for addresses outside of your 
+                    This filter screens for customer's 
                     <a
-                      data-link-type="wc-admin"
-                      href="#"
+                      data-link-type="external"
+                      href="https://simple.wikipedia.org/wiki/IP_address"
+                      target="_blank"
                     >
-                      supported countries
+                      IP address
                     </a>
-                    .
+                     to see if it is in a different country than indicated in their billing address.
                   </p>
                 </div>
               </div>
@@ -5171,7 +5305,7 @@ Object {
                         class="components-toggle-control__label"
                         for="inspector-toggle-control-16"
                       >
-                        Screen transactions for international billing addresses
+                        Screen transactions where the IP country and billing country don't match
                       </label>
                     </div>
                     <p
@@ -5189,9 +5323,10 @@ Object {
                     How does this filter protect me?
                   </strong>
                   <p>
-                    Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
+                    Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
                   </p>
                 </div>
+<<<<<<< HEAD
                 <div
                   class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
                 >
@@ -5226,10 +5361,13 @@ Object {
                     </div>
                   </div>
                 </div>
+=======
+>>>>>>> develop
               </div>
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="address-mismatch-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -5308,6 +5446,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="purchase-price-threshold-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -5546,6 +5685,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="order-items-threshold-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -5682,6 +5822,7 @@ Object {
           </h2>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="avs-mismatch-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -5744,8 +5885,9 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
@@ -5757,6 +5899,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="cvc-verification-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -5819,8 +5962,9 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
@@ -5832,6 +5976,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="international-ip-address-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -5845,10 +5990,17 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for IP addresses outside of your 
+                  This filter screens for 
                   <a
-                    data-link-type="wc-admin"
-                    href="#"
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
+                  >
+                    IP addresses
+                  </a>
+                   outside of your 
+                  <a
+                    href="admin.php?page=wc-settings&tab=general"
                   >
                     supported countries
                   </a>
@@ -5951,6 +6103,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="ip-address-mismatch"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -5959,19 +6112,20 @@ Object {
                 <p
                   class="fraud-protection-rule-card-header"
                 >
-                  International Billing Address
+                  IP Address Mismatch
                 </p>
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens the customer's billing information for addresses outside of your 
+                  This filter screens for customer's 
                   <a
-                    data-link-type="wc-admin"
-                    href="#"
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
                   >
-                    supported countries
+                    IP address
                   </a>
-                  .
+                   to see if it is in a different country than indicated in their billing address.
                 </p>
               </div>
             </div>
@@ -6011,7 +6165,7 @@ Object {
                       class="components-toggle-control__label"
                       for="inspector-toggle-control-16"
                     >
-                      Screen transactions for international billing addresses
+                      Screen transactions where the IP country and billing country don't match
                     </label>
                   </div>
                   <p
@@ -6029,9 +6183,10 @@ Object {
                   How does this filter protect me?
                 </strong>
                 <p>
-                  Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
+                  Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
                 </p>
               </div>
+<<<<<<< HEAD
               <div
                 class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
               >
@@ -6066,10 +6221,13 @@ Object {
                   </div>
                 </div>
               </div>
+=======
+>>>>>>> develop
             </div>
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="address-mismatch-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -6148,6 +6306,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="purchase-price-threshold-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -6386,6 +6545,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="order-items-threshold-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"

@@ -9,7 +9,6 @@ declare const wcpaySettings: {
 	isSubscriptionsActive: boolean;
 	featureFlags: {
 		customSearch: boolean;
-		customDepositSchedules: boolean;
 		isAuthAndCaptureEnabled: boolean;
 		simplifyDepositsUi?: boolean;
 		paymentTimeline: boolean;

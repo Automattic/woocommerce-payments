@@ -705,6 +705,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order = wc_get_order( $order_id );
 
 		try {
+			if ( 20 < strlen( $order->get_billing_phone() ) ) {
+				throw new Process_Payment_Exception(
+					__( 'Invalid phone number.', 'woocommerce-payments' ),
+					'invalid_phone_number'
+				);
+			}
 			// Check if session exists before instantiating Fraud_Prevention_Service.
 			if ( WC()->session ) {
 				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
@@ -756,6 +762,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		} catch ( Exception $e ) {
 			// We set this variable to be used in following checks.
 			$blocked_due_to_fraud_rules = $e instanceof API_Exception && 'wcpay_blocked_by_fraud_rule' === $e->get_error_code();
+
+			do_action( 'woocommerce_payments_order_failed', $order, $e );
 
 			/**
 			 * TODO: Determine how to do this update with Order_Service.
@@ -1181,6 +1189,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$intent_id     = $intent['id'];
 			$status        = $intent['status'];
 			$charge_id     = '';
+			$charge        = null;
 			$client_secret = $intent['client_secret'];
 			$currency      = $order->get_currency();
 			$next_action   = $intent['next_action'];
@@ -1268,6 +1277,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$this->remove_session_processing_order( $order->get_id() );
 		}
 		$this->order_service->update_order_status_from_intent( $order, $intent );
+		$this->order_service->attach_transaction_fee_to_order( $order, $charge );
 
 		$this->maybe_add_customer_notification_note( $order, $processing );
 
@@ -2745,6 +2755,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				$this->attach_exchange_info_to_order( $order, $charge_id );
 				$this->order_service->attach_intent_info_to_order( $order, $intent_id, $status, $intent->get_payment_method_id(), $intent->get_customer_id(), $charge_id, $intent->get_currency() );
+				$this->order_service->attach_transaction_fee_to_order( $order, $charge );
 			} else {
 				// For $0 orders, fetch the Setup Intent instead.
 				$intent    = $this->payments_api_client->get_setup_intent( $intent_id );

@@ -203,15 +203,6 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether custom deposit schedules are enabled.
-	 *
-	 * @return bool
-	 */
-	public static function is_custom_deposit_schedules_enabled() {
-		return '1' === get_option( '_wcpay_feature_custom_deposit_schedules', '1' );
-	}
-
-	/**
 	 * Checks whether WooPay Express Checkout is enabled.
 	 *
 	 * @return bool
@@ -282,7 +273,6 @@ class WC_Payments_Features {
 				'accountOverviewTaskList' => self::is_account_overview_task_list_enabled(),
 				'platformCheckout'        => self::is_platform_checkout_eligible(),
 				'documents'               => self::is_documents_section_enabled(),
-				'customDepositSchedules'  => self::is_custom_deposit_schedules_enabled(),
 				'clientSecretEncryption'  => self::is_client_secret_encryption_enabled(),
 				'woopayExpressCheckout'   => self::is_woopay_express_checkout_enabled(),
 				'isAuthAndCaptureEnabled' => self::is_auth_and_capture_enabled(),

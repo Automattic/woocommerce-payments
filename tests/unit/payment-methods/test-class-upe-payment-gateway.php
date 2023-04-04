@@ -1786,6 +1786,15 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->mock_upe_gateway->process_payment( $order->get_id() );
 	}
 
+	public function test_exception_will_be_thrown_if_phone_number_is_invalid() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_billing_phone( '+1123456789123456789123' );
+		$order->save();
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Invalid phone number.' );
+		$this->mock_upe_gateway->process_payment( $order->get_id() );
+	}
+
 	public function test_process_payment_caches_mimimum_amount_and_displays_error_upon_exception() {
 		$amount            = 0.45;
 		$customer          = 'cus_12345';

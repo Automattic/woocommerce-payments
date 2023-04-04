@@ -4,6 +4,7 @@ exports[`International billing address card renders correctly 1`] = `
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="ip-address-mismatch"
   >
     <div
       class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -12,19 +13,20 @@ exports[`International billing address card renders correctly 1`] = `
         <p
           class="fraud-protection-rule-card-header"
         >
-          International Billing Address
+          IP Address Mismatch
         </p>
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens the customer's billing information for addresses outside of your 
+          This filter screens for customer's 
           <a
-            data-link-type="wc-admin"
-            href="#"
+            data-link-type="external"
+            href="https://simple.wikipedia.org/wiki/IP_address"
+            target="_blank"
           >
-            supported countries
+            IP address
           </a>
-          .
+           to see if it is in a different country than indicated in their billing address.
         </p>
       </div>
     </div>
@@ -64,7 +66,7 @@ exports[`International billing address card renders correctly 1`] = `
               class="components-toggle-control__label"
               for="inspector-toggle-control-0"
             >
-              Screen transactions for international billing addresses
+              Screen transactions where the IP country and billing country don't match
             </label>
           </div>
           <p
@@ -82,9 +84,10 @@ exports[`International billing address card renders correctly 1`] = `
           How does this filter protect me?
         </strong>
         <p>
-          Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
+          Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
         </p>
       </div>
+<<<<<<< HEAD:client/settings/fraud-protection/advanced-settings/cards/test/__snapshots__/international-billing-address.test.js.snap
       <div
         class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
       >
@@ -119,6 +122,8 @@ exports[`International billing address card renders correctly 1`] = `
           </div>
         </div>
       </div>
+=======
+>>>>>>> develop:client/settings/fraud-protection/advanced-settings/cards/test/__snapshots__/ip-address-mismatch.js.snap
     </div>
   </div>
 </div>
@@ -128,6 +133,7 @@ exports[`International billing address card renders correctly when enabled 1`] =
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="ip-address-mismatch"
   >
     <div
       class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -136,19 +142,20 @@ exports[`International billing address card renders correctly when enabled 1`] =
         <p
           class="fraud-protection-rule-card-header"
         >
-          International Billing Address
+          IP Address Mismatch
         </p>
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens the customer's billing information for addresses outside of your 
+          This filter screens for customer's 
           <a
-            data-link-type="wc-admin"
-            href="#"
+            data-link-type="external"
+            href="https://simple.wikipedia.org/wiki/IP_address"
+            target="_blank"
           >
-            supported countries
+            IP address
           </a>
-          .
+           to see if it is in a different country than indicated in their billing address.
         </p>
       </div>
     </div>
@@ -188,7 +195,7 @@ exports[`International billing address card renders correctly when enabled 1`] =
               class="components-toggle-control__label"
               for="inspector-toggle-control-1"
             >
-              Screen transactions for international billing addresses
+              Screen transactions where the IP country and billing country don't match
             </label>
           </div>
           <p
@@ -272,9 +279,10 @@ exports[`International billing address card renders correctly when enabled 1`] =
           How does this filter protect me?
         </strong>
         <p>
-          Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
+          Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
         </p>
       </div>
+<<<<<<< HEAD:client/settings/fraud-protection/advanced-settings/cards/test/__snapshots__/international-billing-address.test.js.snap
       <div
         class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
       >
@@ -309,6 +317,8 @@ exports[`International billing address card renders correctly when enabled 1`] =
           </div>
         </div>
       </div>
+=======
+>>>>>>> develop:client/settings/fraud-protection/advanced-settings/cards/test/__snapshots__/ip-address-mismatch.js.snap
     </div>
   </div>
 </div>
@@ -318,6 +328,7 @@ exports[`International billing address card renders correctly when enabled and c
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="ip-address-mismatch"
   >
     <div
       class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -326,19 +337,20 @@ exports[`International billing address card renders correctly when enabled and c
         <p
           class="fraud-protection-rule-card-header"
         >
-          International Billing Address
+          IP Address Mismatch
         </p>
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens the customer's billing information for addresses outside of your 
+          This filter screens for customer's 
           <a
-            data-link-type="wc-admin"
-            href="#"
+            data-link-type="external"
+            href="https://simple.wikipedia.org/wiki/IP_address"
+            target="_blank"
           >
-            supported countries
+            IP address
           </a>
-          .
+           to see if it is in a different country than indicated in their billing address.
         </p>
       </div>
     </div>
@@ -378,7 +390,7 @@ exports[`International billing address card renders correctly when enabled and c
               class="components-toggle-control__label"
               for="inspector-toggle-control-2"
             >
-              Screen transactions for international billing addresses
+              Screen transactions where the IP country and billing country don't match
             </label>
           </div>
           <p
@@ -477,9 +489,10 @@ exports[`International billing address card renders correctly when enabled and c
           How does this filter protect me?
         </strong>
         <p>
-          Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
+          Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
         </p>
       </div>
+<<<<<<< HEAD:client/settings/fraud-protection/advanced-settings/cards/test/__snapshots__/international-billing-address.test.js.snap
       <div
         class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
       >
@@ -514,6 +527,8 @@ exports[`International billing address card renders correctly when enabled and c
           </div>
         </div>
       </div>
+=======
+>>>>>>> develop:client/settings/fraud-protection/advanced-settings/cards/test/__snapshots__/ip-address-mismatch.js.snap
     </div>
   </div>
 </div>
@@ -523,6 +538,7 @@ exports[`International billing address card renders like disabled when checked, 
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="ip-address-mismatch"
   >
     <div
       class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -531,19 +547,20 @@ exports[`International billing address card renders like disabled when checked, 
         <p
           class="fraud-protection-rule-card-header"
         >
-          International Billing Address
+          IP Address Mismatch
         </p>
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens the customer's billing information for addresses outside of your 
+          This filter screens for customer's 
           <a
-            data-link-type="wc-admin"
-            href="#"
+            data-link-type="external"
+            href="https://simple.wikipedia.org/wiki/IP_address"
+            target="_blank"
           >
-            supported countries
+            IP address
           </a>
-          .
+           to see if it is in a different country than indicated in their billing address.
         </p>
       </div>
     </div>
@@ -583,7 +600,7 @@ exports[`International billing address card renders like disabled when checked, 
               class="components-toggle-control__label"
               for="inspector-toggle-control-3"
             >
-              Screen transactions for international billing addresses
+              Screen transactions where the IP country and billing country don't match
             </label>
           </div>
           <p
@@ -601,9 +618,10 @@ exports[`International billing address card renders like disabled when checked, 
           How does this filter protect me?
         </strong>
         <p>
-          Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
+          Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
         </p>
       </div>
+<<<<<<< HEAD:client/settings/fraud-protection/advanced-settings/cards/test/__snapshots__/international-billing-address.test.js.snap
       <div
         class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
       >
@@ -638,6 +656,8 @@ exports[`International billing address card renders like disabled when checked, 
           </div>
         </div>
       </div>
+=======
+>>>>>>> develop:client/settings/fraud-protection/advanced-settings/cards/test/__snapshots__/ip-address-mismatch.js.snap
     </div>
   </div>
 </div>
