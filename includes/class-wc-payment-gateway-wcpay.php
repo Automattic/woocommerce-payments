@@ -1508,7 +1508,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				if ( null !== $amount ) {
 					$refund_request->set_amount( WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
 				}
-				$refund = $refund_request->send( 'wcpay_refund_request' );
+				$refund = $refund_request->send( 'wcpay_refund_charge_request' );
 			}
 			$currency = strtoupper( $refund['currency'] );
 			Tracker::track_admin( 'wcpay_edit_order_refund_success' );
