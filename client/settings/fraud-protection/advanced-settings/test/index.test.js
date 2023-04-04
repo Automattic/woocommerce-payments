@@ -83,6 +83,7 @@ describe( 'Advanced fraud protection settings', () => {
 					precision: 2,
 				},
 			},
+			isMultiCurrencyEnabled: '1',
 		};
 
 		useAdvancedFraudProtectionSettings.mockReturnValue( [
