@@ -2,7 +2,7 @@
  * External dependencies
  */
 import * as React from 'react';
-import { Card, CardHeader, CardBody } from '@wordpress/components';
+import { Card, CardHeader } from '@wordpress/components';
 
 /**
  * Internal dependencies.
@@ -23,16 +23,11 @@ const DepositsOverview = (): JSX.Element => {
 	const overview = currencies[ 0 ]; // TODO: To handle multiple currencies we'll need to fetch the currently selected currency.
 
 	return (
-		<Card>
+		<Card className="wcpay-deposits-overview">
 			<CardHeader>{ strings.heading }</CardHeader>
-			<CardBody>
-				<NextDepositDetails
-					isLoading={ isLoading }
-					overview={ overview }
-				/>
+			<NextDepositDetails isLoading={ isLoading } overview={ overview } />
 
-				<p>Deposits History Section Goes here</p>
-			</CardBody>
+			<p>Deposits History Section Goes here</p>
 			<DepositsOverviewFooter />
 		</Card>
 	);

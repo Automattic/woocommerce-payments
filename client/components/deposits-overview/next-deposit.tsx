@@ -2,7 +2,13 @@
  * External dependencies
  */
 import * as React from 'react';
-import { Flex, FlexItem, Icon } from '@wordpress/components';
+import {
+	CardBody,
+	CardDivider,
+	Flex,
+	FlexItem,
+	Icon,
+} from '@wordpress/components';
 import { calendar } from '@wordpress/icons';
 
 /**
@@ -41,7 +47,7 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 	return (
 		<>
 			{ /* Next Deposit Heading */ }
-			<div className="wcpay-deposits-overview__heading">
+			<CardBody className="wcpay-deposits-overview__heading">
 				<span className="wcpay-deposits-overview__heading__title">
 					<Loadable
 						isLoading={ isLoading }
@@ -55,9 +61,9 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 						value={ strings.nextDeposit.description }
 					/>
 				</span>
-			</div>
+			</CardBody>
 			{ /* Next Deposit Table */ }
-			<div className={ tableClass }>
+			<CardBody className={ `${ tableClass }__container` }>
 				<Flex className={ `${ tableClass }__row__header` }>
 					<FlexItem className={ `${ tableClass }__cell` }>
 						<Loadable
@@ -78,6 +84,9 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 						/>
 					</FlexItem>
 				</Flex>
+			</CardBody>
+			<CardDivider />
+			<CardBody className={ `${ tableClass }__container` }>
 				<Flex className={ `${ tableClass }__row` }>
 					<FlexItem className={ `${ tableClass }__cell` }>
 						{ ! isLoading && (
@@ -109,7 +118,7 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 						/>
 					</FlexItem>
 				</Flex>
-			</div>
+			</CardBody>
 		</>
 	);
 };
