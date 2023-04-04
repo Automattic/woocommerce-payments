@@ -55,18 +55,20 @@ class WC_Helper_Intention {
 		$intent_data = wp_parse_args(
 			$data,
 			[
-				'id'                 => 'pi_mock',
-				'amount'             => 5000,
-				'currency'           => 'usd',
-				'customer_id'        => 'cus_mock',
-				'payment_method_id'  => 'pm_mock',
-				'status'             => Payment_Intent_Status::SUCCEEDED,
-				'client_secret'      => 'cs_mock',
-				'charge'             => [],
-				'created'            => new DateTime( '2022-05-20 19:05:38' ),
-				'next_action'        => [],
-				'last_payment_error' => [],
-				'metadata'           => [],
+				'id'                   => 'pi_mock',
+				'amount'               => 5000,
+				'currency'             => 'usd',
+				'customer_id'          => 'cus_mock',
+				'payment_method_id'    => 'pm_mock',
+				'status'               => Payment_Intent_Status::SUCCEEDED,
+				'client_secret'        => 'cs_mock',
+				'charge'               => [],
+				'created'              => new DateTime( '2022-05-20 19:05:38' ),
+				'next_action'          => [],
+				'last_payment_error'   => [],
+				'metadata'             => [],
+				'processing'           => [],
+				'payment_method_types' => [],
 			]
 		);
 
@@ -82,7 +84,9 @@ class WC_Helper_Intention {
 			self::create_charge( $intent_data['charge'] ),
 			$intent_data['next_action'],
 			$intent_data['last_payment_error'],
-			$intent_data['metadata']
+			$intent_data['metadata'],
+			$intent_data['processing'],
+			$intent_data['payment_method_types']
 		);
 
 		return $intention;

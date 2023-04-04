@@ -705,6 +705,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order = wc_get_order( $order_id );
 
 		try {
+			if ( 20 < strlen( $order->get_billing_phone() ) ) {
+				throw new Process_Payment_Exception(
+					__( 'Invalid phone number.', 'woocommerce-payments' ),
+					'invalid_phone_number'
+				);
+			}
 			// Check if session exists before instantiating Fraud_Prevention_Service.
 			if ( WC()->session ) {
 				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
@@ -756,6 +762,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		} catch ( Exception $e ) {
 			// We set this variable to be used in following checks.
 			$blocked_due_to_fraud_rules = $e instanceof API_Exception && 'wcpay_blocked_by_fraud_rule' === $e->get_error_code();
+
+			do_action( 'woocommerce_payments_order_failed', $order, $e );
 
 			/**
 			 * TODO: Determine how to do this update with Order_Service.
