@@ -10,6 +10,8 @@ import { render } from '@testing-library/react';
 import DepositsOverview from '..';
 import NextDepositDetails from '../next-deposit';
 import DepositsOverviewFooter from '../footer';
+import DepositSchedule from '../deposit-schedule';
+import SuspendedDepositNotice from '../suspended-deposit-notice';
 import { useAllDepositsOverviews } from 'wcpay/data';
 
 jest.mock( 'wcpay/data', () => ( {
@@ -225,5 +227,86 @@ describe( 'Deposits Overview footer renders', () => {
 		// Check that the button and link is rendered.
 		getByText( 'View full deposits history' );
 		getByText( 'Change deposit schedule' );
+	} );
+} );
+
+describe( 'Deposit Schedule renders', () => {
+	test( 'with a weekly schedule', () => {
+		const { container } = render(
+			<DepositSchedule { ...mockAccount.deposits_schedule } />
+		);
+		const descriptionText = container.textContent;
+
+		expect( descriptionText ).toContain(
+			'Your deposits are dispatched automatically every Monday'
+		);
+	} );
+	test( 'with a monthly schedule on the 14th', () => {
+		mockAccount.deposits_schedule.interval = 'monthly';
+		mockAccount.deposits_schedule.monthly_anchor = 14;
+
+		const { container } = render(
+			<DepositSchedule { ...mockAccount.deposits_schedule } />
+		);
+		const descriptionText = container.textContent;
+
+		expect( descriptionText ).toContain(
+			'Your deposits are dispatched automatically on the 14th of every month'
+		);
+	} );
+	test( 'with a monthly schedule on the last day', () => {
+		mockAccount.deposits_schedule.interval = 'monthly';
+		mockAccount.deposits_schedule.monthly_anchor = 31;
+
+		const { container } = render(
+			<DepositSchedule { ...mockAccount.deposits_schedule } />
+		);
+		const descriptionText = container.textContent;
+
+		expect( descriptionText ).toContain(
+			'Your deposits are dispatched automatically on the last day of every month'
+		);
+	} );
+	test( 'with a monthly schedule on the 2nd', () => {
+		mockAccount.deposits_schedule.interval = 'monthly';
+		mockAccount.deposits_schedule.monthly_anchor = 2;
+
+		const { container } = render(
+			<DepositSchedule { ...mockAccount.deposits_schedule } />
+		);
+		const descriptionText = container.textContent;
+
+		expect( descriptionText ).toContain(
+			'Your deposits are dispatched automatically on the 2nd of every month'
+		);
+	} );
+	test( 'with a daily schedule', () => {
+		mockAccount.deposits_schedule.interval = 'daily';
+
+		const { container } = render(
+			<DepositSchedule { ...mockAccount.deposits_schedule } />
+		);
+		const descriptionText = container.textContent;
+
+		expect( descriptionText ).toContain(
+			'Your deposits are dispatched automatically every day'
+		);
+	} );
+	test( 'with a daily schedule', () => {
+		mockAccount.deposits_schedule.interval = 'manual';
+
+		const { container } = render(
+			<DepositSchedule { ...mockAccount.deposits_schedule } />
+		);
+
+		// Check that a manual schedule is not rendered.
+		expect( container ).toBeEmptyDOMElement();
+	} );
+} );
+
+describe( 'Suspended Deposit Notice Renders', () => {
+	test( 'Component Renders', () => {
+		const { container } = render( <SuspendedDepositNotice /> );
+		expect( container ).toMatchSnapshot();
 	} );
 } );
