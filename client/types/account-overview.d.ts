@@ -42,11 +42,11 @@ declare namespace AccountOverview {
 
 	interface Overview {
 		currency: string;
-		lastPaid: Deposit;
-		nextScheduled: Deposit;
-		pending: Balance;
-		available: Balance;
-		instant: InstantBalance;
+		lastPaid: Deposit | undefined;
+		nextScheduled: Deposit | undefined;
+		pending: Balance | undefined;
+		available: Balance | undefined;
+		instant: InstantBalance | undefined;
 	}
 
 	interface OverviewsResponse {

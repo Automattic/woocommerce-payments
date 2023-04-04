@@ -41,7 +41,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
       <span
         class="wcpay-deposits-overview__heading__title"
       >
-        Next deposits
+        Next deposit
       </span>
       <span
         class="wcpay-deposits-overview__heading__description"
