@@ -53,6 +53,7 @@ import DownloadButton from 'components/download-button';
 import { getTransactionsCSV } from '../../data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { applyThousandSeparator } from '../../utils/index.js';
+import { HoverTooltip } from 'components/tooltip';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -101,6 +102,28 @@ const getPaymentSourceDetails = ( txn: Transaction ) => {
 				</Fragment>
 			);
 	}
+};
+
+const getSourceDeviceIcon = ( txn: Transaction ) => {
+	let tooltipDescription = '';
+
+	if ( txn.source_device === 'ios' ) {
+		tooltipDescription = __(
+			'Tap to Pay on iPhone',
+			'woocommerce-payments'
+		);
+	} else if ( txn.source_device === 'android' ) {
+		tooltipDescription = __(
+			'Tap to Pay on Android',
+			'woocommerce-payments'
+		);
+	}
+
+	return (
+		<HoverTooltip isVisible={ false } content={ tooltipDescription }>
+			<span className="woocommerce-taptopay__icon"></span>
+		</HoverTooltip>
+	);
 };
 
 const getColumns = (
@@ -373,7 +396,12 @@ export const TransactionsList = (
 			},
 			channel: {
 				value: getChargeChannel( txn.channel ),
-				display: clickable( getChargeChannel( txn.channel ) ),
+				display: clickable(
+					<Fragment>
+						{ getChargeChannel( txn.channel ) }
+						{ txn.source_device && getSourceDeviceIcon( txn ) }
+					</Fragment>
+				),
 			},
 			type: {
 				value: displayType[ dataType ],

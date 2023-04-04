@@ -11,26 +11,21 @@ exports[`ProtectionLevels renders 1`] = `
           <input
             checked=""
             class="fraud-protection-single-radio-wrapper__item"
-            id="fraud-protection__standard-level"
+            id="fraud-protection__basic-level"
             name="fraud-protection-level-select"
             type="radio"
-            value="standard"
+            value="basic"
           />
           <label
             class="fraud-protection-single-radio-wrapper__item"
-            for="fraud-protection__standard-level"
+            for="fraud-protection__basic-level"
           >
-            Standard 
-            <span
-              class="fraud-protection-single-radio-wrapper__item--recommended"
-            >
-              (Recommended)
-            </span>
+            Basic
           </label>
           <svg
             class="gridicon gridicons-help-outline fraud-protection__help-icon needs-offset"
             height="18"
-            title="Standard level help icon"
+            title="Basic level help icon"
             viewBox="0 0 24 24"
             width="18"
             xmlns="http://www.w3.org/2000/svg"
@@ -45,30 +40,89 @@ exports[`ProtectionLevels renders 1`] = `
         <p
           class="fraud-protection__text--help-text"
         >
-          Provides a standard level of filtering that's suitable for most businesses.
+          Provides the base level of platform protection.
         </p>
       </li>
+      <hr
+        class="fraud-protection__list-divider"
+      />
+      <li
+        class="fraud-protection__advanced-level-container"
+      >
+        <label
+          for="fraud-protection-level-select_advanced-level"
+        >
+          <div
+            class="fraud-protection-single-radio-wrapper"
+          >
+            <input
+              id="fraud-protection-level-select_advanced-level"
+              name="fraud-protection-level-select"
+              type="radio"
+              value="advanced"
+            />
+            <p
+              class="fraud-protection-single-radio-wrapper__item"
+            >
+              Advanced
+            </p>
+          </div>
+          <p
+            class="fraud-protection__text--help-text"
+          >
+            Allows you to fine-tune the level of filtering according to your business needs.
+          </p>
+        </label>
+        <button
+          class="components-button is-secondary"
+          disabled=""
+          type="button"
+        >
+          Configure
+        </button>
+      </li>
+    </ul>
+  </fieldset>
+</div>
+`;
+
+exports[`ProtectionLevels renders an error message when settings can not be fetched from the server 1`] = `
+<div>
+  <div
+    class="wcpay-inline-notice components-notice is-error"
+  >
+    <div
+      class="components-notice__content"
+    >
+      There was an error retrieving your fraud protection settings. Please refresh the page to try again.
+    </div>
+  </div>
+  <fieldset
+    disabled=""
+  >
+    <ul>
       <li>
         <div
           class="fraud-protection-single-radio-wrapper"
         >
           <input
+            checked=""
             class="fraud-protection-single-radio-wrapper__item"
-            id="fraud-protection__high-level"
+            id="fraud-protection__basic-level"
             name="fraud-protection-level-select"
             type="radio"
-            value="high"
+            value="basic"
           />
           <label
             class="fraud-protection-single-radio-wrapper__item"
-            for="fraud-protection__high-level"
+            for="fraud-protection__basic-level"
           >
-            High
+            Basic
           </label>
           <svg
             class="gridicon gridicons-help-outline fraud-protection__help-icon needs-offset"
             height="18"
-            title="High level help icon"
+            title="Basic level help icon"
             viewBox="0 0 24 24"
             width="18"
             xmlns="http://www.w3.org/2000/svg"
@@ -83,7 +137,7 @@ exports[`ProtectionLevels renders 1`] = `
         <p
           class="fraud-protection__text--help-text"
         >
-          Offers the highest level of filtering for stores, but may catch some legitimate transactions.
+          Provides the base level of platform protection.
         </p>
       </li>
       <hr

@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`FraudProtection renders 1`] = `
+exports[`FraudProtection should render correctly 1`] = `
 <div>
   <div
     class="components-card is-size-medium fraud-protection css-1xs3c37-CardUI e1q7k77g0"
@@ -9,7 +9,11 @@ exports[`FraudProtection renders 1`] = `
       class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
     >
       <h4>
-        Set your payment risk level
+        <span
+          id="fraud-protection-card-title"
+        >
+          Set your payment risk level
+        </span>
       </h4>
       <fieldset>
         <ul>
@@ -19,26 +23,21 @@ exports[`FraudProtection renders 1`] = `
             >
               <input
                 class="fraud-protection-single-radio-wrapper__item"
-                id="fraud-protection__standard-level"
+                id="fraud-protection__basic-level"
                 name="fraud-protection-level-select"
                 type="radio"
-                value="standard"
+                value="basic"
               />
               <label
                 class="fraud-protection-single-radio-wrapper__item"
-                for="fraud-protection__standard-level"
+                for="fraud-protection__basic-level"
               >
-                Standard 
-                <span
-                  class="fraud-protection-single-radio-wrapper__item--recommended"
-                >
-                  (Recommended)
-                </span>
+                Basic
               </label>
               <svg
                 class="gridicon gridicons-help-outline fraud-protection__help-icon needs-offset"
                 height="18"
-                title="Standard level help icon"
+                title="Basic level help icon"
                 viewBox="0 0 24 24"
                 width="18"
                 xmlns="http://www.w3.org/2000/svg"
@@ -53,30 +52,95 @@ exports[`FraudProtection renders 1`] = `
             <p
               class="fraud-protection__text--help-text"
             >
-              Provides a standard level of filtering that's suitable for most businesses.
+              Provides the base level of platform protection.
             </p>
           </li>
+          <hr
+            class="fraud-protection__list-divider"
+          />
+          <li
+            class="fraud-protection__advanced-level-container"
+          >
+            <label
+              for="fraud-protection-level-select_advanced-level"
+            >
+              <div
+                class="fraud-protection-single-radio-wrapper"
+              >
+                <input
+                  id="fraud-protection-level-select_advanced-level"
+                  name="fraud-protection-level-select"
+                  type="radio"
+                  value="advanced"
+                />
+                <p
+                  class="fraud-protection-single-radio-wrapper__item"
+                >
+                  Advanced
+                </p>
+              </div>
+              <p
+                class="fraud-protection__text--help-text"
+              >
+                Allows you to fine-tune the level of filtering according to your business needs.
+              </p>
+            </label>
+            <button
+              class="components-button is-secondary"
+              disabled=""
+              type="button"
+            >
+              Configure
+            </button>
+          </li>
+        </ul>
+      </fieldset>
+    </div>
+  </div>
+  <div>
+    Tour Component
+  </div>
+</div>
+`;
+
+exports[`FraudProtection should render with the welcome tour dismissed 1`] = `
+<div>
+  <div
+    class="components-card is-size-medium fraud-protection css-1xs3c37-CardUI e1q7k77g0"
+  >
+    <div
+      class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
+    >
+      <h4>
+        <span
+          id="fraud-protection-card-title"
+        >
+          Set your payment risk level
+        </span>
+      </h4>
+      <fieldset>
+        <ul>
           <li>
             <div
               class="fraud-protection-single-radio-wrapper"
             >
               <input
                 class="fraud-protection-single-radio-wrapper__item"
-                id="fraud-protection__high-level"
+                id="fraud-protection__basic-level"
                 name="fraud-protection-level-select"
                 type="radio"
-                value="high"
+                value="basic"
               />
               <label
                 class="fraud-protection-single-radio-wrapper__item"
-                for="fraud-protection__high-level"
+                for="fraud-protection__basic-level"
               >
-                High
+                Basic
               </label>
               <svg
                 class="gridicon gridicons-help-outline fraud-protection__help-icon needs-offset"
                 height="18"
-                title="High level help icon"
+                title="Basic level help icon"
                 viewBox="0 0 24 24"
                 width="18"
                 xmlns="http://www.w3.org/2000/svg"
@@ -91,7 +155,7 @@ exports[`FraudProtection renders 1`] = `
             <p
               class="fraud-protection__text--help-text"
             >
-              Offers the highest level of filtering for stores, but may catch some legitimate transactions.
+              Provides the base level of platform protection.
             </p>
           </li>
           <hr

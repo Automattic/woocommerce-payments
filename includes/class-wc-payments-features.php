@@ -59,8 +59,11 @@ class WC_Payments_Features {
 			return true;
 		}
 
+		$upe_split_flag_value    = '1' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' );
+		$upe_deferred_flag_value = '1' === get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, '0' );
+
 		// if the merchant is not eligible for the Split UPE, but they have the flag enabled, fallback to the "legacy" UPE (for now).
-		return ( '1' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' ) || '1' === get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, '0' ) )
+		return ( $upe_split_flag_value || $upe_deferred_flag_value )
 			&& ! self::is_upe_split_eligible();
 	}
 
@@ -200,15 +203,6 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether custom deposit schedules are enabled.
-	 *
-	 * @return bool
-	 */
-	public static function is_custom_deposit_schedules_enabled() {
-		return '1' === get_option( '_wcpay_feature_custom_deposit_schedules', '1' );
-	}
-
-	/**
 	 * Checks whether WooPay Express Checkout is enabled.
 	 *
 	 * @return bool
@@ -246,6 +240,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the Fraud and Risk Tools welcome tour was dismissed.
+	 *
+	 * @return bool
+	 */
+	public static function is_fraud_protection_welcome_tour_dismissed(): bool {
+		return '1' === get_option( 'wcpay_fraud_protection_welcome_tour_dismissed', '0' );
+	}
+
+	/**
 	 * Checks whether Simplify Deposits UI is enabled.
 	 *
 	 * @return bool
@@ -263,12 +266,13 @@ class WC_Payments_Features {
 		return array_filter(
 			[
 				'upe'                     => self::is_upe_enabled(),
+				'upeSplit'                => self::is_upe_split_enabled(),
+				'upeDeferred'             => self::is_upe_deferred_intent_enabled(),
 				'upeSettingsPreview'      => self::is_upe_settings_preview_enabled(),
 				'multiCurrency'           => self::is_customer_multi_currency_enabled(),
 				'accountOverviewTaskList' => self::is_account_overview_task_list_enabled(),
 				'platformCheckout'        => self::is_platform_checkout_eligible(),
 				'documents'               => self::is_documents_section_enabled(),
-				'customDepositSchedules'  => self::is_custom_deposit_schedules_enabled(),
 				'clientSecretEncryption'  => self::is_client_secret_encryption_enabled(),
 				'woopayExpressCheckout'   => self::is_woopay_express_checkout_enabled(),
 				'isAuthAndCaptureEnabled' => self::is_auth_and_capture_enabled(),

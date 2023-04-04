@@ -22,8 +22,10 @@ describe( 'Order items threshold card', () => {
 	};
 	const setSettings = jest.fn();
 	const contextValue = {
-		advancedFraudProtectionSettings: settings,
-		setAdvancedFraudProtectionSettings: setSettings,
+		protectionSettingsUI: settings,
+		setProtectionSettingsUI: setSettings,
+		protectionSettingsChanged: false,
+		setProtectionSettingsChanged: jest.fn(),
 	};
 	test( 'renders correctly', () => {
 		const { container } = render(
@@ -72,7 +74,10 @@ describe( 'Order items threshold card', () => {
 		);
 		expect(
 			screen.queryByText(
-				'An item range must be set for this filter to take effect.'
+				'An item range must be set for this filter to take effect.',
+				{
+					ignore: '.a11y-speak-region',
+				}
 			)
 		).toBeInTheDocument();
 	} );
@@ -88,7 +93,10 @@ describe( 'Order items threshold card', () => {
 		);
 		expect(
 			screen.queryByText(
-				'An item range must be set for this filter to take effect.'
+				'An item range must be set for this filter to take effect.',
+				{
+					ignore: '.a11y-speak-region',
+				}
 			)
 		).not.toBeInTheDocument();
 	} );
@@ -104,7 +112,10 @@ describe( 'Order items threshold card', () => {
 		);
 		expect(
 			screen.queryByText(
-				'An item range must be set for this filter to take effect.'
+				'An item range must be set for this filter to take effect.',
+				{
+					ignore: '.a11y-speak-region',
+				}
 			)
 		).not.toBeInTheDocument();
 	} );
@@ -120,7 +131,10 @@ describe( 'Order items threshold card', () => {
 		);
 		expect(
 			screen.queryByText(
-				'An item range must be set for this filter to take effect.'
+				'An item range must be set for this filter to take effect.',
+				{
+					ignore: '.a11y-speak-region',
+				}
 			)
 		).not.toBeInTheDocument();
 	} );
@@ -136,12 +150,18 @@ describe( 'Order items threshold card', () => {
 		);
 		expect(
 			screen.queryByText(
-				'An item range must be set for this filter to take effect.'
+				'An item range must be set for this filter to take effect.',
+				{
+					ignore: '.a11y-speak-region',
+				}
 			)
 		).not.toBeInTheDocument();
 		expect(
 			screen.queryByText(
-				'Maximum item count must be greater than the minimum item count.'
+				'Maximum item count must be greater than the minimum item count.',
+				{
+					ignore: '.a11y-speak-region',
+				}
 			)
 		).toBeInTheDocument();
 	} );
