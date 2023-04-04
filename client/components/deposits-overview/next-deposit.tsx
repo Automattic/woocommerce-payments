@@ -10,6 +10,7 @@ import {
 	Icon,
 } from '@wordpress/components';
 import { calendar } from '@wordpress/icons';
+import HelpOutlineIcon from 'gridicons/dist/help-outline';
 
 /**
  * Internal dependencies.
@@ -17,6 +18,7 @@ import { calendar } from '@wordpress/icons';
 import strings from './strings';
 import './style.scss';
 import Loadable from 'components/loadable';
+import BannerNotice from '../banner-notice';
 import { getNextDeposit } from './utils';
 import DepositStatusChip from 'components/deposit-status-chip';
 import { getDepositDate } from 'deposits/utils';
@@ -118,6 +120,18 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 						/>
 					</FlexItem>
 				</Flex>
+
+				{ /* Notice(s) */ }
+				{ ! isLoading && (
+					<div className="wcpay-deposits-overview__notices">
+						<BannerNotice
+							status="info"
+							icon={ <HelpOutlineIcon /> }
+							children={ strings.notices.negativeBalance }
+							isDismissible={ false }
+						/>
+					</div>
+				) }
 			</CardBody>
 		</>
 	);

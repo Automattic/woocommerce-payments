@@ -25,4 +25,10 @@ export default {
 		status: __( 'Status', 'woocommerce-payments' ),
 		amount: __( 'Amount', 'woocommerce-payments' ),
 	},
+	notices: {
+		negativeBalance: __(
+			'Deposits may be interrupted while your WooCommerce Payments balance remains negative. WHY?!',
+			'woocommerce-payments'
+		),
+	},
 };
