@@ -53,7 +53,7 @@ import DownloadButton from 'components/download-button';
 import { getTransactionsCSV } from '../../data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { applyThousandSeparator } from '../../utils/index.js';
-import Tooltip from 'components/tooltip';
+import { HoverTooltip } from 'components/tooltip';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -120,9 +120,9 @@ const getSourceDeviceIcon = ( txn: Transaction ) => {
 	}
 
 	return (
-		<Tooltip isVisible={ false } content={ tooltipDescription }>
+		<HoverTooltip isVisible={ false } content={ tooltipDescription }>
 			<span className="woocommerce-taptopay__icon"></span>
-		</Tooltip>
+		</HoverTooltip>
 	);
 };
 

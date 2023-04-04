@@ -535,6 +535,7 @@ class WC_Payments_Admin {
 			],
 			'accountDefaultCurrency'           => $this->account->get_account_default_currency(),
 			'frtDiscoverBannerSettings'        => get_option( 'wcpay_frt_discover_banner_settings', '' ),
+			'storeCurrency'                    => get_option( 'woocommerce_currency' ),
 		];
 
 		wp_localize_script(
@@ -937,7 +938,7 @@ class WC_Payments_Admin {
 			</td>
 			<td width="1%"></td>
 			<td class="total">
-				-<<?php echo wp_kses( wc_price( $order->get_meta( '_wcpay_transaction_fee' ), [ 'currency' => $order->get_currency() ] ), 'post' ); ?>
+				-<?php echo wp_kses( wc_price( $order->get_meta( '_wcpay_transaction_fee' ), [ 'currency' => $order->get_currency() ] ), 'post' ); ?>
 			</td>
 		</tr>
 		<?php
