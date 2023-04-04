@@ -6,9 +6,9 @@ on:
 
 env:
   WP_VERSION:        latest
-  WC_MIN_VERSION: '7.3.0'
+  WC_MIN_SUPPORTED_VERSION: '7.3.0'
   GUTENBERG_VERSION: latest
-  PHP_MIN_VERSION: '7.2'
+  PHP_MIN_SUPPORTED_VERSION: '7.2'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -44,7 +44,7 @@ jobs:
       - name: "Generate matrix"
         id: generate_matrix
         run: |
-          PHP_VERSIONS=$( echo "[\"$PHP_MIN_VERSION\", \"7.3\", \"7.4\"]" )
+          PHP_VERSIONS=$( echo "[\"$PHP_MIN_SUPPORTED_VERSION\", \"7.3\", \"7.4\"]" )
           echo "matrix={\"php\":$PHP_VERSIONS}" >> $GITHUB_OUTPUT
   
   test:
@@ -71,4 +71,4 @@ jobs:
       # run CI checks
       - run: bash bin/run-ci-tests.bash
         env:
-          WC_VERSION: ${{ env.WC_MIN_VERSION }}
+          WC_VERSION: ${{ env.WC_MIN_SUPPORTED_VERSION }}
