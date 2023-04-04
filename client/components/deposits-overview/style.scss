@@ -27,6 +27,11 @@
 		padding-top: 0;
 	}
 
+	// Override extraneous notice margin – padding provided by CardBody.
+	.wcpay-banner-notice.components-notice {
+		margin: 0;
+	}
+
 	&__table {
 		color: $gray-900;
 		align-items: center;
