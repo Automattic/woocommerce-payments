@@ -86,15 +86,6 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	private static $payment_method_meta_key = 'token';
 
 	/**
-	 * Stores a flag to indicate if the subscription integration hooks have been attached.
-	 *
-	 * The callbacks attached as part of maybe_init_subscriptions() only need to be attached once to avoid duplication.
-	 *
-	 * @var bool False by default, true once the callbacks have been attached.
-	 */
-	private static $has_attached_integration_hooks = false;
-
-	/**
 	 * Initialize subscription support and hooks.
 	 */
 	public function maybe_init_subscriptions() {
@@ -139,65 +130,6 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		}
 
 		$this->supports = array_merge( $this->supports, $payment_gateway_features );
-
-		/**
-		 * The following callbacks are only attached once to avoid duplication.
-		 * The callbacks are also only intended to be attached for the WCPay core payment gateway ($this->id = 'woocommerce_payments').
-		 *
-		 * If new payment method IDs (eg 'sepa_debit') are added to this condition in the future, care should be taken to ensure duplication,
-		 * including double renewal charging, isn't introduced.
-		 */
-		if ( self::$has_attached_integration_hooks || 'woocommerce_payments' !== $this->id ) {
-			return;
-		}
-
-		self::$has_attached_integration_hooks = true;
-
-		add_filter( 'woocommerce_email_classes', [ $this, 'add_emails' ], 20 );
-		add_filter( 'woocommerce_available_payment_gateways', [ $this, 'prepare_order_pay_page' ] );
-
-		add_action( 'woocommerce_scheduled_subscription_payment_' . $this->id, [ $this, 'scheduled_subscription_payment' ], 10, 2 );
-		add_action( 'woocommerce_subscription_failing_payment_method_updated_' . $this->id, [ $this, 'update_failing_payment_method' ], 10, 2 );
-		add_filter( 'wc_payments_display_save_payment_method_checkbox', [ $this, 'display_save_payment_method_checkbox' ], 10 );
-
-		// Display the credit card used for a subscription in the "My Subscriptions" table.
-		add_filter( 'woocommerce_my_subscriptions_payment_method', [ $this, 'maybe_render_subscription_payment_method' ], 10, 2 );
-
-		// Used to filter out unwanted metadata on new renewal orders.
-		if ( ! class_exists( 'WC_Subscriptions_Data_Copier' ) ) {
-			add_filter( 'wcs_renewal_order_meta_query', [ $this, 'update_renewal_meta_data' ], 10, 3 );
-		} else {
-			add_filter( 'wc_subscriptions_renewal_order_data', [ $this, 'remove_data_renewal_order' ], 10, 3 );
-		}
-
-		// Allow store managers to manually set Stripe as the payment method on a subscription.
-		add_filter( 'woocommerce_subscription_payment_meta', [ $this, 'add_subscription_payment_meta' ], 10, 2 );
-		add_filter( 'woocommerce_subscription_validate_payment_meta', [ $this, 'validate_subscription_payment_meta' ], 10, 3 );
-		add_action( 'wcs_save_other_payment_meta', [ $this, 'save_meta_in_order_tokens' ], 10, 4 );
-
-		// To make sure payment meta is copied from subscription to order.
-		add_filter( 'wcs_copy_payment_meta_to_order', [ $this, 'append_payment_meta' ], 10, 3 );
-
-		add_filter( 'woocommerce_subscription_note_old_payment_method_title', [ $this, 'get_specific_old_payment_method_title' ], 10, 3 );
-		add_filter( 'woocommerce_subscription_note_new_payment_method_title', [ $this, 'get_specific_new_payment_method_title' ], 10, 3 );
-
-		// TODO: Remove admin payment method JS hack for Subscriptions <= 3.0.7 when we drop support for those versions.
-		// Enqueue JS hack when Subscriptions does not provide the meta input filter.
-		if ( $this->is_subscriptions_plugin_active() && version_compare( $this->get_subscriptions_plugin_version(), '3.0.7', '<=' ) ) {
-			add_action( 'woocommerce_admin_order_data_after_billing_address', [ $this, 'add_payment_method_select_to_subscription_edit' ] );
-		}
-
-		/*
-		 * WC subscriptions hooks into the "template_redirect" hook with priority 100.
-		 * If the screen is "Pay for order" and the order is a subscription renewal, it redirects to the plain checkout.
-		 * See: https://github.com/woocommerce/woocommerce-subscriptions/blob/99a75687e109b64cbc07af6e5518458a6305f366/includes/class-wcs-cart-renewal.php#L165
-		 * If we are in the "You just need to authorize SCA" flow, we don't want that redirection to happen.
-		 */
-		add_action( 'template_redirect', [ $this, 'remove_order_pay_var' ], 99 );
-		add_action( 'template_redirect', [ $this, 'restore_order_pay_var' ], 101 );
-
-		// Update subscriptions token when user sets a default payment method.
-		add_filter( 'woocommerce_subscriptions_update_subscription_token', [ $this, 'update_subscription_token' ], 10, 3 );
 	}
 
 	/**
