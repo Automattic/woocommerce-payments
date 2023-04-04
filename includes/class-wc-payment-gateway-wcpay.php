@@ -24,6 +24,7 @@ use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
 use WCPay\Core\Server\Request\Create_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
+use WCPay\Core\Server\Request\List_Charge_Refunds;
 use WCPay\Core\Server\Request\Refund_Charge;
 use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
@@ -1487,15 +1488,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// If the payment method is Interac, the refund already exists (refunded via Mobile app).
 			$is_refunded_off_session = Payment_Method::INTERAC_PRESENT === $this->get_payment_method_type_for_order( $order );
 			if ( $is_refunded_off_session ) {
-				$refund_amount = WC_Payments_Utils::prepare_amount( $amount ?? $order->get_total(), $order->get_currency() );
-				$refunds       = array_filter(
-					$this->payments_api_client->list_refunds( $charge_id )['data'],
+				$refund_amount              = WC_Payments_Utils::prepare_amount( $amount ?? $order->get_total(), $order->get_currency() );
+				$list_charge_refund_request = List_Charge_Refunds::create( $charge_id );
+				$refunds                    = $list_charge_refund_request->send( 'wcpay_list_charge_refunds_request' );
+
+				$refunds = array_filter(
+					$refunds['data'] ?? [],
 					static function ( $refund ) use ( $refund_amount ) {
 							return 'succeeded' === $refund['status'] && $refund_amount === $refund['amount'];
 					}
 				);
 
 				if ( [] === $refunds ) {
+
 					return new WP_Error(
 						'wcpay_edit_order_refund_not_possible',
 						__( 'You shall refund this payment in the same application where the payment was made.', 'woocommerce-payments' )
