@@ -108,20 +108,6 @@ exports[`Deposits Overview information Component Renders 1`] = `
       </div>
     </div>
     <div
-      class="wcpay-deposits-overview__heading"
-    >
-      <span
-        class="wcpay-deposits-overview__heading__title"
-      >
-        Deposit history
-      </span>
-      <span
-        class="wcpay-deposits-overview__heading__description"
-      >
-        Your deposits are dispatched automatically.
-      </span>
-    </div>
-    <div
       class="wcpay-deposits-overview__table"
     >
       <div

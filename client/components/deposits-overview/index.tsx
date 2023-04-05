@@ -10,7 +10,7 @@ import { Card, CardHeader } from '@wordpress/components';
 import { useAllDepositsOverviews } from 'wcpay/data';
 import strings from './strings';
 import NextDepositDetails from './next-deposit';
-import RecentDeposits from './recent-deposits';
+import RecentDepositsList from './recent-deposits-list';
 import DepositsOverviewFooter from './footer';
 
 const DepositsOverview = (): JSX.Element => {
@@ -28,7 +28,7 @@ const DepositsOverview = (): JSX.Element => {
 			<CardHeader>{ strings.heading }</CardHeader>
 			<NextDepositDetails isLoading={ isLoading } overview={ overview } />
 
-			<RecentDeposits currency={ currency } />
+			<RecentDepositsList currency={ currency } />
 
 			<DepositsOverviewFooter />
 		</Card>

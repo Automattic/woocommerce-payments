@@ -4,6 +4,7 @@
 import * as React from 'react';
 import { Flex, FlexItem, Icon } from '@wordpress/components';
 import { calendar } from '@wordpress/icons';
+import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies.
@@ -15,13 +16,12 @@ import { getDepositDate } from 'deposits/utils';
 import { CachedDeposit } from 'wcpay/types/deposits';
 import { useDeposits } from 'wcpay/data';
 import { formatCurrency } from 'wcpay/utils/currency';
-import { Link } from '@woocommerce/components';
 import { getDetailsURL } from 'wcpay/components/details-link';
 
 interface DepositRowProps {
 	deposit: CachedDeposit;
 }
-interface RecentDeposits {
+interface RecentDepositsList {
 	deposits: CachedDeposit[];
 	isLoading: boolean;
 }
@@ -31,7 +31,7 @@ interface RecentDepositsProps {
 
 const tableClass = 'wcpay-deposits-overview__table';
 
-const GetRecentDeposits = ( currency?: string ): RecentDeposits => {
+const useRecentDeposits = ( currency?: string ): RecentDepositsList => {
 	const query = {
 		status_is_not: 'estimated',
 		store_currency_is: currency,
@@ -49,7 +49,7 @@ const GetRecentDeposits = ( currency?: string ): RecentDeposits => {
 
 const DepositTableRow: React.FC< DepositRowProps > = ( {
 	deposit,
-}: DepositRowProps ): JSX.Element => {
+} ): JSX.Element => {
 	return (
 		<Flex className={ `${ tableClass }__row` }>
 			<FlexItem className={ `${ tableClass }__cell` }>
@@ -73,13 +73,13 @@ const DepositTableRow: React.FC< DepositRowProps > = ( {
  *
  * This component includes the recent deposit heading, table and notice.
  *
- * @param {DepositRowProps} props Next Deposit details props.
+ * @param {RecentDepositsProps} props Recent Deposit props.
  * @return {JSX.Element} Rendered element with Next Deposit details.
  */
-const RecentDeposits: React.FC< RecentDepositsProps > = ( {
+const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 	currency,
 }: RecentDepositsProps ): JSX.Element => {
-	const recentDeposits = GetRecentDeposits( currency );
+	const recentDeposits = useRecentDeposits( currency );
 	const isLoading = recentDeposits.isLoading;
 
 	if ( isLoading || recentDeposits.deposits.length === 0 ) {
@@ -109,4 +109,4 @@ const RecentDeposits: React.FC< RecentDepositsProps > = ( {
 	);
 };
 
-export default RecentDeposits;
+export default RecentDepositsList;

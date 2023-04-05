@@ -11,7 +11,7 @@ import DepositsOverview from '..';
 import NextDepositDetails from '../next-deposit';
 import { useAllDepositsOverviews, useDeposits } from 'wcpay/data';
 import { CachedDeposit } from 'wcpay/types/deposits';
-import RecentDeposits from 'wcpay/components/deposits-overview/recent-deposits';
+import RecentDepositsList from '../recent-deposits-list';
 import DepositsOverviewFooter from '../footer';
 
 jest.mock( 'wcpay/data', () => ( {
@@ -256,9 +256,9 @@ describe( 'Deposits Overview information', () => {
 			isLoading: false,
 		} );
 		const { getByText } = render(
-			<RecentDeposits currency={ mockAccount.default_currency } />
+			<RecentDepositsList currency={ mockAccount.default_currency } />
 		);
-		expect( getByText( 'January 2, 2020' ) ).toBeTruthy();
+		getByText( 'January 2, 2020' );
 	} );
 	test( 'Confirm recent deposits does not render when no deposits', () => {
 		mockUseDeposits.mockReturnValue( {
@@ -268,7 +268,7 @@ describe( 'Deposits Overview information', () => {
 		} );
 
 		const { container } = render(
-			<RecentDeposits currency={ mockAccount.default_currency } />
+			<RecentDepositsList currency={ mockAccount.default_currency } />
 		);
 
 		expect( container ).toBeEmptyDOMElement();
