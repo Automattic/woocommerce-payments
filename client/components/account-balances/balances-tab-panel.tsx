@@ -2,7 +2,7 @@
  * External dependencies
  */
 import * as React from 'react';
-import { ExternalLink, Flex, TabPanel } from '@wordpress/components';
+import { Flex, TabPanel } from '@wordpress/components';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 
@@ -96,7 +96,10 @@ const AccountBalancesTabPanel: React.FC = () => {
 												),
 												components: {
 													learnMoreLink: (
-														<ExternalLink
+														// eslint-disable-next-line jsx-a11y/anchor-has-content
+														<a
+															rel="external noopener noreferrer"
+															target="_blank"
 															href={
 																documentationUrls.negativeBalance
 															}
@@ -111,7 +114,10 @@ const AccountBalancesTabPanel: React.FC = () => {
 												),
 												components: {
 													learnMoreLink: (
-														<ExternalLink
+														// eslint-disable-next-line jsx-a11y/anchor-has-content
+														<a
+															rel="external noopener noreferrer"
+															target="_blank"
 															href={
 																documentationUrls.depositSchedule
 															}
@@ -144,7 +150,10 @@ const AccountBalancesTabPanel: React.FC = () => {
 									),
 									components: {
 										learnMoreLink: (
-											<ExternalLink
+											// eslint-disable-next-line jsx-a11y/anchor-has-content
+											<a
+												rel="external noopener noreferrer"
+												target="_blank"
 												href={
 													documentationUrls.depositSchedule
 												}
