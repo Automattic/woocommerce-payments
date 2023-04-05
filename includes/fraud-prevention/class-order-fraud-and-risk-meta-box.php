@@ -11,6 +11,7 @@ use WC_Payments_Features;
 use WC_Payments_Order_Service;
 use WC_Payments_Utils;
 use WCPay\Constants\Fraud_Meta_Box_Type;
+use WCPay\Fraud_Prevention\Models\Rule;
 
 /**
  * Class Order_Fraud_And_Risk_Meta_Box
@@ -70,7 +71,7 @@ class Order_Fraud_And_Risk_Meta_Box {
 
 		if ( strstr( $payment_method, 'woocommerce_payments_' ) ) {
 			$meta_box_type = Fraud_Meta_Box_Type::NOT_CARD;
-		} elseif ( 'woocommerce_payments' !== $order->get_payment_method() ) {
+		} elseif ( 'woocommerce_payments' !== $payment_method ) {
 			$meta_box_type = Fraud_Meta_Box_Type::NOT_WCPAY;
 		}
 
@@ -104,7 +105,7 @@ class Order_Fraud_And_Risk_Meta_Box {
 			case Fraud_Meta_Box_Type::BLOCK:
 				$description     = __( 'The payment for this order was blocked by your risk filtering. There is no pending authorization, and the order can be cancelled to reduce any held stock.', 'woocommerce-payments' );
 				$callout         = __( 'View more details', 'woocommerce-payments' );
-				$transaction_url = $this->compose_transaction_url_with_tracking( $order->get_id(), '', $meta_box_type );
+				$transaction_url = $this->compose_transaction_url_with_tracking( $order->get_id(), '', Rule::FRAUD_OUTCOME_BLOCK );
 				echo '<p class="wcpay-fraud-risk-meta-blocked"><img src="' . esc_url( $icons['red_shield']['url'] ) . '" alt="' . esc_html( $icons['red_shield']['alt'] ) . '"> ' . esc_html( $statuses['blocked'] ) . '</p><p>' . esc_html( $description ) . '</p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
 				break;
 
@@ -112,7 +113,7 @@ class Order_Fraud_And_Risk_Meta_Box {
 			case Fraud_Meta_Box_Type::NOT_WCPAY:
 				$payment_method_title = $order->get_payment_method_title();
 
-				if ( ! empty( $payment_method_title ) ) {
+				if ( ! empty( $payment_method_title ) && 'Popular payment methods' !== $payment_method_title ) {
 					$description = sprintf(
 						/* translators: %s - Payment method title */
 						__( 'Risk filtering is only available for orders processed using credit cards with WooCommerce Payments. This order was processed with %s.', 'woocommerce-payments' ),
@@ -136,14 +137,14 @@ class Order_Fraud_And_Risk_Meta_Box {
 			case Fraud_Meta_Box_Type::REVIEW:
 				$description     = __( 'The payment for this order was held for review by your risk filtering. You can review the details and determine whether to approve or block the payment.', 'woocommerce-payments' );
 				$callout         = __( 'Review payment', 'woocommerce-payments' );
-				$transaction_url = $this->compose_transaction_url_with_tracking( $intent_id, $charge_id, $meta_box_type );
+				$transaction_url = $this->compose_transaction_url_with_tracking( $intent_id, $charge_id, Rule::FRAUD_OUTCOME_REVIEW );
 				echo '<p class="wcpay-fraud-risk-meta-review"><img src="' . esc_url( $icons['orange_shield']['url'] ) . '" alt="' . esc_html( $icons['orange_shield']['alt'] ) . '"> ' . esc_html( $statuses['held_for_review'] ) . '</p><p>' . esc_html( $description ) . '</p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
 				break;
 
 			case Fraud_Meta_Box_Type::REVIEW_ALLOWED:
 				$description     = __( 'This transaction was held for review by your risk filters, and the charge was manually approved after review.', 'woocommerce-payments' );
 				$callout         = __( 'Review payment', 'woocommerce-payments' );
-				$transaction_url = $this->compose_transaction_url_with_tracking( $intent_id, $charge_id, $meta_box_type );
+				$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 				echo '<p class="wcpay-fraud-risk-meta-allow"><img src="' . esc_url( $icons['green_check_mark']['url'] ) . '" alt="' . esc_html( $icons['green_check_mark']['alt'] ) . '"> ' . esc_html( $statuses['held_for_review'] ) . '</p><p>' . esc_html( $description ) . '</p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
 				break;
 

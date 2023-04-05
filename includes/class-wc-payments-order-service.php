@@ -755,7 +755,9 @@ class WC_Payments_Order_Service {
 		/**
 		 * If we have a status for the fraud outcome, we want to add the proper meta data.
 		 */
-		if ( isset( $intent_data['fraud_outcome'] ) && Rule::is_valid_fraud_outcome_status( $intent_data['fraud_outcome'] ) ) {
+		if ( isset( $intent_data['fraud_outcome'] )
+			&& Rule::is_valid_fraud_outcome_status( $intent_data['fraud_outcome'] )
+			&& Rule::FRAUD_OUTCOME_ALLOW !== $intent_data['fraud_outcome'] ) {
 			$fraud_meta_box = Rule::FRAUD_OUTCOME_REVIEW === $this->get_fraud_outcome_status_for_order( $order ) ? Fraud_Meta_Box_Type::REVIEW_BLOCKED : Fraud_Meta_Box_Type::REVIEW_CANCELLED;
 			$this->set_fraud_outcome_status_for_order( $order, $intent_data['fraud_outcome'] );
 			$this->set_fraud_meta_box_type_for_order( $order, $fraud_meta_box );
@@ -1149,11 +1151,12 @@ class WC_Payments_Order_Service {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url(
 			$intent_id,
 			$charge_id,
-			$query_args  = [
-				'status_is' => 'review',
+			[
+				'status_is' => Rule::FRAUD_OUTCOME_REVIEW,
 				'type_is'   => 'order_note',
 			]
 		);
+
 		$note = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
@@ -1182,11 +1185,12 @@ class WC_Payments_Order_Service {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url(
 			$order->get_id(),
 			'',
-			$query_args  = [
-				'status_is' => 'block',
+			[
+				'status_is' => Rule::FRAUD_OUTCOME_BLOCK,
 				'type_is'   => 'order_note',
 			]
 		);
+
 		$note = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the blocked amount, %2: transaction ID of the payment */
