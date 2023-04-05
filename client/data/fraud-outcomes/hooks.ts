@@ -22,7 +22,7 @@ export const useLatestFraudOutcome = (
 				getLatestFraudOutcomeError,
 			} = select( STORE_NAME );
 
-			if ( ! id ) {
+			if ( ! id || ! wcpaySettings.isFraudProtectionSettingsEnabled ) {
 				return {
 					data: undefined,
 					error: undefined,

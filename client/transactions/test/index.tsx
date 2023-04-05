@@ -80,6 +80,7 @@ declare const global: {
 		accountStatus: {
 			status: boolean;
 		};
+		isFraudProtectionSettingsEnabled: boolean;
 	};
 };
 
@@ -127,6 +128,7 @@ describe( 'TransactionsPage', () => {
 			accountStatus: {
 				status: true,
 			},
+			isFraudProtectionSettingsEnabled: true,
 		};
 	} );
 
@@ -192,7 +194,7 @@ describe( 'TransactionsPage', () => {
 		expect( screen.queryByText( /uncaptured/i ) ).not.toBeInTheDocument();
 	} );
 
-	test( 'renders fraud outcome tabs', async () => {
+	test( 'renders fraud outcome tabs if the feature flag is enabled', async () => {
 		mockUseManualCapture.mockReturnValue( [ false ] );
 		mockUseAuthorizationsSummary.mockReturnValue( {
 			authorizationsSummary: {
@@ -204,5 +206,21 @@ describe( 'TransactionsPage', () => {
 		await renderTransactionsPage();
 		expect( screen.queryByText( /blocked/i ) ).toBeInTheDocument();
 		expect( screen.queryByText( /risk review/i ) ).toBeInTheDocument();
+	} );
+
+	test( 'do not render fraud outcome tabs if the feature flag is disabled', async () => {
+		global.wcpaySettings.isFraudProtectionSettingsEnabled = false;
+
+		mockUseManualCapture.mockReturnValue( [ false ] );
+		mockUseAuthorizationsSummary.mockReturnValue( {
+			authorizationsSummary: {
+				total: 0,
+			},
+			isLoading: false,
+		} );
+
+		await renderTransactionsPage();
+		expect( screen.queryByText( /blocked/i ) ).not.toBeInTheDocument();
+		expect( screen.queryByText( /risk review/i ) ).not.toBeInTheDocument();
 	} );
 } );
