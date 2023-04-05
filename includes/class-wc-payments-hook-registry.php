@@ -63,6 +63,11 @@ class WC_Payments_Hook_Registry {
 	}
 
 	private function add_subscriptions_hooks() {
+		// TODO: the conditionals here could be moved to the hooks themselves.
+		if ( ! $this->is_subscriptions_enabled() ) {
+			return;
+		}
+
 		$this->add_filter( 'woocommerce_email_classes', 'get_gateway', 'add_emails', 20 );
 		$this->add_filter( 'woocommerce_available_payment_gateways', 'get_gateway', 'prepare_order_pay_page' );
 
@@ -108,6 +113,19 @@ class WC_Payments_Hook_Registry {
 
 		// Update subscriptions token when user sets a default payment method.
 		$this->add_filter( 'woocommerce_subscriptions_update_subscription_token', 'get_gateway', 'update_subscription_token', 10, 3 );
+	}
+
+	private function is_subscriptions_enabled() {
+		if ( $this->is_subscriptions_plugin_active() ) {
+			return version_compare( $this->get_subscriptions_plugin_version(), '2.2.0', '>=' );
+		}
+
+		// TODO update this once we know how the base library feature will be enabled.
+		return class_exists( 'WC_Subscriptions_Core_Plugin' );
+	}
+
+	private function is_subscriptions_plugin_active() {
+		return class_exists( 'WC_Subscriptions' );
 	}
 
 	/**
