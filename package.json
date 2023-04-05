@@ -100,7 +100,7 @@
     "@woocommerce/dependency-extraction-webpack-plugin": "2.2.0",
     "@woocommerce/e2e-environment": "0.2.3",
     "@woocommerce/e2e-utils": "0.2.0",
-    "@woocommerce/eslint-plugin": "1.1.0",
+    "@woocommerce/eslint-plugin": "2.2.0",
     "@woocommerce/experimental": "2.1.0",
     "@wordpress/api-fetch": "5.1.1",
     "@wordpress/babel-plugin-makepot": "4.2.0",
