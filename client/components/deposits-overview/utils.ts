@@ -1,16 +1,7 @@
 /**
- * External dependencies
- */
-import React from 'react';
-import { sprintf } from '@wordpress/i18n';
-import moment from 'moment';
-import interpolateComponents from '@automattic/interpolate-components';
-
-/**
  * Internal dependencies
  */
 import { formatCurrency } from 'utils/currency';
-import strings from './strings';
 
 type NextDepositTableData = {
 	date: number;
