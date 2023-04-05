@@ -21,8 +21,13 @@ class WooCommerceBlocks extends BaseCompatibility {
 	 * @return  void
 	 */
 	protected function init() {
-        add_filter( 'woocommerce_blocks_min_price', [ $this, 'convert_price_to_user_currency' ] );
-        add_filter( 'woocommerce_blocks_max_price', [ $this, 'convert_price_to_user_currency' ] );
+		// Convert the min and max price to be displayed on the frontend.
+        add_filter( 'woocommerce_get_min_price', [ $this, 'convert_price_to_user_currency' ] );
+        add_filter( 'woocommerce_get_max_price', [ $this, 'convert_price_to_user_currency' ] );
+
+		// Convert the min and max price choosen by user on the frontend.
+		add_filter( 'woocommerce_blocks_set_min_price', [ $this, 'convert_price_to_default_currency' ] );
+        add_filter( 'woocommerce_blocks_set_max_price', [ $this, 'convert_price_to_default_currency' ] );
 	}
 
 	public function convert_price_to_user_currency( $price ): float {
