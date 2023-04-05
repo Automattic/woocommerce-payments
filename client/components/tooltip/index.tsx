@@ -14,7 +14,14 @@ type TooltipProps = TooltipBaseProps & {
 	onHide?: () => void;
 };
 
-const Tooltip: React.FC< TooltipProps > = ( {
+/**
+ * Tooltip that shows on both hover and click.
+ * To be used when the tooltip content is not interactive.
+ *
+ * @param {TooltipProps} props Component props.
+ * @return {JSX.Element} Tooltip component.
+ */
+export const HoverTooltip: React.FC< TooltipProps > = ( {
 	isVisible,
 	onHide = noop,
 	...props
@@ -62,4 +69,42 @@ const Tooltip: React.FC< TooltipProps > = ( {
 	);
 };
 
-export default Tooltip;
+/**
+ * Tooltip that shows only on click events.
+ * To be used when the tooltip content is interactive (e.g. links to documentation).
+ *
+ * @param {TooltipProps} props Component props.
+ * @return {JSX.Element} Tooltip component.
+ */
+export const ClickTooltip: React.FC< TooltipProps > = ( {
+	isVisible,
+	onHide = noop,
+	...props
+} ) => {
+	const [ isClicked, setIsClicked ] = useState( false );
+
+	const handleMouseClick = () => {
+		setIsClicked( ( val ) => ! val );
+		if ( isClicked ) {
+			onHide();
+		}
+	};
+	const handleHide = () => {
+		setIsClicked( false );
+		onHide();
+	};
+
+	return (
+		<button
+			className="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
+			onClick={ handleMouseClick }
+			type={ 'button' }
+		>
+			<TooltipBase
+				{ ...props }
+				onHide={ handleHide }
+				isVisible={ isVisible || isClicked }
+			/>
+		</button>
+	);
+};

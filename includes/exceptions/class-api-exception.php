@@ -28,18 +28,27 @@ class API_Exception extends Base_Exception {
 	private $error_type = null;
 
 	/**
+	 * Decline code if it is a card error.
+	 *
+	 * @var string
+	 */
+	private $decline_code = null;
+
+	/**
 	 * Constructor
 	 *
 	 * @param string     $message    The Exception message to throw.
 	 * @param string     $error_code Error code returned by the server, for example wcpay_account_not_found.
 	 * @param int        $http_code  HTTP response code.
 	 * @param string     $error_type Error type attribute.
+	 * @param string     $decline_code The decline code if it is a card error.
 	 * @param int        $code       The Exception code.
 	 * @param \Throwable $previous   The previous exception used for the exception chaining.
 	 */
-	public function __construct( $message, $error_code, $http_code, $error_type = null, $code = 0, $previous = null ) {
-		$this->http_code  = $http_code;
-		$this->error_type = $error_type;
+	public function __construct( $message, $error_code, $http_code, $error_type = null, $decline_code = null, $code = 0, $previous = null ) {
+		$this->http_code    = $http_code;
+		$this->error_type   = $error_type;
+		$this->decline_code = $decline_code;
 
 		parent::__construct( $message, $error_code, $code, $previous );
 	}
@@ -60,5 +69,14 @@ class API_Exception extends Base_Exception {
 	 */
 	public function get_error_type() {
 		return $this->error_type;
+	}
+
+	/**
+	 * Returns the decline code attribute from the server.
+	 *
+	 * @return string|null Decline code, for example 'expired_card' or 'insufficient_funds'.
+	 */
+	public function get_decline_code() {
+		return $this->decline_code;
 	}
 }

@@ -9,9 +9,9 @@ const BannerBody = () => {
 		<p className="discoverability-card__body">
 			{ interpolateComponents( {
 				mixedString: __(
-					'A new range of tools have been added to WooCommerce Payments to help {{strong}}reduce fraudulent ' +
-						'transactions{{/strong}} on your store. In addition to purchase verification, new risk filters ' +
-						'are now available to screen incoming transactions - better protecting your store from fraudsters.',
+					'New features have been added to WooCommerce Payments to help {{strong}}reduce fraudulent ' +
+						'transactions{{/strong}} on your store. By using a set of customizable rules to evaluate incoming orders, ' +
+						'your store is better protected from fraudsters.',
 					'woocommerce-payments'
 				),
 				components: {

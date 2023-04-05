@@ -67,10 +67,36 @@ describe( 'Advanced fraud protection settings', () => {
 				},
 			},
 		};
+
+		global.wcpaySettings = {
+			storeCurrency: 'USD',
+			connect: {
+				country: 'US',
+			},
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
+			isMultiCurrencyEnabled: '1',
+		};
+
 		useAdvancedFraudProtectionSettings.mockReturnValue( [
 			protectionSettings.state,
 			protectionSettings.updateState,
 		] );
+		const mockIntersectionObserver = jest.fn();
+		mockIntersectionObserver.mockReturnValue( {
+			observe: () => null,
+			unobserve: () => null,
+			disconnect: () => null,
+		} );
+		window.IntersectionObserver = mockIntersectionObserver;
 	} );
 	afterEach( () => {
 		jest.clearAllMocks();
@@ -112,7 +138,14 @@ describe( 'Advanced fraud protection settings', () => {
 		expect( container.baseElement ).toHaveTextContent(
 			/There was an error retrieving your fraud protection settings/i
 		);
-		expect( await container.findByText( 'Save Changes' ) ).toBeDisabled();
+
+		const [
+			firstSaveButton,
+			secondSaveButton,
+		] = await container.findAllByText( 'Save Changes' );
+
+		expect( firstSaveButton ).toBeDisabled();
+		expect( secondSaveButton ).toBeDisabled();
 	} );
 	test( "doesn't save when there's a validation error", async () => {
 		defaultSettings.push( {
@@ -151,7 +184,7 @@ describe( 'Advanced fraud protection settings', () => {
 				<FraudProtectionAdvancedSettingsPage />
 			</div>
 		);
-		const saveButton = await container.findByText( 'Save Changes' );
+		const [ saveButton ] = await container.findAllByText( 'Save Changes' );
 		saveButton.click();
 		expect( settingsMock.saveSettings.mock.calls.length ).toBe( 0 );
 		expect( container ).toMatchSnapshot();
@@ -197,7 +230,7 @@ describe( 'Advanced fraud protection settings', () => {
 				<FraudProtectionAdvancedSettingsPage />
 			</div>
 		);
-		const saveButton = await container.findByText( 'Save Changes' );
+		const [ saveButton ] = await container.findAllByText( 'Save Changes' );
 		saveButton.click();
 		await waitFor( () => {
 			expect( settingsMock.saveSettings.mock.calls.length ).toBe( 1 );
@@ -255,7 +288,7 @@ describe( 'Advanced fraud protection settings', () => {
 				<FraudProtectionAdvancedSettingsPage />
 			</div>
 		);
-		const saveButton = await container.findByText( 'Save Changes' );
+		const [ saveButton ] = await container.findAllByText( 'Save Changes' );
 		saveButton.click();
 		await waitFor( () => {
 			expect( settingsMock.saveSettings.mock.calls.length ).toBe( 1 );
@@ -317,7 +350,7 @@ describe( 'Advanced fraud protection settings', () => {
 				<FraudProtectionAdvancedSettingsPage />
 			</div>
 		);
-		const saveButton = await container.findByText( 'Save Changes' );
+		const [ saveButton ] = await container.findAllByText( 'Save Changes' );
 		saveButton.click();
 		await waitFor( () => {
 			expect( settingsMock.saveSettings.mock.calls.length ).toBe( 1 );
