@@ -81,7 +81,7 @@
 }
 
 .payment-method__brand--p24 {
-	background: no-repeat url( '../images/payment-methods/przelewy24.svg' );
+	background: no-repeat url( '../images/payment-methods/p24.svg' );
 	background-size: contain;
 }
 
@@ -116,17 +116,17 @@
 }
 
 .payment-method__brand--sepa_debit {
-	background: no-repeat url( '../images/payment-methods/sepa_debit.svg' );
+	background: no-repeat url( '../images/payment-methods/sepa-debit.svg' );
 	background-size: contain;
 }
 
 .payment-method__brand--au_becs_debit {
-	background: no-repeat url( '../images/payment-methods/bank_debit.svg' );
+	background: no-repeat url( '../images/payment-methods/bank-debit.svg' );
 	background-size: contain;
 }
 
 .payment-method__brand--link {
-	background: no-repeat url( '../images/cards/link.png' );
+	background: no-repeat url( '../images/payment-methods/link.svg' );
 	background-size: contain;
 }
 
@@ -148,4 +148,32 @@
 .wc-payment-gateway-method-name-woopay-wrapper img {
 	margin: 0 5px;
 	padding-top: 2px;
+}
+
+.wcpay-fraud-risk-meta-allow,
+.wcpay-fraud-risk-meta-review,
+.wcpay-fraud-risk-meta-blocked {
+	font-weight: 600;
+	font-size: 14px;
+}
+
+.wcpay-fraud-risk-meta-allow img {
+	margin: 0 5px 0 0;
+}
+
+.wcpay-fraud-risk-meta-review img,
+.wcpay-fraud-risk-meta-blocked img {
+	margin: 0 3px -3px 0;
+}
+
+.wcpay-fraud-risk-meta-allow {
+	color: #008a20;
+}
+
+.wcpay-fraud-risk-meta-review {
+	color: #b26200;
+}
+
+.wcpay-fraud-risk-meta-blocked {
+	color: #b32d2e;
 }

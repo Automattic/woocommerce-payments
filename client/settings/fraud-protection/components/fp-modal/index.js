@@ -10,7 +10,7 @@ import { Button, Modal } from '@wordpress/components';
  */
 import ExceedsDollarAmountRule from '../exceeds-dollar-amount-rule';
 import ProtectionLevelModalNotice from '../protection-level-modal-notice';
-import interpolateComponents from 'interpolate-components';
+import interpolateComponents from '@automattic/interpolate-components';
 
 export const HighFraudProtectionModal = ( {
 	level,
@@ -18,6 +18,12 @@ export const HighFraudProtectionModal = ( {
 	setHighModalOpen,
 	storeCurrency,
 } ) => {
+	const { declineOnAVSFailure, declineOnCVCFailure } = window.wcpaySettings
+		?.accountStatus?.fraudProtection ?? {
+		declineOnAVSFailure: true,
+		declineOnCVCFailure: true,
+	};
+
 	return (
 		<>
 			{ isHighModalOpen && (
@@ -45,12 +51,22 @@ export const HighFraudProtectionModal = ( {
 							} ) }
 						</p>
 						<ul>
-							<li>
-								{ __(
-									'The billing address does not match what is on file with the card issuer.',
-									'woocommerce-payments'
-								) }
-							</li>
+							{ declineOnAVSFailure && (
+								<li>
+									{ __(
+										'The billing address does not match what is on file with the card issuer.',
+										'woocommerce-payments'
+									) }
+								</li>
+							) }
+							{ declineOnCVCFailure && (
+								<li>
+									{ __(
+										"The card's issuing bank cannot verify the CVV.",
+										'woocommerce-payments'
+									) }
+								</li>
+							) }
 							<li>
 								{ __(
 									'An order originates from an IP address outside your country',
@@ -61,16 +77,6 @@ export const HighFraudProtectionModal = ( {
 								level={ level }
 								storeCurrency={ storeCurrency }
 							/>
-							<li>
-								{ interpolateComponents( {
-									mixedString: __(
-										'The same card or IP address submits {{strong}}5 orders{{/strong}} within ' +
-											'{{strong}}72 hours.{{/strong}}',
-										'woocommerce-payments'
-									),
-									components: { strong: <strong /> },
-								} ) }
-							</li>
 						</ul>
 						<p>
 							{ interpolateComponents( {
@@ -86,12 +92,6 @@ export const HighFraudProtectionModal = ( {
 							} ) }
 						</p>
 						<ul>
-							<li>
-								{ __(
-									"The card's issuing bank cannot verify the CVV.",
-									'woocommerce-payments'
-								) }
-							</li>
 							<li>
 								{ interpolateComponents( {
 									mixedString: __(
@@ -109,7 +109,7 @@ export const HighFraudProtectionModal = ( {
 							</li>
 							<li>
 								{ __(
-									'An order is shipping or billing to a non-domestic address.',
+									"The billing address country doesn't match the country resolved from the IP address.",
 									'woocommerce-payments'
 								) }
 							</li>
@@ -134,6 +134,13 @@ export const StandardFraudProtectionModal = ( {
 	setStandardModalOpen,
 	storeCurrency,
 } ) => {
+	const { declineOnAVSFailure, declineOnCVCFailure } = window.wcpaySettings
+		?.accountStatus?.fraudProtection ?? {
+		declineOnAVSFailure: true,
+		declineOnCVCFailure: true,
+	};
+
+	const hasActivePlatformChecks = declineOnAVSFailure || declineOnCVCFailure;
 	return (
 		<>
 			{ isStandardModalOpen && (
@@ -150,27 +157,41 @@ export const StandardFraudProtectionModal = ( {
 				>
 					<div className="components-modal__body--fraud-protection">
 						<ProtectionLevelModalNotice level={ level } />
-						<p>
-							{ interpolateComponents( {
-								mixedString: __(
-									'Payments will be {{blocked}}blocked{{/blocked}} if:',
-									'woocommerce-payments'
-								),
-								components: {
-									blocked: (
-										<span className="component-modal__text--blocked" />
-									),
-								},
-							} ) }
-						</p>
-						<ul>
-							<li>
-								{ __(
-									'The billing address does not match what is on file with the card issuer.',
-									'woocommerce-payments'
-								) }
-							</li>
-						</ul>
+						{ hasActivePlatformChecks && (
+							<>
+								<p>
+									{ interpolateComponents( {
+										mixedString: __(
+											'Payments will be {{blocked}}blocked{{/blocked}} if:',
+											'woocommerce-payments'
+										),
+										components: {
+											blocked: (
+												<span className="component-modal__text--blocked" />
+											),
+										},
+									} ) }
+								</p>
+								<ul>
+									{ declineOnAVSFailure && (
+										<li>
+											{ __(
+												'The billing address does not match what is on file with the card issuer.',
+												'woocommerce-payments'
+											) }
+										</li>
+									) }
+									{ declineOnCVCFailure && (
+										<li>
+											{ __(
+												"The card's issuing bank cannot verify the CVV.",
+												'woocommerce-payments'
+											) }
+										</li>
+									) }
+								</ul>
+							</>
+						) }
 						<p>
 							{ interpolateComponents( {
 								mixedString: __(
@@ -187,13 +208,13 @@ export const StandardFraudProtectionModal = ( {
 						<ul>
 							<li>
 								{ __(
-									"The card's issuing bank cannot verify the CVV.",
+									'An order originates from an IP address outside your country.',
 									'woocommerce-payments'
 								) }
 							</li>
 							<li>
 								{ __(
-									'An order originates from an IP address outside your country.',
+									"The billing address country doesn't match the country resolved from the IP address.",
 									'woocommerce-payments'
 								) }
 							</li>
@@ -201,20 +222,84 @@ export const StandardFraudProtectionModal = ( {
 								level={ level }
 								storeCurrency={ storeCurrency }
 							/>
-							<li>
-								{ interpolateComponents( {
-									mixedString: __(
-										'The same card or IP address submits {{strong}}5 orders{{/strong}} within ' +
-											'{{strong}}72 hours.{{/strong}}',
-										'woocommerce-payments'
-									),
-									components: { strong: <strong /> },
-								} ) }
-							</li>
 						</ul>
 						<Button
 							className="component-modal__button--confirm"
 							onClick={ () => setStandardModalOpen( false ) }
+							isTertiary
+						>
+							{ __( 'Got it', 'woocommerce-payments' ) }
+						</Button>
+					</div>
+				</Modal>
+			) }
+		</>
+	);
+};
+
+export const BasicFraudProtectionModal = ( {
+	level,
+	isBasicModalOpen,
+	setBasicModalOpen,
+} ) => {
+	const { declineOnAVSFailure, declineOnCVCFailure } = window.wcpaySettings
+		?.accountStatus?.fraudProtection ?? {
+		declineOnAVSFailure: true,
+		declineOnCVCFailure: true,
+	};
+
+	const hasActivePlatformChecks = declineOnAVSFailure || declineOnCVCFailure;
+	return (
+		<>
+			{ isBasicModalOpen && (
+				<Modal
+					title={ __( 'Basic filter level', 'woocommerce-payments' ) }
+					isDismissible={ true }
+					shouldCloseOnClickOutside={ true }
+					shouldCloseOnEsc={ true }
+					onRequestClose={ () => setBasicModalOpen( false ) }
+					className="fraud-protection-level-modal"
+				>
+					<div className="components-modal__body--fraud-protection">
+						<ProtectionLevelModalNotice level={ level } />
+						{ hasActivePlatformChecks && (
+							<>
+								<p>
+									{ interpolateComponents( {
+										mixedString: __(
+											'Payments will be {{blocked}}blocked{{/blocked}} if:',
+											'woocommerce-payments'
+										),
+										components: {
+											blocked: (
+												<span className="component-modal__text--blocked" />
+											),
+										},
+									} ) }
+								</p>
+								<ul>
+									{ declineOnAVSFailure && (
+										<li>
+											{ __(
+												'The billing address does not match what is on file with the card issuer.',
+												'woocommerce-payments'
+											) }
+										</li>
+									) }
+									{ declineOnCVCFailure && (
+										<li>
+											{ __(
+												"The card's issuing bank cannot verify the CVV.",
+												'woocommerce-payments'
+											) }
+										</li>
+									) }
+								</ul>
+							</>
+						) }
+						<Button
+							className="component-modal__button--confirm"
+							onClick={ () => setBasicModalOpen( false ) }
 							isTertiary
 						>
 							{ __( 'Got it', 'woocommerce-payments' ) }

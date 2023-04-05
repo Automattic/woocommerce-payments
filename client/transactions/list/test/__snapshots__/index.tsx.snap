@@ -112,7 +112,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   >
                     <label
                       class="components-base-control__label"
-                      for="woocommerce-select-control-13__control-input"
+                      for="woocommerce-select-control-15__control-input"
                     >
                       Search by order number, customer name, or billing email
                     </label>
@@ -122,7 +122,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                       aria-haspopup="true"
                       autocomplete="off"
                       class="woocommerce-select-control__control-input"
-                      id="woocommerce-select-control-13__control-input"
+                      id="woocommerce-select-control-15__control-input"
                       placeholder=""
                       role="combobox"
                       type="text"
@@ -130,7 +130,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     />
                     <span
                       class="screen-reader-text"
-                      id="search-inline-input-13"
+                      id="search-inline-input-15"
                     >
                       Move backward for selected items
                     </span>
@@ -215,14 +215,14 @@ exports[`Transactions list renders correctly when can filter by several currenci
       >
         <div
           aria-hidden="false"
-          aria-labelledby="caption-13"
+          aria-labelledby="caption-15"
           class="woocommerce-table__table"
           role="group"
         >
           <table>
             <caption
               class="woocommerce-table__caption screen-reader-text"
-              id="caption-13"
+              id="caption-15"
             >
               Transactions
             </caption>
@@ -235,7 +235,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   scope="col"
                 >
                   <button
-                    aria-describedby="header-13-0"
+                    aria-describedby="header-15-0"
                     class="components-button"
                     type="button"
                   >
@@ -265,7 +265,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   </button>
                   <span
                     class="screen-reader-text"
-                    id="header-13-0"
+                    id="header-15-0"
                   >
                     Sort by Date and time in ascending order
                   </span>
@@ -309,7 +309,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   scope="col"
                 >
                   <button
-                    aria-describedby="header-13-3"
+                    aria-describedby="header-15-3"
                     class="components-button"
                     type="button"
                   >
@@ -339,7 +339,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   </button>
                   <span
                     class="screen-reader-text"
-                    id="header-13-3"
+                    id="header-15-3"
                   >
                     Sort by Amount in descending order
                   </span>
@@ -351,7 +351,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   scope="col"
                 >
                   <button
-                    aria-describedby="header-13-4"
+                    aria-describedby="header-15-4"
                     class="components-button"
                     type="button"
                   >
@@ -381,7 +381,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   </button>
                   <span
                     class="screen-reader-text"
-                    id="header-13-4"
+                    id="header-15-4"
                   >
                     Sort by Fees in descending order
                   </span>
@@ -393,7 +393,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   scope="col"
                 >
                   <button
-                    aria-describedby="header-13-5"
+                    aria-describedby="header-15-5"
                     class="components-button"
                     type="button"
                   >
@@ -423,7 +423,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   </button>
                   <span
                     class="screen-reader-text"
-                    id="header-13-5"
+                    id="header-15-5"
                   >
                     Sort by Net in descending order
                   </span>
@@ -799,6 +799,18 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     tabindex="-1"
                   >
                     In-Person
+                    <button
+                      class="wcpay-tooltip__content-wrapper"
+                      type="button"
+                    >
+                      <div
+                        class="wcpay-tooltip__content-wrapper"
+                      >
+                        <span
+                          class="woocommerce-taptopay__icon"
+                        />
+                      </div>
+                    </button>
                   </a>
                 </td>
                 <td
@@ -994,7 +1006,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   >
                     <label
                       class="components-base-control__label"
-                      for="woocommerce-select-control-14__control-input"
+                      for="woocommerce-select-control-16__control-input"
                     >
                       Search by order number, customer name, or billing email
                     </label>
@@ -1004,7 +1016,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                       aria-haspopup="true"
                       autocomplete="off"
                       class="woocommerce-select-control__control-input"
-                      id="woocommerce-select-control-14__control-input"
+                      id="woocommerce-select-control-16__control-input"
                       placeholder=""
                       role="combobox"
                       type="text"
@@ -1012,7 +1024,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     />
                     <span
                       class="screen-reader-text"
-                      id="search-inline-input-14"
+                      id="search-inline-input-16"
                     >
                       Move backward for selected items
                     </span>
@@ -1097,14 +1109,14 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
       >
         <div
           aria-hidden="false"
-          aria-labelledby="caption-14"
+          aria-labelledby="caption-16"
           class="woocommerce-table__table"
           role="group"
         >
           <table>
             <caption
               class="woocommerce-table__caption screen-reader-text"
-              id="caption-14"
+              id="caption-16"
             >
               Transactions
             </caption>
@@ -1117,7 +1129,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   scope="col"
                 >
                   <button
-                    aria-describedby="header-14-0"
+                    aria-describedby="header-16-0"
                     class="components-button"
                     type="button"
                   >
@@ -1147,7 +1159,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   </button>
                   <span
                     class="screen-reader-text"
-                    id="header-14-0"
+                    id="header-16-0"
                   >
                     Sort by Date and time in ascending order
                   </span>
@@ -1191,7 +1203,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   scope="col"
                 >
                   <button
-                    aria-describedby="header-14-3"
+                    aria-describedby="header-16-3"
                     class="components-button"
                     type="button"
                   >
@@ -1221,7 +1233,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   </button>
                   <span
                     class="screen-reader-text"
-                    id="header-14-3"
+                    id="header-16-3"
                   >
                     Sort by Amount in descending order
                   </span>
@@ -1233,7 +1245,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   scope="col"
                 >
                   <button
-                    aria-describedby="header-14-4"
+                    aria-describedby="header-16-4"
                     class="components-button"
                     type="button"
                   >
@@ -1263,7 +1275,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   </button>
                   <span
                     class="screen-reader-text"
-                    id="header-14-4"
+                    id="header-16-4"
                   >
                     Sort by Fees in descending order
                   </span>
@@ -1275,7 +1287,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   scope="col"
                 >
                   <button
-                    aria-describedby="header-14-5"
+                    aria-describedby="header-16-5"
                     class="components-button"
                     type="button"
                   >
@@ -1305,7 +1317,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   </button>
                   <span
                     class="screen-reader-text"
-                    id="header-14-5"
+                    id="header-16-5"
                   >
                     Sort by Net in descending order
                   </span>
@@ -1681,6 +1693,18 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     tabindex="-1"
                   >
                     In-Person
+                    <button
+                      class="wcpay-tooltip__content-wrapper"
+                      type="button"
+                    >
+                      <div
+                        class="wcpay-tooltip__content-wrapper"
+                      >
+                        <span
+                          class="woocommerce-taptopay__icon"
+                        />
+                      </div>
+                    </button>
                   </a>
                 </td>
                 <td
@@ -2532,7 +2556,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   >
                     <label
                       class="components-base-control__label"
-                      for="woocommerce-select-control-12__control-input"
+                      for="woocommerce-select-control-14__control-input"
                     >
                       Search by order number, subscription number, customer name, or billing email
                     </label>
@@ -2542,7 +2566,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                       aria-haspopup="true"
                       autocomplete="off"
                       class="woocommerce-select-control__control-input"
-                      id="woocommerce-select-control-12__control-input"
+                      id="woocommerce-select-control-14__control-input"
                       placeholder=""
                       role="combobox"
                       type="text"
@@ -2550,7 +2574,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     />
                     <span
                       class="screen-reader-text"
-                      id="search-inline-input-12"
+                      id="search-inline-input-14"
                     >
                       Move backward for selected items
                     </span>
@@ -2635,14 +2659,14 @@ exports[`Transactions list subscription column renders correctly 1`] = `
       >
         <div
           aria-hidden="false"
-          aria-labelledby="caption-12"
+          aria-labelledby="caption-14"
           class="woocommerce-table__table"
           role="group"
         >
           <table>
             <caption
               class="woocommerce-table__caption screen-reader-text"
-              id="caption-12"
+              id="caption-14"
             >
               Transactions
             </caption>
@@ -2655,7 +2679,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   scope="col"
                 >
                   <button
-                    aria-describedby="header-12-0"
+                    aria-describedby="header-14-0"
                     class="components-button"
                     type="button"
                   >
@@ -2685,7 +2709,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   </button>
                   <span
                     class="screen-reader-text"
-                    id="header-12-0"
+                    id="header-14-0"
                   >
                     Sort by Date and time in ascending order
                   </span>
@@ -2729,7 +2753,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   scope="col"
                 >
                   <button
-                    aria-describedby="header-12-3"
+                    aria-describedby="header-14-3"
                     class="components-button"
                     type="button"
                   >
@@ -2759,7 +2783,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   </button>
                   <span
                     class="screen-reader-text"
-                    id="header-12-3"
+                    id="header-14-3"
                   >
                     Sort by Amount in descending order
                   </span>
@@ -2771,7 +2795,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   scope="col"
                 >
                   <button
-                    aria-describedby="header-12-4"
+                    aria-describedby="header-14-4"
                     class="components-button"
                     type="button"
                   >
@@ -2801,7 +2825,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   </button>
                   <span
                     class="screen-reader-text"
-                    id="header-12-4"
+                    id="header-14-4"
                   >
                     Sort by Fees in descending order
                   </span>
@@ -2813,7 +2837,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   scope="col"
                 >
                   <button
-                    aria-describedby="header-12-5"
+                    aria-describedby="header-14-5"
                     class="components-button"
                     type="button"
                   >
@@ -2843,7 +2867,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   </button>
                   <span
                     class="screen-reader-text"
-                    id="header-12-5"
+                    id="header-14-5"
                   >
                     Sort by Net in descending order
                   </span>
@@ -3248,6 +3272,18 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     tabindex="-1"
                   >
                     In-Person
+                    <button
+                      class="wcpay-tooltip__content-wrapper"
+                      type="button"
+                    >
+                      <div
+                        class="wcpay-tooltip__content-wrapper"
+                      >
+                        <span
+                          class="woocommerce-taptopay__icon"
+                        />
+                      </div>
+                    </button>
                   </a>
                 </td>
                 <td
@@ -4175,6 +4211,18 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                     tabindex="-1"
                   >
                     In-Person
+                    <button
+                      class="wcpay-tooltip__content-wrapper"
+                      type="button"
+                    >
+                      <div
+                        class="wcpay-tooltip__content-wrapper"
+                      >
+                        <span
+                          class="woocommerce-taptopay__icon"
+                        />
+                      </div>
+                    </button>
                   </a>
                 </td>
                 <td
@@ -5099,6 +5147,18 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                     tabindex="-1"
                   >
                     In-Person
+                    <button
+                      class="wcpay-tooltip__content-wrapper"
+                      type="button"
+                    >
+                      <div
+                        class="wcpay-tooltip__content-wrapper"
+                      >
+                        <span
+                          class="woocommerce-taptopay__icon"
+                        />
+                      </div>
+                    </button>
                   </a>
                 </td>
                 <td

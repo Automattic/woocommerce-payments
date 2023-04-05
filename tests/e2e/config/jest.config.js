@@ -4,7 +4,6 @@ const { useE2EJestConfig } = require( '@woocommerce/e2e-environment' );
 const fs = require( 'fs' );
 
 config( { path: path.resolve( __dirname, '.env' ) } );
-config( { path: path.resolve( __dirname, 'e2e-default.env' ) } );
 config( { path: path.resolve( __dirname, 'local.env' ) } );
 
 // Define paths to look for E2E tests.
@@ -52,7 +51,7 @@ if ( process.env.E2E_GROUP ) {
 
 // eslint-disable-next-line react-hooks/rules-of-hooks
 const testConfig = useE2EJestConfig( {
-	setupFiles: [],
+	setupFiles: [ '<rootDir>/tests/e2e/config/env.setup.js' ],
 	rootDir: path.resolve( __dirname, '../../../' ),
 	roots: allowedPaths,
 	testSequencer: path.resolve(

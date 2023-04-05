@@ -99,6 +99,7 @@ class WC_Payments_Admin {
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ] );
 		add_action( 'woocommerce_admin_field_payment_gateways', [ $this, 'payment_gateways_container' ] );
 		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'show_woopay_payment_method_name_admin' ] );
+		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'display_wcpay_transaction_fee' ] );
 
 		$this->admin_child_pages = [
 			'wc-payments-overview'     => [
@@ -529,6 +530,12 @@ class WC_Payments_Admin {
 			'restUrl'                          => get_rest_url( null, '' ), // rest url to concatenate when merchant use Plain permalinks.
 			'numDisputesNeedingResponse'       => $this->get_disputes_awaiting_response_count(),
 			'isFraudProtectionSettingsEnabled' => WC_Payments_Features::is_fraud_protection_settings_enabled(),
+			'fraudProtection'                  => [
+				'isWelcomeTourDismissed' => WC_Payments_Features::is_fraud_protection_welcome_tour_dismissed(),
+			],
+			'accountDefaultCurrency'           => $this->account->get_account_default_currency(),
+			'frtDiscoverBannerSettings'        => get_option( 'wcpay_frt_discover_banner_settings', '' ),
+			'storeCurrency'                    => get_option( 'woocommerce_currency' ),
 		];
 
 		wp_localize_script(
@@ -910,6 +917,30 @@ class WC_Payments_Admin {
 			?>
 		</div>
 
+		<?php
+	}
+
+	/**
+	 * Display the _wcpay_transaction_fee from order metadata to the Order Edit screen on admin.
+	 *
+	 * @param int $order_id order_id.
+	 */
+	public function display_wcpay_transaction_fee( $order_id ) {
+		$order = wc_get_order( $order_id );
+		if ( ! $order || ! $order->get_meta( '_wcpay_transaction_fee' ) ) {
+			return;
+		}
+		?>
+		<tr>
+			<td class="label wcpay-transaction-fee">
+				<?php echo wc_help_tip( __( 'This represents the fee WooCommerce Payments collects for the transaction.', 'woocommerce-payments' ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+				<?php esc_html_e( 'Transaction Fee:', 'woocommerce-payments' ); ?>
+			</td>
+			<td width="1%"></td>
+			<td class="total">
+				-<?php echo wp_kses( wc_price( $order->get_meta( '_wcpay_transaction_fee' ), [ 'currency' => $order->get_currency() ] ), 'post' ); ?>
+			</td>
+		</tr>
 		<?php
 	}
 
