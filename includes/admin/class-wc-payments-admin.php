@@ -485,6 +485,7 @@ class WC_Payments_Admin {
 		}
 
 		$account_status_data = $this->account->get_account_status_data();
+		$account_status_data['deposits']['completed_waiting_period'] = false;
 
 		$wcpay_settings = [
 			'connectUrl'                       => WC_Payments_Account::get_connect_url(),

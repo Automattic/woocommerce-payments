@@ -87,16 +87,6 @@ const RecentDeposits: React.FC< RecentDepositsProps > = ( {
 	}
 	return (
 		<>
-			{ /* Next Deposit Heading */ }
-			<div className="wcpay-deposits-overview__heading">
-				<span className="wcpay-deposits-overview__heading__title">
-					{ strings.recentDeposits.title }
-				</span>
-
-				<span className="wcpay-deposits-overview__heading__description">
-					{ strings.recentDeposits.description }
-				</span>
-			</div>
 			{ /* Next Deposit Table */ }
 			<div className={ tableClass }>
 				<Flex className={ `${ tableClass }__row__header` }>
