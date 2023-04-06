@@ -128,6 +128,10 @@ class WC_Payments_Hook_Registry {
 		return class_exists( 'WC_Subscriptions' );
 	}
 
+	public function get_subscriptions_plugin_version() {
+		return class_exists( 'WC_Subscriptions' ) ? WC_Subscriptions::$version : null;
+	}
+
 	/**
 	 * Adds an action to the WordPress hooks.
 	 *
