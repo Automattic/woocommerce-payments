@@ -162,7 +162,22 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 
 			return rest_ensure_response( $this->extract_location_fields( $location ) );
 		} catch ( API_Exception $e ) {
-			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage() ) );
+			$error = new WP_Error( $e->get_error_code(), $e->getMessage() );
+			if ( 'city_invalid' === $e->get_error_code() || 'state_invalid' === $e->get_error_code() ) {
+				$error = new WP_Error(
+					'store_address_is_incomplete',
+					admin_url(
+						add_query_arg(
+							[
+								'page' => 'wc-settings',
+								'tab'  => 'general',
+							],
+							'admin.php'
+						)
+					)
+				);
+			}
+			return rest_ensure_response( $error );
 		}
 	}
 
