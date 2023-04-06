@@ -16,14 +16,14 @@ import DepositSchedule from './deposit-schedule';
 import SuspendedDepositNotice from './suspended-deposit-notice';
 
 const DepositsOverview = (): JSX.Element => {
-	const { overview, isLoading } = useSelectedCurrencyOverview();
+	const { account, overview, isLoading } = useSelectedCurrencyOverview();
 
 	return (
 		<Card>
 			<CardHeader>{ strings.heading }</CardHeader>
 
 			{ /* Only show the next deposit section if the page is loading or if deposits are not blocked. */ }
-			{ ( isLoading || ! account.deposits_blocked ) && (
+			{ ( isLoading || ! account?.deposits_blocked ) && (
 				<>
 					<DepositOverviewSectionHeading
 						title={ strings.nextDeposit.title }
@@ -38,7 +38,8 @@ const DepositsOverview = (): JSX.Element => {
 			) }
 
 			{ ! isLoading &&
-				( account.deposits_blocked ? (
+				!! account &&
+				( ! account.deposits_blocked ? (
 					<DepositOverviewSectionHeading
 						title={ strings.depositHistoryHeading }
 						children={ <SuspendedDepositNotice /> }
