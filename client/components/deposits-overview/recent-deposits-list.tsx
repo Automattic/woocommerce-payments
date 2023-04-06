@@ -14,38 +14,19 @@ import './style.scss';
 import DepositStatusChip from 'components/deposit-status-chip';
 import { getDepositDate } from 'deposits/utils';
 import { CachedDeposit } from 'wcpay/types/deposits';
-import { useDeposits } from 'wcpay/data';
 import { formatCurrency } from 'wcpay/utils/currency';
 import { getDetailsURL } from 'wcpay/components/details-link';
+import useRecentDeposits from './hooks';
 
 interface DepositRowProps {
 	deposit: CachedDeposit;
 }
-interface RecentDepositsList {
-	deposits: CachedDeposit[];
-	isLoading: boolean;
-}
+
 interface RecentDepositsProps {
 	currency: string | undefined;
 }
 
 const tableClass = 'wcpay-deposits-overview__table';
-
-const useRecentDeposits = ( currency?: string ): RecentDepositsList => {
-	const query = {
-		status_is_not: 'estimated',
-		store_currency_is: currency,
-		orderby: 'date',
-		order: 'desc',
-		per_page: '3',
-	};
-	const deposits = useDeposits( query );
-
-	return {
-		deposits: deposits.deposits,
-		isLoading: deposits.isLoading,
-	};
-};
 
 const DepositTableRow: React.FC< DepositRowProps > = ( {
 	deposit,

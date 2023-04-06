@@ -12,13 +12,6 @@ export default {
 			'woocommerce-payments'
 		),
 	},
-	recentDeposits: {
-		title: __( 'Deposit history', 'woocommerce-payments' ),
-		description: __(
-			'Your deposits are dispatched automatically.',
-			'woocommerce-payments'
-		),
-	},
 	viewAllDeposits: __( 'View full deposits history', 'woocommerce-payments' ),
 	changeDepositSchedule: __(
 		'Change deposit schedule',
