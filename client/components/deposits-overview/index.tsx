@@ -11,6 +11,9 @@ import { useAllDepositsOverviews } from 'wcpay/data';
 import strings from './strings';
 import NextDepositDetails from './next-deposit';
 import DepositsOverviewFooter from './footer';
+import DepositOverviewSectionHeading from './section-heading';
+import DepositSchedule from './deposit-schedule';
+import SuspendedDepositNotice from './suspended-deposit-notice';
 
 const DepositsOverview = (): JSX.Element => {
 	const {
@@ -18,18 +21,45 @@ const DepositsOverview = (): JSX.Element => {
 		isLoading,
 	} = useAllDepositsOverviews() as AccountOverview.OverviewsResponse;
 
-	const { currencies } = overviews;
+	const { currencies, account } = overviews;
 
 	const overview = currencies[ 0 ]; // TODO: To handle multiple currencies we'll need to fetch the currently selected currency.
 
 	return (
 		<Card>
 			<CardHeader>{ strings.heading }</CardHeader>
-			<NextDepositDetails isLoading={ isLoading } overview={ overview } />
 
-			<p>Deposits History Section Goes here</p>
+			{ /* Only show the next deposit section if the page is loading or if deposits are not blocked. */ }
+			{ ( isLoading || ! account.deposits_blocked ) && (
+				<>
+					<DepositOverviewSectionHeading
+						title={ strings.nextDeposit.title }
+						text={ strings.nextDeposit.description }
+						isLoading={ isLoading }
+					/>
+					<NextDepositDetails
+						isLoading={ isLoading }
+						overview={ overview }
+					/>
+				</>
+			) }
 
-			<p>Deposits Card Footer/Action Goes here</p>
+			{ ! isLoading &&
+				( account.deposits_blocked ? (
+					<DepositOverviewSectionHeading
+						title={ strings.depositHistoryHeading }
+						children={ <SuspendedDepositNotice /> }
+					/>
+				) : (
+					<DepositOverviewSectionHeading
+						title={ strings.depositHistoryHeading }
+						text={
+							<DepositSchedule { ...account.deposits_schedule } />
+						}
+					/>
+				) ) }
+
+			<p>Deposit history table will go here</p>
 
 			<DepositsOverviewFooter />
 		</Card>
