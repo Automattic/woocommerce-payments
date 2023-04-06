@@ -43,6 +43,12 @@
 			transform: translate( -50%, 22px );
 			border: solid 15px transparent;
 			border-top-color: $gray-900;
+			// Ensure the tooltip arrow does not obscure the mouse target element.
+			pointer-events: none;
+		}
+
+		a {
+			color: $blue-medium;
 		}
 	}
 }
