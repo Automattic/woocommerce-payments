@@ -12,13 +12,17 @@ import NextDepositDetails from '../next-deposit';
 import DepositsOverviewFooter from '../footer';
 import DepositSchedule from '../deposit-schedule';
 import SuspendedDepositNotice from '../suspended-deposit-notice';
-import { useAllDepositsOverviews, useDepositIncludesLoan } from 'wcpay/data';
+import { useDepositIncludesLoan } from 'wcpay/data';
+import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
 import strings from '../strings';
 
 jest.mock( 'wcpay/data', () => ( {
-	useAllDepositsOverviews: jest.fn(),
 	useDepositIncludesLoan: jest.fn(),
 	useInstantDeposit: jest.fn(),
+} ) );
+
+jest.mock( 'wcpay/overview/hooks', () => ( {
+	useSelectedCurrencyOverview: jest.fn(),
 } ) );
 
 const mockAccount: AccountOverview.Account = {
@@ -121,20 +125,18 @@ const createMockNewAccountOverview = (
 	};
 };
 
-const mockUseAllDepositsOverviews = useAllDepositsOverviews as jest.MockedFunction<
-	typeof useAllDepositsOverviews
->;
 const mockUseDepositIncludesLoan = useDepositIncludesLoan as jest.MockedFunction<
 	typeof useDepositIncludesLoan
+>;
+const mockUseSelectedCurrencyOverview = useSelectedCurrencyOverview as jest.MockedFunction<
+	typeof useSelectedCurrencyOverview
 >;
 
 // Mocks the DepositsOverviews hook to return the given currencies.
 const mockOverviews = ( currencies: AccountOverview.Overview[] ) => {
-	mockUseAllDepositsOverviews.mockReturnValue( {
-		overviews: {
-			currencies: currencies,
-			account: mockAccount,
-		},
+	mockUseSelectedCurrencyOverview.mockReturnValue( {
+		account: mockAccount,
+		overview: currencies[ 0 ],
 		isLoading: null === currencies || ! currencies.length,
 	} );
 };
