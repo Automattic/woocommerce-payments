@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -10,9 +10,11 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import AccountBalances from '../';
 import AccountBalancesHeader from '../header';
 import AccountBalancesTabPanel from '../balances-tab-panel';
+
 import { getGreeting, getCurrencyTabTitle } from '../utils';
 import { useCurrentWpUser } from '../hooks';
 import { useAllDepositsOverviews } from 'wcpay/data';
+import { documentationUrls } from '../strings';
 
 const mockUser = {
 	id: 123,
@@ -30,7 +32,7 @@ const mockAccount: AccountOverview.Account = {
 	deposits_blocked: false,
 	deposits_disabled: false,
 	deposits_schedule: {
-		delay_days: 0,
+		delay_days: 17,
 		interval: 'weekly',
 		weekly_anchor: 'Monday',
 		monthly_anchor: 1,
@@ -289,5 +291,64 @@ describe( 'AccountBalancesTabPanel', () => {
 		// Check the available and pending amounts are rendered correctly for the first tab.
 		expect( jpyAvailableAmount ).toHaveTextContent( '¥90' );
 		expect( jpyPendingAmount ).toHaveTextContent( '¥20' );
+	} );
+
+	test( 'renders the correct tooltip text for the available balance', () => {
+		mockOverviews( [ createMockOverview( 'usd', 10000, 20000 ) ] );
+		render( <AccountBalancesTabPanel /> );
+
+		// Check the tooltips are rendered correctly.
+		const tooltipButton = screen.getByRole( 'button', {
+			name: 'Available funds tooltip',
+		} );
+		fireEvent.click( tooltipButton );
+		const tooltip = screen.getByRole( 'tooltip', {
+			name: /The amount of funds available to be deposited./,
+		} );
+		expect( within( tooltip ).getByRole( 'link' ) ).toHaveAttribute(
+			'href',
+			documentationUrls.depositSchedule
+		);
+	} );
+
+	test( 'renders the correct tooltip text for a negative available balance', () => {
+		mockOverviews( [ createMockOverview( 'usd', 10000, -20000 ) ] );
+		render( <AccountBalancesTabPanel /> );
+
+		// Check the tooltips are rendered correctly.
+		const tooltipButton = screen.getByRole( 'button', {
+			name: 'Available funds tooltip',
+		} );
+		fireEvent.click( tooltipButton );
+		const tooltip = screen.getByRole( 'tooltip', {
+			// Regex optional group for `(opens in a new tab)`.
+			name: /Learn more( \(.*?\))? about why your account balance may be negative./,
+		} );
+		expect( within( tooltip ).getByRole( 'link' ) ).toHaveAttribute(
+			'href',
+			documentationUrls.negativeBalance
+		);
+	} );
+
+	test( 'renders the correct tooltip text for the pending balance', () => {
+		const delayDays = mockAccount.deposits_schedule.delay_days;
+		mockOverviews( [ createMockOverview( 'usd', 10000, 20000 ) ] );
+		render( <AccountBalancesTabPanel /> );
+
+		// Check the tooltips are rendered correctly.
+		const tooltipButton = screen.getByRole( 'button', {
+			name: 'Pending funds tooltip',
+		} );
+		fireEvent.click( tooltipButton );
+		const tooltip = screen.getByRole( 'tooltip', {
+			// Using a regex here to allow partial matching of the tooltip text.
+			name: new RegExp(
+				`The amount of funds still in the ${ delayDays } day pending period.`
+			),
+		} );
+		expect( within( tooltip ).getByRole( 'link' ) ).toHaveAttribute(
+			'href',
+			documentationUrls.depositSchedule
+		);
 	} );
 } );
