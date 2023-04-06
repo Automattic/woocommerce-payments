@@ -9,16 +9,23 @@ import { render } from '@testing-library/react';
  */
 import DepositsOverview from '..';
 import NextDepositDetails from '../next-deposit';
+import { CachedDeposit } from 'wcpay/types/deposits';
+import RecentDepositsList from '../recent-deposits-list';
 import DepositsOverviewFooter from '../footer';
 import DepositSchedule from '../deposit-schedule';
 import SuspendedDepositNotice from '../suspended-deposit-notice';
-import { useAllDepositsOverviews, useDepositIncludesLoan } from 'wcpay/data';
+import {
+	useAllDepositsOverviews,
+	useDepositIncludesLoan,
+	useDeposits,
+} from 'wcpay/data';
 import strings from '../strings';
 
 jest.mock( 'wcpay/data', () => ( {
 	useAllDepositsOverviews: jest.fn(),
 	useDepositIncludesLoan: jest.fn(),
 	useInstantDeposit: jest.fn(),
+	useDeposits: jest.fn(),
 } ) );
 
 const mockAccount: AccountOverview.Account = {
@@ -43,6 +50,27 @@ declare const global: {
 		};
 	};
 };
+
+const mockDeposits = [
+	{
+		id: 'po_mock1',
+		date: '2020-01-02 17:46:02',
+		type: 'deposit',
+		amount: 2000,
+		status: 'paid',
+		bankAccount: 'MOCK BANK •••• 1234 (USD)',
+		currency: 'USD',
+	} as CachedDeposit,
+	{
+		id: 'po_mock2',
+		date: '2020-01-03 17:46:02',
+		type: 'withdrawal',
+		amount: 3000,
+		status: 'pending',
+		bankAccount: 'MOCK BANK •••• 1234 (USD)',
+		currency: 'USD',
+	} as CachedDeposit,
+];
 
 // Creates a mock Overview object for the given currency code and balance amounts.
 const createMockOverview = (
@@ -128,6 +156,10 @@ const mockUseDepositIncludesLoan = useDepositIncludesLoan as jest.MockedFunction
 	typeof useDepositIncludesLoan
 >;
 
+const mockUseDeposits = useDeposits as jest.MockedFunction<
+	typeof useDeposits
+>;
+
 // Mocks the DepositsOverviews hook to return the given currencies.
 const mockOverviews = ( currencies: AccountOverview.Overview[] ) => {
 	mockUseAllDepositsOverviews.mockReturnValue( {
@@ -177,6 +209,12 @@ describe( 'Deposits Overview information', () => {
 
 	test( 'Component Renders', () => {
 		mockOverviews( [ createMockOverview( 'usd', 100, 0, 'estimated' ) ] );
+		mockUseDeposits.mockReturnValue( {
+			depositsCount: 0,
+			deposits: mockDeposits,
+			isLoading: false,
+		} );
+
 		const { container } = render( <DepositsOverview /> );
 		expect( container ).toMatchSnapshot();
 	} );
@@ -225,6 +263,32 @@ describe( 'Deposits Overview information', () => {
 		);
 		expect( getByText( 'Estimated' ) ).toBeTruthy();
 		expect( getByText( '—' ) ).toBeTruthy();
+	} );
+
+	test( 'Confirm recent deposits renders ', () => {
+		mockUseDeposits.mockReturnValue( {
+			depositsCount: 0,
+			deposits: mockDeposits,
+			isLoading: false,
+		} );
+		const { getByText } = render(
+			<RecentDepositsList currency={ mockAccount.default_currency } />
+		);
+		getByText( 'January 2, 2020' );
+	} );
+
+	test( 'Confirm recent deposits does not render when no deposits', () => {
+		mockUseDeposits.mockReturnValue( {
+			depositsCount: 0,
+			deposits: [],
+			isLoading: false,
+		} );
+
+		const { container } = render(
+			<RecentDepositsList currency={ mockAccount.default_currency } />
+		);
+
+		expect( container ).toBeEmptyDOMElement();
 	} );
 
 	test( 'Renders capital loan notice if deposit includes financing payout', () => {
