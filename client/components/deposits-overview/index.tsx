@@ -62,7 +62,6 @@ const DepositsOverview = (): JSX.Element => {
 
 			<RecentDepositsList currency={ currency } />
 
-
 			<DepositsOverviewFooter />
 		</Card>
 	);

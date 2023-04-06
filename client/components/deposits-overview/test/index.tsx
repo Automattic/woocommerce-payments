@@ -14,10 +14,10 @@ import RecentDepositsList from '../recent-deposits-list';
 import DepositsOverviewFooter from '../footer';
 import DepositSchedule from '../deposit-schedule';
 import SuspendedDepositNotice from '../suspended-deposit-notice';
-import { 
-  useAllDepositsOverviews, 
-  useDepositIncludesLoan,
-  useDeposits
+import {
+	useAllDepositsOverviews,
+	useDepositIncludesLoan,
+	useDeposits,
 } from 'wcpay/data';
 import strings from '../strings';
 
@@ -276,7 +276,7 @@ describe( 'Deposits Overview information', () => {
 		);
 		getByText( 'January 2, 2020' );
 	} );
-  
+
 	test( 'Confirm recent deposits does not render when no deposits', () => {
 		mockUseDeposits.mockReturnValue( {
 			depositsCount: 0,
@@ -289,7 +289,7 @@ describe( 'Deposits Overview information', () => {
 		);
 
 		expect( container ).toBeEmptyDOMElement();
-  } );
+	} );
 
 	test( 'Renders capital loan notice if deposit includes financing payout', () => {
 		const overview = createMockOverview( 'usd', 100, 0, 'rubbish' );

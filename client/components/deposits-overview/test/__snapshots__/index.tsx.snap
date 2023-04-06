@@ -133,7 +133,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
       </div>
     </div>
     <div
-        class="wcpay-deposits-overview__table"
+      class="wcpay-deposits-overview__table"
     >
       <div
         class="components-flex wcpay-deposits-overview__table__row__header css-1rdm0qk-Flex eboqfv50"
