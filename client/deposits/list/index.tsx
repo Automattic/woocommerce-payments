@@ -25,7 +25,6 @@ import { useDispatch } from '@wordpress/data';
  */
 import { useDeposits, useDepositsSummary } from 'wcpay/data';
 import { displayType, displayStatus } from '../strings';
-import { formatStringValue } from 'utils';
 import { formatExplicitCurrency } from 'utils/currency';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
