@@ -15,6 +15,8 @@ includes:
     - wp-api-v3/order
     - wp-api-v3/authorization
     - wp-api-v3/transaction
-
+    - wp-api-v3/deposit
+    - wp-api-v3/dispute
+    
 search: false
 ---

@@ -12,7 +12,7 @@ The transaction API allows you to get data related to transactions.
 |-----------|---------|----------------------------------------------------|
 | `transaction_id` | string | Unique identifier of the transaction.	|
 | `type` | string  | Type of transaction. Possible values include charge, payment, dispute, refund, refund_failure etc. |
-| `channel` | string  | Channel over which the transaction was processed. Possible values are `online` or `in_person`. |
+| `channel` | string  | Channel over which the transaction was processed. Possible values are `online` or `in_person` . |
 | `source` | string  | Source of the transaction. Value is the Card Brand or Payment Method Type. |
 | `source_identifier` | string  | Identifier for the source. In case of card, the value will be the last four digits of the card. |
 | `customer_name` | string | Full name of the customer on Billing Details. |
@@ -29,7 +29,7 @@ The transaction API allows you to get data related to transactions.
 | `order` | object  | See TODO. |
 | `loan_id` | string  | Unique identifier of the loan, if any, associated with the transaction. |
 | `deposit_id` | string  | Unique identifier of the deposit associated with the transaction. |
-| `deposit_status` | string  | The status of the deposit. Possible values are `Estimated` , `Pending` , `In transit` , `Paid` , `Canceled` , `Failed`. |
+| `deposit_status` | string  | The status of the deposit. Possible values are `Estimated` , `Pending` , `In transit` , `Paid` , `Canceled` , `Failed` . |
 | `available_on` | Date on which the transaction amount will be paid out to the merchant. |
 | `customer_amount` | string  | The customer amount for the transaction. |
 | `customer_currency` | string  |  The customer currency code for the transaction. |
@@ -89,9 +89,9 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/transactions?page=1&pages
             "date": "2023-04-03 09:07:29",
             "source": "visa",
             "source_identifier": "4242",
-			"customer_name": "Mr. Albert",
-			"customer_email": "mr.albert@email.com",
-			"customer_country": "US",
+            "customer_name": "Mr. Albert",
+            "customer_email": "mr.albert@email.com",
+            "customer_country": "US",
             "amount": 2485,
             "net": 2359,
             "fees": 126,
@@ -123,9 +123,9 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/transactions?page=1&pages
             "date": "2023-04-03 09:05:28",
             "source": "visa",
             "source_identifier": "3184",
-			"customer_name": "Mr. Test",
-			"customer_email": "mr.test@email.com",
-			"customer_country": "US",
+            "customer_name": "Mr. Test",
+            "customer_email": "mr.test@email.com",
+            "customer_country": "US",
             "amount": -2485,
             "net": -2485,
             "fees": 0,
