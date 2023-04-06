@@ -9,16 +9,21 @@ import { render } from '@testing-library/react';
  */
 import DepositsOverview from '..';
 import NextDepositDetails from '../next-deposit';
+import { CachedDeposit } from 'wcpay/types/deposits';
+import RecentDepositsList from '../recent-deposits-list';
+import DepositsOverviewFooter from '../footer';
+import DepositSchedule from '../deposit-schedule';
+import SuspendedDepositNotice from '../suspended-deposit-notice';
 import {
 	useAllDepositsOverviews,
+	useDepositIncludesLoan,
 	useDeposits,
 } from 'wcpay/data';
-import { CachedDeposit } from 'wcpay/types/deposits';
-import RecentDeposits from 'wcpay/components/deposits-overview/recent-deposits';
-import DepositsOverviewFooter from '../footer';
+import strings from '../strings';
 
 jest.mock( 'wcpay/data', () => ( {
 	useAllDepositsOverviews: jest.fn(),
+	useDepositIncludesLoan: jest.fn(),
 	useInstantDeposit: jest.fn(),
 	useDeposits: jest.fn(),
 } ) );
@@ -31,6 +36,7 @@ const mockAccount: AccountOverview.Account = {
 		delay_days: 0,
 		interval: 'weekly',
 		weekly_anchor: 'Monday',
+		monthly_anchor: 1,
 	},
 };
 
@@ -146,6 +152,9 @@ const createMockNewAccountOverview = (
 const mockUseAllDepositsOverviews = useAllDepositsOverviews as jest.MockedFunction<
 	typeof useAllDepositsOverviews
 >;
+const mockUseDepositIncludesLoan = useDepositIncludesLoan as jest.MockedFunction<
+	typeof useDepositIncludesLoan
+>;
 
 const mockUseDeposits = useDeposits as jest.MockedFunction<
 	typeof useDeposits
@@ -189,6 +198,10 @@ describe( 'Deposits Overview information', () => {
 				},
 			},
 		};
+		mockUseDepositIncludesLoan.mockReturnValue( {
+			includesFinancingPayout: false,
+			isLoading: false,
+		} );
 	} );
 	afterEach( () => {
 		jest.clearAllMocks();
@@ -259,13 +272,11 @@ describe( 'Deposits Overview information', () => {
 			isLoading: false,
 		} );
 		const { getByText } = render(
-			<RecentDeposits
-				account={ mockAccount }
-				currency={ mockAccount.default_currency }
-			/>
+			<RecentDepositsList currency={ mockAccount.default_currency } />
 		);
-		expect( getByText( 'January 2, 2020' ) ).toBeTruthy();
+		getByText( 'January 2, 2020' );
 	} );
+
 	test( 'Confirm recent deposits does not render when no deposits', () => {
 		mockUseDeposits.mockReturnValue( {
 			depositsCount: 0,
@@ -274,13 +285,56 @@ describe( 'Deposits Overview information', () => {
 		} );
 
 		const { container } = render(
-			<RecentDeposits
-				account={ mockAccount }
-				currency={ mockAccount.default_currency }
-			/>
+			<RecentDepositsList currency={ mockAccount.default_currency } />
 		);
 
 		expect( container ).toBeEmptyDOMElement();
+	} );
+
+	test( 'Renders capital loan notice if deposit includes financing payout', () => {
+		const overview = createMockOverview( 'usd', 100, 0, 'rubbish' );
+		mockUseDepositIncludesLoan.mockReturnValue( {
+			includesFinancingPayout: true,
+			isLoading: false,
+		} );
+
+		const { getByRole, getByText } = render(
+			<NextDepositDetails isLoading={ false } overview={ overview } />
+		);
+
+		getByText( strings.notices.depositIncludesLoan, {
+			exact: false,
+			ignore: '.a11y-speak-region',
+		} );
+		expect(
+			getByRole( 'link', {
+				name: 'Learn more',
+			} )
+		).toHaveAttribute( 'href', strings.documentationUrls.capital );
+	} );
+
+	test( `Doesn't render capital loan notice if deposit does not include financing payout`, () => {
+		const overview = createMockOverview( 'usd', 100, 0, 'rubbish' );
+		mockUseDepositIncludesLoan.mockReturnValue( {
+			includesFinancingPayout: false,
+			isLoading: false,
+		} );
+
+		const { queryByRole, queryByText } = render(
+			<NextDepositDetails isLoading={ false } overview={ overview } />
+		);
+
+		expect(
+			queryByText( strings.notices.depositIncludesLoan, {
+				exact: false,
+				ignore: '.a11y-speak-region',
+			} )
+		).toBeFalsy();
+		expect(
+			queryByRole( 'link', {
+				name: 'Learn more',
+			} )
+		).toBeFalsy();
 	} );
 } );
 
@@ -292,5 +346,86 @@ describe( 'Deposits Overview footer renders', () => {
 		// Check that the button and link is rendered.
 		getByText( 'View full deposits history' );
 		getByText( 'Change deposit schedule' );
+	} );
+} );
+
+describe( 'Deposit Schedule renders', () => {
+	test( 'with a weekly schedule', () => {
+		const { container } = render(
+			<DepositSchedule { ...mockAccount.deposits_schedule } />
+		);
+		const descriptionText = container.textContent;
+
+		expect( descriptionText ).toContain(
+			'Your deposits are dispatched automatically every Monday'
+		);
+	} );
+	test( 'with a monthly schedule on the 14th', () => {
+		mockAccount.deposits_schedule.interval = 'monthly';
+		mockAccount.deposits_schedule.monthly_anchor = 14;
+
+		const { container } = render(
+			<DepositSchedule { ...mockAccount.deposits_schedule } />
+		);
+		const descriptionText = container.textContent;
+
+		expect( descriptionText ).toContain(
+			'Your deposits are dispatched automatically on the 14th of every month'
+		);
+	} );
+	test( 'with a monthly schedule on the last day', () => {
+		mockAccount.deposits_schedule.interval = 'monthly';
+		mockAccount.deposits_schedule.monthly_anchor = 31;
+
+		const { container } = render(
+			<DepositSchedule { ...mockAccount.deposits_schedule } />
+		);
+		const descriptionText = container.textContent;
+
+		expect( descriptionText ).toContain(
+			'Your deposits are dispatched automatically on the last day of every month'
+		);
+	} );
+	test( 'with a monthly schedule on the 2nd', () => {
+		mockAccount.deposits_schedule.interval = 'monthly';
+		mockAccount.deposits_schedule.monthly_anchor = 2;
+
+		const { container } = render(
+			<DepositSchedule { ...mockAccount.deposits_schedule } />
+		);
+		const descriptionText = container.textContent;
+
+		expect( descriptionText ).toContain(
+			'Your deposits are dispatched automatically on the 2nd of every month'
+		);
+	} );
+	test( 'with a daily schedule', () => {
+		mockAccount.deposits_schedule.interval = 'daily';
+
+		const { container } = render(
+			<DepositSchedule { ...mockAccount.deposits_schedule } />
+		);
+		const descriptionText = container.textContent;
+
+		expect( descriptionText ).toContain(
+			'Your deposits are dispatched automatically every day'
+		);
+	} );
+	test( 'with a daily schedule', () => {
+		mockAccount.deposits_schedule.interval = 'manual';
+
+		const { container } = render(
+			<DepositSchedule { ...mockAccount.deposits_schedule } />
+		);
+
+		// Check that a manual schedule is not rendered.
+		expect( container ).toBeEmptyDOMElement();
+	} );
+} );
+
+describe( 'Suspended Deposit Notice Renders', () => {
+	test( 'Component Renders', () => {
+		const { container } = render( <SuspendedDepositNotice /> );
+		expect( container ).toMatchSnapshot();
 	} );
 } );

@@ -12,10 +12,9 @@ export default {
 			'woocommerce-payments'
 		),
 	},
-	recentDeposits: {
-		title: __( 'Deposit history', 'woocommerce-payments' ),
-		description: __(
-			'Your deposits are dispatched automatically.',
+	notices: {
+		depositIncludesLoan: __(
+			'This deposit will include funds from your WooCommerce Capital loan.',
 			'woocommerce-payments'
 		),
 	},
@@ -32,5 +31,10 @@ export default {
 		recentDepositDate: __( 'Dispatch date', 'woocommerce-payments' ),
 		status: __( 'Status', 'woocommerce-payments' ),
 		amount: __( 'Amount', 'woocommerce-payments' ),
+	},
+	depositHistoryHeading: __( 'Deposit history', 'woocommerce-payments' ),
+	documentationUrls: {
+		capital:
+			'https://woocommerce.com/document/woocommerce-payments/stripe-capital/overview',
 	},
 };
