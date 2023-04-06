@@ -1387,8 +1387,6 @@ class WC_Payments {
 			);
 		}
 
-		$session_cookie_name = apply_filters( 'woocommerce_cookie', 'wp_woocommerce_session_' . COOKIEHASH );
-
 		$email       = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : '';
 		$user        = wp_get_current_user();
 		$customer_id = self::$customer_service->get_customer_id_by_user_id( $user->ID );
@@ -1416,15 +1414,13 @@ class WC_Payments {
 		}
 
 		$body = [
-			'wcpay_version'        => WCPAY_VERSION_NUMBER,
-			'user_id'              => $user->ID,
-			'customer_id'          => $customer_id,
-			'session_nonce'        => wp_create_nonce( 'wc_store_api' ),
-			'store_api_token'      => $store_api_token,
-			'email'                => $email,
-			'session_cookie_name'  => $session_cookie_name,
-			'session_cookie_value' => wp_unslash( $_COOKIE[ $session_cookie_name ] ?? '' ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-			'store_data'           => [
+			'wcpay_version'   => WCPAY_VERSION_NUMBER,
+			'user_id'         => $user->ID,
+			'customer_id'     => $customer_id,
+			'session_nonce'   => wp_create_nonce( 'wc_store_api' ),
+			'store_api_token' => $store_api_token,
+			'email'           => $email,
+			'store_data'      => [
 				'store_name'                     => get_bloginfo( 'name' ),
 				'store_logo'                     => ! empty( $store_logo ) ? get_rest_url( null, 'wc/v3/payments/file/' . $store_logo ) : '',
 				'custom_message'                 => self::get_gateway()->get_option( 'platform_checkout_custom_message' ),
@@ -1443,7 +1439,7 @@ class WC_Payments {
 				'blocks_data'                    => $blocks_data_extractor->get_data(),
 				'checkout_schema_namespaces'     => $blocks_data_extractor->get_checkout_schema_namespaces(),
 			],
-			'user_session'         => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
+			'user_session'    => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];
 		$args = [
 			'url'     => $url,
