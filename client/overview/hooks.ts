@@ -17,7 +17,7 @@ declare module '@woocommerce/navigation' {
 
 type CurrencyCode = string;
 
-type SelectedCurrencyResponse = {
+type UseSelectedCurrencyResult = {
 	selectedCurrency?: CurrencyCode;
 	setSelectedCurrency: ( selectedCurrency: CurrencyCode ) => void;
 };
@@ -27,9 +27,9 @@ type SelectedCurrencyResponse = {
  * This is used to determine which currency to display in the overview page.
  * The selected currency is set as a 'selected_currency' query parameter in the URL.
  *
- * @return {SelectedCurrencyResponse} An object containing the selected currency and a setter function.
+ * @return {UseSelectedCurrencyResult} An object containing the selected currency and a setter function.
  */
-export const useSelectedCurrency = (): SelectedCurrencyResponse => {
+export const useSelectedCurrency = (): UseSelectedCurrencyResult => {
 	const setSelectedCurrency = ( currencyCode: CurrencyCode ) => {
 		updateQueryString( {
 			selected_currency: currencyCode,
@@ -44,7 +44,7 @@ export const useSelectedCurrency = (): SelectedCurrencyResponse => {
 	};
 };
 
-type SelectedCurrencyOverviewResponse = {
+type SelectedCurrencyOverview = {
 	account?: AccountOverview.Account;
 	overview?: AccountOverview.Overview;
 	isLoading: boolean;
@@ -54,9 +54,9 @@ type SelectedCurrencyOverviewResponse = {
  * If the selected currency is not valid, the first currency overview is returned.
  * If the selected currency is valid, the overview for that currency is returned.
  *
- * @return {SelectedCurrencyOverviewResponse} An object containing the account and the overview for the selected currency.
+ * @return {SelectedCurrencyOverview} An object containing the account and the overview for the selected currency.
  */
-export const useSelectedCurrencyOverview = (): SelectedCurrencyOverviewResponse => {
+export const useSelectedCurrencyOverview = (): SelectedCurrencyOverview => {
 	const {
 		overviews,
 		isLoading: isAccountOverviewsLoading,
