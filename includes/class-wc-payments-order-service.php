@@ -344,7 +344,9 @@ class WC_Payments_Order_Service {
 	 */
 	public function mark_terminal_payment_completed( $order, $intent_id, $intent_status ) {
 		$this->update_order_status( $order, Order_Status::COMPLETED, $intent_id );
-		$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::TERMINAL_PAYMENT );
+		if ( WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
+			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::TERMINAL_PAYMENT );
+		}
 		$this->complete_order_processing( $order, $intent_status );
 	}
 
@@ -758,9 +760,8 @@ class WC_Payments_Order_Service {
 		if ( isset( $intent_data['fraud_outcome'] )
 			&& Rule::is_valid_fraud_outcome_status( $intent_data['fraud_outcome'] )
 			&& Rule::FRAUD_OUTCOME_ALLOW !== $intent_data['fraud_outcome'] ) {
-			$fraud_meta_box = Rule::FRAUD_OUTCOME_REVIEW === $this->get_fraud_outcome_status_for_order( $order ) ? Fraud_Meta_Box_Type::REVIEW_BLOCKED : Fraud_Meta_Box_Type::REVIEW_CANCELLED;
 			$this->set_fraud_outcome_status_for_order( $order, $intent_data['fraud_outcome'] );
-			$this->set_fraud_meta_box_type_for_order( $order, $fraud_meta_box );
+			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::REVIEW_BLOCKED );
 		}
 
 		$this->update_order_status( $order, Order_Status::CANCELLED );
@@ -798,7 +799,7 @@ class WC_Payments_Order_Service {
 		}
 
 		if ( ! $this->intent_has_card_payment_type( $intent_data ) ) {
-			$this->set_fraud_outcome_status_for_order( $order, Fraud_Meta_Box_Type::NOT_CARD );
+			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::NOT_CARD );
 		}
 
 		$this->update_order_status( $order, 'payment_complete', $intent_data['intent_id'] );
@@ -1444,7 +1445,7 @@ class WC_Payments_Order_Service {
 				'intent_status'       => $intent['status'],
 				'charge_id'           => $intent['charge_id'] ?? '',
 				'fraud_outcome'       => $intent['fraud_outcome'] ?? '',
-				'payment_method_type' => '',
+				'payment_method_type' => $intent['payment_method_type'] ?? '',
 			];
 		} elseif ( is_object( $intent ) ) {
 			$charge               = $intent->get_charge();

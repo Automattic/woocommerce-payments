@@ -155,13 +155,6 @@ class Order_Fraud_And_Risk_Meta_Box {
 				echo '<p class="wcpay-fraud-risk-meta-blocked"><img src="' . esc_url( $icons['red_shield']['url'] ) . '" alt="' . esc_html( $icons['orange_shield']['alt'] ) . '"> ' . esc_html( $statuses['held_for_review'] ) . '</p><p>' . esc_html( $description ) . '</p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
 				break;
 
-			case Fraud_Meta_Box_Type::REVIEW_CANCELLED:
-				$description     = __( 'The payment for this order was held for review by your risk filtering. The charge appears to have been cancelled.', 'woocommerce-payments' );
-				$callout         = __( 'Review payment', 'woocommerce-payments' );
-				$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
-				echo '<p class="wcpay-fraud-risk-meta-review"><img src="' . esc_url( $icons['orange_shield']['url'] ) . '" alt="' . esc_html( $icons['orange_shield']['alt'] ) . '"> ' . esc_html( $statuses['held_for_review'] ) . '</p><p>' . esc_html( $description ) . '</p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
-				break;
-
 			case Fraud_Meta_Box_Type::REVIEW_EXPIRED:
 				$description     = __( 'The payment for this order was held for review by your risk filtering. The authorization for the charge appears to have expired.', 'woocommerce-payments' );
 				$callout         = __( 'Review payment', 'woocommerce-payments' );

@@ -96,10 +96,6 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 				'meta_box_type'   => Fraud_Meta_Box_Type::REVIEW_BLOCKED,
 				'expected_output' => '<p class="wcpay-fraud-risk-meta-blocked"><img src="http://example.org/wp-content/plugins/Users/j/sites/wcp/wp-content/plugins/woocommerce-payments/assets/images/icons/shield-stroke-red.svg" alt="Orange shield outline"> Held for review</p><p>This transaction was held for review by your risk filters, and the charge was manually blocked after review.</p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=/payments/transactions/details&#038;id=pi_mock" target="_blank" rel="noopener noreferrer">Review payment</a>',
 			],
-			'Fraud_Meta_Box_Type_REVIEW_CANCELLED' => [
-				'meta_box_type'   => Fraud_Meta_Box_Type::REVIEW_CANCELLED,
-				'expected_output' => '<p class="wcpay-fraud-risk-meta-review"><img src="http://example.org/wp-content/plugins/Users/j/sites/wcp/wp-content/plugins/woocommerce-payments/assets/images/icons/shield-stroke-orange.svg" alt="Orange shield outline"> Held for review</p><p>The payment for this order was held for review by your risk filtering. The charge appears to have been cancelled.</p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=/payments/transactions/details&#038;id=pi_mock" target="_blank" rel="noopener noreferrer">Review payment</a>',
-			],
 			'Fraud_Meta_Box_Type_REVIEW_EXPIRED'   => [
 				'meta_box_type'   => Fraud_Meta_Box_Type::REVIEW_EXPIRED,
 				'expected_output' => '<p class="wcpay-fraud-risk-meta-review"><img src="http://example.org/wp-content/plugins/Users/j/sites/wcp/wp-content/plugins/woocommerce-payments/assets/images/icons/shield-stroke-orange.svg" alt="Orange shield outline"> Held for review</p><p>The payment for this order was held for review by your risk filtering. The authorization for the charge appears to have expired.</p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=/payments/transactions/details&#038;id=pi_mock" target="_blank" rel="noopener noreferrer">Review payment</a>',
