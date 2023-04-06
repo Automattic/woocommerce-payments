@@ -78,35 +78,35 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 		return [
 			'Fraud_Meta_Box_Type_ALLOW'            => [
 				'meta_box_type'   => Fraud_Meta_Box_Type::ALLOW,
-				'expected_output' => '<p class="wcpay-fraud-risk-meta-allow"><img src="http://example.org/wp-content/plugins/Users/j/sites/wcp/wp-content/plugins/woocommerce-payments/assets/images/icons/check-green.svg" alt="Green check mark"> No action taken</p><p>The payment for this order passed your risk filtering.</p>',
+				'expected_output' => '<p class="wcpay-fraud-risk-meta-allow"><img src="' . plugins_url( 'assets/images/icons/check-green.svg', WCPAY_PLUGIN_FILE ) . '" alt="Green check mark"> No action taken</p><p>The payment for this order passed your risk filtering.</p>',
 			],
 			'Fraud_Meta_Box_Type_PAYMENT_STARTED'  => [
 				'meta_box_type'   => Fraud_Meta_Box_Type::PAYMENT_STARTED,
-				'expected_output' => '<p class="wcpay-fraud-risk-meta-review"><img src="http://example.org/wp-content/plugins/Users/j/sites/wcp/wp-content/plugins/woocommerce-payments/assets/images/icons/shield-stroke-orange.svg" alt="Orange shield outline"> No action taken</p><p>The payment for this order has not yet been passed to the fraud and risk filters to determine its outcome status.</p>',
+				'expected_output' => '<p class="wcpay-fraud-risk-meta-review"><img src="' . plugins_url( 'assets/images/icons/shield-stroke-orange.svg', WCPAY_PLUGIN_FILE ) . '" alt="Orange shield outline"> No action taken</p><p>The payment for this order has not yet been passed to the fraud and risk filters to determine its outcome status.</p>',
 			],
 			'Fraud_Meta_Box_Type_REVIEW'           => [
 				'meta_box_type'   => Fraud_Meta_Box_Type::REVIEW,
-				'expected_output' => '<p class="wcpay-fraud-risk-meta-review"><img src="http://example.org/wp-content/plugins/Users/j/sites/wcp/wp-content/plugins/woocommerce-payments/assets/images/icons/shield-stroke-orange.svg" alt="Orange shield outline"> Held for review</p><p>The payment for this order was held for review by your risk filtering. You can review the details and determine whether to approve or block the payment.</p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=/payments/transactions/details&#038;id=pi_mock&#038;status_is=review&#038;type_is=meta_box" target="_blank" rel="noopener noreferrer">Review payment</a>',
+				'expected_output' => '<p class="wcpay-fraud-risk-meta-review"><img src="' . plugins_url( 'assets/images/icons/shield-stroke-orange.svg', WCPAY_PLUGIN_FILE ) . '" alt="Orange shield outline"> Held for review</p><p>The payment for this order was held for review by your risk filtering. You can review the details and determine whether to approve or block the payment.</p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=/payments/transactions/details&#038;id=pi_mock&#038;status_is=review&#038;type_is=meta_box" target="_blank" rel="noopener noreferrer">Review payment</a>',
 			],
 			'Fraud_Meta_Box_Type_REVIEW_ALLOWED'   => [
 				'meta_box_type'   => Fraud_Meta_Box_Type::REVIEW_ALLOWED,
-				'expected_output' => '<p class="wcpay-fraud-risk-meta-allow"><img src="http://example.org/wp-content/plugins/Users/j/sites/wcp/wp-content/plugins/woocommerce-payments/assets/images/icons/check-green.svg" alt="Green check mark"> Held for review</p><p>This transaction was held for review by your risk filters, and the charge was manually approved after review.</p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=/payments/transactions/details&#038;id=pi_mock" target="_blank" rel="noopener noreferrer">Review payment</a>',
+				'expected_output' => '<p class="wcpay-fraud-risk-meta-allow"><img src="' . plugins_url( 'assets/images/icons/check-green.svg', WCPAY_PLUGIN_FILE ) . '" alt="Green check mark"> Held for review</p><p>This transaction was held for review by your risk filters, and the charge was manually approved after review.</p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=/payments/transactions/details&#038;id=pi_mock" target="_blank" rel="noopener noreferrer">Review payment</a>',
 			],
 			'Fraud_Meta_Box_Type_REVIEW_BLOCKED'   => [
 				'meta_box_type'   => Fraud_Meta_Box_Type::REVIEW_BLOCKED,
-				'expected_output' => '<p class="wcpay-fraud-risk-meta-blocked"><img src="http://example.org/wp-content/plugins/Users/j/sites/wcp/wp-content/plugins/woocommerce-payments/assets/images/icons/shield-stroke-red.svg" alt="Orange shield outline"> Held for review</p><p>This transaction was held for review by your risk filters, and the charge was manually blocked after review.</p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=/payments/transactions/details&#038;id=pi_mock" target="_blank" rel="noopener noreferrer">Review payment</a>',
+				'expected_output' => '<p class="wcpay-fraud-risk-meta-blocked"><img src="' . plugins_url( 'assets/images/icons/shield-stroke-red.svg', WCPAY_PLUGIN_FILE ) . '" alt="Orange shield outline"> Held for review</p><p>This transaction was held for review by your risk filters, and the charge was manually blocked after review.</p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=/payments/transactions/details&#038;id=pi_mock" target="_blank" rel="noopener noreferrer">Review payment</a>',
 			],
 			'Fraud_Meta_Box_Type_REVIEW_EXPIRED'   => [
 				'meta_box_type'   => Fraud_Meta_Box_Type::REVIEW_EXPIRED,
-				'expected_output' => '<p class="wcpay-fraud-risk-meta-review"><img src="http://example.org/wp-content/plugins/Users/j/sites/wcp/wp-content/plugins/woocommerce-payments/assets/images/icons/shield-stroke-orange.svg" alt="Orange shield outline"> Held for review</p><p>The payment for this order was held for review by your risk filtering. The authorization for the charge appears to have expired.</p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=/payments/transactions/details&#038;id=pi_mock" target="_blank" rel="noopener noreferrer">Review payment</a>',
+				'expected_output' => '<p class="wcpay-fraud-risk-meta-review"><img src="' . plugins_url( 'assets/images/icons/shield-stroke-orange.svg', WCPAY_PLUGIN_FILE ) . '" alt="Orange shield outline"> Held for review</p><p>The payment for this order was held for review by your risk filtering. The authorization for the charge appears to have expired.</p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=/payments/transactions/details&#038;id=pi_mock" target="_blank" rel="noopener noreferrer">Review payment</a>',
 			],
 			'Fraud_Meta_Box_Type_REVIEW_FAILED'    => [
 				'meta_box_type'   => Fraud_Meta_Box_Type::REVIEW_FAILED,
-				'expected_output' => '<p class="wcpay-fraud-risk-meta-review"><img src="http://example.org/wp-content/plugins/Users/j/sites/wcp/wp-content/plugins/woocommerce-payments/assets/images/icons/shield-stroke-orange.svg" alt="Orange shield outline"> Held for review</p><p>The payment for this order was held for review by your risk filtering. The authorization for the charge appears to have failed.</p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=/payments/transactions/details&#038;id=pi_mock" target="_blank" rel="noopener noreferrer">Review payment</a>',
+				'expected_output' => '<p class="wcpay-fraud-risk-meta-review"><img src="' . plugins_url( 'assets/images/icons/shield-stroke-orange.svg', WCPAY_PLUGIN_FILE ) . '" alt="Orange shield outline"> Held for review</p><p>The payment for this order was held for review by your risk filtering. The authorization for the charge appears to have failed.</p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=/payments/transactions/details&#038;id=pi_mock" target="_blank" rel="noopener noreferrer">Review payment</a>',
 			],
 			'Fraud_Meta_Box_Type_TERMINAL_PAYMENT' => [
 				'meta_box_type'   => Fraud_Meta_Box_Type::TERMINAL_PAYMENT,
-				'expected_output' => '<p class="wcpay-fraud-risk-meta-allow"><img src="http://example.org/wp-content/plugins/Users/j/sites/wcp/wp-content/plugins/woocommerce-payments/assets/images/icons/check-green.svg" alt="Green check mark"> No action taken</p><p>The payment for this order was done in person and has bypassed your risk filtering.</p>',
+				'expected_output' => '<p class="wcpay-fraud-risk-meta-allow"><img src="' . plugins_url( 'assets/images/icons/check-green.svg', WCPAY_PLUGIN_FILE ) . '" alt="Green check mark"> No action taken</p><p>The payment for this order was done in person and has bypassed your risk filtering.</p>',
 			],
 		];
 	}
@@ -153,7 +153,7 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 		$this->order_fraud_and_risk_meta_box->display_order_fraud_and_risk_meta_box_message( $this->order );
 
 		// Assert: Check to make sure the expected string has been output.
-		$this->expectOutputString( '<p class="wcpay-fraud-risk-meta-blocked"><img src="http://example.org/wp-content/plugins/Users/j/sites/wcp/wp-content/plugins/woocommerce-payments/assets/images/icons/shield-stroke-red.svg" alt="Red shield outline"> Blocked</p><p>The payment for this order was blocked by your risk filtering. There is no pending authorization, and the order can be cancelled to reduce any held stock.</p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=/payments/transactions/details&#038;id=' . $this->order->get_id() . '&#038;status_is=block&#038;type_is=meta_box" target="_blank" rel="noopener noreferrer">View more details</a>' );
+		$this->expectOutputString( '<p class="wcpay-fraud-risk-meta-blocked"><img src="' . plugins_url( 'assets/images/icons/shield-stroke-red.svg', WCPAY_PLUGIN_FILE ) . '" alt="Red shield outline"> Blocked</p><p>The payment for this order was blocked by your risk filtering. There is no pending authorization, and the order can be cancelled to reduce any held stock.</p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=/payments/transactions/details&#038;id=' . $this->order->get_id() . '&#038;status_is=block&#038;type_is=meta_box" target="_blank" rel="noopener noreferrer">View more details</a>' );
 	}
 
 	/**
