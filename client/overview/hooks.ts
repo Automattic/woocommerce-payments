@@ -60,7 +60,7 @@ export const useSelectedCurrencyOverview = (): SelectedCurrencyOverviewResponse 
 	const {
 		overviews,
 		isLoading: isAccountOverviewsLoading,
-	} = useAllDepositsOverviews() as AccountOverview.OverviewsResponse;
+	} = useAllDepositsOverviews();
 	const { currencies, account } = overviews;
 
 	const { selectedCurrency } = useSelectedCurrency();
