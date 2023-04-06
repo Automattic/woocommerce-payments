@@ -18,6 +18,12 @@
 			color: $gray-700;
 		}
 	}
+	&__notices {
+		padding: 0 24px;
+		.wcpay-banner-notice.components-notice {
+			margin: 0;
+		}
+	}
 	&__table {
 		color: $gray-900;
 		align-items: center;

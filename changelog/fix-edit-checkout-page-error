@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Check whether we have an instance of WC_Cart before invoking its methods on checkout
