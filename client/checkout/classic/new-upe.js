@@ -232,9 +232,6 @@ jQuery( function ( $ ) {
 	} );
 
 	function appendPaymentMethodIdToForm( $form, paymentMethodId ) {
-		// Remove any existing payment method inputs.
-		$form.find( 'input[name="wcpay-payment-method"]' ).remove();
-
 		$form.append(
 			`<input type="hidden" name="wcpay-payment-method" value="${ paymentMethodId }" />`
 		);
