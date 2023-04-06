@@ -31,6 +31,7 @@ export default {
 		status: __( 'Status', 'woocommerce-payments' ),
 		amount: __( 'Amount', 'woocommerce-payments' ),
 	},
+	depositHistoryHeading: __( 'Deposit history', 'woocommerce-payments' ),
 	documentationUrls: {
 		capital:
 			'https://woocommerce.com/document/woocommerce-payments/stripe-capital/overview',
