@@ -157,7 +157,7 @@ jQuery( function ( $ ) {
 
 	const handleCheckout = ( $form, paymentMethodType ) => {
 		if ( paymentMethodGenerated ) {
-			paymentMethodGenerated = null;
+			paymentMethodGenerated = false;
 			return;
 		}
 
