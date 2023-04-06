@@ -10,14 +10,6 @@ import { render } from '@testing-library/react';
 import AccountStatus from '../';
 
 describe( 'AccountStatus', () => {
-	beforeEach( () => {
-		global.wcpaySettings = {
-			featureFlags: {
-				customDepositSchedules: false,
-			},
-		};
-	} );
-
 	const renderAccountStatus = ( accountStatus ) => {
 		return render( <AccountStatus accountStatus={ accountStatus } /> );
 	};
@@ -139,24 +131,7 @@ describe( 'AccountStatus', () => {
 		expect( accountStatus ).toMatchSnapshot();
 	} );
 
-	test( 'renders manual (suspended) deposits', () => {
-		const { container: accountStatus } = renderAccountStatus( {
-			status: 'complete',
-			paymentsEnabled: true,
-			deposits: {
-				status: 'enabled',
-				interval: 'manual',
-			},
-			currentDeadline: 0,
-			accountLink: '',
-		} );
-		expect( accountStatus ).toMatchSnapshot();
-	} );
-
-	test( 'renders manual deposits (with custom deposits feature flag enabled)', () => {
-		// Enable custom deposit schedules feature flag.
-		global.wcpaySettings.featureFlags.customDepositSchedules = true;
-
+	test( 'renders manual deposits', () => {
 		const { container: accountStatus } = renderAccountStatus( {
 			status: 'complete',
 			paymentsEnabled: true,

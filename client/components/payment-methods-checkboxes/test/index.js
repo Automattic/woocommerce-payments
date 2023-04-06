@@ -14,6 +14,14 @@ import PaymentMethodsCheckbox from '../payment-method-checkbox';
 import { upeCapabilityStatuses } from '../../../additional-methods-setup/constants';
 import { act } from 'react-dom/test-utils';
 
+jest.mock( '@woocommerce/components', () => {
+	return {
+		Pill: ( { className, children } ) => (
+			<span className={ className }>{ children }</span>
+		),
+	};
+} );
+
 describe( 'PaymentMethodsCheckboxes', () => {
 	it( 'triggers the onChange when clicking the checkbox', () => {
 		const handleChange = jest.fn();
@@ -200,7 +208,7 @@ describe( 'PaymentMethodsCheckboxes', () => {
 
 	it( 'doesnt show the disabled notice pill on payment methods with active and unrequested statuses', () => {
 		const handleChange = () => {};
-		const page = render(
+		render(
 			<PaymentMethodsCheckboxes>
 				<PaymentMethodsCheckbox
 					key={ 'sofort' }
@@ -219,8 +227,9 @@ describe( 'PaymentMethodsCheckboxes', () => {
 			</PaymentMethodsCheckboxes>
 		);
 
-		expect( page.container ).not.toContainHTML(
-			'<span class="wcpay-pill payment-status-inactive">Contact WooCommerce Support</span>'
-		);
+		// Test that the Contact support pill content isn't shown
+		expect(
+			screen.queryByText( 'Contact WooCommerce Support' )
+		).not.toBeInTheDocument();
 	} );
 } );
