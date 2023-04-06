@@ -39,7 +39,7 @@ const DepositsOverview = (): JSX.Element => {
 
 			{ ! isLoading &&
 				!! account &&
-				( ! account.deposits_blocked ? (
+				( account.deposits_blocked ? (
 					<DepositOverviewSectionHeading
 						title={ strings.depositHistoryHeading }
 						children={ <SuspendedDepositNotice /> }
