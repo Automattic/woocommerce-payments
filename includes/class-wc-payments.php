@@ -157,9 +157,9 @@ class WC_Payments {
 	private static $onboarding_service;
 
 	/**
-	 * Instance of WC_Express_Checkout_Button_Display_Handler, created in init function
+	 * Instance of WC_Payments_Express_Checkout_Button_Display_Handler, created in init function
 	 *
-	 * @var WC_Express_Checkout_Button_Display_Handler
+	 * @var WC_Payments_Express_Checkout_Button_Display_Handler
 	 */
 	private static $express_checkout_button_display_handler;
 
