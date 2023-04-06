@@ -186,7 +186,7 @@ class Order_Fraud_And_Risk_Meta_Box {
 	 *
 	 * @param string $primary_id  Usually the Payment Intent ID, but can be an order ID.
 	 * @param string $fallback_id Usually the Charge ID.
-	 * @param array  $status      The status we're wanting to add to the meta box tracking.
+	 * @param string $status      The status we're wanting to add to the meta box tracking.
 	 *
 	 * @return string Transaction details page url with tracking.
 	 */
