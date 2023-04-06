@@ -152,7 +152,7 @@ const SettingsManager = () => {
 		if ( ! isLoading && scrollTo ) {
 			const element = document.querySelector( scrollTo );
 
-			if ( ! scrollTo ) {
+			if ( ! element ) {
 				return;
 			}
 
