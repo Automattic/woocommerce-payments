@@ -120,7 +120,7 @@ jQuery( function ( $ ) {
 		const options = {
 			mode: 1 > amount ? 'setup' : 'payment',
 			currency: getUPEConfig( 'currency' ).toLowerCase(),
-			amount: Number( getUPEConfig( 'cartTotal' ) ),
+			amount: amount,
 			paymentMethodCreation: 'manual',
 			paymentMethodTypes: [ paymentMethodType ],
 			appearance: appearance,
