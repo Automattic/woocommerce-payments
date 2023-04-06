@@ -876,6 +876,17 @@ class WC_Payments {
 	}
 
 	/**
+	 * Initializes the Platform_Checkout_Store_Api_Token class and returns the Cart token.
+	 *
+	 * @return string The Cart Token.
+	 */
+	private static function init_store_api_token() {
+		$cart_route = Platform_Checkout_Store_Api_Token::init();
+
+		return $cart_route->get_cart_token();
+	}
+
+	/**
 	 * Initialize the REST API controllers.
 	 */
 	public static function init_rest_api() {
@@ -1375,7 +1386,6 @@ class WC_Payments {
 	 * Used to initialize platform checkout session.
 	 *
 	 * @return void
-	 * @throws \Exception - If Store API nonce cannot be generated.
 	 */
 	public static function ajax_init_platform_checkout() {
 		$is_nonce_valid = check_ajax_referer( 'wcpay_init_platform_checkout_nonce', false, false );
@@ -1406,19 +1416,12 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/compat/blocks/class-blocks-data-extractor.php';
 		$blocks_data_extractor = new Blocks_Data_Extractor();
 
-		try {
-			$cart_route      = Platform_Checkout_Store_Api_Token::init();
-			$store_api_token = $cart_route->get_cart_token();
-		} catch ( \Exception $e ) {
-			throw $e;
-		}
-
 		$body = [
 			'wcpay_version'   => WCPAY_VERSION_NUMBER,
 			'user_id'         => $user->ID,
 			'customer_id'     => $customer_id,
 			'session_nonce'   => wp_create_nonce( 'wc_store_api' ),
-			'store_api_token' => $store_api_token,
+			'store_api_token' => self::init_store_api_token(),
 			'email'           => $email,
 			'store_data'      => [
 				'store_name'                     => get_bloginfo( 'name' ),

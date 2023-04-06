@@ -21,14 +21,10 @@ class Platform_Checkout_Store_Api_Token extends AbstractCartRoute {
 	 * @throws \Exception If the class cannot be instantiated.
 	 */
 	public static function init() {
-		try {
-			$formatters        = new \Automattic\WooCommerce\StoreApi\Formatters();
-			$extend_schema     = new \Automattic\WooCommerce\StoreApi\Schemas\ExtendSchema( $formatters );
-			$schema_controller = new \Automattic\WooCommerce\StoreApi\SchemaController( $extend_schema );
-			return new self( $schema_controller, $schema_controller->get( 'cart' ) );
-		} catch ( \Exception $e ) {
-			throw $e;
-		}
+		$formatters        = new \Automattic\WooCommerce\StoreApi\Formatters();
+		$extend_schema     = new \Automattic\WooCommerce\StoreApi\Schemas\ExtendSchema( $formatters );
+		$schema_controller = new \Automattic\WooCommerce\StoreApi\SchemaController( $extend_schema );
+		return new self( $schema_controller, $schema_controller->get( 'cart' ) );
 	}
 
 	/**
