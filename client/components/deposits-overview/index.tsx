@@ -10,6 +10,7 @@ import { Card, CardHeader } from '@wordpress/components';
 import { useAllDepositsOverviews } from 'wcpay/data';
 import strings from './strings';
 import NextDepositDetails from './next-deposit';
+import RecentDepositsList from './recent-deposits-list';
 import DepositsOverviewFooter from './footer';
 import DepositOverviewSectionHeading from './section-heading';
 import DepositSchedule from './deposit-schedule';
@@ -24,7 +25,7 @@ const DepositsOverview = (): JSX.Element => {
 	const { currencies, account } = overviews;
 
 	const overview = currencies[ 0 ]; // TODO: To handle multiple currencies we'll need to fetch the currently selected currency.
-
+	const currency = 'usd'; // TODO: hardcoded curency for recent deposits.
 	return (
 		<Card>
 			<CardHeader>{ strings.heading }</CardHeader>
@@ -59,7 +60,7 @@ const DepositsOverview = (): JSX.Element => {
 					/>
 				) ) }
 
-			<p>Deposit history table will go here</p>
+			<RecentDepositsList currency={ currency } />
 
 			<DepositsOverviewFooter />
 		</Card>
