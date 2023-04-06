@@ -9,6 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
+
 /**
  * Class WC_Payments_Express_Checkout_Button_Display_Handler
  */
@@ -40,14 +42,14 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 *
 	 * @var WC_Payments_Payment_Request_Button_Handler
 	 */
-	private static $payment_request_button_handler;
+	private $payment_request_button_handler;
 
 	/**
 	 * Instance of WC_Payments_Platform_Checkout_Button_Handler, created in init function
 	 *
 	 * @var WC_Payments_Platform_Checkout_Button_Handler
 	 */
-	private static $platform_checkout_button_handler;
+	private $platform_checkout_button_handler;
 
 	/**
 	 * Initialize class actions.
@@ -56,7 +58,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 * @param WC_Payment_Gateway_WCPay    $gateway WCPay gateway.
 	 * @param Platform_Checkout_Utilities $platform_checkout_utilities Platform checkout utilities.
 	 */
-	public function __construct( WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway, $platform_checkout_utilities ) {
+	public function __construct( WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway, Platform_Checkout_Utilities $platform_checkout_utilities ) {
 		$this->account                     = $account;
 		$this->gateway                     = $gateway;
 		$this->platform_checkout_utilities = $platform_checkout_utilities;
@@ -68,11 +70,11 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 * @return  void
 	 */
 	public function init() {
-		self::$payment_request_button_handler   = new WC_Payments_Payment_Request_Button_Handler( $this->account, $this->gateway );
-		self::$platform_checkout_button_handler = new WC_Payments_Platform_Checkout_Button_Handler( $this->account, $this->gateway, $this->platform_checkout_utilities );
+		$this->payment_request_button_handler   = new WC_Payments_Payment_Request_Button_Handler( $this->account, $this->gateway );
+		$this->platform_checkout_button_handler = new WC_Payments_Platform_Checkout_Button_Handler( $this->account, $this->gateway, $this->platform_checkout_utilities );
 
-		self::$platform_checkout_button_handler->init();
-		self::$payment_request_button_handler->init();
+		$this->platform_checkout_button_handler->init();
+		$this->payment_request_button_handler->init();
 
 		$is_woopay_express_checkout_enabled = WC_Payments_Features::is_woopay_express_checkout_enabled();
 
@@ -94,8 +96,8 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 * @return void
 	 */
 	public function display_express_checkout_separator_if_necessary() {
-		$woopay          = self::$platform_checkout_button_handler->is_woopay_enabled() && self::$platform_checkout_button_handler->should_show_platform_checkout_button();
-		$payment_request = self::$payment_request_button_handler->should_show_payment_request_button();
+		$woopay          = $this->platform_checkout_button_handler->is_woopay_enabled() && $this->platform_checkout_button_handler->should_show_platform_checkout_button();
+		$payment_request = $this->payment_request_button_handler->should_show_payment_request_button();
 		$should_hide     = $payment_request && ! $woopay;
 		if ( $woopay || $payment_request ) {
 			?>
@@ -110,9 +112,9 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 * @return void
 	 */
 	public function display_express_checkout_buttons() {
-		self::$platform_checkout_button_handler->display_platform_checkout_button_html();
-		self::$payment_request_button_handler->display_payment_request_button_html();
-		self::display_express_checkout_separator_if_necessary();
+		$this->platform_checkout_button_handler->display_platform_checkout_button_html();
+		$this->payment_request_button_handler->display_payment_request_button_html();
+		$this->display_express_checkout_separator_if_necessary();
 	}
 
 	/**
@@ -121,6 +123,6 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 * @return bool
 	 */
 	public function is_woopay_enabled() {
-		return self::$platform_checkout_button_handler->is_woopay_enabled();
+		return $this->platform_checkout_button_handler->is_woopay_enabled();
 	}
 }

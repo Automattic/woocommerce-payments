@@ -552,8 +552,6 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 			</div>
 		</div>
 		<?php
-
-		return true;
 	}
 
 	/**

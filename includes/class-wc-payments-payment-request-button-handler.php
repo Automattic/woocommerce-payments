@@ -776,7 +776,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 			</div>
 		</div>
 		<?php
-		return true;
 	}
 
 	/**
