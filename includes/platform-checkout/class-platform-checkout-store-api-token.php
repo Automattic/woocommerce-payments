@@ -18,7 +18,6 @@ class Platform_Checkout_Store_Api_Token extends AbstractCartRoute {
 	 * Helper method to get the instance of the class.
 	 *
 	 * @return Platform_Checkout_Store_Api_Token The instance of the class.
-	 * @throws \Exception If the class cannot be instantiated.
 	 */
 	public static function init() {
 		$formatters        = new \Automattic\WooCommerce\StoreApi\Formatters();
@@ -30,7 +29,7 @@ class Platform_Checkout_Store_Api_Token extends AbstractCartRoute {
 	/**
 	 * Get the path of this REST route.
 	 *
-	 * @throws \Exception The method is not implemented.
+	 * @throws \Exception Throws exception because this method is not meant to be implemented in this utility class.
 	 */
 	public function get_path() {
 		throw new \Exception( 'Not implemented' );
@@ -39,7 +38,7 @@ class Platform_Checkout_Store_Api_Token extends AbstractCartRoute {
 	/**
 	 * Get arguments for this REST route.
 	 *
-	 * @throws \Exception The method is not implemented.
+	 * @throws \Exception Throws exception because this method is not meant to be implemented in this utility class.
 	 */
 	public function get_args() {
 		throw new \Exception( 'Not implemented' );
