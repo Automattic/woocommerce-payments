@@ -17,8 +17,6 @@ use Automattic\WooCommerce\StoreApi\Utilities\JsonWebToken;
  */
 class Platform_Checkout_Session {
 
-	const PLATFORM_CHECKOUT_SESSION_COOKIE_NAME = 'platform_checkout_session';
-
 	/**
 	 * Init the hooks.
 	 *
@@ -26,7 +24,6 @@ class Platform_Checkout_Session {
 	 */
 	public static function init() {
 		add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ], 20 );
-		add_filter( 'woocommerce_cookie', [ __CLASS__, 'determine_session_cookie_for_platform_checkout' ], 20 );
 	}
 
 	/**
@@ -104,19 +101,5 @@ class Platform_Checkout_Session {
 	 */
 	private static function is_request_authenticated(): bool {
 		return apply_filters( 'wcpay_woopay_is_signed_with_blog_token', Rest_Authentication::is_signed_with_blog_token() );
-	}
-
-	/**
-	 * Tells WC to use platform checkout session cookie if the header is present.
-	 *
-	 * @param string $cookie_hash Default cookie hash.
-	 *
-	 * @return string
-	 */
-	public static function determine_session_cookie_for_platform_checkout( $cookie_hash ) {
-		if ( self::is_store_api_request() && self::is_request_authenticated() && ( 0 === self::get_user_id_from_cart_token() ) ) {
-			return self::PLATFORM_CHECKOUT_SESSION_COOKIE_NAME;
-		}
-		return $cookie_hash;
 	}
 }
