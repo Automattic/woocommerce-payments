@@ -26,7 +26,7 @@ The transaction API allows you to get data related to transactions.
 | `charge_id` | string  | Unique identifier of the charge. |
 | `payment_intent_id` | string  | Unique identifier of the payment intent for the transaction. |
 | `order_id` | string  | Unique identifier of the order associated with the transaction. |
-| `order` | object  | See TODO. |
+| `order` | object  | Order associated with the transaction. See [Order Properties](#order-properties) . |
 | `loan_id` | string  | Unique identifier of the loan, if any, associated with the transaction. |
 | `deposit_id` | string  | Unique identifier of the deposit associated with the transaction. |
 | `deposit_status` | string  | The status of the deposit. Possible values are `Estimated` , `Pending` , `In transit` , `Paid` , `Canceled` , `Failed` . |
@@ -35,6 +35,15 @@ The transaction API allows you to get data related to transactions.
 | `customer_currency` | string  |  The customer currency code for the transaction. |
 | `amount_in_usd` | string  | The amount in USD for the transaction. |
 | `source_device` | string  | Identifier for the device platform when a device such as a card reader is used for the transaction. |
+
+## Order Properties
+
+| Attribute | Type    | Description                                        |
+|-----------|---------|----------------------------------------------------|
+| `number` | string | Order identifier.	|
+| `url` | string  | URL for the Order Edit screen for this order. |
+| `customer_url` | string  | URL for the Customer screen on Admin dashboard. |
+| `subscriptions` | array  | Array of Order objects for subscriptions associated with this order. |
 
 ## Get transactions
 

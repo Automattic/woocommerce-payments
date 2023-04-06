@@ -1,10 +1,10 @@
 # Dispute
 
-A deposit represents a payout into the merchant bank account or debit card. 
+A dispute occurs when a customer contests a payment made with their card. 
 
-Deposits can be past or future(estimated) and can have different status.
+Disputes should be responded to with evidence that the payment was legitimate.
 
-The deposit API allows you to get data related to deposits such as a listing, summary or details of a particular deposit.
+The disputes API allows you to get data related to disputes such as a listing, summary or details of a particular dispute.
 
 ## Dispute Properties
 
@@ -15,16 +15,25 @@ The deposit API allows you to get data related to deposits such as a listing, su
 | `amount` | integer  | Amount of the dispute. |
 | `currency` | string  | Currency of the dispute. |
 | `reason` | string | Reason for the dispute. |
-| `status` | string | Status of the dispute. Possible values are `warning_needs_response`, `warning_under_review`, `warning_closed`, `needs_response`, `under_review`, `charge_refunded`, `won`, or `lost`. |
+| `status` | string | Status of the dispute. Possible values are `warning_needs_response` , `warning_under_review` , `warning_closed` , `needs_response` , `under_review` , `charge_refunded` , `won` , or `lost` . |
 | `balance_transactions` | array  | Chargeback transactions associated with this dispute. |
-| `evidence_details` | object | Evidence details of the dispute. See TODO |
-| `evidence` | object | Evidence submitted for the dispute. See TODO |
+| `evidence_details` | object | Evidence details of the dispute. See [Evidence Details Properties](#evidence-details-properties) |
+| `evidence` | object | Evidence provided to respond to a dispute. |
 | `source` | string | Indicates the source which the payment was made from e.g. Card brand. |
 | `customer_name` | string | Full name of the customer on Billing Details. |
 | `customer_email` | string | Email id of the customer on Billing Details. |
 | `customer_country` | string | Country of the customer on Billing Details. |
-| `order` | object | Details of order associated with the dispute. |
+| `order` | object | Details of order associated with the dispute. See [Order Properties](#order-properties)  |
 | `created` | string  | Date on which dispute raised. |
+
+## Evidence Details Properties
+
+| Attribute | Type    | Description                                        |
+|-----------|---------|----------------------------------------------------|
+| `due_by` | string | Date by which evidence must be submitted in order to successfully challenge dispute.	|
+| `has_evidence` | string  | Whether evidence has been added to the dispute. |
+| `past_due` | string  | Whether the last evidence submission was submitted after due date. |
+| `submission_count` | array  | The number of times evidence has been submitted. Possible values 0 or 1. |
 
 ## Get disputes
 
@@ -114,7 +123,7 @@ Return details of a particular dispute.
   <div class="endpoint-data">
 
    <i class="label label-get">GET</i>
-   <h6>/wp-json/wc/v3/payments/disputes/&lt;dispute_id&gt; </h6>
+   <h6>/wp-json/wc/v3/payments/disputes/&lt; dispute_id&gt; </h6>
 
   </div>
 </div>

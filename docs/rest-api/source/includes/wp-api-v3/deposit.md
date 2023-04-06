@@ -2,11 +2,11 @@
 
 A deposit represents a payout into the merchant bank account or debit card. 
 
-Deposits can be past or future(estimated) and can have different status.
+Deposits can be past or future(estimated) and can have different statuses.
 
 The deposit API allows you to get data related to deposits such as a listing, summary or details of a particular deposit.
 
-## Transaction Properties
+## Deposit Properties
 
 | Attribute | Type    | Description                                        |
 |-----------|---------|----------------------------------------------------|
@@ -102,7 +102,7 @@ Return data of a particular deposit.
   <div class="endpoint-data">
 
    <i class="label label-get">GET</i>
-   <h6>/wp-json/wc/v3/payments/deposits/&lt;deposit_id&gt; </h6>
+   <h6>/wp-json/wc/v3/payments/deposits/&lt; deposit_id&gt; </h6>
 
   </div>
 </div>
