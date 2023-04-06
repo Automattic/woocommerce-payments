@@ -33,6 +33,7 @@ const mockAccount: AccountOverview.Account = {
 		delay_days: 0,
 		interval: 'weekly',
 		weekly_anchor: 'Monday',
+		monthly_anchor: 1,
 	},
 };
 
