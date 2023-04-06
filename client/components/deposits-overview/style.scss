@@ -13,9 +13,19 @@
 		}
 
 		&__description {
-			font-size: 13px;
-			line-height: 16px;
-			color: $gray-700;
+			& > &__text {
+				line-height: 16px;
+				color: $gray-700;
+			}
+			.wcpay-banner-notice.components-notice {
+				margin: 0;
+			}
+		}
+	}
+	&__notices {
+		padding: 0 24px;
+		.wcpay-banner-notice.components-notice {
+			margin: 0;
 		}
 	}
 	&__table {

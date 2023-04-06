@@ -19,6 +19,12 @@ jest.mock( 'wcpay/data', () => ( {
 } ) );
 
 describe( 'ProtectionLevels', () => {
+	beforeEach( () => {
+		global.wcpaySettings = {
+			isMultiCurrencyEnabled: '1',
+		};
+	} );
+
 	it( 'renders', () => {
 		mockAdvancedFraudProtectionSettings = [];
 		const { container: protectionLevels } = render( <ProtectionLevels /> );
