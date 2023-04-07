@@ -38,7 +38,7 @@ class Platform_Checkout_Session {
 			return $user;
 		}
 
-		if ( ! self::is_store_api_request() || ! self::is_request_authenticated() ) {
+		if ( ! self::is_store_api_request() || ! self::is_request_from_woopay() ) {
 			return $user;
 		}
 
@@ -95,11 +95,15 @@ class Platform_Checkout_Session {
 	}
 
 	/**
-	 * Returns true if the request is authenticated.
+	 * Returns true if the request is from WooPay.
 	 *
-	 * @return bool  True if request is authenticated.
+	 * @return bool  True if request is from WooPay.
 	 */
-	private static function is_request_authenticated(): bool {
+	private static function is_request_from_woopay(): bool {
+		if ( ! isset( $_SERVER['HTTP_USER_AGENT'] ) || 'WooPay' !== $_SERVER['HTTP_USER_AGENT'] ) {
+			return false;
+		}
+
 		return apply_filters( 'wcpay_woopay_is_signed_with_blog_token', Rest_Authentication::is_signed_with_blog_token() );
 	}
 }
