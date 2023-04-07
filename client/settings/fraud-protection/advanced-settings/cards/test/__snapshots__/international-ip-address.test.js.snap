@@ -100,7 +100,7 @@ exports[`International IP address card renders correctly 1`] = `
           class="components-notice__content"
         >
           <div
-            class="components-flex css-1nh0b0-Flex eboqfv50"
+            class="components-flex css-18koiq9-Flex eboqfv50"
           >
             <div
               class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -298,7 +298,7 @@ exports[`International IP address card renders correctly when enabled 1`] = `
           class="components-notice__content"
         >
           <div
-            class="components-flex css-1nh0b0-Flex eboqfv50"
+            class="components-flex css-18koiq9-Flex eboqfv50"
           >
             <div
               class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -511,7 +511,7 @@ exports[`International IP address card renders correctly when enabled and checke
           class="components-notice__content"
         >
           <div
-            class="components-flex css-1nh0b0-Flex eboqfv50"
+            class="components-flex css-18koiq9-Flex eboqfv50"
           >
             <div
               class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -643,7 +643,7 @@ exports[`International IP address card renders like disabled when checked, but n
           class="components-notice__content"
         >
           <div
-            class="components-flex css-1nh0b0-Flex eboqfv50"
+            class="components-flex css-18koiq9-Flex eboqfv50"
           >
             <div
               class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"

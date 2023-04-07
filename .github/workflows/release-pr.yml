@@ -94,21 +94,17 @@ jobs:
           # 'Version' header in woocommerce-payments.php
           sed -i "s/^ \* Version: .*$/ * Version: $RELEASE_VERSION/" woocommerce-payments.php
 
-          # 'version' field in package.json
-          sed -ri 's/("version": )".*"/\1"'${RELEASE_VERSION}'"/' package.json
+          # 'version' field in package.json and package-lock.json
+          npm version $RELEASE_VERSION --no-git-tag-version
 
           # 'Stable tag' header in readme.txt;
           sed -i "s/^Stable tag: .*$/Stable tag: $RELEASE_VERSION/" readme.txt
-
-          # Duplicate the generated changelog into the Changelog section from the readme.txt
-          sed -ri "s|(== Changelog ==)|\1\n\n= $RELEASE_VERSION - $RELEASE_DATE =\n$CHANGELOG|" readme.txt
 
       - name: "Commit and push changes"
         env:
           RELEASE_VERSION: ${{ steps.create_branch.outputs.trimmed-version }}
           BRANCH_NAME: ${{ steps.create_branch.outputs.branch-name }}
         run: |
-          npm install # To update package-lock.json with the new version of the plugin
           git config user.name "github-actions[bot]"
           # We could consider fetching the bot's ID through an API call to be future-proof. Hardcoded for now.
           # See https://github.com/Automattic/woocommerce-payments/pull/5200#discussion_r1034560144

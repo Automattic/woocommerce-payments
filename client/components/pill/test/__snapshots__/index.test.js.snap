@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Pill Pill with type "primary" 1`] = `
+<div>
+  <span
+    class="wcpay-pill__primary"
+  >
+    Primary
+  </span>
+</div>
+`;
+
+exports[`Pill Pill with type "success" 1`] = `
+<div>
+  <span
+    class="wcpay-pill__success"
+  >
+    Success
+  </span>
+</div>
+`;
+
+exports[`Pill Pill without a type 1`] = `
+<div>
+  <span
+    class="wcpay-pill"
+  >
+    Test
+  </span>
+</div>
+`;
