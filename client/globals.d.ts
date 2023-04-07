@@ -62,3 +62,7 @@ declare const wcpaySettings: {
 };
 
 declare const wcTracks: any;
+
+declare const wcSettings: {
+	countries: Record< string, string >;
+};
