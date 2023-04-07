@@ -13,8 +13,12 @@ import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import { useAllDepositsOverviews } from 'wcpay/data';
 import strings from './strings';
 import NextDepositDetails from './next-deposit';
-import BannerNotice from 'wcpay/components/banner-notice';
+import RecentDepositsList from './recent-deposits-list';
 import DepositsOverviewFooter from './footer';
+import DepositOverviewSectionHeading from './section-heading';
+import DepositSchedule from './deposit-schedule';
+import SuspendedDepositNotice from './suspended-deposit-notice';
+import BannerNotice from 'wcpay/components/banner-notice';
 import './style.scss';
 
 const DepositsOverview = (): JSX.Element => {
@@ -27,9 +31,10 @@ const DepositsOverview = (): JSX.Element => {
 		wcpaySettings.accountStatus.deposits || {}
 	).completed_waiting_period;
 
-	const { currencies } = overviews;
+	const { currencies, account } = overviews;
 
 	const overview = currencies[ 0 ]; // TODO: To handle multiple currencies we'll need to fetch the currently selected currency.
+	const currency = 'usd'; // TODO: hardcoded curency for recent deposits.
 
 	const userHasNotFinishedNewAccountWaitingPeriodNotice = createInterpolateElement(
 		/* translators: <link> - link to WCPay deposit schedule docs. */
@@ -47,21 +52,49 @@ const DepositsOverview = (): JSX.Element => {
 	return (
 		<Card className="wcpay-deposits-overview">
 			<CardHeader>{ strings.heading }</CardHeader>
-			<NextDepositDetails isLoading={ isLoading } overview={ overview } />
 
-			{ ! completedWaitingPeriod && (
-				<BannerNotice
-					status="warning"
-					icon={ <NoticeOutlineIcon /> }
-					className="new-account-waiting-period-notice"
-					children={ userHasNotFinishedNewAccountWaitingPeriodNotice }
-					isDismissible={ false }
-				/>
+			{ /* Only show the next deposit section if the page is loading or if deposits are not blocked. */ }
+			{ ( isLoading || ! account.deposits_blocked ) && (
+				<>
+					<DepositOverviewSectionHeading
+						title={ strings.nextDeposit.title }
+						text={ strings.nextDeposit.description }
+						isLoading={ isLoading }
+					/>
+					<NextDepositDetails
+						isLoading={ isLoading }
+						overview={ overview }
+					/>
+					{ ! completedWaitingPeriod && (
+						<BannerNotice
+							status="warning"
+							icon={ <NoticeOutlineIcon /> }
+							className="new-account-waiting-period-notice"
+							children={
+								userHasNotFinishedNewAccountWaitingPeriodNotice
+							}
+							isDismissible={ false }
+						/>
+					) }
+				</>
 			) }
 
-			<p>Deposits History Section Goes here</p>
+			{ ! isLoading &&
+				( account.deposits_blocked ? (
+					<DepositOverviewSectionHeading
+						title={ strings.depositHistoryHeading }
+						children={ <SuspendedDepositNotice /> }
+					/>
+				) : (
+					<DepositOverviewSectionHeading
+						title={ strings.depositHistoryHeading }
+						text={
+							<DepositSchedule { ...account.deposits_schedule } />
+						}
+					/>
+				) ) }
 
-			<p>Deposits Card Footer/Action Goes here</p>
+			<RecentDepositsList currency={ currency } />
 
 			<DepositsOverviewFooter />
 		</Card>
