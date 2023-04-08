@@ -2,7 +2,7 @@
  * External dependencies
  */
 import * as React from 'react';
-import { Card, CardHeader, ExternalLink } from '@wordpress/components';
+import { Card, CardHeader } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
@@ -44,7 +44,12 @@ const DepositsOverview = (): JSX.Element => {
 		),
 		{
 			link: (
-				<ExternalLink href="https://woocommerce.com/document/woocommerce-payments/deposits/deposit-schedule/#section-1" />
+				// eslint-disable-next-line jsx-a11y/anchor-has-content
+				<a
+					target="_blank"
+					rel="noopener noreferrer"
+					href="https://woocommerce.com/document/woocommerce-payments/deposits/deposit-schedule/#section-1"
+				/>
 			),
 		}
 	);
