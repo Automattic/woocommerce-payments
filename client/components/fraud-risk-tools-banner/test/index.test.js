@@ -8,6 +8,14 @@ import { render } from '@testing-library/react';
  */
 import FRTDiscoverabilityBanner from '..';
 
+jest.mock( '@woocommerce/components', () => {
+	return {
+		Pill: ( { className, children } ) => (
+			<span className={ className }>{ children }</span>
+		),
+	};
+} );
+
 jest.mock( '@wordpress/data', () => ( {
 	useDispatch: jest.fn( () => ( { updateOptions: jest.fn() } ) ),
 } ) );
