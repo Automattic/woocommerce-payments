@@ -15,11 +15,12 @@ None.
 
 When using this request, provide the following filter:
 
-- Name: `wcpay_get_account`
+- Name: `wcpay_get_account`.
 
 ## Example:
 
 ```php
 $request = Get_Account::create();
+$request->set_test_mode_only_when_dev_mode();
 $request->send( 'wcpay_get_account' );
 ```

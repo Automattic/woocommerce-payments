@@ -16,6 +16,8 @@ use WC_Payments_API_Client;
 class Get_Account extends Request {
 	use Use_Test_Mode_Only_When_Dev_Mode;
 
+	const REQUIRED_PARAMS = [ 'test_mode' ];
+
 	/**
 	 * Returns the request's API.
 	 *
