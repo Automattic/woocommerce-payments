@@ -112,8 +112,7 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 				{ isLoading && <DepositTableRowLoading /> }
 
 				{ deposits.map( ( deposit ) => (
-					// eslint-disable-next-line react/jsx-key
-					<DepositTableRow deposit={ deposit } />
+					<DepositTableRow key={ deposit.id } deposit={ deposit } />
 				) ) }
 			</div>
 		</>
