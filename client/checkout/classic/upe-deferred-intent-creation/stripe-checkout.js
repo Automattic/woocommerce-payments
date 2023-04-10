@@ -4,7 +4,6 @@
 import WCPayAPI from 'wcpay/checkout/api';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import apiRequest from '../../utils/request';
-import enqueueFraudScripts from 'fraud-scripts';
 import { getAppearance } from '../../upe-styles';
 import showErrorCheckout from 'wcpay/checkout/utils/show-error-checkout';
 import {
@@ -16,7 +15,6 @@ import {
 	getUpeSettings,
 } from 'wcpay/checkout/utils/upe';
 
-enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
 const gatewayUPEComponents = {};
 const api = new WCPayAPI(
 	{
@@ -135,29 +133,21 @@ async function createStripePaymentElement( paymentMethodType ) {
 }
 
 /**
- * Initializes the fingerprint.
- *
- */
-export async function initializeFingerprint() {
-	if ( ! fingerprint ) {
-		try {
-			const { visitorId } = await getFingerprint();
-			fingerprint = visitorId;
-		} catch ( error ) {
-			// Do not mount element if fingerprinting is not available
-			showErrorCheckout( error.message );
-			throw error;
-		}
-	}
-}
-
-/**
  * Mounts the existing Stripe Payment Element to the DOM element.
  * Creates the Stipe Payment Element instance if it doesn't exist and mounts it to the DOM element.
  *
  * @param {string} domElement The selector of the DOM element of particular payment method to mount the UPE element to.
  **/
 export async function mountStripePaymentElement( domElement ) {
+	try {
+		if ( ! fingerprint ) {
+			const { visitorId } = await getFingerprint();
+			fingerprint = visitorId;
+		}
+	} catch ( error ) {
+		showErrorCheckout( error.message );
+		return;
+	}
 	const paymentMethodType = domElement.dataset.paymentMethodType;
 	const upeElement =
 		gatewayUPEComponents[ paymentMethodType ].upeElement ||

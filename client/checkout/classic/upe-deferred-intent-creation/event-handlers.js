@@ -3,20 +3,18 @@
 /**
  * Internal dependencies
  */
+import { getUPEConfig } from 'wcpay/utils/checkout';
 import {
 	generateCheckoutEventNames,
 	getSelectedUPEGatewayPaymentMethod,
 	isUsingSavedPaymentMethod,
 } from '../../utils/upe';
-import {
-	checkout,
-	initializeFingerprint,
-	mountStripePaymentElement,
-} from './stripe-checkout';
+import { checkout, mountStripePaymentElement } from './stripe-checkout';
+import enqueueFraudScripts from 'fraud-scripts';
 
 jQuery( function ( $ ) {
+	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
 	$( document.body ).on( 'updated_checkout', () => {
-		initializeFingerprint();
 		if (
 			$( '.wcpay-upe-element' ).length &&
 			! $( '.wcpay-upe-element' ).children().length
