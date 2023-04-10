@@ -1001,6 +1001,12 @@ class WC_Payments_Account {
 		// Clear account transient when generating Stripe's oauth data.
 		$this->clear_cache();
 
+		// Enable dev mode if the test_mode query param is set.
+		$test_mode = isset( $_GET['test_mode'] ) ? boolval( wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) : false;
+		if ( $test_mode ) {
+			WC_Payments_Onboarding_Service::enable_test_mode();
+		}
+
 		$current_user = wp_get_current_user();
 		$return_url   = $this->get_onboarding_return_url( $wcpay_connect_from );
 
