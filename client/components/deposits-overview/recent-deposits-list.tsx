@@ -24,7 +24,7 @@ interface DepositRowProps {
 }
 
 interface RecentDepositsProps {
-	currency: string | undefined;
+	currency: string;
 }
 
 const tableClass = 'wcpay-deposits-overview__table';
@@ -86,7 +86,7 @@ const DepositTableRowLoading: React.FC = (): JSX.Element => {
  */
 const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 	currency,
-}: RecentDepositsProps ): JSX.Element => {
+} ): JSX.Element => {
 	const { isLoading, deposits } = useRecentDeposits( currency );
 
 	if ( ! isLoading && deposits.length === 0 ) {
