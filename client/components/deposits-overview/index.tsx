@@ -23,9 +23,8 @@ import './style.scss';
 
 const DepositsOverview = (): JSX.Element => {
 	const { account, overview, isLoading } = useSelectedCurrencyOverview();
-	const completedWaitingPeriod = (
-		wcpaySettings.accountStatus.deposits || {}
-	).completed_waiting_period;
+	const completedWaitingPeriod =
+		wcpaySettings.accountStatus.deposits?.completed_waiting_period;
 
 	const userHasNotFinishedNewAccountWaitingPeriodNotice = createInterpolateElement(
 		/* translators: <link> - link to WCPay deposit schedule docs. */
