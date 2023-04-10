@@ -28,10 +28,6 @@ jest.mock( 'wcpay/overview/hooks', () => ( {
 	useSelectedCurrencyOverview: jest.fn(),
 } ) );
 
-jest.mock( 'wcpay/overview/hooks', () => ( {
-	useSelectedCurrencyOverview: jest.fn(),
-} ) );
-
 const mockAccount: AccountOverview.Account = {
 	default_currency: 'USD',
 	deposits_blocked: false,
