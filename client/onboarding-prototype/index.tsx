@@ -10,11 +10,13 @@ import { OnboardingContextProvider } from './context';
 import { Stepper } from 'components/stepper';
 import { OnboardingSteps } from './types';
 import { OnboardingForm } from './form';
+import ModeChoice from './steps/mode-choice';
 import PersonalDetails from './steps/personal-details';
 import BusinessDetails from './steps/business-details';
 import StoreDetails from './steps/store-details';
 import Loading from './steps/loading';
 import strings from './strings';
+import './style.scss';
 
 interface Props {
 	name: OnboardingSteps;
@@ -32,6 +34,9 @@ const Step: React.FC< Props > = ( { name, children } ) => {
 const OnboardingStepper = () => {
 	return (
 		<Stepper>
+			<Step name="mode">
+				<ModeChoice />
+			</Step>
 			<Step name="personal">
 				<OnboardingForm>
 					<PersonalDetails />
@@ -56,9 +61,11 @@ const OnboardingStepper = () => {
 
 const OnboardingPrototype: React.FC = () => {
 	return (
-		<OnboardingContextProvider>
-			<OnboardingStepper />
-		</OnboardingContextProvider>
+		<div className="wcpay-onboarding-prototype">
+			<OnboardingContextProvider>
+				<OnboardingStepper />
+			</OnboardingContextProvider>
+		</div>
 	);
 };
 
