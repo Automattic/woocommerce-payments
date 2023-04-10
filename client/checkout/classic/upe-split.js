@@ -30,6 +30,7 @@ import {
 	getPaymentIntentFromSession,
 	getSelectedUPEGatewayPaymentMethod,
 	getUpeSettings,
+	isUsingSavedPaymentMethod,
 } from '../utils/upe';
 import { decryptClientSecret } from '../utils/encryption';
 import enableStripeLinkPaymentMethod from '../stripe-link';
@@ -738,26 +739,6 @@ jQuery( function ( $ ) {
 		}
 	} );
 } );
-
-/**
- * Checks if the customer is using a saved payment method.
- *
- * @param {string} paymentMethodType Stripe payment method type ID.
- * @return {boolean} Boolean indicating whether a saved payment method is being used.
- */
-export function isUsingSavedPaymentMethod( paymentMethodType ) {
-	const prefix = '#wc-woocommerce_payments';
-	const suffix = '-payment-token-new';
-	const savedPaymentSelector =
-		'card' === paymentMethodType
-			? prefix + suffix
-			: prefix + '_' + paymentMethodType + suffix;
-
-	return (
-		null !== document.querySelector( savedPaymentSelector ) &&
-		! document.querySelector( savedPaymentSelector ).checked
-	);
-}
 
 /**
  * Returns the cached setup intent.
