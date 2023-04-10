@@ -86,7 +86,7 @@ exports[`Authorizations list renders correctly 1`] = `
             <tbody>
               <tr>
                 <th
-                  aria-sort="descending"
+                  aria-sort="ascending"
                   class="woocommerce-table__header date-time is-left-aligned is-sortable is-sorted"
                   role="columnheader"
                   scope="col"
@@ -106,7 +106,7 @@ exports[`Authorizations list renders correctly 1`] = `
                       xmlns="http://www.w3.org/2000/svg"
                     >
                       <path
-                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                        d="M6.5 12.4L12 8l5.5 4.4-.9 1.2L12 10l-4.5 3.6-1-1.2z"
                       />
                     </svg>
                     <span
@@ -124,7 +124,7 @@ exports[`Authorizations list renders correctly 1`] = `
                     class="screen-reader-text"
                     id="header-0-0"
                   >
-                    Sort by Authorized on in ascending order
+                    Sort by Authorized on in descending order
                   </span>
                 </th>
                 <th

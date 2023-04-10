@@ -22,7 +22,7 @@ import {
 import CardBody from '../card-body';
 import './style.scss';
 import WCPaySettingsContext from '../wcpay-settings-context';
-import Tooltip from 'components/tooltip';
+import { HoverTooltip } from 'components/tooltip';
 import ApplePay from 'assets/images/cards/apple-pay.svg?asset';
 import GooglePay from 'assets/images/cards/google-pay.svg?asset';
 import LinkIcon from 'assets/images/payment-methods/link.svg?asset';
@@ -77,10 +77,13 @@ const ExpressCheckout = () => {
 			<CardBody size={ 0 }>
 				<ul className="express-checkouts-list">
 					{ isPlatformCheckoutFeatureFlagEnabled && (
-						<li className="express-checkout">
+						<li
+							className="express-checkout"
+							id="express-checkouts-woopay"
+						>
 							<div className="express-checkout__checkbox">
 								{ isStripeLinkEnabled ? (
-									<Tooltip
+									<HoverTooltip
 										content={ __(
 											'To enable WooPay, you must first disable Link by Stripe.',
 											'woocommerce-payments'
@@ -103,7 +106,7 @@ const ExpressCheckout = () => {
 												</VisuallyHidden>
 											</div>
 										</div>
-									</Tooltip>
+									</HoverTooltip>
 								) : (
 									<CheckboxControl
 										label={ __(
@@ -193,7 +196,10 @@ const ExpressCheckout = () => {
 							</div>
 						</li>
 					) }
-					<li className="express-checkout">
+					<li
+						className="express-checkout"
+						id="express-checkouts-apple-google-pay"
+					>
 						<div className="express-checkout__checkbox">
 							<CheckboxControl
 								label={ __(
@@ -320,10 +326,13 @@ const ExpressCheckout = () => {
 						</div>
 					</li>
 					{ displayLinkPaymentMethod && (
-						<li className="express-checkout">
+						<li
+							className="express-checkout"
+							id="express-checkouts-link"
+						>
 							<div className="express-checkout__checkbox">
 								{ isPlatformCheckoutEnabled ? (
-									<Tooltip
+									<HoverTooltip
 										content={ __(
 											'To enable Link by Stripe, you must first disable WooPay.',
 											'woocommerce-payments'
@@ -346,7 +355,7 @@ const ExpressCheckout = () => {
 												</VisuallyHidden>
 											</div>
 										</div>
-									</Tooltip>
+									</HoverTooltip>
 								) : (
 									<CheckboxControl
 										label={ __(

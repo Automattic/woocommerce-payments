@@ -24,6 +24,7 @@ const CVCVerificationRuleCard = () => {
 				'This filter checks the security code submitted by the customer against the data on file with the card issuer.',
 				'woocommerce-payments'
 			) }
+			id="cvc-verification-card"
 		>
 			<FraudProtectionRuleDescription>
 				{ __(
@@ -42,8 +43,12 @@ const CVCVerificationRuleCard = () => {
 							),
 							components: {
 								learnMoreLink: (
-									// eslint-disable-next-line max-len
-									<Link href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods" />
+									<Link
+										target="_blank"
+										type="external"
+										// eslint-disable-next-line max-len
+										href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+									/>
 								),
 							},
 					  } )

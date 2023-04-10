@@ -99,6 +99,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="avs-mismatch-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -137,7 +138,7 @@ Object {
                     class="components-notice__content"
                   >
                     <div
-                      class="components-flex css-1nh0b0-Flex eboqfv50"
+                      class="components-flex css-18koiq9-Flex eboqfv50"
                     >
                       <div
                         class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -161,8 +162,9 @@ Object {
                       >
                         For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                         <a
-                          data-link-type="wc-admin"
-                          href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                          data-link-type="external"
+                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          target="_blank"
                         >
                           Learn more
                         </a>
@@ -174,6 +176,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="cvc-verification-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -212,7 +215,7 @@ Object {
                     class="components-notice__content"
                   >
                     <div
-                      class="components-flex css-1nh0b0-Flex eboqfv50"
+                      class="components-flex css-18koiq9-Flex eboqfv50"
                     >
                       <div
                         class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -236,8 +239,9 @@ Object {
                       >
                         For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                         <a
-                          data-link-type="wc-admin"
-                          href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                          data-link-type="external"
+                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          target="_blank"
                         >
                           Learn more
                         </a>
@@ -249,6 +253,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="international-ip-address-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -262,10 +267,17 @@ Object {
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens for IP addresses outside of your 
+                    This filter screens for 
                     <a
-                      data-link-type="wc-admin"
-                      href="#"
+                      data-link-type="external"
+                      href="https://simple.wikipedia.org/wiki/IP_address"
+                      target="_blank"
+                    >
+                      IP addresses
+                    </a>
+                     outside of your 
+                    <a
+                      href="admin.php?page=wc-settings&tab=general"
                     >
                       supported countries
                     </a>
@@ -337,7 +349,7 @@ Object {
                     class="components-notice__content"
                   >
                     <div
-                      class="components-flex css-1nh0b0-Flex eboqfv50"
+                      class="components-flex css-18koiq9-Flex eboqfv50"
                     >
                       <div
                         class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -368,6 +380,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="ip-address-mismatch"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -376,19 +389,20 @@ Object {
                   <p
                     class="fraud-protection-rule-card-header"
                   >
-                    International Billing Address
+                    IP Address Mismatch
                   </p>
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens the customer's billing information for addresses outside of your 
+                    This filter screens for customer's 
                     <a
-                      data-link-type="wc-admin"
-                      href="#"
+                      data-link-type="external"
+                      href="https://simple.wikipedia.org/wiki/IP_address"
+                      target="_blank"
                     >
-                      supported countries
+                      IP address
                     </a>
-                    .
+                     to see if it is in a different country than indicated in their billing address.
                   </p>
                 </div>
               </div>
@@ -428,7 +442,7 @@ Object {
                         class="components-toggle-control__label"
                         for="inspector-toggle-control-11"
                       >
-                        Screen transactions for international billing addresses
+                        Screen transactions where the IP country and billing country don't match
                       </label>
                     </div>
                     <p
@@ -446,47 +460,14 @@ Object {
                     How does this filter protect me?
                   </strong>
                   <p>
-                    Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
+                    Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
                   </p>
-                </div>
-                <div
-                  class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-                >
-                  <div
-                    class="components-notice__content"
-                  >
-                    <div
-                      class="components-flex css-1nh0b0-Flex eboqfv50"
-                    >
-                      <div
-                        class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                      >
-                        <svg
-                          class="gridicon gridicons-notice-outline"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          width="24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <g>
-                            <path
-                              d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                            />
-                          </g>
-                        </svg>
-                      </div>
-                      <div
-                        class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                      >
-                        Enabling this filter will not have any effect because you are selling to all countries.
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="address-mismatch-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -565,6 +546,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="purchase-price-threshold-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -716,7 +698,7 @@ Object {
                             class="components-notice__content"
                           >
                             <div
-                              class="components-flex css-1nh0b0-Flex eboqfv50"
+                              class="components-flex css-18koiq9-Flex eboqfv50"
                             >
                               <div
                                 class="components-flex__item wcpay-banner-notice__icon wcpay-banner-error-notice__icon css-1s295sp-Item eboqfv51"
@@ -745,80 +727,84 @@ Object {
                         </div>
                       </div>
                     </div>
-                    <strong>
-                      Advanced
-                    </strong>
                     <div
-                      class="fraud-protection-rule-toggle-checkbox-container"
+                      class="fraud-protection-rule-toggle-block"
                     >
+                      <strong>
+                        Advanced
+                      </strong>
                       <div
-                        class="components-base-control fraud-protection-rule-toggle-checkbox css-wdf2ti-Wrapper e1puf3u0"
+                        class="fraud-protection-rule-toggle-checkbox-container"
                       >
                         <div
-                          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-                        >
-                          <span
-                            class="components-checkbox-control__input-container"
-                          >
-                            <input
-                              checked=""
-                              class="components-checkbox-control__input"
-                              id="inspector-checkbox-control-0"
-                              type="checkbox"
-                              value="1"
-                            />
-                            <svg
-                              aria-hidden="true"
-                              class="components-checkbox-control__checked"
-                              focusable="false"
-                              height="24"
-                              role="img"
-                              viewBox="0 0 24 24"
-                              width="24"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
-                              />
-                            </svg>
-                          </span>
-                          <label
-                            class="components-checkbox-control__label"
-                            for="inspector-checkbox-control-0"
-                          >
-                            Block Payment
-                          </label>
-                        </div>
-                      </div>
-                      <button
-                        class="wcpay-tooltip__content-wrapper"
-                        type="button"
-                      >
-                        <div
-                          class="wcpay-tooltip__content-wrapper"
+                          class="components-base-control fraud-protection-rule-toggle-checkbox css-wdf2ti-Wrapper e1puf3u0"
                         >
                           <div
-                            class="fraud-protection-rule-toggle-checkbox-container-help"
+                            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
                           >
-                            <svg
-                              aria-hidden="true"
-                              fill="none"
-                              focusable="false"
-                              height="16"
-                              role="img"
-                              viewBox="3 3 18 18"
-                              width="16"
-                              xmlns="http://www.w3.org/2000/svg"
+                            <span
+                              class="components-checkbox-control__input-container"
                             >
-                              <path
-                                d="M9.75 10.25C9.75 9.00736 10.7574 8 12 8C13.2426 8 14.25 9.00736 14.25 10.25C14.25 														11.4083 13.3748 12.3621 12.2496 12.4863C12.1124 12.5015 12 12.6119 12 12.75V14M12 														15V16.5M20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 														7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z"
-                                stroke="#1E1E1E"
-                                stroke-width="1.5"
+                              <input
+                                checked=""
+                                class="components-checkbox-control__input"
+                                id="inspector-checkbox-control-0"
+                                type="checkbox"
+                                value="1"
                               />
-                            </svg>
+                              <svg
+                                aria-hidden="true"
+                                class="components-checkbox-control__checked"
+                                focusable="false"
+                                height="24"
+                                role="img"
+                                viewBox="0 0 24 24"
+                                width="24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
+                                />
+                              </svg>
+                            </span>
+                            <label
+                              class="components-checkbox-control__label"
+                              for="inspector-checkbox-control-0"
+                            >
+                              Block Payment
+                            </label>
                           </div>
                         </div>
-                      </button>
+                        <button
+                          class="wcpay-tooltip__content-wrapper"
+                          type="button"
+                        >
+                          <div
+                            class="wcpay-tooltip__content-wrapper"
+                          >
+                            <div
+                              class="fraud-protection-rule-toggle-checkbox-container-help"
+                            >
+                              <svg
+                                aria-hidden="true"
+                                fill="none"
+                                focusable="false"
+                                height="16"
+                                role="img"
+                                viewBox="3 3 18 18"
+                                width="16"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M9.75 10.25C9.75 9.00736 10.7574 8 12 8C13.2426 8 14.25 9.00736 14.25 10.25C14.25 														11.4083 13.3748 12.3621 12.2496 12.4863C12.1124 12.5015 12 12.6119 12 12.75V14M12 														15V16.5M20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 														7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z"
+                                  stroke="#1E1E1E"
+                                  stroke-width="1.5"
+                                />
+                              </svg>
+                            </div>
+                          </div>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -836,6 +822,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="order-items-threshold-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -912,6 +899,22 @@ Object {
                 </div>
               </div>
             </div>
+            <footer
+              class="fraud-protection-advanced-settings__footer"
+            >
+              <a
+                class="components-button is-secondary"
+                href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
+              >
+                Back to Payments Settings
+              </a>
+              <button
+                class="components-button is-primary"
+                type="button"
+              >
+                Save Changes
+              </button>
+            </footer>
           </div>
         </div>
       </div>
@@ -987,6 +990,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="avs-mismatch-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -1025,7 +1029,7 @@ Object {
                   class="components-notice__content"
                 >
                   <div
-                    class="components-flex css-1nh0b0-Flex eboqfv50"
+                    class="components-flex css-18koiq9-Flex eboqfv50"
                   >
                     <div
                       class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -1049,8 +1053,9 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
@@ -1062,6 +1067,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="cvc-verification-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -1100,7 +1106,7 @@ Object {
                   class="components-notice__content"
                 >
                   <div
-                    class="components-flex css-1nh0b0-Flex eboqfv50"
+                    class="components-flex css-18koiq9-Flex eboqfv50"
                   >
                     <div
                       class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -1124,8 +1130,9 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
@@ -1137,6 +1144,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="international-ip-address-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -1150,10 +1158,17 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for IP addresses outside of your 
+                  This filter screens for 
                   <a
-                    data-link-type="wc-admin"
-                    href="#"
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
+                  >
+                    IP addresses
+                  </a>
+                   outside of your 
+                  <a
+                    href="admin.php?page=wc-settings&tab=general"
                   >
                     supported countries
                   </a>
@@ -1225,7 +1240,7 @@ Object {
                   class="components-notice__content"
                 >
                   <div
-                    class="components-flex css-1nh0b0-Flex eboqfv50"
+                    class="components-flex css-18koiq9-Flex eboqfv50"
                   >
                     <div
                       class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -1256,6 +1271,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="ip-address-mismatch"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -1264,19 +1280,20 @@ Object {
                 <p
                   class="fraud-protection-rule-card-header"
                 >
-                  International Billing Address
+                  IP Address Mismatch
                 </p>
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens the customer's billing information for addresses outside of your 
+                  This filter screens for customer's 
                   <a
-                    data-link-type="wc-admin"
-                    href="#"
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
                   >
-                    supported countries
+                    IP address
                   </a>
-                  .
+                   to see if it is in a different country than indicated in their billing address.
                 </p>
               </div>
             </div>
@@ -1316,7 +1333,7 @@ Object {
                       class="components-toggle-control__label"
                       for="inspector-toggle-control-11"
                     >
-                      Screen transactions for international billing addresses
+                      Screen transactions where the IP country and billing country don't match
                     </label>
                   </div>
                   <p
@@ -1334,47 +1351,14 @@ Object {
                   How does this filter protect me?
                 </strong>
                 <p>
-                  Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
+                  Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
                 </p>
-              </div>
-              <div
-                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-              >
-                <div
-                  class="components-notice__content"
-                >
-                  <div
-                    class="components-flex css-1nh0b0-Flex eboqfv50"
-                  >
-                    <div
-                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                    >
-                      <svg
-                        class="gridicon gridicons-notice-outline"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        width="24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <g>
-                          <path
-                            d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                          />
-                        </g>
-                      </svg>
-                    </div>
-                    <div
-                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                    >
-                      Enabling this filter will not have any effect because you are selling to all countries.
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="address-mismatch-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -1453,6 +1437,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="purchase-price-threshold-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -1604,7 +1589,7 @@ Object {
                           class="components-notice__content"
                         >
                           <div
-                            class="components-flex css-1nh0b0-Flex eboqfv50"
+                            class="components-flex css-18koiq9-Flex eboqfv50"
                           >
                             <div
                               class="components-flex__item wcpay-banner-notice__icon wcpay-banner-error-notice__icon css-1s295sp-Item eboqfv51"
@@ -1633,80 +1618,84 @@ Object {
                       </div>
                     </div>
                   </div>
-                  <strong>
-                    Advanced
-                  </strong>
                   <div
-                    class="fraud-protection-rule-toggle-checkbox-container"
+                    class="fraud-protection-rule-toggle-block"
                   >
+                    <strong>
+                      Advanced
+                    </strong>
                     <div
-                      class="components-base-control fraud-protection-rule-toggle-checkbox css-wdf2ti-Wrapper e1puf3u0"
+                      class="fraud-protection-rule-toggle-checkbox-container"
                     >
                       <div
-                        class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-                      >
-                        <span
-                          class="components-checkbox-control__input-container"
-                        >
-                          <input
-                            checked=""
-                            class="components-checkbox-control__input"
-                            id="inspector-checkbox-control-0"
-                            type="checkbox"
-                            value="1"
-                          />
-                          <svg
-                            aria-hidden="true"
-                            class="components-checkbox-control__checked"
-                            focusable="false"
-                            height="24"
-                            role="img"
-                            viewBox="0 0 24 24"
-                            width="24"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
-                            />
-                          </svg>
-                        </span>
-                        <label
-                          class="components-checkbox-control__label"
-                          for="inspector-checkbox-control-0"
-                        >
-                          Block Payment
-                        </label>
-                      </div>
-                    </div>
-                    <button
-                      class="wcpay-tooltip__content-wrapper"
-                      type="button"
-                    >
-                      <div
-                        class="wcpay-tooltip__content-wrapper"
+                        class="components-base-control fraud-protection-rule-toggle-checkbox css-wdf2ti-Wrapper e1puf3u0"
                       >
                         <div
-                          class="fraud-protection-rule-toggle-checkbox-container-help"
+                          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
                         >
-                          <svg
-                            aria-hidden="true"
-                            fill="none"
-                            focusable="false"
-                            height="16"
-                            role="img"
-                            viewBox="3 3 18 18"
-                            width="16"
-                            xmlns="http://www.w3.org/2000/svg"
+                          <span
+                            class="components-checkbox-control__input-container"
                           >
-                            <path
-                              d="M9.75 10.25C9.75 9.00736 10.7574 8 12 8C13.2426 8 14.25 9.00736 14.25 10.25C14.25 														11.4083 13.3748 12.3621 12.2496 12.4863C12.1124 12.5015 12 12.6119 12 12.75V14M12 														15V16.5M20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 														7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z"
-                              stroke="#1E1E1E"
-                              stroke-width="1.5"
+                            <input
+                              checked=""
+                              class="components-checkbox-control__input"
+                              id="inspector-checkbox-control-0"
+                              type="checkbox"
+                              value="1"
                             />
-                          </svg>
+                            <svg
+                              aria-hidden="true"
+                              class="components-checkbox-control__checked"
+                              focusable="false"
+                              height="24"
+                              role="img"
+                              viewBox="0 0 24 24"
+                              width="24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
+                              />
+                            </svg>
+                          </span>
+                          <label
+                            class="components-checkbox-control__label"
+                            for="inspector-checkbox-control-0"
+                          >
+                            Block Payment
+                          </label>
                         </div>
                       </div>
-                    </button>
+                      <button
+                        class="wcpay-tooltip__content-wrapper"
+                        type="button"
+                      >
+                        <div
+                          class="wcpay-tooltip__content-wrapper"
+                        >
+                          <div
+                            class="fraud-protection-rule-toggle-checkbox-container-help"
+                          >
+                            <svg
+                              aria-hidden="true"
+                              fill="none"
+                              focusable="false"
+                              height="16"
+                              role="img"
+                              viewBox="3 3 18 18"
+                              width="16"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M9.75 10.25C9.75 9.00736 10.7574 8 12 8C13.2426 8 14.25 9.00736 14.25 10.25C14.25 														11.4083 13.3748 12.3621 12.2496 12.4863C12.1124 12.5015 12 12.6119 12 12.75V14M12 														15V16.5M20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 														7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z"
+                                stroke="#1E1E1E"
+                                stroke-width="1.5"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1724,6 +1713,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="order-items-threshold-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -1800,6 +1790,22 @@ Object {
               </div>
             </div>
           </div>
+          <footer
+            class="fraud-protection-advanced-settings__footer"
+          >
+            <a
+              class="components-button is-secondary"
+              href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
+            >
+              Back to Payments Settings
+            </a>
+            <button
+              class="components-button is-primary"
+              type="button"
+            >
+              Save Changes
+            </button>
+          </footer>
         </div>
       </div>
     </div>
@@ -1885,7 +1891,7 @@ Object {
       id="a11y-speak-polite"
       style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
     >
-                Enabling this filter will not have any effect because you are selling to all countries.   
+                Enabling this filter will not have any effect because you are selling to all countries.  
     </div>
     <div>
       <div>
@@ -1940,6 +1946,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="avs-mismatch-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -1978,7 +1985,7 @@ Object {
                     class="components-notice__content"
                   >
                     <div
-                      class="components-flex css-1nh0b0-Flex eboqfv50"
+                      class="components-flex css-18koiq9-Flex eboqfv50"
                     >
                       <div
                         class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -2002,8 +2009,9 @@ Object {
                       >
                         For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                         <a
-                          data-link-type="wc-admin"
-                          href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                          data-link-type="external"
+                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          target="_blank"
                         >
                           Learn more
                         </a>
@@ -2015,6 +2023,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="cvc-verification-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2053,7 +2062,7 @@ Object {
                     class="components-notice__content"
                   >
                     <div
-                      class="components-flex css-1nh0b0-Flex eboqfv50"
+                      class="components-flex css-18koiq9-Flex eboqfv50"
                     >
                       <div
                         class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -2077,8 +2086,9 @@ Object {
                       >
                         For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                         <a
-                          data-link-type="wc-admin"
-                          href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                          data-link-type="external"
+                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          target="_blank"
                         >
                           Learn more
                         </a>
@@ -2090,6 +2100,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="international-ip-address-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2103,10 +2114,17 @@ Object {
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens for IP addresses outside of your 
+                    This filter screens for 
                     <a
-                      data-link-type="wc-admin"
-                      href="#"
+                      data-link-type="external"
+                      href="https://simple.wikipedia.org/wiki/IP_address"
+                      target="_blank"
+                    >
+                      IP addresses
+                    </a>
+                     outside of your 
+                    <a
+                      href="admin.php?page=wc-settings&tab=general"
                     >
                       supported countries
                     </a>
@@ -2178,7 +2196,7 @@ Object {
                     class="components-notice__content"
                   >
                     <div
-                      class="components-flex css-1nh0b0-Flex eboqfv50"
+                      class="components-flex css-18koiq9-Flex eboqfv50"
                     >
                       <div
                         class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -2209,6 +2227,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="ip-address-mismatch"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2217,19 +2236,20 @@ Object {
                   <p
                     class="fraud-protection-rule-card-header"
                   >
-                    International Billing Address
+                    IP Address Mismatch
                   </p>
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens the customer's billing information for addresses outside of your 
+                    This filter screens for customer's 
                     <a
-                      data-link-type="wc-admin"
-                      href="#"
+                      data-link-type="external"
+                      href="https://simple.wikipedia.org/wiki/IP_address"
+                      target="_blank"
                     >
-                      supported countries
+                      IP address
                     </a>
-                    .
+                     to see if it is in a different country than indicated in their billing address.
                   </p>
                 </div>
               </div>
@@ -2269,7 +2289,7 @@ Object {
                         class="components-toggle-control__label"
                         for="inspector-toggle-control-6"
                       >
-                        Screen transactions for international billing addresses
+                        Screen transactions where the IP country and billing country don't match
                       </label>
                     </div>
                     <p
@@ -2287,47 +2307,14 @@ Object {
                     How does this filter protect me?
                   </strong>
                   <p>
-                    Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
+                    Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
                   </p>
-                </div>
-                <div
-                  class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-                >
-                  <div
-                    class="components-notice__content"
-                  >
-                    <div
-                      class="components-flex css-1nh0b0-Flex eboqfv50"
-                    >
-                      <div
-                        class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                      >
-                        <svg
-                          class="gridicon gridicons-notice-outline"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          width="24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <g>
-                            <path
-                              d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                            />
-                          </g>
-                        </svg>
-                      </div>
-                      <div
-                        class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                      >
-                        Enabling this filter will not have any effect because you are selling to all countries.
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="address-mismatch-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2406,6 +2393,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="purchase-price-threshold-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2484,6 +2472,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="order-items-threshold-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2560,6 +2549,23 @@ Object {
                 </div>
               </div>
             </div>
+            <footer
+              class="fraud-protection-advanced-settings__footer"
+            >
+              <a
+                class="components-button is-secondary"
+                href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
+              >
+                Back to Payments Settings
+              </a>
+              <button
+                class="components-button is-primary"
+                disabled=""
+                type="button"
+              >
+                Save Changes
+              </button>
+            </footer>
           </div>
         </div>
       </div>
@@ -2618,6 +2624,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="avs-mismatch-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2656,7 +2663,7 @@ Object {
                   class="components-notice__content"
                 >
                   <div
-                    class="components-flex css-1nh0b0-Flex eboqfv50"
+                    class="components-flex css-18koiq9-Flex eboqfv50"
                   >
                     <div
                       class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -2680,8 +2687,9 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
@@ -2693,6 +2701,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="cvc-verification-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2731,7 +2740,7 @@ Object {
                   class="components-notice__content"
                 >
                   <div
-                    class="components-flex css-1nh0b0-Flex eboqfv50"
+                    class="components-flex css-18koiq9-Flex eboqfv50"
                   >
                     <div
                       class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -2755,8 +2764,9 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
@@ -2768,6 +2778,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="international-ip-address-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2781,10 +2792,17 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for IP addresses outside of your 
+                  This filter screens for 
                   <a
-                    data-link-type="wc-admin"
-                    href="#"
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
+                  >
+                    IP addresses
+                  </a>
+                   outside of your 
+                  <a
+                    href="admin.php?page=wc-settings&tab=general"
                   >
                     supported countries
                   </a>
@@ -2856,7 +2874,7 @@ Object {
                   class="components-notice__content"
                 >
                   <div
-                    class="components-flex css-1nh0b0-Flex eboqfv50"
+                    class="components-flex css-18koiq9-Flex eboqfv50"
                   >
                     <div
                       class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -2887,6 +2905,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="ip-address-mismatch"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -2895,19 +2914,20 @@ Object {
                 <p
                   class="fraud-protection-rule-card-header"
                 >
-                  International Billing Address
+                  IP Address Mismatch
                 </p>
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens the customer's billing information for addresses outside of your 
+                  This filter screens for customer's 
                   <a
-                    data-link-type="wc-admin"
-                    href="#"
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
                   >
-                    supported countries
+                    IP address
                   </a>
-                  .
+                   to see if it is in a different country than indicated in their billing address.
                 </p>
               </div>
             </div>
@@ -2947,7 +2967,7 @@ Object {
                       class="components-toggle-control__label"
                       for="inspector-toggle-control-6"
                     >
-                      Screen transactions for international billing addresses
+                      Screen transactions where the IP country and billing country don't match
                     </label>
                   </div>
                   <p
@@ -2965,47 +2985,14 @@ Object {
                   How does this filter protect me?
                 </strong>
                 <p>
-                  Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
+                  Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
                 </p>
-              </div>
-              <div
-                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-              >
-                <div
-                  class="components-notice__content"
-                >
-                  <div
-                    class="components-flex css-1nh0b0-Flex eboqfv50"
-                  >
-                    <div
-                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                    >
-                      <svg
-                        class="gridicon gridicons-notice-outline"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        width="24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <g>
-                          <path
-                            d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                          />
-                        </g>
-                      </svg>
-                    </div>
-                    <div
-                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                    >
-                      Enabling this filter will not have any effect because you are selling to all countries.
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="address-mismatch-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -3084,6 +3071,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="purchase-price-threshold-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -3162,6 +3150,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="order-items-threshold-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -3238,6 +3227,23 @@ Object {
               </div>
             </div>
           </div>
+          <footer
+            class="fraud-protection-advanced-settings__footer"
+          >
+            <a
+              class="components-button is-secondary"
+              href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
+            >
+              Back to Payments Settings
+            </a>
+            <button
+              class="components-button is-primary"
+              disabled=""
+              type="button"
+            >
+              Save Changes
+            </button>
+          </footer>
         </div>
       </div>
     </div>
@@ -3323,7 +3329,7 @@ Object {
       id="a11y-speak-polite"
       style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
     >
-                Enabling this filter will not have any effect because you are selling to all countries.   
+                Enabling this filter will not have any effect because you are selling to all countries.  
     </div>
     <div>
       <div
@@ -3346,6 +3352,7 @@ Object {
           </h2>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="avs-mismatch-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -3384,7 +3391,7 @@ Object {
                   class="components-notice__content"
                 >
                   <div
-                    class="components-flex css-1nh0b0-Flex eboqfv50"
+                    class="components-flex css-18koiq9-Flex eboqfv50"
                   >
                     <div
                       class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -3408,8 +3415,9 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
@@ -3421,6 +3429,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="cvc-verification-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -3459,7 +3468,7 @@ Object {
                   class="components-notice__content"
                 >
                   <div
-                    class="components-flex css-1nh0b0-Flex eboqfv50"
+                    class="components-flex css-18koiq9-Flex eboqfv50"
                   >
                     <div
                       class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -3483,8 +3492,9 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
@@ -3496,6 +3506,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="international-ip-address-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -3509,10 +3520,17 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for IP addresses outside of your 
+                  This filter screens for 
                   <a
-                    data-link-type="wc-admin"
-                    href="#"
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
+                  >
+                    IP addresses
+                  </a>
+                   outside of your 
+                  <a
+                    href="admin.php?page=wc-settings&tab=general"
                   >
                     supported countries
                   </a>
@@ -3584,7 +3602,7 @@ Object {
                   class="components-notice__content"
                 >
                   <div
-                    class="components-flex css-1nh0b0-Flex eboqfv50"
+                    class="components-flex css-18koiq9-Flex eboqfv50"
                   >
                     <div
                       class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -3615,6 +3633,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="ip-address-mismatch"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -3623,19 +3642,20 @@ Object {
                 <p
                   class="fraud-protection-rule-card-header"
                 >
-                  International Billing Address
+                  IP Address Mismatch
                 </p>
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens the customer's billing information for addresses outside of your 
+                  This filter screens for customer's 
                   <a
-                    data-link-type="wc-admin"
-                    href="#"
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
                   >
-                    supported countries
+                    IP address
                   </a>
-                  .
+                   to see if it is in a different country than indicated in their billing address.
                 </p>
               </div>
             </div>
@@ -3675,7 +3695,7 @@ Object {
                       class="components-toggle-control__label"
                       for="inspector-toggle-control-1"
                     >
-                      Screen transactions for international billing addresses
+                      Screen transactions where the IP country and billing country don't match
                     </label>
                   </div>
                   <p
@@ -3693,47 +3713,14 @@ Object {
                   How does this filter protect me?
                 </strong>
                 <p>
-                  Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
+                  Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
                 </p>
-              </div>
-              <div
-                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-              >
-                <div
-                  class="components-notice__content"
-                >
-                  <div
-                    class="components-flex css-1nh0b0-Flex eboqfv50"
-                  >
-                    <div
-                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                    >
-                      <svg
-                        class="gridicon gridicons-notice-outline"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        width="24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <g>
-                          <path
-                            d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                          />
-                        </g>
-                      </svg>
-                    </div>
-                    <div
-                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                    >
-                      Enabling this filter will not have any effect because you are selling to all countries.
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="address-mismatch-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -3812,6 +3799,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="purchase-price-threshold-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -3890,6 +3878,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="order-items-threshold-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -3966,6 +3955,22 @@ Object {
               </div>
             </div>
           </div>
+          <footer
+            class="fraud-protection-advanced-settings__footer"
+          >
+            <a
+              class="components-button is-secondary"
+              href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
+            >
+              Back to Payments Settings
+            </a>
+            <button
+              class="components-button is-primary"
+              type="button"
+            >
+              Save Changes
+            </button>
+          </footer>
         </div>
       </div>
     </div>
@@ -3991,6 +3996,7 @@ Object {
         </h2>
         <div
           class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+          id="avs-mismatch-card"
         >
           <div
             class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4029,7 +4035,7 @@ Object {
                 class="components-notice__content"
               >
                 <div
-                  class="components-flex css-1nh0b0-Flex eboqfv50"
+                  class="components-flex css-18koiq9-Flex eboqfv50"
                 >
                   <div
                     class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -4053,8 +4059,9 @@ Object {
                   >
                     For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                     <a
-                      data-link-type="wc-admin"
-                      href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                      data-link-type="external"
+                      href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                      target="_blank"
                     >
                       Learn more
                     </a>
@@ -4066,6 +4073,7 @@ Object {
         </div>
         <div
           class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+          id="cvc-verification-card"
         >
           <div
             class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4104,7 +4112,7 @@ Object {
                 class="components-notice__content"
               >
                 <div
-                  class="components-flex css-1nh0b0-Flex eboqfv50"
+                  class="components-flex css-18koiq9-Flex eboqfv50"
                 >
                   <div
                     class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -4128,8 +4136,9 @@ Object {
                   >
                     For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                     <a
-                      data-link-type="wc-admin"
-                      href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                      data-link-type="external"
+                      href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                      target="_blank"
                     >
                       Learn more
                     </a>
@@ -4141,6 +4150,7 @@ Object {
         </div>
         <div
           class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+          id="international-ip-address-card"
         >
           <div
             class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4154,10 +4164,17 @@ Object {
               <p
                 class="fraud-protection-rule-card-description"
               >
-                This filter screens for IP addresses outside of your 
+                This filter screens for 
                 <a
-                  data-link-type="wc-admin"
-                  href="#"
+                  data-link-type="external"
+                  href="https://simple.wikipedia.org/wiki/IP_address"
+                  target="_blank"
+                >
+                  IP addresses
+                </a>
+                 outside of your 
+                <a
+                  href="admin.php?page=wc-settings&tab=general"
                 >
                   supported countries
                 </a>
@@ -4229,7 +4246,7 @@ Object {
                 class="components-notice__content"
               >
                 <div
-                  class="components-flex css-1nh0b0-Flex eboqfv50"
+                  class="components-flex css-18koiq9-Flex eboqfv50"
                 >
                   <div
                     class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -4260,6 +4277,7 @@ Object {
         </div>
         <div
           class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+          id="ip-address-mismatch"
         >
           <div
             class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4268,19 +4286,20 @@ Object {
               <p
                 class="fraud-protection-rule-card-header"
               >
-                International Billing Address
+                IP Address Mismatch
               </p>
               <p
                 class="fraud-protection-rule-card-description"
               >
-                This filter screens the customer's billing information for addresses outside of your 
+                This filter screens for customer's 
                 <a
-                  data-link-type="wc-admin"
-                  href="#"
+                  data-link-type="external"
+                  href="https://simple.wikipedia.org/wiki/IP_address"
+                  target="_blank"
                 >
-                  supported countries
+                  IP address
                 </a>
-                .
+                 to see if it is in a different country than indicated in their billing address.
               </p>
             </div>
           </div>
@@ -4320,7 +4339,7 @@ Object {
                     class="components-toggle-control__label"
                     for="inspector-toggle-control-1"
                   >
-                    Screen transactions for international billing addresses
+                    Screen transactions where the IP country and billing country don't match
                   </label>
                 </div>
                 <p
@@ -4338,47 +4357,14 @@ Object {
                 How does this filter protect me?
               </strong>
               <p>
-                Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
+                Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
               </p>
-            </div>
-            <div
-              class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-            >
-              <div
-                class="components-notice__content"
-              >
-                <div
-                  class="components-flex css-1nh0b0-Flex eboqfv50"
-                >
-                  <div
-                    class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                  >
-                    <svg
-                      class="gridicon gridicons-notice-outline"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      width="24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <g>
-                        <path
-                          d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                        />
-                      </g>
-                    </svg>
-                  </div>
-                  <div
-                    class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                  >
-                    Enabling this filter will not have any effect because you are selling to all countries.
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
         <div
           class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+          id="address-mismatch-card"
         >
           <div
             class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4457,6 +4443,7 @@ Object {
         </div>
         <div
           class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+          id="purchase-price-threshold-card"
         >
           <div
             class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4535,6 +4522,7 @@ Object {
         </div>
         <div
           class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+          id="order-items-threshold-card"
         >
           <div
             class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4611,6 +4599,22 @@ Object {
             </div>
           </div>
         </div>
+        <footer
+          class="fraud-protection-advanced-settings__footer"
+        >
+          <a
+            class="components-button is-secondary"
+            href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
+          >
+            Back to Payments Settings
+          </a>
+          <button
+            class="components-button is-primary"
+            type="button"
+          >
+            Save Changes
+          </button>
+        </footer>
       </div>
     </div>
   </div>,
@@ -4695,7 +4699,7 @@ Object {
       id="a11y-speak-polite"
       style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
     >
-                Enabling this filter will not have any effect because you are selling to all countries.   
+                Enabling this filter will not have any effect because you are selling to all countries.  
     </div>
     <div>
       <div>
@@ -4736,6 +4740,7 @@ Object {
             </h2>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="avs-mismatch-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4774,7 +4779,7 @@ Object {
                     class="components-notice__content"
                   >
                     <div
-                      class="components-flex css-1nh0b0-Flex eboqfv50"
+                      class="components-flex css-18koiq9-Flex eboqfv50"
                     >
                       <div
                         class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -4798,8 +4803,9 @@ Object {
                       >
                         For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                         <a
-                          data-link-type="wc-admin"
-                          href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                          data-link-type="external"
+                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          target="_blank"
                         >
                           Learn more
                         </a>
@@ -4811,6 +4817,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="cvc-verification-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4849,7 +4856,7 @@ Object {
                     class="components-notice__content"
                   >
                     <div
-                      class="components-flex css-1nh0b0-Flex eboqfv50"
+                      class="components-flex css-18koiq9-Flex eboqfv50"
                     >
                       <div
                         class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -4873,8 +4880,9 @@ Object {
                       >
                         For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                         <a
-                          data-link-type="wc-admin"
-                          href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                          data-link-type="external"
+                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          target="_blank"
                         >
                           Learn more
                         </a>
@@ -4886,6 +4894,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="international-ip-address-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -4899,10 +4908,17 @@ Object {
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens for IP addresses outside of your 
+                    This filter screens for 
                     <a
-                      data-link-type="wc-admin"
-                      href="#"
+                      data-link-type="external"
+                      href="https://simple.wikipedia.org/wiki/IP_address"
+                      target="_blank"
+                    >
+                      IP addresses
+                    </a>
+                     outside of your 
+                    <a
+                      href="admin.php?page=wc-settings&tab=general"
                     >
                       supported countries
                     </a>
@@ -4974,7 +4990,7 @@ Object {
                     class="components-notice__content"
                   >
                     <div
-                      class="components-flex css-1nh0b0-Flex eboqfv50"
+                      class="components-flex css-18koiq9-Flex eboqfv50"
                     >
                       <div
                         class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -5005,6 +5021,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="ip-address-mismatch"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -5013,19 +5030,20 @@ Object {
                   <p
                     class="fraud-protection-rule-card-header"
                   >
-                    International Billing Address
+                    IP Address Mismatch
                   </p>
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens the customer's billing information for addresses outside of your 
+                    This filter screens for customer's 
                     <a
-                      data-link-type="wc-admin"
-                      href="#"
+                      data-link-type="external"
+                      href="https://simple.wikipedia.org/wiki/IP_address"
+                      target="_blank"
                     >
-                      supported countries
+                      IP address
                     </a>
-                    .
+                     to see if it is in a different country than indicated in their billing address.
                   </p>
                 </div>
               </div>
@@ -5065,7 +5083,7 @@ Object {
                         class="components-toggle-control__label"
                         for="inspector-toggle-control-16"
                       >
-                        Screen transactions for international billing addresses
+                        Screen transactions where the IP country and billing country don't match
                       </label>
                     </div>
                     <p
@@ -5083,47 +5101,14 @@ Object {
                     How does this filter protect me?
                   </strong>
                   <p>
-                    Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
+                    Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
                   </p>
-                </div>
-                <div
-                  class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-                >
-                  <div
-                    class="components-notice__content"
-                  >
-                    <div
-                      class="components-flex css-1nh0b0-Flex eboqfv50"
-                    >
-                      <div
-                        class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                      >
-                        <svg
-                          class="gridicon gridicons-notice-outline"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          width="24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <g>
-                            <path
-                              d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                            />
-                          </g>
-                        </svg>
-                      </div>
-                      <div
-                        class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                      >
-                        Enabling this filter will not have any effect because you are selling to all countries.
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="address-mismatch-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -5202,6 +5187,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="purchase-price-threshold-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -5345,80 +5331,84 @@ Object {
                         </div>
                       </div>
                     </div>
-                    <strong>
-                      Advanced
-                    </strong>
                     <div
-                      class="fraud-protection-rule-toggle-checkbox-container"
+                      class="fraud-protection-rule-toggle-block"
                     >
+                      <strong>
+                        Advanced
+                      </strong>
                       <div
-                        class="components-base-control fraud-protection-rule-toggle-checkbox css-wdf2ti-Wrapper e1puf3u0"
+                        class="fraud-protection-rule-toggle-checkbox-container"
                       >
                         <div
-                          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-                        >
-                          <span
-                            class="components-checkbox-control__input-container"
-                          >
-                            <input
-                              checked=""
-                              class="components-checkbox-control__input"
-                              id="inspector-checkbox-control-1"
-                              type="checkbox"
-                              value="1"
-                            />
-                            <svg
-                              aria-hidden="true"
-                              class="components-checkbox-control__checked"
-                              focusable="false"
-                              height="24"
-                              role="img"
-                              viewBox="0 0 24 24"
-                              width="24"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
-                              />
-                            </svg>
-                          </span>
-                          <label
-                            class="components-checkbox-control__label"
-                            for="inspector-checkbox-control-1"
-                          >
-                            Block Payment
-                          </label>
-                        </div>
-                      </div>
-                      <button
-                        class="wcpay-tooltip__content-wrapper"
-                        type="button"
-                      >
-                        <div
-                          class="wcpay-tooltip__content-wrapper"
+                          class="components-base-control fraud-protection-rule-toggle-checkbox css-wdf2ti-Wrapper e1puf3u0"
                         >
                           <div
-                            class="fraud-protection-rule-toggle-checkbox-container-help"
+                            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
                           >
-                            <svg
-                              aria-hidden="true"
-                              fill="none"
-                              focusable="false"
-                              height="16"
-                              role="img"
-                              viewBox="3 3 18 18"
-                              width="16"
-                              xmlns="http://www.w3.org/2000/svg"
+                            <span
+                              class="components-checkbox-control__input-container"
                             >
-                              <path
-                                d="M9.75 10.25C9.75 9.00736 10.7574 8 12 8C13.2426 8 14.25 9.00736 14.25 10.25C14.25 														11.4083 13.3748 12.3621 12.2496 12.4863C12.1124 12.5015 12 12.6119 12 12.75V14M12 														15V16.5M20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 														7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z"
-                                stroke="#1E1E1E"
-                                stroke-width="1.5"
+                              <input
+                                checked=""
+                                class="components-checkbox-control__input"
+                                id="inspector-checkbox-control-1"
+                                type="checkbox"
+                                value="1"
                               />
-                            </svg>
+                              <svg
+                                aria-hidden="true"
+                                class="components-checkbox-control__checked"
+                                focusable="false"
+                                height="24"
+                                role="img"
+                                viewBox="0 0 24 24"
+                                width="24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
+                                />
+                              </svg>
+                            </span>
+                            <label
+                              class="components-checkbox-control__label"
+                              for="inspector-checkbox-control-1"
+                            >
+                              Block Payment
+                            </label>
                           </div>
                         </div>
-                      </button>
+                        <button
+                          class="wcpay-tooltip__content-wrapper"
+                          type="button"
+                        >
+                          <div
+                            class="wcpay-tooltip__content-wrapper"
+                          >
+                            <div
+                              class="fraud-protection-rule-toggle-checkbox-container-help"
+                            >
+                              <svg
+                                aria-hidden="true"
+                                fill="none"
+                                focusable="false"
+                                height="16"
+                                role="img"
+                                viewBox="3 3 18 18"
+                                width="16"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M9.75 10.25C9.75 9.00736 10.7574 8 12 8C13.2426 8 14.25 9.00736 14.25 10.25C14.25 														11.4083 13.3748 12.3621 12.2496 12.4863C12.1124 12.5015 12 12.6119 12 12.75V14M12 														15V16.5M20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 														7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z"
+                                  stroke="#1E1E1E"
+                                  stroke-width="1.5"
+                                />
+                              </svg>
+                            </div>
+                          </div>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -5436,6 +5426,7 @@ Object {
             </div>
             <div
               class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="order-items-threshold-card"
             >
               <div
                 class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -5512,6 +5503,22 @@ Object {
                 </div>
               </div>
             </div>
+            <footer
+              class="fraud-protection-advanced-settings__footer"
+            >
+              <a
+                class="components-button is-secondary"
+                href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
+              >
+                Back to Payments Settings
+              </a>
+              <button
+                class="components-button is-primary"
+                type="button"
+              >
+                Save Changes
+              </button>
+            </footer>
           </div>
         </div>
       </div>
@@ -5556,6 +5563,7 @@ Object {
           </h2>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="avs-mismatch-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -5594,7 +5602,7 @@ Object {
                   class="components-notice__content"
                 >
                   <div
-                    class="components-flex css-1nh0b0-Flex eboqfv50"
+                    class="components-flex css-18koiq9-Flex eboqfv50"
                   >
                     <div
                       class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -5618,8 +5626,9 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
@@ -5631,6 +5640,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="cvc-verification-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -5669,7 +5679,7 @@ Object {
                   class="components-notice__content"
                 >
                   <div
-                    class="components-flex css-1nh0b0-Flex eboqfv50"
+                    class="components-flex css-18koiq9-Flex eboqfv50"
                   >
                     <div
                       class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -5693,8 +5703,9 @@ Object {
                     >
                       For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                       <a
-                        data-link-type="wc-admin"
-                        href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
                       >
                         Learn more
                       </a>
@@ -5706,6 +5717,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="international-ip-address-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -5719,10 +5731,17 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for IP addresses outside of your 
+                  This filter screens for 
                   <a
-                    data-link-type="wc-admin"
-                    href="#"
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
+                  >
+                    IP addresses
+                  </a>
+                   outside of your 
+                  <a
+                    href="admin.php?page=wc-settings&tab=general"
                   >
                     supported countries
                   </a>
@@ -5794,7 +5813,7 @@ Object {
                   class="components-notice__content"
                 >
                   <div
-                    class="components-flex css-1nh0b0-Flex eboqfv50"
+                    class="components-flex css-18koiq9-Flex eboqfv50"
                   >
                     <div
                       class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -5825,6 +5844,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="ip-address-mismatch"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -5833,19 +5853,20 @@ Object {
                 <p
                   class="fraud-protection-rule-card-header"
                 >
-                  International Billing Address
+                  IP Address Mismatch
                 </p>
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens the customer's billing information for addresses outside of your 
+                  This filter screens for customer's 
                   <a
-                    data-link-type="wc-admin"
-                    href="#"
+                    data-link-type="external"
+                    href="https://simple.wikipedia.org/wiki/IP_address"
+                    target="_blank"
                   >
-                    supported countries
+                    IP address
                   </a>
-                  .
+                   to see if it is in a different country than indicated in their billing address.
                 </p>
               </div>
             </div>
@@ -5885,7 +5906,7 @@ Object {
                       class="components-toggle-control__label"
                       for="inspector-toggle-control-16"
                     >
-                      Screen transactions for international billing addresses
+                      Screen transactions where the IP country and billing country don't match
                     </label>
                   </div>
                   <p
@@ -5903,47 +5924,14 @@ Object {
                   How does this filter protect me?
                 </strong>
                 <p>
-                  Due to the difficulty of authenticating foreign citizens and cross-border legal enforcement against fraudulent activities, you should exercise caution when accepting orders from customers in foreign countries who are using non-domestic addresses.
+                  Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.
                 </p>
-              </div>
-              <div
-                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-              >
-                <div
-                  class="components-notice__content"
-                >
-                  <div
-                    class="components-flex css-1nh0b0-Flex eboqfv50"
-                  >
-                    <div
-                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                    >
-                      <svg
-                        class="gridicon gridicons-notice-outline"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        width="24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <g>
-                          <path
-                            d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                          />
-                        </g>
-                      </svg>
-                    </div>
-                    <div
-                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                    >
-                      Enabling this filter will not have any effect because you are selling to all countries.
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="address-mismatch-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -6022,6 +6010,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="purchase-price-threshold-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -6165,80 +6154,84 @@ Object {
                       </div>
                     </div>
                   </div>
-                  <strong>
-                    Advanced
-                  </strong>
                   <div
-                    class="fraud-protection-rule-toggle-checkbox-container"
+                    class="fraud-protection-rule-toggle-block"
                   >
+                    <strong>
+                      Advanced
+                    </strong>
                     <div
-                      class="components-base-control fraud-protection-rule-toggle-checkbox css-wdf2ti-Wrapper e1puf3u0"
+                      class="fraud-protection-rule-toggle-checkbox-container"
                     >
                       <div
-                        class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-                      >
-                        <span
-                          class="components-checkbox-control__input-container"
-                        >
-                          <input
-                            checked=""
-                            class="components-checkbox-control__input"
-                            id="inspector-checkbox-control-1"
-                            type="checkbox"
-                            value="1"
-                          />
-                          <svg
-                            aria-hidden="true"
-                            class="components-checkbox-control__checked"
-                            focusable="false"
-                            height="24"
-                            role="img"
-                            viewBox="0 0 24 24"
-                            width="24"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
-                            />
-                          </svg>
-                        </span>
-                        <label
-                          class="components-checkbox-control__label"
-                          for="inspector-checkbox-control-1"
-                        >
-                          Block Payment
-                        </label>
-                      </div>
-                    </div>
-                    <button
-                      class="wcpay-tooltip__content-wrapper"
-                      type="button"
-                    >
-                      <div
-                        class="wcpay-tooltip__content-wrapper"
+                        class="components-base-control fraud-protection-rule-toggle-checkbox css-wdf2ti-Wrapper e1puf3u0"
                       >
                         <div
-                          class="fraud-protection-rule-toggle-checkbox-container-help"
+                          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
                         >
-                          <svg
-                            aria-hidden="true"
-                            fill="none"
-                            focusable="false"
-                            height="16"
-                            role="img"
-                            viewBox="3 3 18 18"
-                            width="16"
-                            xmlns="http://www.w3.org/2000/svg"
+                          <span
+                            class="components-checkbox-control__input-container"
                           >
-                            <path
-                              d="M9.75 10.25C9.75 9.00736 10.7574 8 12 8C13.2426 8 14.25 9.00736 14.25 10.25C14.25 														11.4083 13.3748 12.3621 12.2496 12.4863C12.1124 12.5015 12 12.6119 12 12.75V14M12 														15V16.5M20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 														7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z"
-                              stroke="#1E1E1E"
-                              stroke-width="1.5"
+                            <input
+                              checked=""
+                              class="components-checkbox-control__input"
+                              id="inspector-checkbox-control-1"
+                              type="checkbox"
+                              value="1"
                             />
-                          </svg>
+                            <svg
+                              aria-hidden="true"
+                              class="components-checkbox-control__checked"
+                              focusable="false"
+                              height="24"
+                              role="img"
+                              viewBox="0 0 24 24"
+                              width="24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
+                              />
+                            </svg>
+                          </span>
+                          <label
+                            class="components-checkbox-control__label"
+                            for="inspector-checkbox-control-1"
+                          >
+                            Block Payment
+                          </label>
                         </div>
                       </div>
-                    </button>
+                      <button
+                        class="wcpay-tooltip__content-wrapper"
+                        type="button"
+                      >
+                        <div
+                          class="wcpay-tooltip__content-wrapper"
+                        >
+                          <div
+                            class="fraud-protection-rule-toggle-checkbox-container-help"
+                          >
+                            <svg
+                              aria-hidden="true"
+                              fill="none"
+                              focusable="false"
+                              height="16"
+                              role="img"
+                              viewBox="3 3 18 18"
+                              width="16"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M9.75 10.25C9.75 9.00736 10.7574 8 12 8C13.2426 8 14.25 9.00736 14.25 10.25C14.25 														11.4083 13.3748 12.3621 12.2496 12.4863C12.1124 12.5015 12 12.6119 12 12.75V14M12 														15V16.5M20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 														7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z"
+                                stroke="#1E1E1E"
+                                stroke-width="1.5"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -6256,6 +6249,7 @@ Object {
           </div>
           <div
             class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="order-items-threshold-card"
           >
             <div
               class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -6332,6 +6326,22 @@ Object {
               </div>
             </div>
           </div>
+          <footer
+            class="fraud-protection-advanced-settings__footer"
+          >
+            <a
+              class="components-button is-secondary"
+              href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
+            >
+              Back to Payments Settings
+            </a>
+            <button
+              class="components-button is-primary"
+              type="button"
+            >
+              Save Changes
+            </button>
+          </footer>
         </div>
       </div>
     </div>

@@ -1,10 +1,10 @@
 === WooCommerce Payments - Fully Integrated Solution Built and Supported by Woo ===
 Contributors: woocommerce, automattic
 Tags: payment gateway, payment, apple pay, credit card, google pay
-Requires at least: 5.9
-Tested up to: 6.1
-Requires PHP: 7.0
-Stable tag: 5.6.2
+Requires at least: 6.0
+Tested up to: 6.2
+Requires PHP: 7.2
+Stable tag: 5.7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -38,9 +38,9 @@ Our global support team is available to answer questions you may have about WooC
 
 = Requirements =
 
-* WordPress 5.9 or newer.
-* WooCommerce 7.1 or newer.
-* PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
+* WordPress 6.0 or newer.
+* WooCommerce 7.3 or newer.
+* PHP 7.2 or newer is recommended.
 
 = Try it now =
 
@@ -97,6 +97,75 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 5.7.0 - 2023-04-05 =
+* Add - Add ClickTooltip and HoverTooltip components to improve mobile UX when tooltip content is interactive.
+* Add - Add concurrency to workflows
+* Add - Added a confirmation modal when Order Status is changed to Cancel on Edit Order page
+* Add - Added Transaction Fee to order metadata and display it on Order admin screen.
+* Add - Add GitHub workflow to build live branch and inform the zip file to Jetpack Beta Builder.
+* Add - Add new fraud protection elements to the transaction details page.
+* Add - Add order handling and meta box updates for fraud and risk tools.
+* Add - Add order id support for payment details page.
+* Add - Add risk review and blocked tabs to transactions list page.
+* Add - Adds a filter to enable fraud settings.
+* Add - Adds fraud and risk tools banner to WCPay overview page. All fraud and risk tools, including this banner, are currently behind a feature flag.
+* Add - Add shopper IP country to fraud prevention metadata sent to the server
+* Add - Add store currency support for the price threshold fraud rule.
+* Add - Add welcome tour for fraud protection settings section.
+* Add - Advanced fraud protection level settings user interface
+* Add - Fraud protection settings data builder implementation
+* Add - Implement connection to the Intelligent Router and flow switching
+* Add - Introduce a Banner Notice component to be used in upcoming UI elements
+* Add - Prefill Stripe KYC data for non-progressive onboarding scenario
+* Add - Record the following events:
+wcpay_fraud_protection_banner_rendered
+wcpay_fraud_protection_banner_learn_more_button_clicked
+wcpay_fraud_protection_banner_remind_later_button_clicked
+wcpay_fraud_protection_tour_clicked_through
+wcpay_fraud_protection_tour_abandoned
+wcpay_fraud_protection_risk_level_preset_enabled
+wcpay_fraud_protection_advanced_settings_saved
+wcpay_fraud_protection_transaction_reviewed_merchant_blocked
+wcpay_fraud_protection_transaction_reviewed_merchant_approved
+wcpay_fraud_protection_standard_modal_viewed
+wcpay_fraud_protection_high_modal_viewed
+wcpay_fraud_protection_advanced_settings_card_avs_mismatch_viewed
+wcpay_fraud_protection_advanced_settings_card_cvc_verification_viewed
+wcpay_fraud_protection_advanced_settings_card_international_ip_address_card_viewed
+wcpay_fraud_protection_advanced_settings_card_international_billing_address_viewed
+wcpay_fraud_protection_advanced_settings_card_address_mismatch_viewed
+wcpay_fraud_protection_advanced_settings_card_price_threshold_viewed
+wcpay_fraud_protection_advanced_settings_card_items_threshold_viewed
+wcpay_fraud_protection_order_details_link_clicked
+* Add - Show Tap to Pay icon in transactions list page for Tap to Pay transactions
+* Fix - Check whether we have an instance of WC_Cart before invoking its methods on checkout
+* Fix - Fatal errors on the thank-you page due to the strong type check in our filters.
+* Fix - Fix bug with showing WC tasks when there is no WCPay account
+* Fix - Fix new user not being saved in platform
+* Fix - Fix the Request WCPay core class conflict with WP 6.2.
+* Fix - Fix WooPay phone number on blocks checkout
+* Fix - Prevent the WooPay Express button from showing up for pre-order products to be paid upon release.
+* Fix - Sort uncaptured transactions with oldest first.
+* Update - Add documentation links to fraud == Changelog == risk tools.
+* Update - Adds basic protection level modal and fixes standard and high level protection modal rules
+* Update - Change the link in the Express checkouts setting.
+* Update - Change user-facing wording from payouts to deposits.
+* Update - Connection success notice.
+* Update - Improve Fraud == Changelog == Risk tools layout and add missing UI elements.
+* Update - Replace custom tour component with TourKit from the WooCommerce components library.
+* Update - Replace international billing address with IP country filter on fraud and risk tools
+* Update - Update international filters to use selling locations settings instead stripe account country
+* Update - Update test mode notice for Authorizations tab
+* Update - Update the payment details page to reflect the Tap to Pay transactions channel
+* Dev - Adds UPE deferred intent feature flag for future development
+* Dev - Add userscript for WCPay Live Branch.
+* Dev - Bump minimum required version of WooCommerce to 7.3.0.
+* Dev - Made timezones consistent in tests by generating dynamically.
+* Dev - Optimize asset bundling and loading
+* Dev - Pass an instance of Platform_Checkout_Utilities when instantiating WC_Payments_Platform_Checkout_Button_Handler.
+* Dev - Refactor the `Tooltip` component to use TypeScript
+* Dev - Removed unused code from WC Payments API client class
 
 = 5.6.2 - 2023-03-23 =
 * Update - Security update.

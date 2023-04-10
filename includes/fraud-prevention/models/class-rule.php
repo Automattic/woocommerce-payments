@@ -121,6 +121,25 @@ class Rule {
 	}
 
 	/**
+	 * Validates the given string to see if it's a valid fraud outcome status.
+	 *
+	 * @param  string $outcome The array to validate.
+	 *
+	 * @return bool Whether it is a valid Rule array.
+	 */
+	public static function is_valid_fraud_outcome_status( string $outcome ): bool {
+		return in_array(
+			$outcome,
+			[
+				self::FRAUD_OUTCOME_BLOCK,
+				self::FRAUD_OUTCOME_REVIEW,
+				self::FRAUD_OUTCOME_ALLOW,
+			],
+			true
+		);
+	}
+
+	/**
 	 * Converts the class to it's array representation for transmission.
 	 *
 	 * @return  array

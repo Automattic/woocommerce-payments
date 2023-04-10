@@ -188,10 +188,10 @@ describe( 'Authorizations list', () => {
 
 		test( 'sorts by authorized on field', () => {
 			sortBy( 'Authorized on' );
-			expectSortingToBe( 'created', 'asc' );
+			expectSortingToBe( 'created', 'desc' );
 
 			sortBy( 'Authorized on' );
-			expectSortingToBe( 'created', 'desc' );
+			expectSortingToBe( 'created', 'asc' );
 		} );
 
 		test( 'sorts by capture by field', () => {

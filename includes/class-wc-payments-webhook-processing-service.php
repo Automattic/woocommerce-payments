@@ -392,7 +392,7 @@ class WC_Payments_Webhook_Processing_Service {
 	 *
 	 * @param array $event_body The event that triggered the webhook.
 	 *
-	 * @throws Invalid_Webhook_Data_Exception           Required parameters not found.
+	 * @throws Invalid_Webhook_Data_Exception   Required parameters not found.
 	 * @throws Invalid_Payment_Method_Exception When unable to resolve charge ID to order.
 	 */
 	private function process_webhook_payment_intent_failed( $event_body ) {
@@ -447,11 +447,13 @@ class WC_Payments_Webhook_Processing_Service {
 		$event_charges = $this->read_webhook_property( $event_object, 'charges' );
 		$charges_data  = $this->read_webhook_property( $event_charges, 'data' );
 		$charge_id     = $this->read_webhook_property( $charges_data[0], 'id' );
+		$metadata      = $this->read_webhook_property( $event_object, 'metadata' );
 
 		$payment_method_id = $charges_data[0]['payment_method'] ?? null;
 		if ( ! $order ) {
 			return;
 		}
+
 		// Update missing intents because webhook can be delivered before order is processed on the client.
 		$meta_data_to_update = [
 			'_intent_id'         => $intent_id,
@@ -466,6 +468,11 @@ class WC_Payments_Webhook_Processing_Service {
 			$meta_data_to_update['_stripe_mandate_id'] = $mandate_id;
 		}
 
+		$application_fee_amount = $charges_data[0]['application_fee_amount'] ?? null;
+		if ( $application_fee_amount ) {
+			$meta_data_to_update['_wcpay_transaction_fee'] = WC_Payments_Utils::interpret_stripe_amount( $application_fee_amount, $currency );
+		}
+
 		foreach ( $meta_data_to_update as $key => $value ) {
 			// Override existing meta data with incoming values, if present.
 			if ( $value ) {
@@ -475,7 +482,13 @@ class WC_Payments_Webhook_Processing_Service {
 		// Save the order after updating the meta data values.
 		$order->save();
 
-		$this->order_service->mark_payment_completed( $order, $intent_id, $intent_status, $charge_id );
+		$intent_data = [
+			'id'            => $intent_id,
+			'status'        => $intent_status,
+			'charge_id'     => $charge_id,
+			'fraud_outcome' => $metadata['fraud_outcome'] ?? '',
+		];
+		$this->order_service->update_order_status_from_intent( $order, $intent_data );
 
 		// Send the customer a card reader receipt if it's an in person payment type.
 		$payment_method = $charges_data[0]['payment_method_details']['type'] ?? null;
