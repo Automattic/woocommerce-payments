@@ -31,7 +31,7 @@ interface ListItem extends Omit< Item, 'group' > {
 	items?: string[];
 }
 
-interface GroupedSelectControl< ItemType > {
+export interface GroupedSelectControlProps< ItemType > {
 	label: string;
 	options: ItemType[];
 	groups: Group[];
@@ -51,7 +51,7 @@ const GroupedSelectControl = < ItemType extends Item >( {
 	searchable,
 	className,
 	onChange,
-}: GroupedSelectControl< ItemType > ): JSX.Element => {
+}: GroupedSelectControlProps< ItemType > ): JSX.Element => {
 	const searchRef = useRef< HTMLInputElement >( null );
 	const previousStateRef = useRef< {
 		visibleItems: Set< string >;
