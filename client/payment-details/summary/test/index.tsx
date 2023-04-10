@@ -16,6 +16,11 @@ import { paymentIntentMock } from '../../../data/payment-intents/test/hooks';
 import { latestFraudOutcomeMock } from '../../../data/fraud-outcomes/test/hooks';
 
 declare const global: {
+	wcSettings: {
+		locale: {
+			siteLocale: string;
+		};
+	};
 	wcpaySettings: {
 		isSubscriptionsActive: boolean;
 		zeroDecimalCurrencies: string[];
@@ -215,6 +220,12 @@ describe( 'PaymentDetailsSummary', () => {
 			jest.spyOn( moment, 'now' ).mockImplementation( () =>
 				fixedCurrentDate.getTime()
 			);
+
+			global.wcSettings = {
+				locale: {
+					siteLocale: 'en_US',
+				},
+			};
 		} );
 
 		afterAll( () => {
@@ -255,7 +266,7 @@ describe( 'PaymentDetailsSummary', () => {
 					'payment-details-capture-notice__text'
 				)[ 0 ].innerHTML
 			).toMatch(
-				`You need to <a href=\"https://woocommerce.com/document/woocommerce-payments/settings-guide/authorize-and-capture/#capturing-authorized-orders\" target=\"_blank\" rel=\"noreferer\">capture</a> this charge in <abbr title=\"Apr 5, 2023 / 5:43AM\"><b>7 days</b></abbr>`
+				`You need to <a href=\"https://woocommerce.com/document/woocommerce-payments/settings-guide/authorize-and-capture/#capturing-authorized-orders\" target=\"_blank\" rel=\"noreferer\">capture</a> this charge in <abbr title=\"Apr 5, 2023 / 5:43AM\"><b>5 days</b></abbr>`
 			);
 
 			expect( container ).toMatchSnapshot();

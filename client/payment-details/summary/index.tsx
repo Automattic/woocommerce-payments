@@ -6,12 +6,10 @@
 import { sprintf, __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import { Card, CardBody, CardFooter, CardDivider } from '@wordpress/components';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
+// @ts-expect-error - types are not available for the minified locales version
 import moment from 'moment/min/moment-with-locales';
 import React, { useContext } from 'react';
 import { createInterpolateElement } from '@wordpress/element';
-import { useSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies.
@@ -178,15 +176,6 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		fraudOutcome,
 		paymentIntent
 	);
-
-	const siteLocale = useSelect( ( select ) => {
-		const wcAdminSettings = select( 'wc/admin/settings' ).getSettings(
-			'wc_admin'
-		);
-		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-		// @ts-ignore
-		return wcAdminSettings.locale.siteLocale.substring( 0, 2 );
-	} );
 
 	return (
 		<Card>
@@ -416,7 +405,12 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 													.utc(
 														authorization.created
 													)
-													.locale( siteLocale )
+													.locale(
+														window.wcSettings.locale.siteLocale.substring(
+															0,
+															2
+														)
+													)
 													.add( 7, 'days' )
 													.fromNow( true )
 											) }
