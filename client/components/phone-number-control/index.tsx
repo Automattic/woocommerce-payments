@@ -31,7 +31,7 @@ interface Props {
 	help?: string;
 }
 
-const PhoneNumberInput: React.FC< Props > = ( {
+const PhoneNumberControl: React.FC< Props > = ( {
 	value,
 	onChange,
 	...rest
@@ -105,4 +105,4 @@ const PhoneNumberInput: React.FC< Props > = ( {
 	);
 };
 
-export default PhoneNumberInput;
+export default PhoneNumberControl;
