@@ -64,6 +64,11 @@
 			}
 		}
 	}
+	.new-account-waiting-period-notice {
+		&.components-notice {
+			margin: 0 24px;
+		}
+	}
 	&__footer {
 		:not( :first-child ) {
 			margin-left: 12px;
