@@ -31,18 +31,18 @@ interface ListItem extends Omit< Item, 'group' > {
 	items?: string[];
 }
 
-interface GroupedSelectControl {
+interface GroupedSelectControl< ItemType > {
 	label: string;
-	options: Item[];
+	options: ItemType[];
 	groups: Group[];
-	value?: Item;
+	value?: ItemType;
 	placeholder?: string;
 	searchable?: boolean;
 	className?: string;
-	onChange: ( value?: Item ) => void;
+	onChange: ( value?: ItemType ) => void;
 }
 
-const GroupedSelectControl: React.FC< GroupedSelectControl > = ( {
+const GroupedSelectControl = < ItemType extends Item >( {
 	label,
 	options: items,
 	value,
@@ -51,7 +51,7 @@ const GroupedSelectControl: React.FC< GroupedSelectControl > = ( {
 	searchable,
 	className,
 	onChange,
-} ) => {
+}: GroupedSelectControl< ItemType > ): JSX.Element => {
 	const searchRef = useRef< HTMLInputElement >( null );
 	const previousStateRef = useRef< {
 		visibleItems: Set< string >;
@@ -94,9 +94,9 @@ const GroupedSelectControl: React.FC< GroupedSelectControl > = ( {
 	} = useSelect( {
 		items: itemsToRender,
 		itemToString: ( item ) => item.name,
-		selectedItem: value || ( {} as Item ),
+		selectedItem: value || ( {} as ItemType ),
 		onSelectedItemChange: ( changes ) =>
-			onChange( changes.selectedItem as Item ),
+			onChange( changes.selectedItem as ItemType ),
 		stateReducer: ( state, { changes, type } ) => {
 			if (
 				searchable &&
