@@ -17,6 +17,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WC_Payments_Onboarding_Service {
 
+	const TEST_MODE_OPTION = 'wcpay_onboarding_test_mode';
+
 	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
@@ -40,6 +42,8 @@ class WC_Payments_Onboarding_Service {
 	public function __construct( WC_Payments_API_Client $payments_api_client, Database_Cache $database_cache ) {
 		$this->payments_api_client = $payments_api_client;
 		$this->database_cache      = $database_cache;
+
+		add_filter( 'wcpay_dev_mode', [ $this, 'maybe_enable_dev_mode' ], 100 );
 	}
 
 	/**
@@ -115,5 +119,26 @@ class WC_Payments_Onboarding_Service {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Enable dev mode if onboarding test mode is enabled.
+	 *
+	 * @param bool $dev_mode Current dev mode value.
+	 *
+	 * @return bool
+	 */
+	public function maybe_enable_dev_mode( $dev_mode ) {
+		return get_option( self::TEST_MODE_OPTION, $dev_mode );
+	}
+
+	/**
+	 * Enable onboarding test mode.
+	 * This will enable WCPay dev mode.
+	 */
+	public static function enable_test_mode() {
+		add_option( self::TEST_MODE_OPTION, true );
+		// Ensure dev mode is enabled immediately.
+		WC_Payments::mode()->dev();
 	}
 }
