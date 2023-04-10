@@ -9,16 +9,23 @@ import { render } from '@testing-library/react';
  */
 import DepositsOverview from '..';
 import NextDepositDetails from '../next-deposit';
+import { CachedDeposit } from 'wcpay/types/deposits';
+import RecentDepositsList from '../recent-deposits-list';
 import DepositsOverviewFooter from '../footer';
 import DepositSchedule from '../deposit-schedule';
 import SuspendedDepositNotice from '../suspended-deposit-notice';
-import { useDepositIncludesLoan } from 'wcpay/data';
+import { useDepositIncludesLoan, useDeposits } from 'wcpay/data';
 import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
 import strings from '../strings';
 
 jest.mock( 'wcpay/data', () => ( {
 	useDepositIncludesLoan: jest.fn(),
 	useInstantDeposit: jest.fn(),
+	useDeposits: jest.fn(),
+} ) );
+
+jest.mock( 'wcpay/overview/hooks', () => ( {
+	useSelectedCurrencyOverview: jest.fn(),
 } ) );
 
 jest.mock( 'wcpay/overview/hooks', () => ( {
@@ -39,6 +46,11 @@ const mockAccount: AccountOverview.Account = {
 
 declare const global: {
 	wcpaySettings: {
+		accountStatus: {
+			deposits: {
+				completed_waiting_period: boolean;
+			};
+		};
 		accountDefaultCurrency: string;
 		zeroDecimalCurrencies: string[];
 		currencyData: Record< string, any >;
@@ -47,6 +59,27 @@ declare const global: {
 		};
 	};
 };
+
+const mockDeposits = [
+	{
+		id: 'po_mock1',
+		date: '2020-01-02 17:46:02',
+		type: 'deposit',
+		amount: 2000,
+		status: 'paid',
+		bankAccount: 'MOCK BANK •••• 1234 (USD)',
+		currency: 'USD',
+	} as CachedDeposit,
+	{
+		id: 'po_mock2',
+		date: '2020-01-03 17:46:02',
+		type: 'withdrawal',
+		amount: 3000,
+		status: 'pending',
+		bankAccount: 'MOCK BANK •••• 1234 (USD)',
+		currency: 'USD',
+	} as CachedDeposit,
+];
 
 // Creates a mock Overview object for the given currency code and balance amounts.
 const createMockOverview = (
@@ -132,6 +165,10 @@ const mockUseSelectedCurrencyOverview = useSelectedCurrencyOverview as jest.Mock
 	typeof useSelectedCurrencyOverview
 >;
 
+const mockUseDeposits = useDeposits as jest.MockedFunction<
+	typeof useDeposits
+>;
+
 // Mocks the DepositsOverviews hook to return the given currencies.
 const mockOverviews = ( currencies: AccountOverview.Overview[] ) => {
 	mockUseSelectedCurrencyOverview.mockReturnValue( {
@@ -144,6 +181,11 @@ const mockOverviews = ( currencies: AccountOverview.Overview[] ) => {
 describe( 'Deposits Overview information', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
+			accountStatus: {
+				deposits: {
+					completed_waiting_period: true,
+				},
+			},
 			accountDefaultCurrency: 'USD',
 			zeroDecimalCurrencies: [],
 			connect: {
@@ -179,6 +221,12 @@ describe( 'Deposits Overview information', () => {
 
 	test( 'Component Renders', () => {
 		mockOverviews( [ createMockOverview( 'usd', 100, 0, 'estimated' ) ] );
+		mockUseDeposits.mockReturnValue( {
+			depositsCount: 0,
+			deposits: mockDeposits,
+			isLoading: false,
+		} );
+
 		const { container } = render( <DepositsOverview /> );
 		expect( container ).toMatchSnapshot();
 	} );
@@ -229,6 +277,32 @@ describe( 'Deposits Overview information', () => {
 		expect( getByText( '—' ) ).toBeTruthy();
 	} );
 
+	test( 'Confirm recent deposits renders ', () => {
+		mockUseDeposits.mockReturnValue( {
+			depositsCount: 0,
+			deposits: mockDeposits,
+			isLoading: false,
+		} );
+		const { getByText } = render(
+			<RecentDepositsList currency={ mockAccount.default_currency } />
+		);
+		getByText( 'January 2, 2020' );
+	} );
+
+	test( 'Confirm recent deposits does not render when no deposits', () => {
+		mockUseDeposits.mockReturnValue( {
+			depositsCount: 0,
+			deposits: [],
+			isLoading: false,
+		} );
+
+		const { container } = render(
+			<RecentDepositsList currency={ mockAccount.default_currency } />
+		);
+
+		expect( container ).toBeEmptyDOMElement();
+	} );
+
 	test( 'Renders capital loan notice if deposit includes financing payout', () => {
 		const overview = createMockOverview( 'usd', 100, 0, 'rubbish' );
 		mockUseDepositIncludesLoan.mockReturnValue( {
@@ -273,6 +347,26 @@ describe( 'Deposits Overview information', () => {
 				name: 'Learn more',
 			} )
 		).toBeFalsy();
+	} );
+
+	test( 'Confirm new account waiting period notice does not show', () => {
+		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = true;
+		const { queryByText } = render( <DepositsOverview /> );
+		expect(
+			queryByText( 'Your first deposit is held for seven business days' )
+		).toBeFalsy();
+	} );
+
+	test( 'Confirm new account waiting period notice shows', () => {
+		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = false;
+		const { getByText, getByRole } = render( <DepositsOverview /> );
+		getByText( /Your first deposit is held for seven business days/, {
+			ignore: '.a11y-speak-region',
+		} );
+		expect( getByRole( 'link', { name: /Why\?/ } ) ).toHaveAttribute(
+			'href',
+			'https://woocommerce.com/document/woocommerce-payments/deposits/deposit-schedule/#section-1'
+		);
 	} );
 } );
 

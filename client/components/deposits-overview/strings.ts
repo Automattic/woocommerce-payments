@@ -28,6 +28,7 @@ export default {
 			'Estimated dispatch date',
 			'woocommerce-payments'
 		),
+		recentDepositDate: __( 'Dispatch date', 'woocommerce-payments' ),
 		status: __( 'Status', 'woocommerce-payments' ),
 		amount: __( 'Amount', 'woocommerce-payments' ),
 	},
