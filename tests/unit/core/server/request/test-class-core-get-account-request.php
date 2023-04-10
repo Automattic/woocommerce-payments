@@ -1,6 +1,6 @@
 <?php
 /**
- * Class Get_Intention_Test
+ * Class Get_Account_Test
  *
  * @package WooCommerce\Payments\Tests
  */
@@ -10,7 +10,7 @@ use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request\Get_Account;
 
 /**
- * WCPay\Core\Server\Get_Intention_Test unit tests.
+ * WCPay\Core\Server\Get_Account_Test unit tests.
  */
 class Get_Account_Test extends WCPAY_UnitTestCase {
 
@@ -48,18 +48,21 @@ class Get_Account_Test extends WCPAY_UnitTestCase {
 	public function test_get_account_will_be_requested_as_test_mode_only_in_dev_mode() {
 		// enable test mode.
 		WC_Payments::mode()->test();
-		$request = new Get_Account( $this->mock_api_client, $this->mock_wc_payments_http_client );
-		$this->assertFalse( $request->get_param( 'test_mode' ) );
+		$request_test = new Get_Account( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request_test->set_test_mode_only_when_dev_mode();
+		$this->assertFalse( $request_test->get_param( 'test_mode' ) );
 
 		// enable live mode.
 		WC_Payments::mode()->live();
-		$request = new Get_Account( $this->mock_api_client, $this->mock_wc_payments_http_client );
-		$this->assertFalse( $request->get_param( 'test_mode' ) );
+		$request_live = new Get_Account( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request_live->set_test_mode_only_when_dev_mode();
+		$this->assertFalse( $request_live->get_param( 'test_mode' ) );
 
 		// enable dev mode.
 		WC_Payments::mode()->dev();
-		$request = new Get_Account( $this->mock_api_client, $this->mock_wc_payments_http_client );
-		$this->assertTrue( $request->get_param( 'test_mode' ) );
+		$request_dev = new Get_Account( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request_dev->set_test_mode_only_when_dev_mode();
+		$this->assertTrue( $request_dev->get_param( 'test_mode' ) );
 
 		// reset the test.
 		WC_Payments::mode()->live();
