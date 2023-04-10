@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Support subscription_variation product type when re-adding items to a cart.
