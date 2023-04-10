@@ -6,6 +6,7 @@ import React, { useState, useRef } from 'react';
 import { BaseControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import classNames from 'classnames';
+import 'intl-tel-input';
 
 /**
  * Internal dependencies
@@ -57,7 +58,7 @@ const PhoneNumberInput: React.FC< Props > = ( {
 	};
 
 	const handleInput = ( event: React.ChangeEvent< HTMLInputElement > ) => {
-		handleChange( countryCode, event.target.value );
+		handleChange( countryCode, event.target.value.replace( /\D/g, '' ) );
 	};
 
 	return (
