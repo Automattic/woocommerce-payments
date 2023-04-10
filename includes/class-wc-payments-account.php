@@ -1280,12 +1280,7 @@ class WC_Payments_Account {
 				return;
 			}
 
-			$request = Update_Account::create();
-			// Dynamically set the request parameters.
-			foreach ( $stripe_account_settings as $param => $value ) {
-				call_user_func( [ $request, "set_{$param}" ], $value );
-			}
-
+			$request         = Update_Account::from_account_settings( $stripe_account_settings );
 			$response        = $request->send( 'wcpay_update_account_settings' );
 			$updated_account = $response->to_array();
 
@@ -1325,12 +1320,14 @@ class WC_Payments_Account {
 	public function possibly_update_wcpay_account_locale( $option_name, $old_value, $new_value ) {
 		if ( 'WPLANG' === $option_name && $this->is_stripe_connected() ) {
 			try {
-				$locale  = $new_value ?? 'en_US';
-				$request = Update_Account::create();
-				$request->set_locale( $locale );
+				$account_settings = [
+					'locale' => $new_value ? $new_value : 'en_US',
+				];
 
+				$request         = Update_Account::from_account_settings( $account_settings );
 				$response        = $request->send( 'wcpay_update_account_settings' );
 				$updated_account = $response->to_array();
+
 				$this->database_cache->add( Database_Cache::ACCOUNT_KEY, $updated_account );
 			} catch ( Exception $e ) {
 				Logger::error( __( 'Failed to update Account locale. ', 'woocommerce-payments' ) . $e );

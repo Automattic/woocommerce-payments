@@ -7,6 +7,7 @@
 
 namespace WCPay\Core\Server\Request;
 
+use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request;
 use WC_Payments_API_Client;
 
@@ -37,6 +38,44 @@ class Update_Account extends Request {
 	 */
 	public function should_use_user_token(): bool {
 		return true;
+	}
+
+	/**
+	 * Used to prepare request from array account_settings.
+	 *
+	 * @param  array $account_settings  Account settings: key is the param name, value is the param value.
+	 *
+	 * @return static
+	 * @throws Invalid_Request_Parameter_Exception When either no account settings provided or no existing setter for provided parameter.
+	 */
+	public static function from_account_settings( array $account_settings ) {
+		if ( 0 === count( $account_settings ) ) {
+			throw new Invalid_Request_Parameter_Exception(
+				__( 'No account settings provided', 'woocommerce-payments' ),
+				'wcpay_core_invalid_request_parameter_account_settings_empty'
+			);
+		}
+
+		$wcpay_request = static::create();
+
+		foreach ( $account_settings as $param_name => $value ) {
+			$param_setter = 'set_' . $param_name;
+
+			if ( ! method_exists( static::class, $param_setter ) ) {
+				throw new Invalid_Request_Parameter_Exception(
+					sprintf(
+						/* translators: %s: parameter name */
+						__( 'No existing setter for provided parameter: %s', 'woocommerce-payments' ),
+						$param_name
+					),
+					'wcpay_core_invalid_request_parameter_no_existing_setter'
+				);
+			}
+
+			call_user_func( [ $wcpay_request, $param_setter ], $value );
+		}
+
+		return $wcpay_request;
 	}
 
 	/**
