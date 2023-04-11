@@ -62,48 +62,7 @@ const DepositTableRow: React.FC< DepositRowProps > = ( {
 const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 	currency,
 }: RecentDepositsProps ): JSX.Element => {
-	//const recentDeposits = useRecentDeposits( currency );
-	const recentDeposits = {
-		isLoading: false,
-		deposits: [
-			{
-				id: '1',
-				date: '2023-04-10',
-				type: 'deposit',
-				amount: 2982,
-				currency: 'USD',
-				fee_percentage: 0,
-				fee: 0,
-				status: 'pending',
-				bankAccount: '123456789',
-				automatic: true,
-			} as CachedDeposit,
-			{
-				id: '2',
-				date: '2023-03-09',
-				type: 'deposit',
-				amount: 13721,
-				currency: 'USD',
-				fee_percentage: 0,
-				fee: 0,
-				status: 'paid',
-				bankAccount: '987654321',
-				automatic: true,
-			} as CachedDeposit,
-			{
-				id: '2',
-				date: '2023-02-09',
-				type: 'deposit',
-				amount: 12314,
-				currency: 'USD',
-				fee_percentage: 0,
-				fee: 0,
-				status: 'paid',
-				bankAccount: '987654321',
-				automatic: true,
-			} as CachedDeposit,
-		],
-	};
+	const recentDeposits = useRecentDeposits( currency );
 	const isLoading = recentDeposits.isLoading;
 
 	if ( isLoading || recentDeposits.deposits.length === 0 ) {
