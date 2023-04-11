@@ -12,7 +12,7 @@ import HelpOutlineIcon from 'gridicons/dist/help-outline';
  */
 import strings from './strings';
 import './style.scss';
-import DepositStatusChip from 'components/deposit-status-chip';
+import DepositStatusPill from 'components/deposit-status-pill';
 import { getDepositDate } from 'deposits/utils';
 import { CachedDeposit } from 'wcpay/types/deposits';
 import { formatCurrency } from 'wcpay/utils/currency';
@@ -42,7 +42,7 @@ const DepositTableRow: React.FC< DepositRowProps > = ( {
 				</Link>
 			</FlexItem>
 			<FlexItem className={ `${ tableClass }__cell` }>
-				<DepositStatusChip status={ deposit.status } isCompact />
+				<DepositStatusPill status={ deposit.status } />
 			</FlexItem>
 			<FlexItem className={ `${ tableClass }__cell` }>
 				{ formatCurrency( deposit.amount, deposit.currency ) }

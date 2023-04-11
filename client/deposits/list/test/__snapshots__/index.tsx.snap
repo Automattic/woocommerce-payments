@@ -388,7 +388,11 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
                     tabindex="-1"
                   >
-                    Paid
+                    <span
+                      class="woocommerce-pill css-1qmnemh-Text e15wbhsk0"
+                    >
+                      Paid
+                    </span>
                   </a>
                 </td>
                 <td
@@ -471,7 +475,11 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
                     tabindex="-1"
                   >
-                    Pending
+                    <span
+                      class="woocommerce-pill css-1qmnemh-Text e15wbhsk0"
+                    >
+                      Pending
+                    </span>
                   </a>
                 </td>
                 <td
@@ -916,7 +924,11 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
                     tabindex="-1"
                   >
-                    Paid
+                    <span
+                      class="woocommerce-pill css-1qmnemh-Text e15wbhsk0"
+                    >
+                      Paid
+                    </span>
                   </a>
                 </td>
                 <td
@@ -999,7 +1011,11 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
                     tabindex="-1"
                   >
-                    Pending
+                    <span
+                      class="woocommerce-pill css-1qmnemh-Text e15wbhsk0"
+                    >
+                      Pending
+                    </span>
                   </a>
                 </td>
                 <td
