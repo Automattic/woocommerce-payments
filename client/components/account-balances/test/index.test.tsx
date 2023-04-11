@@ -15,6 +15,7 @@ import { getGreeting, getCurrencyTabTitle } from '../utils';
 import { useCurrentWpUser } from '../hooks';
 import { useAllDepositsOverviews } from 'wcpay/data';
 import { documentationUrls } from '../strings';
+import { useSelectedCurrency } from 'wcpay/overview/hooks';
 
 const mockUser = {
 	id: 123,
@@ -82,6 +83,10 @@ jest.mock( 'wcpay/data', () => ( {
 	useAllDepositsOverviews: jest.fn(),
 } ) );
 
+jest.mock( 'wcpay/overview/hooks', () => ( {
+	useSelectedCurrency: jest.fn(),
+} ) );
+
 const mockGetGreeting = getGreeting as jest.MockedFunction<
 	typeof getGreeting
 >;
@@ -94,6 +99,9 @@ const mockGetCurrencyTabTitle = getCurrencyTabTitle as jest.MockedFunction<
 const mockUseAllDepositsOverviews = useAllDepositsOverviews as jest.MockedFunction<
 	typeof useAllDepositsOverviews
 >;
+const mockUseSelectedCurrency = useSelectedCurrency as jest.MockedFunction<
+	typeof useSelectedCurrency
+>;
 
 // Mocks the DepositsOverviews hook to return the given currencies.
 const mockOverviews = ( currencies: AccountOverview.Overview[] ) => {
@@ -105,6 +113,13 @@ const mockOverviews = ( currencies: AccountOverview.Overview[] ) => {
 		isLoading: null === currencies || ! currencies.length,
 	} );
 };
+
+// Mocks the useSelectedCurrency hook to return no previously selected currency.
+const mockSetSelectedCurrency = jest.fn();
+mockUseSelectedCurrency.mockReturnValue( {
+	selectedCurrency: undefined,
+	setSelectedCurrency: mockSetSelectedCurrency,
+} );
 
 // Creates a mock Overview object for the given currency code and balance amounts.
 const createMockOverview = (
@@ -175,6 +190,7 @@ describe( 'AccountBalances', () => {
 		} );
 		mockGetCurrencyTabTitle.mockReturnValue( 'USD Balance' );
 		mockOverviews( [ createMockOverview( 'usd', 100, 200 ) ] );
+
 		const { container } = render( <AccountBalances /> );
 		expect( container ).toMatchSnapshot();
 	} );
@@ -239,6 +255,75 @@ describe( 'AccountBalancesTabPanel', () => {
 		expect( pendingAmount ).toHaveTextContent( '¥123' );
 	} );
 
+	test( 'renders with selected currency correctly', () => {
+		mockGetCurrencyTabTitle.mockImplementation(
+			( currencyCode: string ) => {
+				return `${ currencyCode.toUpperCase() } Balance`;
+			}
+		);
+		mockOverviews( [
+			createMockOverview( 'eur', 7660, 2739 ),
+			createMockOverview( 'usd', 84875, 47941 ),
+			createMockOverview( 'jpy', 2000, 9000 ),
+		] );
+		mockUseSelectedCurrency.mockReturnValue( {
+			selectedCurrency: 'jpy',
+			setSelectedCurrency: mockSetSelectedCurrency,
+		} );
+
+		const { getByLabelText, getByRole } = render(
+			<AccountBalancesTabPanel />
+		);
+
+		// Check the active tab is rendered correctly.
+		getByRole( 'tab', {
+			selected: true,
+			name: /JPY Balance/,
+		} );
+
+		const pendingAmount = getByLabelText( 'Pending funds' );
+		const availableAmount = getByLabelText( 'Available funds' );
+
+		// Check the available and pending amounts are rendered correctly.
+		expect( pendingAmount ).toHaveTextContent( '¥20' );
+		expect( availableAmount ).toHaveTextContent( '¥90' );
+	} );
+
+	test( 'renders default tab with invalid selected currency', () => {
+		mockGetCurrencyTabTitle.mockImplementation(
+			( currencyCode: string ) => {
+				return `${ currencyCode.toUpperCase() } Balance`;
+			}
+		);
+		mockOverviews( [
+			createMockOverview( 'eur', 7660, 2739 ),
+			createMockOverview( 'usd', 84875, 47941 ),
+			createMockOverview( 'jpy', 2000, 9000 ),
+		] );
+		mockUseSelectedCurrency.mockReturnValue( {
+			// Invalid currency code.
+			selectedCurrency: '1234',
+			setSelectedCurrency: mockSetSelectedCurrency,
+		} );
+
+		const { getByLabelText, getByRole } = render(
+			<AccountBalancesTabPanel />
+		);
+
+		// Check the default active tab is rendered correctly.
+		getByRole( 'tab', {
+			selected: true,
+			name: /EUR Balance/,
+		} );
+
+		const pendingAmount = getByLabelText( 'Pending funds' );
+		const availableAmount = getByLabelText( 'Available funds' );
+
+		// Check the available and pending amounts are rendered correctly.
+		expect( pendingAmount ).toHaveTextContent( '€76.60' );
+		expect( availableAmount ).toHaveTextContent( '€27.39' );
+	} );
+
 	test( 'renders multiple currency tabs', () => {
 		mockGetCurrencyTabTitle.mockImplementation(
 			( currencyCode: string ) => {
@@ -272,7 +357,8 @@ describe( 'AccountBalancesTabPanel', () => {
 		 * Change the tab to the second tab (USD).
 		 */
 		fireEvent.click( tabTitles[ 1 ] );
-
+		expect( mockSetSelectedCurrency ).toHaveBeenCalledTimes( 1 );
+		expect( mockSetSelectedCurrency ).toHaveBeenCalledWith( 'usd' );
 		const usdAvailableAmount = getByLabelText( 'Available funds' );
 		const usdPendingAmount = getByLabelText( 'Pending funds' );
 
@@ -284,7 +370,8 @@ describe( 'AccountBalancesTabPanel', () => {
 		 * Change the tab to the third tab (JPY).
 		 */
 		fireEvent.click( tabTitles[ 2 ] );
-
+		expect( mockSetSelectedCurrency ).toHaveBeenCalledTimes( 2 );
+		expect( mockSetSelectedCurrency ).toHaveBeenLastCalledWith( 'jpy' );
 		const jpyAvailableAmount = getByLabelText( 'Available funds' );
 		const jpyPendingAmount = getByLabelText( 'Pending funds' );
 

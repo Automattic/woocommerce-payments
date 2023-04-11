@@ -28,7 +28,7 @@ exports[`Deposits Overview footer renders Component Renders 1`] = `
 exports[`Deposits Overview information Component Renders 1`] = `
 <div>
   <div
-    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+    class="components-card is-size-medium wcpay-deposits-overview css-1xs3c37-CardUI e1q7k77g0"
   >
     <div
       class="components-flex components-card__header is-size-medium e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
@@ -99,7 +99,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
           class="components-flex__item wcpay-deposits-overview__table__cell css-1s295sp-Item eboqfv51"
         >
           <span
-            class="deposit-status-chip chip-estimated is-compact"
+            class="woocommerce-pill css-1qmnemh-Text e15wbhsk0"
           >
             Estimated
           </span>
@@ -183,9 +183,9 @@ exports[`Deposits Overview information Component Renders 1`] = `
           class="components-flex__item wcpay-deposits-overview__table__cell css-1s295sp-Item eboqfv51"
         >
           <span
-            class="deposit-status-chip chip-sent is-compact"
+            class="woocommerce-pill css-1qmnemh-Text e15wbhsk0"
           >
-            Sent
+            Paid
           </span>
         </div>
         <div
@@ -223,9 +223,9 @@ exports[`Deposits Overview information Component Renders 1`] = `
           class="components-flex__item wcpay-deposits-overview__table__cell css-1s295sp-Item eboqfv51"
         >
           <span
-            class="deposit-status-chip chip-processing is-compact"
+            class="woocommerce-pill css-1qmnemh-Text e15wbhsk0"
           >
-            Processing
+            Pending
           </span>
         </div>
         <div
