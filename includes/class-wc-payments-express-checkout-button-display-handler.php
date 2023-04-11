@@ -9,19 +9,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
-
 /**
  * Class WC_Payments_Express_Checkout_Button_Display_Handler
  */
 class WC_Payments_Express_Checkout_Button_Display_Handler {
-
-	/**
-	 * WC_Payments_Account instance to get information about the account
-	 *
-	 * @var WC_Payments_Account
-	 */
-	private $account;
 
 	/**
 	 * WC_Payment_Gateway_WCPay instance.
@@ -29,13 +20,6 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 * @var WC_Payment_Gateway_WCPay
 	 */
 	private $gateway;
-
-	/**
-	 * Platform_Checkout_Utilities instance.
-	 *
-	 * @var Platform_Checkout_Utilities
-	 */
-	private $platform_checkout_utilities;
 
 	/**
 	 * Instance of WC_Payments_Payment_Request_Button_Handler, created in init function
@@ -54,24 +38,14 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	/**
 	 * Initialize class actions.
 	 *
-	 * @param WC_Payments_Account         $account Account information.
-	 * @param WC_Payment_Gateway_WCPay    $gateway WCPay gateway.
-	 * @param Platform_Checkout_Utilities $platform_checkout_utilities Platform checkout utilities.
+	 * @param WC_Payment_Gateway_WCPay                     $gateway WCPay gateway.
+	 * @param WC_Payments_Payment_Request_Button_Handler   $payment_request_button_handler Payment request button handler.
+	 * @param WC_Payments_Platform_Checkout_Button_Handler $platform_checkout_button_handler Platform checkout button handler.
 	 */
-	public function __construct( WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway, Platform_Checkout_Utilities $platform_checkout_utilities ) {
-		$this->account                     = $account;
-		$this->gateway                     = $gateway;
-		$this->platform_checkout_utilities = $platform_checkout_utilities;
-	}
-
-	/**
-	 * Initialize hooks.
-	 *
-	 * @return  void
-	 */
-	public function init() {
-		$this->payment_request_button_handler   = new WC_Payments_Payment_Request_Button_Handler( $this->account, $this->gateway );
-		$this->platform_checkout_button_handler = new WC_Payments_Platform_Checkout_Button_Handler( $this->account, $this->gateway, $this->platform_checkout_utilities );
+	public function __construct( WC_Payment_Gateway_WCPay $gateway, WC_Payments_Payment_Request_Button_Handler $payment_request_button_handler, WC_Payments_Platform_Checkout_Button_Handler $platform_checkout_button_handler ) {
+		$this->gateway                          = $gateway;
+		$this->payment_request_button_handler   = $payment_request_button_handler;
+		$this->platform_checkout_button_handler = $platform_checkout_button_handler;
 
 		$this->platform_checkout_button_handler->init();
 		$this->payment_request_button_handler->init();

@@ -157,6 +157,20 @@ class WC_Payments {
 	private static $onboarding_service;
 
 	/**
+	 * Instance of WC_Payments_Payment_Request_Button_Handler, created in init function
+	 *
+	 * @var WC_Payments_Payment_Request_Button_Handler
+	 */
+	private static $payment_request_button_handler;
+
+	/**
+	 * Instance of WC_Payments_Platform_Checkout_Button_Handler, created in init function
+	 *
+	 * @var WC_Payments_Platform_Checkout_Button_Handler
+	 */
+	private static $platform_checkout_button_handler;
+
+	/**
 	 * Instance of WC_Payments_Express_Checkout_Button_Display_Handler, created in init function
 	 *
 	 * @var WC_Payments_Express_Checkout_Button_Display_Handler
@@ -483,8 +497,11 @@ class WC_Payments {
 
 		self::$apple_pay_registration = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
 
-		self::$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::$account, self::get_gateway(), self::$platform_checkout_util );
-		self::$express_checkout_button_display_handler->init();
+		self::$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway() );
+
+		self::$platform_checkout_button_handler = new WC_Payments_Platform_Checkout_Button_Handler( self::$account, self::get_gateway(), self::$platform_checkout_util );
+
+		self::$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), self::$payment_request_button_handler, self::$platform_checkout_button_handler );
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
