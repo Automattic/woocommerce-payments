@@ -11,7 +11,8 @@ import { Link } from '@woocommerce/components';
  */
 import strings from './strings';
 import './style.scss';
-import DepositStatusChip from 'components/deposit-status-chip';
+import DepositStatusPill from 'components/deposit-status-pill';
+import Loadable from 'components/loadable';
 import { getDepositDate } from 'deposits/utils';
 import { CachedDeposit } from 'wcpay/types/deposits';
 import { formatCurrency } from 'wcpay/utils/currency';
@@ -23,11 +24,16 @@ interface DepositRowProps {
 }
 
 interface RecentDepositsProps {
-	currency: string | undefined;
+	currency: string;
 }
 
 const tableClass = 'wcpay-deposits-overview__table';
 
+/**
+ * Renders a recent deposits table row.
+ *
+ * @return {JSX.Element} Deposit table row.
+ */
 const DepositTableRow: React.FC< DepositRowProps > = ( {
 	deposit,
 } ): JSX.Element => {
@@ -40,10 +46,31 @@ const DepositTableRow: React.FC< DepositRowProps > = ( {
 				</Link>
 			</FlexItem>
 			<FlexItem className={ `${ tableClass }__cell` }>
-				<DepositStatusChip status={ deposit.status } isCompact />
+				<DepositStatusPill status={ deposit.status } />
 			</FlexItem>
 			<FlexItem className={ `${ tableClass }__cell` }>
 				{ formatCurrency( deposit.amount, deposit.currency ) }
+			</FlexItem>
+		</Flex>
+	);
+};
+
+/**
+ * Renders a recent deposits table row with loading placeholders.
+ *
+ * @return {JSX.Element} Deposit table row with loading placeholders.
+ */
+const DepositTableRowLoading: React.FC = (): JSX.Element => {
+	return (
+		<Flex className={ `${ tableClass }__row` }>
+			<FlexItem className={ `${ tableClass }__cell` }>
+				<Loadable isLoading placeholder="loading" />
+			</FlexItem>
+			<FlexItem className={ `${ tableClass }__cell` }>
+				<Loadable isLoading placeholder="loading" />
+			</FlexItem>
+			<FlexItem className={ `${ tableClass }__cell` }>
+				<Loadable isLoading placeholder="loading" />
 			</FlexItem>
 		</Flex>
 	);
@@ -59,13 +86,13 @@ const DepositTableRow: React.FC< DepositRowProps > = ( {
  */
 const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 	currency,
-}: RecentDepositsProps ): JSX.Element => {
-	const recentDeposits = useRecentDeposits( currency );
-	const isLoading = recentDeposits.isLoading;
+} ): JSX.Element => {
+	const { isLoading, deposits } = useRecentDeposits( currency );
 
-	if ( isLoading || recentDeposits.deposits.length === 0 ) {
+	if ( ! isLoading && deposits.length === 0 ) {
 		return <></>;
 	}
+
 	return (
 		<>
 			{ /* Next Deposit Table */ }
@@ -81,9 +108,11 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 						{ strings.tableHeaders.amount }
 					</FlexItem>
 				</Flex>
-				{ recentDeposits.deposits.map( ( deposit ) => (
-					// eslint-disable-next-line react/jsx-key
-					<DepositTableRow deposit={ deposit } />
+
+				{ isLoading && <DepositTableRowLoading /> }
+
+				{ deposits.map( ( deposit ) => (
+					<DepositTableRow key={ deposit.id } deposit={ deposit } />
 				) ) }
 			</div>
 		</>
