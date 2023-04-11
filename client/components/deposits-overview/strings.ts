@@ -18,7 +18,7 @@ export default {
 			'woocommerce-payments'
 		),
 		businessDayDelay: __(
-			'Deposits may take 1-2 business days to appear in your bank account once dispatched',
+			'Deposits pending or in-transit may take 1-2 business days to appear in your bank account once dispatched',
 			'woocommerce-payments'
 		),
 	},

@@ -5,7 +5,7 @@ import * as React from 'react';
 import { Flex, FlexItem, Icon } from '@wordpress/components';
 import { calendar } from '@wordpress/icons';
 import { Link } from '@woocommerce/components';
-import HelpOutlineIcon from 'gridicons/dist/help-outline';
+import InfoOutlineIcon from 'gridicons/dist/info-outline';
 
 /**
  * Internal dependencies.
@@ -70,27 +70,36 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 	}
 
 	// Add a notice indicating the potential business day delay for pending and in_transit deposits.
-	const depositRows = recentDeposits.deposits.map( ( deposit ) => {
-		let bannerNotice = null;
+	let bannerAdded = false;
+	const depositRows = recentDeposits.deposits
+		.reverse() // reverse the array so that the oldest pending or in_transit deposit has the notice added to it.
+		.map( ( deposit ) => {
+			let bannerNotice = null;
 
-		if ( 'pending' === deposit.status || 'in_transit' === deposit.status ) {
-			bannerNotice = (
-				<BannerNotice
-					status="info"
-					icon={ <HelpOutlineIcon /> }
-					children={ strings.notices.businessDayDelay }
-					isDismissible={ false }
-				/>
+			if (
+				! bannerAdded &&
+				( 'pending' === deposit.status ||
+					'in_transit' === deposit.status )
+			) {
+				bannerNotice = (
+					<BannerNotice
+						status="info"
+						icon={ <InfoOutlineIcon /> }
+						children={ strings.notices.businessDayDelay }
+						isDismissible={ false }
+					/>
+				);
+				bannerAdded = true;
+			}
+
+			return (
+				<>
+					<DepositTableRow deposit={ deposit } />
+					{ bannerNotice }
+				</>
 			);
-		}
-
-		return (
-			<>
-				<DepositTableRow deposit={ deposit } />
-				{ bannerNotice }
-			</>
-		);
-	} );
+		} )
+		.reverse(); // reverse the array back to the original order.
 
 	return (
 		<>
