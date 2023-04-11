@@ -14,6 +14,7 @@ import { Fragment } from '@wordpress/element';
 import strings from './strings';
 import './style.scss';
 import DepositStatusPill from 'components/deposit-status-pill';
+import Loadable from 'components/loadable';
 import { getDepositDate } from 'deposits/utils';
 import { CachedDeposit } from 'wcpay/types/deposits';
 import { formatCurrency } from 'wcpay/utils/currency';
@@ -26,11 +27,16 @@ interface DepositRowProps {
 }
 
 interface RecentDepositsProps {
-	currency: string | undefined;
+	currency: string;
 }
 
 const tableClass = 'wcpay-deposits-overview__table';
 
+/**
+ * Renders a recent deposits table row.
+ *
+ * @return {JSX.Element} Deposit table row.
+ */
 const DepositTableRow: React.FC< DepositRowProps > = ( {
 	deposit,
 } ): JSX.Element => {
@@ -53,6 +59,27 @@ const DepositTableRow: React.FC< DepositRowProps > = ( {
 };
 
 /**
+ * Renders a recent deposits table row with loading placeholders.
+ *
+ * @return {JSX.Element} Deposit table row with loading placeholders.
+ */
+const DepositTableRowLoading: React.FC = (): JSX.Element => {
+	return (
+		<Flex className={ `${ tableClass }__row` }>
+			<FlexItem className={ `${ tableClass }__cell` }>
+				<Loadable isLoading placeholder="loading" />
+			</FlexItem>
+			<FlexItem className={ `${ tableClass }__cell` }>
+				<Loadable isLoading placeholder="loading" />
+			</FlexItem>
+			<FlexItem className={ `${ tableClass }__cell` }>
+				<Loadable isLoading placeholder="loading" />
+			</FlexItem>
+		</Flex>
+	);
+};
+
+/**
  * Renders the Recent Deposit details component.
  *
  * This component includes the recent deposit heading, table and notice.
@@ -62,17 +89,16 @@ const DepositTableRow: React.FC< DepositRowProps > = ( {
  */
 const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 	currency,
-}: RecentDepositsProps ): JSX.Element => {
-	const recentDeposits = useRecentDeposits( currency );
-	const isLoading = recentDeposits.isLoading;
+} ): JSX.Element => {
+	const { isLoading, deposits } = useRecentDeposits( currency );
 
-	if ( isLoading || recentDeposits.deposits.length === 0 ) {
+	if ( ! isLoading && deposits.length === 0 ) {
 		return <></>;
 	}
 
 	// Add a notice indicating the potential business day delay for pending and in_transit deposits.
 	let bannerAdded = false;
-	const depositRows = [ ...recentDeposits.deposits ]
+	const depositRows = [ ...deposits ]
 		.reverse() // reverse the array so that the oldest pending or in_transit deposit has the notice added to it.
 		.map( ( deposit ) => {
 			let bannerNotice = null;
@@ -117,7 +143,7 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 						{ strings.tableHeaders.amount }
 					</FlexItem>
 				</Flex>
-				{ depositRows }
+				{ isLoading ? <DepositTableRowLoading /> : depositRows }
 			</div>
 		</>
 	);
