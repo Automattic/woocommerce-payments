@@ -124,38 +124,39 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 						/>
 					</FlexItem>
 				</Flex>
+				{ /* Deposit includes capital funds notice */ }
+				{ ! isLoading && includesFinancingPayout && (
+					<div className="wcpay-deposits-overview__notices">
+						<BannerNotice
+							status="warning"
+							icon={ <InfoOutlineIcon /> }
+							isDismissible={ false }
+						>
+							{ interpolateComponents( {
+								mixedString:
+									strings.notices.depositIncludesLoan +
+									__(
+										' {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+										'woocommerce-payments'
+									),
+								components: {
+									learnMoreLink: (
+										// eslint-disable-next-line jsx-a11y/anchor-has-content
+										<a
+											href={
+												strings.documentationUrls
+													.capital
+											}
+											target="_blank"
+											rel="noreferrer"
+										/>
+									),
+								},
+							} ) }
+						</BannerNotice>
+					</div>
+				) }
 			</CardBody>
-			{ /* Deposit includes capital funds notice */ }
-			{ ! isLoading && includesFinancingPayout && (
-				<div className="wcpay-deposits-overview__notices">
-					<BannerNotice
-						status="warning"
-						icon={ <InfoOutlineIcon /> }
-						isDismissible={ false }
-					>
-						{ interpolateComponents( {
-							mixedString:
-								strings.notices.depositIncludesLoan +
-								__(
-									' {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-									'woocommerce-payments'
-								),
-							components: {
-								learnMoreLink: (
-									// eslint-disable-next-line jsx-a11y/anchor-has-content
-									<a
-										href={
-											strings.documentationUrls.capital
-										}
-										target="_blank"
-										rel="noreferrer"
-									/>
-								),
-							},
-						} ) }
-					</BannerNotice>
-				</div>
-			) }
 		</>
 	);
 };

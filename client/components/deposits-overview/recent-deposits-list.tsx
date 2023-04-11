@@ -2,7 +2,13 @@
  * External dependencies
  */
 import * as React from 'react';
-import { Flex, FlexItem, Icon } from '@wordpress/components';
+import {
+	CardBody,
+	CardDivider,
+	Flex,
+	FlexItem,
+	Icon,
+} from '@wordpress/components';
 import { calendar } from '@wordpress/icons';
 import { Link } from '@woocommerce/components';
 
@@ -96,7 +102,7 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 	return (
 		<>
 			{ /* Next Deposit Table */ }
-			<div className={ tableClass }>
+			<CardBody className={ tableClass }>
 				<Flex className={ `${ tableClass }__row__header` }>
 					<FlexItem className={ `${ tableClass }__cell` }>
 						{ strings.tableHeaders.recentDepositDate }
@@ -108,13 +114,15 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 						{ strings.tableHeaders.amount }
 					</FlexItem>
 				</Flex>
-
+			</CardBody>
+			<CardDivider />
+			<CardBody>
 				{ isLoading && <DepositTableRowLoading /> }
 
 				{ deposits.map( ( deposit ) => (
 					<DepositTableRow key={ deposit.id } deposit={ deposit } />
 				) ) }
-			</div>
+			</CardBody>
 		</>
 	);
 };

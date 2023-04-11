@@ -51,11 +51,6 @@ const DepositsOverview = (): JSX.Element => {
 			{ /* Only show the next deposit section if the page is loading or if deposits are not blocked. */ }
 			{ ( isLoading || ! account?.deposits_blocked ) && (
 				<>
-					<DepositOverviewSectionHeading
-						title={ strings.nextDeposit.title }
-						text={ strings.nextDeposit.description }
-						isLoading={ isLoading }
-					/>
 					<NextDepositDetails
 						isLoading={ isLoading }
 						overview={ overview }
