@@ -12,6 +12,7 @@ import { render, useState, useEffect } from '@wordpress/element';
 import OnboardingLocationCheckModal from './modal';
 import OnboardingMoreInfoModal from './info-modal';
 import Page from 'components/page';
+import TipBox from 'components/tip-box';
 import strings from './strings';
 import wcpayTracks from 'tracks';
 import Banner from '../banner';
@@ -24,7 +25,6 @@ import Discover from 'assets/images/cards/discover.svg?asset';
 import GPay from 'assets/images/cards/google-pay.svg?asset';
 import JCB from 'assets/images/cards/jcb.svg?asset';
 import UnionPay from 'assets/images/cards/unionpay.svg?asset';
-import LightbulbIcon from 'assets/images/icons/lightbulb.svg?asset';
 import './style.scss';
 
 const LearnMore = () => {
@@ -183,23 +183,20 @@ const ConnectPageInfoNotice = () => {
 
 	return (
 		<>
-			<div className="wcpay-connect-info-notice">
-				<img src={ LightbulbIcon } alt="light bulb icon" />
-				<div>
-					{ strings.infoNotice.description }
-					<Button
-						onClick={ () => {
-							wcpayTracks.recordEvent(
-								wcpayTracks.events
-									.CONNECT_ACCOUNT_KYC_MODAL_OPENED
-							);
-							setModalOpen( true );
-						} }
-					>
-						{ strings.infoNotice.button }
-					</Button>
-				</div>
-			</div>
+			<TipBox color="purple">
+				{ strings.infoNotice.description }{ ' ' }
+				<Button
+					isLink
+					onClick={ () => {
+						wcpayTracks.recordEvent(
+							wcpayTracks.events.CONNECT_ACCOUNT_KYC_MODAL_OPENED
+						);
+						setModalOpen( true );
+					} }
+				>
+					{ strings.infoNotice.button }
+				</Button>
+			</TipBox>
 			{ isModalOpen && (
 				<OnboardingMoreInfoModal
 					handleModalClose={ () => setModalOpen( false ) }

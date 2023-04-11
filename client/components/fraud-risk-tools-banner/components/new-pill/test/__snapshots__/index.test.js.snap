@@ -3,7 +3,7 @@
 exports[`NewPill renders 1`] = `
 <div>
   <span
-    class="wcpay-pill discoverability-card__new-feature-pill"
+    class="woocommerce-pill css-1qmnemh-Text e15wbhsk0"
   >
     New
   </span>
