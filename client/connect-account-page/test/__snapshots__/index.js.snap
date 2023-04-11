@@ -133,13 +133,23 @@ exports[`ConnectAccountPage should render correctly 1`] = `
             You’re only steps away from getting paid
           </h2>
           <div
-            class="wcpay-connect-info-notice"
+            class="wcpay-component-tip-box purple"
           >
-            <img
-              alt="light bulb icon"
-              src="assets/images/icons/lightbulb.svg"
-            />
-            <div>
+            <svg
+              height="24"
+              viewBox="-4 -4 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                clip-rule="evenodd"
+                d="M8 1.33a4.67 4.67 0 0 0-2.67 8.5v1.5c0 .37.3.67.67.67h4c.37 0 .67-.3.67-.67v-1.5A4.66 4.66 0 0 0 8 1.33ZM6 14c0 .37.3.67.67.67h2.66c.37 0 .67-.3.67-.67v-.67H6V14Zm3.33-4.87.57-.4a3.33 3.33 0 1 0-3.8 0l.57.4v1.54h2.66V9.13Z"
+                fill-rule="evenodd"
+              />
+            </svg>
+            <div
+              class="wcpay-component-tip-box__content"
+            >
               In order to receive deposits with 
               <a
                 href="https://woocommerce.com/payments/"
@@ -149,8 +159,9 @@ exports[`ConnectAccountPage should render correctly 1`] = `
                 WooCommerce Payments
               </a>
               , you'll need to share business details to verify who you are.
+               
               <button
-                class="components-button"
+                class="components-button is-link"
                 type="button"
               >
                 Learn more about how to receive deposits.

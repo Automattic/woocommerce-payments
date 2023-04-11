@@ -208,7 +208,7 @@ describe( 'PaymentMethodsCheckboxes', () => {
 
 	it( 'doesnt show the disabled notice pill on payment methods with active and unrequested statuses', () => {
 		const handleChange = () => {};
-		const page = render(
+		render(
 			<PaymentMethodsCheckboxes>
 				<PaymentMethodsCheckbox
 					key={ 'sofort' }
@@ -227,10 +227,9 @@ describe( 'PaymentMethodsCheckboxes', () => {
 			</PaymentMethodsCheckboxes>
 		);
 
-		expect( page.container ).not.toContainHTML(
-			'<span class="wcpay-pill payment-status-inactive">' +
-				'<span class="woocommerce-pill css-1qmnemh-Text e15wbhsk0">' +
-				'Contact WooCommerce Support</span></span>'
-		);
+		// Test that the Contact support pill content isn't shown
+		expect(
+			screen.queryByText( 'Contact WooCommerce Support' )
+		).not.toBeInTheDocument();
 	} );
 } );
