@@ -28,7 +28,7 @@ exports[`Deposits Overview footer renders Component Renders 1`] = `
 exports[`Deposits Overview information Component Renders 1`] = `
 <div>
   <div
-    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+    class="components-card is-size-medium wcpay-deposits-overview css-1xs3c37-CardUI e1q7k77g0"
   >
     <div
       class="components-flex components-card__header is-size-medium e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"

@@ -42,6 +42,11 @@ const mockAccount: AccountOverview.Account = {
 
 declare const global: {
 	wcpaySettings: {
+		accountStatus: {
+			deposits: {
+				completed_waiting_period: boolean;
+			};
+		};
 		accountDefaultCurrency: string;
 		zeroDecimalCurrencies: string[];
 		currencyData: Record< string, any >;
@@ -174,6 +179,11 @@ const mockOverviews = ( currencies: AccountOverview.Overview[] ) => {
 describe( 'Deposits Overview information', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
+			accountStatus: {
+				deposits: {
+					completed_waiting_period: true,
+				},
+			},
 			accountDefaultCurrency: 'USD',
 			zeroDecimalCurrencies: [],
 			connect: {
@@ -335,6 +345,26 @@ describe( 'Deposits Overview information', () => {
 				name: 'Learn more',
 			} )
 		).toBeFalsy();
+	} );
+
+	test( 'Confirm new account waiting period notice does not show', () => {
+		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = true;
+		const { queryByText } = render( <DepositsOverview /> );
+		expect(
+			queryByText( 'Your first deposit is held for seven business days' )
+		).toBeFalsy();
+	} );
+
+	test( 'Confirm new account waiting period notice shows', () => {
+		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = false;
+		const { getByText, getByRole } = render( <DepositsOverview /> );
+		getByText( /Your first deposit is held for seven business days/, {
+			ignore: '.a11y-speak-region',
+		} );
+		expect( getByRole( 'link', { name: /Why\?/ } ) ).toHaveAttribute(
+			'href',
+			'https://woocommerce.com/document/woocommerce-payments/deposits/deposit-schedule/#section-1'
+		);
 	} );
 } );
 

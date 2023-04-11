@@ -12,7 +12,6 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies.
  */
 import strings from './strings';
-import './style.scss';
 import Loadable from 'components/loadable';
 import { getNextDeposit } from './utils';
 import DepositStatusPill from 'components/deposit-status-pill';
