@@ -42,6 +42,9 @@
 		}
 		.wcpay-banner-notice.components-notice {
 			margin: 0 24px;
+			&:last-child {
+				margin-bottom: 16px;
+			}
 		}
 		&__cell {
 			display: flex;
