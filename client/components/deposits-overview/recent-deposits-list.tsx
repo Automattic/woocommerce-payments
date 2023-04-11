@@ -5,6 +5,7 @@ import * as React from 'react';
 import { Flex, FlexItem, Icon } from '@wordpress/components';
 import { calendar } from '@wordpress/icons';
 import { Link } from '@woocommerce/components';
+import HelpOutlineIcon from 'gridicons/dist/help-outline';
 
 /**
  * Internal dependencies.
@@ -17,6 +18,7 @@ import { CachedDeposit } from 'wcpay/types/deposits';
 import { formatCurrency } from 'wcpay/utils/currency';
 import { getDetailsURL } from 'wcpay/components/details-link';
 import useRecentDeposits from './hooks';
+import BannerNotice from '../banner-notice';
 
 interface DepositRowProps {
 	deposit: CachedDeposit;
@@ -60,12 +62,77 @@ const DepositTableRow: React.FC< DepositRowProps > = ( {
 const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 	currency,
 }: RecentDepositsProps ): JSX.Element => {
-	const recentDeposits = useRecentDeposits( currency );
+	//const recentDeposits = useRecentDeposits( currency );
+	const recentDeposits = {
+		isLoading: false,
+		deposits: [
+			{
+				id: '1',
+				date: '2023-04-10',
+				type: 'deposit',
+				amount: 2982,
+				currency: 'USD',
+				fee_percentage: 0,
+				fee: 0,
+				status: 'pending',
+				bankAccount: '123456789',
+				automatic: true,
+			} as CachedDeposit,
+			{
+				id: '2',
+				date: '2023-03-09',
+				type: 'deposit',
+				amount: 13721,
+				currency: 'USD',
+				fee_percentage: 0,
+				fee: 0,
+				status: 'paid',
+				bankAccount: '987654321',
+				automatic: true,
+			} as CachedDeposit,
+			{
+				id: '2',
+				date: '2023-02-09',
+				type: 'deposit',
+				amount: 12314,
+				currency: 'USD',
+				fee_percentage: 0,
+				fee: 0,
+				status: 'paid',
+				bankAccount: '987654321',
+				automatic: true,
+			} as CachedDeposit,
+		],
+	};
 	const isLoading = recentDeposits.isLoading;
 
 	if ( isLoading || recentDeposits.deposits.length === 0 ) {
 		return <></>;
 	}
+
+	// Add a notice indicating the potential business day delay for pending and in_transit deposits.
+	const depositRows = recentDeposits.deposits.map( ( deposit ) => {
+		let bannerNotice = null;
+
+		if ( 'pending' === deposit.status || 'in_transit' === deposit.status ) {
+			bannerNotice = (
+				<BannerNotice
+					status="info"
+					icon={ <HelpOutlineIcon /> }
+					children={ strings.notices.businessDayDelay }
+					isDismissible={ false }
+				/>
+			);
+		}
+
+		return (
+			<>
+				<DepositTableRow deposit={ deposit } />
+				{ bannerNotice }
+			</>
+		);
+	} );
+
 	return (
 		<>
 			{ /* Next Deposit Table */ }
@@ -81,10 +148,7 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 						{ strings.tableHeaders.amount }
 					</FlexItem>
 				</Flex>
-				{ recentDeposits.deposits.map( ( deposit ) => (
-					// eslint-disable-next-line react/jsx-key
-					<DepositTableRow deposit={ deposit } />
-				) ) }
+				{ depositRows }
 			</div>
 		</>
 	);
