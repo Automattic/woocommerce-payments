@@ -72,7 +72,7 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 
 	// Add a notice indicating the potential business day delay for pending and in_transit deposits.
 	let bannerAdded = false;
-	const depositRows = recentDeposits.deposits
+	const depositRows = [ ...recentDeposits.deposits ]
 		.reverse() // reverse the array so that the oldest pending or in_transit deposit has the notice added to it.
 		.map( ( deposit ) => {
 			let bannerNotice = null;
