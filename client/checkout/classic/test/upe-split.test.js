@@ -2,12 +2,12 @@
  * Internal dependencies
  */
 import * as CheckoutUtils from 'utils/checkout';
-import {
-	isUsingSavedPaymentMethod,
-	getSetupIntentFromSession,
-} from '../upe-split';
+import { getSetupIntentFromSession } from '../upe-split';
 
-import { getSelectedUPEGatewayPaymentMethod } from 'wcpay/checkout/utils/upe';
+import {
+	getSelectedUPEGatewayPaymentMethod,
+	isUsingSavedPaymentMethod,
+} from 'wcpay/checkout/utils/upe';
 
 describe( 'UPE split checkout', () => {
 	describe( 'isUsingSavedPaymentMethod', () => {

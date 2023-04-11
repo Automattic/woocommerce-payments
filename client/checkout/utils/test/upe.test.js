@@ -6,7 +6,15 @@ import {
 	getCookieValue,
 	isWCPayChosen,
 	getPaymentIntentFromSession,
+	generateCheckoutEventNames,
 } from '../upe';
+import { getPaymentMethodsConstants } from '../../constants';
+
+jest.mock( '../../constants', () => {
+	return {
+		getPaymentMethodsConstants: jest.fn(),
+	};
+} );
 
 describe( 'UPE checkout utils', () => {
 	describe( 'getTerms', () => {
@@ -154,6 +162,29 @@ describe( 'UPE checkout utils', () => {
 			expect(
 				getPaymentIntentFromSession( paymentMethodsConfig, 'card' )
 			).toEqual( {} );
+		} );
+	} );
+
+	describe( 'generateCheckoutEventNames', () => {
+		it( 'should return empty string when there are no payment methods', () => {
+			getPaymentMethodsConstants.mockImplementation( () => [] );
+
+			const result = generateCheckoutEventNames();
+
+			expect( result ).toEqual( '' );
+		} );
+
+		it( 'should generate correct event names when there are payment methods', () => {
+			getPaymentMethodsConstants.mockImplementation( () => [
+				'woocommerce_payments_bancontact',
+				'woocommerce_payments_eps',
+			] );
+
+			const result = generateCheckoutEventNames();
+
+			expect( result ).toEqual(
+				'checkout_place_order_woocommerce_payments_bancontact checkout_place_order_woocommerce_payments_eps'
+			);
 		} );
 	} );
 } );
