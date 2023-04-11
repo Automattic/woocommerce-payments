@@ -74,24 +74,30 @@ const DepositsOverview = (): JSX.Element => {
 				</>
 			) }
 
-			{ ! isLoading &&
-				!! account &&
-				( account.deposits_blocked ? (
-					<DepositOverviewSectionHeading
-						title={ strings.depositHistoryHeading }
-						children={ <SuspendedDepositNotice /> }
-					/>
-				) : (
-					<DepositOverviewSectionHeading
-						title={ strings.depositHistoryHeading }
-						text={
-							<DepositSchedule { ...account.deposits_schedule } />
-						}
-					/>
-				) ) }
+			{ completedWaitingPeriod && (
+				<>
+					{ ! isLoading &&
+						!! account &&
+						( account.deposits_blocked ? (
+							<DepositOverviewSectionHeading
+								title={ strings.depositHistoryHeading }
+								children={ <SuspendedDepositNotice /> }
+							/>
+						) : (
+							<DepositOverviewSectionHeading
+								title={ strings.depositHistoryHeading }
+								text={
+									<DepositSchedule
+										{ ...account.deposits_schedule }
+									/>
+								}
+							/>
+						) ) }
 
-			{ overview?.currency && (
-				<RecentDepositsList currency={ overview.currency } />
+					{ overview?.currency && (
+						<RecentDepositsList currency={ overview.currency } />
+					) }
+				</>
 			) }
 
 			<DepositsOverviewFooter />
