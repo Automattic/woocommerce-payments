@@ -102,7 +102,7 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 	return (
 		<>
 			{ /* Next Deposit Table */ }
-			<CardBody className={ tableClass }>
+			<CardBody className={ `${ tableClass }__container` }>
 				<Flex className={ `${ tableClass }__row__header` }>
 					<FlexItem className={ `${ tableClass }__cell` }>
 						{ strings.tableHeaders.recentDepositDate }
@@ -116,7 +116,7 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 				</Flex>
 			</CardBody>
 			<CardDivider />
-			<CardBody>
+			<CardBody className={ `${ tableClass }__container` }>
 				{ isLoading && <DepositTableRowLoading /> }
 
 				{ deposits.map( ( deposit ) => (
