@@ -10,7 +10,7 @@ import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 /**
  * Internal dependencies.
  */
-import { useAllDepositsOverviews } from 'wcpay/data';
+import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
 import strings from './strings';
 import NextDepositDetails from './next-deposit';
 import RecentDepositsList from './recent-deposits-list';
@@ -22,19 +22,9 @@ import BannerNotice from 'wcpay/components/banner-notice';
 import './style.scss';
 
 const DepositsOverview = (): JSX.Element => {
-	const {
-		overviews,
-		isLoading,
-	} = useAllDepositsOverviews() as AccountOverview.OverviewsResponse;
-
-	const completedWaitingPeriod = (
-		wcpaySettings.accountStatus.deposits || {}
-	).completed_waiting_period;
-
-	const { currencies, account } = overviews;
-
-	const overview = currencies[ 0 ]; // TODO: To handle multiple currencies we'll need to fetch the currently selected currency.
-	const currency = 'usd'; // TODO: hardcoded curency for recent deposits.
+	const { account, overview, isLoading } = useSelectedCurrencyOverview();
+	const completedWaitingPeriod =
+		wcpaySettings.accountStatus.deposits?.completed_waiting_period;
 
 	const userHasNotFinishedNewAccountWaitingPeriodNotice = createInterpolateElement(
 		/* translators: <link> - link to WCPay deposit schedule docs. */
@@ -59,7 +49,7 @@ const DepositsOverview = (): JSX.Element => {
 			<CardHeader>{ strings.heading }</CardHeader>
 
 			{ /* Only show the next deposit section if the page is loading or if deposits are not blocked. */ }
-			{ ( isLoading || ! account.deposits_blocked ) && (
+			{ ( isLoading || ! account?.deposits_blocked ) && (
 				<>
 					<DepositOverviewSectionHeading
 						title={ strings.nextDeposit.title }
@@ -85,6 +75,7 @@ const DepositsOverview = (): JSX.Element => {
 			) }
 
 			{ ! isLoading &&
+				!! account &&
 				( account.deposits_blocked ? (
 					<DepositOverviewSectionHeading
 						title={ strings.depositHistoryHeading }
@@ -99,7 +90,9 @@ const DepositsOverview = (): JSX.Element => {
 					/>
 				) ) }
 
-			<RecentDepositsList currency={ currency } />
+			{ overview?.currency && (
+				<RecentDepositsList currency={ overview.currency } />
+			) }
 
 			<DepositsOverviewFooter />
 		</Card>
