@@ -6,6 +6,7 @@ import { Flex, FlexItem, Icon } from '@wordpress/components';
 import { calendar } from '@wordpress/icons';
 import { Link } from '@woocommerce/components';
 import InfoOutlineIcon from 'gridicons/dist/info-outline';
+import { Fragment } from '@wordpress/element';
 
 /**
  * Internal dependencies.
@@ -93,10 +94,10 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 			}
 
 			return (
-				<>
+				<Fragment key={ deposit.id }>
 					<DepositTableRow deposit={ deposit } />
 					{ bannerNotice }
-				</>
+				</Fragment>
 			);
 		} )
 		.reverse(); // reverse the array back to the original order.
