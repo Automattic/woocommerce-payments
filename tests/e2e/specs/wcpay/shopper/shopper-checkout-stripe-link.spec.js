@@ -31,6 +31,15 @@ describe( 'Link with enabled UPE', () => {
 			await shopper.login();
 		} );
 
+		beforeEach( async () => {
+			const delay = Math.floor( Math.random() * 20 ); // generate a random number between 0 and 20
+			console.log( `Delaying for ${ delay } seconds...` );
+
+			setTimeout( () => {
+				console.log( 'Delay complete.' );
+			}, delay * 1000 );
+		} );
+
 		afterAll( async () => {
 			await merchant.login();
 			await merchantWCP.disablePaymentMethod(
@@ -123,6 +132,15 @@ describe( 'Link with enabled UPE', () => {
 			await merchantWCP.enablePaymentMethod( linkPaymentsCheckbox );
 			await merchant.logout();
 			await shopper.login();
+		} );
+
+		beforeEach( async () => {
+			const delay = Math.floor( Math.random() * 20 ); // generate a random number between 0 and 20
+			console.log( `Delaying for ${ delay } seconds...` );
+
+			setTimeout( () => {
+				console.log( 'Delay complete.' );
+			}, delay * 1000 );
 		} );
 
 		afterAll( async () => {
