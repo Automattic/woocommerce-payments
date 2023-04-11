@@ -4,7 +4,6 @@
  */
 import { render, screen } from '@testing-library/react';
 import React from 'react';
-import moment from 'moment';
 
 /**
  * Internal dependencies
@@ -216,20 +215,14 @@ describe( 'PaymentDetailsSummary', () => {
 	describe( 'capture notification', () => {
 		beforeAll( () => {
 			// Mock current date and time to fixed value in moment
-			const fixedCurrentDate = new Date( '2023-03-29T05:43:00.000Z' );
-			jest.spyOn( moment, 'now' ).mockImplementation( () =>
+			const fixedCurrentDate = new Date( '2023-03-29T05:20:00.000Z' );
+			jest.spyOn( Date, 'now' ).mockImplementation( () =>
 				fixedCurrentDate.getTime()
 			);
-
-			global.wcSettings = {
-				locale: {
-					siteLocale: 'en_US',
-				},
-			};
 		} );
 
 		afterAll( () => {
-			jest.spyOn( moment, 'now' ).mockRestore();
+			jest.spyOn( Date, 'now' ).mockRestore();
 		} );
 
 		test( 'renders capture section correctly', () => {
@@ -239,7 +232,7 @@ describe( 'PaymentDetailsSummary', () => {
 					charge_id: 'ch_mock',
 					amount: 1000,
 					currency: 'usd',
-					created: moment().toISOString(),
+					created: new Date( Date.now() ).toISOString(),
 					order_id: 123,
 					risk_level: 1,
 					customer_country: 'US',
@@ -266,7 +259,7 @@ describe( 'PaymentDetailsSummary', () => {
 					'payment-details-capture-notice__text'
 				)[ 0 ].innerHTML
 			).toMatch(
-				`You need to <a href=\"https://woocommerce.com/document/woocommerce-payments/settings-guide/authorize-and-capture/#capturing-authorized-orders\" target=\"_blank\" rel=\"noreferer\">capture</a> this charge in <abbr title=\"Apr 5, 2023 / 5:43AM\"><b>5 days</b></abbr>`
+				`You need to <a href=\"https://woocommerce.com/document/woocommerce-payments/settings-guide/authorize-and-capture/#capturing-authorized-orders\" target=\"_blank\" rel=\"noreferer\">capture</a> this charge in <abbr title=\"Apr 4, 2023 / 9:20PM\"><b>7 days</b></abbr>`
 			);
 
 			expect( container ).toMatchSnapshot();

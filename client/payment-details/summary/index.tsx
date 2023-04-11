@@ -6,8 +6,7 @@
 import { sprintf, __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import { Card, CardBody, CardFooter, CardDivider } from '@wordpress/components';
-// @ts-expect-error - types are not available for the minified locales version
-import moment from 'moment/min/moment-with-locales';
+import moment from 'moment';
 import React, { useContext } from 'react';
 import { createInterpolateElement } from '@wordpress/element';
 
@@ -176,6 +175,51 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		fraudOutcome,
 		paymentIntent
 	);
+
+	const relativeTimeRemaining = ( deadlineDate: number ): string => {
+		const timeRemaining = deadlineDate - Date.now();
+
+		const minutesRemaining = Math.ceil( timeRemaining / 1000 / 60 );
+		const hoursRemaining = Math.ceil( timeRemaining / 1000 / 60 / 60 );
+		const daysRemaining = Math.ceil( timeRemaining / 1000 / 60 / 60 / 24 );
+
+		if ( minutesRemaining < 60 ) {
+			if ( minutesRemaining === 1 ) {
+				return sprintf(
+					__( '%d minute', 'woocommerce-payments' ),
+					minutesRemaining
+				);
+			}
+			return sprintf(
+				__( '%d minutes', 'woocommerce-payments' ),
+				minutesRemaining
+			);
+		}
+
+		if ( hoursRemaining < 24 ) {
+			if ( hoursRemaining === 1 ) {
+				return sprintf(
+					__( '%d hour', 'woocommerce-payments' ),
+					hoursRemaining
+				);
+			}
+			return sprintf(
+				__( '%d hours', 'woocommerce-payments' ),
+				hoursRemaining
+			);
+		}
+
+		if ( daysRemaining === 1 ) {
+			return sprintf(
+				__( '%d day', 'woocommerce-payments' ),
+				daysRemaining
+			);
+		}
+		return sprintf(
+			__( '%d days', 'woocommerce-payments' ),
+			daysRemaining
+		);
+	};
 
 	return (
 		<Card>
@@ -388,31 +432,54 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 									<abbr
 										title={ dateI18n(
 											'M j, Y / g:iA',
-											moment
-												.utc( authorization.created )
-												.add( 7, 'days' )
+											new Date(
+												Date.UTC(
+													new Date(
+														authorization.created
+													).getFullYear(),
+													new Date(
+														authorization.created
+													).getMonth(),
+													new Date(
+														authorization.created
+													).getDate() + 7,
+													new Date(
+														authorization.created
+													).getHours(),
+													new Date(
+														authorization.created
+													).getMinutes(),
+													new Date(
+														authorization.created
+													).getSeconds()
+												)
+											)
 										) }
 									>
 										<b>
-											{ sprintf(
-												// eslint-disable-next-line @wordpress/i18n-no-placeholders-only
-												__(
-													'%s',
-													'woocommerce-payments'
-												),
-												// Wrapped in __() to ensure translation of relative time strings inserted by moment.fromNow() (e.g. "days", "hours", "minutes", etc.)
-												moment
-													.utc(
-														authorization.created
+											{ relativeTimeRemaining(
+												new Date(
+													Date.UTC(
+														new Date(
+															authorization.created
+														).getFullYear(),
+														new Date(
+															authorization.created
+														).getMonth(),
+														new Date(
+															authorization.created
+														).getDate() + 7,
+														new Date(
+															authorization.created
+														).getHours(),
+														new Date(
+															authorization.created
+														).getMinutes(),
+														new Date(
+															authorization.created
+														).getSeconds()
 													)
-													.locale(
-														window.wcSettings.locale.siteLocale.substring(
-															0,
-															2
-														)
-													)
-													.add( 7, 'days' )
-													.fromNow( true )
+												).valueOf()
 											) }
 										</b>
 									</abbr>
