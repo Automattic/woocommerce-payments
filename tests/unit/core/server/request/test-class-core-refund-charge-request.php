@@ -62,6 +62,10 @@ class Refund_Charge_Test extends WCPAY_UnitTestCase {
 		$this->addToAssertionCount( 1 ); // We're not asserting anything, just not expecting an exception.
 	}
 
+	public function test_refund_charge_request_class_is_using_correct_http_method() {
+		$request = new Refund_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client, 'ch_mock' );
+		$this->assertSame( 'POST', $request->get_method() );
+	}
 	public function test_refund_charge_request_class_is_created() {
 		$request = new Refund_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client, 'ch_mock' );
 		$this->assertSame( WC_Payments_API_Client::REFUNDS_API . '/ch_mock', $request->get_api() );

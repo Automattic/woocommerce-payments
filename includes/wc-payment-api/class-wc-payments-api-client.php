@@ -212,23 +212,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * List refunds
-	 *
-	 * @param string $charge_id - The charge to retrieve the list of refunds for.
-	 *
-	 * @return array
-	 * @throws API_Exception - Exception thrown on request failure.
-	 */
-	public function list_refunds( $charge_id ) {
-		$request = [
-			'limit'  => 100,
-			'charge' => $charge_id,
-		];
-
-		return $this->request( $request, self::REFUNDS_API, self::GET );
-	}
-
-	/**
 	 * Fetch a single intent with provided id.
 	 *
 	 * @param string $intent_id intent id.

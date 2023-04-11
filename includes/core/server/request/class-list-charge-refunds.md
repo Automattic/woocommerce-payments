@@ -8,7 +8,7 @@ The `WCPay\Core\Server\Request\List_Charge_Refunds` class is used to construct t
 
 ## Parameters
 
-When creating `List_Charge_Refunds` requests, the item ID must be provided to the `::create()` method. The identifier should be in the `ch_XXX` format.
+When creating `List_Charge_Refunds` requests, the item ID must be provided to the `::create()` method. The identifier should be in the `ch_XXX` or `py_YYY` format.
 
 | Parameter | Setter                    | Immutable | Required | Default value |
 |-----------|---------------------------|:---------:|:--------:|:-------------:|
