@@ -134,6 +134,10 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		$this->onboarding_service = new WC_Payments_Onboarding_Service( $this->mock_api_client, $this->mock_database_cache );
 	}
 
+	public function test_filters_registered_properly() {
+		$this->assertNotFalse( has_filter( 'wcpay_dev_mode', [ $this->onboarding_service, 'maybe_enable_dev_mode' ] ) );
+	}
+
 	public function test_get_required_verification_information() {
 		$mock_requirements = [ 'requirement1', 'requirement2', 'requirement3' ];
 
