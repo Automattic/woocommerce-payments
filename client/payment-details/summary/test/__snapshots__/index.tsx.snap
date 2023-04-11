@@ -1888,7 +1888,7 @@ exports[`PaymentDetailsSummary renders the fraud outcome buttons 1`] = `
             title="Sep 26, 2019 / 1:24PM"
           >
             <b>
-              -1861490 minutes
+              -1861542 minutes
             </b>
           </abbr>
           . Approving this transaction will capture the charge.
