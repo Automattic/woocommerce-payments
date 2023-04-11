@@ -21,7 +21,7 @@ import BannerNotice from 'wcpay/components/banner-notice';
 
 type NextDepositProps = {
 	isLoading: boolean;
-	overview: AccountOverview.Overview;
+	overview?: AccountOverview.Overview;
 };
 
 /**
