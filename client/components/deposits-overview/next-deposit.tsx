@@ -14,14 +14,14 @@ import { __ } from '@wordpress/i18n';
 import strings from './strings';
 import Loadable from 'components/loadable';
 import { getNextDeposit } from './utils';
-import DepositStatusChip from 'components/deposit-status-chip';
+import DepositStatusPill from 'components/deposit-status-pill';
 import { getDepositDate } from 'deposits/utils';
 import { useDepositIncludesLoan } from 'wcpay/data';
 import BannerNotice from 'wcpay/components/banner-notice';
 
 type NextDepositProps = {
 	isLoading: boolean;
-	overview: AccountOverview.Overview;
+	overview?: AccountOverview.Overview;
 };
 
 /**
@@ -84,9 +84,8 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 							isLoading={ isLoading }
 							placeholder="Estimated"
 							children={
-								<DepositStatusChip
+								<DepositStatusPill
 									status={ nextDeposit.status }
-									isCompact
 								/>
 							}
 						/>
