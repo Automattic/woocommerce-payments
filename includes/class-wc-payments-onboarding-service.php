@@ -134,11 +134,20 @@ class WC_Payments_Onboarding_Service {
 
 	/**
 	 * Enable onboarding test mode.
-	 * This will enable WCPay dev mode.
+	 * This will enable WCPay dev mode immediately.
 	 */
-	public static function enable_test_mode() {
+	public static function enable_test_mode(): void {
 		add_option( self::TEST_MODE_OPTION, true );
 		// Ensure dev mode is enabled immediately.
 		WC_Payments::mode()->dev();
+	}
+
+	/**
+	 * Returns whether onboarding test mode is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_test_mode_enabled(): bool {
+		return get_option( self::TEST_MODE_OPTION, false );
 	}
 }
