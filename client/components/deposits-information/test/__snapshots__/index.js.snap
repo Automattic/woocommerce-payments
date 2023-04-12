@@ -510,10 +510,10 @@ exports[`Deposits information renders instant deposit button only where applicab
           data-testid="extra"
         >
           <button
-            class="components-button is-secondary"
+            class="components-button is-primary"
             type="button"
           >
-            Instant deposit
+            Deposit available funds
           </button>
         </div>
       </div>
