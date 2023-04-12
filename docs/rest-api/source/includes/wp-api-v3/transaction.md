@@ -11,7 +11,7 @@ The transaction API allows you to get data related to transactions.
 | Attribute | Type    | Description                                        |
 |-----------|---------|----------------------------------------------------|
 | `transaction_id` | string | Unique identifier of the transaction.	|
-| `type` | string  | Type of transaction. Possible values include charge, payment, dispute, refund, refund_failure etc. |
+| `type` | string  | Type of transaction. Possible values include `charge`, `payment`, `dispute`, `refund`, `refund_failure` etc. |
 | `channel` | string  | Channel over which the transaction was processed. Possible values are `online` or `in_person` . |
 | `source` | string  | Source of the transaction. Value is the Card Brand or Payment Method Type. |
 | `source_identifier` | string  | Identifier for the source. In case of card, the value will be the last four digits of the card. |
