@@ -1034,6 +1034,22 @@ class WC_Payments_Account {
 					'phone'      => ! $progressive && 'individual' === $business_type ? ( $prefill_data['phone'] ?? null ) : null,
 				],
 			];
+		} elseif ( $test_mode ) {
+			$account_data = [
+				'country'       => 'US',
+				'business_type' => 'individual',
+				'individual'    => [
+					'first_name' => 'John',
+					'last_name'  => 'Wooliams',
+					'address'    => [
+						'country'     => 'US',
+						'state'       => 'California',
+						'city'        => 'South San Francisco',
+						'line1'       => '1040 Grand Ave',
+						'postal_code' => '94080',
+					],
+				],
+			];
 		} else {
 			$account_data = [];
 		}
