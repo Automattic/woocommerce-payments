@@ -24,6 +24,6 @@ When using this request, provide the following filter and arguments:
 
 ```php
 $request = Get_Account_Login_Data::create();
-$request->set_test_mode_only_when_dev_mode();
+$request->set_test_mode_according_to_dev_mode();
 $request->send( 'wpcay_get_account_login_data' );
 ```
