@@ -20,7 +20,6 @@ import { __ } from '@wordpress/i18n';
 import strings from './strings';
 import Loadable from 'components/loadable';
 import { getNextDeposit } from './utils';
-import DepositOverviewSectionHeading from './section-heading';
 import DepositStatusPill from 'components/deposit-status-pill';
 import { getDepositDate } from 'deposits/utils';
 import { useDepositIncludesLoan } from 'wcpay/data';
