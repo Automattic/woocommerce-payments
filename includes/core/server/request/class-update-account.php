@@ -62,17 +62,10 @@ class Update_Account extends Request {
 			$param_setter = 'set_' . $param_name;
 
 			if ( ! method_exists( static::class, $param_setter ) ) {
-				throw new Invalid_Request_Parameter_Exception(
-					sprintf(
-						/* translators: %s: parameter name */
-						__( 'No existing setter for provided parameter: %s', 'woocommerce-payments' ),
-						$param_name
-					),
-					'wcpay_core_invalid_request_parameter_no_existing_setter'
-				);
+				continue;
 			}
 
-			call_user_func( [ $wcpay_request, $param_setter ], $value );
+			$wcpay_request->{$param_setter}( $value );
 		}
 
 		return $wcpay_request;

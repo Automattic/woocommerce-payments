@@ -65,10 +65,15 @@ class Update_Account_Test extends WCPAY_UnitTestCase {
 		Update_Account::from_account_settings( [] );
 	}
 
-	public function test_from_account_settings_with_no_existing_setter_for_param_will_throw_exception() {
+	public function test_from_account_settings_with_non_existing_param_continue_to_run() {
+		$none_existing_param = 'none_existing_param';
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
-		$this->expectExceptionMessage( 'No existing setter for provided parameter: test_param' );
+		$this->expectExceptionMessage( "The passed key $none_existing_param does not exist in Request class" );
 
-		Update_Account::from_account_settings( [ 'test_param' => 'test_value' ] );
+		// Do not throw any error at this point as the code continues to run even with a non-existing param.
+		$request = Update_Account::from_account_settings( [ $none_existing_param => 'test_value' ] );
+
+		// Check this non-existing param will throw exception.
+		$request->get_param( $none_existing_param );
 	}
 }
