@@ -15,6 +15,7 @@ import { getCurrencyTabTitle } from './utils';
 import BalanceBlock from './balance-block';
 import BalanceTooltip from './balance-tooltip';
 import { documentationUrls, fundLabelStrings } from './strings';
+import * as AccountOverview from 'wcpay/types/account-overview';
 
 /**
  * BalanceTab

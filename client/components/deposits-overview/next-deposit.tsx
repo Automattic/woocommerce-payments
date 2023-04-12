@@ -18,6 +18,7 @@ import DepositStatusPill from 'components/deposit-status-pill';
 import { getDepositDate } from 'deposits/utils';
 import { useDepositIncludesLoan } from 'wcpay/data';
 import BannerNotice from 'wcpay/components/banner-notice';
+import * as AccountOverview from 'wcpay/types/account-overview';
 
 type NextDepositProps = {
 	isLoading: boolean;

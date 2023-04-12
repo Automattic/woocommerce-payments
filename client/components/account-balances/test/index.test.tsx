@@ -16,6 +16,7 @@ import { useCurrentWpUser } from '../hooks';
 import { useAllDepositsOverviews } from 'wcpay/data';
 import { documentationUrls } from '../strings';
 import { useSelectedCurrency } from 'wcpay/overview/hooks';
+import * as AccountOverview from 'wcpay/types/account-overview';
 
 const mockUser = {
 	id: 123,
@@ -163,7 +164,7 @@ const createMockOverview = (
 			date: Date.now(),
 			fee: 0,
 			fee_percentage: 0,
-			status: 'scheduled',
+			status: 'estimated',
 		},
 		instant: {
 			currency: currencyCode,

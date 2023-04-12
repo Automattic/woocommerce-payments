@@ -2,11 +2,13 @@
  * Internal dependencies
  */
 import { formatCurrency } from 'utils/currency';
+import { DepositStatus } from 'wcpay/types/deposits';
+import * as AccountOverview from 'wcpay/types/account-overview';
 
 type NextDepositTableData = {
 	id?: string;
 	date: number;
-	status: string;
+	status: DepositStatus;
 	amount: string;
 };
 

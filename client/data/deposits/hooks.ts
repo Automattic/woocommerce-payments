@@ -17,6 +17,7 @@ import {
 	DepositsSummaryCache,
 } from 'wcpay/types/deposits';
 import { Transaction } from 'wcpay/data/transactions';
+import * as AccountOverview from 'wcpay/types/account-overview';
 
 export const useDeposit = (
 	id: string

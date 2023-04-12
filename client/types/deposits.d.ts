@@ -21,13 +21,7 @@ export interface CachedDeposit {
 	currency: string;
 	fee_percentage: number;
 	fee: number;
-	status:
-		| 'paid'
-		| 'pending'
-		| 'in_transit'
-		| 'canceled'
-		| 'failed'
-		| 'estimated';
+	status: DepositStatus;
 	bankAccount: string;
 	automatic: boolean;
 }
@@ -43,3 +37,11 @@ export interface DepositsSummary {
 	total: number;
 	currency: string;
 }
+
+export type DepositStatus =
+	| 'paid'
+	| 'pending'
+	| 'in_transit'
+	| 'canceled'
+	| 'failed'
+	| 'estimated';

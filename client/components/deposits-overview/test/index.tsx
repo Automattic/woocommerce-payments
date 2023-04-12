@@ -9,7 +9,7 @@ import { render } from '@testing-library/react';
  */
 import DepositsOverview from '..';
 import NextDepositDetails from '../next-deposit';
-import { CachedDeposit } from 'wcpay/types/deposits';
+import { CachedDeposit, DepositStatus } from 'wcpay/types/deposits';
 import RecentDepositsList from '../recent-deposits-list';
 import DepositsOverviewFooter from '../footer';
 import DepositSchedule from '../deposit-schedule';
@@ -17,6 +17,7 @@ import SuspendedDepositNotice from '../suspended-deposit-notice';
 import { useDepositIncludesLoan, useDeposits } from 'wcpay/data';
 import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
 import strings from '../strings';
+import * as AccountOverview from 'wcpay/types/account-overview';
 
 jest.mock( 'wcpay/data', () => ( {
 	useDepositIncludesLoan: jest.fn(),
@@ -82,7 +83,7 @@ const createMockOverview = (
 	currencyCode: string,
 	depositAmount: number,
 	depositDate: number,
-	depositStatus: string
+	depositStatus: DepositStatus
 ): AccountOverview.Overview => {
 	return {
 		currency: currencyCode,
@@ -263,16 +264,6 @@ describe( 'Deposits Overview information', () => {
 		expect( getByText( 'October 1, 2021' ) ).toBeTruthy();
 	} );
 
-	test( 'Confirm next deposit default status and date', () => {
-		const overview = createMockOverview( 'usd', 100, 0, 'rubbish' );
-
-		const { getByText } = render(
-			<NextDepositDetails isLoading={ false } overview={ overview } />
-		);
-		expect( getByText( 'Unknown' ) ).toBeTruthy();
-		expect( getByText( '—' ) ).toBeTruthy();
-	} );
-
 	test( 'Confirm recent deposits renders ', () => {
 		mockUseDeposits.mockReturnValue( {
 			depositsCount: 0,
@@ -300,7 +291,7 @@ describe( 'Deposits Overview information', () => {
 	} );
 
 	test( 'Renders capital loan notice if deposit includes financing payout', () => {
-		const overview = createMockOverview( 'usd', 100, 0, 'rubbish' );
+		const overview = createMockOverview( 'usd', 100, 0, 'estimated' );
 		mockUseDepositIncludesLoan.mockReturnValue( {
 			includesFinancingPayout: true,
 			isLoading: false,
@@ -322,7 +313,7 @@ describe( 'Deposits Overview information', () => {
 	} );
 
 	test( `Doesn't render capital loan notice if deposit does not include financing payout`, () => {
-		const overview = createMockOverview( 'usd', 100, 0, 'rubbish' );
+		const overview = createMockOverview( 'usd', 100, 0, 'estimated' );
 		mockUseDepositIncludesLoan.mockReturnValue( {
 			includesFinancingPayout: false,
 			isLoading: false,
