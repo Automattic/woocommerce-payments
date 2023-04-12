@@ -8,7 +8,8 @@ import { useDispatch } from '@wordpress/data';
 // eslint-disable-next-line import/no-unresolved
 import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
 import { Icon, info } from '@wordpress/icons';
-import interpolateComponents from 'interpolate-components';
+import interpolateComponents from '@automattic/interpolate-components';
+import LockIconG from 'gridicons/dist/lock';
 
 /**
  * Internal dependencies
@@ -18,11 +19,10 @@ import { getConfig } from 'utils/checkout';
 import AdditionalInformation from './additional-information';
 import Agreement from './agreement';
 import Container from './container';
-import LockIcon from '../icons/lock';
 import usePlatformCheckoutUser from '../hooks/use-platform-checkout-user';
 import useSelectedPaymentMethod from '../hooks/use-selected-payment-method';
 import { WC_STORE_CART } from '../../../checkout/constants';
-import WooPayIcon from '../../../../assets/images/woopay.svg';
+import WooPayIcon from 'assets/images/woopay.svg?asset';
 import './style.scss';
 
 const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
@@ -44,6 +44,8 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		isBlocksCheckout
 	);
 	const cart = useDispatch( WC_STORE_CART );
+	const viewportWidth = window.document.documentElement.clientWidth;
+	const viewportHeight = window.document.documentElement.clientHeight;
 
 	const getPhoneFieldValue = () => {
 		let phoneFieldValue = '';
@@ -61,6 +63,10 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		// Take out any non-digit characters, except +.
 		phoneFieldValue = phoneFieldValue.replace( /[^\d+]*/g, '' );
 
+		if ( ! phoneFieldValue.startsWith( '+' ) ) {
+			phoneFieldValue = '+1' + phoneFieldValue;
+		}
+
 		return phoneFieldValue;
 	};
 
@@ -73,6 +79,9 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 				? {}
 				: {
 						save_user_in_platform_checkout: isSaveDetailsChecked,
+						platform_checkout_source_url: window.location.href,
+						platform_checkout_is_blocks: true,
+						platform_checkout_viewport: `${ viewportWidth }x${ viewportHeight }`,
 						platform_checkout_user_phone_field: {
 							full: phoneNumber,
 						},
@@ -93,7 +102,13 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 				} );
 			} );
 		},
-		[ isSaveDetailsChecked, phoneNumber, cart ]
+		[
+			isSaveDetailsChecked,
+			phoneNumber,
+			cart,
+			viewportWidth,
+			viewportHeight,
+		]
 	);
 
 	const handleCheckboxClick = ( e ) => {
@@ -206,17 +221,22 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 								</svg>
 							) }
 							<span>
-								{ __(
-									'Save my information for a faster and secure checkout',
-									'woocommerce-payments'
-								) }
+								{ isBlocksCheckout
+									? __(
+											'Save my information for a faster and secure checkout',
+											'woocommerce-payments'
+									  )
+									: __(
+											'Save my information for a faster checkout',
+											'woocommerce-payments'
+									  ) }
 							</span>
 						</label>
 					</div>
 					<img
 						src={ WooPayIcon }
-						alt="WooPay"
 						className="woopay-logo"
+						alt="WooPay"
 					/>
 					<Icon
 						icon={ info }
@@ -235,7 +255,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 						onBlur={ setInfoFlyoutNotVisible }
 					>
 						<div>
-							<LockIcon />
+							<LockIconG size={ 16 } />
 						</div>
 						<span>
 							{ interpolateComponents( {
@@ -263,37 +283,47 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 						</span>
 					</div>
 				</div>
-				<div
-					className={ `save-details-form form-row ${
-						isSaveDetailsChecked ? 'visible' : ''
-					}` }
-					data-testid="save-user-form"
-				>
-					<PhoneNumberInput
-						value={
-							null === phoneNumber
-								? getPhoneFieldValue()
-								: phoneNumber
-						}
-						onValueChange={ setPhoneNumber }
-						onValidationChange={ onPhoneValidationChange }
-						inputProps={ {
-							name:
-								'platform_checkout_user_phone_field[no-country-code]',
-						} }
-						isBlocksCheckout={ isBlocksCheckout }
-					/>
-					{ ! isPhoneValid && (
-						<p className="error-text">
-							{ __(
-								'Please enter a valid mobile phone number.',
-								'woocommerce-payments'
-							) }
-						</p>
-					) }
-					<AdditionalInformation />
-					<Agreement />
-				</div>
+				{ isSaveDetailsChecked && (
+					<div
+						className="save-details-form form-row"
+						data-testid="save-user-form"
+					>
+						<input
+							type="hidden"
+							name="platform_checkout_source_url"
+							value={ window.location.href }
+						/>
+						<input
+							type="hidden"
+							name="platform_checkout_viewport"
+							value={ `${ viewportWidth }x${ viewportHeight }` }
+						/>
+						<PhoneNumberInput
+							value={
+								null === phoneNumber
+									? getPhoneFieldValue()
+									: phoneNumber
+							}
+							onValueChange={ setPhoneNumber }
+							onValidationChange={ onPhoneValidationChange }
+							inputProps={ {
+								name:
+									'platform_checkout_user_phone_field[no-country-code]',
+							} }
+							isBlocksCheckout={ isBlocksCheckout }
+						/>
+						{ ! isPhoneValid && (
+							<p className="error-text">
+								{ __(
+									'Please enter a valid mobile phone number.',
+									'woocommerce-payments'
+								) }
+							</p>
+						) }
+						<AdditionalInformation />
+						<Agreement />
+					</div>
+				) }
 			</div>
 		</Container>
 	);

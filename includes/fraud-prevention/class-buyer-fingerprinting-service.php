@@ -59,12 +59,16 @@ class Buyer_Fingerprinting_Service {
 	 *
 	 * @param string $fingerprint User fingerprint.
 	 *
-	 * @return string[] An array of hashed data for an order.
+	 * @return array An array of hashed data for an order.
 	 */
 	public function get_hashed_data_for_customer( $fingerprint ): array {
-		return [
-			'fraud_prevention_data_shopper_ip_hash' => $this->hash_data_for_fraud_prevention( WC_Geolocation::get_ip_address() ),
-			'fraud_prevention_data_shopper_ua_hash' => $fingerprint,
-		];
+		return array_filter(
+			[
+				'fraud_prevention_data_shopper_ip_hash' => $this->hash_data_for_fraud_prevention( WC_Geolocation::get_ip_address() ),
+				'fraud_prevention_data_shopper_ua_hash' => $fingerprint,
+				'fraud_prevention_data_ip_country'      => WC_Geolocation::geolocate_ip( '', true )['country'],
+				'fraud_prevention_data_cart_contents'   => WC()->cart ? intval( WC()->cart->get_cart_contents_count() ) : null,
+			]
+		);
 	}
 }

@@ -16,6 +16,7 @@ import strings from './strings';
 import wcpayTracks from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
 import UpdateBusinessDetailsModal from '../modal/update-business-details';
+import { getVerifyBankAccountTask } from './po-tasks';
 
 const renderModal = ( errorMessages, status, accountLink, currentDeadline ) => {
 	let container = document.querySelector(
@@ -70,7 +71,9 @@ export const getTasks = ( {
 		pastDue,
 		accountLink,
 		requirements,
+		progressiveOnboarding,
 	} = accountStatus;
+	const isPoEnabled = progressiveOnboarding?.isEnabled;
 	const accountRestrictedSoon = 'restricted_soon' === status;
 	const accountDetailsPastDue = 'restricted' === status && pastDue;
 	const errorMessages = getErrorMessagesFromRequirements( requirements );
@@ -119,7 +122,8 @@ export const getTasks = ( {
 
 	return [
 		isAccountOverviewTasksEnabled &&
-			showUpdateDetailsTask && {
+			showUpdateDetailsTask &&
+			! isPoEnabled && {
 				key: 'update-business-details',
 				level: 1,
 				title: __(
@@ -202,6 +206,7 @@ export const getTasks = ( {
 				} );
 			},
 		},
+		isPoEnabled && getVerifyBankAccountTask(),
 	].filter( Boolean );
 };
 

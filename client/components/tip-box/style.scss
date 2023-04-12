@@ -1,0 +1,40 @@
+.wcpay-component-tip-box {
+	display: grid;
+	grid-template-columns: 24px 1fr;
+	column-gap: $gap-small;
+	padding: $gap-small $gap;
+	margin: $gap 0;
+
+	&:first-child {
+		margin-top: 0;
+	}
+
+	&:last-child {
+		margin-bottom: 0;
+	}
+
+	&.purple {
+		fill: $studio-woocommerce-purple-50;
+		background-color: $studio-woocommerce-purple-0;
+	}
+
+	&.blue {
+		fill: $gutenberg-blue;
+		background-color: $wp-blue-0;
+	}
+
+	&__content {
+		align-self: center;
+	}
+
+	a {
+		text-decoration: none;
+		font-weight: 700;
+		color: $studio-woocommerce-purple-70;
+	}
+
+	.components-button.is-link {
+		text-decoration: none;
+		color: $studio-woocommerce-purple-50;
+	}
+}

@@ -17,8 +17,9 @@ import SettingsLayout from '../settings-layout';
 import LoadableSettingsSection from '../loadable-settings-section';
 import SaveSettingsSection from '../save-settings-section';
 import ErrorBoundary from '../../components/error-boundary';
-import PaymentRequestIcon from 'wcpay/gateway-icons/payment-request';
-import WooIcon from 'wcpay/gateway-icons/woo';
+import WooIcon from 'assets/images/payment-methods/woo.svg?asset';
+import ApplePay from 'assets/images/cards/apple-pay.svg?asset';
+import GooglePay from 'assets/images/cards/google-pay.svg?asset';
 
 const methods = {
 	platform_checkout: {
@@ -29,7 +30,7 @@ const methods = {
 				description: () => (
 					<>
 						<div className="express-checkout-settings__icon">
-							<WooIcon />
+							<img src={ WooIcon } alt="WooPay" />
 						</div>
 						<p>
 							{ __(
@@ -74,8 +75,13 @@ const methods = {
 				section: 'enable',
 				description: () => (
 					<>
-						<div className="express-checkout-settings__icon">
-							<PaymentRequestIcon />
+						<div className="express-checkout-settings__icons">
+							<div className="express-checkout-settings__icon">
+								<img src={ ApplePay } alt="Apple Pay" />
+							</div>
+							<div className="express-checkout-settings__icon">
+								<img src={ GooglePay } alt="Google Pay" />
+							</div>
 						</div>
 						<p>
 							{ __(

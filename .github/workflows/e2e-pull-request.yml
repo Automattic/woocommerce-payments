@@ -6,6 +6,16 @@ on:
       - develop
       - trunk
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      wcpay-use-build-artifact:
+        type: boolean
+        required: false
+        default: false
+      repo-branch:
+        type: string
+        required: false
+        description: "Branch to be used for running tests"
 
 env:
   E2E_GH_TOKEN:          ${{ secrets.E2E_GH_TOKEN }}
@@ -21,7 +31,13 @@ env:
   E2E_SLACK_TOKEN:       ${{ secrets.E2E_SLACK_TOKEN }}
   E2E_USE_LOCAL_SERVER:  false
   E2E_RESULT_FILEPATH:   'tests/e2e/results.json'
+  WCPAY_USE_BUILD_ARTIFACT: ${{ inputs.wcpay-use-build-artifact }}
+  WCPAY_ARTIFACT_DIRECTORY: 'zipfile'
+  NODE_ENV: 'test'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   wcpay-e2e-tests:
@@ -30,8 +46,13 @@ jobs:
     strategy:
       fail-fast:     false
       matrix:
-        test_groups:   [ 'wcpay', 'subscriptions' ] # [TODO] Unskip blocks tests after investigating constant failures.
+        test_groups:   [ 'wcpay', 'subscriptions', 'upe', 'upeSplit' ] # [TODO] Unskip blocks tests after investigating constant failures.
         test_branches: [ 'merchant', 'shopper' ]
+        exclude:
+          - test_groups: 'upe'
+            test_branches: 'merchant'
+          - test_groups: 'upeSplit'
+            test_branches: 'merchant'
 
     name: WC - latest | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
 
@@ -43,7 +64,16 @@ jobs:
 
     steps:
       - name: Checkout WCPay repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.repo-branch || github.ref }}
+
+      - name: "Download WooCommerce Payments build file"
+        if: ${{ inputs.wcpay-use-build-artifact }}
+        uses: actions/download-artifact@v3
+        with:
+          name: woocommerce-payments
+          path: ${{ env.WCPAY_ARTIFACT_DIRECTORY }}
 
       - name: Setup E2E environment
         uses: ./.github/actions/e2e/env-setup

@@ -211,18 +211,29 @@ class WC_Payments_Account {
 		}
 
 		return [
-			'email'               => $account['email'] ?? '',
-			'country'             => $account['country'] ?? 'US',
-			'status'              => $account['status'],
-			'paymentsEnabled'     => $account['payments_enabled'],
-			'deposits'            => $account['deposits'] ?? [],
-			'depositsStatus'      => $account['deposits']['status'] ?? $account['deposits_status'] ?? '',
-			'currentDeadline'     => $account['current_deadline'] ?? false,
-			'pastDue'             => $account['has_overdue_requirements'] ?? false,
-			'accountLink'         => $this->get_login_url(),
-			'hasSubmittedVatData' => $account['has_submitted_vat_data'] ?? false,
-			'requirements'        => [
+			'email'                 => $account['email'] ?? '',
+			'country'               => $account['country'] ?? 'US',
+			'status'                => $account['status'],
+			'created'               => $account['created'] ?? '',
+			'paymentsEnabled'       => $account['payments_enabled'],
+			'deposits'              => $account['deposits'] ?? [],
+			'depositsStatus'        => $account['deposits']['status'] ?? $account['deposits_status'] ?? '',
+			'currentDeadline'       => $account['current_deadline'] ?? false,
+			'pastDue'               => $account['has_overdue_requirements'] ?? false,
+			'accountLink'           => $this->get_login_url(),
+			'hasSubmittedVatData'   => $account['has_submitted_vat_data'] ?? false,
+			'requirements'          => [
 				'errors' => $account['requirements']['errors'] ?? [],
+			],
+			'progressiveOnboarding' => [
+				'isEnabled'            => $account['progressive_onboarding']['is_enabled'] ?? false,
+				'isComplete'           => $account['progressive_onboarding']['is_complete'] ?? false,
+				'tpv'                  => (int) ( $account['progressive_onboarding']['tpv'] ?? 0 ),
+				'firstTransactionDate' => $account['progressive_onboarding']['first_transaction_date'] ?? null,
+			],
+			'fraudProtection'       => [
+				'declineOnAVSFailure' => $account['fraud_mitigation_settings']['avs_check_enabled'] ?? null,
+				'declineOnCVCFailure' => $account['fraud_mitigation_settings']['cvc_check_enabled'] ?? null,
 			],
 		];
 	}
@@ -629,6 +640,7 @@ class WC_Payments_Account {
 		$http_referer = sanitize_text_field( wp_unslash( $_SERVER['HTTP_REFERER'] ?? '' ) );
 		if ( 0 < strpos( $http_referer, 'task=payments' ) ) {
 			$this->maybe_redirect_to_treatment_onboarding_page();
+			$this->redirect_to_prototype_onboarding_page();
 		}
 
 		// Redirect if not connected.
@@ -725,6 +737,8 @@ class WC_Payments_Account {
 			try {
 				$this->redirect_to_login();
 			} catch ( Exception $e ) {
+				Logger::error( 'Failed redirect_to_login: ' . $e );
+
 				wp_safe_redirect(
 					add_query_arg(
 						[ 'wcpay-login-error' => '1' ],
@@ -748,6 +762,7 @@ class WC_Payments_Account {
 			$from_wc_pay_connect_page = false !== strpos( wp_get_referer(), 'path=%2Fpayments%2Fconnect' );
 			if ( ( $from_wc_admin_task || $from_wc_pay_connect_page ) ) {
 				$this->maybe_redirect_to_treatment_onboarding_page();
+				$this->redirect_to_prototype_onboarding_page();
 			}
 
 			// Hide menu notification badge upon starting setup.
@@ -986,40 +1001,53 @@ class WC_Payments_Account {
 		// Clear account transient when generating Stripe's oauth data.
 		$this->clear_cache();
 
+		// Enable dev mode if the test_mode query param is set.
+		$test_mode = isset( $_GET['test_mode'] ) ? boolval( wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) : false;
+		if ( $test_mode ) {
+			WC_Payments_Onboarding_Service::enable_test_mode();
+		}
+
 		$current_user = wp_get_current_user();
 		$return_url   = $this->get_onboarding_return_url( $wcpay_connect_from );
 
-		// Pre-fill from new KYC flow experiment in treatment mode.
-		$prefill         = isset( $_GET['prefill'] ) ? wc_clean( wp_unslash( $_GET['prefill'] ) ) : [];
-		$prefill_country = $prefill['country'] ?? null;
-		$prefill_rest    = [
-			'business_type' => $prefill['type'] ?? null,
-			'company'       => [
-				'structure' => $prefill['structure'] ?? null,
-			],
-		];
+		// Flags to enable progressive onboarding and collect payout requirements.
+		$progressive                 = isset( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
+		$collect_payout_requirements = isset( $_GET['collect_payout_requirements'] ) && 'true' === $_GET['collect_payout_requirements'];
 
-		$country = $prefill_country ?? WC()->countries->get_base_country();
-		if ( ! array_key_exists( $country, WC_Payments_Utils::supported_countries() ) ) {
-			$country = null;
+		// Onboarding data prefill.
+		$prefill_data = isset( $_GET['prefill'] ) ? wc_clean( wp_unslash( $_GET['prefill'] ) ) : [];
+		if ( $prefill_data ) {
+			$business_type = $prefill_data['business_type'] ?? null;
+			$account_data  = [
+				'country'       => $prefill_data['country'] ?? null,
+				'email'         => $prefill_data['email'] ?? null,
+				'business_name' => $prefill_data['business_name'] ?? null,
+				'url'           => $prefill_data['url'] ?? null,
+				'mcc'           => $prefill_data['mcc'] ?? null,
+				'business_type' => $business_type,
+				'company'       => [
+					'structure' => 'company' === $business_type ? ( isset( $prefill_data['company']['structure'] ) ? ( $prefill_data['company']['structure'] ?? null ) : null ) : null,
+				],
+				'individual'    => [
+					'first_name' => isset( $prefill_data['individual']['first_name'] ) ? ( $prefill_data['individual']['first_name'] ?? null ) : null,
+					'last_name'  => isset( $prefill_data['individual']['last_name'] ) ? ( $prefill_data['individual']['last_name'] ?? null ) : null,
+					'phone'      => ! $progressive && 'individual' === $business_type ? ( $prefill_data['phone'] ?? null ) : null,
+				],
+			];
+		} else {
+			$account_data = [];
 		}
 
 		$onboarding_data = $this->payments_api_client->get_onboarding_data(
 			$return_url,
-			array_merge(
-				[
-					'email'         => $current_user->user_email,
-					'business_name' => get_bloginfo( 'name' ),
-					'url'           => get_home_url(),
-					'country'       => $country,
-				],
-				array_filter( $prefill_rest )
-			),
 			[
 				'site_username' => $current_user->user_login,
 				'site_locale'   => get_locale(),
 			],
-			$this->get_actioned_notes()
+			$this->get_actioned_notes(),
+			array_filter( $account_data ),
+			$progressive,
+			$collect_payout_requirements
 		);
 
 		delete_transient( self::ON_BOARDING_STARTED_TRANSIENT );
@@ -1066,6 +1094,9 @@ class WC_Payments_Account {
 		// Store a state after completing KYC for tracks. This is stored temporarily in option because
 		// user might not have agreed to TOS yet.
 		update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => false ] );
+
+		// Automatically enable split UPE for new stores.
+		update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '1' );
 
 		wp_safe_redirect(
 			add_query_arg(
@@ -1182,7 +1213,7 @@ class WC_Payments_Account {
 		}
 
 		// test accounts are valid only when in dev mode.
-		if ( WC_Payments::get_gateway()->is_in_dev_mode() ) {
+		if ( WC_Payments::mode()->is_dev() ) {
 			return true;
 		}
 
@@ -1458,6 +1489,26 @@ class WC_Payments_Account {
 				$this->redirect_to( $onboarding_url );
 
 			}
+		}
+	}
+
+	/**
+	 * Redirects to the onboarding prototype page if the feature flag is enabled.
+	 * Also checks if the server is connect and try to connect it otherwise.
+	 *
+	 * @return void
+	 */
+	private function redirect_to_prototype_onboarding_page() {
+		if ( ! WC_Payments_Features::is_progressive_onboarding_enabled() ) {
+			return;
+		}
+
+		$onboarding_url = admin_url( 'admin.php?page=wc-admin&path=/payments/onboarding-prototype' );
+
+		if ( ! $this->payments_api_client->is_server_connected() ) {
+			$this->payments_api_client->start_server_connection( $onboarding_url );
+		} else {
+			$this->redirect_to( $onboarding_url );
 		}
 	}
 }

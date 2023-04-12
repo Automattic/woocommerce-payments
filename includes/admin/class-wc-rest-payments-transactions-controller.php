@@ -5,6 +5,9 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Core\Server\Request\List_Transactions;
+use WCPay\Core\Server\Request\List_Fraud_Outcome_Transactions;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -61,6 +64,42 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 		);
 		register_rest_route(
 			$this->namespace,
+			'/' . $this->rest_base . '/fraud-outcomes',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_fraud_outcome_transactions' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/fraud-outcomes/summary',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_fraud_outcome_transactions_summary' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/fraud-outcomes/search',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_fraud_outcome_transactions_search_autocomplete' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/fraud-outcomes/download',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_fraud_outcome_transactions_export' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
 			'/' . $this->rest_base . '/(?P<transaction_id>\w+)',
 			[
 				'methods'             => WP_REST_Server::READABLE,
@@ -76,13 +115,54 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_transactions( $request ) {
-		$page       = (int) $request->get_param( 'page' );
-		$page_size  = (int) $request->get_param( 'pagesize' );
-		$sort       = $request->get_param( 'sort' );
-		$direction  = $request->get_param( 'direction' );
-		$deposit_id = $request->get_param( 'deposit_id' );
-		$filters    = $this->get_transactions_filters( $request );
-		return $this->forward_request( 'list_transactions', [ $page, $page_size, $sort, $direction, $filters, $deposit_id ] );
+
+		$wcpay_request = List_Transactions::from_rest_request( $request );
+
+		return $wcpay_request->handle_rest_request( 'wcpay_list_transactions_request' );
+	}
+
+	/**
+	 * Retrieve fraud outcome transactions to respond with via API.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 */
+	public function get_fraud_outcome_transactions( $request ) {
+		$wcpay_request = List_Fraud_Outcome_Transactions::from_rest_request( $request );
+
+		return $this->forward_request( 'list_fraud_outcome_transactions', [ $wcpay_request ] );
+	}
+
+	/**
+	 * Retrieve fraud outcome transactions summary to respond with via API.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 */
+	public function get_fraud_outcome_transactions_summary( $request ) {
+		$wcpay_request = List_Fraud_Outcome_Transactions::from_rest_request( $request );
+
+		return $this->forward_request( 'list_fraud_outcome_transactions_summary', [ $wcpay_request ] );
+	}
+
+	/**
+	 * Retrieve transactions search options to respond with via API.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 */
+	public function get_fraud_outcome_transactions_search_autocomplete( $request ) {
+		$wcpay_request = List_Fraud_Outcome_Transactions::from_rest_request( $request );
+
+		return $this->forward_request( 'get_fraud_outcome_transactions_search_autocomplete', [ $wcpay_request ] );
+	}
+
+	/**
+	 * Initiate transactions export via API.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 */
+	public function get_fraud_outcome_transactions_export( $request ) {
+		$wcpay_request = List_Fraud_Outcome_Transactions::from_rest_request( $request );
+
+		return $this->forward_request( 'get_fraud_outcome_transactions_export', [ $wcpay_request ] );
 	}
 
 	/**

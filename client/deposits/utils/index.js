@@ -48,6 +48,32 @@ export const getNextDepositLabelFormatted = ( deposit ) => {
 	return baseLabel;
 };
 
+export const getDepositMonthlyAnchorLabel = ( {
+	monthlyAnchor,
+	capitalize = true,
+} ) => {
+	// If locale is set up as en_US or en_GB the ordinal will not show up
+	// More details can be found in https://github.com/WordPress/gutenberg/issues/15221/
+	// Using 'en' as the locale should be enough to workaround it
+	// TODO: Remove workaround when issue is resolved
+	const fixedLocale = moment.locale().startsWith( 'en' )
+		? 'en'
+		: moment.locale();
+
+	let label = moment()
+		.locale( fixedLocale )
+		.date( monthlyAnchor )
+		.format( 'Do' );
+
+	if ( 31 === monthlyAnchor ) {
+		label = __( 'Last day of the month', 'woocommerce-payments' );
+	}
+	if ( ! capitalize ) {
+		label = label.toLowerCase();
+	}
+	return label;
+};
+
 const formatDepositSchedule = ( schedule ) => {
 	switch ( schedule.interval ) {
 		case 'manual':
@@ -67,23 +93,16 @@ const formatDepositSchedule = ( schedule ) => {
 					.format( 'dddd' )
 			);
 		case 'monthly':
-			// If locale is set up as en_US or en_GB the ordinal will not show up
-			// More details can be found in https://github.com/WordPress/gutenberg/issues/15221/
-			// Using 'en' as the locale should be enough to workaround it
-			// TODO: Remove workaround when issue is resolved
-			const fixedLocale = moment.locale().startsWith( 'en' )
-				? 'en'
-				: moment.locale();
 			return sprintf(
 				/** translators: %s day of the month */
 				__(
 					'Deposits set to monthly on the %s.',
 					'woocommerce-payments'
 				),
-				moment()
-					.locale( fixedLocale )
-					.date( schedule.monthly_anchor )
-					.format( 'Do' )
+				getDepositMonthlyAnchorLabel( {
+					monthlyAnchor: schedule.monthly_anchor,
+					capitalize: false,
+				} )
 			);
 	}
 };
@@ -96,20 +115,14 @@ export const getDepositScheduleDescriptor = ( {
 	},
 	last_deposit: last,
 } ) => {
-	const isCustomDepositSchedulesEnabled =
-		window.wcpaySettings?.featureFlags?.customDepositSchedules;
-
 	const hasCompletedWaitingPeriod =
 		window.wcpaySettings?.accountStatus?.deposits
 			?.completed_waiting_period ?? false;
 
-	if (
-		disabled ||
-		blocked ||
-		( ! isCustomDepositSchedulesEnabled && 'manual' === schedule.interval )
-	) {
-		const learnMoreHref =
-			'https://woocommerce.com/document/payments/faq/deposits-suspended/';
+	const learnMoreHref =
+		'https://woocommerce.com/document/payments/faq/deposit-schedule/';
+
+	if ( disabled || blocked ) {
 		return createInterpolateElement(
 			/* translators: <a> - suspended accounts FAQ URL */
 			__(
@@ -120,7 +133,9 @@ export const getDepositScheduleDescriptor = ( {
 				a: (
 					// eslint-disable-next-line jsx-a11y/anchor-has-content
 					<a
-						href={ learnMoreHref }
+						href={
+							'https://woocommerce.com/document/payments/faq/deposits-suspended/'
+						}
 						target="_blank"
 						rel="noopener noreferrer"
 					/>
@@ -130,8 +145,6 @@ export const getDepositScheduleDescriptor = ( {
 	}
 
 	if ( ! last ) {
-		const learnMoreHref =
-			'https://woocommerce.com/document/payments/faq/deposit-schedule/';
 		return createInterpolateElement(
 			sprintf(
 				/** translators: %s - deposit schedule, <a> - waiting period doc URL */
@@ -158,19 +171,34 @@ export const getDepositScheduleDescriptor = ( {
 		return createInterpolateElement(
 			sprintf(
 				/** translators: %s - deposit schedule, <a> - Settings page URL */
-				__( '%s <a>Change</a>', 'woocommerce-payments' ),
+				__(
+					'%s <a>Change this</a> or <learn_more_href/>.',
+					'woocommerce-payments'
+				),
 				formatDepositSchedule( schedule )
 			),
 			{
 				a: (
 					// eslint-disable-next-line jsx-a11y/anchor-has-content
 					<a
-						href={ getAdminUrl( {
-							page: 'wc-settings',
-							section: 'woocommerce_payments',
-							tab: 'checkout',
-						} ) }
+						href={
+							getAdminUrl( {
+								page: 'wc-settings',
+								section: 'woocommerce_payments',
+								tab: 'checkout',
+							} ) + '#deposit-schedule'
+						}
 					/>
+				),
+				learn_more_href: (
+					// eslint-disable-next-line jsx-a11y/anchor-has-content
+					<a
+						href={ learnMoreHref }
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						{ __( 'learn more', 'woocommerce-payments' ) }
+					</a>
 				),
 			}
 		);
