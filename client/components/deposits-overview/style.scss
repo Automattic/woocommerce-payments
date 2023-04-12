@@ -31,7 +31,6 @@
 	&__table {
 		color: $gray-900;
 		align-items: center;
-
 		&__row {
 			&__header {
 				box-shadow: inset 0 -1px 0 #ddd;
@@ -41,7 +40,12 @@
 				}
 			}
 		}
-
+		.wcpay-banner-notice.components-notice {
+			margin: 0 24px;
+			&:last-child {
+				margin-bottom: 16px;
+			}
+		}
 		&__cell {
 			display: flex;
 			font-size: 13px;
