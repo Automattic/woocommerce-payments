@@ -196,7 +196,7 @@ const AccountBalancesTabPanel: React.FC = () => {
 								}
 							/>
 						</Flex>
-						{ tab.instant && (
+						{ tab.instant && tab.instant.amount > 0 && (
 							<Flex
 								gap={ 0 }
 								className="wcpay-account-balances__instant-deposit"
