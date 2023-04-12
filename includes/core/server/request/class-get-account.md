@@ -21,6 +21,6 @@ When using this request, provide the following filter:
 
 ```php
 $request = Get_Account::create();
-$request->set_test_mode_only_when_dev_mode();
+$request->set_test_mode_according_to_dev_mode();
 $request->send( 'wcpay_get_account' );
 ```
