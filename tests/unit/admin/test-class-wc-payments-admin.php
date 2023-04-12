@@ -231,6 +231,108 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * @dataProvider data_maybe_redirect_overview_to_connect
+	 */
+	public function test_maybe_redirect_overview_to_connect( $expected_times_redirect_called, $is_wc_registered_page, $get_params ) {
+		global $wp_actions;
+		// Avoid WP doing_it_wrong warnings.
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		$wp_actions['current_screen'] = true;
+
+		$_GET = $get_params;
+
+		// Register the Payments > Connect page as the top level menu item.
+		wc_admin_register_page(
+			[
+				'id'         => 'wc-payments',
+				'title'      => __( 'Payments', 'woocommerce-payments' ),
+				'capability' => 'manage_woocommerce',
+				'path'       => '/payments/connect',
+				'position'   => '55.7', // After WooCommerce & Product menu items.
+				'icon'       => '',
+				'nav_args'   => [
+					'title'        => __( 'WooCommerce Payments', 'woocommerce-payments' ),
+					'is_category'  => false,
+					'menuId'       => 'plugins',
+					'is_top_level' => true,
+				],
+			]
+		);
+
+		// Whether the current page should be treated as a registered WC admin page or not.
+		if ( $is_wc_registered_page ) {
+			add_filter( 'woocommerce_navigation_is_registered_page', '__return_true', 999 );
+		}
+
+		$this->mock_account
+			->expects( $this->exactly( $expected_times_redirect_called ) )
+			->method( 'redirect_to_onboarding_page' );
+
+		$this->payments_admin->maybe_redirect_overview_to_connect();
+
+		remove_filter( 'woocommerce_navigation_is_registered_page', '__return_true', 999 );
+	}
+
+	/**
+	 * Data provider for test_maybe_redirect_overview_to_connect
+	 */
+	public function data_maybe_redirect_overview_to_connect() {
+		return [
+			'no_get_params'        => [
+				0,
+				false,
+				[],
+			],
+			'empty_page_param'     => [
+				0,
+				false,
+				[
+					'path' => '/payments/overview',
+				],
+			],
+			'incorrect_page_param' => [
+				0,
+				false,
+				[
+					'page' => 'wc-settings',
+					'path' => '/payments/overview',
+				],
+			],
+			'empty_path_param'     => [
+				0,
+				false,
+				[
+					'page' => 'wc-admin',
+				],
+			],
+			'incorrect_path_param' => [
+				0,
+				false,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/does-not-exist',
+				],
+			],
+			'wc registered page'   => [
+				0,
+				true,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/overview',
+				],
+			],
+			'happy_path'           => [
+				1,
+				false,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/overview',
+				],
+			],
+		];
+	}
+
+	/**
 	 * Tests WC_Payments_Admin::add_disputes_notification_badge()
 	 */
 	public function test_disputes_notification_badge_display() {
