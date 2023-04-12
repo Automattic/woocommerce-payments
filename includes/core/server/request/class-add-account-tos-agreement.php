@@ -47,7 +47,7 @@ class Add_Account_Tos_Agreement extends Request {
 	}
 
 	/**
-	 * Sets the type of capital link.
+	 * Sets the source (location) that the merchant agreed to the terms.
 	 *
 	 * @param  string $source Location that the merchant agreed to the terms.
 	 *
