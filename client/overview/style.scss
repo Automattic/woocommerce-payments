@@ -111,7 +111,15 @@
 	}
 
 	.components-modal__header {
-		display: none;
+		position: initial;
+		height: initial;
+		padding: 0;
+		border: 0;
+
+		h1 {
+			@include title-small;
+			margin-bottom: $gap-smaller;
+		}
 	}
 
 	&__title {

@@ -78,12 +78,6 @@ const SetupRealPayments: React.FC = () => {
 					isDismissible={ false }
 					onRequestClose={ () => setModalVisible( false ) }
 				>
-					<h2 className="wcpay-setup-real-payments-modal__title">
-						{ __(
-							'Setup live payments on your store',
-							'woocommerce-payments'
-						) }
-					</h2>
 					<p className="wcpay-setup-real-payments-modal__headline">
 						{ __(
 							'Before proceeding, please take note of the following information:',

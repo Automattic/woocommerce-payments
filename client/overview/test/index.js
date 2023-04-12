@@ -313,4 +313,30 @@ describe( 'Overview page', () => {
 			screen.queryByText( 'Enhanced fraud protection for your store' )
 		).toBeInTheDocument();
 	} );
+
+	it( 'displays SetupRealPayments if onboardingTestMode is true', () => {
+		global.wcpaySettings = {
+			...global.wcpaySettings,
+			onboardingTestMode: true,
+		};
+
+		render( <OverviewPage /> );
+
+		expect(
+			screen.getByText( 'Ready to setup real payments on your store?' )
+		).toBeInTheDocument();
+	} );
+
+	it( 'does not displays SetupRealPayments if onboardingTestMode is false', () => {
+		global.wcpaySettings = {
+			...global.wcpaySettings,
+			onboardingTestMode: false,
+		};
+
+		render( <OverviewPage /> );
+
+		expect(
+			screen.queryByText( 'Ready to setup real payments on your store?' )
+		).not.toBeInTheDocument();
+	} );
 } );

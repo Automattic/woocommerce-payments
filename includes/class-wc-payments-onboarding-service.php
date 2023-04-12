@@ -140,7 +140,7 @@ class WC_Payments_Onboarding_Service {
 	 * @return void
 	 */
 	public static function set_test_mode( bool $test_mode ): void {
-		update_option( self::TEST_MODE_OPTION, $test_mode ? 'yes' : 'no' );
+		update_option( self::TEST_MODE_OPTION, $test_mode );
 
 		// Ensure WC_Payments mode is switched immediately.
 		if ( $test_mode ) {
@@ -157,6 +157,6 @@ class WC_Payments_Onboarding_Service {
 	 * @return bool
 	 */
 	public static function is_test_mode_enabled(): bool {
-		return get_option( self::TEST_MODE_OPTION ) === 'yes';
+		return get_option( self::TEST_MODE_OPTION );
 	}
 }
