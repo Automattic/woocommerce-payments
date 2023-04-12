@@ -20,6 +20,7 @@ import { __ } from '@wordpress/i18n';
 import strings from './strings';
 import Loadable from 'components/loadable';
 import { getNextDeposit } from './utils';
+import DepositOverviewSectionHeading from './section-heading';
 import DepositStatusPill from 'components/deposit-status-pill';
 import { getDepositDate } from 'deposits/utils';
 import { useDepositIncludesLoan } from 'wcpay/data';
@@ -54,21 +55,11 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 	return (
 		<>
 			{ /* Next Deposit Heading */ }
-			<CardBody className="wcpay-deposits-overview__heading">
-				<span className="wcpay-deposits-overview__heading__title">
-					<Loadable
-						isLoading={ isLoading }
-						value={ strings.nextDeposit.title }
-					/>
-				</span>
-
-				<span className="wcpay-deposits-overview__heading__description__text">
-					<Loadable
-						isLoading={ isLoading }
-						value={ strings.nextDeposit.description }
-					/>
-				</span>
-			</CardBody>
+			<DepositOverviewSectionHeading
+				title={ strings.nextDeposit.title }
+				text={ strings.nextDeposit.description }
+				isLoading={ isLoading }
+			/>
 			{ /* Next Deposit Table */ }
 			<CardBody className={ `${ tableClass }__container` }>
 				<Flex className={ `${ tableClass }__row__header` }>
