@@ -54,12 +54,6 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 
 	return (
 		<>
-			{ /* Next Deposit Heading */ }
-			<DepositOverviewSectionHeading
-				title={ strings.nextDeposit.title }
-				text={ strings.nextDeposit.description }
-				isLoading={ isLoading }
-			/>
 			{ /* Next Deposit Table */ }
 			<CardBody className={ `${ tableClass }__container` }>
 				<Flex className={ `${ tableClass }__row__header` }>
