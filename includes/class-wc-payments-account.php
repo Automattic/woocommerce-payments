@@ -527,7 +527,7 @@ class WC_Payments_Account {
 			$request->set_redirect_url( $return_url );
 			$request->set_refresh_url( $refresh_url );
 
-			$capital_link = $request->send( 'wcpay_get_account_capital_link', $type, $return_url, $refresh_url );
+			$capital_link = $request->send( 'wcpay_get_account_capital_link' );
 			$this->redirect_to( $capital_link['url'] );
 		} catch ( API_Exception $e ) {
 			$error_url = add_query_arg(
@@ -958,7 +958,7 @@ class WC_Payments_Account {
 		$request->set_test_mode_only_when_dev_mode();
 		$request->set_redirect_url( $redirect_url );
 
-		$response   = $request->send( 'wpcay_get_account_login_data', $redirect_url );
+		$response   = $request->send( 'wpcay_get_account_login_data' );
 		$login_data = $response->to_array();
 		wp_safe_redirect( $login_data['url'] );
 		exit;

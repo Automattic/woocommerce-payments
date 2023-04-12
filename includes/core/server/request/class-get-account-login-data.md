@@ -18,12 +18,12 @@ A note that this request only sends the test_mode flag only when the site is in 
 When using this request, provide the following filter and arguments:
 
 - Name: `wpcay_get_account_login_data`
-- Arguments: `string $redirect_url`
+- Arguments: None.
 
 ## Example:
 
 ```php
 $request = Get_Account_Login_Data::create();
 $request->set_test_mode_only_when_dev_mode();
-$request->send( 'wpcay_get_account_login_data', $redirect_url );
+$request->send( 'wpcay_get_account_login_data' );
 ```

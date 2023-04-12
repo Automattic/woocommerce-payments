@@ -20,14 +20,11 @@ The `WCPay\Core\Server\Request\Get_Account_Capital_Link` class is used to constr
 When using this request, provide the following filter and arguments:
 
 - Name: `wcpay_get_account_capital_link`
-- Arguments: 
-  - `string $type`
-  - `string $redirect_url`
-  - `string $refresh_url`
+- Arguments: None.
 
 ## Example:
 
 ```php
 $request = Get_Account_Capital_Link::create();
-$request->send( 'wcpay_get_account_capital_link',  $type, $redirect_url, $refresh_url );
+$request->send( 'wcpay_get_account_capital_link' );
 ```
