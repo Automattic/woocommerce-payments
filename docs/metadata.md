@@ -34,6 +34,9 @@ To improve the extensibility and stability of WooCommerce Payments, all WooComme
 - `_wcpay_fraud_outcome_status`
 	- `get_fraud_outcome_status_for_order( mixed $order ) : string`
 	- `set_fraud_outcome_status_for_order( mixed $order, string $fraud_outcome_status )`
+- `_wcpay_fraud_meta_box_type`
+	- `get_fraud_meta_box_type_for_order( mixed $order ) : string`
+	- `set_fraud_meta_box_type_for_order( mixed $order, string $fraud_meta_box_type )`
 
 ## Hooks
 

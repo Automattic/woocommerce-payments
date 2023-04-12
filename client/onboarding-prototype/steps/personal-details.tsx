@@ -24,7 +24,7 @@ const PersonalDetails: React.FC = () => {
 			<OnboardingTextField name="email" />
 			<div>
 				{
-					// TODO  [GH-4744]: Create a notice component
+					// TODO: Use BannerNotice component when it's available.
 					strings.steps.personal.notice
 				}
 			</div>
