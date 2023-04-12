@@ -128,18 +128,27 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * @return bool
 	 */
-	public function maybe_enable_dev_mode( $dev_mode ) {
-		return get_option( self::TEST_MODE_OPTION, $dev_mode );
+	public function maybe_enable_dev_mode( bool $dev_mode ): bool {
+		return self::is_test_mode_enabled() || $dev_mode;
 	}
 
 	/**
-	 * Enable onboarding test mode.
-	 * This will enable WCPay dev mode immediately.
+	 * Set onboarding test mode.
+	 * Will also switch WC_Payments mode immediately.
+	 *
+	 * @param boolean $test_mode Whether to enable test mode.
+	 * @return void
 	 */
-	public static function enable_test_mode(): void {
-		add_option( self::TEST_MODE_OPTION, true );
-		// Ensure dev mode is enabled immediately.
-		WC_Payments::mode()->dev();
+	public static function set_test_mode( bool $test_mode ): void {
+		update_option( self::TEST_MODE_OPTION, $test_mode ? 'yes' : 'no' );
+
+		// Ensure WC_Payments mode is switched immediately.
+		if ( $test_mode ) {
+			WC_Payments::mode()->dev();
+
+		} else {
+			WC_Payments::mode()->live();
+		}
 	}
 
 	/**
@@ -148,6 +157,6 @@ class WC_Payments_Onboarding_Service {
 	 * @return bool
 	 */
 	public static function is_test_mode_enabled(): bool {
-		return get_option( self::TEST_MODE_OPTION, false );
+		return get_option( self::TEST_MODE_OPTION ) === 'yes';
 	}
 }

@@ -3,6 +3,7 @@
  */
 import React, { useState } from 'react';
 import { __ } from '@wordpress/i18n';
+import { addQueryArgs } from '@wordpress/url';
 import {
 	Button,
 	Card,
@@ -22,6 +23,12 @@ import BlockPostAuthorIcon from 'components/icons/block-post-author';
 
 const SetupRealPayments: React.FC = () => {
 	const [ modalVisible, setModalVisible ] = useState( false );
+
+	const handleContinue = () => {
+		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
+			'wcpay-disable-onboarding-test-mode': true,
+		} );
+	};
 
 	return (
 		<>
@@ -101,10 +108,13 @@ const SetupRealPayments: React.FC = () => {
 						) }
 					</div>
 					<div className="wcpay-setup-real-payments-modal__footer">
-						<Button isTertiary>
+						<Button
+							isTertiary
+							onClick={ () => setModalVisible( false ) }
+						>
 							{ __( 'Go back', 'woocommerce-payments' ) }
 						</Button>
-						<Button isPrimary>
+						<Button isPrimary onClick={ handleContinue }>
 							{ __( 'Continue setup', 'woocommerce-payments' ) }
 						</Button>
 					</div>
