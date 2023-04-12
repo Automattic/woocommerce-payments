@@ -110,7 +110,7 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/authorizations?page=1&pag
 }
 ```
 
-## Get authorization
+## Get an authorization
 
 _@since v4.9.0_
 
