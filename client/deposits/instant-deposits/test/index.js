@@ -80,10 +80,10 @@ describe( 'Instant deposit button and modal', () => {
 			<InstantDepositButton instantBalance={ mockInstantBalance } />
 		);
 		expect(
-			screen.queryByRole( 'dialog', { name: /instant deposit/i } )
+			screen.queryByRole( 'dialog', { name: /deposit available funds/i } )
 		).not.toBeInTheDocument();
 		fireEvent.click(
-			screen.getByRole( 'button', { name: /instant deposit/i } )
+			screen.getByRole( 'button', { name: /deposit available funds/i } )
 		);
 		const modal = screen.queryByRole( 'dialog', {
 			name: /instant deposit/i,
