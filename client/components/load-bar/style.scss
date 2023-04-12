@@ -1,0 +1,27 @@
+.wcpay-component-load-bar {
+	overflow: hidden;
+	height: 4px;
+	background-color: $gray-10;
+	margin: $gap 0;
+	&::after {
+		content: '';
+		display: block;
+		height: 100%;
+		width: 100%;
+		background-color: $blue-50;
+		animation: wcpay-component-load-bar 3s ease-in-out infinite;
+		transform-origin: 0 0;
+	}
+}
+
+@keyframes wcpay-component-load-bar {
+	0% {
+		transform: scaleX( 0 ) translateX( 0% );
+	}
+	50% {
+		transform: scaleX( 1 ) translateX( 0% );
+	}
+	100% {
+		transform: scaleX( 1 ) translateX( 100% );
+	}
+}
