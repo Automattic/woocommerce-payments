@@ -1150,7 +1150,7 @@ class WC_Payments_Account {
 					delete_transient( self::ON_BOARDING_DISABLED_TRANSIENT );
 
 					$request = Get_Account::create();
-					$request->set_test_mode_only_when_dev_mode();
+					$request->set_test_mode_according_to_dev_mode();
 					$response = $request->send( 'wcpay_get_account' );
 					$account  = $response->to_array();
 

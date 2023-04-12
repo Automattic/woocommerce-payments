@@ -11,7 +11,7 @@ use WCPay\Core\Server\Request;
 use WC_Payments_API_Client;
 
 /**
- * Request class for getting intents.
+ * Request class for getting account data.
  */
 class Get_Account extends Request {
 	use Use_Test_Mode_Only_When_Dev_Mode;
