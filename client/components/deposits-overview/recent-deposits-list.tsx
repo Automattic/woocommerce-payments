@@ -142,7 +142,6 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 			</CardBody>
 			<CardDivider />
 			<CardBody className={ `${ tableClass }__container` }>
-				{ ' ' }
 				{ isLoading ? <DepositTableRowLoading /> : depositRows }
 			</CardBody>
 		</>
