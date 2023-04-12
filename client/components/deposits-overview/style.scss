@@ -13,7 +13,7 @@
 		}
 
 		&__description {
-			& > &__text {
+			&__text {
 				line-height: 16px;
 				color: $gray-700;
 			}

@@ -62,7 +62,7 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 					/>
 				</span>
 
-				<span className="wcpay-deposits-overview__heading__description">
+				<span className="wcpay-deposits-overview__heading__description__text">
 					<Loadable
 						isLoading={ isLoading }
 						value={ strings.nextDeposit.description }
