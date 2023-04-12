@@ -18,7 +18,7 @@ trait Use_Test_Mode_Only_When_Dev_Mode {
 	 *
 	 * @return void
 	 */
-	public function set_test_mode_only_when_dev_mode() {
+	public function set_test_mode_according_to_dev_mode() {
 		$this->set_param( 'test_mode', WC_Payments::mode()->is_dev() );
 	}
 }
