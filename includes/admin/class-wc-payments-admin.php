@@ -910,7 +910,7 @@ class WC_Payments_Admin {
 	 * @see self::add_payments_menu()
 	 */
 	public function maybe_redirect_overview_to_connect() {
-		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
+		if ( wp_doing_ajax() ) {
 			return;
 		}
 
@@ -919,15 +919,9 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		$current_url = '';
-		if ( isset( $_SERVER['REQUEST_URI'] ) ) {
-			$current_url = esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) );
-		}
-
-		$current_query = wp_parse_url( $current_url, PHP_URL_QUERY );
-		parse_str( (string) $current_query, $current_pieces );
-		if ( empty( $current_pieces['page'] ) || 'wc-admin' !== $current_pieces['page']
-			|| empty( $current_pieces['path'] ) || '/payments/overview' !== $current_pieces['path'] ) {
+		$url_params = wp_unslash( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification
+		if ( empty( $url_params['page'] ) || 'wc-admin' !== $url_params['page']
+			|| empty( $url_params['path'] ) || '/payments/overview' !== $url_params['path'] ) {
 			return;
 		}
 
@@ -942,12 +936,7 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		$params = [
-			'page' => 'wc-admin',
-			'path' => '/payments/connect',
-		];
-		wp_safe_redirect( admin_url( add_query_arg( $params, 'admin.php' ) ) );
-		exit();
+		$this->account->redirect_to_onboarding_page();
 	}
 
 	/**
