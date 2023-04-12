@@ -5,6 +5,8 @@ import * as React from 'react';
 import { Flex, FlexItem, Icon } from '@wordpress/components';
 import { calendar } from '@wordpress/icons';
 import { Link } from '@woocommerce/components';
+import InfoOutlineIcon from 'gridicons/dist/info-outline';
+import { Fragment } from '@wordpress/element';
 
 /**
  * Internal dependencies.
@@ -18,6 +20,7 @@ import { CachedDeposit } from 'wcpay/types/deposits';
 import { formatCurrency } from 'wcpay/utils/currency';
 import { getDetailsURL } from 'wcpay/components/details-link';
 import useRecentDeposits from './hooks';
+import BannerNotice from '../banner-notice';
 
 interface DepositRowProps {
 	deposit: CachedDeposit;
@@ -93,6 +96,28 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 		return <></>;
 	}
 
+	// Add a notice indicating the potential business day delay for pending and in_transit deposits.
+	// The notice is added after the oldest pending or in_transit deposit.
+	const oldestPendingDepositId = [ ...deposits ]
+		.reverse()
+		.find(
+			( deposit ) =>
+				'pending' === deposit.status || 'in_transit' === deposit.status
+		)?.id;
+	const depositRows = deposits.map( ( deposit ) => (
+		<Fragment key={ deposit.id }>
+			<DepositTableRow deposit={ deposit } />
+			{ deposit.id === oldestPendingDepositId && (
+				<BannerNotice
+					status="info"
+					icon={ <InfoOutlineIcon /> }
+					children={ strings.notices.businessDayDelay }
+					isDismissible={ false }
+				/>
+			) }
+		</Fragment>
+	) );
+
 	return (
 		<>
 			{ /* Next Deposit Table */ }
@@ -108,12 +133,7 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 						{ strings.tableHeaders.amount }
 					</FlexItem>
 				</Flex>
-
-				{ isLoading && <DepositTableRowLoading /> }
-
-				{ deposits.map( ( deposit ) => (
-					<DepositTableRow key={ deposit.id } deposit={ deposit } />
-				) ) }
+				{ isLoading ? <DepositTableRowLoading /> : depositRows }
 			</div>
 		</>
 	);

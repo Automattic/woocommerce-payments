@@ -234,6 +234,40 @@ exports[`Deposits Overview information Component Renders 1`] = `
           $30.00
         </div>
       </div>
+      <div
+        class="wcpay-banner-notice wcpay-banner-info-notice components-notice is-info"
+      >
+        <div
+          class="components-notice__content"
+        >
+          <div
+            class="components-flex css-18koiq9-Flex eboqfv50"
+          >
+            <div
+              class="components-flex__item wcpay-banner-notice__icon wcpay-banner-info-notice__icon css-1s295sp-Item eboqfv51"
+            >
+              <svg
+                class="gridicon gridicons-info-outline"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g>
+                  <path
+                    d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.41 0-8 3.59-8 8s3.59 8 8 8 8-3.59 8-8-3.59-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+                  />
+                </g>
+              </svg>
+            </div>
+            <div
+              class="components-flex__item wcpay-banner-notice__content wcpay-banner-info-notice__content css-1s295sp-Item eboqfv51"
+            >
+              Deposits pending or in-transit may take 1-2 business days to appear in your bank account once dispatched
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div
       class="components-flex components-card__footer is-size-medium wcpay-deposits-overview__footer e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
