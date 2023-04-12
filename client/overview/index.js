@@ -27,6 +27,28 @@ import AccountBalances from 'components/account-balances';
 import FRTDiscoverabilityBanner from 'wcpay/components/fraud-risk-tools-banner';
 import { useSettings } from 'wcpay/data';
 import './style.scss';
+import React from 'react';
+
+const OverviewPageError = () => {
+	const queryParams = getQuery();
+	const showLoginError = '1' === queryParams[ 'wcpay-login-error' ];
+	if ( ! wcpaySettings.errorMessage && ! showLoginError ) {
+		return null;
+	}
+	return (
+		<Notice
+			status="error"
+			isDismissible={ false }
+			className="wcpay-login-error"
+		>
+			{ wcpaySettings.errorMessage ||
+				__(
+					'There was a problem redirecting you to the account dashboard. Please try again.',
+					'woocommerce-payments'
+				) }
+		</Notice>
+	);
+};
 
 const OverviewPage = () => {
 	const {
@@ -54,7 +76,6 @@ const OverviewPage = () => {
 	const showConnectionSuccess =
 		'1' === queryParams[ 'wcpay-connection-success' ];
 
-	const showLoginError = '1' === queryParams[ 'wcpay-login-error' ];
 	const showLoanOfferError = '1' === queryParams[ 'wcpay-loan-offer-error' ];
 	const showServerLinkError =
 		'1' === queryParams[ 'wcpay-server-link-error' ];
@@ -84,18 +105,7 @@ const OverviewPage = () => {
 
 	return (
 		<Page isNarrow className="wcpay-overview">
-			{ showLoginError && (
-				<Notice
-					status="error"
-					isDismissible={ false }
-					className="wcpay-login-error"
-				>
-					{ __(
-						'There was a problem redirecting you to the account dashboard. Please try again.',
-						'woocommerce-payments'
-					) }
-				</Notice>
-			) }
+			<OverviewPageError />
 
 			<JetpackIdcNotice />
 
