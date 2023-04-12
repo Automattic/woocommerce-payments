@@ -74,8 +74,7 @@ const BusinessDetails: React.FC = () => {
 				) }
 			{ /* <OnboardingSelectField
 				name="mcc"
-				// TODO [GH-4744]: The select control must provide search functionality.
-				// TODO [GH-4853]: Populate MCC options
+				// TODO [GH-4853]: Create a Field component for GroupedSelectControl and Populate MCC options.
 				options={ [] }
 			/> */ }
 		</>
