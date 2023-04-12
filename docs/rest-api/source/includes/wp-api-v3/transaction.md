@@ -55,7 +55,7 @@ Return the transactions.
 *   pagesize: int
 *   sort: string
 *   direction: string
-*   search: string
+*   search: array
 *   match: string
 * 	customer_currency_is: string
 * 	customer_currency_is_not: string
@@ -177,7 +177,7 @@ Return a high-level summary for all transactions.
 
 ### GET params
 
-*   search: string
+*   search: array
 *   match: string
 * 	date_before: string
 * 	date_after: string

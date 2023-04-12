@@ -35,7 +35,7 @@ The disputes API allows you to get data related to disputes such as a listing, s
 | `past_due` | string  | Whether the last evidence submission was submitted after due date. |
 | `submission_count` | array  | The number of times evidence has been submitted. Possible values 0 or 1. |
 
-## Get disputes
+## List disputes
 
 Return the disputes.
 
@@ -45,7 +45,7 @@ Return the disputes.
 *   pagesize: int
 *   sort: string
 *   direction: string
-*   search: string
+*   search: array
 *   match: string
 * 	status_is: string
 * 	status_is_not: string
@@ -105,7 +105,7 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/disputes?page=1&pagesize=
 }
 ```
 
-```json
+```Error json
 {
 	"code": "wcpay_bad_request",
 	"message": "Error: Invalid sorting direction: ",
@@ -113,7 +113,7 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/disputes?page=1&pagesize=
 }
 ```
 
-## Get dispute
+## Get a dispute
 
 Return details of a particular dispute.
 
@@ -228,7 +228,7 @@ Returns summary of deposits
 
 ### GET params
 
-*   search: string
+*   search: array
 *   match: string
 * 	status_is: string
 * 	status_is_not: string
