@@ -10,8 +10,11 @@ import { displayStatus } from 'deposits/strings';
 import Pill, { PillType } from 'components/pill';
 import { DepositStatus } from 'wcpay/types/deposits';
 
+/**
+ * Maps a DepositStatus to a PillType.
+ */
 const mappings: Record< DepositStatus, PillType > = {
-	estimated: 'alert',
+	estimated: 'light',
 	pending: 'alert',
 	in_transit: 'success',
 	paid: 'success',

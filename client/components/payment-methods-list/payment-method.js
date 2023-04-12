@@ -88,7 +88,7 @@ const PaymentMethod = ( {
 									')' }
 							</span>
 						) }
-						{ true && (
+						{ upeCapabilityStatuses.PENDING_APPROVAL === status && (
 							<HoverTooltip
 								content={ __(
 									'This payment method is pending approval. Once approved, you will be able to use it.',
