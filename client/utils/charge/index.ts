@@ -11,7 +11,6 @@ import { __ } from '@wordpress/i18n';
  */
 import { Dispute } from 'types/disputes';
 import { Charge, ChargeAmounts } from 'types/charges';
-import { FraudOutcome } from '../../types/fraud-outcome';
 import { PaymentIntent } from '../../types/payment-intents';
 
 const failedOutcomeTypes = [ 'issuer_declined', 'invalid' ];
