@@ -29,7 +29,7 @@ The transaction API allows you to get data related to transactions.
 | `order` | object  | Order associated with the transaction. See [Order Properties](#order-properties) . |
 | `loan_id` | string  | Unique identifier of the loan, if any, associated with the transaction. |
 | `deposit_id` | string  | Unique identifier of the deposit associated with the transaction. |
-| `deposit_status` | string  | The status of the deposit. Possible values are `Estimated` , `Pending` , `In transit` , `Paid` , `Canceled` , `Failed` . |
+| `deposit_status` | string  | The status of the deposit. Possible values are `estimated` , `pending` , `in_transit` , `paid` , `canceled` , `failed` . |
 | `available_on` | Date on which the transaction amount will be paid out to the merchant. |
 | `customer_amount` | string  | The customer amount for the transaction. |
 | `customer_currency` | string  |  The customer currency code for the transaction. |
