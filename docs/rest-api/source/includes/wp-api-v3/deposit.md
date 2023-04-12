@@ -13,9 +13,9 @@ The deposit API allows you to get data related to deposits such as a listing, su
 | `id` | string | Unique identifier of the deposit.	|
 | `type` | string  | Type of deposit. Possible values include `deposit` or `withdrawal` |
 | `status` | string  | Status of the deposit. Possible values are `paid` , `pending` , `in_transit` , `canceled` , `failed` or `estimated` . |
-| `amount` | integer  | Amount of the deposit. |
-| `currency` | string | Currency of the deposit. |
-| `fee` | integer | Fee, if any, charged for the deposit. |
+| `amount` | integer  | Amount of the deposit in cents. |
+| `currency` | string | ISO Currency code of the deposit. |
+| `fee` | integer | Fee, if any, charged for the deposit in cents. |
 | `fee_percentage` | integer | Fee percentage on the deposit. |
 | `automatic` | boolean  | Indicates that the deposit was automatic. `false` for manual deposits. |
 | `bankAccount` | string  | Identifier of the bank account or card the deposit was made to. |

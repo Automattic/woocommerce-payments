@@ -12,8 +12,8 @@ The disputes API allows you to get data related to disputes such as a listing, s
 |-----------|---------|----------------------------------------------------|
 | `dispute_id` | string | Unique identifier of the dispute.	|
 | `charge_id` | string  | Unique identifier of the charge |
-| `amount` | integer  | Amount of the dispute. |
-| `currency` | string  | Currency of the dispute. |
+| `amount` | integer  | Amount of the dispute in cents. |
+| `currency` | string  | ISO Currency code of the dispute. |
 | `reason` | string | Reason for the dispute. |
 | `status` | string | Status of the dispute. Possible values are `warning_needs_response` , `warning_under_review` , `warning_closed` , `needs_response` , `under_review` , `charge_refunded` , `won` , or `lost` . |
 | `balance_transactions` | array  | Chargeback transactions associated with this dispute. |
@@ -22,15 +22,15 @@ The disputes API allows you to get data related to disputes such as a listing, s
 | `source` | string | Indicates the source which the payment was made from e.g. Card brand. |
 | `customer_name` | string | Full name of the customer on Billing Details. |
 | `customer_email` | string | Email id of the customer on Billing Details. |
-| `customer_country` | string | Country of the customer on Billing Details. |
+| `customer_country` | string | ISO country code of the customer on Billing Details. |
 | `order` | object | Details of order associated with the dispute. See [Order Properties](#order-properties)  |
-| `created` | string  | Date on which dispute raised. |
+| `created` | string  | Date on which dispute raised in UTC. |
 
 ## Evidence Details Properties
 
 | Attribute | Type    | Description                                        |
 |-----------|---------|----------------------------------------------------|
-| `due_by` | string | Date by which evidence must be submitted in order to successfully challenge dispute.	|
+| `due_by` | string | Date by which evidence must be submitted in order to successfully challenge dispute in UTC.	|
 | `has_evidence` | string  | Whether evidence has been added to the dispute. |
 | `past_due` | string  | Whether the last evidence submission was submitted after due date. |
 | `submission_count` | array  | The number of times evidence has been submitted. Possible values 0 or 1. |

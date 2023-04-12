@@ -17,23 +17,23 @@ The transaction API allows you to get data related to transactions.
 | `source_identifier` | string  | Identifier for the source. In case of card, the value will be the last four digits of the card. |
 | `customer_name` | string | Full name of the customer on Billing Details. |
 | `customer_email` | string | Email id of the customer on Billing Details. |
-| `customer_country` | string | Country of the customer on Billing Details. |
-| `amount` | integer  | Amount of this transaction. |
-| `fees` | integer  | The amount of the application fee for the transaction. |
-| `net` | integer  | The Net amount of the transaction. |
-| `currency` | string  | The currency code for the transaction. |
+| `customer_country` | string | ISO code of the country of the customer on Billing Details. |
+| `amount` | integer  | Amount of this transaction in cents. |
+| `fees` | integer  | The amount of the application fee for the transaction in cents. |
+| `net` | integer  | The Net amount of the transaction in cents. |
+| `currency` | string  | The ISO currency code for the transaction. |
 | `risk_level` | integer  | An integer indicating the risk level associated with the transaction. Possible values are 0 (Normal), 1 (Elevated), 2 (Highest). |
 | `charge_id` | string  | Unique identifier of the charge. |
 | `payment_intent_id` | string  | Unique identifier of the payment intent for the transaction. |
-| `order_id` | string  | Unique identifier of the order associated with the transaction. |
+| `order_id` | integer  | Unique identifier of the order associated with the transaction. |
 | `order` | object  | Order associated with the transaction. See [Order Properties](#order-properties) . |
 | `loan_id` | string  | Unique identifier of the loan, if any, associated with the transaction. |
 | `deposit_id` | string  | Unique identifier of the deposit associated with the transaction. |
 | `deposit_status` | string  | The status of the deposit. Possible values are `estimated` , `pending` , `in_transit` , `paid` , `canceled` , `failed` . |
-| `available_on` | Date on which the transaction amount will be paid out to the merchant. |
-| `customer_amount` | string  | The customer amount for the transaction. |
-| `customer_currency` | string  |  The customer currency code for the transaction. |
-| `amount_in_usd` | string  | The amount in USD for the transaction. |
+| `available_on` | string | Date on which the transaction amount will be paid out to the merchant in UTC. |
+| `customer_amount` | string  | The customer amount for the transaction in cents. |
+| `customer_currency` | string  |  The ISO currency code of currency used by the customer for the transaction. |
+| `amount_in_usd` | string  | The amount in USD for the transaction in cents. |
 | `source_device` | string  | Identifier for the device platform when a device such as a card reader is used for the transaction. |
 
 ## Order Properties
@@ -43,9 +43,9 @@ The transaction API allows you to get data related to transactions.
 | `number` | string | Order identifier.	|
 | `url` | string  | URL for the Order Edit screen for this order. |
 | `customer_url` | string  | URL for the Customer screen on Admin dashboard. |
-| `subscriptions` | array  | Array of Order objects for subscriptions associated with this order. |
+| `subscriptions` | array  | Array of subscriptions associated with this order. |
 
-## Get transactions
+## List transactions
 
 Return the transactions.
 
@@ -163,7 +163,7 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/transactions?page=1&pages
 }
 ```
 
-```json
+```Error json
 {
 	"code": "wcpay_bad_request",
 	"message": "Error: Invalid sorting direction: ",

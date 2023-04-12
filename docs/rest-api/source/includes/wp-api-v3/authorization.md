@@ -13,10 +13,11 @@ The authorization API allows you to get data related to authorizations.
 | `charge_id` | string | Unique identifier of the charge. |
 | `transaction_id` | string | Unique identifier of the transaction associated with this charge. |
 | `payment_intent_id` | string | Unique identifier of the payment intent associated with this charge. |
-| `order_id` | string | Unique identifier of the order associated with this charge. |
+| `order_id` | integer | Unique identifier of the order associated with this charge. |
 | `amount` | integer | Amount intended to be collected by this charge. |
-| `amount_captured` | integer | Amount captured. |
-| `amount_refunded` | integer | Amount refunded. |
+| `amount_captured` | integer | Amount captured in cents. |
+| `amount_refunded` | integer | Amount refunded in cents. |
+| `net` | integer  | The Net amount of the authorization in cents. |
 | `refunded` | boolean | Indicates whether the charge has been fully refunded. |
 | `is_captured` | boolean | Indicates whether the charge has been captured. |
 | `channel` | string | Channel through which the charge was made. Possible values are `online` or `in_person`. |
@@ -26,14 +27,14 @@ The authorization API allows you to get data related to authorizations.
 | `customer_email` | string | Email id of the customer on Billing Details. |
 | `customer_country` | string | Country of the customer on Billing Details. |
 | `fees` | integer | The amount of the application fee for the charge. |
-| `currency` | string | The currency code of the charge. |
+| `currency` | string | The ISO currency code of the charge. |
 | `risk_level` | integer | An integer indicating the risk level associated with the transaction. Possible values are 0 (Normal), 1 (Elevated), 2 (Highest). |
 | `outcome_type` | string | Indicates outcome of the payment. Possible values are `authorized` , `manual_review` , `issuer_declined` , `blocked` , or `invalid`. |
 | `status` | string | Indicates status of the charge. Possible values are `succeeded` , `pending` , or `failed`. |
-| `created` | string | The date the charge was created. |
-| `modified` | string | The date the charge was modified. |
+| `created` | string | The date the charge was created in UTC. |
+| `modified` | string | The date the charge was modified in UTC. |
 
-## Get authorizations
+## List authorizations
 
 _@since v4.9.0_
 
@@ -101,7 +102,7 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/authorizations?page=1&pag
 }
 ```
 
-```json
+```Error json
 {
 	"code": "wcpay_bad_request",
 	"message": "Error: Invalid sorting direction: ",
