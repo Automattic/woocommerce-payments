@@ -97,36 +97,26 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 	}
 
 	// Add a notice indicating the potential business day delay for pending and in_transit deposits.
-	let bannerAdded = false;
-	const depositRows = [ ...deposits ]
-		.reverse() // reverse the array so that the oldest pending or in_transit deposit has the notice added to it.
-		.map( ( deposit ) => {
-			let bannerNotice = null;
-
-			if (
-				! bannerAdded &&
-				( 'pending' === deposit.status ||
-					'in_transit' === deposit.status )
-			) {
-				bannerNotice = (
-					<BannerNotice
-						status="info"
-						icon={ <InfoOutlineIcon /> }
-						children={ strings.notices.businessDayDelay }
-						isDismissible={ false }
-					/>
-				);
-				bannerAdded = true;
-			}
-
-			return (
-				<Fragment key={ deposit.id }>
-					<DepositTableRow deposit={ deposit } />
-					{ bannerNotice }
-				</Fragment>
-			);
-		} )
-		.reverse(); // reverse the array back to the original order.
+	// The notice is added after the oldest pending or in_transit deposit.
+	const oldestPendingDepositId = [ ...deposits ]
+		.reverse()
+		.find(
+			( deposit ) =>
+				'pending' === deposit.status || 'in_transit' === deposit.status
+		)?.id;
+	const depositRows = deposits.map( ( deposit ) => (
+		<Fragment key={ deposit.id }>
+			<DepositTableRow deposit={ deposit } />
+			{ deposit.id === oldestPendingDepositId && (
+				<BannerNotice
+					status="info"
+					icon={ <InfoOutlineIcon /> }
+					children={ strings.notices.businessDayDelay }
+					isDismissible={ false }
+				/>
+			) }
+		</Fragment>
+	) );
 
 	return (
 		<>
