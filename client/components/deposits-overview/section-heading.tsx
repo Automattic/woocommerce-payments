@@ -2,6 +2,7 @@
  * External dependencies
  */
 import React from 'react';
+import { CardBody } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -41,7 +42,7 @@ const DepositOverviewSectionHeading: React.FC< SectionHeadingProps > = ( {
 	isLoading = false,
 } ): JSX.Element => {
 	return (
-		<div className="wcpay-deposits-overview__heading">
+		<CardBody className="wcpay-deposits-overview__heading">
 			<span className="wcpay-deposits-overview__heading__title">
 				<Loadable isLoading={ isLoading } value={ title } />
 			</span>
@@ -56,7 +57,7 @@ const DepositOverviewSectionHeading: React.FC< SectionHeadingProps > = ( {
 					) }
 				</Loadable>
 			</div>
-		</div>
+		</CardBody>
 	);
 };
 

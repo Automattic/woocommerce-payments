@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Revert the added tests for Stripe Link due to rate limiting during concurrent execution.
