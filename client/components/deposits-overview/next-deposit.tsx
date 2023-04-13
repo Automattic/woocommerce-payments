@@ -50,13 +50,11 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 	);
 
 	// Next deposit related notices logic.
-	// const { includesFinancingPayout } = useDepositIncludesLoan(
-	// 	nextDeposit.id
-	// );
-	const includesFinancingPayout = true;
-	const completedWaitingPeriod = false;
-	//wcpaySettings.accountStatus.deposits?.completed_waiting_period;
-	const displayNotices = includesFinancingPayout || ! completedWaitingPeriod;
+	const { includesFinancingPayout } = useDepositIncludesLoan(
+		nextDeposit.id
+	);
+	const completedWaitingPeriod =
+		wcpaySettings.accountStatus.deposits?.completed_waiting_period;
 
 	return (
 		<>
@@ -117,7 +115,7 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 				</Flex>
 			</CardBody>
 			{ /* Notices */ }
-			{ ! isLoading && displayNotices && (
+			{ ! isLoading && (
 				<CardBody
 					className={ 'wcpay-deposits-overview__notices__container' }
 				>
