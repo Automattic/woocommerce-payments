@@ -145,7 +145,6 @@ class WC_Payments_Onboarding_Service {
 		// Ensure WC_Payments mode is switched immediately.
 		if ( $test_mode ) {
 			WC_Payments::mode()->dev();
-
 		} else {
 			WC_Payments::mode()->live();
 		}
