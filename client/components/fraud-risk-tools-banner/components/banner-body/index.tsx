@@ -1,10 +1,11 @@
 /**
  * External dependencies
  */
-import interpolateComponents from 'interpolate-components';
+import React from 'react';
+import interpolateComponents from '@automattic/interpolate-components';
 import { __ } from '@wordpress/i18n';
 
-const BannerBody = () => {
+const BannerBody: React.FC = () => {
 	return (
 		<p className="discoverability-card__body">
 			{ interpolateComponents( {

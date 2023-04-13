@@ -506,7 +506,7 @@ class WC_Payments_API_Client {
 			return $transaction;
 		}
 
-		return $this->add_order_info_to_object( $transaction['charge_id'], $transaction );
+		return $this->add_order_info_to_charge_object( $transaction['charge_id'], $transaction );
 	}
 
 	/**
@@ -576,7 +576,7 @@ class WC_Payments_API_Client {
 		}
 
 		$charge_id = is_array( $dispute['charge'] ) ? $dispute['charge']['id'] : $dispute['charge'];
-		return $this->add_order_info_to_object( $charge_id, $dispute );
+		return $this->add_order_info_to_charge_object( $charge_id, $dispute );
 	}
 
 	/**
@@ -605,7 +605,7 @@ class WC_Payments_API_Client {
 		}
 
 		$charge_id = is_array( $dispute['charge'] ) ? $dispute['charge']['id'] : $dispute['charge'];
-		return $this->add_order_info_to_object( $charge_id, $dispute );
+		return $this->add_order_info_to_charge_object( $charge_id, $dispute );
 	}
 
 	/**
@@ -624,7 +624,7 @@ class WC_Payments_API_Client {
 		}
 
 		$charge_id = is_array( $dispute['charge'] ) ? $dispute['charge']['id'] : $dispute['charge'];
-		return $this->add_order_info_to_object( $charge_id, $dispute );
+		return $this->add_order_info_to_charge_object( $charge_id, $dispute );
 	}
 
 	/**
@@ -2130,7 +2130,7 @@ class WC_Payments_API_Client {
 	 * @return array
 	 */
 	public function add_additional_info_to_charge( array $charge ) : array {
-		$charge = $this->add_order_info_to_object( $charge['id'], $charge );
+		$charge = $this->add_order_info_to_charge_object( $charge['id'], $charge );
 		$charge = $this->add_formatted_address_to_charge_object( $charge );
 
 		return $charge;
@@ -2164,18 +2164,47 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Adds additional info to intention object.
+	 *
+	 * @param string $intention_id Intention ID.
+	 *
+	 * @return array
+	 */
+	private function get_order_info_from_intention_object( $intention_id ) {
+		$order  = $this->wcpay_db->order_from_intent_id( $intention_id );
+		$object = $this->add_order_info_to_object( $order, [] );
+
+		return $object['order'];
+	}
+
+	/**
+	 * Adds order information to the charge object.
+	 *
+	 * @param string $charge_id Charge ID.
+	 * @param array  $object    Object to add order information.
+	 *
+	 * @return array
+	 */
+	private function add_order_info_to_charge_object( $charge_id, $object ) {
+		$order  = $this->wcpay_db->order_from_charge_id( $charge_id );
+		$object = $this->add_order_info_to_object( $order, $object );
+
+		return $object;
+	}
+
+	/**
 	 * Returns a transaction with order information when it exists.
 	 *
-	 * @param  string $charge_id related charge id.
-	 * @param  array  $object object to add order information.
-	 * @return array  new object with order information.
+	 * @param  bool|\WC_Order|\WC_Order_Refund $order  Order object.
+	 * @param  array                           $object Object to add order information.
+	 *
+	 * @return array new object with order information.
 	 */
-	private function add_order_info_to_object( $charge_id, $object ) {
-		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
-
+	private function add_order_info_to_object( $order, $object ) {
 		// Add order information to the `$transaction`.
 		// If the order couldn't be retrieved, return an empty order.
 		$object['order'] = null;
+
 		if ( $order ) {
 			$object['order'] = $this->build_order_info( $order );
 		}
@@ -2191,9 +2220,10 @@ class WC_Payments_API_Client {
 	 */
 	public function build_order_info( WC_Order $order ): array {
 		$order_info = [
-			'number'       => $order->get_order_number(),
-			'url'          => $order->get_edit_order_url(),
-			'customer_url' => $this->get_customer_url( $order ),
+			'number'              => $order->get_order_number(),
+			'url'                 => $order->get_edit_order_url(),
+			'customer_url'        => $this->get_customer_url( $order ),
+			'fraud_meta_box_type' => $order->get_meta( '_wcpay_fraud_meta_box_type' ),
 		];
 
 		if ( function_exists( 'wcs_get_subscriptions_for_order' ) ) {
@@ -2303,6 +2333,7 @@ class WC_Payments_API_Client {
 		$payment_method_types = $intention_array['payment_method_types'] ?? [];
 
 		$charge = ! empty( $charge_array ) ? self::deserialize_charge_object_from_array( $charge_array ) : null;
+		$order  = $this->get_order_info_from_intention_object( $intention_array['id'] );
 
 		$intent = new WC_Payments_API_Intention(
 			$intention_array['id'],
@@ -2318,7 +2349,8 @@ class WC_Payments_API_Client {
 			$last_payment_error,
 			$metadata,
 			$processing,
-			$payment_method_types
+			$payment_method_types,
+			$order
 		);
 
 		return $intent;

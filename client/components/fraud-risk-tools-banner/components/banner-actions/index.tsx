@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 
@@ -9,22 +10,31 @@ import { Button } from '@wordpress/components';
  */
 import wcpayTracks from 'tracks';
 
-const BannerActions = ( {
+interface BannerActionsProps {
+	remindMeCount: number;
+	handleRemindOnClick: () => void;
+	handleDontShowAgainOnClick: () => void;
+}
+
+const BannerActions: React.FC< BannerActionsProps > = ( {
 	remindMeCount,
 	handleRemindOnClick,
 	handleDontShowAgainOnClick,
 } ) => {
+	const handleLearnMoreButtonClick = () => {
+		wcpayTracks.recordEvent(
+			'wcpay_fraud_protection_banner_learn_more_button_clicked',
+			{}
+		);
+	};
+
 	return (
 		<div className="discoverability-card__actions">
 			<Button
 				href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/"
 				target="_blank"
 				isPrimary
-				onClick={ () => {
-					wcpayTracks.recordEvent(
-						'wcpay_fraud_protection_banner_learn_more_button_clicked'
-					);
-				} }
+				onClick={ handleLearnMoreButtonClick }
 			>
 				{ __( 'Learn more', 'woocommerce-payments' ) }
 			</Button>
