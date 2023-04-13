@@ -102,7 +102,7 @@ Return data of a particular deposit.
   <div class="endpoint-data">
 
    <i class="label label-get">GET</i>
-   <h6>/wp-json/wc/v3/payments/deposits/&lt; deposit_id&gt; </h6>
+   <h6>/wp-json/wc/v3/payments/deposits/&lt;deposit_id&gt; </h6>
 
   </div>
 </div>
