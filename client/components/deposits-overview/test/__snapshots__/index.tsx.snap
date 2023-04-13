@@ -170,7 +170,6 @@ exports[`Deposits Overview information Component Renders 1`] = `
     <div
       class="components-card__body is-size-medium wcpay-deposits-overview__table__container css-xmjzce-BodyUI e1q7k77g3"
     >
-       
       <div
         class="components-flex wcpay-deposits-overview__table__row css-1rdm0qk-Flex eboqfv50"
       >
