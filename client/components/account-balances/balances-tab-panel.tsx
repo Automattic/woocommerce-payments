@@ -36,7 +36,7 @@ type BalanceTab = {
 	availableFunds: number;
 	pendingFunds: number;
 	delayDays: number;
-	instant?: AccountOverview.InstantBalance;
+	instantBalance?: AccountOverview.InstantBalance;
 };
 
 /**
@@ -196,13 +196,13 @@ const AccountBalancesTabPanel: React.FC = () => {
 								}
 							/>
 						</Flex>
-						{ tab.instant && tab.instant.amount > 0 && (
+						{ tab.instantBalance && tab.instantBalance.amount > 0 && (
 							<Flex
 								gap={ 0 }
 								className="wcpay-account-balances__instant-deposit"
 							>
 								<InstantDepositButton
-									instantBalance={ tab.instant }
+									instantBalance={ tab.instantBalance }
 								/>
 							</Flex>
 						) }
