@@ -9,6 +9,7 @@ namespace WCPay\Platform_Checkout;
 
 use Automattic\Jetpack\Connection\Rest_Authentication;
 use Automattic\WooCommerce\StoreApi\Utilities\JsonWebToken;
+use WCPay\Logger;
 
 /**
  * Class responsible for handling platform checkout sessions.
@@ -38,7 +39,7 @@ class Platform_Checkout_Session {
 			return $user;
 		}
 
-		if ( ! self::is_store_api_request() || ! self::is_request_from_woopay() ) {
+		if ( ! self::is_store_api_request() || ! self::validate_request_from_woopay() ) {
 			return $user;
 		}
 
@@ -95,15 +96,21 @@ class Platform_Checkout_Session {
 	}
 
 	/**
-	 * Returns true if the request is from WooPay.
+	 * Validates that the request is from WooPay and that it's signed with the blog token.
 	 *
 	 * @return bool  True if request is from WooPay.
+	 * @throws \Exception If the request is not signed with the blog token.
 	 */
-	private static function is_request_from_woopay(): bool {
+	private static function validate_request_from_woopay(): bool {
 		if ( ! isset( $_SERVER['HTTP_USER_AGENT'] ) || 'WooPay' !== $_SERVER['HTTP_USER_AGENT'] ) {
 			return false;
 		}
 
-		return apply_filters( 'wcpay_woopay_is_signed_with_blog_token', Rest_Authentication::is_signed_with_blog_token() );
+		if ( ! apply_filters( 'wcpay_woopay_is_signed_with_blog_token', Rest_Authentication::is_signed_with_blog_token() ) ) {
+			Logger::log( 'WooPay request is not signed correctly.' );
+			throw new \Exception( 'Request is not signed correctly.' );
+		}
+
+		return true;
 	}
 }
