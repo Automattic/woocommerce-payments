@@ -142,7 +142,6 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	charge = {} as Charge,
 	metadata = {},
 	isLoading,
-	fraudOutcome,
 	paymentIntent,
 } ) => {
 	const balance = charge.amount
@@ -170,10 +169,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		shouldFetchAuthorization
 	);
 
-	const isFraudOutcomeReview = isOnHoldByFraudTools(
-		fraudOutcome,
-		paymentIntent
-	);
+	const isFraudOutcomeReview = isOnHoldByFraudTools( charge, paymentIntent );
 
 	return (
 		<Card>
@@ -196,7 +192,6 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								<PaymentStatusChip
 									status={ getChargeStatus(
 										charge,
-										fraudOutcome,
 										paymentIntent
 									) }
 								/>
