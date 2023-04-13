@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Payment_Method;
+
 /**
  * WCPay\MultiCurrency\PaymentMethodsCompatibility unit tests.
  */
@@ -81,12 +83,12 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WCPAY_Uni
 	public function test_it_should_not_update_available_currencies_when_not_needed() {
 		$this->gateway_mock->expects( $this->atLeastOnce() )->method( 'get_upe_enabled_payment_method_ids' )->willReturn(
 			[
-				'card',
-				'au_becs_debit',
-				'bancontact',
-				'eps',
-				'giropay',
-				'sepa_debit',
+				Payment_Method::CARD,
+				Payment_Method::BECS,
+				Payment_Method::BANCONTACT,
+				Payment_Method::EPS,
+				Payment_Method::GIROPAY,
+				Payment_Method::SEPA,
 			]
 		);
 		$this->multi_currency_mock->expects( $this->atLeastOnce() )->method( 'get_enabled_currencies' )->willReturn(
@@ -108,12 +110,12 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WCPAY_Uni
 	public function test_it_should_update_available_currencies_when_needed() {
 		$this->gateway_mock->expects( $this->atLeastOnce() )->method( 'get_upe_enabled_payment_method_ids' )->willReturn(
 			[
-				'card',
-				'au_becs_debit',
-				'bancontact',
-				'eps',
-				'giropay',
-				'sepa_debit',
+				Payment_Method::CARD,
+				Payment_Method::BECS,
+				Payment_Method::BANCONTACT,
+				Payment_Method::EPS,
+				Payment_Method::GIROPAY,
+				Payment_Method::SEPA,
 			]
 		);
 		$this->multi_currency_mock->expects( $this->atLeastOnce() )->method( 'get_enabled_currencies' )->willReturn(

@@ -8,13 +8,14 @@
 namespace WCPay\Payment_Methods;
 
 use WC_Payments_Token_Service;
+use WCPay\Constants\Payment_Method;
 
 /**
  * Bancontact Payment Method class extending UPE base class
  */
 class Bancontact_Payment_Method extends UPE_Payment_Method {
 
-	const PAYMENT_METHOD_STRIPE_ID = 'bancontact';
+	const PAYMENT_METHOD_STRIPE_ID = Payment_Method::BANCONTACT;
 
 	/**
 	 * Constructor for Bancontact payment method

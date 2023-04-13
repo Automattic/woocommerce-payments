@@ -8,6 +8,7 @@
 use WCPay\Constants\Fraud_Meta_Box_Type;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Payment_Method;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Fraud_Prevention\Models\Rule;
 
@@ -480,7 +481,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			'mark_payment_started_intent_status_requires_action_not_card' => [
 				'intent_args'             => [
 					'status'               => Payment_Intent_Status::REQUIRES_ACTION,
-					'payment_method_types' => [ 'bancontact' ],
+					'payment_method_types' => [ Payment_Method::BANCONTACT ],
 				],
 				'expected_fraud_meta_box' => Fraud_Meta_Box_Type::NOT_CARD,
 			],
