@@ -68,6 +68,7 @@ const AccountBalancesTabPanel: React.FC = () => {
 			availableFunds: 0,
 			pendingFunds: 0,
 			delayDays: 0,
+			instantBalance: undefined,
 		},
 	];
 
@@ -82,7 +83,7 @@ const AccountBalancesTabPanel: React.FC = () => {
 				availableFunds: overview.available?.amount ?? 0,
 				pendingFunds: overview.pending?.amount ?? 0,
 				delayDays: account.deposits_schedule.delay_days,
-				instant: overview.instant,
+				instantBalance: overview.instant,
 			} )
 		);
 	}
