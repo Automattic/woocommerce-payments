@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: This handles some edgecases around the merchant flow with relation to Stripe KYC.
+
+
