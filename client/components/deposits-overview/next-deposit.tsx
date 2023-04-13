@@ -154,7 +154,7 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 								},
 							} ) }
 						</BannerNotice>
-						</div>
+					</div>
 				) }
 
 				{ /* Notice(s) */ }
@@ -169,7 +169,6 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 					</div>
 				) }
 			</CardBody>
-
 		</>
 	);
 };
