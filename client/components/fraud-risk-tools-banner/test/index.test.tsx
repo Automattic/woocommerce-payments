@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import React, { HTMLAttributes } from 'react';
 import { render } from '@testing-library/react';
 
 /**
@@ -8,12 +9,20 @@ import { render } from '@testing-library/react';
  */
 import FRTDiscoverabilityBanner from '..';
 
-jest.mock( '@woocommerce/components', () => {
-	return {
-		Pill: ( { className, children } ) => (
-			<span className={ className }>{ children }</span>
-		),
+declare const global: {
+	wcpaySettings: {
+		frtDiscoverBannerSettings: string;
+		isFraudProtectionSettingsEnabled: boolean;
 	};
+};
+
+jest.mock( '@woocommerce/components', () => {
+	const Pill: React.FC< HTMLAttributes< HTMLDivElement > > = ( {
+		className,
+		children,
+	} ) => <span className={ className }>{ children }</span>;
+
+	return { Pill };
 } );
 
 jest.mock( '@wordpress/data', () => ( {
@@ -23,6 +32,7 @@ jest.mock( '@wordpress/data', () => ( {
 describe( 'FRTDiscoverabilityBanner', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
+			frtDiscoverBannerSettings: '',
 			isFraudProtectionSettingsEnabled: true,
 		};
 	} );
