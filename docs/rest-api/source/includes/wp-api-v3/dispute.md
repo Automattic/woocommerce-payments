@@ -1,6 +1,6 @@
 # Dispute
 
-A dispute occurs when a customer contests a payment made with their card. 
+A dispute occurs when a customer contests a payment made with their card, account, or wallet. 
 
 Disputes should be responded to with evidence that the payment was legitimate.
 
