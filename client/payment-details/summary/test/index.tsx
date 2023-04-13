@@ -254,14 +254,6 @@ describe( 'PaymentDetailsSummary', () => {
 				screen.getByRole( 'button', { name: /Capture/i } )
 			).toBeInTheDocument();
 
-			expect(
-				container.getElementsByClassName(
-					'payment-details-capture-notice__text'
-				)[ 0 ].innerHTML
-			).toMatch(
-				`You need to <a href=\"https://woocommerce.com/document/woocommerce-payments/settings-guide/authorize-and-capture/#capturing-authorized-orders\" target=\"_blank\" rel=\"noreferer\">capture</a> this charge in <abbr title=\"Jan 8, 2023 / 1:00AM\"><b>7 days</b></abbr>`
-			);
-
 			expect( container ).toMatchSnapshot();
 		} );
 
