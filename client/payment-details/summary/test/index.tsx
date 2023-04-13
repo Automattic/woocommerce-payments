@@ -4,7 +4,7 @@
  */
 import { render, screen } from '@testing-library/react';
 import React from 'react';
-
+import moment from 'moment';
 /**
  * Internal dependencies
  */
@@ -232,7 +232,7 @@ describe( 'PaymentDetailsSummary', () => {
 					charge_id: 'ch_mock',
 					amount: 1000,
 					currency: 'usd',
-					created: new Date( Date.now() ).toISOString(),
+					created: moment.utc().format(),
 					order_id: 123,
 					risk_level: 1,
 					customer_country: 'US',
@@ -259,7 +259,7 @@ describe( 'PaymentDetailsSummary', () => {
 					'payment-details-capture-notice__text'
 				)[ 0 ].innerHTML
 			).toMatch(
-				`You need to <a href=\"https://woocommerce.com/document/woocommerce-payments/settings-guide/authorize-and-capture/#capturing-authorized-orders\" target=\"_blank\" rel=\"noreferer\">capture</a> this charge in <abbr title=\"Jan 7, 2023 / 3:00PM\"><b>7 days</b></abbr>`
+				`You need to <a href=\"https://woocommerce.com/document/woocommerce-payments/settings-guide/authorize-and-capture/#capturing-authorized-orders\" target=\"_blank\" rel=\"noreferer\">capture</a> this charge in <abbr title=\"Jan 8, 2023 / 1:00AM\"><b>7 days</b></abbr>`
 			);
 
 			expect( container ).toMatchSnapshot();

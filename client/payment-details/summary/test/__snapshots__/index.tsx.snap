@@ -240,7 +240,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
           </a>
            this charge in 
           <abbr
-            title="Jan 7, 2023 / 3:00PM"
+            title="Jan 8, 2023 / 1:00AM"
           >
             <b>
               7 days
@@ -519,7 +519,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
           </a>
            this charge in 
           <abbr
-            title="Jan 7, 2023 / 3:00PM"
+            title="Jan 8, 2023 / 1:00AM"
           >
             <b>
               7 days

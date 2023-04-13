@@ -6,7 +6,7 @@
 import { sprintf, __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import { Card, CardBody, CardFooter, CardDivider } from '@wordpress/components';
-import moment from 'moment';
+import moment, { Moment } from 'moment';
 import React, { useContext } from 'react';
 import { createInterpolateElement } from '@wordpress/element';
 
@@ -176,8 +176,8 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		paymentIntent
 	);
 
-	const relativeTimeRemaining = ( deadlineDate: number ): string => {
-		const timeRemaining = deadlineDate - Date.now();
+	const relativeTimeRemaining = ( deadlineDate: Moment ): string => {
+		const timeRemaining = deadlineDate.diff( moment.utc() );
 
 		const minutesRemaining = Math.ceil( timeRemaining / 1000 / 60 );
 		const hoursRemaining = Math.ceil( timeRemaining / 1000 / 60 / 60 );
@@ -432,54 +432,18 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 									<abbr
 										title={ dateI18n(
 											'M j, Y / g:iA',
-											new Date(
-												Date.UTC(
-													new Date(
-														authorization.created
-													).getFullYear(),
-													new Date(
-														authorization.created
-													).getMonth(),
-													new Date(
-														authorization.created
-													).getDate() + 7,
-													new Date(
-														authorization.created
-													).getHours(),
-													new Date(
-														authorization.created
-													).getMinutes(),
-													new Date(
-														authorization.created
-													).getSeconds()
-												)
-											)
+											moment
+												.utc( authorization.created )
+												.add( 7, 'days' )
 										) }
 									>
 										<b>
 											{ relativeTimeRemaining(
-												new Date(
-													Date.UTC(
-														new Date(
-															authorization.created
-														).getFullYear(),
-														new Date(
-															authorization.created
-														).getMonth(),
-														new Date(
-															authorization.created
-														).getDate() + 7,
-														new Date(
-															authorization.created
-														).getHours(),
-														new Date(
-															authorization.created
-														).getMinutes(),
-														new Date(
-															authorization.created
-														).getSeconds()
+												moment
+													.utc(
+														authorization.created
 													)
-												).valueOf()
+													.add( 7, 'days' )
 											) }
 										</b>
 									</abbr>
