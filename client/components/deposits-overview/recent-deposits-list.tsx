@@ -18,6 +18,9 @@ import { CachedDeposit } from 'wcpay/types/deposits';
 import { formatCurrency } from 'wcpay/utils/currency';
 import { getDetailsURL } from 'wcpay/components/details-link';
 import useRecentDeposits from './hooks';
+import DepositSchedule from './deposit-schedule';
+import SuspendedDepositNotice from './suspended-deposit-notice';
+import DepositOverviewSectionHeading from './section-heading';
 
 interface DepositRowProps {
 	deposit: CachedDeposit;
@@ -25,6 +28,7 @@ interface DepositRowProps {
 
 interface RecentDepositsProps {
 	currency: string;
+	account?: AccountOverview.Account;
 }
 
 const tableClass = 'wcpay-deposits-overview__table';
@@ -86,6 +90,7 @@ const DepositTableRowLoading: React.FC = (): JSX.Element => {
  */
 const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 	currency,
+	account,
 } ): JSX.Element => {
 	const { isLoading, deposits } = useRecentDeposits( currency );
 
@@ -95,6 +100,20 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 
 	return (
 		<>
+			{ !! account &&
+				( account.deposits_blocked ? (
+					<DepositOverviewSectionHeading
+						title={ strings.depositHistoryHeading }
+						children={ <SuspendedDepositNotice /> }
+					/>
+				) : (
+					<DepositOverviewSectionHeading
+						title={ strings.depositHistoryHeading }
+						text={
+							<DepositSchedule { ...account.deposits_schedule } />
+						}
+					/>
+				) ) }
 			{ /* Next Deposit Table */ }
 			<div className={ tableClass }>
 				<Flex className={ `${ tableClass }__row__header` }>

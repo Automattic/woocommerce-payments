@@ -10,20 +10,20 @@ import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 /**
  * Internal dependencies.
  */
+import { isInTestMode } from 'utils';
 import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
 import strings from './strings';
 import NextDepositDetails from './next-deposit';
 import RecentDepositsList from './recent-deposits-list';
 import DepositsOverviewFooter from './footer';
 import DepositOverviewSectionHeading from './section-heading';
-import DepositSchedule from './deposit-schedule';
-import SuspendedDepositNotice from './suspended-deposit-notice';
 import BannerNotice from 'wcpay/components/banner-notice';
 import './style.scss';
 
 const DepositsOverview = (): JSX.Element => {
 	const { account, overview, isLoading } = useSelectedCurrencyOverview();
 	const completedWaitingPeriod =
+		isInTestMode() ||
 		wcpaySettings.accountStatus.deposits?.completed_waiting_period;
 
 	const userHasNotFinishedNewAccountWaitingPeriodNotice = createInterpolateElement(
@@ -74,30 +74,11 @@ const DepositsOverview = (): JSX.Element => {
 				</>
 			) }
 
-			{ completedWaitingPeriod && (
-				<>
-					{ ! isLoading &&
-						!! account &&
-						( account.deposits_blocked ? (
-							<DepositOverviewSectionHeading
-								title={ strings.depositHistoryHeading }
-								children={ <SuspendedDepositNotice /> }
-							/>
-						) : (
-							<DepositOverviewSectionHeading
-								title={ strings.depositHistoryHeading }
-								text={
-									<DepositSchedule
-										{ ...account.deposits_schedule }
-									/>
-								}
-							/>
-						) ) }
-
-					{ overview?.currency && (
-						<RecentDepositsList currency={ overview.currency } />
-					) }
-				</>
+			{ overview?.currency && (
+				<RecentDepositsList
+					currency={ overview.currency }
+					account={ account }
+				/>
 			) }
 
 			<DepositsOverviewFooter />
