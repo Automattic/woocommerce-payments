@@ -10,7 +10,6 @@ import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 /**
  * Internal dependencies.
  */
-import { isInTestMode } from 'utils';
 import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
 import strings from './strings';
 import NextDepositDetails from './next-deposit';
@@ -23,7 +22,6 @@ import './style.scss';
 const DepositsOverview = (): JSX.Element => {
 	const { account, overview, isLoading } = useSelectedCurrencyOverview();
 	const completedWaitingPeriod =
-		isInTestMode() ||
 		wcpaySettings.accountStatus.deposits?.completed_waiting_period;
 
 	const userHasNotFinishedNewAccountWaitingPeriodNotice = createInterpolateElement(
