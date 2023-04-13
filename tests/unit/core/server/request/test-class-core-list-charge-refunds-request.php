@@ -40,30 +40,40 @@ class List_Charge_Refunds_Test extends WCPAY_UnitTestCase {
 		$this->mock_wc_payments_http_client = $this->createMock( WC_Payments_Http_Interface::class );
 	}
 
+	public function test_exception_will_throw_if_charge_id_is_invalid() {
+		$request = new List_Charge_Refunds( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$this->expectException( Invalid_Request_Parameter_Exception::class );
+		$request->set_charge( '1' );
+	}
+
+	public function test_py_prefix_will_not_throw_exception() {
+		$request = new List_Charge_Refunds( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_charge( 'py_xyz' );
+		$this->addToAssertionCount( 1 ); // We're not asserting anything, just not expecting an exception.
+	}
 	public function test_exception_will_throw_if_limit_is_invalid() {
-		$request = new List_Charge_Refunds( $this->mock_api_client, $this->mock_wc_payments_http_client, 'py_xyz' );
+		$request = new List_Charge_Refunds( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_charge( 'ch_mock' );
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
 		$request->set_limit( 0 );
 	}
 
 	public function test_exception_will_throw_if_charge_id_is_not_set() {
+		$request = new List_Charge_Refunds( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
-
-		new List_Charge_Refunds( $this->mock_api_client, $this->mock_wc_payments_http_client, null );
-	}
-
-	public function test_exception_will_throw_if_charge_id_is_invalid() {
-		$this->expectException( Invalid_Request_Parameter_Exception::class );
-		new List_Charge_Refunds( $this->mock_api_client, $this->mock_wc_payments_http_client, '1' );
-	}
-
-	public function test_py_prefix_will_not_throw_exception() {
-		new List_Charge_Refunds( $this->mock_api_client, $this->mock_wc_payments_http_client, 'py_xyz' );
-		$this->addToAssertionCount( 1 ); // We're not asserting anything, just not expecting an exception.
+		$request->get_params();
 	}
 
 	public function test_list_charge_refunds_request_class_is_created() {
-		$request = new List_Charge_Refunds( $this->mock_api_client, $this->mock_wc_payments_http_client, 'ch_mock' );
-		$this->assertSame( WC_Payments_API_Client::REFUNDS_API . '/ch_mock', $request->get_api() );
+		$charge  = 'ch_mock';
+		$limit   = 50;
+		$request = new List_Charge_Refunds( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_charge( $charge );
+		$request->set_limit( $limit );
+		$this->assertSame( WC_Payments_API_Client::REFUNDS_API, $request->get_api() );
+		$this->assertSame( 'GET', $request->get_method() );
+		$params = $request->get_params();
+		$this->assertSame( $limit, $params['limit'] );
+		$this->assertSame( $charge, $params['charge'] );
 	}
 }

@@ -125,7 +125,12 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 				'currency'                 => 'usd',
 			]
 		);
-		$request  = $this->mock_wcpay_request( Refund_Charge::class, 1, $charge_id );
+		$request  = $this->mock_wcpay_request( Refund_Charge::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
+
 		$request->expects( $this->once() )
 			->method( 'set_amount' )
 			->with( WC_Payments_Utils::prepare_amount( $amount ) );
@@ -133,6 +138,10 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $response );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
 
 		$result = $this->wcpay_gateway->process_refund( $order->get_id(), $amount );
 
@@ -155,7 +164,11 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 				'currency' => 'usd',
 			]
 		);
-		$request  = $this->mock_wcpay_request( Refund_Charge::class, 1, $charge_id );
+		$request  = $this->mock_wcpay_request( Refund_Charge::class );
+		$request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
+
 		$request->expects( $this->once() )
 			->method( 'set_amount' )
 			->with( $amount );
@@ -163,6 +176,10 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $response );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
 
 		$result = $this->wcpay_gateway->process_refund( $order->get_id(), $order->get_total() );
 
@@ -200,7 +217,11 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 				'currency'                 => 'usd',
 			]
 		);
-		$request  = $this->mock_wcpay_request( Refund_Charge::class, 1, $charge_id );
+		$request  = $this->mock_wcpay_request( Refund_Charge::class );
+		$request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
+
 		$request->expects( $this->once() )
 			->method( 'set_amount' )
 			->with( WC_Payments_Utils::prepare_amount( $amount ) );
@@ -208,6 +229,10 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $response );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
 
 		$result = $this->wcpay_gateway->process_refund( $order->get_id(), 19.99 );
 
@@ -251,7 +276,11 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 				'currency'                 => 'eur',
 			]
 		);
-		$request  = $this->mock_wcpay_request( Refund_Charge::class, 1, $charge_id );
+		$request  = $this->mock_wcpay_request( Refund_Charge::class );
+		$request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
+
 		$request->expects( $this->once() )
 			->method( 'set_amount' )
 			->with( WC_Payments_Utils::prepare_amount( $amount, 'eur' ) );
@@ -259,6 +288,10 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $response );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
 
 		$result = $this->wcpay_gateway->process_refund( $order->get_id(), 19.99 );
 
@@ -301,14 +334,22 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 				'currency'                 => 'eur',
 			]
 		);
-		$request  = $this->mock_wcpay_request( Refund_Charge::class, 1, $charge_id );
+		$request  = $this->mock_wcpay_request( Refund_Charge::class );
 		$request->expects( $this->once() )
 			->method( 'set_amount' )
 			->with( WC_Payments_Utils::prepare_amount( $amount, 'eur' ) );
 
 		$request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
+
+		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $response );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
 
 		$result = $this->wcpay_gateway->process_refund( $order->get_id(), 19.99, 'some reason' );
 
@@ -358,7 +399,11 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 				]
 			);
 
-		$list_request = $this->mock_wcpay_request( List_Charge_Refunds::class, 1, $charge_id );
+		$list_request = $this->mock_wcpay_request( List_Charge_Refunds::class );
+		$list_request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
+
 		$list_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn(
@@ -385,7 +430,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 				)
 			);
 
-		$this->mock_wcpay_request( Refund_Charge::class, 0, $charge_id );
+		$this->mock_wcpay_request( Refund_Charge::class, 0 );
 
 		$result = $this->wcpay_gateway->process_refund( $order->get_id(), 19.99 );
 
@@ -429,7 +474,10 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 					WC_Helper_Intention::create_intention( [ 'charge' => [ 'payment_method_details' => [ 'type' => 'interac_present' ] ] ] )
 				);
 
-		$list_request = $this->mock_wcpay_request( List_Charge_Refunds::class, 1, $charge_id );
+		$list_request = $this->mock_wcpay_request( List_Charge_Refunds::class );
+		$list_request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
 		$list_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn(
@@ -454,7 +502,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 				]
 			);
 
-		$this->mock_wcpay_request( Refund_Charge::class, 0, $charge_id );
+		$this->mock_wcpay_request( Refund_Charge::class, 0 );
 
 		$result = $this->wcpay_gateway->process_refund( $order->get_id(), $order->get_total() );
 
@@ -507,7 +555,10 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 				]
 			);
 
-		$list_request = $this->mock_wcpay_request( List_Charge_Refunds::class, 1, $charge_id );
+		$list_request = $this->mock_wcpay_request( List_Charge_Refunds::class );
+		$list_request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
 		$list_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn(
@@ -516,7 +567,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 				]
 			);
 
-		$this->mock_wcpay_request( Refund_Charge::class, 0, $charge_id );
+		$this->mock_wcpay_request( Refund_Charge::class, 0 );
 
 		$result = $this->wcpay_gateway->process_refund( $order->get_id(), 19.99 );
 
@@ -560,7 +611,10 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 				]
 			);
 
-		$list_request = $this->mock_wcpay_request( List_Charge_Refunds::class, 1, $charge_id );
+		$list_request = $this->mock_wcpay_request( List_Charge_Refunds::class );
+		$list_request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
 		$list_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn(
@@ -585,7 +639,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 				]
 			);
 
-		$this->mock_wcpay_request( Refund_Charge::class, 0, $charge_id );
+		$this->mock_wcpay_request( Refund_Charge::class, 0 );
 
 		$result = $this->wcpay_gateway->process_refund( $order->get_id(), 19.99 );
 
@@ -607,6 +661,10 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$this->mock_order_service
 			->method( 'get_intent_id_for_order' )
 			->willReturn( $intent_id );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
 
 		$this->mock_order_service
 			->method( 'get_payment_method_id_for_order' )
@@ -641,7 +699,10 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 				'currency'                 => 'eur',
 			]
 		);
-		$request  = $this->mock_wcpay_request( Refund_Charge::class, 1, $charge_id );
+		$request  = $this->mock_wcpay_request( Refund_Charge::class );
+		$request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
 		$request->expects( $this->once() )
 			->method( 'set_amount' )
 			->with( WC_Payments_Utils::prepare_amount( $amount, 'eur' ) );
@@ -749,7 +810,10 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 				'currency'                 => 'usd',
 			]
 		);
-		$request  = $this->mock_wcpay_request( Refund_Charge::class, 1, $charge_id );
+		$request  = $this->mock_wcpay_request( Refund_Charge::class );
+		$request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
 		$request->expects( $this->once() )
 			->method( 'set_amount' )
 			->with( WC_Payments_Utils::prepare_amount( $amount ) );
@@ -757,6 +821,10 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $response );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
 
 		$this->wcpay_gateway->process_refund( $order->get_id(), $amount );
 
@@ -777,11 +845,19 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 
 		$order_id = $order->get_id();
 
-		$request = $this->mock_wcpay_request( Refund_Charge::class, 1, $charge_id );
+		$request = $this->mock_wcpay_request( Refund_Charge::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willThrowException( new \Exception( 'Test message' ) );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
 
 		$this->mock_order_service
 			->method( 'get_wcpay_refund_status_for_order' )
@@ -820,7 +896,11 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 
 		$order_id = $order->get_id();
 
-		$request = $this->mock_wcpay_request( Refund_Charge::class, 1, $charge_id );
+		$request = $this->mock_wcpay_request( Refund_Charge::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -864,7 +944,12 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 
 		$order_id = $order->get_id();
 
-		$request = $this->mock_wcpay_request( Refund_Charge::class, 1, $charge_id );
+		$request = $this->mock_wcpay_request( Refund_Charge::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
+
 		$request
 			->expects( $this->once() )
 			->method( 'format_response' )

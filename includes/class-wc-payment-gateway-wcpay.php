@@ -1489,8 +1489,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$is_refunded_off_session = Payment_Method::INTERAC_PRESENT === $this->get_payment_method_type_for_order( $order );
 			if ( $is_refunded_off_session ) {
 				$refund_amount              = WC_Payments_Utils::prepare_amount( $amount ?? $order->get_total(), $order->get_currency() );
-				$list_charge_refund_request = List_Charge_Refunds::create( $charge_id );
-				$refunds                    = $list_charge_refund_request->send( 'wcpay_list_charge_refunds_request' );
+				$list_charge_refund_request = List_Charge_Refunds::create();
+				$list_charge_refund_request->set_charge( $charge_id );
+
+				$refunds = $list_charge_refund_request->send( 'wcpay_list_charge_refunds_request' );
 
 				$refunds = array_filter(
 					$refunds['data'] ?? [],
@@ -1509,7 +1511,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				$refund = array_pop( $refunds );
 			} else {
-				$refund_request = Refund_Charge::create( $charge_id );
+				$refund_request = Refund_Charge::create();
+				$refund_request->set_charge( $charge_id );
 				if ( null !== $amount ) {
 					$refund_request->set_amount( WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
 				}

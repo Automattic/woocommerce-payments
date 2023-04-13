@@ -21,22 +21,24 @@ class Refund_Charge extends Request {
 		'amount' => null,
 	];
 
-	const IMMUTABLE_PARAMS = [ 'id' ];
+	const IMMUTABLE_PARAMS = [ 'charge' ];
+
+	const REQUIRED_PARAMS = [ 'charge' ];
 
 	/**
 	 * Sets the charge ID, which will be used in the request URL.
 	 *
-	 * @param string $id Sets the charge ID, which will be used in the request URL.
+	 * @param string $charge_id Sets the charge ID, which will be used in the request URL.
 	 *
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
-	protected function set_id( string $id ) {
+	public function set_charge( string $charge_id ) {
 		/**
 		 * `py_XYZ` objects are identical to charges, and sometimes occur
 		 * whenever the payment was made in a non-deposit currency.
 		 */
-		$this->validate_stripe_id( $id, [ 'ch', 'py' ] );
-		$this->id = $id;
+		$this->validate_stripe_id( $charge_id, [ 'ch', 'py' ] );
+		$this->set_param( 'charge', $charge_id );
 	}
 
 	/**
@@ -57,7 +59,7 @@ class Refund_Charge extends Request {
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
 	public function get_api(): string {
-		return WC_Payments_API_Client::REFUNDS_API . '/' . $this->id;
+		return WC_Payments_API_Client::REFUNDS_API;
 	}
 
 	/**

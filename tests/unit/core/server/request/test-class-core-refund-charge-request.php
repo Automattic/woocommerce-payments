@@ -41,33 +41,41 @@ class Refund_Charge_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_exception_will_throw_if_amount_is_invalid() {
-		$request = new Refund_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client, 'py_xyz' );
+		$request = new Refund_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_charge( 'ch_xyz' );
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
 		$request->set_amount( 0 );
 	}
 
 	public function test_exception_will_throw_if_charge_id_is_not_set() {
+		$request = new Refund_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
+		$request->get_params();
 
-		new Refund_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client, null );
 	}
 
 	public function test_exception_will_throw_if_charge_id_is_invalid() {
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
-		new Refund_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client, '1' );
+		$request = new Refund_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_charge( '1' );
 	}
 
 	public function test_py_prefix_will_not_throw_exception() {
-		new Refund_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client, 'py_xyz' );
+		$request = new Refund_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_charge( 'py_xyz' );
 		$this->addToAssertionCount( 1 ); // We're not asserting anything, just not expecting an exception.
 	}
 
-	public function test_refund_charge_request_class_is_using_correct_http_method() {
-		$request = new Refund_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client, 'ch_mock' );
-		$this->assertSame( 'POST', $request->get_method() );
-	}
 	public function test_refund_charge_request_class_is_created() {
-		$request = new Refund_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client, 'ch_mock' );
-		$this->assertSame( WC_Payments_API_Client::REFUNDS_API . '/ch_mock', $request->get_api() );
+		$charge  = 'ch_mock';
+		$amount  = 100;
+		$request = new Refund_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_charge( $charge );
+		$request->set_amount( $amount );
+		$this->assertSame( WC_Payments_API_Client::REFUNDS_API, $request->get_api() );
+		$this->assertSame( 'POST', $request->get_method() );
+		$params = $request->get_params();
+		$this->assertSame( $amount, $params['amount'] );
+		$this->assertSame( $charge, $params['charge'] );
 	}
 }
