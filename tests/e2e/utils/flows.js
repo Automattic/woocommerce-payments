@@ -105,79 +105,6 @@ export const shopperWCP = {
 		}
 	},
 
-	autofillExistingStripeLinkAccount: async () => {
-		const frameHandle = await page.waitForSelector(
-			'iframe[name^="__privateStripeFrame"]'
-		);
-		const stripeFrame = await frameHandle.contentFrame();
-
-		const selector = await stripeFrame.waitForSelector(
-			'.OtpCodeField-inputContainer',
-			{ timeout: 30000 }
-		);
-		const selectors = await selector.$$( '.OtpCodeField-inputGroup' );
-
-		await page.waitFor( 2000 );
-
-		selectors.forEach( async ( sel ) => {
-			const fields = await sel.$$( 'input' );
-			fields.forEach( ( field ) => {
-				field.type( '7', { delay: 20 } );
-			} );
-		} );
-
-		const autofillButton = await stripeFrame.waitForSelector(
-			'.LinkAutofillInfoPage-button',
-			{ timeout: 30000 }
-		);
-		autofillButton.click();
-		await page.waitFor( 3000 );
-	},
-
-	fillStripeLinkDetails: async ( billing, isBlocksCheckout = false ) => {
-		let frameHandle;
-		if ( isBlocksCheckout ) {
-			frameHandle = await page.waitForSelector(
-				'.wcpay-payment-element iframe'
-			);
-		} else {
-			frameHandle = await page.waitForSelector(
-				'#payment .payment_method_woocommerce_payments .wcpay-upe-element iframe'
-			);
-		}
-
-		const stripeFrame = await frameHandle.contentFrame();
-
-		const linkCheckbox = await stripeFrame.waitForSelector(
-			'[name="linkOptIn"]',
-			{ timeout: 30000 }
-		);
-		linkCheckbox.evaluate( ( node ) => node.click() );
-
-		const linkPhoneCountry = await stripeFrame.waitForSelector(
-			'[name="linkMobilePhoneCountry"]',
-			{ timeout: 30000 }
-		);
-
-		await linkPhoneCountry.select( 'US' );
-
-		const linkPhoneNumber = await stripeFrame.waitForSelector(
-			'[name="linkMobilePhone"]',
-			{ timeout: 30000 }
-		);
-		await linkPhoneNumber.type( billing.phone, { delay: 20 } );
-
-		if ( await stripeFrame.$( '[name="linkLegalName"]' ) ) {
-			const linkName = await stripeFrame.waitForSelector(
-				'[name="linkLegalName"]',
-				{ timeout: 30000 }
-			);
-			await linkName.type( billing.firstname + ' ' + billing.lastname, {
-				delay: 20,
-			} );
-		}
-	},
-
 	toggleSavePaymentMethod: async () => {
 		await expect( page ).toClick(
 			'#wc-woocommerce_payments-new-payment-method'
@@ -471,31 +398,23 @@ export const merchantWCP = {
 		await page.goto( WCPAY_PAYMENT_SETTINGS, {
 			waitUntil: 'networkidle0',
 		} );
-		if (
-			! ( await page.$eval(
-				paymentMethod,
-				( method ) => method.checked
-			) )
-		) {
-			await page.$eval( paymentMethod, ( method ) => method.click() );
-			await new Promise( ( resolve ) => setTimeout( resolve, 2000 ) );
-			await expect( page ).toClick( 'button', {
-				text: 'Save changes',
-			} );
-		}
+
+		await page.$eval( paymentMethod, ( method ) => method.click() );
+		await new Promise( ( resolve ) => setTimeout( resolve, 2000 ) );
+		await expect( page ).toClick( 'button', {
+			text: 'Save changes',
+		} );
 	},
 
-	disablePaymentMethod: async ( paymentMethod, withModalWindow = true ) => {
+	disablePaymentMethod: async ( paymentMethod ) => {
 		await page.goto( WCPAY_PAYMENT_SETTINGS, {
 			waitUntil: 'networkidle0',
 		} );
 
 		await page.$eval( paymentMethod, ( method ) => method.click() );
-		if ( withModalWindow ) {
-			await expect( page ).toClick( 'button', {
-				text: 'Remove',
-			} );
-		}
+		await expect( page ).toClick( 'button', {
+			text: 'Remove',
+		} );
 		await new Promise( ( resolve ) => setTimeout( resolve, 2000 ) );
 		await expect( page ).toClick( 'button', {
 			text: 'Save changes',
