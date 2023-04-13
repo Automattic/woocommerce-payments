@@ -176,7 +176,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		paymentIntent
 	);
 
-	const relativeTimeRemaining = ( deadlineDate: Moment ): string => {
+	const calculateRelativeTimeRemaining = ( deadlineDate: Moment ): string => {
 		const timeRemaining = deadlineDate.diff( moment.utc() );
 
 		const minutesRemaining = Math.ceil( timeRemaining / 1000 / 60 );
@@ -439,7 +439,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 										) }
 									>
 										<b>
-											{ relativeTimeRemaining(
+											{ calculateRelativeTimeRemaining(
 												moment
 													.utc(
 														authorization.created
