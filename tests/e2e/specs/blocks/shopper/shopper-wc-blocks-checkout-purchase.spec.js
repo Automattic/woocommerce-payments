@@ -28,7 +28,7 @@ const billingDetails = config.get( 'addresses.customer.billing' );
 const productName = config.get( 'products.simple.name' );
 
 import {
-	fillLegacyCardDetailsWCB,
+	fillCardDetailsWCB,
 	confirmCardAuthentication,
 } from '../../../utils/payments';
 
@@ -53,7 +53,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 
 			// Fill CC details and purchase the product
 			const card = config.get( 'cards.basic' );
-			await fillLegacyCardDetailsWCB( page, card );
+			await fillCardDetailsWCB( page, card );
 			await page.waitForSelector(
 				'.wc-block-components-main button:not(:disabled)'
 			);
@@ -72,7 +72,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 
 			// Fill CC details and purchase the product
 			const card = config.get( 'cards.3ds' );
-			await fillLegacyCardDetailsWCB( page, card );
+			await fillCardDetailsWCB( page, card );
 			await page.waitForSelector(
 				'.wc-block-components-main button:not(:disabled)'
 			);
