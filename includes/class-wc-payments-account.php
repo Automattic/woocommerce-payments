@@ -1048,7 +1048,16 @@ class WC_Payments_Account {
 						'line1'       => '1040 Grand Ave',
 						'postal_code' => '94080',
 					],
+					'ssn_last_4' => '0000',
+					'phone'      => '+10000000000',
+					'dob'        => [
+						'day'   => '1',
+						'month' => '1',
+						'year'  => '1980',
+					],
 				],
+				'mcc'           => '5734',
+				'url'           => 'http://wcpay.test',
 			];
 		} else {
 			$account_data = [];
