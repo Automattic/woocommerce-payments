@@ -1035,12 +1035,20 @@ class WC_Payments_Account {
 				],
 			];
 		} elseif ( $test_mode ) {
+			$home_url    = get_home_url();
+			$default_url = 'http://wcpay.test';
+			$url         = wp_http_validate_url( $home_url ) ? $home_url : $default_url;
+			// If the site is running on localhost, use the default URL. This is to avoid Stripe's errors.
+			// wp_http_validate_url does not check that unfortunately.
+			if ( wp_parse_url( $home_url, PHP_URL_HOST ) === 'localhost' ) {
+				$url = $default_url;
+			}
 			$account_data = [
 				'country'       => 'US',
 				'business_type' => 'individual',
 				'individual'    => [
 					'first_name' => 'John',
-					'last_name'  => 'Wooliams',
+					'last_name'  => 'Woolliams',
 					'address'    => [
 						'country'     => 'US',
 						'state'       => 'California',
@@ -1057,7 +1065,8 @@ class WC_Payments_Account {
 					],
 				],
 				'mcc'           => '5734',
-				'url'           => 'http://wcpay.test',
+				'url'           => $url,
+				'business_name' => get_bloginfo( 'name' ),
 			];
 		} else {
 			$account_data = [];
