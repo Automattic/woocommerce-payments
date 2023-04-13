@@ -3,9 +3,12 @@
 	display: block;
 	padding: $gap-large;
 	background-color: #fff;
-	margin-bottom: $gap-large;
 	border-radius: 3px;
 	border: 1px solid $light-gray-500;
+
+	&:not( :last-of-type ) {
+		margin-bottom: $gap-large;
+	}
 
 	&.checked {
 		box-shadow: 0 0 0 1px #007cba;
