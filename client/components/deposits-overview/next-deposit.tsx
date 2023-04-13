@@ -158,14 +158,32 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 				) }
 
 				{ /* Notice(s) */ }
-				{ ! isLoading && (
+				{ ! isLoading && nextDeposit.amount < 0 && (
 					<div className="wcpay-deposits-overview__notices">
 						<BannerNotice
 							status="info"
 							icon={ <InfoOutlineIcon /> }
-							children={ strings.notices.negativeBalance }
 							isDismissible={ false }
-						/>
+						>
+							{ interpolateComponents( {
+								mixedString:
+									strings.notices.negativeBalance +
+									__(
+										' {{whyLink}}Why?{{/whyLink}}',
+										'woocommerce-payments'
+									),
+								components: {
+									whyLink: (
+										// eslint-disable-next-line jsx-a11y/anchor-has-content
+										<a
+											href="https://woocommerce.com/document/woocommerce-payments/fees-and-debits/account-showing-negative-balance/"
+											target="_blank"
+											rel="noreferrer"
+										/>
+									),
+								},
+							} ) }
+						</BannerNotice>
 					</div>
 				) }
 			</CardBody>

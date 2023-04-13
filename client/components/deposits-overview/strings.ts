@@ -22,7 +22,7 @@ export default {
 			'woocommerce-payments'
 		),
 		negativeBalance: __(
-			'Deposits may be interrupted while your WooCommerce Payments balance remains negative. WHY?!',
+			'Deposits may be interrupted while your WooCommerce Payments balance remains negative.',
 			'woocommerce-payments'
 		),
 	},
