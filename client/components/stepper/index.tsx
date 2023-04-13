@@ -19,11 +19,14 @@ const useContextValue = ( { steps, onComplete }: UseContextValueParams ) => {
 	const nextStep = () => {
 		const index = keys.indexOf( currentStep );
 		const next = keys[ index + 1 ];
+
 		if ( next ) {
 			setCurrentStep( next );
 		} else {
 			onComplete?.();
 		}
+
+		window.scroll( 0, 0 );
 	};
 
 	return {
