@@ -7,7 +7,8 @@ type NextDepositTableData = {
 	id?: string;
 	date: number;
 	status: string;
-	amount: string;
+	formattedAmount: string;
+	amount: number;
 };
 
 /**
@@ -28,7 +29,8 @@ export const getNextDeposit = (
 			id: undefined,
 			date: 0,
 			status: 'estimated',
-			amount: formatCurrency( 0, overview?.currency ),
+			formattedAmount: formatCurrency( 0, overview?.currency ),
+			amount: 0,
 		};
 	}
 
@@ -38,6 +40,7 @@ export const getNextDeposit = (
 		id: nextScheduled.id,
 		date: nextScheduled.date ?? 0,
 		status: nextScheduled.status ?? 'estimated',
-		amount: formatCurrency( nextScheduled.amount ?? 0, currency ),
+		formattedAmount: formatCurrency( nextScheduled.amount ?? 0, currency ),
+		amount: nextScheduled.amount ?? 0,
 	};
 };
