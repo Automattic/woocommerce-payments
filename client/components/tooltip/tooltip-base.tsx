@@ -248,6 +248,7 @@ const TooltipBase: React.FC< TooltipBaseProps > = ( {
 							'wcpay-tooltip__tooltip-wrapper',
 							{ 'is-hiding': ! isVisible }
 						) }
+						role="tooltip"
 					>
 						<div
 							className={ classNames(

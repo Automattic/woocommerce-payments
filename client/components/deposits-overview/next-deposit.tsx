@@ -10,22 +10,24 @@ import {
 	Icon,
 } from '@wordpress/components';
 import { calendar } from '@wordpress/icons';
-import HelpOutlineIcon from 'gridicons/dist/help-outline';
+import InfoOutlineIcon from 'gridicons/dist/info-outline';
+import interpolateComponents from '@automattic/interpolate-components';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
  */
 import strings from './strings';
-import './style.scss';
 import Loadable from 'components/loadable';
-import BannerNotice from '../banner-notice';
 import { getNextDeposit } from './utils';
-import DepositStatusChip from 'components/deposit-status-chip';
+import DepositStatusPill from 'components/deposit-status-pill';
 import { getDepositDate } from 'deposits/utils';
+import { useDepositIncludesLoan } from 'wcpay/data';
+import BannerNotice from 'wcpay/components/banner-notice';
 
 type NextDepositProps = {
 	isLoading: boolean;
-	overview: AccountOverview.Overview;
+	overview?: AccountOverview.Overview;
 };
 
 /**
@@ -44,6 +46,9 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 	const nextDeposit = getNextDeposit( overview );
 	const nextDepositDate = getDepositDate(
 		nextDeposit.date > 0 ? nextDeposit : null
+	);
+	const { includesFinancingPayout } = useDepositIncludesLoan(
+		nextDeposit.id
 	);
 
 	return (
@@ -105,9 +110,8 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 							isLoading={ isLoading }
 							placeholder="Estimated"
 							children={
-								<DepositStatusChip
+								<DepositStatusPill
 									status={ nextDeposit.status }
-									isCompact
 								/>
 							}
 						/>
@@ -120,19 +124,52 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 						/>
 					</FlexItem>
 				</Flex>
+				{ /* Deposit includes capital funds notice */ }
+				{ ! isLoading && includesFinancingPayout && (
+					<div className="wcpay-deposits-overview__notices">
+						<BannerNotice
+							status="warning"
+							icon={ <InfoOutlineIcon /> }
+							isDismissible={ false }
+						>
+							{ interpolateComponents( {
+								mixedString:
+									strings.notices.depositIncludesLoan +
+									__(
+										' {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+										'woocommerce-payments'
+									),
+								components: {
+									learnMoreLink: (
+										// eslint-disable-next-line jsx-a11y/anchor-has-content
+										<a
+											href={
+												strings.documentationUrls
+													.capital
+											}
+											target="_blank"
+											rel="noreferrer"
+										/>
+									),
+								},
+							} ) }
+						</BannerNotice>
+						</div>
+				) }
 
 				{ /* Notice(s) */ }
 				{ ! isLoading && (
 					<div className="wcpay-deposits-overview__notices">
 						<BannerNotice
 							status="info"
-							icon={ <HelpOutlineIcon /> }
+							icon={ <InfoOutlineIcon /> }
 							children={ strings.notices.negativeBalance }
 							isDismissible={ false }
 						/>
 					</div>
 				) }
 			</CardBody>
+
 		</>
 	);
 };

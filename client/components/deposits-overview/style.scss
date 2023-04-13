@@ -13,9 +13,18 @@
 		}
 
 		&__description {
-			font-size: 13px;
-			line-height: 16px;
-			color: $gray-700;
+			& > &__text {
+				line-height: 16px;
+				color: $gray-700;
+			}
+			.wcpay-banner-notice.components-notice {
+				margin: 0;
+			}
+		}
+	}
+	&__notices {
+		.wcpay-banner-notice.components-notice {
+			margin: 0;
 		}
 	}
 
@@ -25,17 +34,16 @@
 	.components-card__body.wcpay-deposits-overview__table__container {
 		padding-bottom: 0;
 		padding-top: 0;
-	}
 
-	// Override extraneous notice margin – padding provided by CardBody.
-	.wcpay-banner-notice.components-notice {
-		margin: 0;
+		.wcpay-banner-notice.components-notice {
+			margin: 0;
+			&:last-child {
+				margin-bottom: 16px;
+			}
+		}
 	}
 
 	&__table {
-		color: $gray-900;
-		align-items: center;
-
 		&__row {
 			&__header {
 				font-weight: 600;
@@ -44,7 +52,6 @@
 				}
 			}
 		}
-
 		&__cell {
 			display: flex;
 			font-size: 13px;
@@ -65,6 +72,11 @@
 			&:last-child {
 				margin-left: auto;
 			}
+		}
+	}
+	.new-account-waiting-period-notice {
+		&.components-notice {
+			margin: 0 24px;
 		}
 	}
 	&__footer {
