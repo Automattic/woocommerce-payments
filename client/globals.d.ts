@@ -68,6 +68,7 @@ declare const wcpaySettings: {
 	accountDefaultCurrency: string;
 	isFraudProtectionSettingsEnabled: boolean;
 	frtDiscoverBannerSettings: string;
+	onboardingTestMode: boolean;
 };
 
 declare const wcTracks: any;
