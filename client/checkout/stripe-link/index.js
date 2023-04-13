@@ -1,23 +1,25 @@
-/* global jQuery */
-
 const showLinkButton = ( linkAutofill ) => {
 	// Display StripeLink button if email field is prefilled.
-	if ( '' !== jQuery( '#billing_email' ).val() ) {
+	const billingEmailInput = document.getElementById( 'billing_email' );
+	if ( '' !== billingEmailInput.value ) {
 		const linkButtonTop =
-			jQuery( '#billing_email' ).position().top +
-			( jQuery( '#billing_email' ).outerHeight() - 40 ) / 2;
-		jQuery( '.wcpay-stripelink-modal-trigger' ).show();
-		jQuery( '.wcpay-stripelink-modal-trigger' ).css(
-			'top',
-			linkButtonTop + 'px'
+			billingEmailInput.offsetTop +
+			( billingEmailInput.offsetHeight - 40 ) / 2;
+		const stripeLinkButton = document.querySelector(
+			'.wcpay-stripelink-modal-trigger'
 		);
+		stripeLinkButton.style.display = 'block';
+		stripeLinkButton.style.top = `${ linkButtonTop }px`;
 	}
 
 	// Handle StripeLink button click.
-	jQuery( '.wcpay-stripelink-modal-trigger' ).on( 'click', ( event ) => {
+	const stripeLinkButton = document.querySelector(
+		'.wcpay-stripelink-modal-trigger'
+	);
+	stripeLinkButton.addEventListener( 'click', ( event ) => {
 		event.preventDefault();
 		// Trigger modal.
-		linkAutofill.launch( { email: jQuery( '#billing_email' ).val() } );
+		linkAutofill.launch( { email: billingEmailInput.value } );
 	} );
 };
 
@@ -73,9 +75,12 @@ const enableStripeLinkPaymentMethod = ( options ) => {
 				options.shipping_fields.last_name,
 				'last_name'
 			);
-			jQuery(
+			const billingCountryStateSelects = document.querySelectorAll(
 				'#billing_country, #billing_state, #shipping_country, #shipping_state'
-			).trigger( 'change' );
+			);
+			billingCountryStateSelects.forEach( ( select ) =>
+				select.dispatchEvent( new Event( 'change' ) )
+			);
 			fillWith( shippingAddress, options.shipping_fields.state, 'state' );
 			fillWith(
 				shippingAddress,
@@ -108,9 +113,12 @@ const enableStripeLinkPaymentMethod = ( options ) => {
 				'last_name'
 			);
 
-			jQuery(
+			const billingCountryStateSelects = document.querySelectorAll(
 				'#billing_country, #billing_state, #shipping_country, #shipping_state'
-			).trigger( 'change' );
+			);
+			billingCountryStateSelects.forEach( ( select ) =>
+				select.dispatchEvent( new Event( 'change' ) )
+			);
 			fillWith( billingAddress, options.billing_fields.state, 'state' );
 			fillWith(
 				billingAddress,
@@ -118,9 +126,12 @@ const enableStripeLinkPaymentMethod = ( options ) => {
 				'postal_code'
 			);
 		}
-		jQuery(
+		const billingCountryStateSelects = document.querySelectorAll(
 			'#billing_country, #billing_state, #shipping_country, #shipping_state'
-		).trigger( 'change' );
+		);
+		billingCountryStateSelects.forEach( ( select ) =>
+			select.dispatchEvent( new Event( 'change' ) )
+		);
 	} );
 };
 
