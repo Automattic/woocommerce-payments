@@ -40,7 +40,7 @@ export const OnboardingForm: React.FC = ( { children } ) => {
 			} }
 		>
 			{ children }
-			<Button isPrimary type="submit">
+			<Button isPrimary type="submit" className="step__cta">
 				{ strings.continue }
 			</Button>
 		</form>

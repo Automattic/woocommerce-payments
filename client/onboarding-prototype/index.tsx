@@ -24,9 +24,11 @@ interface Props {
 const Step: React.FC< Props > = ( { name, children } ) => {
 	return (
 		<>
-			<h1>{ strings.steps[ name ].heading }</h1>
-			<h1>{ strings.steps[ name ].subheading }</h1>
-			{ children }
+			<h1 className="step__heading">{ strings.steps[ name ].heading }</h1>
+			<h2 className="step__subheading">
+				{ strings.steps[ name ].subheading }
+			</h2>
+			<div className="step__content">{ children }</div>
 		</>
 	);
 };

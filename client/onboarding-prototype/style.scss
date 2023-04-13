@@ -1,10 +1,48 @@
 .wcpay-onboarding-prototype {
+	max-width: 600px;
+	margin: 0 auto;
 	a {
 		text-decoration: none;
+	}
+
+	.step {
+		&__heading {
+			@include title-large;
+			color: $studio-gray-100;
+			text-align: center;
+		}
+
+		&__subheading {
+			font-size: 16px;
+			line-height: 24px;
+			font-weight: 400;
+			text-align: center;
+			color: $studio-gray-60;
+			margin: $gap-small 0 $gap-largest;
+		}
+
+		&__content {
+			max-width: 400px;
+		}
+
+		&__cta {
+			display: block;
+			width: 100%;
+			margin-top: $gap-larger;
+		}
 	}
 
 	.onboarding-mode__note {
 		background-color: $wp-blue-0;
 		padding: $gap-small $gap;
+	}
+
+	.wcpay-banner-notice {
+		margin: 0;
+	}
+
+	.components-base-control,
+	.components-custom-select-control {
+		margin-bottom: $gap-large;
 	}
 }
