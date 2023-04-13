@@ -16,4 +16,5 @@ interface OrderDetails {
 	url: string;
 	customer_url: null | string;
 	subscriptions?: SubscriptionDetails[];
+	fraud_meta_box_type?: string;
 }
