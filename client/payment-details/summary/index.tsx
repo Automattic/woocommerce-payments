@@ -434,7 +434,8 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											'M j, Y / g:iA',
 											moment
 												.utc( authorization.created )
-												.add( 7, 'days' )
+												.add( 7, 'days' ),
+											'UTC'
 										) }
 									>
 										<b>
