@@ -1,6 +1,10 @@
 .wcpay-onboarding-prototype {
 	max-width: 600px;
 	margin: 0 auto;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+
 	a {
 		text-decoration: none;
 	}
@@ -30,6 +34,12 @@
 			width: 100%;
 			margin-top: $gap-larger;
 		}
+	}
+
+	.loading-step {
+		max-width: 520px;
+		margin: 50% auto 0;
+		transform: translateY( -50% );
 	}
 
 	.onboarding-mode__note {

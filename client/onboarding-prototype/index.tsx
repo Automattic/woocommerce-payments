@@ -14,7 +14,7 @@ import ModeChoice from './steps/mode-choice';
 import PersonalDetails from './steps/personal-details';
 import BusinessDetails from './steps/business-details';
 import StoreDetails from './steps/store-details';
-import Loading from './steps/loading';
+import LoadingStep from './steps/loading';
 import strings from './strings';
 import './style.scss';
 
@@ -54,9 +54,7 @@ const OnboardingStepper = () => {
 					<StoreDetails />
 				</OnboardingForm>
 			</Step>
-			<Step name="loading">
-				<Loading />
-			</Step>
+			<LoadingStep name="loading" />
 		</Stepper>
 	);
 };
