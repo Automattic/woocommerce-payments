@@ -52,6 +52,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	const METHOD_ENABLED_KEY = 'enabled';
 
+	/**
+	 * Mapping between the client and server accepted params:
+	 * - Keys are WCPay client accepted params (in WC_REST_Payments_Settings_Controller).
+	 * - Values are WCPay Server accepted params.
+	 *
+	 * @type array
+	 */
 	const ACCOUNT_SETTINGS_MAPPING = [
 		'account_statement_descriptor'     => 'statement_descriptor',
 		'account_business_name'            => 'business_name',

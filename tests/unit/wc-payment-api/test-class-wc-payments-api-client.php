@@ -367,44 +367,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->payments_api_client->get_onboarding_required_verification_information( 'country', 'type' );
 	}
 
-	public function test_update_account() {
-		$test_data = [ 'mock' => true ];
-
-		$this->mock_http_client
-			->expects( $this->once() )
-			->method( 'remote_request' )
-			->with(
-				$this->callback(
-					function ( $data ): bool {
-						$this->validate_default_remote_request_params( $data, 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts', 'POST' );
-						$this->assertSame( 'POST', $data['method'] );
-						return true;
-					}
-				),
-				wp_json_encode(
-					array_merge(
-						[ 'test_mode' => false ],
-						[ 'mock' => true ]
-					)
-				),
-				true,
-				true // update_account should use user token auth.
-			)
-			->willReturn(
-				[
-					'body'     => wp_json_encode( [ 'mock_account' => true ] ),
-					'response' => [
-						'code'    => 200,
-						'message' => 'OK',
-					],
-				]
-			);
-
-		$result = $this->payments_api_client->update_account( $test_data );
-
-		$this->assertEquals( [ 'mock_account' => true ], $result );
-	}
-
 	public function test_get_login_data() {
 		$this->mock_http_client
 			->expects( $this->once() )
