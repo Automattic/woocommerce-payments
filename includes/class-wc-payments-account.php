@@ -765,6 +765,12 @@ class WC_Payments_Account {
 				$this->redirect_to_prototype_onboarding_page();
 			}
 
+			if ( isset( $_GET['wcpay-disable-onboarding-test-mode'] ) ) {
+				WC_Payments_Onboarding_Service::set_test_mode( false );
+				$this->redirect_to_onboarding_page();
+				return;
+			}
+
 			// Hide menu notification badge upon starting setup.
 			update_option( 'wcpay_menu_badge_hidden', 'yes' );
 
@@ -1004,7 +1010,7 @@ class WC_Payments_Account {
 		// Enable dev mode if the test_mode query param is set.
 		$test_mode = isset( $_GET['test_mode'] ) ? boolval( wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) : false;
 		if ( $test_mode ) {
-			WC_Payments_Onboarding_Service::enable_test_mode();
+			WC_Payments_Onboarding_Service::set_test_mode( true );
 		}
 
 		$current_user = wp_get_current_user();
