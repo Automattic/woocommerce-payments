@@ -11,7 +11,7 @@ The `WCPay\Core\Server\Request\List_Charge_Refunds` class is used to construct t
 
 | Parameter | Setter                         | Immutable | Required | Default value |
 |-----------|--------------------------------|:---------:|:--------:|:-------------:|
-| `charge`  | `set_charge( string $charge )` |    Yes    |   Yes    |     None      |
+| `charge`  | `set_charge( string $charge_id )` |    Yes    |   Yes    |     None      |
 | `limit`   | `set_limit( int $limit )`      |    No     |    No    |      100      |
 
 
