@@ -794,7 +794,7 @@ class WC_Payments_API_Client {
 				return $timeline;
 			}
 
-			$manual_entry_meta = $order->get_meta( 'fraud_outcome_manual_entry', true );
+			$manual_entry_meta = $order->get_meta( '_wcpay_fraud_outcome_manual_entry', true );
 
 			if ( ! empty( $manual_entry_meta ) ) {
 				$timeline['data'][] = $manual_entry_meta;
