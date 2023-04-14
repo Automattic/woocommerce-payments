@@ -36,7 +36,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
       Deposits
     </div>
     <div
-      class="wcpay-deposits-overview__heading"
+      class="components-card__body is-size-medium wcpay-deposits-overview__heading css-xmjzce-BodyUI e1q7k77g3"
     >
       <span
         class="wcpay-deposits-overview__heading__title"
@@ -54,7 +54,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
       </div>
     </div>
     <div
-      class="wcpay-deposits-overview__table"
+      class="components-card__body is-size-medium wcpay-deposits-overview__table__container css-xmjzce-BodyUI e1q7k77g3"
     >
       <div
         class="components-flex wcpay-deposits-overview__table__row__header css-1rdm0qk-Flex eboqfv50"
@@ -75,6 +75,14 @@ exports[`Deposits Overview information Component Renders 1`] = `
           Amount
         </div>
       </div>
+    </div>
+    <hr
+      class="components-card__divider css-lh2anh-DividerUI e1q7k77g5"
+      role="separator"
+    />
+    <div
+      class="components-card__body is-size-medium wcpay-deposits-overview__table__container css-xmjzce-BodyUI e1q7k77g3"
+    >
       <div
         class="components-flex wcpay-deposits-overview__table__row css-1rdm0qk-Flex eboqfv50"
       >
@@ -99,7 +107,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
           class="components-flex__item wcpay-deposits-overview__table__cell css-1s295sp-Item eboqfv51"
         >
           <span
-            class="deposit-status-chip chip-estimated is-compact"
+            class="woocommerce-pill css-1qmnemh-Text e15wbhsk0"
           >
             Estimated
           </span>
@@ -112,7 +120,10 @@ exports[`Deposits Overview information Component Renders 1`] = `
       </div>
     </div>
     <div
-      class="wcpay-deposits-overview__heading"
+      class="components-card__body is-size-medium wcpay-deposits-overview__notices__container css-xmjzce-BodyUI e1q7k77g3"
+    />
+    <div
+      class="components-card__body is-size-medium wcpay-deposits-overview__heading css-xmjzce-BodyUI e1q7k77g3"
     >
       <span
         class="wcpay-deposits-overview__heading__title"
@@ -133,7 +144,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
       </div>
     </div>
     <div
-      class="wcpay-deposits-overview__table"
+      class="components-card__body is-size-medium wcpay-deposits-overview__table__container css-xmjzce-BodyUI e1q7k77g3"
     >
       <div
         class="components-flex wcpay-deposits-overview__table__row__header css-1rdm0qk-Flex eboqfv50"
@@ -154,6 +165,14 @@ exports[`Deposits Overview information Component Renders 1`] = `
           Amount
         </div>
       </div>
+    </div>
+    <hr
+      class="components-card__divider css-lh2anh-DividerUI e1q7k77g5"
+      role="separator"
+    />
+    <div
+      class="components-card__body is-size-medium wcpay-deposits-overview__table__container css-xmjzce-BodyUI e1q7k77g3"
+    >
       <div
         class="components-flex wcpay-deposits-overview__table__row css-1rdm0qk-Flex eboqfv50"
       >
@@ -183,9 +202,9 @@ exports[`Deposits Overview information Component Renders 1`] = `
           class="components-flex__item wcpay-deposits-overview__table__cell css-1s295sp-Item eboqfv51"
         >
           <span
-            class="deposit-status-chip chip-sent is-compact"
+            class="woocommerce-pill css-1qmnemh-Text e15wbhsk0"
           >
-            Sent
+            Paid
           </span>
         </div>
         <div
@@ -223,15 +242,49 @@ exports[`Deposits Overview information Component Renders 1`] = `
           class="components-flex__item wcpay-deposits-overview__table__cell css-1s295sp-Item eboqfv51"
         >
           <span
-            class="deposit-status-chip chip-processing is-compact"
+            class="woocommerce-pill css-1qmnemh-Text e15wbhsk0"
           >
-            Processing
+            Pending
           </span>
         </div>
         <div
           class="components-flex__item wcpay-deposits-overview__table__cell css-1s295sp-Item eboqfv51"
         >
           $30.00
+        </div>
+      </div>
+      <div
+        class="wcpay-banner-notice wcpay-banner-info-notice wcpay-deposits-overview__business-day-delay-notice components-notice is-info"
+      >
+        <div
+          class="components-notice__content"
+        >
+          <div
+            class="components-flex css-18koiq9-Flex eboqfv50"
+          >
+            <div
+              class="components-flex__item wcpay-banner-notice__icon wcpay-banner-info-notice__icon css-1s295sp-Item eboqfv51"
+            >
+              <svg
+                class="gridicon gridicons-info-outline"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g>
+                  <path
+                    d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.41 0-8 3.59-8 8s3.59 8 8 8 8-3.59 8-8-3.59-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+                  />
+                </g>
+              </svg>
+            </div>
+            <div
+              class="components-flex__item wcpay-banner-notice__content wcpay-banner-info-notice__content css-1s295sp-Item eboqfv51"
+            >
+              Deposits pending or in-transit may take 1-2 business days to appear in your bank account once dispatched
+            </div>
+          </div>
         </div>
       </div>
     </div>

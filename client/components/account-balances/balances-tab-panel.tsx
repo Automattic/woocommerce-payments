@@ -10,6 +10,7 @@ import interpolateComponents from '@automattic/interpolate-components';
  * Internal dependencies.
  */
 import { useAllDepositsOverviews } from 'wcpay/data';
+import { useSelectedCurrency } from 'wcpay/overview/hooks';
 import { getCurrencyTabTitle } from './utils';
 import BalanceBlock from './balance-block';
 import BalanceTooltip from './balance-tooltip';
@@ -46,36 +47,83 @@ const AccountBalancesTabPanel: React.FC = () => {
 		overviews,
 		isLoading,
 	} = useAllDepositsOverviews() as AccountOverview.OverviewsResponse;
+	const { selectedCurrency, setSelectedCurrency } = useSelectedCurrency();
 
-	// While the data is loading, we show the default currency tab.
-	let depositCurrencyTabs: BalanceTab[] = [
-		{
-			name: wcpaySettings.accountDefaultCurrency,
-			title: getCurrencyTabTitle( wcpaySettings.accountDefaultCurrency ),
-			currencyCode: wcpaySettings.accountDefaultCurrency,
-			availableFunds: 0,
-			pendingFunds: 0,
-			delayDays: 0,
-		},
-	];
+	if ( ! isLoading && overviews.currencies.length === 0 ) {
+		return null;
+	}
 
-	const { currencies, account } = overviews;
+	const onTabSelect = ( tabName: BalanceTab[ 'name' ] ) => {
+		setSelectedCurrency( tabName );
+	};
 
-	if ( ! isLoading && currencies.length !== 0 ) {
-		depositCurrencyTabs = currencies.map(
-			( overview: AccountOverview.Overview ) => ( {
-				name: overview.currency,
-				title: getCurrencyTabTitle( overview.currency ),
-				currencyCode: overview.currency,
-				availableFunds: overview.available?.amount ?? 0,
-				pendingFunds: overview.pending?.amount ?? 0,
-				delayDays: account.deposits_schedule.delay_days,
-			} )
+	if ( isLoading ) {
+		// While the data is loading, we show a loading currency tab.
+		const loadingTabs: BalanceTab[] = [
+			{
+				name: 'loading',
+				title: getCurrencyTabTitle(
+					wcpaySettings.accountDefaultCurrency
+				),
+				currencyCode: wcpaySettings.accountDefaultCurrency,
+				availableFunds: 0,
+				pendingFunds: 0,
+				delayDays: 0,
+			},
+		];
+		return (
+			<TabPanel tabs={ loadingTabs }>
+				{ ( tab: BalanceTab ) => (
+					<Flex
+						gap={ 0 }
+						className="wcpay-account-balances__balances"
+					>
+						<BalanceBlock
+							id={ `wcpay-account-balances-${ tab.currencyCode }-available` }
+							title={ fundLabelStrings.available }
+							amount={ tab.availableFunds }
+							currencyCode={ tab.currencyCode }
+							isLoading
+						/>
+						<BalanceBlock
+							id={ `wcpay-account-balances-${ tab.currencyCode }-pending` }
+							title={ fundLabelStrings.pending }
+							amount={ tab.pendingFunds }
+							currencyCode={ tab.currencyCode }
+							isLoading
+						/>
+					</Flex>
+				) }
+			</TabPanel>
 		);
 	}
 
+	const { currencies, account } = overviews;
+
+	const depositCurrencyTabs = currencies.map(
+		( overview: AccountOverview.Overview ) => ( {
+			name: overview.currency,
+			title: getCurrencyTabTitle( overview.currency ),
+			currencyCode: overview.currency,
+			availableFunds: overview.available?.amount ?? 0,
+			pendingFunds: overview.pending?.amount ?? 0,
+			delayDays: account.deposits_schedule.delay_days,
+		} )
+	);
+
+	// Selected currency is not valid if it is not in the list of deposit currencies.
+	const isSelectedCurrencyValid =
+		selectedCurrency &&
+		depositCurrencyTabs.some( ( tab ) => tab.name === selectedCurrency );
+
 	return (
-		<TabPanel tabs={ depositCurrencyTabs }>
+		<TabPanel
+			tabs={ depositCurrencyTabs }
+			onSelect={ onTabSelect }
+			initialTabName={
+				isSelectedCurrencyValid ? selectedCurrency : undefined
+			}
+		>
 			{ ( tab: BalanceTab ) => (
 				<Flex gap={ 0 } className="wcpay-account-balances__balances">
 					<BalanceBlock
@@ -83,7 +131,6 @@ const AccountBalancesTabPanel: React.FC = () => {
 						title={ fundLabelStrings.available }
 						amount={ tab.availableFunds }
 						currencyCode={ tab.currencyCode }
-						isLoading={ isLoading }
 						tooltip={
 							<BalanceTooltip
 								label={ `${ fundLabelStrings.available } tooltip` }
@@ -134,7 +181,6 @@ const AccountBalancesTabPanel: React.FC = () => {
 						title={ fundLabelStrings.pending }
 						amount={ tab.pendingFunds }
 						currencyCode={ tab.currencyCode }
-						isLoading={ isLoading }
 						tooltip={
 							<BalanceTooltip
 								label={ `${ fundLabelStrings.pending } tooltip` }
