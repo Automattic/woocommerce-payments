@@ -24,5 +24,6 @@ When using this request, provide the following filter and arguments:
 
 ```php
 $request = Get_Account_Login_Data::create();
+$request->set_redirect_url( 'http://example.org/wp-admin/admin.php?page=wc-admin&path=/payments/overview' );
 $request->send( 'wpcay_get_account_login_data' );
 ```

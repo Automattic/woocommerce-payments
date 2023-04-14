@@ -4,7 +4,7 @@
 
 ## Description
 
-The `WCPay\Core\Server\Request\Add_Account_Tos_Agreement` class is used to construct the request for retrieving an intention.
+The `WCPay\Core\Server\Request\Add_Account_Tos_Agreement` class is used to construct the request for recording a new Terms of Service agreement.
 
 ## Parameters
 
@@ -24,5 +24,7 @@ When using this request, provide the following filter and arguments:
 
 ```php
 $request = Add_Account_Tos_Agreement::create();
+$request->set_source( 'settings-popup' );
+$request->set_user_name( 'current_username' );
 $request->send( 'wcpay_add_account_tos_agreement' );
 ```
