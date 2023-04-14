@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use Automattic\WooCommerce\Admin\Notes\DataStore;
 use Automattic\WooCommerce\Admin\Notes\Note;
+use WCPay\Core\Server\Request\Get_Account;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
 use WCPay\Database_Cache;
@@ -1175,7 +1176,10 @@ class WC_Payments_Account {
 					// below re-create it if the server tells us on-boarding is still disabled.
 					delete_transient( self::ON_BOARDING_DISABLED_TRANSIENT );
 
-					$account = $this->payments_api_client->get_account_data();
+					$request  = Get_Account::create();
+					$response = $request->send( 'wcpay_get_account' );
+					$account  = $response->to_array();
+
 				} catch ( API_Exception $e ) {
 					if ( 'wcpay_account_not_found' === $e->get_error_code() ) {
 						// Special case - detect account not connected and cache it.

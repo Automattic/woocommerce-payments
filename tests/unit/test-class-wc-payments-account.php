@@ -6,6 +6,8 @@
  */
 
 use Automattic\WooCommerce\Admin\Notes\Notes;
+use WCPay\Core\Server\Request\Get_Account;
+use WCPay\Core\Server\Response;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Database_Cache;
 
@@ -96,9 +98,12 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$cb = $this->create_can_manage_woocommerce_cap_override( true );
 		add_filter( 'user_has_cap', $cb );
 
-		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->throwException( new API_Exception( 'test', 'wcpay_account_not_found', 401 ) )
-		);
+		$this->mock_wcpay_request( Get_Account::class )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willThrowException(
+				new API_Exception( 'test', 'wcpay_account_not_found', 401 )
+			);
 
 		$this->assertTrue( $this->wcpay_account->maybe_redirect_to_onboarding() );
 		$this->assertFalse( WC_Payments_Account::is_on_boarding_disabled() );
@@ -115,15 +120,16 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$cb = $this->create_can_manage_woocommerce_cap_override( true );
 		add_filter( 'user_has_cap', $cb );
 
-		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->throwException(
+		$this->mock_wcpay_request( Get_Account::class )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willThrowException(
 				new API_Exception(
 					'test',
 					'wcpay_on_boarding_disabled',
 					401
 				)
-			)
-		);
+			);
 
 		$this->assertTrue( $this->wcpay_account->maybe_redirect_to_onboarding() );
 		$this->assertTrue( WC_Payments_Account::is_on_boarding_disabled() );
@@ -140,9 +146,12 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$cb = $this->create_can_manage_woocommerce_cap_override( true );
 		add_filter( 'user_has_cap', $cb );
 
-		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->throwException( new Exception() )
-		);
+		$this->mock_wcpay_request( Get_Account::class )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willThrowException(
+				new Exception()
+			);
 
 		$this->expectException( Exception::class );
 
@@ -160,18 +169,21 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$cb = $this->create_can_manage_woocommerce_cap_override( true );
 		add_filter( 'user_has_cap', $cb );
 
-		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->returnValue(
-				[
-					'account_id'               => 'acc_test',
-					'live_publishable_key'     => 'pk_test_',
-					'test_publishable_key'     => 'pk_live_',
-					'has_pending_requirements' => true,
-					'current_deadline'         => 12345,
-					'is_live'                  => true,
-				]
-			)
-		);
+		$this->mock_wcpay_request( Get_Account::class )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				new Response(
+					[
+						'account_id'               => 'acc_test',
+						'live_publishable_key'     => 'pk_test_',
+						'test_publishable_key'     => 'pk_live_',
+						'has_pending_requirements' => true,
+						'current_deadline'         => 12345,
+						'is_live'                  => true,
+					]
+				)
+			);
 
 		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_onboarding() );
 		// The option should be updated.
@@ -187,7 +199,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$cb = $this->create_can_manage_woocommerce_cap_override( false );
 		add_filter( 'user_has_cap', $cb );
 
-		$this->mock_api_client->expects( $this->never() )->method( 'get_account_data' );
+		$this->mock_wcpay_request( Get_Account::class, 0 );
 
 		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_onboarding() );
 		// The option should be updated.
@@ -203,18 +215,21 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$cb = $this->create_can_manage_woocommerce_cap_override( true );
 		add_filter( 'user_has_cap', $cb );
 
-		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->returnValue(
-				[
-					'account_id'               => 'acc_test',
-					'live_publishable_key'     => 'pk_test_',
-					'test_publishable_key'     => 'pk_live_',
-					'has_pending_requirements' => true,
-					'current_deadline'         => 12345,
-					'is_live'                  => true,
-				]
-			)
-		);
+		$this->mock_wcpay_request( Get_Account::class )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				new Response(
+					[
+						'account_id'               => 'acc_test',
+						'live_publishable_key'     => 'pk_test_',
+						'test_publishable_key'     => 'pk_live_',
+						'has_pending_requirements' => true,
+						'current_deadline'         => 12345,
+						'is_live'                  => true,
+					]
+				)
+			);
 
 		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_onboarding() );
 		// call the method twice but use the mock_api_client to make sure the account has been retrieved only once.
@@ -226,31 +241,33 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	public function test_maybe_redirect_to_onboarding_returns_true_and_on_boarding_re_enabled() {
 		// We will call get_account_data twice. The first call will tell us no account is connected and that on-boarding
 		// is disabled. The second call will just tell us that no account is connected (i.e. on-boarding was
-		// re-enabled). willReturnCallback is being used because PHPUnit doesn't have any helper methods for returning a
-		// mix of values and exceptions.
-		$expected_call_count = $this->exactly( 2 );
-		$this->mock_api_client
-			->expects( $expected_call_count )
-			->method( 'get_account_data' )
-			->willReturnCallback(
-				function () use ( $expected_call_count ) {
-					if ( $expected_call_count->getInvocationCount() === 1 ) {
-						throw new API_Exception(
-							'test',
-							'wcpay_on_boarding_disabled',
-							401
-						);
-					}
+		// re-enabled).
+		$request1 = $this->mock_wcpay_request( Get_Account::class );
+		$request1
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willThrowException(
+				new API_Exception(
+					'test',
+					'wcpay_on_boarding_disabled',
+					401
+				)
+			);
 
-					return [
+		$request2 = $this->mock_wcpay_request( Get_Account::class );
+		$request2->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				new Response(
+					[
 						'account_id'               => 'acc_test',
 						'live_publishable_key'     => 'pk_test_',
 						'test_publishable_key'     => 'pk_live_',
 						'has_pending_requirements' => true,
 						'current_deadline'         => 12345,
 						'is_live'                  => true,
-					];
-				}
+					]
+				)
 			);
 
 		// Simulate the account details cache not being there and then timing out.
@@ -331,18 +348,21 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	public function test_try_is_stripe_connected_returns_true_when_connected() {
 		$this->mock_empty_cache();
 
-		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->returnValue(
-				[
-					'account_id'               => 'acc_test',
-					'live_publishable_key'     => 'pk_test_',
-					'test_publishable_key'     => 'pk_live_',
-					'has_pending_requirements' => true,
-					'current_deadline'         => 12345,
-					'is_live'                  => true,
-				]
-			)
-		);
+		$this->mock_wcpay_request( Get_Account::class )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				new Response(
+					[
+						'account_id'               => 'acc_test',
+						'live_publishable_key'     => 'pk_test_',
+						'test_publishable_key'     => 'pk_live_',
+						'has_pending_requirements' => true,
+						'current_deadline'         => 12345,
+						'is_live'                  => true,
+					]
+				)
+			);
 
 		$this->assertTrue( $this->wcpay_account->try_is_stripe_connected() );
 	}
@@ -350,9 +370,12 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	public function test_try_is_stripe_connected_throws() {
 		$this->mock_empty_cache();
 
-		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->throwException( new API_Exception( 'test', 'server_error', 500 ) )
-		);
+		$this->mock_wcpay_request( Get_Account::class )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willThrowException(
+				new API_Exception( 'test', 'server_error', 500 )
+			);
 
 		// Server exception is masked by generic exception.
 		$this->expectException( Exception::class );
@@ -363,9 +386,12 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	public function test_try_is_stripe_connected_returns_false() {
 		$this->mock_empty_cache();
 
-		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->throwException( new API_Exception( 'test', 'wcpay_account_not_found', 401 ) )
-		);
+		$this->mock_wcpay_request( Get_Account::class )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willThrowException(
+				new API_Exception( 'test', 'wcpay_account_not_found', 401 )
+			);
 
 		$this->assertFalse( $this->wcpay_account->try_is_stripe_connected() );
 	}
@@ -373,18 +399,21 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	public function test_is_stripe_connected_returns_true_when_connected() {
 		$this->mock_empty_cache();
 
-		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->returnValue(
-				[
-					'account_id'               => 'acc_test',
-					'live_publishable_key'     => 'pk_test_',
-					'test_publishable_key'     => 'pk_live_',
-					'has_pending_requirements' => true,
-					'current_deadline'         => 12345,
-					'is_live'                  => true,
-				]
-			)
-		);
+		$this->mock_wcpay_request( Get_Account::class )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				new Response(
+					[
+						'account_id'               => 'acc_test',
+						'live_publishable_key'     => 'pk_test_',
+						'test_publishable_key'     => 'pk_live_',
+						'has_pending_requirements' => true,
+						'current_deadline'         => 12345,
+						'is_live'                  => true,
+					]
+				)
+			);
 
 		$this->assertTrue( $this->wcpay_account->is_stripe_connected( false ) );
 	}
@@ -392,9 +421,12 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	public function test_is_stripe_connected_returns_false_on_error() {
 		$this->mock_empty_cache();
 
-		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->throwException( new API_Exception( 'test', 'server_error', 500 ) )
-		);
+		$this->mock_wcpay_request( Get_Account::class )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willThrowException(
+				new API_Exception( 'test', 'server_error', 500 )
+			);
 
 		$this->assertFalse( $this->wcpay_account->is_stripe_connected( false ) );
 	}
@@ -402,9 +434,12 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	public function test_is_stripe_connected_returns_false_when_not_connected() {
 		$this->mock_empty_cache();
 
-		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->throwException( new API_Exception( 'test', 'wcpay_account_not_found', 401 ) )
-		);
+		$this->mock_wcpay_request( Get_Account::class )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willThrowException(
+				new API_Exception( 'test', 'wcpay_account_not_found', 401 )
+			);
 
 		$this->assertFalse( $this->wcpay_account->is_stripe_connected( false ) );
 	}
@@ -412,9 +447,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	public function test_is_stripe_account_valid_when_not_connected() {
 		$this->mock_empty_cache();
 
-		$this->mock_api_client
+		$this->mock_wcpay_request( Get_Account::class )
 			->expects( $this->once() )
-			->method( 'get_account_data' )
+			->method( 'format_response' )
 			->willThrowException( new API_Exception( 'test', 'wcpay_mock', 500 ) );
 
 		$this->assertFalse( $this->wcpay_account->is_stripe_account_valid() );
@@ -423,9 +458,12 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	public function test_is_stripe_account_valid_when_empty_account_data() {
 		$this->mock_empty_cache();
 
-		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->returnValue( [] )
-		);
+		$this->mock_wcpay_request( Get_Account::class )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				new Response( [] )
+			);
 
 		$this->assertFalse( $this->wcpay_account->is_stripe_account_valid() );
 	}
@@ -505,18 +543,21 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	public function test_get_publishable_key_returns_for_live() {
 		$this->mock_empty_cache();
 
-		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->returnValue(
-				[
-					'account_id'               => 'acc_test',
-					'live_publishable_key'     => 'pk_live_',
-					'test_publishable_key'     => 'pk_test_',
-					'has_pending_requirements' => true,
-					'current_deadline'         => 12345,
-					'is_live'                  => true,
-				]
-			)
-		);
+		$this->mock_wcpay_request( Get_Account::class )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				new Response(
+					[
+						'account_id'               => 'acc_test',
+						'live_publishable_key'     => 'pk_live_',
+						'test_publishable_key'     => 'pk_test_',
+						'has_pending_requirements' => true,
+						'current_deadline'         => 12345,
+						'is_live'                  => true,
+					]
+				)
+			);
 
 		$this->assertEquals( 'pk_live_', $this->wcpay_account->get_publishable_key( false ) );
 	}
@@ -524,18 +565,21 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	public function test_get_publishable_key_returns_for_test() {
 		$this->mock_empty_cache();
 
-		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->returnValue(
-				[
-					'account_id'               => 'acc_test',
-					'live_publishable_key'     => 'pk_live_',
-					'test_publishable_key'     => 'pk_test_',
-					'has_pending_requirements' => true,
-					'current_deadline'         => 12345,
-					'is_live'                  => true,
-				]
-			)
-		);
+		$this->mock_wcpay_request( Get_Account::class )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				new Response(
+					[
+						'account_id'               => 'acc_test',
+						'live_publishable_key'     => 'pk_live_',
+						'test_publishable_key'     => 'pk_test_',
+						'has_pending_requirements' => true,
+						'current_deadline'         => 12345,
+						'is_live'                  => true,
+					]
+				)
+			);
 
 		$this->assertEquals( 'pk_test_', $this->wcpay_account->get_publishable_key( true ) );
 	}
@@ -543,9 +587,12 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	public function test_get_publishable_key_throws() {
 		$this->mock_empty_cache();
 
-		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->throwException( new API_Exception( 'test', 'test', 123 ) )
-		);
+		$this->mock_wcpay_request( Get_Account::class )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willThrowException(
+				new API_Exception( 'test', 'test', 123 )
+			);
 
 		$this->assertNull( $this->wcpay_account->get_publishable_key( true ) );
 	}
@@ -553,18 +600,21 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	public function test_get_stripe_account_id() {
 		$this->mock_empty_cache();
 
-		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->returnValue(
-				[
-					'account_id'               => 'acc_test',
-					'live_publishable_key'     => 'pk_live_',
-					'test_publishable_key'     => 'pk_test_',
-					'has_pending_requirements' => true,
-					'current_deadline'         => 12345,
-					'is_live'                  => true,
-				]
-			)
-		);
+		$this->mock_wcpay_request( Get_Account::class )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				new Response(
+					[
+						'account_id'               => 'acc_test',
+						'live_publishable_key'     => 'pk_live_',
+						'test_publishable_key'     => 'pk_test_',
+						'has_pending_requirements' => true,
+						'current_deadline'         => 12345,
+						'is_live'                  => true,
+					]
+				)
+			);
 
 		$this->assertEquals( 'acc_test', $this->wcpay_account->get_stripe_account_id() );
 	}
@@ -572,9 +622,12 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	public function test_get_stripe_account_id_throws() {
 		$this->mock_empty_cache();
 
-		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->throwException( new API_Exception( 'test', 'test', 123 ) )
-		);
+		$this->mock_wcpay_request( Get_Account::class )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willThrowException(
+				new API_Exception( 'test', 'test', 123 )
+			);
 
 		$this->assertNull( $this->wcpay_account->get_stripe_account_id() );
 	}
@@ -596,7 +649,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		);
 
 		// cached value should be used and the api should never be called.
-		$this->mock_api_client->expects( $this->never() )->method( 'get_account_data' );
+		$this->mock_wcpay_request( Get_Account::class, 0 );
 
 		$this->assertTrue( $this->wcpay_account->try_is_stripe_connected() );
 
@@ -620,9 +673,12 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		);
 
 		// cached value should be ignored and the api should return not-connected.
-		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->throwException( new API_Exception( 'test', 'wcpay_account_not_found', 401 ) )
-		);
+		$this->mock_wcpay_request( Get_Account::class )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willThrowException(
+				new API_Exception( 'test', 'wcpay_account_not_found', 401 )
+			);
 
 		$this->assertFalse( $this->wcpay_account->try_is_stripe_connected() );
 
@@ -646,7 +702,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		);
 
 		// cached live account should be used and the api shouldn't be called.
-		$this->mock_api_client->expects( $this->never() )->method( 'get_account_data' );
+		$this->mock_wcpay_request( Get_Account::class, 0 );
 
 		$this->assertTrue( $this->wcpay_account->try_is_stripe_connected() );
 
@@ -688,9 +744,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	public function test_is_account_rejected_returns_false_on_error() {
 		$this->mock_empty_cache();
 
-		$this->mock_api_client
+		$this->mock_wcpay_request( Get_Account::class )
 			->expects( $this->once() )
-			->method( 'get_account_data' )
+			->method( 'format_response' )
 			->willThrowException( new API_Exception( 'test', 'wcpay_mock', 500 ) );
 
 		$this->assertFalse( $this->wcpay_account->is_account_rejected() );
@@ -805,7 +861,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->cache_account_details( [] );
 
 		// Wire up the API client mock to return updated account data.
-		$this->mock_api_client->expects( $this->never() )->method( 'get_account_data' );
+		$this->mock_wcpay_request( Get_Account::class, 0 );
 
 		// Fetch the account.
 		$account = $this->wcpay_account->get_cached_account_data();
