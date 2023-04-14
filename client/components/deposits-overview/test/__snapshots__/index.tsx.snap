@@ -36,7 +36,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
       Deposits
     </div>
     <div
-      class="wcpay-deposits-overview__heading"
+      class="components-card__body is-size-medium wcpay-deposits-overview__heading css-xmjzce-BodyUI e1q7k77g3"
     >
       <span
         class="wcpay-deposits-overview__heading__title"
@@ -54,7 +54,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
       </div>
     </div>
     <div
-      class="wcpay-deposits-overview__table"
+      class="components-card__body is-size-medium wcpay-deposits-overview__table__container css-xmjzce-BodyUI e1q7k77g3"
     >
       <div
         class="components-flex wcpay-deposits-overview__table__row__header css-1rdm0qk-Flex eboqfv50"
@@ -75,6 +75,14 @@ exports[`Deposits Overview information Component Renders 1`] = `
           Amount
         </div>
       </div>
+    </div>
+    <hr
+      class="components-card__divider css-lh2anh-DividerUI e1q7k77g5"
+      role="separator"
+    />
+    <div
+      class="components-card__body is-size-medium wcpay-deposits-overview__table__container css-xmjzce-BodyUI e1q7k77g3"
+    >
       <div
         class="components-flex wcpay-deposits-overview__table__row css-1rdm0qk-Flex eboqfv50"
       >
@@ -112,7 +120,10 @@ exports[`Deposits Overview information Component Renders 1`] = `
       </div>
     </div>
     <div
-      class="wcpay-deposits-overview__heading"
+      class="components-card__body is-size-medium wcpay-deposits-overview__notices__container css-xmjzce-BodyUI e1q7k77g3"
+    />
+    <div
+      class="components-card__body is-size-medium wcpay-deposits-overview__heading css-xmjzce-BodyUI e1q7k77g3"
     >
       <span
         class="wcpay-deposits-overview__heading__title"
@@ -133,7 +144,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
       </div>
     </div>
     <div
-      class="wcpay-deposits-overview__table"
+      class="components-card__body is-size-medium wcpay-deposits-overview__table__container css-xmjzce-BodyUI e1q7k77g3"
     >
       <div
         class="components-flex wcpay-deposits-overview__table__row__header css-1rdm0qk-Flex eboqfv50"
@@ -154,6 +165,14 @@ exports[`Deposits Overview information Component Renders 1`] = `
           Amount
         </div>
       </div>
+    </div>
+    <hr
+      class="components-card__divider css-lh2anh-DividerUI e1q7k77g5"
+      role="separator"
+    />
+    <div
+      class="components-card__body is-size-medium wcpay-deposits-overview__table__container css-xmjzce-BodyUI e1q7k77g3"
+    >
       <div
         class="components-flex wcpay-deposits-overview__table__row css-1rdm0qk-Flex eboqfv50"
       >
@@ -235,7 +254,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
         </div>
       </div>
       <div
-        class="wcpay-banner-notice wcpay-banner-info-notice components-notice is-info"
+        class="wcpay-banner-notice wcpay-banner-info-notice wcpay-deposits-overview__business-day-delay-notice components-notice is-info"
       >
         <div
           class="components-notice__content"
