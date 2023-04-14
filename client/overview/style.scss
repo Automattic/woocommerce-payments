@@ -33,9 +33,24 @@
 	}
 
 	.wcpay-connection-success {
+		position: relative;
 		text-align: center;
 		padding: $gap-large;
-		padding-bottom: $gap;
+
+		&__dropdown {
+			position: absolute;
+			top: $gap-large;
+			right: $gap-large;
+
+			.dashicons-ellipsis {
+				transform: rotate( 90deg );
+			}
+		}
+
+		.dashicons-button {
+			margin-right: 0;
+			display: none !important;
+		}
 
 		img {
 			max-height: 73px;
@@ -47,7 +62,7 @@
 			font-weight: 400;
 			letter-spacing: 0.7px;
 			line-height: 28px;
-			margin-bottom: 0;
+			margin-bottom: $gap-small;
 
 			@media ( min-width: 783px ) {
 				padding: 0 10%;
@@ -59,6 +74,13 @@
 		}
 	}
 
+	// Gutenberg compatibility adjustments. The component changed its classes and
+	// styling in @wordpress/components 19.11.0. We're currently using 11.1.5.
+	// To be removed when we upgrade this package.
+	.components-popover {
+		position: fixed;
+  }
+  
 	// To be removed when @wordpress/components is upgraded to 17.0.0.
 	.components-visually-hidden {
 		border: 0;
