@@ -206,7 +206,7 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 					{ includesFinancingPayout && (
 						<DepositIncludesLoanPayoutNotice />
 					) }
-					{ completedWaitingPeriod && (
+					{ ! completedWaitingPeriod && (
 						<NewAccountWaitingPeriodNotice />
 					) }
 					{ true && <NegativeBalanceDepositsPausedNotice /> }
