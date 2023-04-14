@@ -4,13 +4,14 @@
  * Internal dependencies
  */
 import riskMappings from './strings';
+import Pill from '../pill';
 
 const riskOrder = [ 'normal', 'elevated', 'highest' ];
 
 const colorMappings = {
-	normal: 'green',
-	elevated: 'orange',
-	highest: 'red',
+	normal: 'success',
+	elevated: 'alert',
+	highest: 'danger',
 };
 
 export function calculateRiskMapping( risk ) {
@@ -22,9 +23,9 @@ const RiskLevel = ( { risk } ) => {
 	const riskLevel = riskOrder[ risk ];
 
 	return (
-		<span style={ { color: colorMappings[ riskLevel ] } }>
+		<Pill type={ colorMappings[ riskLevel ] }>
 			{ calculateRiskMapping( risk ) }
-		</span>
+		</Pill>
 	);
 };
 
