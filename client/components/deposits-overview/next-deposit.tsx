@@ -130,12 +130,14 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 		nextDeposit.date > 0 ? nextDeposit : null
 	);
 
-	// Next deposit related notices logic.
 	const { includesFinancingPayout } = useDepositIncludesLoan(
 		nextDeposit.id
 	);
 	const completedWaitingPeriod =
 		wcpaySettings.accountStatus.deposits?.completed_waiting_period;
+	const negativeBalanceDepositsPaused = overview?.nextScheduled?.amount
+		? overview?.nextScheduled?.amount <= 0
+		: false;
 
 	return (
 		<>
@@ -209,7 +211,9 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 					{ ! completedWaitingPeriod && (
 						<NewAccountWaitingPeriodNotice />
 					) }
-					{ true && <NegativeBalanceDepositsPausedNotice /> }
+					{ negativeBalanceDepositsPaused && (
+						<NegativeBalanceDepositsPausedNotice />
+					) }
 				</CardBody>
 			) }
 		</>
