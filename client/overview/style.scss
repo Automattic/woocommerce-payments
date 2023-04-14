@@ -39,8 +39,8 @@
 
 		&__dropdown {
 			position: absolute;
-			top: 0 + $gap-large;
-			right: 0 + $gap-large;
+			top: $gap-large;
+			right: $gap-large;
 
 			.dashicons-ellipsis {
 				transform: rotate( 90deg );
