@@ -1492,10 +1492,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$list_charge_refund_request = List_Charge_Refunds::create();
 				$list_charge_refund_request->set_charge( $charge_id );
 
-				$refunds = $list_charge_refund_request->send( 'wcpay_list_charge_refunds_request' );
+				$list_charge_refund_response = $list_charge_refund_request->send( 'wcpay_list_charge_refunds_request' );
 
 				$refunds = array_filter(
-					$refunds['data'] ?? [],
+					$list_charge_refund_response['data'] ?? [],
 					static function ( $refund ) use ( $refund_amount ) {
 							return 'succeeded' === $refund['status'] && $refund_amount === $refund['amount'];
 					}
