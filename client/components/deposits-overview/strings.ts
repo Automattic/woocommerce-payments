@@ -21,10 +21,6 @@ export default {
 			'Deposits pending or in-transit may take 1-2 business days to appear in your bank account once dispatched',
 			'woocommerce-payments'
 		),
-		negativeBalance: __(
-			'Deposits may be interrupted while your WooCommerce Payments balance remains negative.',
-			'woocommerce-payments'
-		),
 	},
 	viewAllDeposits: __( 'View full deposits history', 'woocommerce-payments' ),
 	changeDepositSchedule: __(

@@ -31,6 +31,87 @@ type NextDepositProps = {
 	overview?: AccountOverview.Overview;
 };
 
+const DepositIncludesLoanPayoutNotice = () => (
+	<BannerNotice
+		status="warning"
+		icon={ <InfoOutlineIcon /> }
+		isDismissible={ false }
+	>
+		{ interpolateComponents( {
+			mixedString:
+				strings.notices.depositIncludesLoan +
+				__(
+					' {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+					'woocommerce-payments'
+				),
+			components: {
+				learnMoreLink: (
+					// eslint-disable-next-line jsx-a11y/anchor-has-content
+					<a
+						href={ strings.documentationUrls.capital }
+						target="_blank"
+						rel="noreferrer"
+					/>
+				),
+			},
+		} ) }
+	</BannerNotice>
+);
+
+const NewAccountWaitingPeriodNotice = () => (
+	<BannerNotice
+		status="warning"
+		icon={ <NoticeOutlineIcon /> }
+		className="new-account-waiting-period-notice"
+		isDismissible={ false }
+	>
+		{ interpolateComponents( {
+			mixedString: __(
+				'Your first deposit is held for seven business days. {{whyLink}}Why?{{/whyLink}}',
+				'woocommerce-payments'
+			),
+			components: {
+				whyLink: (
+					// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
+					// eslint-disable-next-line jsx-a11y/anchor-has-content
+					<a
+						target="_blank"
+						rel="noopener noreferrer"
+						href="https://woocommerce.com/document/woocommerce-payments/fees-and-debits/account-showing-negative-balance/"
+					/>
+				),
+			},
+		} ) }
+	</BannerNotice>
+);
+
+const NegativeBalanceDepositsPausedNotice = () => (
+	<BannerNotice
+		status="warning"
+		icon={ <NoticeOutlineIcon /> }
+		className="negative-balance-deposits-paused-notice"
+		isDismissible={ false }
+	>
+		{ interpolateComponents( {
+			mixedString: __(
+				'Deposits may be interrupted while your WooCommerce Payments balance remains negative. {{whyLink}}Why?{{/whyLink}}',
+				'woocommerce-payments'
+			),
+			components: {
+				whyLink: (
+					// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
+					// eslint-disable-next-line jsx-a11y/anchor-has-content
+					<a
+						target="_blank"
+						rel="noopener noreferrer"
+						href="https://woocommerce.com/document/woocommerce-payments/fees-and-debits/account-showing-negative-balance/"
+					/>
+				),
+			},
+		} ) }
+	</BannerNotice>
+);
+
 /**
  * Renders the Next Deposit details component.
  *
@@ -119,62 +200,13 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 				<CardBody
 					className={ 'wcpay-deposits-overview__notices__container' }
 				>
-					{ /* Deposit includes capital funds notice */ }
 					{ includesFinancingPayout && (
-						<BannerNotice
-							status="warning"
-							icon={ <InfoOutlineIcon /> }
-							isDismissible={ false }
-						>
-							{ interpolateComponents( {
-								mixedString:
-									strings.notices.depositIncludesLoan +
-									__(
-										' {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-										'woocommerce-payments'
-									),
-								components: {
-									learnMoreLink: (
-										// eslint-disable-next-line jsx-a11y/anchor-has-content
-										<a
-											href={
-												strings.documentationUrls
-													.capital
-											}
-											target="_blank"
-											rel="noreferrer"
-										/>
-									),
-								},
-							} ) }
-						</BannerNotice>
+						<DepositIncludesLoanPayoutNotice />
 					) }
-					{ /* New account waiting period notice */ }
-					{ ! completedWaitingPeriod && (
-						<BannerNotice
-							status="warning"
-							icon={ <NoticeOutlineIcon /> }
-							className="new-account-waiting-period-notice"
-							isDismissible={ false }
-						>
-							{ interpolateComponents( {
-								mixedString: __(
-									'Your first deposit is held for seven business days. {{whyLink}}Why?{{/whyLink}}',
-									'woocommerce-payments'
-								),
-								components: {
-									whyLink: (
-										// eslint-disable-next-line jsx-a11y/anchor-has-content
-										<a
-											target="_blank"
-											rel="noopener noreferrer"
-											href="https://woocommerce.com/document/woocommerce-payments/deposits/deposit-schedule/#section-1"
-										/>
-									),
-								},
-							} ) }
-						</BannerNotice>
+					{ completedWaitingPeriod && (
+						<NewAccountWaitingPeriodNotice />
 					) }
+					{ true && <NegativeBalanceDepositsPausedNotice /> }
 				</CardBody>
 			) }
 		</>
