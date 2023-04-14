@@ -10,9 +10,10 @@ The `WCPay\Core\Server\Request\Refund_Charge` class is used to construct the req
 
 When creating `Refund_Charge` requests, the item ID must be provided to the `::create()` method. The identifier should be in the `ch_XXX` format.
 
-| Parameter               | Setter                                               | Immutable | Required | Default value |
-|-------------------------|------------------------------------------------------|:---------:|:--------:|:-------------:|
-| `amount`                | `set_amount( int $amount )`                          |    No     |    No    |     null      |
+| Parameter | Setter                         | Immutable | Required | Default value |
+|-----------|--------------------------------|:---------:|:--------:|:-------------:|
+| `charge`  | `set_charge( string $charge )` |    Yes    |   Yes    |     None      |
+| `amount`  | `set_amount( int $amount )`    |    No     |    No    |     null      |
 
 
 ## Filter
@@ -25,7 +26,8 @@ When using this request, provide the following filter and arguments:
 ## Example:
 
 ```php
-$request = Refund_Charge::create( $id );
+$request = Refund_Charge::create( );
+$request->set_charge( $carge );
 $request->set_amount( 100 ); // It is not required. You can also skip this setter.
 $request->send( 'wcpay_refund_charge_request' );
 ```
