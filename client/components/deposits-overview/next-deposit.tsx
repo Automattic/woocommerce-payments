@@ -22,8 +22,9 @@ import Loadable from 'components/loadable';
 import { getNextDeposit } from './utils';
 import DepositStatusPill from 'components/deposit-status-pill';
 import { getDepositDate } from 'deposits/utils';
-import { useDepositIncludesLoan } from 'wcpay/data';
+import { useDepositIncludesLoan, useAllDepositsOverviews } from 'wcpay/data';
 import BannerNotice from 'wcpay/components/banner-notice';
+import { useSelectedCurrency } from 'wcpay/overview/hooks';
 
 type NextDepositProps = {
 	isLoading: boolean;
@@ -135,9 +136,21 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 	);
 	const completedWaitingPeriod =
 		wcpaySettings.accountStatus.deposits?.completed_waiting_period;
-	const negativeBalanceDepositsPaused = overview?.nextScheduled?.amount
-		? overview?.nextScheduled?.amount <= 0
-		: false;
+
+	const {
+		overviews,
+	} = useAllDepositsOverviews() as AccountOverview.OverviewsResponse;
+	const { selectedCurrency } = useSelectedCurrency();
+
+	const availableBalance = overviews?.currencies.find(
+		( currencyOverview ) =>
+			( selectedCurrency &&
+				selectedCurrency === currencyOverview.currency ) ||
+			wcpaySettings.accountDefaultCurrency === currencyOverview.currency
+	)?.available;
+
+	const negativeBalanceDepositsPaused =
+		availableBalance && availableBalance.amount < 0;
 
 	return (
 		<>
