@@ -25,6 +25,7 @@ import WcPayUpeContextProvider from '../wcpay-upe-toggle/provider';
 import ErrorBoundary from '../../components/error-boundary';
 import { useDepositDelayDays, useSettings } from '../../data';
 import FraudProtection from '../fraud-protection';
+import wcpayTracks from 'wcpay/tracks';
 
 const PaymentMethodsDescription = () => (
 	<>
@@ -100,7 +101,15 @@ const DepositsDescription = () => {
 					depositDelayDays
 				) }
 			</p>
-			<ExternalLink href="https://woocommerce.com/document/payments/faq/deposit-schedule/#section-2">
+			<ExternalLink
+				href="https://woocommerce.com/document/payments/faq/deposit-schedule/#section-2"
+				onClick={ () =>
+					wcpayTracks.recordEvent(
+						'wcpay_deposits_pending_schedules_help',
+						{}
+					)
+				}
+			>
 				{ __(
 					'Learn more about pending schedules',
 					'woocommerce-payments'

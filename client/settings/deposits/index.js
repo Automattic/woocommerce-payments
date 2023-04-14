@@ -25,6 +25,8 @@ import {
 	useCompletedWaitingPeriod,
 } from '../../data';
 import './style.scss';
+import wcpayTracks from 'wcpay/tracks';
+import { useEffect, useRef } from '@wordpress/element';
 
 const daysOfWeek = [
 	{ label: __( 'Monday', 'woocommerce-payments' ), value: 'monday' },
@@ -59,6 +61,22 @@ const CustomizeDepositSchedule = () => {
 		depositScheduleMonthlyAnchor,
 		setDepositScheduleMonthlyAnchor,
 	] = useDepositScheduleMonthlyAnchor();
+	const initialRender = useRef( true );
+	useEffect( () => {
+		if ( initialRender.current ) {
+			initialRender.current = false;
+			return;
+		}
+		wcpayTracks.recordEvent( 'wcpay_deposits_schedule_change', {
+			interval: depositScheduleInterval,
+			weekly_anchor: depositScheduleWeeklyAnchor,
+			monthly_anchor: depositScheduleMonthlyAnchor,
+		} );
+	}, [
+		depositScheduleInterval,
+		depositScheduleMonthlyAnchor,
+		depositScheduleWeeklyAnchor,
+	] );
 
 	const handleIntervalChange = ( newInterval ) => {
 		switch ( newInterval ) {
@@ -162,6 +180,12 @@ const DepositsSchedule = () => {
 					href="https://woocommerce.com/document/payments/faq/deposit-schedule/"
 					target="_blank"
 					rel="external noreferrer noopener"
+					onClick={ () =>
+						wcpayTracks.recordEvent(
+							'wcpay_deposits_schedule_disabled_help',
+							{}
+						)
+					}
 				>
 					<HelpOutlineIcon size={ 18 } />
 				</a>
@@ -189,6 +213,12 @@ const DepositsSchedule = () => {
 					href="https://woocommerce.com/document/payments/faq/deposit-schedule/"
 					target="_blank"
 					rel="external noreferrer noopener"
+					onClick={ () =>
+						wcpayTracks.recordEvent(
+							'wcpay_deposits_waiting_period_help',
+							{}
+						)
+					}
 				>
 					<HelpOutlineIcon size={ 18 } />
 				</a>
@@ -220,7 +250,15 @@ const Deposits = () => {
 							'Manage and update your deposit account information to receive payments and deposits.',
 							'woocommerce-payments'
 						) }{ ' ' }
-						<ExternalLink href={ accountLink }>
+						<ExternalLink
+							href={ accountLink }
+							onClick={ () =>
+								wcpayTracks.recordEvent(
+									'wcpay_settings_deposits_manage_in_stripe',
+									{}
+								)
+							}
+						>
 							{ __( 'Manage in Stripe', 'woocommerce-payments' ) }
 						</ExternalLink>
 					</p>
