@@ -5,7 +5,7 @@
 ## Description
 
 The `WCPay\Core\Server\Request\Get_Account_Login_Data` class is used to construct the request for getting one-time dashboard login url.
-A note that this request only sends the test_mode flag only when the site is in the dev mode.
+Note that this request sends the test_mode flag only when the site is in the dev mode.
 
 ## Parameters
 
@@ -24,6 +24,5 @@ When using this request, provide the following filter and arguments:
 
 ```php
 $request = Get_Account_Login_Data::create();
-$request->set_test_mode_according_to_dev_mode();
 $request->send( 'wpcay_get_account_login_data' );
 ```

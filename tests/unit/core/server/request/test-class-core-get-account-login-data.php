@@ -41,8 +41,7 @@ class Get_Account_Login_Data_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_account_login_data_will_be_sent() {
-		$request = new Get_Account_Login_Data( $this->mock_api_client, $this->mock_wc_payments_http_client );
-		$request->set_test_mode_according_to_dev_mode();
+		$request   = new Get_Account_Login_Data( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$valid_url = home_url() . '/a-valid-url';
 		$request->set_redirect_url( $valid_url );
 		$this->assertInstanceOf( Get_Account_Login_Data::class, $request );
@@ -58,20 +57,17 @@ class Get_Account_Login_Data_Test extends WCPAY_UnitTestCase {
 		// enable test mode.
 		WC_Payments::mode()->test();
 		$request_test = new Get_Account_Login_Data( $this->mock_api_client, $this->mock_wc_payments_http_client );
-		$request_test->set_test_mode_according_to_dev_mode();
-		$this->assertFalse( $request_test->get_param( 'test_mode' ) );
+		$this->assertFalse( $request_test->get_default_params()['test_mode'] );
 
 		// enable live mode.
 		WC_Payments::mode()->live();
 		$request_live = new Get_Account_Login_Data( $this->mock_api_client, $this->mock_wc_payments_http_client );
-		$request_live->set_test_mode_according_to_dev_mode();
-		$this->assertFalse( $request_live->get_param( 'test_mode' ) );
+		$this->assertFalse( $request_live->get_default_params()['test_mode'] );
 
 		// enable dev mode.
 		WC_Payments::mode()->dev();
 		$request_dev = new Get_Account_Login_Data( $this->mock_api_client, $this->mock_wc_payments_http_client );
-		$request_dev->set_test_mode_according_to_dev_mode();
-		$this->assertTrue( $request_dev->get_param( 'test_mode' ) );
+		$this->assertTrue( $request_dev->get_default_params()['test_mode'] );
 
 		// reset the test.
 		WC_Payments::mode()->live();

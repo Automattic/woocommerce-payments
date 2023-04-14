@@ -961,7 +961,6 @@ class WC_Payments_Account {
 		$redirect_url = $this->get_overview_page_url();
 
 		$request = Get_Account_Login_Data::create();
-		$request->set_test_mode_according_to_dev_mode();
 		$request->set_redirect_url( $redirect_url );
 
 		$response   = $request->send( 'wpcay_get_account_login_data' );
