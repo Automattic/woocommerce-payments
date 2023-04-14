@@ -46,7 +46,8 @@ class Response implements ArrayAccess {
 	 * @param mixed $offset The key to retrieve.
 	 * @return mixed
 	 */
-	public function offsetGet( $offset ): mixed {
+	#[\ReturnTypeWillChange]
+	public function offsetGet( $offset ) {
 		return $this->data[ $offset ];
 	}
 
