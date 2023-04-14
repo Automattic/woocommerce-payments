@@ -815,23 +815,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Get current account data
-	 *
-	 * @return array An array describing an account object.
-	 *
-	 * @throws API_Exception - Error contacting the API.
-	 */
-	public function get_account_data() {
-		return $this->request(
-			[
-				'test_mode' => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
-			],
-			self::ACCOUNTS_API,
-			self::GET
-		);
-	}
-
-	/**
 	 * Get current platform checkout eligibility
 	 *
 	 * @return array An array describing platform checkout eligibility.
@@ -865,23 +848,6 @@ class WC_Payments_API_Client {
 			),
 			self::PLATFORM_CHECKOUT_API,
 			self::POST
-		);
-	}
-
-	/**
-	 * Update Stripe account data
-	 *
-	 * @param array $account_settings Settings to update.
-	 *
-	 * @return array Updated account data.
-	 */
-	public function update_account( $account_settings ) {
-		return $this->request(
-			$account_settings,
-			self::ACCOUNTS_API,
-			self::POST,
-			true,
-			true
 		);
 	}
 
