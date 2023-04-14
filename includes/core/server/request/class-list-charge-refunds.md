@@ -4,7 +4,7 @@
 
 ## Description
 
-The `WCPay\Core\Server\Request\List_Charge_Refunds` class is used to construct the request for refunding a refunds for specific charge.
+The `WCPay\Core\Server\Request\List_Charge_Refunds` class is used to construct the request for listing refunds of a specific charge.
 
 ## Parameters
 
