@@ -12,7 +12,7 @@ When creating `Refund_Charge` requests, the item ID must be provided to the `::c
 
 | Parameter | Setter                         | Immutable | Required | Default value |
 |-----------|--------------------------------|:---------:|:--------:|:-------------:|
-| `charge`  | `set_charge( string $charge )` |    Yes    |   Yes    |     None      |
+| `charge`  | `set_charge( string $charge_id )` |    Yes    |   Yes    |     None      |
 | `amount`  | `set_amount( int $amount )`    |    No     |    No    |     null      |
 
 
