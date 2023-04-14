@@ -6,7 +6,7 @@ import React, { useEffect } from 'react';
 /**
  * Internal dependencies
  */
-import { useChargeFromOrder, useLatestFraudOutcome } from '../../data';
+import { useChargeFromOrder } from '../../data';
 import PaymentDetails from '../payment-details';
 import { getAdminUrl } from '../../utils';
 
@@ -17,18 +17,12 @@ interface PaymentOrderDetailsProps {
 const PaymentOrderDetails: React.FC< PaymentOrderDetailsProps > = ( {
 	id: orderId,
 } ) => {
-	const {
-		data: fraudOutcome,
-		isLoading: isLoadingFraudOutcome,
-	} = useLatestFraudOutcome( orderId );
-
 	const { data: charge, isLoading: isLoadingCharge } = useChargeFromOrder(
 		orderId
 	);
 
 	const shouldRedirect = !! charge.payment_intent;
-	const isLoading =
-		isLoadingCharge || isLoadingFraudOutcome || shouldRedirect;
+	const isLoading = isLoadingCharge || shouldRedirect;
 
 	useEffect( () => {
 		if ( ! charge ) return;
@@ -49,7 +43,6 @@ const PaymentOrderDetails: React.FC< PaymentOrderDetailsProps > = ( {
 			id={ orderId }
 			charge={ charge }
 			isLoading={ isLoading }
-			fraudOutcome={ fraudOutcome }
 			showTimeline={ ! shouldRedirect }
 		/>
 	);

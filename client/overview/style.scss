@@ -73,4 +73,73 @@
 		width: 1px;
 		word-wrap: normal;
 	}
+
+	.wcpay-setup-real-payments {
+		&__body {
+			display: grid;
+			grid-template-columns: repeat( 3, 1fr );
+			grid-column-gap: $gap-largest;
+			margin: $gap $gap-small;
+			text-align: center;
+			fill: $studio-woocommerce-purple-50;
+
+			@media ( max-width: 783px ) {
+				grid-template-columns: 1fr;
+			}
+
+			svg {
+				display: block;
+				margin: 0 auto $gap-smaller;
+			}
+		}
+
+		&__footer {
+			justify-content: end;
+		}
+	}
+}
+
+.wcpay-setup-real-payments-modal {
+	color: $gray-900;
+	fill: $studio-woocommerce-purple-50;
+
+	.components-modal__content {
+		box-sizing: border-box;
+		max-width: 600px;
+		margin: auto;
+		padding: $gap-smaller $gap-larger $gap-larger;
+	}
+
+	.components-modal__header {
+		position: initial;
+		height: initial;
+		padding: 0;
+		border: 0;
+
+		h1 {
+			@include title-small;
+			margin-bottom: $gap-smaller;
+		}
+	}
+
+	&__title {
+		@include title-small;
+	}
+
+	&__headline {
+		font-weight: 600;
+	}
+
+	&__content {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		gap: $gap;
+		padding: $gap-smallest;
+		align-items: center;
+		margin-bottom: $gap-large;
+	}
+
+	&__footer {
+		@include modal-footer-buttons;
+	}
 }

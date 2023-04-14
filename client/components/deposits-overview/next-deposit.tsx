@@ -11,6 +11,7 @@ import {
 } from '@wordpress/components';
 import { calendar } from '@wordpress/icons';
 import InfoOutlineIcon from 'gridicons/dist/info-outline';
+import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import interpolateComponents from '@automattic/interpolate-components';
 import { __ } from '@wordpress/i18n';
 
@@ -47,9 +48,13 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 	const nextDepositDate = getDepositDate(
 		nextDeposit.date > 0 ? nextDeposit : null
 	);
+
+	// Next deposit related notices logic.
 	const { includesFinancingPayout } = useDepositIncludesLoan(
 		nextDeposit.id
 	);
+	const completedWaitingPeriod =
+		wcpaySettings.accountStatus.deposits?.completed_waiting_period;
 
 	return (
 		<>
@@ -124,9 +129,14 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 						/>
 					</FlexItem>
 				</Flex>
-				{ /* Deposit includes capital funds notice */ }
-				{ ! isLoading && includesFinancingPayout && (
-					<div className="wcpay-deposits-overview__notices">
+			</CardBody>
+			{ /* Notices */ }
+			{ ! isLoading && (
+				<CardBody
+					className={ 'wcpay-deposits-overview__notices__container' }
+				>
+					{ /* Deposit includes capital funds notice */ }
+					{ includesFinancingPayout && (
 						<BannerNotice
 							status="warning"
 							icon={ <InfoOutlineIcon /> }
@@ -154,39 +164,35 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 								},
 							} ) }
 						</BannerNotice>
-					</div>
-				) }
-
-				{ /* Notice(s) */ }
-				{ ! isLoading && nextDeposit.amount < 0 && (
-					<div className="wcpay-deposits-overview__notices">
+					) }
+					{ /* New account waiting period notice */ }
+					{ ! completedWaitingPeriod && (
 						<BannerNotice
-							status="info"
-							icon={ <InfoOutlineIcon /> }
+							status="warning"
+							icon={ <NoticeOutlineIcon /> }
+							className="new-account-waiting-period-notice"
 							isDismissible={ false }
 						>
 							{ interpolateComponents( {
-								mixedString:
-									strings.notices.negativeBalance +
-									__(
-										' {{whyLink}}Why?{{/whyLink}}',
-										'woocommerce-payments'
-									),
+								mixedString: __(
+									'Your first deposit is held for seven business days. {{whyLink}}Why?{{/whyLink}}',
+									'woocommerce-payments'
+								),
 								components: {
 									whyLink: (
 										// eslint-disable-next-line jsx-a11y/anchor-has-content
 										<a
-											href="https://woocommerce.com/document/woocommerce-payments/fees-and-debits/account-showing-negative-balance/"
 											target="_blank"
-											rel="noreferrer"
+											rel="noopener noreferrer"
+											href="https://woocommerce.com/document/woocommerce-payments/deposits/deposit-schedule/#section-1"
 										/>
 									),
 								},
 							} ) }
 						</BannerNotice>
-					</div>
-				) }
-			</CardBody>
+					) }
+				</CardBody>
+			) }
 		</>
 	);
 };
