@@ -2,9 +2,16 @@
  * External dependencies
  */
 import * as React from 'react';
-import { Flex, FlexItem, Icon } from '@wordpress/components';
+import {
+	CardBody,
+	CardDivider,
+	Flex,
+	FlexItem,
+	Icon,
+} from '@wordpress/components';
 import { calendar } from '@wordpress/icons';
 import InfoOutlineIcon from 'gridicons/dist/info-outline';
+import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import interpolateComponents from '@automattic/interpolate-components';
 import { __ } from '@wordpress/i18n';
 
@@ -41,13 +48,18 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 	const nextDepositDate = getDepositDate(
 		nextDeposit.date > 0 ? nextDeposit : null
 	);
+
+	// Next deposit related notices logic.
 	const { includesFinancingPayout } = useDepositIncludesLoan(
 		nextDeposit.id
 	);
+	const completedWaitingPeriod =
+		wcpaySettings.accountStatus.deposits?.completed_waiting_period;
 
 	return (
 		<>
-			<div className={ tableClass }>
+			{ /* Next Deposit Table */ }
+			<CardBody className={ `${ tableClass }__container` }>
 				<Flex className={ `${ tableClass }__row__header` }>
 					<FlexItem className={ `${ tableClass }__cell` }>
 						<Loadable
@@ -68,6 +80,9 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 						/>
 					</FlexItem>
 				</Flex>
+			</CardBody>
+			<CardDivider />
+			<CardBody className={ `${ tableClass }__container` }>
 				<Flex className={ `${ tableClass }__row` }>
 					<FlexItem className={ `${ tableClass }__cell` }>
 						{ ! isLoading && (
@@ -98,37 +113,69 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 						/>
 					</FlexItem>
 				</Flex>
-			</div>
-			{ /* Deposit includes capital funds notice */ }
-			{ ! isLoading && includesFinancingPayout && (
-				<div className="wcpay-deposits-overview__notices">
-					<BannerNotice
-						status="warning"
-						icon={ <InfoOutlineIcon /> }
-						isDismissible={ false }
-					>
-						{ interpolateComponents( {
-							mixedString:
-								strings.notices.depositIncludesLoan +
-								__(
-									' {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+			</CardBody>
+			{ /* Notices */ }
+			{ ! isLoading && (
+				<CardBody
+					className={ 'wcpay-deposits-overview__notices__container' }
+				>
+					{ /* Deposit includes capital funds notice */ }
+					{ includesFinancingPayout && (
+						<BannerNotice
+							status="warning"
+							icon={ <InfoOutlineIcon /> }
+							isDismissible={ false }
+						>
+							{ interpolateComponents( {
+								mixedString:
+									strings.notices.depositIncludesLoan +
+									__(
+										' {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+										'woocommerce-payments'
+									),
+								components: {
+									learnMoreLink: (
+										// eslint-disable-next-line jsx-a11y/anchor-has-content
+										<a
+											href={
+												strings.documentationUrls
+													.capital
+											}
+											target="_blank"
+											rel="noreferrer"
+										/>
+									),
+								},
+							} ) }
+						</BannerNotice>
+					) }
+					{ /* New account waiting period notice */ }
+					{ ! completedWaitingPeriod && (
+						<BannerNotice
+							status="warning"
+							icon={ <NoticeOutlineIcon /> }
+							className="new-account-waiting-period-notice"
+							isDismissible={ false }
+						>
+							{ interpolateComponents( {
+								mixedString: __(
+									'Your first deposit is held for seven business days. {{whyLink}}Why?{{/whyLink}}',
 									'woocommerce-payments'
 								),
-							components: {
-								learnMoreLink: (
-									// eslint-disable-next-line jsx-a11y/anchor-has-content
-									<a
-										href={
-											strings.documentationUrls.capital
-										}
-										target="_blank"
-										rel="noreferrer"
-									/>
-								),
-							},
-						} ) }
-					</BannerNotice>
-				</div>
+								components: {
+									whyLink: (
+										// eslint-disable-next-line jsx-a11y/anchor-has-content
+										<a
+											target="_blank"
+											rel="noopener noreferrer"
+											href="https://woocommerce.com/document/woocommerce-payments/deposits/deposit-schedule/#section-1"
+										/>
+									),
+								},
+							} ) }
+						</BannerNotice>
+					) }
+				</CardBody>
 			) }
 		</>
 	);
