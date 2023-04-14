@@ -610,7 +610,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 */
 	private function update_account( WP_REST_Request $request ) {
 		$updated_fields_callback = function ( $value, string $key ) {
-			return in_array( $key, array_keys( WC_Payment_Gateway_WCPay::ACCOUNT_SETTINGS_MAPPING ), true ) &&
+			return array_key_exists( $key, WC_Payment_Gateway_WCPay::ACCOUNT_SETTINGS_MAPPING ) &&
 				$this->wcpay_gateway->get_option( $key ) !== $value;
 		};
 		// Filter out fields that are unchanged or not in the list of fields to update.
