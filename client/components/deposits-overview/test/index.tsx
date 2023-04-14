@@ -16,7 +16,6 @@ import DepositSchedule from '../deposit-schedule';
 import SuspendedDepositNotice from '../suspended-deposit-notice';
 import { useDepositIncludesLoan, useDeposits } from 'wcpay/data';
 import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
-import strings from '../strings';
 
 jest.mock( 'wcpay/data', () => ( {
 	useDepositIncludesLoan: jest.fn(),
@@ -310,15 +309,21 @@ describe( 'Deposits Overview information', () => {
 			<NextDepositDetails isLoading={ false } overview={ overview } />
 		);
 
-		getByText( strings.notices.depositIncludesLoan, {
-			exact: false,
-			ignore: '.a11y-speak-region',
-		} );
+		getByText(
+			'deposit will include funds from your WooCommerce Capital loan',
+			{
+				exact: false,
+				ignore: '.a11y-speak-region',
+			}
+		);
 		expect(
 			getByRole( 'link', {
 				name: 'Learn more',
 			} )
-		).toHaveAttribute( 'href', strings.documentationUrls.capital );
+		).toHaveAttribute(
+			'href',
+			'https://woocommerce.com/document/woocommerce-payments/stripe-capital/overview'
+		);
 	} );
 
 	test( `Doesn't render capital loan notice if deposit does not include financing payout`, () => {
@@ -333,10 +338,13 @@ describe( 'Deposits Overview information', () => {
 		);
 
 		expect(
-			queryByText( strings.notices.depositIncludesLoan, {
-				exact: false,
-				ignore: '.a11y-speak-region',
-			} )
+			queryByText(
+				'deposit will include funds from your WooCommerce Capital loan',
+				{
+					exact: false,
+					ignore: '.a11y-speak-region',
+				}
+			)
 		).toBeFalsy();
 		expect(
 			queryByRole( 'link', {

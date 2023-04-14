@@ -18,7 +18,6 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies.
  */
-import strings from './strings';
 import Loadable from 'components/loadable';
 import { getNextDeposit } from './utils';
 import DepositStatusPill from 'components/deposit-status-pill';
@@ -38,17 +37,18 @@ const DepositIncludesLoanPayoutNotice = () => (
 		isDismissible={ false }
 	>
 		{ interpolateComponents( {
-			mixedString:
-				strings.notices.depositIncludesLoan +
-				__(
-					' {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-					'woocommerce-payments'
-				),
+			mixedString: __(
+				'This deposit will include funds from your WooCommerce Capital loan. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+				'woocommerce-payments'
+			),
 			components: {
 				learnMoreLink: (
+					// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
 					// eslint-disable-next-line jsx-a11y/anchor-has-content
 					<a
-						href={ strings.documentationUrls.capital }
+						href={
+							'https://woocommerce.com/document/woocommerce-payments/stripe-capital/overview'
+						}
 						target="_blank"
 						rel="noreferrer"
 					/>
@@ -145,19 +145,22 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 					<FlexItem className={ `${ tableClass }__cell` }>
 						<Loadable
 							isLoading={ isLoading }
-							value={ strings.tableHeaders.nextDepositDate }
+							value={ __(
+								'Estimated dispatch date',
+								'woocommerce-payments'
+							) }
 						/>
 					</FlexItem>
 					<FlexItem className={ `${ tableClass }__cell` }>
 						<Loadable
 							isLoading={ isLoading }
-							value={ strings.tableHeaders.status }
+							value={ __( 'Status', 'woocommerce-payments' ) }
 						/>
 					</FlexItem>
 					<FlexItem className={ `${ tableClass }__cell` }>
 						<Loadable
 							isLoading={ isLoading }
-							value={ strings.tableHeaders.amount }
+							value={ __( 'Amount', 'woocommerce-payments' ) }
 						/>
 					</FlexItem>
 				</Flex>
