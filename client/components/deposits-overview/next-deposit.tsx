@@ -58,22 +58,6 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 
 	return (
 		<>
-			{ /* Next Deposit Heading */ }
-			<CardBody className="wcpay-deposits-overview__heading">
-				<span className="wcpay-deposits-overview__heading__title">
-					<Loadable
-						isLoading={ isLoading }
-						value={ strings.nextDeposit.title }
-					/>
-				</span>
-
-				<span className="wcpay-deposits-overview__heading__description">
-					<Loadable
-						isLoading={ isLoading }
-						value={ strings.nextDeposit.description }
-					/>
-				</span>
-			</CardBody>
 			{ /* Next Deposit Table */ }
 			<CardBody className={ `${ tableClass }__container` }>
 				<Flex className={ `${ tableClass }__row__header` }>
