@@ -2,7 +2,7 @@
  * External dependencies
  */
 import * as React from 'react';
-import { Card, CardHeader, CardBody, Flex } from '@wordpress/components';
+import { Card, CardHeader, Flex } from '@wordpress/components';
 import { Link } from '@woocommerce/components';
 import CalendarIcon from 'gridicons/dist/calendar';
 import { __, sprintf } from '@wordpress/i18n';
@@ -106,41 +106,31 @@ const DepositsInformationOverview: React.FunctionComponent< OverviewProps > = (
 					</p>
 				</div>
 			</CardHeader>
-			<CardBody>
-				<Flex className="wcpay-deposits-information-row" align="normal">
-					<DepositsInformationBlock
-						title={ __(
-							'Pending balance',
-							'woocommerce-payments'
-						) }
-						value={ formatCurrency( pendingAmount, currency ) }
-						children={ pendingDepositsLink }
-					/>
-					<DepositsInformationBlock
-						title={ __( 'Next deposit', 'woocommerce-payments' ) }
-						value={ formatCurrency(
-							nextScheduledAmount,
-							currency
-						) }
-						children={ nextScheduledLink }
-					/>
-				</Flex>
-				<Flex className="wcpay-deposits-information-row" align="normal">
-					<DepositsInformationBlock
-						title={ __( 'Last deposit', 'woocommerce-payments' ) }
-						value={ formatCurrency( lastPaidAmount, currency ) }
-						children={ lastPaidLink }
-					/>
-					<DepositsInformationBlock
-						title={ __(
-							'Available balance',
-							'woocommerce-payments'
-						) }
-						value={ formatCurrency( availableAmount, currency ) }
-						children={ depositButton }
-					/>
-				</Flex>
-			</CardBody>
+
+			<Flex className="wcpay-deposits-information-row" align="normal">
+				<DepositsInformationBlock
+					title={ __( 'Pending balance', 'woocommerce-payments' ) }
+					value={ formatCurrency( pendingAmount, currency ) }
+					children={ pendingDepositsLink }
+				/>
+				<DepositsInformationBlock
+					title={ __( 'Next deposit', 'woocommerce-payments' ) }
+					value={ formatCurrency( nextScheduledAmount, currency ) }
+					children={ nextScheduledLink }
+				/>
+			</Flex>
+			<Flex className="wcpay-deposits-information-row" align="normal">
+				<DepositsInformationBlock
+					title={ __( 'Last deposit', 'woocommerce-payments' ) }
+					value={ formatCurrency( lastPaidAmount, currency ) }
+					children={ lastPaidLink }
+				/>
+				<DepositsInformationBlock
+					title={ __( 'Available balance', 'woocommerce-payments' ) }
+					value={ formatCurrency( availableAmount, currency ) }
+					children={ depositButton }
+				/>
+			</Flex>
 		</Card>
 	);
 };
