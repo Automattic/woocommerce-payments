@@ -482,16 +482,17 @@ class WC_Payments_Webhook_Processing_Service {
 		// Save the order after updating the meta data values.
 		$order->save();
 
-		$intent_data = [
-			'id'            => $intent_id,
-			'status'        => $intent_status,
-			'charge_id'     => $charge_id,
-			'fraud_outcome' => $metadata['fraud_outcome'] ?? '',
+		$payment_method = $charges_data[0]['payment_method_details']['type'] ?? null;
+		$intent_data    = [
+			'id'                  => $intent_id,
+			'status'              => $intent_status,
+			'charge_id'           => $charge_id,
+			'fraud_outcome'       => $metadata['fraud_outcome'] ?? '',
+			'payment_method_type' => $payment_method,
 		];
 		$this->order_service->update_order_status_from_intent( $order, $intent_data );
 
 		// Send the customer a card reader receipt if it's an in person payment type.
-		$payment_method = $charges_data[0]['payment_method_details']['type'] ?? null;
 		if ( Payment_Method::CARD_PRESENT === $payment_method || Payment_Method::INTERAC_PRESENT === $payment_method ) {
 			$merchant_settings = [
 				'business_name' => $this->wcpay_gateway->get_option( 'account_business_name' ),
