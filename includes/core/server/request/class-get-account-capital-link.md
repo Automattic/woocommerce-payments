@@ -8,11 +8,11 @@ The `WCPay\Core\Server\Request\Get_Account_Capital_Link` class is used to constr
 
 ## Parameters
 
-| Parameter         | Setter                                     | Immutable | Required | Default value |
-|-------------------|--------------------------------------------|:---------:|:--------:|:-------------:|
-| `type`            | `set_type( string $type )`                 |     -     |   Yes    |       -       |
-| `redirect_url`    | `set_redirect_url( string $redirect_url )` |     -     |   Yes    |       -       |
-| `refresh_url`     | `set_refresh_url( string $refresh_url )`   |     -     |   Yes    |       -       |
+| Parameter         | Setter                                   | Immutable | Required | Default value |
+|-------------------|------------------------------------------|:---------:|:--------:|:-------------:|
+| `type`            | `set_type( string $type )`               |     -     |   Yes    |       -       |
+| `return_url`      | `set_return_url( string $return_url )`   |     -     |   Yes    |       -       |
+| `refresh_url`     | `set_refresh_url( string $refresh_url )` |     -     |   Yes    |       -       |
 
 
 ## Filter

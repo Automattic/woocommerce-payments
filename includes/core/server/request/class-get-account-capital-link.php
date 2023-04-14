@@ -18,7 +18,7 @@ use WC_Payments_API_Client;
 class Get_Account_Capital_Link extends Request {
 	const REQUIRED_PARAMS = [
 		'type',
-		'redirect_url',
+		'return_url',
 		'refresh_url',
 	];
 
@@ -61,14 +61,14 @@ class Get_Account_Capital_Link extends Request {
 	/**
 	 * Sets the redirect URL.
 	 *
-	 * @param  string $redirect_url URL to navigate back to from the dashboard.
+	 * @param  string $return_url URL to navigate back to from the dashboard.
 	 *
 	 * @return void
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
-	public function set_redirect_url( string $redirect_url ) {
-		$this->validate_redirect_url( $redirect_url );
-		$this->set_param( 'redirect_url', $redirect_url );
+	public function set_return_url( string $return_url ) {
+		$this->validate_redirect_url( $return_url );
+		$this->set_param( 'return_url', $return_url );
 	}
 
 	/**

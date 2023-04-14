@@ -525,12 +525,12 @@ class WC_Payments_Account {
 			$request = Get_Account_Capital_Link::create();
 			$type    = 'capital_financing_offer';
 			$request->set_type( $type );
-			$request->set_redirect_url( $return_url );
+			$request->set_return_url( $return_url );
 			$request->set_refresh_url( $refresh_url );
 
 			$capital_link = $request->send( 'wcpay_get_account_capital_link' );
 			$this->redirect_to( $capital_link['url'] );
-		} catch ( API_Exception $e ) {
+		} catch ( Exception $e ) {
 			$error_url = add_query_arg(
 				[ 'wcpay-loan-offer-error' => '1' ],
 				self::get_overview_page_url()

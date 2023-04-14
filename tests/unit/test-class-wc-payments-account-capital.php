@@ -129,7 +129,7 @@ class WC_Payments_Account_Capital_Test extends WCPAY_UnitTestCase {
 
 		$request
 			->expects( $this->once() )
-			->method( 'set_redirect_url' )
+			->method( 'set_return_url' )
 			->with( 'http://example.org/wp-admin/admin.php?page=wc-admin&path=/payments/overview' );
 
 		$request
@@ -155,7 +155,7 @@ class WC_Payments_Account_Capital_Test extends WCPAY_UnitTestCase {
 
 		$request
 			->expects( $this->once() )
-			->method( 'set_redirect_url' )
+			->method( 'set_return_url' )
 			->with( 'http://example.org/wp-admin/admin.php?page=wc-admin&path=/payments/overview' );
 
 		$request

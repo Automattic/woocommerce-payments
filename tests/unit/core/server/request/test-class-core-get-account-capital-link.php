@@ -10,7 +10,7 @@ use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request\Get_Account_Capital_Link;
 
 /**
- * WCPay\Core\Server\Get_Intention_Test unit tests.
+ * WCPay\Core\Server\Get_Account_Capital_Link_Test unit tests.
  */
 class Get_Account_Capital_Link_Test extends WCPAY_UnitTestCase {
 
@@ -41,27 +41,27 @@ class Get_Account_Capital_Link_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_account_capital_link_will_be_sent() {
-		$request            = new Get_Account_Capital_Link( $this->mock_api_client, $this->mock_wc_payments_http_client );
-		$valid_redirect_url = home_url() . '/redirect-url';
-		$valid_refresh_url  = home_url() . '/refresh-url';
+		$request           = new Get_Account_Capital_Link( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$valid_return_url  = home_url() . '/return-url';
+		$valid_refresh_url = home_url() . '/refresh-url';
 
 		$request->set_type( 'some_type' );
-		$request->set_redirect_url( $valid_redirect_url );
+		$request->set_return_url( $valid_return_url );
 		$request->set_refresh_url( $valid_refresh_url );
 		$this->assertInstanceOf( Get_Account_Capital_Link::class, $request );
 		$params = $request->get_params();
 
 		$this->assertIsArray( $params );
-		$this->assertSame( $valid_redirect_url, $params['redirect_url'] );
+		$this->assertSame( $valid_return_url, $params['return_url'] );
 		$this->assertSame( $valid_refresh_url, $params['refresh_url'] );
 		$this->assertSame( 'accounts/capital_links', $request->get_api() );
 		$this->assertSame( 'POST', $request->get_method() );
 	}
 
-	public function test_get_account_login_data_with_invalid_redirect_url_param_will_throw_exception() {
+	public function test_get_account_login_data_with_invalid_return_url_param_will_throw_exception() {
 		$request = new Get_Account_Capital_Link( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
-		$request->set_redirect_url( 'http://invalid-redirect.url' );
+		$request->set_return_url( 'http://invalid-redirect.url' );
 	}
 
 	public function test_get_account_login_data_with_invalid_refresh_url_param_will_throw_exception() {
