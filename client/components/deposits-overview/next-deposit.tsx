@@ -207,7 +207,7 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 						<Loadable
 							isLoading={ isLoading }
 							placeholder="$00,000.00"
-							value={ nextDeposit.formattedAmount }
+							value={ nextDeposit.amount }
 						/>
 					</FlexItem>
 				</Flex>
