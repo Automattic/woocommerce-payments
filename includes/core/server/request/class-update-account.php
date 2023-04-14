@@ -61,11 +61,9 @@ class Update_Account extends Request {
 		foreach ( $account_settings as $param_name => $value ) {
 			$param_setter = 'set_' . $param_name;
 
-			if ( ! method_exists( static::class, $param_setter ) ) {
-				continue;
+			if ( method_exists( static::class, $param_setter ) ) {
+				$wcpay_request->{$param_setter}( $value );
 			}
-
-			$wcpay_request->{$param_setter}( $value );
 		}
 
 		return $wcpay_request;
