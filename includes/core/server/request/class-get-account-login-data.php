@@ -16,8 +16,8 @@ use WC_Payments_API_Client;
  */
 class Get_Account_Login_Data extends Request {
 	use Use_Test_Mode_Only_When_Dev_Mode;
+
 	const REQUIRED_PARAMS = [
-		'test_mode',
 		'redirect_url',
 	];
 
