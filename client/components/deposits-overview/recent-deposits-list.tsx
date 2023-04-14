@@ -115,6 +115,7 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 			<DepositTableRow deposit={ deposit } />
 			{ deposit.id === oldestPendingDepositId && (
 				<BannerNotice
+					className="wcpay-deposits-overview__business-day-delay-notice"
 					status="info"
 					icon={ <InfoOutlineIcon /> }
 					children={ strings.notices.businessDayDelay }
