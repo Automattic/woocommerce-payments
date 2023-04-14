@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useEffect } from 'react';
 
 /**
  * Internal dependencies
@@ -60,6 +60,21 @@ const OnboardingStepper = () => {
 };
 
 const OnboardingPrototype: React.FC = () => {
+	useEffect( () => {
+		document.body.classList.remove( 'woocommerce-admin-is-loading' );
+		document.body.classList.add( 'woocommerce-admin-full-screen' );
+		document.body.classList.add( 'is-wp-toolbar-disabled' );
+		document.body.classList.add( 'wcpay-onboarding-prototype__body' );
+
+		return () => {
+			document.body.classList.remove( 'woocommerce-admin-full-screen' );
+			document.body.classList.remove( 'is-wp-toolbar-disabled' );
+			document.body.classList.remove(
+				'wcpay-onboarding-prototype__body'
+			);
+		};
+	}, [] );
+
 	return (
 		<div className="wcpay-onboarding-prototype">
 			<OnboardingContextProvider>

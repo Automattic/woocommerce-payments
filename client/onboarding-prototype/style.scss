@@ -1,58 +1,61 @@
-.wcpay-onboarding-prototype {
-	max-width: 600px;
-	margin: 0 auto;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
+body.wcpay-onboarding-prototype__body {
+	background-color: #fff;
 
-	a {
-		text-decoration: none;
-	}
+	.wcpay-onboarding-prototype {
+		max-width: 600px;
+		margin: 0 auto;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
 
-	.step {
-		&__heading {
-			@include title-large;
-			color: $studio-gray-100;
-			text-align: center;
+		a {
+			text-decoration: none;
 		}
 
-		&__subheading {
-			font-size: 16px;
-			line-height: 24px;
-			font-weight: 400;
-			text-align: center;
-			color: $studio-gray-60;
-			margin: $gap-small 0 $gap-largest;
+		.step {
+			&__heading {
+				@include title-large;
+				color: $studio-gray-100;
+				text-align: center;
+			}
+
+			&__subheading {
+				font-size: 16px;
+				line-height: 24px;
+				font-weight: 400;
+				text-align: center;
+				color: $studio-gray-60;
+				margin: $gap-small 0 $gap-largest;
+			}
+
+			&__content {
+				max-width: 400px;
+			}
+
+			&__cta {
+				display: block;
+				width: 100%;
+				margin-top: $gap-larger;
+			}
 		}
 
-		&__content {
-			max-width: 400px;
+		.loading-step {
+			max-width: 520px;
+			margin: 50% auto 0;
 		}
 
-		&__cta {
-			display: block;
-			width: 100%;
-			margin-top: $gap-larger;
+		.onboarding-mode__note {
+			background-color: $wp-blue-0;
+			padding: $gap-small $gap;
 		}
-	}
 
-	.loading-step {
-		max-width: 520px;
-		margin: 50% auto 0;
-		transform: translateY( -50% );
-	}
+		.wcpay-banner-notice {
+			margin: 0;
+		}
 
-	.onboarding-mode__note {
-		background-color: $wp-blue-0;
-		padding: $gap-small $gap;
-	}
-
-	.wcpay-banner-notice {
-		margin: 0;
-	}
-
-	.components-base-control,
-	.components-custom-select-control {
-		margin-bottom: $gap-large;
+		.components-base-control,
+		.components-custom-select-control {
+			margin-bottom: $gap-large;
+		}
 	}
 }
