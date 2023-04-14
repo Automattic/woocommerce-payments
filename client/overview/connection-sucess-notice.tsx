@@ -21,19 +21,18 @@ const ConnectionSuccessNotice: React.FC = () => {
 
 	const DismissMenu = () => {
 		return (
-			<div className="wcpay-connection-success__dropdown">
-				<DropdownMenu
-					label={ __( 'Dismiss element', 'woocommerce-payments' ) }
-					icon="ellipsis"
-					controls={ [
-						{
-							icon: 'button',
-							title: __( 'Dismiss', 'woocommerce-payments' ),
-							onClick: () => setIsDismissed( true ),
-						},
-					] }
-				/>
-			</div>
+			<DropdownMenu
+				className="wcpay-connection-success__dropdown"
+				label={ __( 'Dismiss element', 'woocommerce-payments' ) }
+				icon="ellipsis"
+				controls={ [
+					{
+						icon: 'button',
+						title: __( 'Dismiss', 'woocommerce-payments' ),
+						onClick: () => setIsDismissed( true ),
+					},
+				] }
+			/>
 		);
 	};
 
