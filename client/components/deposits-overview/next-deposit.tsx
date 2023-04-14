@@ -77,7 +77,7 @@ const NewAccountWaitingPeriodNotice = () => (
 					<a
 						target="_blank"
 						rel="noopener noreferrer"
-						href="https://woocommerce.com/document/woocommerce-payments/fees-and-debits/account-showing-negative-balance/"
+						href="https://woocommerce.com/document/woocommerce-payments/deposits/deposit-schedule/#section-1"
 					/>
 				),
 			},
