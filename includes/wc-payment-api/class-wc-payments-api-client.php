@@ -951,51 +951,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Get one-time dashboard login url
-	 *
-	 * @param string $redirect_url - URL to navigate back to from the dashboard.
-	 *
-	 * @return array An array containing the url field
-	 */
-	public function get_login_data( $redirect_url ) {
-		return $this->request(
-			[
-				'redirect_url' => $redirect_url,
-				'test_mode'    => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
-			],
-			self::ACCOUNTS_API . '/login_links',
-			self::POST,
-			true,
-			true
-		);
-	}
-
-	/**
-	 * Get a one-time capital link.
-	 *
-	 * @param string $type        The type of link to be requested.
-	 * @param string $return_url  URL to navigate back to from the dashboard.
-	 * @param string $refresh_url URL to navigate to if the link expired, has been previously-visited, or is otherwise invalid.
-	 *
-	 * @return array Account link object with create, expires_at, and url fields.
-	 *
-	 * @throws API_Exception When something goes wrong with the request, or there aren't valid loan offers for the merchant.
-	 */
-	public function get_capital_link( $type, $return_url, $refresh_url ) {
-		return $this->request(
-			[
-				'type'        => $type,
-				'return_url'  => $return_url,
-				'refresh_url' => $refresh_url,
-			],
-			self::ACCOUNTS_API . '/capital_links',
-			self::POST,
-			true,
-			true
-		);
-	}
-
-	/**
 	 * Get a link's details from the server.
 	 *
 	 * @param array $args The arguments to be sent with the link request.
@@ -1319,29 +1274,6 @@ class WC_Payments_API_Client {
 			[],
 			self::PAYMENT_METHODS_API . '/' . $payment_method_id . '/detach',
 			self::POST
-		);
-	}
-
-	/**
-	 * Records a new Terms of Service agreement.
-	 *
-	 * @param string $source     A string, which describes where the merchant agreed to the terms.
-	 * @param string $user_name  The user_login of the current user.
-	 *
-	 * @return array An array, containing a `success` flag.
-	 *
-	 * @throws API_Exception If an error occurs.
-	 */
-	public function add_tos_agreement( $source, $user_name ) {
-		return $this->request(
-			[
-				'source'    => $source,
-				'user_name' => $user_name,
-			],
-			self::ACCOUNTS_API . '/tos_agreements',
-			self::POST,
-			true,
-			true
 		);
 	}
 
