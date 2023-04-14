@@ -212,40 +212,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Refund a charge
-	 *
-	 * @param string $charge_id - The charge to refund.
-	 * @param int    $amount    - Amount to charge.
-	 *
-	 * @return array
-	 * @throws API_Exception - Exception thrown on refund creation failure.
-	 */
-	public function refund_charge( $charge_id, $amount = null ) {
-		$request           = [];
-		$request['charge'] = $charge_id;
-		$request['amount'] = $amount;
-
-		return $this->request( $request, self::REFUNDS_API, self::POST );
-	}
-
-	/**
-	 * List refunds
-	 *
-	 * @param string $charge_id - The charge to retrieve the list of refunds for.
-	 *
-	 * @return array
-	 * @throws API_Exception - Exception thrown on request failure.
-	 */
-	public function list_refunds( $charge_id ) {
-		$request = [
-			'limit'  => 100,
-			'charge' => $charge_id,
-		];
-
-		return $this->request( $request, self::REFUNDS_API, self::GET );
-	}
-
-	/**
 	 * Fetch a single intent with provided id.
 	 *
 	 * @param string $intent_id intent id.
@@ -849,23 +815,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Get current account data
-	 *
-	 * @return array An array describing an account object.
-	 *
-	 * @throws API_Exception - Error contacting the API.
-	 */
-	public function get_account_data() {
-		return $this->request(
-			[
-				'test_mode' => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
-			],
-			self::ACCOUNTS_API,
-			self::GET
-		);
-	}
-
-	/**
 	 * Get current platform checkout eligibility
 	 *
 	 * @return array An array describing platform checkout eligibility.
@@ -899,23 +848,6 @@ class WC_Payments_API_Client {
 			),
 			self::PLATFORM_CHECKOUT_API,
 			self::POST
-		);
-	}
-
-	/**
-	 * Update Stripe account data
-	 *
-	 * @param array $account_settings Settings to update.
-	 *
-	 * @return array Updated account data.
-	 */
-	public function update_account( $account_settings ) {
-		return $this->request(
-			$account_settings,
-			self::ACCOUNTS_API,
-			self::POST,
-			true,
-			true
 		);
 	}
 
