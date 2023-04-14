@@ -141,12 +141,11 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 		overviews,
 	} = useAllDepositsOverviews() as AccountOverview.OverviewsResponse;
 	const { selectedCurrency } = useSelectedCurrency();
+	const displayedCurrency =
+		selectedCurrency ?? wcpaySettings.accountDefaultCurrency;
 
 	const availableBalance = overviews?.currencies.find(
-		( currencyOverview ) =>
-			( selectedCurrency &&
-				selectedCurrency === currencyOverview.currency ) ||
-			wcpaySettings.accountDefaultCurrency === currencyOverview.currency
+		( currencyOverview ) => displayedCurrency === currencyOverview.currency
 	)?.available;
 
 	const negativeBalanceDepositsPaused =
