@@ -886,23 +886,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Update Stripe account data
-	 *
-	 * @param array $account_settings Settings to update.
-	 *
-	 * @return array Updated account data.
-	 */
-	public function update_account( $account_settings ) {
-		return $this->request(
-			$account_settings,
-			self::ACCOUNTS_API,
-			self::POST,
-			true,
-			true
-		);
-	}
-
-	/**
 	 * Request capability activation from the server
 	 *
 	 * @param   string $capability_id  Capability ID.

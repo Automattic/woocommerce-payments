@@ -14,6 +14,7 @@ use Automattic\WooCommerce\Admin\Notes\Note;
 use WCPay\Core\Server\Request\Get_Account;
 use WCPay\Core\Server\Request\Get_Account_Capital_Link;
 use WCPay\Core\Server\Request\Get_Account_Login_Data;
+use WCPay\Core\Server\Request\Update_Account;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
 use WCPay\Database_Cache;
@@ -1053,6 +1054,40 @@ class WC_Payments_Account {
 					'phone'      => ! $progressive && 'individual' === $business_type ? ( $prefill_data['phone'] ?? null ) : null,
 				],
 			];
+		} elseif ( $test_mode ) {
+			$home_url    = get_home_url();
+			$default_url = 'http://wcpay.test';
+			$url         = wp_http_validate_url( $home_url ) ? $home_url : $default_url;
+			// If the site is running on localhost, use the default URL. This is to avoid Stripe's errors.
+			// wp_http_validate_url does not check that unfortunately.
+			if ( wp_parse_url( $home_url, PHP_URL_HOST ) === 'localhost' ) {
+				$url = $default_url;
+			}
+			$account_data = [
+				'country'       => 'US',
+				'business_type' => 'individual',
+				'individual'    => [
+					'first_name' => 'John',
+					'last_name'  => 'Woolliams',
+					'address'    => [
+						'country'     => 'US',
+						'state'       => 'California',
+						'city'        => 'South San Francisco',
+						'line1'       => '1040 Grand Ave',
+						'postal_code' => '94080',
+					],
+					'ssn_last_4' => '0000',
+					'phone'      => '+10000000000',
+					'dob'        => [
+						'day'   => '1',
+						'month' => '1',
+						'year'  => '1980',
+					],
+				],
+				'mcc'           => '5734',
+				'url'           => $url,
+				'business_name' => get_bloginfo( 'name' ),
+			];
 		} else {
 			$account_data = [];
 		}
@@ -1255,7 +1290,11 @@ class WC_Payments_Account {
 				Logger::info( 'Skip updating account settings. Nothing is changed.' );
 				return;
 			}
-			$updated_account = $this->payments_api_client->update_account( $stripe_account_settings );
+
+			$request         = Update_Account::from_account_settings( $stripe_account_settings );
+			$response        = $request->send( 'wcpay_update_account_settings' );
+			$updated_account = $response->to_array();
+
 			$this->database_cache->add( Database_Cache::ACCOUNT_KEY, $updated_account );
 		} catch ( Exception $e ) {
 			Logger::error( 'Failed to update Stripe account ' . $e );
@@ -1295,7 +1334,11 @@ class WC_Payments_Account {
 				$account_settings = [
 					'locale' => $new_value ? $new_value : 'en_US',
 				];
-				$updated_account  = $this->payments_api_client->update_account( $account_settings );
+
+				$request         = Update_Account::from_account_settings( $account_settings );
+				$response        = $request->send( 'wcpay_update_account_settings' );
+				$updated_account = $response->to_array();
+
 				$this->database_cache->add( Database_Cache::ACCOUNT_KEY, $updated_account );
 			} catch ( Exception $e ) {
 				Logger::error( __( 'Failed to update Account locale. ', 'woocommerce-payments' ) . $e );

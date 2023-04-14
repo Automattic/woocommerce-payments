@@ -8,6 +8,7 @@
 use Automattic\WooCommerce\Admin\Notes\Notes;
 use WCPay\Core\Server\Request\Get_Account;
 use WCPay\Core\Server\Response;
+use WCPay\Core\Server\Request\Update_Account;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Database_Cache;
 
@@ -798,7 +799,15 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			[ 'statement_descriptor' => $new_descriptor ]
 		);
 
-		$this->mock_api_client->expects( $this->once() )->method( 'update_account' )->will( $this->returnValue( $expected_account ) );
+		$request = $this->mock_wcpay_request( Update_Account::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_statement_descriptor' )
+			->with( $new_descriptor );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( new Response( $expected_account ) );
 
 		$this->mock_database_cache
 			->expects( $this->once() )
@@ -825,7 +834,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->with( Database_Cache::ACCOUNT_KEY )
 			->willReturn( $account );
 
-		$this->mock_api_client->expects( $this->never() )->method( 'update_account' );
+		$this->mock_wcpay_request( Update_Account::class, 0 );
 		$this->wcpay_account->update_stripe_account( [ 'statement_descriptor' => 'WCPAY' ] );
 	}
 
@@ -846,9 +855,12 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->with( Database_Cache::ACCOUNT_KEY )
 			->willReturn( $account );
 
-		$this->mock_api_client->expects( $this->once() )->method( 'update_account' )->will(
-			$this->throwException( new API_Exception( 'test', 'bad_request', 400 ) )
-		);
+		$request = $this->mock_wcpay_request( Update_Account::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willThrowException(
+				new API_Exception( 'test', 'bad_request', 400 )
+			);
 		$error_msg = $this->wcpay_account->update_stripe_account( [ 'statement_descriptor' => 'WCPAY_DEV' ] );
 		$this->assertEquals( 'test', $error_msg, 'Error message expected' );
 	}
