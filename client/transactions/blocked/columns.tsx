@@ -81,7 +81,7 @@ export const getBlockedListRowContent = (
 	return {
 		status: {
 			value: data.status,
-			display: <TransactionStatusChip status={ data.status } />,
+			display: <TransactionStatusChip status="block" />,
 		},
 		created: {
 			value: formattedCreatedDate,
