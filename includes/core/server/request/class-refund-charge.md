@@ -27,7 +27,7 @@ When using this request, provide the following filter and arguments:
 
 ```php
 $request = Refund_Charge::create( );
-$request->set_charge( $carge );
+$request->set_charge( 'ch_xxxxx' );
 $request->set_amount( 100 ); // It is not required. You can also skip this setter.
 $request->send( 'wcpay_refund_charge_request' );
 ```
