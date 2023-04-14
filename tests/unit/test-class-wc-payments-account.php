@@ -7,8 +7,8 @@
 
 use Automattic\WooCommerce\Admin\Notes\Notes;
 use WCPay\Core\Server\Request\Get_Account;
-use WCPay\Core\Server\Response;
 use WCPay\Core\Server\Request\Update_Account;
+use WCPay\Core\Server\Response;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Database_Cache;
 
