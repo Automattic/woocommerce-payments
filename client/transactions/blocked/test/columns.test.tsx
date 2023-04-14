@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { FraudOutcomeStatus } from '../../../data';
+import { FraudMetaBoxType, FraudOutcomeStatus } from '../../../data';
 import {
 	getBlockedListColumns,
 	getBlockedListColumnsStructure,
@@ -39,6 +39,7 @@ describe( 'Blocked fraud outcome transactions columns', () => {
 			status: '',
 		},
 		status: 'block' as FraudOutcomeStatus,
+		fraud_meta_box_type: 'block' as FraudMetaBoxType,
 	};
 
 	beforeEach( () => {
