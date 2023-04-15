@@ -2,7 +2,7 @@
 /**
  * Class SessionHandler
  *
- * This is a copy of the Automattic\WooCommerce\StoreApi\SessionHandler class with the addition of a `init_session_cookie` method.
+ * This is a copy of the Automattic\WooCommerce\StoreApi\SessionHandler class with the addition of an `init_session_cookie` method.
  *
  * @package WooCommerce\Payments
  */
@@ -49,18 +49,18 @@ final class SessionHandler extends WC_Session {
 	}
 
 	/**
-	 * Init hooks and session data.
+	 * Note: This method was added to the original class for compatibility with WooPay.
 	 */
-	public function init() {
-		$this->init_session_from_token();
-		add_action( 'shutdown', [ $this, 'save_data' ], 20 );
+	public function init_session_cookie() {
+		$this->init();
 	}
 
 	/**
 	 * Init hooks and session data.
 	 */
-	public function init_session_cookie() {
-		$this->init();
+	public function init() {
+		$this->init_session_from_token();
+		add_action( 'shutdown', [ $this, 'save_data' ], 20 );
 	}
 
 	/**
