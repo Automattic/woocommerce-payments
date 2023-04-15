@@ -416,6 +416,7 @@ class WC_Payments {
 		include_once __DIR__ . '/platform-checkout/class-platform-checkout-store-api-token.php';
 		include_once __DIR__ . '/platform-checkout/class-platform-checkout-utilities.php';
 		include_once __DIR__ . '/platform-checkout/class-platform-checkout-order-status-sync.php';
+		include_once __DIR__ . '/platform-checkout/class-platform-checkout-store-api-session-handler.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-link.php';
 		include_once __DIR__ . '/core/service/class-wc-payments-customer-service-api.php';
 
@@ -1342,6 +1343,7 @@ class WC_Payments {
 		if ( $is_platform_checkout_eligible && $is_platform_checkout_enabled ) {
 			add_action( 'wc_ajax_wcpay_init_platform_checkout', [ __CLASS__, 'ajax_init_platform_checkout' ] );
 			add_action( 'wc_ajax_wcpay_get_platform_checkout_signature', [ __CLASS__, 'ajax_get_platform_checkout_signature' ] );
+			add_filter( 'rest_request_before_callbacks', [ __CLASS__, 'add_platform_checkout_store_api_session_handler' ], 10, 3 );
 
 			// This injects the payments API and draft orders into core, so the WooCommerce Blocks plugin is not necessary.
 			// We should remove this once both features are available by default in the WC minimum supported version.
@@ -1380,6 +1382,32 @@ class WC_Payments {
 
 			new Platform_Checkout_Order_Status_Sync( self::$api_client );
 		}
+	}
+
+	/**
+	 * This filter is used to add a custom session handler before processing Store API request callbacks.
+	 * This is only necessary because the Store API SessionHandler currently doesn't provide an `init_session_cookie` method.
+	 *
+	 * @param mixed           $response The response object.
+	 * @param mixed           $handler The handler used for the response.
+	 * @param WP_REST_Request $request The request used to generate the response.
+	 *
+	 * @return mixed
+	 */
+	public function add_platform_checkout_store_api_session_handler( $response, $handler, WP_REST_Request $request ) {
+		$cart_token = $request->get_header( 'Cart-Token' );
+
+		if ( $cart_token && 0 === strpos( $request->get_route(), '/wc/store/v1/' ) && Automattic\WooCommerce\StoreApi\Utilities\JsonWebToken::validate( $cart_token, '@' . wp_salt() ) ) {
+			add_filter(
+				'woocommerce_session_handler',
+				function ( $session_handler ) {
+					return WCPay\Platform_Checkout\SessionHandler::class;
+				},
+				20
+			);
+		}
+
+		return $response;
 	}
 
 	/**
