@@ -455,10 +455,9 @@ describe( 'AccountBalancesTabPanel', () => {
 		mockOverviews( [ createMockOverview( 'usd', 10000, 20000, 30000 ) ] );
 		render( <AccountBalancesTabPanel /> );
 
-		const instantDepositButton = screen.getByRole( 'button', {
+		screen.getByRole( 'button', {
 			name: 'Deposit available funds',
 		} );
-		expect( instantDepositButton ).toBeInTheDocument();
 	} );
 
 	test( 'does not render instant deposit button when instant amount is 0', () => {
