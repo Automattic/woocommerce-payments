@@ -156,7 +156,7 @@ describe( 'Deposits information', () => {
 		);
 
 		const { container, findByText } = render( <DepositsInformation /> );
-		expect( await findByText( 'Deposit available funds' ) ).toBeVisible();
+		expect( await findByText( 'Instant deposit' ) ).toBeVisible();
 		expect( container ).toMatchSnapshot();
 	} );
 } );
