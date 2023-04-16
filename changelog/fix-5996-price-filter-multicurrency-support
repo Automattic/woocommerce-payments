@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Add compatibility for price filter widget when used with multicurrency
