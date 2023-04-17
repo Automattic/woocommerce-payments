@@ -2,12 +2,11 @@
  * External dependencies
  */
 import React from 'react';
-import { Button, Icon } from '@wordpress/components';
+import { Icon } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { OnboardingContextProvider } from './context';
 import { useStepperContext } from 'components/stepper';
 import { OnboardingSteps } from './types';
 import strings from './strings';

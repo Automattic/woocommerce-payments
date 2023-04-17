@@ -12,7 +12,14 @@ import {
 	OnboardingForm,
 	OnboardingTextField,
 	OnboardingSelectField,
+	OnboardingPhoneNumberField,
 } from '../form';
+
+declare const global: {
+	wcpaySettings: {
+		connect: { country: string };
+	};
+};
 
 let nextStep = jest.fn();
 let data = {};
@@ -53,6 +60,10 @@ describe( 'Progressive Onboarding Prototype Form', () => {
 		setTouched = jest.fn();
 		validate = jest.fn();
 		error = jest.fn();
+
+		global.wcpaySettings = {
+			connect: { country: 'US' },
+		};
 	} );
 
 	it( 'calls nextStep when the form is submitted by click and there are no errors', () => {
@@ -153,6 +164,37 @@ describe( 'Progressive Onboarding Prototype Form', () => {
 				business_type: 'individual',
 			} );
 			expect( validate ).toHaveBeenCalledWith( 'individual' );
+		} );
+
+		describe( 'OnboardingPhoneNumberField', () => {
+			it( 'renders component with provided props ', () => {
+				data = { phone: '+123' };
+				error.mockReturnValue( 'error message' );
+
+				render( <OnboardingPhoneNumberField name="phone" /> );
+
+				const textField = screen.getByLabelText(
+					'What’s your mobile phone number?'
+				);
+				const errorMessage = screen.getByText( 'error message' );
+
+				expect( textField ).toHaveValue( '23' );
+				expect( errorMessage ).toBeInTheDocument();
+			} );
+
+			it( 'calls setData and validate on change', () => {
+				render( <OnboardingPhoneNumberField name="phone" /> );
+
+				const textField = screen.getByLabelText(
+					'What’s your mobile phone number?'
+				);
+				userEvent.type( textField, '23' );
+
+				expect( setData ).toHaveBeenCalledWith( {
+					phone: '+123',
+				} );
+				expect( validate ).toHaveBeenCalledWith( '+123' );
+			} );
 		} );
 	} );
 } );

@@ -88,7 +88,7 @@ const PhoneNumberControl: React.FC< Props > = ( {
 							</option>
 						) ) }
 				</select>
-				<button tabIndex={ -1 } onClick={ handleFocus }>
+				<button type="button" tabIndex={ -1 } onClick={ handleFocus }>
 					{ countryCodes[ countryCode ] }
 				</button>
 				<input

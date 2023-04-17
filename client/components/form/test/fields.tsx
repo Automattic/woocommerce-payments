@@ -7,7 +7,13 @@ import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import { TextField, SelectField } from '../fields';
+import { TextField, SelectField, PhoneNumberField } from '../fields';
+
+declare const global: {
+	wcpaySettings: {
+		connect: { country: string };
+	};
+};
 
 describe( 'Form fields components', () => {
 	it( 'renders TextField component with provided props', () => {
@@ -32,6 +38,21 @@ describe( 'Form fields components', () => {
 			<SelectField
 				label="Test Label"
 				options={ options }
+				onChange={ jest.fn() }
+			/>
+		);
+		expect( screen.getByText( 'Test Label' ) ).toBeInTheDocument();
+	} );
+
+	it( 'renders PhoneNumberField component with provided props', () => {
+		global.wcpaySettings = {
+			connect: { country: 'US' },
+		};
+
+		render(
+			<PhoneNumberField
+				label="Test Label"
+				value="123"
 				onChange={ jest.fn() }
 			/>
 		);
