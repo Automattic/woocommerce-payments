@@ -24,8 +24,11 @@ declare const global: {
 let nextStep = jest.fn();
 let data = {};
 let errors = {};
+let temp = {};
+
 let setData = jest.fn();
 let setTouched = jest.fn();
+let setTemp = jest.fn();
 let validate = jest.fn();
 let error = jest.fn();
 
@@ -33,8 +36,10 @@ jest.mock( '../context', () => ( {
 	useOnboardingContext: jest.fn( () => ( {
 		data,
 		errors,
+		temp,
 		setData,
 		setTouched,
+		setTemp,
 	} ) ),
 } ) );
 
@@ -56,8 +61,10 @@ describe( 'Progressive Onboarding Prototype Form', () => {
 		nextStep = jest.fn();
 		data = {};
 		errors = {};
+		temp = {};
 		setData = jest.fn();
 		setTouched = jest.fn();
+		setTemp = jest.fn();
 		validate = jest.fn();
 		error = jest.fn();
 
@@ -182,13 +189,17 @@ describe( 'Progressive Onboarding Prototype Form', () => {
 				expect( errorMessage ).toBeInTheDocument();
 			} );
 
-			it( 'calls setData and validate on change', () => {
+			it( 'calls setTemp, setData and validate on change', () => {
 				render( <OnboardingPhoneNumberField name="phone" /> );
 
 				const textField = screen.getByLabelText(
 					'What’s your mobile phone number?'
 				);
 				userEvent.type( textField, '23' );
+
+				expect( setTemp ).toHaveBeenCalledWith( {
+					phoneCountryCode: 'US',
+				} );
 
 				expect( setData ).toHaveBeenCalledWith( {
 					phone: '+123',

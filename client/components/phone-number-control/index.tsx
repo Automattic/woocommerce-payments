@@ -25,7 +25,8 @@ const countryCodes = window.intlTelInputGlobals
 
 interface Props {
 	value: string;
-	onChange: ( value: string ) => void;
+	onChange: ( value: string, country: string ) => void;
+	country?: string;
 	className?: string;
 	label?: string;
 	help?: string;
@@ -33,6 +34,7 @@ interface Props {
 
 const PhoneNumberControl: React.FC< Props > = ( {
 	value,
+	country,
 	onChange,
 	...rest
 } ) => {
@@ -40,16 +42,14 @@ const PhoneNumberControl: React.FC< Props > = ( {
 	const inputRef = useRef< HTMLInputElement >( null );
 	const id = useUniqueId( 'wcpay-phone-number-control-' );
 
-	const [ countryCode, setCountryCode ] = useState(
-		wcpaySettings.connect.country || 'US'
-	);
+	const [ countryCode, setCountryCode ] = useState( country || 'US' );
 	const phoneNumber = value.replace( countryCodes[ countryCode ], '' );
 
 	const handleFocus = () => inputRef.current?.focus();
 
 	const handleChange = ( code: string, number: string ) => {
 		setCountryCode( code );
-		onChange( `${ countryCodes[ code ] }${ number }` );
+		onChange( `${ countryCodes[ code ] }${ number }`, code );
 		handleFocus();
 	};
 

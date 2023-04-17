@@ -119,14 +119,16 @@ export const OnboardingPhoneNumberField: React.FC< OnboardingPhoneNumberFieldPro
 	name,
 	...rest
 } ) => {
-	const { data, setData } = useOnboardingContext();
+	const { data, setData, temp, setTemp } = useOnboardingContext();
 	const { validate, error } = useValidation( name );
 
 	return (
 		<PhoneNumberField
 			label={ strings.fields[ name ] }
 			value={ data[ name ] || '' }
-			onChange={ ( value: string ) => {
+			country={ temp.phoneCountryCode || wcpaySettings.connect.country }
+			onChange={ ( value: string, phoneCountryCode: string ) => {
+				setTemp( { phoneCountryCode } );
 				setData( { [ name ]: value } );
 				validate( value );
 			} }

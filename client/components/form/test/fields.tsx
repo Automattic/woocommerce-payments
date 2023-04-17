@@ -9,12 +9,6 @@ import { render, screen } from '@testing-library/react';
  */
 import { TextField, SelectField, PhoneNumberField } from '../fields';
 
-declare const global: {
-	wcpaySettings: {
-		connect: { country: string };
-	};
-};
-
 describe( 'Form fields components', () => {
 	it( 'renders TextField component with provided props', () => {
 		render(
@@ -45,10 +39,6 @@ describe( 'Form fields components', () => {
 	} );
 
 	it( 'renders PhoneNumberField component with provided props', () => {
-		global.wcpaySettings = {
-			connect: { country: 'US' },
-		};
-
 		render(
 			<PhoneNumberField
 				label="Test Label"
