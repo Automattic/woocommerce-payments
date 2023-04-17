@@ -2,7 +2,13 @@
  * External dependencies
  */
 import * as React from 'react';
-import { Flex, FlexItem, Icon } from '@wordpress/components';
+import {
+	CardBody,
+	CardDivider,
+	Flex,
+	FlexItem,
+	Icon,
+} from '@wordpress/components';
 import { calendar } from '@wordpress/icons';
 import { Link } from '@woocommerce/components';
 import InfoOutlineIcon from 'gridicons/dist/info-outline';
@@ -109,6 +115,7 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 			<DepositTableRow deposit={ deposit } />
 			{ deposit.id === oldestPendingDepositId && (
 				<BannerNotice
+					className="wcpay-deposits-overview__business-day-delay-notice"
 					status="info"
 					icon={ <InfoOutlineIcon /> }
 					children={ strings.notices.businessDayDelay }
@@ -121,7 +128,7 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 	return (
 		<>
 			{ /* Next Deposit Table */ }
-			<div className={ tableClass }>
+			<CardBody className={ `${ tableClass }__container` }>
 				<Flex className={ `${ tableClass }__row__header` }>
 					<FlexItem className={ `${ tableClass }__cell` }>
 						{ strings.tableHeaders.recentDepositDate }
@@ -133,8 +140,11 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 						{ strings.tableHeaders.amount }
 					</FlexItem>
 				</Flex>
+			</CardBody>
+			<CardDivider />
+			<CardBody className={ `${ tableClass }__container` }>
 				{ isLoading ? <DepositTableRowLoading /> : depositRows }
-			</div>
+			</CardBody>
 		</>
 	);
 };
