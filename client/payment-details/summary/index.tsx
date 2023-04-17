@@ -172,50 +172,18 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 
 	const isFraudOutcomeReview = isOnHoldByFraudTools( charge, paymentIntent );
 
-	const calculateRelativeTimeRemaining = ( deadlineDate: Moment ): string => {
-		const timeRemaining = deadlineDate.diff( moment.utc() );
-
-		const minutesRemaining = Math.ceil( timeRemaining / 1000 / 60 );
-		const hoursRemaining = Math.ceil( timeRemaining / 1000 / 60 / 60 );
-		const daysRemaining = Math.ceil( timeRemaining / 1000 / 60 / 60 / 24 );
-
-		if ( minutesRemaining < 60 ) {
-			if ( minutesRemaining === 1 ) {
-				return sprintf(
-					__( '%d minute', 'woocommerce-payments' ),
-					minutesRemaining
-				);
-			}
-			return sprintf(
-				__( '%d minutes', 'woocommerce-payments' ),
-				minutesRemaining
-			);
-		}
-
-		if ( hoursRemaining < 24 ) {
-			if ( hoursRemaining === 1 ) {
-				return sprintf(
-					__( '%d hour', 'woocommerce-payments' ),
-					hoursRemaining
-				);
-			}
-			return sprintf(
-				__( '%d hours', 'woocommerce-payments' ),
-				hoursRemaining
-			);
-		}
-
-		if ( daysRemaining === 1 ) {
-			return sprintf(
-				__( '%d day', 'woocommerce-payments' ),
-				daysRemaining
-			);
-		}
-		return sprintf(
-			__( '%d days', 'woocommerce-payments' ),
-			daysRemaining
-		);
-	};
+	moment.updateLocale( 'en', {
+		relativeTime: {
+			s: __( 'a second', 'woocommerce-payments' ),
+			ss: __( '%d seconds', 'woocommerce-payments' ),
+			m: __( 'a minute', 'woocommerce-payments' ),
+			mm: __( '%d minutes', 'woocommerce-payments' ),
+			h: __( 'an hour', 'woocommerce-payments' ),
+			hh: __( '%d hours', 'woocommerce-payments' ),
+			d: __( 'a day', 'woocommerce-payments' ),
+			dd: __( '%d days', 'woocommerce-payments' ),
+		},
+	} );
 
 	return (
 		<Card>
@@ -434,13 +402,10 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 										) }
 									>
 										<b>
-											{ calculateRelativeTimeRemaining(
-												moment
-													.utc(
-														authorization.created
-													)
-													.add( 7, 'days' )
-											) }
+											{ moment
+												.utc( authorization.created )
+												.add( 7, 'days' )
+												.fromNow( true ) }
 										</b>
 									</abbr>
 									{ isFraudOutcomeReview &&
