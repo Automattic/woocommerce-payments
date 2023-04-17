@@ -916,10 +916,9 @@ class MultiCurrency {
 		WC()->initialize_session();
 		$currency_code = WC()->session->get( self::CURRENCY_SESSION_KEY );
 
-		// If the user does not have a session cookie yet and uses geolocation.
-		if (
-			! $currency_code
-			&& $this->is_using_auto_currency_switching() ) {
+		// If the user does not have a session cookie yet and enabled auto-currency selection from geolocation.
+		if ( ! $currency_code && $this->is_using_auto_currency_switching() ) {
+			// Refetch the currency from geolocation.
 			$currency_code = $this->geolocation->get_currency_by_customer_location();
 		}
 
