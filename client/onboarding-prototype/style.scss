@@ -2,17 +2,60 @@ body.wcpay-onboarding-prototype__body {
 	background-color: #fff;
 
 	.wcpay-onboarding-prototype {
-		max-width: 600px;
-		margin: 0 auto;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-
 		a {
 			text-decoration: none;
 		}
 
-		.step {
+		.stepper {
+			&__progress {
+				position: fixed;
+				top: 0;
+				left: 0;
+				height: 8px;
+				background-color: $gutenberg-blue;
+				z-index: 11;
+			}
+
+			&__nav {
+				position: fixed;
+				top: 0;
+				left: 0;
+				right: 0;
+				height: 80px;
+				padding-top: 8px;
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				background-color: #fff;
+				z-index: 10;
+
+				&-button {
+					background-color: transparent;
+					border: none;
+					display: flex;
+					align-items: center;
+					padding: $gap-large;
+					font-size: 14px;
+					font-weight: 500;
+
+					.dashicon {
+						margin-right: $gap-smallest;
+					}
+				}
+
+				&-logo {
+					height: 28px;
+				}
+			}
+
+			&__wrapper {
+				max-width: 600px;
+				margin: 88px auto 0;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+			}
+
 			&__heading {
 				@include title-large;
 				color: $studio-gray-100;
@@ -56,6 +99,10 @@ body.wcpay-onboarding-prototype__body {
 		.components-base-control,
 		.components-custom-select-control {
 			margin-bottom: $gap-large;
+		}
+
+		.components-form-field__error {
+			margin: -$gap 0 $gap;
 		}
 	}
 }

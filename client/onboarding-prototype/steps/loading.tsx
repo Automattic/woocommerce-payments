@@ -73,9 +73,11 @@ const LoadingStep: React.FC< Props > = () => {
 
 	return (
 		<div className="loading-step">
-			<h1 className="step__heading">{ strings.steps.loading.heading }</h1>
+			<h1 className="stepper__heading">
+				{ strings.steps.loading.heading }
+			</h1>
 			<LoadBar />
-			<h2 className="step__subheading">
+			<h2 className="stepper__subheading">
 				{ strings.steps.loading.subheading }
 			</h2>
 		</div>

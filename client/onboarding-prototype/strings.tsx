@@ -163,4 +163,5 @@ export default {
 		more_than_6months: __( '6+ months', 'woocommerce-payments' ),
 	},
 	continue: __( 'Continue', 'woocommerce-payments' ),
+	back: __( 'Back', 'woocommerce-payments' ),
 };

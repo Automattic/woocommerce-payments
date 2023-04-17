@@ -8,34 +8,24 @@ import React, { useEffect } from 'react';
  */
 import { OnboardingContextProvider } from './context';
 import { Stepper } from 'components/stepper';
-import { OnboardingSteps } from './types';
 import { OnboardingForm } from './form';
+import Step from './step';
 import ModeChoice from './steps/mode-choice';
 import PersonalDetails from './steps/personal-details';
 import BusinessDetails from './steps/business-details';
 import StoreDetails from './steps/store-details';
 import LoadingStep from './steps/loading';
-import strings from './strings';
 import './style.scss';
 
-interface Props {
-	name: OnboardingSteps;
-}
-const Step: React.FC< Props > = ( { name, children } ) => {
-	return (
-		<>
-			<h1 className="step__heading">{ strings.steps[ name ].heading }</h1>
-			<h2 className="step__subheading">
-				{ strings.steps[ name ].subheading }
-			</h2>
-			<div className="step__content">{ children }</div>
-		</>
-	);
-};
-
 const OnboardingStepper = () => {
+	const handleExit = () => window.history.back();
+
+	const handleStepChange = () => {
+		window.scroll( 0, 0 );
+	};
+
 	return (
-		<Stepper>
+		<Stepper onStepChange={ handleStepChange } onExit={ handleExit }>
 			<Step name="mode">
 				<ModeChoice />
 			</Step>
