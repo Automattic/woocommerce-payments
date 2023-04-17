@@ -12,8 +12,15 @@ import { OnboardingFields } from './types';
 
 const isValid = ( name: keyof OnboardingFields, value?: string ): boolean => {
 	if ( ! value ) return false;
-	if ( name === 'email' ) return value.includes( '@' );
-	return true;
+
+	switch ( name ) {
+		case 'email':
+			return value.includes( '@' );
+		case 'phone':
+			return /^\+\d{7,}$/.test( value );
+		default:
+			return true;
+	}
 };
 
 // TS is smart enough to infer the return type here.

@@ -15,6 +15,8 @@ import {
 	TextFieldProps,
 	SelectField,
 	SelectFieldProps,
+	PhoneNumberField,
+	PhoneNumberFieldProps,
 } from 'components/form/fields';
 import { useOnboardingContext } from './context';
 import { OnboardingFields } from './types';
@@ -102,6 +104,32 @@ export const OnboardingSelectField = < ItemType extends Item >( {
 				validate( selectedItem?.key );
 			} }
 			options={ [] }
+			error={ error() }
+			{ ...rest }
+		/>
+	);
+};
+
+interface OnboardingPhoneNumberFieldProps
+	extends Partial< PhoneNumberFieldProps > {
+	name: keyof OnboardingFields;
+}
+
+export const OnboardingPhoneNumberField: React.FC< OnboardingPhoneNumberFieldProps > = ( {
+	name,
+	...rest
+} ) => {
+	const { data, setData } = useOnboardingContext();
+	const { validate, error } = useValidation( name );
+
+	return (
+		<PhoneNumberField
+			label={ strings.fields[ name ] }
+			value={ data[ name ] || '' }
+			onChange={ ( value: string ) => {
+				setData( { [ name ]: value } );
+				validate( value );
+			} }
 			error={ error() }
 			{ ...rest }
 		/>
