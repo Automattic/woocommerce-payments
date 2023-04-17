@@ -62,12 +62,11 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 						return get_class( $request ) === get_class( $argument ) || is_subclass_of( $argument, $request_class );
 					}
 				)
-			)
-			->willReturn( $response );
+			);
 
-		// If the request class does not have a `format_response` method, we can provide the default response here.
-		if ( ! method_exists( $request_class, 'format_response' ) ) {
+		if ( ! is_null( $response ) ) {
 			$request
+				->expects( $this->exactly( $total_api_calls ) )
 				->method( 'format_response' )
 				->willReturn( new Response( $response ) );
 		}
