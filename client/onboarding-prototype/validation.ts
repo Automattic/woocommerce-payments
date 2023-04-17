@@ -19,20 +19,35 @@ const isValid = ( name: keyof OnboardingFields, value?: string ): boolean => {
 // TS is smart enough to infer the return type here.
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const useValidation = ( name: keyof OnboardingFields ) => {
-	const { errors, setErrors, touched, setTouched } = useOnboardingContext();
+	const {
+		data,
+		errors,
+		setErrors,
+		touched,
+		setTouched,
+	} = useOnboardingContext();
 
-	const validate = ( value?: string ) => {
+	const validate = ( value: string | undefined = data[ name ] ) => {
 		if ( ! touched[ name ] ) setTouched( { [ name ]: true } );
+
 		const error = isValid( name, value )
 			? undefined
 			: ( strings.errors as Record< string, string > )[ name ] ||
 			  strings.errors.generic;
+
 		setErrors( { [ name ]: error } );
 	};
 
 	useEffect( () => {
+		// Validate on mount.
 		validate();
-		setTouched( { [ name ]: false } );
+
+		// Set touched to false if the field is empty.
+		if ( ! data[ name ] ) setTouched( { [ name ]: false } );
+
+		// Clean up the error when the field is unmounted.
+		return () => setErrors( { [ name ]: undefined } );
+
 		// We only want to run this once, so we disable the exhaustive deps rule.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [] );

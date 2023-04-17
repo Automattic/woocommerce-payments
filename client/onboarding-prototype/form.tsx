@@ -25,10 +25,8 @@ export const OnboardingForm: React.FC = ( { children } ) => {
 	const { errors, touched, setTouched } = useOnboardingContext();
 	const { nextStep } = useStepperContext();
 
-	const isValid = isEmpty( errors );
-
 	const handleContinue = () => {
-		if ( isValid ) return nextStep();
+		if ( isEmpty( errors ) ) return nextStep();
 		setTouched( mapValues( touched, () => true ) );
 	};
 
