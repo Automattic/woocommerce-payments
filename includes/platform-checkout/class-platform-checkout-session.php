@@ -43,7 +43,12 @@ class Platform_Checkout_Session {
 			return $user;
 		}
 
-		return self::get_user_id_from_cart_token();
+		$cart_token_user_id = self::get_user_id_from_cart_token();
+		if ( null === $cart_token_user_id ) {
+			return $user;
+		}
+
+		return $cart_token_user_id;
 	}
 
 	/**
@@ -53,7 +58,7 @@ class Platform_Checkout_Session {
 	 */
 	private static function get_user_id_from_cart_token() {
 		if ( ! isset( $_SERVER['HTTP_CART_TOKEN'] ) ) {
-			return 0;
+			return null;
 		}
 
 		$cart_token = wc_clean( wp_unslash( $_SERVER['HTTP_CART_TOKEN'] ) );
@@ -62,7 +67,7 @@ class Platform_Checkout_Session {
 			$payload = JsonWebToken::get_parts( $cart_token )->payload;
 
 			if ( empty( $payload ) ) {
-				return 0;
+				return null;
 			}
 
 			$session_handler = new \Automattic\WooCommerce\StoreApi\SessionHandler();
@@ -72,7 +77,7 @@ class Platform_Checkout_Session {
 			return (int) $customer['id'];
 		}
 
-		return 0;
+		return null;
 	}
 
 	/**
