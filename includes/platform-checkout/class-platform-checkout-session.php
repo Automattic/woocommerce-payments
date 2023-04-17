@@ -74,7 +74,7 @@ class Platform_Checkout_Session {
 			$session_data    = $session_handler->get_session( $payload->user_id );
 			$customer        = maybe_unserialize( $session_data['customer'] );
 
-			return (int) $customer['id'];
+			return is_numeric( $customer['id'] ) ? intval( $customer['id'] ) : null;
 		}
 
 		return null;
