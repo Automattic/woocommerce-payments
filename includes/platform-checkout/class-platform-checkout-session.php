@@ -87,16 +87,25 @@ class Platform_Checkout_Session {
 	 * @return bool  True if request is a Store API request, false otherwise.
 	 */
 	private static function is_store_api_request(): bool {
+		if ( ! defined( 'REST_REQUEST' ) || ! REST_REQUEST ) {
+			return false;
+		}
+
 		/**
 		 * The request URI. This comment is here to satisfy Psalm.
 		 *
 		 * @var string
 		 */
-		$request_uri   = wc_clean( wp_unslash( $_SERVER['REQUEST_URI'] ?? '' ) );
+		$request_uri = wc_clean( wp_unslash( $_SERVER['REQUEST_URI'] ?? '' ) );
+
+		// Check if the request URI contains a URL traversal.
+		if ( strpos( $request_uri, '../' ) !== false ) {
+			return false;
+		}
+
 		$request_uri   = home_url( esc_url( $request_uri ) );
 		$store_api_url = home_url( '/wp-json/wc/store/' );
 
-		// Restrict filter to only run on Store API requests.
 		return 0 === strpos( $request_uri, $store_api_url );
 	}
 
