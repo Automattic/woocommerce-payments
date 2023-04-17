@@ -1394,7 +1394,7 @@ class WC_Payments {
 	 *
 	 * @return mixed
 	 */
-	public function add_platform_checkout_store_api_session_handler( $response, $handler, WP_REST_Request $request ) {
+	public static function add_platform_checkout_store_api_session_handler( $response, $handler, WP_REST_Request $request ) {
 		$cart_token = $request->get_header( 'Cart-Token' );
 
 		if ( $cart_token && 0 === strpos( $request->get_route(), '/wc/store/v1/' ) && Automattic\WooCommerce\StoreApi\Utilities\JsonWebToken::validate( $cart_token, '@' . wp_salt() ) ) {
