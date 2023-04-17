@@ -26,7 +26,8 @@ class StoreAPICompatibility extends BaseCompatibility {
 		$container  = StoreApi::container();
 		$formatters = $container->get( Formatters::class );
 		$formatters->register( 'currency', Helpers\MultiCurrencyFormatter::class );
-		add_action( 'posts_clauses', [ $this, 'convert_prices_if_min_max_price' ], 9, 2 );
+		// Convert GET parameter prices before it is applied to posts query.
+		add_filter( 'posts_clauses', [ $this, 'convert_prices_if_min_max_price' ], 9, 2 );
 	}
 
 	/**
@@ -38,21 +39,31 @@ class StoreAPICompatibility extends BaseCompatibility {
 	 * @return  array
 	 */
 	public function convert_prices_if_min_max_price( $args, $wp_query ) {
-		// Check first if it has min_price or max_price.
-		if ( ! $wp_query->get( 'min_price', false ) && ! $wp_query->get( 'max_price', false ) ) {
+		/**
+		 * Context:
+		 * The `price_filter_post_clauses` method checks the $_GET['min_price'] or $_GET['max_price'] and limits the
+		 * product display to those limits by directly applying the parameters to the DB query, which is always saved
+		 * in the store currency, and when MC is involved, the prices on the querystring are sent as the customer currency.
+		 * To match the price limits on the querystring to the saved values on the DB, the filters need to be converted
+		 * back to the store currency.
+		 *
+		 * Permalink: https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce/includes/class-wc-query.php#L670-L673
+		 */
+
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		if ( ! $wp_query->is_main_query() || isset( $_GET['are_prices_converted'] ) || ( ! isset( $_GET['max_price'] ) && ! isset( $_GET['min_price'] ) ) ) {
 			return $args;
 		}
 		$currency_rate = $this->multi_currency->get_selected_currency()->get_rate();
-		if ( $wp_query->get( 'min_price' ) && ! $wp_query->get( 'is_min_price_converted', false ) ) {
-			$converted_price   = $wp_query->get( 'min_price' ) / $currency_rate;
-			$_GET['min_price'] = $converted_price;
-			$wp_query->set( 'is_min_price_converted', true );
+		if ( isset( $_GET['min_price'] ) ) {
+			$_GET['min_price'] = floatval( wp_unslash( $_GET['min_price'] ) ) / $currency_rate;
 		}
-		if ( $wp_query->get( 'max_price' ) && ! $wp_query->get( 'is_max_price_converted', false ) ) {
-			$converted_price   = $wp_query->get( 'max_price' ) / $currency_rate;
-			$_GET['max_price'] = $converted_price;
-			$wp_query->set( 'is_max_price_converted', true );
+		if ( isset( $_GET['max_price'] ) ) {
+			$_GET['max_price'] = floatval( wp_unslash( $_GET['max_price'] ) ) / $currency_rate;
 		}
+		$_GET['are_prices_converted'] = true;
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
 		return $args;
 	}
 }
