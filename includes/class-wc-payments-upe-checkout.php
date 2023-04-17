@@ -118,7 +118,8 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		} elseif ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 			$payment_fields['checkoutTitle'] = $this->gateway->get_checkout_title();
 			$payment_fields['currency']      = get_woocommerce_currency();
-			$payment_fields['cartTotal']     = WC_Payments_Utils::prepare_amount( WC()->cart->get_total( '' ), get_woocommerce_currency() );
+			$cart_total                      = ( WC()->cart ? WC()->cart->get_total( '' ) : 0 );
+			$payment_fields['cartTotal']     = WC_Payments_Utils::prepare_amount( $cart_total, get_woocommerce_currency() );
 		}
 
 		$enabled_billing_fields = [];
