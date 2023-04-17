@@ -92,6 +92,11 @@
 	}
 }
 
+.wcpay-account-balances__instant-deposit {
+	border-top: 1px solid $gray-200;
+	padding: 24px;
+}
+
 @media screen and ( max-width: 500px ) {
 	// On small devices, the logo and greeting should be centered.
 	.wcpay-account-balances__header__flex {
