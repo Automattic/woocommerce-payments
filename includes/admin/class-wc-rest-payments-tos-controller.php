@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Core\Server\Request\Add_Account_Tos_Agreement;
 use WCPay\Exceptions\Rest_Request_Exception;
 use WCPay\Logger;
 
@@ -138,7 +139,11 @@ class WC_REST_Payments_Tos_Controller extends WC_Payments_REST_Controller {
 		$current_user = wp_get_current_user();
 		$user_name    = $current_user->user_login;
 
-		$this->api_client->add_tos_agreement( 'settings-popup', $user_name );
+		$request = Add_Account_Tos_Agreement::create();
+		$request->set_source( 'settings-popup' );
+		$request->set_user_name( $user_name );
+		$request->send( 'wcpay_add_account_tos_agreement' );
+
 		$this->account->refresh_account_data();
 	}
 

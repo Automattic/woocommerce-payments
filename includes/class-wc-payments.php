@@ -325,6 +325,9 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/class-create-setup-intention.php';
 		include_once __DIR__ . '/core/server/request/class-create-and-confirm-setup-intention.php';
 		include_once __DIR__ . '/core/server/request/class-get-account.php';
+		include_once __DIR__ . '/core/server/request/class-get-account-login-data.php';
+		include_once __DIR__ . '/core/server/request/class-get-account-capital-link.php';
+		include_once __DIR__ . '/core/server/request/class-add-account-tos-agreement.php';
 		include_once __DIR__ . '/core/server/request/class-update-account.php';
 		include_once __DIR__ . '/core/server/request/class-get-charge.php';
 		include_once __DIR__ . '/core/server/request/class-woopay-create-intent.php';

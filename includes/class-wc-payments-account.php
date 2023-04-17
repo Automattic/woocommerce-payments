@@ -12,6 +12,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 use Automattic\WooCommerce\Admin\Notes\DataStore;
 use Automattic\WooCommerce\Admin\Notes\Note;
 use WCPay\Core\Server\Request\Get_Account;
+use WCPay\Core\Server\Request\Get_Account_Capital_Link;
+use WCPay\Core\Server\Request\Get_Account_Login_Data;
 use WCPay\Core\Server\Request\Update_Account;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
@@ -520,10 +522,15 @@ class WC_Payments_Account {
 		$refresh_url = add_query_arg( [ 'wcpay-loan-offer' => '' ], admin_url( 'admin.php' ) );
 
 		try {
-			$capital_link = $this->payments_api_client->get_capital_link( 'capital_financing_offer', $return_url, $refresh_url );
+			$request = Get_Account_Capital_Link::create();
+			$type    = 'capital_financing_offer';
+			$request->set_type( $type );
+			$request->set_return_url( $return_url );
+			$request->set_refresh_url( $refresh_url );
 
+			$capital_link = $request->send( 'wcpay_get_account_capital_link' );
 			$this->redirect_to( $capital_link['url'] );
-		} catch ( API_Exception $e ) {
+		} catch ( Exception $e ) {
 			$error_url = add_query_arg(
 				[ 'wcpay-loan-offer-error' => '1' ],
 				self::get_overview_page_url()
@@ -953,7 +960,12 @@ class WC_Payments_Account {
 		// Clear account transient when generating Stripe dashboard's login link.
 		$this->clear_cache();
 		$redirect_url = $this->get_overview_page_url();
-		$login_data   = $this->payments_api_client->get_login_data( $redirect_url );
+
+		$request = Get_Account_Login_Data::create();
+		$request->set_redirect_url( $redirect_url );
+
+		$response   = $request->send( 'wpcay_get_account_login_data' );
+		$login_data = $response->to_array();
 		wp_safe_redirect( $login_data['url'] );
 		exit;
 	}
