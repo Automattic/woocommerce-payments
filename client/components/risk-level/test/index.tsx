@@ -15,6 +15,7 @@ describe( 'RiskLevel', () => {
 	function renderRisk( risk: number ): HTMLElement {
 		return render( <RiskLevel risk={ risk } /> ).container;
 	}
+
 	test( 'Renders normal risk correctly.', () => {
 		const riskLevel = renderRisk( 0 );
 		expect( riskLevel ).toMatchSnapshot();
