@@ -2,9 +2,17 @@
  * External dependencies
  */
 import * as React from 'react';
-import { Flex, FlexItem, Icon } from '@wordpress/components';
+import {
+	CardBody,
+	CardDivider,
+	Flex,
+	FlexItem,
+	Icon,
+} from '@wordpress/components';
 import { calendar } from '@wordpress/icons';
 import { Link } from '@woocommerce/components';
+import InfoOutlineIcon from 'gridicons/dist/info-outline';
+import { Fragment } from '@wordpress/element';
 
 /**
  * Internal dependencies.
@@ -18,6 +26,7 @@ import { CachedDeposit } from 'wcpay/types/deposits';
 import { formatCurrency } from 'wcpay/utils/currency';
 import { getDetailsURL } from 'wcpay/components/details-link';
 import useRecentDeposits from './hooks';
+import BannerNotice from '../banner-notice';
 
 interface DepositRowProps {
 	deposit: CachedDeposit;
@@ -93,10 +102,33 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 		return <></>;
 	}
 
+	// Add a notice indicating the potential business day delay for pending and in_transit deposits.
+	// The notice is added after the oldest pending or in_transit deposit.
+	const oldestPendingDepositId = [ ...deposits ]
+		.reverse()
+		.find(
+			( deposit ) =>
+				'pending' === deposit.status || 'in_transit' === deposit.status
+		)?.id;
+	const depositRows = deposits.map( ( deposit ) => (
+		<Fragment key={ deposit.id }>
+			<DepositTableRow deposit={ deposit } />
+			{ deposit.id === oldestPendingDepositId && (
+				<BannerNotice
+					className="wcpay-deposits-overview__business-day-delay-notice"
+					status="info"
+					icon={ <InfoOutlineIcon /> }
+					children={ strings.notices.businessDayDelay }
+					isDismissible={ false }
+				/>
+			) }
+		</Fragment>
+	) );
+
 	return (
 		<>
 			{ /* Next Deposit Table */ }
-			<div className={ tableClass }>
+			<CardBody className={ `${ tableClass }__container` }>
 				<Flex className={ `${ tableClass }__row__header` }>
 					<FlexItem className={ `${ tableClass }__cell` }>
 						{ strings.tableHeaders.recentDepositDate }
@@ -108,13 +140,11 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 						{ strings.tableHeaders.amount }
 					</FlexItem>
 				</Flex>
-
-				{ isLoading && <DepositTableRowLoading /> }
-
-				{ deposits.map( ( deposit ) => (
-					<DepositTableRow key={ deposit.id } deposit={ deposit } />
-				) ) }
-			</div>
+			</CardBody>
+			<CardDivider />
+			<CardBody className={ `${ tableClass }__container` }>
+				{ isLoading ? <DepositTableRowLoading /> : depositRows }
+			</CardBody>
 		</>
 	);
 };

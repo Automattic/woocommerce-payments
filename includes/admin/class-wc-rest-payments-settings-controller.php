@@ -13,23 +13,6 @@ defined( 'ABSPATH' ) || exit;
  * REST controller for settings.
  */
 class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
-
-	const ACCOUNT_FIELDS_TO_UPDATE = [
-		'account_statement_descriptor',
-		'account_business_name',
-		'account_business_url',
-		'account_business_support_address',
-		'account_business_support_email',
-		'account_business_support_phone',
-		'account_branding_logo',
-		'account_branding_icon',
-		'account_branding_primary_color',
-		'account_branding_secondary_color',
-		'deposit_schedule_interval',
-		'deposit_schedule_monthly_anchor',
-		'deposit_schedule_weekly_anchor',
-	];
-
 	/**
 	 * Endpoint path.
 	 *
@@ -627,7 +610,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 */
 	private function update_account( WP_REST_Request $request ) {
 		$updated_fields_callback = function ( $value, string $key ) {
-			return in_array( $key, static::ACCOUNT_FIELDS_TO_UPDATE, true ) &&
+			return array_key_exists( $key, WC_Payment_Gateway_WCPay::ACCOUNT_SETTINGS_MAPPING ) &&
 				$this->wcpay_gateway->get_option( $key ) !== $value;
 		};
 		// Filter out fields that are unchanged or not in the list of fields to update.

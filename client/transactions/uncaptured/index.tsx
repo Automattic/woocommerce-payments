@@ -191,6 +191,7 @@ export const AuthorizationsList = (): JSX.Element => {
 					<CaptureAuthorizationButton
 						orderId={ auth.order_id }
 						paymentIntentId={ auth.payment_intent_id }
+						buttonIsSmall={ false }
 						onClick={ () => {
 							wcpayTracks.recordEvent(
 								'payments_transactions_uncaptured_list_capture_charge_button_click',
