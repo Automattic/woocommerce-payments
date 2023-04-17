@@ -9,12 +9,21 @@ import React, { createContext, useContext, useState } from 'react';
 
 interface UseContextValueParams {
 	steps: Record< string, React.ReactElement >;
+	onStepChange?: ( step: string ) => void;
 	onComplete?: () => void;
+	onExit?: () => void;
 }
 
-const useContextValue = ( { steps, onComplete }: UseContextValueParams ) => {
+const useContextValue = ( {
+	steps,
+	onStepChange,
+	onComplete,
+	onExit,
+}: UseContextValueParams ) => {
 	const keys = Object.keys( steps );
 	const [ currentStep, setCurrentStep ] = useState( keys[ 0 ] );
+
+	const progress = ( keys.indexOf( currentStep ) + 1 ) / keys.length;
 
 	const nextStep = () => {
 		const index = keys.indexOf( currentStep );
@@ -22,16 +31,32 @@ const useContextValue = ( { steps, onComplete }: UseContextValueParams ) => {
 
 		if ( next ) {
 			setCurrentStep( next );
+			onStepChange?.( next );
 		} else {
 			onComplete?.();
 		}
-
-		window.scroll( 0, 0 );
 	};
+
+	const prevStep = () => {
+		const index = keys.indexOf( currentStep );
+		const prev = keys[ index - 1 ];
+
+		if ( prev ) {
+			setCurrentStep( prev );
+			onStepChange?.( prev );
+		} else {
+			onExit?.();
+		}
+	};
+
+	const exit = () => onExit?.();
 
 	return {
 		currentStep,
+		progress,
 		nextStep,
+		prevStep,
+		exit,
 	};
 };
 
@@ -41,7 +66,9 @@ const StepperContext = createContext< ContextValue | null >( null );
 
 interface StepperProps {
 	children: React.ReactElement< { name: string } >[];
+	onStepChange?: ( step: string ) => void;
 	onComplete?: () => void;
+	onExit?: () => void;
 }
 
 const childrenToSteps = ( children: StepperProps[ 'children' ] ) => {
@@ -56,12 +83,12 @@ const childrenToSteps = ( children: StepperProps[ 'children' ] ) => {
 	);
 };
 
-export const Stepper: React.FC< StepperProps > = ( {
-	children,
-	onComplete,
-} ) => {
+export const Stepper: React.FC< StepperProps > = ( { children, ...rest } ) => {
 	const steps = childrenToSteps( children );
-	const value = useContextValue( { steps, onComplete } );
+	const value = useContextValue( {
+		steps,
+		...rest,
+	} );
 	const CurrentStep = steps[ value.currentStep ];
 
 	return (
