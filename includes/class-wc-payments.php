@@ -1469,6 +1469,7 @@ class WC_Payments {
 				'return_url'                     => wc_get_cart_url(),
 				'blocks_data'                    => $blocks_data_extractor->get_data(),
 				'checkout_schema_namespaces'     => $blocks_data_extractor->get_checkout_schema_namespaces(),
+				'logged_in_cookie_name'          => sanitize_text_field( LOGGED_IN_COOKIE ),
 			],
 			'user_session'    => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];
