@@ -25,10 +25,6 @@ import { getDepositDate } from 'deposits/utils';
 import { CachedDeposit } from 'wcpay/types/deposits';
 import { formatCurrency } from 'wcpay/utils/currency';
 import { getDetailsURL } from 'wcpay/components/details-link';
-import useRecentDeposits from './hooks';
-import DepositSchedule from './deposit-schedule';
-import SuspendedDepositNotice from './suspended-deposit-notice';
-import DepositOverviewSectionHeading from './section-heading';
 import BannerNotice from '../banner-notice';
 
 interface DepositRowProps {
@@ -36,8 +32,7 @@ interface DepositRowProps {
 }
 
 interface RecentDepositsProps {
-	currency: string;
-	account?: AccountOverview.Account;
+	deposits: CachedDeposit[];
 }
 
 const tableClass = 'wcpay-deposits-overview__table';
@@ -69,27 +64,6 @@ const DepositTableRow: React.FC< DepositRowProps > = ( {
 };
 
 /**
- * Renders a recent deposits table row with loading placeholders.
- *
- * @return {JSX.Element} Deposit table row with loading placeholders.
- */
-const DepositTableRowLoading: React.FC = (): JSX.Element => {
-	return (
-		<Flex className={ `${ tableClass }__row` }>
-			<FlexItem className={ `${ tableClass }__cell` }>
-				<Loadable isLoading placeholder="loading" />
-			</FlexItem>
-			<FlexItem className={ `${ tableClass }__cell` }>
-				<Loadable isLoading placeholder="loading" />
-			</FlexItem>
-			<FlexItem className={ `${ tableClass }__cell` }>
-				<Loadable isLoading placeholder="loading" />
-			</FlexItem>
-		</Flex>
-	);
-};
-
-/**
  * Renders the Recent Deposit details component.
  *
  * This component includes the recent deposit heading, table and notice.
@@ -98,15 +72,8 @@ const DepositTableRowLoading: React.FC = (): JSX.Element => {
  * @return {JSX.Element} Rendered element with Next Deposit details.
  */
 const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
-	currency,
-	account,
+	deposits,
 } ): JSX.Element => {
-	const { isLoading, deposits } = useRecentDeposits( currency );
-
-	if ( ! isLoading && deposits.length === 0 ) {
-		return <></>;
-	}
-
 	// Add a notice indicating the potential business day delay for pending and in_transit deposits.
 	// The notice is added after the oldest pending or in_transit deposit.
 	const oldestPendingDepositId = [ ...deposits ]
@@ -132,20 +99,6 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 
 	return (
 		<>
-			{ !! account &&
-				( account.deposits_blocked ? (
-					<DepositOverviewSectionHeading
-						title={ strings.depositHistoryHeading }
-						children={ <SuspendedDepositNotice /> }
-					/>
-				) : (
-					<DepositOverviewSectionHeading
-						title={ strings.depositHistoryHeading }
-						text={
-							<DepositSchedule { ...account.deposits_schedule } />
-						}
-					/>
-				) ) }
 			{ /* Next Deposit Table */ }
 			<CardBody className={ `${ tableClass }__container` }>
 				<Flex className={ `${ tableClass }__row__header` }>
@@ -162,7 +115,7 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 			</CardBody>
 			<CardDivider />
 			<CardBody className={ `${ tableClass }__container` }>
-				{ isLoading ? <DepositTableRowLoading /> : depositRows }
+				{ depositRows }
 			</CardBody>
 		</>
 	);
