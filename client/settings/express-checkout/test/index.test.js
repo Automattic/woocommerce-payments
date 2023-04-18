@@ -53,10 +53,7 @@ describe( 'ExpressCheckout', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ] ] );
 
 		useWooPayEnabledSettings.mockReturnValue(
-			getMockWooPayEnabledSettings(
-				true,
-				updateIsWooPayEnabledHandler
-			)
+			getMockWooPayEnabledSettings( true, updateIsWooPayEnabledHandler )
 		);
 		usePaymentRequestEnabledSettings.mockReturnValue(
 			getMockPaymentRequestEnabledSettings(
@@ -75,9 +72,7 @@ describe( 'ExpressCheckout', () => {
 
 		userEvent.click( screen.getByLabelText( 'WooPay' ) );
 
-		expect( updateIsWooPayEnabledHandler ).toHaveBeenCalledWith(
-			false
-		);
+		expect( updateIsWooPayEnabledHandler ).toHaveBeenCalledWith( false );
 	} );
 
 	it( 'has the correct href links to the express checkout settings pages', async () => {
@@ -167,10 +162,7 @@ describe( 'ExpressCheckout', () => {
 	it( 'should prevent enabling both Link and WooPay at the same time', async () => {
 		const updateIsWooPayEnabledHandler = jest.fn();
 		useWooPayEnabledSettings.mockReturnValue(
-			getMockWooPayEnabledSettings(
-				false,
-				updateIsWooPayEnabledHandler
-			)
+			getMockWooPayEnabledSettings( false, updateIsWooPayEnabledHandler )
 		);
 		const context = { featureFlags: { woopay: true } };
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );

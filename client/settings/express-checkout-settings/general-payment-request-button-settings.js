@@ -133,9 +133,7 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 	const [ isWooPayEnabled ] = useWooPayEnabledSettings();
 	const [ isPaymentRequestEnabled ] = usePaymentRequestEnabledSettings();
 	const {
-		featureFlags: {
-			woopay: isWooPayFeatureFlagEnabled,
-		},
+		featureFlags: { woopay: isWooPayFeatureFlagEnabled },
 	} = useContext( WCPaySettingsContext );
 
 	const stripePromise = useMemo( () => {

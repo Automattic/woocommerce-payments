@@ -490,10 +490,7 @@ export const useWooPayEnabledSettings = () => {
 	return useSelect( ( select ) => {
 		const { getIsWooPayEnabled } = select( STORE_NAME );
 
-		return [
-			getIsWooPayEnabled(),
-			updateIsWooPayEnabled,
-		];
+		return [ getIsWooPayEnabled(), updateIsWooPayEnabled ];
 	} );
 };
 
@@ -504,10 +501,7 @@ export const useWooPayCustomMessage = () => {
 		( select ) => {
 			const { getWooPayCustomMessage } = select( STORE_NAME );
 
-			return [
-				getWooPayCustomMessage(),
-				updateWooPayCustomMessage,
-			];
+			return [ getWooPayCustomMessage(), updateWooPayCustomMessage ];
 		},
 		[ updateWooPayCustomMessage ]
 	);
@@ -520,10 +514,7 @@ export const useWooPayStoreLogo = () => {
 		( select ) => {
 			const { getWooPayStoreLogo } = select( STORE_NAME );
 
-			return [
-				getWooPayStoreLogo(),
-				updateWooPayStoreLogo,
-			];
+			return [ getWooPayStoreLogo(), updateWooPayStoreLogo ];
 		},
 		[ updateWooPayStoreLogo ]
 	);
@@ -535,10 +526,7 @@ export const useWooPayLocations = () => {
 	return useSelect( ( select ) => {
 		const { getWooPayLocations } = select( STORE_NAME );
 
-		return [
-			getWooPayLocations(),
-			updateWooPayLocations,
-		];
+		return [ getWooPayLocations(), updateWooPayLocations ];
 	} );
 };
 

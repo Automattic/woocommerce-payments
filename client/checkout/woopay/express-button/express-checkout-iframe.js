@@ -93,9 +93,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		window.addEventListener( 'resize', setPopoverPosition );
 
 		iframe.classList.add( 'open' );
-		wcpayTracks.recordUserEvent(
-			wcpayTracks.events.WOOPAY_OTP_START
-		);
+		wcpayTracks.recordUserEvent( wcpayTracks.events.WOOPAY_OTP_START );
 	} );
 
 	// Add the iframe to the wrapper.
@@ -221,17 +219,16 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 				wcpayTracks.recordUserEvent(
 					wcpayTracks.events.WOOPAY_OTP_COMPLETE
 				);
-				api.initWooPay(
-					userEmail,
-					e.data.woopayUserSession
-				).then( ( response ) => {
-					if ( 'success' === response.result ) {
-						window.location = response.url;
-					} else {
-						showErrorMessage();
-						closeIframe( false );
+				api.initWooPay( userEmail, e.data.woopayUserSession ).then(
+					( response ) => {
+						if ( 'success' === response.result ) {
+							window.location = response.url;
+						} else {
+							showErrorMessage();
+							closeIframe( false );
+						}
 					}
-				} );
+				);
 				break;
 			case 'otp_validation_failed':
 				wcpayTracks.recordUserEvent(

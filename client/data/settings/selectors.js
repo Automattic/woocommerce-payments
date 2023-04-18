@@ -201,9 +201,7 @@ export const getWooPayStoreLogo = ( state ) => {
 };
 
 export const getWooPayLocations = ( state ) => {
-	return (
-		getSettings( state ).woopay_enabled_locations || EMPTY_ARR
-	);
+	return getSettings( state ).woopay_enabled_locations || EMPTY_ARR;
 };
 
 export const getCurrentProtectionLevel = ( state ) => {

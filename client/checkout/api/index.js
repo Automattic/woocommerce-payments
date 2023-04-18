@@ -674,14 +674,11 @@ export default class WCPayAPI {
 	initWooPay( userEmail, woopayUserSession ) {
 		const wcAjaxUrl = getConfig( 'wcAjaxUrl' );
 		const nonce = getConfig( 'initWooPayNonce' );
-		return this.request(
-			buildAjaxURL( wcAjaxUrl, 'init_woopay' ),
-			{
-				_wpnonce: nonce,
-				email: userEmail,
-				user_session: woopayUserSession,
-			}
-		);
+		return this.request( buildAjaxURL( wcAjaxUrl, 'init_woopay' ), {
+			_wpnonce: nonce,
+			email: userEmail,
+			user_session: woopayUserSession,
+		} );
 	}
 
 	expressCheckoutAddToCart( productData ) {

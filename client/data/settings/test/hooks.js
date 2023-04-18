@@ -320,9 +320,9 @@ describe( 'Settings hooks tests', () => {
 			updateIsWooPayEnabled( false );
 
 			expect( isWooPayEnabled ).toEqual( true );
-			expect(
-				actions.updateIsWooPayEnabled
-			).toHaveBeenCalledWith( false );
+			expect( actions.updateIsWooPayEnabled ).toHaveBeenCalledWith(
+				false
+			);
 		} );
 	} );
 
@@ -336,9 +336,7 @@ describe( 'Settings hooks tests', () => {
 			};
 
 			selectors = {
-				getWooPayCustomMessage: jest.fn(
-					() => messageBeforeUpdate
-				),
+				getWooPayCustomMessage: jest.fn( () => messageBeforeUpdate ),
 			};
 
 			const [
@@ -348,12 +346,10 @@ describe( 'Settings hooks tests', () => {
 
 			updateWooPayCustomMessage( messageAfterUpdate );
 
-			expect( woopayCustomMessage ).toEqual(
-				messageBeforeUpdate
+			expect( woopayCustomMessage ).toEqual( messageBeforeUpdate );
+			expect( actions.updateWooPayCustomMessage ).toHaveBeenCalledWith(
+				messageAfterUpdate
 			);
-			expect(
-				actions.updateWooPayCustomMessage
-			).toHaveBeenCalledWith( messageAfterUpdate );
 		} );
 	} );
 
@@ -367,9 +363,7 @@ describe( 'Settings hooks tests', () => {
 			};
 
 			selectors = {
-				getWooPayStoreLogo: jest.fn(
-					() => messageBeforeUpdate
-				),
+				getWooPayStoreLogo: jest.fn( () => messageBeforeUpdate ),
 			};
 
 			const [
@@ -380,9 +374,9 @@ describe( 'Settings hooks tests', () => {
 			updateWooPayStoreLogo( messageAfterUpdate );
 
 			expect( woopayStoreLogo ).toEqual( messageBeforeUpdate );
-			expect(
-				actions.updateWooPayStoreLogo
-			).toHaveBeenCalledWith( messageAfterUpdate );
+			expect( actions.updateWooPayStoreLogo ).toHaveBeenCalledWith(
+				messageAfterUpdate
+			);
 		} );
 	} );
 } );

@@ -82,10 +82,8 @@ const events = {
 	WOOPAY_OTP_FAILED: 'woopay_otp_prompt_failed',
 	WOOPAY_AUTO_REDIRECT: 'woopay_auto_redirect',
 	WOOPAY_SKIPPED: 'woopay_skipped',
-	WOOPAY_EXPRESS_BUTTON_OFFERED:
-		'woopay_express_button_offered',
-	WOOPAY_EXPRESS_BUTTON_CLICKED:
-		'woopay_express_button_clicked',
+	WOOPAY_EXPRESS_BUTTON_OFFERED: 'woopay_express_button_offered',
+	WOOPAY_EXPRESS_BUTTON_CLICKED: 'woopay_express_button_clicked',
 };
 
 export default {

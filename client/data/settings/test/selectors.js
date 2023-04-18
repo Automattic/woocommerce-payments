@@ -268,9 +268,7 @@ describe( 'Settings selectors tests', () => {
 				},
 			};
 
-			expect( getWooPayCustomMessage( state ) ).toEqual(
-				'test'
-			);
+			expect( getWooPayCustomMessage( state ) ).toEqual( 'test' );
 		} );
 
 		test.each( [

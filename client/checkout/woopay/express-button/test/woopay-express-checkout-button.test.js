@@ -45,8 +45,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		getConfig.mockReturnValue( 'foo' );
 		wcpayTracks.recordUserEvent.mockReturnValue( true );
 		wcpayTracks.events = {
-			WOOPAY_EXPRESS_BUTTON_OFFERED:
-				'woopay_express_button_offered',
+			WOOPAY_EXPRESS_BUTTON_OFFERED: 'woopay_express_button_offered',
 		};
 		useExpressCheckoutProductHandler.mockImplementation( () => ( {
 			addToCart: mockAddToCart,

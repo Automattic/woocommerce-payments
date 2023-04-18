@@ -24,9 +24,7 @@ const renderWooPayExpressButton = () => {
 		request
 	);
 
-	const woopayContainer = document.getElementById(
-		'wcpay-woopay-button'
-	);
+	const woopayContainer = document.getElementById( 'wcpay-woopay-button' );
 
 	if ( woopayContainer ) {
 		ReactDOM.render(
@@ -34,9 +32,7 @@ const renderWooPayExpressButton = () => {
 				buttonSettings={ getConfig( 'woopayButton' ) }
 				api={ api }
 				isProductPage={
-					!! woopayContainer.getAttribute(
-						'data-product_page'
-					)
+					!! woopayContainer.getAttribute( 'data-product_page' )
 				}
 				emailSelector="#billing_email"
 			/>,

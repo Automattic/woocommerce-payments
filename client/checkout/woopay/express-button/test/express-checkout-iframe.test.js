@@ -27,9 +27,7 @@ describe( 'expressCheckoutIframe', () => {
 		await waitFor( () => {
 			const woopayIframe = document.querySelector( 'iframe' );
 
-			expect( woopayIframe.className ).toContain(
-				'woopay-otp-iframe'
-			);
+			expect( woopayIframe.className ).toContain( 'woopay-otp-iframe' );
 			expect( woopayIframe.src ).toContain( 'http://example.com/otp/' );
 		} );
 	} );

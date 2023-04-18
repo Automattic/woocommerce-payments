@@ -385,10 +385,7 @@ describe( 'Settings reducer tests', () => {
 				savingError: null,
 			};
 
-			const state = reducer(
-				oldState,
-				updateIsWooPayEnabled( true )
-			);
+			const state = reducer( oldState, updateIsWooPayEnabled( true ) );
 
 			expect( state.data.is_woopay_enabled ).toBeTruthy();
 		} );
@@ -403,10 +400,7 @@ describe( 'Settings reducer tests', () => {
 				savingError: {},
 			};
 
-			const state = reducer(
-				oldState,
-				updateIsWooPayEnabled( true )
-			);
+			const state = reducer( oldState, updateIsWooPayEnabled( true ) );
 
 			expect( state ).toEqual( {
 				foo: 'bar',
@@ -432,9 +426,7 @@ describe( 'Settings reducer tests', () => {
 				updateWooPayCustomMessage( 'test' )
 			);
 
-			expect( state.data.woopay_custom_message ).toEqual(
-				'test'
-			);
+			expect( state.data.woopay_custom_message ).toEqual( 'test' );
 		} );
 
 		test( 'leaves other fields unchanged', () => {
@@ -471,10 +463,7 @@ describe( 'Settings reducer tests', () => {
 				},
 			};
 
-			const state = reducer(
-				oldState,
-				updateWooPayStoreLogo( 'test' )
-			);
+			const state = reducer( oldState, updateWooPayStoreLogo( 'test' ) );
 
 			expect( state.data.woopay_store_logo ).toEqual( 'test' );
 		} );
@@ -489,10 +478,7 @@ describe( 'Settings reducer tests', () => {
 				savingError: {},
 			};
 
-			const state = reducer(
-				oldState,
-				updateWooPayStoreLogo( 'test' )
-			);
+			const state = reducer( oldState, updateWooPayStoreLogo( 'test' ) );
 
 			expect( state ).toEqual( {
 				foo: 'bar',

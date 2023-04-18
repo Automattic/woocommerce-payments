@@ -39,9 +39,7 @@ export const handleWooPayEmailInput = async (
 		'WooPay Login Session',
 		'woocommerce-payments'
 	);
-	loginSessionIframe.classList.add(
-		'woopay-login-session-iframe'
-	);
+	loginSessionIframe.classList.add( 'woopay-login-session-iframe' );
 
 	// To prevent twentytwenty.intrinsicRatioVideos from trying to resize the iframe.
 	loginSessionIframe.classList.add( 'intrinsic-ignore' );
@@ -192,9 +190,7 @@ export const handleWooPayEmailInput = async (
 		window.addEventListener( 'resize', setPopoverPosition );
 
 		iframe.classList.add( 'open' );
-		wcpayTracks.recordUserEvent(
-			wcpayTracks.events.WOOPAY_OTP_START
-		);
+		wcpayTracks.recordUserEvent( wcpayTracks.events.WOOPAY_OTP_START );
 	} );
 
 	// Add the iframe and iframe arrow to the wrapper.
@@ -263,10 +259,7 @@ export const handleWooPayEmailInput = async (
 	};
 
 	const showErrorMessage = () => {
-		parentDiv.insertBefore(
-			errorMessage,
-			woopayEmailInput.nextSibling
-		);
+		parentDiv.insertBefore( errorMessage, woopayEmailInput.nextSibling );
 	};
 
 	document.addEventListener( 'keyup', ( event ) => {
@@ -305,14 +298,11 @@ export const handleWooPayEmailInput = async (
 	}
 
 	const dispatchUserExistEvent = ( userExist ) => {
-		const WooPayUserCheckEvent = new CustomEvent(
-			'WooPayUserCheck',
-			{
-				detail: {
-					isRegisteredUser: userExist,
-				},
-			}
-		);
+		const WooPayUserCheckEvent = new CustomEvent( 'WooPayUserCheck', {
+			detail: {
+				isRegisteredUser: userExist,
+			},
+		} );
 		window.dispatchEvent( WooPayUserCheckEvent );
 	};
 
@@ -360,10 +350,7 @@ export const handleWooPayEmailInput = async (
 		}
 
 		request(
-			buildAjaxURL(
-				getConfig( 'wcAjaxUrl' ),
-				'get_woopay_signature'
-			),
+			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_signature' ),
 			{
 				_ajax_nonce: getConfig( 'woopaySignatureNonce' ),
 			}
@@ -510,10 +497,7 @@ export const handleWooPayEmailInput = async (
 		switch ( e.data.action ) {
 			case 'auto_redirect_to_woopay':
 				hasCheckedLoginSession = true;
-				api.initWooPay(
-					'',
-					e.data.woopayUserSession
-				)
+				api.initWooPay( '', e.data.woopayUserSession )
 					.then( ( response ) => {
 						if ( 'success' === response.result ) {
 							loginSessionIframeWrapper.classList.add(
@@ -521,8 +505,7 @@ export const handleWooPayEmailInput = async (
 							);
 							loginSessionIframe.classList.add( 'open' );
 							wcpayTracks.recordUserEvent(
-								wcpayTracks.events
-									.WOOPAY_AUTO_REDIRECT
+								wcpayTracks.events.WOOPAY_AUTO_REDIRECT
 							);
 							spinner.remove();
 							window.location = response.url;
@@ -628,9 +611,7 @@ export const handleWooPayEmailInput = async (
 			dispatchUserExistEvent( true );
 		}, 2000 );
 
-		wcpayTracks.recordUserEvent(
-			wcpayTracks.events.WOOPAY_SKIPPED
-		);
+		wcpayTracks.recordUserEvent( wcpayTracks.events.WOOPAY_SKIPPED );
 
 		searchParams.delete( 'skip_woopay' );
 

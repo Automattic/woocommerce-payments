@@ -33,27 +33,16 @@ const WooPaySettings = ( { section } ) => {
 		setWooPayCustomMessage,
 	] = useWooPayCustomMessage();
 
-	const [
-		woopayStoreLogo,
-		setWooPayStoreLogo,
-	] = useWooPayStoreLogo();
+	const [ woopayStoreLogo, setWooPayStoreLogo ] = useWooPayStoreLogo();
 
-	const [
-		woopayLocations,
-		updateWooPayLocations,
-	] = useWooPayLocations();
+	const [ woopayLocations, updateWooPayLocations ] = useWooPayLocations();
 
 	const makeLocationChangeHandler = ( location ) => ( isChecked ) => {
 		if ( isChecked ) {
-			updateWooPayLocations( [
-				...woopayLocations,
-				location,
-			] );
+			updateWooPayLocations( [ ...woopayLocations, location ] );
 		} else {
 			updateWooPayLocations(
-				woopayLocations.filter(
-					( name ) => name !== location
-				)
+				woopayLocations.filter( ( name ) => name !== location )
 			);
 		}
 	};
@@ -83,9 +72,7 @@ const WooPaySettings = ( { section } ) => {
 								disabled={ ! isWooPayEnabled }
 								checked={
 									isWooPayEnabled &&
-									woopayLocations.includes(
-										'checkout'
-									)
+									woopayLocations.includes( 'checkout' )
 								}
 								onChange={ makeLocationChangeHandler(
 									'checkout'
@@ -101,9 +88,7 @@ const WooPaySettings = ( { section } ) => {
 								disabled={ ! isWooPayEnabled }
 								checked={
 									isWooPayEnabled &&
-									woopayLocations.includes(
-										'product'
-									)
+									woopayLocations.includes( 'product' )
 								}
 								onChange={ makeLocationChangeHandler(
 									'product'

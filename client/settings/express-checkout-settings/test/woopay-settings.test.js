@@ -43,10 +43,10 @@ const getMockWooPayCustomMessage = (
 	message,
 	updateWooPayCustomMessageHandler
 ) => [ message, updateWooPayCustomMessageHandler ];
-const getMockWooPayStoreLogo = (
+const getMockWooPayStoreLogo = ( message, updateWooPayStoreLogoHandler ) => [
 	message,
-	updateWooPayStoreLogoHandler
-) => [ message, updateWooPayStoreLogoHandler ];
+	updateWooPayStoreLogoHandler,
+];
 
 const getMockPaymentRequestButtonType = (
 	message,
@@ -60,10 +60,10 @@ const getMockPaymentRequestButtonTheme = (
 	message,
 	updatePaymentRequestButtonThemeHandler
 ) => [ message, updatePaymentRequestButtonThemeHandler ];
-const getMockWooPayLocations = (
+const getMockWooPayLocations = ( message, updateWooPayLocationsHandler ) => [
 	message,
-	updateWooPayLocationsHandler
-) => [ message, updateWooPayLocationsHandler ];
+	updateWooPayLocationsHandler,
+];
 
 describe( 'WooPaySettings', () => {
 	beforeEach( () => {
@@ -113,10 +113,7 @@ describe( 'WooPaySettings', () => {
 		const updateIsWooPayEnabledHandler = jest.fn();
 
 		useWooPayEnabledSettings.mockReturnValue(
-			getMockWooPayEnabledSettings(
-				true,
-				updateIsWooPayEnabledHandler
-			)
+			getMockWooPayEnabledSettings( true, updateIsWooPayEnabledHandler )
 		);
 
 		render( <WooPaySettings section="enable" /> );
@@ -124,19 +121,14 @@ describe( 'WooPaySettings', () => {
 		expect( updateIsWooPayEnabledHandler ).not.toHaveBeenCalled();
 
 		userEvent.click( screen.getByLabelText( /Enable WooPay/ ) );
-		expect( updateIsWooPayEnabledHandler ).toHaveBeenCalledWith(
-			false
-		);
+		expect( updateIsWooPayEnabledHandler ).toHaveBeenCalledWith( false );
 	} );
 
 	it( 'triggers the hooks when the custom message setting is being interacted with', () => {
 		const updateWooPayCustomMessageHandler = jest.fn();
 
 		useWooPayCustomMessage.mockReturnValue(
-			getMockWooPayCustomMessage(
-				'',
-				updateWooPayCustomMessageHandler
-			)
+			getMockWooPayCustomMessage( '', updateWooPayCustomMessageHandler )
 		);
 
 		render( <WooPaySettings section="appearance" /> );
@@ -151,13 +143,11 @@ describe( 'WooPaySettings', () => {
 
 		expect( customMessageTextbox ).toBeInTheDocument();
 
-		expect(
-			updateWooPayCustomMessageHandler
-		).not.toHaveBeenCalled();
+		expect( updateWooPayCustomMessageHandler ).not.toHaveBeenCalled();
 
 		userEvent.type( screen.getByRole( 'textbox' ), 'test' );
-		expect(
-			updateWooPayCustomMessageHandler
-		).toHaveBeenLastCalledWith( 'test' );
+		expect( updateWooPayCustomMessageHandler ).toHaveBeenLastCalledWith(
+			'test'
+		);
 	} );
 } );

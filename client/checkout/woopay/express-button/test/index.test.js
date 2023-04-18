@@ -23,10 +23,7 @@ jest.mock( '../woopay-express-checkout-button', () => ( {
 describe( 'renderWooPayExpressButton', () => {
 	// placeholder to attach react component.
 	const expressButtonContainer = document.createElement( 'div' );
-	expressButtonContainer.setAttribute(
-		'id',
-		'wcpay-woopay-button'
-	);
+	expressButtonContainer.setAttribute( 'id', 'wcpay-woopay-button' );
 
 	beforeEach( () => {
 		getConfig.mockReturnValue( 'foo' );

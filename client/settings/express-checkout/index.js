@@ -67,9 +67,7 @@ const ExpressCheckout = () => {
 	const isStripeLinkEnabled = enabledMethodIds.includes( 'link' );
 
 	const {
-		featureFlags: {
-			woopay: isWooPayFeatureFlagEnabled,
-		},
+		featureFlags: { woopay: isWooPayFeatureFlagEnabled },
 	} = useContext( WCPaySettingsContext );
 
 	return (
@@ -114,9 +112,7 @@ const ExpressCheckout = () => {
 											'woocommerce-payments'
 										) }
 										checked={ isWooPayEnabled }
-										onChange={
-											updateIsWooPayEnabled
-										}
+										onChange={ updateIsWooPayEnabled }
 									/>
 								) }
 							</div>

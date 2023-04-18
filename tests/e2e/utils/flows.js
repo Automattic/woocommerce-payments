@@ -613,23 +613,15 @@ export const merchantWCP = {
 			waitUntil: 'networkidle0',
 		} );
 
-		if (
-			! ( await page.$( '#override_woopay_eligible:checked' ) )
-		) {
+		if ( ! ( await page.$( '#override_woopay_eligible:checked' ) ) ) {
 			await expect( page ).toClick( 'label', {
-				text:
-					'Override the woopay_eligible flag in the account cache',
+				text: 'Override the woopay_eligible flag in the account cache',
 			} );
 		}
 
-		if (
-			! ( await page.$(
-				'#override_woopay_eligible_value:checked'
-			) )
-		) {
+		if ( ! ( await page.$( '#override_woopay_eligible_value:checked' ) ) ) {
 			await expect( page ).toClick( 'label', {
-				text:
-					'Set woopay_eligible flag to true, false otherwise',
+				text: 'Set woopay_eligible flag to true, false otherwise',
 			} );
 		}
 
@@ -646,17 +638,13 @@ export const merchantWCP = {
 
 		if ( await page.$( '#override_woopay_eligible:checked' ) ) {
 			await expect( page ).toClick( 'label', {
-				text:
-					'Override the woopay_eligible flag in the account cache',
+				text: 'Override the woopay_eligible flag in the account cache',
 			} );
 		}
 
-		if (
-			await page.$( '#override_woopay_eligible_value:checked' )
-		) {
+		if ( await page.$( '#override_woopay_eligible_value:checked' ) ) {
 			await expect( page ).toClick( 'label', {
-				text:
-					'Set woopay_eligible flag to true, false otherwise',
+				text: 'Set woopay_eligible flag to true, false otherwise',
 			} );
 		}
 
