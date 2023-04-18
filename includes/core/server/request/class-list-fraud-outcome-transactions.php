@@ -10,6 +10,7 @@ namespace WCPay\Core\Server\Request;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WC_Payments_Utils;
 use WC_Payments_API_Client;
+use WCPay\Constants\Fraud_Meta_Box_Type;
 
 /**
  * Request class for getting intents.
@@ -74,6 +75,15 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 	}
 
 	/**
+	 * Sets the additional status param.
+	 *
+	 * @param string $additional_status Additional status param.
+	 */
+	public function set_additional_status( $additional_status ) {
+		$this->set_param( 'additional_status', $additional_status );
+	}
+
+	/**
 	 * Used to prepare request from WP Rest data.
 	 *
 	 * @param \WP_REST_Request $request Request object.
@@ -83,13 +93,15 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 	public static function from_rest_request( $request ) {
 		$wcpay_request = parent::from_rest_request( $request );
 
-		$search      = $request->get_param( 'search' ) ?? [];
-		$status      = $request->get_param( 'status' );
-		$search_term = $request->get_param( 'search_term' ) ?? '';
+		$search            = $request->get_param( 'search' ) ?? [];
+		$status            = $request->get_param( 'status' );
+		$search_term       = $request->get_param( 'search_term' ) ?? '';
+		$additional_status = $request->get_param( 'additional_status' ) ?? '';
 
 		$wcpay_request->set_status( $status );
 		$wcpay_request->set_search( $search );
 		$wcpay_request->set_search_term( $search_term );
+		$wcpay_request->set_additional_status( $additional_status );
 
 		return $wcpay_request;
 	}
@@ -111,14 +123,23 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 			return $response;
 		}
 
+		// The fraud outcomes list doesn't hold the status of the payment intent, so we need
+		// to remove the payments that aren't in the desired status anymore.
 		$fraud_outcomes = array_reduce(
 			$response,
 			function ( $result, $current ) use ( $search ) {
 				$outcome = $this->build_fraud_outcome_transactions_order_info( $current );
 
-				// The fraud outcomes list doesn't hold the status of the payment intent, so we need
-				// to remove the payments that aren't in the requires_capture status anymore.
-				if ( 'review' === $this->status && 'requires_capture' !== $outcome['payment_intent']['status'] ) {
+				// Removes the outcomes that are not pending review.
+				$is_review_pending = 'requires_capture' === $outcome['payment_intent']['status'] && empty( $outcome['manual_review'] ) && Fraud_Meta_Box_Type::REVIEW === $outcome['fraud_meta_box_type'];
+				if ( 'review' === $this->status && ! $is_review_pending ) {
+					return $result;
+				}
+
+				// Removes the outcomes that are not blocked.
+				$block_statuses   = [ Fraud_Meta_Box_Type::BLOCK, Fraud_Meta_Box_Type::REVIEW_BLOCKED ];
+				$has_block_status = in_array( $outcome['fraud_meta_box_type'], $block_statuses, true );
+				if ( 'block' === $this->status && ! $has_block_status ) {
 					return $result;
 				}
 
@@ -136,6 +157,8 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 						return $result;
 					}
 				}
+
+				unset( $outcome['manual_review'] );
 
 				$result[] = $outcome;
 
@@ -171,9 +194,11 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 		$outcome['payment_intent']['id']     = $outcome['payment_intent_id'] ?? $order->get_meta( '_intent_id' ) ?? $order->get_transaction_id();
 		$outcome['payment_intent']['status'] = $order->get_meta( '_intention_status' );
 
-		$outcome['amount']        = WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() );
-		$outcome['currency']      = $order->get_currency();
-		$outcome['customer_name'] = wc_clean( $order->get_billing_first_name() ) . ' ' . wc_clean( $order->get_billing_last_name() );
+		$outcome['amount']              = WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() );
+		$outcome['currency']            = $order->get_currency();
+		$outcome['customer_name']       = wc_clean( $order->get_billing_first_name() ) . ' ' . wc_clean( $order->get_billing_last_name() );
+		$outcome['manual_review']       = $order->get_meta( '_wcpay_fraud_outcome_manual_entry' );
+		$outcome['fraud_meta_box_type'] = $order->get_meta( '_wcpay_fraud_meta_box_type' );
 
 		unset( $outcome['payment_intent_id'] );
 
@@ -195,8 +220,8 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 		}
 
 		// Search by order id.
-		if ( preg_match( '/#\d+/', $term ) ) {
-			return $term === (string) $outcome['order_id'];
+		if ( preg_match( '/#(\d+)/', $term, $matches ) ) {
+			return $matches[1] === (string) $outcome['order_id'];
 		};
 
 		// Search by customer name.

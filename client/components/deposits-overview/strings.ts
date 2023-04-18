@@ -17,12 +17,5 @@ export default {
 		'Change deposit schedule',
 		'woocommerce-payments'
 	),
-	tableHeaders: {
-		nextDepositDate: __(
-			'Estimated dispatch date',
-			'woocommerce-payments'
-		),
-		status: __( 'Status', 'woocommerce-payments' ),
-		amount: __( 'Amount', 'woocommerce-payments' ),
-	},
+	depositHistoryHeading: __( 'Deposit history', 'woocommerce-payments' ),
 };

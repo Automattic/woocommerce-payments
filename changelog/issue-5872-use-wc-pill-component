@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Update the WCPay Pill component to use WooCommerce Core's Pill component

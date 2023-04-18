@@ -80,7 +80,7 @@ function BannerNotice( props: BannerNoticeProps ): JSX.Element {
 
 	return (
 		<Notice { ...noticeProps }>
-			<Flex align="flex-start" justify="flex-start">
+			<Flex align="center" justify="flex-start">
 				{ icon && (
 					<FlexItem
 						className={ `wcpay-banner-notice__icon wcpay-banner-${ noticeProps.status }-notice__icon` }

@@ -494,6 +494,7 @@ class WC_Payments_Admin {
 				'availableStates'    => WC()->countries->get_states(),
 			],
 			'testMode'                         => WC_Payments::mode()->is_test(),
+			'onboardingTestMode'               => WC_Payments_Onboarding_Service::is_test_mode_enabled(),
 			// set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
 			'onBoardingDisabled'               => WC_Payments_Account::is_on_boarding_disabled(),
 			'errorMessage'                     => $error_message,
