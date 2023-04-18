@@ -20,7 +20,6 @@ import { Fragment } from '@wordpress/element';
 import strings from './strings';
 import './style.scss';
 import DepositStatusPill from 'components/deposit-status-pill';
-import Loadable from 'components/loadable';
 import { getDepositDate } from 'deposits/utils';
 import { CachedDeposit } from 'wcpay/types/deposits';
 import { formatCurrency } from 'wcpay/utils/currency';
