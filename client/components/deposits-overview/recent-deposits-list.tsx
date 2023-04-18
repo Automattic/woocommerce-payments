@@ -73,7 +73,7 @@ const DepositTableRow: React.FC< DepositRowProps > = ( {
 const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 	deposits,
 } ): JSX.Element => {
-	if ( ! deposits.length ) {
+	if ( deposits.length === 0 ) {
 		return <></>;
 	}
 
