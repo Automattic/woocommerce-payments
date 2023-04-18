@@ -39,9 +39,12 @@ class Platform_Checkout_Session {
 			return $user;
 		}
 
-		if ( ! self::is_store_api_request() || ! self::validate_request_from_woopay() ) {
+		if ( ! self::is_store_api_request() || ! self::is_request_from_woopay() ) {
 			return $user;
 		}
+
+		// Validate that the request is signed properly.
+		self::validate_request_signature();
 
 		$cart_token_user_id = self::get_user_id_from_cart_token();
 		if ( null === $cart_token_user_id ) {
@@ -110,21 +113,22 @@ class Platform_Checkout_Session {
 	}
 
 	/**
-	 * Validates that the request is from WooPay and that it's signed with the blog token.
+	 * Returns true if the request that's currently being processed is from WooPay, false
+	 * otherwise.
 	 *
 	 * @return bool  True if request is from WooPay.
-	 * @throws \Exception If the request is not signed with the blog token.
 	 */
-	private static function validate_request_from_woopay(): bool {
-		if ( ! isset( $_SERVER['HTTP_USER_AGENT'] ) || 'WooPay' !== $_SERVER['HTTP_USER_AGENT'] ) {
-			return false;
-		}
+	private static function is_request_from_woopay(): bool {
+		return isset( $_SERVER['HTTP_USER_AGENT'] ) && 'WooPay' === $_SERVER['HTTP_USER_AGENT'];
+	}
 
+	/**
+	 * Validates the request signature.
+	 */
+	private static function validate_request_signature() {
 		if ( ! apply_filters( 'wcpay_woopay_is_signed_with_blog_token', Rest_Authentication::is_signed_with_blog_token() ) ) {
-			Logger::log( 'WooPay request is not signed correctly.' );
-			throw new \Exception( 'Request is not signed correctly.' );
+			Logger::log( __( 'WooPay request is not signed correctly.', 'woocommerce-payments' ) );
+			wp_die( esc_html__( 'WooPay request is not signed correctly.', 'woocommerce-payments' ), 401 );
 		}
-
-		return true;
 	}
 }
