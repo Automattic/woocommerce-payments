@@ -10,7 +10,7 @@
  */
 class WC_Payments_Test extends WCPAY_UnitTestCase {
 
-	const EXPECTED_PLATFORM_CHECKOUT_HOOKS = [
+	const EXPECTED_WOOPAY_HOOKS = [
 		'wc_ajax_wcpay_init_platform_checkout' => [ WC_Payments::class, 'ajax_init_platform_checkout' ],
 	];
 
@@ -51,7 +51,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 
 		$this->set_platform_checkout_enabled( true );
 
-		foreach ( self::EXPECTED_PLATFORM_CHECKOUT_HOOKS as $hook => $callback ) {
+		foreach ( self::EXPECTED_WOOPAY_HOOKS as $hook => $callback ) {
 			$this->assertEquals( 10, has_filter( $hook, $callback ) );
 		}
 	}
@@ -59,7 +59,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 	public function test_it_registers_platform_checkout_hooks_if_feature_flag_is_enabled_but_not_in_dev_mode() {
 		$this->set_platform_checkout_enabled( true );
 
-		foreach ( self::EXPECTED_PLATFORM_CHECKOUT_HOOKS as $hook => $callback ) {
+		foreach ( self::EXPECTED_WOOPAY_HOOKS as $hook => $callback ) {
 			$this->assertEquals( 10, has_filter( $hook, $callback ) );
 		}
 	}
@@ -67,7 +67,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 	public function test_it_does_not_register_platform_checkout_hooks_if_feature_flag_is_disabled() {
 		$this->set_platform_checkout_enabled( false );
 
-		foreach ( self::EXPECTED_PLATFORM_CHECKOUT_HOOKS as $hook => $callback ) {
+		foreach ( self::EXPECTED_WOOPAY_HOOKS as $hook => $callback ) {
 			$this->assertEquals( false, has_filter( $hook, $callback ) );
 		}
 	}
@@ -126,7 +126,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 	 */
 	private function set_platform_checkout_feature_flag_enabled( $is_enabled ) {
 		// Make sure platform checkout hooks are not registered.
-		foreach ( self::EXPECTED_PLATFORM_CHECKOUT_HOOKS as $hook => $callback ) {
+		foreach ( self::EXPECTED_WOOPAY_HOOKS as $hook => $callback ) {
 			remove_filter( $hook, $callback );
 		}
 
@@ -142,7 +142,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 
 	private function set_platform_checkout_enabled( $is_enabled ) {
 		// Make sure platform checkout hooks are not registered.
-		foreach ( self::EXPECTED_PLATFORM_CHECKOUT_HOOKS as $hook => $callback ) {
+		foreach ( self::EXPECTED_WOOPAY_HOOKS as $hook => $callback ) {
 			remove_filter( $hook, $callback );
 		}
 

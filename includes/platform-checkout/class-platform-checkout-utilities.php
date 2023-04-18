@@ -63,7 +63,7 @@ class WooPay_Utilities {
 	 * @return boolean
 	 */
 	public function should_save_platform_customer() {
-		$session_data = WC()->session->get( WooPay_Extension::PLATFORM_CHECKOUT_SESSION_KEY );
+		$session_data = WC()->session->get( WooPay_Extension::WOOPAY_SESSION_KEY );
 
 		return ( isset( $_POST['save_user_in_platform_checkout'] ) && filter_var( wp_unslash( $_POST['save_user_in_platform_checkout'] ), FILTER_VALIDATE_BOOLEAN ) ) || ( isset( $session_data['save_user_in_platform_checkout'] ) && filter_var( $session_data['save_user_in_platform_checkout'], FILTER_VALIDATE_BOOLEAN ) ); // phpcs:ignore WordPress.Security.NonceVerification
 	}
@@ -95,7 +95,7 @@ class WooPay_Utilities {
 			return $this->get_persisted_available_countries();
 		}
 
-		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'https://pay.woo.com';
+		$platform_checkout_host = defined( 'WOOPAY_HOST' ) ? WOOPAY_HOST : 'https://pay.woo.com';
 		$url                    = $platform_checkout_host . '/wp-json/platform-checkout/v1/user/available-countries';
 
 		$args = [
@@ -153,7 +153,7 @@ class WooPay_Utilities {
 	 * @return mixed|string
 	 */
 	public function get_platform_checkout_phone() {
-		$session_data = WC()->session->get( WooPay_Extension::PLATFORM_CHECKOUT_SESSION_KEY );
+		$session_data = WC()->session->get( WooPay_Extension::WOOPAY_SESSION_KEY );
 
 		if ( ! empty( $_POST['platform_checkout_user_phone_field']['full'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return wc_clean( wp_unslash( $_POST['platform_checkout_user_phone_field']['full'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
@@ -170,7 +170,7 @@ class WooPay_Utilities {
 	 * @return mixed|string
 	 */
 	public function get_platform_checkout_source_url() {
-		$session_data = WC()->session->get( WooPay_Extension::PLATFORM_CHECKOUT_SESSION_KEY );
+		$session_data = WC()->session->get( WooPay_Extension::WOOPAY_SESSION_KEY );
 
 		if ( ! empty( $_POST['platform_checkout_source_url'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return wc_clean( wp_unslash( $_POST['platform_checkout_source_url'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
@@ -187,7 +187,7 @@ class WooPay_Utilities {
 	 * @return boolean
 	 */
 	public function get_platform_checkout_is_blocks() {
-		$session_data = WC()->session->get( WooPay_Extension::PLATFORM_CHECKOUT_SESSION_KEY );
+		$session_data = WC()->session->get( WooPay_Extension::WOOPAY_SESSION_KEY );
 
 		return ( isset( $_POST['platform_checkout_is_blocks'] ) && filter_var( wp_unslash( $_POST['platform_checkout_is_blocks'] ), FILTER_VALIDATE_BOOLEAN ) ) || ( isset( $session_data['platform_checkout_is_blocks'] ) && filter_var( $session_data['platform_checkout_is_blocks'], FILTER_VALIDATE_BOOLEAN ) ); // phpcs:ignore WordPress.Security.NonceVerification
 	}
@@ -198,7 +198,7 @@ class WooPay_Utilities {
 	 * @return mixed|string
 	 */
 	public function get_platform_checkout_viewport() {
-		$session_data = WC()->session->get( WooPay_Extension::PLATFORM_CHECKOUT_SESSION_KEY );
+		$session_data = WC()->session->get( WooPay_Extension::WOOPAY_SESSION_KEY );
 
 		if ( ! empty( $_POST['platform_checkout_viewport'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return wc_clean( wp_unslash( $_POST['platform_checkout_viewport'] ) ); // phpcs:ignore WordPress.Security.NonceVerification

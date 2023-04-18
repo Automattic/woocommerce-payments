@@ -39,7 +39,7 @@ export const WoopayExpressCheckoutButton = ( {
 	useEffect( () => {
 		if ( ! isPreview ) {
 			wcpayTracks.recordUserEvent(
-				wcpayTracks.events.PLATFORM_CHECKOUT_EXPRESS_BUTTON_OFFERED,
+				wcpayTracks.events.WOOPAY_EXPRESS_BUTTON_OFFERED,
 				{
 					context,
 				}
@@ -55,7 +55,7 @@ export const WoopayExpressCheckoutButton = ( {
 		}
 
 		wcpayTracks.recordUserEvent(
-			wcpayTracks.events.PLATFORM_CHECKOUT_EXPRESS_BUTTON_CLICKED,
+			wcpayTracks.events.WOOPAY_EXPRESS_BUTTON_CLICKED,
 			{
 				context: context,
 			}

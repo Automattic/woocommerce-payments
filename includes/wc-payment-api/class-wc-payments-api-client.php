@@ -38,7 +38,7 @@ class WC_Payments_API_Client {
 
 	const ACCOUNTS_API                 = 'accounts';
 	const CAPABILITIES_API             = 'accounts/capabilities';
-	const PLATFORM_CHECKOUT_API        = 'accounts/platform_checkout';
+	const WOOPAY_API        = 'accounts/platform_checkout';
 	const APPLE_PAY_API                = 'apple_pay';
 	const CHARGES_API                  = 'charges';
 	const CONN_TOKENS_API              = 'terminal/connection_tokens';
@@ -826,7 +826,7 @@ class WC_Payments_API_Client {
 			[
 				'test_mode' => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
 			],
-			self::PLATFORM_CHECKOUT_API,
+			self::WOOPAY_API,
 			self::GET
 		);
 	}
@@ -846,7 +846,7 @@ class WC_Payments_API_Client {
 				[ 'test_mode' => WC_Payments::mode()->is_dev() ],
 				$data
 			),
-			self::PLATFORM_CHECKOUT_API,
+			self::WOOPAY_API,
 			self::POST
 		);
 	}

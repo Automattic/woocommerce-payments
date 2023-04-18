@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class WooPay_Extension {
 	const EXTENSION_NAMESPACE           = 'platform-checkout';
-	const PLATFORM_CHECKOUT_SESSION_KEY = 'platform-checkout-user-data';
+	const WOOPAY_SESSION_KEY = 'platform-checkout-user-data';
 
 	/**
 	 * Registers callback.
@@ -42,6 +42,6 @@ class WooPay_Extension {
 		if ( ! ( isset( WC()->session ) && WC()->session->has_session() ) ) {
 			WC()->session->set_customer_session_cookie( true );
 		}
-		WC()->session->set( self::PLATFORM_CHECKOUT_SESSION_KEY, $data );
+		WC()->session->set( self::WOOPAY_SESSION_KEY, $data );
 	}
 }

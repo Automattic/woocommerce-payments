@@ -49,15 +49,15 @@ class WooPay_Save_User {
 		$style_url = plugins_url( 'dist/platform-checkout.css', WCPAY_PLUGIN_FILE );
 
 		wp_register_style(
-			'WCPAY_PLATFORM_CHECKOUT',
+			'WCPAY_WOOPAY',
 			$style_url,
 			[],
 			\WC_Payments::get_file_version( 'dist/platform-checkout.css' )
 		);
-		WC_Payments::register_script_with_dependencies( 'WCPAY_PLATFORM_CHECKOUT', 'dist/platform-checkout' );
+		WC_Payments::register_script_with_dependencies( 'WCPAY_WOOPAY', 'dist/platform-checkout' );
 
-		wp_enqueue_style( 'WCPAY_PLATFORM_CHECKOUT' );
-		wp_enqueue_script( 'WCPAY_PLATFORM_CHECKOUT' );
+		wp_enqueue_style( 'WCPAY_WOOPAY' );
+		wp_enqueue_script( 'WCPAY_WOOPAY' );
 	}
 
 	/**
@@ -101,10 +101,10 @@ class WooPay_Save_User {
 	 * @return void
 	 */
 	public function maybe_clear_session_key() {
-		$session_data = WC()->session->get( WooPay_Extension::PLATFORM_CHECKOUT_SESSION_KEY );
+		$session_data = WC()->session->get( WooPay_Extension::WOOPAY_SESSION_KEY );
 
 		if ( ! empty( $session_data ) ) {
-			WC()->session->__unset( WooPay_Extension::PLATFORM_CHECKOUT_SESSION_KEY );
+			WC()->session->__unset( WooPay_Extension::WOOPAY_SESSION_KEY );
 		}
 	}
 }

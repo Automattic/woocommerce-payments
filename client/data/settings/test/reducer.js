@@ -376,7 +376,7 @@ describe( 'Settings reducer tests', () => {
 		);
 	} );
 
-	describe( 'SET_IS_PLATFORM_CHECKOUT_ENABLED', () => {
+	describe( 'SET_IS_WOOPAY_ENABLED', () => {
 		test( 'toggles `data.is_platform_checkout_enabled`', () => {
 			const oldState = {
 				data: {
@@ -419,7 +419,7 @@ describe( 'Settings reducer tests', () => {
 		} );
 	} );
 
-	describe( 'SET_PLATFORM_CHECKOUT_CUSTOM_MESSAGE', () => {
+	describe( 'SET_WOOPAY_CUSTOM_MESSAGE', () => {
 		test( 'toggle `data.platform_checkout_custom_message`', () => {
 			const oldState = {
 				data: {
@@ -463,7 +463,7 @@ describe( 'Settings reducer tests', () => {
 		} );
 	} );
 
-	describe( 'SET_PLATFORM_CHECKOUT_STORE_LOGO', () => {
+	describe( 'SET_WOOPAY_STORE_LOGO', () => {
 		test( 'toggle `data.platform_checkout_store_logo`', () => {
 			const oldState = {
 				data: {
