@@ -52,6 +52,7 @@ class Get_Account_Login_Data_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $params['test_mode'] );
 		$this->assertSame( 'accounts/login_links', $request->get_api() );
 		$this->assertSame( 'POST', $request->get_method() );
+		$this->assertTrue( $request->should_use_user_token() );
 	}
 	public function test_get_account_will_be_requested_as_test_mode_only_in_dev_mode() {
 		// enable test mode.

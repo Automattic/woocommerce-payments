@@ -3,14 +3,19 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { render } from '@testing-library/react';
 
 /**
  * Internal dependencies
  */
-import RiskLevel, { calculateRiskMapping } from '../';
+import RiskLevel, { calculateRiskMapping } from '..';
 
 describe( 'RiskLevel', () => {
+	function renderRisk( risk: number ): HTMLElement {
+		return render( <RiskLevel risk={ risk } /> ).container;
+	}
+
 	test( 'Renders normal risk correctly.', () => {
 		const riskLevel = renderRisk( 0 );
 		expect( riskLevel ).toMatchSnapshot();
@@ -27,13 +32,9 @@ describe( 'RiskLevel', () => {
 	} );
 
 	test( 'Renders not assessed risk correctly.', () => {
-		const riskLevel = renderRisk( undefined );
+		const riskLevel = renderRisk( 99 );
 		expect( riskLevel ).toMatchSnapshot();
 	} );
-
-	function renderRisk( risk ) {
-		return render( <RiskLevel risk={ risk } /> ).container;
-	}
 } );
 
 describe( 'Test calculateRiskMapping', () => {

@@ -97,7 +97,7 @@ export const getRiskReviewListRowContent = (
 	return {
 		status: {
 			value: data.status,
-			display: <TransactionStatusChip status={ data.status } />,
+			display: <TransactionStatusChip status="review" />,
 		},
 		created: {
 			value: formattedCreatedDate,
