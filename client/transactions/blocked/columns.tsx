@@ -66,7 +66,7 @@ export const getBlockedListRowContent = (
 	data: FraudOutcomeTransaction
 ): Record< string, TableCardBodyColumn > => {
 	const detailsURL = getDetailsURL(
-		data.order_id.toString(),
+		data.payment_intent.id || data.order_id.toString(),
 		'transactions'
 	);
 	const formattedCreatedDate = dateI18n(
@@ -81,7 +81,7 @@ export const getBlockedListRowContent = (
 	return {
 		status: {
 			value: data.status,
-			display: <TransactionStatusChip status={ data.status } />,
+			display: <TransactionStatusChip status="block" />,
 		},
 		created: {
 			value: formattedCreatedDate,
