@@ -57,7 +57,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 	 * Construct.
 	 *
 	 * @param UPE_Payment_Gateway          $gateway                WC Payment Gateway.
-	 * @param WooPay_Utilities  $woopay_util WooPay Utilities.
+	 * @param WooPay_Utilities             $woopay_util WooPay Utilities.
 	 * @param WC_Payments_Account          $account                WC Payments Account.
 	 * @param WC_Payments_Customer_Service $customer_service       WC Payments Customer Service.
 	 */
@@ -67,10 +67,10 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		WC_Payments_Account $account,
 		WC_Payments_Customer_Service $customer_service
 	) {
-		$this->gateway                = $gateway;
-		$this->woopay_util = $woopay_util;
-		$this->account                = $account;
-		$this->customer_service       = $customer_service;
+		$this->gateway          = $gateway;
+		$this->woopay_util      = $woopay_util;
+		$this->account          = $account;
+		$this->customer_service = $customer_service;
 
 		add_action( 'wc_payments_set_gateway', [ $this, 'set_gateway' ] );
 		add_action( 'wc_payments_add_upe_payment_fields', [ $this, 'payment_fields' ] );

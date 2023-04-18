@@ -70,7 +70,7 @@ class WooPay_Save_User {
 	 */
 	public function maybe_add_userdata_to_metadata( $metadata, $order ) {
 		$should_save_platform_customer = $this->woopay_util->should_save_platform_customer();
-		$woopay_phone       = $this->woopay_util->get_woopay_phone();
+		$woopay_phone                  = $this->woopay_util->get_woopay_phone();
 
 		if ( $should_save_platform_customer && $woopay_phone ) {
 			$woopay_source_url = $this->woopay_util->get_woopay_source_url();

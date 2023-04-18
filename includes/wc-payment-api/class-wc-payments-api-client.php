@@ -38,7 +38,7 @@ class WC_Payments_API_Client {
 
 	const ACCOUNTS_API                 = 'accounts';
 	const CAPABILITIES_API             = 'accounts/capabilities';
-	const WOOPAY_API        = 'accounts/woopay';
+	const WOOPAY_API                   = 'accounts/woopay';
 	const APPLE_PAY_API                = 'apple_pay';
 	const CHARGES_API                  = 'charges';
 	const CONN_TOKENS_API              = 'terminal/connection_tokens';

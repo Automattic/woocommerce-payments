@@ -46,13 +46,13 @@ class WC_Payments_WooPay_Button_Handler {
 	/**
 	 * Initialize class actions.
 	 *
-	 * @param WC_Payments_Account         $account Account information.
-	 * @param WC_Payment_Gateway_WCPay    $gateway WCPay gateway.
-	 * @param WooPay_Utilities $woopay_utilities WCPay gateway.
+	 * @param WC_Payments_Account      $account Account information.
+	 * @param WC_Payment_Gateway_WCPay $gateway WCPay gateway.
+	 * @param WooPay_Utilities         $woopay_utilities WCPay gateway.
 	 */
 	public function __construct( WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway, WooPay_Utilities $woopay_utilities ) {
-		$this->account                     = $account;
-		$this->gateway                     = $gateway;
+		$this->account          = $account;
+		$this->gateway          = $gateway;
 		$this->woopay_utilities = $woopay_utilities;
 
 		add_action( 'init', [ $this, 'init' ] );
@@ -139,7 +139,7 @@ class WC_Payments_WooPay_Button_Handler {
 	public function add_woopay_config( $config ) {
 		$config['woopayButton']      = $this->get_button_settings();
 		$config['woopayButtonNonce'] = wp_create_nonce( 'woopay_button_nonce' );
-		$config['addToCartNonce']              = wp_create_nonce( 'wcpay-add-to-cart' );
+		$config['addToCartNonce']    = wp_create_nonce( 'wcpay-add-to-cart' );
 
 		return $config;
 	}

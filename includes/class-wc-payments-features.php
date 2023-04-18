@@ -271,7 +271,7 @@ class WC_Payments_Features {
 				'upeSettingsPreview'      => self::is_upe_settings_preview_enabled(),
 				'multiCurrency'           => self::is_customer_multi_currency_enabled(),
 				'accountOverviewTaskList' => self::is_account_overview_task_list_enabled(),
-				'woopay'        => self::is_woopay_eligible(),
+				'woopay'                  => self::is_woopay_eligible(),
 				'documents'               => self::is_documents_section_enabled(),
 				'clientSecretEncryption'  => self::is_client_secret_encryption_enabled(),
 				'woopayExpressCheckout'   => self::is_woopay_express_checkout_enabled(),

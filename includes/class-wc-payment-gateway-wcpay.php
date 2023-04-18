@@ -1174,14 +1174,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				if ( $this->woopay_util->should_save_platform_customer() ) {
 					$save_user_in_woopay = true;
-					$metadata_from_order            = apply_filters(
+					$metadata_from_order = apply_filters(
 						'wcpay_metadata_from_order',
 						[
 							'customer_email' => $order->get_billing_email(),
 						],
 						$order
 					);
-					$metadata                       = array_merge( (array) $metadata_from_order, (array) $metadata ); // prioritize metadata from mobile app.
+					$metadata            = array_merge( (array) $metadata_from_order, (array) $metadata ); // prioritize metadata from mobile app.
 
 					do_action( 'woocommerce_payments_save_user_in_woopay' );
 				}

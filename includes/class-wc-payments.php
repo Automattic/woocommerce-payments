@@ -446,7 +446,7 @@ class WC_Payments {
 		self::$failed_transaction_rate_limiter     = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
 		self::$order_success_page                  = new WC_Payments_Order_Success_Page();
 		self::$onboarding_service                  = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
-		self::$woopay_util              = new WooPay_Utilities();
+		self::$woopay_util                         = new WooPay_Utilities();
 
 		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
 
@@ -500,9 +500,9 @@ class WC_Payments {
 		self::maybe_register_woopay_hooks();
 
 		// Payment Request and Apple Pay.
-		self::$payment_request_button_handler   = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway() );
-		self::$woopay_button_handler = new WC_Payments_WooPay_Button_Handler( self::$account, self::get_gateway(), self::$woopay_util );
-		self::$apple_pay_registration           = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
+		self::$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway() );
+		self::$woopay_button_handler          = new WC_Payments_WooPay_Button_Handler( self::$account, self::get_gateway(), self::$woopay_util );
+		self::$apple_pay_registration         = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
@@ -1398,7 +1398,7 @@ class WC_Payments {
 		$account_id = self::get_account_service()->get_stripe_account_id();
 
 		$woopay_host = defined( 'WOOPAY_HOST' ) ? WOOPAY_HOST : 'https://pay.woo.com';
-		$url                    = $woopay_host . '/wp-json/woopay/v1/init';
+		$url         = $woopay_host . '/wp-json/woopay/v1/init';
 
 		$store_logo = self::get_gateway()->get_option( 'woopay_store_logo' );
 

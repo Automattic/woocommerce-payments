@@ -56,7 +56,7 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 			->willReturn( $gateway_woopay_enabled );
 
 		$woopay_utilities = new WooPay_Utilities();
-		$actual                      = $woopay_utilities->should_enable_woopay( $this->gateway_mock );
+		$actual           = $woopay_utilities->should_enable_woopay( $this->gateway_mock );
 		$this->assertSame( $expected, $actual );
 	}
 
@@ -84,7 +84,7 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 		WC_Payments::mode()->live();
 
 		$woopay_utilities = new WooPay_Utilities();
-		$actual                      = $woopay_utilities->is_country_available( $this->gateway_mock );
+		$actual           = $woopay_utilities->is_country_available( $this->gateway_mock );
 		$this->assertSame( $expected, $actual );
 	}
 
@@ -92,7 +92,7 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 		WC_Payments::mode()->test();
 
 		$woopay_utilities = new WooPay_Utilities();
-		$actual                      = $woopay_utilities->is_country_available( $this->gateway_mock );
+		$actual           = $woopay_utilities->is_country_available( $this->gateway_mock );
 		$this->assertSame( true, $actual );
 	}
 

@@ -11,8 +11,8 @@ defined( 'ABSPATH' ) || exit;
  * Class that registers a blocks extension callback for woopay new user.
  */
 class WooPay_Extension {
-	const EXTENSION_NAMESPACE           = 'woopay';
-	const WOOPAY_SESSION_KEY = 'woopay-user-data';
+	const EXTENSION_NAMESPACE = 'woopay';
+	const WOOPAY_SESSION_KEY  = 'woopay-user-data';
 
 	/**
 	 * Registers callback.

@@ -96,7 +96,7 @@ class WooPay_Utilities {
 		}
 
 		$woopay_host = defined( 'WOOPAY_HOST' ) ? WOOPAY_HOST : 'https://pay.woo.com';
-		$url                    = $woopay_host . '/wp-json/woopay/v1/user/available-countries';
+		$url         = $woopay_host . '/wp-json/woopay/v1/user/available-countries';
 
 		$args = [
 			'url'     => $url,
