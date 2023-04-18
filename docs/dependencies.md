@@ -38,6 +38,9 @@ to catalog our packages and provide guidance to a developer who wants to test an
 | [vimeo/psalm](https://github.com/vimeo/psalm) |  Used for type checking our PHP code. | Run the tool, make sure it completes and produces output. | Run with `npm run psalm`. |
 
 ### JavaScript Dev Dependencies
+
+For most dependencies, we'll try to match the version being used by the minimum supported version of [WordPress](https://github.com/WordPress/wordpress-develop/blob/x.y.z/package.json) and [WooCommerce](https://github.com/woocommerce/woocommerce/blob/x.y.z/plugins/woocommerce/package.json) (replace `x.y.z` by the minimum supported version in the link).
+
 | Package Name | Usage Summary | Testing | Notes |
 | ------------ | ------------- | ------- | ----- |
 | [husky](https://www.npmjs.com/package/husky) |  Used to run hooks pre/post commit, like automatically running PHPCS. | Check out another branch `composer install` should run automatically. |  |
