@@ -26,7 +26,7 @@ define( 'WCPAY_SUBSCRIPTIONS_ABSPATH', __DIR__ . '/vendor/woocommerce/subscripti
 
 require_once __DIR__ . '/vendor/autoload_packages.php';
 require_once __DIR__ . '/includes/class-wc-payments-features.php';
-require_once __DIR__ . '/includes/platform-checkout-user/class-platform-checkout-extension.php';
+require_once __DIR__ . '/includes/woopay-user/class-woopay-extension.php';
 
 /**
  * Plugin activation hook.
@@ -317,13 +317,13 @@ function wcpay_tasks_init() {
 add_action( 'plugins_loaded', 'wcpay_tasks_init' );
 
 /**
- * Register blocks extension for platform checkout.
+ * Register blocks extension for woopay.
  */
-function register_platform_checkout_extension() {
+function register_woopay_extension() {
 	( new WooPay_Extension() )->register_extend_rest_api_update_callback();
 }
 
-add_action( 'woocommerce_blocks_loaded', 'register_platform_checkout_extension' );
+add_action( 'woocommerce_blocks_loaded', 'register_woopay_extension' );
 
 /**
  * As the class is defined in later versions of WC, Psalm infers error.

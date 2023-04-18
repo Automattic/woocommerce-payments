@@ -52,7 +52,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		add_action( 'woocommerce_blocks_enqueue_checkout_block_scripts_after', [ $this, 'checkout_start' ] );
 		add_action( 'woocommerce_checkout_order_processed', [ $this, 'checkout_order_processed' ] );
 		add_action( 'woocommerce_blocks_checkout_order_processed', [ $this, 'checkout_order_processed' ] );
-		add_action( 'woocommerce_payments_save_user_in_platform_checkout', [ $this, 'must_save_payment_method_to_platform' ] );
+		add_action( 'woocommerce_payments_save_user_in_woopay', [ $this, 'must_save_payment_method_to_platform' ] );
 	}
 
 	/**
@@ -140,11 +140,11 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 			return false;
 		}
 
-		// Don't track when platform checkout is disabled.
+		// Don't track when woopay is disabled.
 		$gateway                       = \WC_Payments::get_gateway();
-		$is_platform_checkout_eligible = WC_Payments_Features::is_platform_checkout_eligible(); // Feature flag.
-		$is_platform_checkout_enabled  = 'yes' === $gateway->get_option( 'platform_checkout', 'no' );
-		if ( ! ( $is_platform_checkout_eligible && $is_platform_checkout_enabled ) ) {
+		$is_woopay_eligible = WC_Payments_Features::is_woopay_eligible(); // Feature flag.
+		$is_woopay_enabled  = 'yes' === $gateway->get_option( 'woopay', 'no' );
+		if ( ! ( $is_woopay_eligible && $is_woopay_enabled ) ) {
 			return false;
 		}
 
@@ -292,11 +292,11 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	}
 
 	/**
-	 * Record a Tracks event that user chose to save payment information in platform checkout.
+	 * Record a Tracks event that user chose to save payment information in woopay.
 	 */
 	public function must_save_payment_method_to_platform() {
 		$this->maybe_record_event(
-			'platform_checkout_registered',
+			'woopay_registered',
 			[
 				'source' => 'checkout',
 			]

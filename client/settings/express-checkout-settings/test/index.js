@@ -126,8 +126,8 @@ describe( 'ExpressCheckoutSettings', () => {
 		).toBeInTheDocument();
 	} );
 
-	test( 'renders platform checkout breadcrumbs', () => {
-		render( <ExpressCheckoutSettings methodId="platform_checkout" /> );
+	test( 'renders woopay breadcrumbs', () => {
+		render( <ExpressCheckoutSettings methodId="woopay" /> );
 
 		const linkToPayments = screen.getByRole( 'link', {
 			name: 'WooCommerce Payments',
@@ -138,8 +138,8 @@ describe( 'ExpressCheckoutSettings', () => {
 		expect( breadcrumbs ).toContainElement( methodName );
 	} );
 
-	test( 'renders platform checkout settings and confirm its checkbox label', () => {
-		render( <ExpressCheckoutSettings methodId="platform_checkout" /> );
+	test( 'renders woopay settings and confirm its checkbox label', () => {
+		render( <ExpressCheckoutSettings methodId="woopay" /> );
 
 		const label = screen.getByRole( 'checkbox', {
 			name: 'Enable WooPay',
@@ -148,7 +148,7 @@ describe( 'ExpressCheckoutSettings', () => {
 	} );
 
 	test( 'renders WooPay express button appearance settings if feature flag is enabled and confirm its first heading', () => {
-		render( <ExpressCheckoutSettings methodId="platform_checkout" /> );
+		render( <ExpressCheckoutSettings methodId="woopay" /> );
 
 		expect(
 			screen.queryByRole( 'heading', {
@@ -160,7 +160,7 @@ describe( 'ExpressCheckoutSettings', () => {
 	test( 'does not render WooPay express button appearance settings if feature flag is disabled', () => {
 		global.wcpaySettings.featureFlags.woopayExpressCheckout = false;
 
-		render( <ExpressCheckoutSettings methodId="platform_checkout" /> );
+		render( <ExpressCheckoutSettings methodId="woopay" /> );
 
 		expect(
 			screen.queryByRole( 'heading', {

@@ -181,14 +181,14 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether platform checkout is enabled.
+	 * Checks whether woopay is enabled.
 	 *
 	 * @return bool
 	 */
-	public static function is_platform_checkout_eligible() {
+	public static function is_woopay_eligible() {
 		// read directly from cache, ignore cache expiration check.
 		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
-		return is_array( $account ) && ( $account['platform_checkout_eligible'] ?? false );
+		return is_array( $account ) && ( $account['woopay_eligible'] ?? false );
 	}
 
 	/**
@@ -208,8 +208,8 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_woopay_express_checkout_enabled() {
-		// Confirm platform checkout eligibility as well.
-		return '1' === get_option( self::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME, '1' ) && self::is_platform_checkout_eligible();
+		// Confirm woopay eligibility as well.
+		return '1' === get_option( self::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME, '1' ) && self::is_woopay_eligible();
 	}
 
 	/**
@@ -271,7 +271,7 @@ class WC_Payments_Features {
 				'upeSettingsPreview'      => self::is_upe_settings_preview_enabled(),
 				'multiCurrency'           => self::is_customer_multi_currency_enabled(),
 				'accountOverviewTaskList' => self::is_account_overview_task_list_enabled(),
-				'platformCheckout'        => self::is_platform_checkout_eligible(),
+				'woopay'        => self::is_woopay_eligible(),
 				'documents'               => self::is_documents_section_enabled(),
 				'clientSecretEncryption'  => self::is_client_secret_encryption_enabled(),
 				'woopayExpressCheckout'   => self::is_woopay_express_checkout_enabled(),

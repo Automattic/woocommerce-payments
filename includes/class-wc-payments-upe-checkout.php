@@ -37,7 +37,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 	 *
 	 * @var WooPay_Utilities
 	 */
-	protected $platform_checkout_util;
+	protected $woopay_util;
 
 	/**
 	 * WC Payments Account.
@@ -57,18 +57,18 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 	 * Construct.
 	 *
 	 * @param UPE_Payment_Gateway          $gateway                WC Payment Gateway.
-	 * @param WooPay_Utilities  $platform_checkout_util WooPay Utilities.
+	 * @param WooPay_Utilities  $woopay_util WooPay Utilities.
 	 * @param WC_Payments_Account          $account                WC Payments Account.
 	 * @param WC_Payments_Customer_Service $customer_service       WC Payments Customer Service.
 	 */
 	public function __construct(
 		UPE_Payment_Gateway $gateway,
-		WooPay_Utilities $platform_checkout_util,
+		WooPay_Utilities $woopay_util,
 		WC_Payments_Account $account,
 		WC_Payments_Customer_Service $customer_service
 	) {
 		$this->gateway                = $gateway;
-		$this->platform_checkout_util = $platform_checkout_util;
+		$this->woopay_util = $woopay_util;
 		$this->account                = $account;
 		$this->customer_service       = $customer_service;
 
@@ -167,7 +167,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 	 * @return bool - True if WooPay enabled, false otherwise.
 	 */
 	private function is_woopay_enabled() {
-		return WC_Payments_Features::is_platform_checkout_eligible() && 'yes' === $this->gateway->get_option( 'platform_checkout', 'no' ) && WC_Payments_Features::is_woopay_express_checkout_enabled();
+		return WC_Payments_Features::is_woopay_eligible() && 'yes' === $this->gateway->get_option( 'woopay', 'no' ) && WC_Payments_Features::is_woopay_express_checkout_enabled();
 	}
 
 	/**

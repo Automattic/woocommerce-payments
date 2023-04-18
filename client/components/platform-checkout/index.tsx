@@ -19,19 +19,19 @@ interface wcpayApi {
 	initWooPay: () => Promise< apiResponse >;
 }
 
-interface platformCheckoutButtonProps {
+interface woopayButtonProps {
 	isStatic?: boolean;
 	api: wcpayApi;
 }
 
-const WooPay = ( { isStatic, api }: platformCheckoutButtonProps ) => {
+const WooPay = ( { isStatic, api }: woopayButtonProps ) => {
 	const [ isLoading, setIsLoading ] = useState( false );
 
 	const buttonContent = (
 		<span>
 			{ interpolateComponents( {
 				mixedString: __(
-					'Buy now with{{br/}}platform checkout',
+					'Buy now with{{br/}}woopay',
 					'woocommerce-payments'
 				),
 				components: { br: <br /> },
@@ -80,10 +80,10 @@ interface expressPaymentMethod {
 	};
 }
 
-export const platformCheckoutPaymentMethod = (
+export const woopayPaymentMethod = (
 	api: wcpayApi
 ): expressPaymentMethod => ( {
-	name: 'platform_checkout',
+	name: 'woopay',
 	content: <WooPay api={ api } />,
 	edit: <WooPay isStatic={ true } api={ api } />,
 	canMakePayment: () => true,

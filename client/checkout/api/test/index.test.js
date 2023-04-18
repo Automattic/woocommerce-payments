@@ -15,7 +15,7 @@ jest.mock( 'wcpay/utils/checkout', () => ( {
 } ) );
 
 describe( 'WCPayAPI', () => {
-	test( 'initializes platform checkout using config params', () => {
+	test( 'initializes woopay using config params', () => {
 		buildAjaxURL.mockReturnValue( 'https://example.org/' );
 		getConfig.mockReturnValue( 'foo' );
 

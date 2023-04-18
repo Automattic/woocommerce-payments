@@ -303,7 +303,7 @@ describe( 'Settings hooks tests', () => {
 	} );
 
 	describe( 'useWooPayEnabledSettings()', () => {
-		test( 'returns platform checkout setting from selector', () => {
+		test( 'returns woopay setting from selector', () => {
 			actions = {
 				updateIsWooPayEnabled: jest.fn(),
 			};
@@ -327,7 +327,7 @@ describe( 'Settings hooks tests', () => {
 	} );
 
 	describe( 'useWooPayCustomMessage()', () => {
-		test( 'returns and updates platform checkout custom message', () => {
+		test( 'returns and updates woopay custom message', () => {
 			const messageBeforeUpdate = '';
 			const messageAfterUpdate = 'test';
 
@@ -342,13 +342,13 @@ describe( 'Settings hooks tests', () => {
 			};
 
 			const [
-				platformCheckoutCustomMessage,
+				woopayCustomMessage,
 				updateWooPayCustomMessage,
 			] = useWooPayCustomMessage();
 
 			updateWooPayCustomMessage( messageAfterUpdate );
 
-			expect( platformCheckoutCustomMessage ).toEqual(
+			expect( woopayCustomMessage ).toEqual(
 				messageBeforeUpdate
 			);
 			expect(
@@ -358,7 +358,7 @@ describe( 'Settings hooks tests', () => {
 	} );
 
 	describe( 'useWooPayStoreLogo()', () => {
-		test( 'returns and updates platform checkout custom message', () => {
+		test( 'returns and updates woopay custom message', () => {
 			const messageBeforeUpdate = '';
 			const messageAfterUpdate = 'test';
 
@@ -373,13 +373,13 @@ describe( 'Settings hooks tests', () => {
 			};
 
 			const [
-				platformCheckoutStoreLogo,
+				woopayStoreLogo,
 				updateWooPayStoreLogo,
 			] = useWooPayStoreLogo();
 
 			updateWooPayStoreLogo( messageAfterUpdate );
 
-			expect( platformCheckoutStoreLogo ).toEqual( messageBeforeUpdate );
+			expect( woopayStoreLogo ).toEqual( messageBeforeUpdate );
 			expect(
 				actions.updateWooPayStoreLogo
 			).toHaveBeenCalledWith( messageAfterUpdate );

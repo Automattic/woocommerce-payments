@@ -9,7 +9,7 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import WooPaySettings from '../platform-checkout-settings';
+import WooPaySettings from '../woopay-settings';
 import {
 	useWooPayEnabledSettings,
 	useWooPayCustomMessage,

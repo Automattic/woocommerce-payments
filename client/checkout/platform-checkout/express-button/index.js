@@ -24,23 +24,23 @@ const renderWooPayExpressButton = () => {
 		request
 	);
 
-	const platformCheckoutContainer = document.getElementById(
-		'wcpay-platform-checkout-button'
+	const woopayContainer = document.getElementById(
+		'wcpay-woopay-button'
 	);
 
-	if ( platformCheckoutContainer ) {
+	if ( woopayContainer ) {
 		ReactDOM.render(
 			<WoopayExpressCheckoutButton
-				buttonSettings={ getConfig( 'platformCheckoutButton' ) }
+				buttonSettings={ getConfig( 'woopayButton' ) }
 				api={ api }
 				isProductPage={
-					!! platformCheckoutContainer.getAttribute(
+					!! woopayContainer.getAttribute(
 						'data-product_page'
 					)
 				}
 				emailSelector="#billing_email"
 			/>,
-			platformCheckoutContainer
+			woopayContainer
 		);
 	}
 };

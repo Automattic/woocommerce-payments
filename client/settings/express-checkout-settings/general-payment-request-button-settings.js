@@ -134,7 +134,7 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 	const [ isPaymentRequestEnabled ] = usePaymentRequestEnabledSettings();
 	const {
 		featureFlags: {
-			platformCheckout: isWooPayFeatureFlagEnabled,
+			woopay: isWooPayFeatureFlagEnabled,
 		},
 	} = useContext( WCPaySettingsContext );
 

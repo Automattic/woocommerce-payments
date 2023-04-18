@@ -25,7 +25,7 @@ describe( 'renderWooPayExpressButton', () => {
 	const expressButtonContainer = document.createElement( 'div' );
 	expressButtonContainer.setAttribute(
 		'id',
-		'wcpay-platform-checkout-button'
+		'wcpay-woopay-button'
 	);
 
 	beforeEach( () => {

@@ -68,7 +68,7 @@ const ExpressCheckout = () => {
 
 	const {
 		featureFlags: {
-			platformCheckout: isWooPayFeatureFlagEnabled,
+			woopay: isWooPayFeatureFlagEnabled,
 		},
 	} = useContext( WCPaySettingsContext );
 
@@ -185,7 +185,7 @@ const ExpressCheckout = () => {
 							<div className="express-checkout__link">
 								<a
 									href={ getPaymentMethodSettingsUrl(
-										'platform_checkout'
+										'woopay'
 									) }
 								>
 									{ __(

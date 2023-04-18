@@ -28,9 +28,9 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 		$this->mock_cache = $this->createMock( WCPay\Database_Cache::class );
 		WC_Payments::set_database_cache( $this->mock_cache );
 
-		// Enable platform checkout.
-		$this->set_is_platform_checkout_eligible( true );
-		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'yes' );
+		// Enable woopay.
+		$this->set_is_woopay_eligible( true );
+		WC_Payments::get_gateway()->update_option( 'woopay', 'yes' );
 	}
 
 	public function tear_down() {
@@ -51,7 +51,7 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 
 		$this->assertEmpty( WooPay_Order_Status_Sync::get_webhook() );
 
-		$this->webhook_sync_mock->maybe_create_platform_checkout_order_webhook();
+		$this->webhook_sync_mock->maybe_create_woopay_order_webhook();
 
 		$this->assertNotEmpty( WooPay_Order_Status_Sync::get_webhook() );
 	}
@@ -63,11 +63,11 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 
 		wp_set_current_user( self::$admin_user->ID );
 
-		$this->webhook_sync_mock->maybe_create_platform_checkout_order_webhook();
+		$this->webhook_sync_mock->maybe_create_woopay_order_webhook();
 		$this->assertNotEmpty( WooPay_Order_Status_Sync::get_webhook() );
 
-		$this->set_is_platform_checkout_eligible( false );
-		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'no' );
+		$this->set_is_woopay_eligible( false );
+		WC_Payments::get_gateway()->update_option( 'woopay', 'no' );
 
 		$this->webhook_sync_mock->remove_webhook();
 		$this->assertEmpty( WooPay_Order_Status_Sync::get_webhook() );
@@ -79,8 +79,8 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 	 *
 	 * @param $account
 	 */
-	private function set_is_platform_checkout_eligible( $is_platform_checkout_eligible ) {
-		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => $is_platform_checkout_eligible ] );
+	private function set_is_woopay_eligible( $is_woopay_eligible ) {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'woopay_eligible' => $is_woopay_eligible ] );
 	}
 
 }

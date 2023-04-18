@@ -9,7 +9,7 @@
 /* stylelint-enable selector-id-pattern */
 
 #contact-fields,
-.platform-checkout-billing-email {
+.woopay-billing-email {
 	.wc-block-components-text-input,
 	.woocommerce-input-wrapper {
 		display: inline-block;
@@ -23,7 +23,7 @@
 	}
 }
 
-.platform-checkout-login-session-iframe {
+.woopay-login-session-iframe {
 	width: 100%;
 	height: 100vh;
 	position: fixed;
@@ -41,7 +41,7 @@
 }
 
 @media screen and ( min-width: 768px ) {
-	.platform-checkout-login-session-iframe-wrapper {
+	.woopay-login-session-iframe-wrapper {
 		position: fixed;
 		background: rgba( 117, 117, 117, 0.6 );
 		top: 0;
@@ -52,7 +52,7 @@
 		display: block;
 		z-index: 355000;
 
-		.platform-checkout-login-session-iframe {
+		.woopay-login-session-iframe {
 			transition: none;
 			height: 90vh;
 			max-height: 520px;
@@ -63,7 +63,7 @@
 	}
 }
 
-.platform-checkout-otp-iframe {
+.woopay-otp-iframe {
 	transition: top 500ms;
 	width: 100%;
 	height: 100vh;
@@ -78,7 +78,7 @@
 	}
 }
 
-.platform-checkout-otp-iframe-wrapper {
+.woopay-otp-iframe-wrapper {
 	.arrow {
 		position: fixed;
 		top: 100%;
@@ -86,7 +86,7 @@
 }
 
 @media screen and ( min-width: 768px ) {
-	.platform-checkout-otp-iframe-wrapper {
+	.woopay-otp-iframe-wrapper {
 		position: fixed;
 		background: rgba( 117, 117, 117, 0.6 );
 		top: 0;
@@ -97,7 +97,7 @@
 		display: block;
 		z-index: 355000;
 
-		.platform-checkout-otp-iframe {
+		.woopay-otp-iframe {
 			transition: none;
 			height: 90vh;
 			max-height: 650px;

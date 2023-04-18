@@ -11,7 +11,7 @@ import { Card, CheckboxControl, TextControl } from '@wordpress/components';
  */
 import CardBody from '../card-body';
 import WooPayFileUpload from './file-upload';
-import WooPayPreview from './platform-checkout-preview';
+import WooPayPreview from './woopay-preview';
 import {
 	useWooPayEnabledSettings,
 	useWooPayCustomMessage,
@@ -29,29 +29,29 @@ const WooPaySettings = ( { section } ) => {
 	] = useWooPayEnabledSettings();
 
 	const [
-		platformCheckoutCustomMessage,
+		woopayCustomMessage,
 		setWooPayCustomMessage,
 	] = useWooPayCustomMessage();
 
 	const [
-		platformCheckoutStoreLogo,
+		woopayStoreLogo,
 		setWooPayStoreLogo,
 	] = useWooPayStoreLogo();
 
 	const [
-		platformCheckoutLocations,
+		woopayLocations,
 		updateWooPayLocations,
 	] = useWooPayLocations();
 
 	const makeLocationChangeHandler = ( location ) => ( isChecked ) => {
 		if ( isChecked ) {
 			updateWooPayLocations( [
-				...platformCheckoutLocations,
+				...woopayLocations,
 				location,
 			] );
 		} else {
 			updateWooPayLocations(
-				platformCheckoutLocations.filter(
+				woopayLocations.filter(
 					( name ) => name !== location
 				)
 			);
@@ -59,7 +59,7 @@ const WooPaySettings = ( { section } ) => {
 	};
 
 	return (
-		<Card className="platform-checkout-settings">
+		<Card className="woopay-settings">
 			{ 'enable' === section && (
 				<CardBody>
 					<CheckboxControl
@@ -83,7 +83,7 @@ const WooPaySettings = ( { section } ) => {
 								disabled={ ! isWooPayEnabled }
 								checked={
 									isWooPayEnabled &&
-									platformCheckoutLocations.includes(
+									woopayLocations.includes(
 										'checkout'
 									)
 								}
@@ -101,7 +101,7 @@ const WooPaySettings = ( { section } ) => {
 								disabled={ ! isWooPayEnabled }
 								checked={
 									isWooPayEnabled &&
-									platformCheckoutLocations.includes(
+									woopayLocations.includes(
 										'product'
 									)
 								}
@@ -119,7 +119,7 @@ const WooPaySettings = ( { section } ) => {
 								disabled={ ! isWooPayEnabled }
 								checked={
 									isWooPayEnabled &&
-									platformCheckoutLocations.includes( 'cart' )
+									woopayLocations.includes( 'cart' )
 								}
 								onChange={ makeLocationChangeHandler( 'cart' ) }
 								label={ __(
@@ -134,14 +134,14 @@ const WooPaySettings = ( { section } ) => {
 
 			{ 'appearance' === section && (
 				<CardBody style={ { marginTop: 12 } }>
-					<div className="platform-checkout-settings__preview">
+					<div className="woopay-settings__preview">
 						<WooPayPreview
 							storeName={ wcSettings.siteTitle }
-							storeLogo={ platformCheckoutStoreLogo }
+							storeLogo={ woopayStoreLogo }
 						></WooPayPreview>
-						<div className="platform-checkout-settings__preview-fade"></div>
+						<div className="woopay-settings__preview-fade"></div>
 					</div>
-					<div className="platform-checkout-settings__custom-message-wrapper">
+					<div className="woopay-settings__custom-message-wrapper">
 						<h4>
 							{ __(
 								'Store logo on checkout',
@@ -159,11 +159,11 @@ const WooPaySettings = ( { section } ) => {
 								'woocommerce-payments'
 							) }
 							purpose="business_logo"
-							fileID={ platformCheckoutStoreLogo }
+							fileID={ woopayStoreLogo }
 							updateFileID={ setWooPayStoreLogo }
 						/>
 					</div>
-					<div className="platform-checkout-settings__custom-message-wrapper">
+					<div className="woopay-settings__custom-message-wrapper">
 						<h4>
 							{ __( 'Custom message', 'woocommerce-payments' ) }
 						</h4>
@@ -173,7 +173,7 @@ const WooPaySettings = ( { section } ) => {
 									' message. Note that you can add plain text and links, but not images.',
 								'woocommerce-payments'
 							) }
-							value={ platformCheckoutCustomMessage }
+							value={ woopayCustomMessage }
 							onChange={ setWooPayCustomMessage }
 							maxLength={ CUSTOM_MESSAGE_MAX_LENGTH }
 						/>
@@ -181,7 +181,7 @@ const WooPaySettings = ( { section } ) => {
 							className="input-help-text light-text"
 							aria-hidden="true"
 						>
-							{ `${ platformCheckoutCustomMessage.length } / ${ CUSTOM_MESSAGE_MAX_LENGTH }` }
+							{ `${ woopayCustomMessage.length } / ${ CUSTOM_MESSAGE_MAX_LENGTH }` }
 						</span>
 					</div>
 				</CardBody>

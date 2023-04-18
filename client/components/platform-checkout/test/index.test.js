@@ -8,13 +8,13 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import { platformCheckoutPaymentMethod } from '..';
+import { woopayPaymentMethod } from '..';
 
 jest.mock( 'utils/checkout', () => ( {
 	getConfig: jest.fn(),
 } ) );
 
-describe( 'platformCheckoutPaymentMethod', () => {
+describe( 'woopayPaymentMethod', () => {
 	let nativeWindowLocation;
 
 	const apiMock = {
@@ -37,38 +37,38 @@ describe( 'platformCheckoutPaymentMethod', () => {
 	} );
 
 	test( 'creates expected payment method object', () => {
-		const method = platformCheckoutPaymentMethod( apiMock );
+		const method = woopayPaymentMethod( apiMock );
 		expect( method ).toEqual(
 			expect.objectContaining( {
-				name: 'platform_checkout',
+				name: 'woopay',
 				paymentMethodId: 'woocommerce_payments',
 			} )
 		);
 	} );
 
 	test( 'method front-end matches expectation', () => {
-		const method = platformCheckoutPaymentMethod( apiMock );
+		const method = woopayPaymentMethod( apiMock );
 		render( method.content );
 		expect(
 			screen.queryByRole( 'button', {
-				name: /Buy now with.*platform checkout/,
+				name: /Buy now with.*woopay/,
 			} )
 		).toBeInTheDocument();
 	} );
 
 	test( 'method edit mode matches expectation', () => {
-		const method = platformCheckoutPaymentMethod( apiMock );
+		const method = woopayPaymentMethod( apiMock );
 
 		render( method.edit );
 
 		// No button this time but the text should still be there.
 		expect(
 			screen.queryByRole( 'button', {
-				name: /Buy now with.*platform checkout/,
+				name: /Buy now with.*woopay/,
 			} )
 		).not.toBeInTheDocument();
 		expect(
-			screen.queryByText( /Buy now with.*platform checkout/ )
+			screen.queryByText( /Buy now with.*woopay/ )
 		).toBeInTheDocument();
 	} );
 
@@ -79,12 +79,12 @@ describe( 'platformCheckoutPaymentMethod', () => {
 		} );
 		apiMock.initWooPay.mockReturnValue( initCheckoutPromise );
 
-		const method = platformCheckoutPaymentMethod( apiMock );
+		const method = woopayPaymentMethod( apiMock );
 		render( method.content );
 
 		// Button should not be disabled initially.
 		const buyNowButton = screen.getByRole( 'button', {
-			name: /Buy now with.*platform checkout/,
+			name: /Buy now with.*woopay/,
 		} );
 		expect( buyNowButton ).not.toBeDisabled();
 

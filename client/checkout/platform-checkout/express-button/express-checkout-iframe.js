@@ -7,7 +7,7 @@ import { getTargetElement, validateEmail } from '../utils';
 import wcpayTracks from 'tracks';
 
 export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
-	const platformCheckoutEmailInput = await getTargetElement( emailSelector );
+	const woopayEmailInput = await getTargetElement( emailSelector );
 	let userEmail = '';
 
 	const parentDiv = document.body;
@@ -16,12 +16,12 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 	const iframeWrapper = document.createElement( 'div' );
 	iframeWrapper.setAttribute( 'role', 'dialog' );
 	iframeWrapper.setAttribute( 'aria-modal', 'true' );
-	iframeWrapper.classList.add( 'platform-checkout-otp-iframe-wrapper' );
+	iframeWrapper.classList.add( 'woopay-otp-iframe-wrapper' );
 
 	// Make the otp iframe.
 	const iframe = document.createElement( 'iframe' );
 	iframe.title = __( 'WooPay SMS code verification', 'woocommerce-payments' );
-	iframe.classList.add( 'platform-checkout-otp-iframe' );
+	iframe.classList.add( 'woopay-otp-iframe' );
 
 	// To prevent twentytwenty.intrinsicRatioVideos from trying to resize the iframe.
 	iframe.classList.add( 'intrinsic-ignore' );
@@ -45,7 +45,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 					action: 'setHeader',
 					value: iframeHeaderValue,
 				},
-				getConfig( 'platformCheckoutHost' )
+				getConfig( 'woopayHost' )
 			);
 		}
 
@@ -122,7 +122,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 				method: 'POST',
 				body: new URLSearchParams( {
 					action: 'woopay_express_checkout_button_show_error_notice',
-					_ajax_nonce: getConfig( 'platformCheckoutButtonNonce' ),
+					_ajax_nonce: getConfig( 'woopayButtonNonce' ),
 					context,
 					message: errorMessage,
 				} ),
@@ -161,7 +161,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 
 	const openIframe = ( email = '' ) => {
 		// check and return if another otp iframe is already open.
-		if ( document.querySelector( '.platform-checkout-otp-iframe' ) ) {
+		if ( document.querySelector( '.woopay-otp-iframe' ) ) {
 			return;
 		}
 
@@ -190,7 +190,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		);
 
 		iframe.src = `${ getConfig(
-			'platformCheckoutHost'
+			'woopayHost'
 		) }/otp/?${ urlParams.toString() }`;
 
 		// Insert the wrapper into the DOM.
@@ -209,7 +209,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 	} );
 
 	window.addEventListener( 'message', ( e ) => {
-		if ( ! getConfig( 'platformCheckoutHost' ).startsWith( e.origin ) ) {
+		if ( ! getConfig( 'woopayHost' ).startsWith( e.origin ) ) {
 			return;
 		}
 
@@ -217,13 +217,13 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 			case 'otp_email_submitted':
 				userEmail = e.data.userEmail;
 				break;
-			case 'redirect_to_platform_checkout':
+			case 'redirect_to_woopay':
 				wcpayTracks.recordUserEvent(
 					wcpayTracks.events.WOOPAY_OTP_COMPLETE
 				);
 				api.initWooPay(
 					userEmail,
-					e.data.platformCheckoutUserSession
+					e.data.woopayUserSession
 				).then( ( response ) => {
 					if ( 'success' === response.result ) {
 						window.location = response.url;
@@ -270,5 +270,5 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		}
 	} );
 
-	openIframe( platformCheckoutEmailInput?.value );
+	openIframe( woopayEmailInput?.value );
 };

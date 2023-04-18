@@ -189,20 +189,20 @@ export const getIsSubscriptionsPluginActive = ( state ) => {
 };
 
 export const getIsWooPayEnabled = ( state ) => {
-	return getSettings( state ).is_platform_checkout_enabled || false;
+	return getSettings( state ).is_woopay_enabled || false;
 };
 
 export const getWooPayCustomMessage = ( state ) => {
-	return getSettings( state ).platform_checkout_custom_message || '';
+	return getSettings( state ).woopay_custom_message || '';
 };
 
 export const getWooPayStoreLogo = ( state ) => {
-	return getSettings( state ).platform_checkout_store_logo || '';
+	return getSettings( state ).woopay_store_logo || '';
 };
 
 export const getWooPayLocations = ( state ) => {
 	return (
-		getSettings( state ).platform_checkout_enabled_locations || EMPTY_ARR
+		getSettings( state ).woopay_enabled_locations || EMPTY_ARR
 	);
 };
 

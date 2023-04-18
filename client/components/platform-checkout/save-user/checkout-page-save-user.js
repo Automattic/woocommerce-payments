@@ -19,7 +19,7 @@ import { getConfig } from 'utils/checkout';
 import AdditionalInformation from './additional-information';
 import Agreement from './agreement';
 import Container from './container';
-import useWooPayUser from '../hooks/use-platform-checkout-user';
+import useWooPayUser from '../hooks/use-woopay-user';
 import useSelectedPaymentMethod from '../hooks/use-selected-payment-method';
 import { WC_STORE_CART } from '../../../checkout/constants';
 import WooPayIcon from 'assets/images/woopay.svg?asset';
@@ -78,17 +78,17 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 			const data = shouldClearData
 				? {}
 				: {
-						save_user_in_platform_checkout: isSaveDetailsChecked,
-						platform_checkout_source_url: window.location.href,
-						platform_checkout_is_blocks: true,
-						platform_checkout_viewport: `${ viewportWidth }x${ viewportHeight }`,
-						platform_checkout_user_phone_field: {
+						save_user_in_woopay: isSaveDetailsChecked,
+						woopay_source_url: window.location.href,
+						woopay_is_blocks: true,
+						woopay_viewport: `${ viewportWidth }x${ viewportHeight }`,
+						woopay_user_phone_field: {
 							full: phoneNumber,
 						},
 				  };
 
 			extensionCartUpdate( {
-				namespace: 'platform-checkout',
+				namespace: 'woopay',
 				data: data,
 			} ).then( () => {
 				setUserDataSent( ! shouldClearData );
@@ -195,13 +195,13 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 								: ''
 						}
 					>
-						<label htmlFor="save_user_in_platform_checkout">
+						<label htmlFor="save_user_in_woopay">
 							<input
 								type="checkbox"
 								checked={ isSaveDetailsChecked }
 								onChange={ handleCheckboxClick }
-								name="save_user_in_platform_checkout"
-								id="save_user_in_platform_checkout"
+								name="save_user_in_woopay"
+								id="save_user_in_woopay"
 								value="true"
 								className={ `save-details-checkbox ${
 									isBlocksCheckout
@@ -290,12 +290,12 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 					>
 						<input
 							type="hidden"
-							name="platform_checkout_source_url"
+							name="woopay_source_url"
 							value={ window.location.href }
 						/>
 						<input
 							type="hidden"
-							name="platform_checkout_viewport"
+							name="woopay_viewport"
 							value={ `${ viewportWidth }x${ viewportHeight }` }
 						/>
 						<PhoneNumberInput
@@ -308,7 +308,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 							onValidationChange={ onPhoneValidationChange }
 							inputProps={ {
 								name:
-									'platform_checkout_user_phone_field[no-country-code]',
+									'woopay_user_phone_field[no-country-code]',
 							} }
 							isBlocksCheckout={ isBlocksCheckout }
 						/>

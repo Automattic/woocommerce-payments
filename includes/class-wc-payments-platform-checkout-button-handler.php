@@ -41,19 +41,19 @@ class WC_Payments_WooPay_Button_Handler {
 	 *
 	 * @var WooPay_Utilities
 	 */
-	private $platform_checkout_utilities;
+	private $woopay_utilities;
 
 	/**
 	 * Initialize class actions.
 	 *
 	 * @param WC_Payments_Account         $account Account information.
 	 * @param WC_Payment_Gateway_WCPay    $gateway WCPay gateway.
-	 * @param WooPay_Utilities $platform_checkout_utilities WCPay gateway.
+	 * @param WooPay_Utilities $woopay_utilities WCPay gateway.
 	 */
-	public function __construct( WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway, WooPay_Utilities $platform_checkout_utilities ) {
+	public function __construct( WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway, WooPay_Utilities $woopay_utilities ) {
 		$this->account                     = $account;
 		$this->gateway                     = $gateway;
-		$this->platform_checkout_utilities = $platform_checkout_utilities;
+		$this->woopay_utilities = $woopay_utilities;
 
 		add_action( 'init', [ $this, 'init' ] );
 	}
@@ -63,21 +63,21 @@ class WC_Payments_WooPay_Button_Handler {
 	 *
 	 * @var bool
 	 */
-	private $is_platform_checkout_eligible;
+	private $is_woopay_eligible;
 
 	/**
 	 * Indicates whether WooPay is enabled.
 	 *
 	 * @var bool
 	 */
-	private $is_platform_checkout_enabled;
+	private $is_woopay_enabled;
 
 	/**
 	 * Indicates whether WooPay express checkout is enabled.
 	 *
 	 * @var bool
 	 */
-	private $is_platform_checkout_express_button_enabled;
+	private $is_woopay_express_button_enabled;
 
 	/**
 	 * Indicates whether WooPay and WooPay express checkout are enabled.
@@ -85,7 +85,7 @@ class WC_Payments_WooPay_Button_Handler {
 	 * @return bool
 	 */
 	public function is_woopay_enabled() {
-		return $this->is_platform_checkout_eligible && $this->is_platform_checkout_enabled && $this->is_platform_checkout_express_button_enabled;
+		return $this->is_woopay_eligible && $this->is_woopay_enabled && $this->is_woopay_express_button_enabled;
 	}
 
 	/**
@@ -100,9 +100,9 @@ class WC_Payments_WooPay_Button_Handler {
 		}
 
 		// Checks if WooPay is enabled.
-		$this->is_platform_checkout_eligible               = WC_Payments_Features::is_platform_checkout_eligible(); // Feature flag.
-		$this->is_platform_checkout_enabled                = 'yes' === $this->gateway->get_option( 'platform_checkout', 'no' );
-		$this->is_platform_checkout_express_button_enabled = WC_Payments_Features::is_woopay_express_checkout_enabled();
+		$this->is_woopay_eligible               = WC_Payments_Features::is_woopay_eligible(); // Feature flag.
+		$this->is_woopay_enabled                = 'yes' === $this->gateway->get_option( 'woopay', 'no' );
+		$this->is_woopay_express_button_enabled = WC_Payments_Features::is_woopay_express_checkout_enabled();
 
 		if ( ! $this->is_woopay_enabled() ) {
 			return;
@@ -115,30 +115,30 @@ class WC_Payments_WooPay_Button_Handler {
 
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
 
-		add_filter( 'wcpay_payment_fields_js_config', [ $this, 'add_platform_checkout_config' ] );
+		add_filter( 'wcpay_payment_fields_js_config', [ $this, 'add_woopay_config' ] );
 
 		add_action( 'wc_ajax_wcpay_add_to_cart', [ $this, 'ajax_add_to_cart' ] );
 
-		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_platform_checkout_button_html' ], -2 );
+		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_woopay_button_html' ], -2 );
 
-		add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_platform_checkout_button_html' ], -2 );
+		add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_woopay_button_html' ], -2 );
 
-		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_platform_checkout_button_html' ], -2 );
+		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_woopay_button_html' ], -2 );
 
 		add_action( 'wp_ajax_woopay_express_checkout_button_show_error_notice', [ $this, 'show_error_notice' ] );
 		add_action( 'wp_ajax_nopriv_woopay_express_checkout_button_show_error_notice', [ $this, 'show_error_notice' ] );
 	}
 
 	/**
-	 * Add the platform checkout button config to wcpay_config.
+	 * Add the woopay button config to wcpay_config.
 	 *
 	 * @param array $config The existing config array.
 	 *
 	 * @return array The modified config array.
 	 */
-	public function add_platform_checkout_config( $config ) {
-		$config['platformCheckoutButton']      = $this->get_button_settings();
-		$config['platformCheckoutButtonNonce'] = wp_create_nonce( 'platform_checkout_button_nonce' );
+	public function add_woopay_config( $config ) {
+		$config['woopayButton']      = $this->get_button_settings();
+		$config['woopayButtonNonce'] = wp_create_nonce( 'woopay_button_nonce' );
 		$config['addToCartNonce']              = wp_create_nonce( 'wcpay-add-to-cart' );
 
 		return $config;
@@ -149,11 +149,11 @@ class WC_Payments_WooPay_Button_Handler {
 	 */
 	public function scripts() {
 		// Don't load scripts if we should not show the button.
-		if ( ! $this->should_show_platform_checkout_button() ) {
+		if ( ! $this->should_show_woopay_button() ) {
 			return;
 		}
 
-		WC_Payments::register_script_with_dependencies( 'WCPAY_WOOPAY_EXPRESS_BUTTON', 'dist/platform-checkout-express-button' );
+		WC_Payments::register_script_with_dependencies( 'WCPAY_WOOPAY_EXPRESS_BUTTON', 'dist/woopay-express-button' );
 
 		$wcpay_config = rawurlencode( wp_json_encode( WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() ) );
 
@@ -171,7 +171,7 @@ class WC_Payments_WooPay_Button_Handler {
 
 		wp_register_style(
 			'WCPAY_WOOPAY',
-			plugins_url( 'dist/platform-checkout.css', WCPAY_PLUGIN_FILE ),
+			plugins_url( 'dist/woopay.css', WCPAY_PLUGIN_FILE ),
 			[],
 			WCPAY_VERSION_NUMBER
 		);
@@ -183,7 +183,7 @@ class WC_Payments_WooPay_Button_Handler {
 	 * Returns the error notice HTML.
 	 */
 	public function show_error_notice() {
-		$is_nonce_valid = check_ajax_referer( 'platform_checkout_button_nonce', false, false );
+		$is_nonce_valid = check_ajax_referer( 'woopay_button_nonce', false, false );
 
 		if ( ! $is_nonce_valid ) {
 			wp_send_json_error(
@@ -410,7 +410,7 @@ class WC_Payments_WooPay_Button_Handler {
 	 * @return boolean
 	 */
 	public function is_available_at( $location ) {
-		$available_locations = $this->gateway->get_option( 'platform_checkout_button_locations' );
+		$available_locations = $this->gateway->get_option( 'woopay_button_locations' );
 		if ( $available_locations && is_array( $available_locations ) ) {
 			return in_array( $location, $available_locations, true );
 		}
@@ -483,7 +483,7 @@ class WC_Payments_WooPay_Button_Handler {
 	 *
 	 * @return bool
 	 */
-	public function should_show_platform_checkout_button() {
+	public function should_show_woopay_button() {
 		// WCPay is not available.
 		$gateways = WC()->payment_gateways->get_available_payment_gateways();
 		if ( ! isset( $gateways['woocommerce_payments'] ) ) {
@@ -496,7 +496,7 @@ class WC_Payments_WooPay_Button_Handler {
 		}
 
 		// Check if WooPay is available in the user country.
-		if ( ! $this->platform_checkout_utilities->is_country_available( $this->gateway ) ) {
+		if ( ! $this->woopay_utilities->is_country_available( $this->gateway ) ) {
 			return false;
 		}
 
@@ -543,14 +543,14 @@ class WC_Payments_WooPay_Button_Handler {
 	/**
 	 * Display the payment request button.
 	 */
-	public function display_platform_checkout_button_html() {
-		if ( ! $this->should_show_platform_checkout_button() ) {
+	public function display_woopay_button_html() {
+		if ( ! $this->should_show_woopay_button() ) {
 			return;
 		}
 
 		?>
 		<div id="wcpay-payment-request-wrapper" style="clear:both;padding-top:1.5em;">
-			<div id="wcpay-platform-checkout-button" data-product_page=<?php echo esc_attr( $this->is_product() ); ?>>
+			<div id="wcpay-woopay-button" data-product_page=<?php echo esc_attr( $this->is_product() ); ?>>
 				<?php // The WooPay express checkout button React component will go here. ?>
 			</div>
 		</div>
@@ -575,7 +575,7 @@ class WC_Payments_WooPay_Button_Handler {
 			$is_supported = false;
 		}
 
-		return apply_filters( 'wcpay_platform_checkout_button_is_product_supported', $is_supported, $product );
+		return apply_filters( 'wcpay_woopay_button_is_product_supported', $is_supported, $product );
 	}
 
 	/**
@@ -598,7 +598,7 @@ class WC_Payments_WooPay_Button_Handler {
 			$is_supported = false;
 		}
 
-		return apply_filters( 'wcpay_platform_checkout_button_are_cart_items_supported', $is_supported );
+		return apply_filters( 'wcpay_woopay_button_are_cart_items_supported', $is_supported );
 	}
 
 	/**

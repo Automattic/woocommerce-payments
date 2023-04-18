@@ -20,7 +20,7 @@ const Container = ( { children, isBlocksCheckout } ) => {
 			</div>
 			<div className="wc-block-components-checkout-step__container">
 				<div className="wc-block-components-checkout-step__content">
-					<div className="platform-checkout-save-new-user-container">
+					<div className="woopay-save-new-user-container">
 						{ children }
 					</div>
 				</div>

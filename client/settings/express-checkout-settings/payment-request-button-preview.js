@@ -15,7 +15,7 @@ import {
  */
 import { shouldUseGooglePayBrand } from 'payment-request/utils';
 import InlineNotice from 'components/inline-notice';
-import { WoopayExpressCheckoutButton } from 'wcpay/checkout/platform-checkout/express-button/woopay-express-checkout-button';
+import { WoopayExpressCheckoutButton } from 'wcpay/checkout/woopay/express-button/woopay-express-checkout-button';
 import {
 	usePaymentRequestButtonSize,
 	usePaymentRequestButtonTheme,

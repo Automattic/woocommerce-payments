@@ -1423,7 +1423,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		$intent = WC_Helper_Intention::create_intention();
 
-		$_POST['save_user_in_platform_checkout'] = 'true';
+		$_POST['save_user_in_woopay'] = 'true';
 
 		$this->mock_customer_service
 			->expects( $this->once() )

@@ -28,7 +28,7 @@ describe( 'expressCheckoutIframe', () => {
 			const woopayIframe = document.querySelector( 'iframe' );
 
 			expect( woopayIframe.className ).toContain(
-				'platform-checkout-otp-iframe'
+				'woopay-otp-iframe'
 			);
 			expect( woopayIframe.src ).toContain( 'http://example.com/otp/' );
 		} );

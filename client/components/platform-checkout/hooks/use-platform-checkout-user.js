@@ -3,7 +3,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 
-// hook for handling API calls to get and create platform checkout user.
+// hook for handling API calls to get and create woopay user.
 const useWooPayUser = () => {
 	const [ isRegisteredUser, setIsRegisteredUser ] = useState( false );
 	const windowRef = useRef( window );

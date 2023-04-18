@@ -11,11 +11,11 @@ import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
  * Internal dependencies
  */
 import CheckoutPageSaveUser from '../checkout-page-save-user';
-import useWooPayUser from '../../hooks/use-platform-checkout-user';
+import useWooPayUser from '../../hooks/use-woopay-user';
 import useSelectedPaymentMethod from '../../hooks/use-selected-payment-method';
 import { getConfig } from 'utils/checkout';
 
-jest.mock( '../../hooks/use-platform-checkout-user', () => jest.fn() );
+jest.mock( '../../hooks/use-woopay-user', () => jest.fn() );
 jest.mock( '../../hooks/use-selected-payment-method', () => jest.fn() );
 jest.mock( 'utils/checkout', () => ( {
 	getConfig: jest.fn(),
@@ -183,13 +183,13 @@ describe( 'CheckoutPageSaveUser', () => {
 		expect( label ).toBeChecked();
 		await waitFor( () =>
 			expect( extensionCartUpdate ).toHaveBeenCalledWith( {
-				namespace: 'platform-checkout',
+				namespace: 'woopay',
 				data: {
-					save_user_in_platform_checkout: true,
-					platform_checkout_source_url: 'http://localhost/',
-					platform_checkout_is_blocks: true,
-					platform_checkout_viewport: '0x0',
-					platform_checkout_user_phone_field: {
+					save_user_in_woopay: true,
+					woopay_source_url: 'http://localhost/',
+					woopay_is_blocks: true,
+					woopay_viewport: '0x0',
+					woopay_user_phone_field: {
 						full: '+12015555555',
 					},
 				},
@@ -202,7 +202,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		expect( label ).not.toBeChecked();
 		await waitFor( () =>
 			expect( extensionCartUpdate ).toHaveBeenCalledWith( {
-				namespace: 'platform-checkout',
+				namespace: 'woopay',
 				data: {},
 			} )
 		);
@@ -242,13 +242,13 @@ describe( 'CheckoutPageSaveUser', () => {
 		expect( label ).toBeChecked();
 		await waitFor( () =>
 			expect( extensionCartUpdate ).toHaveBeenCalledWith( {
-				namespace: 'platform-checkout',
+				namespace: 'woopay',
 				data: {
-					save_user_in_platform_checkout: true,
-					platform_checkout_source_url: 'http://localhost/',
-					platform_checkout_is_blocks: true,
-					platform_checkout_viewport: '0x0',
-					platform_checkout_user_phone_field: {
+					save_user_in_woopay: true,
+					woopay_source_url: 'http://localhost/',
+					woopay_is_blocks: true,
+					woopay_viewport: '0x0',
+					woopay_user_phone_field: {
 						full: '+12015555555',
 					},
 				},
@@ -261,7 +261,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		expect( label ).not.toBeChecked();
 		await waitFor( () =>
 			expect( extensionCartUpdate ).toHaveBeenCalledWith( {
-				namespace: 'platform-checkout',
+				namespace: 'woopay',
 				data: {},
 			} )
 		);

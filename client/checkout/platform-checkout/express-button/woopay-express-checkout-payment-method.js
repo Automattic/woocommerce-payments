@@ -22,14 +22,14 @@ const wooPayExpressCheckoutPaymentMethod = () => ( {
 	name: PAYMENT_METHOD_NAME_WOOPAY_EXPRESS_CHECKOUT,
 	content: (
 		<WoopayExpressCheckoutButton
-			buttonSettings={ getConfig( 'platformCheckoutButton' ) }
+			buttonSettings={ getConfig( 'woopayButton' ) }
 			api={ api }
 			emailSelector="#email"
 		/>
 	),
 	edit: (
 		<WoopayExpressCheckoutButton
-			buttonSettings={ getConfig( 'platformCheckoutButton' ) }
+			buttonSettings={ getConfig( 'woopayButton' ) }
 			isPreview={ true }
 			emailSelector="#email"
 		/>

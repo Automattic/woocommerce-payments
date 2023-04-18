@@ -236,11 +236,11 @@ describe( 'Settings selectors tests', () => {
 	} );
 
 	describe( 'getIsWooPayEnabled()', () => {
-		test( 'returns the value of state.settings.data.is_platform_checkout_enabled', () => {
+		test( 'returns the value of state.settings.data.is_woopay_enabled', () => {
 			const state = {
 				settings: {
 					data: {
-						is_platform_checkout_enabled: true,
+						is_woopay_enabled: true,
 					},
 				},
 			};
@@ -259,11 +259,11 @@ describe( 'Settings selectors tests', () => {
 	} );
 
 	describe( 'getWooPayCustomMessage()', () => {
-		test( 'returns the value of state.settings.data.platform_checkout_custom_message', () => {
+		test( 'returns the value of state.settings.data.woopay_custom_message', () => {
 			const state = {
 				settings: {
 					data: {
-						platform_checkout_custom_message: 'test',
+						woopay_custom_message: 'test',
 					},
 				},
 			};
@@ -284,11 +284,11 @@ describe( 'Settings selectors tests', () => {
 	} );
 
 	describe( 'getWooPayStoreLogo()', () => {
-		test( 'returns the value of state.settings.data.platform_checkout_store_logo', () => {
+		test( 'returns the value of state.settings.data.woopay_store_logo', () => {
 			const state = {
 				settings: {
 					data: {
-						platform_checkout_store_logo: 'test',
+						woopay_store_logo: 'test',
 					},
 				},
 			};

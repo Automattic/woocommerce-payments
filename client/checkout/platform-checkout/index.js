@@ -7,11 +7,11 @@ import ReactDOM from 'react-dom';
 /**
  * External dependencies
  */
-import CheckoutPageSaveUser from 'wcpay/components/platform-checkout/save-user/checkout-page-save-user';
+import CheckoutPageSaveUser from 'wcpay/components/woopay/save-user/checkout-page-save-user';
 
 const renderSaveUserSection = () => {
 	const saveUserSection = document.getElementsByClassName(
-		'platform-checkout-save-new-user-container'
+		'woopay-save-new-user-container'
 	)?.[ 0 ];
 
 	if ( saveUserSection ) {
@@ -50,7 +50,7 @@ const renderSaveUserSection = () => {
 	} else {
 		const checkoutPageSaveUserContainer = document.createElement( 'div' );
 		checkoutPageSaveUserContainer.className =
-			'platform-checkout-save-new-user-container';
+			'woopay-save-new-user-container';
 
 		const placeOrderButton = document.getElementsByClassName(
 			'form-row place-order'

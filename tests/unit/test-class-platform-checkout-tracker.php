@@ -46,22 +46,22 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		parent::tear_down();
 	}
 
-	public function test_tracks_obeys_platform_checkout_flag() {
-		$this->set_is_platform_checkout_eligible( false );
+	public function test_tracks_obeys_woopay_flag() {
+		$this->set_is_woopay_eligible( false );
 		$this->assertFalse( $this->tracker->should_enable_tracking( null, null ) );
 	}
 
 	public function test_does_not_track_admin_pages() {
 		wp_set_current_user( 1 );
-		$this->set_is_platform_checkout_eligible( true );
+		$this->set_is_woopay_eligible( true );
 		$this->set_is_admin( true );
 		$this->assertFalse( $this->tracker->should_enable_tracking( null, null ) );
 	}
 
 	public function test_does_track_non_admins() {
 		global $wp_roles;
-		$this->set_is_platform_checkout_eligible( true );
-		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'yes' );
+		$this->set_is_woopay_eligible( true );
+		WC_Payments::get_gateway()->update_option( 'woopay', 'yes' );
 		wp_set_current_user( 1 );
 		$this->set_is_admin( false );
 
@@ -98,7 +98,7 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 	 *
 	 * @param $account
 	 */
-	private function set_is_platform_checkout_eligible( $is_platform_checkout_eligible ) {
-		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => $is_platform_checkout_eligible ] );
+	private function set_is_woopay_eligible( $is_woopay_eligible ) {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'woopay_eligible' => $is_woopay_eligible ] );
 	}
 }

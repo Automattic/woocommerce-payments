@@ -133,7 +133,7 @@ const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = (
 			| HTMLInputElement
 			| null
 			| undefined = ( event.target as HTMLButtonElement )
-			.closest( '.platform-checkout-settings__update-store-logo' )
+			.closest( '.woopay-settings__update-store-logo' )
 			?.querySelector( 'input[type="file"]' );
 
 		fileInput?.click();
@@ -146,7 +146,7 @@ const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = (
 		<div className="wcpay-branding-upload-field__wrapper">
 			<div
 				className={ classNames(
-					'platform-checkout-settings__update-store-logo',
+					'woopay-settings__update-store-logo',
 					fileID && 'has-file'
 				) }
 			>

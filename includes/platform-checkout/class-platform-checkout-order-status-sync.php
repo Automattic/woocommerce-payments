@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * This class introduces webhooks to delivery order updates to the associated
- * orders in the platform checkout.
+ * orders in the woopay.
  *
  * WooPay Webhooks are enqueued to their associated actions, delivered, and logged.
  */
@@ -42,7 +42,7 @@ class WooPay_Order_Status_Sync {
 		add_filter( 'woocommerce_valid_webhook_events', [ __CLASS__, 'add_event' ], 10, 1 );
 		add_action( 'woocommerce_order_status_changed', [ __CLASS__, 'send_webhook' ], 10, 3 );
 
-		add_action( 'admin_init', [ $this, 'maybe_create_platform_checkout_order_webhook' ], 10 );
+		add_action( 'admin_init', [ $this, 'maybe_create_woopay_order_webhook' ], 10 );
 	}
 
 	/**
@@ -51,7 +51,7 @@ class WooPay_Order_Status_Sync {
 	 * @return string
 	 */
 	private static function get_webhook_name() {
-		return __( 'WCPay platform checkout order status sync', 'woocommerce-payments' );
+		return __( 'WCPay woopay order status sync', 'woocommerce-payments' );
 	}
 
 	/**
@@ -60,14 +60,14 @@ class WooPay_Order_Status_Sync {
 	 * @return string
 	 */
 	private static function get_webhook_delivery_url() {
-		$platform_checkout_host = defined( 'WOOPAY_HOST' ) ? WOOPAY_HOST : 'https://pay.woo.com';
-		return $platform_checkout_host . '/wp-json/platform-checkout/v1/merchant-notification';
+		$woopay_host = defined( 'WOOPAY_HOST' ) ? WOOPAY_HOST : 'https://pay.woo.com';
+		return $woopay_host . '/wp-json/woopay/v1/merchant-notification';
 	}
 
 	/**
 	 * Maybe create the WooPay webhook under certain conditions.
 	 */
-	public function maybe_create_platform_checkout_order_webhook() {
+	public function maybe_create_woopay_order_webhook() {
 		if ( ! current_user_can( 'manage_woocommerce' ) || self::is_webhook_created() ) {
 			return;
 		}
@@ -85,7 +85,7 @@ class WooPay_Order_Status_Sync {
 	}
 
 	/**
-	 * Return array with the webhook id for the platform checkout order status sync.
+	 * Return array with the webhook id for the woopay order status sync.
 	 *
 	 * @return array
 	 */
@@ -118,7 +118,7 @@ class WooPay_Order_Status_Sync {
 		$webhook->save();
 
 		try {
-			$this->payments_api_client->update_platform_checkout( [ 'webhook_secret' => $webhook->get_secret() ] );
+			$this->payments_api_client->update_woopay( [ 'webhook_secret' => $webhook->get_secret() ] );
 		} catch ( API_Exception $e ) {
 			$webhook->delete();
 		}
@@ -130,7 +130,7 @@ class WooPay_Order_Status_Sync {
 	 * @param array $topic_hooks List of WooCommerce's standard webhook topics and hooks.
 	 */
 	public static function add_topics( $topic_hooks ) {
-		$topic_hooks['order.status_changed'][] = 'wcpay_webhook_platform_checkout_order_status_changed';
+		$topic_hooks['order.status_changed'][] = 'wcpay_webhook_woopay_order_status_changed';
 
 		return $topic_hooks;
 	}
@@ -184,12 +184,12 @@ class WooPay_Order_Status_Sync {
 	public static function send_webhook( $order_id, $previous_status, $next_status ) {
 		$order = wc_get_order( $order_id );
 		if ( $order->get_meta( 'is_woopay' ) ) {
-			do_action( 'wcpay_webhook_platform_checkout_order_status_changed', $order_id, $next_status );
+			do_action( 'wcpay_webhook_woopay_order_status_changed', $order_id, $next_status );
 		}
 	}
 
 	/**
-	 * Removes the webhook if platform checkout is disabled.
+	 * Removes the webhook if woopay is disabled.
 	 *
 	 * @return void
 	 */
