@@ -17,7 +17,7 @@ import {
 	usePaymentRequestButtonType,
 	usePaymentRequestButtonSize,
 	usePaymentRequestButtonTheme,
-	usePlatformCheckoutEnabledSettings,
+	useWooPayEnabledSettings,
 } from '../../../data';
 
 jest.mock( '../../../data', () => ( {
@@ -26,7 +26,7 @@ jest.mock( '../../../data', () => ( {
 	usePaymentRequestButtonType: jest.fn().mockReturnValue( [ 'buy' ] ),
 	usePaymentRequestButtonSize: jest.fn().mockReturnValue( [ 'default' ] ),
 	usePaymentRequestButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
-	usePlatformCheckoutEnabledSettings: jest.fn(),
+	useWooPayEnabledSettings: jest.fn(),
 } ) );
 
 jest.mock( '../payment-request-button-preview' );
@@ -45,7 +45,7 @@ const getMockPaymentRequestEnabledSettings = (
 	updateIsPaymentRequestEnabledHandler
 ) => [ isEnabled, updateIsPaymentRequestEnabledHandler ];
 
-const getMockPlatformCheckoutEnabledSettings = ( isEnabled ) => [ isEnabled ];
+const getMockWooPayEnabledSettings = ( isEnabled ) => [ isEnabled ];
 
 const getMockPaymentRequestLocations = (
 	isCheckoutEnabled,
@@ -71,8 +71,8 @@ describe( 'PaymentRequestSettings', () => {
 			getMockPaymentRequestLocations( true, true, true, jest.fn() )
 		);
 
-		usePlatformCheckoutEnabledSettings.mockReturnValue(
-			getMockPlatformCheckoutEnabledSettings( true )
+		useWooPayEnabledSettings.mockReturnValue(
+			getMockWooPayEnabledSettings( true )
 		);
 	} );
 

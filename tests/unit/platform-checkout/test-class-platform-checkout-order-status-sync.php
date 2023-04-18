@@ -1,16 +1,16 @@
 <?php
 /**
- * Class Platform_Checkout_Order_Status_Sync_Test
+ * Class WooPay_Order_Status_Sync_Test
  *
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Platform_Checkout\Platform_Checkout_Order_Status_Sync;
+use WCPay\WooPay\WooPay_Order_Status_Sync;
 
 /**
- * Platform_Checkout_Utilities unit tests.
+ * WooPay_Utilities unit tests.
  */
-class Platform_Checkout_Order_Status_Sync_Test extends WP_UnitTestCase {
+class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 
 	/**
 	 * @var WP_User $admin_user
@@ -21,7 +21,7 @@ class Platform_Checkout_Order_Status_Sync_Test extends WP_UnitTestCase {
 		parent::set_up();
 
 		$this->api_client_mock   = $this->createMock( WC_Payments_API_Client::class );
-		$this->webhook_sync_mock = new WCPay\Platform_Checkout\Platform_Checkout_Order_Status_Sync( $this->api_client_mock );
+		$this->webhook_sync_mock = new WCPay\WooPay\WooPay_Order_Status_Sync( $this->api_client_mock );
 
 		// Mock the main class's cache service.
 		$this->_cache     = WC_Payments::get_database_cache();
@@ -49,11 +49,11 @@ class Platform_Checkout_Order_Status_Sync_Test extends WP_UnitTestCase {
 	public function test_webhook_is_created() {
 		wp_set_current_user( self::$admin_user->ID );
 
-		$this->assertEmpty( Platform_Checkout_Order_Status_Sync::get_webhook() );
+		$this->assertEmpty( WooPay_Order_Status_Sync::get_webhook() );
 
 		$this->webhook_sync_mock->maybe_create_platform_checkout_order_webhook();
 
-		$this->assertNotEmpty( Platform_Checkout_Order_Status_Sync::get_webhook() );
+		$this->assertNotEmpty( WooPay_Order_Status_Sync::get_webhook() );
 	}
 
 	/**
@@ -64,13 +64,13 @@ class Platform_Checkout_Order_Status_Sync_Test extends WP_UnitTestCase {
 		wp_set_current_user( self::$admin_user->ID );
 
 		$this->webhook_sync_mock->maybe_create_platform_checkout_order_webhook();
-		$this->assertNotEmpty( Platform_Checkout_Order_Status_Sync::get_webhook() );
+		$this->assertNotEmpty( WooPay_Order_Status_Sync::get_webhook() );
 
 		$this->set_is_platform_checkout_eligible( false );
 		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'no' );
 
 		$this->webhook_sync_mock->remove_webhook();
-		$this->assertEmpty( Platform_Checkout_Order_Status_Sync::get_webhook() );
+		$this->assertEmpty( WooPay_Order_Status_Sync::get_webhook() );
 
 	}
 

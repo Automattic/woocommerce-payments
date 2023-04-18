@@ -20,7 +20,7 @@ describe( 'WCPayAPI', () => {
 		getConfig.mockReturnValue( 'foo' );
 
 		const api = new WCPayAPI( {}, request );
-		api.initPlatformCheckout( 'foo@bar.com', 'qwerty123' );
+		api.initWooPay( 'foo@bar.com', 'qwerty123' );
 
 		expect( request ).toHaveBeenLastCalledWith( 'https://example.org/', {
 			_wpnonce: 'foo',

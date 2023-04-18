@@ -19,19 +19,19 @@ jest.mock( '../../../data', () => ( {
 	usePaymentRequestLocations: jest
 		.fn()
 		.mockReturnValue( [ [ true, true, true ], jest.fn() ] ),
-	usePlatformCheckoutEnabledSettings: jest
+	useWooPayEnabledSettings: jest
 		.fn()
 		.mockReturnValue( [ true, jest.fn() ] ),
-	usePlatformCheckoutCustomMessage: jest
+	useWooPayCustomMessage: jest
 		.fn()
 		.mockReturnValue( [ 'test', jest.fn() ] ),
-	usePlatformCheckoutStoreLogo: jest
+	useWooPayStoreLogo: jest
 		.fn()
 		.mockReturnValue( [ 'test', jest.fn() ] ),
 	usePaymentRequestButtonType: jest.fn().mockReturnValue( [ 'buy' ] ),
 	usePaymentRequestButtonSize: jest.fn().mockReturnValue( [ 'default' ] ),
 	usePaymentRequestButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
-	usePlatformCheckoutLocations: jest
+	useWooPayLocations: jest
 		.fn()
 		.mockReturnValue( [ [ true, true, true ], jest.fn() ] ),
 } ) );

@@ -10,47 +10,47 @@ import { Card, CheckboxControl, TextControl } from '@wordpress/components';
  * Internal dependencies
  */
 import CardBody from '../card-body';
-import PlatformCheckoutFileUpload from './file-upload';
-import PlatformCheckoutPreview from './platform-checkout-preview';
+import WooPayFileUpload from './file-upload';
+import WooPayPreview from './platform-checkout-preview';
 import {
-	usePlatformCheckoutEnabledSettings,
-	usePlatformCheckoutCustomMessage,
-	usePlatformCheckoutStoreLogo,
-	usePlatformCheckoutLocations,
+	useWooPayEnabledSettings,
+	useWooPayCustomMessage,
+	useWooPayStoreLogo,
+	useWooPayLocations,
 } from 'wcpay/data';
 import GeneralPaymentRequestButtonSettings from './general-payment-request-button-settings';
 
 const CUSTOM_MESSAGE_MAX_LENGTH = 100;
 
-const PlatformCheckoutSettings = ( { section } ) => {
+const WooPaySettings = ( { section } ) => {
 	const [
-		isPlatformCheckoutEnabled,
-		updateIsPlatformCheckoutEnabled,
-	] = usePlatformCheckoutEnabledSettings();
+		isWooPayEnabled,
+		updateIsWooPayEnabled,
+	] = useWooPayEnabledSettings();
 
 	const [
 		platformCheckoutCustomMessage,
-		setPlatformCheckoutCustomMessage,
-	] = usePlatformCheckoutCustomMessage();
+		setWooPayCustomMessage,
+	] = useWooPayCustomMessage();
 
 	const [
 		platformCheckoutStoreLogo,
-		setPlatformCheckoutStoreLogo,
-	] = usePlatformCheckoutStoreLogo();
+		setWooPayStoreLogo,
+	] = useWooPayStoreLogo();
 
 	const [
 		platformCheckoutLocations,
-		updatePlatformCheckoutLocations,
-	] = usePlatformCheckoutLocations();
+		updateWooPayLocations,
+	] = useWooPayLocations();
 
 	const makeLocationChangeHandler = ( location ) => ( isChecked ) => {
 		if ( isChecked ) {
-			updatePlatformCheckoutLocations( [
+			updateWooPayLocations( [
 				...platformCheckoutLocations,
 				location,
 			] );
 		} else {
-			updatePlatformCheckoutLocations(
+			updateWooPayLocations(
 				platformCheckoutLocations.filter(
 					( name ) => name !== location
 				)
@@ -63,8 +63,8 @@ const PlatformCheckoutSettings = ( { section } ) => {
 			{ 'enable' === section && (
 				<CardBody>
 					<CheckboxControl
-						checked={ isPlatformCheckoutEnabled }
-						onChange={ updateIsPlatformCheckoutEnabled }
+						checked={ isWooPayEnabled }
+						onChange={ updateIsWooPayEnabled }
 						label={ __( 'Enable WooPay', 'woocommerce-payments' ) }
 						help={ __(
 							'When enabled, customers will be able to checkout using WooPay',
@@ -80,9 +80,9 @@ const PlatformCheckoutSettings = ( { section } ) => {
 					<ul className="payment-request-settings__location">
 						<li>
 							<CheckboxControl
-								disabled={ ! isPlatformCheckoutEnabled }
+								disabled={ ! isWooPayEnabled }
 								checked={
-									isPlatformCheckoutEnabled &&
+									isWooPayEnabled &&
 									platformCheckoutLocations.includes(
 										'checkout'
 									)
@@ -98,9 +98,9 @@ const PlatformCheckoutSettings = ( { section } ) => {
 						</li>
 						<li>
 							<CheckboxControl
-								disabled={ ! isPlatformCheckoutEnabled }
+								disabled={ ! isWooPayEnabled }
 								checked={
-									isPlatformCheckoutEnabled &&
+									isWooPayEnabled &&
 									platformCheckoutLocations.includes(
 										'product'
 									)
@@ -116,9 +116,9 @@ const PlatformCheckoutSettings = ( { section } ) => {
 						</li>
 						<li>
 							<CheckboxControl
-								disabled={ ! isPlatformCheckoutEnabled }
+								disabled={ ! isWooPayEnabled }
 								checked={
-									isPlatformCheckoutEnabled &&
+									isWooPayEnabled &&
 									platformCheckoutLocations.includes( 'cart' )
 								}
 								onChange={ makeLocationChangeHandler( 'cart' ) }
@@ -135,10 +135,10 @@ const PlatformCheckoutSettings = ( { section } ) => {
 			{ 'appearance' === section && (
 				<CardBody style={ { marginTop: 12 } }>
 					<div className="platform-checkout-settings__preview">
-						<PlatformCheckoutPreview
+						<WooPayPreview
 							storeName={ wcSettings.siteTitle }
 							storeLogo={ platformCheckoutStoreLogo }
-						></PlatformCheckoutPreview>
+						></WooPayPreview>
 						<div className="platform-checkout-settings__preview-fade"></div>
 					</div>
 					<div className="platform-checkout-settings__custom-message-wrapper">
@@ -148,7 +148,7 @@ const PlatformCheckoutSettings = ( { section } ) => {
 								'woocommerce-payments'
 							) }
 						</h4>
-						<PlatformCheckoutFileUpload
+						<WooPayFileUpload
 							fieldKey="woopay-store-logo"
 							accept="image/png, image/jpeg"
 							disabled={ false }
@@ -160,7 +160,7 @@ const PlatformCheckoutSettings = ( { section } ) => {
 							) }
 							purpose="business_logo"
 							fileID={ platformCheckoutStoreLogo }
-							updateFileID={ setPlatformCheckoutStoreLogo }
+							updateFileID={ setWooPayStoreLogo }
 						/>
 					</div>
 					<div className="platform-checkout-settings__custom-message-wrapper">
@@ -174,7 +174,7 @@ const PlatformCheckoutSettings = ( { section } ) => {
 								'woocommerce-payments'
 							) }
 							value={ platformCheckoutCustomMessage }
-							onChange={ setPlatformCheckoutCustomMessage }
+							onChange={ setWooPayCustomMessage }
 							maxLength={ CUSTOM_MESSAGE_MAX_LENGTH }
 						/>
 						<span
@@ -194,4 +194,4 @@ const PlatformCheckoutSettings = ( { section } ) => {
 	);
 };
 
-export default PlatformCheckoutSettings;
+export default WooPaySettings;

@@ -28,9 +28,9 @@ use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
-use WCPay\Platform_Checkout_Tracker;
-use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
-use WCPay\Platform_Checkout\Platform_Checkout_Order_Status_Sync;
+use WCPay\WooPay_Tracker;
+use WCPay\WooPay\WooPay_Utilities;
+use WCPay\WooPay\WooPay_Order_Status_Sync;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Database_Cache;
@@ -164,9 +164,9 @@ class WC_Payments {
 	private static $payment_request_button_handler;
 
 	/**
-	 * Instance of WC_Payments_Platform_Checkout_Button_Handler, created in init function
+	 * Instance of WC_Payments_WooPay_Button_Handler, created in init function
 	 *
-	 * @var WC_Payments_Platform_Checkout_Button_Handler
+	 * @var WC_Payments_WooPay_Button_Handler
 	 */
 	private static $platform_checkout_button_handler;
 
@@ -241,9 +241,9 @@ class WC_Payments {
 	private static $mode;
 
 	/**
-	 * Platform Checkout Utilities.
+	 * WooPay Utilities.
 	 *
-	 * @var Platform_Checkout_Utilities
+	 * @var WooPay_Utilities
 	 */
 	private static $platform_checkout_util;
 
@@ -446,7 +446,7 @@ class WC_Payments {
 		self::$failed_transaction_rate_limiter     = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
 		self::$order_success_page                  = new WC_Payments_Order_Success_Page();
 		self::$onboarding_service                  = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
-		self::$platform_checkout_util              = new Platform_Checkout_Utilities();
+		self::$platform_checkout_util              = new WooPay_Utilities();
 
 		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
 
@@ -501,7 +501,7 @@ class WC_Payments {
 
 		// Payment Request and Apple Pay.
 		self::$payment_request_button_handler   = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway() );
-		self::$platform_checkout_button_handler = new WC_Payments_Platform_Checkout_Button_Handler( self::$account, self::get_gateway(), self::$platform_checkout_util );
+		self::$platform_checkout_button_handler = new WC_Payments_WooPay_Button_Handler( self::$account, self::get_gateway(), self::$platform_checkout_util );
 		self::$apple_pay_registration           = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
@@ -524,7 +524,7 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Track_Upe_Status', 'maybe_track' ] );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Delete_Active_Platform_Checkout_Webhook', 'maybe_delete' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Delete_Active_WooPay_Webhook', 'maybe_delete' ] );
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
 		WC_Payments_Explicit_Price_Formatter::init();
@@ -1356,7 +1356,7 @@ class WC_Payments {
 				add_action( 'admin_init', [ $draft_orders, 'install' ] );
 			}
 
-			new Platform_Checkout_Order_Status_Sync( self::$api_client );
+			new WooPay_Order_Status_Sync( self::$api_client );
 		}
 	}
 
@@ -1478,7 +1478,7 @@ class WC_Payments {
 			);
 		}
 
-		$platform_checkout_util = new Platform_Checkout_Utilities();
+		$platform_checkout_util = new WooPay_Utilities();
 
 		$signature = $platform_checkout_util->get_platform_checkout_request_signature();
 
@@ -1573,8 +1573,8 @@ class WC_Payments {
 			// Load platform checkout tracking.
 			include_once WCPAY_ABSPATH . 'includes/class-platform-checkout-tracker.php';
 
-			new Platform_Checkout_Save_User();
-			new Platform_Checkout_Tracker( self::get_wc_payments_http() );
+			new WooPay_Save_User();
+			new WooPay_Tracker( self::get_wc_payments_http() );
 		}
 	}
 

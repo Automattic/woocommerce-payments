@@ -1,8 +1,8 @@
 <?php
 /**
- * Class PlatformCheckoutExtension
+ * Class WooPayExtension
  *
- * @package WooCommerce\Payments\PlatformCheckout
+ * @package WooCommerce\Payments\WooPay
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class that registers a blocks extension callback for platform checkout new user.
  */
-class Platform_Checkout_Extension {
+class WooPay_Extension {
 	const EXTENSION_NAMESPACE           = 'platform-checkout';
 	const PLATFORM_CHECKOUT_SESSION_KEY = 'platform-checkout-user-data';
 

@@ -320,7 +320,7 @@ add_action( 'plugins_loaded', 'wcpay_tasks_init' );
  * Register blocks extension for platform checkout.
  */
 function register_platform_checkout_extension() {
-	( new Platform_Checkout_Extension() )->register_extend_rest_api_update_callback();
+	( new WooPay_Extension() )->register_extend_rest_api_update_callback();
 }
 
 add_action( 'woocommerce_blocks_loaded', 'register_platform_checkout_extension' );

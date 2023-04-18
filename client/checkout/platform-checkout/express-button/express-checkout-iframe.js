@@ -221,7 +221,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 				wcpayTracks.recordUserEvent(
 					wcpayTracks.events.PLATFORM_CHECKOUT_OTP_COMPLETE
 				);
-				api.initPlatformCheckout(
+				api.initWooPay(
 					userEmail,
 					e.data.platformCheckoutUserSession
 				).then( ( response ) => {

@@ -17,7 +17,7 @@ use WC_Payments_Customer_Service;
 use WC_Payments_Features;
 use WC_Payments_Utils;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
-use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
+use WCPay\WooPay\WooPay_Utilities;
 
 
 /**
@@ -33,9 +33,9 @@ class WC_Payments_Checkout {
 	protected $gateway;
 
 	/**
-	 * Platform Checkout Utilities.
+	 * WooPay Utilities.
 	 *
-	 * @var Platform_Checkout_Utilities
+	 * @var WooPay_Utilities
 	 */
 	protected $platform_checkout_util;
 
@@ -58,13 +58,13 @@ class WC_Payments_Checkout {
 	 * Construct.
 	 *
 	 * @param WC_Payment_Gateway_WCPay     $gateway                WC Payment Gateway.
-	 * @param Platform_Checkout_Utilities  $platform_checkout_util Platform Checkout Utilities.
+	 * @param WooPay_Utilities  $platform_checkout_util WooPay Utilities.
 	 * @param WC_Payments_Account          $account                WC Payments Account.
 	 * @param WC_Payments_Customer_Service $customer_service       WC Payments Customer Service.
 	 */
 	public function __construct(
 		WC_Payment_Gateway_WCPay $gateway,
-		Platform_Checkout_Utilities $platform_checkout_util,
+		WooPay_Utilities $platform_checkout_util,
 		WC_Payments_Account $account,
 		WC_Payments_Customer_Service $customer_service
 	) {
@@ -106,7 +106,7 @@ class WC_Payments_Checkout {
 			'createPaymentIntentNonce'       => wp_create_nonce( 'wcpay_create_payment_intent_nonce' ),
 			'updatePaymentIntentNonce'       => wp_create_nonce( 'wcpay_update_payment_intent_nonce' ),
 			'logPaymentErrorNonce'           => wp_create_nonce( 'wcpay_log_payment_error_nonce' ),
-			'initPlatformCheckoutNonce'      => wp_create_nonce( 'wcpay_init_platform_checkout_nonce' ),
+			'initWooPayNonce'      => wp_create_nonce( 'wcpay_init_platform_checkout_nonce' ),
 			'saveUPEAppearanceNonce'         => wp_create_nonce( 'wcpay_save_upe_appearance_nonce' ),
 			'genericErrorMessage'            => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
 			'fraudServices'                  => $this->account->get_fraud_services_config(),
@@ -117,7 +117,7 @@ class WC_Payments_Checkout {
 			'isUPEEnabled'                   => WC_Payments_Features::is_upe_enabled(),
 			'isUPESplitEnabled'              => WC_Payments_Features::is_upe_split_enabled(),
 			'isSavedCardsEnabled'            => $this->gateway->is_saved_cards_enabled(),
-			'isPlatformCheckoutEnabled'      => $this->platform_checkout_util->should_enable_platform_checkout( $this->gateway ),
+			'isWooPayEnabled'      => $this->platform_checkout_util->should_enable_platform_checkout( $this->gateway ),
 			'isWoopayExpressCheckoutEnabled' => $this->platform_checkout_util->is_woopay_express_checkout_enabled(),
 			'isClientEncryptionEnabled'      => WC_Payments_Features::is_client_secret_encryption_enabled(),
 			'platformCheckoutHost'           => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'https://pay.woo.com',

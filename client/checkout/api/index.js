@@ -671,9 +671,9 @@ export default class WCPayAPI {
 		} );
 	}
 
-	initPlatformCheckout( userEmail, platformCheckoutUserSession ) {
+	initWooPay( userEmail, platformCheckoutUserSession ) {
 		const wcAjaxUrl = getConfig( 'wcAjaxUrl' );
-		const nonce = getConfig( 'initPlatformCheckoutNonce' );
+		const nonce = getConfig( 'initWooPayNonce' );
 		return this.request(
 			buildAjaxURL( wcAjaxUrl, 'init_platform_checkout' ),
 			{

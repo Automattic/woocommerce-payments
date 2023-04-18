@@ -1,17 +1,17 @@
 <?php
 /**
- * These tests make assertions against class WC_Payments_Platform_Checkout_Button_Handler.
+ * These tests make assertions against class WC_Payments_WooPay_Button_Handler.
  *
  * @package WooCommerce\Payments\Tests
  */
 
 use WCPay\Session_Rate_Limiter;
-use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
+use WCPay\WooPay\WooPay_Utilities;
 
 /**
- * WC_Payments_Platform_Checkout_Button_Handler_Test class.
+ * WC_Payments_WooPay_Button_Handler_Test class.
  */
-class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCase {
+class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Mock WC_Payments_API_Client.
 	 *
@@ -22,7 +22,7 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 	/**
 	 * Payment request mock instance.
 	 *
-	 * @var Mock_WC_Payments_Platform_Checkout_Button_Handler
+	 * @var Mock_WC_Payments_WooPay_Button_Handler
 	 */
 	private $mock_pr;
 
@@ -41,9 +41,9 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 	private $mock_wcpay_gateway;
 
 	/**
-	 * Platform_Checkout_Utilities instance.
+	 * WooPay_Utilities instance.
 	 *
-	 * @var Platform_Checkout_Utilities
+	 * @var WooPay_Utilities
 	 */
 	private $mock_platform_checkout_utilities;
 
@@ -73,12 +73,12 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 
 		$this->mock_wcpay_gateway = $this->make_wcpay_gateway();
 
-		$this->mock_platform_checkout_utilities = $this->getMockBuilder( Platform_Checkout_Utilities::class )
+		$this->mock_platform_checkout_utilities = $this->getMockBuilder( WooPay_Utilities::class )
 			->disableOriginalConstructor()
 			->setMethods( [ 'is_country_available' ] )
 			->getMock();
 
-		$this->mock_pr = $this->getMockBuilder( WC_Payments_Platform_Checkout_Button_Handler::class )
+		$this->mock_pr = $this->getMockBuilder( WC_Payments_WooPay_Button_Handler::class )
 			->setConstructorArgs(
 				[
 					$this->mock_wcpay_account,

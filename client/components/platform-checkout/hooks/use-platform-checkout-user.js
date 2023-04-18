@@ -4,25 +4,25 @@
 import { useEffect, useRef, useState } from 'react';
 
 // hook for handling API calls to get and create platform checkout user.
-const usePlatformCheckoutUser = () => {
+const useWooPayUser = () => {
 	const [ isRegisteredUser, setIsRegisteredUser ] = useState( false );
 	const windowRef = useRef( window );
 
 	useEffect( () => {
-		const handlePlatformCheckoutUserCheck = ( e ) => {
+		const handleWooPayUserCheck = ( e ) => {
 			setIsRegisteredUser( e.detail.isRegisteredUser );
 		};
 
 		const currentWindowRef = windowRef.current;
 		currentWindowRef.addEventListener(
-			'PlatformCheckoutUserCheck',
-			handlePlatformCheckoutUserCheck
+			'WooPayUserCheck',
+			handleWooPayUserCheck
 		);
 
 		return () => {
 			currentWindowRef.removeEventListener(
-				'PlatformCheckoutUserCheck',
-				handlePlatformCheckoutUserCheck
+				'WooPayUserCheck',
+				handleWooPayUserCheck
 			);
 		};
 	}, [] );
@@ -30,4 +30,4 @@ const usePlatformCheckoutUser = () => {
 	return isRegisteredUser;
 };
 
-export default usePlatformCheckoutUser;
+export default useWooPayUser;

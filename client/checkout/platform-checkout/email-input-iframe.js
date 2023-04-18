@@ -9,7 +9,7 @@ import showErrorCheckout from '../utils/show-error-checkout';
 import { buildAjaxURL } from '../../payment-request/utils';
 import { getTargetElement, validateEmail } from './utils';
 
-export const handlePlatformCheckoutEmailInput = async (
+export const handleWooPayEmailInput = async (
 	field,
 	api,
 	isBlocksCheckout = false
@@ -277,7 +277,7 @@ export const handlePlatformCheckoutEmailInput = async (
 
 	// Store if the subscription login error is being shown
 	// to remove it when change the e-mail address.
-	let hasPlatformCheckoutSubscriptionLoginError = false;
+	let hasWooPaySubscriptionLoginError = false;
 
 	// Cancel platform checkout request and close iframe
 	// when user clicks Place Order before it loads.
@@ -305,15 +305,15 @@ export const handlePlatformCheckoutEmailInput = async (
 	}
 
 	const dispatchUserExistEvent = ( userExist ) => {
-		const PlatformCheckoutUserCheckEvent = new CustomEvent(
-			'PlatformCheckoutUserCheck',
+		const WooPayUserCheckEvent = new CustomEvent(
+			'WooPayUserCheck',
 			{
 				detail: {
 					isRegisteredUser: userExist,
 				},
 			}
 		);
-		window.dispatchEvent( PlatformCheckoutUserCheckEvent );
+		window.dispatchEvent( WooPayUserCheckEvent );
 	};
 
 	const platformCheckoutLocateUser = async ( email ) => {
@@ -323,11 +323,11 @@ export const handlePlatformCheckoutEmailInput = async (
 			parentDiv.removeChild( errorMessage );
 		}
 
-		if ( hasPlatformCheckoutSubscriptionLoginError ) {
+		if ( hasWooPaySubscriptionLoginError ) {
 			document
 				.querySelector( '#platform-checkout-subscriptions-login-error' )
 				.remove();
-			hasPlatformCheckoutSubscriptionLoginError = false;
+			hasWooPaySubscriptionLoginError = false;
 		}
 
 		if ( getConfig( 'platformCheckoutNeedLogin' ) ) {
@@ -341,7 +341,7 @@ export const handlePlatformCheckoutEmailInput = async (
 				);
 
 				if ( userExistsData[ 'user-exists' ] ) {
-					hasPlatformCheckoutSubscriptionLoginError = true;
+					hasWooPaySubscriptionLoginError = true;
 					showErrorCheckout(
 						userExistsData.message,
 						false,
@@ -510,7 +510,7 @@ export const handlePlatformCheckoutEmailInput = async (
 		switch ( e.data.action ) {
 			case 'auto_redirect_to_platform_checkout':
 				hasCheckedLoginSession = true;
-				api.initPlatformCheckout(
+				api.initWooPay(
 					'',
 					e.data.platformCheckoutUserSession
 				)
@@ -550,7 +550,7 @@ export const handlePlatformCheckoutEmailInput = async (
 				wcpayTracks.recordUserEvent(
 					wcpayTracks.events.PLATFORM_CHECKOUT_OTP_COMPLETE
 				);
-				api.initPlatformCheckout(
+				api.initWooPay(
 					platformCheckoutEmailInput.value,
 					e.data.platformCheckoutUserSession
 				)

@@ -1,16 +1,16 @@
 <?php
 /**
- * Class Platform_Checkout_Utilities_Test
+ * Class WooPay_Utilities_Test
  *
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
+use WCPay\WooPay\WooPay_Utilities;
 
 /**
- * Platform_Checkout_Utilities unit tests.
+ * WooPay_Utilities unit tests.
  */
-class Platform_Checkout_Utilities_Test extends WCPAY_UnitTestCase {
+class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 		$this->gateway_mock = $this->createMock( WC_Payment_Gateway_WCPay::class );
@@ -42,7 +42,7 @@ class Platform_Checkout_Utilities_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Platform checkout is available if feature flags are enabled.
+	 * WooPay is available if feature flags are enabled.
 	 *
 	 * @dataProvider should_enable_platform_checkout_data_provider
 	 * @return void
@@ -55,7 +55,7 @@ class Platform_Checkout_Utilities_Test extends WCPAY_UnitTestCase {
 			->with( 'platform_checkout', 'no' )
 			->willReturn( $gateway_platform_checkout_enabled );
 
-		$platform_checkout_utilities = new Platform_Checkout_Utilities();
+		$platform_checkout_utilities = new WooPay_Utilities();
 		$actual                      = $platform_checkout_utilities->should_enable_platform_checkout( $this->gateway_mock );
 		$this->assertSame( $expected, $actual );
 	}
@@ -73,7 +73,7 @@ class Platform_Checkout_Utilities_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Platform checkout is available if feature flags are enabled.
+	 * WooPay is available if feature flags are enabled.
 	 *
 	 * @dataProvider is_country_available_data_provider
 	 * @return void
@@ -83,7 +83,7 @@ class Platform_Checkout_Utilities_Test extends WCPAY_UnitTestCase {
 
 		WC_Payments::mode()->live();
 
-		$platform_checkout_utilities = new Platform_Checkout_Utilities();
+		$platform_checkout_utilities = new WooPay_Utilities();
 		$actual                      = $platform_checkout_utilities->is_country_available( $this->gateway_mock );
 		$this->assertSame( $expected, $actual );
 	}
@@ -91,7 +91,7 @@ class Platform_Checkout_Utilities_Test extends WCPAY_UnitTestCase {
 	public function test_is_country_available_in_test_mode_return_true() {
 		WC_Payments::mode()->test();
 
-		$platform_checkout_utilities = new Platform_Checkout_Utilities();
+		$platform_checkout_utilities = new WooPay_Utilities();
 		$actual                      = $platform_checkout_utilities->is_country_available( $this->gateway_mock );
 		$this->assertSame( true, $actual );
 	}

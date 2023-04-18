@@ -17,7 +17,7 @@ import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
 	usePaymentRequestEnabledSettings,
-	usePlatformCheckoutEnabledSettings,
+	useWooPayEnabledSettings,
 } from 'wcpay/data';
 import CardBody from '../card-body';
 import './style.scss';
@@ -35,9 +35,9 @@ const ExpressCheckout = () => {
 	] = usePaymentRequestEnabledSettings();
 
 	const [
-		isPlatformCheckoutEnabled,
-		updateIsPlatformCheckoutEnabled,
-	] = usePlatformCheckoutEnabledSettings();
+		isWooPayEnabled,
+		updateIsWooPayEnabled,
+	] = useWooPayEnabledSettings();
 
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
 
@@ -68,7 +68,7 @@ const ExpressCheckout = () => {
 
 	const {
 		featureFlags: {
-			platformCheckout: isPlatformCheckoutFeatureFlagEnabled,
+			platformCheckout: isWooPayFeatureFlagEnabled,
 		},
 	} = useContext( WCPaySettingsContext );
 
@@ -76,7 +76,7 @@ const ExpressCheckout = () => {
 		<Card className="express-checkouts">
 			<CardBody size={ 0 }>
 				<ul className="express-checkouts-list">
-					{ isPlatformCheckoutFeatureFlagEnabled && (
+					{ isWooPayFeatureFlagEnabled && (
 						<li
 							className="express-checkout"
 							id="express-checkouts-woopay"
@@ -113,9 +113,9 @@ const ExpressCheckout = () => {
 											'WooPay',
 											'woocommerce-payments'
 										) }
-										checked={ isPlatformCheckoutEnabled }
+										checked={ isWooPayEnabled }
 										onChange={
-											updateIsPlatformCheckoutEnabled
+											updateIsWooPayEnabled
 										}
 									/>
 								) }
@@ -130,7 +130,7 @@ const ExpressCheckout = () => {
 								<div className="express-checkout__description">
 									{
 										/* eslint-disable jsx-a11y/anchor-has-content */
-										isPlatformCheckoutEnabled
+										isWooPayEnabled
 											? __(
 													'Boost conversion and customer loyalty by offering a single click, secure way to pay.',
 													'woocommerce-payments'
@@ -331,7 +331,7 @@ const ExpressCheckout = () => {
 							id="express-checkouts-link"
 						>
 							<div className="express-checkout__checkbox">
-								{ isPlatformCheckoutEnabled ? (
+								{ isWooPayEnabled ? (
 									<HoverTooltip
 										content={ __(
 											'To enable Link by Stripe, you must first disable WooPay.',

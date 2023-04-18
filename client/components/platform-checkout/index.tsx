@@ -16,7 +16,7 @@ interface apiResponse {
 }
 
 interface wcpayApi {
-	initPlatformCheckout: () => Promise< apiResponse >;
+	initWooPay: () => Promise< apiResponse >;
 }
 
 interface platformCheckoutButtonProps {
@@ -24,7 +24,7 @@ interface platformCheckoutButtonProps {
 	api: wcpayApi;
 }
 
-const PlatformCheckout = ( { isStatic, api }: platformCheckoutButtonProps ) => {
+const WooPay = ( { isStatic, api }: platformCheckoutButtonProps ) => {
 	const [ isLoading, setIsLoading ] = useState( false );
 
 	const buttonContent = (
@@ -45,7 +45,7 @@ const PlatformCheckout = ( { isStatic, api }: platformCheckoutButtonProps ) => {
 
 	const onClick = () => {
 		setIsLoading( true );
-		api.initPlatformCheckout().then( ( response ) => {
+		api.initWooPay().then( ( response ) => {
 			window.location = response.url;
 			setIsLoading( false );
 		} );
@@ -84,8 +84,8 @@ export const platformCheckoutPaymentMethod = (
 	api: wcpayApi
 ): expressPaymentMethod => ( {
 	name: 'platform_checkout',
-	content: <PlatformCheckout api={ api } />,
-	edit: <PlatformCheckout isStatic={ true } api={ api } />,
+	content: <WooPay api={ api } />,
+	edit: <WooPay isStatic={ true } api={ api } />,
 	canMakePayment: () => true,
 	paymentMethodId: 'woocommerce_payments',
 	supports: {

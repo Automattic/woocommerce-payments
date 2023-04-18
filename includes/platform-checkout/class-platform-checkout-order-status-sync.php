@@ -1,11 +1,11 @@
 <?php
 /**
- * Class Platform_Checkout_Webhooks
+ * Class WooPay_Webhooks
  *
  * @package WooCommerce\Payments
  */
 
-namespace WCPay\Platform_Checkout;
+namespace WCPay\WooPay;
 
 use WC_Payments_API_Client;
 use WCPay\Exceptions\API_Exception;
@@ -16,9 +16,9 @@ defined( 'ABSPATH' ) || exit;
  * This class introduces webhooks to delivery order updates to the associated
  * orders in the platform checkout.
  *
- * Platform Checkout Webhooks are enqueued to their associated actions, delivered, and logged.
+ * WooPay Webhooks are enqueued to their associated actions, delivered, and logged.
  */
-class Platform_Checkout_Order_Status_Sync {
+class WooPay_Order_Status_Sync {
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -28,7 +28,7 @@ class Platform_Checkout_Order_Status_Sync {
 	protected $payments_api_client;
 
 	/**
-	 * Setup webhook for the Platform Checkout Order Status Sync.
+	 * Setup webhook for the WooPay Order Status Sync.
 	 *
 	 * @param WC_Payments_API_Client $payments_api_client - WooCommerce Payments API client.
 	 */
@@ -65,7 +65,7 @@ class Platform_Checkout_Order_Status_Sync {
 	}
 
 	/**
-	 * Maybe create the Platform Checkout webhook under certain conditions.
+	 * Maybe create the WooPay webhook under certain conditions.
 	 */
 	public function maybe_create_platform_checkout_order_webhook() {
 		if ( ! current_user_can( 'manage_woocommerce' ) || self::is_webhook_created() ) {

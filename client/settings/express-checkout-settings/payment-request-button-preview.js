@@ -21,7 +21,7 @@ import {
 	usePaymentRequestButtonTheme,
 	usePaymentRequestButtonType,
 	usePaymentRequestEnabledSettings,
-	usePlatformCheckoutEnabledSettings,
+	useWooPayEnabledSettings,
 } from '../../data';
 
 /**
@@ -68,7 +68,7 @@ const PaymentRequestButtonPreview = () => {
 	const [ buttonType ] = usePaymentRequestButtonType();
 	const [ size ] = usePaymentRequestButtonSize();
 	const [ theme ] = usePaymentRequestButtonTheme();
-	const [ isPlatformCheckoutEnabled ] = usePlatformCheckoutEnabledSettings();
+	const [ isWooPayEnabled ] = useWooPayEnabledSettings();
 	const [ isPaymentRequestEnabled ] = usePaymentRequestEnabledSettings();
 
 	useEffect( () => {
@@ -105,13 +105,13 @@ const PaymentRequestButtonPreview = () => {
 
 	return (
 		<>
-			{ ( isPlatformCheckoutEnabled ||
+			{ ( isWooPayEnabled ||
 				( isPaymentRequestEnabled && paymentRequest ) ) && (
 				<div
 					className="payment-method-settings__preview"
 					data-theme={ theme }
 				>
-					{ isPlatformCheckoutEnabled && (
+					{ isWooPayEnabled && (
 						<WoopayExpressCheckoutButton
 							isPreview={ true }
 							buttonSettings={ {
@@ -151,7 +151,7 @@ const PaymentRequestButtonPreview = () => {
 						) }
 				</div>
 			) }
-			{ ! isPlatformCheckoutEnabled && ! isPaymentRequestEnabled && (
+			{ ! isWooPayEnabled && ! isPaymentRequestEnabled && (
 				<InlineNotice status="info" isDismissible={ false }>
 					{ __(
 						'To preview the express checkout buttons, ' +

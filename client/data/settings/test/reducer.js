@@ -15,9 +15,9 @@ import {
 	updateAccountBusinessSupportEmail,
 	updateAccountBusinessSupportPhone,
 	updateAccountBrandingLogo,
-	updateIsPlatformCheckoutEnabled,
-	updatePlatformCheckoutCustomMessage,
-	updatePlatformCheckoutStoreLogo,
+	updateIsWooPayEnabled,
+	updateWooPayCustomMessage,
+	updateWooPayStoreLogo,
 	updateIsClientSecretEncryptionEnabled,
 } from '../actions';
 
@@ -387,7 +387,7 @@ describe( 'Settings reducer tests', () => {
 
 			const state = reducer(
 				oldState,
-				updateIsPlatformCheckoutEnabled( true )
+				updateIsWooPayEnabled( true )
 			);
 
 			expect( state.data.is_platform_checkout_enabled ).toBeTruthy();
@@ -405,7 +405,7 @@ describe( 'Settings reducer tests', () => {
 
 			const state = reducer(
 				oldState,
-				updateIsPlatformCheckoutEnabled( true )
+				updateIsWooPayEnabled( true )
 			);
 
 			expect( state ).toEqual( {
@@ -429,7 +429,7 @@ describe( 'Settings reducer tests', () => {
 
 			const state = reducer(
 				oldState,
-				updatePlatformCheckoutCustomMessage( 'test' )
+				updateWooPayCustomMessage( 'test' )
 			);
 
 			expect( state.data.platform_checkout_custom_message ).toEqual(
@@ -449,7 +449,7 @@ describe( 'Settings reducer tests', () => {
 
 			const state = reducer(
 				oldState,
-				updatePlatformCheckoutCustomMessage( 'test' )
+				updateWooPayCustomMessage( 'test' )
 			);
 
 			expect( state ).toEqual( {
@@ -473,7 +473,7 @@ describe( 'Settings reducer tests', () => {
 
 			const state = reducer(
 				oldState,
-				updatePlatformCheckoutStoreLogo( 'test' )
+				updateWooPayStoreLogo( 'test' )
 			);
 
 			expect( state.data.platform_checkout_store_logo ).toEqual( 'test' );
@@ -491,7 +491,7 @@ describe( 'Settings reducer tests', () => {
 
 			const state = reducer(
 				oldState,
-				updatePlatformCheckoutStoreLogo( 'test' )
+				updateWooPayStoreLogo( 'test' )
 			);
 
 			expect( state ).toEqual( {

@@ -17,7 +17,7 @@ import classNames from 'classnames';
  */
 import { FileUploadControl } from 'components/file-upload';
 
-interface PlatformCheckoutFileUploadProps {
+interface WooPayFileUploadProps {
 	fieldKey: string;
 	label: string;
 	accept: string;
@@ -28,7 +28,7 @@ interface PlatformCheckoutFileUploadProps {
 	updateFileID: ( id: string ) => void;
 }
 
-const PlatformCheckoutFileUpload: React.FunctionComponent< PlatformCheckoutFileUploadProps > = (
+const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = (
 	props
 ) => {
 	const {
@@ -209,4 +209,4 @@ const PlatformCheckoutFileUpload: React.FunctionComponent< PlatformCheckoutFileU
 	);
 };
 
-export default PlatformCheckoutFileUpload;
+export default WooPayFileUpload;

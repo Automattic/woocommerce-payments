@@ -21,7 +21,7 @@ use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Payment_Information;
-use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
+use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\WC_Payments_Checkout;
 
@@ -93,9 +93,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private $order_service;
 
 	/**
-	 * Platform_Checkout_Utilities instance.
+	 * WooPay_Utilities instance.
 	 *
-	 * @var Platform_Checkout_Utilities
+	 * @var WooPay_Utilities
 	 */
 	private $platform_checkout_utilities;
 
@@ -168,7 +168,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->order_service
 		);
 
-		$this->platform_checkout_utilities = new Platform_Checkout_Utilities();
+		$this->platform_checkout_utilities = new WooPay_Utilities();
 
 		$this->payments_checkout = new WC_Payments_Checkout(
 			$this->wcpay_gateway,
@@ -2133,7 +2133,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function test_is_platform_checkout_enabled_returns_true() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
-		$this->assertTrue( $this->payments_checkout->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
+		$this->assertTrue( $this->payments_checkout->get_payment_fields_js_config()['isWooPayEnabled'] );
 	}
 
 	public function test_should_use_stripe_platform_on_checkout_page_not_platform_checkout_eligible() {
@@ -2168,12 +2168,12 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 	public function test_is_platform_checkout_enabled_returns_false_if_ineligible() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => false ] );
-		$this->assertFalse( $this->payments_checkout->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
+		$this->assertFalse( $this->payments_checkout->get_payment_fields_js_config()['isWooPayEnabled'] );
 	}
 
 	public function test_is_platform_checkout_enabled_returns_false_if_ineligible_and_enabled() {
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
-		$this->assertFalse( $this->payments_checkout->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
+		$this->assertFalse( $this->payments_checkout->get_payment_fields_js_config()['isWooPayEnabled'] );
 	}
 
 	public function test_return_icon_url() {

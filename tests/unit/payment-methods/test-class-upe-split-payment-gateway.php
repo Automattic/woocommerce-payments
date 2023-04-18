@@ -12,7 +12,7 @@ use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
-use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
+use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\WC_Payments_UPE_Checkout;
 use WCPAY_UnitTestCase;
@@ -119,9 +119,9 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	private $mock_wcpay_account;
 
 	/**
-	 * Platform_Checkout_Utilities instance.
+	 * WooPay_Utilities instance.
 	 *
-	 * @var Platform_Checkout_Utilities
+	 * @var WooPay_Utilities
 	 */
 	private $mock_platform_checkout_utilities;
 
@@ -211,7 +211,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'get_fees' )
 			->willReturn( $payment_methods );
 
-		$this->mock_platform_checkout_utilities = $this->createMock( Platform_Checkout_Utilities::class );
+		$this->mock_platform_checkout_utilities = $this->createMock( WooPay_Utilities::class );
 
 		// Arrange: Mock WC_Payments_Customer_Service so its methods aren't called directly.
 		$this->mock_customer_service = $this->getMockBuilder( 'WC_Payments_Customer_Service' )

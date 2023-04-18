@@ -14,13 +14,13 @@ import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
 	usePaymentRequestEnabledSettings,
-	usePlatformCheckoutEnabledSettings,
+	useWooPayEnabledSettings,
 } from 'wcpay/data';
 import WCPaySettingsContext from '../../wcpay-settings-context';
 
 jest.mock( 'wcpay/data', () => ( {
 	usePaymentRequestEnabledSettings: jest.fn(),
-	usePlatformCheckoutEnabledSettings: jest.fn(),
+	useWooPayEnabledSettings: jest.fn(),
 	useEnabledPaymentMethodIds: jest.fn(),
 	useGetAvailablePaymentMethodIds: jest.fn(),
 } ) );
@@ -30,32 +30,32 @@ const getMockPaymentRequestEnabledSettings = (
 	updateIsPaymentRequestEnabledHandler
 ) => [ isEnabled, updateIsPaymentRequestEnabledHandler ];
 
-const getMockPlatformCheckoutEnabledSettings = (
+const getMockWooPayEnabledSettings = (
 	isEnabled,
-	updateIsPlatformCheckoutEnabledHandler
-) => [ isEnabled, updateIsPlatformCheckoutEnabledHandler ];
+	updateIsWooPayEnabledHandler
+) => [ isEnabled, updateIsWooPayEnabledHandler ];
 
 describe( 'ExpressCheckout', () => {
 	beforeEach( () => {
 		usePaymentRequestEnabledSettings.mockReturnValue(
 			getMockPaymentRequestEnabledSettings( false, jest.fn() )
 		);
-		usePlatformCheckoutEnabledSettings.mockReturnValue(
-			getMockPlatformCheckoutEnabledSettings( false, jest.fn() )
+		useWooPayEnabledSettings.mockReturnValue(
+			getMockWooPayEnabledSettings( false, jest.fn() )
 		);
 	} );
 
 	it( 'should dispatch enabled status update if express checkout is being toggled', async () => {
-		const updateIsPlatformCheckoutEnabledHandler = jest.fn();
+		const updateIsWooPayEnabledHandler = jest.fn();
 		const updateIsPaymentRequestEnabledHandler = jest.fn();
 
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
 		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ] ] );
 
-		usePlatformCheckoutEnabledSettings.mockReturnValue(
-			getMockPlatformCheckoutEnabledSettings(
+		useWooPayEnabledSettings.mockReturnValue(
+			getMockWooPayEnabledSettings(
 				true,
-				updateIsPlatformCheckoutEnabledHandler
+				updateIsWooPayEnabledHandler
 			)
 		);
 		usePaymentRequestEnabledSettings.mockReturnValue(
@@ -75,7 +75,7 @@ describe( 'ExpressCheckout', () => {
 
 		userEvent.click( screen.getByLabelText( 'WooPay' ) );
 
-		expect( updateIsPlatformCheckoutEnabledHandler ).toHaveBeenCalledWith(
+		expect( updateIsWooPayEnabledHandler ).toHaveBeenCalledWith(
 			false
 		);
 	} );
@@ -165,11 +165,11 @@ describe( 'ExpressCheckout', () => {
 	} );
 
 	it( 'should prevent enabling both Link and WooPay at the same time', async () => {
-		const updateIsPlatformCheckoutEnabledHandler = jest.fn();
-		usePlatformCheckoutEnabledSettings.mockReturnValue(
-			getMockPlatformCheckoutEnabledSettings(
+		const updateIsWooPayEnabledHandler = jest.fn();
+		useWooPayEnabledSettings.mockReturnValue(
+			getMockWooPayEnabledSettings(
 				false,
-				updateIsPlatformCheckoutEnabledHandler
+				updateIsWooPayEnabledHandler
 			)
 		);
 		const context = { featureFlags: { platformCheckout: true } };

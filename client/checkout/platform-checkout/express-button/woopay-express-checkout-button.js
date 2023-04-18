@@ -47,7 +47,7 @@ export const WoopayExpressCheckoutButton = ( {
 		}
 	}, [ isPreview, context ] );
 
-	const initPlatformCheckout = ( e ) => {
+	const initWooPay = ( e ) => {
 		e.preventDefault();
 
 		if ( isPreview ) {
@@ -78,7 +78,7 @@ export const WoopayExpressCheckoutButton = ( {
 		<button
 			key={ `${ buttonType }-${ theme }-${ size }` }
 			aria-label={ 'default' !== buttonType ? text : __( 'WooPay' ) }
-			onClick={ initPlatformCheckout }
+			onClick={ initWooPay }
 			className="woopay-express-button"
 			disabled={ isAddToCartDisabled }
 			data-type={ buttonType }

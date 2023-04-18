@@ -11,7 +11,7 @@ import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
  * Internal dependencies
  */
 import CheckoutPageSaveUser from '../checkout-page-save-user';
-import usePlatformCheckoutUser from '../../hooks/use-platform-checkout-user';
+import useWooPayUser from '../../hooks/use-platform-checkout-user';
 import useSelectedPaymentMethod from '../../hooks/use-selected-payment-method';
 import { getConfig } from 'utils/checkout';
 
@@ -36,7 +36,7 @@ jest.mock( '@wordpress/data', () => ( {
 
 describe( 'CheckoutPageSaveUser', () => {
 	beforeEach( () => {
-		usePlatformCheckoutUser.mockImplementation( () => false );
+		useWooPayUser.mockImplementation( () => false );
 
 		useSelectedPaymentMethod.mockImplementation( () => ( {
 			isWCPayChosen: true,
@@ -52,7 +52,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		jest.restoreAllMocks();
 	} );
 
-	it( 'should render checkbox for saving Platform Checkout user when user is not registered and selected payment method is card', () => {
+	it( 'should render checkbox for saving WooPay user when user is not registered and selected payment method is card', () => {
 		render( <CheckoutPageSaveUser /> );
 		expect(
 			screen.queryByLabelText(
@@ -66,8 +66,8 @@ describe( 'CheckoutPageSaveUser', () => {
 		).not.toBeChecked();
 	} );
 
-	it( 'should not render checkbox for saving Platform Checkout user when user is already registered', () => {
-		usePlatformCheckoutUser.mockImplementation( () => true );
+	it( 'should not render checkbox for saving WooPay user when user is already registered', () => {
+		useWooPayUser.mockImplementation( () => true );
 
 		render( <CheckoutPageSaveUser /> );
 		expect(
@@ -77,7 +77,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	it( 'should not render checkbox for saving Platform Checkout user when forceNetworkSavedCards is false', () => {
+	it( 'should not render checkbox for saving WooPay user when forceNetworkSavedCards is false', () => {
 		getConfig.mockImplementation( () => false );
 
 		render( <CheckoutPageSaveUser /> );
@@ -88,7 +88,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	it( 'should render checkbox for saving Platform Checkout user when selected payment method is not card', () => {
+	it( 'should render checkbox for saving WooPay user when selected payment method is not card', () => {
 		useSelectedPaymentMethod.mockImplementation( () => ( {
 			isWCPayChosen: false,
 		} ) );

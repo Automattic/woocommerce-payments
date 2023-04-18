@@ -8,13 +8,13 @@ import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import PlatformCheckoutFileUpload from '../file-upload';
+import WooPayFileUpload from '../file-upload';
 
 jest.mock( '@wordpress/data', () => ( {
 	useDispatch: jest.fn( () => ( { createErrorNotice: jest.fn() } ) ),
 } ) );
 
-describe( 'PlatformCheckoutFileUpload', () => {
+describe( 'WooPayFileUpload', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
 			restUrl: 'http://example.com/wp-json/',
@@ -23,7 +23,7 @@ describe( 'PlatformCheckoutFileUpload', () => {
 
 	it( 'should render replace and delete button with file', () => {
 		const { container } = render(
-			<PlatformCheckoutFileUpload
+			<WooPayFileUpload
 				fieldKey="test"
 				label="test"
 				accept="image/png"
@@ -48,7 +48,7 @@ describe( 'PlatformCheckoutFileUpload', () => {
 
 	it( 'should not render replace and delete button without file', () => {
 		const { container } = render(
-			<PlatformCheckoutFileUpload
+			<WooPayFileUpload
 				fieldKey="test"
 				label="test"
 				accept="image/png"

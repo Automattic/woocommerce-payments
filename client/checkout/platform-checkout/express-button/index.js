@@ -12,7 +12,7 @@ import { WoopayExpressCheckoutButton } from './woopay-express-checkout-button';
 import WCPayAPI from '../../api';
 import request from '../../utils/request';
 
-const renderPlatformCheckoutExpressButton = () => {
+const renderWooPayExpressButton = () => {
 	// Create an API object, which will be used throughout the checkout.
 	const api = new WCPayAPI(
 		{
@@ -45,10 +45,10 @@ const renderPlatformCheckoutExpressButton = () => {
 	}
 };
 
-window.addEventListener( 'load', renderPlatformCheckoutExpressButton );
+window.addEventListener( 'load', renderWooPayExpressButton );
 
 jQuery( ( $ ) => {
 	$( document.body ).on( 'updated_cart_totals', () => {
-		renderPlatformCheckoutExpressButton();
+		renderWooPayExpressButton();
 	} );
 } );

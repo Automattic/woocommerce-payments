@@ -9,44 +9,44 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import PlatformCheckoutSettings from '../platform-checkout-settings';
+import WooPaySettings from '../platform-checkout-settings';
 import {
-	usePlatformCheckoutEnabledSettings,
-	usePlatformCheckoutCustomMessage,
-	usePlatformCheckoutStoreLogo,
+	useWooPayEnabledSettings,
+	useWooPayCustomMessage,
+	useWooPayStoreLogo,
 	usePaymentRequestButtonType,
 	usePaymentRequestButtonSize,
 	usePaymentRequestButtonTheme,
-	usePlatformCheckoutLocations,
+	useWooPayLocations,
 } from '../../../data';
 
 jest.mock( '../../../data', () => ( {
-	usePlatformCheckoutEnabledSettings: jest.fn(),
-	usePlatformCheckoutCustomMessage: jest.fn(),
-	usePlatformCheckoutStoreLogo: jest.fn(),
+	useWooPayEnabledSettings: jest.fn(),
+	useWooPayCustomMessage: jest.fn(),
+	useWooPayStoreLogo: jest.fn(),
 	usePaymentRequestButtonType: jest.fn(),
 	usePaymentRequestButtonSize: jest.fn(),
 	usePaymentRequestButtonTheme: jest.fn(),
-	usePlatformCheckoutLocations: jest.fn(),
+	useWooPayLocations: jest.fn(),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
 	useDispatch: jest.fn( () => ( { createErrorNotice: jest.fn() } ) ),
 } ) );
 
-const getMockPlatformCheckoutEnabledSettings = (
+const getMockWooPayEnabledSettings = (
 	isEnabled,
-	updateIsPlatformCheckoutEnabledHandler
-) => [ isEnabled, updateIsPlatformCheckoutEnabledHandler ];
+	updateIsWooPayEnabledHandler
+) => [ isEnabled, updateIsWooPayEnabledHandler ];
 
-const getMockPlatformCheckoutCustomMessage = (
+const getMockWooPayCustomMessage = (
 	message,
-	updatePlatformCheckoutCustomMessageHandler
-) => [ message, updatePlatformCheckoutCustomMessageHandler ];
-const getMockPlatformCheckoutStoreLogo = (
+	updateWooPayCustomMessageHandler
+) => [ message, updateWooPayCustomMessageHandler ];
+const getMockWooPayStoreLogo = (
 	message,
-	updatePlatformCheckoutStoreLogoHandler
-) => [ message, updatePlatformCheckoutStoreLogoHandler ];
+	updateWooPayStoreLogoHandler
+) => [ message, updateWooPayStoreLogoHandler ];
 
 const getMockPaymentRequestButtonType = (
 	message,
@@ -60,23 +60,23 @@ const getMockPaymentRequestButtonTheme = (
 	message,
 	updatePaymentRequestButtonThemeHandler
 ) => [ message, updatePaymentRequestButtonThemeHandler ];
-const getMockPlatformCheckoutLocations = (
+const getMockWooPayLocations = (
 	message,
-	updatePlatformCheckoutLocationsHandler
-) => [ message, updatePlatformCheckoutLocationsHandler ];
+	updateWooPayLocationsHandler
+) => [ message, updateWooPayLocationsHandler ];
 
-describe( 'PlatformCheckoutSettings', () => {
+describe( 'WooPaySettings', () => {
 	beforeEach( () => {
-		usePlatformCheckoutEnabledSettings.mockReturnValue(
-			getMockPlatformCheckoutEnabledSettings( true, jest.fn() )
+		useWooPayEnabledSettings.mockReturnValue(
+			getMockWooPayEnabledSettings( true, jest.fn() )
 		);
 
-		usePlatformCheckoutCustomMessage.mockReturnValue(
-			getMockPlatformCheckoutCustomMessage( '', jest.fn() )
+		useWooPayCustomMessage.mockReturnValue(
+			getMockWooPayCustomMessage( '', jest.fn() )
 		);
 
-		usePlatformCheckoutStoreLogo.mockReturnValue(
-			getMockPlatformCheckoutStoreLogo( '', jest.fn() )
+		useWooPayStoreLogo.mockReturnValue(
+			getMockWooPayStoreLogo( '', jest.fn() )
 		);
 
 		usePaymentRequestButtonType.mockReturnValue(
@@ -91,8 +91,8 @@ describe( 'PlatformCheckoutSettings', () => {
 			getMockPaymentRequestButtonTheme( [ 'dark' ], jest.fn() )
 		);
 
-		usePlatformCheckoutLocations.mockReturnValue(
-			getMockPlatformCheckoutLocations( [ true, true, true ], jest.fn() )
+		useWooPayLocations.mockReturnValue(
+			getMockWooPayLocations( [ true, true, true ], jest.fn() )
 		);
 
 		global.wcpaySettings = {
@@ -101,7 +101,7 @@ describe( 'PlatformCheckoutSettings', () => {
 	} );
 
 	it( 'renders settings with defaults', () => {
-		render( <PlatformCheckoutSettings section="enable" /> );
+		render( <WooPaySettings section="enable" /> );
 
 		// confirm checkbox groups displayed
 		const [ enableCheckbox ] = screen.queryAllByRole( 'checkbox' );
@@ -110,36 +110,36 @@ describe( 'PlatformCheckoutSettings', () => {
 	} );
 
 	it( 'triggers the hooks when the enable setting is being interacted with', () => {
-		const updateIsPlatformCheckoutEnabledHandler = jest.fn();
+		const updateIsWooPayEnabledHandler = jest.fn();
 
-		usePlatformCheckoutEnabledSettings.mockReturnValue(
-			getMockPlatformCheckoutEnabledSettings(
+		useWooPayEnabledSettings.mockReturnValue(
+			getMockWooPayEnabledSettings(
 				true,
-				updateIsPlatformCheckoutEnabledHandler
+				updateIsWooPayEnabledHandler
 			)
 		);
 
-		render( <PlatformCheckoutSettings section="enable" /> );
+		render( <WooPaySettings section="enable" /> );
 
-		expect( updateIsPlatformCheckoutEnabledHandler ).not.toHaveBeenCalled();
+		expect( updateIsWooPayEnabledHandler ).not.toHaveBeenCalled();
 
 		userEvent.click( screen.getByLabelText( /Enable WooPay/ ) );
-		expect( updateIsPlatformCheckoutEnabledHandler ).toHaveBeenCalledWith(
+		expect( updateIsWooPayEnabledHandler ).toHaveBeenCalledWith(
 			false
 		);
 	} );
 
 	it( 'triggers the hooks when the custom message setting is being interacted with', () => {
-		const updatePlatformCheckoutCustomMessageHandler = jest.fn();
+		const updateWooPayCustomMessageHandler = jest.fn();
 
-		usePlatformCheckoutCustomMessage.mockReturnValue(
-			getMockPlatformCheckoutCustomMessage(
+		useWooPayCustomMessage.mockReturnValue(
+			getMockWooPayCustomMessage(
 				'',
-				updatePlatformCheckoutCustomMessageHandler
+				updateWooPayCustomMessageHandler
 			)
 		);
 
-		render( <PlatformCheckoutSettings section="appearance" /> );
+		render( <WooPaySettings section="appearance" /> );
 
 		// confirm settings headings
 		expect(
@@ -152,12 +152,12 @@ describe( 'PlatformCheckoutSettings', () => {
 		expect( customMessageTextbox ).toBeInTheDocument();
 
 		expect(
-			updatePlatformCheckoutCustomMessageHandler
+			updateWooPayCustomMessageHandler
 		).not.toHaveBeenCalled();
 
 		userEvent.type( screen.getByRole( 'textbox' ), 'test' );
 		expect(
-			updatePlatformCheckoutCustomMessageHandler
+			updateWooPayCustomMessageHandler
 		).toHaveBeenLastCalledWith( 'test' );
 	} );
 } );

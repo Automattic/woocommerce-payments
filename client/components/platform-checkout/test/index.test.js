@@ -18,7 +18,7 @@ describe( 'platformCheckoutPaymentMethod', () => {
 	let nativeWindowLocation;
 
 	const apiMock = {
-		initPlatformCheckout: jest.fn(),
+		initWooPay: jest.fn(),
 	};
 
 	beforeEach( () => {
@@ -29,7 +29,7 @@ describe( 'platformCheckoutPaymentMethod', () => {
 		Object.defineProperty( window, 'location', {
 			writable: true,
 		} );
-		apiMock.initPlatformCheckout = jest.fn();
+		apiMock.initWooPay = jest.fn();
 	} );
 
 	afterEach( () => {
@@ -72,12 +72,12 @@ describe( 'platformCheckoutPaymentMethod', () => {
 		).toBeInTheDocument();
 	} );
 
-	test( 'clicking checkout button calls initPlatformCheckout()', async () => {
+	test( 'clicking checkout button calls initWooPay()', async () => {
 		let resolvePromise;
 		const initCheckoutPromise = new Promise( ( resolve ) => {
 			resolvePromise = resolve;
 		} );
-		apiMock.initPlatformCheckout.mockReturnValue( initCheckoutPromise );
+		apiMock.initWooPay.mockReturnValue( initCheckoutPromise );
 
 		const method = platformCheckoutPaymentMethod( apiMock );
 		render( method.content );
@@ -88,10 +88,10 @@ describe( 'platformCheckoutPaymentMethod', () => {
 		} );
 		expect( buyNowButton ).not.toBeDisabled();
 
-		// Let's click it. It should be disabled and initPlatformCheckout should be called.
+		// Let's click it. It should be disabled and initWooPay should be called.
 		userEvent.click( buyNowButton );
 		expect( buyNowButton ).toBeDisabled();
-		expect( apiMock.initPlatformCheckout ).toHaveBeenCalledTimes( 1 );
+		expect( apiMock.initWooPay ).toHaveBeenCalledTimes( 1 );
 
 		/*
 		 * The button should be enabled again once the promise is resolved and

@@ -12,7 +12,7 @@ import './index.scss';
 import SettingsSection from '../settings-section';
 import { getPaymentSettingsUrl } from '../../utils';
 import PaymentRequestSettings from './payment-request-settings';
-import PlatformCheckoutSettings from './platform-checkout-settings';
+import WooPaySettings from './platform-checkout-settings';
 import SettingsLayout from '../settings-layout';
 import LoadableSettingsSection from '../loadable-settings-section';
 import SaveSettingsSection from '../save-settings-section';
@@ -66,7 +66,7 @@ const methods = {
 				),
 			},
 		],
-		controls: ( props ) => <PlatformCheckoutSettings { ...props } />,
+		controls: ( props ) => <WooPaySettings { ...props } />,
 	},
 	payment_request: {
 		title: 'Apple Pay / Google Pay',

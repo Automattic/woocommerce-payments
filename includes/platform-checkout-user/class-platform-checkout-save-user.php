@@ -1,23 +1,23 @@
 <?php
 /**
- * Class PlatformCheckoutSaveUser
+ * Class WooPaySaveUser
  *
- * @package WooCommerce\Payments\PlatformCheckout
+ * @package WooCommerce\Payments\WooPay
  */
 
 defined( 'ABSPATH' ) || exit;
 
-use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
+use WCPay\WooPay\WooPay_Utilities;
 
 /**
  * Class that adds a section to save new user for platform checkout on the frontend.
  */
-class Platform_Checkout_Save_User {
+class WooPay_Save_User {
 
 	/**
-	 * Platform checkout utilities.
+	 * WooPay utilities.
 	 *
-	 * @var Platform_Checkout_Utilities
+	 * @var WooPay_Utilities
 	 */
 	protected $platform_checkout_util;
 
@@ -25,7 +25,7 @@ class Platform_Checkout_Save_User {
 	 * Constructor.
 	 */
 	public function __construct() {
-		$this->platform_checkout_util = new Platform_Checkout_Utilities();
+		$this->platform_checkout_util = new WooPay_Utilities();
 
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_checkout_page_scripts' ] );
 		add_filter( 'wcpay_metadata_from_order', [ $this, 'maybe_add_userdata_to_metadata' ], 10, 2 );
@@ -101,10 +101,10 @@ class Platform_Checkout_Save_User {
 	 * @return void
 	 */
 	public function maybe_clear_session_key() {
-		$session_data = WC()->session->get( Platform_Checkout_Extension::PLATFORM_CHECKOUT_SESSION_KEY );
+		$session_data = WC()->session->get( WooPay_Extension::PLATFORM_CHECKOUT_SESSION_KEY );
 
 		if ( ! empty( $session_data ) ) {
-			WC()->session->__unset( Platform_Checkout_Extension::PLATFORM_CHECKOUT_SESSION_KEY );
+			WC()->session->__unset( WooPay_Extension::PLATFORM_CHECKOUT_SESSION_KEY );
 		}
 	}
 }

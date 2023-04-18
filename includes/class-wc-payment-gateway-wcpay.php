@@ -33,8 +33,8 @@ use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\Link_Payment_Method;
-use WCPay\Platform_Checkout\Platform_Checkout_Order_Status_Sync;
-use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
+use WCPay\WooPay\WooPay_Order_Status_Sync;
+use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Tracker;
 
@@ -176,9 +176,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected $payment_method_capability_key_map;
 
 	/**
-	 * Platform checkout utilities.
+	 * WooPay utilities.
 	 *
-	 * @var Platform_Checkout_Utilities
+	 * @var WooPay_Utilities
 	 */
 	protected $platform_checkout_util;
 
@@ -395,8 +395,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'link'          => 'link_payments',
 		];
 
-		// Platform checkout utilities.
-		$this->platform_checkout_util = new Platform_Checkout_Utilities();
+		// WooPay utilities.
+		$this->platform_checkout_util = new WooPay_Utilities();
 
 		// Load the settings.
 		$this->init_settings();
@@ -1757,7 +1757,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			);
 			$this->update_option( 'platform_checkout', $is_platform_checkout_enabled ? 'yes' : 'no' );
 			if ( ! $is_platform_checkout_enabled ) {
-				Platform_Checkout_Order_Status_Sync::remove_webhook();
+				WooPay_Order_Status_Sync::remove_webhook();
 			} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
 				update_option( WC_Payments_Features::UPE_FLAG_NAME, '0' );
 				update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '1' );

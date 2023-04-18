@@ -19,7 +19,7 @@ import { getConfig } from 'utils/checkout';
 import AdditionalInformation from './additional-information';
 import Agreement from './agreement';
 import Container from './container';
-import usePlatformCheckoutUser from '../hooks/use-platform-checkout-user';
+import useWooPayUser from '../hooks/use-platform-checkout-user';
 import useSelectedPaymentMethod from '../hooks/use-selected-payment-method';
 import { WC_STORE_CART } from '../../../checkout/constants';
 import WooPayIcon from 'assets/images/woopay.svg?asset';
@@ -39,7 +39,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		() => setIsInfoFlyoutVisible( false ),
 		[]
 	);
-	const isRegisteredUser = usePlatformCheckoutUser();
+	const isRegisteredUser = useWooPayUser();
 	const { isWCPayChosen, isNewPaymentTokenChosen } = useSelectedPaymentMethod(
 		isBlocksCheckout
 	);

@@ -1,19 +1,19 @@
 <?php
 /**
- * Class Platform_Checkout_Tracker_Test
+ * Class WooPay_Tracker_Test
  *
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Platform_Checkout_Tracker;
+use WCPay\WooPay_Tracker;
 
 /**
- * Platform_Checkout_Tracker unit tests.
+ * WooPay_Tracker unit tests.
  */
-class Platform_Checkout_Tracker_Test extends WCPAY_UnitTestCase {
+class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 
 	/**
-	 * @var Platform_Checkout_Tracker
+	 * @var WooPay_Tracker
 	 */
 	private $tracker;
 
@@ -31,7 +31,7 @@ class Platform_Checkout_Tracker_Test extends WCPAY_UnitTestCase {
 		parent::set_up();
 
 		$this->http_client_stub = $this->getMockBuilder( WC_Payments_Http::class )->disableOriginalConstructor()->setMethods( [ 'wpcom_json_api_request_as_user' ] )->getMock();
-		$this->tracker          = new WCPay\Platform_Checkout_Tracker( $this->http_client_stub );
+		$this->tracker          = new WCPay\WooPay_Tracker( $this->http_client_stub );
 
 		// Mock the main class's cache service.
 		$this->_cache     = WC_Payments::get_database_cache();

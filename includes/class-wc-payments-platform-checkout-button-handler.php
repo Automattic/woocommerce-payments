@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WC_Payments_Platform_Checkout_Button_Handler
+ * Class WC_Payments_WooPay_Button_Handler
  * Adds support for the WooPay express checkout button.
  *
  * Borrowed heavily from the WC_Payments_Payment_Request_Button_Handler class.
@@ -16,12 +16,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 use WCPay\Exceptions\Invalid_Price_Exception;
 use WCPay\Logger;
 use WCPay\Payment_Information;
-use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
+use WCPay\WooPay\WooPay_Utilities;
 
 /**
- * WC_Payments_Platform_Checkout_Button_Handler class.
+ * WC_Payments_WooPay_Button_Handler class.
  */
-class WC_Payments_Platform_Checkout_Button_Handler {
+class WC_Payments_WooPay_Button_Handler {
 	/**
 	 * WC_Payments_Account instance to get information about the account
 	 *
@@ -37,9 +37,9 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 	private $gateway;
 
 	/**
-	 * Platform_Checkout_Utilities instance.
+	 * WooPay_Utilities instance.
 	 *
-	 * @var Platform_Checkout_Utilities
+	 * @var WooPay_Utilities
 	 */
 	private $platform_checkout_utilities;
 
@@ -48,9 +48,9 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 	 *
 	 * @param WC_Payments_Account         $account Account information.
 	 * @param WC_Payment_Gateway_WCPay    $gateway WCPay gateway.
-	 * @param Platform_Checkout_Utilities $platform_checkout_utilities WCPay gateway.
+	 * @param WooPay_Utilities $platform_checkout_utilities WCPay gateway.
 	 */
-	public function __construct( WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway, Platform_Checkout_Utilities $platform_checkout_utilities ) {
+	public function __construct( WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway, WooPay_Utilities $platform_checkout_utilities ) {
 		$this->account                     = $account;
 		$this->gateway                     = $gateway;
 		$this->platform_checkout_utilities = $platform_checkout_utilities;

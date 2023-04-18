@@ -222,23 +222,23 @@ export function updatePaymentRequestLocations( locations ) {
 	} );
 }
 
-export function updateIsPlatformCheckoutEnabled( isEnabled ) {
+export function updateIsWooPayEnabled( isEnabled ) {
 	return updateSettingsValues( { is_platform_checkout_enabled: isEnabled } );
 }
 
-export function updatePlatformCheckoutCustomMessage( message ) {
+export function updateWooPayCustomMessage( message ) {
 	return updateSettingsValues( {
 		platform_checkout_custom_message: message,
 	} );
 }
 
-export function updatePlatformCheckoutStoreLogo( storeLogo ) {
+export function updateWooPayStoreLogo( storeLogo ) {
 	return updateSettingsValues( {
 		platform_checkout_store_logo: storeLogo,
 	} );
 }
 
-export function updatePlatformCheckoutLocations( locations ) {
+export function updateWooPayLocations( locations ) {
 	return updateSettingsValues( {
 		platform_checkout_enabled_locations: [ ...locations ],
 	} );

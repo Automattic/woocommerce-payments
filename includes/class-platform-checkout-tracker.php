@@ -1,6 +1,6 @@
 <?php
 /**
- * Class Platform_Checkout_Tracker
+ * Class WooPay_Tracker
  *
  * @package WooCommerce\Payments
  */
@@ -16,12 +16,12 @@ use WP_Error;
 defined( 'ABSPATH' ) || exit; // block direct access.
 
 /**
- * Track Platform Checkout related events
+ * Track WooPay related events
  */
-class Platform_Checkout_Tracker extends Jetpack_Tracks_Client {
+class WooPay_Tracker extends Jetpack_Tracks_Client {
 
 	/**
-	 * Platform checkout event prefix
+	 * WooPay event prefix
 	 *
 	 * @var string
 	 */

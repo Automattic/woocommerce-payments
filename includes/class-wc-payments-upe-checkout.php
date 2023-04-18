@@ -16,7 +16,7 @@ use WC_Payments_Features;
 use WCPay\Constants\Payment_Method;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
-use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
+use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 
 
@@ -33,9 +33,9 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 	protected $gateway;
 
 	/**
-	 * Platform Checkout Utilities.
+	 * WooPay Utilities.
 	 *
-	 * @var Platform_Checkout_Utilities
+	 * @var WooPay_Utilities
 	 */
 	protected $platform_checkout_util;
 
@@ -57,13 +57,13 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 	 * Construct.
 	 *
 	 * @param UPE_Payment_Gateway          $gateway                WC Payment Gateway.
-	 * @param Platform_Checkout_Utilities  $platform_checkout_util Platform Checkout Utilities.
+	 * @param WooPay_Utilities  $platform_checkout_util WooPay Utilities.
 	 * @param WC_Payments_Account          $account                WC Payments Account.
 	 * @param WC_Payments_Customer_Service $customer_service       WC Payments Customer Service.
 	 */
 	public function __construct(
 		UPE_Payment_Gateway $gateway,
-		Platform_Checkout_Utilities $platform_checkout_util,
+		WooPay_Utilities $platform_checkout_util,
 		WC_Payments_Account $account,
 		WC_Payments_Customer_Service $customer_service
 	) {

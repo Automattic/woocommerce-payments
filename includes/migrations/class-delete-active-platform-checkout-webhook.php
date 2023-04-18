@@ -1,6 +1,6 @@
 <?php
 /**
- * Class Delete_Active_Platform_Checkout_Webhook
+ * Class Delete_Active_WooPay_Webhook
  *
  * @package WooCommerce\Payments
  */
@@ -10,13 +10,13 @@ namespace WCPay\Migrations;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class Delete_Active_Platform_Checkout_Webhook
+ * Class Delete_Active_WooPay_Webhook
  *
  * Fires an event on plugin upgrade to delete the active webhook.
  * Runs only once. We want to know whether existing install had it
  * enabled before the current version.
  */
-class Delete_Active_Platform_Checkout_Webhook {
+class Delete_Active_WooPay_Webhook {
 	/**
 	 * Checks whether we should trigger the event.
 	 */
@@ -32,6 +32,6 @@ class Delete_Active_Platform_Checkout_Webhook {
 	 * Deletes the active webhook.
 	 */
 	private static function delete() {
-		\WCPay\Platform_Checkout\Platform_Checkout_Order_Status_Sync::remove_webhook();
+		\WCPay\WooPay\WooPay_Order_Status_Sync::remove_webhook();
 	}
 }
