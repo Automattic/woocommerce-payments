@@ -1108,20 +1108,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_off_session( $payment_information->is_merchant_initiated() );
 				$request->set_payment_methods( $payment_methods );
 				$request->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
-				$request->set_return_url(
-					wp_sanitize_redirect(
-						esc_url_raw(
-							add_query_arg(
-								[
-									'order_id'          => $order_id,
-									'wc_payment_method' => self::GATEWAY_ID,
-									'_wpnonce'          => wp_create_nonce( 'wcpay_process_redirect_order_nonce' ),
-								],
-								$this->get_return_url( $order )
+
+				if ( 1 === count( $payment_methods ) && 'card' !== $payment_methods[0] ) {
+					$request->set_return_url(
+						wp_sanitize_redirect(
+							esc_url_raw(
+								add_query_arg(
+									[
+										'order_id' => $order_id,
+										'wc_payment_method' => self::GATEWAY_ID,
+										'_wpnonce' => wp_create_nonce( 'wcpay_process_redirect_order_nonce' ),
+									],
+									$this->get_return_url( $order )
+								)
 							)
 						)
-					)
-				);
+					);
+				}
+
 				// Make sure that setting fingerprint is performed after setting metadata because metadata will override any values you set before for metadata param.
 				$request->set_fingerprint( $payment_information->get_fingerprint() );
 				if ( $save_payment_method_to_store ) {
