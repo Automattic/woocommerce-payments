@@ -877,17 +877,6 @@ class WC_Payments {
 	}
 
 	/**
-	 * Initializes the Platform_Checkout_Store_Api_Token class and returns the Cart token.
-	 *
-	 * @return string The Cart Token.
-	 */
-	private static function init_store_api_token() {
-		$cart_route = Platform_Checkout_Store_Api_Token::init();
-
-		return $cart_route->get_cart_token();
-	}
-
-	/**
 	 * Initialize the REST API controllers.
 	 */
 	public static function init_rest_api() {
@@ -1509,6 +1498,17 @@ class WC_Payments {
 
 		Logger::log( $response_body_json );
 		wp_send_json( json_decode( $response_body_json ) );
+	}
+
+	/**
+	 * Initializes the Platform_Checkout_Store_Api_Token class and returns the Cart token.
+	 *
+	 * @return string The Cart Token.
+	 */
+	private static function init_store_api_token() {
+		$cart_route = Platform_Checkout_Store_Api_Token::init();
+
+		return $cart_route->get_cart_token();
 	}
 
 	/**
