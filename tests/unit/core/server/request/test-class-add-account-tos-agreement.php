@@ -53,6 +53,7 @@ class Add_Account_Tos_Agreement_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $admin_username, $params['user_name'] );
 		$this->assertSame( 'accounts/tos_agreements', $request->get_api() );
 		$this->assertSame( 'POST', $request->get_method() );
+		$this->assertTrue( $request->should_use_user_token() );
 	}
 
 	public function test_add_account_tos_agreement_with_invalid_user_name_param_will_throw_exception() {

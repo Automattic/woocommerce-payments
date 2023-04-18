@@ -56,6 +56,9 @@ class Update_Account_Test extends WCPAY_UnitTestCase {
 		// Assert method and endpoint.
 		$this->assertSame( 'POST', $request->get_method() );
 		$this->assertSame( 'accounts', $request->get_api() );
+
+		// Assert using user token.
+		$this->assertTrue( $request->should_use_user_token() );
 	}
 
 	public function test_from_account_settings_with_empty_input_will_throw_exception() {
