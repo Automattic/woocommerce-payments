@@ -3,7 +3,7 @@
 exports[`RiskLevel Renders elevated risk correctly. 1`] = `
 <div>
   <span
-    style="color: orange;"
+    class="woocommerce-pill css-1qmnemh-Text e15wbhsk0"
   >
     Elevated
   </span>
@@ -13,7 +13,7 @@ exports[`RiskLevel Renders elevated risk correctly. 1`] = `
 exports[`RiskLevel Renders highest risk correctly. 1`] = `
 <div>
   <span
-    style="color: red;"
+    class="woocommerce-pill css-1qmnemh-Text e15wbhsk0"
   >
     Highest
   </span>
@@ -23,7 +23,7 @@ exports[`RiskLevel Renders highest risk correctly. 1`] = `
 exports[`RiskLevel Renders normal risk correctly. 1`] = `
 <div>
   <span
-    style="color: green;"
+    class="woocommerce-pill css-1qmnemh-Text e15wbhsk0"
   >
     Normal
   </span>
@@ -32,7 +32,9 @@ exports[`RiskLevel Renders normal risk correctly. 1`] = `
 
 exports[`RiskLevel Renders not assessed risk correctly. 1`] = `
 <div>
-  <span>
+  <span
+    class="woocommerce-pill css-1qmnemh-Text e15wbhsk0"
+  >
     N/A
   </span>
 </div>
