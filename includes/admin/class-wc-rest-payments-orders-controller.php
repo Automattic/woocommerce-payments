@@ -534,7 +534,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	private function add_fraud_outcome_manual_entry( $order, $action ) {
 		$current_user = wp_get_current_user();
 		$order->add_meta_data(
-			'fraud_outcome_manual_entry',
+			'_wcpay_fraud_outcome_manual_entry',
 			[
 				'type'     => 'fraud_outcome_manual_' . $action,
 				'user'     => [

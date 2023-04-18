@@ -481,7 +481,7 @@ Object {
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens for differences between the shipping information and the billing information (street, state, post code, and country).
+                    This filter screens for differences between the shipping information and the billing information (country).
                   </p>
                 </div>
               </div>
@@ -1372,7 +1372,7 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for differences between the shipping information and the billing information (street, state, post code, and country).
+                  This filter screens for differences between the shipping information and the billing information (country).
                 </p>
               </div>
             </div>
@@ -2328,7 +2328,7 @@ Object {
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens for differences between the shipping information and the billing information (street, state, post code, and country).
+                    This filter screens for differences between the shipping information and the billing information (country).
                   </p>
                 </div>
               </div>
@@ -3006,7 +3006,7 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for differences between the shipping information and the billing information (street, state, post code, and country).
+                  This filter screens for differences between the shipping information and the billing information (country).
                 </p>
               </div>
             </div>
@@ -3734,7 +3734,7 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for differences between the shipping information and the billing information (street, state, post code, and country).
+                  This filter screens for differences between the shipping information and the billing information (country).
                 </p>
               </div>
             </div>
@@ -4378,7 +4378,7 @@ Object {
               <p
                 class="fraud-protection-rule-card-description"
               >
-                This filter screens for differences between the shipping information and the billing information (street, state, post code, and country).
+                This filter screens for differences between the shipping information and the billing information (country).
               </p>
             </div>
           </div>
@@ -5122,7 +5122,7 @@ Object {
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens for differences between the shipping information and the billing information (street, state, post code, and country).
+                    This filter screens for differences between the shipping information and the billing information (country).
                   </p>
                 </div>
               </div>
@@ -5945,7 +5945,7 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for differences between the shipping information and the billing information (street, state, post code, and country).
+                  This filter screens for differences between the shipping information and the billing information (country).
                 </p>
               </div>
             </div>
