@@ -315,6 +315,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/trait-level3.php';
 		include_once __DIR__ . '/core/server/request/trait-order-info.php';
 		include_once __DIR__ . '/core/server/request/trait-date-parameters.php';
+		include_once __DIR__ . '/core/server/request/trait-use-test-mode-only-when-dev-mode.php';
 		include_once __DIR__ . '/core/server/request/class-generic.php';
 		include_once __DIR__ . '/core/server/request/class-get-intention.php';
 		include_once __DIR__ . '/core/server/request/class-create-intention.php';
@@ -323,6 +324,11 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/class-cancel-intention.php';
 		include_once __DIR__ . '/core/server/request/class-create-setup-intention.php';
 		include_once __DIR__ . '/core/server/request/class-create-and-confirm-setup-intention.php';
+		include_once __DIR__ . '/core/server/request/class-get-account.php';
+		include_once __DIR__ . '/core/server/request/class-get-account-login-data.php';
+		include_once __DIR__ . '/core/server/request/class-get-account-capital-link.php';
+		include_once __DIR__ . '/core/server/request/class-add-account-tos-agreement.php';
+		include_once __DIR__ . '/core/server/request/class-update-account.php';
 		include_once __DIR__ . '/core/server/request/class-get-charge.php';
 		include_once __DIR__ . '/core/server/request/class-woopay-create-intent.php';
 		include_once __DIR__ . '/core/server/request/class-create-and-confirm-intention.php';
@@ -330,11 +336,14 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/class-woopay-create-and-confirm-setup-intention.php';
 		include_once __DIR__ . '/core/server/request/class-paginated.php';
 		include_once __DIR__ . '/core/server/request/class-list-transactions.php';
+		include_once __DIR__ . '/core/server/request/class-list-fraud-outcome-transactions.php';
 		include_once __DIR__ . '/core/server/request/class-list-disputes.php';
 		include_once __DIR__ . '/core/server/request/class-list-deposits.php';
 		include_once __DIR__ . '/core/server/request/class-list-documents.php';
 		include_once __DIR__ . '/core/server/request/class-list-authorizations.php';
 		include_once __DIR__ . '/core/server/request/class-woopay-create-and-confirm-setup-intention.php';
+		include_once __DIR__ . '/core/server/request/class-refund-charge.php';
+		include_once __DIR__ . '/core/server/request/class-list-charge-refunds.php';
 
 		include_once __DIR__ . '/woopay/services/class-checkout-service.php';
 
@@ -376,7 +385,10 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-process-payment-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-webhook-data-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-price-exception.php';
+		include_once __DIR__ . '/exceptions/class-fraud-ruleset-exception.php';
+		include_once __DIR__ . '/exceptions/class-order-not-found-exception.php';
 		include_once __DIR__ . '/constants/class-base-constant.php';
+		include_once __DIR__ . '/constants/class-fraud-meta-box-type.php';
 		include_once __DIR__ . '/constants/class-order-status.php';
 		include_once __DIR__ . '/constants/class-payment-type.php';
 		include_once __DIR__ . '/constants/class-payment-initiated-by.php';
@@ -398,6 +410,8 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-webhook-reliability-service.php';
 		include_once __DIR__ . '/fraud-prevention/class-fraud-prevention-service.php';
 		include_once __DIR__ . '/fraud-prevention/class-buyer-fingerprinting-service.php';
+		include_once __DIR__ . '/fraud-prevention/class-fraud-risk-tools.php';
+		include_once __DIR__ . '/fraud-prevention/wc-payments-fraud-risk-tools.php';
 		include_once __DIR__ . '/platform-checkout/class-platform-checkout-utilities.php';
 		include_once __DIR__ . '/platform-checkout/class-platform-checkout-order-status-sync.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-link.php';
@@ -487,7 +501,7 @@ class WC_Payments {
 
 		// Payment Request and Apple Pay.
 		self::$payment_request_button_handler   = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway() );
-		self::$platform_checkout_button_handler = new WC_Payments_Platform_Checkout_Button_Handler( self::$account, self::get_gateway() );
+		self::$platform_checkout_button_handler = new WC_Payments_Platform_Checkout_Button_Handler( self::$account, self::get_gateway(), self::$platform_checkout_util );
 		self::$apple_pay_registration           = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
@@ -515,8 +529,9 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
 		WC_Payments_Explicit_Price_Formatter::init();
 
-		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-captured-event-note.php';
+		include_once WCPAY_ABSPATH . 'includes/class-wc-payments-captured-event-note.php';
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin-settings.php';
+		include_once WCPAY_ABSPATH . 'includes/fraud-prevention/class-order-fraud-and-risk-meta-box.php';
 
 		// Add admin screens.
 		if ( is_admin() ) {
@@ -535,6 +550,10 @@ class WC_Payments {
 			new WC_Payments_Admin_Sections_Overwrite( self::get_account_service() );
 
 			new WC_Payments_Status( self::get_wc_payments_http(), self::get_account_service() );
+
+			if ( WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
+				new WCPay\Fraud_Prevention\Order_Fraud_And_Risk_Meta_Box( self::$order_service );
+			}
 		}
 
 		// Load WCPay Subscriptions.
@@ -888,6 +907,10 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-orders-controller.php';
 		$orders_controller = new WC_REST_Payments_Orders_Controller( self::$api_client, self::get_gateway(), self::$customer_service, self::$order_service );
 		$orders_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-fraud-outcomes-controller.php';
+		$fraud_outcomes_controller = new WC_REST_Payments_Fraud_Outcomes_Controller( self::$api_client );
+		$fraud_outcomes_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-timeline-controller.php';
 		$timeline_controller = new WC_REST_Payments_Timeline_Controller( self::$api_client );

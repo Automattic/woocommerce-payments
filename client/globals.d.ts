@@ -9,8 +9,9 @@ declare const wcpaySettings: {
 	isSubscriptionsActive: boolean;
 	featureFlags: {
 		customSearch: boolean;
-		customDepositSchedules: boolean;
 		isAuthAndCaptureEnabled: boolean;
+		simplifyDepositsUi?: boolean;
+		paymentTimeline: boolean;
 	};
 	fraudServices: unknown[];
 	isJetpackConnected: boolean;
@@ -22,7 +23,15 @@ declare const wcpaySettings: {
 		status?: string;
 		country?: string;
 		paymentsEnabled?: boolean;
-		deposits?: Array< any >;
+		deposits?: {
+			status: string;
+			interval: string;
+			weekly_anchor: string;
+			monthly_anchor: null | number;
+			delay_days: null | number;
+			completed_waiting_period: boolean;
+			minimum_deposit_amounts: Record< string, number >;
+		};
 		depositsStatus?: string;
 		currentDeadline?: bigint;
 		pastDue?: boolean;
@@ -53,6 +62,13 @@ declare const wcpaySettings: {
 	restUrl: string;
 	shouldUseExplicitPrice: boolean;
 	numDisputesNeedingResponse: string;
+	fraudProtection: {
+		isWelcomeTourDismissed?: boolean;
+	};
+	accountDefaultCurrency: string;
+	isFraudProtectionSettingsEnabled: boolean;
+	frtDiscoverBannerSettings: string;
+	onboardingTestMode: boolean;
 };
 
 declare const wcTracks: any;

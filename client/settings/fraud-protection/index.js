@@ -11,20 +11,27 @@ import { Card } from '@wordpress/components';
 import CardBody from '../card-body';
 import { ProtectionLevels } from './components';
 import './style.scss';
+import FraudProtectionTour from './tour';
 
 const FraudProtection = () => {
 	return (
-		<Card className="fraud-protection">
-			<CardBody>
-				<h4>
-					{ __(
-						'Set your payment risk level',
-						'woocommerce-payments'
-					) }
-				</h4>
-				<ProtectionLevels />
-			</CardBody>
-		</Card>
+		<>
+			<Card className="fraud-protection">
+				<CardBody>
+					<h4>
+						<span id="fraud-protection-card-title">
+							{ __(
+								'Set your payment risk level',
+								'woocommerce-payments'
+							) }
+						</span>
+					</h4>
+					<ProtectionLevels />
+				</CardBody>
+			</Card>
+
+			<FraudProtectionTour />
+		</>
 	);
 };
 

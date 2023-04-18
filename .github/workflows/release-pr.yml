@@ -94,21 +94,17 @@ jobs:
           # 'Version' header in woocommerce-payments.php
           sed -i "s/^ \* Version: .*$/ * Version: $RELEASE_VERSION/" woocommerce-payments.php
 
-          # 'version' field in package.json
-          sed -ri 's/("version": )".*"/\1"'${RELEASE_VERSION}'"/' package.json
+          # 'version' field in package.json and package-lock.json
+          npm version $RELEASE_VERSION --no-git-tag-version
 
           # 'Stable tag' header in readme.txt;
           sed -i "s/^Stable tag: .*$/Stable tag: $RELEASE_VERSION/" readme.txt
-
-          # Duplicate the generated changelog into the Changelog section from the readme.txt
-          sed -ri "s|(== Changelog ==)|\1\n\n= $RELEASE_VERSION - $RELEASE_DATE =\n$CHANGELOG|" readme.txt
 
       - name: "Commit and push changes"
         env:
           RELEASE_VERSION: ${{ steps.create_branch.outputs.trimmed-version }}
           BRANCH_NAME: ${{ steps.create_branch.outputs.branch-name }}
         run: |
-          npm install # To update package-lock.json with the new version of the plugin
           git config user.name "github-actions[bot]"
           # We could consider fetching the bot's ID through an API call to be future-proof. Hardcoded for now.
           # See https://github.com/Automattic/woocommerce-payments/pull/5200#discussion_r1034560144
@@ -124,7 +120,7 @@ jobs:
           CHANGELOG: ${{ steps.generate_changelog.outputs.changelog }}
           RELEASE_VERSION: ${{ steps.create_branch.outputs.trimmed-version }}
         run: |
-          PR_BODY=$(echo -e ":warning: Please do not merge the PR from the GitHub interface. :warning:\n\n Instead, you can use the following command:\n\`\`\`\n git checkout trunk && git pull \n git merge --no-ff $BRANCH_NAME -m 'Merge $BRANCH_NAME into trunk' \n git push origin trunk \n\`\`\` \n Changelog: \n\`\`\`\n${CHANGELOG}\n\`\`\`")
+          PR_BODY=$(echo -e ":warning: Please do not merge the PR from the GitHub interface. :warning:\n\n Instead, you can use the following command:\n\`\`\`\n git checkout $BRANCH_NAME && git pull \n git checkout trunk && git pull \n git merge --no-ff $BRANCH_NAME -m 'Merge $BRANCH_NAME into trunk' \n git push origin trunk \n\`\`\` \n Changelog: \n\`\`\`\n${CHANGELOG}\n\`\`\`")
           PR_URL=$(gh pr create --title "Release branch for $RELEASE_VERSION" --body="$PR_BODY" --base="trunk")
           PR_ID=${PR_URL##*/}
           if [[ $PR_ID =~ ^[0-9]+$ ]]; then
