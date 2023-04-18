@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Migrate login_links, capital_links, tos_agreement to use the core Request class.
