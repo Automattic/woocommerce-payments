@@ -254,9 +254,7 @@ describe( 'Deposits Overview information', () => {
 			deposits: mockDeposits,
 			isLoading: false,
 		} );
-		mockDepositOverviews( [
-			createMockNewAccountOverview( 'usd', 100, 100 ),
-		] );
+		mockDepositOverviews( [ createMockNewAccountOverview( 'usd' ) ] );
 		mockUseSelectedCurrency.mockReturnValue( {
 			selectedCurrency: 'usd',
 			setSelectedCurrency: mockSetSelectedCurrency,
@@ -538,5 +536,56 @@ describe( 'Suspended Deposit Notice Renders', () => {
 	test( 'Component Renders', () => {
 		const { container } = render( <SuspendedDepositNotice /> );
 		expect( container ).toMatchSnapshot();
+	} );
+} );
+
+describe( 'Paused Deposit notice Renders', () => {
+	test( 'When available balance is negative', () => {
+		const overview = createMockOverview( 'usd', 100, 0, 'estimated' );
+		mockUseDeposits.mockReturnValue( {
+			depositsCount: 0,
+			deposits: mockDeposits,
+			isLoading: false,
+		} );
+		mockDepositOverviews( [
+			// Negative 100 available balance
+			createMockNewAccountOverview( 'usd', 100, -100 ),
+		] );
+		mockUseSelectedCurrency.mockReturnValue( {
+			selectedCurrency: 'usd',
+			setSelectedCurrency: mockSetSelectedCurrency,
+		} );
+
+		const { getByText } = render(
+			<NextDepositDetails isLoading={ false } overview={ overview } />
+		);
+		getByText(
+			'Deposits may be interrupted while your WooCommerce Payments balance remains negative. Why?'
+		);
+	} );
+	test( 'When available balance is positive', () => {
+		const overview = createMockOverview( 'usd', 100, 0, 'estimated' );
+		mockUseDeposits.mockReturnValue( {
+			depositsCount: 0,
+			deposits: mockDeposits,
+			isLoading: false,
+		} );
+		mockDepositOverviews( [
+			// Positive 100 available balance
+			createMockNewAccountOverview( 'usd', 100, 100 ),
+		] );
+		mockUseSelectedCurrency.mockReturnValue( {
+			selectedCurrency: 'usd',
+			setSelectedCurrency: mockSetSelectedCurrency,
+		} );
+
+		const { queryByText } = render(
+			<NextDepositDetails isLoading={ false } overview={ overview } />
+		);
+		expect(
+			queryByText(
+				'Deposits may be interrupted while your WooCommerce Payments balance remains negative. Why?'
+			)
+		).toBeFalsy();
 	} );
 } );
