@@ -11,7 +11,13 @@ import { Notice } from '@wordpress/components';
 import { TipIcon } from 'wcpay/icons';
 import { ProtectionLevel } from '../../advanced-settings/constants';
 
-const ProtectionLevelModalNotice = ( { level } ) => {
+interface ProtectionLevelModalNoticeProps {
+	level: string;
+}
+
+const ProtectionLevelModalNotice: React.FC< ProtectionLevelModalNoticeProps > = ( {
+	level,
+} ) => {
 	const modalTexts = {
 		[ ProtectionLevel.BASIC ]: __(
 			'Provides basic anti-fraud protection only.',

@@ -15,6 +15,7 @@ declare module '@woocommerce/currency' {
 	interface CurrencyInterface {
 		formatAmount: ( n: number ) => string;
 		formatCurrency: ( n: number ) => string;
+		getCurrencyConfig: () => CurrencyConfig;
 	}
 
 	export default function CurrencyFactory(

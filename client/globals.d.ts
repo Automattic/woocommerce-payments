@@ -46,6 +46,10 @@ declare const wcpaySettings: {
 			tpv: number;
 			firstTransactionDate?: string;
 		};
+		fraudProtection: {
+			declineOnAVSFailure: boolean;
+			declineOnCVCFailure: boolean;
+		};
 	};
 	accountLoans: {
 		has_active_loan: boolean;
@@ -69,6 +73,8 @@ declare const wcpaySettings: {
 	isFraudProtectionSettingsEnabled: boolean;
 	frtDiscoverBannerSettings: string;
 	onboardingTestMode: boolean;
+	storeCurrency: string;
+	isMultiCurrencyEnabled: string;
 };
 
 declare const wcTracks: any;

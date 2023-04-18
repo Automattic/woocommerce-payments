@@ -5,6 +5,7 @@ import React from 'react';
 import { __ } from '@wordpress/i18n';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import { useState } from '@wordpress/element';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -14,25 +15,25 @@ import {
 	useAdvancedFraudProtectionSettings,
 } from 'wcpay/data';
 import { FraudProtectionHelpText, BasicFraudProtectionModal } from '../index';
-import { Button } from '@wordpress/components';
 import { getAdminUrl } from 'wcpay/utils';
 import { ProtectionLevel } from '../../advanced-settings/constants';
 import InlineNotice from '../../../../components/inline-notice';
 import wcpayTracks from 'tracks';
+import { UseCurrentProtectionLevel } from '../../interfaces';
 
-const ProtectionLevels = () => {
+const ProtectionLevels: React.FC = () => {
 	const [ isBasicModalOpen, setBasicModalOpen ] = useState( false );
 
 	const [
 		currentProtectionLevel,
 		updateProtectionLevel,
-	] = useCurrentProtectionLevel();
+	] = useCurrentProtectionLevel() as UseCurrentProtectionLevel;
 
 	const [
 		advancedFraudProtectionSettings,
 	] = useAdvancedFraudProtectionSettings();
 
-	const handleLevelChange = ( level ) => {
+	const handleLevelChange = ( level: string ) => {
 		wcpayTracks.recordEvent(
 			'wcpay_fraud_protection_risk_level_preset_enabled',
 			{ preset: level }
@@ -40,10 +41,22 @@ const ProtectionLevels = () => {
 		updateProtectionLevel( level );
 	};
 
+	const handleBasicModalOpen = () => {
+		wcpayTracks.recordEvent(
+			'wcpay_fraud_protection_basic_modal_viewed',
+			{}
+		);
+		setBasicModalOpen( true );
+	};
+
 	return (
 		<>
 			{ 'error' === advancedFraudProtectionSettings && (
-				<InlineNotice status="error" isDismissible={ false }>
+				<InlineNotice
+					status="error"
+					isDismissible={ false }
+					className={ '' }
+				>
 					{ __(
 						'There was an error retrieving your fraud protection settings. Please refresh the page to try again.',
 						'woocommerce-payments'
@@ -80,12 +93,7 @@ const ProtectionLevels = () => {
 								size={ 18 }
 								title="Basic level help icon"
 								className="fraud-protection__help-icon"
-								onClick={ () => {
-									wcpayTracks.recordEvent(
-										'wcpay_fraud_protection_basic_modal_viewed'
-									);
-									setBasicModalOpen( true );
-								} }
+								onClick={ handleBasicModalOpen }
 							/>
 							<BasicFraudProtectionModal
 								level={ ProtectionLevel.BASIC }

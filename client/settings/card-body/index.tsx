@@ -10,12 +10,13 @@ import classNames from 'classnames';
  */
 import './styles.scss';
 
-const WcpayCardBody = ( {
+interface WcpayCardBodyProps {
+	className?: string;
+}
+
+const WcpayCardBody: React.FC< WcpayCardBodyProps > = ( {
 	className,
 	...props
-}: {
-	className?: string;
-	children?: JSX.Element;
 } ): JSX.Element => (
 	<CardBody
 		className={ classNames( 'wcpay-card-body', className ) }

@@ -37,8 +37,14 @@ import './../style.scss';
 import { ProtectionLevel } from './constants';
 import { readRuleset, writeRuleset } from './utils';
 import wcpayTracks from 'tracks';
+import {
+	UseCurrentProtectionLevel,
+	UseAdvancedFraudPreventionSettings,
+	ProtectionSettingsUI,
+	UseSettings,
+} from '../interfaces';
 
-const observerEventMapping = {
+const observerEventMapping: { [ key: string ]: string } = {
 	'avs-mismatch-card':
 		'wcpay_fraud_protection_advanced_settings_card_avs_mismatch_viewed',
 	'cvc-verification-card':
@@ -72,34 +78,40 @@ const Breadcrumb = () => (
 	</h2>
 );
 
-const SaveFraudProtectionSettingsButton = ( { children } ) => {
+const SaveFraudProtectionSettingsButton: React.FC = ( { children } ) => {
 	const headerElement = document.querySelector(
 		'.woocommerce-layout__header-wrapper'
 	);
 	return headerElement && ReactDOM.createPortal( children, headerElement );
 };
 
-const FraudProtectionAdvancedSettingsPage = () => {
-	const { saveSettings, isLoading, isSaving } = useSettings();
+const FraudProtectionAdvancedSettingsPage: React.FC = () => {
+	const { saveSettings, isLoading, isSaving } = useSettings() as UseSettings;
 
-	const cardObserver = useRef( null );
+	const cardObserver = useRef< IntersectionObserver | null >( null );
 
 	const [
 		currentProtectionLevel,
 		updateProtectionLevel,
-	] = useCurrentProtectionLevel();
+	] = useCurrentProtectionLevel() as UseCurrentProtectionLevel;
 	const [
 		advancedFraudProtectionSettings,
 		updateAdvancedFraudProtectionSettings,
-	] = useAdvancedFraudProtectionSettings();
-	const [ validationError, setValidationError ] = useState( null );
-	const [ protectionSettingsUI, setProtectionSettingsUI ] = useState( {} );
+	] = useAdvancedFraudProtectionSettings() as UseAdvancedFraudPreventionSettings;
+	const [ validationError, setValidationError ] = useState< string | null >(
+		null
+	);
+	const [ protectionSettingsUI, setProtectionSettingsUI ] = useState<
+		ProtectionSettingsUI
+	>( {} );
 	const [
 		protectionSettingsChanged,
 		setProtectionSettingsChanged,
 	] = useState( false );
 
 	useEffect( () => {
+		if ( typeof advancedFraudProtectionSettings === 'string' ) return;
+
 		setProtectionSettingsUI(
 			readRuleset( advancedFraudProtectionSettings )
 		);
@@ -112,12 +124,15 @@ const FraudProtectionAdvancedSettingsPage = () => {
 		if ( saveButton ) {
 			document
 				.querySelector( '.woocommerce-layout__header-heading' )
-				.after( saveButton );
+				?.after( saveButton );
 		}
 	} );
 
-	const validateSettings = ( fraudProtectionSettings ) => {
+	const validateSettings = (
+		fraudProtectionSettings: ProtectionSettingsUI
+	) => {
 		setValidationError( null );
+
 		const validators = {
 			order_items_threshold: OrderItemsThresholdValidation,
 			purchase_price_threshold: PurchasePriceThresholdValidation,
@@ -125,7 +140,7 @@ const FraudProtectionAdvancedSettingsPage = () => {
 
 		return Object.keys( validators )
 			.map( ( key ) =>
-				validators[ key ](
+				validators[ key as keyof typeof validators ](
 					fraudProtectionSettings[ key ],
 					setValidationError
 				)
@@ -170,27 +185,29 @@ const FraudProtectionAdvancedSettingsPage = () => {
 		if ( wcSettingsMenuItem ) {
 			wcSettingsMenuItem.setAttribute( 'aria-current', 'page' );
 			wcSettingsMenuItem.classList.add( 'current' );
-			wcSettingsMenuItem.parentElement.classList.add( 'current' );
+			wcSettingsMenuItem.parentElement?.classList.add( 'current' );
 		}
 	}, [] );
 
 	// Intersection observer callback for tracking card viewed events.
-	const observerCallback = ( entries ) => {
-		entries.forEach( ( entry ) => {
+	const observerCallback = ( entries: IntersectionObserverEntry[] ) => {
+		entries.forEach( ( entry: IntersectionObserverEntry ) => {
 			const { target, intersectionRatio } = entry;
 
 			if ( 0 < intersectionRatio ) {
-				// element is at least partially visible.
+				// Element is at least partially visible.
 				const { id } = target;
 				const event = observerEventMapping[ id ] || null;
 
 				if ( event ) {
-					wcpayTracks.recordEvent( event );
+					wcpayTracks.recordEvent( event, {} );
 				}
 
-				cardObserver.current?.unobserve(
-					document.getElementById( id )
-				);
+				const element = document.getElementById( id );
+
+				if ( element ) {
+					cardObserver.current?.unobserve( element );
+				}
 			}
 		} );
 	};

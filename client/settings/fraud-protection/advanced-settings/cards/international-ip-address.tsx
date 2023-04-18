@@ -15,7 +15,7 @@ import FraudProtectionRuleToggle from '../rule-toggle';
 import AllowedCountriesNotice from '../allow-countries-notice';
 import { getAdminUrl } from 'wcpay/utils';
 
-const InternationalIPAddressRuleCard = () => {
+const InternationalIPAddressRuleCard: React.FC = () => {
 	return (
 		<FraudProtectionRuleCard
 			title={ __( 'International IP Address', 'woocommerce-payments' ) }

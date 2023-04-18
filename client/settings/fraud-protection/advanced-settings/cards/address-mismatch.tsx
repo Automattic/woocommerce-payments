@@ -11,7 +11,7 @@ import FraudProtectionRuleCard from '../rule-card';
 import FraudProtectionRuleDescription from '../rule-description';
 import FraudProtectionRuleToggle from '../rule-toggle';
 
-const AddressMismatchRuleCard = () => (
+const AddressMismatchRuleCard: React.FC = () => (
 	<FraudProtectionRuleCard
 		title={ __( 'Address Mismatch', 'woocommerce-payments' ) }
 		description={ __(

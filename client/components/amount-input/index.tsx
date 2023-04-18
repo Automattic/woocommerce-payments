@@ -4,18 +4,28 @@
 import React, { useCallback, useEffect } from 'react';
 import './style.scss';
 
-const AmountInput = ( {
+interface AmountInputProps {
+	id?: string;
+	prefix?: string;
+	value: string;
+	placeholder?: string;
+	help?: string;
+	onChange?: ( value: string ) => void;
+}
+
+const AmountInput: React.FC< AmountInputProps > = ( {
 	id,
 	prefix,
 	value,
 	placeholder,
 	help,
-	onChange = () => {},
+	onChange = () => null,
 } ) => {
-	const validateInput = useCallback( ( subject ) => {
-		// Only allow decimals, a single dot, and more decimals (or an empty value).
-		return /^(\d+\.?\d*)?$/m.test( subject );
-	}, [] );
+	// Only allow decimals, a single dot, and more decimals (or an empty value).
+	const validateInput = useCallback(
+		( subject ) => /^(\d+\.?\d*)?$/m.test( subject ),
+		[]
+	);
 
 	useEffect( () => {
 		if ( ! validateInput( value ) ) {
@@ -23,11 +33,11 @@ const AmountInput = ( {
 		}
 	}, [ validateInput, value, onChange ] );
 
-	if ( isNaN( value ) || null === value ) value = '';
+	if ( isNaN( Number( value ) ) || null === value ) value = '';
 
-	const handleChange = ( inputvalue ) => {
-		if ( validateInput( inputvalue ) ) {
-			onChange( inputvalue );
+	const handleChange = ( inputValue: string ) => {
+		if ( validateInput( inputValue ) ) {
+			onChange( inputValue );
 		}
 	};
 

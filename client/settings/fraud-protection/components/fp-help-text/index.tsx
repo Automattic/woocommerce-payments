@@ -5,7 +5,7 @@ import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { ProtectionLevel } from '../../advanced-settings/constants';
 
-const getFraudProtectionLevelText = function ( level ) {
+const getFraudProtectionLevelText = function ( level: string ) {
 	switch ( level ) {
 		case ProtectionLevel.HIGH:
 			return __(
@@ -32,7 +32,13 @@ const getFraudProtectionLevelText = function ( level ) {
 	}
 };
 
-const FraudProtectionHelpText = ( { level } ) => {
+interface FraudProtectionHelpTextProps {
+	level: string;
+}
+
+const FraudProtectionHelpText: React.FC< FraudProtectionHelpTextProps > = ( {
+	level,
+} ) => {
 	return (
 		<p className={ 'fraud-protection__text--help-text' }>
 			{ getFraudProtectionLevelText( level ) }

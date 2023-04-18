@@ -13,32 +13,33 @@ import FraudProtectionRuleCard from '../rule-card';
 import FraudProtectionRuleDescription from '../rule-description';
 import FraudProtectionRuleCardNotice from '../rule-card-notice';
 
-const CVCVerificationRuleCard = () => {
-	const declineOnCVCFailure =
-		window.wcpaySettings?.accountStatus?.fraudProtection
-			?.declineOnCVCFailure ?? true;
+const AVSMismatchRuleCard: React.FC = () => {
+	const declineOnAVSFailure =
+		wcpaySettings?.accountStatus?.fraudProtection?.declineOnAVSFailure ??
+		true;
 	return (
 		<FraudProtectionRuleCard
-			title={ __( 'CVC Verification', 'woocommerce-payments' ) }
+			title={ __( 'AVS Mismatch', 'woocommerce-payments' ) }
 			description={ __(
-				'This filter checks the security code submitted by the customer against the data on file with the card issuer.',
+				'This filter compares the street number and the post code submitted by the customer against the data on ' +
+					'file with the card issuer.',
 				'woocommerce-payments'
 			) }
-			id="cvc-verification-card"
+			id="avs-mismatch-card"
 		>
 			<FraudProtectionRuleDescription>
 				{ __(
-					'Because the card security code appears only on the card and not on receipts or statements, the card security code ' +
-						'provides some assurance that the physical card is in the possession of the buyer.',
+					'Buyers who can provide the street number and post code on file with the issuing bank ' +
+						'are more likely to be the actual account holder. AVS matches, however, are not a guarantee.',
 					'woocommerce-payments'
 				) }
 			</FraudProtectionRuleDescription>
 			<FraudProtectionRuleCardNotice type="warning">
-				{ declineOnCVCFailure
+				{ declineOnAVSFailure
 					? interpolateComponents( {
 							mixedString: __(
-								'For security, this filter is enabled and cannot be modified. Payments failing CVC verification ' +
-									'will be blocked. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+								'For security, this filter is enabled and cannot be modified. Payments failing address ' +
+									'verification will be blocked. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 								'woocommerce-payments'
 							),
 							components: {
@@ -61,4 +62,4 @@ const CVCVerificationRuleCard = () => {
 	);
 };
 
-export default CVCVerificationRuleCard;
+export default AVSMismatchRuleCard;

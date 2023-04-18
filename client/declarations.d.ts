@@ -1,6 +1,8 @@
 declare module 'gridicons/dist/*' {
 	type GridiconParams = {
 		size?: number;
+		title?: string;
+		onClick?: ( event: React.MouseEvent< SVGElement > ) => void;
 		className?: string;
 	};
 	const Gridicon: ( props: GridiconParams ) => JSX.Element;

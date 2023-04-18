@@ -11,7 +11,14 @@ import './../style.scss';
 import BannerNotice from 'wcpay/components/banner-notice';
 import { TipIcon } from 'wcpay/icons';
 
-const FraudProtectionRuleCardNotice = ( { type, children } ) => {
+interface FraudProtectionRuleCardNoticeProps {
+	type: any;
+}
+
+const FraudProtectionRuleCardNotice: React.FC< FraudProtectionRuleCardNoticeProps > = ( {
+	type,
+	children,
+} ) => {
 	const supportedTypes = [ 'error', 'warning', 'info' ];
 
 	if ( ! supportedTypes.includes( type ) ) {
@@ -28,7 +35,7 @@ const FraudProtectionRuleCardNotice = ( { type, children } ) => {
 
 	return (
 		<BannerNotice
-			status={ type }
+			status={ type } // Type 'string' is not assignable to type 'Status | undefined'.
 			icon={ icon }
 			className={
 				'fraud-protection-rule-card-notice fraud-protection-rule-card-notice-' +

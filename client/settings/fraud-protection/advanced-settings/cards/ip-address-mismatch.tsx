@@ -13,7 +13,7 @@ import FraudProtectionRuleCard from '../rule-card';
 import FraudProtectionRuleDescription from '../rule-description';
 import FraudProtectionRuleToggle from '../rule-toggle';
 
-const IPAddressMismatchRuleCard = () => (
+const IPAddressMismatchRuleCard: React.FC = () => (
 	<FraudProtectionRuleCard
 		title={ __( 'IP Address Mismatch', 'woocommerce-payments' ) }
 		description={ interpolateComponents( {

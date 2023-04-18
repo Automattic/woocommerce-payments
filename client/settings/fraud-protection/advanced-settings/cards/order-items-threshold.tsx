@@ -1,7 +1,13 @@
 /**
  * External dependencies
  */
-import React, { useContext, useEffect, useState } from 'react';
+import React, {
+	useContext,
+	useEffect,
+	useState,
+	Dispatch,
+	SetStateAction,
+} from 'react';
 import { __ } from '@wordpress/i18n';
 import { TextControl } from '@wordpress/components';
 
@@ -13,18 +19,25 @@ import FraudProtectionRuleToggle from '../rule-toggle';
 import FraudProtectionRuleCardNotice from '../rule-card-notice';
 import FraudProtectionRuleDescription from '../rule-description';
 import FraudPreventionSettingsContext from '../context';
+import { FraudPreventionSetting } from '../../interfaces';
 
-const OrderItemsThresholdCustomForm = ( { setting } ) => {
+interface OrderItemsThresholdCustomFormProps {
+	setting: string;
+}
+
+const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProps > = ( {
+	setting,
+} ) => {
 	const { protectionSettingsUI, setProtectionSettingsUI } = useContext(
 		FraudPreventionSettingsContext
 	);
 
 	const minItemsTemp = parseInt(
-		protectionSettingsUI[ setting ].min_items,
+		protectionSettingsUI[ setting ].min_items?.toString() || '',
 		10
 	);
 	const maxItemsTemp = parseInt(
-		protectionSettingsUI[ setting ].max_items,
+		protectionSettingsUI[ setting ].max_items?.toString() || '',
 		10
 	);
 
@@ -48,9 +61,11 @@ const OrderItemsThresholdCustomForm = ( { setting } ) => {
 	] );
 
 	const isItemRangeEmpty =
-		! parseInt( minItemsCount, 10 ) && ! parseInt( maxItemsCount, 10 );
+		! parseInt( minItemsCount?.toString() || '', 10 ) &&
+		! parseInt( maxItemsCount?.toString() || '', 10 );
 	const isMinGreaterThanMax =
-		parseInt( minItemsCount, 10 ) > parseInt( maxItemsCount, 10 );
+		parseInt( minItemsCount?.toString() || '', 10 ) >
+		parseInt( maxItemsCount?.toString() || '', 10 );
 
 	return (
 		<div className="fraud-protection-rule-toggle-children-container">
@@ -130,7 +145,7 @@ const OrderItemsThresholdCustomForm = ( { setting } ) => {
 		</div>
 	);
 };
-const OrderItemsThresholdRuleCard = () => (
+const OrderItemsThresholdRuleCard: React.FC = () => (
 	<FraudProtectionRuleCard
 		title={ __( 'Order Items Threshold', 'woocommerce-payments' ) }
 		description={ __(
@@ -163,11 +178,18 @@ const OrderItemsThresholdRuleCard = () => (
 );
 
 export const OrderItemsThresholdValidation = (
-	{ enabled, min_items: minItems, max_items: maxItems },
-	setValidationError
-) => {
+	{
+		enabled,
+		min_items: minItems,
+		max_items: maxItems,
+	}: FraudPreventionSetting,
+	setValidationError: Dispatch< SetStateAction< string | null > >
+): boolean => {
 	if ( enabled ) {
-		if ( ! parseInt( minItems, 10 ) && ! parseInt( maxItems, 10 ) ) {
+		if (
+			! parseInt( minItems?.toString() || '', 10 ) &&
+			! parseInt( maxItems?.toString() || '', 10 )
+		) {
 			setValidationError(
 				__(
 					'An item range must be set for the "Order Item Threshold" filter.',
@@ -176,7 +198,10 @@ export const OrderItemsThresholdValidation = (
 			);
 			return false;
 		}
-		if ( parseInt( minItems, 10 ) > parseInt( maxItems, 10 ) ) {
+		if (
+			parseInt( minItems?.toString() || '', 10 ) >
+			parseInt( maxItems?.toString() || '', 10 )
+		) {
 			setValidationError(
 				__(
 					'Maximum item count must be greater than the minimum item count on the "Order Item Threshold" rule.',

@@ -3,6 +3,8 @@
 export const ProtectionLevel = {
 	BASIC: 'basic',
 	ADVANCED: 'advanced',
+	STANDARD: 'standard',
+	HIGH: 'high',
 };
 
 export const Outcomes = {

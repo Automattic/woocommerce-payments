@@ -13,33 +13,32 @@ import FraudProtectionRuleCard from '../rule-card';
 import FraudProtectionRuleDescription from '../rule-description';
 import FraudProtectionRuleCardNotice from '../rule-card-notice';
 
-const AVSMismatchRuleCard = () => {
-	const declineOnAVSFailure =
-		window.wcpaySettings?.accountStatus?.fraudProtection
-			?.declineOnAVSFailure ?? true;
+const CVCVerificationRuleCard: React.FC = () => {
+	const declineOnCVCFailure =
+		wcpaySettings?.accountStatus?.fraudProtection?.declineOnCVCFailure ??
+		true;
 	return (
 		<FraudProtectionRuleCard
-			title={ __( 'AVS Mismatch', 'woocommerce-payments' ) }
+			title={ __( 'CVC Verification', 'woocommerce-payments' ) }
 			description={ __(
-				'This filter compares the street number and the post code submitted by the customer against the data on ' +
-					'file with the card issuer.',
+				'This filter checks the security code submitted by the customer against the data on file with the card issuer.',
 				'woocommerce-payments'
 			) }
-			id="avs-mismatch-card"
+			id="cvc-verification-card"
 		>
 			<FraudProtectionRuleDescription>
 				{ __(
-					'Buyers who can provide the street number and post code on file with the issuing bank ' +
-						'are more likely to be the actual account holder. AVS matches, however, are not a guarantee.',
+					'Because the card security code appears only on the card and not on receipts or statements, the card security code ' +
+						'provides some assurance that the physical card is in the possession of the buyer.',
 					'woocommerce-payments'
 				) }
 			</FraudProtectionRuleDescription>
 			<FraudProtectionRuleCardNotice type="warning">
-				{ declineOnAVSFailure
+				{ declineOnCVCFailure
 					? interpolateComponents( {
 							mixedString: __(
-								'For security, this filter is enabled and cannot be modified. Payments failing address ' +
-									'verification will be blocked. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+								'For security, this filter is enabled and cannot be modified. Payments failing CVC verification ' +
+									'will be blocked. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 								'woocommerce-payments'
 							),
 							components: {
@@ -62,4 +61,4 @@ const AVSMismatchRuleCard = () => {
 	);
 };
 
-export default AVSMismatchRuleCard;
+export default CVCVerificationRuleCard;

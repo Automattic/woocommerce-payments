@@ -403,7 +403,7 @@ export const useSettings = () => {
 			} = select( STORE_NAME );
 
 			const isLoading =
-				isResolving( 'getSettings' ) ||
+				!! isResolving( 'getSettings' ) ||
 				! hasFinishedResolution( 'getSettings' );
 
 			return {

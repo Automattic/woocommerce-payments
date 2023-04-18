@@ -11,12 +11,18 @@ import { Button, Modal } from '@wordpress/components';
 import ProtectionLevelModalNotice from '../protection-level-modal-notice';
 import interpolateComponents from '@automattic/interpolate-components';
 
-export const BasicFraudProtectionModal = ( {
+interface BasicFraudProtectionModalProps {
+	level: string;
+	isBasicModalOpen: boolean;
+	setBasicModalOpen: ( isOpen: boolean ) => void;
+}
+
+export const BasicFraudProtectionModal: React.FC< BasicFraudProtectionModalProps > = ( {
 	level,
 	isBasicModalOpen,
 	setBasicModalOpen,
 } ) => {
-	const { declineOnAVSFailure, declineOnCVCFailure } = window.wcpaySettings
+	const { declineOnAVSFailure, declineOnCVCFailure } = wcpaySettings
 		?.accountStatus?.fraudProtection ?? {
 		declineOnAVSFailure: true,
 		declineOnCVCFailure: true,

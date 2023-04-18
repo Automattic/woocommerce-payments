@@ -1,7 +1,13 @@
 /**
  * External dependencies
  */
-import React, { useContext, useEffect, useState } from 'react';
+import React, {
+	useContext,
+	useEffect,
+	useState,
+	SetStateAction,
+	Dispatch,
+} from 'react';
 import { __ } from '@wordpress/i18n';
 import AmountInput from 'wcpay/components/amount-input';
 
@@ -14,8 +20,9 @@ import FraudProtectionRuleToggle from '../rule-toggle';
 import FraudProtectionRuleDescription from '../rule-description';
 import FraudProtectionRuleCardNotice from '../rule-card-notice';
 import FraudPreventionSettingsContext from '../context';
+import { FraudPreventionSetting } from '../../interfaces';
 
-const getFloatValue = ( value ) => {
+const getFloatValue = ( value: string ) => {
 	return '' === value || '0' === value ? 0 : parseFloat( value );
 };
 
@@ -27,21 +34,28 @@ const getCurrencySymbol = () => {
 	}
 
 	const currency = getCurrency( wcpaySettings.storeCurrency );
-	const { symbol } = currency?.getCurrencyConfig() || fallbackCurrency;
+	const { symbol } =
+		( currency as any )?.getCurrencyConfig() || fallbackCurrency;
 
 	return symbol;
 };
 
-const PurchasePriceThresholdCustomForm = ( { setting } ) => {
+interface PurchasePriceThresholdCustomFormProps {
+	setting: string;
+}
+
+const PurchasePriceThresholdCustomForm: React.FC< PurchasePriceThresholdCustomFormProps > = ( {
+	setting,
+} ) => {
 	const { protectionSettingsUI, setProtectionSettingsUI } = useContext(
 		FraudPreventionSettingsContext
 	);
 
 	const minAmountTemp = parseFloat(
-		protectionSettingsUI[ setting ].min_amount
+		protectionSettingsUI[ setting ].min_amount?.toString() || ''
 	);
 	const maxAmountTemp = parseFloat(
-		protectionSettingsUI[ setting ].max_amount
+		protectionSettingsUI[ setting ].max_amount?.toString() || ''
 	);
 
 	const [ minAmount, setMinAmount ] = useState( minAmountTemp ?? '' );
@@ -60,11 +74,13 @@ const PurchasePriceThresholdCustomForm = ( { setting } ) => {
 	] );
 
 	const areInputsEmpty =
-		! getFloatValue( minAmount ) && ! getFloatValue( maxAmount );
+		! getFloatValue( minAmount?.toString() || '' ) &&
+		! getFloatValue( maxAmount?.toString() || '' );
 	const isMinGreaterThanMax =
 		minAmount &&
 		maxAmount &&
-		getFloatValue( minAmount ) > getFloatValue( maxAmount );
+		getFloatValue( minAmount?.toString() || '' ) >
+			getFloatValue( maxAmount?.toString() || '' );
 
 	const currencySymbol = getCurrencySymbol();
 
@@ -83,8 +99,8 @@ const PurchasePriceThresholdCustomForm = ( { setting } ) => {
 						id={ 'fraud-protection-purchase-price-minimum' }
 						prefix={ currencySymbol }
 						placeholder={ '0.00' }
-						value={ minAmount }
-						onChange={ ( val ) => setMinAmount( val ) }
+						value={ minAmount.toString() }
+						onChange={ ( val ) => setMinAmount( Number( val ) ) }
 						help={ __(
 							'Leave blank for no limit',
 							'woocommerce-payments'
@@ -102,8 +118,8 @@ const PurchasePriceThresholdCustomForm = ( { setting } ) => {
 						id={ 'fraud-protection-purchase-price-maximum' }
 						prefix={ currencySymbol }
 						placeholder={ '0.00' }
-						value={ maxAmount }
-						onChange={ ( val ) => setMaxAmount( val ) }
+						value={ maxAmount.toString() }
+						onChange={ ( val ) => setMaxAmount( Number( val ) ) }
 						help={ __(
 							'Leave blank for no limit',
 							'woocommerce-payments'
@@ -137,7 +153,7 @@ const PurchasePriceThresholdCustomForm = ( { setting } ) => {
 	);
 };
 
-const PurchasePriceThresholdRuleCard = () => (
+const PurchasePriceThresholdRuleCard: React.FC = () => (
 	<FraudProtectionRuleCard
 		title={ __( 'Purchase Price Threshold', 'woocommerce-payments' ) }
 		description={ __(
@@ -171,11 +187,15 @@ const PurchasePriceThresholdRuleCard = () => (
 );
 
 export const PurchasePriceThresholdValidation = (
-	{ enabled, min_amount: minAmount, max_amount: maxAmount },
-	setValidationError
-) => {
-	const minAmountFloat = getFloatValue( minAmount );
-	const maxAmountFloat = getFloatValue( maxAmount );
+	{
+		enabled,
+		min_amount: minAmount,
+		max_amount: maxAmount,
+	}: FraudPreventionSetting,
+	setValidationError: Dispatch< SetStateAction< string | null > >
+): boolean => {
+	const minAmountFloat = getFloatValue( maxAmount?.toString() || '' );
+	const maxAmountFloat = getFloatValue( maxAmount?.toString() || '' );
 	if ( enabled ) {
 		if ( ! minAmountFloat && ! maxAmountFloat ) {
 			setValidationError(

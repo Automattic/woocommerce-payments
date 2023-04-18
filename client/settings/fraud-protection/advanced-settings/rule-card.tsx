@@ -10,7 +10,18 @@ import { Card } from '@wordpress/components';
 import './../style.scss';
 import CardBody from '../../card-body';
 
-const FraudProtectionRuleCard = ( { title, description, children, id } ) => {
+interface FraudProtectionRuleCardProps {
+	title: string;
+	description: string | React.ReactNode;
+	id: string;
+}
+
+const FraudProtectionRuleCard: React.FC< FraudProtectionRuleCardProps > = ( {
+	title,
+	description,
+	children,
+	id,
+} ) => {
 	return (
 		<Card id={ id } className="fraud-protection-rule-card">
 			<CardBody className="fraud-protection-rule-card-header-container">

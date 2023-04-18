@@ -12,7 +12,13 @@ import './../style.scss';
 import { HoverTooltip } from 'components/tooltip';
 import FraudPreventionSettingsContext from './context';
 
-const FraudProtectionRuleToggle = ( {
+interface FraudProtectionRuleToggleProps {
+	setting: string;
+	label: string;
+	helpText: string;
+}
+
+const FraudProtectionRuleToggle: React.FC< FraudProtectionRuleToggleProps > = ( {
 	setting,
 	label,
 	helpText,
