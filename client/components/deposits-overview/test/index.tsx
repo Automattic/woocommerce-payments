@@ -274,27 +274,14 @@ describe( 'Deposits Overview information', () => {
 	} );
 
 	test( 'Confirm recent deposits renders ', () => {
-		mockUseDeposits.mockReturnValue( {
-			depositsCount: 0,
-			deposits: mockDeposits,
-			isLoading: false,
-		} );
 		const { getByText } = render(
-			<RecentDepositsList currency={ mockAccount.default_currency } />
+			<RecentDepositsList deposits={ mockDeposits } />
 		);
 		getByText( 'January 2, 2020' );
 	} );
 
 	test( 'Confirm recent deposits does not render when no deposits', () => {
-		mockUseDeposits.mockReturnValue( {
-			depositsCount: 0,
-			deposits: [],
-			isLoading: false,
-		} );
-
-		const { container } = render(
-			<RecentDepositsList currency={ mockAccount.default_currency } />
-		);
+		const { container } = render( <RecentDepositsList deposits={ [] } /> );
 
 		expect( container ).toBeEmptyDOMElement();
 	} );

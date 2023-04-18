@@ -17,30 +17,34 @@
 				line-height: 16px;
 				color: $gray-700;
 			}
-			.wcpay-banner-notice.components-notice {
-				margin: 0;
-			}
 		}
 	}
-	&__notices {
-		.wcpay-banner-notice.components-notice {
-			margin: 0;
-		}
+	.wcpay-banner-notice.components-notice {
+		margin: 0;
+	}
+
+	// Apply a margin bottom to all except the last notice
+	// in the notices container and to the business delay
+	// notice if it's the last child of the Deposit history table.
+	&__notices__container
+		> .wcpay-banner-notice.components-notice:not( :last-child ),
+	.wcpay-deposits-overview__business-day-delay-notice:last-child {
+		margin-bottom: 16px;
+	}
+
+	// If the notices container is the last element before the footer (no deposit history), apply a margin to the footer, to float the notices on.
+	.wcpay-deposits-overview__notices__container:not( :empty )
+		+ .wcpay-deposits-overview__footer {
+		margin-top: 16px;
 	}
 
 	// Override extraneous CardBody vertical padding -
 	// we use multiple stacked CardBody components
-	// so table CardDivider is full widh.
-	.components-card__body.wcpay-deposits-overview__table__container {
+	// so table CardDivider is full width.
+	.components-card__body.wcpay-deposits-overview__table__container,
+	.components-card__body.wcpay-deposits-overview__notices__container {
 		padding-bottom: 0;
 		padding-top: 0;
-
-		.wcpay-banner-notice.components-notice {
-			margin: 0;
-			&:last-child {
-				margin-bottom: 16px;
-			}
-		}
 	}
 
 	&__table {
@@ -72,11 +76,6 @@
 			&:last-child {
 				margin-left: auto;
 			}
-		}
-	}
-	.new-account-waiting-period-notice {
-		&.components-notice {
-			margin: 0 24px;
 		}
 	}
 	&__footer {

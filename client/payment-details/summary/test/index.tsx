@@ -12,7 +12,6 @@ import PaymentDetailsSummary from '../';
 import { Charge } from 'wcpay/types/charges';
 import { useAuthorization } from 'wcpay/data';
 import { paymentIntentMock } from '../../../data/payment-intents/test/hooks';
-import { latestFraudOutcomeMock } from '../../../data/fraud-outcomes/test/hooks';
 
 declare const global: {
 	wcpaySettings: {
@@ -272,7 +271,6 @@ describe( 'PaymentDetailsSummary', () => {
 
 		const container = renderCharge( charge, {}, false, {
 			paymentIntent: paymentIntentMock,
-			fraudOutcome: latestFraudOutcomeMock,
 		} );
 
 		expect(

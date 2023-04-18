@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Migrate API get_account_data to use the core Request class.

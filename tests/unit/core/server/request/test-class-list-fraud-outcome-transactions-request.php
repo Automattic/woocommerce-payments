@@ -101,4 +101,473 @@ class List_Fraud_Outcome_Transactions_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'GET', $request->get_method() );
 		$this->assertSame( WC_Payments_API_Client::FRAUD_OUTCOMES_API . '/status/' . $status, $request->get_api() );
 	}
+
+	public function test_list_fraud_outcome_transactions_request_format_response() {
+		$mock_first_order = WC_Helper_Order::create_order();
+		$mock_first_order->add_meta_data( '_intention_status', 'requires_capture' );
+		$mock_first_order->add_meta_data( '_wcpay_fraud_meta_box_type', 'review' );
+		$mock_first_order->save();
+
+		$mock_second_order = WC_Helper_Order::create_order();
+		$mock_second_order->add_meta_data( '_intention_status', 'succeeded' );
+		$mock_second_order->add_meta_data( '_intent_id', 'pi_234' );
+		$mock_first_order->add_meta_data( '_wcpay_fraud_meta_box_type', 'review_approved' );
+		$mock_second_order->save();
+
+		$mock_response = [
+			[
+				'order_id'          => $mock_first_order->get_id(),
+				'payment_intent_id' => 'pi_123',
+			],
+			[
+				'order_id' => $mock_second_order->get_id(),
+			],
+		];
+
+		$request = new List_Fraud_Outcome_Transactions( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_sort_direction( 'asc' );
+		$request->set_sort_by( 'date' );
+		$request->set_search( [] );
+		$request->set_status( 'review' );
+
+		$result = $request->format_response( $mock_response );
+
+		$expected = [
+			[
+				'order_id'            => $mock_first_order->get_id(),
+				'payment_intent'      => [
+					'id'     => 'pi_123',
+					'status' => 'requires_capture',
+				],
+				'amount'              => 5000,
+				'currency'            => $mock_first_order->get_currency(),
+				'customer_name'       => wc_clean( $mock_first_order->get_billing_first_name() ) . ' ' . wc_clean( $mock_first_order->get_billing_last_name() ),
+				'fraud_meta_box_type' => 'review',
+			],
+		];
+
+		$this->assertEquals( $expected, $result );
+	}
+
+	public function test_list_fraud_outcome_transactions_request_format_response_invalid_response() {
+		$mock_response = null;
+
+		$request = new List_Fraud_Outcome_Transactions( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_sort_direction( 'asc' );
+		$request->set_sort_by( 'date' );
+		$request->set_search( [] );
+		$request->set_status( 'review' );
+
+		$result = $request->format_response( $mock_response );
+
+		$this->assertEquals( $mock_response, $result );
+	}
+
+	public function test_list_fraud_outcome_transactions_request_format_response_correct_order_desc() {
+		$mock_first_order = WC_Helper_Order::create_order();
+		$mock_first_order->add_meta_data( '_intention_status', 'requires_capture' );
+		$mock_first_order->add_meta_data( '_intent_id', 'pi_123' );
+		$mock_first_order->add_meta_data( '_wcpay_fraud_meta_box_type', 'review' );
+		$mock_first_order->save();
+
+		$mock_second_order = WC_Helper_Order::create_order();
+		$mock_second_order->add_meta_data( '_intention_status', 'requires_capture' );
+		$mock_second_order->add_meta_data( '_intent_id', 'pi_234' );
+		$mock_second_order->add_meta_data( '_wcpay_fraud_meta_box_type', 'review' );
+		$mock_second_order->save();
+
+		$mock_response = [
+			[
+				'order_id' => $mock_first_order->get_id(),
+				'created'  => 1681136843,
+			],
+			[
+				'order_id' => $mock_second_order->get_id(),
+				'created'  => 1681136943,
+			],
+		];
+
+		$request = new List_Fraud_Outcome_Transactions( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_sort_direction( 'desc' );
+		$request->set_sort_by( 'date' );
+		$request->set_search( [] );
+		$request->set_status( 'review' );
+
+		$result = $request->format_response( $mock_response );
+
+		$expected = [
+			array_merge(
+				$mock_response[1],
+				[
+					'payment_intent'      => [
+						'id'     => 'pi_234',
+						'status' => 'requires_capture',
+					],
+					'amount'              => 5000,
+					'currency'            => $mock_second_order->get_currency(),
+					'customer_name'       => wc_clean( $mock_second_order->get_billing_first_name() ) . ' ' . wc_clean( $mock_first_order->get_billing_last_name() ),
+					'fraud_meta_box_type' => 'review',
+				]
+			),
+			array_merge(
+				$mock_response[0],
+				[
+					'payment_intent'      => [
+						'id'     => 'pi_123',
+						'status' => 'requires_capture',
+					],
+					'amount'              => 5000,
+					'currency'            => $mock_first_order->get_currency(),
+					'customer_name'       => wc_clean( $mock_first_order->get_billing_first_name() ) . ' ' . wc_clean( $mock_first_order->get_billing_last_name() ),
+					'fraud_meta_box_type' => 'review',
+				]
+			),
+		];
+
+		$this->assertEquals( $expected, $result );
+	}
+
+	public function test_list_fraud_outcome_transactions_request_format_response_correct_order_asc() {
+		$mock_first_order = WC_Helper_Order::create_order();
+		$mock_first_order->add_meta_data( '_intention_status', 'requires_capture' );
+		$mock_first_order->add_meta_data( '_intent_id', 'pi_123' );
+		$mock_first_order->add_meta_data( '_wcpay_fraud_meta_box_type', 'review' );
+		$mock_first_order->save();
+
+		$mock_second_order = WC_Helper_Order::create_order();
+		$mock_second_order->add_meta_data( '_intention_status', 'requires_capture' );
+		$mock_second_order->add_meta_data( '_intent_id', 'pi_234' );
+		$mock_second_order->add_meta_data( '_wcpay_fraud_meta_box_type', 'review' );
+		$mock_second_order->save();
+
+		$mock_response = [
+			[
+				'order_id' => $mock_first_order->get_id(),
+				'created'  => 1681136843,
+			],
+			[
+				'order_id' => $mock_second_order->get_id(),
+				'created'  => 1681136943,
+			],
+		];
+
+		$request = new List_Fraud_Outcome_Transactions( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_sort_direction( 'asc' );
+		$request->set_sort_by( 'date' );
+		$request->set_search( [] );
+		$request->set_status( 'review' );
+
+		$result = $request->format_response( $mock_response );
+
+		$expected = [
+			array_merge(
+				$mock_response[0],
+				[
+					'payment_intent'      => [
+						'id'     => 'pi_123',
+						'status' => 'requires_capture',
+					],
+					'amount'              => 5000,
+					'currency'            => $mock_first_order->get_currency(),
+					'customer_name'       => wc_clean( $mock_first_order->get_billing_first_name() ) . ' ' . wc_clean( $mock_first_order->get_billing_last_name() ),
+					'fraud_meta_box_type' => 'review',
+				]
+			),
+			array_merge(
+				$mock_response[1],
+				[
+					'payment_intent'      => [
+						'id'     => 'pi_234',
+						'status' => 'requires_capture',
+					],
+					'amount'              => 5000,
+					'currency'            => $mock_second_order->get_currency(),
+					'customer_name'       => wc_clean( $mock_second_order->get_billing_first_name() ) . ' ' . wc_clean( $mock_first_order->get_billing_last_name() ),
+					'fraud_meta_box_type' => 'review',
+				]
+			),
+		];
+
+		$this->assertEquals( $expected, $result );
+	}
+
+	/**
+	 * @dataProvider provider_get_sort_key
+	 */
+	public function test_list_fraud_outcome_transactions_request_format_response_correct_order_sort_key( $sort_key ) {
+		$mock_first_order = WC_Helper_Order::create_order();
+		$mock_first_order->add_meta_data( '_intention_status', 'requires_capture' );
+		$mock_first_order->add_meta_data( '_intent_id', 'pi_123' );
+		$mock_first_order->add_meta_data( '_wcpay_fraud_meta_box_type', 'review' );
+		$mock_first_order->save();
+
+		$mock_second_order = WC_Helper_Order::create_order();
+		$mock_second_order->add_meta_data( '_intention_status', 'requires_capture' );
+		$mock_second_order->add_meta_data( '_intent_id', 'pi_234' );
+		$mock_second_order->add_meta_data( '_wcpay_fraud_meta_box_type', 'review' );
+		$mock_second_order->save();
+
+		$mock_response = [
+			[
+				'order_id' => $mock_first_order->get_id(),
+				'created'  => 1681136843,
+			],
+			[
+				'order_id' => $mock_second_order->get_id(),
+				'created'  => 1681136843,
+			],
+		];
+
+		$request = new List_Fraud_Outcome_Transactions( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_sort_direction( 'asc' );
+		$request->set_sort_by( $sort_key );
+		$request->set_search( [] );
+		$request->set_status( 'review' );
+
+		$result = $request->format_response( $mock_response );
+
+		$expected = [
+			array_merge(
+				$mock_response[0],
+				[
+					'payment_intent'      => [
+						'id'     => 'pi_123',
+						'status' => 'requires_capture',
+					],
+					'amount'              => 5000,
+					'currency'            => $mock_first_order->get_currency(),
+					'customer_name'       => wc_clean( $mock_first_order->get_billing_first_name() ) . ' ' . wc_clean( $mock_first_order->get_billing_last_name() ),
+					'fraud_meta_box_type' => 'review',
+				]
+			),
+			array_merge(
+				$mock_response[1],
+				[
+					'payment_intent'      => [
+						'id'     => 'pi_234',
+						'status' => 'requires_capture',
+					],
+					'amount'              => 5000,
+					'currency'            => $mock_second_order->get_currency(),
+					'customer_name'       => wc_clean( $mock_second_order->get_billing_first_name() ) . ' ' . wc_clean( $mock_first_order->get_billing_last_name() ),
+					'fraud_meta_box_type' => 'review',
+				]
+			),
+		];
+
+		$this->assertEquals( $expected, $result );
+	}
+
+	public function provider_get_sort_key(): array {
+		return [
+			[ 'date' ],
+			[ 'invalid-key' ],
+		];
+	}
+
+	public function test_list_fraud_outcome_transactions_request_format_response_filtered_by_search_order_id() {
+		$mock_first_order = WC_Helper_Order::create_order();
+		$mock_first_order->add_meta_data( '_intention_status', 'requires_capture' );
+		$mock_first_order->add_meta_data( '_intent_id', 'pi_123' );
+		$mock_first_order->add_meta_data( '_wcpay_fraud_meta_box_type', 'review' );
+		$mock_first_order->save();
+
+		$mock_second_order = WC_Helper_Order::create_order();
+		$mock_second_order->add_meta_data( '_intention_status', 'requires_capture' );
+		$mock_second_order->add_meta_data( '_intent_id', 'pi_234' );
+		$mock_first_order->add_meta_data( '_wcpay_fraud_meta_box_type', 'review' );
+		$mock_second_order->save();
+
+		$mock_response = [
+			[
+				'order_id' => $mock_first_order->get_id(),
+				'created'  => 1681136843,
+			],
+			[
+				'order_id' => $mock_second_order->get_id(),
+				'created'  => 1681136943,
+			],
+		];
+
+		$request = new List_Fraud_Outcome_Transactions( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_sort_direction( 'desc' );
+		$request->set_sort_by( 'date' );
+		$request->set_search( [ 'Order #' . $mock_first_order->get_id() ] );
+		$request->set_status( 'review' );
+
+		$result = $request->format_response( $mock_response );
+
+		$expected = [
+			array_merge(
+				$mock_response[0],
+				[
+					'payment_intent'      => [
+						'id'     => 'pi_123',
+						'status' => 'requires_capture',
+					],
+					'amount'              => 5000,
+					'currency'            => $mock_first_order->get_currency(),
+					'customer_name'       => wc_clean( $mock_first_order->get_billing_first_name() ) . ' ' . wc_clean( $mock_first_order->get_billing_last_name() ),
+					'fraud_meta_box_type' => 'review',
+				]
+			),
+		];
+
+		$this->assertEquals( $expected, $result );
+	}
+
+	public function test_list_fraud_outcome_transactions_request_format_response_filtered_by_search_multiple_search_parameters() {
+		$mock_first_order = WC_Helper_Order::create_order();
+		$mock_first_order->add_meta_data( '_intention_status', 'requires_capture' );
+		$mock_first_order->add_meta_data( '_intent_id', 'pi_123' );
+		$mock_first_order->add_meta_data( '_wcpay_fraud_meta_box_type', 'review' );
+		$mock_first_order->save();
+
+		$mock_second_order = WC_Helper_Order::create_order();
+		$mock_second_order->add_meta_data( '_intention_status', 'requires_capture' );
+		$mock_second_order->add_meta_data( '_intent_id', 'pi_234' );
+		$mock_first_order->add_meta_data( '_wcpay_fraud_meta_box_type', 'review' );
+		$mock_second_order->save();
+
+		$mock_response = [
+			[
+				'order_id' => $mock_first_order->get_id(),
+				'created'  => 1681136843,
+			],
+			[
+				'order_id' => $mock_second_order->get_id(),
+				'created'  => 1681136943,
+			],
+		];
+
+		$request = new List_Fraud_Outcome_Transactions( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_sort_direction( 'desc' );
+		$request->set_sort_by( 'date' );
+		$request->set_search( [ 'Order #' . $mock_first_order->get_id(), wc_clean( $mock_first_order->get_billing_first_name() ) ] );
+		$request->set_status( 'review' );
+
+		$result = $request->format_response( $mock_response );
+
+		$expected = [
+			array_merge(
+				$mock_response[0],
+				[
+					'payment_intent'      => [
+						'id'     => 'pi_123',
+						'status' => 'requires_capture',
+					],
+					'amount'              => 5000,
+					'currency'            => $mock_first_order->get_currency(),
+					'customer_name'       => wc_clean( $mock_first_order->get_billing_first_name() ) . ' ' . wc_clean( $mock_first_order->get_billing_last_name() ),
+					'fraud_meta_box_type' => 'review',
+				]
+			),
+		];
+
+		$this->assertEquals( $expected, $result );
+	}
+
+	public function test_list_fraud_outcome_transactions_request_format_response_filtered_by_search_customer_name() {
+		$mock_first_order = WC_Helper_Order::create_order();
+		$mock_first_order->add_meta_data( '_intention_status', 'requires_capture' );
+		$mock_first_order->add_meta_data( '_intent_id', 'pi_123' );
+		$mock_first_order->add_meta_data( '_wcpay_fraud_meta_box_type', 'review' );
+		$mock_first_order->set_billing_last_name( 'Doe' );
+		$mock_first_order->save();
+
+		$mock_second_order = WC_Helper_Order::create_order();
+		$mock_second_order->add_meta_data( '_intention_status', 'requires_capture' );
+		$mock_second_order->add_meta_data( '_intent_id', 'pi_234' );
+		$mock_second_order->add_meta_data( '_wcpay_fraud_meta_box_type', 'review' );
+		$mock_second_order->save();
+
+		$mock_response = [
+			[
+				'order_id' => $mock_first_order->get_id(),
+				'created'  => 1681136843,
+			],
+			[
+				'order_id' => $mock_second_order->get_id(),
+				'created'  => 1681136943,
+			],
+		];
+
+		$request = new List_Fraud_Outcome_Transactions( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_sort_direction( 'desc' );
+		$request->set_sort_by( 'date' );
+		$request->set_search( [ $mock_first_order->get_billing_last_name() ] );
+		$request->set_status( 'review' );
+
+		$result = $request->format_response( $mock_response );
+
+		$expected = [
+			array_merge(
+				$mock_response[0],
+				[
+					'payment_intent'      => [
+						'id'     => 'pi_123',
+						'status' => 'requires_capture',
+					],
+					'amount'              => 5000,
+					'currency'            => $mock_first_order->get_currency(),
+					'customer_name'       => wc_clean( $mock_first_order->get_billing_first_name() ) . ' ' . wc_clean( $mock_first_order->get_billing_last_name() ),
+					'fraud_meta_box_type' => 'review',
+				]
+			),
+		];
+
+		$this->assertEquals( $expected, $result );
+	}
+
+	public function test_list_fraud_outcome_transactions_request_filters_out_non_blocked_outcomes() {
+		$mock_first_order = WC_Helper_Order::create_order();
+		$mock_first_order->add_meta_data( '_intention_status', 'requires_capture' );
+		$mock_first_order->add_meta_data( '_intent_id', 'pi_123' );
+		$mock_first_order->add_meta_data( '_wcpay_fraud_meta_box_type', 'review' );
+		$mock_first_order->set_billing_last_name( 'Doe' );
+		$mock_first_order->save();
+
+		$mock_second_order = WC_Helper_Order::create_order();
+		$mock_second_order->add_meta_data( '_intention_status', 'canceled' );
+		$mock_second_order->add_meta_data( '_intent_id', 'pi_234' );
+		$mock_second_order->add_meta_data( '_wcpay_fraud_meta_box_type', 'review_blocked' );
+		$mock_second_order->save();
+
+		$mock_response = [
+			[
+				'order_id' => $mock_first_order->get_id(),
+				'created'  => 1681136843,
+			],
+			[
+				'order_id' => $mock_second_order->get_id(),
+				'created'  => 1681136943,
+			],
+		];
+
+		$request = new List_Fraud_Outcome_Transactions( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_sort_direction( 'desc' );
+		$request->set_sort_by( 'date' );
+		$request->set_search( [] );
+		$request->set_status( 'block' );
+
+		$result = $request->format_response( $mock_response );
+
+		$expected = [
+			array_merge(
+				$mock_response[1],
+				[
+					'payment_intent'      => [
+						'id'     => 'pi_234',
+						'status' => 'canceled',
+					],
+					'amount'              => 5000,
+					'currency'            => $mock_second_order->get_currency(),
+					'customer_name'       => wc_clean( $mock_second_order->get_billing_first_name() ) . ' ' . wc_clean( $mock_second_order->get_billing_last_name() ),
+					'fraud_meta_box_type' => 'review_blocked',
+				]
+			),
+		];
+
+		$this->assertEquals( $expected, $result );
+	}
 }
