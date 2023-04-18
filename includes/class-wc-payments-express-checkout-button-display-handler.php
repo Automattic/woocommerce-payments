@@ -52,12 +52,12 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 
 		$is_woopay_express_checkout_enabled = WC_Payments_Features::is_woopay_express_checkout_enabled();
 
-		if ( $is_woopay_express_checkout_enabled || $this->gateway->get_option( 'payment_request' ) ) {
+		if ( $is_woopay_express_checkout_enabled || 'yes' === $this->gateway->get_option( 'payment_request' ) ) {
 			add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_express_checkout_buttons' ], 1 );
 			add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_express_checkout_buttons' ], 1 );
 			add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_express_checkout_buttons' ], 1 );
 
-			if ( $this->gateway->get_option( 'payment_request' ) ) {
+			if ( 'yes' === $this->gateway->get_option( 'payment_request' ) ) {
 				// Load separator on the Pay for Order page.
 				add_action( 'before_woocommerce_pay_form', [ $this, 'display_express_checkout_buttons' ], 1 );
 			}
