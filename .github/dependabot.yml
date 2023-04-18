@@ -9,7 +9,7 @@ updates:
           interval: 'daily'
       # Reviewers for issues created
       reviewers:
-          - 'jessepearson'
+          - 'Automattic/harmony'
 
     # Enable version updates for composer
     - package-ecosystem: 'composer'
@@ -20,7 +20,7 @@ updates:
           interval: 'daily'
       # Reviewers for issues created
       reviewers:
-          - 'jessepearson'
+          - 'Automattic/harmony'
 
     # Enable version updates for Docker
     - package-ecosystem: 'docker'
@@ -31,4 +31,4 @@ updates:
           interval: 'weekly'
       # Reviewers for issues created
       reviewers:
-          - 'jessepearson'
+          - 'Automattic/harmony'
