@@ -31,8 +31,9 @@
 	.wcpay-deposits-overview__business-day-delay-notice:last-child {
 		margin-bottom: 16px;
 	}
-	// If the notices container is the last element before the footer, apply a margin to the footer, to float the notices on.
-	.wcpay-deposits-overview__notices__container
+
+	// If the notices container is the last element before the footer (no deposit history), apply a margin to the footer, to float the notices on.
+	.wcpay-deposits-overview__notices__container:not( :empty )
 		+ .wcpay-deposits-overview__footer {
 		margin-top: 16px;
 	}
