@@ -74,6 +74,10 @@ const DepositTableRow: React.FC< DepositRowProps > = ( {
 const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 	deposits,
 } ): JSX.Element => {
+	if ( ! deposits.length ) {
+		return <></>;
+	}
+
 	// Add a notice indicating the potential business day delay for pending and in_transit deposits.
 	// The notice is added after the oldest pending or in_transit deposit.
 	const oldestPendingDepositId = [ ...deposits ]
