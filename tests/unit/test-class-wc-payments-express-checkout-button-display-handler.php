@@ -170,7 +170,9 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 
 		$this->express_checkout_button_display_handler->display_express_checkout_separator_if_necessary();
 
+		ob_start();
 		$this->assertStringContainsString( 'wcpay-payment-request-button-separator', ob_get_contents() );
+		ob_end_clean();
 	}
 
 	public function test_display_express_checkout_separator_if_necessary_woopay_disabled() {
@@ -188,7 +190,9 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 
 		$this->express_checkout_button_display_handler->display_express_checkout_separator_if_necessary();
 
+		ob_start();
 		$this->assertStringContainsString( 'wcpay-payment-request-button-separator', ob_get_contents() );
+		ob_end_clean();
 	}
 
 	public function test_display_express_checkout_separator_if_necessary_payment_request_disabled() {
@@ -206,7 +210,9 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 
 		$this->express_checkout_button_display_handler->display_express_checkout_separator_if_necessary();
 
+		ob_start();
 		$this->assertStringContainsString( 'wcpay-payment-request-button-separator', ob_get_contents() );
+		ob_end_clean();
 	}
 
 	public function test_display_express_checkout_separator_if_necessary_all_disabled() {
@@ -224,7 +230,9 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 
 		$this->express_checkout_button_display_handler->display_express_checkout_separator_if_necessary();
 
+		ob_start();
 		$this->assertEmpty( ob_get_contents() );
+		ob_end_clean();
 	}
 
 	public function test_display_express_checkout_buttons_all_enabled() {
@@ -238,8 +246,13 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 
 		$this->express_checkout_button_display_handler->display_express_checkout_buttons();
 
+		ob_start();
 		$this->assertStringContainsString( 'wcpay-platform-checkout-button', ob_get_contents() );
+		ob_end_clean();
+
+		ob_start();
 		$this->assertStringContainsString( 'wcpay-payment-request-button', ob_get_contents() );
+		ob_end_clean();
 	}
 
 	public function test_display_express_checkout_buttons_all_disabled() {
@@ -253,7 +266,9 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 
 		$this->express_checkout_button_display_handler->display_express_checkout_buttons();
 
+		ob_start();
 		$this->assertEmpty( ob_get_contents() );
+		ob_end_clean();
 	}
 
 	public function test_display_express_checkout_buttons_only_woopay() {
@@ -267,7 +282,9 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 
 		$this->express_checkout_button_display_handler->display_express_checkout_buttons();
 
+		ob_start();
 		$this->assertStringContainsString( 'wcpay-platform-checkout-button', ob_get_contents() );
+		ob_end_clean();
 	}
 
 	public function test_display_express_checkout_buttons_only_payment_request() {
@@ -281,6 +298,8 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 
 		$this->express_checkout_button_display_handler->display_express_checkout_buttons();
 
+		ob_start();
 		$this->assertStringContainsString( 'wcpay-payment-request-button', ob_get_contents() );
+		ob_end_clean();
 	}
 }
