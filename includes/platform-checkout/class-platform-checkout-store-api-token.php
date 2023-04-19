@@ -18,6 +18,8 @@ class Platform_Checkout_Store_Api_Token extends AbstractCartRoute {
 	 * Helper method to get the instance of the class.
 	 *
 	 * @return Platform_Checkout_Store_Api_Token The instance of the class.
+	 *
+	 * @psalm-suppress InvalidArgument Psalm thinks namespace is incorrect.
 	 */
 	public static function init() {
 		$formatters        = new \Automattic\WooCommerce\StoreApi\Formatters();
@@ -49,17 +51,9 @@ class Platform_Checkout_Store_Api_Token extends AbstractCartRoute {
 	 * This function is used to get the cart token from the cart route.
 	 *
 	 * @return string The cart token.
+	 * @psalm-suppress UndefinedMethod
 	 */
 	public function get_cart_token() {
 		return parent::get_cart_token();
-	}
-
-	/**
-	 * This function is used to get the cart token secret from the cart route.
-	 *
-	 * @return string The cart token secret.
-	 */
-	public function get_cart_token_secret() {
-		return parent::get_cart_token_secret();
 	}
 }

@@ -85,7 +85,7 @@ class Platform_Checkout_Session {
 	/**
 	 * Returns the user ID from the cart token.
 	 *
-	 * @return int User ID.
+	 * @return int|null The User ID or null if there's no cart token in the request.
 	 */
 	private static function get_user_id_from_cart_token() {
 		if ( ! isset( $_SERVER['HTTP_CART_TOKEN'] ) ) {
