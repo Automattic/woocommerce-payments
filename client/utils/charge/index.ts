@@ -93,7 +93,7 @@ export const isBlockedByFraudTools = (
 		return false;
 	}
 
-	return [ 'block', 'review_block' ].includes( fraudMetaBoxType );
+	return [ 'block', 'review_blocked' ].includes( fraudMetaBoxType );
 };
 
 /* TODO: implement authorization and SCA charge statuses */
