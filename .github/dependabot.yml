@@ -6,7 +6,7 @@ updates:
       directory: '/'
       # Check the npm registry for updates every day (weekdays)
       schedule:
-          interval: 'daily'
+        interval: 'weekly'
       # Reviewers for issues created
       reviewers:
           - 'Automattic/harmony'
@@ -17,7 +17,7 @@ updates:
       directory: '/'
       # Check the npm registry for updates every day (weekdays)
       schedule:
-          interval: 'daily'
+        interval: 'weekly'
       # Reviewers for issues created
       reviewers:
           - 'Automattic/harmony'
