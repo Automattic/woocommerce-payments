@@ -52,6 +52,7 @@ const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 	CH: 'switzerland',
 	UK: 'united-kingdom',
 	US: 'united-states',
+	HR: 'croatia',
 };
 
 const stripeFeeSectionExistsForCountry = ( country: string ): boolean => {
