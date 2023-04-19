@@ -268,7 +268,7 @@ describe( 'Overview page', () => {
 		} );
 	} );
 
-	it( 'dismisses the FRTDiscoverabilityBanner when dont show again button is clicked', async () => {
+	it( 'dismisses the FRTDiscoverabilityBanner when dismiss button is clicked', async () => {
 		global.wcpaySettings = {
 			...global.wcpaySettings,
 			frtDiscoverBannerSettings: JSON.stringify( {
@@ -286,7 +286,7 @@ describe( 'Overview page', () => {
 
 		expect( bannerHeader ).toBeInTheDocument();
 
-		userEvent.click( screen.getByText( "Don't show me this again" ) );
+		userEvent.click( screen.getByText( 'Dismiss' ) );
 
 		await waitFor( () => {
 			expect( bannerHeader ).not.toBeInTheDocument();
