@@ -6,10 +6,10 @@ updates:
       directory: '/'
       # Check the npm registry for updates every day (weekdays)
       schedule:
-          interval: 'daily'
+        interval: 'weekly'
       # Reviewers for issues created
       reviewers:
-          - 'jessepearson'
+          - 'Automattic/harmony'
 
     # Enable version updates for composer
     - package-ecosystem: 'composer'
@@ -17,10 +17,10 @@ updates:
       directory: '/'
       # Check the npm registry for updates every day (weekdays)
       schedule:
-          interval: 'daily'
+        interval: 'weekly'
       # Reviewers for issues created
       reviewers:
-          - 'jessepearson'
+          - 'Automattic/harmony'
 
     # Enable version updates for Docker
     - package-ecosystem: 'docker'
@@ -31,4 +31,4 @@ updates:
           interval: 'weekly'
       # Reviewers for issues created
       reviewers:
-          - 'jessepearson'
+          - 'Automattic/harmony'
