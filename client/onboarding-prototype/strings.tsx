@@ -46,7 +46,7 @@ export default {
 				'woocommerce-payments'
 			),
 			notice: __(
-				'We’ll use the email address to contact you with any important notifications related to your account, and the phone number will only be used to protect your account with two factor authentication.',
+				'We’ll use the email address to contact you with any important notifications related to your account, and the phone number will only be used to protect your account with two-factor authentication.',
 				'woocommerce-payments'
 			),
 		},
