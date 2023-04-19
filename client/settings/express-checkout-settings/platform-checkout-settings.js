@@ -78,10 +78,9 @@ const PlatformCheckoutSettings = ( { section } ) => {
 										mixedString: __(
 											/* eslint-disable-next-line max-len */
 											'When enabled, customers will be able to checkout using WooPay. ' +
-												'By using {{wooPayLink}}WooPay{{/wooPayLink}}, you agree to our ' +
+												'In order to use {{wooPayLink}}WooPay{{/wooPayLink}}, you must agree to our ' +
 												'{{tosLink}}WooCommerce Terms of Service{{/tosLink}} ' +
-												'and and {{privacyLink}}Privacy Policy{{/privacyLink}}. ' +
-												'You understand you will be sharing data with us. ' +
+												'and {{privacyLink}}Privacy Policy{{/privacyLink}}. ' +
 												'{{trackingLink}}Click here{{/trackingLink}} to learn more about the ' +
 												'data you will be sharing and opt-out options.',
 											'woocommerce-payments'
