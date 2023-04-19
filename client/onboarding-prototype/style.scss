@@ -24,9 +24,9 @@ body.wcpay-onboarding-prototype__body {
 				right: 0;
 				height: 80px;
 				padding-top: 8px;
-				display: flex;
-				justify-content: space-between;
-				align-items: center;
+				display: grid;
+				grid-template-columns: 102px 1fr 102px;
+				align-items: stretch;
 				background-color: #fff;
 				z-index: 10;
 
@@ -39,12 +39,18 @@ body.wcpay-onboarding-prototype__body {
 					font-size: 14px;
 					font-weight: 500;
 
-					.dashicon {
-						margin-right: $gap-smallest;
+					.gridicons-chevron-left {
+						margin-right: 2px;
+					}
+
+					&:last-child {
+						justify-self: end;
 					}
 				}
 
 				&-logo {
+					justify-self: center;
+					align-self: center;
 					height: 28px;
 				}
 			}

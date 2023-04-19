@@ -2,7 +2,8 @@
  * External dependencies
  */
 import React from 'react';
-import { Icon } from '@wordpress/components';
+import { Icon, closeSmall } from '@wordpress/icons';
+import ChevronLeft from 'gridicons/dist/chevron-left';
 
 /**
  * Internal dependencies
@@ -30,7 +31,7 @@ const Step: React.FC< Props > = ( { name, children } ) => {
 					className="stepper__nav-button"
 					onClick={ prevStep }
 				>
-					<Icon icon="arrow-left-alt2" />
+					<ChevronLeft />
 					{ strings.back }
 				</button>
 				<img
@@ -43,7 +44,7 @@ const Step: React.FC< Props > = ( { name, children } ) => {
 					className="stepper__nav-button"
 					onClick={ exit }
 				>
-					<Icon icon="no-alt" />
+					<Icon icon={ closeSmall } />
 				</button>
 			</div>
 			<div className="stepper__wrapper">
