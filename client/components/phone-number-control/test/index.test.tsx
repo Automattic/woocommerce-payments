@@ -30,14 +30,14 @@ describe( 'Phone Number Control', () => {
 		const selectElement = screen.getByRole( 'combobox', {
 			name: 'phone number country code',
 		} );
-		const buttonElement = screen.getByRole( 'button', { name: '+1' } );
+		const spanElement = screen.getByText( '+1' );
 		const inputElement = screen.getByRole( 'textbox', {
 			name: 'Phone number',
 		} );
 
 		expect( labelElement ).toBeInTheDocument();
 		expect( selectElement ).toHaveDisplayValue( 'US' );
-		expect( buttonElement ).toBeInTheDocument();
+		expect( spanElement ).toBeInTheDocument();
 		expect( inputElement ).toHaveDisplayValue( '123' );
 	} );
 
@@ -73,16 +73,6 @@ describe( 'Phone Number Control', () => {
 		userEvent.selectOptions( select, 'ES' );
 		expect( onChange ).toHaveBeenCalledTimes( 1 );
 		expect( onChange ).toHaveBeenCalledWith( '+34', 'ES' );
-	} );
-
-	it( 'focus input on button click', () => {
-		render( <PhoneNumberControl value="" onChange={ onChange } /> );
-
-		const input = screen.getByRole( 'textbox' );
-		const button = screen.getByRole( 'button' );
-		userEvent.click( button );
-
-		expect( input ).toHaveFocus();
 	} );
 
 	it( 'focus input on select change', () => {

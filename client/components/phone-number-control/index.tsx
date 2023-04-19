@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useLayoutEffect } from 'react';
 import { BaseControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import classNames from 'classnames';
@@ -39,11 +39,19 @@ const PhoneNumberControl: React.FC< Props > = ( {
 	...rest
 } ) => {
 	const [ focused, setFocused ] = useState( false );
+	const [ spanWidth, setSpanWidth ] = useState( 0 );
+	const spanRef = useRef< HTMLSpanElement >( null );
 	const inputRef = useRef< HTMLInputElement >( null );
 	const id = useUniqueId( 'wcpay-phone-number-control-' );
 
 	const [ countryCode, setCountryCode ] = useState( country || 'US' );
 	const phoneNumber = value.replace( countryCodes[ countryCode ], '' );
+
+	useLayoutEffect( () => {
+		if ( spanRef.current ) {
+			setSpanWidth( spanRef.current.offsetWidth + 1 );
+		}
+	}, [ spanRef, countryCode ] );
 
 	const handleFocus = () => inputRef.current?.focus();
 
@@ -88,9 +96,10 @@ const PhoneNumberControl: React.FC< Props > = ( {
 							</option>
 						) ) }
 				</select>
-				<button type="button" tabIndex={ -1 } onClick={ handleFocus }>
-					{ countryCodes[ countryCode ] }
-				</button>
+				<svg xmlns="http://www.w3.org/2000/svg">
+					<path d="M13.125 8.7 9 12l-4.125-3.3.675-.9L9 10.5l3.375-2.7.75 .9z" />
+				</svg>
+				<span ref={ spanRef }>{ countryCodes[ countryCode ] }</span>
 				<input
 					id={ id }
 					ref={ inputRef }
@@ -99,6 +108,10 @@ const PhoneNumberControl: React.FC< Props > = ( {
 					onChange={ handleInput }
 					onFocus={ () => setFocused( true ) }
 					onBlur={ () => setFocused( false ) }
+					style={ {
+						paddingLeft: spanWidth + 8,
+						marginLeft: -spanWidth,
+					} }
 				/>
 			</div>
 		</BaseControl>
