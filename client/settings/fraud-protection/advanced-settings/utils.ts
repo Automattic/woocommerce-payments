@@ -219,8 +219,6 @@ const findCheck = (
 	checkKey: string,
 	operator: string
 ): FraudProtectionSettingsCheck | boolean => {
-	// const isSingleCheck = isFraudProtectionSettingsSingleCheck( current );
-
 	if (
 		isFraudProtectionSettingsSingleCheck( current ) &&
 		checkKey === current.key &&
