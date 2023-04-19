@@ -1252,6 +1252,10 @@ class WC_Payments {
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-stripelink.php';
 			WC_Payments_Notes_Set_Up_StripeLink::set_gateway( self::get_gateway() );
 			WC_Payments_Notes_Set_Up_StripeLink::possibly_add_note();
+
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-woopay-beta-recruitment.php';
+			WC_Payments_Notes_WooPay_Beta_Recruitment::set_platform_checkout_button_handler( self::$platform_checkout_button_handler );
+			WC_Payments_Notes_WooPay_Beta_Recruitment::possibly_add_note();
 		}
 
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.5', '<' ) && get_woocommerce_currency() === 'NOK' ) {
