@@ -6,7 +6,6 @@ import { getConfig } from 'wcpay/utils/checkout';
 import showErrorCheckout from 'wcpay/checkout/utils/show-error-checkout';
 
 const getPaymentMethodId = () => {
-	// console.log('3');
 	return isWCPayChosen()
 		? document.querySelector( '#wcpay-payment-method-sepa' )?.value ?? ''
 		: document.querySelector( '#wcpay-payment-method' )?.value ?? '';
