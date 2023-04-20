@@ -575,7 +575,7 @@ class WC_Payments_WooPay_Button_Handler {
 			$is_supported = false;
 		}
 
-		return apply_filters( 'wcpay_woopay_button_is_product_supported', $is_supported, $product );
+		return apply_filters( 'wcpay_platform_checkout_button_is_product_supported', $is_supported, $product );
 	}
 
 	/**
@@ -598,7 +598,7 @@ class WC_Payments_WooPay_Button_Handler {
 			$is_supported = false;
 		}
 
-		return apply_filters( 'wcpay_woopay_button_are_cart_items_supported', $is_supported );
+		return apply_filters( 'wcpay_platform_checkout_button_are_cart_items_supported', $is_supported );
 	}
 
 	/**
