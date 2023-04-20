@@ -1090,6 +1090,15 @@ class WC_Payments {
 	}
 
 	/**
+	 * Sets the card gateway instance.
+	 *
+	 * @param WC_Payment_Gateway_WCPay|UPE_Payment_Gateway $gateway The card gateway instance..
+	 */
+	public static function set_gateway( $gateway ) {
+		self::$card_gateway = $gateway;
+	}
+
+	/**
 	 * Returns the WC_Payments_Account instance
 	 *
 	 * @return WC_Payments_Account account service instance

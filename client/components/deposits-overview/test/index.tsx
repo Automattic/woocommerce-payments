@@ -14,18 +14,26 @@ import RecentDepositsList from '../recent-deposits-list';
 import DepositsOverviewFooter from '../footer';
 import DepositSchedule from '../deposit-schedule';
 import SuspendedDepositNotice from '../suspended-deposit-notice';
-import { useDepositIncludesLoan, useDeposits } from 'wcpay/data';
-import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
-import strings from '../strings';
+import {
+	useSelectedCurrencyOverview,
+	useSelectedCurrency,
+} from 'wcpay/overview/hooks';
+import {
+	useDepositIncludesLoan,
+	useDeposits,
+	useAllDepositsOverviews,
+} from 'wcpay/data';
 
 jest.mock( 'wcpay/data', () => ( {
 	useDepositIncludesLoan: jest.fn(),
 	useInstantDeposit: jest.fn(),
 	useDeposits: jest.fn(),
+	useAllDepositsOverviews: jest.fn(),
 } ) );
 
 jest.mock( 'wcpay/overview/hooks', () => ( {
 	useSelectedCurrencyOverview: jest.fn(),
+	useSelectedCurrency: jest.fn(),
 } ) );
 
 const mockAccount: AccountOverview.Account = {
@@ -134,17 +142,19 @@ const createMockOverview = (
 };
 
 const createMockNewAccountOverview = (
-	currencyCode: string
+	currencyCode: string,
+	pendingBalance?: number,
+	availableBalance?: number
 ): AccountOverview.Overview => {
 	return {
 		currency: currencyCode,
 		pending: {
-			amount: 0,
+			amount: pendingBalance || 0,
 			currency: currencyCode,
 			source_types: [],
 		},
 		available: {
-			amount: 0,
+			amount: availableBalance || 0,
 			currency: currencyCode,
 			source_types: [],
 		},
@@ -160,9 +170,14 @@ const mockUseDepositIncludesLoan = useDepositIncludesLoan as jest.MockedFunction
 const mockUseSelectedCurrencyOverview = useSelectedCurrencyOverview as jest.MockedFunction<
 	typeof useSelectedCurrencyOverview
 >;
-
+const mockUseAllDepositsOverviews = useAllDepositsOverviews as jest.MockedFunction<
+	typeof useAllDepositsOverviews
+>;
 const mockUseDeposits = useDeposits as jest.MockedFunction<
 	typeof useDeposits
+>;
+const mockUseSelectedCurrency = useSelectedCurrency as jest.MockedFunction<
+	typeof useSelectedCurrency
 >;
 
 // Mocks the DepositsOverviews hook to return the given currencies.
@@ -170,6 +185,23 @@ const mockOverviews = ( currencies: AccountOverview.Overview[] ) => {
 	mockUseSelectedCurrencyOverview.mockReturnValue( {
 		account: mockAccount,
 		overview: currencies[ 0 ],
+		isLoading: null === currencies || ! currencies.length,
+	} );
+};
+// Mocks the useSelectedCurrency hook to return no previously selected currency.
+const mockSetSelectedCurrency = jest.fn();
+mockUseSelectedCurrency.mockReturnValue( {
+	selectedCurrency: undefined,
+	setSelectedCurrency: mockSetSelectedCurrency,
+} );
+
+// Mocks the DepositsOverviews hook to return the given currencies.
+const mockDepositOverviews = ( currencies: AccountOverview.Overview[] ) => {
+	mockUseAllDepositsOverviews.mockReturnValue( {
+		overviews: {
+			currencies: currencies,
+			account: mockAccount,
+		},
 		isLoading: null === currencies || ! currencies.length,
 	} );
 };
@@ -222,6 +254,11 @@ describe( 'Deposits Overview information', () => {
 			deposits: mockDeposits,
 			isLoading: false,
 		} );
+		mockDepositOverviews( [ createMockNewAccountOverview( 'usd' ) ] );
+		mockUseSelectedCurrency.mockReturnValue( {
+			selectedCurrency: 'usd',
+			setSelectedCurrency: mockSetSelectedCurrency,
+		} );
 
 		const { container } = render( <DepositsOverview /> );
 		expect( container ).toMatchSnapshot();
@@ -229,11 +266,21 @@ describe( 'Deposits Overview information', () => {
 
 	test( 'Component renders without errors for new account', () => {
 		mockOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
+		mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
+		mockUseSelectedCurrency.mockReturnValue( {
+			selectedCurrency: 'eur',
+			setSelectedCurrency: mockSetSelectedCurrency,
+		} );
 		const { getByText } = render( <DepositsOverview /> );
 		getByText( '€0.00' );
 	} );
 
 	test( 'Confirm next deposit in EUR amount', () => {
+		mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
+		mockUseSelectedCurrency.mockReturnValue( {
+			selectedCurrency: 'eur',
+			setSelectedCurrency: mockSetSelectedCurrency,
+		} );
 		const overview = createMockOverview( 'usd', 100, 0, 'estimated' );
 		const { getByText } = render(
 			<NextDepositDetails isLoading={ false } overview={ overview } />
@@ -244,6 +291,11 @@ describe( 'Deposits Overview information', () => {
 
 	test( 'Confirm next deposit in EUR amount', () => {
 		global.wcpaySettings.connect.country = 'EU';
+		mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
+		mockUseSelectedCurrency.mockReturnValue( {
+			selectedCurrency: 'eur',
+			setSelectedCurrency: mockSetSelectedCurrency,
+		} );
 
 		const overview = createMockOverview( 'EUR', 647049, 0, 'estimated' );
 		const { getByText } = render(
@@ -257,6 +309,12 @@ describe( 'Deposits Overview information', () => {
 		const date = Date.parse( '2021-10-01' );
 		const overview = createMockOverview( 'usd', 100, date, 'estimated' );
 
+		mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
+		mockUseSelectedCurrency.mockReturnValue( {
+			selectedCurrency: 'eur',
+			setSelectedCurrency: mockSetSelectedCurrency,
+		} );
+
 		const { getByText } = render(
 			<NextDepositDetails isLoading={ false } overview={ overview } />
 		);
@@ -265,6 +323,11 @@ describe( 'Deposits Overview information', () => {
 
 	test( 'Confirm next deposit default status and date', () => {
 		const overview = createMockOverview( 'usd', 100, 0, 'rubbish' );
+		mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
+		mockUseSelectedCurrency.mockReturnValue( {
+			selectedCurrency: 'eur',
+			setSelectedCurrency: mockSetSelectedCurrency,
+		} );
 
 		const { getByText } = render(
 			<NextDepositDetails isLoading={ false } overview={ overview } />
@@ -274,27 +337,14 @@ describe( 'Deposits Overview information', () => {
 	} );
 
 	test( 'Confirm recent deposits renders ', () => {
-		mockUseDeposits.mockReturnValue( {
-			depositsCount: 0,
-			deposits: mockDeposits,
-			isLoading: false,
-		} );
 		const { getByText } = render(
-			<RecentDepositsList currency={ mockAccount.default_currency } />
+			<RecentDepositsList deposits={ mockDeposits } />
 		);
 		getByText( 'January 2, 2020' );
 	} );
 
 	test( 'Confirm recent deposits does not render when no deposits', () => {
-		mockUseDeposits.mockReturnValue( {
-			depositsCount: 0,
-			deposits: [],
-			isLoading: false,
-		} );
-
-		const { container } = render(
-			<RecentDepositsList currency={ mockAccount.default_currency } />
-		);
+		const { container } = render( <RecentDepositsList deposits={ [] } /> );
 
 		expect( container ).toBeEmptyDOMElement();
 	} );
@@ -305,20 +355,31 @@ describe( 'Deposits Overview information', () => {
 			includesFinancingPayout: true,
 			isLoading: false,
 		} );
+		mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
+		mockUseSelectedCurrency.mockReturnValue( {
+			selectedCurrency: 'eur',
+			setSelectedCurrency: mockSetSelectedCurrency,
+		} );
 
 		const { getByRole, getByText } = render(
 			<NextDepositDetails isLoading={ false } overview={ overview } />
 		);
 
-		getByText( strings.notices.depositIncludesLoan, {
-			exact: false,
-			ignore: '.a11y-speak-region',
-		} );
+		getByText(
+			'deposit will include funds from your WooCommerce Capital loan',
+			{
+				exact: false,
+				ignore: '.a11y-speak-region',
+			}
+		);
 		expect(
 			getByRole( 'link', {
 				name: 'Learn more',
 			} )
-		).toHaveAttribute( 'href', strings.documentationUrls.capital );
+		).toHaveAttribute(
+			'href',
+			'https://woocommerce.com/document/woocommerce-payments/stripe-capital/overview'
+		);
 	} );
 
 	test( `Doesn't render capital loan notice if deposit does not include financing payout`, () => {
@@ -327,16 +388,24 @@ describe( 'Deposits Overview information', () => {
 			includesFinancingPayout: false,
 			isLoading: false,
 		} );
+		mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
+		mockUseSelectedCurrency.mockReturnValue( {
+			selectedCurrency: 'eur',
+			setSelectedCurrency: mockSetSelectedCurrency,
+		} );
 
 		const { queryByRole, queryByText } = render(
 			<NextDepositDetails isLoading={ false } overview={ overview } />
 		);
 
 		expect(
-			queryByText( strings.notices.depositIncludesLoan, {
-				exact: false,
-				ignore: '.a11y-speak-region',
-			} )
+			queryByText(
+				'deposit will include funds from your WooCommerce Capital loan',
+				{
+					exact: false,
+					ignore: '.a11y-speak-region',
+				}
+			)
 		).toBeFalsy();
 		expect(
 			queryByRole( 'link', {
@@ -347,6 +416,12 @@ describe( 'Deposits Overview information', () => {
 
 	test( 'Confirm new account waiting period notice does not show', () => {
 		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = true;
+		mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
+		mockUseSelectedCurrency.mockReturnValue( {
+			selectedCurrency: 'eur',
+			setSelectedCurrency: mockSetSelectedCurrency,
+		} );
+
 		const { queryByText } = render( <DepositsOverview /> );
 		expect(
 			queryByText( 'Your first deposit is held for seven business days' )
@@ -355,6 +430,12 @@ describe( 'Deposits Overview information', () => {
 
 	test( 'Confirm new account waiting period notice shows', () => {
 		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = false;
+		mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
+		mockUseSelectedCurrency.mockReturnValue( {
+			selectedCurrency: 'eur',
+			setSelectedCurrency: mockSetSelectedCurrency,
+		} );
+
 		const { getByText, getByRole } = render( <DepositsOverview /> );
 		getByText( /Your first deposit is held for seven business days/, {
 			ignore: '.a11y-speak-region',
@@ -455,5 +536,56 @@ describe( 'Suspended Deposit Notice Renders', () => {
 	test( 'Component Renders', () => {
 		const { container } = render( <SuspendedDepositNotice /> );
 		expect( container ).toMatchSnapshot();
+	} );
+} );
+
+describe( 'Paused Deposit notice Renders', () => {
+	test( 'When available balance is negative', () => {
+		const overview = createMockOverview( 'usd', 100, 0, 'estimated' );
+		mockUseDeposits.mockReturnValue( {
+			depositsCount: 0,
+			deposits: mockDeposits,
+			isLoading: false,
+		} );
+		mockDepositOverviews( [
+			// Negative 100 available balance
+			createMockNewAccountOverview( 'usd', 100, -100 ),
+		] );
+		mockUseSelectedCurrency.mockReturnValue( {
+			selectedCurrency: 'usd',
+			setSelectedCurrency: mockSetSelectedCurrency,
+		} );
+
+		const { getByText } = render(
+			<NextDepositDetails isLoading={ false } overview={ overview } />
+		);
+		getByText(
+			'Deposits may be interrupted while your WooCommerce Payments balance remains negative. Why?'
+		);
+	} );
+	test( 'When available balance is positive', () => {
+		const overview = createMockOverview( 'usd', 100, 0, 'estimated' );
+		mockUseDeposits.mockReturnValue( {
+			depositsCount: 0,
+			deposits: mockDeposits,
+			isLoading: false,
+		} );
+		mockDepositOverviews( [
+			// Positive 100 available balance
+			createMockNewAccountOverview( 'usd', 100, 100 ),
+		] );
+		mockUseSelectedCurrency.mockReturnValue( {
+			selectedCurrency: 'usd',
+			setSelectedCurrency: mockSetSelectedCurrency,
+		} );
+
+		const { queryByText } = render(
+			<NextDepositDetails isLoading={ false } overview={ overview } />
+		);
+		expect(
+			queryByText(
+				'Deposits may be interrupted while your WooCommerce Payments balance remains negative. Why?'
+			)
+		).toBeFalsy();
 	} );
 } );

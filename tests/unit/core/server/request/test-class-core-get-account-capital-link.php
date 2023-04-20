@@ -56,6 +56,7 @@ class Get_Account_Capital_Link_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $valid_refresh_url, $params['refresh_url'] );
 		$this->assertSame( 'accounts/capital_links', $request->get_api() );
 		$this->assertSame( 'POST', $request->get_method() );
+		$this->assertTrue( $request->should_use_user_token() );
 	}
 
 	public function test_get_account_login_data_with_invalid_return_url_param_will_throw_exception() {

@@ -12,8 +12,8 @@ to catalog our packages and provide guidance to a developer who wants to test an
 ## Some Notes on Packages
 * A lot of our JavaScript dev dependencies are provided by WordPress or WooCommerce globally at runtime, we include them
   as dev dependencies so that we aren't duplicating them in our build bundle but our unit tests can still pass by
-  having them available. This means we should keep the versions of these packages on the highest version avaiable in our
-  supported versions of WordPress and WooCommerce, giving us the best chance of catching any issues with the bundled
+  having them available. This means we should keep the versions of these packages on the highest version available in our
+  minimum supported versions of [WordPress](https://github.com/WordPress/wordpress-develop/blob/x.y.z/package.json) and [WooCommerce](https://github.com/woocommerce/woocommerce/blob/x.y.z/plugins/woocommerce/package.json) (replace `x.y.z` by the minimum supported version in the link), giving us the best chance of catching any issues with the bundled
   packages early.
 * Following on from above, we use the `@woocommerce/dependency-extraction-webpack-plugin` to make WebPack aware of what
   can be found globally at runtime. The configuration for this can be found in 

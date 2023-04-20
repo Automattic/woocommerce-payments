@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Fixed precision loss notice that occurs when running PHP 8.1.

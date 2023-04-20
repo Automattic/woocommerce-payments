@@ -34,3 +34,38 @@ Array [
   },
 ]
 `;
+
+exports[`Blocked fraud outcome transactions columns should render the column correctly with the payment intent link 1`] = `
+Array [
+  Object {
+    "display": <ClickableCell
+      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_123"
+    >
+      Mar 20, 2023 / 4:08PM
+    </ClickableCell>,
+    "value": "Mar 20, 2023 / 4:08PM",
+  },
+  Object {
+    "display": <ClickableCell
+      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_123"
+    >
+      $11.00
+    </ClickableCell>,
+    "value": 1100,
+  },
+  Object {
+    "display": <ClickableCell
+      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_123"
+    >
+      Mock Customer
+    </ClickableCell>,
+    "value": "Mock Customer",
+  },
+  Object {
+    "display": <TransactionStatusChip
+      status="block"
+    />,
+    "value": "block",
+  },
+]
+`;
