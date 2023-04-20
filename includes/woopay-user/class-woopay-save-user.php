@@ -78,18 +78,18 @@ class WooPay_Save_User {
 			$woopay_viewport   = $this->woopay_util->get_woopay_viewport();
 
 			// Add the metadata.
-			$metadata['woopay_primary_first_name']   = wc_clean( $order->get_billing_first_name() );
-			$metadata['woopay_primary_last_name']    = wc_clean( $order->get_billing_last_name() );
-			$metadata['woopay_primary_phone']        = wc_clean( $order->get_billing_phone() );
-			$metadata['woopay_primary_company']      = wc_clean( $order->get_billing_company() );
-			$metadata['woopay_secondary_first_name'] = wc_clean( $order->get_shipping_first_name() );
-			$metadata['woopay_secondary_last_name']  = wc_clean( $order->get_shipping_last_name() );
-			$metadata['woopay_secondary_phone']      = wc_clean( $order->get_shipping_phone() );
-			$metadata['woopay_secondary_company']    = wc_clean( $order->get_shipping_company() );
-			$metadata['woopay_phone']                = $woopay_phone;
-			$metadata['woopay_source_url']           = $woopay_source_url;
-			$metadata['woopay_is_blocks']            = $woopay_is_blocks;
-			$metadata['woopay_viewport']             = $woopay_viewport;
+			$metadata['platform_checkout_primary_first_name']   = wc_clean( $order->get_billing_first_name() );
+			$metadata['platform_checkout_primary_last_name']    = wc_clean( $order->get_billing_last_name() );
+			$metadata['platform_checkout_primary_phone']        = wc_clean( $order->get_billing_phone() );
+			$metadata['platform_checkout_primary_company']      = wc_clean( $order->get_billing_company() );
+			$metadata['platform_checkout_secondary_first_name'] = wc_clean( $order->get_shipping_first_name() );
+			$metadata['platform_checkout_secondary_last_name']  = wc_clean( $order->get_shipping_last_name() );
+			$metadata['platform_checkout_secondary_phone']      = wc_clean( $order->get_shipping_phone() );
+			$metadata['platform_checkout_secondary_company']    = wc_clean( $order->get_shipping_company() );
+			$metadata['platform_checkout_phone']                = $woopay_phone;
+			$metadata['platform_checkout_source_url']           = $woopay_source_url;
+			$metadata['platform_checkout_is_blocks']            = $woopay_is_blocks;
+			$metadata['platform_checkout_viewport']             = $woopay_viewport;
 		}
 
 		return $metadata;
