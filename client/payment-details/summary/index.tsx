@@ -379,7 +379,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								<div className="payment-details-capture-notice__text">
 									{ createInterpolateElement(
 										__(
-											'You need to <a>capture</a> this charge in ',
+											'You must <a>capture</a> this charge within the next ',
 											'woocommerce-payments'
 										),
 										{
