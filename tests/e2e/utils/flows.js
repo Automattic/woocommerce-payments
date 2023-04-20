@@ -340,7 +340,7 @@ export const merchantWCP = {
 		} );
 	},
 
-	activateEnhancedUPE: async () => {
+	activateUPEWithDefferedIntentCreation: async () => {
 		await page.goto( WCPAY_DEV_TOOLS, {
 			waitUntil: 'networkidle0',
 		} );
@@ -384,7 +384,7 @@ export const merchantWCP = {
 		} );
 	},
 
-	deactivateEnhancedUPE: async () => {
+	deactivateUPEWithDefferedIntentCreation: async () => {
 		await page.goto( WCPAY_DEV_TOOLS, {
 			waitUntil: 'networkidle0',
 		} );
