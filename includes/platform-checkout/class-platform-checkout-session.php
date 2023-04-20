@@ -63,10 +63,6 @@ class Platform_Checkout_Session {
 	 * @return \WP_User|null|int
 	 */
 	public static function determine_current_user_for_platform_checkout( $user ) {
-		if ( $user ) {
-			return $user;
-		}
-
 		if ( ! self::is_store_api_request() || ! self::is_request_from_woopay() ) {
 			return $user;
 		}
