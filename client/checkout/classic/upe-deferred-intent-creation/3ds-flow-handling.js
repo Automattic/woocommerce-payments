@@ -1,21 +1,9 @@
 /**
  * Internal dependencies
  */
-import WCPayAPI from 'wcpay/checkout/api';
 import { isWCPayChosen } from 'wcpay/checkout/utils/upe';
-import { getUPEConfig, getConfig } from 'wcpay/utils/checkout';
-import apiRequest from '../../utils/request';
+import { getConfig } from 'wcpay/utils/checkout';
 import showErrorCheckout from 'wcpay/checkout/utils/show-error-checkout';
-
-const api = new WCPayAPI(
-	{
-		publishableKey: getUPEConfig( 'publishableKey' ),
-		accountId: getUPEConfig( 'accountId' ),
-		forceNetworkSavedCards: getUPEConfig( 'forceNetworkSavedCards' ),
-		locale: getUPEConfig( 'locale' ),
-	},
-	apiRequest
-);
 
 const getPaymentMethodId = () => {
 	// console.log('3');
@@ -41,7 +29,7 @@ const cleanupURL = () => {
 	);
 };
 
-export const showAuthenticationModalIfRequired = () => {
+export const showAuthenticationModalIfRequired = ( api ) => {
 	const url = window.location.href;
 	const paymentMethodId = getPaymentMethodId();
 
@@ -83,9 +71,3 @@ export const showAuthenticationModalIfRequired = () => {
 			showErrorCheckout( errorMessage );
 		} );
 };
-
-window.addEventListener( 'hashchange', () => {
-	if ( window.location.hash.startsWith( '#wcpay-confirm-' ) ) {
-		showAuthenticationModalIfRequired();
-	}
-} );

@@ -12,11 +12,22 @@ import {
 import { checkout, mountStripePaymentElement } from './stripe-checkout';
 import enqueueFraudScripts from 'fraud-scripts';
 import { showAuthenticationModalIfRequired } from './3ds-flow-handling';
+import WCPayAPI from 'wcpay/checkout/api';
+import apiRequest from '../../utils/request';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
+	const api = new WCPayAPI(
+		{
+			publishableKey: getUPEConfig( 'publishableKey' ),
+			accountId: getUPEConfig( 'accountId' ),
+			forceNetworkSavedCards: getUPEConfig( 'forceNetworkSavedCards' ),
+			locale: getUPEConfig( 'locale' ),
+		},
+		apiRequest
+	);
+	showAuthenticationModalIfRequired( api );
 
-	showAuthenticationModalIfRequired();
 	$( document.body ).on( 'updated_checkout', () => {
 		if (
 			$( '.wcpay-upe-element' ).length &&
@@ -25,7 +36,7 @@ jQuery( function ( $ ) {
 			$( '.wcpay-upe-element' )
 				.toArray()
 				.forEach( ( domElement ) =>
-					mountStripePaymentElement( domElement )
+					mountStripePaymentElement( api, domElement )
 				);
 		}
 	} );
@@ -33,7 +44,13 @@ jQuery( function ( $ ) {
 	$( 'form.checkout' ).on( generateCheckoutEventNames(), function () {
 		const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
 		if ( ! isUsingSavedPaymentMethod( paymentMethodType ) ) {
-			return checkout( jQuery( this ), paymentMethodType );
+			return checkout( api, jQuery( this ), paymentMethodType );
+		}
+	} );
+
+	window.addEventListener( 'hashchange', () => {
+		if ( window.location.hash.startsWith( '#wcpay-confirm-' ) ) {
+			showAuthenticationModalIfRequired( api );
 		}
 	} );
 } );

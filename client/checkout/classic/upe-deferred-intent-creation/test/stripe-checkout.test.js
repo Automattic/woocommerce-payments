@@ -12,8 +12,6 @@ import { getUPEConfig } from 'wcpay/utils/checkout';
 import { getFingerprint } from 'wcpay/checkout/utils/fingerprint';
 import showErrorCheckout from 'wcpay/checkout/utils/show-error-checkout';
 import { waitFor } from '@testing-library/react';
-import WCPayAPI from 'wcpay/checkout/api';
-// const appppi = require('wcpay/checkout/api');
 
 jest.mock( '../../../upe-styles' );
 
@@ -22,57 +20,6 @@ jest.mock( 'wcpay/utils/checkout', () => {
 		getUPEConfig: jest.fn(),
 		getConfig: jest.fn(),
 	};
-} );
-
-jest.mock( 'wcpay/checkout/api', () => {
-	const mockMountFunction = jest.fn();
-
-	const mockCreateFunction = jest.fn( () => {
-		return {
-			mount: mockMountFunction,
-		};
-	} );
-
-	const mockSubmit = jest.fn( () => {
-		return {
-			then: jest.fn(),
-		};
-	} );
-
-	const mockElements = jest.fn( () => {
-		return {
-			create: mockCreateFunction,
-			submit: mockSubmit,
-		};
-	} );
-
-	const mockThen = jest.fn( () => {
-		return {
-			catch: jest.fn(),
-		};
-	} );
-
-	const mockCreatePaymentMethod = jest.fn( () => {
-		return {
-			then: mockThen,
-		};
-	} );
-
-	const mockGetStripe = jest.fn( () => {
-		return {
-			elements: mockElements,
-			createPaymentMethod: mockCreatePaymentMethod,
-		};
-	} );
-
-	const saveUPEAppearanceMock = jest.fn();
-
-	return jest.fn().mockImplementation( () => {
-		return {
-			saveUPEAppearance: saveUPEAppearanceMock,
-			getStripe: mockGetStripe,
-		};
-	} );
 } );
 
 jest.mock( 'wcpay/checkout/utils/fingerprint', () => {
@@ -85,24 +32,73 @@ jest.mock( 'wcpay/checkout/utils/show-error-checkout', () => {
 	return jest.fn();
 } );
 
+const mockMountFunction = jest.fn();
+
+const mockCreateFunction = jest.fn( () => {
+	return {
+		mount: mockMountFunction,
+	};
+} );
+
+const mockSubmit = jest.fn( () => {
+	return {
+		then: jest.fn(),
+	};
+} );
+
+const mockElements = jest.fn( () => {
+	return {
+		create: mockCreateFunction,
+		submit: mockSubmit,
+	};
+} );
+
+const mockThen = jest.fn( () => {
+	return {
+		catch: jest.fn(),
+	};
+} );
+
+const mockCreatePaymentMethod = jest.fn( () => {
+	return {
+		then: mockThen,
+	};
+} );
+
+const mockGetStripe = jest.fn( () => {
+	return {
+		elements: mockElements,
+		createPaymentMethod: mockCreatePaymentMethod,
+	};
+} );
+
+const saveUPEAppearanceMock = jest.fn();
+
+const apiMock = {
+	saveUPEAppearance: saveUPEAppearanceMock,
+	getStripe: mockGetStripe,
+};
+
 describe( 'UPE appearance initialization', () => {
 	afterEach( () => {
 		jest.clearAllMocks();
 	} );
 
 	test( 'initializes the appearance when it is not set and saves it', () => {
-		const mockAppearance = { backgroundColor: '#fff' };
-		getAppearance.mockReturnValue( mockAppearance );
+		const appearanceMock = { backgroundColor: '#fff' };
+		getAppearance.mockReturnValue( appearanceMock );
 
-		initializeAppearance();
+		initializeAppearance( apiMock );
 
 		expect( getAppearance ).toHaveBeenCalled();
-		expect( WCPayAPI().saveUPEAppearance ).toHaveBeenCalled();
+		expect( apiMock.saveUPEAppearance ).toHaveBeenCalledWith(
+			appearanceMock
+		);
 	} );
 
 	test( 'does not call getAppearance or saveUPEAppearance if appearance is already set', () => {
-		const mockAppearance = { backgroundColor: '#fff' };
-		getAppearance.mockReturnValue( mockAppearance );
+		const appearanceMock = { backgroundColor: '#fff' };
+		getAppearance.mockReturnValue( appearanceMock );
 		getUPEConfig.mockImplementation( () => {
 			return {
 				upeAppearance: { backgroundColor: '#fff' },
@@ -110,10 +106,10 @@ describe( 'UPE appearance initialization', () => {
 		} );
 		inititalizeStripeElements();
 
-		initializeAppearance();
+		initializeAppearance( apiMock );
 
 		expect( getAppearance ).not.toHaveBeenCalled();
-		expect( WCPayAPI().saveUPEAppearance ).not.toHaveBeenCalled();
+		expect( apiMock.saveUPEAppearance ).not.toHaveBeenCalled();
 	} );
 } );
 
@@ -127,17 +123,15 @@ describe( 'Mount Stripe Payment Element', () => {
 			throw new Error( 'No fingerprint' );
 		} );
 
-		mountStripePaymentElement( null );
+		mountStripePaymentElement( apiMock, null );
 
 		await waitFor( () => {
 			expect( showErrorCheckout ).toHaveBeenCalledWith(
 				'No fingerprint'
 			);
-			expect( WCPayAPI().getStripe ).not.toHaveBeenCalled();
-			expect( WCPayAPI().getStripe().elements ).not.toHaveBeenCalled();
-			expect(
-				WCPayAPI().getStripe().elements().create
-			).not.toHaveBeenCalled();
+			expect( apiMock.getStripe ).not.toHaveBeenCalled();
+			expect( mockElements ).not.toHaveBeenCalled();
+			expect( mockCreateFunction ).not.toHaveBeenCalled();
 		} );
 	} );
 
@@ -164,17 +158,13 @@ describe( 'Mount Stripe Payment Element', () => {
 		mockDomElement.dataset.paymentMethodType = 'card';
 		inititalizeStripeElements();
 
-		mountStripePaymentElement( mockDomElement );
+		mountStripePaymentElement( apiMock, mockDomElement );
 
 		await waitFor( () => {
-			expect( WCPayAPI().getStripe ).toHaveBeenCalled();
-			expect( WCPayAPI().getStripe().elements ).toHaveBeenCalled();
-			expect(
-				WCPayAPI().getStripe().elements().create
-			).toHaveBeenCalled();
-			expect(
-				WCPayAPI().getStripe().elements().create().mount
-			).toHaveBeenCalled();
+			expect( apiMock.getStripe ).toHaveBeenCalled();
+			expect( mockElements ).toHaveBeenCalled();
+			expect( mockCreateFunction ).toHaveBeenCalled();
+			expect( mockMountFunction ).toHaveBeenCalled();
 		} );
 	} );
 
@@ -201,13 +191,12 @@ describe( 'Mount Stripe Payment Element', () => {
 		mockDomElement.dataset.paymentMethodType = 'card';
 		inititalizeStripeElements();
 
-		mountStripePaymentElement( mockDomElement );
-		mountStripePaymentElement( mockDomElement );
+		mountStripePaymentElement( apiMock, mockDomElement );
+		mountStripePaymentElement( apiMock, mockDomElement );
 
 		await waitFor( () => {
-			expect(
-				WCPayAPI().getStripe().elements().create
-			).toHaveBeenCalledTimes( 1 );
+			expect( apiMock.getStripe ).toHaveBeenCalled();
+			expect( mockElements ).toHaveBeenCalledTimes( 1 );
 		} );
 	} );
 } );
@@ -241,7 +230,7 @@ describe( 'Checkout', () => {
 		mockDomElement.dataset.paymentMethodType = 'card';
 		inititalizeStripeElements();
 
-		await mountStripePaymentElement( mockDomElement );
+		await mountStripePaymentElement( apiMock, mockDomElement );
 
 		const mockJqueryForm = {
 			submit: jest.fn(),
@@ -254,20 +243,15 @@ describe( 'Checkout', () => {
 			unblock: jest.fn(),
 		};
 
-		const checkoutResult = checkout( mockJqueryForm, 'card' );
+		const checkoutResult = checkout( apiMock, mockJqueryForm, 'card' );
 
 		expect( mockJqueryForm.addClass ).toHaveBeenCalledWith( 'processing' );
-		expect( WCPayAPI().getStripe().elements().submit ).toHaveBeenCalled();
 		expect( mockJqueryForm.removeClass ).not.toHaveBeenCalledWith(
 			'processing'
 		);
-		expect( WCPayAPI().getStripe().createPaymentMethod ).toHaveBeenCalled();
-		expect(
-			WCPayAPI().getStripe().createPaymentMethod().then
-		).toHaveBeenCalled();
-		expect(
-			WCPayAPI().getStripe().createPaymentMethod().then().catch
-		).not.toHaveBeenCalled();
+		expect( mockSubmit ).toHaveBeenCalled();
+		expect( mockCreatePaymentMethod ).toHaveBeenCalled();
+		expect( mockThen ).toHaveBeenCalled();
 		expect( checkoutResult ).toBe( false );
 	} );
 

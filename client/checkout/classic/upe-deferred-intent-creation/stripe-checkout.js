@@ -1,9 +1,7 @@
 /**
  * Internal dependencies
  */
-import WCPayAPI from 'wcpay/checkout/api';
 import { getUPEConfig } from 'wcpay/utils/checkout';
-import apiRequest from '../../utils/request';
 import { getAppearance } from '../../upe-styles';
 import showErrorCheckout from 'wcpay/checkout/utils/show-error-checkout';
 import {
@@ -16,21 +14,12 @@ import {
 } from 'wcpay/checkout/utils/upe';
 
 const gatewayUPEComponents = {};
-const api = new WCPayAPI(
-	{
-		publishableKey: getUPEConfig( 'publishableKey' ),
-		accountId: getUPEConfig( 'accountId' ),
-		forceNetworkSavedCards: getUPEConfig( 'forceNetworkSavedCards' ),
-		locale: getUPEConfig( 'locale' ),
-	},
-	apiRequest
-);
 
 let fingerprint = null;
 
 inititalizeStripeElements();
 
-export function initializeAppearance() {
+export function initializeAppearance( api ) {
 	let appearance = getUPEConfig( 'upeAppearance' );
 	if ( ! appearance ) {
 		appearance = getAppearance();
@@ -63,7 +52,7 @@ function blockUI( jQueryForm ) {
 	} );
 }
 
-function createStripePaymentMethod( elements ) {
+function createStripePaymentMethod( api, elements ) {
 	return api.getStripe().createPaymentMethod( {
 		elements,
 		params: {
@@ -105,7 +94,7 @@ function submitForm( jQueryForm ) {
 	jQueryForm.removeClass( 'processing' ).submit();
 }
 
-async function createStripePaymentElement( paymentMethodType ) {
+async function createStripePaymentElement( api, paymentMethodType ) {
 	const amount = Number( getUPEConfig( 'cartTotal' ) );
 	const options = {
 		mode: 1 > amount ? 'setup' : 'payment',
@@ -136,9 +125,10 @@ async function createStripePaymentElement( paymentMethodType ) {
  * Mounts the existing Stripe Payment Element to the DOM element.
  * Creates the Stipe Payment Element instance if it doesn't exist and mounts it to the DOM element.
  *
+ * @param {Object} api The API object.
  * @param {string} domElement The selector of the DOM element of particular payment method to mount the UPE element to.
  **/
-export async function mountStripePaymentElement( domElement ) {
+export async function mountStripePaymentElement( api, domElement ) {
 	try {
 		if ( ! fingerprint ) {
 			const { visitorId } = await getFingerprint();
@@ -151,12 +141,12 @@ export async function mountStripePaymentElement( domElement ) {
 	const paymentMethodType = domElement.dataset.paymentMethodType;
 	const upeElement =
 		gatewayUPEComponents[ paymentMethodType ].upeElement ||
-		( await createStripePaymentElement( paymentMethodType ) );
+		( await createStripePaymentElement( api, paymentMethodType ) );
 	upeElement.mount( domElement );
 }
 
 let hasCheckoutCompleted;
-export const checkout = ( jQueryForm, paymentMethodType ) => {
+export const checkout = ( api, jQueryForm, paymentMethodType ) => {
 	if ( hasCheckoutCompleted ) {
 		hasCheckoutCompleted = false;
 		return;
@@ -166,7 +156,7 @@ export const checkout = ( jQueryForm, paymentMethodType ) => {
 
 	const elements = gatewayUPEComponents[ paymentMethodType ].elements;
 	validateElements( elements, jQueryForm );
-	createStripePaymentMethod( elements )
+	createStripePaymentMethod( api, elements )
 		.then( ( paymentMethodObject ) => {
 			appendFingerprintInputToForm( jQueryForm, fingerprint );
 			appendPaymentMethodIdToForm(
