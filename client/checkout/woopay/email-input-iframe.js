@@ -389,7 +389,7 @@ export const handleWooPayEmailInput = async (
 				return fetch(
 					`${ getConfig(
 						'woopayHost'
-					) }/wp-json/woopay/v1/user/exists?${ emailExistsQuery.toString() }`,
+					) }/wp-json/platform-checkout/v1/user/exists?${ emailExistsQuery.toString() }`,
 					{
 						signal,
 					}

@@ -61,7 +61,7 @@ class WooPay_Order_Status_Sync {
 	 */
 	private static function get_webhook_delivery_url() {
 		$woopay_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'https://pay.woo.com';
-		return $woopay_host . '/wp-json/woopay/v1/merchant-notification';
+		return $woopay_host . '/wp-json/platform-checkout/v1/merchant-notification';
 	}
 
 	/**

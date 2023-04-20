@@ -1398,7 +1398,7 @@ class WC_Payments {
 		$account_id = self::get_account_service()->get_stripe_account_id();
 
 		$woopay_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'https://pay.woo.com';
-		$url         = $woopay_host . '/wp-json/woopay/v1/init';
+		$url         = $woopay_host . '/wp-json/platform-checkout/v1/init';
 
 		$store_logo = self::get_gateway()->get_option( 'platform_checkout_store_logo' );
 
