@@ -52,7 +52,7 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 
 		$this->gateway_mock->expects( $this->once() )
 			->method( 'get_option' )
-			->with( 'woopay', 'no' )
+			->with( 'platform_checkout', 'no' )
 			->willReturn( $gateway_woopay_enabled );
 
 		$woopay_utilities = new WooPay_Utilities();
@@ -102,6 +102,6 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 	 * @param $account
 	 */
 	private function set_is_woopay_eligible( $is_woopay_eligible ) {
-		$this->mock_cache->method( 'get' )->willReturn( [ 'woopay_eligible' => $is_woopay_eligible ] );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => $is_woopay_eligible ] );
 	}
 }

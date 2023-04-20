@@ -2131,18 +2131,18 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_woopay_enabled_returns_true() {
-		$this->mock_cache->method( 'get' )->willReturn( [ 'woopay_eligible' => true ] );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
 		$this->assertTrue( $this->payments_checkout->get_payment_fields_js_config()['isWooPayEnabled'] );
 	}
 
 	public function test_should_use_stripe_platform_on_checkout_page_not_woopay_eligible() {
-		$this->mock_cache->method( 'get' )->willReturn( [ 'woopay_eligible' => false ] );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => false ] );
 		$this->assertFalse( $this->wcpay_gateway->should_use_stripe_platform_on_checkout_page() );
 	}
 
 	public function test_should_use_stripe_platform_on_checkout_page_not_woopay() {
-		$this->mock_cache->method( 'get' )->willReturn( [ 'woopay_eligible' => true ] );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'no' );
 
 		$this->assertFalse( $this->wcpay_gateway->should_use_stripe_platform_on_checkout_page() );
@@ -2167,7 +2167,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_woopay_enabled_returns_false_if_ineligible() {
-		$this->mock_cache->method( 'get' )->willReturn( [ 'woopay_eligible' => false ] );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => false ] );
 		$this->assertFalse( $this->payments_checkout->get_payment_fields_js_config()['isWooPayEnabled'] );
 	}
 

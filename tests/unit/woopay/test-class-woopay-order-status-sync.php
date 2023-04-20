@@ -80,7 +80,7 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 	 * @param $account
 	 */
 	private function set_is_woopay_eligible( $is_woopay_eligible ) {
-		$this->mock_cache->method( 'get' )->willReturn( [ 'woopay_eligible' => $is_woopay_eligible ] );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => $is_woopay_eligible ] );
 	}
 
 }

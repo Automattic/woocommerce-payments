@@ -160,7 +160,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 			remove_filter( $hook, $callback );
 		}
 
-		$this->mock_cache->method( 'get' )->willReturn( [ 'woopay_eligible' => $is_enabled ] );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => $is_enabled ] );
 		// Testing feature flag, so woopay setting should always be on.
 		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'yes' );
 
@@ -177,7 +177,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		}
 
 		// Testing woopay, so feature flag should always be on.
-		$this->mock_cache->method( 'get' )->willReturn( [ 'woopay_eligible' => true ] );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		WC_Payments::get_gateway()->update_option( 'platform_checkout', $is_enabled ? 'yes' : 'no' );
 
 		WC_Payments::maybe_register_woopay_hooks();

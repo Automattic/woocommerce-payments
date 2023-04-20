@@ -98,12 +98,12 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_woopay_eligible_returns_true() {
-		$this->mock_cache->method( 'get' )->willReturn( [ 'woopay_eligible' => true ] );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		$this->assertTrue( WC_Payments_Features::is_woopay_eligible() );
 	}
 
 	public function test_is_woopay_eligible_returns_false() {
-		$this->mock_cache->method( 'get' )->willReturn( [ 'woopay_eligible' => false ] );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => false ] );
 		$this->assertFalse( WC_Payments_Features::is_woopay_eligible() );
 	}
 
@@ -140,7 +140,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 			10,
 			3
 		);
-		$this->mock_cache->method( 'get' )->willReturn( [ 'woopay_eligible' => true ] );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		$this->assertTrue( WC_Payments_Features::is_woopay_express_checkout_enabled() );
 	}
 
@@ -153,7 +153,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 			10,
 			3
 		);
-		$this->mock_cache->method( 'get' )->willReturn( [ 'woopay_eligible' => true ] );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		$this->assertFalse( WC_Payments_Features::is_woopay_express_checkout_enabled() );
 	}
 
@@ -166,7 +166,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 			10,
 			3
 		);
-		$this->mock_cache->method( 'get' )->willReturn( [ 'woopay_eligible' => false ] );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => false ] );
 		$this->assertFalse( WC_Payments_Features::is_woopay_express_checkout_enabled() );
 	}
 

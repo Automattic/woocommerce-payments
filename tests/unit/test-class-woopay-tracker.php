@@ -99,6 +99,6 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 	 * @param $account
 	 */
 	private function set_is_woopay_eligible( $is_woopay_eligible ) {
-		$this->mock_cache->method( 'get' )->willReturn( [ 'woopay_eligible' => $is_woopay_eligible ] );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => $is_woopay_eligible ] );
 	}
 }

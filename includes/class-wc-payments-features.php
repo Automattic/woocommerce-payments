@@ -188,7 +188,7 @@ class WC_Payments_Features {
 	public static function is_woopay_eligible() {
 		// read directly from cache, ignore cache expiration check.
 		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
-		return is_array( $account ) && ( $account['woopay_eligible'] ?? false );
+		return is_array( $account ) && ( $account['platform_checkout_eligible'] ?? false );
 	}
 
 	/**

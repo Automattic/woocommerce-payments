@@ -923,12 +923,12 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->set_http_mock_response(
 			200,
 			[
-				'woopay_eligible' => true,
+				'platform_checkout_eligible' => true,
 			]
 		);
 
 		$response = $this->payments_api_client->get_woopay_eligibility();
-		$this->assertTrue( $response['woopay_eligible'] );
+		$this->assertTrue( $response['platform_checkout_eligible'] );
 	}
 
 	/**
