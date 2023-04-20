@@ -73,6 +73,7 @@ class WC_Payments_Account {
 		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
 		add_action( 'updated_option', [ $this, 'possibly_update_wcpay_account_locale' ], 10, 3 );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'clear_cache' ] );
 
 		// Add capital offer redirection.
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_capital_offer' ] );
