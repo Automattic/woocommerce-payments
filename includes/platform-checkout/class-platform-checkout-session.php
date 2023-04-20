@@ -126,10 +126,10 @@ class Platform_Checkout_Session {
 		 *
 		 * @var string
 		 */
-		$request_uri = wc_clean( wp_unslash( $_SERVER['REQUEST_URI'] ?? '' ) );
+		$request_uri = urldecode( wp_parse_url( $_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH ) ); // phpcs:ignore
 
 		// Check if the request URI contains a URL traversal.
-		if ( strpos( $request_uri, '../' ) !== false ) {
+		if ( strpos( $request_uri . '/', '../' ) !== false ) {
 			return false;
 		}
 
