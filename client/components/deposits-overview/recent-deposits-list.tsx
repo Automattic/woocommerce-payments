@@ -13,11 +13,11 @@ import { calendar } from '@wordpress/icons';
 import { Link } from '@woocommerce/components';
 import InfoOutlineIcon from 'gridicons/dist/info-outline';
 import { Fragment } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
  */
-import strings from './strings';
 import './style.scss';
 import DepositStatusPill from 'components/deposit-status-pill';
 import { getDepositDate } from 'deposits/utils';
@@ -93,7 +93,9 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 					className="wcpay-deposits-overview__business-day-delay-notice"
 					status="info"
 					icon={ <InfoOutlineIcon /> }
-					children={ strings.notices.businessDayDelay }
+					children={
+						'Deposits pending or in-transit may take 1-2 business days to appear in your bank account once dispatched'
+					}
 					isDismissible={ false }
 				/>
 			) }
@@ -106,13 +108,13 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 			<CardBody className={ `${ tableClass }__container` }>
 				<Flex className={ `${ tableClass }__row__header` }>
 					<FlexItem className={ `${ tableClass }__cell` }>
-						{ strings.tableHeaders.recentDepositDate }
+						{ __( 'Dispatch date', 'woocommerce-payments' ) }
 					</FlexItem>
 					<FlexItem className={ `${ tableClass }__cell` }>
-						{ strings.tableHeaders.status }
+						{ __( 'Status', 'woocommerce-payments' ) }
 					</FlexItem>
 					<FlexItem className={ `${ tableClass }__cell` }>
-						{ strings.tableHeaders.amount }
+						{ __( 'Amount', 'woocommerce-payments' ) }
 					</FlexItem>
 				</Flex>
 			</CardBody>
