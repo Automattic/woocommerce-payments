@@ -11,9 +11,12 @@ import {
 } from '../../utils/upe';
 import { checkout, mountStripePaymentElement } from './stripe-checkout';
 import enqueueFraudScripts from 'fraud-scripts';
+import { showAuthenticationModalIfRequired } from './3ds-flow-handling';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
+
+	showAuthenticationModalIfRequired();
 	$( document.body ).on( 'updated_checkout', () => {
 		if (
 			$( '.wcpay-upe-element' ).length &&
