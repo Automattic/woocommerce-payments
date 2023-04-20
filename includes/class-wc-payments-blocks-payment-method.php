@@ -85,7 +85,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 
 		if ( $is_woopay_eligible && $is_woopay_enabled ) {
 			$woopay_config = [
-				'woopayHost' => defined( 'WOOPAY_FRONTEND_HOST' ) ? WOOPAY_FRONTEND_HOST : 'https://pay.woo.com',
+				'woopayHost' => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'https://pay.woo.com',
 			];
 		}
 
