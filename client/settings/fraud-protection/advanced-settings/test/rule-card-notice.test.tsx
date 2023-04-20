@@ -32,10 +32,10 @@ describe( 'Fraud protection rule card notice tests', () => {
 		);
 		expect( container ).toMatchSnapshot();
 	} );
-	test( "doesn't render box when type is missing", () => {
+	test( "doesn't render box when type is not a valid type", () => {
 		const testValue = 'This is the test content';
 		const { queryByText } = render(
-			<FraudProtectionRuleCardNotice>
+			<FraudProtectionRuleCardNotice type="invalid">
 				{ testValue }
 			</FraudProtectionRuleCardNotice>
 		);

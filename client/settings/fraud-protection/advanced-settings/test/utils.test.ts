@@ -2,8 +2,14 @@
 /**
  * Internal dependencies
  */
+import {
+	AdvancedFraudProtectionSettings,
+	FraudProtectionSettingsMultipleChecks,
+	FraudProtectionSettingsSingleCheck,
+} from '../../interfaces';
 import { CheckOperators, Checks, Outcomes, Rules } from '../constants';
 import { readRuleset, writeRuleset } from '../utils';
+
 const defaultUIConfig = {
 	address_mismatch: {
 		block: false,
@@ -30,6 +36,37 @@ const defaultUIConfig = {
 		min_amount: null,
 	},
 };
+
+declare const global: {
+	wcpaySettings: {
+		storeCurrency: string;
+		connect: {
+			country: string;
+		};
+		currencyData: {
+			[ country: string ]: {
+				code: string;
+				symbol: string;
+				symbolPosition: string;
+				thousandSeparator: string;
+				decimalSeparator: string;
+				precision: number;
+			};
+		};
+	};
+	wcSettings: {
+		admin: {
+			preloadSettings: {
+				general: {
+					woocommerce_allowed_countries: string;
+					woocommerce_specific_allowed_countries: string[];
+					woocommerce_all_except_countries: string[];
+				};
+			};
+		};
+	};
+};
+
 describe( 'Ruleset adapter utilities test', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
@@ -51,7 +88,7 @@ describe( 'Ruleset adapter utilities test', () => {
 	} );
 
 	test( 'converts an empty ruleset to default UI config', () => {
-		const ruleset = [];
+		const ruleset: AdvancedFraudProtectionSettings[] = [];
 		const expected = defaultUIConfig;
 		const output = readRuleset( ruleset );
 		expect( output ).toEqual( expected );
@@ -65,7 +102,7 @@ describe( 'Ruleset adapter utilities test', () => {
 					key: Checks.CHECK_BILLING_SHIPPING_ADDRESS_SAME,
 					operator: CheckOperators.OPERATOR_EQUALS,
 					value: false,
-				},
+				} as FraudProtectionSettingsSingleCheck,
 			},
 		];
 		const expected = Object.assign( {}, defaultUIConfig, {
@@ -87,7 +124,7 @@ describe( 'Ruleset adapter utilities test', () => {
 					key: Checks.CHECK_IP_BILLING_COUNTRY_SAME,
 					operator: CheckOperators.OPERATOR_EQUALS,
 					value: false,
-				},
+				} as FraudProtectionSettingsSingleCheck,
 			},
 		];
 		const expected = Object.assign( {}, defaultUIConfig, {
@@ -109,7 +146,7 @@ describe( 'Ruleset adapter utilities test', () => {
 					key: Checks.CHECK_IP_COUNTRY,
 					operator: CheckOperators.OPERATOR_IN,
 					value: 'US|CA',
-				},
+				} as FraudProtectionSettingsSingleCheck,
 			},
 		];
 		const expected = Object.assign( {}, defaultUIConfig, {
@@ -141,7 +178,7 @@ describe( 'Ruleset adapter utilities test', () => {
 							value: 10,
 						},
 					],
-				},
+				} as FraudProtectionSettingsMultipleChecks,
 			},
 		];
 		const expected = Object.assign( {}, defaultUIConfig, {
@@ -174,7 +211,7 @@ describe( 'Ruleset adapter utilities test', () => {
 							value: 1000,
 						},
 					],
-				},
+				} as FraudProtectionSettingsMultipleChecks,
 			},
 		];
 		const expected = Object.assign( {}, defaultUIConfig, {
@@ -202,7 +239,7 @@ describe( 'Ruleset adapter utilities test', () => {
 							value: 100,
 						},
 					],
-				},
+				} as FraudProtectionSettingsMultipleChecks,
 			},
 		];
 		const expected = Object.assign( {}, defaultUIConfig, {
@@ -225,7 +262,7 @@ describe( 'Ruleset adapter utilities test', () => {
 					key: Checks.CHECK_ORDER_TOTAL,
 					operator: CheckOperators.OPERATOR_LT,
 					value: 1,
-				},
+				} as FraudProtectionSettingsSingleCheck,
 			},
 		];
 		const expected = Object.assign( {}, defaultUIConfig );
@@ -241,7 +278,7 @@ describe( 'Ruleset adapter utilities test', () => {
 					key: Checks.CHECK_ORDER_TOTAL,
 					operator: CheckOperators.OPERATOR_LT,
 					value: 100,
-				},
+				} as FraudProtectionSettingsSingleCheck,
 			},
 		];
 		const expected = Object.assign( {}, defaultUIConfig, {
@@ -264,7 +301,7 @@ describe( 'Ruleset adapter utilities test', () => {
 					key: 'unknown_key',
 					operator: CheckOperators.OPERATOR_LT,
 					value: 1,
-				},
+				} as FraudProtectionSettingsSingleCheck,
 			},
 		];
 		const expected = Object.assign( {}, defaultUIConfig, {
@@ -287,7 +324,7 @@ describe( 'Ruleset adapter utilities test', () => {
 					key: Checks.CHECK_ORDER_TOTAL,
 					operator: 'exp',
 					value: 100,
-				},
+				} as FraudProtectionSettingsSingleCheck,
 			},
 		];
 		const expected = Object.assign( {}, defaultUIConfig, {
@@ -310,7 +347,7 @@ describe( 'Ruleset adapter utilities test', () => {
 					operator: CheckOperators.OPERATOR_LT,
 					value: 100,
 				},
-			},
+			} as any,
 		];
 		const expected = Object.assign( {}, defaultUIConfig );
 		const output = readRuleset( ruleset );
@@ -325,7 +362,7 @@ describe( 'Ruleset adapter utilities test', () => {
 					operator: CheckOperators.OPERATOR_LT,
 					value: 1,
 				},
-			},
+			} as any,
 		];
 		const expected = Object.assign( {}, defaultUIConfig, {
 			[ Rules.RULE_PURCHASE_PRICE_THRESHOLD ]: {
@@ -346,7 +383,7 @@ describe( 'Ruleset adapter utilities test', () => {
 				check: {
 					operator: CheckOperators.OPERATOR_LT,
 					value: 1,
-				},
+				} as FraudProtectionSettingsSingleCheck,
 			},
 		];
 		const expected = Object.assign( {}, defaultUIConfig, {
@@ -368,7 +405,7 @@ describe( 'Ruleset adapter utilities test', () => {
 				check: {
 					key: Checks.CHECK_ORDER_TOTAL,
 					value: 1,
-				},
+				} as FraudProtectionSettingsSingleCheck,
 			},
 		];
 		const expected = Object.assign( {}, defaultUIConfig, {
@@ -390,7 +427,7 @@ describe( 'Ruleset adapter utilities test', () => {
 				check: {
 					key: Checks.CHECK_ORDER_TOTAL,
 					operator: CheckOperators.OPERATOR_LT,
-				},
+				} as FraudProtectionSettingsSingleCheck,
 			},
 		];
 		const expected = Object.assign( {}, defaultUIConfig, {
@@ -406,13 +443,13 @@ describe( 'Ruleset adapter utilities test', () => {
 	} );
 	test( 'converts an empty UI config to an empty ruleset', () => {
 		const config = {};
-		const expected = [];
+		const expected: AdvancedFraudProtectionSettings[] = [];
 		const output = writeRuleset( config );
 		expect( output ).toEqual( expected );
 	} );
 	test( 'converts default UI config to an empty ruleset', () => {
 		const config = defaultUIConfig;
-		const expected = [];
+		const expected: AdvancedFraudProtectionSettings[] = [];
 		const output = writeRuleset( config );
 		expect( output ).toEqual( expected );
 	} );
@@ -514,7 +551,7 @@ describe( 'Ruleset adapter utilities test', () => {
 		[ true, 10, 100 ],
 		[ false, '', 100 ],
 		[ false, 10, 100 ],
-	];
+	] as Array< [ boolean, string | number, string | number ] >;
 	test.each( orderItemsThresholdCases )(
 		'converts enabled order items threshold filter to ruleset, blocking %s, min %s, max %s',
 		( block, minItems, maxItems ) => {
@@ -578,7 +615,7 @@ describe( 'Ruleset adapter utilities test', () => {
 		[ true, 10, 100 ],
 		[ false, '', 100 ],
 		[ false, 10, 100 ],
-	];
+	] as Array< [ boolean, string | number, string | number ] >;
 	test.each( purchasePriceThresholdCases )(
 		'converts enabled purchase price threshold filter to ruleset, blocking %s, min %s, max %s',
 		( block, minAmount, maxAmount ) => {
@@ -601,12 +638,18 @@ describe( 'Ruleset adapter utilities test', () => {
 							{
 								key: Checks.CHECK_ORDER_TOTAL,
 								operator: CheckOperators.OPERATOR_LT,
-								value: [ minAmount * 100, 'USD' ].join( '|' ),
+								value: [
+									Number( minAmount ) * 100,
+									'USD',
+								].join( '|' ),
 							},
 							{
 								key: Checks.CHECK_ORDER_TOTAL,
 								operator: CheckOperators.OPERATOR_GT,
-								value: [ maxAmount * 100, 'USD' ].join( '|' ),
+								value: [
+									Number( maxAmount ) * 100,
+									'USD',
+								].join( '|' ),
 							},
 						],
 					},
@@ -623,8 +666,12 @@ describe( 'Ruleset adapter utilities test', () => {
 								: CheckOperators.OPERATOR_LT,
 						value:
 							'' !== maxAmount
-								? [ maxAmount * 100, 'USD' ].join( '|' )
-								: [ minAmount * 100, 'USD' ].join( '|' ),
+								? [ Number( maxAmount ) * 100, 'USD' ].join(
+										'|'
+								  )
+								: [ Number( minAmount ) * 100, 'USD' ].join(
+										'|'
+								  ),
 					},
 				} );
 			} else {

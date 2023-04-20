@@ -194,7 +194,7 @@ export const PurchasePriceThresholdValidation = (
 	}: FraudPreventionSetting,
 	setValidationError: Dispatch< SetStateAction< string | null > >
 ): boolean => {
-	const minAmountFloat = getFloatValue( maxAmount?.toString() || '' );
+	const minAmountFloat = getFloatValue( minAmount?.toString() || '' );
 	const maxAmountFloat = getFloatValue( maxAmount?.toString() || '' );
 	if ( enabled ) {
 		if ( ! minAmountFloat && ! maxAmountFloat ) {

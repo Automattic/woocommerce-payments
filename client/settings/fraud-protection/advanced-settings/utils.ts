@@ -9,7 +9,6 @@ import {
 	FraudProtectionSettingsSingleCheck,
 	FraudProtectionSettingsCheck,
 	isFraudProtectionSettingsSingleCheck,
-	// FindCheckOverload,
 } from '../interfaces';
 
 export const getSupportedCountriesType = (): string => {
@@ -58,7 +57,7 @@ const getRuleBase = (
 	return {
 		key: setting,
 		outcome: block ? Outcomes.BLOCK : Outcomes.REVIEW,
-		check: {} as FraudProtectionSettingsSingleCheck,
+		check: null, //{} as FraudProtectionSettingsSingleCheck,
 	};
 };
 
@@ -227,7 +226,10 @@ const findCheck = (
 		return current;
 	}
 
-	if ( ! isFraudProtectionSettingsSingleCheck( current ) && current.checks ) {
+	if (
+		! isFraudProtectionSettingsSingleCheck( current ) &&
+		current?.checks
+	) {
 		for ( const i in current.checks ) {
 			const check = current.checks[ i ];
 			const result = findCheck( check, checkKey, operator );
@@ -257,7 +259,7 @@ export const writeRuleset = (
 };
 
 export const readRuleset = (
-	rulesetConfig: AdvancedFraudProtectionSettings[]
+	rulesetConfig: AdvancedFraudProtectionSettings[] | string
 ): ProtectionSettingsUI => {
 	const defaultUIConfig = {
 		[ Rules.RULE_ADDRESS_MISMATCH ]: { enabled: false, block: false },
@@ -283,64 +285,67 @@ export const readRuleset = (
 		},
 	};
 	const parsedUIConfig = {} as ProtectionSettingsUI;
-	for ( const id in rulesetConfig ) {
-		const rule = rulesetConfig[ id ];
 
-		switch ( rule.key ) {
-			case Rules.RULE_ADDRESS_MISMATCH:
-				parsedUIConfig[ rule.key ] = {
-					enabled: true,
-					block: rule.outcome === Outcomes.BLOCK,
-				};
-				break;
-			case Rules.RULE_INTERNATIONAL_IP_ADDRESS:
-				parsedUIConfig[ rule.key ] = {
-					enabled: true,
-					block: rule.outcome === Outcomes.BLOCK,
-				};
-				break;
-			case Rules.RULE_IP_ADDRESS_MISMATCH:
-				parsedUIConfig[ rule.key ] = {
-					enabled: true,
-					block: rule.outcome === Outcomes.BLOCK,
-				};
-				break;
-			case Rules.RULE_ORDER_ITEMS_THRESHOLD:
-				const minItems = findCheck(
-					rule.check,
-					Checks.CHECK_ITEM_COUNT,
-					CheckOperators.OPERATOR_LT
-				) as FraudProtectionSettingsSingleCheck;
-				const maxItems = findCheck(
-					rule.check,
-					Checks.CHECK_ITEM_COUNT,
-					CheckOperators.OPERATOR_GT
-				) as FraudProtectionSettingsSingleCheck;
-				parsedUIConfig[ rule.key ] = {
-					enabled: true,
-					block: rule.outcome === Outcomes.BLOCK,
-					min_items: minItems.value ?? '',
-					max_items: maxItems.value ?? '',
-				};
-				break;
-			case Rules.RULE_PURCHASE_PRICE_THRESHOLD:
-				const minAmount = findCheck(
-					rule.check,
-					Checks.CHECK_ORDER_TOTAL,
-					CheckOperators.OPERATOR_LT
-				) as FraudProtectionSettingsSingleCheck;
-				const maxAmount = findCheck(
-					rule.check,
-					Checks.CHECK_ORDER_TOTAL,
-					CheckOperators.OPERATOR_GT
-				) as FraudProtectionSettingsSingleCheck;
-				parsedUIConfig[ rule.key ] = {
-					enabled: true,
-					block: rule.outcome === Outcomes.BLOCK,
-					min_amount: readFormattedRulePrice( minAmount.value ),
-					max_amount: readFormattedRulePrice( maxAmount.value ),
-				};
-				break;
+	if ( 'string' !== typeof rulesetConfig ) {
+		for ( const id in rulesetConfig ) {
+			const rule = rulesetConfig[ id ];
+
+			switch ( rule.key ) {
+				case Rules.RULE_ADDRESS_MISMATCH:
+					parsedUIConfig[ rule.key ] = {
+						enabled: true,
+						block: rule.outcome === Outcomes.BLOCK,
+					};
+					break;
+				case Rules.RULE_INTERNATIONAL_IP_ADDRESS:
+					parsedUIConfig[ rule.key ] = {
+						enabled: true,
+						block: rule.outcome === Outcomes.BLOCK,
+					};
+					break;
+				case Rules.RULE_IP_ADDRESS_MISMATCH:
+					parsedUIConfig[ rule.key ] = {
+						enabled: true,
+						block: rule.outcome === Outcomes.BLOCK,
+					};
+					break;
+				case Rules.RULE_ORDER_ITEMS_THRESHOLD:
+					const minItems = findCheck(
+						rule.check,
+						Checks.CHECK_ITEM_COUNT,
+						CheckOperators.OPERATOR_LT
+					) as FraudProtectionSettingsSingleCheck;
+					const maxItems = findCheck(
+						rule.check,
+						Checks.CHECK_ITEM_COUNT,
+						CheckOperators.OPERATOR_GT
+					) as FraudProtectionSettingsSingleCheck;
+					parsedUIConfig[ rule.key ] = {
+						enabled: true,
+						block: rule.outcome === Outcomes.BLOCK,
+						min_items: minItems.value ?? '',
+						max_items: maxItems.value ?? '',
+					};
+					break;
+				case Rules.RULE_PURCHASE_PRICE_THRESHOLD:
+					const minAmount = findCheck(
+						rule.check,
+						Checks.CHECK_ORDER_TOTAL,
+						CheckOperators.OPERATOR_LT
+					) as FraudProtectionSettingsSingleCheck;
+					const maxAmount = findCheck(
+						rule.check,
+						Checks.CHECK_ORDER_TOTAL,
+						CheckOperators.OPERATOR_GT
+					) as FraudProtectionSettingsSingleCheck;
+					parsedUIConfig[ rule.key ] = {
+						enabled: true,
+						block: rule.outcome === Outcomes.BLOCK,
+						min_amount: readFormattedRulePrice( minAmount.value ),
+						max_amount: readFormattedRulePrice( maxAmount.value ),
+					};
+					break;
+			}
 		}
 	}
 

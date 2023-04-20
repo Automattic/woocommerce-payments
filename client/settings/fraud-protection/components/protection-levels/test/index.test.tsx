@@ -1,14 +1,24 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { render } from '@testing-library/react';
 
 /**
  * Internal dependencies
  */
 import ProtectionLevels from '../index';
+import { AdvancedFraudProtectionSettings } from 'wcpay/settings/fraud-protection/interfaces';
 
-let mockAdvancedFraudProtectionSettings = null;
+declare const global: {
+	wcpaySettings: {
+		isMultiCurrencyEnabled: string;
+	};
+};
+
+let mockAdvancedFraudProtectionSettings:
+	| AdvancedFraudProtectionSettings[]
+	| string = [];
 
 jest.mock( 'wcpay/data', () => ( {
 	...jest.requireActual( 'wcpay/data' ),

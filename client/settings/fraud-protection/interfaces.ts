@@ -34,7 +34,8 @@ export interface FraudProtectionSettingsMultipleChecks {
 
 export type FraudProtectionSettingsCheck =
 	| FraudProtectionSettingsSingleCheck
-	| FraudProtectionSettingsMultipleChecks;
+	| FraudProtectionSettingsMultipleChecks
+	| null;
 
 export interface AdvancedFraudProtectionSettings {
 	key: string;
@@ -60,16 +61,3 @@ export function isFraudProtectionSettingsSingleCheck(
 ): check is FraudProtectionSettingsSingleCheck {
 	return ( check as FraudProtectionSettingsSingleCheck ).key !== undefined;
 }
-
-// export interface FindCheckOverload {
-// 	(
-// 		current: FraudProtectionSettingsSingleCheck,
-// 		checkKey: string,
-// 		operator: string
-// 	): FraudProtectionSettingsSingleCheck | false;
-// 	(
-// 		current: FraudProtectionSettingsMultipleChecks,
-// 		checkKey: string,
-// 		operator: string
-// 	): FraudProtectionSettingsMultipleChecks | false;
-// }

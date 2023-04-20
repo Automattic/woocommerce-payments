@@ -110,8 +110,6 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 	] = useState( false );
 
 	useEffect( () => {
-		if ( typeof advancedFraudProtectionSettings === 'string' ) return;
-
 		setProtectionSettingsUI(
 			readRuleset( advancedFraudProtectionSettings )
 		);

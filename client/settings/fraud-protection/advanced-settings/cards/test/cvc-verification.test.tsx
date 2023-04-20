@@ -9,6 +9,16 @@ import { render } from '@testing-library/react';
 import FraudPreventionSettingsContext from '../../context';
 import CVCVerificationRuleCard from '../cvc-verification';
 
+declare const global: {
+	wcpaySettings: {
+		accountStatus: {
+			fraudProtection: {
+				declineOnCVCFailure: boolean;
+			};
+		};
+	};
+};
+
 describe( 'CVC verification card', () => {
 	test( 'renders correctly when CVC check is enabled', () => {
 		const settings = {
@@ -57,8 +67,10 @@ describe( 'CVC verification card', () => {
 		};
 		const setSettings = jest.fn();
 		const contextValue = {
-			advancedFraudProtectionSettings: settings,
-			setAdvancedFraudProtectionSettings: setSettings,
+			protectionSettingsUI: settings,
+			setProtectionSettingsUI: setSettings,
+			protectionSettingsChanged: false,
+			setProtectionSettingsChanged: jest.fn(),
 		};
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>

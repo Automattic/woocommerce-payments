@@ -16,8 +16,26 @@ const mockContext = {
 			block: false,
 		},
 	},
+	protectionSettingsChanged: false,
 	setProtectionSettingsUI: jest.fn(),
 	setProtectionSettingsChanged: jest.fn(),
+};
+
+declare const global: {
+	wcSettings: {
+		admin: {
+			preloadSettings: {
+				general: {
+					woocommerce_allowed_countries: string;
+					woocommerce_all_except_countries: string[];
+					woocommerce_specific_allowed_countries: string[];
+				};
+			};
+		};
+		countries: {
+			[ key: string ]: string;
+		};
+	};
 };
 
 describe( 'Allowed countries rule card notice tests', () => {

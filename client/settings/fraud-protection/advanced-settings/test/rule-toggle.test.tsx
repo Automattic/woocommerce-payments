@@ -10,8 +10,30 @@ import { render } from '@testing-library/react';
 import FraudProtectionRuleToggle from '../rule-toggle';
 import FraudPreventionSettingsContext from '../context';
 
+interface mockContext {
+	protectionSettingsUI: {
+		[ key: string ]: {
+			enabled: boolean;
+			block: boolean;
+		};
+	};
+	protectionSettingsChanged: boolean;
+	setProtectionSettingsUI: jest.Mock;
+	setProtectionSettingsChanged: jest.Mock;
+}
+
 describe( 'Fraud protection rule toggle tests', () => {
-	let mockContext = null;
+	let mockContext: mockContext = {
+		protectionSettingsUI: {
+			test_rule: {
+				enabled: false,
+				block: false,
+			},
+		},
+		protectionSettingsChanged: false,
+		setProtectionSettingsUI: jest.fn(),
+		setProtectionSettingsChanged: jest.fn(),
+	};
 
 	beforeEach( () => {
 		mockContext = {
@@ -21,6 +43,7 @@ describe( 'Fraud protection rule toggle tests', () => {
 					block: false,
 				},
 			},
+			protectionSettingsChanged: false,
 			setProtectionSettingsUI: jest.fn(),
 			setProtectionSettingsChanged: jest.fn(),
 		};

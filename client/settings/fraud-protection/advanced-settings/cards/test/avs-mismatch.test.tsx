@@ -9,6 +9,16 @@ import { render } from '@testing-library/react';
 import FraudPreventionSettingsContext from '../../context';
 import AVSMismatchRuleCard from '../avs-mismatch';
 
+declare const global: {
+	wcpaySettings: {
+		accountStatus: {
+			fraudProtection: {
+				declineOnAVSFailure: boolean;
+			};
+		};
+	};
+};
+
 describe( 'AVS mismatch card', () => {
 	test( 'renders correctly when AVS check is enabled', () => {
 		const settings = {

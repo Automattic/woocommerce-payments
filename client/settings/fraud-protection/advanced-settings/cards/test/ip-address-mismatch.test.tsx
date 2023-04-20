@@ -9,6 +9,20 @@ import { render } from '@testing-library/react';
 import FraudPreventionSettingsContext from '../../context';
 import IPAddressMismatchRuleCard from '../ip-address-mismatch';
 
+declare const global: {
+	wcSettings: {
+		admin: {
+			preloadSettings: {
+				general: {
+					woocommerce_allowed_countries: string;
+					woocommerce_all_except_countries: string[];
+					woocommerce_specific_allowed_countries: string[];
+				};
+			};
+		};
+	};
+};
+
 describe( 'International billing address card', () => {
 	const settings = {
 		ip_address_mismatch: {

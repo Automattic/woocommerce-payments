@@ -31,6 +31,7 @@ Object {
     <div>
       <div
         class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+        id="test-id"
       >
         <div
           class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -60,6 +61,7 @@ Object {
   "container": <div>
     <div
       class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+      id="test-id"
     >
       <div
         class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"

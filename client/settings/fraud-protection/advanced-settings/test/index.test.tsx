@@ -35,13 +35,63 @@ jest.mock( '@wordpress/data', () => ( {
 	withSelect: jest.fn( () => jest.fn() ),
 } ) );
 
-let defaultSettings = [];
+let defaultSettings: any[] = [];
+let container: any = null;
+
+declare const global: {
+	wcSettings: {
+		admin: {
+			preloadSettings: {
+				general: {
+					woocommerce_allowed_countries: string;
+					woocommerce_all_except_countries: string[];
+					woocommerce_specific_allowed_countries: string[];
+				};
+			};
+		};
+	};
+	wcpaySettings: {
+		storeCurrency: string;
+		connect: {
+			country: string;
+		};
+		currencyData: Record<
+			string,
+			{
+				code: string;
+				symbol: string;
+				symbolPosition: string;
+				thousandSeparator: string;
+				decimalSeparator: string;
+				precision: number;
+			}
+		>;
+		isMultiCurrencyEnabled: string;
+	};
+};
+
+const mockUseCurrentProtectionLevel = useCurrentProtectionLevel as jest.MockedFunction<
+	() => [ string, ( level: string ) => void ]
+>;
+
+const mockUseAdvancedFraudProtectionSettings = useAdvancedFraudProtectionSettings as jest.MockedFunction<
+	() => [ any[] | string, ( settings: string ) => void ]
+>;
+
+const mockUseSettings = useSettings as jest.MockedFunction<
+	() => {
+		settings: any;
+		isLoading: boolean;
+		saveSettings: jest.Mock;
+		isSaving: boolean;
+	}
+>;
 
 describe( 'Advanced fraud protection settings', () => {
 	beforeEach( () => {
 		window.scrollTo = jest.fn();
 		const protectionSettings = {
-			state: {},
+			state: [],
 			updateState: jest.fn( ( settings ) => {
 				protectionSettings.state = settings;
 			} ),
@@ -52,7 +102,7 @@ describe( 'Advanced fraud protection settings', () => {
 				protectionLevelState.state = level;
 			} ),
 		};
-		useCurrentProtectionLevel.mockReturnValue( [
+		mockUseCurrentProtectionLevel.mockReturnValue( [
 			protectionLevelState.state,
 			protectionLevelState.updateState,
 		] );
@@ -86,7 +136,7 @@ describe( 'Advanced fraud protection settings', () => {
 			isMultiCurrencyEnabled: '1',
 		};
 
-		useAdvancedFraudProtectionSettings.mockReturnValue( [
+		mockUseAdvancedFraudProtectionSettings.mockReturnValue( [
 			protectionSettings.state,
 			protectionSettings.updateState,
 		] );
@@ -97,36 +147,44 @@ describe( 'Advanced fraud protection settings', () => {
 			disconnect: () => null,
 		} );
 		window.IntersectionObserver = mockIntersectionObserver;
+
+		container = null;
 	} );
 	afterEach( () => {
 		jest.clearAllMocks();
+		container?.unmount();
 		defaultSettings = [];
 	} );
 	test( 'renders correctly', () => {
-		useSettings.mockReturnValue( {
+		mockUseSettings.mockReturnValue( {
 			settings: {
 				advanced_fraud_protection_settings: [],
 			},
 			saveSettings: jest.fn(),
+			isSaving: false,
 			isLoading: false,
 		} );
-		useAdvancedFraudProtectionSettings.mockReturnValue( [ {}, jest.fn() ] );
-		const container = render( <FraudProtectionAdvancedSettingsPage /> );
+		mockUseAdvancedFraudProtectionSettings.mockReturnValue( [
+			[],
+			jest.fn(),
+		] );
+		container = render( <FraudProtectionAdvancedSettingsPage /> );
 		expect( container ).toMatchSnapshot();
 	} );
 	it( 'renders an error message when settings can not be fetched from the server', async () => {
-		useSettings.mockReturnValue( {
+		mockUseSettings.mockReturnValue( {
 			settings: {
 				advanced_fraud_protection_settings: 'error',
 			},
 			saveSettings: jest.fn(),
+			isSaving: false,
 			isLoading: false,
 		} );
-		useAdvancedFraudProtectionSettings.mockReturnValue( [
+		mockUseAdvancedFraudProtectionSettings.mockReturnValue( [
 			'error',
 			jest.fn(),
 		] );
-		const container = render(
+		container = render(
 			<div>
 				<div className="woocommerce-layout__header-wrapper">
 					<div className="woocommerce-layout__header-heading"></div>
@@ -134,6 +192,7 @@ describe( 'Advanced fraud protection settings', () => {
 				<FraudProtectionAdvancedSettingsPage />
 			</div>
 		);
+
 		expect( container ).toMatchSnapshot();
 		expect( container.baseElement ).toHaveTextContent(
 			/There was an error retrieving your fraud protection settings/i
@@ -163,11 +222,12 @@ describe( 'Advanced fraud protection settings', () => {
 				],
 			},
 		} );
-		useAdvancedFraudProtectionSettings.mockReturnValue( [
+		mockUseAdvancedFraudProtectionSettings.mockReturnValue( [
 			defaultSettings,
 			jest.fn(),
 		] );
-		useSettings.mockReturnValue( {
+
+		mockUseSettings.mockReturnValue( {
 			settings: {
 				advanced_fraud_protection_settings: defaultSettings,
 			},
@@ -175,8 +235,8 @@ describe( 'Advanced fraud protection settings', () => {
 			isLoading: false,
 			isSaving: false,
 		} );
-		const settingsMock = useSettings();
-		const container = render(
+
+		container = render(
 			<div>
 				<div className="woocommerce-layout__header-wrapper">
 					<div className="woocommerce-layout__header-heading"></div>
@@ -184,9 +244,10 @@ describe( 'Advanced fraud protection settings', () => {
 				<FraudProtectionAdvancedSettingsPage />
 			</div>
 		);
+
 		const [ saveButton ] = await container.findAllByText( 'Save Changes' );
 		saveButton.click();
-		expect( settingsMock.saveSettings.mock.calls.length ).toBe( 0 );
+		expect( mockUseSettings().saveSettings.mock.calls.length ).toBe( 0 );
 		expect( container ).toMatchSnapshot();
 		expect(
 			document.querySelectorAll(
@@ -210,19 +271,19 @@ describe( 'Advanced fraud protection settings', () => {
 				],
 			},
 		} );
-		useSettings.mockReturnValue( {
+		mockUseSettings.mockReturnValue( {
 			settings: {
 				advanced_fraud_protection_settings: defaultSettings,
 			},
 			saveSettings: jest.fn(),
+			isSaving: false,
 			isLoading: false,
 		} );
-		useAdvancedFraudProtectionSettings.mockReturnValue( [
+		mockUseAdvancedFraudProtectionSettings.mockReturnValue( [
 			defaultSettings,
 			jest.fn(),
 		] );
-		const settingsMock = useSettings();
-		const container = render(
+		container = render(
 			<div>
 				<div className="woocommerce-layout__header-wrapper">
 					<div className="woocommerce-layout__header-heading"></div>
@@ -233,7 +294,9 @@ describe( 'Advanced fraud protection settings', () => {
 		const [ saveButton ] = await container.findAllByText( 'Save Changes' );
 		saveButton.click();
 		await waitFor( () => {
-			expect( settingsMock.saveSettings.mock.calls.length ).toBe( 1 );
+			expect( mockUseSettings().saveSettings.mock.calls.length ).toBe(
+				1
+			);
 		} );
 		expect( container ).toMatchSnapshot();
 		expect(
@@ -249,7 +312,7 @@ describe( 'Advanced fraud protection settings', () => {
 				protectionLevelState.state = level;
 			} ),
 		};
-		useCurrentProtectionLevel.mockReturnValue( [
+		mockUseCurrentProtectionLevel.mockReturnValue( [
 			protectionLevelState.state,
 			protectionLevelState.updateState,
 		] );
@@ -268,19 +331,19 @@ describe( 'Advanced fraud protection settings', () => {
 				],
 			},
 		} );
-		useSettings.mockReturnValue( {
+		mockUseSettings.mockReturnValue( {
 			settings: {
 				advanced_fraud_protection_settings: defaultSettings,
 			},
+			isSaving: false,
 			saveSettings: jest.fn(),
 			isLoading: false,
 		} );
-		useAdvancedFraudProtectionSettings.mockReturnValue( [
+		mockUseAdvancedFraudProtectionSettings.mockReturnValue( [
 			defaultSettings,
 			jest.fn(),
 		] );
-		const settingsMock = useSettings();
-		const container = render(
+		container = render(
 			<div>
 				<div className="woocommerce-layout__header-wrapper">
 					<div className="woocommerce-layout__header-heading"></div>
@@ -291,7 +354,9 @@ describe( 'Advanced fraud protection settings', () => {
 		const [ saveButton ] = await container.findAllByText( 'Save Changes' );
 		saveButton.click();
 		await waitFor( () => {
-			expect( settingsMock.saveSettings.mock.calls.length ).toBe( 1 );
+			expect( mockUseSettings().saveSettings.mock.calls.length ).toBe(
+				1
+			);
 		} );
 		expect(
 			document.querySelectorAll(
@@ -311,7 +376,7 @@ describe( 'Advanced fraud protection settings', () => {
 				protectionLevelState.state = level;
 			} ),
 		};
-		useCurrentProtectionLevel.mockReturnValue( [
+		mockUseCurrentProtectionLevel.mockReturnValue( [
 			protectionLevelState.state,
 			protectionLevelState.updateState,
 		] );
@@ -330,19 +395,19 @@ describe( 'Advanced fraud protection settings', () => {
 				],
 			},
 		} );
-		useSettings.mockReturnValue( {
+		mockUseSettings.mockReturnValue( {
 			settings: {
 				advanced_fraud_protection_settings: defaultSettings,
 			},
 			saveSettings: jest.fn(),
+			isSaving: false,
 			isLoading: false,
 		} );
-		useAdvancedFraudProtectionSettings.mockReturnValue( [
+		mockUseAdvancedFraudProtectionSettings.mockReturnValue( [
 			defaultSettings,
 			jest.fn(),
 		] );
-		const settingsMock = useSettings();
-		const container = render(
+		container = render(
 			<div>
 				<div className="woocommerce-layout__header-wrapper">
 					<div className="woocommerce-layout__header-heading"></div>
@@ -353,7 +418,9 @@ describe( 'Advanced fraud protection settings', () => {
 		const [ saveButton ] = await container.findAllByText( 'Save Changes' );
 		saveButton.click();
 		await waitFor( () => {
-			expect( settingsMock.saveSettings.mock.calls.length ).toBe( 1 );
+			expect( mockUseSettings().saveSettings.mock.calls.length ).toBe(
+				1
+			);
 		} );
 		expect(
 			document.querySelectorAll(

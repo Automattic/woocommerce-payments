@@ -10,6 +10,26 @@ import FraudPreventionSettingsContext from '../../context';
 import PurchasePriceThresholdRuleCard, {
 	PurchasePriceThresholdValidation,
 } from '../purchase-price-threshold';
+import { ProtectionSettingsUI } from 'wcpay/settings/fraud-protection/interfaces';
+
+declare const global: {
+	wcpaySettings: {
+		storeCurrency: string;
+		connect: {
+			country: string;
+		};
+		currencyData: {
+			[ key: string ]: {
+				code: string;
+				symbol: string;
+				symbolPosition: string;
+				thousandSeparator: string;
+				decimalSeparator: string;
+				precision: number;
+			};
+		};
+	};
+};
 
 describe( 'Purchase price threshold card', () => {
 	beforeEach( () => {
@@ -31,7 +51,7 @@ describe( 'Purchase price threshold card', () => {
 		};
 	} );
 
-	const settings = {
+	const settings: ProtectionSettingsUI = {
 		purchase_price_threshold: {
 			enabled: false,
 			block: false,
@@ -214,7 +234,7 @@ describe( 'Purchase price threshold card', () => {
 		settings.purchase_price_threshold.min_amount = 10;
 		const setValidationError = jest.fn();
 		const validationResult = PurchasePriceThresholdValidation(
-			settings,
+			settings.purchase_price_threshold,
 			setValidationError
 		);
 		expect( validationResult ).toBe( true );

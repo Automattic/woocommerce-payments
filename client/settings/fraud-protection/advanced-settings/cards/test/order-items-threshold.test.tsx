@@ -10,9 +10,10 @@ import FraudPreventionSettingsContext from '../../context';
 import OrderItemsThresholdRuleCard, {
 	OrderItemsThresholdValidation,
 } from '../order-items-threshold';
+import { ProtectionSettingsUI } from 'wcpay/settings/fraud-protection/interfaces';
 
 describe( 'Order items threshold card', () => {
-	const settings = {
+	const settings: ProtectionSettingsUI = {
 		order_items_threshold: {
 			enabled: false,
 			block: false,

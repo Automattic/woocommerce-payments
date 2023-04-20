@@ -13,6 +13,7 @@ describe( 'Fraud protection rule card tests', () => {
 			<FraudProtectionRuleCard
 				title="test title"
 				description="test description"
+				id="test-id"
 			>
 				test content
 			</FraudProtectionRuleCard>

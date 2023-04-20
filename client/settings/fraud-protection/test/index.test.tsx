@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { render } from '@testing-library/react';
 import { useDispatch } from '@wordpress/data';
 
@@ -15,6 +16,14 @@ import {
 	useSettings,
 } from 'wcpay/data';
 import WCPaySettingsContext from '../../wcpay-settings-context';
+
+declare const global: {
+	wcpaySettings: {
+		fraudProtection: {
+			isWelcomeTourDismissed: boolean;
+		};
+	};
+};
 
 jest.mock( 'wcpay/data', () => ( {
 	useAdvancedFraudProtectionSettings: jest.fn(),
@@ -31,10 +40,36 @@ jest.mock( '@woocommerce/components', () => ( {
 	TourKit: () => <div>Tour Component</div>,
 } ) );
 
+const mockUseCurrentProtectionLevel = useCurrentProtectionLevel as jest.MockedFunction<
+	() => [ string, ( level: string ) => void ]
+>;
+
+const mockUseCurrencies = useCurrencies as jest.MockedFunction<
+	() => { currencies: Record< string, any >; isLoading: boolean }
+>;
+
+const mockUseAdvancedFraudProtectionSettings = useAdvancedFraudProtectionSettings as jest.MockedFunction<
+	() => [ any[] | string, ( settings: string ) => void ]
+>;
+
+const mockUseSettings = useSettings as jest.MockedFunction<
+	() => {
+		settings: any;
+		isLoading: boolean;
+		saveSettings: () => void;
+		isSaving: boolean;
+	}
+>;
+
+const mockUseDispatch = useDispatch as jest.MockedFunction< any >;
+
 describe( 'FraudProtection', () => {
 	beforeEach( () => {
-		useCurrentProtectionLevel.mockReturnValue( 'standard' );
-		useCurrencies.mockReturnValue( {
+		mockUseCurrentProtectionLevel.mockReturnValue( [
+			'standard',
+			jest.fn(),
+		] );
+		mockUseCurrencies.mockReturnValue( {
 			isLoading: false,
 			currencies: {
 				available: {
@@ -45,9 +80,17 @@ describe( 'FraudProtection', () => {
 			},
 		} );
 
-		useAdvancedFraudProtectionSettings.mockReturnValue( [ [], jest.fn() ] );
-		useSettings.mockReturnValue( { isLoading: false } );
-		useDispatch.mockReturnValue( { updateOptions: jest.fn() } );
+		mockUseAdvancedFraudProtectionSettings.mockReturnValue( [
+			[],
+			jest.fn(),
+		] );
+		mockUseSettings.mockReturnValue( {
+			settings: {},
+			isSaving: false,
+			saveSettings: jest.fn(),
+			isLoading: false,
+		} );
+		mockUseDispatch.mockReturnValue( { updateOptions: jest.fn() } );
 
 		global.wcpaySettings = {
 			fraudProtection: {
@@ -58,7 +101,9 @@ describe( 'FraudProtection', () => {
 
 	it( 'should render correctly', () => {
 		const { container: fraudProtectionSettings } = render(
-			<WCPaySettingsContext.Provider>
+			<WCPaySettingsContext.Provider
+				value={ { isWelcomeTourDismissed: true } as any }
+			>
 				<FraudProtection />
 			</WCPaySettingsContext.Provider>
 		);
@@ -71,7 +116,7 @@ describe( 'FraudProtection', () => {
 
 		const { container: fraudProtectionSettings } = render(
 			<WCPaySettingsContext.Provider
-				value={ { isWelcomeTourDismissed: true } }
+				value={ { isWelcomeTourDismissed: true } as any }
 			>
 				<FraudProtection />
 			</WCPaySettingsContext.Provider>

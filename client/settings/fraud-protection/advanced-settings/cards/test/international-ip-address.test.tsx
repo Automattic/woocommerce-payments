@@ -9,6 +9,20 @@ import { render } from '@testing-library/react';
 import FraudPreventionSettingsContext from '../../context';
 import InternationalIPAddressRuleCard from '../international-ip-address';
 
+declare const global: {
+	wcSettings: {
+		admin: {
+			preloadSettings: {
+				general: {
+					woocommerce_allowed_countries: string;
+					woocommerce_all_except_countries: string[];
+					woocommerce_specific_allowed_countries: string[];
+				};
+			};
+		};
+	};
+};
+
 describe( 'International IP address card', () => {
 	const settings = {
 		international_ip_address: {
