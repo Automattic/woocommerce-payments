@@ -95,7 +95,7 @@ class WooPay_Utilities {
 			return $this->get_persisted_available_countries();
 		}
 
-		$woopay_host = defined( 'WOOPAY_HOST' ) ? WOOPAY_HOST : 'https://pay.woo.com';
+		$woopay_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'https://pay.woo.com';
 		$url         = $woopay_host . '/wp-json/woopay/v1/user/available-countries';
 
 		$args = [
