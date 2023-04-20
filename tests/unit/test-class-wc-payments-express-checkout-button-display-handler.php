@@ -168,9 +168,9 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			->method( 'should_show_payment_request_button' )
 			->willReturn( true );
 
+		ob_start();
 		$this->express_checkout_button_display_handler->display_express_checkout_separator_if_necessary();
 
-		ob_start();
 		$this->assertStringContainsString( 'wcpay-payment-request-button-separator', ob_get_contents() );
 		ob_end_clean();
 	}
@@ -188,9 +188,9 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			->method( 'should_show_payment_request_button' )
 			->willReturn( true );
 
+		ob_start();
 		$this->express_checkout_button_display_handler->display_express_checkout_separator_if_necessary();
 
-		ob_start();
 		$this->assertStringContainsString( 'wcpay-payment-request-button-separator', ob_get_contents() );
 		ob_end_clean();
 	}
@@ -208,9 +208,9 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			->method( 'should_show_payment_request_button' )
 			->willReturn( false );
 
+		ob_start();
 		$this->express_checkout_button_display_handler->display_express_checkout_separator_if_necessary();
 
-		ob_start();
 		$this->assertStringContainsString( 'wcpay-payment-request-button-separator', ob_get_contents() );
 		ob_end_clean();
 	}
@@ -228,9 +228,9 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			->method( 'should_show_payment_request_button' )
 			->willReturn( false );
 
+		ob_start();
 		$this->express_checkout_button_display_handler->display_express_checkout_separator_if_necessary();
 
-		ob_start();
 		$this->assertEmpty( ob_get_contents() );
 		ob_end_clean();
 	}
@@ -244,13 +244,10 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			->method( 'should_show_payment_request_button' )
 			->willReturn( true );
 
+		ob_start();
 		$this->express_checkout_button_display_handler->display_express_checkout_buttons();
 
-		ob_start();
 		$this->assertStringContainsString( 'wcpay-platform-checkout-button', ob_get_contents() );
-		ob_end_clean();
-
-		ob_start();
 		$this->assertStringContainsString( 'wcpay-payment-request-button', ob_get_contents() );
 		ob_end_clean();
 	}
@@ -264,9 +261,9 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			->method( 'should_show_payment_request_button' )
 			->willReturn( false );
 
+		ob_start();
 		$this->express_checkout_button_display_handler->display_express_checkout_buttons();
 
-		ob_start();
 		$this->assertEmpty( ob_get_contents() );
 		ob_end_clean();
 	}
@@ -280,9 +277,9 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			->method( 'should_show_payment_request_button' )
 			->willReturn( false );
 
+		ob_start();
 		$this->express_checkout_button_display_handler->display_express_checkout_buttons();
 
-		ob_start();
 		$this->assertStringContainsString( 'wcpay-platform-checkout-button', ob_get_contents() );
 		ob_end_clean();
 	}
@@ -296,9 +293,9 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			->method( 'should_show_payment_request_button' )
 			->willReturn( true );
 
+		ob_start();
 		$this->express_checkout_button_display_handler->display_express_checkout_buttons();
 
-		ob_start();
 		$this->assertStringContainsString( 'wcpay-payment-request-button', ob_get_contents() );
 		ob_end_clean();
 	}
