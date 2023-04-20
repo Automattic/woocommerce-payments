@@ -19,6 +19,7 @@ defined( 'ABSPATH' ) || exit;
  * WooPay Webhooks are enqueued to their associated actions, delivered, and logged.
  */
 class WooPay_Order_Status_Sync {
+	const WCPAY_WEBHOOK_WOOPAY_ORDER_STATUS_CHANGED = 'wcpay_webhook_platform_checkout_order_status_changed';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -130,7 +131,7 @@ class WooPay_Order_Status_Sync {
 	 * @param array $topic_hooks List of WooCommerce's standard webhook topics and hooks.
 	 */
 	public static function add_topics( $topic_hooks ) {
-		$topic_hooks['order.status_changed'][] = 'wcpay_webhook_woopay_order_status_changed';
+		$topic_hooks['order.status_changed'][] = self::WCPAY_WEBHOOK_WOOPAY_ORDER_STATUS_CHANGED;
 
 		return $topic_hooks;
 	}
@@ -184,7 +185,7 @@ class WooPay_Order_Status_Sync {
 	public static function send_webhook( $order_id, $previous_status, $next_status ) {
 		$order = wc_get_order( $order_id );
 		if ( $order->get_meta( 'is_woopay' ) ) {
-			do_action( 'wcpay_webhook_woopay_order_status_changed', $order_id, $next_status );
+			do_action( self::WCPAY_WEBHOOK_WOOPAY_ORDER_STATUS_CHANGED, $order_id, $next_status );
 		}
 	}
 
