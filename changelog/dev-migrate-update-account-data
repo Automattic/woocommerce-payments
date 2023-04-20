@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Migrate update_account API to the core Request class.

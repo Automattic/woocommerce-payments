@@ -97,6 +97,7 @@ const chargeMock = {
 		jest.fn().mockReturnValue( {
 			getCharge: jest.fn().mockReturnValue( chargeMock ),
 			isResolving: jest.fn().mockReturnValue( false ),
+			hasFinishedResolution: jest.fn().mockReturnValue( true ),
 			getChargeError: jest.fn().mockReturnValue( null ),
 			getPaymentIntent: jest.fn().mockReturnValue( {
 				id: 'pi_mock',
@@ -108,6 +109,7 @@ const chargeMock = {
 			getAuthorization: jest.fn().mockReturnValue( {
 				created: '2022-09-27 17:07:09',
 			} ),
+			getIsRequesting: jest.fn().mockReturnValue( false ),
 		} )
 	)
 );

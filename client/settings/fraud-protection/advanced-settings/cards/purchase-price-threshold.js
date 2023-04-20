@@ -8,6 +8,7 @@ import AmountInput from 'wcpay/components/amount-input';
 /**
  * Internal dependencies
  */
+import { getCurrency } from 'utils/currency';
 import FraudProtectionRuleCard from '../rule-card';
 import FraudProtectionRuleToggle from '../rule-toggle';
 import FraudProtectionRuleDescription from '../rule-description';
@@ -18,32 +19,44 @@ const getFloatValue = ( value ) => {
 	return '' === value || '0' === value ? 0 : parseFloat( value );
 };
 
+const getCurrencySymbol = () => {
+	const fallbackCurrency = { symbol: '$' };
+
+	if ( '1' !== wcpaySettings.isMultiCurrencyEnabled ) {
+		return fallbackCurrency.symbol;
+	}
+
+	const currency = getCurrency( wcpaySettings.storeCurrency );
+	const { symbol } = currency?.getCurrencyConfig() || fallbackCurrency;
+
+	return symbol;
+};
+
 const PurchasePriceThresholdCustomForm = ( { setting } ) => {
-	const {
-		advancedFraudProtectionSettings,
-		setAdvancedFraudProtectionSettings,
-	} = useContext( FraudPreventionSettingsContext );
+	const { protectionSettingsUI, setProtectionSettingsUI } = useContext(
+		FraudPreventionSettingsContext
+	);
 
 	const minAmountTemp = parseFloat(
-		advancedFraudProtectionSettings[ setting ].min_amount
+		protectionSettingsUI[ setting ].min_amount
 	);
 	const maxAmountTemp = parseFloat(
-		advancedFraudProtectionSettings[ setting ].max_amount
+		protectionSettingsUI[ setting ].max_amount
 	);
 
 	const [ minAmount, setMinAmount ] = useState( minAmountTemp ?? '' );
 	const [ maxAmount, setMaxAmount ] = useState( maxAmountTemp ?? '' );
 
 	useEffect( () => {
-		advancedFraudProtectionSettings[ setting ].min_amount = minAmount;
-		advancedFraudProtectionSettings[ setting ].max_amount = maxAmount;
-		setAdvancedFraudProtectionSettings( advancedFraudProtectionSettings );
+		protectionSettingsUI[ setting ].min_amount = minAmount;
+		protectionSettingsUI[ setting ].max_amount = maxAmount;
+		setProtectionSettingsUI( protectionSettingsUI );
 	}, [
 		setting,
 		minAmount,
 		maxAmount,
-		advancedFraudProtectionSettings,
-		setAdvancedFraudProtectionSettings,
+		protectionSettingsUI,
+		setProtectionSettingsUI,
 	] );
 
 	const areInputsEmpty =
@@ -52,6 +65,8 @@ const PurchasePriceThresholdCustomForm = ( { setting } ) => {
 		minAmount &&
 		maxAmount &&
 		getFloatValue( minAmount ) > getFloatValue( maxAmount );
+
+	const currencySymbol = getCurrencySymbol();
 
 	return (
 		<div className="fraud-protection-rule-toggle-children-container">
@@ -66,7 +81,7 @@ const PurchasePriceThresholdCustomForm = ( { setting } ) => {
 					</label>
 					<AmountInput
 						id={ 'fraud-protection-purchase-price-minimum' }
-						prefix={ '$' }
+						prefix={ currencySymbol }
 						placeholder={ '0.00' }
 						value={ minAmount }
 						onChange={ ( val ) => setMinAmount( val ) }
@@ -85,7 +100,7 @@ const PurchasePriceThresholdCustomForm = ( { setting } ) => {
 					</label>
 					<AmountInput
 						id={ 'fraud-protection-purchase-price-maximum' }
-						prefix={ '$' }
+						prefix={ currencySymbol }
 						placeholder={ '0.00' }
 						value={ maxAmount }
 						onChange={ ( val ) => setMaxAmount( val ) }
@@ -129,6 +144,7 @@ const PurchasePriceThresholdRuleCard = () => (
 			'This filter compares the purchase price of an order to the minimum and maximum purchase amounts that you specify.',
 			'woocommerce-payments'
 		) }
+		id="purchase-price-threshold-card"
 	>
 		<FraudProtectionRuleToggle
 			setting={ 'purchase_price_threshold' }

@@ -613,36 +613,40 @@ class WC_Payments_Utils {
 
 	/**
 	 * Returns the correct id to be used on the transaction URL
-	 * The Payment Intent ID is prioritized and it fallbacks to the charge ID
+	 * The primary ID is prioritized and it fallbacks to the fallback ID
 	 *
-	 * @param string $intent_id Payment intent ID.
-	 * @param string $charge_id Charge ID.
+	 * @param string $primary_id  Usually the Payment Intent ID, but can be an order ID.
+	 * @param string $fallback_id Usually the Charge ID.
 	 *
 	 * @return string
 	 */
-	public static function get_transaction_url_id( $intent_id, $charge_id ) {
-		return ! empty( $intent_id ) ? $intent_id : $charge_id;
+	public static function get_transaction_url_id( $primary_id, $fallback_id ) {
+		return ! empty( $primary_id ) ? $primary_id : $fallback_id;
 	}
 
 	/**
 	 * Composes url for transaction details page.
 	 *
-	 * @param string $intent_id Payment Intent ID.
-	 * @param string $charge_id Charge ID.
+	 * @param string $primary_id  Usually the Payment Intent ID, but can be an order ID.
+	 * @param string $fallback_id Usually the Charge ID.
+	 * @param array  $query_args  Optional additonal query args to append to the URL.
 	 *
 	 * @return string Transaction details page url.
 	 */
-	public static function compose_transaction_url( $intent_id, $charge_id ) {
-		if ( empty( $charge_id ) && empty( $intent_id ) ) {
+	public static function compose_transaction_url( $primary_id, $fallback_id, $query_args = [] ) {
+		if ( empty( $fallback_id ) && empty( $primary_id ) ) {
 			return '';
 		}
 
 		return add_query_arg(
-			[
-				'page' => 'wc-admin',
-				'path' => '/payments/transactions/details',
-				'id'   => self::get_transaction_url_id( $intent_id, $charge_id ),
-			],
+			array_merge(
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/transactions/details',
+					'id'   => self::get_transaction_url_id( $primary_id, $fallback_id ),
+				],
+				$query_args
+			),
 			admin_url( 'admin.php' )
 		);
 	}
@@ -846,5 +850,18 @@ class WC_Payments_Utils {
 	 */
 	public static function is_hpos_tables_usage_enabled() {
 		return class_exists( '\Automattic\WooCommerce\Utilities\OrderUtil' ) && \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
+	}
+
+	/**
+	 * Get the core request class name as WordPress 6.2 introduces a breaking namespace change.
+	 *
+	 * @see https://github.com/WordPress/wordpress-develop/commit/d7dd42d72fe5b10460072e7c78d36c130857e427
+	 *
+	 * @return string The request class name.
+	 */
+	public static function get_wpcore_request_class(): string {
+		return version_compare( get_bloginfo( 'version' ), '6.2', '>=' )
+			? '\\WpOrg\\Requests\\Requests'
+			: '\\Requests';
 	}
 }

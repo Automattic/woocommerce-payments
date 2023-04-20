@@ -65,7 +65,6 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 					'create_and_confirm_setup_intent',
 					'get_setup_intent',
 					'get_payment_method',
-					'refund_charge',
 				]
 			)
 			->getMock();

@@ -21,8 +21,11 @@ use WCPay\Core\Server\Request\Cancel_Intention;
 use WCPay\Core\Server\Request\Capture_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
+use WCPay\Core\Server\Request\Create_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
+use WCPay\Core\Server\Request\List_Charge_Refunds;
+use WCPay\Core\Server\Request\Refund_Charge;
 use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
@@ -51,6 +54,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	const METHOD_ENABLED_KEY = 'enabled';
 
+	/**
+	 * Mapping between the client and server accepted params:
+	 * - Keys are WCPay client accepted params (in WC_REST_Payments_Settings_Controller).
+	 * - Values are WCPay Server accepted params.
+	 *
+	 * @type array
+	 */
 	const ACCOUNT_SETTINGS_MAPPING = [
 		'account_statement_descriptor'     => 'statement_descriptor',
 		'account_business_name'            => 'business_name',
@@ -672,6 +682,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			! ( WC_Payments_Features::is_upe_legacy_enabled() && ! WC_Payments_Features::is_upe_split_enabled() ) &&
 			( is_checkout() || has_block( 'woocommerce/checkout' ) ) &&
 			! is_wc_endpoint_url( 'order-pay' ) &&
+			WC()->cart instanceof WC_Cart &&
 			! WC()->cart->is_empty() &&
 			WC()->cart->needs_payment()
 		) {
@@ -703,6 +714,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order = wc_get_order( $order_id );
 
 		try {
+			if ( 20 < strlen( $order->get_billing_phone() ) ) {
+				throw new Process_Payment_Exception(
+					__( 'Invalid phone number.', 'woocommerce-payments' ),
+					'invalid_phone_number'
+				);
+			}
 			// Check if session exists before instantiating Fraud_Prevention_Service.
 			if ( WC()->session ) {
 				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
@@ -752,12 +769,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
+			// We set this variable to be used in following checks.
+			$blocked_due_to_fraud_rules = $e instanceof API_Exception && 'wcpay_blocked_by_fraud_rule' === $e->get_error_code();
+
+			do_action( 'woocommerce_payments_order_failed', $order, $e );
+
 			/**
 			 * TODO: Determine how to do this update with Order_Service.
 			 * It seems that the status only needs to change in certain instances, and within those instances the intent
 			 * information is not added to the order, as shown by tests.
 			 */
-			if ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) {
+			if ( ! $blocked_due_to_fraud_rules && ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) ) {
 				$order->update_status( Order_Status::FAILED );
 			}
 
@@ -765,7 +787,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$this->failed_transaction_rate_limiter->bump();
 			}
 
-			if ( ! empty( $payment_information ) ) {
+			if ( $blocked_due_to_fraud_rules ) {
+				$this->order_service->mark_order_blocked_for_fraud( $order, '', Payment_Intent_Status::CANCELED );
+			} elseif ( ! empty( $payment_information ) ) {
+				/**
+				 * TODO: Move the contents of this else into the Order_Service.
+				 */
 				/* translators: %1: the failed payment amount, %2: error message  */
 				$error_message = __(
 					'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
@@ -803,6 +830,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( $e instanceof Process_Payment_Exception && 'rate_limiter_enabled' === $e->get_error_code() ) {
+				/**
+				 * TODO: Move the contents of this into the Order_Service.
+				 */
 				$note = sprintf(
 					WC_Payments_Utils::esc_interpolated_html(
 						/* translators: %1: the failed payment amount */
@@ -1168,6 +1198,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$intent_id     = $intent['id'];
 			$status        = $intent['status'];
 			$charge_id     = '';
+			$charge        = null;
 			$client_secret = $intent['client_secret'];
 			$currency      = $order->get_currency();
 			$next_action   = $intent['next_action'];
@@ -1251,7 +1282,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$this->order_service->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
 		$this->attach_exchange_info_to_order( $order, $charge_id );
-		$this->update_order_status_from_intent( $order, $intent_id, $status, $charge_id );
+		if ( Payment_Intent_Status::SUCCEEDED === $status ) {
+			$this->remove_session_processing_order( $order->get_id() );
+		}
+		$this->order_service->update_order_status_from_intent( $order, $intent );
+		$this->order_service->attach_transaction_fee_to_order( $order, $charge );
 
 		$this->maybe_add_customer_notification_note( $order, $processing );
 
@@ -1377,34 +1412,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Parse the payment intent data and add any necessary notes to the order and update the order status accordingly.
-	 *
-	 * @param WC_Order $order The order to update.
-	 * @param string   $intent_id The intent ID.
-	 * @param string   $intent_status Intent status.
-	 * @param string   $charge_id Charge ID.
-	 */
-	public function update_order_status_from_intent( $order, $intent_id, $intent_status, $charge_id ) {
-		switch ( $intent_status ) {
-			case Payment_Intent_Status::SUCCEEDED:
-				$this->remove_session_processing_order( $order->get_id() );
-				$this->order_service->mark_payment_completed( $order, $intent_id, $intent_status, $charge_id );
-				break;
-			case Payment_Intent_Status::PROCESSING:
-			case Payment_Intent_Status::REQUIRES_CAPTURE:
-				$this->order_service->mark_payment_authorized( $order, $intent_id, $intent_status, $charge_id );
-				break;
-			case Payment_Intent_Status::REQUIRES_ACTION:
-			case Payment_Intent_Status::REQUIRES_PAYMENT_METHOD:
-				$this->order_service->mark_payment_started( $order, $intent_id, $intent_status, $charge_id );
-				break;
-			default:
-				Logger::error( 'Uncaught payment intent status of ' . $intent_status . ' passed for order id: ' . $order->get_id() );
-				break;
-		}
-	}
-
-	/**
 	 * Saves the payment token to the order.
 	 *
 	 * @param WC_Order         $order The order.
@@ -1458,8 +1465,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool|WP_Error - Whether the refund went through. Returns a WP_Error if an Exception occurs during execution.
 	 */
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
-		$order    = wc_get_order( $order_id );
-		$currency = $this->order_service->get_wcpay_intent_currency_for_order( $order );
+		$order = wc_get_order( $order_id );
 
 		if ( ! $order ) {
 			return false;
@@ -1483,20 +1489,27 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		$charge_id = $this->order_service->get_charge_id_for_order( $order );
+		$currency  = $this->order_service->get_wcpay_intent_currency_for_order( $order );
 
 		try {
 			// If the payment method is Interac, the refund already exists (refunded via Mobile app).
 			$is_refunded_off_session = Payment_Method::INTERAC_PRESENT === $this->get_payment_method_type_for_order( $order );
 			if ( $is_refunded_off_session ) {
-				$refund_amount = WC_Payments_Utils::prepare_amount( $amount ?? $order->get_total(), $order->get_currency() );
-				$refunds       = array_filter(
-					$this->payments_api_client->list_refunds( $charge_id )['data'],
+				$refund_amount              = WC_Payments_Utils::prepare_amount( $amount ?? $order->get_total(), $order->get_currency() );
+				$list_charge_refund_request = List_Charge_Refunds::create();
+				$list_charge_refund_request->set_charge( $charge_id );
+
+				$list_charge_refund_response = $list_charge_refund_request->send( 'wcpay_list_charge_refunds_request' );
+
+				$refunds = array_filter(
+					$list_charge_refund_response['data'] ?? [],
 					static function ( $refund ) use ( $refund_amount ) {
 							return 'succeeded' === $refund['status'] && $refund_amount === $refund['amount'];
 					}
 				);
 
 				if ( [] === $refunds ) {
+
 					return new WP_Error(
 						'wcpay_edit_order_refund_not_possible',
 						__( 'You shall refund this payment in the same application where the payment was made.', 'woocommerce-payments' )
@@ -1505,12 +1518,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				$refund = array_pop( $refunds );
 			} else {
-				if ( null === $amount ) {
-					// If amount is null, the default is the entire charge.
-					$refund = $this->payments_api_client->refund_charge( $charge_id );
-				} else {
-					$refund = $this->payments_api_client->refund_charge( $charge_id, WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
+				$refund_request = Refund_Charge::create();
+				$refund_request->set_charge( $charge_id );
+				if ( null !== $amount ) {
+					$refund_request->set_amount( WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
 				}
+				$refund = $refund_request->send( 'wcpay_refund_charge_request' );
 			}
 			$currency = strtoupper( $refund['currency'] );
 			Tracker::track_admin( 'wcpay_edit_order_refund_success' );
@@ -1587,6 +1600,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Gets the payment method type used for an order, if any
 	 *
 	 * @param WC_Order $order The order to get the payment method type for.
+	 *
 	 * @return string
 	 */
 	private function get_payment_method_type_for_order( $order ): string {
@@ -1694,6 +1708,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->get_deposit_status();
 			case 'deposit_completed_waiting_period':
 				return $this->get_deposit_completed_waiting_period();
+			case 'current_protection_level':
+				return $this->get_current_protection_level();
 			case 'advanced_fraud_protection_settings':
 				return $this->get_advanced_fraud_protection_settings();
 
@@ -1977,9 +1993,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		$charge    = $intent->get_charge();
-		$charge_id = $charge ? $charge->get_id() : null;
-		$this->update_order_status_from_intent( $order, $intent_id, $intent_status, $charge_id );
+		if ( Payment_Intent_Status::SUCCEEDED === $intent_status ) {
+			$this->remove_session_processing_order( $order->get_id() );
+		}
+		$this->order_service->update_order_status_from_intent( $order, $intent );
 
 		$return_url = $this->get_return_url( $order );
 		$return_url = add_query_arg( self::FLAG_PREVIOUS_SUCCESSFUL_INTENT, 'yes', $return_url );
@@ -2240,9 +2257,25 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Gets the current fraud protection level value.
+	 *
+	 * @return  string The current fraud protection level.
+	 */
+	protected function get_current_protection_level() {
+		// If fraud and risk tools feature is not enabled, do not expose the settings.
+		if ( ! WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
+			return '';
+		}
+
+		$this->maybe_refresh_fraud_protection_settings();
+		return get_option( 'current_protection_level', 'basic' );
+	}
+
+	/**
 	 * Gets the advanced fraud protection level settings value.
 	 *
-	 * @return  array The advanced level fraud settings for the store, if not saved, the default ones.
+	 * @return  array|string The advanced level fraud settings for the store, if not saved, the default ones.
+	 *                       If there's a fetch error, it returns "error".
 	 */
 	protected function get_advanced_fraud_protection_settings() {
 		// If fraud and risk tools feature is not enabled, do not expose the settings.
@@ -2255,11 +2288,65 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return [];
 		}
 
-		$settings = get_option( 'advanced_fraud_protection_settings', false );
-		if ( ! $settings ) {
-			return Fraud_Risk_Tools::get_default_protection_settings();
+		$this->maybe_refresh_fraud_protection_settings();
+		$transient_value = get_transient( 'wcpay_fraud_protection_settings' );
+		return false === $transient_value ? 'error' : $transient_value;
+	}
+
+	/**
+	 * Checks the synchronicity of fraud protection settings with the server, and updates the local cache when needed.
+	 *
+	 * @return  void
+	 */
+	protected function maybe_refresh_fraud_protection_settings() {
+		// It'll be good to run this only once per call, because if it succeeds, the latter won't require
+		// to run again, and if it fails, it will fail on other calls too.
+		static $runonce = false;
+
+		// If already ran this before on this call, return.
+		if ( $runonce ) {
+			return;
 		}
-		return json_decode( $settings, true );
+
+		// Check if we have local cache available before pulling it from the server.
+		// If the transient exists, do nothing.
+		$cached_server_settings = get_transient( 'wcpay_fraud_protection_settings' );
+
+		if ( ! $cached_server_settings ) {
+			// When both local and server values don't exist, we need to reset the protection level on both to "Basic".
+			$needs_reset = false;
+
+			try {
+				// There's no cached ruleset, or the cache has expired. Try to fetch it from the server.
+				$latest_server_ruleset = $this->payments_api_client->get_latest_fraud_ruleset();
+				if ( isset( $latest_server_ruleset['ruleset_config'] ) ) {
+					// Update the local cache from the server.
+					set_transient( 'wcpay_fraud_protection_settings', $latest_server_ruleset['ruleset_config'], DAY_IN_SECONDS );
+					// Get the matching level for the ruleset, and set the option.
+					update_option( 'current_protection_level', Fraud_Risk_Tools::get_matching_protection_level( $latest_server_ruleset['ruleset_config'] ) );
+					return;
+				}
+				// If the response doesn't contain a ruleset, probably there's an error. Grey out the form.
+			} catch ( API_Exception $ex ) {
+				if ( 'wcpay_fraud_ruleset_not_found' === $ex->get_error_code() ) {
+					// If fetching returned a 'wcpay_fraud_ruleset_not_found' exception, save the basic protection as the server ruleset,
+					// and update the client with the same config.
+					$needs_reset = true;
+				}
+				// If the exception isn't what we want, probably there's an error. Grey out the form.
+			}
+
+			if ( $needs_reset ) {
+				// Set the Basic protection level as the default on both client and server.
+				$basic_protection_settings = Fraud_Risk_Tools::get_basic_protection_settings();
+				$this->payments_api_client->save_fraud_ruleset( $basic_protection_settings );
+				set_transient( 'wcpay_fraud_protection_settings', $basic_protection_settings, DAY_IN_SECONDS );
+				update_option( 'current_protection_level', 'basic' );
+			}
+
+			// Set the static flag to prevent duplicate calls to this method.
+			$runonce = true;
+		}
 	}
 
 	/**
@@ -2374,7 +2461,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$status                   = null;
 		$error_message            = null;
 		$http_code                = null;
-		$currency                 = $this->order_service->get_wcpay_intent_currency_for_order( $order );
 
 		try {
 			$intent_id = $order->get_transaction_id();
@@ -2400,7 +2486,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$intent = $capture_intention_request->send( 'wcpay_capture_intent_request', $order );
 
 			$status    = $intent->get_status();
-			$currency  = $intent->get_currency();
 			$http_code = 200;
 		} catch ( API_Exception $e ) {
 			try {
@@ -2431,7 +2516,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->attach_exchange_info_to_order( $order, $charge_id );
 
 		if ( Payment_Intent_Status::SUCCEEDED === $status ) {
-			$this->order_service->mark_payment_capture_completed( $order, $intent_id, $status, $charge_id );
+			$this->order_service->update_order_status_from_intent( $order, $intent );
 		} elseif ( $is_authorization_expired ) {
 			$this->order_service->mark_payment_capture_expired( $order, $intent_id, Payment_Intent_Status::CANCELED, $charge_id );
 		} else {
@@ -2460,11 +2545,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function cancel_authorization( $order ) {
 		$status        = null;
 		$error_message = null;
+		$http_code     = null;
 
 		try {
-			$request = Cancel_Intention::create( $order->get_transaction_id() );
-			$intent  = $request->send( 'wcpay_cancel_intent_request', $order );
-			$status  = $intent->get_status();
+			$request   = Cancel_Intention::create( $order->get_transaction_id() );
+			$intent    = $request->send( 'wcpay_cancel_intent_request', $order );
+			$status    = $intent->get_status();
+			$http_code = 200;
 		} catch ( API_Exception $e ) {
 			try {
 				// Fetch the Intent to check if it's already expired and the site missed the "charge.expired" webhook.
@@ -2480,42 +2567,49 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// original error message.
 				$status        = null;
 				$error_message = $e->getMessage();
+				$http_code     = $e->get_http_code();
 			}
 		}
 
 		if ( Payment_Intent_Status::CANCELED === $status ) {
-			$charge    = $intent->get_charge();
-			$charge_id = ! empty( $charge ) ? $charge->get_id() : null;
-
-			$this->order_service->mark_payment_capture_cancelled( $order, $intent->get_id(), $status );
-			return;
-		} elseif ( ! empty( $error_message ) ) {
-			$note = sprintf(
-				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: error message  */
-					__(
-						'Canceling authorization <strong>failed</strong> to complete with the following message: <code>%1$s</code>.',
-						'woocommerce-payments'
-					),
-					[
-						'strong' => '<strong>',
-						'code'   => '<code>',
-					]
-				),
-				esc_html( $error_message )
-			);
-			$order->add_order_note( $note );
+			$this->order_service->update_order_status_from_intent( $order, $intent );
 		} else {
-			$order->add_order_note(
-				WC_Payments_Utils::esc_interpolated_html(
-					__( 'Canceling authorization <strong>failed</strong> to complete.', 'woocommerce-payments' ),
-					[ 'strong' => '<strong>' ]
-				)
-			);
+			if ( ! empty( $error_message ) ) {
+				$note = sprintf(
+					WC_Payments_Utils::esc_interpolated_html(
+						/* translators: %1: error message  */
+						__(
+							'Canceling authorization <strong>failed</strong> to complete with the following message: <code>%1$s</code>.',
+							'woocommerce-payments'
+						),
+						[
+							'strong' => '<strong>',
+							'code'   => '<code>',
+						]
+					),
+					esc_html( $error_message )
+				);
+				$order->add_order_note( $note );
+			} else {
+				$order->add_order_note(
+					WC_Payments_Utils::esc_interpolated_html(
+						__( 'Canceling authorization <strong>failed</strong> to complete.', 'woocommerce-payments' ),
+						[ 'strong' => '<strong>' ]
+					)
+				);
+			}
+
+			$this->order_service->set_intention_status_for_order( $order, $status );
+			$order->save();
+			$http_code = 502;
 		}
 
-		$this->order_service->set_intention_status_for_order( $order, $status );
-		$order->save();
+		return [
+			'status'    => $status ?? 'failed',
+			'id'        => ! empty( $intent ) ? $intent->get_id() : null,
+			'message'   => $error_message,
+			'http_code' => $http_code,
+		];
 	}
 
 	/**
@@ -2676,6 +2770,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				$this->attach_exchange_info_to_order( $order, $charge_id );
 				$this->order_service->attach_intent_info_to_order( $order, $intent_id, $status, $intent->get_payment_method_id(), $intent->get_customer_id(), $charge_id, $intent->get_currency() );
+				$this->order_service->attach_transaction_fee_to_order( $order, $charge );
 			} else {
 				// For $0 orders, fetch the Setup Intent instead.
 				$intent    = $this->payments_api_client->get_setup_intent( $intent_id );
@@ -2683,19 +2778,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$charge_id = '';
 			}
 
-			switch ( $status ) {
-				case Payment_Intent_Status::SUCCEEDED:
-					$this->remove_session_processing_order( $order->get_id() );
-					$this->order_service->mark_payment_completed( $order, $intent_id, $status, $charge_id );
-					break;
-				case Payment_Intent_Status::PROCESSING:
-				case Payment_Intent_Status::REQUIRES_CAPTURE:
-					$this->order_service->mark_payment_authorized( $order, $intent_id, $status, $charge_id );
-					break;
-				case Payment_Intent_Status::REQUIRES_PAYMENT_METHOD:
-					$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id );
-					break;
+			if ( Payment_Intent_Status::SUCCEEDED === $status ) {
+				$this->remove_session_processing_order( $order->get_id() );
 			}
+			$this->order_service->update_order_status_from_intent( $order, $intent );
 
 			if ( in_array( $status, self::SUCCESSFUL_INTENT_STATUS, true ) ) {
 				wc_reduce_stock_levels( $order_id );
@@ -2876,17 +2962,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function create_intent( WC_Order $order, array $payment_methods, string $capture_method = 'automatic', array $metadata = [], string $customer_id = null ) {
 		$currency         = strtolower( $order->get_currency() );
 		$converted_amount = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
+		$order_number     = $order->get_order_number();
+		if ( $order_number ) {
+			$metadata['order_number'] = $order_number;
+		}
 
 		try {
-			$intent = $this->payments_api_client->create_intention(
-				$converted_amount,
-				$currency,
-				$payment_methods,
-				$order->get_order_number(),
-				$capture_method,
-				$metadata,
-				$customer_id
-			);
+			$request = Create_Intention::create();
+			$request->set_amount( $converted_amount );
+			$request->set_customer( $customer_id );
+			$request->set_currency_code( $currency );
+			$request->set_metadata( $metadata );
+			$request->set_payment_method_types( $payment_methods );
+			$request->set_capture_method( $capture_method );
+			$intent = $request->send( 'wcpay_create_intent_request', $order );
 
 			return [
 				'id' => ! empty( $intent ) ? $intent->get_id() : null,

@@ -86,7 +86,7 @@ exports[`Authorizations list renders correctly 1`] = `
             <tbody>
               <tr>
                 <th
-                  aria-sort="descending"
+                  aria-sort="ascending"
                   class="woocommerce-table__header date-time is-left-aligned is-sortable is-sorted"
                   role="columnheader"
                   scope="col"
@@ -106,7 +106,7 @@ exports[`Authorizations list renders correctly 1`] = `
                       xmlns="http://www.w3.org/2000/svg"
                     >
                       <path
-                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                        d="M6.5 12.4L12 8l5.5 4.4-.9 1.2L12 10l-4.5 3.6-1-1.2z"
                       />
                     </svg>
                     <span
@@ -124,7 +124,7 @@ exports[`Authorizations list renders correctly 1`] = `
                     class="screen-reader-text"
                     id="header-0-0"
                   >
-                    Sort by Authorized on in ascending order
+                    Sort by Authorized on in descending order
                   </span>
                 </th>
                 <th
@@ -308,7 +308,7 @@ exports[`Authorizations list renders correctly 1`] = `
                     tabindex="-1"
                   >
                     <span
-                      style="color: red;"
+                      class="woocommerce-pill css-1qmnemh-Text e15wbhsk0"
                     >
                       Highest
                     </span>
@@ -330,7 +330,7 @@ exports[`Authorizations list renders correctly 1`] = `
                   class="woocommerce-table__item"
                 >
                   <button
-                    class="components-button is-secondary is-small"
+                    class="components-button is-secondary"
                     type="button"
                   >
                     Capture
@@ -385,7 +385,7 @@ exports[`Authorizations list renders correctly 1`] = `
                     tabindex="-1"
                   >
                     <span
-                      style="color: green;"
+                      class="woocommerce-pill css-1qmnemh-Text e15wbhsk0"
                     >
                       Normal
                     </span>
@@ -407,7 +407,7 @@ exports[`Authorizations list renders correctly 1`] = `
                   class="woocommerce-table__item"
                 >
                   <button
-                    class="components-button is-secondary is-small"
+                    class="components-button is-secondary"
                     type="button"
                   >
                     Capture

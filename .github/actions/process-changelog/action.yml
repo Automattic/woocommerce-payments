@@ -22,7 +22,7 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: "Process changelog"
+    - name: "Process changelog for changelog.txt"
       id: process_changelog
       shell: bash
       env:
@@ -40,13 +40,29 @@ runs:
           CHANGELOG_FLAG="--amend"
           echo "Amending the changelog entries." >> $GITHUB_STEP_SUMMARY
         fi
-          
-        ~/.composer/vendor/bin/changelogger write --use-version="$RELEASE_VERSION" --release-date="$RELEASE_DATE" $CHANGELOG_FLAG --no-interaction
+        
+        ~/.composer/vendor/bin/changelogger write --use-version="$RELEASE_VERSION" --release-date="$RELEASE_DATE" $CHANGELOG_FLAG --no-interaction --yes
         
         echo "Picking up changelog for version '$RELEASE_VERSION'..."
         CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1; next } p && NF' changelog.txt)
         echo "$CHANGELOG"
         
-        # New line characters need to be escaped because set-output doesn't support multi-line strings out of the box
-        CHANGELOG="${CHANGELOG//$'\n'/\\n}"  
+        # Escape backslash, new line and ampersand characters. The order is important.
+        CHANGELOG=${CHANGELOG//\\/\\\\}
+        CHANGELOG=${CHANGELOG//$'\n'/\\n} 
+        CHANGELOG=${CHANGELOG//&/\\&}
         echo "CHANGELOG=$CHANGELOG" >> $GITHUB_OUTPUT
+
+    - name: "Process changelog for readme.txt"
+      shell: bash
+      env:
+        ACTION_TYPE: ${{ inputs.action-type }}
+        RELEASE_VERSION: ${{ inputs.release-version }}
+        RELEASE_DATE: ${{ inputs.release-date }}
+        CHANGELOG: ${{ steps.process_changelog.outputs.CHANGELOG }}
+      run: |
+        if ${{ env.ACTION_TYPE == 'amend' }}; then
+          perl -i -p0e "s/= $RELEASE_VERSION.*?(\n){2}//s" readme.txt # Delete the existing changelog for the release version first
+        fi
+        
+        sed -ri "s|(== Changelog ==)|\1\n\n= $RELEASE_VERSION - $RELEASE_DATE =\n$CHANGELOG|" readme.txt

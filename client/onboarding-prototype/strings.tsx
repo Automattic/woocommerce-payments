@@ -6,6 +6,36 @@ import { __ } from '@wordpress/i18n';
 
 export default {
 	steps: {
+		mode: {
+			heading: __(
+				'Let’s get your store ready to accept payments.',
+				'woocommerce-payments'
+			),
+			subheading: __(
+				'Select the option that best fits your needs.',
+				'woocommerce-payments'
+			),
+			live: {
+				label: __(
+					'I’d like to set up payments for my store',
+					'woocommerce-payments'
+				),
+				note: __(
+					'You’ll need to provide details to verify that you’re the owner of the account. If you’re setting up payments for someone else, choose the test payments option.',
+					'woocommerce-payments'
+				),
+			},
+			test: {
+				label: __(
+					'I’d like to set up test payments',
+					'woocommerce-payments'
+				),
+				note: __(
+					'This option will set up WooCommerce Payments in development mode. You can use our test data to set up. When you’re ready to launch your store, switching to live payments is easy.',
+					'woocommerce-payments'
+				),
+			},
+		},
 		personal: {
 			heading: __( 'Tell us about yourself', 'woocommerce-payments' ),
 			subheading: __(
@@ -34,6 +64,16 @@ export default {
 			),
 			subheading: __(
 				'This information will assist us in getting you set up quickly.',
+				'woocommerce-payments'
+			),
+		},
+		loading: {
+			heading: __(
+				'Let’s get you setup for payments',
+				'woocommerce-payments'
+			),
+			subheading: __(
+				'All you need is to confirm your identity with our partner',
 				'woocommerce-payments'
 			),
 		},
@@ -72,6 +112,15 @@ export default {
 			'What is the estimated timeline for taking your store live?',
 			'woocommerce-payments'
 		),
+	},
+	errors: {
+		generic: __( 'Please provide a response', 'woocommerce-payments' ),
+		email: __( 'Please provide a valid email', 'woocommerce-payments' ),
+		phone: __(
+			'Please provide a valid phone number',
+			'woocommerce-payments'
+		),
+		url: __( 'Please provide a valid website', 'woocommerce-payments' ),
 	},
 	placeholders: {
 		country: __( 'Select a location', 'woocommerce-payments' ),

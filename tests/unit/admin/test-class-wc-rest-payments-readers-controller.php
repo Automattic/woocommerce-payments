@@ -299,6 +299,8 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 	public function test_preview_print_receipt(): void {
 		$order = new WC_Payments_Printed_Receipt_Sample_Order();
 
+		$this->assertEquals( WC_Payments_Printed_Receipt_Sample_Order::PREVIEW_RECEIPT_ORDER_DATA, $order->get_data() );
+
 		$mock_receipt = '<p>Receipt</p>';
 		$this->mock_wcpay_gateway
 			->expects( $this->never() )

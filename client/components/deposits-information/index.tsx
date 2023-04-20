@@ -33,8 +33,8 @@ interface OverviewProps {
 /**
  * Renders a deposits overview
  *
- * @param {AccountOverview.Overview} props Deposits overview
- * @return {JSX.Element} Rendered element with deposits overview
+ * @param {OverviewProps} props Deposits overview and account.
+ * @return {JSX.Element} Rendered element with deposits overview.
  */
 const DepositsInformationOverview: React.FunctionComponent< OverviewProps > = (
 	props
@@ -51,7 +51,7 @@ const DepositsInformationOverview: React.FunctionComponent< OverviewProps > = (
 
 	const pendingAmount = pending ? pending.amount : 0;
 	const pendingDepositsLink = pending?.deposits_count ? (
-		<Link href={ getDetailsURL( nextScheduled.id, 'deposits' ) }>
+		<Link href={ getDetailsURL( nextScheduled?.id, 'deposits' ) }>
 			{ getBalanceDepositCount( pending ) }
 		</Link>
 	) : (
