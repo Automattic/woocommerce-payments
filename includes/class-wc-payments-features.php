@@ -249,12 +249,12 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether Simplify Deposits UI is enabled.
+	 * Checks whether Simplify Deposits UI is enabled. Enabled by default.
 	 *
 	 * @return bool
 	 */
 	public static function is_simplify_deposits_ui_enabled(): bool {
-		return '1' === get_option( self::SIMPLIFY_DEPOSITS_UI_FLAG_NAME, '0' );
+		return '1' === get_option( self::SIMPLIFY_DEPOSITS_UI_FLAG_NAME, '1' );
 	}
 
 	/**
