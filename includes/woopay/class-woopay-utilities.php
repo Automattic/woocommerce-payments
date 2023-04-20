@@ -31,7 +31,7 @@ class WooPay_Utilities {
 	 */
 	public function should_enable_woopay( $gateway ) {
 		$is_woopay_eligible = WC_Payments_Features::is_woopay_eligible(); // Feature flag.
-		$is_woopay_enabled  = 'yes' === $gateway->get_option( 'woopay', 'no' );
+		$is_woopay_enabled  = 'yes' === $gateway->get_option( 'platform_checkout', 'no' );
 
 		return $is_woopay_eligible && $is_woopay_enabled;
 	}

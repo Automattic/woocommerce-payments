@@ -384,10 +384,10 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'payment_request_button_theme'        => $this->wcpay_gateway->get_option( 'payment_request_button_theme' ),
 				'is_saved_cards_enabled'              => $this->wcpay_gateway->is_saved_cards_enabled(),
 				'is_card_present_eligible'            => $this->wcpay_gateway->is_card_present_eligible(),
-				'is_woopay_enabled'                   => 'yes' === $this->wcpay_gateway->get_option( 'woopay' ),
-				'woopay_custom_message'               => $this->wcpay_gateway->get_option( 'woopay_custom_message' ),
-				'woopay_store_logo'                   => $this->wcpay_gateway->get_option( 'woopay_store_logo' ),
-				'woopay_enabled_locations'            => $this->wcpay_gateway->get_option( 'woopay_button_locations', [] ),
+				'is_woopay_enabled'                   => 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),
+				'woopay_custom_message'               => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),
+				'woopay_store_logo'                   => $this->wcpay_gateway->get_option( 'platform_checkout_store_logo' ),
+				'woopay_enabled_locations'            => $this->wcpay_gateway->get_option( 'platform_checkout_button_locations', [] ),
 				'deposit_schedule_interval'           => $this->wcpay_gateway->get_option( 'deposit_schedule_interval' ),
 				'deposit_schedule_monthly_anchor'     => $this->wcpay_gateway->get_option( 'deposit_schedule_monthly_anchor' ),
 				'deposit_schedule_weekly_anchor'      => $this->wcpay_gateway->get_option( 'deposit_schedule_weekly_anchor' ),
@@ -717,7 +717,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 
 		$woopay_custom_message = $request->get_param( 'woopay_custom_message' );
 
-		$this->wcpay_gateway->update_option( 'woopay_custom_message', $woopay_custom_message );
+		$this->wcpay_gateway->update_option( 'platform_checkout_custom_message', $woopay_custom_message );
 	}
 
 	/**
@@ -732,7 +732,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 
 		$woopay_store_logo = $request->get_param( 'woopay_store_logo' );
 
-		$this->wcpay_gateway->update_option( 'woopay_store_logo', $woopay_store_logo );
+		$this->wcpay_gateway->update_option( 'platform_checkout_store_logo', $woopay_store_logo );
 	}
 
 	/**
@@ -747,7 +747,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 
 		$woopay_enabled_locations = $request->get_param( 'woopay_enabled_locations' );
 
-		$this->wcpay_gateway->update_option( 'woopay_button_locations', $woopay_enabled_locations );
+		$this->wcpay_gateway->update_option( 'platform_checkout_button_locations', $woopay_enabled_locations );
 	}
 
 	/**

@@ -80,7 +80,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	 */
 	public function get_payment_method_data() {
 		$is_woopay_eligible = WC_Payments_Features::is_woopay_eligible(); // Feature flag.
-		$is_woopay_enabled  = 'yes' === $this->gateway->get_option( 'woopay', 'no' );
+		$is_woopay_enabled  = 'yes' === $this->gateway->get_option( 'platform_checkout', 'no' );
 		$woopay_config      = [];
 
 		if ( $is_woopay_eligible && $is_woopay_enabled ) {

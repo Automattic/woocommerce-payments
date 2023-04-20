@@ -607,7 +607,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	public function test_enable_woopay_converts_upe_flag() {
 		update_option( '_wcpay_feature_upe', '1' );
 		update_option( '_wcpay_feature_upe_split', '0' );
-		$this->gateway->update_option( 'woopay', 'no' );
+		$this->gateway->update_option( 'platform_checkout', 'no' );
 
 		$request = new WP_REST_Request();
 		$request->set_param( 'is_woopay_enabled', true );

@@ -101,7 +101,7 @@ class WC_Payments_WooPay_Button_Handler {
 
 		// Checks if WooPay is enabled.
 		$this->is_woopay_eligible               = WC_Payments_Features::is_woopay_eligible(); // Feature flag.
-		$this->is_woopay_enabled                = 'yes' === $this->gateway->get_option( 'woopay', 'no' );
+		$this->is_woopay_enabled                = 'yes' === $this->gateway->get_option( 'platform_checkout', 'no' );
 		$this->is_woopay_express_button_enabled = WC_Payments_Features::is_woopay_express_checkout_enabled();
 
 		if ( ! $this->is_woopay_enabled() ) {
@@ -410,7 +410,7 @@ class WC_Payments_WooPay_Button_Handler {
 	 * @return boolean
 	 */
 	public function is_available_at( $location ) {
-		$available_locations = $this->gateway->get_option( 'woopay_button_locations' );
+		$available_locations = $this->gateway->get_option( 'platform_checkout_button_locations' );
 		if ( $available_locations && is_array( $available_locations ) ) {
 			return in_array( $location, $available_locations, true );
 		}

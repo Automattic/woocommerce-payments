@@ -678,7 +678,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function should_use_stripe_platform_on_checkout_page() {
 		if (
 			WC_Payments_Features::is_woopay_eligible() &&
-			'yes' === $this->get_option( 'woopay', 'no' ) &&
+			'yes' === $this->get_option( 'platform_checkout', 'no' ) &&
 			! ( WC_Payments_Features::is_upe_legacy_enabled() && ! WC_Payments_Features::is_upe_split_enabled() ) &&
 			( is_checkout() || has_block( 'woocommerce/checkout' ) ) &&
 			! is_wc_endpoint_url( 'order-pay' ) &&
@@ -1749,13 +1749,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param bool $is_woopay_enabled Whether woopay should be enabled.
 	 */
 	public function update_is_woopay_enabled( $is_woopay_enabled ) {
-		$current_is_woopay_enabled = 'yes' === $this->get_option( 'woopay', 'no' );
+		$current_is_woopay_enabled = 'yes' === $this->get_option( 'platform_checkout', 'no' );
 		if ( $is_woopay_enabled !== $current_is_woopay_enabled ) {
 			wc_admin_record_tracks_event(
 				$is_woopay_enabled ? 'woopay_enabled' : 'woopay_disabled',
 				[ 'test_mode' => WC_Payments::mode()->is_test() ? 1 : 0 ]
 			);
-			$this->update_option( 'woopay', $is_woopay_enabled ? 'yes' : 'no' );
+			$this->update_option( 'platform_checkout', $is_woopay_enabled ? 'yes' : 'no' );
 			if ( ! $is_woopay_enabled ) {
 				WooPay_Order_Status_Sync::remove_webhook();
 			} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {

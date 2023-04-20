@@ -1324,7 +1324,7 @@ class WC_Payments {
 	 */
 	public static function maybe_register_woopay_hooks() {
 		$is_woopay_eligible = WC_Payments_Features::is_woopay_eligible(); // Feature flag.
-		$is_woopay_enabled  = 'yes' === self::get_gateway()->get_option( 'woopay', 'no' );
+		$is_woopay_enabled  = 'yes' === self::get_gateway()->get_option( 'platform_checkout', 'no' );
 
 		if ( $is_woopay_eligible && $is_woopay_enabled ) {
 			add_action( 'wc_ajax_wcpay_init_woopay', [ __CLASS__, 'ajax_init_woopay' ] );
@@ -1400,7 +1400,7 @@ class WC_Payments {
 		$woopay_host = defined( 'WOOPAY_HOST' ) ? WOOPAY_HOST : 'https://pay.woo.com';
 		$url         = $woopay_host . '/wp-json/woopay/v1/init';
 
-		$store_logo = self::get_gateway()->get_option( 'woopay_store_logo' );
+		$store_logo = self::get_gateway()->get_option( 'platform_checkout_store_logo' );
 
 		include_once WCPAY_ABSPATH . 'includes/compat/blocks/class-blocks-data-extractor.php';
 		$blocks_data_extractor = new Blocks_Data_Extractor();
@@ -1416,7 +1416,7 @@ class WC_Payments {
 			'store_data'           => [
 				'store_name'                     => get_bloginfo( 'name' ),
 				'store_logo'                     => ! empty( $store_logo ) ? get_rest_url( null, 'wc/v3/payments/file/' . $store_logo ) : '',
-				'custom_message'                 => self::get_gateway()->get_option( 'woopay_custom_message' ),
+				'custom_message'                 => self::get_gateway()->get_option( 'platform_checkout_custom_message' ),
 				'blog_id'                        => Jetpack_Options::get_option( 'id' ),
 				'blog_url'                       => get_site_url(),
 				'blog_checkout_url'              => wc_get_checkout_url(),

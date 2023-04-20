@@ -167,7 +167,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 	 * @return bool - True if WooPay enabled, false otherwise.
 	 */
 	private function is_woopay_enabled() {
-		return WC_Payments_Features::is_woopay_eligible() && 'yes' === $this->gateway->get_option( 'woopay', 'no' ) && WC_Payments_Features::is_woopay_express_checkout_enabled();
+		return WC_Payments_Features::is_woopay_eligible() && 'yes' === $this->gateway->get_option( 'platform_checkout', 'no' ) && WC_Payments_Features::is_woopay_express_checkout_enabled();
 	}
 
 	/**

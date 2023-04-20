@@ -30,7 +30,7 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 
 		// Enable woopay.
 		$this->set_is_woopay_eligible( true );
-		WC_Payments::get_gateway()->update_option( 'woopay', 'yes' );
+		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'yes' );
 	}
 
 	public function tear_down() {
@@ -67,7 +67,7 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 		$this->assertNotEmpty( WooPay_Order_Status_Sync::get_webhook() );
 
 		$this->set_is_woopay_eligible( false );
-		WC_Payments::get_gateway()->update_option( 'woopay', 'no' );
+		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'no' );
 
 		$this->webhook_sync_mock->remove_webhook();
 		$this->assertEmpty( WooPay_Order_Status_Sync::get_webhook() );

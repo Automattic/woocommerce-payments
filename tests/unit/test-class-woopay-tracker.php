@@ -61,7 +61,7 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 	public function test_does_track_non_admins() {
 		global $wp_roles;
 		$this->set_is_woopay_eligible( true );
-		WC_Payments::get_gateway()->update_option( 'woopay', 'yes' );
+		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'yes' );
 		wp_set_current_user( 1 );
 		$this->set_is_admin( false );
 

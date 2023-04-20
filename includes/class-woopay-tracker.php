@@ -143,7 +143,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		// Don't track when woopay is disabled.
 		$gateway            = \WC_Payments::get_gateway();
 		$is_woopay_eligible = WC_Payments_Features::is_woopay_eligible(); // Feature flag.
-		$is_woopay_enabled  = 'yes' === $gateway->get_option( 'woopay', 'no' );
+		$is_woopay_enabled  = 'yes' === $gateway->get_option( 'platform_checkout', 'no' );
 		if ( ! ( $is_woopay_eligible && $is_woopay_enabled ) ) {
 			return false;
 		}
