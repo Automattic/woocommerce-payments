@@ -86,6 +86,12 @@ const events = {
 		'platform_checkout_express_button_offered',
 	PLATFORM_CHECKOUT_EXPRESS_BUTTON_CLICKED:
 		'platform_checkout_express_button_clicked',
+	// Onboarding flow.
+	ONBOARDING_FLOW_STARTED: 'wcpay_onboarding_flow_started',
+	ONBOARDING_FLOW_MODE_SELECTED: 'wcpay_onboarding_flow_mode_selected',
+	ONBOARDING_FLOW_STEP_COMPLETED: 'wcpay_onboarding_flow_step_completed',
+	ONBOARDING_FLOW_ABANDONED: 'wcpay_onboarding_flow_abandoned',
+	ONBOARDING_FLOW_REDIRECTED: 'wcpay_onboarding_flow_redirected',
 };
 
 export default {

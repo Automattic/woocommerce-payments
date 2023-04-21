@@ -11,6 +11,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { useOnboardingContext } from '../context';
 import { EligibleData, EligibleResult } from '../types';
 import { fromDotNotation } from '../utils';
+import { trackRedirected, useTrackAbandoned } from '../tracking';
 import LoadBar from 'components/load-bar';
 import strings from '../strings';
 
@@ -20,6 +21,8 @@ interface Props {
 
 const LoadingStep: React.FC< Props > = () => {
 	const { data } = useOnboardingContext();
+
+	useTrackAbandoned();
 
 	const isEligibleForPo = async () => {
 		if (
@@ -62,6 +65,9 @@ const LoadingStep: React.FC< Props > = () => {
 			prefill: fromDotNotation( data ),
 			progressive: isEligible,
 		} );
+
+		trackRedirected( isEligible );
+
 		window.location.href = resultUrl;
 	};
 

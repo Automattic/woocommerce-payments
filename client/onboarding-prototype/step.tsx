@@ -10,6 +10,7 @@ import ChevronLeft from 'gridicons/dist/chevron-left';
  */
 import { useStepperContext } from 'components/stepper';
 import { OnboardingSteps } from './types';
+import { useTrackAbandoned } from './tracking';
 import strings from './strings';
 import Logo from 'assets/images/woopayments.svg';
 import './style.scss';
@@ -19,8 +20,14 @@ interface Props {
 }
 
 const Step: React.FC< Props > = ( { name, children } ) => {
+	const { trackAbandoned } = useTrackAbandoned();
 	const { progress, prevStep, exit } = useStepperContext();
 	const width = `${ progress * 100 }%`;
+
+	const handleExit = () => {
+		trackAbandoned( 'exit' );
+		exit();
+	};
 
 	return (
 		<>
@@ -42,7 +49,7 @@ const Step: React.FC< Props > = ( { name, children } ) => {
 				<button
 					type="button"
 					className="stepper__nav-button"
-					onClick={ exit }
+					onClick={ handleExit }
 				>
 					<Icon icon={ closeSmall } />
 				</button>
