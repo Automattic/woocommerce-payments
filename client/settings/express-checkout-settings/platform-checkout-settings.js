@@ -71,13 +71,13 @@ const PlatformCheckoutSettings = ( { section } ) => {
 							/* eslint-disable jsx-a11y/anchor-has-content */
 							isPlatformCheckoutEnabled
 								? __(
-										'Boost conversion and customer loyalty by offering a single click, secure way to pay.',
+										'When enabled, customers will be able to checkout using WooPay.',
 										'woocommerce-payments'
 								  )
 								: interpolateComponents( {
 										mixedString: __(
 											/* eslint-disable-next-line max-len */
-											'Boost conversion and customer loyalty by offering a single click, secure way to pay. ' +
+											'When enabled, customers will be able to checkout using WooPay. ' +
 												'In order to use {{wooPayLink}}WooPay{{/wooPayLink}}, you must agree to our ' +
 												'{{tosLink}}WooCommerce Terms of Service{{/tosLink}} ' +
 												'and {{privacyLink}}Privacy Policy{{/privacyLink}}. ' +
