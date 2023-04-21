@@ -1,12 +1,7 @@
 /**
  * Internal dependencies
  */
-import {
-	checkout,
-	initializeAppearance,
-	inititalizeStripeElements,
-	mountStripePaymentElement,
-} from '../stripe-checkout';
+import { checkout, mountStripePaymentElement } from '../stripe-checkout';
 import { getAppearance } from '../../../upe-styles';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { getFingerprint } from 'wcpay/checkout/utils/fingerprint';
@@ -17,7 +12,28 @@ jest.mock( '../../../upe-styles' );
 
 jest.mock( 'wcpay/utils/checkout', () => {
 	return {
-		getUPEConfig: jest.fn(),
+		getUPEConfig: jest.fn( ( argument ) => {
+			if ( 'paymentMethodsConfig' === argument ) {
+				return {
+					card: {
+						label: 'Card',
+					},
+					giropay: {
+						label: 'Giropay',
+					},
+					ideal: {
+						label: 'iDEAL',
+					},
+					sepa: {
+						label: 'SEPA',
+					},
+				};
+			}
+
+			if ( 'currency' === argument ) {
+				return 'eur';
+			}
+		} ),
 		getConfig: jest.fn(),
 	};
 } );
@@ -79,43 +95,58 @@ const apiMock = {
 	getStripe: mockGetStripe,
 };
 
-describe( 'UPE appearance initialization', () => {
-	afterEach( () => {
-		jest.clearAllMocks();
-	} );
-
-	test( 'initializes the appearance when it is not set and saves it', () => {
-		const appearanceMock = { backgroundColor: '#fff' };
-		getAppearance.mockReturnValue( appearanceMock );
-
-		initializeAppearance( apiMock );
-
-		expect( getAppearance ).toHaveBeenCalled();
-		expect( apiMock.saveUPEAppearance ).toHaveBeenCalledWith(
-			appearanceMock
-		);
-	} );
-
-	test( 'does not call getAppearance or saveUPEAppearance if appearance is already set', () => {
-		const appearanceMock = { backgroundColor: '#fff' };
-		getAppearance.mockReturnValue( appearanceMock );
-		getUPEConfig.mockImplementation( () => {
-			return {
-				upeAppearance: { backgroundColor: '#fff' },
-			};
-		} );
-		inititalizeStripeElements();
-
-		initializeAppearance( apiMock );
-
-		expect( getAppearance ).not.toHaveBeenCalled();
-		expect( apiMock.saveUPEAppearance ).not.toHaveBeenCalled();
-	} );
-} );
-
 describe( 'Mount Stripe Payment Element', () => {
 	afterEach( () => {
 		jest.clearAllMocks();
+	} );
+
+	test( 'initializes the appearance when it is not set and saves it', async () => {
+		const appearanceMock = { backgroundColor: '#fff' };
+		getAppearance.mockReturnValue( appearanceMock );
+		getFingerprint.mockImplementation( () => {
+			return 'fingerprint';
+		} );
+
+		const mockDomElement = document.createElement( 'div' );
+		mockDomElement.dataset.paymentMethodType = 'giropay';
+
+		mountStripePaymentElement( apiMock, mockDomElement );
+
+		await waitFor( () => {
+			expect( getAppearance ).toHaveBeenCalled();
+			expect( apiMock.saveUPEAppearance ).toHaveBeenCalledWith(
+				appearanceMock
+			);
+		} );
+	} );
+
+	test( 'does not call getAppearance or saveUPEAppearance if appearance is already set', async () => {
+		const appearanceMock = { backgroundColor: '#fff' };
+		getAppearance.mockReturnValue( appearanceMock );
+		getFingerprint.mockImplementation( () => {
+			return 'fingerprint';
+		} );
+		getUPEConfig.mockImplementation( ( argument ) => {
+			if ( 'currency' === argument ) {
+				return 'eur';
+			}
+
+			if ( 'upeAppearance' === argument ) {
+				return {
+					backgroundColor: '#fff',
+				};
+			}
+		} );
+
+		const mockDomElement = document.createElement( 'div' );
+		mockDomElement.dataset.paymentMethodType = 'ideal';
+
+		mountStripePaymentElement( apiMock, mockDomElement );
+
+		await waitFor( () => {
+			expect( getAppearance ).not.toHaveBeenCalled();
+			expect( apiMock.saveUPEAppearance ).not.toHaveBeenCalled();
+		} );
 	} );
 
 	test( 'Prevents from mounting when no figerprint is available', async () => {
@@ -140,23 +171,8 @@ describe( 'Mount Stripe Payment Element', () => {
 			return 'fingerprint';
 		} );
 
-		getUPEConfig.mockImplementation( ( argument ) => {
-			if ( 'paymentMethodsConfig' === argument ) {
-				return {
-					card: {
-						label: 'Card',
-					},
-				};
-			}
-
-			if ( 'currency' === argument ) {
-				return 'eur';
-			}
-		} );
-
 		const mockDomElement = document.createElement( 'div' );
 		mockDomElement.dataset.paymentMethodType = 'card';
-		inititalizeStripeElements();
 
 		mountStripePaymentElement( apiMock, mockDomElement );
 
@@ -173,23 +189,8 @@ describe( 'Mount Stripe Payment Element', () => {
 			return 'fingerprint';
 		} );
 
-		getUPEConfig.mockImplementation( ( argument ) => {
-			if ( 'paymentMethodsConfig' === argument ) {
-				return {
-					card: {
-						label: 'Card',
-					},
-				};
-			}
-
-			if ( 'currency' === argument ) {
-				return 'eur';
-			}
-		} );
-
 		const mockDomElement = document.createElement( 'div' );
-		mockDomElement.dataset.paymentMethodType = 'card';
-		inititalizeStripeElements();
+		mockDomElement.dataset.paymentMethodType = 'sepa';
 
 		mountStripePaymentElement( apiMock, mockDomElement );
 		mountStripePaymentElement( apiMock, mockDomElement );
@@ -199,114 +200,101 @@ describe( 'Mount Stripe Payment Element', () => {
 			expect( mockElements ).toHaveBeenCalledTimes( 1 );
 		} );
 	} );
-} );
 
-describe( 'Checkout', () => {
-	afterEach( () => {
-		jest.clearAllMocks();
-	} );
-
-	test( 'Successful checkout', async () => {
-		setupBillingDetailsFields();
-		getFingerprint.mockImplementation( () => {
-			return 'fingerprint';
+	describe( 'Checkout', () => {
+		afterEach( () => {
+			jest.clearAllMocks();
 		} );
 
-		getUPEConfig.mockImplementation( ( argument ) => {
-			if ( 'paymentMethodsConfig' === argument ) {
-				return {
-					card: {
-						label: 'Card',
-					},
-				};
-			}
+		test( 'Successful checkout', async () => {
+			setupBillingDetailsFields();
+			getFingerprint.mockImplementation( () => {
+				return 'fingerprint';
+			} );
 
-			if ( 'currency' === argument ) {
-				return 'eur';
-			}
+			const mockDomElement = document.createElement( 'div' );
+			mockDomElement.dataset.paymentMethodType = 'card';
+
+			await mountStripePaymentElement( apiMock, mockDomElement );
+
+			const mockJqueryForm = {
+				submit: jest.fn(),
+				addClass: jest.fn( () => {
+					return {
+						block: jest.fn(),
+					};
+				} ),
+				removeClass: jest.fn(),
+				unblock: jest.fn(),
+			};
+
+			const checkoutResult = checkout( apiMock, mockJqueryForm, 'card' );
+
+			expect( mockJqueryForm.addClass ).toHaveBeenCalledWith(
+				'processing'
+			);
+			expect( mockJqueryForm.removeClass ).not.toHaveBeenCalledWith(
+				'processing'
+			);
+			expect( mockSubmit ).toHaveBeenCalled();
+			expect( mockCreatePaymentMethod ).toHaveBeenCalled();
+			expect( mockThen ).toHaveBeenCalled();
+			expect( checkoutResult ).toBe( false );
 		} );
 
-		const mockDomElement = document.createElement( 'div' );
-		mockDomElement.dataset.paymentMethodType = 'card';
-		inititalizeStripeElements();
+		function setupBillingDetailsFields() {
+			// Create DOM elements for the test
+			const firstNameInput = document.createElement( 'input' );
+			firstNameInput.id = 'billing_first_name';
+			firstNameInput.value = 'John';
 
-		await mountStripePaymentElement( apiMock, mockDomElement );
+			const lastNameInput = document.createElement( 'input' );
+			lastNameInput.id = 'billing_last_name';
+			lastNameInput.value = 'Doe';
 
-		const mockJqueryForm = {
-			submit: jest.fn(),
-			addClass: jest.fn( () => {
-				return {
-					block: jest.fn(),
-				};
-			} ),
-			removeClass: jest.fn(),
-			unblock: jest.fn(),
-		};
+			const emailInput = document.createElement( 'input' );
+			emailInput.id = 'billing_email';
+			emailInput.value = 'john.doe@example.com';
 
-		const checkoutResult = checkout( apiMock, mockJqueryForm, 'card' );
+			const phoneInput = document.createElement( 'input' );
+			phoneInput.id = 'billing_phone';
+			phoneInput.value = '555-1234';
 
-		expect( mockJqueryForm.addClass ).toHaveBeenCalledWith( 'processing' );
-		expect( mockJqueryForm.removeClass ).not.toHaveBeenCalledWith(
-			'processing'
-		);
-		expect( mockSubmit ).toHaveBeenCalled();
-		expect( mockCreatePaymentMethod ).toHaveBeenCalled();
-		expect( mockThen ).toHaveBeenCalled();
-		expect( checkoutResult ).toBe( false );
+			const cityInput = document.createElement( 'input' );
+			cityInput.id = 'billing_city';
+			cityInput.value = 'New York';
+
+			const countryInput = document.createElement( 'input' );
+			countryInput.id = 'billing_country';
+			countryInput.value = 'US';
+
+			const address1Input = document.createElement( 'input' );
+			address1Input.id = 'billing_address_1';
+			address1Input.value = '123 Main St';
+
+			const address2Input = document.createElement( 'input' );
+			address2Input.id = 'billing_address_2';
+			address2Input.value = '';
+
+			const postcodeInput = document.createElement( 'input' );
+			postcodeInput.id = 'billing_postcode';
+			postcodeInput.value = '10001';
+
+			const stateInput = document.createElement( 'input' );
+			stateInput.id = 'billing_state';
+			stateInput.value = 'NY';
+
+			// Add the DOM elements to the document
+			document.body.appendChild( firstNameInput );
+			document.body.appendChild( lastNameInput );
+			document.body.appendChild( emailInput );
+			document.body.appendChild( phoneInput );
+			document.body.appendChild( cityInput );
+			document.body.appendChild( countryInput );
+			document.body.appendChild( address1Input );
+			document.body.appendChild( address2Input );
+			document.body.appendChild( postcodeInput );
+			document.body.appendChild( stateInput );
+		}
 	} );
-
-	function setupBillingDetailsFields() {
-		// Create DOM elements for the test
-		const firstNameInput = document.createElement( 'input' );
-		firstNameInput.id = 'billing_first_name';
-		firstNameInput.value = 'John';
-
-		const lastNameInput = document.createElement( 'input' );
-		lastNameInput.id = 'billing_last_name';
-		lastNameInput.value = 'Doe';
-
-		const emailInput = document.createElement( 'input' );
-		emailInput.id = 'billing_email';
-		emailInput.value = 'john.doe@example.com';
-
-		const phoneInput = document.createElement( 'input' );
-		phoneInput.id = 'billing_phone';
-		phoneInput.value = '555-1234';
-
-		const cityInput = document.createElement( 'input' );
-		cityInput.id = 'billing_city';
-		cityInput.value = 'New York';
-
-		const countryInput = document.createElement( 'input' );
-		countryInput.id = 'billing_country';
-		countryInput.value = 'US';
-
-		const address1Input = document.createElement( 'input' );
-		address1Input.id = 'billing_address_1';
-		address1Input.value = '123 Main St';
-
-		const address2Input = document.createElement( 'input' );
-		address2Input.id = 'billing_address_2';
-		address2Input.value = '';
-
-		const postcodeInput = document.createElement( 'input' );
-		postcodeInput.id = 'billing_postcode';
-		postcodeInput.value = '10001';
-
-		const stateInput = document.createElement( 'input' );
-		stateInput.id = 'billing_state';
-		stateInput.value = 'NY';
-
-		// Add the DOM elements to the document
-		document.body.appendChild( firstNameInput );
-		document.body.appendChild( lastNameInput );
-		document.body.appendChild( emailInput );
-		document.body.appendChild( phoneInput );
-		document.body.appendChild( cityInput );
-		document.body.appendChild( countryInput );
-		document.body.appendChild( address1Input );
-		document.body.appendChild( address2Input );
-		document.body.appendChild( postcodeInput );
-		document.body.appendChild( stateInput );
-	}
 } );
