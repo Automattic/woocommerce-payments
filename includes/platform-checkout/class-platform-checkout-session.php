@@ -10,6 +10,8 @@ namespace WCPay\Platform_Checkout;
 use Automattic\Jetpack\Connection\Rest_Authentication;
 use Automattic\WooCommerce\StoreApi\Utilities\JsonWebToken;
 use WCPay\Logger;
+use WC_Payments;
+use WC_Payments_Features;
 use WP_REST_Request;
 
 /**
@@ -66,6 +68,10 @@ class Platform_Checkout_Session {
 	 */
 	public static function determine_current_user_for_platform_checkout( $user ) {
 		if ( ! self::is_store_api_request() || ! self::is_request_from_woopay() ) {
+			return $user;
+		}
+
+		if ( ! self::is_woopay_enabled() ) {
 			return $user;
 		}
 
@@ -162,5 +168,14 @@ class Platform_Checkout_Session {
 	 */
 	private static function has_valid_request_signature() {
 		return apply_filters( 'wcpay_woopay_is_signed_with_blog_token', Rest_Authentication::is_signed_with_blog_token() );
+	}
+
+	/**
+	 * Returns true if WooPay is enabled, false otherwise.
+	 *
+	 * @return bool True if WooPay is enabled, false otherwise.
+	 */
+	private static function is_woopay_enabled(): bool {
+		return WC_Payments_Features::is_platform_checkout_eligible() && 'yes' === WC_Payments::get_gateway()->get_option( 'platform_checkout', 'no' );
 	}
 }
