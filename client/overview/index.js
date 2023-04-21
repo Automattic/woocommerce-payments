@@ -22,9 +22,10 @@ import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
 import InboxNotifications from './inbox-notifications';
 import ConnectionSuccessNotice from './connection-sucess-notice';
+import SetupRealPayments from './setup-real-payments';
 import JetpackIdcNotice from 'components/jetpack-idc-notice';
 import AccountBalances from 'components/account-balances';
-import FRTDiscoverabilityBanner from 'wcpay/components/fraud-risk-tools-banner';
+import FRTDiscoverabilityBanner from 'components/fraud-risk-tools-banner';
 import { useSettings } from 'wcpay/data';
 import './style.scss';
 
@@ -157,6 +158,12 @@ const OverviewPage = () => {
 					accountFees={ activeAccountFees }
 				/>
 			</ErrorBoundary>
+
+			{ wcpaySettings.onboardingTestMode && (
+				<ErrorBoundary>
+					<SetupRealPayments />
+				</ErrorBoundary>
+			) }
 
 			{ wcpaySettings.accountLoans.has_active_loan && (
 				<ErrorBoundary>

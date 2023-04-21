@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Correctly determine subscription free shipping eligibility when the initial payment cart isn't eligible. Fixes erroneous "Invalid recurring shipping method" errors on checkout.

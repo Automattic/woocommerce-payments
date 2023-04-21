@@ -95,6 +95,18 @@ interface TransactionsSummary {
 }
 
 export type FraudOutcomeStatus = 'allow' | 'review' | 'block';
+export type FraudMetaBoxType =
+	| 'allow'
+	| 'block'
+	| 'not_card'
+	| 'not_wcpay'
+	| 'payment_started'
+	| 'review'
+	| 'review_allowed'
+	| 'review_blocked'
+	| 'review_expired'
+	| 'review_failed'
+	| 'terminal_payment';
 
 export interface FraudOutcomeTransaction {
 	amount: number;
@@ -107,6 +119,7 @@ export interface FraudOutcomeTransaction {
 		status: string;
 	};
 	status: FraudOutcomeStatus;
+	fraud_meta_box_type: FraudMetaBoxType;
 }
 
 interface FraudOutcomeTransactions {
@@ -265,7 +278,8 @@ export const useTransactionsSummary = (
 
 export const useFraudOutcomeTransactions = (
 	status: string,
-	{ paged, per_page: perPage, orderby, order, search }: Query
+	{ paged, per_page: perPage, orderby, order, search }: Query,
+	additionalStatus?: string
 ): FraudOutcomeTransactions =>
 	useSelect(
 		( select ) => {
@@ -285,6 +299,7 @@ export const useFraudOutcomeTransactions = (
 				orderby: orderby || 'date',
 				order: order || 'desc',
 				search,
+				additionalStatus,
 			};
 
 			return {
@@ -304,7 +319,8 @@ export const useFraudOutcomeTransactions = (
 
 export const useFraudOutcomeTransactionsSummary = (
 	status: string,
-	{ search }: Query
+	{ search }: Query,
+	additionalStatus?: string
 ): FraudOutcomeTransactionsSummary =>
 	useSelect(
 		( select ) => {
@@ -314,7 +330,7 @@ export const useFraudOutcomeTransactionsSummary = (
 				isResolving,
 			} = select( STORE_NAME );
 
-			const query = { search };
+			const query = { search, additionalStatus };
 
 			return {
 				transactionsSummary: getFraudOutcomeTransactionsSummary(
