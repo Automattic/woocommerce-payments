@@ -18,11 +18,16 @@ import LoadingStep from './steps/loading';
 import './style.scss';
 
 const OnboardingStepper = () => {
-	const handleExit = () => window.history.back();
-
-	const handleStepChange = () => {
-		window.scroll( 0, 0 );
+	const handleExit = () => {
+		if (
+			window.history.length > 1 &&
+			document.referrer.includes( wcSettings.adminUrl )
+		)
+			return window.history.back();
+		window.location.href = wcSettings.adminUrl;
 	};
+
+	const handleStepChange = () => window.scroll( 0, 0 );
 
 	return (
 		<Stepper onStepChange={ handleStepChange } onExit={ handleExit }>

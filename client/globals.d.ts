@@ -72,3 +72,7 @@ declare const wcpaySettings: {
 };
 
 declare const wcTracks: any;
+
+declare const wcSettings: {
+	adminUrl: string;
+};
