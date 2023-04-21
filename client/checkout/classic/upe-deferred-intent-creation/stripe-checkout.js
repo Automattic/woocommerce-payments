@@ -10,6 +10,8 @@ import {
 } from 'wcpay/checkout/utils/fingerprint';
 import {
 	appendPaymentMethodIdToForm,
+	getSelectedUPEGatewayPaymentMethod,
+	getTerms,
 	getUpeSettings,
 } from 'wcpay/checkout/utils/upe';
 
@@ -218,3 +220,23 @@ export const checkout = ( api, jQueryForm, paymentMethodType ) => {
 	// Prevent WC Core default form submission (see woocommerce/assets/js/frontend/checkout.js) from happening.
 	return false;
 };
+
+/**
+ * Updates the terms parameter in the Payment Element based on the "save payment information" checkbox.
+ *
+ * @param {Event} event The change event that triggers the function.
+ */
+export function renderTerms( event ) {
+	const isChecked = event.target.checked;
+	const value = isChecked ? 'always' : 'never';
+	const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
+	if ( ! paymentMethodType ) {
+		return;
+	}
+	const upeElement = gatewayUPEComponents[ paymentMethodType ].upeElement;
+	if ( getUPEConfig( 'isUPEEnabled' ) && upeElement ) {
+		upeElement.update( {
+			terms: getTerms( getUPEConfig( 'paymentMethodsConfig' ), value ),
+		} );
+	}
+}

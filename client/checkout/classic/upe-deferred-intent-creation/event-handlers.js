@@ -9,7 +9,11 @@ import {
 	getSelectedUPEGatewayPaymentMethod,
 	isUsingSavedPaymentMethod,
 } from '../../utils/upe';
-import { checkout, mountStripePaymentElement } from './stripe-checkout';
+import {
+	checkout,
+	mountStripePaymentElement,
+	renderTerms,
+} from './stripe-checkout';
 import enqueueFraudScripts from 'fraud-scripts';
 import { showAuthenticationModalIfRequired } from './3ds-flow-handling';
 import WCPayAPI from 'wcpay/checkout/api';
@@ -51,6 +55,15 @@ jQuery( function ( $ ) {
 	window.addEventListener( 'hashchange', () => {
 		if ( window.location.hash.startsWith( '#wcpay-confirm-' ) ) {
 			showAuthenticationModalIfRequired( api );
+		}
+	} );
+
+	document.addEventListener( 'change', function ( event ) {
+		if (
+			event.target &&
+			'wc-woocommerce_payments-new-payment-method' === event.target.id
+		) {
+			renderTerms( event );
 		}
 	} );
 } );
