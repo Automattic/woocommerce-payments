@@ -19,6 +19,8 @@ use WP_REST_Request;
  */
 class Platform_Checkout_Session {
 
+	const STORE_API_NAMESPACE = 'wc/store/v1';
+
 	/**
 	 * Init the hooks.
 	 *
@@ -42,7 +44,7 @@ class Platform_Checkout_Session {
 	public static function add_platform_checkout_store_api_session_handler( $response, $handler, WP_REST_Request $request ) {
 		$cart_token = $request->get_header( 'Cart-Token' );
 
-		if ( $cart_token && 0 === strpos( $request->get_route(), '/wc/store/v1/' ) && \Automattic\WooCommerce\StoreApi\Utilities\JsonWebToken::validate( $cart_token, '@' . wp_salt() ) ) {
+		if ( $cart_token && 0 === strpos( $request->get_route(), self::STORE_API_NAMESPACE ) && JsonWebToken::validate( $cart_token, '@' . wp_salt() ) ) {
 			add_filter(
 				'woocommerce_session_handler',
 				function ( $session_handler ) {
@@ -93,10 +95,14 @@ class Platform_Checkout_Session {
 
 		$cart_token = wc_clean( wp_unslash( $_SERVER['HTTP_CART_TOKEN'] ) );
 
-		if ( $cart_token ) {
+		if ( $cart_token && JsonWebToken::validate( $cart_token, '@' . wp_salt() ) ) {
 			$payload = JsonWebToken::get_parts( $cart_token )->payload;
 
 			if ( empty( $payload ) ) {
+				return null;
+			}
+
+			if ( self::STORE_API_NAMESPACE !== $payload->iss ) {
 				return null;
 			}
 
