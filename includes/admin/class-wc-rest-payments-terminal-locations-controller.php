@@ -168,7 +168,6 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 			// but that will break older mobile app clients.
 			// Until we have a more granular versioning support for WCPay REST endpoints,
 			// this is the best we can do.
-			// Related discussion: https://wp.me/pbUcTB-1Z2#comment-6304.
 			if ( 'invalid_request_error' === $e->get_error_code() ) {
 				$error = new WP_Error(
 					'store_address_is_incomplete',
