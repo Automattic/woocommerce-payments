@@ -654,7 +654,9 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 	 * @return bool  True if product is subscription, false otherwise.
 	 */
 	private function is_product_subscription( WC_Product $product ): bool {
-		return 'subscription' === $product->get_type() || 'subscription_variation' === $product->get_type();
+		return 'subscription' === $product->get_type()
+			|| 'subscription_variation' === $product->get_type()
+			|| 'variable-subscription' === $product->get_type();
 	}
 
 	/**
