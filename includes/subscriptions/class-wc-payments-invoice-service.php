@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
 use WCPay\Logger;
@@ -44,21 +45,29 @@ class WC_Payments_Invoice_Service {
 	 */
 	private $product_service;
 
+
+	/**
+	 * Order Service
+	 *
+	 * @var WC_Payments_Order_Service
+	 */
+	private $order_service;
+
 	/**
 	 * Constructor.
 	 *
 	 * @param WC_Payments_API_Client      $payments_api_client  WooCommerce Payments API client.
 	 * @param WC_Payments_Product_Service $product_service      Product Service.
-	 * @param WC_Payment_Gateway_WCPay    $gateway              WC payments Payment Gateway.
+	 * @param WC_Payments_Order_Service   $order_service              WC payments Order Service.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
 		WC_Payments_Product_Service $product_service,
-		WC_Payment_Gateway_WCPay $gateway
+		WC_Payments_Order_Service $order_service
 	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->product_service     = $product_service;
-		$this->gateway             = $gateway;
+		$this->order_service       = $order_service;
 
 		add_action( 'woocommerce_order_payment_status_changed', [ $this, 'maybe_record_invoice_payment' ], 10, 1 );
 		add_action( 'woocommerce_renewal_order_payment_complete', [ $this, 'maybe_record_invoice_payment' ], 11, 1 );
@@ -103,20 +112,37 @@ class WC_Payments_Invoice_Service {
 	 * @return int The order ID.
 	 */
 	public static function get_order_id_by_invoice_id( string $invoice_id ) {
-		global $wpdb;
+		$query_args = [
+			'status'     => 'any',
+			'type'       => 'shop_order',
+			'limit'      => 1,
+			'return'     => 'ids',
+			'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				[
+					'key'   => self::ORDER_INVOICE_ID_KEY,
+					'value' => $invoice_id,
+				],
+			],
+		];
 
-		return (int) $wpdb->get_var(
-			$wpdb->prepare(
-				"
-				SELECT pm.post_id
-				FROM {$wpdb->prefix}postmeta AS pm
-				INNER JOIN {$wpdb->prefix}posts AS p ON pm.post_id = p.ID
-				WHERE pm.meta_key = %s AND pm.meta_value = %s
-				",
-				self::ORDER_INVOICE_ID_KEY,
-				$invoice_id
-			)
-		);
+		// On HPOS environments we can pass meta_query directly to get_orders() as WC doesn't override it.
+		if ( WC_Payments_Utils::is_hpos_tables_usage_enabled() ) {
+			$order_ids = wc_get_orders( $query_args );
+		} else {
+			$meta_query = $query_args['meta_query'];
+			unset( $query_args['meta_query'] );
+
+			$add_meta_query = function ( $query ) use ( $meta_query ) {
+				$query['meta_query'] = $meta_query; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				return $query;
+			};
+
+			add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $add_meta_query, 10, 2 );
+			$order_ids = wc_get_orders( $query_args );
+			remove_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $add_meta_query, 10 );
+		}
+
+		return (int) array_shift( $order_ids );
 	}
 
 	/**
@@ -243,10 +269,14 @@ class WC_Payments_Invoice_Service {
 	 *
 	 * @param WC_Order $order The order to update.
 	 * @param string   $intent_id The intent ID.
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function get_and_attach_intent_info_to_order( $order, $intent_id ) {
 		try {
-			$intent_object = $this->payments_api_client->get_intent( $intent_id );
+			$request       = Get_Intention::create( $intent_id );
+			$intent_object = $request->send( 'wcpay_get_intent_request', $order );
+
 		} catch ( API_Exception $e ) {
 			$order->add_order_note( __( 'The payment info couldn\'t be added to the order.', 'woocommerce-payments' ) );
 			return;
@@ -254,7 +284,7 @@ class WC_Payments_Invoice_Service {
 
 		$charge = $intent_object->get_charge();
 
-		$this->gateway->attach_intent_info_to_order(
+		$this->order_service->attach_intent_info_to_order(
 			$order,
 			$intent_id,
 			$intent_object->get_status(),

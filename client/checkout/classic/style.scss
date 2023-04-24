@@ -23,9 +23,12 @@
 	border: 1px solid #ddd;
 	padding: 5px 7px;
 	min-height: 29px;
+	margin-bottom: 0.5em;
 }
 
-#wcpay-upe-element {
+#wcpay-upe-element,
+.wcpay-upe-element {
+	padding: 7px 7px;
 	margin-bottom: 0.5em;
 
 	&.processing {
@@ -49,11 +52,8 @@
 	right: 5px;
 	width: 64px;
 	height: 40px;
-	background: no-repeat
-		url( '../../../assets/images/payment-methods/link.svg' );
+	background: no-repeat url( 'assets/images/payment-methods/link.svg?asset' );
 	background-color: none;
 	cursor: pointer;
 	border: none;
 }
-
-@import '../platform-checkout/style';

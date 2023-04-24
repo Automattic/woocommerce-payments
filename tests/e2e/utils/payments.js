@@ -7,9 +7,13 @@ const { shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
 
 // WooCommerce Checkout
 export async function fillCardDetails( page, card ) {
-	if ( await page.$( '#payment #wcpay-upe-element' ) ) {
+	if (
+		await page.$(
+			'#payment .payment_method_woocommerce_payments .wcpay-upe-element'
+		)
+	) {
 		const frameHandle = await page.waitForSelector(
-			'#payment #wcpay-upe-element iframe'
+			'#payment .payment_method_woocommerce_payments .wcpay-upe-element iframe'
 		);
 
 		const stripeFrame = await frameHandle.contentFrame();
@@ -28,11 +32,18 @@ export async function fillCardDetails( page, card ) {
 		await cardDateInput.type( card.expires.month + card.expires.year, {
 			delay: 20,
 		} );
+		await page.waitFor( 1000 );
 
 		const cardCvcInput = await stripeFrame.waitForSelector(
 			'[name="cvc"]'
 		);
 		await cardCvcInput.type( card.cvc, { delay: 20 } );
+		await page.waitFor( 1000 );
+
+		const zip = await stripeFrame.$( '[name="postalCode"]' );
+		if ( null !== zip ) {
+			await zip.type( '90210', { delay: 20 } );
+		}
 	} else {
 		await page.waitForSelector( '.__PrivateStripeElement' );
 		const frameHandle = await page.waitForSelector(
@@ -45,19 +56,24 @@ export async function fillCardDetails( page, card ) {
 			{ timeout: 30000 }
 		);
 		await cardNumberInput.type( card.number, { delay: 20 } );
+		await page.waitFor( 1000 );
 
 		const cardDateInput = await stripeFrame.waitForSelector(
-			'[name="exp-date"]'
+			'[name="exp-date"]',
+			{ timeout: 30000 }
 		);
 
 		await cardDateInput.type( card.expires.month + card.expires.year, {
 			delay: 20,
 		} );
+		await page.waitFor( 1000 );
 
 		const cardCvcInput = await stripeFrame.waitForSelector(
-			'[name="cvc"]'
+			'[name="cvc"]',
+			{ timeout: 30000 }
 		);
 		await cardCvcInput.type( card.cvc, { delay: 20 } );
+		await page.waitFor( 1000 );
 	}
 }
 
@@ -67,26 +83,53 @@ export async function clearCardDetails() {
 		'#payment #wcpay-card-element iframe[name^="__privateStripeFrame"]'
 	);
 	const stripeFrame = await frameHandle.contentFrame();
+
 	const cardNumberInput = await stripeFrame.waitForSelector(
 		'[name="cardnumber"]'
 	);
-	const cardDateInput = await stripeFrame.waitForSelector(
-		'[name="exp-date"]'
-	);
-	const cardCvcInput = await stripeFrame.waitForSelector( '[name="cvc"]' );
-
 	await cardNumberInput.click();
 	await page.waitFor( 1000 );
 	await cardNumberInput.click( { clickCount: 3 } );
 	await page.keyboard.press( 'Backspace' );
 
+	const cardDateInput = await stripeFrame.waitForSelector(
+		'[name="exp-date"]'
+	);
 	await page.waitFor( 1000 );
 	await cardDateInput.click( { clickCount: 3 } );
 	await page.keyboard.press( 'Backspace' );
 
+	const cardCvcInput = await stripeFrame.waitForSelector( '[name="cvc"]' );
 	await page.waitFor( 1000 );
 	await cardCvcInput.click( { clickCount: 3 } );
 	await page.keyboard.press( 'Backspace' );
+
+	await page.waitFor( 1000 );
+}
+
+export async function fillCardDetailsPayForOrder( page, card ) {
+	await page.waitForSelector( '.__PrivateStripeElement' );
+	const frameHandle = await page.waitForSelector(
+		'#payment #wcpay-card-element iframe[name^="__privateStripeFrame"]'
+	);
+	const stripeFrame = await frameHandle.contentFrame();
+
+	const cardNumberInput = await stripeFrame.waitForSelector(
+		'[name="cardnumber"]',
+		{ timeout: 30000 }
+	);
+	await cardNumberInput.type( card.number, { delay: 20 } );
+
+	const cardDateInput = await stripeFrame.waitForSelector(
+		'[name="exp-date"]'
+	);
+
+	await cardDateInput.type( card.expires.month + card.expires.year, {
+		delay: 20,
+	} );
+
+	const cardCvcInput = await stripeFrame.waitForSelector( '[name="cvc"]' );
+	await cardCvcInput.type( card.cvc, { delay: 20 } );
 }
 
 // WooCommerce Blocks Checkout

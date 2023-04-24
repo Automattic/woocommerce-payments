@@ -369,7 +369,7 @@ class MultiCurrency {
 			Database_Cache::CURRENCIES_KEY,
 			function() {
 				try {
-					$currency_data = $this->payments_api_client->get_currency_rates( get_woocommerce_currency() );
+					$currency_data = $this->payments_api_client->get_currency_rates( strtolower( get_woocommerce_currency() ) );
 					return [
 						'currencies' => $currency_data,
 						'updated'    => time(),
@@ -1133,16 +1133,7 @@ class MultiCurrency {
 	 * @return void
 	 */
 	private function register_admin_scripts() {
-		$script_src_url    = plugins_url( 'dist/multi-currency.js', WCPAY_PLUGIN_FILE );
-		$script_asset_path = WCPAY_ABSPATH . 'dist/multi-currency.asset.php';
-		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
-		wp_register_script(
-			'WCPAY_MULTI_CURRENCY_SETTINGS',
-			$script_src_url,
-			$script_asset['dependencies'],
-			\WC_Payments::get_file_version( 'dist/multi-currency.js' ),
-			true
-		);
+		WC_Payments::register_script_with_dependencies( 'WCPAY_MULTI_CURRENCY_SETTINGS', 'dist/multi-currency' );
 
 		wp_register_style(
 			'WCPAY_MULTI_CURRENCY_SETTINGS',

@@ -7,35 +7,7 @@ import wcpayTracks from 'tracks';
 import request from '../utils/request';
 import showErrorCheckout from '../utils/show-error-checkout';
 import { buildAjaxURL } from '../../payment-request/utils';
-
-// Waits for the element to exist as in the Blocks checkout, sometimes the field is not immediately available.
-const waitForElement = ( selector ) => {
-	return new Promise( ( resolve ) => {
-		if ( document.querySelector( selector ) ) {
-			return resolve( document.querySelector( selector ) );
-		}
-
-		const checkoutBlock = document.querySelector(
-			'[data-block-name="woocommerce/checkout"]'
-		);
-
-		if ( ! checkoutBlock ) {
-			return resolve( null );
-		}
-
-		const observer = new MutationObserver( ( mutationList, obs ) => {
-			if ( document.querySelector( selector ) ) {
-				resolve( document.querySelector( selector ) );
-				obs.disconnect();
-			}
-		} );
-
-		observer.observe( checkoutBlock, {
-			childList: true,
-			subtree: true,
-		} );
-	} );
-};
+import { getTargetElement, validateEmail } from './utils';
 
 export const handlePlatformCheckoutEmailInput = async (
 	field,
@@ -44,7 +16,7 @@ export const handlePlatformCheckoutEmailInput = async (
 ) => {
 	let timer;
 	const waitTime = 500;
-	const platformCheckoutEmailInput = await waitForElement( field );
+	const platformCheckoutEmailInput = await getTargetElement( field );
 	let hasCheckedLoginSession = false;
 
 	// If we can't find the input, return.
@@ -254,13 +226,28 @@ export const handlePlatformCheckoutEmailInput = async (
 	iframeWrapper.addEventListener( 'click', closeIframe );
 
 	const openIframe = ( email ) => {
+		// check and return if another otp iframe is already open.
+		if ( document.querySelector( '.platform-checkout-otp-iframe' ) ) {
+			return;
+		}
+
+		const viewportWidth = window.document.documentElement.clientWidth;
+		const viewportHeight = window.document.documentElement.clientHeight;
+
 		const urlParams = new URLSearchParams();
 		urlParams.append( 'email', email );
+		urlParams.append( 'testMode', getConfig( 'testMode' ) );
 		urlParams.append(
 			'needsHeader',
 			fullScreenModalBreakpoint > window.innerWidth
 		);
 		urlParams.append( 'wcpayVersion', getConfig( 'wcpayVersionNumber' ) );
+		urlParams.append( 'is_blocks', isBlocksCheckout ? 'true' : 'false' );
+		urlParams.append( 'source_url', window.location.href );
+		urlParams.append(
+			'viewport',
+			`${ viewportWidth }x${ viewportHeight }`
+		);
 
 		iframe.src = `${ getConfig(
 			'platformCheckoutHost'
@@ -303,7 +290,7 @@ export const handlePlatformCheckoutEmailInput = async (
 	} );
 
 	if ( isBlocksCheckout ) {
-		const formSubmitButton = await waitForElement(
+		const formSubmitButton = await getTargetElement(
 			'button.wc-block-components-checkout-place-order-button'
 		);
 		formSubmitButton.addEventListener( 'click', () => {
@@ -316,6 +303,18 @@ export const handlePlatformCheckoutEmailInput = async (
 				abortController.abort();
 			} );
 	}
+
+	const dispatchUserExistEvent = ( userExist ) => {
+		const PlatformCheckoutUserCheckEvent = new CustomEvent(
+			'PlatformCheckoutUserCheck',
+			{
+				detail: {
+					isRegisteredUser: userExist,
+				},
+			}
+		);
+		window.dispatchEvent( PlatformCheckoutUserCheckEvent );
+	};
 
 	const platformCheckoutLocateUser = async ( email ) => {
 		parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
@@ -418,15 +417,7 @@ export const handlePlatformCheckoutEmailInput = async (
 			} )
 			.then( ( data ) => {
 				// Dispatch an event after we get the response.
-				const PlatformCheckoutUserCheckEvent = new CustomEvent(
-					'PlatformCheckoutUserCheck',
-					{
-						detail: {
-							isRegisteredUser: data[ 'user-exists' ],
-						},
-					}
-				);
-				window.dispatchEvent( PlatformCheckoutUserCheckEvent );
+				dispatchUserExistEvent( data[ 'user-exists' ] );
 
 				if ( data[ 'user-exists' ] ) {
 					openIframe( email );
@@ -449,20 +440,12 @@ export const handlePlatformCheckoutEmailInput = async (
 			} );
 	};
 
-	const validateEmail = ( value ) => {
-		/* Borrowed from WooCommerce checkout.js with a slight tweak to add `{2,}` to the end and make the TLD at least 2 characters. */
-		/* eslint-disable */
-		const pattern = new RegExp(
-			/^([a-z\d!#$%&'*+\-\/=?^_`{|}~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+(\.[a-z\d!#$%&'*+\-\/=?^_`{|}~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+)*|"((([ \t]*\r\n)?[ \t]+)?([\x01-\x08\x0b\x0c\x0e-\x1f\x7f\x21\x23-\x5b\x5d-\x7e\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|\\[\x01-\x09\x0b\x0c\x0d-\x7f\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))*(([ \t]*\r\n)?[ \t]+)?")@(([a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|[a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF][a-z\d\-._~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]*[a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])\.)+([a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|[a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF][a-z\d\-._~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]*[0-9a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]){2,}\.?$/i
-		);
-		/* eslint-enable */
-		return pattern.test( value );
-	};
-
 	const closeLoginSessionIframe = () => {
 		loginSessionIframeWrapper.remove();
 		loginSessionIframe.classList.remove( 'open' );
-		platformCheckoutEmailInput.focus();
+		platformCheckoutEmailInput.focus( {
+			preventScroll: true,
+		} );
 
 		// Check the initial value of the email input and trigger input validation.
 		if ( validateEmail( platformCheckoutEmailInput.value ) ) {
@@ -530,21 +513,34 @@ export const handlePlatformCheckoutEmailInput = async (
 				api.initPlatformCheckout(
 					'',
 					e.data.platformCheckoutUserSession
-				).then( ( response ) => {
-					if ( 'success' === response.result ) {
-						loginSessionIframeWrapper.classList.add(
-							'platform-checkout-login-session-iframe-wrapper'
-						);
-						loginSessionIframe.classList.add( 'open' );
-						wcpayTracks.recordUserEvent(
-							wcpayTracks.events.PLATFORM_CHECKOUT_AUTO_REDIRECT
-						);
+				)
+					.then( ( response ) => {
+						if ( 'success' === response.result ) {
+							loginSessionIframeWrapper.classList.add(
+								'platform-checkout-login-session-iframe-wrapper'
+							);
+							loginSessionIframe.classList.add( 'open' );
+							wcpayTracks.recordUserEvent(
+								wcpayTracks.events
+									.PLATFORM_CHECKOUT_AUTO_REDIRECT
+							);
+							spinner.remove();
+							window.location = response.url;
+						} else {
+							closeLoginSessionIframe();
+						}
+					} )
+					.catch( ( err ) => {
+						// Only show the error if it's not an AbortError,
+						// it occurs when the fetch request is aborted because user
+						// clicked the Place Order button while loading.
+						if ( 'AbortError' !== err.name ) {
+							showErrorMessage();
+						}
+					} )
+					.finally( () => {
 						spinner.remove();
-						window.location = response.url;
-					} else {
-						closeLoginSessionIframe();
-					}
-				} );
+					} );
 				break;
 			case 'close_auto_redirection_modal':
 				hasCheckedLoginSession = true;
@@ -557,14 +553,19 @@ export const handlePlatformCheckoutEmailInput = async (
 				api.initPlatformCheckout(
 					platformCheckoutEmailInput.value,
 					e.data.platformCheckoutUserSession
-				).then( ( response ) => {
-					if ( 'success' === response.result ) {
-						window.location = response.url;
-					} else {
+				)
+					.then( ( response ) => {
+						if ( 'success' === response.result ) {
+							window.location = response.url;
+						} else {
+							showErrorMessage();
+							closeIframe( false );
+						}
+					} )
+					.catch( () => {
 						showErrorMessage();
 						closeIframe( false );
-					}
-				} );
+					} );
 				break;
 			case 'otp_validation_failed':
 				wcpayTracks.recordUserEvent(
@@ -622,6 +623,11 @@ export const handlePlatformCheckoutEmailInput = async (
 			openLoginSessionIframe( platformCheckoutEmailInput.value );
 		}
 	} else {
+		// Dispatch an event declaring this user exists as returned via back button. Wait for the window to load.
+		setTimeout( () => {
+			dispatchUserExistEvent( true );
+		}, 2000 );
+
 		wcpayTracks.recordUserEvent(
 			wcpayTracks.events.PLATFORM_CHECKOUT_SKIPPED
 		);

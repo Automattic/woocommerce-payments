@@ -42,25 +42,19 @@ class Platform_Checkout_Save_User {
 			return;
 		}
 
-		$script_src_url    = plugins_url( 'dist/platform-checkout.js', WCPAY_PLUGIN_FILE );
-		$style_url         = plugins_url( 'dist/platform-checkout.css', WCPAY_PLUGIN_FILE );
-		$script_asset_path = WCPAY_ABSPATH . 'dist/platform-checkout.asset.php';
-		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
+		if ( ! $this->platform_checkout_util->is_country_available( $gateways['woocommerce_payments'] ) ) {
+			return;
+		}
+
+		$style_url = plugins_url( 'dist/platform-checkout.css', WCPAY_PLUGIN_FILE );
 
 		wp_register_style(
 			'WCPAY_PLATFORM_CHECKOUT',
 			$style_url,
-			[ 'wp-components' ],
+			[],
 			\WC_Payments::get_file_version( 'dist/platform-checkout.css' )
 		);
-
-		wp_register_script(
-			'WCPAY_PLATFORM_CHECKOUT',
-			$script_src_url,
-			$script_asset['dependencies'],
-			\WC_Payments::get_file_version( 'dist/platform-checkout.js' ),
-			true
-		);
+		WC_Payments::register_script_with_dependencies( 'WCPAY_PLATFORM_CHECKOUT', 'dist/platform-checkout' );
 
 		wp_enqueue_style( 'WCPAY_PLATFORM_CHECKOUT' );
 		wp_enqueue_script( 'WCPAY_PLATFORM_CHECKOUT' );
@@ -79,6 +73,10 @@ class Platform_Checkout_Save_User {
 		$platform_checkout_phone       = $this->platform_checkout_util->get_platform_checkout_phone();
 
 		if ( $should_save_platform_customer && $platform_checkout_phone ) {
+			$platform_checkout_source_url = $this->platform_checkout_util->get_platform_checkout_source_url();
+			$platform_checkout_is_blocks  = $this->platform_checkout_util->get_platform_checkout_is_blocks();
+			$platform_checkout_viewport   = $this->platform_checkout_util->get_platform_checkout_viewport();
+
 			// Add the metadata.
 			$metadata['platform_checkout_primary_first_name']   = wc_clean( $order->get_billing_first_name() );
 			$metadata['platform_checkout_primary_last_name']    = wc_clean( $order->get_billing_last_name() );
@@ -89,6 +87,9 @@ class Platform_Checkout_Save_User {
 			$metadata['platform_checkout_secondary_phone']      = wc_clean( $order->get_shipping_phone() );
 			$metadata['platform_checkout_secondary_company']    = wc_clean( $order->get_shipping_company() );
 			$metadata['platform_checkout_phone']                = $platform_checkout_phone;
+			$metadata['platform_checkout_source_url']           = $platform_checkout_source_url;
+			$metadata['platform_checkout_is_blocks']            = $platform_checkout_is_blocks;
+			$metadata['platform_checkout_viewport']             = $platform_checkout_viewport;
 		}
 
 		return $metadata;

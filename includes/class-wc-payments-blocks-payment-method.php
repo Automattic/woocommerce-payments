@@ -55,7 +55,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	public function get_payment_method_script_handles() {
 		wp_enqueue_style(
 			'wc-blocks-checkout-style',
-			plugins_url( 'dist/upe-blocks-checkout.css', WCPAY_PLUGIN_FILE ),
+			plugins_url( 'dist/blocks-checkout.css', WCPAY_PLUGIN_FILE ),
 			[],
 			'1.0'
 		);
@@ -67,13 +67,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 			true
 		);
 
-		wp_register_script(
-			'WCPAY_BLOCKS_CHECKOUT',
-			plugins_url( 'dist/blocks-checkout.js', WCPAY_PLUGIN_FILE ),
-			[ 'stripe' ],
-			'1.0.1',
-			true
-		);
+		WC_Payments::register_script_with_dependencies( 'WCPAY_BLOCKS_CHECKOUT', 'dist/blocks-checkout', [ 'stripe' ] );
 		wp_set_script_translations( 'WCPAY_BLOCKS_CHECKOUT', 'woocommerce-payments' );
 
 		return [ 'WCPAY_BLOCKS_CHECKOUT' ];
@@ -114,9 +108,13 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	 * @return  string
 	 */
 	public function maybe_add_card_testing_token( $content ) {
+		if ( ! wp_script_is( 'WCPAY_BLOCKS_CHECKOUT' ) || ! WC()->session ) {
+			return $content;
+		}
+
 		$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		if ( $fraud_prevention_service->is_enabled() && wp_script_is( 'WCPAY_BLOCKS_CHECKOUT' ) ) {
+		if ( $fraud_prevention_service->is_enabled() ) {
 			$content .= '<input type="hidden" name="wcpay-fraud-prevention-token" id="wcpay-fraud-prevention-token" value="' . esc_attr( Fraud_Prevention_Service::get_instance()->get_token() ) . '">';
 		}
 		return $content;

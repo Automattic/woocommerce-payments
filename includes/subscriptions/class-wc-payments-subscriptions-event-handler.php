@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Logger;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 
 /**
@@ -72,6 +73,14 @@ class WC_Payments_Subscriptions_Event_Handler {
 				$this->subscription_service->cancel_subscription( $subscription );
 			} else {
 				$this->subscription_service->suspend_subscription( $subscription );
+				$subscription->add_order_note( __( 'Suspended WCPay Subscription in invoice.upcoming webhook handler because subscription next_payment date is 0.', 'woocommerce-payments' ) );
+				Logger::log(
+					sprintf(
+						'Suspended WCPay Subscription in invoice.upcoming webhook handler because subscription next_payment date is 0. WC ID: %d; WCPay ID: %s.',
+						$subscription->get_id(),
+						$wcpay_subscription_id
+					)
+				);
 			}
 		} else {
 			// Translators: %s Scheduled/upcoming payment date in Y-m-d H:i:s format.
@@ -88,6 +97,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 	 * @param array $body The event body that triggered the webhook.
 	 *
 	 * @throws Invalid_Webhook_Data_Exception Required parameters not found.
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function handle_invoice_paid( array $body ) {
 		$event_data            = $this->get_event_property( $body, 'data' );
@@ -124,9 +134,9 @@ class WC_Payments_Subscriptions_Event_Handler {
 			 * This ensures the downstream effects take place, e.g. a payment status order note is added and the
 			 * 'woocommerce_subscription_payment_complete' action is fired.
 			 */
-			remove_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'suspend_subscription' ] );
+			remove_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'handle_subscription_status_on_hold' ] );
 			$subscription->update_status( 'on-hold' );
-			add_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'suspend_subscription' ] );
+			add_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'handle_subscription_status_on_hold' ] );
 
 			/*
 			 * Remove the reactivate_subscription callback that occurs when a subscription transitions from on-hold to active.
@@ -135,6 +145,14 @@ class WC_Payments_Subscriptions_Event_Handler {
 			remove_action( 'woocommerce_subscription_status_on-hold_to_active', [ $this->subscription_service, 'reactivate_subscription' ] );
 			$order->payment_complete();
 			add_action( 'woocommerce_subscription_status_on-hold_to_active', [ $this->subscription_service, 'reactivate_subscription' ] );
+
+			/**
+			 * Fetch a new instance of the subscription.
+			 *
+			 * After marking the order as paid, a parallel instance of the subscription would have been reactivated.
+			 * To avoid race conditions and cache pollution, fetch a new instance to ensure our current instance doesn't override the active subscription status.
+			 */
+			$subscription = wcs_get_subscription( $subscription->get_id() );
 		}
 
 		if ( isset( $event_object['payment_intent'] ) ) {
@@ -182,9 +200,9 @@ class WC_Payments_Subscriptions_Event_Handler {
 		$subscription->add_order_note( sprintf( _n( 'WCPay subscription renewal attempt %d failed.', 'WCPay subscription renewal attempt %d failed.', $attempts, 'woocommerce-payments' ), $attempts ) );
 
 		if ( self::MAX_RETRIES > $attempts ) {
-			remove_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'suspend_subscription' ] );
+			remove_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'handle_subscription_status_on_hold' ] );
 			$subscription->payment_failed();
-			add_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'suspend_subscription' ] );
+			add_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'handle_subscription_status_on_hold' ] );
 		} else {
 			$subscription->payment_failed( 'cancelled' );
 		}

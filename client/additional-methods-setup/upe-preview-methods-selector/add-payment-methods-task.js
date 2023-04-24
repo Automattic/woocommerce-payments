@@ -10,7 +10,7 @@ import React, {
 } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Button, Card, CardBody, ExternalLink } from '@wordpress/components';
-import interpolateComponents from 'interpolate-components';
+import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies
@@ -34,7 +34,10 @@ import paymentMethodsMap from '../../payment-methods-map';
 import ConfirmPaymentMethodActivationModal from 'wcpay/payment-methods/activation-modal';
 
 const usePaymentMethodsCheckboxState = () => {
-	const [ paymentMethodsState, setPaymentMethodsState ] = useState( {} );
+	// For UPE, the card payment method is required and always active.
+	const [ paymentMethodsState, setPaymentMethodsState ] = useState( {
+		card: true,
+	} );
 
 	const handleChange = useCallback(
 		( paymentMethodName, enabled ) => {
@@ -118,7 +121,7 @@ const ContinueButton = ( { paymentMethodsState } ) => {
 			onClick={ handleContinueClick }
 			isPrimary
 		>
-			{ __( 'Add payment methods', 'woocommerce-payments' ) }
+			{ __( 'Continue', 'woocommerce-payments' ) }
 		</Button>
 	);
 };
@@ -157,14 +160,13 @@ const AddPaymentMethodsTask = () => {
 		null
 	);
 
-	const completeActivation = ( itemId ) => {
-		paymentMethodsState[ itemId ] = true;
-		handlePaymentMethodChange( paymentMethodsState );
+	const completeActivation = ( method ) => {
+		handlePaymentMethodChange( method, true );
 		handleActivationModalOpen( null );
 	};
 
-	const getStatusAndRequirements = ( itemId ) => {
-		const stripeKey = paymentMethodsMap[ itemId ].stripe_key;
+	const getStatusAndRequirements = ( method ) => {
+		const stripeKey = paymentMethodsMap[ method ].stripe_key;
 		const stripeStatusContainer = paymentMethodStatuses[ stripeKey ] ?? [];
 		if ( ! stripeStatusContainer ) {
 			return {
@@ -178,23 +180,22 @@ const AddPaymentMethodsTask = () => {
 		};
 	};
 
-	const handleCheckClick = ( itemId, status ) => {
+	const handleCheckClick = ( method, status ) => {
 		if ( status ) {
-			const statusAndRequirements = getStatusAndRequirements( itemId );
+			const statusAndRequirements = getStatusAndRequirements( method );
 			if (
 				'unrequested' === statusAndRequirements.status &&
 				0 < statusAndRequirements.requirements.length
 			) {
 				handleActivationModalOpen( {
-					id: itemId,
+					id: method,
 					requirements: statusAndRequirements.requirements,
 				} );
 			} else {
-				completeActivation( itemId );
+				completeActivation( method );
 			}
 		} else {
-			paymentMethodsState[ itemId ] = false;
-			handlePaymentMethodChange( paymentMethodsState );
+			handlePaymentMethodChange( method, false );
 		}
 	};
 
@@ -224,7 +225,10 @@ const AddPaymentMethodsTask = () => {
 						},
 					} ) }
 				</p>
-				<Card className="add-payment-methods-task__payment-selector-wrapper">
+				<Card
+					className="add-payment-methods-task__payment-selector-wrapper"
+					size="small"
+				>
 					<CardBody>
 						{ /* eslint-disable-next-line max-len */ }
 						<p className="add-payment-methods-task__payment-selector-title wcpay-wizard-task__description-element">
@@ -236,6 +240,18 @@ const AddPaymentMethodsTask = () => {
 						<LoadableBlock numLines={ 10 } isLoading={ ! isActive }>
 							<LoadableSettingsSection numLines={ 10 }>
 								<PaymentMethodCheckboxes>
+									<PaymentMethodCheckbox
+										key="card"
+										checked={ paymentMethodsState.card }
+										// The card payment method is required when UPE is active and it can't be deactivated.
+										required={ true }
+										locked={ true }
+										status={
+											getStatusAndRequirements( 'card' )
+												.status
+										}
+										name="card"
+									/>
 									{ upeMethods.map(
 										( key ) =>
 											availablePaymentMethods.includes(
@@ -291,6 +307,12 @@ const AddPaymentMethodsTask = () => {
 						) }
 					</CardBody>
 				</Card>
+				<p className="add-payment-methods-task__payment-selector-description wcpay-wizard-task__description-element is-muted-color">
+					{ __(
+						'You can always change or add more payment methods later.',
+						'woocommerce-payments'
+					) }
+				</p>
 				<CurrencyInformationForMethods
 					selectedMethods={ selectedMethods }
 				/>

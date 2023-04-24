@@ -74,16 +74,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
 
 		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_payment_request_button_html' ], 1 );
-		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_payment_request_button_separator_html' ], 2 );
 
 		add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_payment_request_button_html' ], 1 );
-		add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_payment_request_button_separator_html' ], 2 );
 
 		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_payment_request_button_html' ], 1 );
-		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_payment_request_button_separator_html' ], 2 );
 
 		add_action( 'before_woocommerce_pay_form', [ $this, 'display_pay_for_order_page_html' ], 1 );
-		add_action( 'before_woocommerce_pay_form', [ $this, 'display_payment_request_button_separator_html' ], 2 );
 
 		add_action( 'wc_ajax_wcpay_get_cart_details', [ $this, 'ajax_get_cart_details' ] );
 		add_action( 'wc_ajax_wcpay_get_shipping_options', [ $this, 'ajax_get_shipping_options' ] );
@@ -505,7 +501,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		// If no SSL, bail.
-		if ( ! $this->gateway->is_in_test_mode() && ! is_ssl() ) {
+		if ( ! WC_Payments::mode()->is_test() && ! is_ssl() ) {
 			Logger::log( 'Stripe Payment Request live mode requires SSL.' );
 			return false;
 		}
@@ -730,7 +726,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'ajax_url'           => admin_url( 'admin-ajax.php' ),
 			'wc_ajax_url'        => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			'stripe'             => [
-				'publishableKey' => $this->account->get_publishable_key( $this->gateway->is_in_test_mode() ),
+				'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
 				'accountId'      => $this->account->get_stripe_account_id(),
 				'locale'         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 			],
@@ -760,7 +756,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'total_label'        => $this->get_total_label(),
 		];
 
-		wp_register_script( 'WCPAY_PAYMENT_REQUEST', plugins_url( 'dist/payment-request.js', WCPAY_PLUGIN_FILE ), [ 'jquery', 'stripe' ], WC_Payments::get_file_version( 'dist/payment-request.js' ), true );
+		WC_Payments::register_script_with_dependencies( 'WCPAY_PAYMENT_REQUEST', 'dist/payment-request', [ 'jquery', 'stripe' ] );
 
 		wp_localize_script( 'WCPAY_PAYMENT_REQUEST', 'wcpayPaymentRequestParams', $payment_request_params );
 
@@ -787,18 +783,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 				<!-- A Stripe Element will be inserted here. -->
 			</div>
 		</div>
-		<?php
-	}
-
-	/**
-	 * Display payment request button separator.
-	 */
-	public function display_payment_request_button_separator_html() {
-		if ( ! $this->should_show_payment_request_button() ) {
-			return;
-		}
-		?>
-		<p id="wcpay-payment-request-button-separator" style="margin-top:1.5em;text-align:center;display:none;">&mdash; <?php esc_html_e( 'OR', 'woocommerce-payments' ); ?> &mdash;</p>
 		<?php
 	}
 
@@ -1124,6 +1108,11 @@ class WC_Payments_Payment_Request_Button_Handler {
 			define( 'WOOCOMMERCE_CART', true );
 		}
 
+		$subscription_types = [
+			'subscription',
+			'subscription_variation',
+		];
+
 		WC()->shipping->reset_shipping();
 
 		$product_id   = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
@@ -1143,7 +1132,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			WC()->cart->add_to_cart( $product->get_id(), $qty, $variation_id, $attributes );
 		}
 
-		if ( 'simple' === $product_type || 'subscription' === $product_type ) {
+		if ( 'simple' === $product_type || in_array( $product_type, $subscription_types, true ) ) {
 			WC()->cart->add_to_cart( $product->get_id(), $qty );
 		}
 
@@ -1612,7 +1601,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if (
 			$this->gateway->is_enabled()
 			&& 'yes' === $this->gateway->get_option( 'payment_request' )
-			&& ! $this->gateway->is_in_dev_mode()
+			&& ! WC_Payments::mode()->is_dev()
 			&& $this->account->get_is_live()
 		) {
 			$value = wp_rand( 1, 2 );

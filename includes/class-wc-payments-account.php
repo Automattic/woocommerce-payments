@@ -10,6 +10,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use Automattic\WooCommerce\Admin\Notes\DataStore;
+use Automattic\WooCommerce\Admin\Notes\Note;
+use WCPay\Core\Server\Request\Get_Account;
+use WCPay\Core\Server\Request\Get_Account_Capital_Link;
+use WCPay\Core\Server\Request\Get_Account_Login_Data;
+use WCPay\Core\Server\Request\Update_Account;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
 use WCPay\Database_Cache;
@@ -68,6 +73,7 @@ class WC_Payments_Account {
 		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
 		add_action( 'updated_option', [ $this, 'possibly_update_wcpay_account_locale' ], 10, 3 );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'clear_cache' ] );
 
 		// Add capital offer redirection.
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_capital_offer' ] );
@@ -151,6 +157,28 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Checks if the account is valid: which means it's connected and has valid card_payments capability status (requested, pending_verification, active and other valid ones).
+	 * Card_payments capability is crucial for account to function properly. If it is unrequested, we shouldn't show
+	 * any other options for the merchants since it'll lead to various errors.
+	 *
+	 * @see https://github.com/Automattic/woocommerce-payments/issues/5275
+	 *
+	 * @return bool True if the account have valid stripe account, false otherwise.
+	 */
+	public function is_stripe_account_valid(): bool {
+		if ( ! $this->is_stripe_connected() ) {
+			return false;
+		}
+		$account = $this->get_cached_account_data();
+
+		if ( ! isset( $account['capabilities']['card_payments'] ) ) {
+			return false;
+		}
+
+		return 'unrequested' !== $account['capabilities']['card_payments'];
+	}
+
+	/**
 	 * Checks if the account has been rejected, assumes the value of false on any account retrieval error.
 	 * Returns false if the account is not connected.
 	 *
@@ -188,16 +216,30 @@ class WC_Payments_Account {
 		}
 
 		return [
-			'email'               => $account['email'] ?? '',
-			'country'             => $account['country'] ?? 'US',
-			'status'              => $account['status'],
-			'paymentsEnabled'     => $account['payments_enabled'],
-			'deposits'            => $account['deposits'] ?? [],
-			'depositsStatus'      => $account['deposits']['status'] ?? $account['deposits_status'] ?? '',
-			'currentDeadline'     => isset( $account['current_deadline'] ) ? $account['current_deadline'] : false,
-			'pastDue'             => isset( $account['has_overdue_requirements'] ) ? $account['has_overdue_requirements'] : false,
-			'accountLink'         => $this->get_login_url(),
-			'hasSubmittedVatData' => $account['has_submitted_vat_data'] ?? false,
+			'email'                 => $account['email'] ?? '',
+			'country'               => $account['country'] ?? 'US',
+			'status'                => $account['status'],
+			'created'               => $account['created'] ?? '',
+			'paymentsEnabled'       => $account['payments_enabled'],
+			'deposits'              => $account['deposits'] ?? [],
+			'depositsStatus'        => $account['deposits']['status'] ?? $account['deposits_status'] ?? '',
+			'currentDeadline'       => $account['current_deadline'] ?? false,
+			'pastDue'               => $account['has_overdue_requirements'] ?? false,
+			'accountLink'           => $this->get_login_url(),
+			'hasSubmittedVatData'   => $account['has_submitted_vat_data'] ?? false,
+			'requirements'          => [
+				'errors' => $account['requirements']['errors'] ?? [],
+			],
+			'progressiveOnboarding' => [
+				'isEnabled'            => $account['progressive_onboarding']['is_enabled'] ?? false,
+				'isComplete'           => $account['progressive_onboarding']['is_complete'] ?? false,
+				'tpv'                  => (int) ( $account['progressive_onboarding']['tpv'] ?? 0 ),
+				'firstTransactionDate' => $account['progressive_onboarding']['first_transaction_date'] ?? null,
+			],
+			'fraudProtection'       => [
+				'declineOnAVSFailure' => $account['fraud_mitigation_settings']['avs_check_enabled'] ?? null,
+				'declineOnCVCFailure' => $account['fraud_mitigation_settings']['cvc_check_enabled'] ?? null,
+			],
 		];
 	}
 
@@ -481,10 +523,15 @@ class WC_Payments_Account {
 		$refresh_url = add_query_arg( [ 'wcpay-loan-offer' => '' ], admin_url( 'admin.php' ) );
 
 		try {
-			$capital_link = $this->payments_api_client->get_capital_link( 'capital_financing_offer', $return_url, $refresh_url );
+			$request = Get_Account_Capital_Link::create();
+			$type    = 'capital_financing_offer';
+			$request->set_type( $type );
+			$request->set_return_url( $return_url );
+			$request->set_refresh_url( $refresh_url );
 
+			$capital_link = $request->send( 'wcpay_get_account_capital_link' );
 			$this->redirect_to( $capital_link['url'] );
-		} catch ( API_Exception $e ) {
+		} catch ( Exception $e ) {
 			$error_url = add_query_arg(
 				[ 'wcpay-loan-offer-error' => '1' ],
 				self::get_overview_page_url()
@@ -603,6 +650,7 @@ class WC_Payments_Account {
 		$http_referer = sanitize_text_field( wp_unslash( $_SERVER['HTTP_REFERER'] ?? '' ) );
 		if ( 0 < strpos( $http_referer, 'task=payments' ) ) {
 			$this->maybe_redirect_to_treatment_onboarding_page();
+			$this->redirect_to_prototype_onboarding_page();
 		}
 
 		// Redirect if not connected.
@@ -699,6 +747,8 @@ class WC_Payments_Account {
 			try {
 				$this->redirect_to_login();
 			} catch ( Exception $e ) {
+				Logger::error( 'Failed redirect_to_login: ' . $e );
+
 				wp_safe_redirect(
 					add_query_arg(
 						[ 'wcpay-login-error' => '1' ],
@@ -722,6 +772,13 @@ class WC_Payments_Account {
 			$from_wc_pay_connect_page = false !== strpos( wp_get_referer(), 'path=%2Fpayments%2Fconnect' );
 			if ( ( $from_wc_admin_task || $from_wc_pay_connect_page ) ) {
 				$this->maybe_redirect_to_treatment_onboarding_page();
+				$this->redirect_to_prototype_onboarding_page();
+			}
+
+			if ( isset( $_GET['wcpay-disable-onboarding-test-mode'] ) ) {
+				WC_Payments_Onboarding_Service::set_test_mode( false );
+				$this->redirect_to_onboarding_page();
+				return;
 			}
 
 			// Hide menu notification badge upon starting setup.
@@ -904,7 +961,12 @@ class WC_Payments_Account {
 		// Clear account transient when generating Stripe dashboard's login link.
 		$this->clear_cache();
 		$redirect_url = $this->get_overview_page_url();
-		$login_data   = $this->payments_api_client->get_login_data( $redirect_url );
+
+		$request = Get_Account_Login_Data::create();
+		$request->set_redirect_url( $redirect_url );
+
+		$response   = $request->send( 'wpcay_get_account_login_data' );
+		$login_data = $response->to_array();
 		wp_safe_redirect( $login_data['url'] );
 		exit;
 	}
@@ -960,40 +1022,87 @@ class WC_Payments_Account {
 		// Clear account transient when generating Stripe's oauth data.
 		$this->clear_cache();
 
+		// Enable dev mode if the test_mode query param is set.
+		$test_mode = isset( $_GET['test_mode'] ) ? boolval( wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) : false;
+		if ( $test_mode ) {
+			WC_Payments_Onboarding_Service::set_test_mode( true );
+		}
+
 		$current_user = wp_get_current_user();
 		$return_url   = $this->get_onboarding_return_url( $wcpay_connect_from );
 
-		// Pre-fill from new KYC flow experiment in treatment mode.
-		$prefill         = isset( $_GET['prefill'] ) ? wc_clean( wp_unslash( $_GET['prefill'] ) ) : [];
-		$prefill_country = $prefill['country'] ?? null;
-		$prefill_rest    = [
-			'business_type' => $prefill['type'] ?? null,
-			'company'       => [
-				'structure' => $prefill['structure'] ?? null,
-			],
-		];
+		// Flags to enable progressive onboarding and collect payout requirements.
+		$progressive                 = isset( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
+		$collect_payout_requirements = isset( $_GET['collect_payout_requirements'] ) && 'true' === $_GET['collect_payout_requirements'];
 
-		$country = $prefill_country ?? WC()->countries->get_base_country();
-		if ( ! array_key_exists( $country, WC_Payments_Utils::supported_countries() ) ) {
-			$country = null;
+		// Onboarding data prefill.
+		$prefill_data = isset( $_GET['prefill'] ) ? wc_clean( wp_unslash( $_GET['prefill'] ) ) : [];
+		if ( $prefill_data ) {
+			$business_type = $prefill_data['business_type'] ?? null;
+			$account_data  = [
+				'country'       => $prefill_data['country'] ?? null,
+				'email'         => $prefill_data['email'] ?? null,
+				'business_name' => $prefill_data['business_name'] ?? null,
+				'url'           => $prefill_data['url'] ?? null,
+				'mcc'           => $prefill_data['mcc'] ?? null,
+				'business_type' => $business_type,
+				'company'       => [
+					'structure' => 'company' === $business_type ? ( isset( $prefill_data['company']['structure'] ) ? ( $prefill_data['company']['structure'] ?? null ) : null ) : null,
+				],
+				'individual'    => [
+					'first_name' => isset( $prefill_data['individual']['first_name'] ) ? ( $prefill_data['individual']['first_name'] ?? null ) : null,
+					'last_name'  => isset( $prefill_data['individual']['last_name'] ) ? ( $prefill_data['individual']['last_name'] ?? null ) : null,
+					'phone'      => ! $progressive && 'individual' === $business_type ? ( $prefill_data['phone'] ?? null ) : null,
+				],
+			];
+		} elseif ( $test_mode ) {
+			$home_url    = get_home_url();
+			$default_url = 'http://wcpay.test';
+			$url         = wp_http_validate_url( $home_url ) ? $home_url : $default_url;
+			// If the site is running on localhost, use the default URL. This is to avoid Stripe's errors.
+			// wp_http_validate_url does not check that unfortunately.
+			if ( wp_parse_url( $home_url, PHP_URL_HOST ) === 'localhost' ) {
+				$url = $default_url;
+			}
+			$account_data = [
+				'country'       => 'US',
+				'business_type' => 'individual',
+				'individual'    => [
+					'first_name' => 'John',
+					'last_name'  => 'Woolliams',
+					'address'    => [
+						'country'     => 'US',
+						'state'       => 'California',
+						'city'        => 'South San Francisco',
+						'line1'       => '1040 Grand Ave',
+						'postal_code' => '94080',
+					],
+					'ssn_last_4' => '0000',
+					'phone'      => '+10000000000',
+					'dob'        => [
+						'day'   => '1',
+						'month' => '1',
+						'year'  => '1980',
+					],
+				],
+				'mcc'           => '5734',
+				'url'           => $url,
+				'business_name' => get_bloginfo( 'name' ),
+			];
+		} else {
+			$account_data = [];
 		}
 
 		$onboarding_data = $this->payments_api_client->get_onboarding_data(
 			$return_url,
-			array_merge(
-				[
-					'email'         => $current_user->user_email,
-					'business_name' => get_bloginfo( 'name' ),
-					'url'           => get_home_url(),
-					'country'       => $country,
-				],
-				array_filter( $prefill_rest )
-			),
 			[
 				'site_username' => $current_user->user_login,
 				'site_locale'   => get_locale(),
 			],
-			$this->get_actioned_notes()
+			$this->get_actioned_notes(),
+			array_filter( $account_data ),
+			$progressive,
+			$collect_payout_requirements
 		);
 
 		delete_transient( self::ON_BOARDING_STARTED_TRANSIENT );
@@ -1041,6 +1150,9 @@ class WC_Payments_Account {
 		// user might not have agreed to TOS yet.
 		update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => false ] );
 
+		// Automatically enable split UPE for new stores.
+		update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '1' );
+
 		wp_safe_redirect(
 			add_query_arg(
 				[
@@ -1078,7 +1190,10 @@ class WC_Payments_Account {
 					// below re-create it if the server tells us on-boarding is still disabled.
 					delete_transient( self::ON_BOARDING_DISABLED_TRANSIENT );
 
-					$account = $this->payments_api_client->get_account_data();
+					$request  = Get_Account::create();
+					$response = $request->send( 'wcpay_get_account' );
+					$account  = $response->to_array();
+
 				} catch ( API_Exception $e ) {
 					if ( 'wcpay_account_not_found' === $e->get_error_code() ) {
 						// Special case - detect account not connected and cache it.
@@ -1156,7 +1271,7 @@ class WC_Payments_Account {
 		}
 
 		// test accounts are valid only when in dev mode.
-		if ( WC_Payments::get_gateway()->is_in_dev_mode() ) {
+		if ( WC_Payments::mode()->is_dev() ) {
 			return true;
 		}
 
@@ -1176,7 +1291,11 @@ class WC_Payments_Account {
 				Logger::info( 'Skip updating account settings. Nothing is changed.' );
 				return;
 			}
-			$updated_account = $this->payments_api_client->update_account( $stripe_account_settings );
+
+			$request         = Update_Account::from_account_settings( $stripe_account_settings );
+			$response        = $request->send( 'wcpay_update_account_settings' );
+			$updated_account = $response->to_array();
+
 			$this->database_cache->add( Database_Cache::ACCOUNT_KEY, $updated_account );
 		} catch ( Exception $e ) {
 			Logger::error( 'Failed to update Stripe account ' . $e );
@@ -1216,7 +1335,11 @@ class WC_Payments_Account {
 				$account_settings = [
 					'locale' => $new_value ? $new_value : 'en_US',
 				];
-				$updated_account  = $this->payments_api_client->update_account( $account_settings );
+
+				$request         = Update_Account::from_account_settings( $account_settings );
+				$response        = $request->send( 'wcpay_update_account_settings' );
+				$updated_account = $response->to_array();
+
 				$this->database_cache->add( Database_Cache::ACCOUNT_KEY, $updated_account );
 			} catch ( Exception $e ) {
 				Logger::error( __( 'Failed to update Account locale. ', 'woocommerce-payments' ) . $e );
@@ -1264,13 +1387,11 @@ class WC_Payments_Account {
 			return $where_clause . " AND name like 'wcpay-promo-%'";
 		};
 
-		$note_class = WC_Payment_Woo_Compat_Utils::get_note_class();
-
 		add_filter( 'woocommerce_note_where_clauses', $add_like_clause );
 
 		$wcpay_promo_notes = $data_store->get_notes(
 			[
-				'status'     => [ $note_class::E_WC_ADMIN_NOTE_ACTIONED ],
+				'status'     => [ Note::E_WC_ADMIN_NOTE_ACTIONED ],
 				'is_deleted' => false,
 				'per_page'   => 10,
 			]
@@ -1285,7 +1406,7 @@ class WC_Payments_Account {
 
 		// Copy the name of each note into the results.
 		foreach ( (array) $wcpay_promo_notes as $wcpay_note ) {
-			$note               = new $note_class( $wcpay_note->note_id );
+			$note               = new Note( $wcpay_note->note_id );
 			$wcpay_note_names[] = $note->get_name();
 		}
 
@@ -1434,6 +1555,26 @@ class WC_Payments_Account {
 				$this->redirect_to( $onboarding_url );
 
 			}
+		}
+	}
+
+	/**
+	 * Redirects to the onboarding prototype page if the feature flag is enabled.
+	 * Also checks if the server is connect and try to connect it otherwise.
+	 *
+	 * @return void
+	 */
+	private function redirect_to_prototype_onboarding_page() {
+		if ( ! WC_Payments_Features::is_progressive_onboarding_enabled() ) {
+			return;
+		}
+
+		$onboarding_url = admin_url( 'admin.php?page=wc-admin&path=/payments/onboarding-prototype' );
+
+		if ( ! $this->payments_api_client->is_server_connected() ) {
+			$this->payments_api_client->start_server_connection( $onboarding_url );
+		} else {
+			$this->redirect_to( $onboarding_url );
 		}
 	}
 }

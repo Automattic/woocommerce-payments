@@ -100,7 +100,7 @@
 		.platform-checkout-otp-iframe {
 			transition: none;
 			height: 90vh;
-			max-height: 520px;
+			max-height: 650px;
 			position: absolute;
 			max-width: 374px;
 			border-radius: 8px;
@@ -123,12 +123,13 @@
 }
 
 .woopay-express-button {
-	font-size: 20px;
-	font-weight: normal;
+	font-size: 13px;
+	font-weight: 500;
 	font-family: 'SF Pro Text', 'Helvetica Neue', 'Helvetica', 'Roboto', 'Arial',
 		sans-serif;
-	line-height: 42px;
-	background: $white;
+	letter-spacing: 0.8px;
+	height: 40px;
+	background: #f2deff;
 	border: 1px solid $white;
 	color: $studio-woocommerce-purple-60;
 	width: 100%;
@@ -140,6 +141,11 @@
 	justify-content: center;
 	white-space: nowrap;
 
+	&:hover {
+		background: #d9baff;
+		cursor: pointer;
+	}
+
 	svg {
 		fill: $studio-woocommerce-purple-60;
 		position: relative;
@@ -149,19 +155,26 @@
 	&[data-theme='dark'] {
 		background: $studio-woocommerce-purple-60;
 		color: $white;
+		border-color: $studio-woocommerce-purple-60;
 
 		svg {
 			fill: $white;
 		}
+		&:hover {
+			background: #533582;
+		}
 	}
 
 	&[data-theme='light-outline'] {
-		border-color: $studio-woocommerce-purple-60;
+		border-color: #674399;
+		&:hover {
+			background: #d9baff;
+		}
 	}
 
 	&[data-size='medium'] {
-		font-size: 25px;
-		line-height: 48px;
+		font-size: 14px;
+		height: 48px;
 
 		svg {
 			top: 2px;
@@ -171,8 +184,8 @@
 	}
 
 	&[data-size='large'] {
-		font-size: 29px;
-		line-height: 56px;
+		font-size: 16px;
+		height: 56px;
 
 		svg {
 			top: 3px;
@@ -185,13 +198,11 @@
 	&[data-type='book'],
 	&[data-type='donate'] {
 		svg {
-			margin-left: 8px;
+			margin-left: 6px;
 		}
-
-		&[data-size='medium'],
 		&[data-size='large'] {
 			svg {
-				margin-left: 10px;
+				margin-left: 8px;
 			}
 		}
 	}

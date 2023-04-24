@@ -15,6 +15,7 @@ import {
 } from '@woocommerce/blocks-registry';
 import { useEffect, useState } from '@wordpress/element';
 import { useDispatch, useSelect } from '@wordpress/data';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -210,7 +211,10 @@ const WCPayUPEFields = ( {
 				if ( ! isUPEComplete ) {
 					return {
 						type: 'error',
-						message: 'Your payment information is incomplete.',
+						message: __(
+							'Your payment information is incomplete.',
+							'woocommerce-payments'
+						),
 					};
 				}
 
@@ -268,6 +272,10 @@ const WCPayUPEFields = ( {
 			onCheckoutAfterProcessingWithSuccess(
 				( { orderId, processingResponse: { paymentDetails } } ) => {
 					async function updateIntent() {
+						if ( api.handleDuplicatePayments( paymentDetails ) ) {
+							return;
+						}
+
 						await api.updateIntent(
 							paymentIntentId,
 							orderId,
@@ -307,13 +315,8 @@ const WCPayUPEFields = ( {
 	// Checks whether there are errors within a field, and saves them for later reporting.
 	const upeOnChange = ( event ) => {
 		// Update WC Blocks gateway config based on selected UPE payment method.
-		if (
-			getConfig( 'isSavedCardsEnabled' ) &&
-			! getConfig( 'cartContainsSubscription' )
-		) {
-			gatewayConfig.supports.showSaveOption =
-				paymentMethodsConfig[ event.value.type ].isReusable;
-		}
+		gatewayConfig.supports.showSaveOption =
+			paymentMethodsConfig[ event.value.type ].showSaveOption;
 
 		setIsUPEComplete( event.complete );
 		setSelectedUPEPaymentType( event.value.type );
@@ -376,19 +379,24 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 		getConfig( 'wcBlocksUPEAppearance' )
 	);
 	const [ fontRules ] = useState( getFontRulesFromPage() );
-	const [ fingerprint ] = useFingerprint();
+	const [ fingerprint, fingerprintErrorMessage ] = useFingerprint();
 
 	useEffect( () => {
 		async function generateUPEAppearance() {
 			// Generate UPE input styles.
 			const upeAppearance = getAppearance( true );
-			await api.saveUPEAppearance( upeAppearance, true );
+			await api.saveUPEAppearance( upeAppearance, 'true' );
 
 			// Update appearance state
 			setAppearance( upeAppearance );
 		}
 		if ( ! appearance ) {
 			generateUPEAppearance();
+		}
+
+		if ( fingerprintErrorMessage ) {
+			setErrorMessage( fingerprintErrorMessage );
+			return;
 		}
 
 		if ( paymentIntentId || hasRequestedIntent || ! fingerprint ) {
@@ -417,6 +425,7 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 		errorMessage,
 		appearance,
 		fingerprint,
+		fingerprintErrorMessage,
 	] );
 
 	if ( ! clientSecret ) {

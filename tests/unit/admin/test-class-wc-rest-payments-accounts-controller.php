@@ -6,6 +6,8 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Core\Server\Request\Get_Account;
+use WCPay\Core\Server\Response;
 use WCPay\Exceptions\API_Exception;
 
 /**
@@ -34,11 +36,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WCPAY_UnitTestCase {
 
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
-		if ( $this->is_wpcom() ) {
-			add_filter( 'wcpay_dev_mode', '__return_true' );
-		} else {
-			WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
-		}
+		WC_Payments::mode()->test();
 
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
 		$this->controller      = new WC_REST_Payments_Accounts_Controller( $this->mock_api_client );
@@ -54,10 +52,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		parent::tear_down();
 
-		if ( $this->is_wpcom() ) {
-			remove_filter( 'wcpay_dev_mode', '__return_true' );
-		}
-
+		WC_Payments::mode()->live();
 		WC_Payments::get_gateway()->update_option( 'test_mode', 'no' );
 
 		// Restore the original client.
@@ -72,17 +67,20 @@ class WC_REST_Payments_Accounts_Controller_Test extends WCPAY_UnitTestCase {
 			->expects( $this->atLeastOnce() )
 			->method( 'is_server_connected' )
 			->willReturn( true );
-		$this->mock_api_client
+
+		$this->mock_wcpay_request( Get_Account::class )
 			->expects( $this->once() )
-			->method( 'get_account_data' )
+			->method( 'format_response' )
 			->willReturn(
 				// We are providing only some of fields, needed for the assertions we are relying to.
-				[
-					'is_live'          => true,
-					'country'          => 'DE',
-					'status'           => 'complete',
-					'store_currencies' => [ 'default' => 'EUR' ],
-				]
+				new Response(
+					[
+						'is_live'          => true,
+						'country'          => 'DE',
+						'status'           => 'complete',
+						'store_currencies' => [ 'default' => 'EUR' ],
+					]
+				)
 			);
 
 		$response      = $this->controller->get_account_data( new WP_REST_Request( 'GET' ) );
@@ -100,12 +98,13 @@ class WC_REST_Payments_Accounts_Controller_Test extends WCPAY_UnitTestCase {
 			->expects( $this->atLeastOnce() )
 			->method( 'is_server_connected' )
 			->willReturn( true );
-		$this->mock_api_client
+
+		$this->mock_wcpay_request( Get_Account::class )
 			->expects( $this->once() )
-			->method( 'get_account_data' )
+			->method( 'format_response' )
 			->willReturn(
 				// Indicates that server connection is ok, but no connected accounts available.
-				[]
+				new Response( [] )
 			);
 
 		$response      = $this->controller->get_account_data( new WP_REST_Request( 'GET' ) );
@@ -124,9 +123,10 @@ class WC_REST_Payments_Accounts_Controller_Test extends WCPAY_UnitTestCase {
 			->expects( $this->atLeastOnce() )
 			->method( 'is_server_connected' )
 			->willReturn( true );
-		$this->mock_api_client
+
+		$this->mock_wcpay_request( Get_Account::class )
 			->expects( $this->once() )
-			->method( 'get_account_data' )
+			->method( 'format_response' )
 			->willThrowException(
 				new API_Exception( 'On-boarding unavailable.', 'wcpay_on_boarding_disabled', 401 )
 			);
@@ -147,14 +147,17 @@ class WC_REST_Payments_Accounts_Controller_Test extends WCPAY_UnitTestCase {
 			->expects( $this->atLeastOnce() )
 			->method( 'is_server_connected' )
 			->willReturn( true );
-		$this->mock_api_client
+
+		$this->mock_wcpay_request( Get_Account::class )
 			->expects( $this->once() )
-			->method( 'get_account_data' )
+			->method( 'format_response' )
 			->willReturn(
-				[
-					'is_live'               => true,
-					'card_present_eligible' => true,
-				]
+				new Response(
+					[
+						'is_live'               => true,
+						'card_present_eligible' => true,
+					]
+				)
 			);
 
 		$response      = $this->controller->get_account_data( new WP_REST_Request( 'GET' ) );

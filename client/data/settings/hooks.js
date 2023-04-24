@@ -59,6 +59,38 @@ export const useEnabledPaymentMethodIds = () => {
 	);
 };
 
+export const useSelectedPaymentMethod = () => {
+	const { updateSelectedPaymentMethod } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getEnabledPaymentMethodIds } = select( STORE_NAME );
+
+			return [
+				getEnabledPaymentMethodIds(),
+				updateSelectedPaymentMethod,
+			];
+		},
+		[ updateSelectedPaymentMethod ]
+	);
+};
+
+export const useUnselectedPaymentMethod = () => {
+	const { updateUnselectedPaymentMethod } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getEnabledPaymentMethodIds } = select( STORE_NAME );
+
+			return [
+				getEnabledPaymentMethodIds(),
+				updateUnselectedPaymentMethod,
+			];
+		},
+		[ updateUnselectedPaymentMethod ]
+	);
+};
+
 export const useDebugLog = () => {
 	const { updateIsDebugLogEnabled } = useDispatch( STORE_NAME );
 
@@ -510,41 +542,27 @@ export const usePlatformCheckoutLocations = () => {
 	} );
 };
 
-export const usePlatformCheckoutButtonType = () => {
-	const { updatePlatformCheckoutButtonType } = useDispatch( STORE_NAME );
+export const useCurrentProtectionLevel = () => {
+	const { updateProtectionLevel } = useDispatch( STORE_NAME );
 
-	return useSelect( ( select ) => {
-		const { getPlatformCheckoutButtonType } = select( STORE_NAME );
+	return useSelect(
+		( select ) => {
+			const { getCurrentProtectionLevel } = select( STORE_NAME );
 
-		return [
-			getPlatformCheckoutButtonType(),
-			updatePlatformCheckoutButtonType,
-		];
-	} );
+			return [ getCurrentProtectionLevel(), updateProtectionLevel ];
+		},
+		[ updateProtectionLevel ]
+	);
 };
 
-export const usePlatformCheckoutButtonSize = () => {
-	const { updatePlatformCheckoutButtonSize } = useDispatch( STORE_NAME );
+export const useAdvancedFraudProtectionSettings = () => {
+	const { updateAdvancedFraudProtectionSettings } = useDispatch( STORE_NAME );
 
 	return useSelect( ( select ) => {
-		const { getPlatformCheckoutButtonSize } = select( STORE_NAME );
-
+		const { getAdvancedFraudProtectionSettings } = select( STORE_NAME );
 		return [
-			getPlatformCheckoutButtonSize(),
-			updatePlatformCheckoutButtonSize,
-		];
-	} );
-};
-
-export const usePlatformCheckoutButtonTheme = () => {
-	const { updatePlatformCheckoutButtonTheme } = useDispatch( STORE_NAME );
-
-	return useSelect( ( select ) => {
-		const { getPlatformCheckoutButtonTheme } = select( STORE_NAME );
-
-		return [
-			getPlatformCheckoutButtonTheme(),
-			updatePlatformCheckoutButtonTheme,
+			getAdvancedFraudProtectionSettings(),
+			updateAdvancedFraudProtectionSettings,
 		];
 	} );
 };

@@ -24,6 +24,7 @@ interface Authorizations {
 	authorizations: Authorization[];
 	authorizationsError?: string;
 	isLoading: boolean;
+	isRequesting?: boolean;
 }
 
 export interface AuthorizationsSummary {
@@ -38,6 +39,7 @@ export interface AuthorizationsState {
 		[ x: string ]: { data?: AuthorizationsSummary; error?: string };
 	};
 	byId: Record< string, Authorization >;
+	isRequesting: boolean;
 }
 
 export interface GetAuthorizationsApiResponse {
@@ -52,6 +54,7 @@ export interface CaptureAuthorizationApiResponse {
 export interface GetAuthorizationApiResponse {
 	payment_intent_id: string;
 	is_captured: boolean;
+	created: string;
 }
 
 export interface UpdateAuthorizationAction {
@@ -77,10 +80,17 @@ export interface UpdateAuthorizationsSummaryAction {
 
 export interface SetErrorForAuthorizationsAction {
 	type: string;
+	query: Query;
 	error: string;
 }
 
 export interface SetErrorForAuthorizationsSummaryAction {
 	type: string;
+	query: Query;
 	error: string;
+}
+
+export interface SetIsRequestingAuthorizationsAction {
+	type: string;
+	data: boolean;
 }

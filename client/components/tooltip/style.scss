@@ -1,4 +1,10 @@
 .wcpay-tooltip {
+	&--click {
+		&__content-wrapper {
+			cursor: pointer;
+		}
+	}
+
 	&__content-wrapper {
 		// ensures that the element needed for position calculations isn't included in the DOM layout
 		display: contents;
@@ -37,6 +43,12 @@
 			transform: translate( -50%, 22px );
 			border: solid 15px transparent;
 			border-top-color: $gray-900;
+			// Ensure the tooltip arrow does not obscure the mouse target element.
+			pointer-events: none;
+		}
+
+		a {
+			color: $blue-medium;
 		}
 	}
 }

@@ -20,7 +20,7 @@ import LoadableCheckboxControl from 'components/loadable-checkbox';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 import PaymentMethodsMap from '../../payment-methods-map';
 import Pill from '../pill';
-import Tooltip from '../tooltip';
+import { HoverTooltip } from 'components/tooltip';
 import './payment-method-checkbox.scss';
 import { useManualCapture } from 'wcpay/data';
 
@@ -29,7 +29,7 @@ const PaymentMethodDescription = ( { name } ) => {
 	if ( ! description ) return null;
 
 	return (
-		<Tooltip content={ description }>
+		<HoverTooltip content={ description }>
 			<div className="payment-method-checkbox__info">
 				<VisuallyHidden>
 					{ __(
@@ -39,23 +39,36 @@ const PaymentMethodDescription = ( { name } ) => {
 				</VisuallyHidden>
 				<Icon icon="info-outline" />
 			</div>
-		</Tooltip>
+		</HoverTooltip>
 	);
 };
 
-const PaymentMethodCheckbox = ( { onChange, name, checked, fees, status } ) => {
+const PaymentMethodCheckbox = ( {
+	onChange,
+	name,
+	checked,
+	fees,
+	status,
+	required,
+	locked,
+} ) => {
 	const { accountFees } = useContext( WCPaySettingsContext );
 
 	const handleChange = useCallback(
 		( enabled ) => {
+			// If the payment method checkbox is locked, reject any changes.
+			if ( locked ) {
+				return;
+			}
+
 			onChange( name, enabled );
 		},
-		[ name, onChange ]
+		[ locked, name, onChange ]
 	);
 
 	const disabled = upeCapabilityStatuses.INACTIVE === status;
 
-	// Uncheck payment method if checked and disabled.
+	// Force uncheck payment method checkbox if it's checked and the payment method is disabled.
 	useEffect( () => {
 		if ( disabled && checked ) {
 			handleChange( false );
@@ -76,7 +89,7 @@ const PaymentMethodCheckbox = ( { onChange, name, checked, fees, status } ) => {
 			<LoadableCheckboxControl
 				label={ paymentMethod.label }
 				checked={ checked }
-				disabled={ disabled }
+				disabled={ disabled || locked }
 				onChange={ ( state ) => {
 					handleChange( state );
 				} }
@@ -92,10 +105,14 @@ const PaymentMethodCheckbox = ( { onChange, name, checked, fees, status } ) => {
 				<div className={ 'payment-method-checkbox__pills-left' }>
 					<span className="payment-method-checkbox__label">
 						{ paymentMethod.label }
+						{ required && (
+							<span className="payment-method-checkbox__required-label">
+								{ __( 'Required', 'woocommerce-payments' ) }
+							</span>
+						) }
 					</span>
-
 					{ upeCapabilityStatuses.PENDING_APPROVAL === status && (
-						<Tooltip
+						<HoverTooltip
 							content={ __(
 								'This payment method is pending approval. Once approved, you will be able to use it.',
 								'woocommerce-payments'
@@ -109,10 +126,10 @@ const PaymentMethodCheckbox = ( { onChange, name, checked, fees, status } ) => {
 									'woocommerce-payments'
 								) }
 							</Pill>
-						</Tooltip>
+						</HoverTooltip>
 					) }
 					{ upeCapabilityStatuses.PENDING_VERIFICATION === status && (
-						<Tooltip
+						<HoverTooltip
 							content={ sprintf(
 								__(
 									"%s won't be visible to your customers until you provide the required " +
@@ -133,10 +150,10 @@ const PaymentMethodCheckbox = ( { onChange, name, checked, fees, status } ) => {
 									'woocommerce-payments'
 								) }
 							</Pill>
-						</Tooltip>
+						</HoverTooltip>
 					) }
 					{ disabled && (
-						<Tooltip
+						<HoverTooltip
 							content={ sprintf(
 								__(
 									'To use %s, please contact WooCommerce support.',
@@ -151,11 +168,11 @@ const PaymentMethodCheckbox = ( { onChange, name, checked, fees, status } ) => {
 									'woocommerce-payments'
 								) }
 							</Pill>
-						</Tooltip>
+						</HoverTooltip>
 					) }
 				</div>
 				<div className={ 'payment-method-checkbox__pills-right' }>
-					<Tooltip
+					<HoverTooltip
 						content={ formatMethodFeesTooltip(
 							accountFees[ name ]
 						) }
@@ -176,7 +193,7 @@ const PaymentMethodCheckbox = ( { onChange, name, checked, fees, status } ) => {
 								) }
 							</span>
 						</Pill>
-					</Tooltip>
+					</HoverTooltip>
 					<PaymentMethodDescription name={ name } />
 				</div>
 			</div>

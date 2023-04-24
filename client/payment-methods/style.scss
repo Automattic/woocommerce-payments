@@ -27,10 +27,14 @@
 				margin-right: 4px;
 			}
 		}
+
+		.wcpay-pill {
+			padding: 2px $gap-smaller;
+		}
 	}
 
 	&__express-checkouts {
-		background: url( '../../assets/images/upe_preview_illustration.svg' )
+		background: url( 'assets/images/upe_preview_illustration.svg?asset' )
 			no-repeat right;
 		background-color: #f7edf7;
 		background-size: auto;

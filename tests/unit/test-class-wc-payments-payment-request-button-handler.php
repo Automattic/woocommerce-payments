@@ -89,11 +89,8 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 					'is_server_connected',
 					'capture_intention',
 					'cancel_intention',
-					'get_intent',
-					'create_and_confirm_setup_intent',
 					'get_setup_intent',
 					'get_payment_method',
-					'refund_charge',
 				]
 			)
 			->getMock();

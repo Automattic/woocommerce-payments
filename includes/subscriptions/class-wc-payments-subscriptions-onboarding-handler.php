@@ -180,17 +180,7 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 			return;
 		}
 
-		$script_src_url    = plugins_url( 'dist/subscription-product-onboarding-modal.js', WCPAY_PLUGIN_FILE );
-		$script_asset_path = WCPAY_ABSPATH . 'dist/subscription-product-onboarding-modal.asset.php';
-		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
-
-		wp_register_script(
-			'wcpay-subscription-product-onboarding-modal',
-			$script_src_url,
-			$script_asset['dependencies'],
-			WC_Payments::get_file_version( 'dist/subscription-product-onboarding-modal.js' ),
-			true
-		);
+		WC_Payments::register_script_with_dependencies( 'wcpay-subscription-product-onboarding-modal', 'dist/subscription-product-onboarding-modal' );
 
 		wp_localize_script(
 			'wcpay-subscription-product-onboarding-modal',
@@ -238,17 +228,7 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 			return;
 		}
 
-		$script_src_url    = plugins_url( 'dist/subscription-product-onboarding-toast.js', WCPAY_PLUGIN_FILE );
-		$script_asset_path = WCPAY_ABSPATH . 'dist/subscription-product-onboarding-toast.asset.php';
-		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
-
-		wp_register_script(
-			'wcpay-subscription-product-onboarding-toast',
-			$script_src_url,
-			$script_asset['dependencies'],
-			WC_Payments::get_file_version( 'dist/subscription-product-onboarding-toast.js' ),
-			true
-		);
+		WC_Payments::register_script_with_dependencies( 'wcpay-subscription-product-onboarding-toast', 'dist/subscription-product-onboarding-toast' );
 
 		wp_localize_script(
 			'wcpay-subscription-product-onboarding-toast',

@@ -3,14 +3,24 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card, CardBody, CardHeader } from '@wordpress/components';
+import {
+	Card,
+	CardBody,
+	CardHeader,
+	FlexItem,
+	FlexBlock,
+} from '@wordpress/components';
 import { Badge } from '@woocommerce/components';
-import { CollapsibleList, TaskItem, Text } from '@woocommerce/experimental';
+import { CollapsibleList, TaskItem } from '@woocommerce/experimental';
 import { useDispatch } from '@wordpress/data';
 import { useCallback, useEffect, useState } from '@wordpress/element';
 
-const DAY_IN_MS = 24 * 60 * 60 * 1000;
+/**
+ * Internal dependencies
+ */
+import { TIME } from '../../constants';
 
 const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 	const { createNotice } = useDispatch( 'core/notices' );
@@ -124,7 +134,7 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 	};
 
 	const remindTaskLater = async ( { key, onDismiss } ) => {
-		const dismissTime = Date.now() + DAY_IN_MS;
+		const dismissTime = Date.now() + TIME.DAY_IN_MS;
 		remindMeLaterTodoTasks[ key ] = dismissTime;
 		setVisibleTasks( getVisibleTasks() );
 
@@ -163,15 +173,15 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 			size="large"
 			className="woocommerce-task-card woocommerce-homescreen-card"
 		>
-			<CardHeader size="medium">
-				<div className="wooocommerce-task-card__header">
-					<Text variant="title.small">
-						{ __( 'Things to do', 'woocommerce-payments' ) }
-					</Text>
+			<CardHeader size="medium" justify="left">
+				<FlexItem>
+					{ __( 'Things to do', 'woocommerce-payments' ) }
+				</FlexItem>
+				<FlexBlock>
 					{ 0 < pendingTaskCount && (
 						<Badge count={ pendingTaskCount } />
 					) }
-				</div>
+				</FlexBlock>
 			</CardHeader>
 			<CardBody>
 				<CollapsibleList
@@ -192,6 +202,9 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 							showActionButton={ task.showActionButton }
 							expandable={ task.expandable }
 							expanded={ task.expanded }
+							enter={
+								task.enter !== undefined ? task.enter : false
+							}
 							action={
 								task.action !== undefined
 									? task.action

@@ -7,6 +7,7 @@
 
 namespace WCPay\MultiCurrency;
 
+use WC_Payments;
 use function http_build_query;
 use function implode;
 use function urldecode;
@@ -52,21 +53,7 @@ class CurrencySwitcherBlock {
 	 */
 	public function init_block_widget() {
 		// Automatically load dependencies and version.
-		$asset_file_path = WCPAY_ABSPATH . 'dist/multi-currency-switcher-block.asset.php';
-		$asset_file      = file_exists( $asset_file_path )
-			? require_once $asset_file_path
-			: [
-				'dependencies' => [],
-				'version'      => false,
-			];
-
-		wp_register_script(
-			'woocommerce-payments/multi-currency-switcher',
-			plugins_url( 'dist/multi-currency-switcher-block.js', WCPAY_PLUGIN_FILE ),
-			$asset_file['dependencies'],
-			$asset_file['version'],
-			true
-		);
+		WC_Payments::register_script_with_dependencies( 'woocommerce-payments/multi-currency-switcher', 'dist/multi-currency-switcher-block' );
 
 		register_block_type(
 			'woocommerce-payments/multi-currency-switcher',

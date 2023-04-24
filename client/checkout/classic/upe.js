@@ -1,6 +1,11 @@
 /* global jQuery */
 
 /**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import './style.scss';
@@ -189,6 +194,8 @@ jQuery( function ( $ ) {
 				fingerprint = visitorId;
 			} catch ( error ) {
 				// Do not mount element if fingerprinting is not available
+				showErrorCheckout( error.message );
+
 				return;
 			}
 		}
@@ -223,7 +230,7 @@ jQuery( function ( $ ) {
 			try {
 				const newIntent = isSetupIntent
 					? await api.initSetupIntent()
-					: await api.createIntent( fingerprint, orderId );
+					: await api.createIntent( { fingerprint, orderId } );
 				intentId = newIntent.id;
 				clientSecret = newIntent.client_secret;
 			} catch ( error ) {
@@ -393,7 +400,12 @@ jQuery( function ( $ ) {
 	 */
 	const checkUPEForm = async ( $form, returnUrl = '#' ) => {
 		if ( ! upeElement ) {
-			showErrorCheckout( 'Your payment information is incomplete.' );
+			showErrorCheckout(
+				__(
+					'Your payment information is incomplete.',
+					'woocommerce-payments'
+				)
+			);
 			return false;
 		}
 		if ( ! isUPEComplete ) {
@@ -441,13 +453,19 @@ jQuery( function ( $ ) {
 
 		try {
 			// Update payment intent with level3 data, customer and maybe setup for future use.
-			await api.updateIntent(
+			const updateResponse = await api.updateIntent(
 				paymentIntentId,
 				orderId,
 				savePaymentMethod,
 				$( '#wcpay_selected_upe_payment_type' ).val(),
 				$( '#wcpay_payment_country' ).val()
 			);
+
+			if ( updateResponse.data ) {
+				if ( api.handleDuplicatePayments( updateResponse.data ) ) {
+					return;
+				}
+			}
 
 			const { error } = await api.handlePaymentConfirmation(
 				elements,
@@ -523,6 +541,11 @@ jQuery( function ( $ ) {
 				formFields,
 				fingerprint ? fingerprint : ''
 			);
+
+			if ( api.handleDuplicatePayments( response ) ) {
+				return;
+			}
+
 			const redirectUrl = response.redirect_url;
 			const upeConfig = {
 				elements,
@@ -610,18 +633,6 @@ jQuery( function ( $ ) {
 				showErrorCheckout( errorMessage );
 			} );
 	};
-
-	/**
-	 * Checks if the customer is using a saved payment method.
-	 *
-	 * @return {boolean} Boolean indicating whether or not a saved payment method is being used.
-	 */
-	function isUsingSavedPaymentMethod() {
-		return (
-			$( '#wc-woocommerce_payments-payment-token-new' ).length &&
-			! $( '#wc-woocommerce_payments-payment-token-new' ).is( ':checked' )
-		);
-	}
 
 	/**
 	 * Returns the cached payment intent for the current cart state.
@@ -751,3 +762,19 @@ jQuery( function ( $ ) {
 		}
 	} );
 } );
+
+/**
+ * Checks if the customer is using a saved payment method.
+ *
+ * @return {boolean} Boolean indicating whether or not a saved payment method is being used.
+ */
+export function isUsingSavedPaymentMethod() {
+	return (
+		null !==
+			document.querySelector(
+				'#wc-woocommerce_payments-payment-token-new'
+			) &&
+		! document.querySelector( '#wc-woocommerce_payments-payment-token-new' )
+			.checked
+	);
+}

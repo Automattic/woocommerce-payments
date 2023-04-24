@@ -42,3 +42,10 @@
 		}
 	}
 }
+
+// WordPress/Title Small
+@mixin title-small {
+	font-size: 20px;
+	line-height: 28px;
+	font-weight: 400;
+}

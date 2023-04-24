@@ -1,5 +1,10 @@
 /** @format */
 
+/**
+ * Internal dependencies
+ */
+import { ProtectionLevel } from '../../settings/fraud-protection/advanced-settings/constants';
+
 const EMPTY_OBJ = {};
 const EMPTY_ARR = [];
 
@@ -201,14 +206,12 @@ export const getPlatformCheckoutLocations = ( state ) => {
 	);
 };
 
-export const getPlatformCheckoutButtonType = ( state ) => {
-	return getSettings( state ).platform_checkout_button_type || 'default';
+export const getCurrentProtectionLevel = ( state ) => {
+	return (
+		getSettings( state ).current_protection_level || ProtectionLevel.BASIC
+	);
 };
 
-export const getPlatformCheckoutButtonSize = ( state ) => {
-	return getSettings( state ).platform_checkout_button_size || 'default';
-};
-
-export const getPlatformCheckoutButtonTheme = ( state ) => {
-	return getSettings( state ).platform_checkout_button_theme || 'dark';
+export const getAdvancedFraudProtectionSettings = ( state ) => {
+	return getSettings( state ).advanced_fraud_protection_settings || EMPTY_OBJ;
 };

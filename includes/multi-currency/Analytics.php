@@ -64,7 +64,7 @@ class Analytics {
 			$this->register_customer_currencies();
 		}
 
-		if ( WC_Payments::get_gateway()->is_in_dev_mode() ) {
+		if ( WC_Payments::mode()->is_dev() ) {
 			add_filter( 'woocommerce_analytics_report_should_use_cache', [ $this, 'disable_report_caching' ] );
 		}
 
@@ -106,17 +106,7 @@ class Analytics {
 	 * @return void
 	 */
 	public function register_admin_scripts() {
-		$script_src_url    = plugins_url( 'dist/multi-currency-analytics.js', WCPAY_PLUGIN_FILE );
-		$script_asset_path = WCPAY_ABSPATH . 'dist/multi-currency-analytics.asset.php';
-		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
-
-		wp_register_script(
-			self::SCRIPT_NAME,
-			$script_src_url,
-			$script_asset['dependencies'],
-			\WC_Payments::get_file_version( 'dist/multi-currency-analytics.js' ),
-			true
-		);
+		WC_Payments::register_script_with_dependencies( self::SCRIPT_NAME, 'dist/multi-currency-analytics' );
 	}
 
 	/**

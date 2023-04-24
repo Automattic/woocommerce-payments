@@ -81,6 +81,20 @@ export function updateIsSavingSettings( isSaving, error ) {
 	};
 }
 
+export function updateSelectedPaymentMethod( id ) {
+	return {
+		type: ACTION_TYPES.SET_SELECTED_PAYMENT_METHOD,
+		id,
+	};
+}
+
+export function updateUnselectedPaymentMethod( id ) {
+	return {
+		type: ACTION_TYPES.SET_UNSELECTED_PAYMENT_METHOD,
+		id,
+	};
+}
+
 export function updateIsManualCaptureEnabled( isEnabled ) {
 	return updateSettingsValues( { is_manual_capture_enabled: isEnabled } );
 }
@@ -224,20 +238,18 @@ export function updatePlatformCheckoutStoreLogo( storeLogo ) {
 	} );
 }
 
-export function updatePlatformCheckoutButtonType( type ) {
-	return updateSettingsValues( { platform_checkout_button_type: type } );
-}
-
-export function updatePlatformCheckoutButtonSize( size ) {
-	return updateSettingsValues( { platform_checkout_button_size: size } );
-}
-
-export function updatePlatformCheckoutButtonTheme( theme ) {
-	return updateSettingsValues( { platform_checkout_button_theme: theme } );
-}
-
 export function updatePlatformCheckoutLocations( locations ) {
 	return updateSettingsValues( {
 		platform_checkout_enabled_locations: [ ...locations ],
+	} );
+}
+
+export function updateProtectionLevel( level ) {
+	return updateSettingsValues( { current_protection_level: level } );
+}
+
+export function updateAdvancedFraudProtectionSettings( settings ) {
+	return updateSettingsValues( {
+		advanced_fraud_protection_settings: settings,
 	} );
 }

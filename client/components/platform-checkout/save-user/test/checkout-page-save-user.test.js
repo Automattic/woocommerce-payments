@@ -4,6 +4,8 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+// eslint-disable-next-line import/no-unresolved
+import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
 
 /**
  * Internal dependencies
@@ -12,8 +14,6 @@ import CheckoutPageSaveUser from '../checkout-page-save-user';
 import usePlatformCheckoutUser from '../../hooks/use-platform-checkout-user';
 import useSelectedPaymentMethod from '../../hooks/use-selected-payment-method';
 import { getConfig } from 'utils/checkout';
-// eslint-disable-next-line import/no-unresolved
-import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
 
 jest.mock( '../../hooks/use-platform-checkout-user', () => jest.fn() );
 jest.mock( '../../hooks/use-selected-payment-method', () => jest.fn() );
@@ -55,16 +55,13 @@ describe( 'CheckoutPageSaveUser', () => {
 	it( 'should render checkbox for saving Platform Checkout user when user is not registered and selected payment method is card', () => {
 		render( <CheckoutPageSaveUser /> );
 		expect(
-			screen.queryByText( 'Remember your details?' )
-		).toBeInTheDocument();
-		expect(
 			screen.queryByLabelText(
-				'Save my information for faster checkouts'
+				'Save my information for a faster checkout'
 			)
 		).toBeInTheDocument();
 		expect(
 			screen.queryByLabelText(
-				'Save my information for faster checkouts'
+				'Save my information for a faster checkout'
 			)
 		).not.toBeChecked();
 	} );
@@ -74,11 +71,8 @@ describe( 'CheckoutPageSaveUser', () => {
 
 		render( <CheckoutPageSaveUser /> );
 		expect(
-			screen.queryByText( 'Remember your details?' )
-		).not.toBeInTheDocument();
-		expect(
 			screen.queryByLabelText(
-				'Save my information for faster checkouts'
+				'Save my information for a faster checkout'
 			)
 		).not.toBeInTheDocument();
 	} );
@@ -88,11 +82,8 @@ describe( 'CheckoutPageSaveUser', () => {
 
 		render( <CheckoutPageSaveUser /> );
 		expect(
-			screen.queryByText( 'Remember your details?' )
-		).not.toBeInTheDocument();
-		expect(
 			screen.queryByLabelText(
-				'Save my information for faster checkouts'
+				'Save my information for a faster checkout'
 			)
 		).not.toBeInTheDocument();
 	} );
@@ -104,11 +95,8 @@ describe( 'CheckoutPageSaveUser', () => {
 
 		render( <CheckoutPageSaveUser /> );
 		expect(
-			screen.queryByText( 'Remember your details?' )
-		).not.toBeInTheDocument();
-		expect(
 			screen.queryByLabelText(
-				'Save my information for faster checkouts'
+				'Save my information for a faster checkout'
 			)
 		).not.toBeInTheDocument();
 	} );
@@ -116,59 +104,39 @@ describe( 'CheckoutPageSaveUser', () => {
 	it( 'should render the save user form when checkbox is checked for classic checkout', () => {
 		render( <CheckoutPageSaveUser /> );
 
+		const label = screen.getByLabelText(
+			'Save my information for a faster checkout'
+		);
+
+		expect( label ).not.toBeChecked();
 		expect(
-			screen.queryByLabelText(
-				'Save my information for faster checkouts'
-			)
-		).not.toBeChecked();
-		expect(
-			screen.queryByLabelText( 'Mobile phone number' )
+			screen.queryByTestId( 'save-user-form' )
 		).not.toBeInTheDocument();
 
 		// click on the checkbox
-		userEvent.click(
-			screen.queryByLabelText(
-				'Save my information for faster checkouts'
-			)
-		);
+		userEvent.click( label );
 
-		expect(
-			screen.queryByLabelText(
-				'Save my information for faster checkouts'
-			)
-		).toBeChecked();
-		expect(
-			screen.queryByLabelText( 'Mobile phone number' )
-		).toBeInTheDocument();
+		expect( label ).toBeChecked();
+		expect( screen.queryByTestId( 'save-user-form' ) ).toBeInTheDocument();
 	} );
 
 	it( 'should render the save user form when checkbox is checked for blocks checkout', () => {
 		render( <CheckoutPageSaveUser isBlocksCheckout={ true } /> );
 
+		const label = screen.getByLabelText(
+			'Save my information for a faster and secure checkout'
+		);
+
+		expect( label ).not.toBeChecked();
 		expect(
-			screen.queryByLabelText(
-				'Save my information for faster checkouts'
-			)
-		).not.toBeChecked();
-		expect(
-			screen.queryByLabelText( 'Mobile phone number' )
+			screen.queryByTestId( 'save-user-form' )
 		).not.toBeInTheDocument();
 
 		// click on the checkbox
-		userEvent.click(
-			screen.queryByLabelText(
-				'Save my information for faster checkouts'
-			)
-		);
+		userEvent.click( label );
 
-		expect(
-			screen.queryByLabelText(
-				'Save my information for faster checkouts'
-			)
-		).toBeChecked();
-		expect(
-			screen.queryByLabelText( 'Mobile phone number' )
-		).toBeInTheDocument();
+		expect( label ).toBeChecked();
+		expect( screen.queryByTestId( 'save-user-form' ) ).toBeInTheDocument();
 	} );
 
 	it( 'should not call `extensionCartUpdate` on classic checkout when checkbox is clicked', () => {
@@ -181,7 +149,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		// click on the checkbox
 		userEvent.click(
 			screen.queryByLabelText(
-				'Save my information for faster checkouts'
+				'Save my information for a faster checkout'
 			)
 		);
 
@@ -202,20 +170,25 @@ describe( 'CheckoutPageSaveUser', () => {
 
 		render( <CheckoutPageSaveUser isBlocksCheckout={ true } /> );
 
+		const label = screen.getByLabelText(
+			'Save my information for a faster and secure checkout'
+		);
+
+		expect( label ).not.toBeChecked();
 		expect( extensionCartUpdate ).not.toHaveBeenCalled();
 
 		// click on the checkbox to select
-		userEvent.click(
-			screen.queryByLabelText(
-				'Save my information for faster checkouts'
-			)
-		);
+		userEvent.click( label );
 
+		expect( label ).toBeChecked();
 		await waitFor( () =>
 			expect( extensionCartUpdate ).toHaveBeenCalledWith( {
 				namespace: 'platform-checkout',
 				data: {
 					save_user_in_platform_checkout: true,
+					platform_checkout_source_url: 'http://localhost/',
+					platform_checkout_is_blocks: true,
+					platform_checkout_viewport: '0x0',
 					platform_checkout_user_phone_field: {
 						full: '+12015555555',
 					},
@@ -224,12 +197,68 @@ describe( 'CheckoutPageSaveUser', () => {
 		);
 
 		// click on the checkbox to unselect
-		userEvent.click(
-			screen.queryByLabelText(
-				'Save my information for faster checkouts'
-			)
+		userEvent.click( label );
+
+		expect( label ).not.toBeChecked();
+		await waitFor( () =>
+			expect( extensionCartUpdate ).toHaveBeenCalledWith( {
+				namespace: 'platform-checkout',
+				data: {},
+			} )
 		);
 
+		document.body.removeChild(
+			document.querySelector(
+				'button.wc-block-components-checkout-place-order-button'
+			)
+		);
+	} );
+
+	it( 'call `extensionCartUpdate` on blocks checkout when checkbox is clicked with a phone without country code', async () => {
+		jest.clearAllMocks();
+		extensionCartUpdate.mockResolvedValue( {} );
+		const placeOrderButton = document.createElement( 'button' );
+		placeOrderButton.classList.add(
+			'wc-block-components-checkout-place-order-button'
+		);
+		document.body.appendChild( placeOrderButton );
+		const phoneField = document.createElement( 'input' );
+		phoneField.setAttribute( 'id', 'phone' );
+		phoneField.value = '2015555555';
+		document.body.appendChild( phoneField );
+
+		render( <CheckoutPageSaveUser isBlocksCheckout={ true } /> );
+
+		const label = screen.getByLabelText(
+			'Save my information for a faster and secure checkout'
+		);
+
+		expect( label ).not.toBeChecked();
+		expect( extensionCartUpdate ).not.toHaveBeenCalled();
+
+		// click on the checkbox to select
+		userEvent.click( label );
+
+		expect( label ).toBeChecked();
+		await waitFor( () =>
+			expect( extensionCartUpdate ).toHaveBeenCalledWith( {
+				namespace: 'platform-checkout',
+				data: {
+					save_user_in_platform_checkout: true,
+					platform_checkout_source_url: 'http://localhost/',
+					platform_checkout_is_blocks: true,
+					platform_checkout_viewport: '0x0',
+					platform_checkout_user_phone_field: {
+						full: '+12015555555',
+					},
+				},
+			} )
+		);
+
+		// click on the checkbox to unselect
+		userEvent.click( label );
+
+		expect( label ).not.toBeChecked();
 		await waitFor( () =>
 			expect( extensionCartUpdate ).toHaveBeenCalledWith( {
 				namespace: 'platform-checkout',

@@ -29,7 +29,9 @@ import CapitalPage from 'capital';
 import PreviewReceiptPage from 'card-readers/preview-receipt';
 import OverviewPage from 'overview';
 import DocumentsPage from 'documents';
-import OnboardingPage from 'onboarding';
+import OnboardingExperimentPage from 'onboarding-experiment';
+import OnboardingPrototype from 'onboarding-prototype';
+import FraudProtectionAdvancedSettingsPage from './settings/fraud-protection/advanced-settings';
 import { getTasks } from 'overview/task-list/tasks';
 
 addFilter(
@@ -56,7 +58,7 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: OnboardingPage,
+			container: OnboardingExperimentPage,
 			path: '/payments/onboarding',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -65,6 +67,20 @@ addFilter(
 			],
 			navArgs: {
 				id: 'wc-payments-onboarding',
+			},
+			capability: 'manage_woocommerce',
+		} );
+
+		pages.push( {
+			container: OnboardingPrototype,
+			path: '/payments/onboarding-prototype',
+			wpOpenMenu: menuID,
+			breadcrumbs: [
+				rootLink,
+				__( 'Onboarding Prototype', 'woocommerce-payments' ),
+			],
+			navArgs: {
+				id: 'wc-payments-onboarding-prototype',
 			},
 			capability: 'manage_woocommerce',
 		} );
@@ -236,6 +252,17 @@ addFilter(
 				navArgs: {
 					id: 'wc-payments-documents',
 				},
+				capability: 'manage_woocommerce',
+			} );
+		}
+		if ( wcpaySettings && wcpaySettings.isFraudProtectionSettingsEnabled ) {
+			pages.push( {
+				container: FraudProtectionAdvancedSettingsPage,
+				path: '/payments/fraud-protection',
+				wpOpenMenu: 'toplevel_page_woocommerce',
+				breadcrumbs: [
+					__( 'WooCommerce Payments', 'woocommerce-payments' ),
+				],
 				capability: 'manage_woocommerce',
 			} );
 		}
