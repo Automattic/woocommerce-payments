@@ -120,9 +120,9 @@ trait WC_Payments_Subscriptions_Utilities {
 	}
 
 	/**
-	 * Gets the version of the Subscriptions core library running.
+	 * Gets the version of the subscriptions-core library.
 	 *
-	 * @return null|string The core Subscriptions libary version.
+	 * @return null|string The version number of subscriptions-core or null if not active.
 	 */
 	public function get_subscriptions_core_version() {
 		$subscriptions_core_instance = WC_Subscriptions_Core_Plugin::instance();
