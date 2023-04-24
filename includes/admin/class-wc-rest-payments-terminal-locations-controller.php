@@ -163,11 +163,9 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 			return rest_ensure_response( $this->extract_location_fields( $location ) );
 		} catch ( API_Exception $e ) {
 			$error = new WP_Error( $e->get_error_code(), $e->getMessage() );
-			// Stripe will return a 400 for incorrect city, state, or country.
-			// Ideally, we should return a more appropriate error code like 'store_address_is_incorrect',
-			// but that will break older mobile app clients.
-			// Until we have a more granular versioning support for WCPay REST endpoints,
-			// this is the best we can do.
+			// Stripe will return a 400 for incorrect city, state, or country. Ideally, we should return
+			// a more appropriate error code like 'store_address_is_incorrect', but that will break older mobile app clients.
+			// Until we have a more granular versioning support for WCPay REST endpoints, this is the best we can do.
 			if ( 'invalid_request_error' === $e->get_error_code() ) {
 				$error = new WP_Error(
 					'store_address_is_incomplete',
