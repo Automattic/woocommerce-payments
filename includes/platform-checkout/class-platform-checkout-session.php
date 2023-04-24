@@ -21,7 +21,20 @@ use WP_REST_Request;
  */
 class Platform_Checkout_Session {
 
-	const STORE_API_NAMESPACE = 'wc/store/v1';
+	const STORE_API_NAMESPACE_PATTERN = '@^wc/store(/v[\d]+)?$@';
+
+	/**
+	 * The Store API route patterns that should be handled by the Platform Checkout session handler.
+	 */
+	const STORE_API_ROUTE_PATTERNS = [
+		'@^/wc/store(/v[\d]+)?/cart$@',
+		'@^/wc/store(/v[\d]+)?/cart/apply-coupon$@',
+		'@^/wc/store(/v[\d]+)?/cart/remove-coupon$@',
+		'@^/wc/store(/v[\d]+)?/cart/select-shipping-rate$@',
+		'@^/wc/store(/v[\d]+)?/cart/update-customer$@',
+		'@^/wc/store(/v[\d]+)?/cart/update-item$@',
+		'@^/wc/store(/v[\d]+)?/checkout$@',
+	];
 
 	/**
 	 * Init the hooks.
@@ -46,7 +59,7 @@ class Platform_Checkout_Session {
 	public static function add_platform_checkout_store_api_session_handler( $response, $handler, WP_REST_Request $request ) {
 		$cart_token = $request->get_header( 'Cart-Token' );
 
-		if ( $cart_token && 0 === strpos( $request->get_route(), self::STORE_API_NAMESPACE ) && JsonWebToken::validate( $cart_token, '@' . wp_salt() ) ) {
+		if ( $cart_token && self::is_store_api_request() && JsonWebToken::validate( $cart_token, '@' . wp_salt() ) ) {
 			add_filter(
 				'woocommerce_session_handler',
 				function ( $session_handler ) {
@@ -67,7 +80,7 @@ class Platform_Checkout_Session {
 	 * @return \WP_User|null|int
 	 */
 	public static function determine_current_user_for_platform_checkout( $user ) {
-		if ( ! self::is_store_api_request() || ! self::is_request_from_woopay() ) {
+		if ( ! self::is_request_from_woopay() || ! self::is_store_api_request() ) {
 			return $user;
 		}
 
@@ -108,7 +121,8 @@ class Platform_Checkout_Session {
 				return null;
 			}
 
-			if ( self::STORE_API_NAMESPACE !== $payload->iss ) {
+			// Store API namespace is used as the token issuer.
+			if ( ! preg_match( self::STORE_API_NAMESPACE_PATTERN, $payload->iss ) ) {
 				return null;
 			}
 
@@ -133,22 +147,17 @@ class Platform_Checkout_Session {
 			return false;
 		}
 
-		/**
-		 * The request URI. This comment is here to satisfy Psalm.
-		 *
-		 * @var string
-		 */
-		$request_uri = urldecode( wp_parse_url( $_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH ) ); // phpcs:ignore
+		$url_parts    = wp_parse_url( $_SERVER['REQUEST_URI'] ?? '' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		$request_path = rtrim( $url_parts['path'], '/' );
+		$rest_route   = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
 
-		// Check if the request URI contains a URL traversal.
-		if ( strpos( $request_uri . '/', '../' ) !== false ) {
-			return false;
+		foreach ( self::STORE_API_ROUTE_PATTERNS as $pattern ) {
+			if ( 1 === preg_match( $pattern, $rest_route ) ) {
+				return true;
+			}
 		}
 
-		$request_uri   = home_url( esc_url( $request_uri ) );
-		$store_api_url = home_url( '/wp-json/wc/store/' );
-
-		return 0 === strpos( $request_uri, $store_api_url );
+		return false;
 	}
 
 	/**
