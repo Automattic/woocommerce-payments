@@ -147,7 +147,7 @@ class Platform_Checkout_Session {
 			return false;
 		}
 
-		$url_parts    = wp_parse_url( $_SERVER['REQUEST_URI'] ?? '' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		$url_parts    = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 		$request_path = rtrim( $url_parts['path'], '/' );
 		$rest_route   = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
 
