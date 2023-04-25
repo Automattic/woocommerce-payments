@@ -5,10 +5,10 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Constants\Payment_Method;
 use WCPay\Database_Cache;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
-use WCPay\Constants\Payment_Method;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -207,7 +207,7 @@ class WC_Payments_Customer_Service {
 	 *
 	 * @throws API_Exception We only handle 'resource_missing' code types and rethrow anything else.
 	 */
-	public function get_payment_methods_for_customer( $customer_id, $type = 'card' ) {
+	public function get_payment_methods_for_customer( $customer_id, $type = Payment_Method::CARD ) {
 		if ( ! $customer_id ) {
 			return [];
 		}

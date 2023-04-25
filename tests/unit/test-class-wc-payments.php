@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Payment_Method;
 use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
 
 /**
@@ -85,21 +86,21 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 			->method( 'get_payment_method_ids_enabled_at_checkout' )
 			->willReturn(
 				[
-					'link',
-					'card',
+					Payment_Method::LINK,
+					Payment_Method::CARD,
 				]
 			);
 		$card_gateway_mock
 			->expects( $this->once() )
 			->method( 'get_stripe_id' )
-			->willReturn( 'card' );
+			->willReturn( Payment_Method::CARD );
 		WC_Payments::set_gateway( $card_gateway_mock );
 
 		$registered_gateways = WC_Payments::register_gateway( [] );
 
 		$this->assertCount( 1, $registered_gateways );
 		$this->assertInstanceOf( UPE_Split_Payment_Gateway::class, $registered_gateways[0] );
-		$this->assertEquals( $registered_gateways[0]->get_stripe_id(), 'card' );
+		$this->assertEquals( $registered_gateways[0]->get_stripe_id(), Payment_Method::CARD );
 	}
 
 	public function test_rest_endpoints_validate_nonce() {

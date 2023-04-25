@@ -7,6 +7,8 @@
 
 namespace WCPay\Migrations;
 
+use WCPay\Constants\Payment_Method;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -49,7 +51,7 @@ class Update_Service_Data_From_Server {
 		// we have account data, do we have the fees for sofort/sepa/giropay/p24 etc?
 		// if we do, no need to migrate.
 		$account_fees = $this->account->get_fees();
-		if ( ! empty( $account_fees['giropay']['base'] ) ) {
+		if ( ! empty( $account_fees[ Payment_Method::GIROPAY ]['base'] ) ) {
 			return;
 		}
 

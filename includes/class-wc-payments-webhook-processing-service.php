@@ -463,7 +463,7 @@ class WC_Payments_Webhook_Processing_Service {
 		];
 
 		// Save mandate id, necessary for some subscription renewals.
-		$mandate_id = $event_data['object']['charges']['data'][0]['payment_method_details']['card']['mandate'] ?? null;
+		$mandate_id = $event_data['object']['charges']['data'][0]['payment_method_details'][ Payment_Method::CARD ]['mandate'] ?? null;
 		if ( $mandate_id ) {
 			$meta_data_to_update['_stripe_mandate_id'] = $mandate_id;
 		}

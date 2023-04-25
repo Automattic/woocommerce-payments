@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Constants\Payment_Method;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -150,7 +152,7 @@ class WC_REST_UPE_Flag_Toggle_Controller extends WP_REST_Controller {
 		$this->wcpay_gateway->update_option(
 			'upe_enabled_payment_method_ids',
 			[
-				'card',
+				Payment_Method::CARD,
 			]
 		);
 

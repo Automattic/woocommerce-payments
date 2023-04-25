@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Constants\Payment_Method;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Exceptions\API_Exception;
 
@@ -107,12 +108,12 @@ class WC_REST_Payments_Charges_Controller extends WC_Payments_REST_Controller {
 			'paydown'                => null,
 			'payment_intent'         => ! empty( $intent_id ) ? $intent_id : null,
 			'payment_method_details' => [
-				'card' => [
+				Payment_Method::CARD => [
 					'country' => $order->get_billing_country(),
 					'checks'  => [],
 					'network' => '',
 				],
-				'type' => 'card',
+				'type'               => Payment_Method::CARD,
 			],
 			'refunded'               => false,
 			'refunds'                => null,

@@ -90,7 +90,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 		add_action( "wc_ajax_wcpay_update_payment_intent_$this->stripe_id", [ $this, 'update_payment_intent_ajax' ] );
 		add_action( "wc_ajax_wcpay_init_setup_intent_$this->stripe_id", [ $this, 'init_setup_intent_ajax' ] );
 
-		if ( 'card' !== $this->stripe_id ) {
+		if ( Payment_Method::CARD !== $this->stripe_id ) {
 			$this->id           = self::GATEWAY_ID . '_' . $this->stripe_id;
 			$this->method_title = "WooCommerce Payments ($this->title)";
 		}
@@ -147,7 +147,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 * @return bool Result of the WCPay gateway checks if the card payment method is used, false otherwise.
 	 */
 	public function should_use_stripe_platform_on_checkout_page() {
-		if ( 'card' === $this->stripe_id ) {
+		if ( Payment_Method::CARD === $this->stripe_id ) {
 			return parent::should_use_stripe_platform_on_checkout_page();
 		}
 		return false;

@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Payment_Method;
+
 /**
  * WC_Payments_API_Charge unit tests.
  */
@@ -16,8 +18,8 @@ class WC_Payments_API_Charge_Test extends WCPAY_UnitTestCase {
 			'amount'                 => 1500,
 			'created'                => $created->getTimestamp(),
 			'payment_method_details' => [
-				'type' => 'card',
-				'card' => [
+				'type'               => Payment_Method::CARD,
+				Payment_Method::CARD => [
 					'brand'       => 'visa',
 					'checks'      => [
 						'address_line1_check'       => null,

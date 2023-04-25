@@ -8,6 +8,7 @@
 namespace WCPay\Core;
 
 use WCPay\Exceptions\API_Exception;
+use WCPay\Constants\Payment_Method;
 use WC_Payments_Customer_Service;
 use WP_User;
 use \WC_Customer;
@@ -94,7 +95,7 @@ class WC_Payments_Customer_Service_API {
 	 *
 	 * @throws API_Exception We only handle 'resource_missing' code types and rethrow anything else.
 	 */
-	public function get_payment_methods_for_customer( $customer_id, $type = 'card' ) {
+	public function get_payment_methods_for_customer( $customer_id, $type = Payment_Method::CARD ) {
 		return $this->customer_service->get_payment_methods_for_customer( $customer_id, $type );
 	}
 

@@ -75,7 +75,7 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WCPAY_Uni
 
 	public function test_it_should_not_update_available_currencies_when_enabled_payment_methods_do_not_need_it() {
 		$this->multi_currency_mock->expects( $this->never() )->method( $this->anything() );
-		$this->gateway_mock->expects( $this->atLeastOnce() )->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card' ] );
+		$this->gateway_mock->expects( $this->atLeastOnce() )->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ Payment_Method::CARD ] );
 
 		$this->payment_methods_compatibility->add_missing_currencies();
 	}

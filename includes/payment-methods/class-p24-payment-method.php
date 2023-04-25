@@ -8,13 +8,14 @@
 namespace WCPay\Payment_Methods;
 
 use WC_Payments_Token_Service;
+use WCPay\Constants\Payment_Method;
 
 /**
  * P24 Payment Method class extending UPE base class
  */
 class P24_Payment_Method extends UPE_Payment_Method {
 
-	const PAYMENT_METHOD_STRIPE_ID = 'p24';
+	const PAYMENT_METHOD_STRIPE_ID = Payment_Method::P24;
 
 	/**
 	 * Constructor for P24 payment method

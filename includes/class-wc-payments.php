@@ -11,8 +11,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use Automattic\WooCommerce\StoreApi\StoreApi;
 use Automattic\WooCommerce\StoreApi\RoutesController;
+use WCPay\Blocks_Data_Extractor;
+use WCPay\Constants\Payment_Method;
 use WCPay\Core\Mode;
 use WCPay\Core\Server\Request;
+use WCPay\Core\WC_Payments_Customer_Service_API;
+use WCPay\Database_Cache;
 use WCPay\Logger;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
@@ -33,12 +37,9 @@ use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 use WCPay\Platform_Checkout\Platform_Checkout_Order_Status_Sync;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Session_Rate_Limiter;
-use WCPay\Database_Cache;
 use WCPay\WC_Payments_Checkout;
 use WCPay\WC_Payments_UPE_Checkout;
 use WCPay\WooPay\Service\Checkout_Service;
-use WCPay\Core\WC_Payments_Customer_Service_API;
-use WCPay\Blocks_Data_Extractor;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -473,7 +474,7 @@ class WC_Payments {
 				self::$upe_payment_gateway_map[ $payment_method->get_id() ] = new UPE_Split_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service );
 			}
 
-			self::$card_gateway         = self::get_payment_gateway_by_id( 'card' );
+			self::$card_gateway         = self::get_payment_gateway_by_id( Payment_Method::CARD );
 			$card_payments_checkout     = new WC_Payments_Checkout( self::$legacy_card_gateway, self::$platform_checkout_util, self::$account, self::$customer_service );
 			self::$wc_payments_checkout = new WC_Payments_UPE_Checkout( self::get_gateway(), self::$platform_checkout_util, self::$account, self::$customer_service );
 		} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
@@ -662,7 +663,7 @@ class WC_Payments {
 
 			$payment_methods = self::$card_gateway->get_payment_method_ids_enabled_at_checkout();
 
-			$key = array_search( 'link', $payment_methods, true );
+			$key = array_search( Payment_Method::LINK, $payment_methods, true );
 
 			if ( false !== $key && self::$platform_checkout_button_handler->is_woopay_enabled() ) {
 				unset( $payment_methods[ $key ] );
@@ -678,7 +679,7 @@ class WC_Payments {
 			$all_upe_gateways = [];
 			$reusable_methods = [];
 			foreach ( $payment_methods as $payment_method_id ) {
-				if ( 'card' === $payment_method_id || 'link' === $payment_method_id ) {
+				if ( Payment_Method::CARD === $payment_method_id || Payment_Method::LINK === $payment_method_id ) {
 					continue;
 				}
 				$upe_gateway        = self::get_payment_gateway_by_id( $payment_method_id );

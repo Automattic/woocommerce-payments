@@ -68,14 +68,14 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	public function test_add_token_to_user() {
 		$expiry_year         = intval( gmdate( 'Y' ) ) + 1;
 		$mock_payment_method = [
-			'id'   => 'pm_mock',
-			'card' => [
+			'id'                 => 'pm_mock',
+			Payment_Method::CARD => [
 				'brand'     => 'visa',
 				'last4'     => '4242',
 				'exp_month' => 6,
 				'exp_year'  => $expiry_year,
 			],
-			'type' => Payment_Method::CARD,
+			'type'               => Payment_Method::CARD,
 		];
 
 		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
@@ -94,11 +94,11 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_add_token_to_user_for_sepa() {
 		$mock_payment_method = [
-			'id'         => 'pm_mock',
-			'sepa_debit' => [
+			'id'                 => 'pm_mock',
+			Payment_Method::SEPA => [
 				'last4' => '3000',
 			],
-			'type'       => Payment_Method::SEPA,
+			'type'               => Payment_Method::SEPA,
 		];
 
 		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
@@ -115,11 +115,11 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_add_token_to_user_for_link() {
 		$mock_payment_method = [
-			'id'   => 'pm_mock',
-			'link' => [
+			'id'                 => 'pm_mock',
+			Payment_Method::LINK => [
 				'email' => 'test@test.com',
 			],
-			'type' => Payment_Method::LINK,
+			'type'               => Payment_Method::LINK,
 		];
 
 		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
@@ -134,14 +134,14 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	public function test_add_payment_method_to_user() {
 		$expiry_year         = intval( gmdate( 'Y' ) ) + 1;
 		$mock_payment_method = [
-			'id'   => 'pm_mock',
-			'card' => [
+			'id'                 => 'pm_mock',
+			Payment_Method::CARD => [
 				'brand'     => 'visa',
 				'last4'     => '4242',
 				'exp_month' => 6,
 				'exp_year'  => $expiry_year,
 			],
-			'type' => Payment_Method::CARD,
+			'type'               => Payment_Method::CARD,
 		];
 
 		$this->mock_api_client
@@ -539,9 +539,9 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 
 	private function generate_card_pm_response( $stripe_id ) {
 		return [
-			'type' => Payment_Method::CARD,
-			'id'   => $stripe_id,
-			'card' => [
+			'type'               => Payment_Method::CARD,
+			'id'                 => $stripe_id,
+			Payment_Method::CARD => [
 				'brand'     => 'visa',
 				'last4'     => '4242',
 				'exp_month' => 6,
@@ -552,9 +552,9 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 
 	private function generate_sepa_pm_response( $stripe_id ) {
 		return [
-			'type'       => Payment_Method::SEPA,
-			'id'         => $stripe_id,
-			'sepa_debit' => [
+			'type'               => Payment_Method::SEPA,
+			'id'                 => $stripe_id,
+			Payment_Method::SEPA => [
 				'last4' => '1234',
 			],
 		];
@@ -562,9 +562,9 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 
 	private function generate_link_pm_response( $stripe_id ) {
 		return [
-			'type' => Payment_Method::LINK,
-			'id'   => $stripe_id,
-			'link' => [
+			'type'               => Payment_Method::LINK,
+			'id'                 => $stripe_id,
+			Payment_Method::LINK => [
 				'email' => 'test@test.com',
 			],
 		];

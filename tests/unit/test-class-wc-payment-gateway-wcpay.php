@@ -15,6 +15,7 @@ use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Core\Server\Response;
 use WCPay\Constants\Order_Status;
+use WCPay\Constants\Payment_Method;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
@@ -1855,7 +1856,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// There is no payment method data within the request. This is the case e.g. for the automatic subscription renewals.
 		$_POST['payment_method'] = '';
 
-		$expected_upe_payment_method = 'card';
+		$expected_upe_payment_method = Payment_Method::CARD;
 		$order                       = WC_Helper_Order::create_order();
 		$order->set_currency( 'USD' );
 		$order->set_total( 100 );
@@ -1891,7 +1892,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 	public function test_process_payment_for_order_cc_payment_method() {
 		$payment_method                              = 'woocommerce_payments';
-		$expected_upe_payment_method_for_pi_creation = 'card';
+		$expected_upe_payment_method_for_pi_creation = Payment_Method::CARD;
 		$order                                       = WC_Helper_Order::create_order();
 		$order->set_currency( 'USD' );
 		$order->set_total( 100 );
@@ -1914,7 +1915,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 	public function test_process_payment_for_order_upe_payment_method() {
 		$payment_method                              = 'woocommerce_payments_sepa_debit';
-		$expected_upe_payment_method_for_pi_creation = 'sepa_debit';
+		$expected_upe_payment_method_for_pi_creation = Payment_Method::SEPA;
 		$order                                       = WC_Helper_Order::create_order();
 		$order->set_currency( 'USD' );
 		$order->set_total( 100 );

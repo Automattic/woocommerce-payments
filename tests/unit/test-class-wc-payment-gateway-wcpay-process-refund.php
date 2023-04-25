@@ -8,6 +8,7 @@
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Payment_Method;
 use WCPay\Core\Server\Request\List_Charge_Refunds;
 use WCPay\Core\Server\Request\Refund_Charge;
 use WCPay\Core\Server\Response;
@@ -395,7 +396,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 				[
 					'id'     => $payment_method_id,
 					'object' => 'payment_method',
-					'type'   => 'interac_present',
+					'type'   => Payment_Method::INTERAC_PRESENT,
 				]
 			);
 
@@ -471,7 +472,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 			$request->expects( $this->once() )
 				->method( 'format_response' )
 				->willReturn(
-					WC_Helper_Intention::create_intention( [ 'charge' => [ 'payment_method_details' => [ 'type' => 'interac_present' ] ] ] )
+					WC_Helper_Intention::create_intention( [ 'charge' => [ 'payment_method_details' => [ 'type' => Payment_Method::INTERAC_PRESENT ] ] ] )
 				);
 
 		$list_request = $this->mock_wcpay_request( List_Charge_Refunds::class );
@@ -551,7 +552,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 				[
 					'id'     => $payment_method_id,
 					'object' => 'payment_method',
-					'type'   => 'interac_present',
+					'type'   => Payment_Method::INTERAC_PRESENT,
 				]
 			);
 
@@ -607,7 +608,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 				[
 					'id'     => $payment_method_id,
 					'object' => 'payment_method',
-					'type'   => 'interac_present',
+					'type'   => Payment_Method::INTERAC_PRESENT,
 				]
 			);
 
@@ -678,7 +679,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 				[
 					'id'     => $payment_method_id,
 					'object' => 'payment_method',
-					'type'   => 'card_present',
+					'type'   => Payment_Method::CARD_PRESENT,
 				]
 			);
 

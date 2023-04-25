@@ -5,6 +5,8 @@
  * @package WooCommerce\Emails
  */
 
+use WCPay\Constants\Payment_Method;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -219,8 +221,8 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 				wc_get_template(
 					'emails/plain/email-ipp-receipt-compliance-details.php',
 					[
-						'payment_method_details' => $charge['payment_method_details']['card_present'],
-						'receipt'                => $charge['payment_method_details']['card_present']['receipt'],
+						'payment_method_details' => $charge['payment_method_details'][ Payment_Method::CARD_PRESENT ],
+						'receipt'                => $charge['payment_method_details'][ Payment_Method::CARD_PRESENT ]['receipt'],
 					],
 					'',
 					WCPAY_ABSPATH . 'templates/'
@@ -229,8 +231,8 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 				wc_get_template(
 					'emails/email-ipp-receipt-compliance-details.php',
 					[
-						'payment_method_details' => $charge['payment_method_details']['card_present'],
-						'receipt'                => $charge['payment_method_details']['card_present']['receipt'],
+						'payment_method_details' => $charge['payment_method_details'][ Payment_Method::CARD_PRESENT ],
+						'receipt'                => $charge['payment_method_details'][ Payment_Method::CARD_PRESENT ]['receipt'],
 					],
 					'',
 					WCPAY_ABSPATH . 'templates/'

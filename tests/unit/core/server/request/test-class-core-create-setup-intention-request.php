@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Payment_Method;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request\Create_Setup_Intention;
 
@@ -50,7 +51,7 @@ class Create_Setup_Intention_Test extends WCPAY_UnitTestCase {
 
 	public function test_exception_will_throw_if_customer_id_is_not_set() {
 		$request = new Create_Setup_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
-		$request->set_payment_method_types( [ 'card' ] );
+		$request->set_payment_method_types( [ Payment_Method::CARD ] );
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
 		$request->get_params();
 	}
@@ -62,10 +63,10 @@ class Create_Setup_Intention_Test extends WCPAY_UnitTestCase {
 	}
 	public function test_create_intent_request_will_be_created() {
 		$customer = 'cus_1';
-		$pm       = [ 'card' ];
+		$pm       = [ Payment_Method::CARD ];
 		$request  = new Create_Setup_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$request->set_customer( 'cus_1' );
-		$request->set_payment_method_types( [ 'card' ] );
+		$request->set_payment_method_types( [ Payment_Method::CARD ] );
 		$this->assertInstanceOf( Create_Setup_Intention::class, $request );
 		$params = $request->get_params();
 

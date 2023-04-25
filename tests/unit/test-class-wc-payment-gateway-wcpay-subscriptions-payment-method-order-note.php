@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Payment_Method;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Session_Rate_Limiter;
 
@@ -213,7 +214,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 			->with( $payment_method_id )
 			->willReturn(
 				[
-					'card' => [
+					Payment_Method::CARD => [
 						'last4' => $this->last4digits[3],
 					],
 				]
@@ -268,7 +269,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 			->with( $payment_method_id )
 			->willReturn(
 				[
-					'card' => [
+					Payment_Method::CARD => [
 						'last4' => $this->last4digits[3],
 					],
 				]
@@ -318,7 +319,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 			->with( $payment_method_id )
 			->willReturn(
 				[
-					'card' => [
+					Payment_Method::CARD => [
 						'last4' => $this->last4digits[3],
 					],
 				]

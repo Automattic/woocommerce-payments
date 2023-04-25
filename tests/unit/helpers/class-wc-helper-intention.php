@@ -6,6 +6,7 @@
  */
 
 use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Payment_Method;
 /**
  * Class WC_Helper_Intention.
  *
@@ -27,8 +28,8 @@ class WC_Helper_Intention {
 				'created'                => new DateTime( '2022-05-20 19:05:38' ),
 				'amount'                 => 5000,
 				'payment_method_details' => [
-					'type' => 'card',
-					'card' => [
+					'type'               => Payment_Method::CARD,
+					Payment_Method::CARD => [
 						'network' => 'visa',
 						'funding' => 'credit',
 					],

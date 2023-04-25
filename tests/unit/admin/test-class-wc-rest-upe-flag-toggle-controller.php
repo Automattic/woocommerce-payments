@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Payment_Method;
 use WCPay\Database_Cache;
 use WCPay\Session_Rate_Limiter;
 
@@ -127,8 +128,8 @@ class WC_REST_UPE_Flag_Toggle_Controller_Test extends WCPAY_UnitTestCase {
 		$this->gateway->update_option(
 			'upe_enabled_payment_method_ids',
 			[
-				'card',
-				'giropay',
+				Payment_Method::CARD,
+				Payment_Method::GIROPAY,
 			]
 		);
 		update_option( '_wcpay_feature_upe', '1' );
@@ -143,7 +144,7 @@ class WC_REST_UPE_Flag_Toggle_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'disabled', get_option( '_wcpay_feature_upe', null ) );
 		$this->assertEquals(
 			[
-				'card',
+				Payment_Method::CARD,
 			],
 			$this->gateway->get_option(
 				'upe_enabled_payment_method_ids'

@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Payment_Method;
+
 /**
  * WC_Payments_In_Person_Payments_Receipts_Service_Test unit tests.
  */
@@ -51,7 +53,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WCPAY_UnitTes
 				'number' => $mock_order->get_id(),
 			],
 			'payment_method_details' => [
-				'card_present' => [
+				Payment_Method::CARD_PRESENT => [
 					'brand'   => 'test',
 					'last4'   => 'Test',
 					'receipt' => [
@@ -177,28 +179,28 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WCPAY_UnitTes
 			[
 				[
 					'amount_captured'        => '42',
-					'payment_method_details' => [ 'card_present' => 'value' ],
+					'payment_method_details' => [ Payment_Method::CARD_PRESENT => 'value' ],
 				],
 				'Payment method details needs to be provided.',
 			],
 			[
 				[
 					'amount_captured'        => '42',
-					'payment_method_details' => [ 'card_present' => [] ],
+					'payment_method_details' => [ Payment_Method::CARD_PRESENT => [] ],
 				],
 				'Payment method details needs to be provided.',
 			],
 			[
 				[
 					'amount_captured'        => '42',
-					'payment_method_details' => [ 'card_present' => [ 'last4' => 'test' ] ],
+					'payment_method_details' => [ Payment_Method::CARD_PRESENT => [ 'last4' => 'test' ] ],
 				],
 				'Error validating payment information. Missing key: brand',
 			],
 			[
 				[
 					'amount_captured'        => '42',
-					'payment_method_details' => [ 'card_present' => [ 'brand' => 'test' ] ],
+					'payment_method_details' => [ Payment_Method::CARD_PRESENT => [ 'brand' => 'test' ] ],
 				],
 				'Error validating payment information. Missing key: last4',
 			],
@@ -206,7 +208,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WCPAY_UnitTes
 				[
 					'amount_captured'        => '42',
 					'payment_method_details' => [
-						'card_present' => [
+						Payment_Method::CARD_PRESENT => [
 							'brand' => 'test',
 							'last4' => 'test',
 						],
@@ -218,7 +220,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WCPAY_UnitTes
 				[
 					'amount_captured'        => '42',
 					'payment_method_details' => [
-						'card_present' => [
+						Payment_Method::CARD_PRESENT => [
 							'brand'   => 'test',
 							'last4'   => 'test',
 							'receipt' => [],
@@ -231,7 +233,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WCPAY_UnitTes
 				[
 					'amount_captured'        => '42',
 					'payment_method_details' => [
-						'card_present' => [
+						Payment_Method::CARD_PRESENT => [
 							'brand'   => 'test',
 							'last4'   => 'test',
 							'receipt' => [
@@ -247,7 +249,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WCPAY_UnitTes
 				[
 					'amount_captured'        => '42',
 					'payment_method_details' => [
-						'card_present' => [
+						Payment_Method::CARD_PRESENT => [
 							'brand'   => 'test',
 							'last4'   => 'test',
 							'receipt' => [

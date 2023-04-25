@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Payment_Method;
+
 /**
  * Class WC_Payments_Notes_Set_Up_StripeLink tests.
  */
@@ -39,7 +41,7 @@ class WC_Payments_Notes_Set_Up_StripeLink_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_stripelink_setup_get_note() {
-		$this->mock_gateway_data( '1', [ 'card', 'link' ], [ 'card' ] );
+		$this->mock_gateway_data( '1', [ Payment_Method::CARD, Payment_Method::LINK ], [ Payment_Method::CARD ] );
 
 		$note = \WC_Payments_Notes_Set_Up_StripeLink::get_note();
 
@@ -56,7 +58,7 @@ class WC_Payments_Notes_Set_Up_StripeLink_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_stripelink_setup_note_null_when_upe_disabled() {
-		$this->mock_gateway_data( '0', [ 'card', 'link' ], [ 'card' ] );
+		$this->mock_gateway_data( '0', [ Payment_Method::CARD, Payment_Method::LINK ], [ Payment_Method::CARD ] );
 
 		$note = \WC_Payments_Notes_Set_Up_StripeLink::get_note();
 
@@ -64,7 +66,7 @@ class WC_Payments_Notes_Set_Up_StripeLink_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_stripelink_setup_note_null_when_link_not_available() {
-		$this->mock_gateway_data( '1', [ 'card' ], [ 'card' ] );
+		$this->mock_gateway_data( '1', [ Payment_Method::CARD ], [ Payment_Method::CARD ] );
 
 		$note = \WC_Payments_Notes_Set_Up_StripeLink::get_note();
 
@@ -72,7 +74,7 @@ class WC_Payments_Notes_Set_Up_StripeLink_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_stripelink_setup_note_null_when_link_enabled() {
-		$this->mock_gateway_data( '1', [ 'card', 'link' ], [ 'card', 'link' ] );
+		$this->mock_gateway_data( '1', [ Payment_Method::CARD, Payment_Method::LINK ], [ Payment_Method::CARD, Payment_Method::LINK ] );
 
 		$note = \WC_Payments_Notes_Set_Up_StripeLink::get_note();
 

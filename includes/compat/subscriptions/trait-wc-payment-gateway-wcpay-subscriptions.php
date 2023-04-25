@@ -9,15 +9,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Constants\Payment_Type;
+use WCPay\Constants\Payment_Initiated_By;
+use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Payment_Method;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Logger;
 use WCPay\Payment_Information;
-use WCPay\Constants\Payment_Type;
-use WCPay\Constants\Payment_Initiated_By;
-use WCPay\Constants\Payment_Intent_Status;
 
 /**
  * Gateway class for WooCommerce Payments, with added compatibility with WooCommerce Subscriptions.
@@ -672,9 +673,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			try {
 				$payment_method_id = $payment_information->get_payment_method();
 				$payment_method    = $this->payments_api_client->get_payment_method( $payment_method_id );
-				if ( ! empty( $payment_method['card']['last4'] ) ) {
+				if ( ! empty( $payment_method[ Payment_Method::CARD ]['last4'] ) ) {
 					// translators: 1: payment method likely credit card, 2: last 4 digit.
-					return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $new_payment_method_title, $payment_method['card']['last4'] );
+					return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $new_payment_method_title, $payment_method[ Payment_Method::CARD ]['last4'] );
 				}
 			} catch ( Exception $e ) {
 				Logger::error( $e );
@@ -898,8 +899,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return $result;
 		}
 
-		$result['setup_future_usage']                                = 'off_session';
-		$result['payment_method_options']['card']['mandate_options'] = [
+		$result['setup_future_usage'] = 'off_session';
+		$result['payment_method_options'][ Payment_Method::CARD ]['mandate_options'] = [
 			'reference'       => $order->get_id(),
 			'amount'          => $amount,
 			'amount_type'     => 'fixed',
@@ -914,9 +915,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		// - Set interval to sporadic, to not follow any specific interval.
 		// - Unset interval count, because it doesn't apply anymore.
 		if ( 1 < count( $subscriptions ) ) {
-			$result['card']['mandate_options']['amount_type'] = 'maximum';
-			$result['card']['mandate_options']['interval']    = 'sporadic';
-			unset( $result['card']['mandate_options']['interval_count'] );
+			$result[ Payment_Method::CARD ]['mandate_options']['amount_type'] = 'maximum';
+			$result[ Payment_Method::CARD ]['mandate_options']['interval']    = 'sporadic';
+			unset( $result[ Payment_Method::CARD ]['mandate_options']['interval_count'] );
 		}
 
 		return $result;
@@ -931,8 +932,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @return void
 	 */
 	public function maybe_add_customer_notification_note( WC_Order $order, array $processing = [] ) {
-		$approval_requested = $processing['card']['customer_notification']['approval_requested'] ?? false;
-		$completes_at       = $processing['card']['customer_notification']['completes_at'] ?? null;
+		$approval_requested = $processing[ Payment_Method::CARD ]['customer_notification']['approval_requested'] ?? false;
+		$completes_at       = $processing[ Payment_Method::CARD ]['customer_notification']['completes_at'] ?? null;
 		if ( $approval_requested && $completes_at ) {
 			$attempt_date = wp_date( get_option( 'date_format', 'F j, Y' ), $completes_at, wp_timezone() );
 			$attempt_time = wp_date( get_option( 'time_format', 'g:i a' ), $completes_at, wp_timezone() );

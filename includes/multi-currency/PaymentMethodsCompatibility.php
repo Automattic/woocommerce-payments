@@ -63,7 +63,7 @@ class PaymentMethodsCompatibility {
 		$payment_methods_needing_currency = array_reduce(
 			$enabled_payment_method_ids,
 			function ( $result, $method ) {
-				if ( in_array( $method, [ 'card', 'card_present' ], true ) ) {
+				if ( in_array( $method, [ Payment_Method::CARD, Payment_Method::CARD_PRESENT ], true ) ) {
 					return $result;
 				}
 				$method_key = Payment_Method::search( $method );

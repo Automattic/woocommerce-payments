@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Constants\Payment_Method;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -54,8 +56,8 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 				'business_name'          => $settings['business_name'],
 				'line_items'             => $line_items_data,
 				'order'                  => $order_data,
-				'payment_method_details' => $charge['payment_method_details']['card_present'],
-				'receipt'                => $charge['payment_method_details']['card_present']['receipt'],
+				'payment_method_details' => $charge['payment_method_details'][ Payment_Method::CARD_PRESENT ],
+				'receipt'                => $charge['payment_method_details'][ Payment_Method::CARD_PRESENT ]['receipt'],
 				'support_address'        => $settings['support_info']['address'],
 				'support_email'          => $settings['support_info']['email'],
 				'support_phone'          => $settings['support_info']['phone'],
@@ -137,19 +139,19 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 			throw new \RuntimeException( 'Captured amount needs to be provided.' );
 		}
 
-		if ( empty( $charge['payment_method_details']['card_present'] ) || ! is_array( $charge['payment_method_details']['card_present'] ) ) {
+		if ( empty( $charge['payment_method_details'][ Payment_Method::CARD_PRESENT ] ) || ! is_array( $charge['payment_method_details'][ Payment_Method::CARD_PRESENT ] ) ) {
 			throw new \RuntimeException( 'Payment method details needs to be provided.' );
 		}
 
 		$this->validate_required_fields(
 			[ 'brand', 'last4', 'receipt' ],
-			$charge['payment_method_details']['card_present'],
+			$charge['payment_method_details'][ Payment_Method::CARD_PRESENT ],
 			'Error validating payment information'
 		);
 
 		$this->validate_required_fields(
 			[ 'application_preferred_name', 'dedicated_file_name', 'account_type' ],
-			$charge['payment_method_details']['card_present']['receipt'],
+			$charge['payment_method_details'][ Payment_Method::CARD_PRESENT ]['receipt'],
 			'Error validating receipt information'
 		);
 

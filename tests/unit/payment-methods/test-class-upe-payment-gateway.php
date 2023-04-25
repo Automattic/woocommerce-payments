@@ -167,7 +167,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( 'US' );
 
 		$payment_methods = [
-			'link' => [
+			Payment_Method::LINK => [
 				'base' => 0.1,
 			],
 		];
@@ -654,7 +654,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$this->set_get_upe_enabled_payment_method_statuses_return_value();
 
-		$this->mock_upe_gateway->create_payment_intent( [ 'card' ], $order_id );
+		$this->mock_upe_gateway->create_payment_intent( [ Payment_Method::CARD ], $order_id );
 	}
 
 	public function test_create_payment_intent_with_manual_capture() {
@@ -682,7 +682,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$this->set_get_upe_enabled_payment_method_statuses_return_value();
 
-		$this->mock_upe_gateway->create_payment_intent( [ 'card' ], $order_id );
+		$this->mock_upe_gateway->create_payment_intent( [ Payment_Method::CARD ], $order_id );
 	}
 
 	public function test_create_payment_intent_with_fingerprint() {
@@ -703,7 +703,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$request
 			->expects( $this->once() )
 			->method( 'set_payment_method_types' )
-			->with( [ 'card' ] );
+			->with( [ Payment_Method::CARD ] );
 		$request
 			->expects( $this->once() )
 			->method( 'set_metadata' )
@@ -718,7 +718,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->willReturn( $intent );
 		$this->set_get_upe_enabled_payment_method_statuses_return_value();
 
-		$this->mock_upe_gateway->create_payment_intent( [ 'card' ], $order_id, $fingerprint );
+		$this->mock_upe_gateway->create_payment_intent( [ Payment_Method::CARD ], $order_id, $fingerprint );
 	}
 
 	public function test_create_payment_intent_with_no_fingerprint() {
@@ -739,7 +739,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->willReturn( $intent );
 		$this->set_get_upe_enabled_payment_method_statuses_return_value();
 
-		$this->mock_upe_gateway->create_payment_intent( [ 'card' ], $order_id );
+		$this->mock_upe_gateway->create_payment_intent( [ Payment_Method::CARD ], $order_id );
 	}
 
 	public function test_create_setup_intent_existing_customer() {
@@ -775,7 +775,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$this->set_cart_contains_subscription_items( false );
 
-		$result = $this->mock_upe_gateway->create_setup_intent( [ 'card' ] );
+		$result = $this->mock_upe_gateway->create_setup_intent( [ Payment_Method::CARD ] );
 
 		$this->assertEquals( 'seti_mock', $result['id'] );
 		$this->assertEquals( 'client_secret_mock', $result['client_secret'] );
@@ -812,7 +812,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$this->set_cart_contains_subscription_items( false );
 
-		$result = $this->mock_upe_gateway->create_setup_intent( [ 'card' ] );
+		$result = $this->mock_upe_gateway->create_setup_intent( [ Payment_Method::CARD ] );
 
 		$this->assertEquals( 'seti_mock', $result['id'] );
 		$this->assertEquals( 'client_secret_mock', $result['client_secret'] );
@@ -1315,7 +1315,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			'status'                 => $intent_status,
 			'payment_method'         => $payment_method_id,
 			'payment_method_options' => [
-				'card' => [
+				Payment_Method::CARD => [
 					'request_three_d_secure' => 'automatic',
 				],
 			],
@@ -1449,7 +1449,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			'type' => Payment_Method::BANCONTACT,
 		];
 		$sepa_details              = [
-			'type' => Payment_Method::SEPA_DEBIT,
+			'type' => Payment_Method::SEPA,
 		];
 		$ideal_details             = [
 			'type' => Payment_Method::IDEAL,
@@ -1533,7 +1533,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			'type' => Payment_Method::EPS,
 		];
 		$mock_sepa_details       = [
-			'type' => Payment_Method::SEPA_DEBIT,
+			'type' => Payment_Method::SEPA,
 		];
 		$mock_ideal_details      = [
 			'type' => Payment_Method::IDEAL,
@@ -1729,7 +1729,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$this->set_get_upe_enabled_payment_method_statuses_return_value();
 
-		$this->mock_upe_gateway->create_payment_intent( [ 'card' ], $order->get_id() );
+		$this->mock_upe_gateway->create_payment_intent( [ Payment_Method::CARD ], $order->get_id() );
 	}
 
 	public function test_create_payment_intent_creates_new_intent_with_minimum_amount() {
@@ -1765,7 +1765,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			);
 		$this->set_get_upe_enabled_payment_method_statuses_return_value();
 
-		$result = $this->mock_upe_gateway->create_payment_intent( [ 'card' ], $order->get_id() );
+		$result = $this->mock_upe_gateway->create_payment_intent( [ Payment_Method::CARD ], $order->get_id() );
 		$this->assertsame( 'cs_mock', $result['client_secret'] );
 	}
 
@@ -1972,14 +1972,14 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertSame(
 			$upe_checkout->get_payment_fields_js_config()['paymentMethodsConfig'],
 			[
-				'card' => [
+				Payment_Method::CARD => [
 					'isReusable'     => true,
 					'title'          => 'Credit card / debit card',
 					'icon'           => $this->icon_url,
 					'showSaveOption' => true,
 
 				],
-				'link' => [
+				Payment_Method::LINK => [
 					'isReusable'     => true,
 					'title'          => 'Link',
 					'icon'           => $this->icon_url,

@@ -13,8 +13,8 @@ use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Intent_Status;
-use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Method;
+use WCPay\Constants\Payment_Type;
 use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
 use WCPay\Core\Mode;
 use WCPay\Core\Server\Request\Cancel_Intention;
@@ -362,7 +362,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'upe_enabled_payment_method_ids'   => [
 				'title'   => __( 'Payments accepted on checkout', 'woocommerce-payments' ),
 				'type'    => 'multiselect',
-				'default' => [ 'card' ],
+				'default' => [ Payment_Method::CARD ],
 				'options' => [],
 			],
 			'payment_request_button_size'      => [
@@ -1077,7 +1077,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( ! empty( $upe_payment_method ) && 'woocommerce_payments' !== $upe_payment_method ) {
 				$payment_methods = [ str_replace( 'woocommerce_payments_', '', $upe_payment_method ) ];
 			} elseif ( WC_Payments_Features::is_upe_split_enabled() ) {
-				$payment_methods = [ 'card' ];
+				$payment_methods = [ Payment_Method::CARD ];
 			} else {
 				$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
 			}
@@ -1304,8 +1304,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
 			$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : null;
 
-			if ( $order->get_meta( 'is_woopay' ) && 'card' === $payment_method_type && isset( $payment_method_details['card']['last4'] ) ) {
-				$order->add_meta_data( 'last4', $payment_method_details['card']['last4'], true );
+			if ( $order->get_meta( 'is_woopay' ) && Payment_Method::CARD === $payment_method_type && isset( $payment_method_details[ Payment_Method::CARD ]['last4'] ) ) {
+				$order->add_meta_data( 'last4', $payment_method_details[ Payment_Method::CARD ]['last4'], true );
 				$order->save_meta_data();
 			}
 		} else {
@@ -3134,7 +3134,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return $this->get_option(
 			'upe_enabled_payment_method_ids',
 			[
-				'card',
+				Payment_Method::CARD,
 			]
 		);
 	}
@@ -3192,7 +3192,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function get_selected_stripe_payment_type_id() {
 		return [
-			'card',
+			Payment_Method::CARD,
 		];
 	}
 
@@ -3205,7 +3205,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function get_payment_method_ids_enabled_at_checkout( $order_id = null, $force_currency_check = false ) {
 		return [
-			'card',
+			Payment_Method::CARD,
 		];
 	}
 
@@ -3228,7 +3228,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function get_upe_available_payment_methods() {
 		return [
-			'card',
+			Payment_Method::CARD,
 		];
 	}
 

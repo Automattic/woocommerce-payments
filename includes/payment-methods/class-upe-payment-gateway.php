@@ -866,8 +866,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$setup_intent      = $this->payments_api_client->get_setup_intent( $setup_intent_id );
 			$payment_method_id = $setup_intent['payment_method'];
 			// TODO: When adding SEPA and Sofort, we will need a new API call to get the payment method and from there get the type.
-			// Leaving 'card' as a hardcoded value for now to avoid the extra API call.
-			$payment_method = $this->payment_methods['card'];
+			// Leaving  Payment_Method::CARD  as a hardcoded value for now to avoid the extra API call.
+			$payment_method = $this->payment_methods[ Payment_Method::CARD ];
 
 			return $payment_method->get_payment_token_for_user( $user, $payment_method_id );
 		} catch ( Exception $e ) {
@@ -1062,7 +1062,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			}
 
 			if ( 0 === count( $enabled_payment_methods ) ) {
-				$title = $this->payment_methods['card']->get_title();
+				$title = $this->payment_methods[ Payment_Method::CARD ]->get_title();
 			}
 		}
 		return $title;
@@ -1251,7 +1251,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return UPE_Payment_Method
 	 */
 	public function get_payment_method() {
-		return $this->payment_methods['card'];
+		return $this->payment_methods[ Payment_Method::CARD ];
 	}
 
 	/**

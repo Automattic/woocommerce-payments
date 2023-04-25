@@ -180,7 +180,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		$enabled_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
 
 		foreach ( $enabled_payment_methods as $payment_method_id ) {
-			if ( 'card' === $payment_method_id && WC_Payments_Features::is_upe_split_enabled() && $this->is_woopay_enabled() ) {
+			if ( Payment_Method::CARD === $payment_method_id && WC_Payments_Features::is_upe_split_enabled() && $this->is_woopay_enabled() ) {
 				continue;
 			}
 			// Link by Stripe should be validated with available fees.

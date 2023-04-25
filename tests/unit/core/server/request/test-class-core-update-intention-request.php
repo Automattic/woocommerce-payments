@@ -6,9 +6,9 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Payment_Method;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request\Update_Intention;
-
 /**
  * WCPay\Core\Server\Update_Intention_Test unit tests.
  */
@@ -61,7 +61,7 @@ class Update_Intention_Test extends WCPAY_UnitTestCase {
 		$currency     = 'usd';
 		$cs           = 'cus_1';
 		$country      = 'usa';
-		$payment_type = 'card';
+		$payment_type = Payment_Method::CARD;
 		$intent_id    = 'pi_1';
 
 		$request = new Update_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client, $intent_id );

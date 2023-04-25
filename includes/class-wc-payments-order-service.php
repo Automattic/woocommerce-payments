@@ -8,6 +8,7 @@
 use WCPay\Constants\Fraud_Meta_Box_Type;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Payment_Method;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Fraud_Prevention\Models\Rule;
 use WCPay\Logger;
@@ -1526,6 +1527,6 @@ class WC_Payments_Order_Service {
 	 * @return bool
 	 */
 	private function intent_has_card_payment_type( $intent_data ): bool {
-		return isset( $intent_data['payment_method_type'] ) && 'card' === $intent_data['payment_method_type'];
+		return isset( $intent_data['payment_method_type'] ) && Payment_Method::CARD === $intent_data['payment_method_type'];
 	}
 }

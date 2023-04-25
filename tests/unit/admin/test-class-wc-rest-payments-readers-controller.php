@@ -7,6 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_REST_Payments_Reader_Controller as Controller;
+use WCPay\Constants\Payment_Method;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Constants\Payment_Intent_Status;
@@ -600,7 +601,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 				'number' => $order_id,
 			],
 			'payment_method_details' => [
-				'card_present' => [
+				Payment_Method::CARD_PRESENT => [
 					'brand'   => 'test',
 					'last4'   => 'Test',
 					'receipt' => [

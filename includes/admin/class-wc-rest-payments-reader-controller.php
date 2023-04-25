@@ -8,6 +8,7 @@
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Payment_Method;
 use WCPay\Exceptions\API_Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -23,7 +24,7 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 	const PREVIEW_RECEIPT_CHARGE_DATA = [
 		'amount_captured'        => 0,
 		'payment_method_details' => [
-			'card_present' => [
+			Payment_Method::CARD_PRESENT => [
 				'brand'   => 'Sample',
 				'last4'   => '0000',
 				'receipt' => [

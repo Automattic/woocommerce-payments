@@ -8,13 +8,14 @@
 namespace WCPay\Payment_Methods;
 
 use WC_Payments_Token_Service;
+use WCPay\Constants\Payment_Method;
 
 /**
  * Becs Payment Method class extending UPE base class
  */
 class Becs_Payment_Method extends UPE_Payment_Method {
 
-	const PAYMENT_METHOD_STRIPE_ID = 'au_becs_debit';
+	const PAYMENT_METHOD_STRIPE_ID = Payment_Method::BECS;
 
 	/**
 	 * Constructor for Becs payment method

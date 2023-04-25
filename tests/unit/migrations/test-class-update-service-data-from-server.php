@@ -9,6 +9,7 @@ namespace WCPay\Migrations;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPAY_UnitTestCase;
+use WCPay\Constants\Payment_Method;
 
 /**
  * WCPay\Migrations\Update_Service_Data_From_Server unit tests.
@@ -49,13 +50,13 @@ class Update_Service_Data_From_Server_Test extends WCPAY_UnitTestCase {
 					'account_id' => 'acct_xxxxx',
 					'is_live'    => true,
 					'fees'       => [
-						'base'     => [
+						'base'                  => [
 							'percentage_rate' => 0.029,
 							'fixed_rate'      => 30,
 							'currency'        => 'usd',
 						],
-						'discount' => [],
-						'card'     =>
+						'discount'              => [],
+						Payment_Method::CARD    =>
 							[
 								'base'     => [
 									'percentage_rate' => 0.029,
@@ -64,7 +65,7 @@ class Update_Service_Data_From_Server_Test extends WCPAY_UnitTestCase {
 								],
 								'discount' => [],
 							],
-						'giropay'  =>
+						Payment_Method::GIROPAY =>
 							[
 								'base'     => [
 									'percentage_rate' => 0.014,
@@ -90,13 +91,13 @@ class Update_Service_Data_From_Server_Test extends WCPAY_UnitTestCase {
 					'account_id' => 'acct_xxxxx',
 					'is_live'    => true,
 					'fees'       => [
-						'base'     => [
+						'base'               => [
 							'percentage_rate' => 0.029,
 							'fixed_rate'      => 30,
 							'currency'        => 'usd',
 						],
-						'discount' => [],
-						'card'     =>
+						'discount'           => [],
+						Payment_Method::CARD =>
 							[
 								'base'     => [
 									'percentage_rate' => 0.029,

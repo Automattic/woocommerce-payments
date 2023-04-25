@@ -8,6 +8,7 @@
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Payment_Method;
 use WCPay\Database_Cache;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
@@ -615,7 +616,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 						'id'                     => $charge_id         = 'py_123123123123123',
 						'payment_method'         => $payment_method_id = 'pm_foo',
 						'payment_method_details' => [
-							'type' => 'card',
+							'type' => Payment_Method::CARD,
 						],
 					],
 				],
@@ -697,7 +698,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 						'id'                     => $charge_id         = 'py_123123123123123',
 						'payment_method'         => $payment_method_id = 'pm_foo',
 						'payment_method_details' => [
-							'type' => 'card',
+							'type' => Payment_Method::CARD,
 						],
 					],
 				],
@@ -861,7 +862,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 					[
 						'id'                     => 'py_123123123123123',
 						'payment_method_details' => [
-							'type' => 'card_present',
+							'type' => Payment_Method::CARD_PRESENT,
 						],
 					],
 				],
@@ -954,10 +955,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 						'id'                     => $charge_id         = 'py_123123123123123',
 						'payment_method'         => $payment_method_id = 'pm_foo',
 						'payment_method_details' => [
-							'card' => [
+							Payment_Method::CARD => [
 								'mandate' => $mandate_id = 'mandate_123123123',
 							],
-							'type' => 'card',
+							'type'               => Payment_Method::CARD,
 						],
 					],
 				],
@@ -1040,7 +1041,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 						'id'                     => 'py_123123123123123',
 						'payment_method'         => 'pm_123123123123123', // Payment method ID.
 						'payment_method_details' => [
-							'type' => 'us_bank_account',
+							'type' => Payment_Method::US_BANK_ACCOUNT,
 						],
 					],
 				],
@@ -1049,7 +1050,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				'message'        => 'error message',
 				'payment_method' => [
 					'id'   => 'pm_123123123123123',
-					'type' => 'us_bank_account',
+					'type' => Payment_Method::US_BANK_ACCOUNT,
 				],
 			],
 			'currency'           => 'usd',
@@ -1116,7 +1117,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				'decline_code'   => 'debit_notification_undelivered',
 				'payment_method' => [
 					'id'   => 'pm_123123123123123',
-					'type' => 'us_bank_account',
+					'type' => Payment_Method::US_BANK_ACCOUNT,
 				],
 			],
 			'currency'           => 'usd',
