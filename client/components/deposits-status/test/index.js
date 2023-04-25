@@ -71,6 +71,17 @@ describe( 'DepositsStatus', () => {
 		expect( depositsStatus ).toMatchSnapshot();
 	} );
 
+	test( 'renders pending verification status', async () => {
+		const { container: depositsStatus } = renderDepositsStatus( {
+			status: 'blocked',
+			accountStatus: 'pending_verification',
+			interval: 'daily',
+			iconSize: 20,
+		} );
+
+		expect( depositsStatus ).toMatchSnapshot();
+	} );
+
 	test( 'renders manual status', async () => {
 		const { container: depositsStatus, findByText } = renderDepositsStatus(
 			{
@@ -93,10 +104,16 @@ describe( 'DepositsStatus', () => {
 		expect( depositsStatus ).toMatchSnapshot();
 	} );
 
-	function renderDepositsStatus( { status, interval, iconSize } ) {
+	function renderDepositsStatus( {
+		status,
+		interval,
+		accountStatus,
+		iconSize,
+	} ) {
 		return render(
 			<DepositsStatus
 				status={ status }
+				accountStatus={ accountStatus }
 				interval={ interval }
 				iconSize={ iconSize }
 			/>
