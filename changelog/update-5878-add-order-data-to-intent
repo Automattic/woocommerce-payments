@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Replace fraud status logic to use the same data from the fraud meta box.

@@ -12,8 +12,8 @@ to catalog our packages and provide guidance to a developer who wants to test an
 ## Some Notes on Packages
 * A lot of our JavaScript dev dependencies are provided by WordPress or WooCommerce globally at runtime, we include them
   as dev dependencies so that we aren't duplicating them in our build bundle but our unit tests can still pass by
-  having them available. This means we should keep the versions of these packages on the highest version avaiable in our
-  supported versions of WordPress and WooCommerce, giving us the best chance of catching any issues with the bundled
+  having them available. This means we should keep the versions of these packages on the highest version available in our
+  minimum supported versions of [WordPress](https://github.com/WordPress/wordpress-develop/blob/x.y.z/package.json) and [WooCommerce](https://github.com/woocommerce/woocommerce/blob/x.y.z/plugins/woocommerce/package.json) (replace `x.y.z` by the minimum supported version in the link), giving us the best chance of catching any issues with the bundled
   packages early.
 * Following on from above, we use the `@woocommerce/dependency-extraction-webpack-plugin` to make WebPack aware of what
   can be found globally at runtime. The configuration for this can be found in 
@@ -43,6 +43,8 @@ to catalog our packages and provide guidance to a developer who wants to test an
 | [husky](https://www.npmjs.com/package/husky) |  Used to run hooks pre/post commit, like automatically running PHPCS. | Check out another branch `composer install` should run automatically. |  |
 | [lodash](https://www.npmjs.com/package/lodash) | Lodash makes JavaScript easier by taking the hassle out of working with arrays, numbers, objects, strings, etc. | JS tests should pass. |  |
 | [node](https://www.npmjs.com/package/node) | Not a package, but we declare the supported version of node in our `.nvmrc` file. We use node to build the JavaScript for the plugin and run the JavaScript unit tests. | Ensure you're running the new version of node by running the `nvm use` command or manually setting up the correct version. For minor and patch upgrades testing that the build runs is sufficient. For major versions, smoke testing the running plugin would be advised. | |
+| [@woocommerce/currency](https://www.npmjs.com/package/@woocommerce/currency) | A collection of utilities to display and work with currency values. | JS tests should pass.	 | |
+| [@wordpress/url](https://www.npmjs.com/package/@wordpress/url) | A collection of utilities to manipulate URLs.| JS unit tests are passing| |
 
 ### PHP Runtime Dependencies
 | Package Name | Usage Summary | Testing | Notes |

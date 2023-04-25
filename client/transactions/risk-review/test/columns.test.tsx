@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { FraudOutcomeStatus } from '../../../data';
+import { FraudMetaBoxType, FraudOutcomeStatus } from '../../../data';
 import {
 	getRiskReviewListColumns,
 	getRiskReviewListColumnsStructure,
@@ -39,6 +39,7 @@ describe( 'Review fraud outcome transactions columns', () => {
 			status: 'requires_capture',
 		},
 		status: 'review' as FraudOutcomeStatus,
+		fraud_meta_box_type: 'review' as FraudMetaBoxType,
 	};
 
 	beforeEach( () => {

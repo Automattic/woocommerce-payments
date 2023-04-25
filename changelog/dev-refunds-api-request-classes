@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Migrated refunds API endpoints to request classes
