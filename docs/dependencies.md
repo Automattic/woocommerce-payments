@@ -45,7 +45,7 @@ to catalog our packages and provide guidance to a developer who wants to test an
 | [node](https://www.npmjs.com/package/node) | Not a package, but we declare the supported version of node in our `.nvmrc` file. We use node to build the JavaScript for the plugin and run the JavaScript unit tests. | Ensure you're running the new version of node by running the `nvm use` command or manually setting up the correct version. For minor and patch upgrades testing that the build runs is sufficient. For major versions, smoke testing the running plugin would be advised. | |
 | [@woocommerce/currency](https://www.npmjs.com/package/@woocommerce/currency) | A collection of utilities to display and work with currency values. | JS tests should pass.	 | |
 | [@wordpress/url](https://www.npmjs.com/package/@wordpress/url) | A collection of utilities to manipulate URLs.| JS unit tests are passing| |
-
+| [@wordpress/api-fetch](https://www.npmjs.com/package/@wordpress/api-fetch) | Utility to make WordPress REST API requests. | JS tests should pass. | |
 ### PHP Runtime Dependencies
 | Package Name | Usage Summary | Testing | Notes |
 | ------------ | ------------- | ------- | ----- |
