@@ -27,13 +27,13 @@ class Platform_Checkout_Session {
 	 * The Store API route patterns that should be handled by the Platform Checkout session handler.
 	 */
 	const STORE_API_ROUTE_PATTERNS = [
-		'@^/wc/store(/v[\d]+)?/cart$@',
-		'@^/wc/store(/v[\d]+)?/cart/apply-coupon$@',
-		'@^/wc/store(/v[\d]+)?/cart/remove-coupon$@',
-		'@^/wc/store(/v[\d]+)?/cart/select-shipping-rate$@',
-		'@^/wc/store(/v[\d]+)?/cart/update-customer$@',
-		'@^/wc/store(/v[\d]+)?/cart/update-item$@',
-		'@^/wc/store(/v[\d]+)?/checkout$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/apply-coupon$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/remove-coupon$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/select-shipping-rate$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/update-customer$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/update-item$@',
+		'@^\/wc\/store(\/v[\d]+)?\/checkout$@',
 	];
 
 	/**
