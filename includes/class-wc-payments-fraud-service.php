@@ -130,7 +130,11 @@ class WC_Payments_Fraud_Service {
 		}
 		WC()->initialize_session();
 		$session_handler = WC()->session;
-		$cookie          = $session_handler->get_session_cookie();
+		// The Store API SessionHandler (used by WooPay) doesn't provide this method.
+		if ( ! method_exists( $session_handler, 'get_session_cookie' ) ) {
+			return false;
+		}
+		$cookie = $session_handler->get_session_cookie();
 		if ( ! $cookie ) {
 			return false;
 		}
@@ -186,6 +190,10 @@ class WC_Payments_Fraud_Service {
 
 		$session_handler = WC()->session;
 		if ( ! $session_handler ) {
+			return null;
+		}
+		// The Store API SessionHandler (used by WooPay) doesn't provide this method.
+		if ( ! method_exists( $session_handler, 'get_session_cookie' ) ) {
 			return null;
 		}
 		$cookie = $session_handler->get_session_cookie();
