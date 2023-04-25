@@ -28,5 +28,11 @@
 		<MissingFile errorLevel="suppress" />
 		<DuplicateClass errorLevel="suppress" />
 		<InvalidGlobal errorLevel="suppress" />
+		<UndefinedClass>
+			<errorLevel type="suppress">
+				<referencedClass name="Automattic\WooCommerce\StoreApi\Utilities\JsonWebToken" />
+				<referencedClass name="Automattic\WooCommerce\StoreApi\SessionHandler" />
+			</errorLevel>
+		</UndefinedClass>
 	</issueHandlers>
 </psalm>
