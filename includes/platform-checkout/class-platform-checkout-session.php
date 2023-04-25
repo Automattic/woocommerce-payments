@@ -59,7 +59,12 @@ class Platform_Checkout_Session {
 	public static function add_platform_checkout_store_api_session_handler( $response, $handler, WP_REST_Request $request ) {
 		$cart_token = $request->get_header( 'Cart-Token' );
 
-		if ( $cart_token && self::is_store_api_request() && JsonWebToken::validate( $cart_token, '@' . wp_salt() ) ) {
+		if (
+			$cart_token &&
+			self::is_store_api_request() &&
+			class_exists( JsonWebToken::class ) &&
+			JsonWebToken::validate( $cart_token, '@' . wp_salt() )
+		) {
 			add_filter(
 				'woocommerce_session_handler',
 				function ( $session_handler ) {
@@ -109,6 +114,10 @@ class Platform_Checkout_Session {
 	 */
 	private static function get_user_id_from_cart_token() {
 		if ( ! isset( $_SERVER['HTTP_CART_TOKEN'] ) ) {
+			return null;
+		}
+
+		if ( ! class_exists( JsonWebToken::class ) ) {
 			return null;
 		}
 
