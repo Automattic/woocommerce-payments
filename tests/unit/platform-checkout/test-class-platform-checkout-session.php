@@ -12,6 +12,9 @@ use Automattic\WooCommerce\StoreApi\Utilities\JsonWebToken;
 
 /**
  * Platform_Checkout_Session unit tests.
+ *
+ * @runTestsInSeparateProcesses
+ * @preserveGlobalState disabled
  */
 class Platform_Checkout_Session_Test extends WP_UnitTestCase {
 
@@ -91,9 +94,8 @@ class Platform_Checkout_Session_Test extends WP_UnitTestCase {
 		$_SERVER['HTTP_USER_AGENT'] = 'WooPay';
 		$_SERVER['REQUEST_URI']     = '/wp-json/wc/store/cart';
 		$_SERVER['HTTP_CART_TOKEN'] = $cart_token;
-		if ( ! defined( 'REST_REQUEST' ) ) {
-			define( 'REST_REQUEST', true );
-		}
+		// The `runTestsInSeparateProcesses` annotation is necessary because of this constant.
+		define( 'REST_REQUEST', true );
 
 		// Set WooPay as enabled.
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
