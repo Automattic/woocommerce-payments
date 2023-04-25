@@ -623,8 +623,8 @@ class WC_Payments_Admin {
 		}
 
 		// TODO: Try to enqueue the JS and CSS bundles lazily (will require changes on WC-Admin).
-		$current_screen = get_current_screen();
-		if ( wc_admin_is_registered_page() || 'widgets' === $current_screen->base ) {
+		$current_screen = get_current_screen() ? get_current_screen()->base : null;
+		if ( wc_admin_is_registered_page() || 'widgets' === $current_screen ) {
 			wp_enqueue_script( 'WCPAY_DASH_APP' );
 			wp_enqueue_style( 'WCPAY_DASH_APP' );
 		}
