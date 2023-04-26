@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Check for the `AbstractCartRoute` class before making WooPay available.
