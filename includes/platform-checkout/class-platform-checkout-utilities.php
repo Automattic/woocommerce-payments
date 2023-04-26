@@ -39,9 +39,17 @@ class Platform_Checkout_Utilities {
 	/**
 	 * Checks various conditions to determine if WooPay should be enabled on the checkout page.
 	 *
+	 * This function should only be called when evaluating something for the checkout page. The
+	 * function will return false if you're on any other page.
+	 *
 	 * @return bool  True if WooPay should be enabled, false otherwise.
 	 */
 	public function should_enable_woopay_on_checkout(): bool {
+		if ( ! is_checkout() && ! has_block( 'woocommerce/checkout' ) ) {
+			// Wrong usage, this should only be called for the checkout page.
+			return false;
+		}
+
 		if ( ! is_user_logged_in() ) {
 			// If there's a subscription product in the cart and the customer isn't logged in we
 			// should not enable WooPay since that situation is currently not supported.
