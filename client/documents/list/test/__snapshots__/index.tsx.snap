@@ -254,7 +254,7 @@ exports[`Documents list renders correctly 1`] = `
                   class="woocommerce-table__item date is-left-aligned is-sorted"
                   scope="row"
                 >
-                  Jan 4, 2020
+                  Jan 5, 2020
                 </th>
                 <td
                   class="woocommerce-table__item is-left-aligned"
@@ -558,7 +558,7 @@ exports[`Documents list renders table summary only when the documents summary da
                   class="woocommerce-table__item date is-left-aligned is-sorted"
                   scope="row"
                 >
-                  Jan 4, 2020
+                  Jan 5, 2020
                 </th>
                 <td
                   class="woocommerce-table__item is-left-aligned"

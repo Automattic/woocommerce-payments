@@ -84,7 +84,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
               <span
                 class="woocommerce-list__item-content"
               >
-                Sep 19, 2019, 5:24pm
+                Sep 19, 2019, 9:24pm
               </span>
             </div>
           </div>
@@ -363,7 +363,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
               <span
                 class="woocommerce-list__item-content"
               >
-                Sep 19, 2019, 5:24pm
+                Sep 19, 2019, 9:24pm
               </span>
             </div>
           </div>
@@ -617,7 +617,7 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
               <span
                 class="woocommerce-list__item-content"
               >
-                Sep 19, 2019, 5:24pm
+                Sep 19, 2019, 9:24pm
               </span>
             </div>
           </div>
@@ -842,7 +842,7 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
               <span
                 class="woocommerce-list__item-content"
               >
-                Sep 19, 2019, 5:24pm
+                Sep 19, 2019, 9:24pm
               </span>
             </div>
           </div>
@@ -1097,7 +1097,7 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
               <span
                 class="woocommerce-list__item-content"
               >
-                Sep 19, 2019, 5:24pm
+                Sep 19, 2019, 9:24pm
               </span>
             </div>
           </div>
@@ -1533,7 +1533,7 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
               <span
                 class="woocommerce-list__item-content"
               >
-                Sep 19, 2019, 5:24pm
+                Sep 19, 2019, 9:24pm
               </span>
             </div>
           </div>
@@ -1758,7 +1758,7 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] 
               <span
                 class="woocommerce-list__item-content"
               >
-                Sep 19, 2019, 5:24pm
+                Sep 19, 2019, 9:24pm
               </span>
             </div>
           </div>
@@ -1986,7 +1986,7 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
               <span
                 class="woocommerce-list__item-content"
               >
-                Sep 19, 2019, 5:24pm
+                Sep 19, 2019, 9:24pm
               </span>
             </div>
           </div>
