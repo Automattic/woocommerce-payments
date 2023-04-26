@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Replace DAY_IN_MS with new constant TIME.DAY_IN_MS in the task-list index file.
