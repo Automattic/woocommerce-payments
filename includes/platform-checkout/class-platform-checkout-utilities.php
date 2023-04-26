@@ -33,6 +33,22 @@ class Platform_Checkout_Utilities {
 		$is_platform_checkout_eligible = WC_Payments_Features::is_platform_checkout_eligible(); // Feature flag.
 		$is_platform_checkout_enabled  = 'yes' === $gateway->get_option( 'platform_checkout', 'no' );
 
+		if ( ! is_user_logged_in() ) {
+			// If there's a subscription product in the cart and the customer isn't logged in we
+			// should not enable WooPay since that situation is currently not supported.
+			// Note that this is mirrored in the WC_Payments_Platform_Checkout_Button_Handler class.
+			if ( class_exists( 'WC_Subscriptions_Cart' ) && \WC_Subscriptions_Cart::cart_contains_subscription() ) {
+				return false;
+			}
+
+			// If guest checkout is disabled and the customer isn't logged in we should not enable
+			// WooPay scripts since that situations is currently not supported.
+			// Note that this is mirrored in the WC_Payments_Platform_Checkout_Button_Handler class.
+			if ( ! $this->is_guest_checkout_enabled() ) {
+				return false;
+			}
+		}
+
 		return $is_platform_checkout_eligible && $is_platform_checkout_enabled;
 	}
 
@@ -207,5 +223,14 @@ class Platform_Checkout_Utilities {
 		}
 
 		return '';
+	}
+
+	/**
+	 * Returns true if guest checkout is enabled, false otherwise.
+	 *
+	 * @return bool  True if guest checkout is enabled, false otherwise.
+	 */
+	public function is_guest_checkout_enabled(): bool {
+		return 'yes' === get_option( 'woocommerce_enable_guest_checkout', 'no' );
 	}
 }
