@@ -33,6 +33,15 @@ class Platform_Checkout_Utilities {
 		$is_platform_checkout_eligible = WC_Payments_Features::is_platform_checkout_eligible(); // Feature flag.
 		$is_platform_checkout_enabled  = 'yes' === $gateway->get_option( 'platform_checkout', 'no' );
 
+		return $is_platform_checkout_eligible && $is_platform_checkout_enabled;
+	}
+
+	/**
+	 * Checks various conditions to determine if WooPay should be enabled on the checkout page.
+	 *
+	 * @return bool  True if WooPay should be enabled, false otherwise.
+	 */
+	public function should_enable_woopay_on_checkout(): bool {
 		if ( ! is_user_logged_in() ) {
 			// If there's a subscription product in the cart and the customer isn't logged in we
 			// should not enable WooPay since that situation is currently not supported.
@@ -49,7 +58,7 @@ class Platform_Checkout_Utilities {
 			}
 		}
 
-		return $is_platform_checkout_eligible && $is_platform_checkout_enabled;
+		return true;
 	}
 
 	/**
