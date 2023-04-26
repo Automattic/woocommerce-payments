@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Convert hardcoded strings for Payment Methods to Constants
