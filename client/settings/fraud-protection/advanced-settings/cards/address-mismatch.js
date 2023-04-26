@@ -16,9 +16,10 @@ const AddressMismatchRuleCard = () => (
 		title={ __( 'Address Mismatch', 'woocommerce-payments' ) }
 		description={ __(
 			'This filter screens for differences between the shipping information and the ' +
-				'billing information (street, state, post code, and country).',
+				'billing information (country).',
 			'woocommerce-payments'
 		) }
+		id="address-mismatch-card"
 	>
 		<FraudProtectionRuleToggle
 			setting={ 'address_mismatch' }

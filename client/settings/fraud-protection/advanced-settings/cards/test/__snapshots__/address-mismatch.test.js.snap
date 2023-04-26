@@ -4,6 +4,7 @@ exports[`Address mismatch card renders correctly 1`] = `
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="address-mismatch-card"
   >
     <div
       class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -17,7 +18,7 @@ exports[`Address mismatch card renders correctly 1`] = `
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens for differences between the shipping information and the billing information (street, state, post code, and country).
+          This filter screens for differences between the shipping information and the billing information (country).
         </p>
       </div>
     </div>
@@ -87,6 +88,7 @@ exports[`Address mismatch card renders correctly when enabled 1`] = `
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="address-mismatch-card"
   >
     <div
       class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -100,7 +102,7 @@ exports[`Address mismatch card renders correctly when enabled 1`] = `
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens for differences between the shipping information and the billing information (street, state, post code, and country).
+          This filter screens for differences between the shipping information and the billing information (country).
         </p>
       </div>
     </div>
@@ -236,6 +238,7 @@ exports[`Address mismatch card renders correctly when enabled and checked 1`] = 
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="address-mismatch-card"
   >
     <div
       class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -249,7 +252,7 @@ exports[`Address mismatch card renders correctly when enabled and checked 1`] = 
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens for differences between the shipping information and the billing information (street, state, post code, and country).
+          This filter screens for differences between the shipping information and the billing information (country).
         </p>
       </div>
     </div>
@@ -400,6 +403,7 @@ exports[`Address mismatch card renders like disabled when checked, but not enabl
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="address-mismatch-card"
   >
     <div
       class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -413,7 +417,7 @@ exports[`Address mismatch card renders like disabled when checked, but not enabl
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens for differences between the shipping information and the billing information (street, state, post code, and country).
+          This filter screens for differences between the shipping information and the billing information (country).
         </p>
       </div>
     </div>

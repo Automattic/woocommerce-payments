@@ -83,12 +83,19 @@ class WC_Payments_Order_Service {
 	 */
 	const WCPAY_REFUND_ID_META_KEY = '_wcpay_refund_id';
 
-		/**
+	/**
 	 * Meta key used to store WCPay refund status.
 	 *
 	 * @const string
 	 */
 	const WCPAY_REFUND_STATUS_META_KEY = '_wcpay_refund_status';
+
+	/**
+	 * Meta key used to store WCPay transaction fee.
+	 *
+	 * @const string
+	 */
+	const WCPAY_TRANSACTION_FEE_META_KEY = '_wcpay_transaction_fee';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -200,6 +207,10 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
+		if ( Rule::FRAUD_OUTCOME_REVIEW === $this->get_fraud_outcome_status_for_order( $order ) ) {
+			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::REVIEW_FAILED );
+		}
+
 		$order->add_order_note( $note );
 		$this->complete_order_processing( $order, $intent_status );
 	}
@@ -223,6 +234,10 @@ class WC_Payments_Order_Service {
 		if ( $this->order_note_exists( $order, $note ) ) {
 			$this->complete_order_processing( $order );
 			return;
+		}
+
+		if ( Rule::FRAUD_OUTCOME_REVIEW === $this->get_fraud_outcome_status_for_order( $order ) ) {
+			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::REVIEW_EXPIRED );
 		}
 
 		$this->update_order_status( $order, Order_Status::CANCELLED );
@@ -329,6 +344,9 @@ class WC_Payments_Order_Service {
 	 */
 	public function mark_terminal_payment_completed( $order, $intent_id, $intent_status ) {
 		$this->update_order_status( $order, Order_Status::COMPLETED, $intent_id );
+		if ( WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
+			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::TERMINAL_PAYMENT );
+		}
 		$this->complete_order_processing( $order, $intent_status );
 	}
 
@@ -739,11 +757,11 @@ class WC_Payments_Order_Service {
 		/**
 		 * If we have a status for the fraud outcome, we want to add the proper meta data.
 		 */
-		if ( isset( $intent_data['fraud_outcome'] ) && Rule::is_valid_fraud_outcome_status( $intent_data['fraud_outcome'] ) ) {
-			if ( Rule::FRAUD_OUTCOME_REVIEW === $intent_data['fraud_outcome'] ) {
-				$this->set_fraud_outcome_status_for_order( $order, $intent_data['fraud_outcome'] );
-				$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::REVIEW_BLOCKED );
-			}
+		if ( isset( $intent_data['fraud_outcome'] )
+			&& Rule::is_valid_fraud_outcome_status( $intent_data['fraud_outcome'] )
+			&& Rule::FRAUD_OUTCOME_ALLOW !== $intent_data['fraud_outcome'] ) {
+			$this->set_fraud_outcome_status_for_order( $order, $intent_data['fraud_outcome'] );
+			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::REVIEW_BLOCKED );
 		}
 
 		$this->update_order_status( $order, Order_Status::CANCELLED );
@@ -778,6 +796,10 @@ class WC_Payments_Order_Service {
 			$fraud_meta_box_type = Order_Status::ON_HOLD === $order->get_status() ? Fraud_Meta_Box_Type::REVIEW_ALLOWED : Fraud_Meta_Box_Type::ALLOW;
 			$this->set_fraud_outcome_status_for_order( $order, $intent_data['fraud_outcome'] );
 			$this->set_fraud_meta_box_type_for_order( $order, $fraud_meta_box_type );
+		}
+
+		if ( ! $this->intent_has_card_payment_type( $intent_data ) ) {
+			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::NOT_CARD );
 		}
 
 		$this->update_order_status( $order, 'payment_complete', $intent_data['intent_id'] );
@@ -858,6 +880,11 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
+		if ( WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
+			$fraud_meta_box_type = $this->intent_has_card_payment_type( $intent_data ) ? Fraud_Meta_Box_Type::PAYMENT_STARTED : Fraud_Meta_Box_Type::NOT_CARD;
+			$this->set_fraud_meta_box_type_for_order( $order, $fraud_meta_box_type );
+		}
+
 		$order->add_order_note( $note );
 		$this->set_intention_status_for_order( $order, $intent_data['intent_status'] );
 	}
@@ -881,6 +908,28 @@ class WC_Payments_Order_Service {
 		$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::REVIEW );
 		$order->add_order_note( $note );
 		$this->set_intention_status_for_order( $order, $intent_data['intent_status'] );
+	}
+
+	/**
+	 * Given the charge, adds the application_fee_amount from the charge to the given order as metadata.
+	 *
+	 * @param WC_Order                    $order The order to update.
+	 * @param WC_Payments_API_Charge|null $charge The charge to get the application_fee_amount from.
+	 */
+	public function attach_transaction_fee_to_order( $order, $charge ) {
+		try {
+			if ( $charge && null !== $charge->get_application_fee_amount() ) {
+				$order->update_meta_data(
+					self::WCPAY_TRANSACTION_FEE_META_KEY,
+					WC_Payments_Utils::interpret_stripe_amount( $charge->get_application_fee_amount(), $charge->get_currency() )
+				);
+				$order->save_meta_data();
+			}
+		} catch ( Exception $e ) {
+			// Log the error and don't block checkout.
+			Logger::log( 'Error saving transaction fee into metadata for the order ' . $order->get_id() . ': ' . $e->getMessage() );
+		}
+
 	}
 
 	/**
@@ -1100,8 +1149,16 @@ class WC_Payments_Order_Service {
 	 * @return string
 	 */
 	private function generate_fraud_held_for_review_note( $order, $intent_id, $charge_id ): string {
-		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
-		$note            = sprintf(
+		$transaction_url = WC_Payments_Utils::compose_transaction_url(
+			$intent_id,
+			$charge_id,
+			[
+				'status_is' => Rule::FRAUD_OUTCOME_REVIEW,
+				'type_is'   => 'order_note',
+			]
+		);
+
+		$note = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
 				__( '&#x26D4; A payment of %1$s was <strong>held for review</strong> by one or more risk filters.<br><br><a>View more details</a>.', 'woocommerce-payments' ),
@@ -1126,8 +1183,16 @@ class WC_Payments_Order_Service {
 	 * @return string
 	 */
 	private function generate_fraud_blocked_note( $order ): string {
-		$transaction_url = WC_Payments_Utils::compose_transaction_url( $order->get_id(), '' );
-		$note            = sprintf(
+		$transaction_url = WC_Payments_Utils::compose_transaction_url(
+			$order->get_id(),
+			'',
+			[
+				'status_is' => Rule::FRAUD_OUTCOME_BLOCK,
+				'type_is'   => 'order_note',
+			]
+		);
+
+		$note = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the blocked amount, %2: transaction ID of the payment */
 				__( '&#x1F6AB; A payment of %1$s was <strong>blocked</strong> by one or more risk filters.<br><br><a>View more details</a>.', 'woocommerce-payments' ),
@@ -1376,18 +1441,22 @@ class WC_Payments_Order_Service {
 		$intent_data = [];
 		if ( is_array( $intent ) ) {
 			$intent_data = [
-				'intent_id'     => $intent['id'],
-				'intent_status' => $intent['status'],
-				'charge_id'     => $intent['charge_id'] ?? '',
-				'fraud_outcome' => $intent['fraud_outcome'] ?? '',
+				'intent_id'           => $intent['id'],
+				'intent_status'       => $intent['status'],
+				'charge_id'           => $intent['charge_id'] ?? '',
+				'fraud_outcome'       => $intent['fraud_outcome'] ?? '',
+				'payment_method_type' => $intent['payment_method_type'] ?? '',
 			];
 		} elseif ( is_object( $intent ) ) {
-			$charge      = $intent->get_charge();
+			$charge               = $intent->get_charge();
+			$payment_method_types = $intent->get_payment_method_types();
+
 			$intent_data = [
-				'intent_id'     => $intent->get_id(),
-				'intent_status' => $intent->get_status(),
-				'charge_id'     => $charge ? $charge->get_id() : null,
-				'fraud_outcome' => $intent->get_metadata()['fraud_outcome'] ?? '',
+				'intent_id'           => $intent->get_id(),
+				'intent_status'       => $intent->get_status(),
+				'charge_id'           => $charge ? $charge->get_id() : null,
+				'fraud_outcome'       => $intent->get_metadata()['fraud_outcome'] ?? '',
+				'payment_method_type' => 1 === count( $payment_method_types ) ? $payment_method_types[0] : '',
 			];
 		}
 		return $intent_data;
@@ -1447,5 +1516,16 @@ class WC_Payments_Order_Service {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Checks to see if the intent data has just card set as the payment method type.
+	 *
+	 * @param array $intent_data The intent data obtained from get_intent_data.
+	 *
+	 * @return bool
+	 */
+	private function intent_has_card_payment_type( $intent_data ): bool {
+		return isset( $intent_data['payment_method_type'] ) && 'card' === $intent_data['payment_method_type'];
 	}
 }

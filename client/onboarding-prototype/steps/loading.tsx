@@ -44,8 +44,6 @@ const Loading: React.FC = () => {
 
 	const handleComplete = async () => {
 		const { connectUrl } = wcpaySettings;
-		// TODO GH-5476 prefill the data for full KYC with addQueryArgs( connectUrl, {prefill: fromDotNotation( data ),} )
-		// that needs server tweaks first.
 		let isEligible;
 		try {
 			isEligible = await isEligibleForPo();
@@ -54,11 +52,10 @@ const Loading: React.FC = () => {
 			// TODO maybe log these errors in future, e.g. with tracks.
 			isEligible = false;
 		}
-		const resultUrl = isEligible
-			? addQueryArgs( connectUrl, {
-					progressive: fromDotNotation( data ),
-			  } )
-			: connectUrl;
+		const resultUrl = addQueryArgs( connectUrl, {
+			prefill: fromDotNotation( data ),
+			progressive: isEligible,
+		} );
 		window.location.href = resultUrl;
 	};
 
@@ -68,7 +65,7 @@ const Loading: React.FC = () => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [] );
 
-	// TODO implement in GH-4744 (Create or extend components needed for PO)
+	// TODO [GH-4746] Use LoadBar component.
 	return <></>;
 };
 

@@ -4,6 +4,7 @@ exports[`CVC verification card renders correctly when CVC check is disabled 1`] 
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="cvc-verification-card"
   >
     <div
       class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -42,7 +43,7 @@ exports[`CVC verification card renders correctly when CVC check is disabled 1`] 
           class="components-notice__content"
         >
           <div
-            class="components-flex css-1nh0b0-Flex eboqfv50"
+            class="components-flex css-18koiq9-Flex eboqfv50"
           >
             <div
               class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -78,6 +79,7 @@ exports[`CVC verification card renders correctly when CVC check is enabled 1`] =
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="cvc-verification-card"
   >
     <div
       class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -116,7 +118,7 @@ exports[`CVC verification card renders correctly when CVC check is enabled 1`] =
           class="components-notice__content"
         >
           <div
-            class="components-flex css-1nh0b0-Flex eboqfv50"
+            class="components-flex css-18koiq9-Flex eboqfv50"
           >
             <div
               class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -140,8 +142,9 @@ exports[`CVC verification card renders correctly when CVC check is enabled 1`] =
             >
               For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
               <a
-                data-link-type="wc-admin"
-                href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+                data-link-type="external"
+                href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                target="_blank"
               >
                 Learn more
               </a>

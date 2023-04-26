@@ -465,8 +465,15 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @throws Order_Not_Found_Exception
 	 */
 	public function process_payment( $order_id ) {
+		$order = wc_get_order( $order_id );
+
+		if ( 20 < strlen( $order->get_billing_phone() ) ) {
+			throw new Process_Payment_Exception(
+				__( 'Invalid phone number.', 'woocommerce-payments' ),
+				'invalid_phone_number'
+			);
+		}
 		$payment_intent_id         = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$order                     = wc_get_order( $order_id );
 		$amount                    = $order->get_total();
 		$currency                  = $order->get_currency();
 		$converted_amount          = WC_Payments_Utils::prepare_amount( $amount, $currency );
@@ -742,6 +749,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$client_secret          = $intent['client_secret'];
 				$status                 = $intent['status'];
 				$charge_id              = '';
+				$charge                 = null;
 				$currency               = $order->get_currency();
 				$payment_method_id      = $intent['payment_method'];
 				$payment_method_details = false;
@@ -779,6 +787,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				}
 				$this->order_service->update_order_status_from_intent( $order, $intent );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
+				$this->order_service->attach_transaction_fee_to_order( $order, $charge );
 
 				self::remove_upe_payment_intent_from_session();
 

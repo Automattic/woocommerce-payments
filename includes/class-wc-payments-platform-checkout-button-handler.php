@@ -531,6 +531,28 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 			return false;
 		}
 
+		if ( ! is_user_logged_in() ) {
+			// On product page for a subscription product, but not logged in, making WooPay unavailable.
+			if ( $this->is_product() ) {
+				$current_product = wc_get_product();
+
+				if ( $current_product && $this->is_product_subscription( $current_product ) ) {
+					return false;
+				}
+			}
+
+			// On cart or checkout page with a subscription product in cart, but not logged in, making WooPay unavailable.
+			if ( ( $this->is_checkout() || $this->is_cart() ) && class_exists( 'WC_Subscriptions_Cart' ) && WC_Subscriptions_Cart::cart_contains_subscription() ) {
+				// Check cart for subscription products.
+				return false;
+			}
+
+			// If guest checkout is not allowed, and customer is not logged in, disable the WooPay button.
+			if ( ! $this->platform_checkout_utilities->is_guest_checkout_enabled() ) {
+				return false;
+			}
+		}
+
 		/**
 		 * TODO: We need to do some research here and see if there are any product types that we
 		 * absolutely cannot support with WooPay at this time. There are some examples in the
@@ -622,5 +644,18 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Returns true if the provided WC_Product is a subscription, false otherwise.
+	 *
+	 * @param WC_Product $product The product to check.
+	 *
+	 * @return bool  True if product is subscription, false otherwise.
+	 */
+	private function is_product_subscription( WC_Product $product ): bool {
+		return 'subscription' === $product->get_type()
+			|| 'subscription_variation' === $product->get_type()
+			|| 'variable-subscription' === $product->get_type();
 	}
 }

@@ -2,6 +2,13 @@
  * Internal dependencies
  */
 
+export type OnboardingSteps =
+	| 'mode'
+	| 'personal'
+	| 'business'
+	| 'store'
+	| 'loading';
+
 export type OnboardingFields = {
 	email?: string;
 	'individual.first_name'?: string;
@@ -30,5 +37,3 @@ export interface EligibleData {
 		go_live_timeframe: string;
 	};
 }
-
-export type OnboardingSteps = 'personal' | 'business' | 'store' | 'loading';

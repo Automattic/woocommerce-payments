@@ -4,6 +4,7 @@ exports[`International IP address card renders correctly 1`] = `
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="international-ip-address-card"
   >
     <div
       class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -17,10 +18,17 @@ exports[`International IP address card renders correctly 1`] = `
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens for IP addresses outside of your 
+          This filter screens for 
           <a
-            data-link-type="wc-admin"
-            href="#"
+            data-link-type="external"
+            href="https://simple.wikipedia.org/wiki/IP_address"
+            target="_blank"
+          >
+            IP addresses
+          </a>
+           outside of your 
+          <a
+            href="admin.php?page=wc-settings&tab=general"
           >
             supported countries
           </a>
@@ -92,7 +100,7 @@ exports[`International IP address card renders correctly 1`] = `
           class="components-notice__content"
         >
           <div
-            class="components-flex css-1nh0b0-Flex eboqfv50"
+            class="components-flex css-18koiq9-Flex eboqfv50"
           >
             <div
               class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -128,6 +136,7 @@ exports[`International IP address card renders correctly when enabled 1`] = `
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="international-ip-address-card"
   >
     <div
       class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -141,10 +150,17 @@ exports[`International IP address card renders correctly when enabled 1`] = `
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens for IP addresses outside of your 
+          This filter screens for 
           <a
-            data-link-type="wc-admin"
-            href="#"
+            data-link-type="external"
+            href="https://simple.wikipedia.org/wiki/IP_address"
+            target="_blank"
+          >
+            IP addresses
+          </a>
+           outside of your 
+          <a
+            href="admin.php?page=wc-settings&tab=general"
           >
             supported countries
           </a>
@@ -282,7 +298,7 @@ exports[`International IP address card renders correctly when enabled 1`] = `
           class="components-notice__content"
         >
           <div
-            class="components-flex css-1nh0b0-Flex eboqfv50"
+            class="components-flex css-18koiq9-Flex eboqfv50"
           >
             <div
               class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -318,6 +334,7 @@ exports[`International IP address card renders correctly when enabled and checke
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="international-ip-address-card"
   >
     <div
       class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -331,10 +348,17 @@ exports[`International IP address card renders correctly when enabled and checke
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens for IP addresses outside of your 
+          This filter screens for 
           <a
-            data-link-type="wc-admin"
-            href="#"
+            data-link-type="external"
+            href="https://simple.wikipedia.org/wiki/IP_address"
+            target="_blank"
+          >
+            IP addresses
+          </a>
+           outside of your 
+          <a
+            href="admin.php?page=wc-settings&tab=general"
           >
             supported countries
           </a>
@@ -487,7 +511,7 @@ exports[`International IP address card renders correctly when enabled and checke
           class="components-notice__content"
         >
           <div
-            class="components-flex css-1nh0b0-Flex eboqfv50"
+            class="components-flex css-18koiq9-Flex eboqfv50"
           >
             <div
               class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
@@ -523,6 +547,7 @@ exports[`International IP address card renders like disabled when checked, but n
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="international-ip-address-card"
   >
     <div
       class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
@@ -536,10 +561,17 @@ exports[`International IP address card renders like disabled when checked, but n
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens for IP addresses outside of your 
+          This filter screens for 
           <a
-            data-link-type="wc-admin"
-            href="#"
+            data-link-type="external"
+            href="https://simple.wikipedia.org/wiki/IP_address"
+            target="_blank"
+          >
+            IP addresses
+          </a>
+           outside of your 
+          <a
+            href="admin.php?page=wc-settings&tab=general"
           >
             supported countries
           </a>
@@ -611,7 +643,7 @@ exports[`International IP address card renders like disabled when checked, but n
           class="components-notice__content"
         >
           <div
-            class="components-flex css-1nh0b0-Flex eboqfv50"
+            class="components-flex css-18koiq9-Flex eboqfv50"
           >
             <div
               class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"

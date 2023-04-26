@@ -6,6 +6,36 @@ import { __ } from '@wordpress/i18n';
 
 export default {
 	steps: {
+		mode: {
+			heading: __(
+				'Let’s get your store ready to accept payments.',
+				'woocommerce-payments'
+			),
+			subheading: __(
+				'Select the option that best fits your needs.',
+				'woocommerce-payments'
+			),
+			live: {
+				label: __(
+					'I’d like to set up payments for my store',
+					'woocommerce-payments'
+				),
+				note: __(
+					'You’ll need to provide details to verify that you’re the owner of the account. If you’re setting up payments for someone else, choose the test payments option.',
+					'woocommerce-payments'
+				),
+			},
+			test: {
+				label: __(
+					'I’d like to set up test payments',
+					'woocommerce-payments'
+				),
+				note: __(
+					'This option will set up WooCommerce Payments in development mode. You can use our test data to set up. When you’re ready to launch your store, switching to live payments is easy.',
+					'woocommerce-payments'
+				),
+			},
+		},
 		personal: {
 			heading: __( 'Tell us about yourself', 'woocommerce-payments' ),
 			subheading: __(

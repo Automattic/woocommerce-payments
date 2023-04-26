@@ -77,7 +77,10 @@ const ExpressCheckout = () => {
 			<CardBody size={ 0 }>
 				<ul className="express-checkouts-list">
 					{ isPlatformCheckoutFeatureFlagEnabled && (
-						<li className="express-checkout">
+						<li
+							className="express-checkout"
+							id="express-checkouts-woopay"
+						>
 							<div className="express-checkout__checkbox">
 								{ isStripeLinkEnabled ? (
 									<HoverTooltip
@@ -136,10 +139,9 @@ const ExpressCheckout = () => {
 													mixedString: __(
 														/* eslint-disable-next-line max-len */
 														'Boost conversion and customer loyalty by offering a single click, secure way to pay. ' +
-															'By using {{wooPayLink}}WooPay{{/wooPayLink}}, you agree to our ' +
+															'In order to use {{wooPayLink}}WooPay{{/wooPayLink}}, you must agree to our ' +
 															'{{tosLink}}WooCommerce Terms of Service{{/tosLink}} ' +
-															'and and {{privacyLink}}Privacy Policy{{/privacyLink}}. ' +
-															'You understand you will be sharing data with us. ' +
+															'and {{privacyLink}}Privacy Policy{{/privacyLink}}. ' +
 															'{{trackingLink}}Click here{{/trackingLink}} to learn more about the ' +
 															'data you will be sharing and opt-out options.',
 														'woocommerce-payments'
@@ -193,7 +195,10 @@ const ExpressCheckout = () => {
 							</div>
 						</li>
 					) }
-					<li className="express-checkout">
+					<li
+						className="express-checkout"
+						id="express-checkouts-apple-google-pay"
+					>
 						<div className="express-checkout__checkbox">
 							<CheckboxControl
 								label={ __(
@@ -320,7 +325,10 @@ const ExpressCheckout = () => {
 						</div>
 					</li>
 					{ displayLinkPaymentMethod && (
-						<li className="express-checkout">
+						<li
+							className="express-checkout"
+							id="express-checkouts-link"
+						>
 							<div className="express-checkout__checkbox">
 								{ isPlatformCheckoutEnabled ? (
 									<HoverTooltip

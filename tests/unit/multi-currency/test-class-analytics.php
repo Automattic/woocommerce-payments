@@ -209,14 +209,14 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 			->method( 'get_default_currency' )
 			->willReturn( new Currency( 'USD', 1.0 ) );
 
-		$args  = $this->order_args_provider( 123, 0, 1, 15.50, 1.50, 0, 14.00 );
+		$args  = $this->order_args_provider( 123, 0, 1, 15.50, 1.50, 0, 15.00 );
 		$order = wc_create_order();
 		$order->set_currency( 'GBP' );
 		$order->update_meta_data( '_wcpay_multi_currency_order_exchange_rate', 0.78 );
 		$order->update_meta_data( '_wcpay_multi_currency_stripe_exchange_rate', 1.2823 );
 		$order->update_meta_data( '_wcpay_multi_currency_order_default_currency', 'USD' );
 
-		$expected = $this->order_args_provider( 123, 0, 1, 19.87, 1.92, 0, 17.95 );
+		$expected = $this->order_args_provider( 123, 0, 1, 21.15, 1.92, 0.0, 19.23 );
 		$this->assertEquals( $expected, $this->analytics->update_order_stats_data( $args, $order ) );
 	}
 
