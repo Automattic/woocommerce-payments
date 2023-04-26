@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Disable the WooPay auto-redirect and SMS OTP modal in unsupported contexts.
