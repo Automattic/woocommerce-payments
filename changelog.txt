@@ -5,12 +5,16 @@
 * Add - Add order failed hook
 * Add - Add settings page section anchors
 * Add - Clear account cache on update plugin
+* Add - Disable the WooPay auto-redirect and SMS OTP modal in unsupported contexts.
+* Add - Hide WooPay button in unsupported contexts
 * Add - New UI for Account Balances and Deposits on the Payments -> Overview admin screen, providing an enhanced user experience and a clearer account balance breakdown, upcoming deposit information, and deposit history.
 * Add - Prefill Stripe KYC with hardcoded data for test mode
 * Fix - Add check to prevent fraud & risk tools interacting with multi-currency if it is not enabled.
 * Fix - Added phone number length validation
 * Fix - Bump up the size of Capture action button on the Authorizations list page.
+* Fix - Check for the `AbstractCartRoute` class before making WooPay available.
 * Fix - Correctly determine subscription free shipping eligibility when the initial payment cart isn't eligible. Fixes erroneous "Invalid recurring shipping method" errors on checkout.
+* Fix - Handle WooPay requests using Store API cart token and Jetpack blog token.
 * Fix - Revert the added tests for Stripe Link due to rate limiting during concurrent execution.
 * Fix - Support subscription_variation product type when re-adding items to a cart.
 * Update - Improve how capture date deadline notice shows up in the details page
