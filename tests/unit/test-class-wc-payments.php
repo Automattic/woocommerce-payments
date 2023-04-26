@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
+
 /**
  * WC_Payments unit tests.
  */
@@ -16,14 +18,16 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 
 	public function set_up() {
 		// Mock the main class's cache service.
-		$this->_cache     = WC_Payments::get_database_cache();
-		$this->mock_cache = $this->createMock( WCPay\Database_Cache::class );
+		$this->_cache        = WC_Payments::get_database_cache();
+		$this->_card_gateway = WC_Payments::get_gateway();
+		$this->mock_cache    = $this->createMock( WCPay\Database_Cache::class );
 		WC_Payments::set_database_cache( $this->mock_cache );
 	}
 
 	public function tear_down() {
 		// Restore the cache service in the main class.
 		WC_Payments::set_database_cache( $this->_cache );
+		WC_Payments::set_gateway( $this->_card_gateway );
 		WC_Payments::mode()->live();
 		parent::tear_down();
 	}
@@ -72,6 +76,32 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
+	public function test_it_skips_stripe_link_gateway_registration() {
+		update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '1' );
+
+		$card_gateway_mock = $this->createMock( UPE_Split_Payment_Gateway::class );
+		$card_gateway_mock
+			->expects( $this->once() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn(
+				[
+					'link',
+					'card',
+				]
+			);
+		$card_gateway_mock
+			->expects( $this->once() )
+			->method( 'get_stripe_id' )
+			->willReturn( 'card' );
+		WC_Payments::set_gateway( $card_gateway_mock );
+
+		$registered_gateways = WC_Payments::register_gateway( [] );
+
+		$this->assertCount( 1, $registered_gateways );
+		$this->assertInstanceOf( UPE_Split_Payment_Gateway::class, $registered_gateways[0] );
+		$this->assertEquals( $registered_gateways[0]->get_stripe_id(), 'card' );
+	}
+
 	public function test_rest_endpoints_validate_nonce() {
 
 		if ( $this->is_wpcom() ) {
@@ -118,7 +148,9 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		WC_Payments::set_customer_service( $mock_customer_service );
 		$this->set_platform_checkout_feature_flag_enabled( true );
 
+		ob_start();
 		WC_Payments::ajax_init_platform_checkout();
+		ob_get_clean();
 	}
 
 	/**

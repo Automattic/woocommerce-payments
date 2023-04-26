@@ -186,6 +186,11 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_platform_checkout_eligible() {
+		// Checks for the dependency on Store API AbstractCartRoute.
+		if ( ! class_exists( 'Automattic\WooCommerce\StoreApi\Routes\V1\AbstractCartRoute' ) ) {
+			return false;
+		}
+
 		// read directly from cache, ignore cache expiration check.
 		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
 		return is_array( $account ) && ( $account['platform_checkout_eligible'] ?? false );
@@ -200,15 +205,6 @@ class WC_Payments_Features {
 		$account              = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY );
 		$is_documents_enabled = is_array( $account ) && ( $account['is_documents_enabled'] ?? false );
 		return '1' === get_option( '_wcpay_feature_documents', $is_documents_enabled ? '1' : '0' );
-	}
-
-	/**
-	 * Checks whether custom deposit schedules are enabled.
-	 *
-	 * @return bool
-	 */
-	public static function is_custom_deposit_schedules_enabled() {
-		return '1' === get_option( '_wcpay_feature_custom_deposit_schedules', '1' );
 	}
 
 	/**
@@ -258,12 +254,12 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether Simplify Deposits UI is enabled.
+	 * Checks whether Simplify Deposits UI is enabled. Enabled by default.
 	 *
 	 * @return bool
 	 */
 	public static function is_simplify_deposits_ui_enabled(): bool {
-		return '1' === get_option( self::SIMPLIFY_DEPOSITS_UI_FLAG_NAME, '0' );
+		return '1' === get_option( self::SIMPLIFY_DEPOSITS_UI_FLAG_NAME, '1' );
 	}
 
 	/**
@@ -282,7 +278,6 @@ class WC_Payments_Features {
 				'accountOverviewTaskList' => self::is_account_overview_task_list_enabled(),
 				'platformCheckout'        => self::is_platform_checkout_eligible(),
 				'documents'               => self::is_documents_section_enabled(),
-				'customDepositSchedules'  => self::is_custom_deposit_schedules_enabled(),
 				'clientSecretEncryption'  => self::is_client_secret_encryption_enabled(),
 				'woopayExpressCheckout'   => self::is_woopay_express_checkout_enabled(),
 				'isAuthAndCaptureEnabled' => self::is_auth_and_capture_enabled(),

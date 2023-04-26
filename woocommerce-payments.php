@@ -8,11 +8,11 @@
  * Woo: 5278104:bf3cf30871604e15eec560c962593c1f
  * Text Domain: woocommerce-payments
  * Domain Path: /languages
- * WC requires at least: 7.3
- * WC tested up to: 7.5.1
- * Requires at least: 5.9
- * Requires PHP: 7.0
- * Version: 5.7.0
+ * WC requires at least: 7.4
+ * WC tested up to: 7.6.0
+ * Requires at least: 6.0
+ * Requires PHP: 7.2
+ * Version: 5.8.0
  *
  * @package WooCommerce\Payments
  */
@@ -27,6 +27,7 @@ define( 'WCPAY_SUBSCRIPTIONS_ABSPATH', __DIR__ . '/vendor/woocommerce/subscripti
 require_once __DIR__ . '/vendor/autoload_packages.php';
 require_once __DIR__ . '/includes/class-wc-payments-features.php';
 require_once __DIR__ . '/includes/platform-checkout-user/class-platform-checkout-extension.php';
+require_once __DIR__ . '/includes/platform-checkout/class-platform-checkout-session.php';
 
 /**
  * Plugin activation hook.
@@ -131,6 +132,13 @@ function wcpay_jetpack_init() {
 }
 // Jetpack's Rest_Authentication needs to be initialized even before plugins_loaded.
 Automattic\Jetpack\Connection\Rest_Authentication::init();
+
+/**
+ * Needs to be loaded as soon as possible
+ * Check https://github.com/Automattic/woocommerce-payments/issues/4759
+ */
+\WCPay\Platform_Checkout\Platform_Checkout_Session::init();
+
 
 // Jetpack-config will initialize the modules on "plugins_loaded" with priority 2, so this code needs to be run before that.
 add_action( 'plugins_loaded', 'wcpay_jetpack_init', 1 );

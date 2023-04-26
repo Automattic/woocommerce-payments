@@ -25,7 +25,6 @@ import { useDispatch } from '@wordpress/data';
  */
 import { useDeposits, useDepositsSummary } from 'wcpay/data';
 import { displayType, displayStatus } from '../strings';
-import { formatStringValue } from 'utils';
 import { formatExplicitCurrency } from 'utils/currency';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
@@ -34,6 +33,7 @@ import DepositsFilters from '../filters';
 import DownloadButton from 'components/download-button';
 import { getDepositsCSV } from 'wcpay/data/deposits/resolvers';
 import { applyThousandSeparator } from '../../utils/index.js';
+import DepositStatusPill from 'components/deposit-status-pill';
 
 import './style.scss';
 import { parseInt } from 'lodash';
@@ -137,8 +137,7 @@ export const DepositsList = (): JSX.Element => {
 			status: {
 				value: displayStatus[ deposit.status ],
 				display: clickable(
-					displayStatus[ deposit.status ] ||
-						formatStringValue( deposit.status )
+					<DepositStatusPill status={ deposit.status } />
 				),
 			},
 			bankAccount: {

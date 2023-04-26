@@ -134,6 +134,10 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		$this->onboarding_service = new WC_Payments_Onboarding_Service( $this->mock_api_client, $this->mock_database_cache );
 	}
 
+	public function test_filters_registered_properly() {
+		$this->assertNotFalse( has_filter( 'wcpay_dev_mode', [ $this->onboarding_service, 'maybe_enable_dev_mode' ] ) );
+	}
+
 	public function test_get_required_verification_information() {
 		$mock_requirements = [ 'requirement1', 'requirement2', 'requirement3' ];
 
@@ -187,5 +191,19 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn( null );
 
 		$this->assertFalse( $this->onboarding_service->get_cached_business_types() );
+	}
+
+	public function test_set_test_mode() {
+		$this->onboarding_service->set_test_mode( true );
+
+		$this->assertTrue( get_option( 'wcpay_onboarding_test_mode' ) );
+		$this->assertTrue( WC_Payments::mode()->is_dev() );
+
+		$this->onboarding_service->set_test_mode( false );
+
+		$this->assertFalse( get_option( 'wcpay_onboarding_test_mode' ) );
+		$this->assertFalse( WC_Payments::mode()->is_dev() );
+
+		delete_option( 'wcpay_onboarding_test_mode' );
 	}
 }

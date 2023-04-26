@@ -1,10 +1,10 @@
 === WooCommerce Payments - Fully Integrated Solution Built and Supported by Woo ===
 Contributors: woocommerce, automattic
 Tags: payment gateway, payment, apple pay, credit card, google pay
-Requires at least: 5.9
-Tested up to: 6.1
-Requires PHP: 7.0
-Stable tag: 5.7.0
+Requires at least: 6.0
+Tested up to: 6.2
+Requires PHP: 7.2
+Stable tag: 5.8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -38,13 +38,13 @@ Our global support team is available to answer questions you may have about WooC
 
 = Requirements =
 
-* WordPress 5.9 or newer.
-* WooCommerce 7.3 or newer.
-* PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
+* WordPress 6.0 or newer.
+* WooCommerce 7.4 or newer.
+* PHP 7.2 or newer is recommended.
 
 = Try it now =
 
-To try WooCommerce Payments on your store, simply [install it](https://wordpress.org/plugins/woocommerce-payments/#installation) and follow the prompts.
+To try WooCommerce Payments on your store, simply [install it](https://wordpress.org/plugins/woocommerce-payments/#installation) and follow the prompts. Please see our [Startup Guide](https://woocommerce.com/document/woocommerce-payments/startup-guide/) for a full walkthrough of the process.
 
 WooCommerce Payments has experimental support for the Checkout block from [WooCommerce Blocks](https://wordpress.org/plugins/woo-gutenberg-products-block/). Please check the [FAQ section](#faq) for more information.
 
@@ -66,19 +66,15 @@ WooCommerce Payments uses the WordPress.com connection to authenticate each requ
 
 = How do I set up a store for a client? =
 
-If you are setting up a store that will process real payments, have the site owner complete the WooCommerce Payments setup. This ensures that the correct business details are set on the account during [onboarding](https://woocommerce.com/document/payments/#section-3).
-
-After the store setup has been completed, you can use [Test Mode](https://woocommerce.com/document/payments/testing/) to simulate payments, refunds, and disputes.
-
-If you are setting up WooCommerce Payments on a development or test site that will **never need to process real payments**, try [Dev Mode](https://woocommerce.com/document/payments/testing/dev-mode/#section-1).
+If you are a developer or agency setting up a site for a client, please see [this page](https://woocommerce.com/document/woocommerce-payments/account-management/developer-or-agency-setup/) of our documentation for some tips on how to install WooCommerce Payments on client sites.
 
 = How is WooCommerce Payments related to Stripe? =
 
-WooCommerce Payments is proudly powered by [Stripe](https://stripe.com/). When you sign up for WooCommerce Payments, your personal and business information is verified with Stripe and stored in an account connected to the WooCommerce Payments service. This account is then used in the background for managing your business account information and activity via WooCommerce Payments. [Learn more](https://woocommerce.com/document/payments/powered-by-stripe/).
+WooCommerce Payments is built in partnership with Stripe [Stripe](https://stripe.com/). When you sign up for WooCommerce Payments, your personal and business information is verified with Stripe and stored in an account connected to the WooCommerce Payments service. This account is then used in the background for managing your business account information and activity via WooCommerce Payments. [Learn more](https://woocommerce.com/document/woocommerce-payments/account-management/partnership-with-stripe/).
 
 = Are there Terms of Service and data usage policies? =
 
-You can read our Terms of Service [here](https://en.wordpress.com/tos).
+You can read our Terms of Service and other policies [here](https://woocommerce.com/document/woocommerce-payments/our-policies/).
 
 = How does the Checkout block work? =
 
@@ -97,6 +93,53 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 5.8.0 - 2023-04-26 =
+* Add - Add additional fruad meta box statuses and messages.
+* Add - Add order failed hook
+* Add - Add settings page section anchors
+* Add - Clear account cache on update plugin
+* Add - Disable the WooPay auto-redirect and SMS OTP modal in unsupported contexts.
+* Add - Hide WooPay button in unsupported contexts
+* Add - New UI for Account Balances and Deposits on the Payments -> Overview admin screen, providing an enhanced user experience and a clearer account balance breakdown, upcoming deposit information, and deposit history.
+* Add - Prefill Stripe KYC with hardcoded data for test mode
+* Fix - Add check to prevent fraud & risk tools interacting with multi-currency if it is not enabled.
+* Fix - Added phone number length validation
+* Fix - Bump up the size of Capture action button on the Authorizations list page.
+* Fix - Check for the `AbstractCartRoute` class before making WooPay available.
+* Fix - Correctly determine subscription free shipping eligibility when the initial payment cart isn't eligible. Fixes erroneous "Invalid recurring shipping method" errors on checkout.
+* Fix - Handle WooPay requests using Store API cart token and Jetpack blog token.
+* Fix - Revert the added tests for Stripe Link due to rate limiting during concurrent execution.
+* Fix - Support subscription_variation product type when re-adding items to a cart.
+* Update - Improve how capture date deadline notice shows up in the details page
+* Update - Replace fraud status logic to use the same data from the fraud meta box.
+* Update - Update fraud transactions list to show manually blocked transactions in the correct tab.
+* Update - Update Jetpack dependencies, remove outdated ones, and fix failing tests.
+* Update - Updates legal mandate displayed prior to enabling WooPay.
+* Update - Updates the display of the remind me later button and changes the text of the dismiss button to 'dismiss' on the fraud and risk tools discoverability banner.
+* Update - Updates to the WordPress.org readme.txt file.
+* Update - Update the status column on the Payments > Deposits table to display as a Pill.
+* Update - Update the WooPay logo.
+* Update - Use WooCommerce Pill component to show risk levels in the transactions list.
+* Dev - Add payment_method_types array returned from Stripe payment_intent into WC_Payments_API_Intention object.
+* Dev - Add PHP unit tests for multiple files.
+* Dev - Bump minimum required version of WooCommerce to 7.4.1
+* Dev - Bump WP (6.2) and PHP minimum version (7.2)
+* Dev - Change all the JS files to TSX files in the client/components/fraud-risk-tools-banner directory and its subdirectories.
+* Dev - Change is hidden behind feature flag, will have changelog added at later date
+* Dev - Expands the test coverage for the Stripe Link.
+* Dev - Fixed precision loss notice that occurs when running PHP 8.1.
+* Dev - Fix phpcs and semgrep warnings to improve code quality.
+* Dev - Migrate API get_account_data to use the core Request class.
+* Dev - Migrated refunds API endpoints to request classes
+* Dev - Migrate login_links, capital_links, tos_agreement to use the core Request class.
+* Dev - Migrate update_account API to the core Request class.
+* Dev - Remove the feature flag for custom deposit schedules, now enabled by default.
+* Dev - Replace DAY_IN_MS with new constant TIME.DAY_IN_MS in the task-list index file.
+* Dev - Update subscriptions-core to 5.6.0.
+* Dev - Update the WCPay Pill component to use WooCommerce Core's Pill component
+* Dev - Updating the multiline changelog entries to single line
+* Dev - Use `wp_safe_redirect()` when processing a payment method change request.
 
 = 5.7.0 - 2023-04-05 =
 * Add - Add ClickTooltip and HoverTooltip components to improve mobile UX when tooltip content is interactive.
@@ -118,26 +161,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Implement connection to the Intelligent Router and flow switching
 * Add - Introduce a Banner Notice component to be used in upcoming UI elements
 * Add - Prefill Stripe KYC data for non-progressive onboarding scenario
-* Add - Record the following events:
-wcpay_fraud_protection_banner_rendered
-wcpay_fraud_protection_banner_learn_more_button_clicked
-wcpay_fraud_protection_banner_remind_later_button_clicked
-wcpay_fraud_protection_tour_clicked_through
-wcpay_fraud_protection_tour_abandoned
-wcpay_fraud_protection_risk_level_preset_enabled
-wcpay_fraud_protection_advanced_settings_saved
-wcpay_fraud_protection_transaction_reviewed_merchant_blocked
-wcpay_fraud_protection_transaction_reviewed_merchant_approved
-wcpay_fraud_protection_standard_modal_viewed
-wcpay_fraud_protection_high_modal_viewed
-wcpay_fraud_protection_advanced_settings_card_avs_mismatch_viewed
-wcpay_fraud_protection_advanced_settings_card_cvc_verification_viewed
-wcpay_fraud_protection_advanced_settings_card_international_ip_address_card_viewed
-wcpay_fraud_protection_advanced_settings_card_international_billing_address_viewed
-wcpay_fraud_protection_advanced_settings_card_address_mismatch_viewed
-wcpay_fraud_protection_advanced_settings_card_price_threshold_viewed
-wcpay_fraud_protection_advanced_settings_card_items_threshold_viewed
-wcpay_fraud_protection_order_details_link_clicked
+* Add - Record the following events: wcpay_fraud_protection_banner_rendered, wcpay_fraud_protection_banner_learn_more_button_clicked, wcpay_fraud_protection_banner_remind_later_button_clicked, wcpay_fraud_protection_tour_clicked_through, wcpay_fraud_protection_tour_abandoned, wcpay_fraud_protection_risk_level_preset_enabled, wcpay_fraud_protection_advanced_settings_saved, wcpay_fraud_protection_transaction_reviewed_merchant_blocked, wcpay_fraud_protection_transaction_reviewed_merchant_approved, wcpay_fraud_protection_standard_modal_viewed, wcpay_fraud_protection_high_modal_viewed, wcpay_fraud_protection_advanced_settings_card_avs_mismatch_viewed, wcpay_fraud_protection_advanced_settings_card_cvc_verification_viewed, wcpay_fraud_protection_advanced_settings_card_international_ip_address_card_viewed, wcpay_fraud_protection_advanced_settings_card_international_billing_address_viewed, wcpay_fraud_protection_advanced_settings_card_address_mismatch_viewed, wcpay_fraud_protection_advanced_settings_card_price_threshold_viewed, wcpay_fraud_protection_advanced_settings_card_items_threshold_viewed, wcpay_fraud_protection_order_details_link_clicked
 * Add - Show Tap to Pay icon in transactions list page for Tap to Pay transactions
 * Fix - Check whether we have an instance of WC_Cart before invoking its methods on checkout
 * Fix - Fatal errors on the thank-you page due to the strong type check in our filters.
@@ -147,12 +171,12 @@ wcpay_fraud_protection_order_details_link_clicked
 * Fix - Fix WooPay phone number on blocks checkout
 * Fix - Prevent the WooPay Express button from showing up for pre-order products to be paid upon release.
 * Fix - Sort uncaptured transactions with oldest first.
-* Update - Add documentation links to fraud == Changelog == risk tools.
+* Update - Add documentation links to fraud & risk tools.
 * Update - Adds basic protection level modal and fixes standard and high level protection modal rules
 * Update - Change the link in the Express checkouts setting.
 * Update - Change user-facing wording from payouts to deposits.
 * Update - Connection success notice.
-* Update - Improve Fraud == Changelog == Risk tools layout and add missing UI elements.
+* Update - Improve Fraud & Risk tools layout and add missing UI elements.
 * Update - Replace custom tour component with TourKit from the WooCommerce components library.
 * Update - Replace international billing address with IP country filter on fraud and risk tools
 * Update - Update international filters to use selling locations settings instead stripe account country

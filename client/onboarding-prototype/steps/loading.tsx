@@ -65,7 +65,7 @@ const Loading: React.FC = () => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [] );
 
-	// TODO implement in GH-4744 (Create or extend components needed for PO)
+	// TODO [GH-4746] Use LoadBar component.
 	return <></>;
 };
 

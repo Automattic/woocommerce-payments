@@ -19,6 +19,19 @@ const getFloatValue = ( value ) => {
 	return '' === value || '0' === value ? 0 : parseFloat( value );
 };
 
+const getCurrencySymbol = () => {
+	const fallbackCurrency = { symbol: '$' };
+
+	if ( '1' !== wcpaySettings.isMultiCurrencyEnabled ) {
+		return fallbackCurrency.symbol;
+	}
+
+	const currency = getCurrency( wcpaySettings.storeCurrency );
+	const { symbol } = currency?.getCurrencyConfig() || fallbackCurrency;
+
+	return symbol;
+};
+
 const PurchasePriceThresholdCustomForm = ( { setting } ) => {
 	const { protectionSettingsUI, setProtectionSettingsUI } = useContext(
 		FraudPreventionSettingsContext
@@ -53,10 +66,7 @@ const PurchasePriceThresholdCustomForm = ( { setting } ) => {
 		maxAmount &&
 		getFloatValue( minAmount ) > getFloatValue( maxAmount );
 
-	const currency = getCurrency( wcpaySettings.storeCurrency );
-	const { symbol: currencySymbol } = currency?.getCurrencyConfig() || {
-		symbol: '$',
-	};
+	const currencySymbol = getCurrencySymbol();
 
 	return (
 		<div className="fraud-protection-rule-toggle-children-container">
