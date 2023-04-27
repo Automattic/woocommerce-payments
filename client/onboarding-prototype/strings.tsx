@@ -17,7 +17,7 @@ export default {
 			),
 			live: {
 				label: __(
-					'I’d like to set up payments for my store',
+					'I’d like to set up payments on my own store',
 					'woocommerce-payments'
 				),
 				note: __(
@@ -27,7 +27,7 @@ export default {
 			},
 			test: {
 				label: __(
-					'I’d like to set up test payments',
+					'I’m building a store for someone else and would like to test payments',
 					'woocommerce-payments'
 				),
 				note: __(
