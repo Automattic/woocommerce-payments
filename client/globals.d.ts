@@ -22,6 +22,15 @@ declare interface BusinessStructure {
 	name: string;
 }
 
+declare interface MccsDisplayTreeItem {
+	id: string;
+	type: string;
+	title: string;
+	items?: MccsDisplayTreeItem[];
+	mcc?: number;
+	keywords?: string[];
+}
+
 declare const wcpaySettings: {
 	connectUrl: string;
 	isSubscriptionsActive: boolean;
@@ -89,7 +98,7 @@ declare const wcpaySettings: {
 	onboardingTestMode: boolean;
 	onboardingFieldsData?: {
 		business_types: Country[];
-		mccs_display_tree: unknown[];
+		mccs_display_tree: MccsDisplayTreeItem[];
 	};
 };
 
