@@ -8,9 +8,13 @@ import React from 'react';
  */
 import { useOnboardingContext } from '../context';
 import { Item } from 'components/custom-select-control';
+import GroupedSelectControl from 'components/grouped-select-control';
 import { OnboardingFields } from '../types';
 import { OnboardingTextField, OnboardingSelectField } from '../form';
-import { getBusinessTypes } from 'wcpay/onboarding-experiment/utils';
+import {
+	getBusinessTypes,
+	getMccsFlatList,
+} from 'wcpay/onboarding-experiment/utils';
 
 const BusinessDetails: React.FC = () => {
 	const { data, setData } = useOnboardingContext();
@@ -35,6 +39,13 @@ const BusinessDetails: React.FC = () => {
 		} else if ( name === 'country' ) {
 			newData = { ...newData, business_type: undefined };
 		}
+		setData( newData );
+	};
+
+	const handleMccChange = ( selectedItem?: Item ) => {
+		const newData: OnboardingFields = {
+			mcc: selectedItem?.key,
+		};
 		setData( newData );
 	};
 
@@ -71,11 +82,14 @@ const BusinessDetails: React.FC = () => {
 						onChange={ handleTiedChange }
 					/>
 				) }
-			{ /* <OnboardingSelectField
-				name="mcc"
-				// TODO [GH-4853]: Create a Field component for GroupedSelectControl and Populate MCC options.
-				options={ [] }
-			/> */ }
+
+			<GroupedSelectControl
+				label="Chose your industry"
+				options={ getMccsFlatList() }
+				onChange={ handleMccChange }
+				searchable
+				placeholder="Select an option"
+			/>
 		</>
 	);
 };
