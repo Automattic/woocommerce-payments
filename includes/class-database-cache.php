@@ -13,10 +13,11 @@ defined( 'ABSPATH' ) || exit; // block direct access.
  * A class for caching data as an option in the database.
  */
 class Database_Cache {
-	const ACCOUNT_KEY             = 'wcpay_account_data';
-	const BUSINESS_TYPES_KEY      = 'wcpay_business_types_data';
-	const CURRENCIES_KEY          = 'wcpay_multi_currency_cached_currencies';
-	const CUSTOMER_CURRENCIES_KEY = 'wcpay_multi_currency_customer_currencies';
+	const ACCOUNT_KEY                = 'wcpay_account_data';
+	const ONBOARDING_FIELDS_DATA_KEY = 'wcpay_onboarding_fields_data';
+	const BUSINESS_TYPES_KEY         = 'wcpay_business_types_data';
+	const CURRENCIES_KEY             = 'wcpay_multi_currency_cached_currencies';
+	const CUSTOMER_CURRENCIES_KEY    = 'wcpay_multi_currency_customer_currencies';
 
 	/**
 	 * Payment methods cache key prefix. Used in conjunction with the customer_id to cache a customer's payment methods.
@@ -69,7 +70,7 @@ class Database_Cache {
 	 * @param boolean  $force_refresh Regenerates the cache regardless of its state if true.
 	 * @param boolean  $refreshed     Is set to true if the cache has been refreshed without errors and with a non-empty value.
 	 *
-	 * @return mixed The cache contents.
+	 * @return mixed|null The cache contents. NULL on failure
 	 */
 	public function get_or_add( string $key, callable $generator, callable $validate_data, bool $force_refresh = false, bool &$refreshed = false ) {
 		$cache_contents = get_option( $key );
@@ -310,7 +311,8 @@ class Database_Cache {
 				$ttl = $cache_contents['errored'] ? 2 * MINUTE_IN_SECONDS : 6 * HOUR_IN_SECONDS;
 				break;
 			case self::BUSINESS_TYPES_KEY:
-				// Cache business types for a week.
+			case self::ONBOARDING_FIELDS_DATA_KEY:
+				// Cache these for a week.
 				$ttl = WEEK_IN_SECONDS;
 				break;
 			default:
