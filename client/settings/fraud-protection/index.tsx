@@ -18,17 +18,15 @@ const FraudProtection: React.FC = () => {
 		<>
 			<Card className="fraud-protection">
 				<CardBody>
-					<>
-						<h4>
-							<span id="fraud-protection-card-title">
-								{ __(
-									'Set your payment risk level',
-									'woocommerce-payments'
-								) }
-							</span>
-						</h4>
-						<ProtectionLevels />
-					</>
+					<h4>
+						<span id="fraud-protection-card-title">
+							{ __(
+								'Set your payment risk level',
+								'woocommerce-payments'
+							) }
+						</span>
+					</h4>
+					<ProtectionLevels />
 				</CardBody>
 			</Card>
 
