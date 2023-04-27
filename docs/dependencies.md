@@ -46,6 +46,7 @@ to catalog our packages and provide guidance to a developer who wants to test an
 | [@woocommerce/currency](https://www.npmjs.com/package/@woocommerce/currency) | A collection of utilities to display and work with currency values. | JS tests should pass.	 | |
 | [@wordpress/url](https://www.npmjs.com/package/@wordpress/url) | A collection of utilities to manipulate URLs.| JS unit tests are passing| |
 | [@wordpress/data](https://www.npmjs.com/package/@wordpress/data) | It serves as a hub to manage application state for both plugins and WordPress itself, providing tools to manage data within and between distinct modules.| JS unit tests are passing| |
+| [@wordpress/i18n](https://www.npmjs.com/package/@wordpress/i18n) | Internationalization utilities for client-side localization.| JS unit tests are passing. | The `wpi18n` used in `postbuild:client` script comes from `node-wp-i18n` and is thus separate from this. |
 | [@wordpress/date](https://www.npmjs.com/package/@wordpress/date) | Date module for WordPress.| JS unit tests are passing| From v4.6.0, the `TZ` env var from the Jest global setup is not taken into account anymore, hence unit tests fail. |
 
 ### PHP Runtime Dependencies
