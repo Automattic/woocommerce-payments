@@ -49,6 +49,7 @@ to catalog our packages and provide guidance to a developer who wants to test an
 | [@wordpress/i18n](https://www.npmjs.com/package/@wordpress/i18n) | Internationalization utilities for client-side localization.| JS unit tests are passing. | The `wpi18n` used in `postbuild:client` script comes from `node-wp-i18n` and is thus separate from this. |
 | [@wordpress/api-fetch](https://www.npmjs.com/package/@wordpress/api-fetch) | Utility to make WordPress REST API requests. | JS unit tests are passing. | |
 | [@woocommerce/date](https://www.npmjs.com/package/@woocommerce/date) | A collection of utilities to display and work with date values. | JS unit tests are passing. | Though there is no direct use of this package, it is used by [jest-test-file-setup.js](https://github.com/Automattic/woocommerce-payments/blob/b64178138d44d3bd3aa2a692d1c84e4d91e521b9/tests/js/jest-test-file-setup.js#L25)  |
+| [@wordpress/element](https://www.npmjs.com/package/@wordpress/element) | An abstraction layer atop React. | JS unit tests are passing. | Removed [@types/wordpress__element](https://www.npmjs.com/package/@types/wordpress__element) since @wordpress/element has built-in types |
 
 ### PHP Runtime Dependencies
 | Package Name | Usage Summary | Testing | Notes |
