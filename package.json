@@ -96,7 +96,7 @@
     "@woocommerce/components": "5.1.2",
     "@woocommerce/csv-export": "1.7.0",
     "@woocommerce/currency": "4.2.0",
-    "@woocommerce/date": "2.1.0",
+    "@woocommerce/date": "4.2.0",
     "@woocommerce/dependency-extraction-webpack-plugin": "2.2.0",
     "@woocommerce/e2e-environment": "0.2.3",
     "@woocommerce/e2e-utils": "0.2.0",
