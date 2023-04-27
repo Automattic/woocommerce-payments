@@ -1,5 +1,4 @@
 Significance: patch
 Type: fix
-Comment: Small visual change
 
-
+fixed php 8.1 wp-admin errors

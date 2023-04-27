@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Use `wp_safe_redirect()` when processing a payment method change request.
