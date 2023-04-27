@@ -125,6 +125,7 @@ class Mode {
 	 */
 	public function is_test() : bool {
 		$this->maybe_init();
+
 		return $this->test_mode;
 	}
 

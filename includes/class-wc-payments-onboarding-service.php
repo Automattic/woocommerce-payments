@@ -5,12 +5,12 @@
  * @package WooCommerce\Payments
  */
 
-use WCPay\Database_Cache;
-use WCPay\Exceptions\API_Exception;
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
+
+use WCPay\Database_Cache;
+use WCPay\Exceptions\API_Exception;
 
 /**
  * Class handling onboarding related business logic.
@@ -44,6 +44,45 @@ class WC_Payments_Onboarding_Service {
 		$this->database_cache      = $database_cache;
 
 		add_filter( 'wcpay_dev_mode', [ $this, 'maybe_enable_dev_mode' ], 100 );
+	}
+
+	/**
+	 * Retrieve the fields data to use in the onboarding form.
+	 *
+	 * The data is retrieved from the server and is cached. If we can't retrieve, we will use whatever data we have.
+	 *
+	 * @param string $locale The locale to use to i18n the data.
+	 * @param bool   $force_refresh Forces data to be fetched from the server, rather than using the cache.
+	 *
+	 * @return ?array Fields data, or NULL if failed to retrieve.
+	 */
+	public function get_fields_data( string $locale = '', bool $force_refresh = false ): ?array {
+		// If we don't have a server connection, return what data we currently have, regardless of expiry.
+		if ( ! $this->payments_api_client->is_server_connected() ) {
+			return $this->database_cache->get( Database_Cache::ONBOARDING_FIELDS_DATA_KEY, true );
+		}
+
+		$cache_key = Database_Cache::ONBOARDING_FIELDS_DATA_KEY;
+		if ( ! empty( $locale ) ) {
+			$cache_key .= '__' . $locale;
+		}
+
+		return $this->database_cache->get_or_add(
+			$cache_key,
+			function () use ( $locale ) {
+				try {
+					// We will use the language for the current user (defaults to the site language).
+					$fields_data = $this->payments_api_client->get_onboarding_fields_data( $locale );
+				} catch ( API_Exception $e ) {
+					// Return NULL to signal retrieval error.
+					return null;
+				}
+
+				return $fields_data;
+			},
+			'__return_true',
+			$force_refresh
+		);
 	}
 
 	/**
