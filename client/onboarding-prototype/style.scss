@@ -80,6 +80,10 @@ body.wcpay-onboarding-prototype__body {
 
 			&__content {
 				max-width: 400px;
+
+				@media screen and ( min-width: $break-mobile ) {
+					width: 400px;
+				}
 			}
 
 			&__cta {
