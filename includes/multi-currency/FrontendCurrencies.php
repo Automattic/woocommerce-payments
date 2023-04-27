@@ -150,6 +150,11 @@ class FrontendCurrencies {
 			return $this->get_store_currency()->get_code();
 		}
 
+		if ( $this->should_use_order_currency() ) {
+			$this->init_order_currency_from_query_vars();
+			return $this->order_currency;
+		}
+
 		if ( empty( $this->woocommerce_currency ) ) {
 			$this->woocommerce_currency = $this->get_selected_currency_code();
 		}
