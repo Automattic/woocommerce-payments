@@ -160,11 +160,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 * @return UPE_Payment_Method|false UPE payment method instance.
 	 */
 	public function get_selected_payment_method( $payment_method_type ) {
-		if ( $payment_method_type !== $this->stripe_id ) {
-			return false;
-		}
-
-		return $this->payment_method;
+		return WC_Payments::get_payment_method_by_id( $payment_method_type );
 	}
 
 

@@ -272,6 +272,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 						'is_payment_recurring',
 						'get_payment_method_ids_enabled_at_checkout',
 						'wc_payments_get_payment_gateway_by_id',
+						'get_selected_payment_method',
 					]
 				)
 				->getMock();
@@ -1199,6 +1200,8 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$intent_id           = 'pi_mock';
 		$payment_method_id   = 'pm_mock';
 
+		$card_method = $this->mock_payment_methods['card'];
+
 		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => $intent_status ] );
 
 		$mock_upe_gateway->expects( $this->once() )
@@ -1206,6 +1209,10 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->will(
 				$this->returnValue( [ $user, $customer_id ] )
 			);
+
+		$mock_upe_gateway->expects( $this->once() )
+			->method( 'get_selected_payment_method' )
+			->willReturn( $card_method );
 
 		$this->mock_wcpay_request( Get_Intention::class, 1, $intent_id )
 			->expects( $this->once() )
