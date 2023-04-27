@@ -121,7 +121,7 @@
     "@wordpress/i18n": "4.6.1",
     "@wordpress/icons": "2.10.3",
     "@wordpress/jest-preset-default": "4.0.0",
-    "@wordpress/plugins": "4.0.6",
+    "@wordpress/plugins": "4.4.3",
     "@wordpress/scripts": "12.6.0",
     "@wordpress/url": "3.7.1",
     "archiver": "5.2.0",
