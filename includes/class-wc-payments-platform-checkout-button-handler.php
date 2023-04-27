@@ -548,7 +548,7 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 			}
 
 			// If guest checkout is not allowed, and customer is not logged in, disable the WooPay button.
-			if ( ! $this->is_guest_checkout_enabled() ) {
+			if ( ! $this->platform_checkout_utilities->is_guest_checkout_enabled() ) {
 				return false;
 			}
 		}
@@ -657,14 +657,5 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		return 'subscription' === $product->get_type()
 			|| 'subscription_variation' === $product->get_type()
 			|| 'variable-subscription' === $product->get_type();
-	}
-
-	/**
-	 * Returns true if guest checkout is enabled, false otherwise.
-	 *
-	 * @return bool  True if guest checkout is enabled, false otherwise.
-	 */
-	private function is_guest_checkout_enabled(): bool {
-		return 'yes' === get_option( 'woocommerce_enable_guest_checkout', 'no' );
 	}
 }
