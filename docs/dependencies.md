@@ -38,13 +38,14 @@ to catalog our packages and provide guidance to a developer who wants to test an
 | [vimeo/psalm](https://github.com/vimeo/psalm) |  Used for type checking our PHP code. | Run the tool, make sure it completes and produces output. | Run with `npm run psalm`. |
 
 ### JavaScript Dev Dependencies
-| Package Name | Usage Summary | Testing | Notes                                                                                                              |
-| ------------ | ------------- | ------- |--------------------------------------------------------------------------------------------------------------------|
-| [husky](https://www.npmjs.com/package/husky) |  Used to run hooks pre/post commit, like automatically running PHPCS. | Check out another branch `composer install` should run automatically. |                                                                                                                    |
-| [lodash](https://www.npmjs.com/package/lodash) | Lodash makes JavaScript easier by taking the hassle out of working with arrays, numbers, objects, strings, etc. | JS tests should pass. |                                                                                                                    |
-| [node](https://www.npmjs.com/package/node) | Not a package, but we declare the supported version of node in our `.nvmrc` file. We use node to build the JavaScript for the plugin and run the JavaScript unit tests. | Ensure you're running the new version of node by running the `nvm use` command or manually setting up the correct version. For minor and patch upgrades testing that the build runs is sufficient. For major versions, smoke testing the running plugin would be advised. |                                                                                                                    |
-| [@woocommerce/currency](https://www.npmjs.com/package/@woocommerce/currency) | A collection of utilities to display and work with currency values. | JS tests should pass.	 |                                                                                                                    |
-| [@wordpress/url](https://www.npmjs.com/package/@wordpress/url) | A collection of utilities to manipulate URLs.| JS unit tests are passing|                                                                                                                    |
+| Package Name | Usage Summary | Testing | Notes |
+| ------------ | ------------- | ------- | ----- |
+| [husky](https://www.npmjs.com/package/husky) |  Used to run hooks pre/post commit, like automatically running PHPCS. | Check out another branch `composer install` should run automatically. |  |
+| [lodash](https://www.npmjs.com/package/lodash) | Lodash makes JavaScript easier by taking the hassle out of working with arrays, numbers, objects, strings, etc. | JS tests should pass. |  |
+| [node](https://www.npmjs.com/package/node) | Not a package, but we declare the supported version of node in our `.nvmrc` file. We use node to build the JavaScript for the plugin and run the JavaScript unit tests. | Ensure you're running the new version of node by running the `nvm use` command or manually setting up the correct version. For minor and patch upgrades testing that the build runs is sufficient. For major versions, smoke testing the running plugin would be advised. | |
+| [@woocommerce/currency](https://www.npmjs.com/package/@woocommerce/currency) | A collection of utilities to display and work with currency values. | JS tests should pass.	 | |
+| [@wordpress/url](https://www.npmjs.com/package/@wordpress/url) | A collection of utilities to manipulate URLs.| JS unit tests are passing| |
+| [@wordpress/data](https://www.npmjs.com/package/@wordpress/data) | It serves as a hub to manage application state for both plugins and WordPress itself, providing tools to manage data within and between distinct modules.| JS unit tests are passing| |
 | [@wordpress/date](https://www.npmjs.com/package/@wordpress/date) | Date module for WordPress.| JS unit tests are passing| From v4.6.0, the `TZ` env var from the Jest global setup is not taken into account anymore, hence unit tests fail. |
 
 ### PHP Runtime Dependencies
