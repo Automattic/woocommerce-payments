@@ -310,12 +310,12 @@ export const readRuleset = (
 					};
 					break;
 				case Rules.RULE_ORDER_ITEMS_THRESHOLD:
-					const minItems = findCheck(
+					const minItemsCheck = findCheck(
 						rule.check,
 						Checks.CHECK_ITEM_COUNT,
 						CheckOperators.OPERATOR_LT
 					) as FraudProtectionSettingsSingleCheck;
-					const maxItems = findCheck(
+					const maxItemsCheck = findCheck(
 						rule.check,
 						Checks.CHECK_ITEM_COUNT,
 						CheckOperators.OPERATOR_GT
@@ -323,17 +323,17 @@ export const readRuleset = (
 					parsedUIConfig[ rule.key ] = {
 						enabled: true,
 						block: rule.outcome === Outcomes.BLOCK,
-						min_items: minItems.value ?? '',
-						max_items: maxItems.value ?? '',
+						min_items: minItemsCheck.value ?? '',
+						max_items: maxItemsCheck.value ?? '',
 					};
 					break;
 				case Rules.RULE_PURCHASE_PRICE_THRESHOLD:
-					const minAmount = findCheck(
+					const minAmountCheck = findCheck(
 						rule.check,
 						Checks.CHECK_ORDER_TOTAL,
 						CheckOperators.OPERATOR_LT
 					) as FraudProtectionSettingsSingleCheck;
-					const maxAmount = findCheck(
+					const maxAmountCheck = findCheck(
 						rule.check,
 						Checks.CHECK_ORDER_TOTAL,
 						CheckOperators.OPERATOR_GT
@@ -341,8 +341,12 @@ export const readRuleset = (
 					parsedUIConfig[ rule.key ] = {
 						enabled: true,
 						block: rule.outcome === Outcomes.BLOCK,
-						min_amount: readFormattedRulePrice( minAmount.value ),
-						max_amount: readFormattedRulePrice( maxAmount.value ),
+						min_amount: readFormattedRulePrice(
+							minAmountCheck.value
+						),
+						max_amount: readFormattedRulePrice(
+							maxAmountCheck.value
+						),
 					};
 					break;
 			}
