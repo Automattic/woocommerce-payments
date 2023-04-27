@@ -98,23 +98,12 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 * @param array  $data array of event properties.
 	 */
 	public function maybe_record_event( $event, $data = [] ) {
-
-		$user     = wp_get_current_user();
-		$site_url = get_option( 'siteurl' );
-
-		//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-		$data['_lg']      = isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '';
-		$data['blog_url'] = $site_url;
-		$data['blog_id']  = \Jetpack_Options::get_option( 'id' );
+		$user = wp_get_current_user();
 
 		// Top level events should not be namespaced.
 		if ( '_aliasUser' !== $event ) {
 			$event = self::$prefix . '_' . $event;
 		}
-
-		// Add event property for test mode vs. live mode events.
-		$data['test_mode']     = WC_Payments::mode()->is_test() ? 1 : 0;
-		$data['wcpay_version'] = get_option( 'woocommerce_woocommerce_payments_version' );
 
 		return $this->tracks_record_event( $user, $event, $data );
 	}
@@ -197,8 +186,17 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 */
 	private function tracks_build_event_obj( $user, $event_name, $properties = [] ) {
 		$identity = $this->tracks_get_identity( $user->ID );
+		$site_url = get_option( 'siteurl' );
 
+		//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+		$properties['_lg']       = isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '';
+		$properties['blog_url']  = $site_url;
+		$properties['blog_id']   = \Jetpack_Options::get_option( 'id' );
 		$properties['user_lang'] = $user->get( 'WPLANG' );
+
+		// Add event property for test mode vs. live mode events.
+		$properties['test_mode']     = WC_Payments::mode()->is_test() ? 1 : 0;
+		$properties['wcpay_version'] = get_option( 'woocommerce_woocommerce_payments_version' );
 
 		$blog_details = [
 			'blog_lang' => isset( $properties['blog_lang'] ) ? $properties['blog_lang'] : get_bloginfo( 'language' ),
