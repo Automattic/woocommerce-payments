@@ -4,6 +4,24 @@ declare interface RequirementError {
 	requirement: string;
 }
 
+declare interface Country {
+	key: string;
+	name: string;
+	types: BusinessType[];
+}
+
+declare interface BusinessType {
+	key: string;
+	name: string;
+	description: string;
+	structures: BusinessStructure[];
+}
+
+declare interface BusinessStructure {
+	key: string;
+	name: string;
+}
+
 declare const wcpaySettings: {
 	connectUrl: string;
 	isSubscriptionsActive: boolean;
@@ -69,6 +87,10 @@ declare const wcpaySettings: {
 	isFraudProtectionSettingsEnabled: boolean;
 	frtDiscoverBannerSettings: string;
 	onboardingTestMode: boolean;
+	onboardingFieldsData?: {
+		business_types: Country[];
+		mccs_display_tree: unknown[];
+	};
 };
 
 declare const wcTracks: any;

@@ -8,14 +8,13 @@ import React from 'react';
  */
 import { useOnboardingContext } from '../context';
 import { Item } from 'components/custom-select-control';
-import { useBusinessTypes } from 'onboarding-experiment/hooks';
 import { OnboardingFields } from '../types';
-import { BusinessType } from 'onboarding-experiment/types';
 import { OnboardingTextField, OnboardingSelectField } from '../form';
+import { getBusinessTypes } from 'wcpay/onboarding-experiment/utils';
 
 const BusinessDetails: React.FC = () => {
 	const { data, setData } = useOnboardingContext();
-	const { countries } = useBusinessTypes();
+	const countries = getBusinessTypes();
 
 	const selectedCountry = countries.find(
 		( country ) => country.key === data.country

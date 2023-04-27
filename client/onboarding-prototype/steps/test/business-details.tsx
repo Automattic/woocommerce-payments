@@ -11,11 +11,11 @@ import { mocked } from 'ts-jest/utils';
  */
 import BusinessDetails from '../business-details';
 import { OnboardingContextProvider } from '../../context';
-import { useBusinessTypes } from 'onboarding-experiment/hooks';
 import strings from '../../strings';
+import { getBusinessTypes } from 'onboarding-experiment/utils';
 
-jest.mock( 'onboarding-experiment/hooks', () => ( {
-	useBusinessTypes: jest.fn(),
+jest.mock( 'onboarding-experiment/utils', () => ( {
+	getBusinessTypes: jest.fn(),
 } ) );
 
 const countries = [
@@ -72,10 +72,7 @@ const countries = [
 	},
 ];
 
-mocked( useBusinessTypes ).mockReturnValue( {
-	countries,
-	isLoading: false,
-} );
+mocked( getBusinessTypes ).mockReturnValue( countries );
 
 describe( 'BusinessDetails', () => {
 	it( 'renders and updates fields data when they are changed', () => {
