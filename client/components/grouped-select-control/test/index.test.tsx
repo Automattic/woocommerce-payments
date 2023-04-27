@@ -8,33 +8,34 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal Dependencies
  */
-import GroupedSelectControl, { GroupedSelectControlProps } from '..';
+import GroupedSelectControl, { ListItem } from '..';
 
 describe( 'Grouped Select Control', () => {
 	const onChange = jest.fn();
 
-	const options = [
-		{ key: 'o1', name: 'Option 1', group: 'g1' },
-		{ key: 'o2', name: 'Option 2', group: 'g1' },
-		{ key: 'o3', name: 'Option 3', group: 'g2' },
-		{ key: 'o4', name: 'Option 4', group: 'g2' },
-		{ key: 'o5', name: 'Option 5', group: 'g3', context: 'z' },
-	];
-	const groups = [
-		{ key: 'g1', name: 'Group 1' },
-		{ key: 'g2', name: 'Group 2' },
-		{ key: 'g3', name: 'Group 3' },
+	const options: ListItem[] = [
+		{ type: 'group', key: 'g1', name: 'Group 1' },
+		{ type: 'option', key: 'o1', name: 'Option 1', group: 'g1' },
+		{ type: 'option', key: 'o2', name: 'Option 2', group: 'g1' },
+		{ type: 'group', key: 'g2', name: 'Group 2' },
+		{ type: 'option', key: 'o3', name: 'Option 3', group: 'g2' },
+		{ type: 'option', key: 'o4', name: 'Option 4', group: 'g2' },
+		{ type: 'group', key: 'g3', name: 'Group 3' },
+		{
+			type: 'option',
+			key: 'o5',
+			name: 'Option 5',
+			group: 'g3',
+			context: 'z',
+		},
 	];
 
-	const renderControl = (
-		props?: Partial< GroupedSelectControlProps< typeof options[ 0 ] > >
-	) =>
+	const renderControl = ( props?: any ) =>
 		render(
 			<GroupedSelectControl
 				{ ...props }
 				label="Group select"
 				options={ options }
-				groups={ groups }
 				onChange={ onChange }
 			/>
 		);
@@ -61,7 +62,7 @@ describe( 'Grouped Select Control', () => {
 
 	it( 'renders selected option instead of placeholder', () => {
 		renderControl( {
-			value: options[ 0 ],
+			value: options[ 1 ],
 			placeholder: 'Select an option',
 		} );
 
