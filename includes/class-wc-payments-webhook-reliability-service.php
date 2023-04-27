@@ -18,6 +18,8 @@ use WCPay\Logger;
  * then process them with ActionScheduler
  */
 class WC_Payments_Webhook_Reliability_Service {
+	const POST_TYPE                          = 'wcpay-webhook';
+	const TYPE_TAXONOMY                      = 'wcpay-webhook-type';
 	const CONTINUOUS_FETCH_FLAG_EVENTS_LIST  = 'has_more';
 	const CONTINUOUS_FETCH_FLAG_ACCOUNT_DATA = 'has_more_failed_events';
 	const WEBHOOK_FETCH_EVENTS_ACTION        = 'wcpay_webhook_fetch_events';
@@ -47,8 +49,8 @@ class WC_Payments_Webhook_Reliability_Service {
 	/**
 	 * WC_Payments_Webhook_Reliability_Service constructor.
 	 *
-	 * @param WC_Payments_API_Client                 $payments_api_client WooCommerce Payments API client.
-	 * @param WC_Payments_Action_Scheduler_Service   $action_scheduler_service Wrapper for ActionScheduler service.
+	 * @param WC_Payments_API_Client                 $payments_api_client        WooCommerce Payments API client.
+	 * @param WC_Payments_Action_Scheduler_Service   $action_scheduler_service   Wrapper for ActionScheduler service.
 	 * @param WC_Payments_Webhook_Processing_Service $webhook_processing_service WC_Payments_Webhook_Processing_Service instance.
 	 */
 	public function __construct(
@@ -96,6 +98,7 @@ class WC_Payments_Webhook_Reliability_Service {
 			return;
 		}
 
+		// Schedules another fetch in case this batch does not contain all stored events.
 		if ( $payload[ self::CONTINUOUS_FETCH_FLAG_EVENTS_LIST ] ?? false ) {
 			$this->schedule_fetch_events();
 		}
@@ -108,8 +111,7 @@ class WC_Payments_Webhook_Reliability_Service {
 				continue;
 			}
 
-			$this->set_event_data( $event );
-			$this->schedule_process_event( $event['id'] );
+			$this->store_event( $event );
 		}
 	}
 
@@ -117,15 +119,20 @@ class WC_Payments_Webhook_Reliability_Service {
 	 * Process an event through ActionScheduler.
 	 *
 	 * @param  string $event_id Event ID.
+	 * @deprecated This method (and the action in the constructor) should be removed in the next version.
 	 *
 	 * @return void
 	 */
 	public function process_event( string $event_id ) {
 		Logger::info( 'Start processing event: ' . $event_id );
 
-		$event_data = $this->get_event_data( $event_id );
+		// Use md5 to overcome the limit of transient name (172 characters) while Stripe event ID can be up to 255.
+		$transient_name = 'wcpay_failed_event_' . md5( $event_id );
 
-		$this->delete_event_data( $event_id );
+		$data       = get_transient( $transient_name );
+		$event_data = false === $data ? null : $data;
+
+		delete_transient( $transient_name );
 
 		if ( null === $event_data ) {
 			Logger::error( 'Stop processing as no data available for event: ' . $event_id );
@@ -141,18 +148,6 @@ class WC_Payments_Webhook_Reliability_Service {
 	}
 
 	/**
-	 * Schedule a job to process an event later.
-	 *
-	 * @param  string $event_id Event ID.
-	 *
-	 * @return void
-	 */
-	private function schedule_process_event( string $event_id ) {
-		$this->action_scheduler_service->schedule_job( time(), self::WEBHOOK_PROCESS_EVENT_ACTION, [ 'event_id' => $event_id ] );
-		Logger::info( 'Successfully schedule a job to processing event: ' . $event_id );
-	}
-
-	/**
 	 * Schedule a job to fetch failed events.
 	 *
 	 * @return void
@@ -163,52 +158,183 @@ class WC_Payments_Webhook_Reliability_Service {
 	}
 
 	/**
-	 * Get the transient name to interact with the storage.
-	 *
-	 * @param  string $event_id Event ID.
-	 *
-	 * @return string
+	 * Registers the service's post type.
 	 */
-	private function get_transient_name_for_event_id( string $event_id ): string {
-		// Use md5 to overcome the limit of transient name (172 characters) while Stripe event ID can be up to 255.
-		return 'wcpay_failed_event_' . md5( $event_id );
+	public function init() {
+		register_post_type(
+			self::POST_TYPE,
+			[
+				'public'       => false,
+				'show_in_rest' => false,
+				'can_export'   => false,
+			]
+		);
+
+		register_taxonomy(
+			self::TYPE_TAXONOMY,
+			self::POST_TYPE,
+			[
+				'public'       => false,
+				'show_in_rest' => false,
+			]
+		);
 	}
 
 	/**
-	 * Save the event data.
+	 * Checks if an event should be delayed for asynchronous processing.
 	 *
-	 * @param  array $event_data Event data.
+	 * This list includes events, which might arrive synchronously
+	 * and cause concurrency issues with the rest of the gateway's code.
 	 *
-	 * @return bool True if the value was set, false otherwise.
+	 * @param array $event The event array.
+	 * @return bool        Whether to delay the processing of the event.
 	 */
-	public function set_event_data( array $event_data ) {
-		if ( ! isset( $event_data['id'] ) ) {
-			return false;
+	public function should_delay_event( array $event ) {
+		return in_array(
+			$event['type'],
+			[
+				'payment_intent.succeeded',
+			],
+			true
+		);
+	}
+
+	/**
+	 * Stores an event to be processed later.
+	 *
+	 * @param array $event The event as it was received from the server.
+	 */
+	public function store_event( array $event ) {
+		// Retry mechanisms might try to store an existing webhook.
+		$args     = [ 'id' => $event['id'] ];
+		$existing = $this->get_events( $args );
+		if ( ! empty( $existing ) ) {
+			return;
 		}
 
-		return set_transient( $this->get_transient_name_for_event_id( $event_data['id'] ), $event_data, DAY_IN_SECONDS );
+		$post_arr = [
+			'post_title'   => $event['id'] . ' (' . $event['type'] . ')',
+			'post_name'    => $event['id'],
+			'post_type'    => self::POST_TYPE,
+			'post_content' => maybe_serialize( $event['data'] ),
+			'menu_order'   => $event['livemode'] ? 1 : 0,
+			'tax_input'    => [
+				self::TYPE_TAXONOMY => [ $event['type'] ],
+			],
+		];
+
+		switch ( $event['type'] ) {
+			case 'payment_intent.succeeded':
+				$post_arr['post_parent'] = $event['data']['object']['metadata']['order_id'];
+				break;
+		}
+
+		$post_id = wp_insert_post( $post_arr );
+		if ( is_wp_error( $post_id ) || 0 <= $post_id ) {
+			Logger::error( 'Could not store event in CPT. Event ID: ' . $event['id'] );
+		}
 	}
 
 	/**
-	 * Delete the event data.
+	 * Converts a post to an array, which resembles an event from the server.
 	 *
-	 * @param  string $event_id Event ID.
-	 *
-	 * @return bool True if the event data is deleted, false otherwise.
+	 * @param WP_Post $post The post to convert.
+	 * @return array
 	 */
-	public function delete_event_data( string $event_id ): bool {
-		return delete_transient( $this->get_transient_name_for_event_id( $event_id ) );
+	protected function post_to_event( $post ) {
+		$type = null;
+
+		foreach ( wp_get_post_terms( $post->ID, self::TYPE_TAXONOMY ) as $term ) {
+			$type = $term->name;
+		}
+
+		return [
+			'id'       => $post->post_name,
+			'type'     => $type,
+			'livemode' => $post->menu_order > 0,
+			'data'     => maybe_unserialize( $post->post_content ),
+			'_post_id' => $post->ID,
+		];
 	}
 
 	/**
-	 * Retrieve the event data. Return null if the data does not exist.
+	 * Loads and processes events.
 	 *
-	 * @param  string $event_id Event ID.
-	 *
-	 * @return ?array
+	 * @param array $args Arguments for the `get_events` method.
+	 * @return array[]    The processed events.
 	 */
-	public function get_event_data( string $event_id ) {
-		$data = get_transient( $this->get_transient_name_for_event_id( $event_id ) );
-		return false === $data ? null : $data;
+	public function load_and_process_events( $args ) {
+		$events = $this->get_events( $args );
+
+		foreach ( $events as $event ) {
+			$this->process( $event );
+		}
+
+		return $events;
+	}
+
+	/**
+	 * Loads stored events from the database.
+	 *
+	 * @param array $extra {
+	 *     Additional arguments for the query (Optional).
+	 *
+	 *     @type string       $id    The ID of an existing evnet when querying a specific one.
+	 *     @type int          $count Limit of the query, `-1` removes it. May cause performance issues. Defaults to 10.
+	 *     @type int          $order The ID of an order, if the webhook is related to that order.
+	 *     @type string|array $type  The type (string) or types (array) of events to query. Defaults to all.
+	 *     @type bool         $live  Whether to load live or test mode events. Defaults to the current gateway mode.
+	 * }
+	 * @return array[] Stored events, which match the given criteria. See `->post_to_event()`.
+	 */
+	protected function get_events( $extra = null ) {
+		$live = isset( $extra['live'] ) ? $extra['live'] : ! WC_Payments::get_gateway()->is_in_test_mode();
+		$args = [
+			'post_type'      => self::POST_TYPE,
+			'post_status'    => 'any',
+			'posts_per_page' => 10,
+			'menu_order'     => $live ? 1 : 0,
+		];
+
+		if ( isset( $extra['id'] ) ) {
+			$args['name'] = $extra['id'];
+		}
+
+		if ( isset( $extra['count'] ) ) {
+			$args['posts_per_page'] = $extra['count'];
+		}
+
+		if ( isset( $extra['type'] ) ) {
+			$args['tax_query'] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+				[
+					'taxonomy' => self::TYPE_TAXONOMY,
+					'terms'    => $extra['type'],
+					'field'    => 'name',
+				],
+			];
+		}
+
+		if ( isset( $extra['order'] ) ) {
+			$args['post_parent'] = absint( $extra['order'] );
+		}
+
+		return array_map( [ $this, 'post_to_event' ], get_posts( $args ) );
+	}
+
+	/**
+	 * Processes an event, and removes it from the storage once processed.
+	 *
+	 * @param array $event The event, formatted by `post_to_event()`.
+	 */
+	protected function process( $event ) {
+		// Process the event.
+		try {
+			$this->webhook_processing_service->process( $event );
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed processing event ' . $event_id . '. Reason: ' . $e->getMessage() );
+		}
+
+		// Immediately delete the event.
+		wp_delete_post( $event['_post_id'], true );
 	}
 }

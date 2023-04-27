@@ -232,7 +232,7 @@ class WC_Payments {
 	 *
 	 * @var WC_Payments_Webhook_Reliability_Service
 	 */
-	private static $webhook_reliability_service;
+	public static $webhook_reliability_service;
 
 	/**
 	 * Holds WCPay's working mode.
@@ -451,7 +451,11 @@ class WC_Payments {
 		self::$onboarding_service                  = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
 		self::$platform_checkout_util              = new Platform_Checkout_Utilities();
 
-		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
+		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::$customer_service, self::$database_cache );
+		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
+		add_action( 'init', [ self::$webhook_reliability_service, 'init' ] );
+
+		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service, self::$webhook_reliability_service );
 
 		$payment_method_classes = [
 			CC_Payment_Method::class,
@@ -486,7 +490,7 @@ class WC_Payments {
 				$payment_methods[ $payment_method->get_id() ] = $payment_method;
 			}
 
-			self::$card_gateway         = new UPE_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service );
+			self::$card_gateway         = new UPE_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service, self::$webhook_reliability_service );
 			self::$wc_payments_checkout = new WC_Payments_UPE_Checkout( self::get_gateway(), self::$platform_checkout_util, self::$account, self::$customer_service );
 		} else {
 			self::$card_gateway         = self::$legacy_card_gateway;
@@ -494,9 +498,6 @@ class WC_Payments {
 		}
 
 		self::$mode = new Mode( self::$card_gateway );
-
-		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$customer_service, self::$database_cache );
-		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
 
 		self::$customer_service_api = new WC_Payments_Customer_Service_API( self::$customer_service );
 
@@ -920,7 +921,7 @@ class WC_Payments {
 		$timeline_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-webhook-controller.php';
-		$webhook_controller = new WC_REST_Payments_Webhook_Controller( self::$api_client, self::$webhook_processing_service );
+		$webhook_controller = new WC_REST_Payments_Webhook_Controller( self::$api_client, self::$webhook_processing_service, self::$webhook_reliability_service );
 		$webhook_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-tos-controller.php';

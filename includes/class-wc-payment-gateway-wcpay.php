@@ -183,6 +183,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected $platform_checkout_util;
 
 	/**
+	 * Webhook Reliability Service.
+	 *
+	 * @var WC_Payments_Webhook_Reliability_Service
+	 */
+	protected $webhook_reliability_service;
+
+	/**
 	 * WC_Payment_Gateway_WCPay constructor.
 	 *
 	 * @param WC_Payments_API_Client               $payments_api_client             - WooCommerce Payments API client.
@@ -850,6 +857,31 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
+
+			// Load and process stored webhooks, related to the order. They might complete the order.
+			$events = [];
+			if ( ! empty( $events ) ) {
+				// Note: This is not enough. We should do all post-payment step shere, incl. saving cards and clearing the cart.
+				if ( $this->order_service->is_order_paid( $order ) ) {
+					Logger::log(
+						sprintf(
+							'After encountering "%s" as an exception while processing a payment, %d event(s) were processed and the payment was marked as complete.',
+							$e->getMessage(),
+							count( $events )
+						)
+					);
+
+					$order->add_order_note( __( 'Payment could not be completed, but an incoming webhook recovered the process.', 'woocommerce-payments' ) );
+
+					wc_reduce_stock_levels( $order_id );
+					WC()->cart->empty_cart();
+
+					return [
+						'result'   => 'success',
+						'redirect' => $this->get_return_url( $order ),
+					];
+				}
+			}
 
 			// Re-throw the exception after setting everything up.
 			// This makes the error notice show up both in the regular and block checkout.
