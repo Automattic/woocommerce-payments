@@ -50,6 +50,8 @@ to catalog our packages and provide guidance to a developer who wants to test an
 | [@wordpress/date](https://www.npmjs.com/package/@wordpress/date) | Date module for WordPress.| JS unit tests are passing| From v4.6.0, the `TZ` env var from the Jest global setup is not taken into account anymore, hence unit tests fail. |
 | [@wordpress/api-fetch](https://www.npmjs.com/package/@wordpress/api-fetch) | Utility to make WordPress REST API requests. | JS unit tests are passing. | |
 | [@woocommerce/date](https://www.npmjs.com/package/@woocommerce/date) | A collection of utilities to display and work with date values. | JS unit tests are passing. | Though there is no direct use of this package, it is used by [jest-test-file-setup.js](https://github.com/Automattic/woocommerce-payments/blob/b64178138d44d3bd3aa2a692d1c84e4d91e521b9/tests/js/jest-test-file-setup.js#L25)  |
+| [@wordpress/hooks](https://www.npmjs.com/package/@wordpress/hooks) | A lightweight & efficient EventManager for JavaScript.| JS unit tests are passing| |
+
 
 ### PHP Runtime Dependencies
 | Package Name | Usage Summary | Testing | Notes |
