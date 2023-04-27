@@ -124,7 +124,7 @@ module.exports = {
 	},
 	plugins: [
 		new ProvidePlugin( {
-			process: 'process/browser',
+			process: 'process/browser.js',
 		} ),
 		new MiniCssExtractPlugin( { filename: '[name].css' } ),
 		new WooCommerceDependencyExtractionWebpackPlugin( {
