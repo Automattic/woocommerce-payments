@@ -35,7 +35,7 @@ const FraudProtectionRuleCardNotice: React.FC< FraudProtectionRuleCardNoticeProp
 
 	return (
 		<BannerNotice
-			status={ type } // Type 'string' is not assignable to type 'Status | undefined'.
+			status={ type }
 			icon={ icon }
 			className={
 				'fraud-protection-rule-card-notice fraud-protection-rule-card-notice-' +
