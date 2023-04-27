@@ -16,10 +16,10 @@ to catalog our packages and provide guidance to a developer who wants to test an
   minimum supported versions of [WordPress](https://github.com/WordPress/wordpress-develop/blob/x.y.z/package.json) and [WooCommerce](https://github.com/woocommerce/woocommerce/blob/x.y.z/plugins/woocommerce/package.json) (replace `x.y.z` by the minimum supported version in the link), giving us the best chance of catching any issues with the bundled
   packages early.
 * Following on from above, we use the `@woocommerce/dependency-extraction-webpack-plugin` to make WebPack aware of what
-  can be found globally at runtime. The configuration for this can be found in 
-  [`webpack.config.js`](https://github.com/Automattic/woocommerce-payments/blob/develop/webpack.config.js). Any `wordpress/*`, `woocommerce/*` 
-  and [some other packages](https://www.npmjs.com/package/@woocommerce/dependency-extraction-webpack-plugin) are removed from 
-  the built bundle by default, in addition to any packages listed in the configuration file. Returning `null` in the configuration 
+  can be found globally at runtime. The configuration for this can be found in
+  [`webpack.config.js`](https://github.com/Automattic/woocommerce-payments/blob/develop/webpack.config.js). Any `wordpress/*`, `woocommerce/*`
+  and [some other packages](https://www.npmjs.com/package/@woocommerce/dependency-extraction-webpack-plugin) are removed from
+  the built bundle by default, in addition to any packages listed in the configuration file. Returning `null` in the configuration
   indicates that we want to bundle the package rather than using the globally available one.
 
 ## Review Process
@@ -48,6 +48,7 @@ to catalog our packages and provide guidance to a developer who wants to test an
 | [@wordpress/data](https://www.npmjs.com/package/@wordpress/data) | It serves as a hub to manage application state for both plugins and WordPress itself, providing tools to manage data within and between distinct modules.| JS unit tests are passing| |
 | [@wordpress/i18n](https://www.npmjs.com/package/@wordpress/i18n) | Internationalization utilities for client-side localization.| JS unit tests are passing. | The `wpi18n` used in `postbuild:client` script comes from `node-wp-i18n` and is thus separate from this. |
 | [@wordpress/date](https://www.npmjs.com/package/@wordpress/date) | Date module for WordPress.| JS unit tests are passing| From v4.6.0, the `TZ` env var from the Jest global setup is not taken into account anymore, hence unit tests fail. |
+| [@wordpress/api-fetch](https://www.npmjs.com/package/@wordpress/api-fetch) | Utility to make WordPress REST API requests. | JS unit tests are passing. | |
 
 ### PHP Runtime Dependencies
 | Package Name | Usage Summary | Testing | Notes |
