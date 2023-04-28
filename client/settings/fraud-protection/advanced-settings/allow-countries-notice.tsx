@@ -12,12 +12,6 @@ import FraudPreventionSettingsContext from './context';
 import FraudProtectionRuleCardNotice from './rule-card-notice';
 import { getSettingCountries, getSupportedCountriesType } from './utils';
 
-declare global {
-	interface Window {
-		wcSettings: Record< string, any >;
-	}
-}
-
 const getNoticeText = ( filterType: string, blocking: boolean ) => {
 	if ( 'all_except' === filterType ) {
 		return blocking
@@ -80,7 +74,7 @@ const AllowedCountriesNotice: React.FC< AllowedCountriesNoticeProps > = ( {
 				{ settingCountries
 					.map(
 						( countryCode: string ) =>
-							window.wcSettings.countries[ countryCode ] ?? false
+							wcSettings.countries[ countryCode ] ?? false
 					)
 					.filter( ( element: string ) => element )
 					.join( ', ' ) }

@@ -12,7 +12,7 @@ import {
 } from '../interfaces';
 
 export const getSupportedCountriesType = (): string => {
-	return window.wcSettings.admin.preloadSettings.general
+	return wcSettings.admin.preloadSettings.general
 		.woocommerce_allowed_countries;
 };
 export const getSettingCountries = (): string[] => {
@@ -21,10 +21,10 @@ export const getSettingCountries = (): string[] => {
 		case 'all':
 			return [];
 		case 'all_except':
-			return window.wcSettings.admin.preloadSettings.general
+			return wcSettings.admin.preloadSettings.general
 				.woocommerce_all_except_countries;
 		case 'specific':
-			return window.wcSettings.admin.preloadSettings.general
+			return wcSettings.admin.preloadSettings.general
 				.woocommerce_specific_allowed_countries;
 		default:
 			return [];
