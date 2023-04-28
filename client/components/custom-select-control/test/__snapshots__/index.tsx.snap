@@ -21,7 +21,11 @@ exports[`CustomSelectControl renders options 1`] = `
       id="downshift-0-toggle-button"
       type="button"
     >
-      Pineapple
+      <span
+        class="components-custom-select-control__button-value"
+      >
+        Pineapple
+      </span>
       <svg
         aria-hidden="true"
         class="components-custom-select-control__button-icon"
@@ -108,7 +112,11 @@ exports[`CustomSelectControl renders options with custom children 1`] = `
       id="downshift-2-toggle-button"
       type="button"
     >
-      Pineapple
+      <span
+        class="components-custom-select-control__button-value"
+      >
+        Pineapple
+      </span>
       <svg
         aria-hidden="true"
         class="components-custom-select-control__button-icon"
@@ -210,7 +218,11 @@ exports[`CustomSelectControl renders with placeholder 1`] = `
       id="downshift-4-toggle-button"
       type="button"
     >
-      Which fruit do you like best?
+      <span
+        class="components-custom-select-control__button-value"
+      >
+        Which fruit do you like best?
+      </span>
       <svg
         aria-hidden="true"
         class="components-custom-select-control__button-icon"
