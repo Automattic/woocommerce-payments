@@ -35,6 +35,7 @@ use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\WooPay\WooPay_Order_Status_Sync;
 use WCPay\WooPay\WooPay_Utilities;
+use WCPay\WooPay_Tracker;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Tracker;
 
@@ -183,6 +184,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected $woopay_util;
 
 	/**
+	 * WooPay Tracker.
+	 *
+	 * @var WooPay_Tracker
+	 */
+	protected $woopay_tracker;
+
+	/**
 	 * WC_Payment_Gateway_WCPay constructor.
 	 *
 	 * @param WC_Payments_API_Client               $payments_api_client             - WooCommerce Payments API client.
@@ -192,6 +200,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service        - Action Scheduler service instance.
 	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter - Rate Limiter for failed transactions.
 	 * @param WC_Payments_Order_Service            $order_service                   - Order class instance.
+	 * @param WooPay_Tracker                       $woopay_Tracker                  - WooPay Tracker instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
@@ -200,7 +209,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		WC_Payments_Token_Service $token_service,
 		WC_Payments_Action_Scheduler_Service $action_scheduler_service,
 		Session_Rate_Limiter $failed_transaction_rate_limiter = null,
-		WC_Payments_Order_Service $order_service
+		WC_Payments_Order_Service $order_service,
+		WooPay_Tracker $woopay_tracker
 	) {
 		$this->payments_api_client             = $payments_api_client;
 		$this->account                         = $account;
@@ -209,6 +219,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->action_scheduler_service        = $action_scheduler_service;
 		$this->failed_transaction_rate_limiter = $failed_transaction_rate_limiter;
 		$this->order_service                   = $order_service;
+		$this->woopay_tracker                  = $woopay_tracker;
 
 		$this->id                 = static::GATEWAY_ID;
 		$this->icon               = plugins_url( 'assets/images/payment-methods/cc.svg', WCPAY_PLUGIN_FILE );
@@ -1770,7 +1781,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function update_is_woopay_enabled( $is_woopay_enabled ) {
 		$current_is_woopay_enabled = 'yes' === $this->get_option( 'platform_checkout', 'no' );
 		if ( $is_woopay_enabled !== $current_is_woopay_enabled ) {
-			wc_admin_record_tracks_event(
+			$this->woopay_tracker->maybe_record_admin_event(
 				$is_woopay_enabled ? 'woopay_enabled' : 'woopay_disabled',
 				[ 'test_mode' => WC_Payments::mode()->is_test() ? 1 : 0 ]
 			);

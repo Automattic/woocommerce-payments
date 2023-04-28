@@ -21,11 +21,18 @@ defined( 'ABSPATH' ) || exit; // block direct access.
 class WooPay_Tracker extends Jetpack_Tracks_Client {
 
 	/**
-	 * WooPay event prefix
+	 * WooPay user event prefix
 	 *
 	 * @var string
 	 */
-	private static $prefix = 'woocommerceanalytics';
+	private static $shopper_prefix = 'woocommerceanalytics';
+
+	/**
+	 * Platform checkout admin event prefix
+	 *
+	 * @var string
+	 */
+	private static $admin_prefix = 'wcadmin';
 
 	/**
 	 * WCPay http interface.
@@ -98,14 +105,29 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 * @param array  $data array of event properties.
 	 */
 	public function maybe_record_event( $event, $data = [] ) {
-		$user = wp_get_current_user();
-
 		// Top level events should not be namespaced.
 		if ( '_aliasUser' !== $event ) {
-			$event = self::$prefix . '_' . $event;
+			$event = self::$shopper_prefix . '_' . $event;
 		}
 
-		return $this->tracks_record_event( $user, $event, $data );
+		return $this->tracks_record_event( $event, $data );
+	}
+
+	/**
+	 * Generic method to track admin events.
+	 *
+	 * @param string $event name of the event.
+	 * @param array  $data array of event properties.
+	 */
+	public function maybe_record_admin_event( $event, $data = [] ) {
+		// Top level events should not be namespaced.
+		if ( '_aliasUser' !== $event ) {
+			$event = self::$admin_prefix . '_' . $event;
+		}
+
+		$is_admin_event = true;
+
+		return $this->tracks_record_event( $event, $data, $is_admin_event );
 	}
 
 	/**
@@ -143,20 +165,22 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	/**
 	 * Record an event in Tracks - this is the preferred way to record events from PHP.
 	 *
-	 * @param mixed  $user                   username, user_id, or WP_user object.
 	 * @param string $event_name             The name of the event.
 	 * @param array  $properties             Custom properties to send with the event.
+	 * @param bool   $is_admin_event         Indicate whether the event is emitted from admin area.
 	 *
 	 * @return bool|array|\WP_Error|\Jetpack_Tracks_Event
 	 */
-	public function tracks_record_event( $user, $event_name, $properties = [] ) {
+	public function tracks_record_event( $event_name, $properties = [], $is_admin_event = false ) {
+
+		$user = wp_get_current_user();
 
 		// We don't want to track user events during unit tests/CI runs.
 		if ( $user instanceof \WP_User && 'wptests_capabilities' === $user->cap_key ) {
 			return false;
 		}
 
-		if ( ! $this->should_enable_tracking() ) {
+		if ( ! $is_admin_event && ! $this->should_enable_tracking() ) {
 			return false;
 		}
 
