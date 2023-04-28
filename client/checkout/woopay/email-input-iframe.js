@@ -320,7 +320,7 @@ export const handleWooPayEmailInput = async (
 			hasWooPaySubscriptionLoginError = false;
 		}
 
-		if ( getConfig( 'woopayNeedLogin' ) ) {
+		if ( getConfig( 'woopayNeedsLogin' ) ) {
 			try {
 				const userExistsData = await request(
 					getConfig( 'userExistsEndpoint' ),
