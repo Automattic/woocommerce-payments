@@ -298,7 +298,7 @@ export const handleWooPayEmailInput = async (
 	}
 
 	const dispatchUserExistEvent = ( userExist ) => {
-		const WooPayUserCheckEvent = new CustomEvent( 'WooPayUserCheck', {
+		const woopayUserCheckEvent = new CustomEvent( 'woopayUserCheck', {
 			detail: {
 				isRegisteredUser: userExist,
 			},
