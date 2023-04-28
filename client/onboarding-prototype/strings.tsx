@@ -132,7 +132,10 @@ export default {
 			'Select the legal category of your business',
 			'woocommerce-payments'
 		),
-		mcc: __( 'Please select your industry', 'woocommerce-payments' ),
+		mcc: __(
+			'Select the primary industry of your business',
+			'woocommerce-payments'
+		),
 		annual_revenue: __(
 			'Select your annual revenue',
 			'woocommerce-payments'
