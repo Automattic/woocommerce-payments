@@ -829,7 +829,7 @@ class WC_Payments_Account {
 	 * @return string Stripe account login url.
 	 */
 	private function get_login_url() {
-		return add_query_arg(
+		return add_query_arg( // nosemgrep: audit.php.wp.security.xss.query-arg -- no user input data used.
 			[
 				'wcpay-login' => '1',
 				'_wpnonce'    => wp_create_nonce( 'wcpay-login' ),
@@ -985,7 +985,7 @@ class WC_Payments_Account {
 		);
 
 		if ( 1 === $is_from_subscription_product_publish ) {
-			return add_query_arg(
+			return add_query_arg( // nosemgrep: audit.php.wp.security.xss.query-arg -- specific admin url passed in.
 				[ 'wcpay-subscriptions-onboarded' => '1' ],
 				get_edit_post_link( $matches[1], 'url' )
 			);
