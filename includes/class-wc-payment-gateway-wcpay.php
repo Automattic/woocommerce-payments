@@ -1118,7 +1118,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_payment_methods( $payment_methods );
 				$request->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
 
-				if ( 1 === count( $payment_methods ) && 'card' !== $payment_methods[0] ) {
+				// The below if-statement ensures the support for UPE payment methods.
+				if ( $this->upe_needs_redirection( $payment_methods ) ) {
 					$request->set_return_url(
 						wp_sanitize_redirect(
 							esc_url_raw(
@@ -3464,5 +3465,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Determine whether redirection is needed for the non-card UPE payment method.
+	 *
+	 * @param array $payment_methods The list of payment methods used for the order processing, usually consists of one method only.
+	 * @return boolean True if the arrray consist of only one payment method which is not a card. False otherwise.
+	 */
+	private function upe_needs_redirection( $payment_methods ) {
+		return 1 === count( $payment_methods ) && 'card' !== $payment_methods[0];
 	}
 }
