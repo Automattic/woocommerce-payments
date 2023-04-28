@@ -24,11 +24,7 @@ import { getUPEConfig } from 'utils/checkout';
 import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
-import {
-	getTerms,
-	isWCPayChosen,
-	getPaymentIntentFromSession,
-} from '../utils/upe';
+import { getTerms, getPaymentIntentFromSession } from '../utils/upe';
 import { decryptClientSecret } from '../utils/encryption';
 import enableStripeLinkPaymentMethod from '../stripe-link';
 import apiRequest from '../utils/request';
@@ -735,7 +731,7 @@ jQuery( function ( $ ) {
 		const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
 		if (
 			! isUsingSavedPaymentMethod( paymentMethodType ) &&
-			isWCPayChosen()
+			null !== paymentMethodType
 		) {
 			if ( isChangingPayment ) {
 				handleUPEAddPayment( $( '#order_review' ) );
