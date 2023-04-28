@@ -82,19 +82,11 @@ export const getSelectedUPEGatewayPaymentMethod = () => {
 	let selectedGatewayId = null;
 
 	// Handle payment method selection on the Checkout page or Add Payment Method page where class names differ.
-
-	if ( null !== document.querySelector( 'li.wc_payment_method' ) ) {
-		selectedGatewayId = document
-			.querySelector( 'li.wc_payment_method input.input-radio:checked' )
-			.getAttribute( 'id' );
-	} else if (
-		null !== document.querySelector( 'li.woocommerce-PaymentMethod' )
-	) {
-		selectedGatewayId = document
-			.querySelector(
-				'li.woocommerce-PaymentMethod input.input-radio:checked'
-			)
-			.getAttribute( 'id' );
+	const radio = document.querySelector(
+		'li.wc_payment_method input.input-radio:checked, li.woocommerce-PaymentMethod input.input-radio:checked'
+	);
+	if ( null !== radio ) {
+		selectedGatewayId = radio.id;
 	}
 
 	if ( 'payment_method_woocommerce_payments' === selectedGatewayId ) {
