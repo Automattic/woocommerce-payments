@@ -32,6 +32,7 @@ use WC_Payments_Token_Service;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Utils;
 use WC_Payments_Features;
+use WCPay\Platform_Checkout_Tracker;
 use WP_User;
 
 
@@ -66,6 +67,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 * @param array                                $payment_methods                 - Array of payment methods to supply to parent.
 	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter - Session Rate Limiter instance.
 	 * @param WC_Payments_Order_Service            $order_service                   - Order class instance.
+	 * @param Platform_Checkout_Tracker            $platform_checkout_tracker       - Platform Checkout Tracker instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
@@ -76,9 +78,10 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 		UPE_Payment_Method $payment_method,
 		array $payment_methods,
 		Session_Rate_Limiter $failed_transaction_rate_limiter,
-		WC_Payments_Order_Service $order_service
+		WC_Payments_Order_Service $order_service,
+		Platform_Checkout_Tracker $platform_checkout_tracker
 	) {
-		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $payment_methods, $failed_transaction_rate_limiter, $order_service );
+		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $payment_methods, $failed_transaction_rate_limiter, $order_service, $platform_checkout_tracker );
 		$this->method_description = __( 'Payments made simple, with no monthly fees - designed exclusively for WooCommerce stores. Accept credit cards, debit cards, and other popular payment methods.', 'woocommerce-payments' );
 		$this->description        = '';
 		$this->stripe_id          = $payment_method->get_id();
