@@ -12,7 +12,7 @@ import { WoopayExpressCheckoutButton } from './woopay-express-checkout-button';
 import WCPayAPI from '../../api';
 import request from '../../utils/request';
 
-const renderWooPayExpressButton = () => {
+const renderWooPayExpressCheckoutButton = () => {
 	// Create an API object, which will be used throughout the checkout.
 	const api = new WCPayAPI(
 		{
