@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useCallback, useEffect } from 'react';
+import React from 'react';
 import './style.scss';
 
 interface AmountInputProps {
@@ -13,6 +13,9 @@ interface AmountInputProps {
 	onChange?: ( value: string ) => void;
 }
 
+// Only allow digits, a single dot, and more digits (or an empty value).
+const validateInput = ( subject: string ) => /^(\d+\.?\d*)?$/m.test( subject );
+
 const AmountInput: React.FC< AmountInputProps > = ( {
 	id,
 	prefix,
@@ -21,23 +24,13 @@ const AmountInput: React.FC< AmountInputProps > = ( {
 	help,
 	onChange = () => null,
 } ) => {
-	// Only allow decimals, a single dot, and more decimals (or an empty value).
-	const validateInput = useCallback(
-		( subject ) => /^(\d+\.?\d*)?$/m.test( subject ),
-		[]
-	);
-
-	useEffect( () => {
-		if ( ! validateInput( value ) ) {
-			onChange( '' );
-		}
-	}, [ validateInput, value, onChange ] );
-
-	if ( isNaN( Number( value ) ) || null === value ) value = '';
+	if ( isNaN( Number( value ) ) ) value = '';
 
 	const handleChange = ( inputValue: string ) => {
 		if ( validateInput( inputValue ) ) {
 			onChange( inputValue );
+		} else {
+			onChange( '' );
 		}
 	};
 
