@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { FraudOutcomeStatus } from '../../../data';
+import { FraudMetaBoxType, FraudOutcomeStatus } from '../../../data';
 import {
 	getBlockedListColumns,
 	getBlockedListColumnsStructure,
@@ -39,6 +39,15 @@ describe( 'Blocked fraud outcome transactions columns', () => {
 			status: '',
 		},
 		status: 'block' as FraudOutcomeStatus,
+		fraud_meta_box_type: 'block' as FraudMetaBoxType,
+	};
+
+	const dataWithPaymentIntent = {
+		...data,
+		payment_intent: {
+			id: 'pi_123',
+			status: '',
+		},
 	};
 
 	beforeEach( () => {
@@ -51,6 +60,16 @@ describe( 'Blocked fraud outcome transactions columns', () => {
 
 	it( 'should render the column correctly', () => {
 		const result = getBlockedListColumnsStructure( data, columns );
+
+		expect( result ).toHaveLength( 4 );
+		expect( result ).toMatchSnapshot();
+	} );
+
+	it( 'should render the column correctly with the payment intent link', () => {
+		const result = getBlockedListColumnsStructure(
+			dataWithPaymentIntent,
+			columns
+		);
 
 		expect( result ).toHaveLength( 4 );
 		expect( result ).toMatchSnapshot();

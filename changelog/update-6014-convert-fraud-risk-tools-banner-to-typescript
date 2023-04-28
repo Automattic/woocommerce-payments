@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Change all the JS files to TSX files in the client/components/fraud-risk-tools-banner directory and its subdirectories.

@@ -18,7 +18,7 @@ exports[`Address mismatch card renders correctly 1`] = `
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens for differences between the shipping information and the billing information (street, state, post code, and country).
+          This filter screens for differences between the shipping information and the billing information (country).
         </p>
       </div>
     </div>
@@ -102,7 +102,7 @@ exports[`Address mismatch card renders correctly when enabled 1`] = `
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens for differences between the shipping information and the billing information (street, state, post code, and country).
+          This filter screens for differences between the shipping information and the billing information (country).
         </p>
       </div>
     </div>
@@ -252,7 +252,7 @@ exports[`Address mismatch card renders correctly when enabled and checked 1`] = 
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens for differences between the shipping information and the billing information (street, state, post code, and country).
+          This filter screens for differences between the shipping information and the billing information (country).
         </p>
       </div>
     </div>
@@ -417,7 +417,7 @@ exports[`Address mismatch card renders like disabled when checked, but not enabl
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens for differences between the shipping information and the billing information (street, state, post code, and country).
+          This filter screens for differences between the shipping information and the billing information (country).
         </p>
       </div>
     </div>
