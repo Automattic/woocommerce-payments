@@ -17,6 +17,7 @@ import {
 	getBusinessTypes,
 	getMccsFlatList,
 } from 'wcpay/onboarding-experiment/utils';
+import strings from 'onboarding-prototype/strings';
 
 const BusinessDetails: React.FC = () => {
 	const { data, setData } = useOnboardingContext();
@@ -91,12 +92,12 @@ const BusinessDetails: React.FC = () => {
 				) }
 
 			<GroupedSelectControl
-				label="Chose your industry"
+				label={ strings.fields.mcc }
 				options={ mccsFlatList }
 				onChange={ handleMccChange }
 				value={ selectedMcc }
 				searchable
-				placeholder="Select an option"
+				placeholder={ strings.placeholders.mcc }
 			/>
 		</>
 	);
