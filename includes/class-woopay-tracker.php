@@ -25,7 +25,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 *
 	 * @var string
 	 */
-	private static $shopper_prefix = 'woocommerceanalytics';
+	private static $user_prefix = 'woocommerceanalytics';
 
 	/**
 	 * Platform checkout admin event prefix
@@ -107,7 +107,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	public function maybe_record_event( $event, $data = [] ) {
 		// Top level events should not be namespaced.
 		if ( '_aliasUser' !== $event ) {
-			$event = self::$shopper_prefix . '_' . $event;
+			$event = self::$user_prefix . '_' . $event;
 		}
 
 		return $this->tracks_record_event( $event, $data );
