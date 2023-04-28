@@ -28,7 +28,7 @@ export interface ListItem extends Omit< Item, 'group' > {
 
 export interface GroupedSelectControlProps< ItemType > {
 	label: string;
-	options: ListItem[];
+	options: ItemType[];
 	value?: ItemType;
 	placeholder?: string;
 	searchable?: boolean;
@@ -36,7 +36,7 @@ export interface GroupedSelectControlProps< ItemType > {
 	onChange: ( value?: ItemType ) => void;
 }
 
-const GroupedSelectControl = < ItemType extends Item >( {
+const GroupedSelectControl = < ItemType extends ListItem >( {
 	label,
 	options: listItems,
 	value,

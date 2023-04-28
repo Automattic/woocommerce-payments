@@ -8,7 +8,9 @@ import React from 'react';
  */
 import { useOnboardingContext } from '../context';
 import { Item } from 'components/custom-select-control';
-import GroupedSelectControl from 'components/grouped-select-control';
+import GroupedSelectControl, {
+	ListItem,
+} from 'components/grouped-select-control';
 import { OnboardingFields } from '../types';
 import { OnboardingTextField, OnboardingSelectField } from '../form';
 import {
@@ -42,7 +44,12 @@ const BusinessDetails: React.FC = () => {
 		setData( newData );
 	};
 
-	const handleMccChange = ( selectedItem?: Item ) => {
+	const mccsFlatList = getMccsFlatList();
+	const selectedMcc =
+		mccsFlatList.find( ( item ) => item.key === data.mcc ) ||
+		( {} as ListItem );
+
+	const handleMccChange = ( selectedItem?: ListItem ) => {
 		const newData: OnboardingFields = {
 			mcc: selectedItem?.key,
 		};
@@ -85,8 +92,9 @@ const BusinessDetails: React.FC = () => {
 
 			<GroupedSelectControl
 				label="Chose your industry"
-				options={ getMccsFlatList() }
+				options={ mccsFlatList }
 				onChange={ handleMccChange }
+				value={ selectedMcc }
 				searchable
 				placeholder="Select an option"
 			/>
