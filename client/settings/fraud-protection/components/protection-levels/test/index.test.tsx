@@ -8,7 +8,7 @@ import { render } from '@testing-library/react';
  * Internal dependencies
  */
 import ProtectionLevels from '../index';
-import { AdvancedFraudProtectionSettings } from 'wcpay/settings/fraud-protection/interfaces';
+import { FraudProtectionRule } from 'wcpay/settings/fraud-protection/interfaces';
 
 declare const global: {
 	wcpaySettings: {
@@ -16,14 +16,12 @@ declare const global: {
 	};
 };
 
-let mockAdvancedFraudProtectionSettings:
-	| AdvancedFraudProtectionSettings[]
-	| string = [];
+let mockFraudProtectionRule: FraudProtectionRule[] | string = [];
 
 jest.mock( 'wcpay/data', () => ( {
 	...jest.requireActual( 'wcpay/data' ),
 	useAdvancedFraudProtectionSettings: jest.fn( () => [
-		mockAdvancedFraudProtectionSettings,
+		mockFraudProtectionRule,
 		jest.fn(),
 	] ),
 } ) );
@@ -36,13 +34,13 @@ describe( 'ProtectionLevels', () => {
 	} );
 
 	it( 'renders', () => {
-		mockAdvancedFraudProtectionSettings = [];
+		mockFraudProtectionRule = [];
 		const { container: protectionLevels } = render( <ProtectionLevels /> );
 
 		expect( protectionLevels ).toMatchSnapshot();
 	} );
 	it( 'renders an error message when settings can not be fetched from the server', () => {
-		mockAdvancedFraudProtectionSettings = 'error';
+		mockFraudProtectionRule = 'error';
 		const { container: protectionLevels } = render( <ProtectionLevels /> );
 
 		expect( protectionLevels ).toMatchSnapshot();

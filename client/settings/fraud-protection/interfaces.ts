@@ -37,7 +37,7 @@ export type FraudProtectionSettingsCheck =
 	| FraudProtectionSettingsMultipleChecks
 	| null;
 
-export interface AdvancedFraudProtectionSettings {
+export interface FraudProtectionRule {
 	key: string;
 	outcome: string;
 	check: FraudProtectionSettingsCheck;
@@ -46,8 +46,8 @@ export interface AdvancedFraudProtectionSettings {
 export type UseCurrentProtectionLevel = [ string, ( level: string ) => void ];
 
 export type UseAdvancedFraudPreventionSettings = [
-	AdvancedFraudProtectionSettings[] | string,
-	( settings: AdvancedFraudProtectionSettings[] ) => void
+	FraudProtectionRule[] | string,
+	( settings: FraudProtectionRule[] ) => void
 ];
 
 export interface UseSettings {

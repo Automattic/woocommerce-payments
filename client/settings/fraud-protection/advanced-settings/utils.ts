@@ -5,7 +5,7 @@ import { CheckOperators, Checks, Outcomes, Rules } from './constants';
 import {
 	ProtectionSettingsUI,
 	FraudPreventionSetting,
-	AdvancedFraudProtectionSettings,
+	FraudProtectionRule,
 	FraudProtectionSettingsSingleCheck,
 	FraudProtectionSettingsCheck,
 	isFraudProtectionSettingsSingleCheck,
@@ -53,7 +53,7 @@ const readFormattedRulePrice = ( value: number ) => {
 const getRuleBase = (
 	setting: string,
 	block: boolean
-): AdvancedFraudProtectionSettings => {
+): FraudProtectionRule => {
 	return {
 		key: setting,
 		outcome: block ? Outcomes.BLOCK : Outcomes.REVIEW,
@@ -65,7 +65,7 @@ const buildRuleset = (
 	ruleKey: string,
 	shouldBlock: boolean,
 	ruleConfiguration = {} as FraudPreventionSetting
-): AdvancedFraudProtectionSettings => {
+): FraudProtectionRule => {
 	const ruleBase = getRuleBase( ruleKey, shouldBlock );
 
 	switch ( ruleKey ) {
@@ -245,7 +245,7 @@ const findCheck = (
 
 export const writeRuleset = (
 	config: ProtectionSettingsUI
-): AdvancedFraudProtectionSettings[] => {
+): FraudProtectionRule[] => {
 	const rulesetConfig = [];
 	for ( const key in config ) {
 		if ( config[ key ].enabled ) {
@@ -259,7 +259,7 @@ export const writeRuleset = (
 };
 
 export const readRuleset = (
-	rulesetConfig: AdvancedFraudProtectionSettings[] | string
+	rulesetConfig: FraudProtectionRule[] | string
 ): ProtectionSettingsUI => {
 	const defaultUIConfig = {
 		[ Rules.RULE_ADDRESS_MISMATCH ]: { enabled: false, block: false },

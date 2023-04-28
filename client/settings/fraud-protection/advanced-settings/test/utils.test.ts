@@ -3,7 +3,7 @@
  * Internal dependencies
  */
 import {
-	AdvancedFraudProtectionSettings,
+	FraudProtectionRule,
 	FraudProtectionSettingsMultipleChecks,
 	FraudProtectionSettingsSingleCheck,
 } from '../../interfaces';
@@ -88,7 +88,7 @@ describe( 'Ruleset adapter utilities test', () => {
 	} );
 
 	test( 'converts an empty ruleset to default UI config', () => {
-		const ruleset: AdvancedFraudProtectionSettings[] = [];
+		const ruleset: FraudProtectionRule[] = [];
 		const expected = defaultUIConfig;
 		const output = readRuleset( ruleset );
 		expect( output ).toEqual( expected );
@@ -443,13 +443,13 @@ describe( 'Ruleset adapter utilities test', () => {
 	} );
 	test( 'converts an empty UI config to an empty ruleset', () => {
 		const config = {};
-		const expected: AdvancedFraudProtectionSettings[] = [];
+		const expected: FraudProtectionRule[] = [];
 		const output = writeRuleset( config );
 		expect( output ).toEqual( expected );
 	} );
 	test( 'converts default UI config to an empty ruleset', () => {
 		const config = defaultUIConfig;
-		const expected: AdvancedFraudProtectionSettings[] = [];
+		const expected: FraudProtectionRule[] = [];
 		const output = writeRuleset( config );
 		expect( output ).toEqual( expected );
 	} );
