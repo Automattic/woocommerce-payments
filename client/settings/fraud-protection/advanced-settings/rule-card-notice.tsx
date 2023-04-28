@@ -11,27 +11,24 @@ import './../style.scss';
 import BannerNotice from 'wcpay/components/banner-notice';
 import { TipIcon } from 'wcpay/icons';
 
+const supportedTypes = [ 'error', 'warning', 'info' ] as const;
+
+type NoticeType = typeof supportedTypes[ number ];
+
 interface FraudProtectionRuleCardNoticeProps {
-	type: any;
+	type: NoticeType;
 }
 
 const FraudProtectionRuleCardNotice: React.FC< FraudProtectionRuleCardNoticeProps > = ( {
 	type,
 	children,
 } ) => {
-	const supportedTypes = [ 'error', 'warning', 'info' ];
-
 	if ( ! supportedTypes.includes( type ) ) {
 		return null;
 	}
 
-	// The default icon for these notices are the (!) icon.
-	let icon = <NoticeOutlineIcon />;
-
-	// If the type is info, we want to use the info icon instead.
-	if ( 'info' === type ) {
-		icon = <TipIcon />;
-	}
+	// If the type is info, we want to use the info icon, otherwise, the default icon for these notices is the (!) icon.
+	const icon = 'info' === type ? <TipIcon /> : <NoticeOutlineIcon />;
 
 	return (
 		<BannerNotice

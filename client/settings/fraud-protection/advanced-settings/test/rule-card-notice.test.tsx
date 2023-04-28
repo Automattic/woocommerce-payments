@@ -35,7 +35,7 @@ describe( 'Fraud protection rule card notice tests', () => {
 	test( "doesn't render box when type is not a valid type", () => {
 		const testValue = 'This is the test content';
 		const { queryByText } = render(
-			<FraudProtectionRuleCardNotice type="invalid">
+			<FraudProtectionRuleCardNotice type={ 'invalid' as any }>
 				{ testValue }
 			</FraudProtectionRuleCardNotice>
 		);
