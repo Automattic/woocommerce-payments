@@ -553,7 +553,8 @@ class WC_Payments_Admin {
 		}
 
 		// TODO: Try to enqueue the JS and CSS bundles lazily (will require changes on WC-Admin).
-		if ( wc_admin_is_registered_page() ) {
+		$current_screen = get_current_screen() ? get_current_screen()->base : null;
+		if ( wc_admin_is_registered_page() || 'widgets' === $current_screen ) {
 			// Localize before actually enqueuing to avoid unnecessary settings generation.
 			wp_localize_script(
 				'WCPAY_DASH_APP',
@@ -647,7 +648,7 @@ class WC_Payments_Admin {
 	 * @return array
 	 */
 	private function get_js_settings(): array {
-		// Returned the internally cached data if it is already initialized.
+		// Return the internally cached data if it is already initialized.
 		if ( ! is_null( $this->wcpay_js_settings ) ) {
 			return $this->wcpay_js_settings;
 		}
@@ -656,7 +657,7 @@ class WC_Payments_Admin {
 		delete_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
 
 		/**
-		 * This is a work around to pass the current user's email address to WCPay's settings until we do not need to rely
+		 * This is a workaround to pass the current user's email address to WCPay's settings until we do not need to rely
 		 * on backwards compatibility and can use `getCurrentUser` from `@wordpress/core-data`.
 		 */
 		$current_user       = wp_get_current_user();
@@ -756,7 +757,7 @@ class WC_Payments_Admin {
 	 *
 	 * @return array An associative array containing the flags as booleans.
 	 */
-	private function get_frontend_feature_flags() {
+	private function get_frontend_feature_flags(): array {
 		return array_merge(
 			[
 				'paymentTimeline' => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.4.0', '>=' ),
