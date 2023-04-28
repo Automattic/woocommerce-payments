@@ -72,15 +72,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			->disableOriginalConstructor()
 			->setMethods(
 				[
-					'get_account_data',
 					'is_server_connected',
-					'capture_intention',
-					'cancel_intention',
-					'get_intent',
-					'create_and_confirm_setup_intent',
-					'get_setup_intent',
-					'get_payment_method',
-					'refund_charge',
 				]
 			)
 			->getMock();

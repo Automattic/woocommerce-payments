@@ -158,20 +158,6 @@ class WC_Payments {
 	private static $onboarding_service;
 
 	/**
-	 * Instance of WC_Payments_Payment_Request_Button_Handler, created in init function
-	 *
-	 * @var WC_Payments_Payment_Request_Button_Handler
-	 */
-	private $payment_request_button_handler;
-
-	/**
-	 * Instance of WC_Payments_Platform_Checkout_Button_Handler, created in init function
-	 *
-	 * @var WC_Payments_Platform_Checkout_Button_Handler
-	 */
-	private $platform_checkout_button_handler;
-
-	/**
 	 * Instance of WC_Payments_Express_Checkout_Button_Display_Handler, created in init function
 	 *
 	 * @var WC_Payments_Express_Checkout_Button_Display_Handler
