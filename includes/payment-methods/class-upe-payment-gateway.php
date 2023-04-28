@@ -38,6 +38,7 @@ use WC_Payments_Token_Service;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Utils;
 use WC_Payments_Features;
+use WCPay\Platform_Checkout_Tracker;
 use WP_User;
 
 
@@ -87,6 +88,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @param array                                $payment_methods                 - Array of UPE payment methods.
 	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter - Session Rate Limiter instance.
 	 * @param WC_Payments_Order_Service            $order_service                   - Order class instance.
+	 * @param Platform_Checkout_Tracker            $platform_checkout_tracker       - Platform Checkout Tracker instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
@@ -96,9 +98,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		WC_Payments_Action_Scheduler_Service $action_scheduler_service,
 		array $payment_methods,
 		Session_Rate_Limiter $failed_transaction_rate_limiter,
-		WC_Payments_Order_Service $order_service
+		WC_Payments_Order_Service $order_service,
+		Platform_Checkout_Tracker $platform_checkout_tracker
 	) {
-		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $failed_transaction_rate_limiter, $order_service );
+		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $failed_transaction_rate_limiter, $order_service, $platform_checkout_tracker );
 		$this->title           = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->description     = '';
 		$this->checkout_title  = __( 'Popular payment methods', 'woocommerce-payments' );
