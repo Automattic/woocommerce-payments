@@ -270,7 +270,7 @@ export const handleWooPayEmailInput = async (
 
 	// Store if the subscription login error is being shown
 	// to remove it when change the e-mail address.
-	let hasWooPaySubscriptionLoginError = false;
+	let hasWoopaySubscriptionLoginError = false;
 
 	// Cancel woopay request and close iframe
 	// when user clicks Place Order before it loads.
