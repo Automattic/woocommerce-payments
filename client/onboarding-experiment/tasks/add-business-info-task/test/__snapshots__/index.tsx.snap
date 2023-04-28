@@ -67,7 +67,11 @@ exports[`AddBusinessInfoTask hides the structure when no structures are availabl
           id="downshift-23-toggle-button"
           type="button"
         >
-          United States
+          <span
+            class="components-custom-select-control__button-value"
+          >
+            United States
+          </span>
           <svg
             aria-hidden="true"
             class="components-custom-select-control__button-icon"
@@ -115,7 +119,11 @@ exports[`AddBusinessInfoTask hides the structure when no structures are availabl
           id="downshift-25-toggle-button"
           type="button"
         >
-          Individual
+          <span
+            class="components-custom-select-control__button-value"
+          >
+            Individual
+          </span>
           <svg
             aria-hidden="true"
             class="components-custom-select-control__button-icon"
@@ -284,7 +292,11 @@ exports[`AddBusinessInfoTask shows business type and structure from a selected c
           id="downshift-3-toggle-button"
           type="button"
         >
-          United States
+          <span
+            class="components-custom-select-control__button-value"
+          >
+            United States
+          </span>
           <svg
             aria-hidden="true"
             class="components-custom-select-control__button-icon"
@@ -332,7 +344,11 @@ exports[`AddBusinessInfoTask shows business type and structure from a selected c
           id="downshift-5-toggle-button"
           type="button"
         >
-          Company
+          <span
+            class="components-custom-select-control__button-value"
+          >
+            Company
+          </span>
           <svg
             aria-hidden="true"
             class="components-custom-select-control__button-icon"
@@ -375,7 +391,11 @@ exports[`AddBusinessInfoTask shows business type and structure from a selected c
           id="downshift-16-toggle-button"
           type="button"
         >
-          Single member LLC
+          <span
+            class="components-custom-select-control__button-value"
+          >
+            Single member LLC
+          </span>
           <svg
             aria-hidden="true"
             class="components-custom-select-control__button-icon"
@@ -471,7 +491,11 @@ exports[`AddBusinessInfoTask shows the form 1`] = `
           id="downshift-0-toggle-button"
           type="button"
         >
-          United States
+          <span
+            class="components-custom-select-control__button-value"
+          >
+            United States
+          </span>
           <svg
             aria-hidden="true"
             class="components-custom-select-control__button-icon"
@@ -519,7 +543,11 @@ exports[`AddBusinessInfoTask shows the form 1`] = `
           id="downshift-2-toggle-button"
           type="button"
         >
-          What type of business do you run?
+          <span
+            class="components-custom-select-control__button-value"
+          >
+            What type of business do you run?
+          </span>
           <svg
             aria-hidden="true"
             class="components-custom-select-control__button-icon"

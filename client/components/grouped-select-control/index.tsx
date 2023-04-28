@@ -146,7 +146,7 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 	};
 
 	const menuProps = getMenuProps( {
-		className: 'wcpay-component-new-select-control__list',
+		className: 'wcpay-component-grouped-select-control__list',
 		'aria-hidden': ! isOpen,
 		onFocus: () => searchRef.current?.focus(),
 		onBlur: ( event: any ) => {
@@ -164,13 +164,13 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 	return (
 		<div
 			className={ classNames(
-				'wcpay-component-new-select-control',
+				'wcpay-component-grouped-select-control',
 				className
 			) }
 		>
 			<label
 				{ ...getLabelProps( {
-					className: 'wcpay-component-new-select-control__label',
+					className: 'wcpay-component-grouped-select-control__label',
 				} ) }
 			>
 				{ label }
@@ -179,17 +179,17 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 				{ ...getToggleButtonProps( {
 					type: 'button',
 					className: classNames(
-						'components-text-control__input wcpay-component-new-select-control__button',
+						'components-text-control__input wcpay-component-grouped-select-control__button',
 						{ placeholder }
 					),
 				} ) }
 			>
-				<span className="wcpay-component-new-select-control__button-value">
+				<span className="wcpay-component-grouped-select-control__button-value">
 					{ selectedItem.name || placeholder }
 				</span>
 				<Icon
 					icon={ chevronDown }
-					className="wcpay-component-new-select-control__button-icon"
+					className="wcpay-component-grouped-select-control__button-icon"
 				/>
 			</button>
 			<ul { ...menuProps }>
@@ -197,7 +197,7 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 					<>
 						{ searchable && (
 							<input
-								className="wcpay-component-new-select-control__search"
+								className="wcpay-component-grouped-select-control__search"
 								ref={ searchRef }
 								type="text"
 								value={ searchText }
@@ -209,7 +209,7 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 								) }
 							/>
 						) }
-						<div className="wcpay-component-new-select-control__list-container">
+						<div className="wcpay-component-grouped-select-control__list-container">
 							{ itemsToRender.map( ( item, index ) => {
 								const isGroup = !! item.items;
 
@@ -221,7 +221,7 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 											index,
 											key: item.key,
 											className: classNames(
-												'wcpay-component-new-select-control__item',
+												'wcpay-component-grouped-select-control__item',
 												item.className,
 												{
 													'is-highlighted':
@@ -234,7 +234,7 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 											),
 										} ) }
 									>
-										<div className="wcpay-component-new-select-control__item-content">
+										<div className="wcpay-component-grouped-select-control__item-content">
 											{ item.name }
 										</div>
 										{ item.key === selectedItem.key && (
