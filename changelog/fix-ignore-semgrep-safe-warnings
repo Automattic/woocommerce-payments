@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Ignore the semgrep errors when the code is safe
