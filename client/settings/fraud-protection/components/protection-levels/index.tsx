@@ -19,7 +19,7 @@ import { getAdminUrl } from 'wcpay/utils';
 import { ProtectionLevel } from '../../advanced-settings/constants';
 import InlineNotice from '../../../../components/inline-notice';
 import wcpayTracks from 'tracks';
-import { UseCurrentProtectionLevel } from '../../interfaces';
+import { CurrentProtectionLevelHook } from '../../interfaces';
 
 const ProtectionLevels: React.FC = () => {
 	const [ isBasicModalOpen, setBasicModalOpen ] = useState( false );
@@ -27,7 +27,7 @@ const ProtectionLevels: React.FC = () => {
 	const [
 		currentProtectionLevel,
 		updateProtectionLevel,
-	] = useCurrentProtectionLevel() as UseCurrentProtectionLevel;
+	] = useCurrentProtectionLevel() as CurrentProtectionLevelHook;
 
 	const [
 		advancedFraudProtectionSettings,

@@ -38,7 +38,7 @@ import { ProtectionLevel } from './constants';
 import { readRuleset, writeRuleset } from './utils';
 import wcpayTracks from 'tracks';
 import {
-	UseCurrentProtectionLevel,
+	CurrentProtectionLevelHook,
 	UseAdvancedFraudPreventionSettings,
 	ProtectionSettingsUI,
 	UseSettings,
@@ -93,7 +93,7 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 	const [
 		currentProtectionLevel,
 		updateProtectionLevel,
-	] = useCurrentProtectionLevel() as UseCurrentProtectionLevel;
+	] = useCurrentProtectionLevel() as CurrentProtectionLevelHook;
 	const [
 		advancedFraudProtectionSettings,
 		updateAdvancedFraudProtectionSettings,

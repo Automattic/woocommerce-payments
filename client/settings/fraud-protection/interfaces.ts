@@ -43,7 +43,7 @@ export interface FraudProtectionRule {
 	check: FraudProtectionSettingsCheck;
 }
 
-export type UseCurrentProtectionLevel = [ string, ( level: string ) => void ];
+export type CurrentProtectionLevelHook = [ string, ( level: string ) => void ];
 
 export type UseAdvancedFraudPreventionSettings = [
 	FraudProtectionRule[] | string,
