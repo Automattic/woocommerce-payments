@@ -73,10 +73,10 @@ const AllowedCountriesNotice: React.FC< AllowedCountriesNoticeProps > = ( {
 			<strong>
 				{ settingCountries
 					.map(
-						( countryCode: string ) =>
+						( countryCode ) =>
 							wcSettings.countries[ countryCode ] ?? false
 					)
-					.filter( ( element: string ) => element )
+					.filter( ( element ) => element )
 					.join( ', ' ) }
 			</strong>
 		</FraudProtectionRuleCardNotice>

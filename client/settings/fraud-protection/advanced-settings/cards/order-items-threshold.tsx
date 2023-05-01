@@ -33,11 +33,11 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 	);
 
 	const minItemsTemp = parseInt(
-		protectionSettingsUI[ setting ].min_items?.toString() || '',
+		protectionSettingsUI[ setting ].min_items + '',
 		10
 	);
 	const maxItemsTemp = parseInt(
-		protectionSettingsUI[ setting ].max_items?.toString() || '',
+		protectionSettingsUI[ setting ].max_items + '',
 		10
 	);
 
@@ -61,11 +61,10 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 	] );
 
 	const isItemRangeEmpty =
-		! parseInt( minItemsCount?.toString() || '', 10 ) &&
-		! parseInt( maxItemsCount?.toString() || '', 10 );
+		! parseInt( minItemsCount + '', 10 ) &&
+		! parseInt( maxItemsCount + '', 10 );
 	const isMinGreaterThanMax =
-		parseInt( minItemsCount?.toString() || '', 10 ) >
-		parseInt( maxItemsCount?.toString() || '', 10 );
+		parseInt( minItemsCount + '', 10 ) > parseInt( maxItemsCount + '', 10 );
 
 	return (
 		<div className="fraud-protection-rule-toggle-children-container">
@@ -187,8 +186,8 @@ export const OrderItemsThresholdValidation = (
 ): boolean => {
 	if ( enabled ) {
 		if (
-			! parseInt( minItems?.toString() || '', 10 ) &&
-			! parseInt( maxItems?.toString() || '', 10 )
+			! parseInt( minItems + '', 10 ) &&
+			! parseInt( maxItems + '', 10 )
 		) {
 			setValidationError(
 				__(
@@ -198,10 +197,7 @@ export const OrderItemsThresholdValidation = (
 			);
 			return false;
 		}
-		if (
-			parseInt( minItems?.toString() || '', 10 ) >
-			parseInt( maxItems?.toString() || '', 10 )
-		) {
+		if ( parseInt( minItems + '', 10 ) > parseInt( maxItems + '', 10 ) ) {
 			setValidationError(
 				__(
 					'Maximum item count must be greater than the minimum item count on the "Order Item Threshold" rule.',
