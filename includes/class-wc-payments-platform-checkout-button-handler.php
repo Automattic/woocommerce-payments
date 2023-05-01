@@ -54,8 +54,6 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		$this->account                     = $account;
 		$this->gateway                     = $gateway;
 		$this->platform_checkout_utilities = $platform_checkout_utilities;
-
-		add_action( 'init', [ $this, 'init' ] );
 	}
 
 	/**
@@ -118,12 +116,6 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		add_filter( 'wcpay_payment_fields_js_config', [ $this, 'add_platform_checkout_config' ] );
 
 		add_action( 'wc_ajax_wcpay_add_to_cart', [ $this, 'ajax_add_to_cart' ] );
-
-		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_platform_checkout_button_html' ], -2 );
-
-		add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_platform_checkout_button_html' ], -2 );
-
-		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_platform_checkout_button_html' ], -2 );
 
 		add_action( 'wp_ajax_woopay_express_checkout_button_show_error_notice', [ $this, 'show_error_notice' ] );
 		add_action( 'wp_ajax_nopriv_woopay_express_checkout_button_show_error_notice', [ $this, 'show_error_notice' ] );
@@ -487,6 +479,11 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		// WCPay is not available.
 		$gateways = WC()->payment_gateways->get_available_payment_gateways();
 		if ( ! isset( $gateways['woocommerce_payments'] ) ) {
+			return false;
+		}
+
+		// WooPay is not enabled.
+		if ( ! $this->is_woopay_enabled() ) {
 			return false;
 		}
 

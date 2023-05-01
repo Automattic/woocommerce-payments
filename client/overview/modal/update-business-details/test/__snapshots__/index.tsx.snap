@@ -32,9 +32,10 @@ exports[`Overview: update business details modal renders correctly when opened f
         <svg
           aria-hidden="true"
           focusable="false"
+          height="24"
           role="img"
-          size="24"
           viewBox="0 0 24 24"
+          width="24"
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
@@ -125,9 +126,10 @@ exports[`Overview: update business details modal renders correctly when opened f
         <svg
           aria-hidden="true"
           focusable="false"
+          height="24"
           role="img"
-          size="24"
           viewBox="0 0 24 24"
+          width="24"
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
@@ -218,9 +220,10 @@ exports[`Overview: update business details modal renders correctly when opened f
         <svg
           aria-hidden="true"
           focusable="false"
+          height="24"
           role="img"
-          size="24"
           viewBox="0 0 24 24"
+          width="24"
           xmlns="http://www.w3.org/2000/svg"
         >
           <path

@@ -3,12 +3,14 @@
  */
 import React from 'react';
 import { Flex, FlexBlock } from '@wordpress/components';
+import { info } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
 import strings from '../strings';
-import { OnboardingTextField } from '../form';
+import { OnboardingTextField, OnboardingPhoneNumberField } from '../form';
+import BannerNotice from 'components/banner-notice';
 
 const PersonalDetails: React.FC = () => {
 	return (
@@ -22,13 +24,10 @@ const PersonalDetails: React.FC = () => {
 				</FlexBlock>
 			</Flex>
 			<OnboardingTextField name="email" />
-			<div>
-				{
-					// TODO: Use BannerNotice component when it's available.
-					strings.steps.personal.notice
-				}
-			</div>
-			<OnboardingTextField name="phone" />
+			<OnboardingPhoneNumberField name="phone" />
+			<BannerNotice status="info" icon={ info } isDismissible={ false }>
+				{ strings.steps.personal.notice }
+			</BannerNotice>
 		</>
 	);
 };
