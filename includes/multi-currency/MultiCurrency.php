@@ -1340,7 +1340,7 @@ class MultiCurrency {
 	 *
 	 * @return array
 	 */
-	public function get_all_customer_currencies() {
+	public function get_all_customer_currencies(): array {
 		$data = $this->database_cache->get_or_add(
 			Database_Cache::CUSTOMER_CURRENCIES_KEY,
 			function() {
@@ -1365,7 +1365,11 @@ class MultiCurrency {
 			}
 		);
 
-		return $data['currencies'] ?? [];
+		if ( is_array( $data['currencies'] ) ) {
+			return $data['currencies'];
+		}
+
+		return [];
 	}
 
 	/**
