@@ -25,13 +25,12 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
           class="wcpay-wizard-task__icon-checkmark"
           focusable="false"
           height="24"
-          role="img"
           viewBox="0 0 24 24"
           width="24"
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
-            d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
+            d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"
           />
         </svg>
       </div>
@@ -73,7 +72,6 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                   class="search__icon"
                   focusable="false"
                   height="24"
-                  role="img"
                   viewBox="0 0 24 24"
                   width="24"
                   xmlns="http://www.w3.org/2000/svg"
@@ -749,13 +747,12 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
           class="wcpay-wizard-task__icon-checkmark"
           focusable="false"
           height="24"
-          role="img"
           viewBox="0 0 24 24"
           width="24"
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
-            d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
+            d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"
           />
         </svg>
       </div>
@@ -797,7 +794,6 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
                   class="search__icon"
                   focusable="false"
                   height="24"
-                  role="img"
                   viewBox="0 0 24 24"
                   width="24"
                   xmlns="http://www.w3.org/2000/svg"
@@ -911,13 +907,12 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
           class="wcpay-wizard-task__icon-checkmark"
           focusable="false"
           height="24"
-          role="img"
           viewBox="0 0 24 24"
           width="24"
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
-            d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
+            d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"
           />
         </svg>
       </div>
@@ -959,7 +954,6 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
                   class="search__icon"
                   focusable="false"
                   height="24"
-                  role="img"
                   viewBox="0 0 24 24"
                   width="24"
                   xmlns="http://www.w3.org/2000/svg"
@@ -1073,13 +1067,12 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
           class="wcpay-wizard-task__icon-checkmark"
           focusable="false"
           height="24"
-          role="img"
           viewBox="0 0 24 24"
           width="24"
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
-            d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
+            d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"
           />
         </svg>
       </div>
@@ -1121,7 +1114,6 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
                   class="search__icon"
                   focusable="false"
                   height="24"
-                  role="img"
                   viewBox="0 0 24 24"
                   width="24"
                   xmlns="http://www.w3.org/2000/svg"
@@ -1251,13 +1243,12 @@ exports[`Multi-Currency enabled currencies list should hide recommended currenci
           class="wcpay-wizard-task__icon-checkmark"
           focusable="false"
           height="24"
-          role="img"
           viewBox="0 0 24 24"
           width="24"
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
-            d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
+            d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"
           />
         </svg>
       </div>
@@ -1308,7 +1299,6 @@ exports[`Multi-Currency enabled currencies list should hide recommended currenci
                   class="search__icon"
                   focusable="false"
                   height="24"
-                  role="img"
                   viewBox="0 0 24 24"
                   width="24"
                   xmlns="http://www.w3.org/2000/svg"
