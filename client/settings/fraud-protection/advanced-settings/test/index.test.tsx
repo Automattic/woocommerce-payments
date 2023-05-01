@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import { render, waitFor } from '@testing-library/react';
+import { mocked } from 'ts-jest/utils';
 
 /**
  * Internal dependencies
@@ -70,13 +71,11 @@ declare const global: {
 	};
 };
 
-const mockUseCurrentProtectionLevel = useCurrentProtectionLevel as jest.MockedFunction<
-	() => [ string, ( level: string ) => void ]
->;
+const mockUseCurrentProtectionLevel = mocked( useCurrentProtectionLevel );
 
-const mockUseAdvancedFraudProtectionSettings = useAdvancedFraudProtectionSettings as jest.MockedFunction<
-	() => [ any[] | string, ( settings: string ) => void ]
->;
+const mockUseAdvancedFraudProtectionSettings = mocked(
+	useAdvancedFraudProtectionSettings
+);
 
 const mockUseSettings = useSettings as jest.MockedFunction<
 	() => {

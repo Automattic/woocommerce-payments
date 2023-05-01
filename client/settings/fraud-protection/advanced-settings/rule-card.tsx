@@ -12,7 +12,7 @@ import CardBody from '../../card-body';
 
 interface FraudProtectionRuleCardProps {
 	title: string;
-	description: string | React.ReactNode;
+	description: React.ReactNode;
 	id: string;
 }
 
