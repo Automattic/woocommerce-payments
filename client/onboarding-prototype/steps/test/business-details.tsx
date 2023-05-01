@@ -12,9 +12,9 @@ import { mocked } from 'ts-jest/utils';
 import BusinessDetails from '../business-details';
 import { OnboardingContextProvider } from '../../context';
 import strings from '../../strings';
-import { getBusinessTypes, getMccsFlatList } from 'onboarding-experiment/utils';
+import { getBusinessTypes, getMccsFlatList } from 'onboarding-prototype/utils';
 
-jest.mock( 'onboarding-experiment/utils', () => ( {
+jest.mock( 'onboarding-prototype/utils', () => ( {
 	getBusinessTypes: jest.fn(),
 	getMccsFlatList: jest.fn(),
 } ) );

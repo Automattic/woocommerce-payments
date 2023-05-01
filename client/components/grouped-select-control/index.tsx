@@ -5,24 +5,21 @@ import React, { useRef, useState } from 'react';
 import { Icon, check, chevronDown, chevronUp } from '@wordpress/icons';
 import classNames from 'classnames';
 import { __ } from '@wordpress/i18n';
-import { useSelect } from 'downshift';
+import { useSelect, UseSelectState } from 'downshift';
 
 /**
  * Internal Dependencies
  */
 import './style.scss';
+import { OnboardingFields } from 'wcpay/onboarding-prototype/types';
 
-export interface Item {
+export interface ListItem {
 	type: string;
 	key: string;
 	name: string;
-	group: string;
+	group?: string;
 	context?: string;
 	className?: string;
-}
-
-export interface ListItem extends Omit< Item, 'group' > {
-	group?: string;
 	items?: string[];
 }
 
@@ -33,17 +30,17 @@ export interface GroupedSelectControlProps< ItemType > {
 	placeholder?: string;
 	searchable?: boolean;
 	className?: string;
-	onChange: ( value?: ItemType ) => void;
+	onChange?: ( changes: Partial< UseSelectState< ItemType > > ) => void;
 }
 
 const GroupedSelectControl = < ItemType extends ListItem >( {
+	className,
 	label,
 	options: listItems,
+	onChange: onSelectedItemChange,
 	value,
 	placeholder,
 	searchable,
-	className,
-	onChange,
 }: GroupedSelectControlProps< ItemType > ): JSX.Element => {
 	const searchRef = useRef< HTMLInputElement >( null );
 	const previousStateRef = useRef< {
@@ -79,8 +76,7 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 		items: itemsToRender,
 		itemToString: ( item ) => item.name,
 		selectedItem: value || ( {} as ItemType ),
-		onSelectedItemChange: ( changes ) =>
-			onChange( changes.selectedItem as ItemType ),
+		onSelectedItemChange,
 		stateReducer: ( state, { changes, type } ) => {
 			if (
 				searchable &&

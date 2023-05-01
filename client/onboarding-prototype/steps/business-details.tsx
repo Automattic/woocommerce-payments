@@ -8,16 +8,13 @@ import React from 'react';
  */
 import { useOnboardingContext } from '../context';
 import { Item } from 'components/custom-select-control';
-import GroupedSelectControl, {
-	ListItem,
-} from 'components/grouped-select-control';
 import { OnboardingFields } from '../types';
-import { OnboardingTextField, OnboardingSelectField } from '../form';
 import {
-	getBusinessTypes,
-	getMccsFlatList,
-} from 'wcpay/onboarding-experiment/utils';
-import strings from 'onboarding-prototype/strings';
+	OnboardingTextField,
+	OnboardingSelectField,
+	OnboardingGroupedSelectField,
+} from '../form';
+import { getBusinessTypes, getMccsFlatList } from 'onboarding-prototype/utils';
 
 const BusinessDetails: React.FC = () => {
 	const { data, setData } = useOnboardingContext();
@@ -46,16 +43,6 @@ const BusinessDetails: React.FC = () => {
 	};
 
 	const mccsFlatList = getMccsFlatList();
-	const selectedMcc =
-		mccsFlatList.find( ( item ) => item.key === data.mcc ) ||
-		( {} as ListItem );
-
-	const handleMccChange = ( selectedItem?: ListItem ) => {
-		const newData: OnboardingFields = {
-			mcc: selectedItem?.key,
-		};
-		setData( newData );
-	};
 
 	return (
 		<>
@@ -91,13 +78,10 @@ const BusinessDetails: React.FC = () => {
 					/>
 				) }
 
-			<GroupedSelectControl
-				label={ strings.fields.mcc }
+			<OnboardingGroupedSelectField
+				name="mcc"
 				options={ mccsFlatList }
-				onChange={ handleMccChange }
-				value={ selectedMcc }
 				searchable
-				placeholder={ strings.placeholders.mcc }
 			/>
 		</>
 	);

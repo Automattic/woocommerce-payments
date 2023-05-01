@@ -13,7 +13,7 @@ import CustomSelectControl from 'components/custom-select-control';
 import RequiredVerificationInfo from './required-verification-info';
 import strings from 'onboarding-experiment/strings';
 import { OnboardingProps } from 'onboarding-experiment/types';
-import { getBusinessTypes } from 'onboarding-experiment/utils';
+import { getBusinessTypes } from 'onboarding-prototype/utils';
 
 interface TaskProps {
 	onChange: ( data: Partial< OnboardingProps > ) => void;
