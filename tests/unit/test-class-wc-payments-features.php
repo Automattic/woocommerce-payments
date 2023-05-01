@@ -131,6 +131,82 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayNotHasKey( 'documents', WC_Payments_Features::to_array() );
 	}
 
+	public function test_are_payments_enabled_returns_true_when_payments_enabled() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'payments_enabled' => true ] );
+		$this->assertTrue( WC_Payments_Features::are_payments_enabled() );
+	}
+
+	public function test_are_payments_enabled_returns_false_when_payments_disabled() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'payments_enabled' => false ] );
+		$this->assertFalse( WC_Payments_Features::are_payments_enabled() );
+	}
+
+	public function test_are_payments_enabled_returns_false_when_cache_is_not_set() {
+		$this->mock_cache->method( 'get' )->willReturn( null );
+		$this->assertFalse( WC_Payments_Features::are_payments_enabled() );
+	}
+
+	public function test_are_payments_enabled_returns_false_when_flag_not_set() {
+		$this->mock_cache->method( 'get' )->willReturn( [] );
+		$this->assertFalse( WC_Payments_Features::are_payments_enabled() );
+	}
+
+	public function test_is_woopay_enabled_returns_true() {
+		add_filter(
+			'pre_option__wcpay_feature_woopay_express_checkout',
+			function ( $pre_option, $option, $default ) {
+				return '1';
+			},
+			10,
+			3
+		);
+		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'yes' );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
+		$this->assertTrue( WC_Payments_Features::is_woopay_enabled() );
+	}
+
+	public function test_is_woopay_enabled_returns_false_when_express_checkout_flag_is_false() {
+		add_filter(
+			'pre_option__wcpay_feature_woopay_express_checkout',
+			function ( $pre_option, $option, $default ) {
+				return '0';
+			},
+			10,
+			3
+		);
+		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'yes' );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
+		$this->assertFalse( WC_Payments_Features::is_woopay_enabled() );
+	}
+
+	public function test_is_woopay_enabled_returns_false_when_platform_checkout_flag_is_false() {
+		add_filter(
+			'pre_option__wcpay_feature_woopay_express_checkout',
+			function ( $pre_option, $option, $default ) {
+				return '1';
+			},
+			10,
+			3
+		);
+		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'no' );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
+		$this->assertFalse( WC_Payments_Features::is_woopay_enabled() );
+	}
+
+	public function test_is_woopay_enabled_returns_false_when_ineligible() {
+		add_filter(
+			'pre_option__wcpay_feature_woopay_express_checkout',
+			function ( $pre_option, $option, $default ) {
+				return '1';
+			},
+			10,
+			3
+		);
+		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'yes' );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => false ] );
+		$this->assertFalse( WC_Payments_Features::is_woopay_enabled() );
+	}
+
 	public function test_is_woopay_express_checkout_enabled_returns_true() {
 		add_filter(
 			'pre_option__wcpay_feature_woopay_express_checkout',

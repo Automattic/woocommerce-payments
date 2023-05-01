@@ -50,10 +50,10 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 		$this->platform_checkout_button_handler->init();
 		$this->payment_request_button_handler->init();
 
-		$is_woopay_express_checkout_enabled = $this->platform_checkout_button_handler->is_woopay_enabled();
-		$is_payment_request_enabled         = 'yes' === $this->gateway->get_option( 'payment_request' );
+		$is_woopay_enabled          = WC_Payments_Features::is_woopay_enabled();
+		$is_payment_request_enabled = 'yes' === $this->gateway->get_option( 'payment_request' );
 
-		if ( $is_woopay_express_checkout_enabled || $is_payment_request_enabled ) {
+		if ( $is_woopay_enabled || $is_payment_request_enabled ) {
 			add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_express_checkout_buttons' ], 1 );
 			add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_express_checkout_buttons' ], 1 );
 			add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_express_checkout_buttons' ], 1 );
