@@ -197,7 +197,7 @@ class MultiCurrency {
 	 * @param WC_Payments_Account              $payments_account     Payments Account instance.
 	 * @param WC_Payments_Localization_Service $localization_service Localization Service instance.
 	 * @param Database_Cache                   $database_cache       Database Cache instance.
-	 * @param Utils                            $utils                Optional Utils instance.
+	 * @param Utils|null                       $utils                Optional Utils instance.
 	 */
 	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $payments_account, WC_Payments_Localization_Service $localization_service, Database_Cache $database_cache, Utils $utils = null ) {
 		$this->payments_api_client  = $payments_api_client;
@@ -212,7 +212,8 @@ class MultiCurrency {
 
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
-			add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
+			// Enqueue the scripts after the main WC_Payments_Admin does.
+			add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ], 20 );
 			add_action( 'admin_head', [ $this, 'set_client_format_and_rounding_precision' ] );
 		}
 
