@@ -332,14 +332,15 @@ class MultiCurrency {
 	public function enqueue_admin_scripts() {
 		global $current_tab;
 
-		// Output the settings JS and CSS only on the settings page.
-		if ( 'wcpay_multi_currency' === $current_tab ) {
-			$this->register_admin_scripts();
-			wp_enqueue_script( 'WCPAY_ADMIN_SETTINGS' );
-			wp_enqueue_style( 'WCPAY_ADMIN_SETTINGS' );
-			wp_enqueue_script( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
-			wp_enqueue_style( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
+		// Enqueue the settings JS and CSS only on the WCPay multi-currency settings page.
+		if ( 'wcpay_multi_currency' !== $current_tab ) {
+			return;
 		}
+
+		$this->register_admin_scripts();
+
+		wp_enqueue_script( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
+		wp_enqueue_style( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
 	}
 
 	/**
@@ -1134,12 +1135,12 @@ class MultiCurrency {
 	 * @return void
 	 */
 	private function register_admin_scripts() {
-		WC_Payments::register_script_with_dependencies( 'WCPAY_MULTI_CURRENCY_SETTINGS', 'dist/multi-currency' );
+		WC_Payments::register_script_with_dependencies( 'WCPAY_MULTI_CURRENCY_SETTINGS', 'dist/multi-currency', [ 'WCPAY_ADMIN_SETTINGS' ] );
 
 		wp_register_style(
 			'WCPAY_MULTI_CURRENCY_SETTINGS',
 			plugins_url( 'dist/multi-currency.css', WCPAY_PLUGIN_FILE ),
-			[ 'wc-components' ],
+			[ 'wc-components', 'WCPAY_ADMIN_SETTINGS' ],
 			\WC_Payments::get_file_version( 'dist/multi-currency.css' )
 		);
 	}
