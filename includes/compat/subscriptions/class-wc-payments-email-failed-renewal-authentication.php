@@ -101,7 +101,7 @@ class WC_Payments_Email_Failed_Renewal_Authentication extends WC_Email {
 	 * @return string
 	 */
 	public function get_authorization_url( $order ) {
-		return add_query_arg( 'wcpay-confirmation', 1, $order->get_checkout_payment_url( false ) );
+		return add_query_arg( 'wcpay-confirmation', 1, $order->get_checkout_payment_url( false ) ); // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
 	}
 
 	/**
