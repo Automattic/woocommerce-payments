@@ -17,6 +17,9 @@ exports[`Test mode notification Component is rendered correctly 1`] = `
           View WooCommerce Payments settings
         </a>
       </span>
+      <div
+        class="components-notice__actions"
+      />
     </div>
   </div>
 </div>
@@ -39,6 +42,9 @@ exports[`Test mode notification Component is rendered correctly 2`] = `
           View WooCommerce Payments settings
         </a>
       </span>
+      <div
+        class="components-notice__actions"
+      />
     </div>
   </div>
 </div>
@@ -61,6 +67,9 @@ exports[`Test mode notification Component is rendered correctly 3`] = `
           View WooCommerce Payments settings
         </a>
       </span>
+      <div
+        class="components-notice__actions"
+      />
     </div>
   </div>
 </div>
@@ -83,6 +92,9 @@ exports[`Test mode notification Component is rendered correctly 4`] = `
           View WooCommerce Payments settings
         </a>
       </span>
+      <div
+        class="components-notice__actions"
+      />
     </div>
   </div>
 </div>
@@ -109,6 +121,9 @@ exports[`Test mode notification Component is rendered correctly 5`] = `
           View WooCommerce Payments settings
         </a>
       </span>
+      <div
+        class="components-notice__actions"
+      />
     </div>
   </div>
 </div>
@@ -135,6 +150,9 @@ exports[`Test mode notification Component is rendered correctly 6`] = `
           View WooCommerce Payments settings
         </a>
       </span>
+      <div
+        class="components-notice__actions"
+      />
     </div>
   </div>
 </div>
@@ -161,6 +179,9 @@ exports[`Test mode notification Component is rendered correctly 7`] = `
           View WooCommerce Payments settings
         </a>
       </span>
+      <div
+        class="components-notice__actions"
+      />
     </div>
   </div>
 </div>
@@ -187,6 +208,9 @@ exports[`Test mode notification Component is rendered correctly 8`] = `
           View WooCommerce Payments settings
         </a>
       </span>
+      <div
+        class="components-notice__actions"
+      />
     </div>
   </div>
 </div>
