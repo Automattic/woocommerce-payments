@@ -54,6 +54,7 @@ to catalog our packages and provide guidance to a developer who wants to test an
 | [@wordpress/plugins](https://www.npmjs.com/package/@wordpress/plugins) | Plugins module for WordPress.| JS unit tests are passing| |
 | [@wordpress/icons](https://www.npmjs.com/package/@wordpress/icons) | WordPress Icons Library. | JS unit tests are passing and UI isn't affected at places of usage. | Only case in current usage where a `@wordpress/x` doesn't come from WordPress directly. |
 | [@wordpress/element](https://www.npmjs.com/package/@wordpress/element) | An abstraction layer atop React. | JS unit tests are passing. | Removed [@types/wordpress__element](https://www.npmjs.com/package/@types/wordpress__element) since @wordpress/element has built-in types |
+| [@wordpress/scripts](https://www.npmjs.com/package/@wordpress/scripts) | Collection of reusable scripts tailored for WordPress development. | JS tests and E2E pipeline works, which uses `wp-scripts` | `>=20` requires `jest >=27`, we're currently at `v26.x` so updated to  `v19.2.3`  |
 
 
 ### PHP Runtime Dependencies
