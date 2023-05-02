@@ -468,6 +468,8 @@ class WC_Payments_Admin {
 	 * Register the CSS and JS scripts
 	 */
 	public function register_payments_scripts() {
+		// TODO: Add check to see if user can manage_woocommerce and exit early if they cannot.
+
 		WC_Payments::register_script_with_dependencies( 'WCPAY_DASH_APP', 'dist/index' );
 
 		wp_set_script_translations( 'WCPAY_DASH_APP', 'woocommerce-payments' );
@@ -537,11 +539,11 @@ class WC_Payments_Admin {
 	public function enqueue_payments_scripts() {
 		global $current_tab, $current_section;
 
-		// TODO: Add check to see if user can manage_woocommerce and exit early if they cannot.
-		$this->register_payments_scripts();
-
-		if ( WC_Payments_Utils::is_payments_settings_page() ) {
+		// Enqueue the admin settings assets on any WCPau settings page.
+		// We also need to enqueue and localize on the multi-currency tab.
+		if ( WC_Payments_Utils::is_payments_settings_page() || 'wcpay_multi_currency' === $current_tab ) {
 			// Localize before actually enqueuing to avoid unnecessary settings generation.
+			// Most importantly, the destructive error transient handling.
 			wp_localize_script(
 				'WCPAY_ADMIN_SETTINGS',
 				'wcpaySettings',
@@ -557,6 +559,7 @@ class WC_Payments_Admin {
 		$current_screen = get_current_screen() ? get_current_screen()->base : null;
 		if ( wc_admin_is_registered_page() || 'widgets' === $current_screen ) {
 			// Localize before actually enqueuing to avoid unnecessary settings generation.
+			// Most importantly, the destructive error transient handling.
 			wp_localize_script(
 				'WCPAY_DASH_APP',
 				'wcpaySettings',
