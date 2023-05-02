@@ -3,15 +3,14 @@
  * External dependencies
  */
 import config from 'config';
-
-const { merchant, shopper } = require( '@woocommerce/e2e-utils' );
-
 /**
  * Internal dependencies
  */
 import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
 
 import { merchantWCP } from '../../../utils';
+
+const { merchant, shopper } = require( '@woocommerce/e2e-utils' );
 
 let orderId;
 
@@ -81,7 +80,7 @@ describe( 'Disputes > Save dispute for editing', () => {
 		await merchantWCP.openChallengeDispute();
 
 		await page.waitForSelector(
-			'div.wcpay-dispute-evidence .components-flex.components-card__header.is-size-large',
+			'div.wcpay-dispute-evidence .components-flex.components-card__header',
 			{
 				timeout: 10000,
 			}
