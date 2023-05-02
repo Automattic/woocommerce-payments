@@ -339,4 +339,44 @@ describe( 'Overview page', () => {
 			screen.queryByText( 'Ready to setup real payments on your store?' )
 		).not.toBeInTheDocument();
 	} );
+
+	it( 'displays ProgressiveOnboardingEligibilityModal if showProgressiveOnboardingEligibilityModal is true', () => {
+		getQuery.mockReturnValue( { 'wcpay-connection-success': '1' } );
+
+		global.wcpaySettings.accountStatus.progressiveOnboarding.isEnabled = true;
+
+		render( <OverviewPage /> );
+
+		expect(
+			screen.getByText(
+				'You’re eligible to start selling now and fast-track the setup process.'
+			)
+		).toBeInTheDocument();
+	} );
+
+	it( 'does not displays ProgressiveOnboardingEligibilityModal if showProgressiveOnboardingEligibilityModal is false', () => {
+		const query = () =>
+			screen.queryByText(
+				'You’re eligible to start selling now and fast-track the setup process.'
+			);
+
+		render( <OverviewPage /> );
+
+		expect( query() ).not.toBeInTheDocument();
+
+		getQuery.mockReturnValue( { 'wcpay-connection-success': '1' } );
+
+		render( <OverviewPage /> );
+
+		expect( query() ).not.toBeInTheDocument();
+
+		global.wcpaySettings.accountStatus.progressiveOnboarding = {
+			isEnabled: true,
+			isComplete: true,
+		};
+
+		render( <OverviewPage /> );
+
+		expect( query() ).not.toBeInTheDocument();
+	} );
 } );
