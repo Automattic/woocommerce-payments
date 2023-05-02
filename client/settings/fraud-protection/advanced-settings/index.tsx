@@ -44,7 +44,7 @@ import {
 	UseSettings,
 } from '../interfaces';
 
-const observerEventMapping: { [ key: string ]: string } = {
+const observerEventMapping: Record< string, string > = {
 	'avs-mismatch-card':
 		'wcpay_fraud_protection_advanced_settings_card_avs_mismatch_viewed',
 	'cvc-verification-card':

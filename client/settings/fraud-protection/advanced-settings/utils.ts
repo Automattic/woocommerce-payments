@@ -9,6 +9,8 @@ import {
 	FraudProtectionSettingsSingleCheck,
 	FraudProtectionSettingsCheck,
 	isFraudProtectionSettingsSingleCheck,
+	isOrderItemsThresholdSetting,
+	isPurchasePriceThresholdSetting,
 } from '../interfaces';
 
 export const getSupportedCountriesType = (): string => {
@@ -57,7 +59,7 @@ const getRuleBase = (
 	return {
 		key: setting,
 		outcome: block ? Outcomes.BLOCK : Outcomes.REVIEW,
-		check: null, //{} as FraudProtectionSettingsSingleCheck,
+		check: null,
 	};
 };
 
@@ -96,117 +98,83 @@ const buildRuleset = (
 			};
 			break;
 		case Rules.RULE_ORDER_ITEMS_THRESHOLD:
-			if (
-				parseInt(
-					ruleConfiguration?.min_items?.toString() || '',
-					10
-				) &&
-				parseInt( ruleConfiguration?.max_items?.toString() || '', 10 )
-			) {
-				ruleBase.check = {
-					operator: CheckOperators.LIST_OPERATOR_OR,
-					checks: [
-						{
-							key: Checks.CHECK_ITEM_COUNT,
-							operator: CheckOperators.OPERATOR_LT,
-							value:
-								parseInt(
-									ruleConfiguration?.min_items?.toString() ||
-										'',
-									10
-								) ?? null,
-						},
-						{
-							key: Checks.CHECK_ITEM_COUNT,
-							operator: CheckOperators.OPERATOR_GT,
-							value:
-								parseInt(
-									ruleConfiguration?.max_items?.toString() ||
-										'',
-									10
-								) ?? null,
-						},
-					],
-				};
-			} else if (
-				parseInt(
-					ruleConfiguration?.min_items?.toString() || '',
-					10
-				) ||
-				parseInt( ruleConfiguration?.max_items?.toString() || '', 10 )
-			) {
-				ruleBase.check = parseInt(
-					ruleConfiguration?.min_items?.toString() || '',
-					10
-				)
-					? {
-							key: Checks.CHECK_ITEM_COUNT,
-							operator: CheckOperators.OPERATOR_LT,
-							value:
-								parseInt(
-									ruleConfiguration?.min_items?.toString() ||
-										'',
-									10
-								) ?? null,
-					  }
-					: {
-							key: Checks.CHECK_ITEM_COUNT,
-							operator: CheckOperators.OPERATOR_GT,
-							value:
-								parseInt(
-									ruleConfiguration?.max_items?.toString() ||
-										'',
-									10
-								) ?? null,
-					  };
+			if ( isOrderItemsThresholdSetting( ruleConfiguration ) ) {
+				const minItems = ruleConfiguration?.min_items + '';
+				const maxItems = ruleConfiguration?.max_items + '';
+
+				if ( parseInt( minItems, 10 ) && parseInt( maxItems, 10 ) ) {
+					ruleBase.check = {
+						operator: CheckOperators.LIST_OPERATOR_OR,
+						checks: [
+							{
+								key: Checks.CHECK_ITEM_COUNT,
+								operator: CheckOperators.OPERATOR_LT,
+								value: parseInt( minItems, 10 ) ?? null,
+							},
+							{
+								key: Checks.CHECK_ITEM_COUNT,
+								operator: CheckOperators.OPERATOR_GT,
+								value: parseInt( maxItems, 10 ) ?? null,
+							},
+						],
+					};
+				} else if (
+					parseInt( minItems, 10 ) ||
+					parseInt( maxItems, 10 )
+				) {
+					ruleBase.check = parseInt( minItems, 10 )
+						? {
+								key: Checks.CHECK_ITEM_COUNT,
+								operator: CheckOperators.OPERATOR_LT,
+								value: parseInt( minItems, 10 ) ?? null,
+						  }
+						: {
+								key: Checks.CHECK_ITEM_COUNT,
+								operator: CheckOperators.OPERATOR_GT,
+								value: parseInt( maxItems, 10 ) ?? null,
+						  };
+				}
 			}
 			break;
 		case Rules.RULE_PURCHASE_PRICE_THRESHOLD:
-			if (
-				parseFloat( ruleConfiguration?.min_amount?.toString() ?? '' ) &&
-				parseFloat( ruleConfiguration?.max_amount?.toString() ?? '' )
-			) {
-				ruleBase.check = {
-					operator: CheckOperators.LIST_OPERATOR_OR,
-					checks: [
-						{
-							key: Checks.CHECK_ORDER_TOTAL,
-							operator: CheckOperators.OPERATOR_LT,
-							value: buildFormattedRulePrice(
-								ruleConfiguration?.min_amount?.toString() ?? ''
-							),
-						},
-						{
-							key: Checks.CHECK_ORDER_TOTAL,
-							operator: CheckOperators.OPERATOR_GT,
-							value: buildFormattedRulePrice(
-								ruleConfiguration?.max_amount?.toString() ?? ''
-							),
-						},
-					],
-				};
-			} else if (
-				parseFloat( ruleConfiguration?.min_amount?.toString() ?? '' ) ||
-				parseFloat( ruleConfiguration?.max_amount?.toString() ?? '' )
-			) {
-				ruleBase.check = parseFloat(
-					ruleConfiguration?.min_amount?.toString() ?? ''
-				)
-					? {
-							key: Checks.CHECK_ORDER_TOTAL,
-							operator: CheckOperators.OPERATOR_LT,
-							value: buildFormattedRulePrice(
-								ruleConfiguration?.min_amount?.toString() ?? ''
-							),
-					  }
-					: {
-							key: Checks.CHECK_ORDER_TOTAL,
-							operator: CheckOperators.OPERATOR_GT,
-							value: buildFormattedRulePrice(
-								ruleConfiguration?.max_amount?.toString() ?? ''
-							),
-					  };
+			if ( isPurchasePriceThresholdSetting( ruleConfiguration ) ) {
+				const minAmount = ruleConfiguration?.min_amount + '';
+				const maxAmount = ruleConfiguration?.max_amount + '';
+
+				if ( parseFloat( minAmount ) && parseFloat( maxAmount ) ) {
+					ruleBase.check = {
+						operator: CheckOperators.LIST_OPERATOR_OR,
+						checks: [
+							{
+								key: Checks.CHECK_ORDER_TOTAL,
+								operator: CheckOperators.OPERATOR_LT,
+								value: buildFormattedRulePrice( minAmount ),
+							},
+							{
+								key: Checks.CHECK_ORDER_TOTAL,
+								operator: CheckOperators.OPERATOR_GT,
+								value: buildFormattedRulePrice( maxAmount ),
+							},
+						],
+					};
+				} else if (
+					parseFloat( minAmount ) ||
+					parseFloat( maxAmount )
+				) {
+					ruleBase.check = parseFloat( minAmount )
+						? {
+								key: Checks.CHECK_ORDER_TOTAL,
+								operator: CheckOperators.OPERATOR_LT,
+								value: buildFormattedRulePrice( minAmount ),
+						  }
+						: {
+								key: Checks.CHECK_ORDER_TOTAL,
+								operator: CheckOperators.OPERATOR_GT,
+								value: buildFormattedRulePrice( maxAmount ),
+						  };
+				}
 			}
+
 			break;
 	}
 

@@ -5,6 +5,7 @@ import React, {
 	useContext,
 	useEffect,
 	useState,
+	useMemo,
 	Dispatch,
 	SetStateAction,
 } from 'react';
@@ -19,7 +20,11 @@ import FraudProtectionRuleToggle from '../rule-toggle';
 import FraudProtectionRuleCardNotice from '../rule-card-notice';
 import FraudProtectionRuleDescription from '../rule-description';
 import FraudPreventionSettingsContext from '../context';
-import { FraudPreventionSetting } from '../../interfaces';
+import {
+	FraudPreventionOrderItemsThresholdSetting,
+	FraudPreventionSettings,
+	isOrderItemsThresholdSetting,
+} from '../../interfaces';
 
 interface OrderItemsThresholdCustomFormProps {
 	setting: string;
@@ -32,14 +37,16 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 		FraudPreventionSettingsContext
 	);
 
-	const minItemsTemp = parseInt(
-		protectionSettingsUI[ setting ].min_items + '',
-		10
+	const settingUI = useMemo(
+		() =>
+			protectionSettingsUI[
+				setting
+			] as FraudPreventionOrderItemsThresholdSetting,
+		[ protectionSettingsUI, setting ]
 	);
-	const maxItemsTemp = parseInt(
-		protectionSettingsUI[ setting ].max_items + '',
-		10
-	);
+
+	const minItemsTemp = parseInt( settingUI.min_items + '', 10 );
+	const maxItemsTemp = parseInt( settingUI.max_items + '', 10 );
 
 	const [ minItemsCount, setMinItemsCount ] = useState(
 		isNaN( minItemsTemp ) ? '' : minItemsTemp
@@ -49,11 +56,11 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 	);
 
 	useEffect( () => {
-		protectionSettingsUI[ setting ].min_items = minItemsCount;
-		protectionSettingsUI[ setting ].max_items = maxItemsCount;
+		settingUI.min_items = minItemsCount;
+		settingUI.max_items = maxItemsCount;
 		setProtectionSettingsUI( protectionSettingsUI );
 	}, [
-		setting,
+		settingUI,
 		minItemsCount,
 		maxItemsCount,
 		protectionSettingsUI,
@@ -177,14 +184,12 @@ const OrderItemsThresholdRuleCard: React.FC = () => (
 );
 
 export const OrderItemsThresholdValidation = (
-	{
-		enabled,
-		min_items: minItems,
-		max_items: maxItems,
-	}: FraudPreventionSetting,
+	setting: FraudPreventionSettings,
 	setValidationError: Dispatch< SetStateAction< string | null > >
 ): boolean => {
-	if ( enabled ) {
+	if ( setting.enabled && isOrderItemsThresholdSetting( setting ) ) {
+		const { min_items: minItems, max_items: maxItems } = setting;
+
 		if (
 			! parseInt( minItems + '', 10 ) &&
 			! parseInt( maxItems + '', 10 )

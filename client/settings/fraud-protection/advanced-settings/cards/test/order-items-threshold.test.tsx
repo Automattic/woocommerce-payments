@@ -10,16 +10,16 @@ import FraudPreventionSettingsContext from '../../context';
 import OrderItemsThresholdRuleCard, {
 	OrderItemsThresholdValidation,
 } from '../order-items-threshold';
-import { ProtectionSettingsUI } from 'wcpay/settings/fraud-protection/interfaces';
+import { FraudPreventionOrderItemsThresholdSetting } from 'wcpay/settings/fraud-protection/interfaces';
 
 describe( 'Order items threshold card', () => {
-	const settings: ProtectionSettingsUI = {
+	const settings = {
 		order_items_threshold: {
 			enabled: false,
 			block: false,
 			min_items: null,
 			max_items: null,
-		},
+		} as FraudPreventionOrderItemsThresholdSetting,
 	};
 	const setSettings = jest.fn();
 	const contextValue = {

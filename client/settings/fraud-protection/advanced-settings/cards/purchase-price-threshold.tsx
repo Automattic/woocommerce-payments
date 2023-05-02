@@ -5,6 +5,7 @@ import React, {
 	useContext,
 	useEffect,
 	useState,
+	useMemo,
 	SetStateAction,
 	Dispatch,
 } from 'react';
@@ -20,7 +21,11 @@ import FraudProtectionRuleToggle from '../rule-toggle';
 import FraudProtectionRuleDescription from '../rule-description';
 import FraudProtectionRuleCardNotice from '../rule-card-notice';
 import FraudPreventionSettingsContext from '../context';
-import { FraudPreventionSetting } from '../../interfaces';
+import {
+	FraudPreventionPurchasePriceThresholdSetting,
+	FraudPreventionSettings,
+	isPurchasePriceThresholdSetting,
+} from '../../interfaces';
 
 const getFloatValue = ( value: string ) => {
 	return '' === value || '0' === value ? 0 : parseFloat( value );
@@ -51,36 +56,38 @@ const PurchasePriceThresholdCustomForm: React.FC< PurchasePriceThresholdCustomFo
 		FraudPreventionSettingsContext
 	);
 
-	const minAmountTemp = parseFloat(
-		protectionSettingsUI[ setting ].min_amount?.toString() || ''
+	const settingUI = useMemo(
+		() =>
+			protectionSettingsUI[
+				setting
+			] as FraudPreventionPurchasePriceThresholdSetting,
+		[ protectionSettingsUI, setting ]
 	);
-	const maxAmountTemp = parseFloat(
-		protectionSettingsUI[ setting ].max_amount?.toString() || ''
-	);
+
+	const minAmountTemp = parseFloat( settingUI.min_amount + '' );
+	const maxAmountTemp = parseFloat( settingUI.max_amount + '' );
 
 	const [ minAmount, setMinAmount ] = useState( minAmountTemp ?? '' );
 	const [ maxAmount, setMaxAmount ] = useState( maxAmountTemp ?? '' );
 
 	useEffect( () => {
-		protectionSettingsUI[ setting ].min_amount = minAmount;
-		protectionSettingsUI[ setting ].max_amount = maxAmount;
+		settingUI.min_amount = minAmount;
+		settingUI.max_amount = maxAmount;
 		setProtectionSettingsUI( protectionSettingsUI );
 	}, [
-		setting,
 		minAmount,
 		maxAmount,
 		protectionSettingsUI,
 		setProtectionSettingsUI,
+		settingUI,
 	] );
 
 	const areInputsEmpty =
-		! getFloatValue( minAmount?.toString() || '' ) &&
-		! getFloatValue( maxAmount?.toString() || '' );
+		! getFloatValue( minAmount + '' ) && ! getFloatValue( maxAmount + '' );
 	const isMinGreaterThanMax =
 		minAmount &&
 		maxAmount &&
-		getFloatValue( minAmount?.toString() || '' ) >
-			getFloatValue( maxAmount?.toString() || '' );
+		getFloatValue( minAmount + '' ) > getFloatValue( maxAmount + '' );
 
 	const currencySymbol = getCurrencySymbol();
 
@@ -187,16 +194,15 @@ const PurchasePriceThresholdRuleCard: React.FC = () => (
 );
 
 export const PurchasePriceThresholdValidation = (
-	{
-		enabled,
-		min_amount: minAmount,
-		max_amount: maxAmount,
-	}: FraudPreventionSetting,
+	setting: FraudPreventionSettings,
 	setValidationError: Dispatch< SetStateAction< string | null > >
 ): boolean => {
-	const minAmountFloat = getFloatValue( minAmount?.toString() || '' );
-	const maxAmountFloat = getFloatValue( maxAmount?.toString() || '' );
-	if ( enabled ) {
+	if ( setting.enabled && isPurchasePriceThresholdSetting( setting ) ) {
+		const { min_amount: minAmount, max_amount: maxAmount } = setting;
+
+		const minAmountFloat = getFloatValue( minAmount + '' );
+		const maxAmountFloat = getFloatValue( maxAmount + '' );
+
 		if ( ! minAmountFloat && ! maxAmountFloat ) {
 			setValidationError(
 				__(
