@@ -14,15 +14,14 @@ describe( 'Grouped Select Control', () => {
 	const onChange = jest.fn();
 
 	const options = [
-		{ type: 'group', key: 'g1', name: 'Group 1', items: [ 'o1', 'o2' ] },
-		{ type: 'option', key: 'o1', name: 'Option 1', group: 'g1' },
-		{ type: 'option', key: 'o2', name: 'Option 2', group: 'g1' },
-		{ type: 'group', key: 'g2', name: 'Group 2', items: [ 'o3', 'o4' ] },
-		{ type: 'option', key: 'o3', name: 'Option 3', group: 'g2' },
-		{ type: 'option', key: 'o4', name: 'Option 4', group: 'g2' },
-		{ type: 'group', key: 'g3', name: 'Group 3', items: [ 'o5' ] },
+		{ key: 'g1', name: 'Group 1', items: [ 'o1', 'o2' ] },
+		{ key: 'o1', name: 'Option 1', group: 'g1' },
+		{ key: 'o2', name: 'Option 2', group: 'g1' },
+		{ key: 'g2', name: 'Group 2', items: [ 'o3', 'o4' ] },
+		{ key: 'o3', name: 'Option 3', group: 'g2' },
+		{ key: 'o4', name: 'Option 4', group: 'g2' },
+		{ key: 'g3', name: 'Group 3', items: [ 'o5' ] },
 		{
-			type: 'option',
 			key: 'o5',
 			name: 'Option 5',
 			group: 'g3',

@@ -13,7 +13,6 @@ import { useSelect, UseSelectState } from 'downshift';
 import './style.scss';
 
 export interface ListItem {
-	type: string;
 	key: string;
 	name: string;
 	group?: string;

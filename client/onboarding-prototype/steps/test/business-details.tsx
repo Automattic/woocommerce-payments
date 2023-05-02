@@ -77,7 +77,6 @@ mocked( getBusinessTypes ).mockReturnValue( countries );
 
 const mccsFlatList = [
 	{
-		type: 'group',
 		key: 'most_popular',
 		name: 'Most popular',
 		items: [
@@ -87,7 +86,6 @@ const mccsFlatList = [
 		],
 	},
 	{
-		type: 'option',
 		key: 'most_popular__software_services',
 		name: 'Popular Software',
 		group: 'most_popular',
@@ -95,21 +93,18 @@ const mccsFlatList = [
 			'programming web website design data entry processing integrated systems',
 	},
 	{
-		type: 'option',
 		key: 'most_popular__clothing_and_apparel',
 		name: 'Clothing and accessories',
 		group: 'most_popular',
 		context: '',
 	},
 	{
-		type: 'option',
 		key: 'most_popular__consulting_services',
 		name: 'Consulting',
 		group: 'most_popular',
 		context: '',
 	},
 	{
-		type: 'group',
 		key: 'retail',
 		name: 'Retail',
 		items: [
@@ -120,7 +115,6 @@ const mccsFlatList = [
 		],
 	},
 	{
-		type: 'option',
 		key: 'retail__software',
 		name: 'Software',
 		group: 'retail',
@@ -128,7 +122,6 @@ const mccsFlatList = [
 			'app business computer digital electronic hardware lease maintenance personal processing product program programming repair saas sell software retail',
 	},
 	{
-		type: 'option',
 		key: 'retail__clothing_and_apparel',
 		name: 'Clothing and accessories',
 		group: 'retail',
@@ -136,7 +129,6 @@ const mccsFlatList = [
 			'accessories apparel baby children clothes clothing dress family infant men pant shirt short skirt t-shirt tee undergarment women retail',
 	},
 	{
-		type: 'option',
 		key: 'retail__convenience_stores',
 		name: 'Convenience stores',
 		group: 'retail',
@@ -144,7 +136,6 @@ const mccsFlatList = [
 			'candy convenience dairy deli delicatessen drink fast food fruit gourmet grocery health market meal poultry preparation produce retail specialty supermarket vegetable vitamin retail',
 	},
 	{
-		type: 'option',
 		key: 'retail__beauty_products',
 		name: 'Beauty products',
 		group: 'retail',

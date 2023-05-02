@@ -44,14 +44,12 @@ export const getMccsFlatList = (): ListItem[] => {
 	// Right now we support only two levels (top-level groups and items in those groups).
 	// For safety, we will discard anything else like top-level items or sub-groups.
 	const normalizedData = ( data || [] ).filter( ( group ) => {
-		if ( ! group?.type || 'group' !== group.type ) {
+		if ( ! group?.items ) {
 			return false;
 		}
 
 		const groupItems =
-			group.items?.filter(
-				( item ) => item?.type && 'mcc' === item.type
-			) || [];
+			group.items?.filter( ( item ) => ! item?.items ) || [];
 
 		return groupItems.length;
 	} );
@@ -61,7 +59,6 @@ export const getMccsFlatList = (): ListItem[] => {
 			group.items?.map(
 				( item ): ListItem => {
 					return {
-						type: 'option',
 						key: item.id,
 						name: item.title,
 						group: group.id,
@@ -75,7 +72,6 @@ export const getMccsFlatList = (): ListItem[] => {
 		return [
 			...acc,
 			{
-				type: 'group',
 				key: group.id,
 				name: group.title,
 				items: groupItems.map( ( item ) => item.key ),
