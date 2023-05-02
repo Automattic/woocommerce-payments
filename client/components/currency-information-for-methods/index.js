@@ -4,7 +4,7 @@
 import React, { useContext } from 'react';
 import _ from 'lodash';
 import { sprintf, __, _n } from '@wordpress/i18n';
-import interpolateComponents from 'interpolate-components';
+import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies

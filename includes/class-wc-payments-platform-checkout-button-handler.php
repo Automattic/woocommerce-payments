@@ -37,16 +37,53 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 	private $gateway;
 
 	/**
+	 * Platform_Checkout_Utilities instance.
+	 *
+	 * @var Platform_Checkout_Utilities
+	 */
+	private $platform_checkout_utilities;
+
+	/**
 	 * Initialize class actions.
 	 *
-	 * @param WC_Payments_Account      $account Account information.
-	 * @param WC_Payment_Gateway_WCPay $gateway WCPay gateway.
+	 * @param WC_Payments_Account         $account Account information.
+	 * @param WC_Payment_Gateway_WCPay    $gateway WCPay gateway.
+	 * @param Platform_Checkout_Utilities $platform_checkout_utilities WCPay gateway.
 	 */
-	public function __construct( WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway ) {
-		$this->account = $account;
-		$this->gateway = $gateway;
+	public function __construct( WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway, Platform_Checkout_Utilities $platform_checkout_utilities ) {
+		$this->account                     = $account;
+		$this->gateway                     = $gateway;
+		$this->platform_checkout_utilities = $platform_checkout_utilities;
+	}
 
-		add_action( 'init', [ $this, 'init' ] );
+	/**
+	 * Indicates eligibility for WooPay via feature flag.
+	 *
+	 * @var bool
+	 */
+	private $is_platform_checkout_eligible;
+
+	/**
+	 * Indicates whether WooPay is enabled.
+	 *
+	 * @var bool
+	 */
+	private $is_platform_checkout_enabled;
+
+	/**
+	 * Indicates whether WooPay express checkout is enabled.
+	 *
+	 * @var bool
+	 */
+	private $is_platform_checkout_express_button_enabled;
+
+	/**
+	 * Indicates whether WooPay and WooPay express checkout are enabled.
+	 *
+	 * @return bool
+	 */
+	public function is_woopay_enabled() {
+		return $this->is_platform_checkout_eligible && $this->is_platform_checkout_enabled && $this->is_platform_checkout_express_button_enabled;
 	}
 
 	/**
@@ -61,11 +98,11 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		}
 
 		// Checks if WooPay is enabled.
-		$is_platform_checkout_eligible               = WC_Payments_Features::is_platform_checkout_eligible(); // Feature flag.
-		$is_platform_checkout_enabled                = 'yes' === $this->gateway->get_option( 'platform_checkout', 'no' );
-		$is_platform_checkout_express_button_enabled = WC_Payments_Features::is_woopay_express_checkout_enabled();
+		$this->is_platform_checkout_eligible               = WC_Payments_Features::is_platform_checkout_eligible(); // Feature flag.
+		$this->is_platform_checkout_enabled                = 'yes' === $this->gateway->get_option( 'platform_checkout', 'no' );
+		$this->is_platform_checkout_express_button_enabled = WC_Payments_Features::is_woopay_express_checkout_enabled();
 
-		if ( ! ( $is_platform_checkout_eligible && $is_platform_checkout_enabled && $is_platform_checkout_express_button_enabled ) ) {
+		if ( ! $this->is_woopay_enabled() ) {
 			return;
 		}
 
@@ -79,15 +116,6 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		add_filter( 'wcpay_payment_fields_js_config', [ $this, 'add_platform_checkout_config' ] );
 
 		add_action( 'wc_ajax_wcpay_add_to_cart', [ $this, 'ajax_add_to_cart' ] );
-
-		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_platform_checkout_button_html' ], -2 );
-		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_platform_checkout_button_separator_html' ], -1 );
-
-		add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_platform_checkout_button_html' ], -2 );
-		add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_platform_checkout_button_separator_html' ], -1 );
-
-		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_platform_checkout_button_html' ], -2 );
-		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_platform_checkout_button_separator_html' ], -1 );
 
 		add_action( 'wp_ajax_woopay_express_checkout_button_show_error_notice', [ $this, 'show_error_notice' ] );
 		add_action( 'wp_ajax_nopriv_woopay_express_checkout_button_show_error_notice', [ $this, 'show_error_notice' ] );
@@ -117,18 +145,14 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 			return;
 		}
 
-		$script_src_url    = plugins_url( 'dist/platform-checkout-express-button.js', WCPAY_PLUGIN_FILE );
-		$script_asset_path = WCPAY_ABSPATH . 'dist/platform-checkout-express-button.asset.php';
-		$script_asset      = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ];
-
-		wp_register_script( 'WCPAY_PLATFORM_CHECKOUT_EXPRESS_BUTTON', $script_src_url, $script_asset['dependencies'], WC_Payments::get_file_version( 'dist/platform-checkout-express-button.js' ), true );
+		WC_Payments::register_script_with_dependencies( 'WCPAY_PLATFORM_CHECKOUT_EXPRESS_BUTTON', 'dist/platform-checkout-express-button' );
 
 		$wcpay_config = rawurlencode( wp_json_encode( WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() ) );
 
 		wp_add_inline_script(
 			'WCPAY_PLATFORM_CHECKOUT_EXPRESS_BUTTON',
 			"
-			var wcpay_config = wcpay_config || JSON.parse( decodeURIComponent( '" . esc_js( $wcpay_config ) . "' ) );
+			var wcpayConfig = wcpayConfig || JSON.parse( decodeURIComponent( '" . esc_js( $wcpay_config ) . "' ) );
 			",
 			'before'
 		);
@@ -420,7 +444,6 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		$button_type = $this->gateway->get_option( 'payment_request_button_type', 'default' );
 		return [
 			'type'    => $button_type,
-			'text'    => ucfirst( $button_type ),
 			'theme'   => $this->gateway->get_option( 'payment_request_button_theme', 'dark' ),
 			'height'  => $this->get_button_height(),
 			'size'    => $this->gateway->get_option( 'payment_request_button_size' ),
@@ -453,14 +476,24 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 	 * @return bool
 	 */
 	public function should_show_platform_checkout_button() {
+		// WCPay is not available.
+		$gateways = WC()->payment_gateways->get_available_payment_gateways();
+		if ( ! isset( $gateways['woocommerce_payments'] ) ) {
+			return false;
+		}
+
+		// WooPay is not enabled.
+		if ( ! $this->is_woopay_enabled() ) {
+			return false;
+		}
+
 		// Page not supported.
 		if ( ! $this->is_product() && ! $this->is_cart() && ! $this->is_checkout() ) {
 			return false;
 		}
 
 		// Check if WooPay is available in the user country.
-		$platform_checkout_utilities = new Platform_Checkout_Utilities();
-		if ( ! $platform_checkout_utilities->is_country_available( $this->gateway ) ) {
+		if ( ! $this->platform_checkout_utilities->is_country_available( $this->gateway ) ) {
 			return false;
 		}
 
@@ -477,6 +510,44 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		// Cart page, but not available in settings.
 		if ( $this->is_cart() && ! $this->is_available_at( 'cart' ) ) {
 			return false;
+		}
+
+		// Product page, but has unsupported product type.
+		if ( $this->is_product() && ! $this->is_product_supported() ) {
+			Logger::log( 'Product page has unsupported product type ( WooPay Express button disabled )' );
+			return false;
+		}
+
+		// Cart has unsupported product type.
+		if ( ( $this->is_checkout() || $this->is_cart() ) && ! $this->has_allowed_items_in_cart() ) {
+			Logger::log( 'Items in the cart have unsupported product type ( WooPay Express button disabled )' );
+			return false;
+		}
+
+		if ( $this->is_pay_for_order_page() ) {
+			return false;
+		}
+
+		if ( ! is_user_logged_in() ) {
+			// On product page for a subscription product, but not logged in, making WooPay unavailable.
+			if ( $this->is_product() ) {
+				$current_product = wc_get_product();
+
+				if ( $current_product && $this->is_product_subscription( $current_product ) ) {
+					return false;
+				}
+			}
+
+			// On cart or checkout page with a subscription product in cart, but not logged in, making WooPay unavailable.
+			if ( ( $this->is_checkout() || $this->is_cart() ) && class_exists( 'WC_Subscriptions_Cart' ) && WC_Subscriptions_Cart::cart_contains_subscription() ) {
+				// Check cart for subscription products.
+				return false;
+			}
+
+			// If guest checkout is not allowed, and customer is not logged in, disable the WooPay button.
+			if ( ! $this->platform_checkout_utilities->is_guest_checkout_enabled() ) {
+				return false;
+			}
 		}
 
 		/**
@@ -506,15 +577,82 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 	}
 
 	/**
-	 * Display payment request button separator.
+	 * Whether the product page has a product compatible with the WooPay Express button.
+	 *
+	 * @return boolean
 	 */
-	public function display_platform_checkout_button_separator_html() {
-		if ( ! $this->should_show_platform_checkout_button() ) {
-			return;
+	private function is_product_supported() {
+		$product      = $this->get_product();
+		$is_supported = true;
+
+		if ( ! is_object( $product ) ) {
+			$is_supported = false;
 		}
-		?>
-		<p id="wcpay-payment-request-button-separator" style="margin-top:1.5em;text-align:center;">&mdash; <?php esc_html_e( 'OR', 'woocommerce-payments' ); ?> &mdash;</p>
-		<?php
+
+		// Pre Orders products to be charged upon release are not supported.
+		if ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) {
+			$is_supported = false;
+		}
+
+		return apply_filters( 'wcpay_platform_checkout_button_is_product_supported', $is_supported, $product );
 	}
 
+	/**
+	 * Checks the cart to see if the WooPay Express button supports all of its items.
+	 *
+	 * @todo Abstract this. This is a copy of the same method in the `WC_Payments_Payment_Request_Button_Handler` class.
+	 *
+	 * @return boolean
+	 */
+	private function has_allowed_items_in_cart() {
+		$is_supported = true;
+
+		// We don't support pre-order products to be paid upon release.
+		if (
+			class_exists( 'WC_Pre_Orders_Cart' ) &&
+			WC_Pre_Orders_Cart::cart_contains_pre_order() &&
+			class_exists( 'WC_Pre_Orders_Product' ) &&
+			WC_Pre_Orders_Product::product_is_charged_upon_release( WC_Pre_Orders_Cart::get_pre_order_product() )
+		) {
+			$is_supported = false;
+		}
+
+		return apply_filters( 'wcpay_platform_checkout_button_are_cart_items_supported', $is_supported );
+	}
+
+	/**
+	 * Get product from product page or product_page shortcode.
+	 *
+	 * @todo Abstract this. This is a copy of the same method in the `WC_Payments_Payment_Request_Button_Handler` class.
+	 *
+	 * @return WC_Product|false|null Product object.
+	 */
+	private function get_product() {
+		global $post;
+
+		if ( is_product() ) {
+			return wc_get_product( $post->ID );
+		} elseif ( wc_post_content_has_shortcode( 'product_page' ) ) {
+			// Get id from product_page shortcode.
+			preg_match( '/\[product_page id="(?<id>\d+)"\]/', $post->post_content, $shortcode_match );
+			if ( isset( $shortcode_match['id'] ) ) {
+				return wc_get_product( $shortcode_match['id'] );
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Returns true if the provided WC_Product is a subscription, false otherwise.
+	 *
+	 * @param WC_Product $product The product to check.
+	 *
+	 * @return bool  True if product is subscription, false otherwise.
+	 */
+	private function is_product_subscription( WC_Product $product ): bool {
+		return 'subscription' === $product->get_type()
+			|| 'subscription_variation' === $product->get_type()
+			|| 'variable-subscription' === $product->get_type();
+	}
 }

@@ -14,15 +14,11 @@ import { createInterpolateElement } from '@wordpress/element';
 import 'components/account-status/shared.scss';
 
 const DepositsStatus = ( { status, interval, iconSize } ) => {
-	const isCustomDepositSchedulesEnabled =
-		window.wcpaySettings?.featureFlags?.customDepositSchedules;
 	let className = 'account-status__info__green';
 	let description;
 	let icon = <GridiconCheckmarkCircle size={ iconSize } />;
 	const automaticIntervals = [ 'daily', 'weekly', 'monthly' ];
-	const showSuspendedNotice =
-		( ! isCustomDepositSchedulesEnabled && 'manual' === interval ) ||
-		'blocked' === status;
+	const showSuspendedNotice = 'blocked' === status;
 
 	if ( 'disabled' === status ) {
 		description = __( 'Disabled', 'woocommerce-payments' );
@@ -52,7 +48,7 @@ const DepositsStatus = ( { status, interval, iconSize } ) => {
 		icon = <GridiconNotice size={ iconSize } />;
 	} else if ( automaticIntervals.includes( interval ) ) {
 		description = __( 'Automatic', 'woocommerce-payments' );
-	} else if ( isCustomDepositSchedulesEnabled && 'manual' === interval ) {
+	} else if ( 'manual' === interval ) {
 		description = __( 'Manual', 'woocommerce-payments' );
 	} else {
 		description = __( 'Unknown', 'woocommerce-payments' );

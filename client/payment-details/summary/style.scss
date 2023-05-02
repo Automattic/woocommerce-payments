@@ -46,6 +46,15 @@
 		}
 	}
 
+	.payment-details-summary__fraud-outcome-action {
+		display: flex;
+		justify-content: flex-end;
+
+		button + button {
+			margin-left: 8px;
+		}
+	}
+
 	.payment-details-summary__id {
 		height: 100%;
 		margin-top: 8px;

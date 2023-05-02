@@ -13,8 +13,12 @@ $space-header-item: 12px;
 
 		.conversion-indicator {
 			margin-right: 6px;
-			height: 18px;
 			fill: $studio-gray-30;
+		}
+
+		.components-popover__content {
+			position: relative;
+			top: -( $gap * 2 ); // Positioning the tooltip in a higher position to avoid having it cropped by the bottom of the table
 		}
 	}
 
@@ -25,6 +29,20 @@ $space-header-item: 12px;
 
 	.woocommerce-table__header.is-center-aligned {
 		text-align: center;
+	}
+
+	.woocommerce-taptopay__icon {
+		position: relative;
+		display: inline-block;
+		width: 16px;
+		height: 16px;
+		background: no-repeat
+			url( '../../../assets/images/payment-methods/taptopay.svg' );
+		background-size: 16px 16px;
+		transform: rotate( 45deg );
+		cursor: pointer;
+		top: 3px;
+		left: 8px;
 	}
 }
 

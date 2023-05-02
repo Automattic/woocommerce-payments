@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import interpolateComponents from 'interpolate-components';
+import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies

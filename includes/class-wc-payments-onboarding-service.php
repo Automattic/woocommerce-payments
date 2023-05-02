@@ -17,6 +17,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WC_Payments_Onboarding_Service {
 
+	const TEST_MODE_OPTION = 'wcpay_onboarding_test_mode';
+
 	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
@@ -40,6 +42,9 @@ class WC_Payments_Onboarding_Service {
 	public function __construct( WC_Payments_API_Client $payments_api_client, Database_Cache $database_cache ) {
 		$this->payments_api_client = $payments_api_client;
 		$this->database_cache      = $database_cache;
+
+		add_filter( 'wcpay_dev_mode', [ $this, 'maybe_enable_dev_mode' ], 100 );
+		add_filter( 'admin_body_class', [ $this, 'add_admin_body_classes' ] );
 	}
 
 	/**
@@ -115,5 +120,60 @@ class WC_Payments_Onboarding_Service {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Enable dev mode if onboarding test mode is enabled.
+	 *
+	 * @param bool $dev_mode Current dev mode value.
+	 *
+	 * @return bool
+	 */
+	public function maybe_enable_dev_mode( bool $dev_mode ): bool {
+		return self::is_test_mode_enabled() || $dev_mode;
+	}
+
+	/**
+	 * Adds body classes to the main wp-admin wrapper.
+	 *
+	 * @param string $classes Space separated string of class names.
+	 *
+	 * @return string Classes to add to the body.
+	 */
+	public function add_admin_body_classes( string $classes = '' ): string {
+		// Onboarding needs to hide wp-admin navigation and masterbar while JS loads.
+		// This class will be removed by the onboarding component.
+		if ( isset( $_GET['path'] ) && '/payments/onboarding-prototype' === $_GET['path'] ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$classes .= ' woocommerce-admin-is-loading';
+		}
+
+		return $classes;
+	}
+
+	/**
+	 * Set onboarding test mode.
+	 * Will also switch WC_Payments mode immediately.
+	 *
+	 * @param boolean $test_mode Whether to enable test mode.
+	 * @return void
+	 */
+	public static function set_test_mode( bool $test_mode ): void {
+		update_option( self::TEST_MODE_OPTION, $test_mode );
+
+		// Ensure WC_Payments mode is switched immediately.
+		if ( $test_mode ) {
+			WC_Payments::mode()->dev();
+		} else {
+			WC_Payments::mode()->live();
+		}
+	}
+
+	/**
+	 * Returns whether onboarding test mode is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_test_mode_enabled(): bool {
+		return get_option( self::TEST_MODE_OPTION );
 	}
 }

@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Core\Server\Request\Add_Account_Tos_Agreement;
 use WCPay\Database_Cache;
 use WCPay\Session_Rate_Limiter;
 
@@ -56,8 +57,8 @@ class WC_REST_Payments_Tos_Controller_Test extends WCPAY_UnitTestCase {
 		$mock_db_cache            = $this->createMock( Database_Cache::class );
 		$customer_service         = new WC_Payments_Customer_Service( $mock_api_client, $mock_wcpay_account, $mock_db_cache );
 		$token_service            = new WC_Payments_Token_Service( $mock_api_client, $customer_service );
-		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $mock_api_client );
 		$order_service            = new WC_Payments_Order_Service( $this->createMock( WC_Payments_API_Client::class ) );
+		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $mock_api_client, $order_service );
 
 		$this->gateway    = new WC_Payment_Gateway_WCPay(
 			$mock_api_client,
@@ -97,6 +98,7 @@ class WC_REST_Payments_Tos_Controller_Test extends WCPAY_UnitTestCase {
 	public function test_gateway_enabled_on_tos_accepted() {
 		$this->gateway->disable();
 		$this->request->set_body( wp_json_encode( [ 'accept' => true ] ) );
+		$this->mock_wcpay_request( Add_Account_Tos_Agreement::class, 1 );
 
 		// Run the test.
 		$response = $this->controller->handle_tos( $this->request );

@@ -5,29 +5,14 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
  * REST controller for settings.
  */
 class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
-
-	const ACCOUNT_FIELDS_TO_UPDATE = [
-		'account_statement_descriptor',
-		'account_business_name',
-		'account_business_url',
-		'account_business_support_address',
-		'account_business_support_email',
-		'account_business_support_phone',
-		'account_branding_logo',
-		'account_branding_icon',
-		'account_branding_primary_color',
-		'account_branding_secondary_color',
-		'deposit_schedule_interval',
-		'deposit_schedule_monthly_anchor',
-		'deposit_schedule_weekly_anchor',
-	];
-
 	/**
 	 * Endpoint path.
 	 *
@@ -374,8 +359,8 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'payment_method_statuses'             => $this->wcpay_gateway->get_upe_enabled_payment_method_statuses(),
 				'is_wcpay_enabled'                    => $this->wcpay_gateway->is_enabled(),
 				'is_manual_capture_enabled'           => 'yes' === $this->wcpay_gateway->get_option( 'manual_capture' ),
-				'is_test_mode_enabled'                => $this->wcpay_gateway->is_in_test_mode(),
-				'is_dev_mode_enabled'                 => $this->wcpay_gateway->is_in_dev_mode(),
+				'is_test_mode_enabled'                => WC_Payments::mode()->is_test(),
+				'is_dev_mode_enabled'                 => WC_Payments::mode()->is_dev(),
 				'is_multi_currency_enabled'           => WC_Payments_Features::is_customer_multi_currency_enabled(),
 				'is_client_secret_encryption_enabled' => WC_Payments_Features::is_client_secret_encryption_enabled(),
 				'is_wcpay_subscriptions_enabled'      => WC_Payments_Features::is_wcpay_subscriptions_enabled(),
@@ -409,6 +394,8 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'deposit_delay_days'                  => $this->wcpay_gateway->get_option( 'deposit_delay_days' ),
 				'deposit_status'                      => $this->wcpay_gateway->get_option( 'deposit_status' ),
 				'deposit_completed_waiting_period'    => $this->wcpay_gateway->get_option( 'deposit_completed_waiting_period' ),
+				'current_protection_level'            => $this->wcpay_gateway->get_option( 'current_protection_level' ),
+				'advanced_fraud_protection_settings'  => $this->wcpay_gateway->get_option( 'advanced_fraud_protection_settings' ),
 			]
 		);
 	}
@@ -436,6 +423,9 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_platform_checkout_store_logo( $request );
 		$this->update_platform_checkout_custom_message( $request );
 		$this->update_platform_checkout_enabled_locations( $request );
+		// Note: Both "current_protection_level" and "advanced_fraud_protection_settings"
+		// are handled in the below method.
+		$this->update_fraud_protection_settings( $request );
 
 		return new WP_REST_Response( [], 200 );
 	}
@@ -535,7 +525,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 */
 	private function update_is_test_mode_enabled( WP_REST_Request $request ) {
 		// avoiding updating test mode when dev mode is enabled.
-		if ( $this->wcpay_gateway->is_in_dev_mode() ) {
+		if ( WC_Payments::mode()->is_dev() ) {
 			return;
 		}
 
@@ -555,7 +545,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 */
 	private function update_is_debug_log_enabled( WP_REST_Request $request ) {
 		// avoiding updating test mode when dev mode is enabled.
-		if ( $this->wcpay_gateway->is_in_dev_mode() ) {
+		if ( WC_Payments::mode()->is_dev() ) {
 			return;
 		}
 
@@ -620,7 +610,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 */
 	private function update_account( WP_REST_Request $request ) {
 		$updated_fields_callback = function ( $value, string $key ) {
-			return in_array( $key, static::ACCOUNT_FIELDS_TO_UPDATE, true ) &&
+			return array_key_exists( $key, WC_Payment_Gateway_WCPay::ACCOUNT_SETTINGS_MAPPING ) &&
 				$this->wcpay_gateway->get_option( $key ) !== $value;
 		};
 		// Filter out fields that are unchanged or not in the list of fields to update.
@@ -758,5 +748,61 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$platform_checkout_enabled_locations = $request->get_param( 'platform_checkout_enabled_locations' );
 
 		$this->wcpay_gateway->update_option( 'platform_checkout_button_locations', $platform_checkout_enabled_locations );
+	}
+
+	/**
+	 * Updates the settings of fraud protection rules (both settings and level in one function, because they are connected).
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_fraud_protection_settings( WP_REST_Request $request ) {
+		if ( ! WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
+			return;
+		}
+
+		if ( ! $request->has_param( 'current_protection_level' ) || ! $request->has_param( 'advanced_fraud_protection_settings' ) ) {
+			return;
+		}
+
+		$protection_level = $request->get_param( 'current_protection_level' );
+
+		// Check validity of the protection level.
+		if ( ! in_array( $protection_level, [ 'basic', 'standard', 'high', 'advanced' ], true ) ) {
+			return;
+		}
+
+		// Get rulesets per protection level.
+		switch ( $protection_level ) {
+			case 'basic':
+				$ruleset_config = Fraud_Risk_Tools::get_basic_protection_settings();
+				break;
+			case 'standard':
+				$ruleset_config = Fraud_Risk_Tools::get_standard_protection_settings();
+				break;
+			case 'high':
+				$ruleset_config = Fraud_Risk_Tools::get_high_protection_settings();
+				break;
+			case 'advanced':
+				$referer                   = $request->get_header( 'referer' );
+				$is_advanced_settings_page = 0 < strpos( $referer, 'fraud-protection' );
+				if ( ! $is_advanced_settings_page ) {
+					// When the button is clicked from the Payments > Settings page, the advanced fraud protection settings shouldn't change.
+					$ruleset_config = get_transient( 'wcpay_fraud_protection_settings' ) ?? [];
+				} else {
+					// When the button is clicked from the Advanced fraud protection settings page, it should change.
+					$ruleset_config = $request->get_param( 'advanced_fraud_protection_settings' );
+				}
+				break;
+		}
+
+		// Save ruleset to the server.
+		$this->api_client->save_fraud_ruleset( $ruleset_config );
+
+		// Update local cache.
+		delete_transient( 'wcpay_fraud_protection_settings' );
+		set_transient( 'wcpay_fraud_protection_settings', $ruleset_config, 1 * DAY_IN_SECONDS );
+
+		// Update the option only when server update succeeds.
+		update_option( 'current_protection_level', $protection_level );
 	}
 }

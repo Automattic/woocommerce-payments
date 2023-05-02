@@ -19,6 +19,11 @@
         <code>$this->get_deposit_schedule_monthly_anchor()</code>
     </NullableReturnStatement>
   </file>
+  <file src="includes/class-wc-payments-platform-checkout-button-handler.php">
+    <UndefinedClass occurrences="3">
+      <code>WC_Pre_Orders_Product</code>
+    </UndefinedClass>
+  </file>
   <file src="includes/class-wc-payments-payment-request-button-handler.php">
     <UndefinedClass occurrences="3">
       <code>WC_Pre_Orders_Product</code>
@@ -71,6 +76,11 @@
   <file src="includes/class-wc-payments-utils.php">
     <UndefinedClass occurrences="1">
       <code>\Automattic\WooCommerce\Utilities\OrderUtil</code>
+    </UndefinedClass>
+  </file>
+  <file src="includes/compat/blocks/class-blocks-data-extractor.php">
+    <UndefinedClass occurrences="1">
+      <code>CheckoutSchema</code>
     </UndefinedClass>
   </file>
 </files>

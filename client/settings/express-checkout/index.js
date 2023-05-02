@@ -4,9 +4,10 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Card, CheckboxControl } from '@wordpress/components';
-import interpolateComponents from 'interpolate-components';
+import { Card, CheckboxControl, VisuallyHidden } from '@wordpress/components';
+import interpolateComponents from '@automattic/interpolate-components';
 import { useContext } from '@wordpress/element';
+import { Icon, warning } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -19,11 +20,13 @@ import {
 	usePlatformCheckoutEnabledSettings,
 } from 'wcpay/data';
 import CardBody from '../card-body';
-import PaymentRequestIcon from '../../gateway-icons/payment-request';
-import WooIcon from '../../gateway-icons/woo';
 import './style.scss';
 import WCPaySettingsContext from '../wcpay-settings-context';
-import LinkIcon from '../../gateway-icons/link';
+import { HoverTooltip } from 'components/tooltip';
+import ApplePay from 'assets/images/cards/apple-pay.svg?asset';
+import GooglePay from 'assets/images/cards/google-pay.svg?asset';
+import LinkIcon from 'assets/images/payment-methods/link.svg?asset';
+import WooIcon from 'assets/images/payment-methods/woo.svg?asset';
 
 const ExpressCheckout = () => {
 	const [
@@ -74,15 +77,51 @@ const ExpressCheckout = () => {
 			<CardBody size={ 0 }>
 				<ul className="express-checkouts-list">
 					{ isPlatformCheckoutFeatureFlagEnabled && (
-						<li className="express-checkout has-icon-border">
+						<li
+							className="express-checkout"
+							id="express-checkouts-woopay"
+						>
 							<div className="express-checkout__checkbox">
-								<CheckboxControl
-									checked={ isPlatformCheckoutEnabled }
-									onChange={ updateIsPlatformCheckoutEnabled }
-								/>
+								{ isStripeLinkEnabled ? (
+									<HoverTooltip
+										content={ __(
+											'To enable WooPay, you must first disable Link by Stripe.',
+											'woocommerce-payments'
+										) }
+									>
+										<div className="loadable-checkbox__icon">
+											<Icon
+												icon={ warning }
+												fill={ '#ffc83f' }
+											/>
+											<div
+												className="loadable-checkbox__icon-warning"
+												data-testid="loadable-checkbox-icon-warning"
+											>
+												<VisuallyHidden>
+													{ __(
+														'WooPay cannot be enabled at checkout. Click to expand.',
+														'woocommerce-payments'
+													) }
+												</VisuallyHidden>
+											</div>
+										</div>
+									</HoverTooltip>
+								) : (
+									<CheckboxControl
+										label={ __(
+											'WooPay',
+											'woocommerce-payments'
+										) }
+										checked={ isPlatformCheckoutEnabled }
+										onChange={
+											updateIsPlatformCheckoutEnabled
+										}
+									/>
+								) }
 							</div>
 							<div className="express-checkout__icon">
-								<WooIcon />
+								<img src={ WooIcon } alt="WooPay" />
 							</div>
 							<div className="express-checkout__label-container">
 								<div className="express-checkout__label">
@@ -91,39 +130,53 @@ const ExpressCheckout = () => {
 								<div className="express-checkout__description">
 									{
 										/* eslint-disable jsx-a11y/anchor-has-content */
-										interpolateComponents( {
-											mixedString: __(
-												'By using WooPay, you agree to the {{tosLink}}WooCommerce Terms of Service{{/tosLink}} ' +
-													'and acknowledge you have read our {{privacyLink}}Privacy Policy{{/privacyLink}} and ' +
-													'understand you will be sharing data with us. ' +
-													'{{trackingLink}}Click here{{/trackingLink}} to learn more about data sharing. ' +
-													'You can opt out of data sharing by disabling WooPay.',
-												'woocommerce-payments'
-											),
-											components: {
-												tosLink: (
-													<a
-														target="_blank"
-														rel="noreferrer"
-														href="https://wordpress.com/tos/"
-													/>
-												),
-												privacyLink: (
-													<a
-														target="_blank"
-														rel="noreferrer"
-														href="https://automattic.com/privacy/"
-													/>
-												),
-												trackingLink: (
-													<a
-														target="_blank"
-														rel="noreferrer"
-														href="https://woocommerce.com/usage-tracking/"
-													/>
-												),
-											},
-										} )
+										isPlatformCheckoutEnabled
+											? __(
+													'Boost conversion and customer loyalty by offering a single click, secure way to pay.',
+													'woocommerce-payments'
+											  )
+											: interpolateComponents( {
+													mixedString: __(
+														/* eslint-disable-next-line max-len */
+														'Boost conversion and customer loyalty by offering a single click, secure way to pay. ' +
+															'In order to use {{wooPayLink}}WooPay{{/wooPayLink}}, you must agree to our ' +
+															'{{tosLink}}WooCommerce Terms of Service{{/tosLink}} ' +
+															'and {{privacyLink}}Privacy Policy{{/privacyLink}}. ' +
+															'{{trackingLink}}Click here{{/trackingLink}} to learn more about the ' +
+															'data you will be sharing and opt-out options.',
+														'woocommerce-payments'
+													),
+													components: {
+														wooPayLink: (
+															<a
+																target="_blank"
+																rel="noreferrer"
+																href="https://woocommerce.com/document/woopay-merchant-documentation/"
+															/>
+														),
+														tosLink: (
+															<a
+																target="_blank"
+																rel="noreferrer"
+																href="https://wordpress.com/tos/"
+															/>
+														),
+														privacyLink: (
+															<a
+																target="_blank"
+																rel="noreferrer"
+																href="https://automattic.com/privacy/"
+															/>
+														),
+														trackingLink: (
+															<a
+																target="_blank"
+																rel="noreferrer"
+																href="https://woocommerce.com/usage-tracking/"
+															/>
+														),
+													},
+											  } )
 										/* eslint-enable jsx-a11y/anchor-has-content */
 									}
 								</div>
@@ -142,59 +195,123 @@ const ExpressCheckout = () => {
 							</div>
 						</li>
 					) }
-					<li className="express-checkout has-icon-border">
+					<li
+						className="express-checkout"
+						id="express-checkouts-apple-google-pay"
+					>
 						<div className="express-checkout__checkbox">
 							<CheckboxControl
+								label={ __(
+									'Apple Pay / Google Pay',
+									'woocommerce-payments'
+								) }
 								checked={ isPaymentRequestEnabled }
 								onChange={ updateIsPaymentRequestEnabled }
 							/>
 						</div>
-						<div className="express-checkout__icon">
-							<PaymentRequestIcon />
-						</div>
-						<div className="express-checkout__label-container">
-							<div className="express-checkout__label">
-								{ __(
-									'Apple Pay / Google Pay',
-									'woocommerce-payments'
-								) }
-							</div>
-							<div className="express-checkout__description">
-								{
-									/* eslint-disable jsx-a11y/anchor-has-content */
-									interpolateComponents( {
-										mixedString: __(
-											'Boost sales by offering a fast, simple, and secure checkout experience.' +
-												'By enabling this feature, you agree to {{stripeLink}}Stripe{{/stripeLink}}, ' +
-												"{{appleLink}}Apple{{/appleLink}}, and {{googleLink}}Google{{/googleLink}}'s terms of use.",
+						<div>
+							<div className="express-checkout__subgroup">
+								<div className="express-checkout__icon">
+									<img src={ ApplePay } alt="Apple Pay" />
+								</div>
+								<div className="express-checkout__label-container">
+									<div className="express-checkout__label">
+										{ __(
+											'Apple Pay',
 											'woocommerce-payments'
-										),
-										components: {
-											stripeLink: (
-												<a
-													target="_blank"
-													rel="noreferrer"
-													href="https://stripe.com/apple-pay/legal"
-												/>
-											),
-											appleLink: (
-												<a
-													target="_blank"
-													rel="noreferrer"
-													href="https://developer.apple.com/apple-pay/acceptable-use-guidelines-for-websites/"
-												/>
-											),
-											googleLink: (
-												<a
-													target="_blank"
-													rel="noreferrer"
-													href="https://androidpay.developers.google.com/terms/sellertos"
-												/>
-											),
-										},
-									} )
-									/* eslint-enable jsx-a11y/anchor-has-content */
-								}
+										) }
+									</div>
+									<div className="express-checkout__description">
+										{
+											/* eslint-disable jsx-a11y/anchor-has-content */
+											isPaymentRequestEnabled
+												? __(
+														'Apple Pay is an easy and secure way for customers to pay on your store. ',
+														'woocommerce-payments'
+												  )
+												: interpolateComponents( {
+														mixedString: __(
+															/* eslint-disable-next-line max-len */
+															'Apple Pay is an easy and secure way for customers to pay on your store. {{br/}}' +
+																/* eslint-disable-next-line max-len */
+																'By enabling this feature, you agree to {{stripeLink}}Stripe{{/stripeLink}} and' +
+																"{{appleLink}} Apple{{/appleLink}}'s terms of use.",
+															'woocommerce-payments'
+														),
+														components: {
+															stripeLink: (
+																<a
+																	target="_blank"
+																	rel="noreferrer"
+																	href="https://stripe.com/apple-pay/legal"
+																/>
+															),
+															appleLink: (
+																<a
+																	target="_blank"
+																	rel="noreferrer"
+																	/* eslint-disable-next-line max-len */
+																	href="https://developer.apple.com/apple-pay/acceptable-use-guidelines-for-websites/"
+																/>
+															),
+															br: <br />,
+														},
+												  } )
+											/* eslint-enable jsx-a11y/anchor-has-content */
+										}
+									</div>
+								</div>
+							</div>
+							<div className="express-checkout__subgroup">
+								<div className="express-checkout__icon">
+									<img src={ GooglePay } alt="Google Pay" />
+								</div>
+								<div className="express-checkout__label-container">
+									<div className="express-checkout__label">
+										{ __(
+											'Google Pay',
+											'woocommerce-payments'
+										) }
+									</div>
+									<div className="express-checkout__description">
+										{
+											/* eslint-disable jsx-a11y/anchor-has-content */
+											isPaymentRequestEnabled
+												? __(
+														'Offer customers a fast, secure checkout experience with Google Pay. ',
+														'woocommerce-payments'
+												  )
+												: interpolateComponents( {
+														mixedString: __(
+															/* eslint-disable-next-line max-len */
+															'Offer customers a fast, secure checkout experience with Google Pay. {{br/}}' +
+																/* eslint-disable-next-line max-len */
+																'By enabling this feature, you agree to {{stripeLink}}Stripe{{/stripeLink}}, ' +
+																"and {{googleLink}}Google{{/googleLink}}'s terms of use.",
+															'woocommerce-payments'
+														),
+														components: {
+															stripeLink: (
+																<a
+																	target="_blank"
+																	rel="noreferrer"
+																	href="https://stripe.com/apple-pay/legal"
+																/>
+															),
+															googleLink: (
+																<a
+																	target="_blank"
+																	rel="noreferrer"
+																	href="https://androidpay.developers.google.com/terms/sellertos"
+																/>
+															),
+															br: <br />,
+														},
+												  } )
+											/* eslint-enable jsx-a11y/anchor-has-content */
+										}
+									</div>
+								</div>
 							</div>
 						</div>
 						<div className="express-checkout__link">
@@ -208,19 +325,49 @@ const ExpressCheckout = () => {
 						</div>
 					</li>
 					{ displayLinkPaymentMethod && (
-						<li className="express-checkout has-icon-border">
-							<div className="express-checkout__checkbox loadable-checkbox label-hidden">
-								<CheckboxControl
-									label={ __(
-										'Link by Stripe',
-										'woocommerce-payments'
-									) }
-									checked={ isStripeLinkEnabled }
-									onChange={ updateStripeLinkCheckout }
-								/>
+						<li
+							className="express-checkout"
+							id="express-checkouts-link"
+						>
+							<div className="express-checkout__checkbox">
+								{ isPlatformCheckoutEnabled ? (
+									<HoverTooltip
+										content={ __(
+											'To enable Link by Stripe, you must first disable WooPay.',
+											'woocommerce-payments'
+										) }
+									>
+										<div className="loadable-checkbox__icon">
+											<Icon
+												icon={ warning }
+												fill={ '#ffc83f' }
+											/>
+											<div
+												className="loadable-checkbox__icon-warning"
+												data-testid="loadable-checkbox-icon-warning"
+											>
+												<VisuallyHidden>
+													{ __(
+														'Link by Stripe cannot be enabled at checkout. Click to expand.',
+														'woocommerce-payments'
+													) }
+												</VisuallyHidden>
+											</div>
+										</div>
+									</HoverTooltip>
+								) : (
+									<CheckboxControl
+										label={ __(
+											'Link by Stripe',
+											'woocommerce-payments'
+										) }
+										checked={ isStripeLinkEnabled }
+										onChange={ updateStripeLinkCheckout }
+									/>
+								) }
 							</div>
 							<div className="express-checkout__icon">
-								<LinkIcon />
+								<img src={ LinkIcon } alt="Link" />
 							</div>
 							<div className="express-checkout__label-container">
 								<div className="express-checkout__label">
@@ -232,34 +379,41 @@ const ExpressCheckout = () => {
 								<div className="express-checkout__description">
 									{
 										/* eslint-disable jsx-a11y/anchor-has-content */
-										interpolateComponents( {
-											mixedString: __(
-												'Link autofills your customers’ payment and shipping details to ' +
-													'deliver an easy and seamless checkout experience. ' +
-													'New payment experience (UPE) needs to be enabled for Link. ' +
-													'By enabling this feature, you agree to the ' +
-													'{{stripeLinkTerms}}Link by Stripe terms{{/stripeLinkTerms}}, ' +
-													'and {{privacyPolicy}}Privacy Policy{{/privacyPolicy}}.',
-												'woocommerce-payments'
-											),
-											components: {
-												stripeLinkTerms: (
-													<a
-														target="_blank"
-														rel="noreferrer"
-														href="https://link.co/terms"
-													/>
-												),
-												privacyPolicy: (
-													<a
-														target="_blank"
-														rel="noreferrer"
-														href="https://link.co/privacy"
-													/>
-												),
-											},
-										} )
+										isStripeLinkEnabled
+											? /* eslint-disable max-len */
+											  __(
+													'Link autofills your customers’ payment and shipping details to deliver an easy and seamless checkout experience.',
+													'woocommerce-payments'
+											  )
+											: interpolateComponents( {
+													mixedString: __(
+														'Link autofills your customers’ payment and shipping details to ' +
+															'deliver an easy and seamless checkout experience. ' +
+															'New payment experience (UPE) needs to be enabled for Link. ' +
+															'By enabling this feature, you agree to the ' +
+															'{{stripeLinkTerms}}Link by Stripe terms{{/stripeLinkTerms}}, ' +
+															'and {{privacyPolicy}}Privacy Policy{{/privacyPolicy}}.',
+														'woocommerce-payments'
+													),
+													components: {
+														stripeLinkTerms: (
+															<a
+																target="_blank"
+																rel="noreferrer"
+																href="https://link.co/terms"
+															/>
+														),
+														privacyPolicy: (
+															<a
+																target="_blank"
+																rel="noreferrer"
+																href="https://link.co/privacy"
+															/>
+														),
+													},
+											  } )
 										/* eslint-enable jsx-a11y/anchor-has-content */
+										/* eslint-enable max-len */
 									}
 								</div>
 							</div>

@@ -1,0 +1,71 @@
+.wcpay-component-phone-number-control.components-text-control__input {
+	background-color: #fff;
+	color: $gray-80;
+	margin: 0 1px;
+	padding: 0;
+	display: grid;
+	grid-template-columns: auto 0 auto 1fr;
+
+	&.focused {
+		border-color: $blue-50;
+		box-shadow: 0 0 0 1px $blue-50;
+	}
+
+	select,
+	input {
+		border: 0;
+		margin: 0;
+		background-color: transparent;
+
+		@media screen and ( min-width: 783px ) {
+			font-size: 13px;
+		}
+	}
+
+	select {
+		padding-right: $gap;
+		appearance: none;
+		background: none;
+		z-index: 1;
+
+		&:focus {
+			border-radius: 2px;
+			box-shadow: 0 0 0 2px $blue-50;
+		}
+	}
+
+	svg {
+		pointer-events: none;
+		width: 18px;
+		height: 18px;
+		align-self: center;
+		margin-left: -21px;
+		z-index: 2;
+	}
+
+	button {
+		cursor: text;
+		z-index: 1;
+	}
+
+	span {
+		pointer-events: none;
+		color: #000;
+		padding-left: 2px;
+		align-self: center;
+		z-index: 1;
+	}
+
+	input {
+		&:focus {
+			box-shadow: none;
+		}
+	}
+}
+
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus,
+select:-webkit-autofill:active {
+	transition: background-image 9999s ease-in-out 0s;
+}

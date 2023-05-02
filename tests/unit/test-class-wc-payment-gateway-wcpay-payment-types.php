@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 
@@ -183,19 +184,12 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		$this->mock_wcs_order_contains_subscription( false );
 		$this->mock_wcs_get_subscriptions_for_order( [] );
 
-		$intent = WC_Helper_Intention::create_intention();
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'create_and_confirm_intention' )
+		$intent  = WC_Helper_Intention::create_intention();
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_metadata' )
 			->with(
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				// Metadata argument.
 				$this->callback(
 					function( $metadata ) use ( $order ) {
 						$this->assertEquals( $metadata['payment_type'], 'single' );
@@ -203,8 +197,11 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 						return is_array( $metadata );
 					}
 				)
-			)
-			->will( $this->returnValue( $intent ) );
+			);
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
 
 		$mock_fraud_prevention = $this->createMock( Fraud_Prevention_Service::class );
 		Fraud_Prevention_Service::set_instance( $mock_fraud_prevention );
@@ -223,19 +220,12 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		$this->mock_wcs_order_contains_subscription( true );
 		$this->mock_wcs_get_subscriptions_for_order( [ $subscription ] );
 
-		$intent = WC_Helper_Intention::create_intention();
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'create_and_confirm_intention' )
+		$intent  = WC_Helper_Intention::create_intention();
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_metadata' )
 			->with(
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				// Metadata argument.
 				$this->callback(
 					function( $metadata ) use ( $order ) {
 						$this->assertEquals( $metadata['payment_type'], 'recurring' );
@@ -243,8 +233,11 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 						return is_array( $metadata );
 					}
 				)
-			)
-			->will( $this->returnValue( $intent ) );
+			);
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
 
 		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
@@ -260,19 +253,12 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 
 		$order->add_payment_token( $this->token );
 
-		$intent = WC_Helper_Intention::create_intention();
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'create_and_confirm_intention' )
+		$intent  = WC_Helper_Intention::create_intention();
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_metadata' )
 			->with(
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				// Metadata argument.
 				$this->callback(
 					function( $metadata ) use ( $order ) {
 						$this->assertEquals( $metadata['payment_type'], 'recurring' );
@@ -280,8 +266,11 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 						return is_array( $metadata );
 					}
 				)
-			)
-			->will( $this->returnValue( $intent ) );
+			);
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
 
 		$this->mock_wcpay_gateway->scheduled_subscription_payment( 100, $order );
 	}

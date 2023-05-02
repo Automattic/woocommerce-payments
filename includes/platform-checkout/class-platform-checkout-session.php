@@ -7,6 +7,13 @@
 
 namespace WCPay\Platform_Checkout;
 
+use Automattic\Jetpack\Connection\Rest_Authentication;
+use Automattic\WooCommerce\StoreApi\Utilities\JsonWebToken;
+use WCPay\Logger;
+use WC_Payments;
+use WC_Payments_Features;
+use WP_REST_Request;
+
 /**
  * Class responsible for handling platform checkout sessions.
  * This class should be loaded as soon as possible so the correct session is loaded.
@@ -14,7 +21,20 @@ namespace WCPay\Platform_Checkout;
  */
 class Platform_Checkout_Session {
 
-	const PLATFORM_CHECKOUT_SESSION_COOKIE_NAME = 'platform_checkout_session';
+	const STORE_API_NAMESPACE_PATTERN = '@^wc/store(/v[\d]+)?$@';
+
+	/**
+	 * The Store API route patterns that should be handled by the Platform Checkout session handler.
+	 */
+	const STORE_API_ROUTE_PATTERNS = [
+		'@^\/wc\/store(\/v[\d]+)?\/cart$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/apply-coupon$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/remove-coupon$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/select-shipping-rate$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/update-customer$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/update-item$@',
+		'@^\/wc\/store(\/v[\d]+)?\/checkout$@',
+	];
 
 	/**
 	 * Init the hooks.
@@ -22,8 +42,39 @@ class Platform_Checkout_Session {
 	 * @return void
 	 */
 	public static function init() {
-		add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
-		add_filter( 'woocommerce_cookie', [ __CLASS__, 'determine_session_cookie_for_platform_checkout' ] );
+		add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ], 20 );
+		add_filter( 'rest_request_before_callbacks', [ __CLASS__, 'add_platform_checkout_store_api_session_handler' ], 10, 3 );
+	}
+
+	/**
+	 * This filter is used to add a custom session handler before processing Store API request callbacks.
+	 * This is only necessary because the Store API SessionHandler currently doesn't provide an `init_session_cookie` method.
+	 *
+	 * @param mixed           $response The response object.
+	 * @param mixed           $handler The handler used for the response.
+	 * @param WP_REST_Request $request The request used to generate the response.
+	 *
+	 * @return mixed
+	 */
+	public static function add_platform_checkout_store_api_session_handler( $response, $handler, WP_REST_Request $request ) {
+		$cart_token = $request->get_header( 'Cart-Token' );
+
+		if (
+			$cart_token &&
+			self::is_store_api_request() &&
+			class_exists( JsonWebToken::class ) &&
+			JsonWebToken::validate( $cart_token, '@' . wp_salt() )
+		) {
+			add_filter(
+				'woocommerce_session_handler',
+				function ( $session_handler ) {
+					return \WCPay\Platform_Checkout\SessionHandler::class;
+				},
+				20
+			);
+		}
+
+		return $response;
 	}
 
 	/**
@@ -34,29 +85,115 @@ class Platform_Checkout_Session {
 	 * @return \WP_User|null|int
 	 */
 	public static function determine_current_user_for_platform_checkout( $user ) {
-		if ( $user ) {
+		if ( ! self::is_request_from_woopay() || ! self::is_store_api_request() ) {
 			return $user;
 		}
 
-		if ( ! isset( $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'] ) || ! is_numeric( $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'] ) ) {
-			return null;
+		if ( ! self::is_woopay_enabled() ) {
+			return $user;
 		}
 
-		return (int) $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'];
+		// Validate that the request is signed properly.
+		if ( ! self::has_valid_request_signature() ) {
+			Logger::log( __( 'WooPay request is not signed correctly.', 'woocommerce-payments' ) );
+			wp_die( esc_html__( 'WooPay request is not signed correctly.', 'woocommerce-payments' ), 401 );
+		}
+
+		$cart_token_user_id = self::get_user_id_from_cart_token();
+		if ( null === $cart_token_user_id ) {
+			return $user;
+		}
+
+		return $cart_token_user_id;
 	}
 
 	/**
-	 * Tells WC to use platform checkout session cookie if the header is present.
+	 * Returns the user ID from the cart token.
 	 *
-	 * @param string $cookie_hash Default cookie hash.
-	 *
-	 * @return string
+	 * @return int|null The User ID or null if there's no cart token in the request.
 	 */
-	public static function determine_session_cookie_for_platform_checkout( $cookie_hash ) {
-		if ( isset( $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'] ) && 0 === (int) $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'] ) {
-			return self::PLATFORM_CHECKOUT_SESSION_COOKIE_NAME;
+	private static function get_user_id_from_cart_token() {
+		if ( ! isset( $_SERVER['HTTP_CART_TOKEN'] ) ) {
+			return null;
 		}
 
-		return $cookie_hash;
+		if ( ! class_exists( JsonWebToken::class ) ) {
+			return null;
+		}
+
+		$cart_token = wc_clean( wp_unslash( $_SERVER['HTTP_CART_TOKEN'] ) );
+
+		if ( $cart_token && JsonWebToken::validate( $cart_token, '@' . wp_salt() ) ) {
+			$payload = JsonWebToken::get_parts( $cart_token )->payload;
+
+			if ( empty( $payload ) ) {
+				return null;
+			}
+
+			// Store API namespace is used as the token issuer.
+			if ( ! preg_match( self::STORE_API_NAMESPACE_PATTERN, $payload->iss ) ) {
+				return null;
+			}
+
+			$session_handler = new \WCPay\Platform_Checkout\SessionHandler();
+			$session_data    = $session_handler->get_session( $payload->user_id );
+			$customer        = maybe_unserialize( $session_data['customer'] );
+
+			return is_numeric( $customer['id'] ) ? intval( $customer['id'] ) : null;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns true if the request that's currently being processed is a Store API request, false
+	 * otherwise.
+	 *
+	 * @return bool True if request is a Store API request, false otherwise.
+	 */
+	private static function is_store_api_request(): bool {
+		if ( ! defined( 'REST_REQUEST' ) || ! REST_REQUEST ) {
+			return false;
+		}
+
+		$url_parts    = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		$request_path = rtrim( $url_parts['path'], '/' );
+		$rest_route   = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
+
+		foreach ( self::STORE_API_ROUTE_PATTERNS as $pattern ) {
+			if ( 1 === preg_match( $pattern, $rest_route ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Returns true if the request that's currently being processed is from WooPay, false
+	 * otherwise.
+	 *
+	 * @return bool True if request is from WooPay.
+	 */
+	private static function is_request_from_woopay(): bool {
+		return isset( $_SERVER['HTTP_USER_AGENT'] ) && 'WooPay' === $_SERVER['HTTP_USER_AGENT'];
+	}
+
+	/**
+	 * Returns true if the request that's currently being processed is signed with the blog token.
+	 *
+	 * @return bool True if the request signature is valid.
+	 */
+	private static function has_valid_request_signature() {
+		return apply_filters( 'wcpay_woopay_is_signed_with_blog_token', Rest_Authentication::is_signed_with_blog_token() );
+	}
+
+	/**
+	 * Returns true if WooPay is enabled, false otherwise.
+	 *
+	 * @return bool True if WooPay is enabled, false otherwise.
+	 */
+	private static function is_woopay_enabled(): bool {
+		return WC_Payments_Features::is_platform_checkout_eligible() && 'yes' === WC_Payments::get_gateway()->get_option( 'platform_checkout', 'no' );
 	}
 }

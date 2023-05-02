@@ -14,6 +14,11 @@
 				flex-wrap: nowrap;
 			}
 
+			&__description {
+				color: #757575;
+				font-size: 12px;
+			}
+
 			&:not( :last-child ) {
 				box-shadow: inset 0 -1px 0 #e8eaeb;
 			}
@@ -22,6 +27,10 @@
 				display: flex;
 				align-items: center;
 				justify-content: center;
+
+				label {
+					display: none;
+				}
 
 				.components-base-control__field {
 					margin: 0 4px 0 0;
@@ -41,6 +50,20 @@
 				}
 			}
 
+			&__icons {
+				display: flex;
+				.express-checkout__icon {
+					flex: unset;
+					width: 29px;
+					&:not( :last-child ) {
+						margin-right: 4px;
+					}
+					img {
+						width: 100%;
+					}
+				}
+			}
+
 			&__label {
 				display: inline-block;
 				font-size: 14px;
@@ -52,10 +75,21 @@
 
 			&__link {
 				margin-left: auto;
-				padding-left: 16px;
+				padding: 12px;
+				border: 1px solid #007cba;
+				border-radius: 2px;
+				font-size: 12px;
 
 				a {
+					text-decoration: none;
 					white-space: nowrap;
+				}
+			}
+			&__subgroup {
+				display: flex;
+				align-items: center;
+				&:not( :last-child ) {
+					margin-bottom: 1.4em;
 				}
 			}
 		}

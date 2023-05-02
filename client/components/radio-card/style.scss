@@ -1,0 +1,51 @@
+.wcpay-component-radio-card {
+	cursor: pointer;
+	display: block;
+	padding: $gap-large;
+	background-color: #fff;
+	border-radius: 3px;
+	border: 1px solid $light-gray-500;
+
+	&:not( :last-of-type ) {
+		margin-bottom: $gap-large;
+	}
+
+	&:hover,
+	&.checked {
+		box-shadow: 0 0 0 1px #007cba;
+	}
+
+	&__label {
+		display: grid;
+		grid-template-columns: 24px 1fr 25px;
+		column-gap: $gap-small;
+		align-items: center;
+		font-weight: bold;
+
+		&:not( :last-child ) {
+			margin-bottom: $gap;
+		}
+
+		svg {
+			fill: #bbb;
+		}
+
+		input[type='radio'] {
+			margin: 0;
+			justify-self: flex-end;
+			width: 20px;
+			height: 20px;
+			border-color: $gray-700;
+
+			&::before {
+				width: 12px;
+				height: 12px;
+				margin: 3px;
+			}
+
+			&:focus {
+				box-shadow: none;
+			}
+		}
+	}
+}

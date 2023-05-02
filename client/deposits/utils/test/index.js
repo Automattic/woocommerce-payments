@@ -12,6 +12,7 @@ import {
 	getBalanceDepositCount,
 	getNextDepositLabelFormatted,
 	getDepositScheduleDescriptor,
+	getDepositMonthlyAnchorLabel,
 } from './..';
 
 function getDepositSchedule(
@@ -44,14 +45,6 @@ function getDepositSchedule(
 }
 
 describe( 'Deposits Overview Utils / getDepositScheduleDescriptor', () => {
-	beforeEach( () => {
-		global.wcpaySettings = {
-			featureFlags: {
-				customDepositSchedules: false,
-			},
-		};
-	} );
-
 	test( 'renders temporarily suspended notice for accounts with disabled deposits', () => {
 		const depositSchedule = getDepositSchedule(
 			{ interval: 'daily' },
@@ -75,17 +68,7 @@ describe( 'Deposits Overview Utils / getDepositScheduleDescriptor', () => {
 		);
 	} );
 
-	test( 'renders temporarily suspended notice for manual interval', () => {
-		const depositSchedule = getDepositSchedule( { interval: 'manual' } );
-		expect( depositSchedule ).toEqual(
-			'Deposits temporarily suspended (learn more).'
-		);
-	} );
-
-	test( 'renders deposit schedule for manual interval with flag enabled', () => {
-		// Enable custom deposit schedules feature flag.
-		global.wcpaySettings.featureFlags.customDepositSchedules = true;
-
+	test( 'renders deposit schedule for manual interval', () => {
 		const depositSchedule = getDepositSchedule( { interval: 'manual' } );
 		expect( depositSchedule ).toEqual( 'Deposits set to manual.' );
 	} );
@@ -110,6 +93,16 @@ describe( 'Deposits Overview Utils / getDepositScheduleDescriptor', () => {
 		} );
 		expect( depositSchedule ).toEqual(
 			'Deposits set to monthly on the 26th.'
+		);
+	} );
+
+	test( 'renders deposit schedule for monthly interval', () => {
+		const depositSchedule = getDepositSchedule( {
+			interval: 'monthly',
+			monthly_anchor: 31,
+		} );
+		expect( depositSchedule ).toEqual(
+			'Deposits set to monthly on the last day of the month.'
 		);
 	} );
 
@@ -186,5 +179,63 @@ describe( 'Deposits Overview Utils / getNextDepositLabelFormatted', () => {
 		expect( getNextDepositLabelFormatted( deposit ) ).toEqual(
 			'Est. Apr 18, 2019 - In transit'
 		);
+	} );
+} );
+
+describe( 'Deposits Overview Utils / getDepositMonthlyAnchorLabel', () => {
+	const expectedLabels = [
+		{ label: '1st', value: 1 },
+		{ label: '2nd', value: 2 },
+		{ label: '3rd', value: 3 },
+		{ label: '4th', value: 4 },
+		{ label: '5th', value: 5 },
+		{ label: '6th', value: 6 },
+		{ label: '7th', value: 7 },
+		{ label: '8th', value: 8 },
+		{ label: '9th', value: 9 },
+		{ label: '10th', value: 10 },
+		{ label: '11th', value: 11 },
+		{ label: '12th', value: 12 },
+		{ label: '13th', value: 13 },
+		{ label: '14th', value: 14 },
+		{ label: '15th', value: 15 },
+		{ label: '16th', value: 16 },
+		{ label: '17th', value: 17 },
+		{ label: '18th', value: 18 },
+		{ label: '19th', value: 19 },
+		{ label: '20th', value: 20 },
+		{ label: '21st', value: 21 },
+		{ label: '22nd', value: 22 },
+		{ label: '23rd', value: 23 },
+		{ label: '24th', value: 24 },
+		{ label: '25th', value: 25 },
+		{ label: '26th', value: 26 },
+		{ label: '27th', value: 27 },
+		{ label: '28th', value: 28 },
+		{
+			label: 'Last day of the month',
+			value: 31,
+		},
+	];
+
+	test( 'returns the expected label', () => {
+		momentLib.locale( 'en' );
+		expectedLabels.forEach( ( expectedLabel ) => {
+			expect(
+				getDepositMonthlyAnchorLabel( {
+					monthlyAnchor: expectedLabel.value,
+				} )
+			).toEqual( expectedLabel.label );
+		} );
+	} );
+
+	test( 'returns a lowercase value with false capitalize argument', () => {
+		momentLib.locale( 'en' );
+		expect(
+			getDepositMonthlyAnchorLabel( {
+				monthlyAnchor: 31,
+				capitalize: false,
+			} )
+		).toEqual( 'last day of the month' );
 	} );
 } );

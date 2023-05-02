@@ -37,6 +37,39 @@ class Platform_Checkout_Utilities {
 	}
 
 	/**
+	 * Checks various conditions to determine if WooPay should be enabled on the checkout page.
+	 *
+	 * This function should only be called when evaluating something for the checkout page. The
+	 * function will return false if you're on any other page.
+	 *
+	 * @return bool  True if WooPay should be enabled, false otherwise.
+	 */
+	public function should_enable_woopay_on_checkout(): bool {
+		if ( ! is_checkout() && ! has_block( 'woocommerce/checkout' ) ) {
+			// Wrong usage, this should only be called for the checkout page.
+			return false;
+		}
+
+		if ( ! is_user_logged_in() ) {
+			// If there's a subscription product in the cart and the customer isn't logged in we
+			// should not enable WooPay since that situation is currently not supported.
+			// Note that this is mirrored in the WC_Payments_Platform_Checkout_Button_Handler class.
+			if ( class_exists( 'WC_Subscriptions_Cart' ) && \WC_Subscriptions_Cart::cart_contains_subscription() ) {
+				return false;
+			}
+
+			// If guest checkout is disabled and the customer isn't logged in we should not enable
+			// WooPay scripts since that situations is currently not supported.
+			// Note that this is mirrored in the WC_Payments_Platform_Checkout_Button_Handler class.
+			if ( ! $this->is_guest_checkout_enabled() ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
 	 * Check conditions to determine if woopay express checkout is enabled.
 	 *
 	 * @return boolean
@@ -69,6 +102,21 @@ class Platform_Checkout_Utilities {
 	}
 
 	/**
+	 * Get the persisted available countries.
+	 *
+	 * @return array
+	 */
+	public function get_persisted_available_countries() {
+		$available_countries = json_decode( get_option( self::AVAILABLE_COUNTRIES_KEY, '["US"]' ), true );
+
+		if ( ! is_array( $available_countries ) ) {
+			return [];
+		}
+
+		return $available_countries;
+	}
+
+	/**
 	 * Get the list of WooPay available countries and cache it for 24 hours.
 	 *
 	 * @return array
@@ -77,9 +125,7 @@ class Platform_Checkout_Utilities {
 		$last_check = get_option( self::AVAILABLE_COUNTRIES_LAST_CHECK_KEY );
 
 		if ( $last_check && gmdate( 'Y-m-d' ) === $last_check ) {
-			$available_countries = get_option( self::AVAILABLE_COUNTRIES_KEY, '["US"]' );
-
-			return json_decode( $available_countries, true );
+			return $this->get_persisted_available_countries();
 		}
 
 		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'https://pay.woo.com';
@@ -99,32 +145,31 @@ class Platform_Checkout_Utilities {
 		 *
 		 * @psalm-suppress UndefinedDocblockClass
 		 */
-		$response = \Automattic\Jetpack\Connection\Client::remote_request( $args );
+		$response      = \Automattic\Jetpack\Connection\Client::remote_request( $args );
+		$response_body = wp_remote_retrieve_body( $response );
 
-		if ( is_wp_error( $response ) || ! is_array( $response ) || ! empty( $response['code'] ) ) {
+		// phpcs:ignore
+		/**
+		 * @psalm-suppress UndefinedDocblockClass
+		 */
+		if ( is_wp_error( $response ) || ! is_array( $response_body ) || ! empty( $response['code'] ) || $response['code'] >= 300 || $response['code'] < 200 ) {
 			Logger::error( 'HTTP_REQUEST_ERROR ' . var_export( $response, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
-
-			// If there's an error, return current data and check again on the next day.
-			$available_countries = get_option( self::AVAILABLE_COUNTRIES_KEY, '["US"]' );
 		} else {
-			$available_countries = wp_remote_retrieve_body( $response );
-
-			update_option( self::AVAILABLE_COUNTRIES_KEY, $available_countries );
+			update_option( self::AVAILABLE_COUNTRIES_KEY, $response_body );
 		}
 
 		update_option( self::AVAILABLE_COUNTRIES_LAST_CHECK_KEY, gmdate( 'Y-m-d' ) );
 
-		return json_decode( $available_countries, true );
+		return $this->get_persisted_available_countries();
 	}
 
 	/**
 	 * Get if WooPay is available on the user country.
 	 *
-	 * @param \WC_Payment_Gateway_WCPay $gateway Gateway instance.
 	 * @return boolean
 	 */
-	public function is_country_available( $gateway ) {
-		if ( $gateway->is_in_test_mode() ) {
+	public function is_country_available() {
+		if ( WC_Payments::mode()->is_test() ) {
 			return true;
 		}
 
@@ -150,5 +195,59 @@ class Platform_Checkout_Utilities {
 		}
 
 		return '';
+	}
+
+	/**
+	 * Get the url marketing where the user have chosen marketing options.
+	 *
+	 * @return mixed|string
+	 */
+	public function get_platform_checkout_source_url() {
+		$session_data = WC()->session->get( Platform_Checkout_Extension::PLATFORM_CHECKOUT_SESSION_KEY );
+
+		if ( ! empty( $_POST['platform_checkout_source_url'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return wc_clean( wp_unslash( $_POST['platform_checkout_source_url'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		} elseif ( ! empty( $session_data['platform_checkout_source_url'] ) ) {
+			return $session_data['platform_checkout_source_url'];
+		}
+
+		return '';
+	}
+
+	/**
+	 * Get if the request comes from blocks checkout.
+	 *
+	 * @return boolean
+	 */
+	public function get_platform_checkout_is_blocks() {
+		$session_data = WC()->session->get( Platform_Checkout_Extension::PLATFORM_CHECKOUT_SESSION_KEY );
+
+		return ( isset( $_POST['platform_checkout_is_blocks'] ) && filter_var( wp_unslash( $_POST['platform_checkout_is_blocks'] ), FILTER_VALIDATE_BOOLEAN ) ) || ( isset( $session_data['platform_checkout_is_blocks'] ) && filter_var( $session_data['platform_checkout_is_blocks'], FILTER_VALIDATE_BOOLEAN ) ); // phpcs:ignore WordPress.Security.NonceVerification
+	}
+
+	/**
+	 * Get the user viewport.
+	 *
+	 * @return mixed|string
+	 */
+	public function get_platform_checkout_viewport() {
+		$session_data = WC()->session->get( Platform_Checkout_Extension::PLATFORM_CHECKOUT_SESSION_KEY );
+
+		if ( ! empty( $_POST['platform_checkout_viewport'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return wc_clean( wp_unslash( $_POST['platform_checkout_viewport'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		} elseif ( ! empty( $session_data['platform_checkout_viewport'] ) ) {
+			return $session_data['platform_checkout_viewport'];
+		}
+
+		return '';
+	}
+
+	/**
+	 * Returns true if guest checkout is enabled, false otherwise.
+	 *
+	 * @return bool  True if guest checkout is enabled, false otherwise.
+	 */
+	public function is_guest_checkout_enabled(): bool {
+		return 'yes' === get_option( 'woocommerce_enable_guest_checkout', 'no' );
 	}
 }

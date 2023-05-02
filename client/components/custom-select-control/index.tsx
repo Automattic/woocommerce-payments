@@ -29,7 +29,7 @@ export interface Item {
 	style?: React.CSSProperties;
 }
 
-interface ControlProps< ItemType > {
+export interface ControlProps< ItemType > {
 	className?: string;
 	label: string;
 	describedBy?: string;
@@ -170,7 +170,9 @@ function CustomSelectControl< ItemType extends Item >( {
 					),
 				} ) }
 			>
-				{ itemString || placeholder }
+				<span className="components-custom-select-control__button-value">
+					{ itemString || placeholder }
+				</span>
 				<Icon
 					icon={ chevronDown }
 					className="components-custom-select-control__button-icon"

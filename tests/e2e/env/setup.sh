@@ -19,13 +19,13 @@ fi
 
 # Variables
 BLOG_ID=${E2E_BLOG_ID-111}
-WC_GUEST_EMAIL=$(<"$E2E_ROOT/config/test.json" jq -r '.users.guest.email')
-WC_CUSTOMER_EMAIL=$(<"$E2E_ROOT/config/test.json" jq -r '.users.customer.email')
-WC_CUSTOMER_USERNAME=$(<"$E2E_ROOT/config/test.json" jq -r '.users.customer.username')
-WC_CUSTOMER_PASSWORD=$(<"$E2E_ROOT/config/test.json" jq -r '.users.customer.password')
-WP_ADMIN=$(<"$E2E_ROOT/config/test.json" jq -r '.users.admin.username')
-WP_ADMIN_PASSWORD=$(<"$E2E_ROOT/config/test.json" jq -r '.users.admin.password')
-WP_ADMIN_EMAIL=$(<"$E2E_ROOT/config/test.json" jq -r '.users.admin.email')
+WC_GUEST_EMAIL=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.guest.email')
+WC_CUSTOMER_EMAIL=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.customer.email')
+WC_CUSTOMER_USERNAME=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.customer.username')
+WC_CUSTOMER_PASSWORD=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.customer.password')
+WP_ADMIN=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.admin.username')
+WP_ADMIN_PASSWORD=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.admin.password')
+WP_ADMIN_EMAIL=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.admin.email')
 SITE_TITLE="WooCommerce Payments E2E site"
 SITE_URL=$WP_URL
 
@@ -219,8 +219,17 @@ echo "Adding customer account ..."
 cli wp user create "$WC_CUSTOMER_USERNAME" "$WC_CUSTOMER_EMAIL" --role=customer --user_pass="$WC_CUSTOMER_PASSWORD"
 
 # TODO: Build a zip and use it to install plugin to make sure production build is under test.
-echo "Activating the WooCommerce Payments plugin..."
-cli wp plugin activate woocommerce-payments
+if [[ "$WCPAY_USE_BUILD_ARTIFACT" = true ]]; then
+	echo "Creating WooCommerce Payments zip file from GitHub artifact..."
+	mv "$WCPAY_ARTIFACT_DIRECTORY"/woocommerce-payments "$WCPAY_ARTIFACT_DIRECTORY"/woocommerce-payments-build
+    cd "$WCPAY_ARTIFACT_DIRECTORY" && zip -r "$cwd"/woocommerce-payments-build.zip . && cd "$cwd"
+
+	echo "Installing & activating the WooCommerce Payments plugin using the zip file created..."
+	cli wp plugin install wp-content/plugins/woocommerce-payments/woocommerce-payments-build.zip --activate
+else
+	echo "Activating the WooCommerce Payments plugin..."
+	cli wp plugin activate woocommerce-payments
+fi
 
 echo "Setting up WooCommerce Payments..."
 if [[ "0" == "$(cli wp option list --search=woocommerce_woocommerce_payments_settings --format=count)" ]]; then
@@ -302,6 +311,9 @@ mkdir -p $WCP_ROOT/screenshots
 
 echo "Disabling rate limiter for card declined in E2E tests"
 cli wp option add wcpay_session_rate_limiter_disabled_wcpay_card_declined_registry yes
+
+echo "Setting up a coupon for E2E tests"
+cli wp wc --user=admin shop_coupon create --code=free --amount=100 --discount_type=percent --individual_use=true --free_shipping=true
 
 # Log test configuration for visibility
 echo

@@ -37,7 +37,7 @@ export const useAuthorizations = ( {
 				paged: pagedQuery ? '1' : paged,
 				per_page: perPageQuery ? '25' : per_page,
 				orderby: orderby || 'created',
-				order: order || 'desc',
+				order: order || 'asc',
 			};
 
 			return {
@@ -75,22 +75,44 @@ export const useAuthorization = (
 	requiresCapture = true
 ): {
 	isLoading: boolean;
+	isRequesting: boolean;
 	doCaptureAuthorization: () => void;
+	doCancelAuthorization: () => void;
 	authorization?: Authorization;
 } => {
-	const { authorization, isLoading } = useSelect( ( select ) => {
-		const { getAuthorization, isResolving } = select( STORE_NAME );
-		return {
-			authorization: requiresCapture
-				? getAuthorization( paymentIntentId )
-				: null,
-			isLoading: isResolving( 'getAuthorization', [ paymentIntentId ] ),
-		};
-	} );
+	const { authorization, isRequesting, isLoading } = useSelect(
+		( select ) => {
+			const { getAuthorization, getIsRequesting, isResolving } = select(
+				STORE_NAME
+			);
+			return {
+				authorization: requiresCapture
+					? getAuthorization( paymentIntentId )
+					: null,
+				isLoading: isResolving( 'getAuthorization', [
+					paymentIntentId,
+				] ),
+				isRequesting: getIsRequesting(),
+			};
+		}
+	);
 
-	const { submitCaptureAuthorization } = useDispatch( STORE_NAME );
+	const {
+		submitCaptureAuthorization,
+		submitCancelAuthorization,
+	} = useDispatch( STORE_NAME );
+
 	const doCaptureAuthorization = () =>
 		submitCaptureAuthorization( paymentIntentId, orderId );
 
-	return { authorization, isLoading, doCaptureAuthorization };
+	const doCancelAuthorization = () =>
+		submitCancelAuthorization( paymentIntentId, orderId );
+
+	return {
+		authorization,
+		isLoading,
+		isRequesting,
+		doCaptureAuthorization,
+		doCancelAuthorization,
+	};
 };

@@ -136,6 +136,8 @@
 
 	.wcpay-pill {
 		margin-left: $gap-smaller;
+		padding: 2px $gap-smaller;
+
 		&.payment-status-pending-approval,
 		&.payment-status-pending-verification {
 			border: 0 solid transparent;

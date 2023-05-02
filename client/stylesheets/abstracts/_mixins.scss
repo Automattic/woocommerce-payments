@@ -42,3 +42,42 @@
 		}
 	}
 }
+
+// WooCommerce/Body Large
+@mixin wc-body-large {
+	font-size: 16px;
+	line-height: 24px;
+}
+
+// WordPress/Title Large
+@mixin wp-title-large {
+	font-size: 32px;
+	line-height: 40px;
+	font-weight: 400;
+}
+
+// WordPress/Title Small
+@mixin wp-title-small {
+	font-size: 20px;
+	line-height: 28px;
+}
+
+// WordPress/Title Large
+@mixin title-large {
+	font-size: 32px;
+	line-height: 40px;
+	font-weight: 400;
+}
+
+// WordPress/Label
+@mixin wp-label {
+	font-size: 13px;
+	line-height: 16px;
+	font-weight: 400;
+}
+
+// WordPress/Subtitle
+@mixin wp-subtitle {
+	@include wc-body-large;
+	font-weight: 600;
+}
