@@ -32,6 +32,7 @@ declare module '@woocommerce/components' {
 		href: string;
 		children?: React.ReactNode;
 		type?: string;
+		onClick?: ( ...props: any ) => any;
 	};
 	const Link: ( props: LinkParams ) => JSX.Element;
 
