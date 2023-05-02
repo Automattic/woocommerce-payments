@@ -24,7 +24,6 @@
       "@testing-library/jest-dom",
     ],
     "resolveJsonModule": true,
-    "skipLibCheck": true // @types/wordpress__components causes lots of TS errors because it has its own node_modules with @types/react in it, and there are duplicate definition errors.
   },
   "include": [
     "./client/"
