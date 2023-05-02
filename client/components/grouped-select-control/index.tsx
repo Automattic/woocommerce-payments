@@ -11,7 +11,6 @@ import { useSelect, UseSelectState } from 'downshift';
  * Internal Dependencies
  */
 import './style.scss';
-import { OnboardingFields } from 'wcpay/onboarding-prototype/types';
 
 export interface ListItem {
 	type: string;

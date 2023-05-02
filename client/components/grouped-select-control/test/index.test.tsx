@@ -8,19 +8,19 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal Dependencies
  */
-import GroupedSelectControl, { ListItem } from '..';
+import GroupedSelectControl, { GroupedSelectControlProps } from '..';
 
 describe( 'Grouped Select Control', () => {
 	const onChange = jest.fn();
 
-	const options: ListItem[] = [
-		{ type: 'group', key: 'g1', name: 'Group 1' },
+	const options = [
+		{ type: 'group', key: 'g1', name: 'Group 1', items: [ 'o1', 'o2' ] },
 		{ type: 'option', key: 'o1', name: 'Option 1', group: 'g1' },
 		{ type: 'option', key: 'o2', name: 'Option 2', group: 'g1' },
-		{ type: 'group', key: 'g2', name: 'Group 2' },
+		{ type: 'group', key: 'g2', name: 'Group 2', items: [ 'o3', 'o4' ] },
 		{ type: 'option', key: 'o3', name: 'Option 3', group: 'g2' },
 		{ type: 'option', key: 'o4', name: 'Option 4', group: 'g2' },
-		{ type: 'group', key: 'g3', name: 'Group 3' },
+		{ type: 'group', key: 'g3', name: 'Group 3', items: [ 'o5' ] },
 		{
 			type: 'option',
 			key: 'o5',
@@ -30,7 +30,9 @@ describe( 'Grouped Select Control', () => {
 		},
 	];
 
-	const renderControl = ( props?: any ) =>
+	const renderControl = (
+		props?: Partial< GroupedSelectControlProps< typeof options[ 1 ] > >
+	) =>
 		render(
 			<GroupedSelectControl
 				{ ...props }
@@ -109,7 +111,11 @@ describe( 'Grouped Select Control', () => {
 		const option = screen.getByRole( 'option', { name: 'Option 1' } );
 		userEvent.click( option );
 
-		expect( onChange ).toHaveBeenCalledWith( options[ 0 ] );
+		expect( onChange ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				selectedItem: options[ 1 ],
+			} )
+		);
 	} );
 
 	it( 'filters options by name', () => {

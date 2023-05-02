@@ -20,7 +20,7 @@ declare const global: {
 	};
 };
 
-jest.mock( 'onboarding-experiment/utils', () => ( {
+jest.mock( 'onboarding-prototype/utils', () => ( {
 	getBusinessTypes: jest.fn(),
 } ) );
 
