@@ -19,7 +19,6 @@ import {
 	PhoneNumberFieldProps,
 } from 'components/form/fields';
 import { useOnboardingContext } from './context';
-import { OnboardingFields } from './types';
 import { useValidation } from './validation';
 import strings from './strings';
 import GroupedSelectControl, {

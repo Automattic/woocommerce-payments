@@ -4,25 +4,7 @@ declare interface RequirementError {
 	requirement: string;
 }
 
-declare interface Country {
-	key: string;
-	name: string;
-	types: BusinessType[];
-}
-
-declare interface BusinessType {
-	key: string;
-	name: string;
-	description: string;
-	structures: BusinessStructure[];
-}
-
-declare interface BusinessStructure {
-	key: string;
-	name: string;
-}
-
-declare interface MccsDisplayTreeItem {
+interface MccsDisplayTreeItem {
 	id: string;
 	type: string;
 	title: string;
@@ -98,7 +80,14 @@ declare const wcpaySettings: {
 	onboardingTestMode: boolean;
 	onboardingFieldsData?: {
 		business_types: Country[];
-		mccs_display_tree: MccsDisplayTreeItem[];
+		mccs_display_tree: {
+			id: string;
+			type: string;
+			title: string;
+			items?: MccsDisplayTreeItem[];
+			mcc?: number;
+			keywords?: string[];
+		}[];
 	};
 };
 

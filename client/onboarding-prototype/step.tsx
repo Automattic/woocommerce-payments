@@ -9,7 +9,6 @@ import ChevronLeft from 'gridicons/dist/chevron-left';
  * Internal dependencies
  */
 import { useStepperContext } from 'components/stepper';
-import { OnboardingSteps } from './types';
 import strings from './strings';
 import Logo from 'assets/images/woopayments.svg';
 import './style.scss';
