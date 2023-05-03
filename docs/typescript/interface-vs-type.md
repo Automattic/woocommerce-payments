@@ -26,7 +26,7 @@ The TypeScript Handbook itself [recommends](https://www.typescriptlang.org/docs/
 ## What might be a case where I need to use `type` instead of `interface`?
 
 The one useful case for this is renaming a primitive type such as `string` or `number`.
-For example, you might want to make it easier for whoever is reading the code that the `string` some function accepts is a Payment Intent ID, so instead of using `number` you'd prefer to use `PaymentIntentID`:
+For example, you might want to make it easier for whoever is reading the code that the `string` some function accepts is a Payment Intent ID, so instead of using `string` you'd prefer to use `PaymentIntentID`:
 
 ```ts
 interface PaymentIntentID = string; // Error: can't assign type primitive to an interface.
