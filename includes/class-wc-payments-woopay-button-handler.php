@@ -119,12 +119,6 @@ class WC_Payments_WooPay_Button_Handler {
 
 		add_action( 'wc_ajax_wcpay_add_to_cart', [ $this, 'ajax_add_to_cart' ] );
 
-		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_woopay_button_html' ], -2 );
-
-		add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_woopay_button_html' ], -2 );
-
-		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_woopay_button_html' ], -2 );
-
 		add_action( 'wp_ajax_woopay_express_checkout_button_show_error_notice', [ $this, 'show_error_notice' ] );
 		add_action( 'wp_ajax_nopriv_woopay_express_checkout_button_show_error_notice', [ $this, 'show_error_notice' ] );
 	}
@@ -490,6 +484,11 @@ class WC_Payments_WooPay_Button_Handler {
 			return false;
 		}
 
+		// WooPay is not enabled.
+		if ( ! $this->is_woopay_enabled() ) {
+			return false;
+		}
+
 		// Page not supported.
 		if ( ! $this->is_product() && ! $this->is_cart() && ! $this->is_checkout() ) {
 			return false;
@@ -622,5 +621,18 @@ class WC_Payments_WooPay_Button_Handler {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Returns true if the provided WC_Product is a subscription, false otherwise.
+	 *
+	 * @param WC_Product $product The product to check.
+	 *
+	 * @return bool  True if product is subscription, false otherwise.
+	 */
+	private function is_product_subscription( WC_Product $product ): bool {
+		return 'subscription' === $product->get_type()
+			|| 'subscription_variation' === $product->get_type()
+			|| 'variable-subscription' === $product->get_type();
 	}
 }

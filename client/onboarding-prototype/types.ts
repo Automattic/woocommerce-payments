@@ -37,3 +37,7 @@ export interface EligibleData {
 		go_live_timeframe: string;
 	};
 }
+
+export type TempData = {
+	phoneCountryCode?: string;
+};

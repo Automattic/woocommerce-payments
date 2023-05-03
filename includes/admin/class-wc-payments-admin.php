@@ -447,10 +447,6 @@ class WC_Payments_Admin {
 	public function register_payments_scripts() {
 		WC_Payments::register_script_with_dependencies( 'WCPAY_DASH_APP', 'dist/index' );
 
-		// Has on-boarding been disabled? Set the flag for use in the front-end so messages and notices can be altered
-		// as appropriate.
-		$on_boarding_disabled = WC_Payments_Account::is_on_boarding_disabled();
-
 		$error_message = get_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
 		delete_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
 
@@ -627,7 +623,8 @@ class WC_Payments_Admin {
 		}
 
 		// TODO: Try to enqueue the JS and CSS bundles lazily (will require changes on WC-Admin).
-		if ( wc_admin_is_registered_page() ) {
+		$current_screen = get_current_screen() ? get_current_screen()->base : null;
+		if ( wc_admin_is_registered_page() || 'widgets' === $current_screen ) {
 			wp_enqueue_script( 'WCPAY_DASH_APP' );
 			wp_enqueue_style( 'WCPAY_DASH_APP' );
 		}
