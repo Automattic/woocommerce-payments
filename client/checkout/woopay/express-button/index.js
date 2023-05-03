@@ -41,10 +41,10 @@ const renderWooPayExpressCheckoutButton = () => {
 	}
 };
 
-window.addEventListener( 'load', renderWooPayExpressButton );
+window.addEventListener( 'load', renderWooPayExpressCheckoutButton );
 
 jQuery( ( $ ) => {
 	$( document.body ).on( 'updated_cart_totals', () => {
-		renderWooPayExpressButton();
+		renderWooPayExpressCheckoutButton();
 	} );
 } );
