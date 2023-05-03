@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Handle WooPay requests using Store API cart token and Jetpack blog token.

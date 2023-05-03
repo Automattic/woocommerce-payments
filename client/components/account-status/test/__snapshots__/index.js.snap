@@ -131,9 +131,9 @@ exports[`AccountStatus renders normal status 1`] = `
       Euro 
       (EUR) 
       <s>
-        2.9% + 0,00 € per transaction
+        2.9% + 0,00 € per transaction
       </s>
-       2.9% + 0,30 € per transaction
+       2.9% + 0,30 € per transaction
       <p>
         <a
           href="https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/"
@@ -165,6 +165,25 @@ exports[`StatusChip renders partially restricted status 1`] = `
   >
     Restricted partially
   </span>
+</div>
+`;
+
+exports[`StatusChip renders pending verification status 1`] = `
+<div>
+  <button
+    class="wcpay-tooltip__content-wrapper"
+    type="button"
+  >
+    <div
+      class="wcpay-tooltip__content-wrapper"
+    >
+      <span
+        class="chip chip-light is-compact"
+      >
+        Pending
+      </span>
+    </div>
+  </button>
 </div>
 `;
 
