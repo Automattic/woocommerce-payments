@@ -2,8 +2,6 @@
 
 ## Declare the attributes on the component with an `interface`
 
-First, define the attributes for your component using an `interface`:
-
 ```ts
 interface Props {
   /**
@@ -29,17 +27,16 @@ interface Props {
 We provide JSDoc comments to further describe what each attribute does.
 This information will be available in an editor's autocomplete when you're using the component elsewhere.
 
-## Implement the component using the attribute type you declared in your `interface`
-
-Now use the `interface` you just declared when you implement the component:
+## Declare the component using the attribute type you declared in your `interface`
 
 ```ts
 const DisplayName: React.FunctionComponent< Props > = ( props ) => {
-    if ( props.isLoading ) {
-        // ...
-    }
+  // TypeScript knows props.isLoading is a boolean.
+  if ( props.isLoading ) {
+      // ...
+  }
 
-    // ...
+  // ...
 }
 ```
 
@@ -52,7 +49,8 @@ You can also use the shorthand version: `React.FC`.
 For example, if you try to return `true` in the component you'll get an error:
 
 ```ts
-const DisplayName: React.FunctionComponent< Props > = ( props ) => { // ERROR: Type 'boolean' is not assignable to type 'ReactElement<any, any>'.
+// ERROR: Type 'boolean' is not assignable to type 'ReactElement<any, any>'.
+const DisplayName: React.FunctionComponent< Props > = ( props ) => {
   return true;
 }
 ```
@@ -62,14 +60,12 @@ So the `React.FunctionComponent` type helps keep us honest when writing a compon
 If you prefer to destructure the attributes provided to the component you can do that as well:
 
 ```ts
-const Table: DisplayName.FC< Props > = ( { isLoading, numRows, numColumns } ) => {
-  if ( isLoading ) {
-    // ...
-  }
-
+const DisplayName: React.FC< Props > = ( { isLoading, numRows, numColumns } ) => {
   // ...
 }
 ```
+
+## Implement the rest of the component
 
 In most cases you can then fill in the component without worrying about the types since TypeScript will infer types for all of the variables you use for you.
 
@@ -98,7 +94,7 @@ interface Props {
   lastName: string;
 };
 
-const Table: React.FC< Props > = ( { isLoading, numRows, numColumns } ) => {
+export const DisplayName: React.FC< Props > = ( { isLoading, numRows, numColumns } ) => {
   if ( isLoading ) {
     return <p>Loading...</p>;
   }
