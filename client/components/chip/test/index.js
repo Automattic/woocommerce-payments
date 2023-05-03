@@ -25,6 +25,15 @@ describe( 'Chip', () => {
 		expect( chip ).toMatchSnapshot();
 	} );
 
+	test( 'renders a chip with a tooltip', () => {
+		const { container: chip } = renderChip(
+			'light',
+			'Light message',
+			'Tooltip'
+		);
+		expect( chip ).toMatchSnapshot();
+	} );
+
 	test( 'renders a primary chip by default', () => {
 		const { container: chip } = renderChip( undefined, 'Message' );
 		expect( chip ).toMatchSnapshot();
@@ -40,7 +49,9 @@ describe( 'Chip', () => {
 		expect( chip ).toMatchSnapshot();
 	} );
 
-	function renderChip( type, message ) {
-		return render( <Chip type={ type } message={ message } /> );
+	function renderChip( type, message, tooltip ) {
+		return render(
+			<Chip type={ type } message={ message } tooltip={ tooltip } />
+		);
 	}
 } );
