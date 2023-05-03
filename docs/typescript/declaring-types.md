@@ -14,9 +14,9 @@ const MyAwesomeComponent: React.FunctionComponent< Props > = ( props ) => {
 }
 ```
 
-## Global types
+## Global constants
 
-Global types such as the variables we load in from PHP and live on the `window` object go into `client/types/globals.d.ts`.
+Global constants such as the variables we load in from PHP and live on the `window` object go into `client/types/globals.d.ts`.
 For example, `wcpaySettings` is declared there:
 
 ```ts
