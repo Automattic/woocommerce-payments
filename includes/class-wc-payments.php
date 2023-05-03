@@ -158,18 +158,11 @@ class WC_Payments {
 	private static $onboarding_service;
 
 	/**
-	 * Instance of WC_Payments_Payment_Request_Button_Handler, created in init function
+	 * Instance of WC_Payments_Express_Checkout_Button_Display_Handler, created in init function
 	 *
-	 * @var WC_Payments_Payment_Request_Button_Handler
+	 * @var WC_Payments_Express_Checkout_Button_Display_Handler
 	 */
-	private static $payment_request_button_handler;
-
-	/**
-	 * Instance of WC_Payments_Platform_Checkout_Button_Handler, created in init function
-	 *
-	 * @var WC_Payments_Platform_Checkout_Button_Handler
-	 */
-	private static $platform_checkout_button_handler;
+	private static $express_checkout_button_display_handler;
 
 	/**
 	 * Instance of WC_Payments_Apple_Pay_Registration, created in init function
@@ -376,6 +369,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-status.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
+		include_once __DIR__ . '/class-wc-payments-express-checkout-button-display-handler.php';
 		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-platform-checkout-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-apple-pay-registration.php';
@@ -502,10 +496,13 @@ class WC_Payments {
 
 		self::maybe_register_platform_checkout_hooks();
 
-		// Payment Request and Apple Pay.
-		self::$payment_request_button_handler   = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway() );
-		self::$platform_checkout_button_handler = new WC_Payments_Platform_Checkout_Button_Handler( self::$account, self::get_gateway(), self::$platform_checkout_util );
-		self::$apple_pay_registration           = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
+		self::$apple_pay_registration = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
+
+		$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway() );
+
+		$platform_checkout_button_handler = new WC_Payments_Platform_Checkout_Button_Handler( self::$account, self::get_gateway(), self::$platform_checkout_util );
+
+		self::$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $payment_request_button_handler, $platform_checkout_button_handler );
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
@@ -563,19 +560,6 @@ class WC_Payments {
 		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
 			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
 			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account );
-		}
-
-		$is_woopay_express_checkout_enabled = WC_Payments_Features::is_woopay_express_checkout_enabled();
-
-		if ( $is_woopay_express_checkout_enabled || self::get_gateway()->get_option( 'payment_request' ) ) {
-			add_action( 'woocommerce_after_add_to_cart_quantity', [ __CLASS__, 'display_express_checkout_separator_if_necessary' ], 2 );
-			add_action( 'woocommerce_proceed_to_checkout', [ __CLASS__, 'display_express_checkout_separator_if_necessary' ], 2 );
-			add_action( 'woocommerce_checkout_before_customer_details', [ __CLASS__, 'display_express_checkout_separator_if_necessary' ], 2 );
-
-			if ( self::get_gateway()->get_option( 'payment_request' ) ) {
-				// Load separator on the Pay for Order page.
-				add_action( 'before_woocommerce_pay_form', [ __CLASS__, 'display_express_checkout_separator_if_necessary' ], 2 );
-			}
 		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
@@ -667,13 +651,13 @@ class WC_Payments {
 
 			$key = array_search( 'link', $payment_methods, true );
 
-			if ( false !== $key && self::$platform_checkout_button_handler->is_woopay_enabled() ) {
+			if ( false !== $key && self::$express_checkout_button_display_handler->is_woopay_enabled() ) {
 				unset( $payment_methods[ $key ] );
 
 				self::get_gateway()->update_option( 'upe_enabled_payment_method_ids', $payment_methods );
 			}
 
-			if ( self::$platform_checkout_button_handler->is_woopay_enabled() ) {
+			if ( self::$express_checkout_button_display_handler->is_woopay_enabled() ) {
 				$gateways[] = self::$legacy_card_gateway;
 			} else {
 				$gateways[] = self::$card_gateway;
@@ -1010,7 +994,7 @@ class WC_Payments {
 		$script_file                  = $script . '.js';
 		$script_src_url               = plugins_url( $script_file, WCPAY_PLUGIN_FILE );
 		$script_asset_path            = WCPAY_ABSPATH . $script . '.asset.php';
-		$script_asset                 = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ];
+		$script_asset                 = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ]; // nosemgrep: audit.php.lang.security.file.inclusion-arg -- server generated path is used.
 		$script_asset['dependencies'] = array_merge( $script_asset['dependencies'], $dependencies );
 		wp_register_script(
 			$handler,
@@ -1641,22 +1625,6 @@ class WC_Payments {
 		}
 
 		return new $class_name( self::get_payments_api_client(), self::get_wc_payments_http(), $id );
-	}
-
-	/**
-	 * Display express checkout separator only when express buttons are displayed.
-	 *
-	 * @return void
-	 */
-	public static function display_express_checkout_separator_if_necessary() {
-		$woopay          = self::$platform_checkout_button_handler->is_woopay_enabled() && self::$platform_checkout_button_handler->should_show_platform_checkout_button();
-		$payment_request = self::$payment_request_button_handler->should_show_payment_request_button();
-		$should_hide     = $payment_request && ! $woopay;
-		if ( $woopay || $payment_request ) {
-			?>
-			<p id="wcpay-payment-request-button-separator" style="margin-top:1.5em;text-align:center;<?php echo $should_hide ? 'display:none;' : ''; ?>">&mdash; <?php esc_html_e( 'OR', 'woocommerce-payments' ); ?> &mdash;</p>
-			<?php
-		}
 	}
 
 	/**
