@@ -303,7 +303,7 @@ export const handleWooPayEmailInput = async (
 				isRegisteredUser: userExist,
 			},
 		} );
-		window.dispatchEvent( WooPayUserCheckEvent );
+		window.dispatchEvent( woopayUserCheckEvent );
 	};
 
 	const woopayLocateUser = async ( email ) => {
@@ -313,11 +313,11 @@ export const handleWooPayEmailInput = async (
 			parentDiv.removeChild( errorMessage );
 		}
 
-		if ( hasWooPaySubscriptionLoginError ) {
+		if ( hasWoopaySubscriptionLoginError ) {
 			document
 				.querySelector( '#woopay-subscriptions-login-error' )
 				.remove();
-			hasWooPaySubscriptionLoginError = false;
+			hasWoopaySubscriptionLoginError = false;
 		}
 
 		if ( getConfig( 'woopayNeedsLogin' ) ) {
@@ -331,7 +331,7 @@ export const handleWooPayEmailInput = async (
 				);
 
 				if ( userExistsData[ 'user-exists' ] ) {
-					hasWooPaySubscriptionLoginError = true;
+					hasWoopaySubscriptionLoginError = true;
 					showErrorCheckout(
 						userExistsData.message,
 						false,
