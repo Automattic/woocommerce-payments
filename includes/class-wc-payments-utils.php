@@ -222,6 +222,7 @@ class WC_Payments_Utils {
 			'AT' => __( 'Austria', 'woocommerce-payments' ),
 			'AU' => __( 'Australia', 'woocommerce-payments' ),
 			'BE' => __( 'Belgium', 'woocommerce-payments' ),
+			'BG' => __( 'Bulgaria', 'woocommerce-payments' ),
 			'CA' => __( 'Canada', 'woocommerce-payments' ),
 			'CH' => __( 'Switzerland', 'woocommerce-payments' ),
 			'CY' => __( 'Cyprus', 'woocommerce-payments' ),
