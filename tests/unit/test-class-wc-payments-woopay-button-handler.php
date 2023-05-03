@@ -374,7 +374,6 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->method( 'is_product' );
 
 		$this->assertFalse( $this->mock_pr->should_show_woopay_button() );
-		$this->assertFalse( $this->mock_pr->should_show_woopay_button() );
 	}
 
 	public function test_should_show_woopay_button_woopay_not_enabled() {

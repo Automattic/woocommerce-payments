@@ -1,0 +1,5 @@
+Significance: patch
+Type: dev
+Comment: Update dependabot config file to ignore wordpress and woocommerce dependencies
+
+

@@ -158,20 +158,6 @@ class WC_Payments {
 	private static $onboarding_service;
 
 	/**
-	 * Instance of WC_Payments_Payment_Request_Button_Handler, created in init function
-	 *
-	 * @var WC_Payments_Payment_Request_Button_Handler
-	 */
-	private static $payment_request_button_handler;
-
-	/**
-	 * Instance of WC_Payments_WooPay_Button_Handler, created in init function
-	 *
-	 * @var WC_Payments_WooPay_Button_Handler
-	 */
-	private static $woopay_button_handler;
-
-	/**
 	 * Instance of WC_Payments_Express_Checkout_Button_Display_Handler, created in init function
 	 *
 	 * @var WC_Payments_Express_Checkout_Button_Display_Handler
@@ -510,16 +496,11 @@ class WC_Payments {
 
 		self::maybe_register_woopay_hooks();
 
-		// Payment Request and Apple Pay.
-		self::$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway() );
-		self::$woopay_button_handler          = new WC_Payments_WooPay_Button_Handler( self::$account, self::get_gateway(), self::$woopay_util );
-		self::$apple_pay_registration         = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
-
 		$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway() );
 
-		$platform_checkout_button_handler = new WC_Payments_WooPay_Button_Handler( self::$account, self::get_gateway(), self::$woopay_util );
+		$woopay_button_handler = new WC_Payments_WooPay_Button_Handler( self::$account, self::get_gateway(), self::$woopay_util );
 
-		self::$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $payment_request_button_handler, $platform_checkout_button_handler );
+		self::$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $payment_request_button_handler, $woopay_button_handler );
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
@@ -668,13 +649,13 @@ class WC_Payments {
 
 			$key = array_search( 'link', $payment_methods, true );
 
-			if ( false !== $key && self::$woopay_button_handler->is_woopay_enabled() ) {
+			if ( false !== $key && self::$express_checkout_button_display_handler->is_woopay_enabled() ) {
 				unset( $payment_methods[ $key ] );
 
 				self::get_gateway()->update_option( 'upe_enabled_payment_method_ids', $payment_methods );
 			}
 
-			if ( self::$woopay_button_handler->is_woopay_enabled() ) {
+			if ( self::$express_checkout_button_display_handler->is_woopay_enabled() ) {
 				$gateways[] = self::$legacy_card_gateway;
 			} else {
 				$gateways[] = self::$card_gateway;
@@ -1011,7 +992,7 @@ class WC_Payments {
 		$script_file                  = $script . '.js';
 		$script_src_url               = plugins_url( $script_file, WCPAY_PLUGIN_FILE );
 		$script_asset_path            = WCPAY_ABSPATH . $script . '.asset.php';
-		$script_asset                 = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ];
+		$script_asset                 = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ]; // nosemgrep: audit.php.lang.security.file.inclusion-arg -- server generated path is used.
 		$script_asset['dependencies'] = array_merge( $script_asset['dependencies'], $dependencies );
 		wp_register_script(
 			$handler,

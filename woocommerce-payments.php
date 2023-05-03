@@ -17,8 +17,6 @@
  * @package WooCommerce\Payments
  */
 
-use WCPay\WooPay\WooPay_Session;
-
 defined( 'ABSPATH' ) || exit;
 
 define( 'WCPAY_PLUGIN_FILE', __FILE__ );
@@ -139,7 +137,7 @@ Automattic\Jetpack\Connection\Rest_Authentication::init();
  * Needs to be loaded as soon as possible
  * Check https://github.com/Automattic/woocommerce-payments/issues/4759
  */
-WooPay_Session::init();
+\WCPay\WooPay\WooPay_Session::init();
 
 
 // Jetpack-config will initialize the modules on "plugins_loaded" with priority 2, so this code needs to be run before that.
