@@ -95,6 +95,7 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 5.8.1 - 2023-05-03 =
+* Fix - Fix WooPay express checkout button display issue on Cart blocks.
 
 
 = 5.8.0 - 2023-04-26 =
