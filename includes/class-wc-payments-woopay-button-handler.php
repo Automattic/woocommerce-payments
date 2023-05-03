@@ -594,7 +594,7 @@ class WC_Payments_WooPay_Button_Handler {
 			$is_supported = false;
 		}
 
-		return apply_filters( 'wcpay_platform_checkout_button_is_product_supported', $is_supported, $product );
+		return apply_filters( 'wcpay_woopay_button_is_product_supported', $is_supported, $product );
 	}
 
 	/**

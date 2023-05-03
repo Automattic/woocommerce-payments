@@ -235,7 +235,7 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_should_show_woopay_button_all_good_at_product() {
-		add_filter( 'wcpay_platform_checkout_button_is_product_supported', '__return_true' );
+		add_filter( 'wcpay_woopay_button_is_product_supported', '__return_true' );
 
 		$this->mock_pr
 			->method( 'is_woopay_enabled' )
@@ -260,7 +260,7 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_should_show_woopay_button_unsupported_product_at_product() {
-		add_filter( 'wcpay_platform_checkout_button_is_product_supported', '__return_false' );
+		add_filter( 'wcpay_woopay_button_is_product_supported', '__return_false' );
 
 		$this->mock_pr
 			->method( 'is_woopay_enabled' )
@@ -285,7 +285,7 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_should_show_woopay_button_not_available_at_product() {
-		add_filter( 'wcpay_platform_checkout_button_is_product_supported', '__return_true' );
+		add_filter( 'wcpay_woopay_button_is_product_supported', '__return_true' );
 
 		$this->mock_pr
 			->method( 'is_woopay_enabled' )
