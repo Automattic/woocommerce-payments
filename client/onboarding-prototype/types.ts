@@ -1,11 +1,15 @@
-declare type OnboardingSteps =
+/**
+ * Internal dependencies
+ */
+
+export type OnboardingSteps =
 	| 'mode'
 	| 'personal'
 	| 'business'
 	| 'store'
 	| 'loading';
 
-declare type OnboardingFields = {
+export type OnboardingFields = {
 	email?: string;
 	'individual.first_name'?: string;
 	'individual.last_name'?: string;
@@ -20,11 +24,11 @@ declare type OnboardingFields = {
 	go_live_timeframe?: string;
 };
 
-declare interface EligibleResult {
+export interface EligibleResult {
 	result: 'eligible' | 'not_eligible';
 }
 
-declare interface EligibleData {
+export interface EligibleData {
 	business: {
 		country: string;
 		type: string;
@@ -34,24 +38,6 @@ declare interface EligibleData {
 	};
 }
 
-declare type TempData = {
+export type TempData = {
 	phoneCountryCode?: string;
 };
-
-declare interface BusinessStructure {
-	key: string;
-	name: string;
-}
-
-declare interface BusinessType {
-	key: string;
-	name: string;
-	description: string;
-	structures: BusinessStructure[];
-}
-
-declare interface Country {
-	key: string;
-	name: string;
-	types: BusinessType[];
-}

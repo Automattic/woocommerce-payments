@@ -8,6 +8,7 @@ import React from 'react';
  */
 import { useOnboardingContext } from '../context';
 import { Item } from 'components/custom-select-control';
+import { OnboardingFields } from '../types';
 import {
 	OnboardingTextField,
 	OnboardingSelectField,

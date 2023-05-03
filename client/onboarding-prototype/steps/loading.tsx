@@ -9,6 +9,7 @@ import apiFetch from '@wordpress/api-fetch';
  * Internal dependencies
  */
 import { useOnboardingContext } from '../context';
+import { EligibleData, EligibleResult } from '../types';
 import { fromDotNotation } from '../utils';
 import LoadBar from 'components/load-bar';
 import strings from '../strings';

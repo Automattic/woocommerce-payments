@@ -4,6 +4,11 @@
 import React, { createContext, useContext, useState } from 'react';
 import { isNil, omitBy } from 'lodash';
 
+/**
+ * Internal dependencies
+ */
+import { OnboardingFields, TempData } from './types';
+
 const useContextValue = () => {
 	const [ data, setData ] = useState( {} as OnboardingFields );
 	const [ errors, setErrors ] = useState( {} as OnboardingFields );

@@ -8,6 +8,7 @@ import { useEffect } from 'react';
  */
 import strings from './strings';
 import { useOnboardingContext } from './context';
+import { OnboardingFields } from './types';
 
 const isValid = ( name: keyof OnboardingFields, value?: string ): boolean => {
 	if ( ! value ) return false;
