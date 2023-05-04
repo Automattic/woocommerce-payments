@@ -3,7 +3,7 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import Currency from '@woocommerce/currency';
-import { find, trimEnd, endsWith } from 'lodash';
+import { endsWith, find, trimEnd } from 'lodash';
 
 const currencyNames = {
 	aud: __( 'Australian dollar', 'woocommerce-payments' ),
@@ -28,13 +28,13 @@ const currencyNames = {
 export const formatCurrencyName = ( currencyCode ) =>
 	currencyNames[ currencyCode.toLowerCase() ] || currencyCode.toUpperCase();
 
+/* eslint-disable valid-jsdoc */
 /**
  * Gets wc-admin Currency for the given currency code
  *
  * @param {string} currencyCode Currency code
  * @param {string} baseCurrencyCode Base Currency code to override decimal and thousand separators
  *
- * @return {Currency|null} Currency object
  */
 export const getCurrency = ( currencyCode, baseCurrencyCode = null ) => {
 	const {
@@ -65,10 +65,11 @@ export const getCurrency = ( currencyCode, baseCurrencyCode = null ) => {
 				}
 			}
 		}
-		return new Currency( currency );
+		return Currency( currency );
 	}
 	return null;
 };
+/* eslint-enable valid-jsdoc */
 
 /**
  * Determines if the given currency is zero decimal.
@@ -219,7 +220,7 @@ function formatExchangeRate( from, to ) {
 			to.currency.toUpperCase()
 		);
 	}
-	const exchangeCurrency = new Currency( {
+	const exchangeCurrency = Currency( {
 		...exchangeCurrencyConfig,
 		precision,
 	} );

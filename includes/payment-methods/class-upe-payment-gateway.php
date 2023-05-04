@@ -591,7 +591,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			return $this->parent_process_payment( $order_id );
 		}
 
-		return [
+		return [ // nosemgrep: audit.php.wp.security.xss.query-arg  -- The output of add_query_arg is being escaped.
 			'result'         => 'success',
 			'payment_needed' => $payment_needed,
 			'redirect_url'   => wp_sanitize_redirect(

@@ -5,6 +5,7 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card, CheckboxControl, TextControl } from '@wordpress/components';
+import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies
@@ -66,10 +67,57 @@ const PlatformCheckoutSettings = ( { section } ) => {
 						checked={ isPlatformCheckoutEnabled }
 						onChange={ updateIsPlatformCheckoutEnabled }
 						label={ __( 'Enable WooPay', 'woocommerce-payments' ) }
-						help={ __(
-							'When enabled, customers will be able to checkout using WooPay',
-							'woocommerce-payments'
-						) }
+						help={
+							/* eslint-disable jsx-a11y/anchor-has-content */
+							isPlatformCheckoutEnabled
+								? __(
+										'When enabled, customers will be able to checkout using WooPay.',
+										'woocommerce-payments'
+								  )
+								: interpolateComponents( {
+										mixedString: __(
+											/* eslint-disable-next-line max-len */
+											'When enabled, customers will be able to checkout using WooPay. ' +
+												'In order to use {{wooPayLink}}WooPay{{/wooPayLink}}, you must agree to our ' +
+												'{{tosLink}}WooCommerce Terms of Service{{/tosLink}} ' +
+												'and {{privacyLink}}Privacy Policy{{/privacyLink}}. ' +
+												'{{trackingLink}}Click here{{/trackingLink}} to learn more about the ' +
+												'data you will be sharing and opt-out options.',
+											'woocommerce-payments'
+										),
+										components: {
+											wooPayLink: (
+												<a
+													target="_blank"
+													rel="noreferrer"
+													href="https://woocommerce.com/document/woopay-merchant-documentation/"
+												/>
+											),
+											tosLink: (
+												<a
+													target="_blank"
+													rel="noreferrer"
+													href="https://wordpress.com/tos/"
+												/>
+											),
+											privacyLink: (
+												<a
+													target="_blank"
+													rel="noreferrer"
+													href="https://automattic.com/privacy/"
+												/>
+											),
+											trackingLink: (
+												<a
+													target="_blank"
+													rel="noreferrer"
+													href="https://woocommerce.com/usage-tracking/"
+												/>
+											),
+										},
+								  } )
+							/* eslint-enable jsx-a11y/anchor-has-content */
+						}
 					/>
 					<h4>
 						{ __(
