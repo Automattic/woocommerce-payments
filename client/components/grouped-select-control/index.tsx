@@ -5,81 +5,60 @@ import React, { useRef, useState } from 'react';
 import { Icon, check, chevronDown, chevronUp } from '@wordpress/icons';
 import classNames from 'classnames';
 import { __ } from '@wordpress/i18n';
-import { useSelect } from 'downshift';
+import { useSelect, UseSelectState } from 'downshift';
 
 /**
  * Internal Dependencies
  */
 import './style.scss';
 
-export interface Item {
+export interface ListItem {
 	key: string;
 	name: string;
-	group: string;
+	group?: string;
 	context?: string;
 	className?: string;
-}
-
-export interface Group {
-	key: string;
-	name: string;
-	className?: string;
-}
-
-interface ListItem extends Omit< Item, 'group' > {
-	group?: string;
 	items?: string[];
 }
 
 export interface GroupedSelectControlProps< ItemType > {
 	label: string;
 	options: ItemType[];
-	groups: Group[];
 	value?: ItemType;
 	placeholder?: string;
 	searchable?: boolean;
 	className?: string;
-	onChange: ( value?: ItemType ) => void;
+	onChange?: ( changes: Partial< UseSelectState< ItemType > > ) => void;
 }
 
-const GroupedSelectControl = < ItemType extends Item >( {
+const GroupedSelectControl = < ItemType extends ListItem >( {
+	className,
 	label,
-	options: items,
+	options: listItems,
+	onChange: onSelectedItemChange,
 	value,
-	groups,
 	placeholder,
 	searchable,
-	className,
-	onChange,
 }: GroupedSelectControlProps< ItemType > ): JSX.Element => {
 	const searchRef = useRef< HTMLInputElement >( null );
 	const previousStateRef = useRef< {
 		visibleItems: Set< string >;
 	} >();
-	const groupKeys = groups.map( ( group ) => group.key );
-	const mergedList = groups.reduce( ( acc, group ) => {
-		const groupItems = items.filter( ( item ) => item.group === group.key );
-		return [
-			...acc,
-			{
-				...group,
-				items: groupItems.map( ( item ) => item.key ),
-			},
-			...groupItems,
-		];
-	}, [] as ListItem[] );
+	const groupKeys = listItems
+		.filter( ( item ) => item.items?.length )
+		.map( ( group ) => group.key );
 
 	const [ openedGroups, setOpenedGroups ] = useState(
-		new Set( [ groups[ 0 ]?.key ] )
+		new Set( [ groupKeys[ 0 ] ] )
 	);
 
 	const [ visibleItems, setVisibleItems ] = useState(
-		new Set( [ ...groupKeys, ...( mergedList[ 0 ]?.items || [] ) ] )
+		new Set( [ ...groupKeys, ...( listItems[ 0 ]?.items || [] ) ] )
 	);
 
 	const [ searchText, setSearchText ] = useState( '' );
 
-	const itemsToRender = mergedList.filter( ( item ) =>
+	const itemsToRender = listItems.filter( ( item ) =>
 		visibleItems.has( item.key )
 	);
 
@@ -95,8 +74,7 @@ const GroupedSelectControl = < ItemType extends Item >( {
 		items: itemsToRender,
 		itemToString: ( item ) => item.name,
 		selectedItem: value || ( {} as ItemType ),
-		onSelectedItemChange: ( changes ) =>
-			onChange( changes.selectedItem as ItemType ),
+		onSelectedItemChange,
 		stateReducer: ( state, { changes, type } ) => {
 			if (
 				searchable &&
@@ -141,12 +119,16 @@ const GroupedSelectControl = < ItemType extends Item >( {
 			setVisibleItems( previousStateRef.current.visibleItems );
 			previousStateRef.current = undefined;
 		} else {
-			const filteredItems = items.filter( ( item ) =>
-				`${ item.name }${ item.context || '' }`
-					.toLowerCase()
-					.includes( target.value.toLowerCase() )
+			const filteredItems = listItems.filter(
+				( item ) =>
+					item?.group &&
+					`${ item.name } ${ item.context || '' }`
+						.toLowerCase()
+						.includes( target.value.toLowerCase() )
 			);
-			const filteredGroups = filteredItems.map( ( item ) => item.group );
+			const filteredGroups = filteredItems.map(
+				( item ): string => item?.group || ''
+			);
 			const filteredVisibleItems = new Set( [
 				...filteredItems.map( ( i ) => i.key ),
 				...filteredGroups,
