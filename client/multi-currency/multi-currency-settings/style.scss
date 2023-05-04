@@ -1,9 +1,7 @@
 .multi-currency-settings {
 	&__wrapper {
 		& .components-card__body {
-			&[class*='-medium'] {
-				padding: 24px;
-			}
+			padding: 24px;
 
 			.components-base-control {
 				.components-base-control__field {

@@ -10,12 +10,8 @@
 
 // Adapted from woocommerce-admin:client/homescreen/style.scss
 .components-card.woocommerce-task-card {
-	.components-card__body[class*='-large'] {
+	.components-card__body {
 		padding: 0;
-	}
-
-	.components-card__footer[class*='-large'] {
-		padding: 0 $gap-smaller;
 	}
 
 	.wcpay-task-list.woocommerce-experimental-list {

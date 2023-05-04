@@ -25,14 +25,14 @@
 				display: none;
 			}
 
-			.components-card__body[class*='-medium'] {
+			.components-card__body {
 				padding: $gap-large $gap-largest;
 			}
 		}
 	}
 
 	@include breakpoint( '>660px' ) {
-		&__content.components-card__body[class*='-medium'] {
+		&__content.components-card__body {
 			background: url( 'assets/images/illustrations/wcpay.svg?asset' )
 				no-repeat bottom right/293px 275px;
 			min-height: 305px;
@@ -97,7 +97,7 @@
 			grid-template-columns: repeat( 3, 1fr );
 			column-gap: 30px;
 
-			&.components-card__body[class*='-medium'] {
+			&.components-card__body {
 				padding: 30px;
 			}
 		}
