@@ -226,16 +226,19 @@ class WC_Payments_Utils {
 			'CA' => __( 'Canada', 'woocommerce-payments' ),
 			'CH' => __( 'Switzerland', 'woocommerce-payments' ),
 			'CY' => __( 'Cyprus', 'woocommerce-payments' ),
+			'CZ' => __( 'Czech Republic', 'woocommerce-payments' ),
 			'DE' => __( 'Germany', 'woocommerce-payments' ),
 			'DK' => __( 'Denmark', 'woocommerce-payments' ),
 			'EE' => __( 'Estonia', 'woocommerce-payments' ),
 			'FI' => __( 'Finland', 'woocommerce-payments' ),
 			'ES' => __( 'Spain', 'woocommerce-payments' ),
 			'FR' => __( 'France', 'woocommerce-payments' ),
+			'HR' => __( 'Croatia', 'woocommerce-payments' ),
 			'LU' => __( 'Luxembourg', 'woocommerce-payments' ),
 			'GB' => __( 'United Kingdom (UK)', 'woocommerce-payments' ),
 			'GR' => __( 'Greece', 'woocommerce-payments' ),
 			'HK' => __( 'Hong Kong', 'woocommerce-payments' ),
+			'HU' => __( 'Hungary', 'woocommerce-payments' ),
 			'IE' => __( 'Ireland', 'woocommerce-payments' ),
 			'IT' => __( 'Italy', 'woocommerce-payments' ),
 			'LT' => __( 'Lithuania', 'woocommerce-payments' ),
@@ -246,6 +249,8 @@ class WC_Payments_Utils {
 			'NZ' => __( 'New Zealand', 'woocommerce-payments' ),
 			'PL' => __( 'Poland', 'woocommerce-payments' ),
 			'PT' => __( 'Portugal', 'woocommerce-payments' ),
+			'RO' => __( 'Romania', 'woocommerce-payments' ),
+			'SE' => __( 'Sweden', 'woocommerce-payments' ),
 			'SI' => __( 'Slovenia', 'woocommerce-payments' ),
 			'SK' => __( 'Slovakia', 'woocommerce-payments' ),
 			'SG' => __( 'Singapore', 'woocommerce-payments' ),
@@ -639,7 +644,7 @@ class WC_Payments_Utils {
 			return '';
 		}
 
-		return add_query_arg(
+		return add_query_arg( // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
 			array_merge(
 				[
 					'page' => 'wc-admin',

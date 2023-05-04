@@ -148,7 +148,9 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		WC_Payments::set_customer_service( $mock_customer_service );
 		$this->set_platform_checkout_feature_flag_enabled( true );
 
+		ob_start();
 		WC_Payments::ajax_init_platform_checkout();
+		ob_get_clean();
 	}
 
 	/**

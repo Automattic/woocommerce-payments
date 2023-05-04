@@ -139,13 +139,13 @@
 		border: 0;
 
 		h1 {
-			@include title-small;
+			@include wp-title-small;
 			margin-bottom: $gap-smaller;
 		}
 	}
 
 	&__title {
-		@include title-small;
+		@include wp-title-small;
 	}
 
 	&__headline {

@@ -28,6 +28,7 @@ const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 	BG: 'bulgaria',
 	CA: 'canada',
 	CY: 'cyprus',
+	CZ: 'czechia',
 	FR: 'france',
 	LU: 'luxembourg',
 	DE: 'germany',
@@ -36,6 +37,8 @@ const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 	FI: 'finland',
 	GR: 'greece',
 	HK: 'hong-kong',
+	HR: 'croatia',
+	HU: 'hungary',
 	IE: 'ireland',
 	IT: 'italy',
 	LT: 'lithuania',
@@ -49,10 +52,12 @@ const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 	SG: 'singapore',
 	SI: 'slovenia',
 	SK: 'slovakia',
+	SW: 'sweden',
 	ES: 'spain',
 	CH: 'switzerland',
 	UK: 'united-kingdom',
 	US: 'united-states',
+	RO: 'romania',
 };
 
 const stripeFeeSectionExistsForCountry = ( country: string ): boolean => {

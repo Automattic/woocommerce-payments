@@ -59,7 +59,11 @@ const ModeChoice: React.FC = () => {
 					},
 				] }
 			/>
-			<Button isPrimary onClick={ handleContinue }>
+			<Button
+				isPrimary
+				onClick={ handleContinue }
+				className="stepper__cta"
+			>
 				{ strings.continue }
 			</Button>
 		</>
