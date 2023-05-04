@@ -131,7 +131,7 @@ const ProtectionLevels = () => {
 								currentProtectionLevel
 							}
 						>
-							{ __( 'Configure', 'woocommerce-payments' ) }
+							{ __( 'Edit', 'woocommerce-payments' ) }
 						</Button>
 					</li>
 				</ul>

@@ -78,7 +78,7 @@ exports[`ProtectionLevels renders 1`] = `
           disabled=""
           type="button"
         >
-          Configure
+          Edit
         </button>
       </li>
     </ul>
@@ -175,7 +175,7 @@ exports[`ProtectionLevels renders an error message when settings can not be fetc
           disabled=""
           type="button"
         >
-          Configure
+          Edit
         </button>
       </li>
     </ul>
