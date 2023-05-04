@@ -7,6 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_REST_Payments_Terminal_Locations_Controller as Controller;
+use WCPay\Exceptions\API_Exception;
 
 /**
  * WC_REST_Payments_Tos_Controller unit tests.
@@ -83,6 +84,40 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WCPAY_UnitTest
 		$this->mock_api_client
 			->expects( $this->never() )
 			->method( 'create_terminal_location' );
+
+		// Setup the request.
+		$request = new WP_REST_Request(
+			'GET',
+			'/wc/v3/payments/terminal/locations'
+		);
+		$request->set_header( 'Content-Type', 'application/json' );
+
+		$result = $this->controller->get_store_location( $request );
+		$this->assertSame( 'store_address_is_incomplete', $result->get_error_code() );
+		$this->assertStringEndsWith( '/admin.php?page=wc-settings&tab=general', $result->get_error_message() );
+	}
+
+	public function test_emits_error_when_address_is_incorrect() {
+		delete_transient( Controller::STORE_LOCATIONS_TRANSIENT_KEY );
+
+		// Set the store location settings for running the test case as intended.
+		update_option( 'woocommerce_default_country', 'US:InvalidState' );
+
+		$this->mock_api_client
+			->method( 'get_terminal_locations' )
+			->willReturn( [] );
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_terminal_location' )
+			->will(
+				$this->throwException(
+					new API_Exception(
+						'Invalid US state or province',
+						'invalid_request_error',
+						400
+					)
+				)
+			);
 
 		// Setup the request.
 		$request = new WP_REST_Request(

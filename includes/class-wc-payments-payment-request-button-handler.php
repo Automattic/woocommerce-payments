@@ -44,8 +44,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 	public function __construct( WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway ) {
 		$this->account = $account;
 		$this->gateway = $gateway;
-
-		add_action( 'init', [ $this, 'init' ] );
 	}
 
 	/**
@@ -72,12 +70,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 		add_action( 'template_redirect', [ $this, 'set_session' ] );
 		add_action( 'template_redirect', [ $this, 'handle_payment_request_redirect' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
-
-		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_payment_request_button_html' ], 1 );
-
-		add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_payment_request_button_html' ], 1 );
-
-		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_payment_request_button_html' ], 1 );
 
 		add_action( 'before_woocommerce_pay_form', [ $this, 'display_pay_for_order_page_html' ], 1 );
 
@@ -1647,7 +1639,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			home_url()
 		);
 
-		return [
+		return [ // nosemgrep: audit.php.wp.security.xss.query-arg -- home_url passed in to add_query_arg.
 			'message'      => $message,
 			'redirect_url' => $redirect_url,
 		];

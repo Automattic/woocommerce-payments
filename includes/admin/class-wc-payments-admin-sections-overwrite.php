@@ -135,7 +135,7 @@ class WC_Payments_Admin_Sections_Overwrite {
 	 */
 	public function overwrite_payments_tab_url( $url, $path ): string {
 		if ( 'admin.php?page=wc-settings&tab=checkout' === $path ) {
-			return add_query_arg( [ 'section' => 'woocommerce_payments' ], $url );
+			return add_query_arg( [ 'section' => 'woocommerce_payments' ], $url ); // nosemgrep: audit.php.wp.security.xss.query-arg -- Admin area URL is passed in.
 		}
 
 		return $url;

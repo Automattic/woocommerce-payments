@@ -38,12 +38,13 @@ const BannerActions: React.FC< BannerActionsProps > = ( {
 			>
 				{ __( 'Learn more', 'woocommerce-payments' ) }
 			</Button>
-			<Button isTertiary onClick={ handleRemindOnClick }>
-				{ __( 'Remind me later', 'woocommerce-payments' ) }
-			</Button>
-			{ 3 <= remindMeCount && (
+			{ 3 > remindMeCount ? (
+				<Button isTertiary onClick={ handleRemindOnClick }>
+					{ __( 'Remind me later', 'woocommerce-payments' ) }
+				</Button>
+			) : (
 				<Button isTertiary onClick={ handleDontShowAgainOnClick }>
-					{ __( "Don't show me this again", 'woocommerce-payments' ) }
+					{ __( 'Dismiss', 'woocommerce-payments' ) }
 				</Button>
 			) }
 		</div>

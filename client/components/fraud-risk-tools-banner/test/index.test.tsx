@@ -43,7 +43,7 @@ describe( 'FRTDiscoverabilityBanner', () => {
 		expect( frtBanner ).toMatchSnapshot();
 	} );
 
-	it( 'renders with dont show again button if remindMeCount greater than or equal to 3', () => {
+	it( 'renders with dismiss button if remindMeCount greater than or equal to 3', () => {
 		global.wcpaySettings = {
 			...global.wcpaySettings,
 			frtDiscoverBannerSettings: JSON.stringify( {
@@ -58,7 +58,7 @@ describe( 'FRTDiscoverabilityBanner', () => {
 		expect( frtBanner ).toMatchSnapshot();
 	} );
 
-	it( 'renders without dont show again button if remindMeCount greater than 0 but less than 3', () => {
+	it( 'renders without dismiss button if remindMeCount greater than 0 but less than 3', () => {
 		global.wcpaySettings = {
 			...global.wcpaySettings,
 			frtDiscoverBannerSettings: JSON.stringify( {

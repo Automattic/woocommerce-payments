@@ -1,5 +1,0 @@
-Significance: patch
-Type: dev
-Comment: Just add tests to cover using user tokens for some recently added WCPay core request classes.
-
-

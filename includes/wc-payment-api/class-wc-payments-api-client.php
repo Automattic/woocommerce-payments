@@ -72,7 +72,6 @@ class WC_Payments_API_Client {
 	const AUTHORIZATIONS_API           = 'authorizations';
 	const FRAUD_OUTCOMES_API           = 'fraud_outcomes';
 	const FRAUD_RULESET_API            = 'fraud_ruleset';
-	const FRAUD_OUTCOME_API            = 'fraud_outcomes';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -1626,7 +1625,7 @@ class WC_Payments_API_Client {
 	public function get_latest_fraud_outcome( $id ) {
 		$response = $this->request(
 			[],
-			self::FRAUD_OUTCOME_API . '/order_id/' . $id,
+			self::FRAUD_OUTCOMES_API . '/order_id/' . $id,
 			self::GET
 		);
 
