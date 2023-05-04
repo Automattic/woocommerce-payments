@@ -19,17 +19,17 @@ exports[`FraudProtection should render correctly 1`] = `
         <ul>
           <li>
             <div
-              class="fraud-protection-single-radio-wrapper"
+              class="fraud-protection-radio-wrapper"
             >
               <input
-                class="fraud-protection-single-radio-wrapper__item"
+                class="fraud-protection-radio-wrapper__item"
                 id="fraud-protection__basic-level"
                 name="fraud-protection-level-select"
                 type="radio"
                 value="basic"
               />
               <label
-                class="fraud-protection-single-radio-wrapper__item"
+                class="fraud-protection-radio-wrapper__item"
                 for="fraud-protection__basic-level"
               >
                 Basic
@@ -65,7 +65,7 @@ exports[`FraudProtection should render correctly 1`] = `
               for="fraud-protection-level-select_advanced-level"
             >
               <div
-                class="fraud-protection-single-radio-wrapper"
+                class="fraud-protection-radio-wrapper"
               >
                 <input
                   id="fraud-protection-level-select_advanced-level"
@@ -74,7 +74,7 @@ exports[`FraudProtection should render correctly 1`] = `
                   value="advanced"
                 />
                 <p
-                  class="fraud-protection-single-radio-wrapper__item"
+                  class="fraud-protection-radio-wrapper__item"
                 >
                   Advanced
                 </p>
@@ -122,17 +122,17 @@ exports[`FraudProtection should render with the welcome tour dismissed 1`] = `
         <ul>
           <li>
             <div
-              class="fraud-protection-single-radio-wrapper"
+              class="fraud-protection-radio-wrapper"
             >
               <input
-                class="fraud-protection-single-radio-wrapper__item"
+                class="fraud-protection-radio-wrapper__item"
                 id="fraud-protection__basic-level"
                 name="fraud-protection-level-select"
                 type="radio"
                 value="basic"
               />
               <label
-                class="fraud-protection-single-radio-wrapper__item"
+                class="fraud-protection-radio-wrapper__item"
                 for="fraud-protection__basic-level"
               >
                 Basic
@@ -168,7 +168,7 @@ exports[`FraudProtection should render with the welcome tour dismissed 1`] = `
               for="fraud-protection-level-select_advanced-level"
             >
               <div
-                class="fraud-protection-single-radio-wrapper"
+                class="fraud-protection-radio-wrapper"
               >
                 <input
                   id="fraud-protection-level-select_advanced-level"
@@ -177,7 +177,7 @@ exports[`FraudProtection should render with the welcome tour dismissed 1`] = `
                   value="advanced"
                 />
                 <p
-                  class="fraud-protection-single-radio-wrapper__item"
+                  class="fraud-protection-radio-wrapper__item"
                 >
                   Advanced
                 </p>
