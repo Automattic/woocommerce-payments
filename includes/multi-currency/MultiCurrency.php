@@ -1367,7 +1367,7 @@ class MultiCurrency {
 			}
 		);
 
-		if ( is_array( $data['currencies'] ) ) {
+		if ( isset( $data['currencies'] ) && is_array( $data['currencies'] ) ) {
 			return $data['currencies'];
 		}
 
