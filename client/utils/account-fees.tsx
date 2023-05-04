@@ -28,7 +28,7 @@ const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 	BG: 'bulgaria',
 	CA: 'canada',
 	CY: 'cyprus',
-	CZ: 'czechia',
+	CZ: 'czech-republic',
 	FR: 'france',
 	LU: 'luxembourg',
 	DE: 'germany',
