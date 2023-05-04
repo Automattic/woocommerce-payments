@@ -48,6 +48,7 @@ const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 	SG: 'singapore',
 	SI: 'slovenia',
 	SK: 'slovakia',
+	SW: 'sweden',
 	ES: 'spain',
 	CH: 'switzerland',
 	UK: 'united-kingdom',
