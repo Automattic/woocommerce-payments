@@ -23,6 +23,7 @@ import { getTasks, taskSort } from './task-list/tasks';
 import InboxNotifications from './inbox-notifications';
 import ConnectionSuccessNotice from './connection-sucess-notice';
 import SetupRealPayments from './setup-real-payments';
+import ProgressiveOnboardingEligibilityModal from './modal/progressive-onboarding-eligibility';
 import JetpackIdcNotice from 'components/jetpack-idc-notice';
 import AccountBalances from 'components/account-balances';
 import FRTDiscoverabilityBanner from 'components/fraud-risk-tools-banner';
@@ -80,6 +81,11 @@ const OverviewPage = () => {
 	const showLoanOfferError = '1' === queryParams[ 'wcpay-loan-offer-error' ];
 	const showServerLinkError =
 		'1' === queryParams[ 'wcpay-server-link-error' ];
+	const showProgressiveOnboardingEligibilityModal =
+		showConnectionSuccess &&
+		accountStatus.progressiveOnboarding.isEnabled &&
+		! accountStatus.progressiveOnboarding.isComplete &&
+		'pending_verification' !== accountStatus.status;
 	const accountRejected =
 		accountStatus.status && accountStatus.status.startsWith( 'rejected' );
 
@@ -184,6 +190,12 @@ const OverviewPage = () => {
 			{ ! accountRejected && (
 				<ErrorBoundary>
 					<InboxNotifications />
+				</ErrorBoundary>
+			) }
+
+			{ showProgressiveOnboardingEligibilityModal && (
+				<ErrorBoundary>
+					<ProgressiveOnboardingEligibilityModal />
 				</ErrorBoundary>
 			) }
 		</Page>
