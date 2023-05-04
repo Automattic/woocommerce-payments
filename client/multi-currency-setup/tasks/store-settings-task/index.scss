@@ -2,9 +2,10 @@
 	&__wrapper {
 		margin-top: 24px;
 		& > .components-card__body {
-			&.is-size-medium {
+			&[class*='-medium'] {
 				padding: 24px;
 			}
+
 			.components-base-control {
 				.components-base-control__field {
 					margin-bottom: 0;

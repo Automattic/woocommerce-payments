@@ -1,4 +1,4 @@
-.wcpay-account-balances__header.components-card__header.is-size-medium {
+.wcpay-account-balances__header.components-card__header[class*='-medium'] {
 	// Override the default padding to adjust for additional margins on child elements.
 	padding-top: 8px;
 	padding-bottom: 8px;
@@ -75,23 +75,6 @@
 	}
 }
 
-.wcpay-account-balances__balances__item__tooltip {
-	// To be removed when @wordpress/components is upgraded to 17.0.0.
-	.components-visually-hidden {
-		border: 0;
-		clip: rect( 1px, 1px, 1px, 1px );
-		-webkit-clip-path: inset( 50% );
-		clip-path: inset( 50% );
-		height: 1px;
-		margin: -1px;
-		overflow: hidden;
-		padding: 0;
-		position: absolute;
-		width: 1px;
-		word-wrap: normal;
-	}
-}
-
 .wcpay-account-balances__instant-deposit {
 	border-top: 1px solid $gray-200;
 	padding: 24px;
@@ -100,7 +83,6 @@
 @media screen and ( max-width: 500px ) {
 	// On small devices, the logo and greeting should be centered.
 	.wcpay-account-balances__header__flex {
-		flex-direction: column;
 		text-align: center;
 
 		*:first-child {

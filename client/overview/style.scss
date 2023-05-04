@@ -10,11 +10,11 @@
 
 // Adapted from woocommerce-admin:client/homescreen/style.scss
 .components-card.woocommerce-task-card {
-	.components-card__body.is-size-large {
+	.components-card__body[class*='-large'] {
 		padding: 0;
 	}
 
-	.components-card__footer.is-size-large {
+	.components-card__footer[class*='-large'] {
 		padding: 0 $gap-smaller;
 	}
 
@@ -79,21 +79,6 @@
 	// To be removed when we upgrade this package.
 	.components-popover {
 		position: fixed;
-	}
-
-	// To be removed when @wordpress/components is upgraded to 17.0.0.
-	.components-visually-hidden {
-		border: 0;
-		clip: rect( 1px, 1px, 1px, 1px );
-		-webkit-clip-path: inset( 50% );
-		clip-path: inset( 50% );
-		height: 1px;
-		margin: -1px;
-		overflow: hidden;
-		padding: 0;
-		position: absolute;
-		width: 1px;
-		word-wrap: normal;
 	}
 
 	.wcpay-setup-real-payments {

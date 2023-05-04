@@ -1,5 +1,5 @@
 .wcpay-card-body {
-	&.is-size-medium {
+	&[class*='-medium'] {
 		// increasing the specificity of the styles to override the Gutenberg ones
 		&#{&} {
 			padding: $grid-unit-30;
