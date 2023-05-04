@@ -53,30 +53,25 @@ exports[`ConvertedAmount renders an amount with conversion icon and tooltip 2`] 
         </g>
       </svg>
       <span>
-        <div>
+        <div
+          aria-hidden="true"
+          class="components-popover components-tooltip is-without-arrow"
+          data-x-axis="center"
+          data-y-axis="bottom"
+          style="top: 0px; left: 0px;"
+          tabindex="-1"
+        >
           <div
-            aria-hidden="true"
-            class="components-popover components-tooltip is-without-arrow"
-            data-x-axis="center"
-            data-y-axis="bottom"
-            style="top: 0px; left: 0px;"
+            class="components-popover__content"
           >
             <div
-              class="components-popover__content"
-              tabindex="-1"
+              style="position: relative;"
             >
               <div
-                style="position: relative;"
-              >
-                <iframe
-                  aria-hidden="true"
-                  frameborder="0"
-                  src="about:blank"
-                  style="display: block; opacity: 0; position: absolute; top: 0px; left: 0px; height: 100%; width: 100%; overflow: hidden; pointer-events: none; z-index: -1;"
-                  tabindex="-1"
-                />
-                Converted from MOK 2.00
-              </div>
+                aria-hidden="true"
+                style="position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px; pointer-events: none; opacity: 0; overflow: hidden; z-index: -1;"
+              />
+              Converted from MOK 2.00
             </div>
           </div>
         </div>
