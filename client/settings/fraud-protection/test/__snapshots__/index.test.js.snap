@@ -90,7 +90,7 @@ exports[`FraudProtection should render correctly 1`] = `
               disabled=""
               type="button"
             >
-              Edit
+              Configure
             </button>
           </li>
         </ul>
@@ -193,7 +193,7 @@ exports[`FraudProtection should render with the welcome tour dismissed 1`] = `
               disabled=""
               type="button"
             >
-              Edit
+              Configure
             </button>
           </li>
         </ul>

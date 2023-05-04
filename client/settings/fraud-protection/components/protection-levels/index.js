@@ -32,6 +32,10 @@ const ProtectionLevels = () => {
 		advancedFraudProtectionSettings,
 	] = useAdvancedFraudProtectionSettings();
 
+	const isAdvancedSettingsConfigured =
+		Array.isArray( advancedFraudProtectionSettings ) &&
+		0 < advancedFraudProtectionSettings.length;
+
 	const handleLevelChange = ( level ) => () => {
 		wcpayTracks.recordEvent(
 			'wcpay_fraud_protection_risk_level_preset_enabled',
@@ -131,7 +135,9 @@ const ProtectionLevels = () => {
 								currentProtectionLevel
 							}
 						>
-							{ __( 'Edit', 'woocommerce-payments' ) }
+							{ isAdvancedSettingsConfigured
+								? __( 'Edit', 'woocommerce-payments' )
+								: __( 'Configure', 'woocommerce-payments' ) }
 						</Button>
 					</li>
 				</ul>
