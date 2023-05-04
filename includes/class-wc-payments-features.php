@@ -129,7 +129,7 @@ class WC_Payments_Features {
 	 */
 	public static function is_woopay_enabled() {
 		$is_platform_checkout_eligible               = self::is_platform_checkout_eligible(); // Feature flag.
-		$is_platform_checkout_enabled                = 'yes' === WC_Payments::get_gateway()->get_option( 'platform_checkout', 'no' );
+		$is_platform_checkout_enabled                = 'yes' === WC_Payments::get_gateway()->get_option( 'platform_checkout' );
 		$is_platform_checkout_express_button_enabled = self::is_woopay_express_checkout_enabled();
 
 		return $is_platform_checkout_eligible && $is_platform_checkout_enabled && $is_platform_checkout_express_button_enabled;

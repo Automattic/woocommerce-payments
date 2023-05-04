@@ -158,13 +158,6 @@ class WC_Payments {
 	private static $onboarding_service;
 
 	/**
-	 * Instance of WC_Payments_Express_Checkout_Button_Display_Handler, created in init function
-	 *
-	 * @var WC_Payments_Express_Checkout_Button_Display_Handler
-	 */
-	private static $express_checkout_button_display_handler;
-
-	/**
 	 * Instance of WC_Payments_Apple_Pay_Registration, created in init function
 	 *
 	 * @var WC_Payments_Apple_Pay_Registration
@@ -1359,9 +1352,9 @@ class WC_Payments {
 	 */
 	public static function maybe_display_express_checkout_buttons() {
 		if ( WC_Payments_Features::are_payments_enabled() ) {
-			$payment_request_button_handler                = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway() );
-			$platform_checkout_button_handler              = new WC_Payments_Platform_Checkout_Button_Handler( self::$account, self::get_gateway(), self::$platform_checkout_util );
-			self::$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $payment_request_button_handler, $platform_checkout_button_handler );
+			$payment_request_button_handler          = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway() );
+			$platform_checkout_button_handler        = new WC_Payments_Platform_Checkout_Button_Handler( self::$account, self::get_gateway(), self::$platform_checkout_util );
+			$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $payment_request_button_handler, $platform_checkout_button_handler );
 		}
 	}
 
