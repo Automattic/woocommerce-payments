@@ -36,6 +36,7 @@ const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 	FI: 'finland',
 	GR: 'greece',
 	HK: 'hong-kong',
+	HR: 'croatia',
 	HU: 'hungary',
 	IE: 'ireland',
 	IT: 'italy',
