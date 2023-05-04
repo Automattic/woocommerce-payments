@@ -24,7 +24,14 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	private $mock_gateway;
 
 	/**
-	 * Mock database cache
+	 * Mock Onboarding Service.
+	 *
+	 * @var WC_Payments_Onboarding_Service|MockObject;
+	 */
+	private $mock_onboarding_service;
+
+	/**
+	 * Mock database cache.
 	 *
 	 * @var Database_Cache|MockObject;
 	 */
@@ -53,6 +60,10 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
+		$this->mock_onboarding_service = $this->getMockBuilder( WC_Payments_Onboarding_Service::class )
+			->disableOriginalConstructor()
+			->getMock();
+
 		$this->mock_database_cache = $this->getMockBuilder( Database_Cache::class )
 			->disableOriginalConstructor()
 			->getMock();
@@ -65,7 +76,13 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$this->payments_admin = new WC_Payments_Admin( $mock_api_client, $this->mock_gateway, $this->mock_account, $this->mock_database_cache );
+		$this->payments_admin = new WC_Payments_Admin(
+			$mock_api_client,
+			$this->mock_gateway,
+			$this->mock_account,
+			$this->mock_onboarding_service,
+			$this->mock_database_cache
+		);
 	}
 
 	public function tear_down() {

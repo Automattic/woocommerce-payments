@@ -10,7 +10,7 @@ import { mocked } from 'ts-jest/utils';
  * Internal dependencies
  */
 import AddBusinessInfoTask from '../';
-import { useBusinessTypes } from 'onboarding-experiment/hooks';
+import { getBusinessTypes } from 'onboarding-prototype/utils';
 
 declare const global: {
 	wcpaySettings: {
@@ -20,8 +20,8 @@ declare const global: {
 	};
 };
 
-jest.mock( 'onboarding-experiment/hooks', () => ( {
-	useBusinessTypes: jest.fn(),
+jest.mock( 'onboarding-prototype/utils', () => ( {
+	getBusinessTypes: jest.fn(),
 } ) );
 
 const countries = [
@@ -91,21 +91,8 @@ describe( 'AddBusinessInfoTask', () => {
 		};
 	} );
 
-	it( 'shows a loadable block', () => {
-		mocked( useBusinessTypes ).mockReturnValue( {
-			countries: [],
-			isLoading: true,
-		} );
-
-		const { container: task } = renderTask();
-		expect( task ).toMatchSnapshot();
-	} );
-
 	it( 'shows the form', () => {
-		mocked( useBusinessTypes ).mockReturnValue( {
-			countries,
-			isLoading: false,
-		} );
+		mocked( getBusinessTypes ).mockReturnValue( countries );
 
 		const { container: task } = renderTask();
 		expect( task ).toMatchSnapshot();
@@ -117,10 +104,7 @@ describe( 'AddBusinessInfoTask', () => {
 				country: 'FR',
 			},
 		};
-		mocked( useBusinessTypes ).mockReturnValue( {
-			countries,
-			isLoading: false,
-		} );
+		mocked( getBusinessTypes ).mockReturnValue( countries );
 
 		const { container: task } = renderTask();
 
@@ -156,10 +140,7 @@ describe( 'AddBusinessInfoTask', () => {
 				country: 'FR',
 			},
 		};
-		mocked( useBusinessTypes ).mockReturnValue( {
-			countries,
-			isLoading: false,
-		} );
+		mocked( getBusinessTypes ).mockReturnValue( countries );
 
 		const { container: task } = renderTask();
 
