@@ -86,6 +86,6 @@ class WC_Payments_Admin_Settings {
 	 * @return string URL of the configuration screen for this gateway
 	 */
 	public static function get_settings_url() {
-		return admin_url( add_query_arg( self::$settings_url_params, 'admin.php' ) );
+		return admin_url( add_query_arg( self::$settings_url_params, 'admin.php' ) ); // nosemgrep: audit.php.wp.security.xss.query-arg -- constant string is passed in.
 	}
 }

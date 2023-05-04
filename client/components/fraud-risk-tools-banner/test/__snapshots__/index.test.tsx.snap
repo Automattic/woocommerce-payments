@@ -102,7 +102,7 @@ exports[`FRTDiscoverabilityBanner renders when remindMeAt timestamp is in the pa
 </div>
 `;
 
-exports[`FRTDiscoverabilityBanner renders with dont show again button if remindMeCount greater than or equal to 3 1`] = `
+exports[`FRTDiscoverabilityBanner renders with dismiss button if remindMeCount greater than or equal to 3 1`] = `
 <div>
   <div
     class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
@@ -143,13 +143,7 @@ exports[`FRTDiscoverabilityBanner renders with dont show again button if remindM
           class="components-button is-tertiary"
           type="button"
         >
-          Remind me later
-        </button>
-        <button
-          class="components-button is-tertiary"
-          type="button"
-        >
-          Don't show me this again
+          Dismiss
         </button>
       </div>
     </div>
@@ -157,7 +151,7 @@ exports[`FRTDiscoverabilityBanner renders with dont show again button if remindM
 </div>
 `;
 
-exports[`FRTDiscoverabilityBanner renders without dont show again button if remindMeCount greater than 0 but less than 3 1`] = `
+exports[`FRTDiscoverabilityBanner renders without dismiss button if remindMeCount greater than 0 but less than 3 1`] = `
 <div>
   <div
     class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"

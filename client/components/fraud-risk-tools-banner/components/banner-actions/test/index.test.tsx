@@ -13,7 +13,7 @@ const mockHandleRemindOnClick = jest.fn();
 const mockHandleDontShowAgainOnClick = jest.fn();
 
 describe( 'BannerActions', () => {
-	it( 'renders without dont show again button when remindMeCount less than 3', () => {
+	it( 'renders without dismiss button when remindMeCount less than 3', () => {
 		const { container: bannerActionsComponent } = render(
 			<BannerActions
 				remindMeCount={ 0 }
@@ -25,7 +25,7 @@ describe( 'BannerActions', () => {
 		expect( bannerActionsComponent ).toMatchSnapshot();
 	} );
 
-	it( 'renders with dont show again button when remindMeCount greater than or equal to 3', () => {
+	it( 'renders with dismiss button when remindMeCount greater than or equal to 3', () => {
 		const { container: bannerActionsComponent } = render(
 			<BannerActions
 				remindMeCount={ 3 }
