@@ -10,6 +10,7 @@ import { Icon, store, widget, tool } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
+import { trackEligibilityModalClosed } from 'onboarding-prototype/tracking';
 import HeaderImg from 'assets/images/illustrations/po-eligibility.svg';
 import './style.scss';
 
@@ -17,9 +18,20 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 	const [ modalVisible, setModalVisible ] = useState( true );
 
 	const handleSetup = () => {
+		trackEligibilityModalClosed( 'setup_deposits' );
 		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
 			collect_payout_requirements: true,
 		} );
+	};
+
+	const handlePaymentsOnly = () => {
+		trackEligibilityModalClosed( 'enable_payments_only' );
+		setModalVisible( false );
+	};
+
+	const handleDismiss = () => {
+		trackEligibilityModalClosed( 'dismiss' );
+		setModalVisible( false );
 	};
 
 	// Workaround to remove Modal header from the modal until `hideHeader` prop can be used.
@@ -37,7 +49,7 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 		<Modal
 			title={ '' }
 			className="wcpay-progressive-onboarding-eligibility-modal"
-			onRequestClose={ () => setModalVisible( false ) }
+			onRequestClose={ handleDismiss }
 		>
 			<div className="wcpay-progressive-onboarding-eligibility-modal__image">
 				<img src={ HeaderImg } alt="Header" />
@@ -96,7 +108,7 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 						'woocommerce-payments'
 					) }
 				</Button>
-				<Button isPrimary onClick={ () => setModalVisible( false ) }>
+				<Button isPrimary onClick={ () => handlePaymentsOnly }>
 					{ __( 'Enable payments only', 'woocommerce-payments' ) }
 				</Button>
 			</div>

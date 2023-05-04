@@ -92,6 +92,8 @@ const events = {
 	ONBOARDING_FLOW_STEP_COMPLETED: 'wcpay_onboarding_flow_step_completed',
 	ONBOARDING_FLOW_ABANDONED: 'wcpay_onboarding_flow_abandoned',
 	ONBOARDING_FLOW_REDIRECTED: 'wcpay_onboarding_flow_redirected',
+	ONBOARDING_FLOW_ELIGIBILITY_MODAL_CLOSED:
+		'wcpay_onboarding_flow_eligibility_modal_closed',
 };
 
 export default {

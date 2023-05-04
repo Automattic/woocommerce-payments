@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { useEffect } from 'react';
-import { mapValues } from 'lodash';
 
 /**
  * Internal dependencies
@@ -27,7 +26,7 @@ const stepElapsed = () => {
 export const trackStarted = (): void => {
 	startTime = stepStartTime = Date.now();
 
-	wcpayTracks.recordEvent( wcpayTracks.events.ONBOARDING_FLOW_STARTED, null );
+	wcpayTracks.recordEvent( wcpayTracks.events.ONBOARDING_FLOW_STARTED, {} );
 };
 
 export const trackModeSelected = ( mode: string ): void => {
@@ -57,6 +56,14 @@ export const trackRedirected = ( isEligible: boolean ): void => {
 		elapsed: elapsed( startTime ),
 	} );
 };
+
+export const trackEligibilityModalClosed = (
+	action: 'dismiss' | 'setup_deposits' | 'enable_payments_only'
+): void =>
+	wcpayTracks.recordEvent(
+		wcpayTracks.events.ONBOARDING_FLOW_ELIGIBILITY_MODAL_CLOSED,
+		{ action }
+	);
 
 export const useTrackAbandoned = (): {
 	trackAbandoned: ( method: string ) => void;
