@@ -6,6 +6,7 @@
  */
 
 use Automattic\Jetpack\Identity_Crisis as Jetpack_Identity_Crisis;
+use Automattic\WooCommerce\Admin\PageController;
 use WCPay\Database_Cache;
 
 defined( 'ABSPATH' ) || exit;
@@ -96,6 +97,7 @@ class WC_Payments_Admin {
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
+		add_action( 'admin_enqueue_scripts', [ $this, 'maybe_redirect_overview_to_connect' ], 1 ); // Run this late (after `admin_init`) but before any scripts are actually enqueued.
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ] );
 		add_action( 'woocommerce_admin_field_payment_gateways', [ $this, 'payment_gateways_container' ] );
 		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'show_woopay_payment_method_name_admin' ] );
@@ -451,7 +453,7 @@ class WC_Payments_Admin {
 		delete_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
 
 		/**
-		 * This is a work around to pass the current user's email address to WCPay's settings until we do not need to rely
+		 * This is a workaround to pass the current user's email address to WCPay's settings until we do not need to rely
 		 * on backwards compatibility and can use `getCurrentUser` from `@wordpress/core-data`.
 		 */
 		$current_user       = wp_get_current_user();
@@ -887,6 +889,48 @@ class WC_Payments_Admin {
 		}
 
 		if ( $this->account->is_stripe_connected( true ) ) {
+			return;
+		}
+
+		$this->account->redirect_to_onboarding_page();
+	}
+
+	/**
+	 * Avoid WC Admin /payments/overview error page when the current account associated Stripe account is not valid.
+	 *
+	 * The errored page happens because we don't register a /payments/overview WC admin page when the Stripe account
+	 * is not valid and register only a /payments/connect top level menu page.
+	 *
+	 * Places around our plugin redirect merchants to the overview page by default (or using it for the Stripe KYC
+	 * return URL) leading to poor UX.
+	 * This is a safety net to prevent that from happening.
+	 *
+	 * @see self::add_payments_menu()
+	 */
+	public function maybe_redirect_overview_to_connect() {
+		if ( wp_doing_ajax() ) {
+			return;
+		}
+
+		// If the current page is registered, let it pass.
+		if ( wc_admin_is_registered_page() ) {
+			return;
+		}
+
+		$url_params = wp_unslash( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification
+		if ( empty( $url_params['page'] ) || 'wc-admin' !== $url_params['page']
+			|| empty( $url_params['path'] ) || '/payments/overview' !== $url_params['path'] ) {
+			return;
+		}
+
+		/**
+		 * Determine the path of the top level menu page since that can change between payments/connect and payments/overview.
+		 *
+		 * @see self::add_payments_menu()
+		 */
+		$top_level_page_path = PageController::get_instance()->get_path_from_id( 'wc-payments' );
+		// If the top level page path is not the payments/connect one, bail.
+		if ( 'wc-admin&path=/payments/connect' !== $top_level_page_path ) {
 			return;
 		}
 
