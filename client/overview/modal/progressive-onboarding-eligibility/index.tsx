@@ -108,7 +108,7 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 						'woocommerce-payments'
 					) }
 				</Button>
-				<Button isPrimary onClick={ () => handlePaymentsOnly }>
+				<Button isPrimary onClick={ handlePaymentsOnly }>
 					{ __( 'Enable payments only', 'woocommerce-payments' ) }
 				</Button>
 			</div>
