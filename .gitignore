@@ -55,16 +55,6 @@ phpunit.xml
 
 # Logs
 /logs
-*.log
-npm-debug.log*
-*.csv
-*.dat
-*.out
-*.pid
-*.gz
-*.tmp
-*.bak
-*.swp
 
 # Composer
 /vendor/
