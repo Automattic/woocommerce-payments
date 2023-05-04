@@ -8,6 +8,7 @@ import { set, toPairs } from 'lodash';
  */
 import businessTypeDescriptionStrings from './translations/descriptions';
 import { ListItem } from 'components/grouped-select-control';
+import { Country } from './types';
 
 export const fromDotNotation = (
 	record: Record< string, unknown >
@@ -16,9 +17,7 @@ export const fromDotNotation = (
 		return value != null ? set( result, key, value ) : result;
 	}, {} );
 
-type CountriesData = Country[];
-
-export const getBusinessTypes = (): CountriesData => {
+export const getBusinessTypes = (): Country[] => {
 	const data = wcpaySettings?.onboardingFieldsData?.business_types;
 
 	return (

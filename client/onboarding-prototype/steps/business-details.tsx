@@ -15,6 +15,7 @@ import {
 	OnboardingGroupedSelectField,
 } from '../form';
 import { getBusinessTypes, getMccsFlatList } from 'onboarding-prototype/utils';
+import { BusinessType } from 'onboarding-prototype/types';
 
 const BusinessDetails: React.FC = () => {
 	const { data, setData } = useOnboardingContext();

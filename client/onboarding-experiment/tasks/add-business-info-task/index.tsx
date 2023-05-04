@@ -14,6 +14,11 @@ import RequiredVerificationInfo from './required-verification-info';
 import strings from 'onboarding-experiment/strings';
 import { OnboardingProps } from 'onboarding-experiment/types';
 import { getBusinessTypes } from 'onboarding-prototype/utils';
+import {
+	BusinessStructure,
+	BusinessType,
+	Country,
+} from 'onboarding-prototype/types';
 
 interface TaskProps {
 	onChange: ( data: Partial< OnboardingProps > ) => void;
