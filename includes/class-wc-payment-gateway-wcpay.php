@@ -2019,7 +2019,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$return_url = $this->get_return_url( $order );
 		$return_url = add_query_arg( self::FLAG_PREVIOUS_SUCCESSFUL_INTENT, 'yes', $return_url );
-		return [
+		return [ // nosemgrep: audit.php.wp.security.xss.query-arg -- https://woocommerce.github.io/code-reference/classes/WC-Payment-Gateway.html#method_get_return_url is passed in.
 			'result'                               => 'success',
 			'redirect'                             => $return_url,
 			'wcpay_upe_previous_successful_intent' => 'yes', // This flag is needed for UPE flow.
@@ -2066,7 +2066,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$return_url = $this->get_return_url( $session_order );
 		$return_url = add_query_arg( self::FLAG_PREVIOUS_ORDER_PAID, 'yes', $return_url );
 
-		return [
+		return [ // nosemgrep: audit.php.wp.security.xss.query-arg -- https://woocommerce.github.io/code-reference/classes/WC-Payment-Gateway.html#method_get_return_url is passed in.
 			'result'                            => 'success',
 			'redirect'                          => $return_url,
 			'wcpay_upe_paid_for_previous_order' => 'yes', // This flag is needed for UPE flow.

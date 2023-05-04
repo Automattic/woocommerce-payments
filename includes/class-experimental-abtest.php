@@ -159,7 +159,7 @@ final class Experimental_Abtest {
 
 		$url = add_query_arg(
 			$args,
-			sprintf(
+			sprintf( // nosemgrep: audit.php.wp.security.xss.query-arg -- constant value is passed in to add_query_arg.
 				'https://public-api.wordpress.com/wpcom/v2/experiments/0.1.0/assignments/%s',
 				$this->platform
 			)

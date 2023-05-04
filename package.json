@@ -1,6 +1,6 @@
 {
   "name": "woocommerce-payments",
-  "version": "5.8.0",
+  "version": "5.8.1",
   "main": "webpack.config.js",
   "author": "Automattic",
   "license": "GPL-3.0-or-later",
@@ -120,7 +120,7 @@
     "@wordpress/icons": "8.2.3",
     "@wordpress/jest-preset-default": "4.0.0",
     "@wordpress/plugins": "4.4.3",
-    "@wordpress/scripts": "12.6.0",
+    "@wordpress/scripts": "19.2.3",
     "@wordpress/url": "3.7.1",
     "archiver": "5.2.0",
     "babel-loader": "8.2.2",
