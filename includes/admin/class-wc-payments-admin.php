@@ -1130,9 +1130,14 @@ class WC_Payments_Admin {
 		$test_mode = WC_Payments::mode()->is_test();
 		$cache_key = $test_mode ? DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE : DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY;
 
+		$request = Get_Request::create();
+		$request->set_api( WC_Payments_API_Client::AUTHORIZATIONS_API . '/summary' );
+		$send_callback         = function() use ( $request ) {
+			$request->send( 'wc_pay_get_authorizations_summary' );
+		};
 		$authorization_summary = $this->database_cache->get_or_add(
 			$cache_key,
-			[ $this->payments_api_client, 'get_authorizations_summary' ],
+			$send_callback,
 			// We'll consider all array values to be valid as the cache is only invalidated when it is deleted or it expires.
 			'is_array'
 		);

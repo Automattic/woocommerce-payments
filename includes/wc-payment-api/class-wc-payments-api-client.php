@@ -2225,15 +2225,6 @@ class WC_Payments_API_Client {
 		return $customer_fingerprint_metadata;
 	}
 
-	/**
-	 * Return summary for authorizations.
-	 *
-	 * @return array     The authorizations summary.
-	 * @throws API_Exception Exception thrown on request failure.
-	 */
-	public function get_authorizations_summary() {
-		return $this->request( [], self::AUTHORIZATIONS_API . '/summary', self::GET );
-	}
 
 	/**
 	 * Fetch a single authorizations with provided payment intent id.

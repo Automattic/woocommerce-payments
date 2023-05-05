@@ -1049,25 +1049,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 
 		$this->payments_api_client->get_authorization( $payment_intent_id );
 	}
-	/**
-	 * Test a successful fetch of authorizations summary.
-	 *
-	 * @throws Exception In case of test failure.
-	 */
-	public function test_authorizations_summary_success() {
-		$this->set_http_mock_response(
-			200,
-			[
-				'count' => 123,
-				'total' => 1200,
-			]
-		);
-
-		$summary = $this->payments_api_client->get_authorizations_summary();
-
-		$this->assertSame( 123, $summary['count'] );
-		$this->assertSame( 1200, $summary['total'] );
-	}
 
 	/**
 	 * Test that API client will retry request in case of network error
