@@ -65,6 +65,9 @@ const readyForReviewStep = {
 				components: { strong: <strong /> },
 			} ),
 		},
+		primaryButton: {
+			text: __( 'Got it' ),
+		},
 	},
 };
 
