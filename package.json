@@ -120,6 +120,7 @@
     "@wordpress/icons": "8.2.3",
     "@wordpress/jest-preset-default": "4.0.0",
     "@wordpress/plugins": "4.4.3",
+    "@wordpress/primitives": "3.30.0",
     "@wordpress/scripts": "19.2.3",
     "@wordpress/url": "3.7.1",
     "archiver": "5.2.0",
