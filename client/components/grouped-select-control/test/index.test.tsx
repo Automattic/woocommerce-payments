@@ -14,27 +14,29 @@ describe( 'Grouped Select Control', () => {
 	const onChange = jest.fn();
 
 	const options = [
+		{ key: 'g1', name: 'Group 1', items: [ 'o1', 'o2' ] },
 		{ key: 'o1', name: 'Option 1', group: 'g1' },
 		{ key: 'o2', name: 'Option 2', group: 'g1' },
+		{ key: 'g2', name: 'Group 2', items: [ 'o3', 'o4' ] },
 		{ key: 'o3', name: 'Option 3', group: 'g2' },
 		{ key: 'o4', name: 'Option 4', group: 'g2' },
-		{ key: 'o5', name: 'Option 5', group: 'g3', context: 'z' },
-	];
-	const groups = [
-		{ key: 'g1', name: 'Group 1' },
-		{ key: 'g2', name: 'Group 2' },
-		{ key: 'g3', name: 'Group 3' },
+		{ key: 'g3', name: 'Group 3', items: [ 'o5' ] },
+		{
+			key: 'o5',
+			name: 'Option 5',
+			group: 'g3',
+			context: 'z',
+		},
 	];
 
 	const renderControl = (
-		props?: Partial< GroupedSelectControlProps< typeof options[ 0 ] > >
+		props?: Partial< GroupedSelectControlProps< typeof options[ 1 ] > >
 	) =>
 		render(
 			<GroupedSelectControl
 				{ ...props }
 				label="Group select"
 				options={ options }
-				groups={ groups }
 				onChange={ onChange }
 			/>
 		);
@@ -61,7 +63,7 @@ describe( 'Grouped Select Control', () => {
 
 	it( 'renders selected option instead of placeholder', () => {
 		renderControl( {
-			value: options[ 0 ],
+			value: options[ 1 ],
 			placeholder: 'Select an option',
 		} );
 
@@ -108,7 +110,11 @@ describe( 'Grouped Select Control', () => {
 		const option = screen.getByRole( 'option', { name: 'Option 1' } );
 		userEvent.click( option );
 
-		expect( onChange ).toHaveBeenCalledWith( options[ 0 ] );
+		expect( onChange ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				selectedItem: options[ 1 ],
+			} )
+		);
 	} );
 
 	it( 'filters options by name', () => {

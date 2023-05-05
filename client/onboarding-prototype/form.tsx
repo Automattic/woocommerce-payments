@@ -21,14 +21,21 @@ import {
 import { useOnboardingContext } from './context';
 import { OnboardingFields } from './types';
 import { useValidation } from './validation';
+import { trackStepCompleted } from './tracking';
 import strings from './strings';
+import GroupedSelectControl, {
+	ListItem,
+} from 'components/grouped-select-control';
 
 export const OnboardingForm: React.FC = ( { children } ) => {
 	const { errors, touched, setTouched } = useOnboardingContext();
-	const { nextStep } = useStepperContext();
+	const { currentStep, nextStep } = useStepperContext();
 
 	const handleContinue = () => {
-		if ( isEmpty( errors ) ) return nextStep();
+		if ( isEmpty( errors ) ) {
+			trackStepCompleted( currentStep );
+			return nextStep();
+		}
 		setTouched( mapValues( touched, () => true ) );
 	};
 
@@ -63,6 +70,34 @@ export const OnboardingTextField: React.FC< OnboardingTextFieldProps > = ( {
 			label={ strings.fields[ name ] }
 			value={ data[ name ] || '' }
 			onChange={ ( value: string ) => {
+				setData( { [ name ]: value } );
+				validate( value );
+			} }
+			error={ error() }
+			{ ...rest }
+		/>
+	);
+};
+
+interface OnboardingPhoneNumberFieldProps
+	extends Partial< PhoneNumberFieldProps > {
+	name: keyof OnboardingFields;
+}
+
+export const OnboardingPhoneNumberField: React.FC< OnboardingPhoneNumberFieldProps > = ( {
+	name,
+	...rest
+} ) => {
+	const { data, setData, temp, setTemp } = useOnboardingContext();
+	const { validate, error } = useValidation( name );
+
+	return (
+		<PhoneNumberField
+			label={ strings.fields[ name ] }
+			value={ data[ name ] || '' }
+			country={ temp.phoneCountryCode || wcpaySettings.connect.country }
+			onChange={ ( value: string, phoneCountryCode: string ) => {
+				setTemp( { phoneCountryCode } );
 				setData( { [ name ]: value } );
 				validate( value );
 			} }
@@ -110,28 +145,37 @@ export const OnboardingSelectField = < ItemType extends Item >( {
 	);
 };
 
-interface OnboardingPhoneNumberFieldProps
-	extends Partial< PhoneNumberFieldProps > {
-	name: keyof OnboardingFields;
+interface OnboardingGroupedSelectFieldProps< ItemType >
+	extends OnboardingSelectFieldProps< ItemType > {
+	searchable?: boolean;
 }
 
-export const OnboardingPhoneNumberField: React.FC< OnboardingPhoneNumberFieldProps > = ( {
+export const OnboardingGroupedSelectField = < ListItemType extends ListItem >( {
 	name,
+	onChange,
 	...rest
-} ) => {
-	const { data, setData, temp, setTemp } = useOnboardingContext();
+}: OnboardingGroupedSelectFieldProps< ListItemType > ): JSX.Element => {
+	const { data, setData } = useOnboardingContext();
 	const { validate, error } = useValidation( name );
 
 	return (
-		<PhoneNumberField
+		<GroupedSelectControl
 			label={ strings.fields[ name ] }
-			value={ data[ name ] || '' }
-			country={ temp.phoneCountryCode || wcpaySettings.connect.country }
-			onChange={ ( value: string, phoneCountryCode: string ) => {
-				setTemp( { phoneCountryCode } );
-				setData( { [ name ]: value } );
-				validate( value );
+			value={ rest.options?.find(
+				( item ) => item.key === data[ name ]
+			) }
+			placeholder={
+				( strings.placeholders as Record< string, string > )[ name ]
+			}
+			onChange={ ( { selectedItem } ) => {
+				if ( onChange ) {
+					onChange?.( name, selectedItem );
+				} else {
+					setData( { [ name ]: selectedItem?.key } );
+				}
+				validate( selectedItem?.key );
 			} }
+			options={ [] }
 			error={ error() }
 			{ ...rest }
 		/>

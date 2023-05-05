@@ -5,7 +5,6 @@ import { __ } from '@wordpress/i18n';
 import { getConfig } from 'wcpay/utils/checkout';
 import wcpayTracks from 'tracks';
 import request from '../utils/request';
-import showErrorCheckout from '../utils/show-error-checkout';
 import { buildAjaxURL } from '../../payment-request/utils';
 import { getTargetElement, validateEmail } from './utils';
 
@@ -275,10 +274,6 @@ export const handlePlatformCheckoutEmailInput = async (
 		}
 	} );
 
-	// Store if the subscription login error is being shown
-	// to remove it when change the e-mail address.
-	let hasPlatformCheckoutSubscriptionLoginError = false;
-
 	// Cancel platform checkout request and close iframe
 	// when user clicks Place Order before it loads.
 	const abortController = new AbortController();
@@ -321,42 +316,6 @@ export const handlePlatformCheckoutEmailInput = async (
 
 		if ( parentDiv.contains( errorMessage ) ) {
 			parentDiv.removeChild( errorMessage );
-		}
-
-		if ( hasPlatformCheckoutSubscriptionLoginError ) {
-			document
-				.querySelector( '#platform-checkout-subscriptions-login-error' )
-				.remove();
-			hasPlatformCheckoutSubscriptionLoginError = false;
-		}
-
-		if ( getConfig( 'platformCheckoutNeedLogin' ) ) {
-			try {
-				const userExistsData = await request(
-					getConfig( 'userExistsEndpoint' ),
-					{
-						email,
-					},
-					{ signal }
-				);
-
-				if ( userExistsData[ 'user-exists' ] ) {
-					hasPlatformCheckoutSubscriptionLoginError = true;
-					showErrorCheckout(
-						userExistsData.message,
-						false,
-						false,
-						'platform-checkout-subscriptions-login-error'
-					);
-					spinner.remove();
-					return;
-				}
-			} catch ( err ) {
-				if ( 'AbortError' !== err.name ) {
-					showErrorMessage();
-					spinner.remove();
-				}
-			}
 		}
 
 		request(

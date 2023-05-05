@@ -69,7 +69,7 @@
     "@fingerprintjs/fingerprintjs": "^3.3.6",
     "@stripe/react-stripe-js": "1.4.1",
     "@stripe/stripe-js": "1.15.1",
-    "@woocommerce/explat": "1.0.1",
+    "@woocommerce/explat": "2.3.0",
     "@woocommerce/number": "2.4.0",
     "crypto-js": "4.1.1",
     "debug": "4.1.1",

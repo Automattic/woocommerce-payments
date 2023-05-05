@@ -539,7 +539,7 @@ class WC_Payments {
 		}
 
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
-			new WC_Payments_Admin( self::$api_client, self::get_gateway(), self::$account, self::$database_cache );
+			new WC_Payments_Admin( self::$api_client, self::get_gateway(), self::$account, self::$onboarding_service, self::$database_cache );
 
 			new WC_Payments_Admin_Settings( self::get_gateway() );
 
@@ -934,10 +934,6 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-onboarding-controller.php';
 		$onboarding_controller = new WC_REST_Payments_Onboarding_Controller( self::$api_client, self::$onboarding_service );
 		$onboarding_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-user-exists-controller.php';
-		$user_exists_controller = new WC_REST_User_Exists_Controller();
-		$user_exists_controller->register_routes();
 
 		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-upe-flag-toggle-controller.php';
