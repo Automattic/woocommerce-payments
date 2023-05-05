@@ -67,6 +67,7 @@ export const trackEligibilityModalClosed = (
 
 export const useTrackAbandoned = (): {
 	trackAbandoned: ( method: string ) => void;
+	removeTrackListener: () => void;
 } => {
 	const { errors, touched } = useOnboardingContext();
 	const { currentStep: step } = useStepperContext();
@@ -103,5 +104,7 @@ export const useTrackAbandoned = (): {
 			trackEvent( method );
 			document.removeEventListener( 'visibilitychange', listener );
 		},
+		removeTrackListener: () =>
+			document.removeEventListener( 'visibilitychange', listener ),
 	};
 };

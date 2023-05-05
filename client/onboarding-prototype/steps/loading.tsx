@@ -22,7 +22,7 @@ interface Props {
 const LoadingStep: React.FC< Props > = () => {
 	const { data } = useOnboardingContext();
 
-	useTrackAbandoned();
+	const { removeTrackListener } = useTrackAbandoned();
 
 	const isEligibleForPo = async () => {
 		if (
@@ -67,6 +67,7 @@ const LoadingStep: React.FC< Props > = () => {
 		} );
 
 		trackRedirected( isEligible );
+		removeTrackListener();
 
 		window.location.href = resultUrl;
 	};
