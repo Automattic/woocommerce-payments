@@ -12,14 +12,14 @@ to catalog our packages and provide guidance to a developer who wants to test an
 ## Some Notes on Packages
 * A lot of our JavaScript dev dependencies are provided by WordPress or WooCommerce globally at runtime, we include them
   as dev dependencies so that we aren't duplicating them in our build bundle but our unit tests can still pass by
-  having them available. This means we should keep the versions of these packages on the highest version avaiable in our
-  supported versions of WordPress and WooCommerce, giving us the best chance of catching any issues with the bundled
+  having them available. This means we should keep the versions of these packages on the highest version available in our
+  minimum supported versions of [WordPress](https://github.com/WordPress/wordpress-develop/blob/x.y.z/package.json) and [WooCommerce](https://github.com/woocommerce/woocommerce/blob/x.y.z/plugins/woocommerce/package.json) (replace `x.y.z` by the minimum supported version in the link), giving us the best chance of catching any issues with the bundled
   packages early.
 * Following on from above, we use the `@woocommerce/dependency-extraction-webpack-plugin` to make WebPack aware of what
-  can be found globally at runtime. The configuration for this can be found in 
-  [`webpack.config.js`](https://github.com/Automattic/woocommerce-payments/blob/develop/webpack.config.js). Any `wordpress/*`, `woocommerce/*` 
-  and [some other packages](https://www.npmjs.com/package/@woocommerce/dependency-extraction-webpack-plugin) are removed from 
-  the built bundle by default, in addition to any packages listed in the configuration file. Returning `null` in the configuration 
+  can be found globally at runtime. The configuration for this can be found in
+  [`webpack.config.js`](https://github.com/Automattic/woocommerce-payments/blob/develop/webpack.config.js). Any `wordpress/*`, `woocommerce/*`
+  and [some other packages](https://www.npmjs.com/package/@woocommerce/dependency-extraction-webpack-plugin) are removed from
+  the built bundle by default, in addition to any packages listed in the configuration file. Returning `null` in the configuration
   indicates that we want to bundle the package rather than using the globally available one.
 
 ## Review Process
@@ -43,6 +43,20 @@ to catalog our packages and provide guidance to a developer who wants to test an
 | [husky](https://www.npmjs.com/package/husky) |  Used to run hooks pre/post commit, like automatically running PHPCS. | Check out another branch `composer install` should run automatically. |  |
 | [lodash](https://www.npmjs.com/package/lodash) | Lodash makes JavaScript easier by taking the hassle out of working with arrays, numbers, objects, strings, etc. | JS tests should pass. |  |
 | [node](https://www.npmjs.com/package/node) | Not a package, but we declare the supported version of node in our `.nvmrc` file. We use node to build the JavaScript for the plugin and run the JavaScript unit tests. | Ensure you're running the new version of node by running the `nvm use` command or manually setting up the correct version. For minor and patch upgrades testing that the build runs is sufficient. For major versions, smoke testing the running plugin would be advised. | |
+| [@woocommerce/currency](https://www.npmjs.com/package/@woocommerce/currency) | A collection of utilities to display and work with currency values. | JS tests should pass.	 | |
+| [@wordpress/url](https://www.npmjs.com/package/@wordpress/url) | A collection of utilities to manipulate URLs.| JS unit tests are passing| |
+| [@wordpress/data](https://www.npmjs.com/package/@wordpress/data) | It serves as a hub to manage application state for both plugins and WordPress itself, providing tools to manage data within and between distinct modules.| JS unit tests are passing| |
+| [@wordpress/i18n](https://www.npmjs.com/package/@wordpress/i18n) | Internationalization utilities for client-side localization.| JS unit tests are passing. | The `wpi18n` used in `postbuild:client` script comes from `node-wp-i18n` and is thus separate from this. |
+| [@wordpress/date](https://www.npmjs.com/package/@wordpress/date) | Date module for WordPress.| JS unit tests are passing| From v4.6.0, the `TZ` env var from the Jest global setup is not taken into account anymore, hence unit tests fail. |
+| [@wordpress/api-fetch](https://www.npmjs.com/package/@wordpress/api-fetch) | Utility to make WordPress REST API requests. | JS unit tests are passing. | |
+| [@woocommerce/date](https://www.npmjs.com/package/@woocommerce/date) | A collection of utilities to display and work with date values. | JS unit tests are passing. | Though there is no direct use of this package, it is used by [jest-test-file-setup.js](https://github.com/Automattic/woocommerce-payments/blob/b64178138d44d3bd3aa2a692d1c84e4d91e521b9/tests/js/jest-test-file-setup.js#L25)  |
+| [@wordpress/hooks](https://www.npmjs.com/package/@wordpress/hooks) | A lightweight & efficient EventManager for JavaScript.| JS unit tests are passing| |
+| [@wordpress/plugins](https://www.npmjs.com/package/@wordpress/plugins) | Plugins module for WordPress.| JS unit tests are passing| |
+| [@wordpress/icons](https://www.npmjs.com/package/@wordpress/icons) | WordPress Icons Library. | JS unit tests are passing and UI isn't affected at places of usage. | Only case in current usage where a `@wordpress/x` doesn't come from WordPress directly. |
+| [@wordpress/element](https://www.npmjs.com/package/@wordpress/element) | An abstraction layer atop React. | JS unit tests are passing. | Removed [@types/wordpress__element](https://www.npmjs.com/package/@types/wordpress__element) since @wordpress/element has built-in types |
+| [@wordpress/scripts](https://www.npmjs.com/package/@wordpress/scripts) | Collection of reusable scripts tailored for WordPress development. | JS tests and E2E pipeline works, which uses `wp-scripts` | `>=20` requires `jest >=27`, we're currently at `v26.x` so updated to  `v19.2.3`  |
+| [@woocommerce/explat](https://www.npmjs.com/package/@woocommerce/explat/) | Component and utility functions that can be used to run A/B Tests in WooCommerce dashboard and reports pages. | JS unit tests are passing | After update ensure types are still correct for `ExperimentProps`, or use a DefinitelyTyped package if available.  |
+
 
 ### PHP Runtime Dependencies
 | Package Name | Usage Summary | Testing | Notes |

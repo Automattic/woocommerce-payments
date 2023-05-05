@@ -134,8 +134,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					'create_and_confirm_setup_intent',
 					'get_setup_intent',
 					'get_payment_method',
-					'refund_charge',
-					'list_refunds',
 					'get_timeline',
 				]
 			)
@@ -2135,7 +2133,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function test_is_platform_checkout_enabled_returns_true() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
-		$this->assertTrue( $this->payments_checkout->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
+		$this->assertTrue( $this->platform_checkout_utilities->should_enable_platform_checkout( $this->wcpay_gateway ) );
+
+		// This will return false because platform_checkout_utilities->should_enable_woopay_on_cart_or_checkout() will return false.
+		$this->assertFalse( $this->payments_checkout->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
 
 	public function test_should_use_stripe_platform_on_checkout_page_not_platform_checkout_eligible() {

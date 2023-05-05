@@ -72,7 +72,6 @@ class WC_Payments_API_Client {
 	const AUTHORIZATIONS_API           = 'authorizations';
 	const FRAUD_OUTCOMES_API           = 'fraud_outcomes';
 	const FRAUD_RULESET_API            = 'fraud_ruleset';
-	const FRAUD_OUTCOME_API            = 'fraud_outcomes';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -209,40 +208,6 @@ class WC_Payments_API_Client {
 	 */
 	public function start_server_connection( $redirect ) {
 		$this->http_client->start_connection( $redirect );
-	}
-
-	/**
-	 * Refund a charge
-	 *
-	 * @param string $charge_id - The charge to refund.
-	 * @param int    $amount    - Amount to charge.
-	 *
-	 * @return array
-	 * @throws API_Exception - Exception thrown on refund creation failure.
-	 */
-	public function refund_charge( $charge_id, $amount = null ) {
-		$request           = [];
-		$request['charge'] = $charge_id;
-		$request['amount'] = $amount;
-
-		return $this->request( $request, self::REFUNDS_API, self::POST );
-	}
-
-	/**
-	 * List refunds
-	 *
-	 * @param string $charge_id - The charge to retrieve the list of refunds for.
-	 *
-	 * @return array
-	 * @throws API_Exception - Exception thrown on request failure.
-	 */
-	public function list_refunds( $charge_id ) {
-		$request = [
-			'limit'  => 100,
-			'charge' => $charge_id,
-		];
-
-		return $this->request( $request, self::REFUNDS_API, self::GET );
 	}
 
 	/**
@@ -794,7 +759,7 @@ class WC_Payments_API_Client {
 				return $timeline;
 			}
 
-			$manual_entry_meta = $order->get_meta( 'fraud_outcome_manual_entry', true );
+			$manual_entry_meta = $order->get_meta( '_wcpay_fraud_outcome_manual_entry', true );
 
 			if ( ! empty( $manual_entry_meta ) ) {
 				$timeline['data'][] = $manual_entry_meta;
@@ -849,23 +814,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Get current account data
-	 *
-	 * @return array An array describing an account object.
-	 *
-	 * @throws API_Exception - Error contacting the API.
-	 */
-	public function get_account_data() {
-		return $this->request(
-			[
-				'test_mode' => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
-			],
-			self::ACCOUNTS_API,
-			self::GET
-		);
-	}
-
-	/**
 	 * Get current platform checkout eligibility
 	 *
 	 * @return array An array describing platform checkout eligibility.
@@ -899,23 +847,6 @@ class WC_Payments_API_Client {
 			),
 			self::PLATFORM_CHECKOUT_API,
 			self::POST
-		);
-	}
-
-	/**
-	 * Update Stripe account data
-	 *
-	 * @param array $account_settings Settings to update.
-	 *
-	 * @return array Updated account data.
-	 */
-	public function update_account( $account_settings ) {
-		return $this->request(
-			$account_settings,
-			self::ACCOUNTS_API,
-			self::POST,
-			true,
-			true
 		);
 	}
 
@@ -972,6 +903,27 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Get the fields data to be used by the onboarding flow.
+	 *
+	 * @param string $locale The locale to ask for from the server.
+	 *
+	 * @throws API_Exception Exception thrown on request failure.
+	 * @return array An array containing the fields data.
+	 */
+	public function get_onboarding_fields_data( string $locale = '' ): array {
+		return $this->request(
+			[
+				'locale'    => $locale,
+				'test_mode' => WC_Payments::mode()->is_test(),
+			],
+			self::ONBOARDING_API . '/fields_data',
+			self::GET,
+			false,
+			true
+		);
+	}
+
+	/**
 	 * Get the business types, needed for our KYC onboarding flow.
 	 *
 	 * @return array An array containing the business types.
@@ -1013,51 +965,6 @@ class WC_Payments_API_Client {
 			$params,
 			self::ONBOARDING_API . '/required_verification_information',
 			self::GET,
-			true,
-			true
-		);
-	}
-
-	/**
-	 * Get one-time dashboard login url
-	 *
-	 * @param string $redirect_url - URL to navigate back to from the dashboard.
-	 *
-	 * @return array An array containing the url field
-	 */
-	public function get_login_data( $redirect_url ) {
-		return $this->request(
-			[
-				'redirect_url' => $redirect_url,
-				'test_mode'    => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
-			],
-			self::ACCOUNTS_API . '/login_links',
-			self::POST,
-			true,
-			true
-		);
-	}
-
-	/**
-	 * Get a one-time capital link.
-	 *
-	 * @param string $type        The type of link to be requested.
-	 * @param string $return_url  URL to navigate back to from the dashboard.
-	 * @param string $refresh_url URL to navigate to if the link expired, has been previously-visited, or is otherwise invalid.
-	 *
-	 * @return array Account link object with create, expires_at, and url fields.
-	 *
-	 * @throws API_Exception When something goes wrong with the request, or there aren't valid loan offers for the merchant.
-	 */
-	public function get_capital_link( $type, $return_url, $refresh_url ) {
-		return $this->request(
-			[
-				'type'        => $type,
-				'return_url'  => $return_url,
-				'refresh_url' => $refresh_url,
-			],
-			self::ACCOUNTS_API . '/capital_links',
-			self::POST,
 			true,
 			true
 		);
@@ -1387,29 +1294,6 @@ class WC_Payments_API_Client {
 			[],
 			self::PAYMENT_METHODS_API . '/' . $payment_method_id . '/detach',
 			self::POST
-		);
-	}
-
-	/**
-	 * Records a new Terms of Service agreement.
-	 *
-	 * @param string $source     A string, which describes where the merchant agreed to the terms.
-	 * @param string $user_name  The user_login of the current user.
-	 *
-	 * @return array An array, containing a `success` flag.
-	 *
-	 * @throws API_Exception If an error occurs.
-	 */
-	public function add_tos_agreement( $source, $user_name ) {
-		return $this->request(
-			[
-				'source'    => $source,
-				'user_name' => $user_name,
-			],
-			self::ACCOUNTS_API . '/tos_agreements',
-			self::POST,
-			true,
-			true
 		);
 	}
 
@@ -1762,7 +1646,7 @@ class WC_Payments_API_Client {
 	public function get_latest_fraud_outcome( $id ) {
 		$response = $this->request(
 			[],
-			self::FRAUD_OUTCOME_API . '/order_id/' . $id,
+			self::FRAUD_OUTCOMES_API . '/order_id/' . $id,
 			self::GET
 		);
 

@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Handle incorrect address errors in terminal location API

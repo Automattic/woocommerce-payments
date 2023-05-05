@@ -498,4 +498,13 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	public function get_payment_method() {
 		return $this->payment_method;
 	}
+
+	/**
+	 * Returns Stripe payment method type ID.
+	 *
+	 * @return string
+	 */
+	public function get_stripe_id() {
+		return $this->stripe_id;
+	}
 }

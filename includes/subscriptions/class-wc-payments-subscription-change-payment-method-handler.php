@@ -189,7 +189,7 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 	 * @return string The update payment method
 	 */
 	private function get_subscription_update_payment_url( $subscription ) {
-		return add_query_arg(
+		return add_query_arg( // nosemgrep: audit.php.wp.security.xss.query-arg -- no user input is used in this URL.
 			[
 				'change_payment_method' => $subscription->get_id(),
 				'_wpnonce'              => wp_create_nonce(),

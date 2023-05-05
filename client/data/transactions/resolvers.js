@@ -111,11 +111,12 @@ export function* getTransactionsSummary( query ) {
  */
 export function* getFraudOutcomeTransactions( status, query ) {
 	const path = addQueryArgs( `${ NAMESPACE }/transactions/fraud-outcomes`, {
-		page: query.paged,
-		pagesize: query.perPage,
-		sort: query.orderby,
-		direction: query.order,
 		status,
+		page: query.paged,
+		sort: query.orderby,
+		pagesize: query.perPage,
+		direction: query.order,
+		additional_status: query.additionalStatus,
 		...formatQueryFilters( query ),
 	} );
 
@@ -154,12 +155,8 @@ export function* getFraudOutcomeTransactionsSummary( status, query ) {
 	const path = addQueryArgs(
 		`${ NAMESPACE }/transactions/fraud-outcomes/summary`,
 		{
-			page: query.paged,
-			pagesize: query.perPage,
-			sort: query.orderby,
-			direction: query.order,
 			status,
-			...formatQueryFilters( query ),
+			additional_status: query.additionalStatus,
 		}
 	);
 
@@ -201,9 +198,10 @@ export function getFraudOutcomeTransactionsExport( status, query ) {
 	const path = addQueryArgs(
 		`${ NAMESPACE }/transactions/fraud-outcomes/download`,
 		{
+			status,
 			sort: query.orderby,
 			direction: query.order,
-			status,
+			additional_status: query.additionalStatus,
 			...formatQueryFilters( query ),
 		}
 	);

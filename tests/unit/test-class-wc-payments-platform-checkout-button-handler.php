@@ -65,7 +65,6 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 					'create_and_confirm_setup_intent',
 					'get_setup_intent',
 					'get_payment_method',
-					'refund_charge',
 				]
 			)
 			->getMock();
@@ -89,6 +88,7 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 			)
 			->setMethods(
 				[
+					'is_woopay_enabled',
 					'is_cart',
 					'is_checkout',
 					'is_product',
@@ -145,6 +145,10 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 			->willReturn( true );
 
 		$this->mock_pr
+			->method( 'is_woopay_enabled' )
+			->willReturn( true );
+
+		$this->mock_pr
 			->method( 'is_cart' )
 			->willReturn( true );
 
@@ -158,6 +162,10 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 	}
 
 	public function test_should_show_platform_checkout_button_not_available_at_cart() {
+		$this->mock_pr
+			->method( 'is_woopay_enabled' )
+			->willReturn( true );
+
 		$this->mock_platform_checkout_utilities
 			->expects( $this->once() )
 			->method( 'is_country_available' )
@@ -178,6 +186,10 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 
 	public function test_should_show_platform_checkout_button_all_good_at_checkout() {
 		add_filter( 'wcpay_platform_checkout_button_are_cart_items_supported', '__return_true' );
+
+		$this->mock_pr
+			->method( 'is_woopay_enabled' )
+			->willReturn( true );
 
 		$this->mock_platform_checkout_utilities
 			->expects( $this->once() )
@@ -200,6 +212,10 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 	public function test_should_show_platform_checkout_button_unsupported_product_at_checkout() {
 		add_filter( 'wcpay_platform_checkout_button_are_cart_items_supported', '__return_false' );
 
+		$this->mock_pr
+			->method( 'is_woopay_enabled' )
+			->willReturn( true );
+
 		$this->mock_platform_checkout_utilities
 			->expects( $this->once() )
 			->method( 'is_country_available' )
@@ -220,6 +236,10 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 
 	public function test_should_show_platform_checkout_button_all_good_at_product() {
 		add_filter( 'wcpay_platform_checkout_button_is_product_supported', '__return_true' );
+
+		$this->mock_pr
+			->method( 'is_woopay_enabled' )
+			->willReturn( true );
 
 		$this->mock_platform_checkout_utilities
 			->expects( $this->once() )
@@ -242,6 +262,10 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 	public function test_should_show_platform_checkout_button_unsupported_product_at_product() {
 		add_filter( 'wcpay_platform_checkout_button_is_product_supported', '__return_false' );
 
+		$this->mock_pr
+			->method( 'is_woopay_enabled' )
+			->willReturn( true );
+
 		$this->mock_platform_checkout_utilities
 			->expects( $this->once() )
 			->method( 'is_country_available' )
@@ -262,6 +286,10 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 
 	public function test_should_show_platform_checkout_button_not_available_at_product() {
 		add_filter( 'wcpay_platform_checkout_button_is_product_supported', '__return_true' );
+
+		$this->mock_pr
+			->method( 'is_woopay_enabled' )
+			->willReturn( true );
 
 		$this->mock_platform_checkout_utilities
 			->expects( $this->once() )
@@ -306,6 +334,10 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 	}
 
 	public function test_should_show_platform_checkout_button_country_not_supported() {
+		$this->mock_pr
+			->method( 'is_woopay_enabled' )
+			->willReturn( true );
+
 		$this->mock_platform_checkout_utilities
 			->expects( $this->once() )
 			->method( 'is_country_available' )
@@ -340,6 +372,27 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 		$this->mock_pr
 			->expects( $this->never() )
 			->method( 'is_product' );
+
+		$this->assertFalse( $this->mock_pr->should_show_platform_checkout_button() );
+	}
+
+	public function test_should_show_platform_checkout_button_woopay_not_enabled() {
+		$this->mock_pr
+			->method( 'is_woopay_enabled' )
+			->willReturn( false );
+
+		$this->mock_platform_checkout_utilities
+			->expects( $this->never() )
+			->method( 'is_country_available' );
+
+		$this->mock_pr
+			->expects( $this->never() )
+			->method( 'is_cart' );
+
+		$this->mock_pr
+			->expects( $this->never() )
+			->method( 'is_available_at' )
+			->with( 'cart' );
 
 		$this->assertFalse( $this->mock_pr->should_show_platform_checkout_button() );
 	}

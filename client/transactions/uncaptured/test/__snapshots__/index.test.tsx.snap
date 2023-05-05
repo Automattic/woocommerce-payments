@@ -308,7 +308,7 @@ exports[`Authorizations list renders correctly 1`] = `
                     tabindex="-1"
                   >
                     <span
-                      style="color: red;"
+                      class="woocommerce-pill css-1qmnemh-Text e15wbhsk0"
                     >
                       Highest
                     </span>
@@ -330,7 +330,7 @@ exports[`Authorizations list renders correctly 1`] = `
                   class="woocommerce-table__item"
                 >
                   <button
-                    class="components-button is-secondary is-small"
+                    class="components-button is-secondary"
                     type="button"
                   >
                     Capture
@@ -385,7 +385,7 @@ exports[`Authorizations list renders correctly 1`] = `
                     tabindex="-1"
                   >
                     <span
-                      style="color: green;"
+                      class="woocommerce-pill css-1qmnemh-Text e15wbhsk0"
                     >
                       Normal
                     </span>
@@ -407,7 +407,7 @@ exports[`Authorizations list renders correctly 1`] = `
                   class="woocommerce-table__item"
                 >
                   <button
-                    class="components-button is-secondary is-small"
+                    class="components-button is-secondary"
                     type="button"
                   >
                     Capture
