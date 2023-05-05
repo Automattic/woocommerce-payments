@@ -17,8 +17,8 @@ function isEnabled() {
 /**
  * Records site event.
  *
- * @param {string}  eventName       Name of the event.
- * @param {Object?} eventProperties Event properties.
+ * @param {string}  eventName        Name of the event.
+ * @param {Object} [eventProperties] Event properties (optional).
  */
 function recordEvent( eventName, eventProperties ) {
 	// Wc-admin track script is enqueued after ours, wrap in domReady
@@ -31,10 +31,10 @@ function recordEvent( eventName, eventProperties ) {
 }
 
 /**
- * Records events from buyers.
+ * Records events from buyers (aka shoppers).
  *
- * @param {string}  eventName       Name of the event.
- * @param {Object?} eventProperties Event properties.
+ * @param {string}  eventName         Name of the event.
+ * @param {Object}  [eventProperties] Event properties (optional).
  */
 function recordUserEvent( eventName, eventProperties ) {
 	const nonce =
@@ -60,6 +60,10 @@ const events = {
 	CONNECT_ACCOUNT_LEARN_MORE: 'wcpay_welcome_learn_more',
 	CONNECT_ACCOUNT_STRIPE_CONNECTED: 'wcpay_stripe_connected',
 	CONNECT_ACCOUNT_KYC_MODAL_OPENED: 'wcpay_connect_account_kyc_modal_opened',
+	OVERVIEW_DEPOSITS_VIEW_HISTORY_CLICK:
+		'wcpay_overview_deposits_view_history_click',
+	OVERVIEW_DEPOSITS_CHANGE_SCHEDULE_CLICK:
+		'wcpay_overview_deposits_change_schedule_click',
 	MULTI_CURRENCY_ENABLED_CURRENCIES_UPDATED:
 		'wcpay_multi_currency_enabled_currencies_updated',
 	PAYMENT_REQUEST_SETTINGS_CHANGE: 'wcpay_payment_request_settings_change',
@@ -86,6 +90,15 @@ const events = {
 		'platform_checkout_express_button_offered',
 	PLATFORM_CHECKOUT_EXPRESS_BUTTON_CLICKED:
 		'platform_checkout_express_button_clicked',
+	// Onboarding flow.
+	ONBOARDING_FLOW_STARTED: 'wcpay_onboarding_flow_started',
+	ONBOARDING_FLOW_MODE_SELECTED: 'wcpay_onboarding_flow_mode_selected',
+	ONBOARDING_FLOW_STEP_COMPLETED: 'wcpay_onboarding_flow_step_completed',
+	ONBOARDING_FLOW_HIDDEN: 'wcpay_onboarding_flow_hidden',
+	ONBOARDING_FLOW_EXITED: 'wcpay_onboarding_flow_exited',
+	ONBOARDING_FLOW_REDIRECTED: 'wcpay_onboarding_flow_redirected',
+	ONBOARDING_FLOW_ELIGIBILITY_MODAL_CLOSED:
+		'wcpay_onboarding_flow_eligibility_modal_closed',
 };
 
 export default {

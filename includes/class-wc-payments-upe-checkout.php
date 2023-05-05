@@ -137,7 +137,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 						$payment_fields['newTokenFormId'] = '#wc-' . $token->get_gateway_id() . '-payment-token-' . $token->get_id();
 					}
 				}
-				return $payment_fields;
+				return $payment_fields; // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
 			}
 
 			$payment_fields['isOrderPay'] = true;
@@ -158,7 +158,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 				);
 			}
 		}
-		return $payment_fields;
+		return $payment_fields; // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
 	}
 
 	/**

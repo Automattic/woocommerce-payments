@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Remove pinned composer version 2.0.6 from workflows

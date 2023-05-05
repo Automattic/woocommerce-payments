@@ -47,8 +47,16 @@ to catalog our packages and provide guidance to a developer who wants to test an
 | [@wordpress/url](https://www.npmjs.com/package/@wordpress/url) | A collection of utilities to manipulate URLs.| JS unit tests are passing| |
 | [@wordpress/data](https://www.npmjs.com/package/@wordpress/data) | It serves as a hub to manage application state for both plugins and WordPress itself, providing tools to manage data within and between distinct modules.| JS unit tests are passing| |
 | [@wordpress/i18n](https://www.npmjs.com/package/@wordpress/i18n) | Internationalization utilities for client-side localization.| JS unit tests are passing. | The `wpi18n` used in `postbuild:client` script comes from `node-wp-i18n` and is thus separate from this. |
+| [@wordpress/date](https://www.npmjs.com/package/@wordpress/date) | Date module for WordPress.| JS unit tests are passing| From v4.6.0, the `TZ` env var from the Jest global setup is not taken into account anymore, hence unit tests fail. |
 | [@wordpress/api-fetch](https://www.npmjs.com/package/@wordpress/api-fetch) | Utility to make WordPress REST API requests. | JS unit tests are passing. | |
 | [@woocommerce/date](https://www.npmjs.com/package/@woocommerce/date) | A collection of utilities to display and work with date values. | JS unit tests are passing. | Though there is no direct use of this package, it is used by [jest-test-file-setup.js](https://github.com/Automattic/woocommerce-payments/blob/b64178138d44d3bd3aa2a692d1c84e4d91e521b9/tests/js/jest-test-file-setup.js#L25)  |
+| [@wordpress/hooks](https://www.npmjs.com/package/@wordpress/hooks) | A lightweight & efficient EventManager for JavaScript.| JS unit tests are passing| |
+| [@wordpress/plugins](https://www.npmjs.com/package/@wordpress/plugins) | Plugins module for WordPress.| JS unit tests are passing| |
+| [@wordpress/icons](https://www.npmjs.com/package/@wordpress/icons) | WordPress Icons Library. | JS unit tests are passing and UI isn't affected at places of usage. | Only case in current usage where a `@wordpress/x` doesn't come from WordPress directly. |
+| [@wordpress/element](https://www.npmjs.com/package/@wordpress/element) | An abstraction layer atop React. | JS unit tests are passing. | Removed [@types/wordpress__element](https://www.npmjs.com/package/@types/wordpress__element) since @wordpress/element has built-in types |
+| [@wordpress/scripts](https://www.npmjs.com/package/@wordpress/scripts) | Collection of reusable scripts tailored for WordPress development. | JS tests and E2E pipeline works, which uses `wp-scripts` | `>=20` requires `jest >=27`, we're currently at `v26.x` so updated to  `v19.2.3`  |
+| [@woocommerce/explat](https://www.npmjs.com/package/@woocommerce/explat/) | Component and utility functions that can be used to run A/B Tests in WooCommerce dashboard and reports pages. | JS unit tests are passing | After update ensure types are still correct for `ExperimentProps`, or use a DefinitelyTyped package if available.  |
+
 
 ### PHP Runtime Dependencies
 | Package Name | Usage Summary | Testing | Notes |

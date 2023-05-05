@@ -31,6 +31,12 @@ jest.mock( '../../context', () => ( {
 	} ) ),
 } ) );
 
+jest.mock( 'components/stepper', () => ( {
+	useStepperContext: jest.fn( () => ( {
+		currentStep: 'loading',
+	} ) ),
+} ) );
+
 const checkLinkToContainNecessaryParams = ( link: string ) => {
 	expect( link ).toContain( 'prefill' );
 	expect( link ).toContain( 'progressive' );
@@ -79,7 +85,7 @@ describe( 'Loading', () => {
 			data: [],
 		} );
 
-		render( <Loading /> );
+		render( <Loading name="loading" /> );
 
 		await waitFor( () => {
 			expect( apiFetch ).toHaveBeenCalledWith( {
@@ -114,7 +120,7 @@ describe( 'Loading', () => {
 			data: [],
 		} );
 
-		render( <Loading /> );
+		render( <Loading name="loading" /> );
 
 		await waitFor( () => {
 			expect( apiFetch ).toHaveBeenCalledWith( {

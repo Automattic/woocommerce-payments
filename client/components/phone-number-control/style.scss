@@ -3,8 +3,8 @@
 	color: $gray-80;
 	margin: 0 1px;
 	padding: 0;
-	display: flex;
-	align-items: stretch;
+	display: grid;
+	grid-template-columns: auto 0 auto 1fr;
 
 	&.focused {
 		border-color: $blue-50;
@@ -12,8 +12,7 @@
 	}
 
 	select,
-	input,
-	button {
+	input {
 		border: 0;
 		margin: 0;
 		background-color: transparent;
@@ -26,8 +25,8 @@
 	select {
 		padding-right: $gap;
 		appearance: none;
-		background-image: url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M13.125 8.7 9 12l-4.125-3.3.675-.9L9 10.5l3.375-2.7.75 .9z'%3E%3C/path%3E%3C/svg%3E" );
-		background-position: right 4px bottom 54%;
+		background: none;
+		z-index: 1;
 
 		&:focus {
 			border-radius: 2px;
@@ -35,15 +34,38 @@
 		}
 	}
 
+	svg {
+		pointer-events: none;
+		width: 18px;
+		height: 18px;
+		align-self: center;
+		margin-left: -21px;
+		z-index: 2;
+	}
+
 	button {
 		cursor: text;
+		z-index: 1;
+	}
+
+	span {
+		pointer-events: none;
+		color: #000;
+		padding-left: 2px;
+		align-self: center;
+		z-index: 1;
 	}
 
 	input {
-		flex: 1;
-
 		&:focus {
 			box-shadow: none;
 		}
 	}
+}
+
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus,
+select:-webkit-autofill:active {
+	transition: background-image 9999s ease-in-out 0s;
 }
