@@ -26,7 +26,6 @@ import {
 } from '../../data';
 import './style.scss';
 import wcpayTracks from 'wcpay/tracks';
-import { useEffect, useRef } from '@wordpress/element';
 
 const daysOfWeek = [
 	{ label: __( 'Monday', 'woocommerce-payments' ), value: 'monday' },
@@ -61,25 +60,6 @@ const CustomizeDepositSchedule = () => {
 		depositScheduleMonthlyAnchor,
 		setDepositScheduleMonthlyAnchor,
 	] = useDepositScheduleMonthlyAnchor();
-	const initialRender = useRef( true );
-	useEffect( () => {
-		if ( initialRender.current ) {
-			initialRender.current = false;
-			return;
-		}
-		wcpayTracks.recordEvent(
-			wcpayTracks.events.SETTINGS_DEPOSITS_SCHEDULE_CHANGE,
-			{
-				interval: depositScheduleInterval,
-				weekly_anchor: depositScheduleWeeklyAnchor,
-				monthly_anchor: depositScheduleMonthlyAnchor,
-			}
-		);
-	}, [
-		depositScheduleInterval,
-		depositScheduleMonthlyAnchor,
-		depositScheduleWeeklyAnchor,
-	] );
 
 	const handleIntervalChange = ( newInterval ) => {
 		switch ( newInterval ) {
