@@ -12,6 +12,7 @@ use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
+use WCPay\Core\Server\Request\Get_Request;
 use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Core\Server\Response;
 use WCPay\Constants\Order_Status;
@@ -132,7 +133,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					'create_intention',
 					'create_and_confirm_intention',
 					'create_and_confirm_setup_intent',
-					'get_setup_intent',
 					'get_payment_method',
 					'get_timeline',
 				]
@@ -1558,10 +1558,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'get_customer_id_by_user_id' )
 			->will( $this->returnValue( 'cus_12345' ) );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_setup_intent' )
-			->with( 'sti_mock' )
+		$request = $this->mock_wcpay_request( Get_Request::class, 1, 'sti_mock' );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn(
 				[
 					'status'         => Payment_Intent_Status::SUCCEEDED,
@@ -1587,9 +1587,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'get_customer_id_by_user_id' )
 			->will( $this->returnValue( null ) );
 
-		$this->mock_api_client
-			->expects( $this->never() )
-			->method( 'get_setup_intent' );
+		$this->mock_wcpay_request( Get_Request::class, 0 );
 
 		$this->mock_token_service
 			->expects( $this->never() )
@@ -1608,10 +1606,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'get_customer_id_by_user_id' )
 			->will( $this->returnValue( 'cus_12345' ) );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_setup_intent' )
-			->with( 'sti_mock' )
+		$request = $this->mock_wcpay_request( Get_Request::class, 1, 'sti_mock' );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( [ 'status' => Payment_Intent_Status::CANCELED ] );
 
 		$this->mock_token_service

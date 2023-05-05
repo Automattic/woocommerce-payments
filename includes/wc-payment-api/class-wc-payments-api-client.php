@@ -224,18 +224,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Fetch a setup intent details.
-	 *
-	 * @param string $setup_intent_id ID of the setup intent.
-	 *
-	 * @return array
-	 * @throws API_Exception - When fetch of setup intent fails.
-	 */
-	public function get_setup_intent( $setup_intent_id ) {
-		return $this->request( [], self::SETUP_INTENTS_API . '/' . $setup_intent_id, self::GET );
-	}
-
-	/**
 	 * Get summary of deposits.
 	 *
 	 * @param array $filters The filters to be used in the query.

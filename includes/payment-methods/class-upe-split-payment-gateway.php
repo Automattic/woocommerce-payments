@@ -11,6 +11,7 @@ use Exception;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Method;
 use WCPay\Constants\Payment_Type;
+use WCPay\Core\Server\Request\Get_Request;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
@@ -340,7 +341,11 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 */
 	public function create_token_from_setup_intent( $setup_intent_id, $user ) {
 		try {
-			$setup_intent      = $this->payments_api_client->get_setup_intent( $setup_intent_id );
+			$setup_intent_request = Get_Request::create( $setup_intent_id );
+			$setup_intent_request->set_api( WC_Payments_API_Client::SETUP_INTENTS_API );
+
+			$setup_intent = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
+
 			$payment_method_id = $setup_intent['payment_method'];
 			// TODO: When adding SEPA and Sofort, we will need a new API call to get the payment method and from there get the type.
 			// Leaving 'card' as a hardcoded value for now to avoid the extra API call.

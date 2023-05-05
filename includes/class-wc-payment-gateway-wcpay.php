@@ -24,6 +24,7 @@ use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
 use WCPay\Core\Server\Request\Create_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
+use WCPay\Core\Server\Request\Get_Request;
 use WCPay\Core\Server\Request\List_Charge_Refunds;
 use WCPay\Core\Server\Request\Refund_Charge;
 use WCPay\Core\Server\Request\Update_Intention;
@@ -1158,7 +1159,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			if ( ! empty( $platform_checkout_intent_id ) ) {
 				// If the setup intent is included in the request use that intent.
-				$intent = $this->payments_api_client->get_setup_intent( $platform_checkout_intent_id );
+				$setup_intent_request = Get_Request::create( $platform_checkout_intent_id );
+				$setup_intent_request->set_api( WC_Payments_API_Client::SETUP_INTENTS_API );
+
+				$intent = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
 
 				$intent_meta_order_id_raw = ! empty( $intent['metadata'] ) ? $intent['metadata']['order_id'] ?? '' : '';
 				$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
@@ -2773,7 +2777,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$this->order_service->attach_transaction_fee_to_order( $order, $charge );
 			} else {
 				// For $0 orders, fetch the Setup Intent instead.
-				$intent    = $this->payments_api_client->get_setup_intent( $intent_id );
+				$setup_intent_request = Get_Request::create( $intent_id );
+				$setup_intent_request->set_api( WC_Payments_API_Client::SETUP_INTENTS_API );
+
+				$intent    = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
 				$status    = $intent['status'];
 				$charge_id = '';
 			}
@@ -2875,7 +2882,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			$setup_intent = $this->payments_api_client->get_setup_intent( $setup_intent_id );
+			$setup_intent_request = Get_Request::create( $setup_intent_id );
+			$setup_intent_request->set_api( WC_Payments_API_Client::SETUP_INTENTS_API );
+
+			$setup_intent = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
 
 			if ( Payment_Intent_Status::SUCCEEDED !== $setup_intent['status'] ) {
 				throw new Add_Payment_Method_Exception(

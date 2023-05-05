@@ -11,6 +11,7 @@ use Exception;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Core\Server\Request\Get_Request;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 use WCPay\Session_Rate_Limiter;
@@ -188,7 +189,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					'create_setup_intention',
 					'update_intention',
 					'get_intent',
-					'get_setup_intent',
 					'get_payment_method',
 					'is_server_connected',
 					'get_charge',
@@ -1314,12 +1314,11 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				$this->returnValue( [ $user, $customer_id ] )
 			);
 
-		$this->mock_api_client->expects( $this->once() )
-			->method( 'get_setup_intent' )
-			->with( $intent_id )
-			->will(
-				$this->returnValue( $setup_intent )
-			);
+		$request = $this->mock_wcpay_request( Get_Request::class, 1, $intent_id );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $setup_intent );
 
 		$this->mock_token_service->expects( $this->once() )
 			->method( 'add_payment_method_to_user' )
@@ -1675,16 +1674,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$mock_setup_intent_id = 'si_mock';
 		$mock_user            = wp_get_current_user();
 
-		$this->mock_api_client
-			->method( 'get_setup_intent' )
-			->with( $mock_setup_intent_id )
-			->willReturn(
-				[
-					'id'             => $mock_setup_intent_id,
-					'payment_method' => 'pm_mock',
-				]
-			);
-
 		$this->mock_token_service
 			->method( 'add_payment_method_to_user' )
 			->with( 'pm_mock', $mock_user )
@@ -1693,6 +1682,16 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			);
 
 		foreach ( $this->mock_payment_gateways as $mock_upe_gateway ) {
+			$request = $this->mock_wcpay_request( Get_Request::class, 1, $mock_setup_intent_id );
+
+			$request->expects( $this->once() )
+				->method( 'format_response' )
+				->willReturn(
+					[
+						'id'             => $mock_setup_intent_id,
+						'payment_method' => 'pm_mock',
+					]
+				);
 			$this->assertEquals( $mock_token, $mock_upe_gateway->create_token_from_setup_intent( $mock_setup_intent_id, $mock_user ) );
 		}
 	}

@@ -13,6 +13,7 @@ use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Core\Server\Request\Create_Intention;
 use WCPay\Core\Server\Request\Create_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Intention;
+use WCPay\Core\Server\Request\Get_Request;
 use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Core\Server\Response;
 use WCPay\Constants\Payment_Method;
@@ -155,7 +156,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->disableOriginalConstructor()
 			->setMethods(
 				[
-					'get_setup_intent',
 					'get_payment_method',
 					'is_server_connected',
 					'get_timeline',
@@ -1328,12 +1328,11 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				$this->returnValue( [ $user, $customer_id ] )
 			);
 
-		$this->mock_api_client->expects( $this->once() )
-			->method( 'get_setup_intent' )
-			->with( $intent_id )
-			->will(
-				$this->returnValue( $setup_intent )
-			);
+		$request = $this->mock_wcpay_request( Get_Request::class, 1, $intent_id );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $setup_intent );
 
 		$this->mock_token_service->expects( $this->once() )
 			->method( 'add_payment_method_to_user' )
@@ -1680,10 +1679,10 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$mock_setup_intent_id = 'si_mock';
 		$mock_user            = wp_get_current_user();
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_setup_intent' )
-			->with( $mock_setup_intent_id )
+		$request = $this->mock_wcpay_request( Get_Request::class, 1, $mock_setup_intent_id );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn(
 				[
 					'id'             => $mock_setup_intent_id,
