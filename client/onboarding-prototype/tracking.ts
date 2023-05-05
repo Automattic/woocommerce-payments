@@ -66,20 +66,23 @@ export const trackEligibilityModalClosed = (
 	);
 
 export const useTrackAbandoned = (): {
-	trackAbandoned: ( method: string ) => void;
+	trackAbandoned: ( method: 'hide' | 'exit' ) => void;
 	removeTrackListener: () => void;
 } => {
 	const { errors, touched } = useOnboardingContext();
 	const { currentStep: step } = useStepperContext();
 
-	const trackEvent = ( method = 'hidden' ) => {
+	const trackEvent = ( method = 'hide' ) => {
+		const event =
+			method === 'hide'
+				? wcpayTracks.events.ONBOARDING_FLOW_HIDDEN
+				: wcpayTracks.events.ONBOARDING_FLOW_EXITED;
 		const errored = Object.keys( errors ).filter(
 			( field ) => touched[ field as keyof OnboardingFields ]
 		);
 
-		wcpayTracks.recordEvent( wcpayTracks.events.ONBOARDING_FLOW_ABANDONED, {
+		wcpayTracks.recordEvent( event, {
 			step,
-			method,
 			errored,
 			elapsed: elapsed( startTime ),
 		} );
