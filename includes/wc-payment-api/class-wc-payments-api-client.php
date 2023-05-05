@@ -2210,17 +2210,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Fetch the past and present Capital loans.
-	 *
-	 * @return array List of capital loans.
-	 *
-	 * @throws API_Exception If an error occurs.
-	 */
-	public function get_loans() : array {
-		return $this->request( [], self::CAPITAL_API . '/loans', self::GET );
-	}
-
-	/**
 	 * Returns a list of fingerprinting metadata to attach to order.
 	 *
 	 * @param string $fingerprint User fingerprint.

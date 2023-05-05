@@ -58,7 +58,9 @@ class WC_REST_Payments_Capital_Controller extends WC_Payments_REST_Controller {
 	 * Retrieve all the past and present Capital loans.
 	 */
 	public function get_loans() {
-		return $this->forward_request( 'get_loans', [] );
+		$request = Get_Request::create();
+		$request->set_api( WC_Payments_API_Client::CAPITAL_API . '/loans' );
+		return $request->send( 'wcpay_get_loans_request' );
 	}
 
 }
