@@ -60,6 +60,8 @@ const events = {
 	CONNECT_ACCOUNT_LEARN_MORE: 'wcpay_welcome_learn_more',
 	CONNECT_ACCOUNT_STRIPE_CONNECTED: 'wcpay_stripe_connected',
 	CONNECT_ACCOUNT_KYC_MODAL_OPENED: 'wcpay_connect_account_kyc_modal_opened',
+	DEPOSITS_ROW_CLICK: 'wcpay_deposits_row_click',
+	DEPOSITS_DOWNLOAD_CSV_CLICK: 'wcpay_deposits_download_csv_click',
 	OVERVIEW_DEPOSITS_VIEW_HISTORY_CLICK:
 		'wcpay_overview_deposits_view_history_click',
 	OVERVIEW_DEPOSITS_CHANGE_SCHEDULE_CLICK:
@@ -77,7 +79,7 @@ const events = {
 	SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_VIEW:
 		'wcpay_subscriptions_account_not_connected_product_modal_view',
 	SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_FINISH_SETUP:
-		'wcpay_subscriptions_account_not_connected_product_modal_finish_setup',
+		'wcpay_subscriptions_account_not_connec5884ted_product_modal_finish_setup',
 	SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_DISMISS:
 		'wcpay_subscriptions_account_not_connected_product_modal_dismiss',
 	PLATFORM_CHECKOUT_OFFERED: 'platform_checkout_offered',
