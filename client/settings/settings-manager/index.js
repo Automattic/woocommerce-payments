@@ -105,6 +105,8 @@ const DepositsDescription = () => {
 				href="https://woocommerce.com/document/payments/faq/deposit-schedule/#section-2"
 				onClick={ () =>
 					wcpayTracks.recordEvent(
+						wcpayTracks.events
+							.SETTINGS_DEPOSITS_PENDING_SCHEDULES_DOCS_CLICK,
 						'wcpay_deposits_pending_schedules_docs_click',
 						{}
 					)
