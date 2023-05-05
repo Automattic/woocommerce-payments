@@ -7,6 +7,7 @@
 
 use Automattic\Jetpack\Identity_Crisis as Jetpack_Identity_Crisis;
 use Automattic\WooCommerce\Admin\PageController;
+use WCPay\Core\Server\Request\Get_Request;
 use WCPay\Database_Cache;
 use WCPay\Logger;
 
@@ -1099,9 +1100,15 @@ class WC_Payments_Admin {
 	 * @return int The number of disputes which need a response.
 	 */
 	private function get_disputes_awaiting_response_count() {
+		$request = Get_Request::create();
+		$request->set_api( WC_Payments_API_Client::DISPUTES_API . '/status_counts' );
+		$send_callback = function() use ( $request ) {
+			$request->send( 'wcpay_get_dispute_status_counts' );
+		};
+
 		$disputes_status_counts = $this->database_cache->get_or_add(
 			Database_Cache::DISPUTE_STATUS_COUNTS_KEY,
-			[ $this->payments_api_client, 'get_dispute_status_counts' ],
+			$send_callback,
 			// We'll consider all array values to be valid as the cache is only invalidated when it is deleted or it expires.
 			'is_array'
 		);
