@@ -119,7 +119,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 		if ( $this->supports( 'tokenization' ) ) {
 			$script_dependencies[] = 'woocommerce-tokenization-form';
 		}
-		$script = ( WC_Payments_Features::is_upe_deferred_intent_enabled() && ! WC_Payments_Features::is_upe_split_enabled() ) ? 'dist/upe_with_deferred_intent_creation_checkout' : 'dist/upe_split_checkout';
+		$script = WC_Payments_Features::is_upe_deferred_intent_enabled() ? 'dist/upe_with_deferred_intent_creation_checkout' : 'dist/upe_split_checkout';
 		WC_Payments::register_script_with_dependencies( 'wcpay-upe-checkout', $script, $script_dependencies );
 	}
 
