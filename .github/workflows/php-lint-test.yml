@@ -6,9 +6,9 @@ on:
 
 env:
   WP_VERSION:        latest
-  WC_MIN_SUPPORTED_VERSION: '7.4.1'
+  WC_MIN_SUPPORTED_VERSION: '7.5.0'
   GUTENBERG_VERSION: latest
-  PHP_MIN_SUPPORTED_VERSION: '7.2'
+  PHP_MIN_SUPPORTED_VERSION: '7.3'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
