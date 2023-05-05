@@ -112,10 +112,9 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		$payment_fields['cartContainsSubscription'] = $this->gateway->is_subscription_item_in_cart();
 
 		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
-			$payment_fields['checkoutTitle'] = $this->gateway->get_checkout_title();
-			$payment_fields['currency']      = get_woocommerce_currency();
-			$cart_total                      = ( WC()->cart ? WC()->cart->get_total( '' ) : 0 );
-			$payment_fields['cartTotal']     = WC_Payments_Utils::prepare_amount( $cart_total, get_woocommerce_currency() );
+			$payment_fields['currency']  = get_woocommerce_currency();
+			$cart_total                  = ( WC()->cart ? WC()->cart->get_total( '' ) : 0 );
+			$payment_fields['cartTotal'] = WC_Payments_Utils::prepare_amount( $cart_total, get_woocommerce_currency() );
 		} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
 			$payment_fields['checkoutTitle']        = $this->gateway->get_checkout_title();
 			$payment_fields['upePaymentIntentData'] = $this->gateway->get_payment_intent_data_from_session();
