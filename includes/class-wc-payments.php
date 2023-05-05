@@ -539,7 +539,7 @@ class WC_Payments {
 		}
 
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
-			new WC_Payments_Admin( self::$api_client, self::get_gateway(), self::$account, self::$database_cache );
+			new WC_Payments_Admin( self::$api_client, self::get_gateway(), self::$account, self::$onboarding_service, self::$database_cache );
 
 			new WC_Payments_Admin_Settings( self::get_gateway() );
 
@@ -935,10 +935,6 @@ class WC_Payments {
 		$onboarding_controller = new WC_REST_Payments_Onboarding_Controller( self::$api_client, self::$onboarding_service );
 		$onboarding_controller->register_routes();
 
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-user-exists-controller.php';
-		$user_exists_controller = new WC_REST_User_Exists_Controller();
-		$user_exists_controller->register_routes();
-
 		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-upe-flag-toggle-controller.php';
 			$upe_flag_toggle_controller = new WC_REST_UPE_Flag_Toggle_Controller( self::get_gateway() );
@@ -994,7 +990,7 @@ class WC_Payments {
 		$script_file                  = $script . '.js';
 		$script_src_url               = plugins_url( $script_file, WCPAY_PLUGIN_FILE );
 		$script_asset_path            = WCPAY_ABSPATH . $script . '.asset.php';
-		$script_asset                 = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ];
+		$script_asset                 = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ]; // nosemgrep: audit.php.lang.security.file.inclusion-arg -- server generated path is used.
 		$script_asset['dependencies'] = array_merge( $script_asset['dependencies'], $dependencies );
 		wp_register_script(
 			$handler,

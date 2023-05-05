@@ -81,6 +81,7 @@ const AccountStatusDetails = ( props ) => {
 			>
 				<PaymentsStatus
 					paymentsEnabled={ accountStatus.paymentsEnabled }
+					accountStatus={ accountStatus.status }
 				/>
 			</AccountStatusItem>
 			<AccountStatusItem
@@ -89,6 +90,7 @@ const AccountStatusDetails = ( props ) => {
 				<DepositsStatus
 					status={ accountStatus.deposits?.status }
 					interval={ accountStatus.deposits?.interval }
+					accountStatus={ accountStatus.status }
 				/>
 			</AccountStatusItem>
 			{ 0 < accountFees.length && (
