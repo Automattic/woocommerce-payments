@@ -62,7 +62,7 @@ class Get_Request extends Request {
 	 * @return void
 	 */
 	public function set_request_route_id_parameter( $id ) {
-		$this->set_id( $id ); // We don't need extra set_id method validation here.
+		$this->set_id( $id ); // We don't need extra validation here.
 	}
 
 	/**

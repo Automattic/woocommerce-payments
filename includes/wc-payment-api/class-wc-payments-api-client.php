@@ -236,26 +236,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Get overview of deposits.
-	 *
-	 * @return array
-	 * @throws API_Exception - Exception thrown on request failure.
-	 */
-	public function get_deposits_overview() {
-		return $this->request( [], self::DEPOSITS_API . '/overview', self::GET );
-	}
-
-	/**
-	 * Get an overview of all deposits (for all currencies).
-	 *
-	 * @return array
-	 * @throws API_Exception - Exception thrown on request failure.
-	 */
-	public function get_all_deposits_overviews() {
-		return $this->request( [], self::DEPOSITS_API . '/overview-all', self::GET );
-	}
-
-	/**
 	 * Get summary of deposits.
 	 *
 	 * @param array $filters The filters to be used in the query.
@@ -265,16 +245,6 @@ class WC_Payments_API_Client {
 	 */
 	public function get_deposits_summary( array $filters = [] ) {
 		return $this->request( $filters, self::DEPOSITS_API . '/summary', self::GET );
-	}
-
-	/**
-	 * Fetch a single deposit with provided id.
-	 *
-	 * @param string $deposit_id id of requested deposit.
-	 * @return array deposit object.
-	 */
-	public function get_deposit( $deposit_id ) {
-		return $this->request( [], self::DEPOSITS_API . '/' . $deposit_id, self::GET );
 	}
 
 	/**
