@@ -64,6 +64,14 @@ const events = {
 		'wcpay_overview_deposits_view_history_click',
 	OVERVIEW_DEPOSITS_CHANGE_SCHEDULE_CLICK:
 		'wcpay_overview_deposits_change_schedule_click',
+	SETTINGS_DEPOSITS_SCHEDULE_DISABLED_DOCS_CLICK:
+		'wcpay_settings_deposits_schedule_disabled_docs_click',
+	SETTINGS_DEPOSITS_WAITING_PERIOD_DOCS_CLICK:
+		'wcpay_settings_deposits_waiting_period_docs_click',
+	SETTINGS_DEPOSITS_MANAGE_IN_STRIPE_CLICK:
+		'wcpay_settings_deposits_manage_in_stripe_click',
+	SETTINGS_DEPOSITS_SCHEDULE_CHANGE:
+		'wcpay_settings_deposits_schedule_change',
 	MULTI_CURRENCY_ENABLED_CURRENCIES_UPDATED:
 		'wcpay_multi_currency_enabled_currencies_updated',
 	PAYMENT_REQUEST_SETTINGS_CHANGE: 'wcpay_payment_request_settings_change',

@@ -67,11 +67,14 @@ const CustomizeDepositSchedule = () => {
 			initialRender.current = false;
 			return;
 		}
-		wcpayTracks.recordEvent( 'wcpay_deposits_schedule_change', {
-			interval: depositScheduleInterval,
-			weekly_anchor: depositScheduleWeeklyAnchor,
-			monthly_anchor: depositScheduleMonthlyAnchor,
-		} );
+		wcpayTracks.recordEvent(
+			wcpayTracks.events.SETTINGS_DEPOSITS_SCHEDULE_CHANGE,
+			{
+				interval: depositScheduleInterval,
+				weekly_anchor: depositScheduleWeeklyAnchor,
+				monthly_anchor: depositScheduleMonthlyAnchor,
+			}
+		);
 	}, [
 		depositScheduleInterval,
 		depositScheduleMonthlyAnchor,
@@ -182,7 +185,8 @@ const DepositsSchedule = () => {
 					rel="external noreferrer noopener"
 					onClick={ () =>
 						wcpayTracks.recordEvent(
-							'wcpay_deposits_schedule_disabled_help',
+							wcpayTracks.events
+								.SETTINGS_DEPOSITS_SCHEDULE_DISABLED_DOCS_CLICK,
 							{}
 						)
 					}
@@ -215,7 +219,8 @@ const DepositsSchedule = () => {
 					rel="external noreferrer noopener"
 					onClick={ () =>
 						wcpayTracks.recordEvent(
-							'wcpay_deposits_waiting_period_help',
+							wcpayTracks.events
+								.SETTINGS_DEPOSITS_WAITING_PERIOD_DOCS_CLICK,
 							{}
 						)
 					}
@@ -254,7 +259,8 @@ const Deposits = () => {
 							href={ accountLink }
 							onClick={ () =>
 								wcpayTracks.recordEvent(
-									'wcpay_settings_deposits_manage_in_stripe',
+									wcpayTracks.events
+										.SETTINGS_DEPOSITS_MANAGE_IN_STRIPE_CLICK,
 									{}
 								)
 							}
