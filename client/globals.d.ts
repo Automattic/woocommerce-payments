@@ -78,6 +78,10 @@ declare global {
 			mccs_display_tree: MccsDisplayTreeItem[];
 		};
 	};
-}
 
-declare const wcTracks: any;
+	const wcTracks: any;
+
+	const wcSettings: {
+		adminUrl: string;
+	};
+}
