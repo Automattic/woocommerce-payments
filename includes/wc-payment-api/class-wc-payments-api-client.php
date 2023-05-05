@@ -1320,18 +1320,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Retrieves a store's terminal readers.
-	 *
-	 * @return array[] Stripe terminal readers objects.
-	 * @see https://stripe.com/docs/api/terminal/readers/object
-	 *
-	 * @throws API_Exception If an error occurs.
-	 */
-	public function get_terminal_readers() {
-		return $this->request( [], self::TERMINAL_READERS_API, self::GET );
-	}
-
-	/**
 	 * Registers a card reader to a terminal.
 	 *
 	 * @param string  $location           The location to assign the reader to.
