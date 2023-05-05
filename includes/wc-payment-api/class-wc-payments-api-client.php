@@ -2224,15 +2224,4 @@ class WC_Payments_API_Client {
 
 		return $customer_fingerprint_metadata;
 	}
-
-
-	/**
-	 * Fetch a single authorizations with provided payment intent id.
-	 *
-	 * @param string $payment_intent_id id of requested transaction.
-	 * @return array authorization object.
-	 */
-	public function get_authorization( string $payment_intent_id ) {
-		return $this->request( [], self::AUTHORIZATIONS_API . '/' . $payment_intent_id, self::GET );
-	}
 }

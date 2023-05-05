@@ -73,7 +73,9 @@ class WC_REST_Payments_Authorizations_Controller extends WC_Payments_REST_Contro
 	 */
 	public function get_authorization( WP_REST_Request $request ) {
 		$payment_intent_id = $request->get_param( 'payment_intent_id' );
-		return $this->forward_request( 'get_authorization', [ $payment_intent_id ] );
+		$request           = Get_Request::create( $payment_intent_id );
+		$request->set_api( WC_Payments_API_Client::AUTHORIZATIONS_API );
+		return $request->send( 'wcpay_get_authorization_request' );
 	}
 
 	/**
