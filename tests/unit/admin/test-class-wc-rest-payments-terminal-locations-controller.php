@@ -331,26 +331,30 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WCPAY_UnitTest
 			->with( WC_Payments_API_Client::TERMINAL_LOCATIONS_API );
 		$request->expects( $this->once() )
 			->method( 'format_response' )
-			->willReturnOnConsecutiveCalls( [] );
-
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_terminal_location' )
-			->willReturn( $this->location );
+			->willReturn( [] );
 
 		// Setup the request.
-		$request       = new WP_REST_Request(
+		$request              = new WP_REST_Request(
 			'GET',
 			'/wc/v3/payments/terminal/locations'
 		);
-		$wcpay_request = $this->mock_wcpay_request( Get_Request::class );
+		$get_location_request = $this->mock_wcpay_request( Get_Request::class, 1, $this->location['id'] );
 
-		$wcpay_request->expects( $this->once() )
+		$get_location_request->expects( $this->once() )
 			->method( 'set_api' )
 			->with( WC_Payments_API_Client::TERMINAL_LOCATIONS_API );
-		$wcpay_request->expects( $this->once() )
+		$get_location_request->expects( $this->once() )
 			->method( 'format_response' )
-			->willReturnOnConsecutiveCalls( [ $this->location ] );
+			->willReturn( $this->location );
+		$get_locations_request = $this->mock_wcpay_request( Get_Request::class );
+
+		$get_locations_request->expects( $this->once() )
+			->method( 'set_api' )
+			->with( WC_Payments_API_Client::TERMINAL_LOCATIONS_API );
+		$get_locations_request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( [ $this->location ] );
+
 		$request->set_param( 'location_id', $this->location['id'] );
 		$request->set_header( 'Content-Type', 'application/json' );
 
@@ -361,9 +365,7 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WCPAY_UnitTest
 	public function test_retreive_uses_cache_for_existing_location() {
 		set_transient( Controller::STORE_LOCATIONS_TRANSIENT_KEY, [ $this->location ] );
 
-		$this->mock_api_client
-			->expects( $this->never() )
-			->method( 'get_terminal_location' );
+		$this->mock_wcpay_request( Get_Request::class, 0, $this->location['id'] );
 
 		// Setup the request.
 		$request = new WP_REST_Request(

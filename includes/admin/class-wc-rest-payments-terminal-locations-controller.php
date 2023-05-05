@@ -236,9 +236,10 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 					return rest_ensure_response( $this->extract_location_fields( $location ) );
 				}
 			}
-
 			// If the location is missing, fetch it individually and reload the transient.
-			$location = $this->api_client->get_terminal_location( $location_id );
+			$request = Get_Request::create( $location_id );
+			$request->set_api( WC_Payments_API_Client::TERMINAL_LOCATIONS_API );
+			$location = $request->send( 'wcpay_get_terminal_location' );
 			$this->reload_locations();
 
 			return rest_ensure_response( $this->extract_location_fields( $location ) );
