@@ -1491,19 +1491,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Validates a VAT number on the server and returns the full response.
-	 *
-	 * @param string $vat_number The VAT number.
-	 *
-	 * @return array HTTP response on success.
-	 *
-	 * @throws API_Exception - If not connected or request failed.
-	 */
-	public function validate_vat( $vat_number ) {
-		return $this->request( [], self::VAT_API . '/' . $vat_number, self::GET );
-	}
-
-	/**
 	 * Saves the VAT details on the server and returns the full response.
 	 *
 	 * @param string $vat_number The VAT number.
