@@ -143,10 +143,8 @@ class Order_Fraud_And_Risk_Meta_Box {
 				break;
 
 			case Fraud_Meta_Box_Type::REVIEW_ALLOWED:
-				$description     = __( 'The payment for this order was held for review by your risk filtering and manually approved.', 'woocommerce-payments' );
-				$callout         = __( 'Review payment', 'woocommerce-payments' );
-				$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
-				echo '<p class="wcpay-fraud-risk-meta-allow"><img src="' . esc_url( $icons['green_check_mark']['url'] ) . '" alt="' . esc_html( $icons['green_check_mark']['alt'] ) . '"> ' . esc_html( $statuses['approved'] ) . '</p><p>' . esc_html( $description ) . '</p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a>';
+				$description = __( 'The payment for this order was held for review by your risk filtering and manually approved.', 'woocommerce-payments' );
+				echo '<p class="wcpay-fraud-risk-meta-allow"><img src="' . esc_url( $icons['green_check_mark']['url'] ) . '" alt="' . esc_html( $icons['green_check_mark']['alt'] ) . '"> ' . esc_html( $statuses['approved'] ) . '</p><p>' . esc_html( $description ) . '</p>';
 				break;
 
 			case Fraud_Meta_Box_Type::REVIEW_BLOCKED:
