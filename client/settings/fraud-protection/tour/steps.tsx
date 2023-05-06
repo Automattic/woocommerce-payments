@@ -6,6 +6,9 @@ import { __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 
 const enhancedFraudProtectionStep = {
+	referenceElements: {
+		desktop: '#fraud-protection-welcome-tour-first-step',
+	},
 	meta: {
 		name: 'enhanced-fraud-protection',
 		heading: __( 'Enhanced fraud protection is here 🔒' ),
