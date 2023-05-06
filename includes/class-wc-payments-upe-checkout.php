@@ -111,7 +111,11 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		$payment_fields['wcBlocksUPEAppearance']    = get_transient( UPE_Payment_Gateway::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
 		$payment_fields['cartContainsSubscription'] = $this->gateway->is_subscription_item_in_cart();
 
-		if ( WC_Payments_Features::is_upe_legacy_enabled() ) {
+		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+			$payment_fields['currency']  = get_woocommerce_currency();
+			$cart_total                  = ( WC()->cart ? WC()->cart->get_total( '' ) : 0 );
+			$payment_fields['cartTotal'] = WC_Payments_Utils::prepare_amount( $cart_total, get_woocommerce_currency() );
+		} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
 			$payment_fields['checkoutTitle']        = $this->gateway->get_checkout_title();
 			$payment_fields['upePaymentIntentData'] = $this->gateway->get_payment_intent_data_from_session();
 			$payment_fields['upeSetupIntentData']   = $this->gateway->get_setup_intent_data_from_session();
@@ -198,7 +202,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 				'showSaveOption' => $this->should_upe_payment_method_show_save_option( $payment_method ),
 			];
 
-			if ( WC_Payments_Features::is_upe_split_enabled() ) {
+			if ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 				$settings[ $payment_method_id ]['upePaymentIntentData'] = $this->gateway->get_payment_intent_data_from_session( $payment_method_id );
 				$settings[ $payment_method_id ]['upeSetupIntentData']   = $this->gateway->get_setup_intent_data_from_session( $payment_method_id );
 				$settings[ $payment_method_id ]['testingInstructions']  = WC_Payments_Utils::esc_interpolated_html(
@@ -243,7 +247,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 			 * before `$this->saved_payment_methods()`.
 			 */
 			$payment_fields  = $this->get_payment_fields_js_config();
-			$upe_object_name = WC_Payments_Features::is_upe_split_enabled() ? 'wcpay_upe_config' : 'wcpayConfig';
+			$upe_object_name = ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) ? 'wcpay_upe_config' : 'wcpayConfig';
 			wp_enqueue_script( 'wcpay-upe-checkout' );
 			add_action(
 				'wp_footer',
