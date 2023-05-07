@@ -105,10 +105,10 @@ export const DisplayName: React.FC< Props > = ( { isLoading, numRows, numColumns
 
 ## What type do I use to represent children for my component?
 
-The easiest way to accomplish this is to have your component props extend the `PropsWithChildren` interface:
+The easiest way to accomplish this is to have use the `React.PropsWithChildren` interface:
 
 ```ts
-interface Props extends PropsWithChildren {
+interface Props {
   /**
    * Set the loading state of the component. Provide `true` if the component should show a loading state.
    * @type boolean
@@ -132,7 +132,7 @@ interface Props extends PropsWithChildren {
 You can then use this props declaration like so:
 
 ```ts
-export const DisplayName: React.FunctionComponent< Props > = ( { isLoading, numRows, numColumns, children } ) => {
+export const DisplayName: React.FunctionComponent< React.PropsWithChildren< Props > > = ( { isLoading, numRows, numColumns, children } ) => {
   if ( isLoading ) {
     return <p>Loading...</p>;
   }
