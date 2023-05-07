@@ -640,7 +640,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			WC_Payments::get_gateway()->tokenization_script();
 			$script_handle = 'WCPAY_CHECKOUT';
 			$js_object     = 'wcpayConfig';
-			if ( WC_Payments_Features::is_upe_split_enabled() ) {
+			if ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 				$script_handle = 'wcpay-upe-checkout';
 				$js_object     = 'wcpay_upe_config';
 			} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
@@ -1077,7 +1077,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			if ( ! empty( $upe_payment_method ) && 'woocommerce_payments' !== $upe_payment_method ) {
 				$payment_methods = [ str_replace( 'woocommerce_payments_', '', $upe_payment_method ) ];
-			} elseif ( WC_Payments_Features::is_upe_split_enabled() ) {
+			} elseif ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 				$payment_methods = [ 'card' ];
 			} else {
 				$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
@@ -1118,7 +1118,26 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_off_session( $payment_information->is_merchant_initiated() );
 				$request->set_payment_methods( $payment_methods );
 				$request->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
-				// Make sure that setting fingerprint is performed after setting metadata becaouse metadata will override any values you set before for metadata param.
+
+				// The below if-statement ensures the support for UPE payment methods.
+				if ( $this->upe_needs_redirection( $payment_methods ) ) {
+					$request->set_return_url(
+						wp_sanitize_redirect(
+							esc_url_raw(
+								add_query_arg(
+									[
+										'order_id' => $order_id,
+										'wc_payment_method' => self::GATEWAY_ID,
+										'_wpnonce' => wp_create_nonce( 'wcpay_process_redirect_order_nonce' ),
+									],
+									$this->get_return_url( $order )
+								)
+							)
+						)
+					);
+				}
+
+				// Make sure that setting fingerprint is performed after setting metadata because metadata will override any values you set before for metadata param.
 				$request->set_fingerprint( $payment_information->get_fingerprint() );
 				if ( $save_payment_method_to_store ) {
 					$request->setup_future_usage();
@@ -3456,5 +3475,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Determine whether redirection is needed for the non-card UPE payment method.
+	 *
+	 * @param array $payment_methods The list of payment methods used for the order processing, usually consists of one method only.
+	 * @return boolean True if the arrray consist of only one payment method which is not a card. False otherwise.
+	 */
+	private function upe_needs_redirection( $payment_methods ) {
+		return 1 === count( $payment_methods ) && 'card' !== $payment_methods[0];
 	}
 }
