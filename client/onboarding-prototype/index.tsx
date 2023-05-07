@@ -15,14 +15,20 @@ import PersonalDetails from './steps/personal-details';
 import BusinessDetails from './steps/business-details';
 import StoreDetails from './steps/store-details';
 import LoadingStep from './steps/loading';
+import { trackStarted } from './tracking';
 import './style.scss';
 
 const OnboardingStepper = () => {
-	const handleExit = () => window.history.back();
-
-	const handleStepChange = () => {
-		window.scroll( 0, 0 );
+	const handleExit = () => {
+		if (
+			window.history.length > 1 &&
+			document.referrer.includes( wcSettings.adminUrl )
+		)
+			return window.history.back();
+		window.location.href = wcSettings.adminUrl;
 	};
+
+	const handleStepChange = () => window.scroll( 0, 0 );
 
 	return (
 		<Stepper onStepChange={ handleStepChange } onExit={ handleExit }>
@@ -51,11 +57,15 @@ const OnboardingStepper = () => {
 
 const OnboardingPrototype: React.FC = () => {
 	useEffect( () => {
+		trackStarted();
+
+		// Remove loading class and add those requires for full screen.
 		document.body.classList.remove( 'woocommerce-admin-is-loading' );
 		document.body.classList.add( 'woocommerce-admin-full-screen' );
 		document.body.classList.add( 'is-wp-toolbar-disabled' );
 		document.body.classList.add( 'wcpay-onboarding-prototype__body' );
 
+		// Remove full screen classes on unmount.
 		return () => {
 			document.body.classList.remove( 'woocommerce-admin-full-screen' );
 			document.body.classList.remove( 'is-wp-toolbar-disabled' );
