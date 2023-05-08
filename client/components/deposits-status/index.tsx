@@ -13,25 +13,10 @@ import React from 'react';
  * Internal dependencies
  */
 import 'components/account-status/shared.scss';
+import type { AccountStatus } from 'wcpay/types/account/account-status';
 
 type DepositsStatus = 'enabled' | 'disabled' | 'blocked';
 type DepositsIntervals = 'daily' | 'weekly' | 'monthly' | 'manual';
-type AccountStatus =
-	| 'complete'
-	| 'pending_verification'
-	| 'restricted_partially'
-	| 'restricted'
-	| 'restricted_soon'
-	| 'requirements.past_due'
-	| 'requirements.pending_verification'
-	| 'listed'
-	| 'platform_paused'
-	| 'rejected.fraud'
-	| 'rejected.listed'
-	| 'rejected.terms_of_service'
-	| 'rejected.other'
-	| 'under_review'
-	| 'other';
 
 interface Props {
 	status: DepositsStatus;
