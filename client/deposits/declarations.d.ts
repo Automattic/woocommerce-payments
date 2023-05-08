@@ -28,13 +28,14 @@ declare module '@woocommerce/components' {
 		labelPositionToLeft?: boolean;
 	} ) => JSX.Element;
 
-	type LinkParams = {
+	type LinkProps = {
 		href: string;
-		children?: React.ReactNode;
 		type?: string;
 		onClick?: ( ...props: any ) => any;
+		className?: string;
+		tabIndex?: string;
 	};
-	const Link: ( props: LinkParams ) => JSX.Element;
+	const Link: React.FunctionComponent< React.PropsWithChildren< LinkProps > >;
 
 	interface TourKitStep {
 		slug?: string;
