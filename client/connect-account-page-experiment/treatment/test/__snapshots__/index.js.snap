@@ -6,142 +6,189 @@ exports[`ConnectAccountPageExperimentExperiment should render correctly 1`] = `
     class="connect-account-page-treatment woocommerce-payments-page is-narrow"
   >
     <div
-      class="components-card is-size-medium connect-account-page-treatment__onboarding css-1xs3c37-CardUI e1q7k77g0"
+      class="components-surface components-card connect-account-page-treatment__onboarding css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Card"
     >
       <div
-        class="components-flex components-card__header is-size-medium e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+        class="css-mgwsf4-View-Content em57xhy0"
       >
-        <img
-          alt="logo"
-          src="assets/images/logo.svg"
+        <div
+          class="components-flex components-card__header components-card-header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardHeader"
+        >
+          <img
+            alt="logo"
+            src="assets/images/logo.svg"
+          />
+        </div>
+        <div
+          class="components-card__body components-card-body connect-account-page-treatment__content css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
+        >
+          <h2>
+            Accept payments and manage your business.
+          </h2>
+          <p>
+            By using WooCommerce Payments you agree to be bound by our 
+            <a
+              href="https://wordpress.com/tos"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Terms of Service
+            </a>
+             and acknowledge that you have read our 
+            <a
+              href="https://automattic.com/privacy/"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Privacy Policy
+            </a>
+          </p>
+          <a
+            class="components-button is-primary"
+            href="/wcpay-connect-url"
+          >
+            Get started
+          </a>
+        </div>
+        <hr
+          aria-orientation="horizontal"
+          class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+          data-wp-c16t="true"
+          data-wp-component="CardDivider"
+          role="separator"
         />
+        <div
+          class="components-card__body components-card-body connect-account-page-treatment__payment-methods css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
+        >
+          <p>
+            Accepted payment methods include:
+          </p>
+          <div>
+            <img
+              alt="Visa"
+              src="assets/images/cards/visa.svg"
+            />
+            <img
+              alt="MasterCard"
+              src="assets/images/cards/mastercard.svg"
+            />
+            <img
+              alt="American Express"
+              src="assets/images/cards/amex.svg"
+            />
+            <img
+              alt="Apple Pay"
+              src="assets/images/cards/apple-pay.svg"
+            />
+            <img
+              alt="Google Pay"
+              src="assets/images/cards/google-pay.svg"
+            />
+            <img
+              alt="GiroPay"
+              src="assets/images/payment-methods/giropay.svg"
+            />
+            <img
+              alt="DinersClub"
+              src="assets/images/cards/diners.svg"
+            />
+            <img
+              alt="Discover"
+              src="assets/images/cards/discover.svg"
+            />
+            <img
+              alt="UnionPay"
+              src="assets/images/cards/unionpay.svg"
+            />
+            <img
+              alt="JCB"
+              src="assets/images/cards/jcb.svg"
+            />
+            <img
+              alt="Sofort"
+              src="assets/images/payment-methods/sofort.svg"
+            />
+            <span>
+              & more.
+            </span>
+          </div>
+        </div>
       </div>
       <div
-        class="components-card__body is-size-medium connect-account-page-treatment__content css-xmjzce-BodyUI e1q7k77g3"
-      >
-        <h2>
-          Accept payments and manage your business.
-        </h2>
-        <p>
-          By using WooCommerce Payments you agree to be bound by our 
-          <a
-            href="https://wordpress.com/tos"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            Terms of Service
-          </a>
-           and acknowledge that you have read our 
-          <a
-            href="https://automattic.com/privacy/"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            Privacy Policy
-          </a>
-        </p>
-        <a
-          class="components-button is-primary"
-          href="/wcpay-connect-url"
-        >
-          Get started
-        </a>
-      </div>
-      <hr
-        class="components-card__divider css-lh2anh-DividerUI e1q7k77g5"
-        role="separator"
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
       />
       <div
-        class="components-card__body is-size-medium connect-account-page-treatment__payment-methods css-xmjzce-BodyUI e1q7k77g3"
-      >
-        <p>
-          Accepted payment methods include:
-        </p>
-        <div>
-          <img
-            alt="Visa"
-            src="assets/images/cards/visa.svg"
-          />
-          <img
-            alt="MasterCard"
-            src="assets/images/cards/mastercard.svg"
-          />
-          <img
-            alt="American Express"
-            src="assets/images/cards/amex.svg"
-          />
-          <img
-            alt="Apple Pay"
-            src="assets/images/cards/apple-pay.svg"
-          />
-          <img
-            alt="Google Pay"
-            src="assets/images/cards/google-pay.svg"
-          />
-          <img
-            alt="GiroPay"
-            src="assets/images/payment-methods/giropay.svg"
-          />
-          <img
-            alt="DinersClub"
-            src="assets/images/cards/diners.svg"
-          />
-          <img
-            alt="Discover"
-            src="assets/images/cards/discover.svg"
-          />
-          <img
-            alt="UnionPay"
-            src="assets/images/cards/unionpay.svg"
-          />
-          <img
-            alt="JCB"
-            src="assets/images/cards/jcb.svg"
-          />
-          <img
-            alt="Sofort"
-            src="assets/images/payment-methods/sofort.svg"
-          />
-          <span>
-            & more.
-          </span>
-        </div>
-      </div>
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
     </div>
     <div
-      class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Card"
     >
       <div
-        class="components-card__body is-size-medium connect-account-page-treatment__details css-xmjzce-BodyUI e1q7k77g3"
+        class="css-mgwsf4-View-Content em57xhy0"
       >
-        <div>
-          <img
-            alt="Payments"
-            src="assets/images/illustrations/payments.svg"
-          />
-          <p>
-            Offer your customers their preferred way to pay including debit and credit card payments, Apple Pay, Sofort, SEPA, iDeal and many more.
-          </p>
-        </div>
-        <div>
-          <img
-            alt="Multi-Currency"
-            src="assets/images/illustrations/multicurrency.svg"
-          />
-          <p>
-            Sell to international markets and accept more than 135 currencies with local payment methods.
-          </p>
-        </div>
-        <div>
-          <img
-            alt="Manage"
-            src="assets/images/illustrations/manage.svg"
-          />
-          <p>
-            Earn and manage recurring revenue and get automatic deposits into your nominated bank account.
-          </p>
+        <div
+          class="components-card__body components-card-body connect-account-page-treatment__details css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
+        >
+          <div>
+            <img
+              alt="Payments"
+              src="assets/images/illustrations/payments.svg"
+            />
+            <p>
+              Offer your customers their preferred way to pay including debit and credit card payments, Apple Pay, Sofort, SEPA, iDeal and many more.
+            </p>
+          </div>
+          <div>
+            <img
+              alt="Multi-Currency"
+              src="assets/images/illustrations/multicurrency.svg"
+            />
+            <p>
+              Sell to international markets and accept more than 135 currencies with local payment methods.
+            </p>
+          </div>
+          <div>
+            <img
+              alt="Manage"
+              src="assets/images/illustrations/manage.svg"
+            />
+            <p>
+              Earn and manage recurring revenue and get automatic deposits into your nominated bank account.
+            </p>
+          </div>
         </div>
       </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
     </div>
   </div>
 </div>
@@ -153,13 +200,33 @@ exports[`ConnectAccountPageExperimentExperiment should render correctly when on-
     class="connect-account-page-treatment woocommerce-payments-page is-narrow"
   >
     <div
-      class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Card"
     >
       <div
-        class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
+        class="css-mgwsf4-View-Content em57xhy0"
       >
-        We've temporarily paused new account creation. We'll notify you when we resume!
+        <div
+          class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
+        >
+          We've temporarily paused new account creation. We'll notify you when we resume!
+        </div>
       </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
     </div>
   </div>
 </div>

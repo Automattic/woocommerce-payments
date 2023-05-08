@@ -91,22 +91,24 @@
 			font-size: 1em;
 		}
 
-		.connect-account__card {
-			> .components-card__body {
-				padding: 0;
+		.connect-account__card-body {
+			padding: 0;
 
-				.content {
-					padding: 0 24px 24px 24px;
+			.woocommerce-payments-banner {
+				box-shadow: none;
+			}
 
-					a {
-						text-decoration: none;
-					}
+			.content {
+				padding: 0 24px 24px 24px;
 
-					hr {
-						position: relative;
-						left: -24px;
-						width: calc( 100% + 48px );
-					}
+				a {
+					text-decoration: none;
+				}
+
+				hr {
+					position: relative;
+					left: -24px;
+					width: calc( 100% + 48px );
 				}
 			}
 		}

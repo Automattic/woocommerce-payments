@@ -243,8 +243,8 @@ const ConnectAccountPage = () => {
 		<div className="connect-account-page">
 			<Page isNarrow className="connect-account">
 				<ConnectPageError />
-				<Card className="connect-account__card">
-					<CardBody>
+				<Card>
+					<CardBody className="connect-account__card-body">
 						<Banner style="account-page" />
 						<div className="content">
 							{ wcpaySettings.onBoardingDisabled ? (
