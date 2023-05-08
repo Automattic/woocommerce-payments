@@ -454,9 +454,10 @@ export const handleWooPayEmailInput = async (
 		}
 
 		switch ( e.data.action ) {
+			case 'auto_redirect_to_platform_checkout':
 			case 'auto_redirect_to_woopay':
 				hasCheckedLoginSession = true;
-				api.initWooPay( '', e.data.woopayUserSession )
+				api.initWooPay( '', e.data.platformCheckoutUserSession )
 					.then( ( response ) => {
 						if ( 'success' === response.result ) {
 							loginSessionIframeWrapper.classList.add(
@@ -488,13 +489,14 @@ export const handleWooPayEmailInput = async (
 				hasCheckedLoginSession = true;
 				closeLoginSessionIframe();
 				break;
+			case 'redirect_to_platform_checkout':
 			case 'redirect_to_woopay':
 				wcpayTracks.recordUserEvent(
 					wcpayTracks.events.WOOPAY_OTP_COMPLETE
 				);
 				api.initWooPay(
 					woopayEmailInput.value,
-					e.data.woopayUserSession
+					e.data.platformCheckoutUserSession
 				)
 					.then( ( response ) => {
 						if ( 'success' === response.result ) {

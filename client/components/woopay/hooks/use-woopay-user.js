@@ -15,13 +15,13 @@ const useWooPayUser = () => {
 
 		const currentWindowRef = windowRef.current;
 		currentWindowRef.addEventListener(
-			'WooPayUserCheck',
+			'woopayUserCheck',
 			handleWooPayUserCheck
 		);
 
 		return () => {
 			currentWindowRef.removeEventListener(
-				'WooPayUserCheck',
+				'woopayUserCheck',
 				handleWooPayUserCheck
 			);
 		};

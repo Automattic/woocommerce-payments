@@ -215,20 +215,22 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 			case 'otp_email_submitted':
 				userEmail = e.data.userEmail;
 				break;
+			case 'redirect_to_platform_checkout':
 			case 'redirect_to_woopay':
 				wcpayTracks.recordUserEvent(
 					wcpayTracks.events.WOOPAY_OTP_COMPLETE
 				);
-				api.initWooPay( userEmail, e.data.woopayUserSession ).then(
-					( response ) => {
-						if ( 'success' === response.result ) {
-							window.location = response.url;
-						} else {
-							showErrorMessage();
-							closeIframe( false );
-						}
+				api.initWooPay(
+					userEmail,
+					e.data.platformCheckoutUserSession
+				).then( ( response ) => {
+					if ( 'success' === response.result ) {
+						window.location = response.url;
+					} else {
+						showErrorMessage();
+						closeIframe( false );
 					}
-				);
+				} );
 				break;
 			case 'otp_validation_failed':
 				wcpayTracks.recordUserEvent(
