@@ -471,7 +471,7 @@ class WC_Payments {
 			}
 			foreach ( $payment_methods as $payment_method ) {
 				self::$upe_payment_method_map[ $payment_method->get_id() ]  = $payment_method;
-				self::$upe_payment_gateway_map[ $payment_method->get_id() ] = new UPE_Split_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service, self::$platform_checkout_tracker );
+				self::$upe_payment_gateway_map[ $payment_method->get_id() ] = new UPE_Split_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service );
 			}
 
 			self::$card_gateway         = self::get_payment_gateway_by_id( 'card' );
@@ -847,7 +847,7 @@ class WC_Payments {
 	 *
 	 * @return WC_Payments_Http_Interface
 	 */
-	private static function get_wc_payments_http() {
+	public static function get_wc_payments_http() {
 		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http-interface.php';
 		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http.php';
 
