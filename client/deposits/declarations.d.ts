@@ -91,4 +91,6 @@ declare module '@woocommerce/components' {
 	}
 
 	const TourKit: ( props: any ) => JSX.Element;
+
+	const List: ( props: { className: string; items: any[] } ) => JSX.Element;
 }

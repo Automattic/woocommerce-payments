@@ -3,6 +3,7 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { List } from '@woocommerce/components';
 
 /**
@@ -10,7 +11,16 @@ import { List } from '@woocommerce/components';
  */
 import './style.scss';
 
-const HorizontalList = ( props ) => {
+interface HorizontalListItem {
+	title: string;
+	content: string | React.ReactNode;
+}
+
+interface Props {
+	items: ( false | HorizontalListItem )[];
+}
+
+const HorizontalList: React.FunctionComponent< Props > = ( props ) => {
 	const { items } = props;
 	return <List className="woocommerce-list--horizontal" items={ items } />;
 };
