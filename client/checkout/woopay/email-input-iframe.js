@@ -267,7 +267,7 @@ export const handleWooPayEmailInput = async (
 		}
 	} );
 
-	// Cancelwoopay request and close iframe
+	// Cancel woopay request and close iframe
 	// when user clicks Place Order before it loads.
 	const abortController = new AbortController();
 	const { signal } = abortController;
