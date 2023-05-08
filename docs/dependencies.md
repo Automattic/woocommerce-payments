@@ -56,7 +56,7 @@ to catalog our packages and provide guidance to a developer who wants to test an
 | [@wordpress/element](https://www.npmjs.com/package/@wordpress/element) | An abstraction layer atop React. | JS unit tests are passing. | Removed [@types/wordpress__element](https://www.npmjs.com/package/@types/wordpress__element) since @wordpress/element has built-in types |
 | [@wordpress/scripts](https://www.npmjs.com/package/@wordpress/scripts) | Collection of reusable scripts tailored for WordPress development. | JS tests and E2E pipeline works, which uses `wp-scripts` | `>=20` requires `jest >=27`, we're currently at `v26.x` so updated to  `v19.2.3`  |
 | [@woocommerce/explat](https://www.npmjs.com/package/@woocommerce/explat/) | Component and utility functions that can be used to run A/B Tests in WooCommerce dashboard and reports pages. | JS unit tests are passing | After update ensure types are still correct for `ExperimentProps`, or use a DefinitelyTyped package if available.  |
-| [@woocommerce/experimental](https://www.npmjs.com/package/@wordpress/plugins) | A collection of component imports and exports that are aliases for components transitioning from experimental to non-experimental.| JS unit tests are passing| |
+| [@woocommerce/experimental](https://www.npmjs.com/package/@wordpress/plugins) | A collection of component imports and exports that are aliases for components transitioning from experimental to non-experimental.| JS unit tests are passing| Needed to install `@types/react-transition-group` as JS linting could not find a declaration file for module 'react-transition-group/CSSTransition'. |
 
 
 ### PHP Runtime Dependencies
