@@ -877,6 +877,16 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$should_show_itemized_view = ! isset( $product_view_options['is_product_page'] ) ? true : filter_var( $product_view_options['is_product_page'], FILTER_VALIDATE_BOOLEAN );
 
 		$data = $this->get_shipping_options( $shipping_address, $should_show_itemized_view );
+		
+		// Log the data for debugging.
+		$debug_array = [
+			'product_view_options' => $product_view_options,
+			'should_show_itemized_view' => $should_show_itemized_view,
+			'data' => $data,
+			'IP' => $_SERVER['REMOTE_ADDR'],
+		];
+		error_log( var_export( $debug_array, true ) );
+
 		wp_send_json( $data );
 	}
 
@@ -945,6 +955,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 			WC()->cart->calculate_totals();
 
+			
 			$data          += $this->build_display_items( $itemized_display_items );
 			$data['result'] = 'success';
 		} catch ( Exception $e ) {
@@ -1504,6 +1515,9 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$subtotal  = 0;
 		$discounts = 0;
 		$currency  = get_woocommerce_currency();
+
+		// $debug = print_r(WC()->cart->get_cart(), true);
+		// update_option('debug__get_cart', $debug);
 
 		// Default show only subtotal instead of itemization.
 		if ( ! apply_filters( 'wcpay_payment_request_hide_itemization', true ) || $itemized_display_items ) {
