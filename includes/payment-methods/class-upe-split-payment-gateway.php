@@ -163,6 +163,28 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 		return WC_Payments::get_payment_method_by_id( $payment_method_type );
 	}
 
+	/**
+	 * Set formatted readable payment method title for order,
+	 * using payment method details from accompanying charge.
+	 *
+	 * @param WC_Order   $order WC Order being processed.
+	 * @param string     $payment_method_type Stripe payment method key.
+	 * @param array|bool $payment_method_details Array of payment method details from charge or false.
+	 */
+	public function set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details ) {
+		$payment_method = $this->get_selected_payment_method( $payment_method_type );
+		if ( ! $payment_method ) {
+			return;
+		}
+
+		$payment_method_title = $payment_method->get_title( $payment_method_details );
+
+		$payment_gateway = 'card' === $payment_method->get_id() ? self::GATEWAY_ID : self::GATEWAY_ID . '_' . $payment_method_title;
+
+		$order->set_payment_method( $payment_gateway );
+		$order->set_payment_method_title( $payment_method_title );
+		$order->save();
+	}
 
 	/**
 	 * Handle AJAX request for updating a payment intent for Stripe UPE.
