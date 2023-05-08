@@ -7,17 +7,53 @@ import GridiconCheckmarkCircle from 'gridicons/dist/checkmark-circle';
 import GridiconNotice from 'gridicons/dist/notice';
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
+import React from 'react';
 
 /**
  * Internal dependencies
  */
 import 'components/account-status/shared.scss';
 
-const DepositsStatus = ( { status, interval, accountStatus, iconSize } ) => {
+type DepositsStatus = 'enabled' | 'disabled' | 'blocked';
+type DepositsIntervals = 'daily' | 'weekly' | 'monthly' | 'manual';
+type AccountStatus =
+	| 'complete'
+	| 'pending_verification'
+	| 'restricted_partially'
+	| 'restricted'
+	| 'restricted_soon'
+	| 'requirements.past_due'
+	| 'requirements.pending_verification'
+	| 'listed'
+	| 'platform_paused'
+	| 'rejected.fraud'
+	| 'rejected.listed'
+	| 'rejected.terms_of_service'
+	| 'rejected.other'
+	| 'under_review'
+	| 'other';
+
+interface Props {
+	status: DepositsStatus;
+	interval: DepositsIntervals;
+	accountStatus: AccountStatus;
+	iconSize: number;
+}
+
+const DepositsStatus: React.FC< Props > = ( {
+	status,
+	interval,
+	accountStatus,
+	iconSize,
+} ) => {
 	let className = 'account-status__info__green';
 	let description;
 	let icon = <GridiconCheckmarkCircle size={ iconSize } />;
-	const automaticIntervals = [ 'daily', 'weekly', 'monthly' ];
+	const automaticIntervals: DepositsIntervals[] = [
+		'daily',
+		'weekly',
+		'monthly',
+	];
 	const showSuspendedNotice = 'blocked' === status;
 
 	if ( 'pending_verification' === accountStatus ) {
