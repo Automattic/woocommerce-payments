@@ -35,7 +35,6 @@ use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Platform_Checkout\Platform_Checkout_Order_Status_Sync;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
-use WCPay\Platform_Checkout_Tracker;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Tracker;
 
@@ -184,13 +183,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected $platform_checkout_util;
 
 	/**
-	 * Platform Checkout Tracker.
-	 *
-	 * @var Platform_Checkout_Tracker
-	 */
-	protected $platform_checkout_tracker;
-
-	/**
 	 * WC_Payment_Gateway_WCPay constructor.
 	 *
 	 * @param WC_Payments_API_Client               $payments_api_client             - WooCommerce Payments API client.
@@ -217,7 +209,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->action_scheduler_service        = $action_scheduler_service;
 		$this->failed_transaction_rate_limiter = $failed_transaction_rate_limiter;
 		$this->order_service                   = $order_service;
-		$this->platform_checkout_tracker       = new Platform_Checkout_Tracker( WC_Payments::get_wc_payments_http() );
 
 		$this->id                 = static::GATEWAY_ID;
 		$this->icon               = plugins_url( 'assets/images/payment-methods/cc.svg', WCPAY_PLUGIN_FILE );
@@ -1779,7 +1770,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function update_is_platform_checkout_enabled( $is_platform_checkout_enabled ) {
 		$current_is_platform_checkout_enabled = 'yes' === $this->get_option( 'platform_checkout', 'no' );
 		if ( $is_platform_checkout_enabled !== $current_is_platform_checkout_enabled ) {
-			$this->platform_checkout_tracker->maybe_record_admin_event(
+			WC_Payments::platform_checkout_tracker()->maybe_record_admin_event(
 				$is_platform_checkout_enabled ? 'platform_checkout_enabled' : 'platform_checkout_disabled',
 				[ 'test_mode' => WC_Payments::mode()->is_test() ? 1 : 0 ]
 			);

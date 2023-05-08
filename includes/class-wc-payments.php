@@ -39,6 +39,7 @@ use WCPay\WC_Payments_UPE_Checkout;
 use WCPay\WooPay\Service\Checkout_Service;
 use WCPay\Core\WC_Payments_Customer_Service_API;
 use WCPay\Blocks_Data_Extractor;
+use WCPay\Platform_Checkout_Tracker;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -162,6 +163,13 @@ class WC_Payments {
 	 * @var WC_Payments_Express_Checkout_Button_Display_Handler
 	 */
 	private static $express_checkout_button_display_handler;
+
+	/**
+	 * Platform Checkout Tracker.
+	 *
+	 * @var Platform_Checkout_Tracker
+	 */
+	private static $platform_checkout_tracker;
 
 	/**
 	 * Instance of WC_Payments_Apple_Pay_Registration, created in init function
@@ -446,6 +454,7 @@ class WC_Payments {
 		self::$order_success_page                  = new WC_Payments_Order_Success_Page();
 		self::$onboarding_service                  = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
 		self::$platform_checkout_util              = new Platform_Checkout_Utilities();
+		self::$platform_checkout_tracker           = new Platform_Checkout_Tracker( self::get_wc_payments_http() );
 
 		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
 
@@ -977,6 +986,15 @@ class WC_Payments {
 			return (string) filemtime( WCPAY_ABSPATH . trim( $file, '/' ) );
 		}
 		return WCPAY_VERSION_NUMBER;
+	}
+
+	/**
+	 * Returns the Platform_Checkout_Tracker instance
+	 *
+	 * @return Platform_Checkout_Tracker instance
+	 */
+	public static function platform_checkout_tracker(): Platform_Checkout_Tracker {
+		return self::$platform_checkout_tracker;
 	}
 
 	/**
