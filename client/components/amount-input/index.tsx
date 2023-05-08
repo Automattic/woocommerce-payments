@@ -23,7 +23,7 @@ const AmountInput: React.FunctionComponent< Props > = ( {
 	value,
 	placeholder,
 	help,
-	onChange = () => undefined,
+	onChange,
 } ) => {
 	const validateInput = useCallback( ( subject: string ): boolean => {
 		// Only allow decimals, a single dot, and more decimals (or an empty value).
