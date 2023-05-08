@@ -22,13 +22,15 @@ const ClickableCell: React.FunctionComponent< React.PropsWithChildren<
 	Props
 > > = ( { href, children } ) => {
 	if ( href ) {
-		<Link
-			href={ href }
-			className="woocommerce-table__clickable-cell"
-			tabIndex="-1"
-		>
-			{ children }
-		</Link>;
+		return (
+			<Link
+				href={ href }
+				className="woocommerce-table__clickable-cell"
+				tabIndex="-1"
+			>
+				{ children }
+			</Link>
+		);
 	}
 
 	return <>{ children }</>;
