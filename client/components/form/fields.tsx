@@ -12,6 +12,9 @@ import CustomSelectControl, {
 	ControlProps,
 	Item,
 } from 'components/custom-select-control';
+import PhoneNumberControl, {
+	PhoneNumberControlProps,
+} from '../phone-number-control';
 import './style.scss';
 
 interface CommonProps {
@@ -21,10 +24,11 @@ interface CommonProps {
 export type TextFieldProps = TextControl.Props & CommonProps;
 export type SelectFieldProps< ItemType > = ControlProps< ItemType > &
 	CommonProps;
+export type PhoneNumberFieldProps = PhoneNumberControlProps & CommonProps;
 
 type FieldProps< ItemType > = {
-	component: 'text' | 'select';
-} & ( TextFieldProps | SelectFieldProps< ItemType > );
+	component: 'text' | 'select' | 'phone';
+} & ( TextFieldProps | SelectFieldProps< ItemType > | PhoneNumberFieldProps );
 
 const Field = < ItemType extends Item >( {
 	component,
@@ -45,6 +49,10 @@ const Field = < ItemType extends Item >( {
 			props = rest as SelectFieldProps< ItemType >;
 			field = <CustomSelectControl { ...props } />;
 			break;
+		case 'phone':
+			props = rest as PhoneNumberFieldProps;
+			field = <PhoneNumberControl { ...props } />;
+			break;
 	}
 
 	return (
@@ -64,5 +72,9 @@ export const TextField: React.FC< TextFieldProps > = ( props ) => (
 export const SelectField = < ItemType extends Item >(
 	props: SelectFieldProps< ItemType >
 ): JSX.Element => <Field component={ 'select' } { ...props } />;
+
+export const PhoneNumberField: React.FC< PhoneNumberControlProps > = (
+	props
+) => <Field component={ 'phone' } { ...props } />;
 
 export default Field;

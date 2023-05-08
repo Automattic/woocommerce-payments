@@ -11,9 +11,18 @@ import apiFetch from '@wordpress/api-fetch';
 import { useOnboardingContext } from '../context';
 import { EligibleData, EligibleResult } from '../types';
 import { fromDotNotation } from '../utils';
+import { trackRedirected, useTrackAbandoned } from '../tracking';
+import LoadBar from 'components/load-bar';
+import strings from '../strings';
 
-const Loading: React.FC = () => {
+interface Props {
+	name: string;
+}
+
+const LoadingStep: React.FC< Props > = () => {
 	const { data } = useOnboardingContext();
+
+	const { removeTrackListener } = useTrackAbandoned();
 
 	const isEligibleForPo = async () => {
 		if (
@@ -56,6 +65,10 @@ const Loading: React.FC = () => {
 			prefill: fromDotNotation( data ),
 			progressive: isEligible,
 		} );
+
+		trackRedirected( isEligible );
+		removeTrackListener();
+
 		window.location.href = resultUrl;
 	};
 
@@ -65,8 +78,17 @@ const Loading: React.FC = () => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [] );
 
-	// TODO [GH-4746] Use LoadBar component.
-	return <></>;
+	return (
+		<div className="loading-step">
+			<h1 className="stepper__heading">
+				{ strings.steps.loading.heading }
+			</h1>
+			<LoadBar />
+			<h2 className="stepper__subheading">
+				{ strings.steps.loading.subheading }
+			</h2>
+		</div>
+	);
 };
 
-export default Loading;
+export default LoadingStep;
