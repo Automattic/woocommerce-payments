@@ -2,17 +2,30 @@
  * External dependencies
  */
 import React, { useCallback, useEffect } from 'react';
+
+/**
+ * Internal dependencies
+ */
 import './style.scss';
 
-const AmountInput = ( {
+interface Props {
+	id: string;
+	prefix: string;
+	value: any;
+	placeholder: string;
+	help: string;
+	onChange: ( value: string ) => void;
+}
+
+const AmountInput: React.FunctionComponent< Props > = ( {
 	id,
 	prefix,
 	value,
 	placeholder,
 	help,
-	onChange = () => {},
+	onChange = () => undefined,
 } ) => {
-	const validateInput = useCallback( ( subject ) => {
+	const validateInput = useCallback( ( subject: string ): boolean => {
 		// Only allow decimals, a single dot, and more decimals (or an empty value).
 		return /^(\d+\.?\d*)?$/m.test( subject );
 	}, [] );
@@ -25,7 +38,7 @@ const AmountInput = ( {
 
 	if ( isNaN( value ) || null === value ) value = '';
 
-	const handleChange = ( inputvalue ) => {
+	const handleChange = ( inputvalue: string ): void => {
 		if ( validateInput( inputvalue ) ) {
 			onChange( inputvalue );
 		}
