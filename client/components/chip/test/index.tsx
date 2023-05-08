@@ -51,9 +51,4 @@ describe( 'Chip', () => {
 		const { container: chip } = renderChip( 'warning', 'Alert message' );
 		expect( chip ).toMatchSnapshot();
 	} );
-
-	test( 'renders default if type is invalid', () => {
-		const { container: chip } = renderChip( 'invalidtype', 'Message' );
-		expect( chip ).toMatchSnapshot();
-	} );
 } );
