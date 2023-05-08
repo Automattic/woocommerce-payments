@@ -474,6 +474,14 @@ export const handlePlatformCheckoutEmailInput = async (
 					e.data.platformCheckoutUserSession
 				)
 					.then( ( response ) => {
+						// Do nothing if the iframe has been closed.
+						if (
+							! document.querySelector(
+								'.platform-checkout-otp-iframe'
+							)
+						) {
+							return;
+						}
 						if ( 'success' === response.result ) {
 							loginSessionIframeWrapper.classList.add(
 								'platform-checkout-login-session-iframe-wrapper'
@@ -514,6 +522,14 @@ export const handlePlatformCheckoutEmailInput = async (
 					e.data.platformCheckoutUserSession
 				)
 					.then( ( response ) => {
+						// Do nothing if the iframe has been closed.
+						if (
+							! document.querySelector(
+								'.platform-checkout-otp-iframe'
+							)
+						) {
+							return;
+						}
 						if ( 'success' === response.result ) {
 							window.location = response.url;
 						} else {
