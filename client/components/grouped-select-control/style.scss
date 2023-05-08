@@ -1,4 +1,4 @@
-.wcpay-component-new-select-control {
+.wcpay-component-grouped-select-control {
 	position: relative;
 
 	&__label {
@@ -15,7 +15,6 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		padding-right: $gap-smallest;
 
 		&-value {
 			text-overflow: ellipsis;
@@ -48,7 +47,7 @@
 
 	&__list {
 		position: absolute;
-		max-height: 400px;
+		max-height: 300px;
 		min-width: 100%;
 		background-color: #fff;
 		border-radius: 2px;

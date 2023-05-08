@@ -7,13 +7,6 @@
 
 defined( 'ABSPATH' ) || exit;
 
-use WCPay\Core\Server\Request\Create_Intention;
-use WCPay\Core\Server\Request\Get_Intention;
-use WCPay\Logger;
-use WCPay\Constants\Order_Status;
-use WCPay\Constants\Payment_Intent_Status;
-use WCPay\Constants\Payment_Method;
-
 /**
  * REST controller for order processing.
  */

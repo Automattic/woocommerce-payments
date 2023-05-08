@@ -79,7 +79,7 @@ describe( 'Loading', () => {
 			data: [],
 		} );
 
-		render( <Loading /> );
+		render( <Loading name="loading" /> );
 
 		await waitFor( () => {
 			expect( apiFetch ).toHaveBeenCalledWith( {
@@ -114,7 +114,7 @@ describe( 'Loading', () => {
 			data: [],
 		} );
 
-		render( <Loading /> );
+		render( <Loading name="loading" /> );
 
 		await waitFor( () => {
 			expect( apiFetch ).toHaveBeenCalledWith( {

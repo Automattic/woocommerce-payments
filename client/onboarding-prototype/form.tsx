@@ -15,6 +15,8 @@ import {
 	TextFieldProps,
 	SelectField,
 	SelectFieldProps,
+	PhoneNumberField,
+	PhoneNumberFieldProps,
 } from 'components/form/fields';
 import { useOnboardingContext } from './context';
 import { OnboardingFields } from './types';
@@ -25,10 +27,8 @@ export const OnboardingForm: React.FC = ( { children } ) => {
 	const { errors, touched, setTouched } = useOnboardingContext();
 	const { nextStep } = useStepperContext();
 
-	const isValid = isEmpty( errors );
-
 	const handleContinue = () => {
-		if ( isValid ) return nextStep();
+		if ( isEmpty( errors ) ) return nextStep();
 		setTouched( mapValues( touched, () => true ) );
 	};
 
@@ -40,7 +40,7 @@ export const OnboardingForm: React.FC = ( { children } ) => {
 			} }
 		>
 			{ children }
-			<Button isPrimary type="submit">
+			<Button isPrimary type="submit" className="stepper__cta">
 				{ strings.continue }
 			</Button>
 		</form>
@@ -104,6 +104,34 @@ export const OnboardingSelectField = < ItemType extends Item >( {
 				validate( selectedItem?.key );
 			} }
 			options={ [] }
+			error={ error() }
+			{ ...rest }
+		/>
+	);
+};
+
+interface OnboardingPhoneNumberFieldProps
+	extends Partial< PhoneNumberFieldProps > {
+	name: keyof OnboardingFields;
+}
+
+export const OnboardingPhoneNumberField: React.FC< OnboardingPhoneNumberFieldProps > = ( {
+	name,
+	...rest
+} ) => {
+	const { data, setData, temp, setTemp } = useOnboardingContext();
+	const { validate, error } = useValidation( name );
+
+	return (
+		<PhoneNumberField
+			label={ strings.fields[ name ] }
+			value={ data[ name ] || '' }
+			country={ temp.phoneCountryCode || wcpaySettings.connect.country }
+			onChange={ ( value: string, phoneCountryCode: string ) => {
+				setTemp( { phoneCountryCode } );
+				setData( { [ name ]: value } );
+				validate( value );
+			} }
 			error={ error() }
 			{ ...rest }
 		/>
