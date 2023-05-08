@@ -342,8 +342,11 @@ export const DisputesList = (): JSX.Element => {
 					{
 						...row[ 3 ],
 						value:
-							disputeStatusMapping[ row[ 3 ].value ?? '' ]
-								.message,
+							disputeStatusMapping[
+								( row[ 3 ]
+									.value as keyof typeof disputeStatusMapping ) ??
+									'needs_response'
+							].message,
 					},
 					{
 						...row[ 4 ],

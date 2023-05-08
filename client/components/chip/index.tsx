@@ -1,4 +1,5 @@
 /** @format **/
+import React from 'react';
 
 /**
  * Internal dependencies
@@ -6,9 +7,19 @@
 import './style.scss';
 import { HoverTooltip } from 'wcpay/components/tooltip';
 
-const types = [ 'primary', 'light', 'warning', 'alert' ];
+const types = [ 'primary', 'light', 'warning', 'alert' ] as const;
 
-const Chip = ( props ) => {
+export type ChipType = typeof types[ number ];
+
+interface Props {
+	message: string;
+	type: typeof types[ number ];
+	isCompact?: boolean;
+	className?: string;
+	tooltip?: React.ReactNode;
+}
+
+const Chip: React.FC< Props > = ( props ) => {
 	const { message, type, isCompact, className, tooltip } = props;
 
 	const classNames = [

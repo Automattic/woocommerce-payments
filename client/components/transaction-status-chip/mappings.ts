@@ -18,7 +18,7 @@ const transactionStatusMapping = {
 		type: 'alert',
 		message: __( 'Payment blocked', 'woocommerce-payments' ),
 	},
-};
+} as const;
 
 export type TransactionStatus = keyof typeof transactionStatusMapping;
 

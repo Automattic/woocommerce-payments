@@ -4,15 +4,22 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
+import { objectEntries } from 'ts-extras';
 
 /**
  * Internal dependencies
  */
 import disputeStatuses from 'components/dispute-status-chip/mappings';
+import type { ChipType } from '../chip';
 
-const formattedDisputeStatuses = Object.entries( disputeStatuses ).reduce(
+type DisputeStatus = keyof typeof disputeStatuses;
+// prettier-ignore
+// eslint-disable-next-line
+type DisputedStatus = `disputed_${ DisputeStatus }`;
+
+const formattedDisputeStatuses = objectEntries( disputeStatuses ).reduce(
 	( statuses, [ status, mapping ] ) => {
-		statuses[ 'disputed_' + status ] = {
+		statuses[ `disputed_${ status }` as const ] = {
 			type: mapping.type,
 			message: status.startsWith( 'warning_' )
 				? mapping.message
@@ -24,7 +31,10 @@ const formattedDisputeStatuses = Object.entries( disputeStatuses ).reduce(
 		};
 		return statuses;
 	},
-	{}
+	{} as Record<
+		DisputedStatus,
+		{ type: ChipType; message: string }
+	>
 );
 
 /* TODO: implement other payment statuses (SCA and authorizations) */
@@ -66,4 +76,4 @@ export default {
 		message: __( 'Payment blocked', 'woocommerce-payments' ),
 	},
 	...formattedDisputeStatuses,
-};
+} as const;
