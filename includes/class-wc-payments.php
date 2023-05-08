@@ -28,7 +28,6 @@ use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
-use WCPay\Platform_Checkout_Tracker;
 use WCPay\Platform_Checkout\Platform_Checkout_Store_Api_Token;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 use WCPay\Platform_Checkout\Platform_Checkout_Order_Status_Sync;
@@ -249,13 +248,6 @@ class WC_Payments {
 	private static $platform_checkout_util;
 
 	/**
-	 * Platform Checkout Tracker.
-	 *
-	 * @var Platform_Checkout_Tracker
-	 */
-	private static $platform_checkout_tracker;
-
-	/**
 	 * WC Payments Checkout
 	 *
 	 * @var WC_Payments_Checkout|WC_Payments_UPE_Checkout
@@ -460,9 +452,8 @@ class WC_Payments {
 		self::$order_success_page                  = new WC_Payments_Order_Success_Page();
 		self::$onboarding_service                  = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
 		self::$platform_checkout_util              = new Platform_Checkout_Utilities();
-		self::$platform_checkout_tracker           = new Platform_Checkout_Tracker( self::get_wc_payments_http() );
 
-		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service, self::$platform_checkout_tracker );
+		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
 
 		$payment_method_classes = [
 			CC_Payment_Method::class,
@@ -484,7 +475,7 @@ class WC_Payments {
 			}
 			foreach ( $payment_methods as $payment_method ) {
 				self::$upe_payment_method_map[ $payment_method->get_id() ]  = $payment_method;
-				self::$upe_payment_gateway_map[ $payment_method->get_id() ] = new UPE_Split_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service, self::$platform_checkout_tracker );
+				self::$upe_payment_gateway_map[ $payment_method->get_id() ] = new UPE_Split_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service );
 			}
 
 			self::$card_gateway         = self::get_payment_gateway_by_id( 'card' );
@@ -497,7 +488,7 @@ class WC_Payments {
 				$payment_methods[ $payment_method->get_id() ] = $payment_method;
 			}
 
-			self::$card_gateway         = new UPE_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service, self::$platform_checkout_tracker );
+			self::$card_gateway         = new UPE_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service );
 			self::$wc_payments_checkout = new WC_Payments_UPE_Checkout( self::get_gateway(), self::$platform_checkout_util, self::$account, self::$customer_service );
 		} else {
 			self::$card_gateway         = self::$legacy_card_gateway;
@@ -874,7 +865,7 @@ class WC_Payments {
 	 *
 	 * @return WC_Payments_Http_Interface
 	 */
-	private static function get_wc_payments_http() {
+	public static function get_wc_payments_http() {
 		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http-interface.php';
 		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http.php';
 

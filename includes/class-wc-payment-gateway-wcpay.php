@@ -200,7 +200,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service        - Action Scheduler service instance.
 	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter - Rate Limiter for failed transactions.
 	 * @param WC_Payments_Order_Service            $order_service                   - Order class instance.
-	 * @param Platform_Checkout_Tracker            $platform_checkout_tracker       - Platform Checkout Tracker instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
@@ -209,8 +208,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		WC_Payments_Token_Service $token_service,
 		WC_Payments_Action_Scheduler_Service $action_scheduler_service,
 		Session_Rate_Limiter $failed_transaction_rate_limiter = null,
-		WC_Payments_Order_Service $order_service,
-		Platform_Checkout_Tracker $platform_checkout_tracker
+		WC_Payments_Order_Service $order_service
 	) {
 		$this->payments_api_client             = $payments_api_client;
 		$this->account                         = $account;
@@ -219,7 +217,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->action_scheduler_service        = $action_scheduler_service;
 		$this->failed_transaction_rate_limiter = $failed_transaction_rate_limiter;
 		$this->order_service                   = $order_service;
-		$this->platform_checkout_tracker       = $platform_checkout_tracker;
+		$this->platform_checkout_tracker       = new Platform_Checkout_Tracker( WC_Payments::get_wc_payments_http() );
 
 		$this->id                 = static::GATEWAY_ID;
 		$this->icon               = plugins_url( 'assets/images/payment-methods/cc.svg', WCPAY_PLUGIN_FILE );
