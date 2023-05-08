@@ -5,7 +5,6 @@ import { __ } from '@wordpress/i18n';
 import { getConfig } from 'wcpay/utils/checkout';
 import wcpayTracks from 'tracks';
 import request from '../utils/request';
-import showErrorCheckout from '../utils/show-error-checkout';
 import { buildAjaxURL } from '../../payment-request/utils';
 import { getTargetElement, validateEmail } from './utils';
 
@@ -268,11 +267,7 @@ export const handleWooPayEmailInput = async (
 		}
 	} );
 
-	// Store if the subscription login error is being shown
-	// to remove it when change the e-mail address.
-	let hasWoopaySubscriptionLoginError = false;
-
-	// Cancel woopay request and close iframe
+	// Cancelwoopay request and close iframe
 	// when user clicks Place Order before it loads.
 	const abortController = new AbortController();
 	const { signal } = abortController;
@@ -311,42 +306,6 @@ export const handleWooPayEmailInput = async (
 
 		if ( parentDiv.contains( errorMessage ) ) {
 			parentDiv.removeChild( errorMessage );
-		}
-
-		if ( hasWoopaySubscriptionLoginError ) {
-			document
-				.querySelector( '#woopay-subscriptions-login-error' )
-				.remove();
-			hasWoopaySubscriptionLoginError = false;
-		}
-
-		if ( getConfig( 'woopayNeedsLogin' ) ) {
-			try {
-				const userExistsData = await request(
-					getConfig( 'userExistsEndpoint' ),
-					{
-						email,
-					},
-					{ signal }
-				);
-
-				if ( userExistsData[ 'user-exists' ] ) {
-					hasWoopaySubscriptionLoginError = true;
-					showErrorCheckout(
-						userExistsData.message,
-						false,
-						false,
-						'woopay-subscriptions-login-error'
-					);
-					spinner.remove();
-					return;
-				}
-			} catch ( err ) {
-				if ( 'AbortError' !== err.name ) {
-					showErrorMessage();
-					spinner.remove();
-				}
-			}
 		}
 
 		request(

@@ -124,8 +124,6 @@ class WC_Payments_Checkout {
 			'platformTrackerNonce'           => wp_create_nonce( 'platform_tracks_nonce' ),
 			'accountIdForIntentConfirmation' => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
 			'wcpayVersionNumber'             => WCPAY_VERSION_NUMBER,
-			'woopayNeedLogin'                => ! is_user_logged_in() && $wc_checkout->is_registration_required(),
-			'userExistsEndpoint'             => get_rest_url( null, '/wc/v3/users/exists' ),
 			'woopaySignatureNonce'           => wp_create_nonce( 'woopay_signature_nonce' ),
 			'woopayMerchantId'               => Jetpack_Options::get_option( 'id' ),
 			'icon'                           => $this->gateway->get_icon_url(),
