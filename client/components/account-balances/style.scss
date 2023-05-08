@@ -4,22 +4,6 @@
 	padding-bottom: 8px;
 }
 
-.wcpay-account-balances__header__flex {
-	// Using row-reverse to reverse the order of the elements so that the logo is
-	// last in the DOM, but first in the visual order when wrapping.
-	flex-flow: row-reverse wrap;
-
-	*:first-child {
-		order: 2;
-		margin-right: auto;
-	}
-
-	*:last-child {
-		order: 1;
-		margin-left: 8px;
-	}
-}
-
 .wcpay-account-balances__header__flex__logo {
 	display: block;
 	margin-top: 14px;
@@ -80,14 +64,8 @@
 	padding: 24px;
 }
 
-@media screen and ( max-width: 500px ) {
-	// On small devices, the logo and greeting should be centered.
-	.wcpay-account-balances__header__flex {
-		text-align: center;
-
-		*:first-child {
-			margin-left: auto;
-			margin-right: auto;
-		}
+@media screen and ( max-width: $break-mobile ) {
+	.components-flex.wcpay-account-balances__header__flex {
+		flex-direction: column-reverse;
 	}
 }
