@@ -50,13 +50,14 @@ const DepositsInformationOverview: React.FunctionComponent< OverviewProps > = (
 	} = overview;
 
 	const pendingAmount = pending ? pending.amount : 0;
-	const pendingDepositsLink = pending?.deposits_count ? (
-		<Link href={ getDetailsURL( nextScheduled?.id, 'deposits' ) }>
-			{ getBalanceDepositCount( pending ) }
-		</Link>
-	) : (
-		''
-	);
+	const pendingDepositsLink =
+		pending?.deposits_count && nextScheduled?.id ? (
+			<Link href={ getDetailsURL( nextScheduled.id, 'deposits' ) }>
+				{ getBalanceDepositCount( pending ) }
+			</Link>
+		) : (
+			''
+		);
 
 	const nextScheduledAmount = nextScheduled ? nextScheduled.amount : 0;
 	const nextScheduledLink = nextScheduled && (
