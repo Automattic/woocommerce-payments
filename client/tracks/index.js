@@ -70,8 +70,6 @@ const events = {
 		'wcpay_settings_deposits_waiting_period_docs_click',
 	SETTINGS_DEPOSITS_MANAGE_IN_STRIPE_CLICK:
 		'wcpay_settings_deposits_manage_in_stripe_click',
-	SETTINGS_DEPOSITS_PENDING_SCHEDULES_DOCS_CLICK:
-		'wcpay_settings_deposits_pending_schedules_docs_click',
 	MULTI_CURRENCY_ENABLED_CURRENCIES_UPDATED:
 		'wcpay_multi_currency_enabled_currencies_updated',
 	PAYMENT_REQUEST_SETTINGS_CHANGE: 'wcpay_payment_request_settings_change',
