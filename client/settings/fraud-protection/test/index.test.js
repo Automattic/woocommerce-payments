@@ -58,7 +58,9 @@ describe( 'FraudProtection', () => {
 
 	it( 'should render correctly', () => {
 		const { container: fraudProtectionSettings } = render(
-			<WCPaySettingsContext.Provider>
+			<WCPaySettingsContext.Provider
+				value={ { isWelcomeTourDismissed: false } }
+			>
 				<FraudProtection />
 			</WCPaySettingsContext.Provider>
 		);
