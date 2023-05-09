@@ -59,6 +59,7 @@ to catalog our packages and provide guidance to a developer who wants to test an
 | [@woocommerce/experimental](https://www.npmjs.com/package/@wordpress/plugins) | A collection of component imports and exports that are aliases for components transitioning from experimental to non-experimental.| JS unit tests are passing| Needed to install `@types/react-transition-group` as JS linting could not find a declaration file for module `react-transition-group/CSSTransition`. |
 | [@wordpress/dom-ready](https://www.npmjs.com/package/@wordpress/dom-ready) | Execute callback after the DOM is loaded.| JS unit tests are passing. | Downgraded to match the minimum supported version of WordPress. |
 | [@wordpress/html-entities](https://www.npmjs.com/package/@wordpress/html-entities) | HTML entity utilities for WordPress. | JS unit tests are passing. ||
+| [@wordpress/blocks](https://www.npmjs.com/package/@wordpress/blocks) | Blocks utilities for WordPress. | JS unit tests are passing. ||
 
 
 ### PHP Runtime Dependencies
