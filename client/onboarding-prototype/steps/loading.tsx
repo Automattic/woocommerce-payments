@@ -9,7 +9,7 @@ import apiFetch from '@wordpress/api-fetch';
  * Internal dependencies
  */
 import { useOnboardingContext } from '../context';
-import { EligibleData, EligibleResult } from '../types';
+import { POEligibleData, POEligibleResult } from '../types';
 import { fromDotNotation } from '../utils';
 import { trackRedirected, useTrackAbandoned } from '../tracking';
 import LoadBar from 'components/load-bar';
@@ -28,24 +28,27 @@ const LoadingStep: React.FC< Props > = () => {
 		if (
 			! data.country ||
 			! data.business_type ||
+			! data.mcc ||
 			! data.annual_revenue ||
 			! data.go_live_timeframe
 		) {
 			return false;
 		}
-		const businessDetails: EligibleData = {
+		const eligibilityDetails: POEligibleData = {
 			business: {
 				country: data.country,
 				type: data.business_type,
-				mcc: 'computers_peripherals_and_software', // TODO GH-4853 add MCC from onboarding form
+				mcc: data.mcc,
+			},
+			store: {
 				annual_revenue: data.annual_revenue,
 				go_live_timeframe: data.go_live_timeframe,
 			},
 		};
-		const eligibleResult = await apiFetch< EligibleResult >( {
+		const eligibleResult = await apiFetch< POEligibleResult >( {
 			path: '/wc/v3/payments/onboarding/router/po_eligible',
 			method: 'POST',
-			data: businessDetails,
+			data: eligibilityDetails,
 		} );
 
 		return 'eligible' === eligibleResult.result;
