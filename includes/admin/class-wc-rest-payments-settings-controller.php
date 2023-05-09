@@ -747,6 +747,9 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 
 		$platform_checkout_enabled_locations = $request->get_param( 'platform_checkout_enabled_locations' );
 
+		$all_locations = $this->wcpay_gateway->form_fields['payment_request_button_locations']['options'];
+		WC_Payments::platform_checkout_tracker()->platform_checkout_locations_updated( $all_locations, $platform_checkout_enabled_locations );
+
 		$this->wcpay_gateway->update_option( 'platform_checkout_button_locations', $platform_checkout_enabled_locations );
 	}
 
