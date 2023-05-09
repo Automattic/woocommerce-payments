@@ -21,7 +21,8 @@ class Platform_Checkout_Utilities {
 	use WC_Payments_Subscriptions_Utilities;
 
 	const AVAILABLE_COUNTRIES_KEY            = 'woocommerce_woocommerce_payments_woopay_available_countries';
-	const AVAILABLE_COUNTRIES_NEXT_CHECK_KEY = 'woocommerce_woocommerce_payments_woopay_available_countries_next_check';
+	const AVAILABLE_COUNTRIES_LAST_CHECK_KEY = 'woocommerce_woocommerce_payments_woopay_available_countries_last_check';
+	const AVAILABLE_COUNTRIES_DEFAULT        = '["US"]';
 
 	/**
 	 * Check various conditions to determine if we should enable platform checkout.
@@ -107,10 +108,10 @@ class Platform_Checkout_Utilities {
 	 * @return array
 	 */
 	public function get_persisted_available_countries() {
-		$available_countries = json_decode( get_option( self::AVAILABLE_COUNTRIES_KEY, '["US"]' ), true );
+		$available_countries = json_decode( get_option( self::AVAILABLE_COUNTRIES_KEY, self::AVAILABLE_COUNTRIES_DEFAULT ), true );
 
 		if ( ! is_array( $available_countries ) ) {
-			return [ 'US' ]; // need to specify at least one country, or WooPay will be totally disabled.
+			return json_decode( self::AVAILABLE_COUNTRIES_DEFAULT );
 		}
 
 		return $available_countries;
@@ -122,14 +123,14 @@ class Platform_Checkout_Utilities {
 	 * @return array
 	 */
 	public function get_woopay_available_countries() {
-		$next_check_option = get_option( self::AVAILABLE_COUNTRIES_NEXT_CHECK_KEY );
+		$last_check_option = get_option( self::AVAILABLE_COUNTRIES_LAST_CHECK_KEY );
 		$timezone          = new \DateTimeZone( wp_timezone_string() );
 		$current_date      = new \DateTime( 'now', $timezone );
 
-		if ( isset( $next_check_option ) ) {
-			$next_check = new \DateTime( $next_check_option, $timezone );
+		if ( isset( $last_check_option ) ) {
+			$last_check = new \DateTime( $last_check_option, $timezone );
 
-			if ( $current_date < $next_check ) {
+			if ( $current_date < $last_check->modify( '+1 day' ) ) {
 				return $this->get_persisted_available_countries();
 			}
 		}
@@ -172,8 +173,8 @@ class Platform_Checkout_Utilities {
 			}
 		}
 
-		$next_check = $current_date->modify( '+1 day' )->format( 'Y-m-d H:i:s' );
-		update_option( self::AVAILABLE_COUNTRIES_NEXT_CHECK_KEY, gmdate( $next_check ) );
+		$last_check = $current_date->format( 'Y-m-d H:i:s' );
+		update_option( self::AVAILABLE_COUNTRIES_LAST_CHECK_KEY, gmdate( $last_check ) );
 
 		return $this->get_persisted_available_countries();
 	}
