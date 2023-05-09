@@ -1639,7 +1639,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			home_url()
 		);
 
-		return [
+		return [ // nosemgrep: audit.php.wp.security.xss.query-arg -- home_url passed in to add_query_arg.
 			'message'      => $message,
 			'redirect_url' => $redirect_url,
 		];

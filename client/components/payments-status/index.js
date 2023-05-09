@@ -34,9 +34,23 @@ const PaymentsStatusDisabled = ( props ) => {
 	);
 };
 
-const PaymentsStatus = ( props ) => {
-	const { paymentsEnabled } = props;
+const PaymentsStatusPending = ( props ) => {
+	const { iconSize } = props;
 
+	return (
+		<span className={ 'account-status__info__gray' }>
+			<GridiconNotice size={ iconSize } />
+			{ __( 'Pending verification', 'woocommerce-payments' ) }
+		</span>
+	);
+};
+
+const PaymentsStatus = ( props ) => {
+	const { paymentsEnabled, accountStatus } = props;
+
+	if ( 'pending_verification' === accountStatus ) {
+		return <PaymentsStatusPending { ...props } />;
+	}
 	return paymentsEnabled ? (
 		<PaymentsStatusEnabled { ...props } />
 	) : (
