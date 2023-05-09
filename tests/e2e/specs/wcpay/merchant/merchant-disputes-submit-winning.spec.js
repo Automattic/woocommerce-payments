@@ -153,7 +153,7 @@ describe( 'Disputes > Submit winning dispute', () => {
 
 		// Check view submitted evidence is present on page.
 		await expect( page ).toMatchElement(
-			'div.wcpay-dispute-details .components-card > div.components-flex > div > a',
+			'div.wcpay-dispute-details .components-card div.components-flex > div > a',
 			{
 				text: 'View submitted evidence',
 			}

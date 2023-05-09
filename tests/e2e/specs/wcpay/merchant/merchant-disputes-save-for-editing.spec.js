@@ -104,7 +104,7 @@ describe( 'Disputes > Save dispute for editing', () => {
 		// Select the product type
 		await expect( page ).toSelect(
 			'[data-testid="dispute-challenge-product-type-selector"]',
-			'Offline service'
+			'offline_service'
 		);
 
 		await page.waitForSelector(
