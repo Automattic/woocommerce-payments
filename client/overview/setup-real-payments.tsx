@@ -25,6 +25,7 @@ const SetupRealPayments: React.FC = () => {
 	const [ modalVisible, setModalVisible ] = useState( false );
 
 	const handleContinue = () => {
+		// TODO continue setup should redirect to the new onboarding flow directly, skipping payments connect screen.
 		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
 			'wcpay-disable-onboarding-test-mode': true,
 		} );

@@ -110,6 +110,9 @@ const OverviewPage = () => {
 		} )
 		.filter( ( e ) => e && e.fee !== undefined );
 
+	// TODO SetupRealPayments should be placed above the account card.
+	// TODO SetupRealPayments should be dismissable.
+
 	return (
 		<Page isNarrow className="wcpay-overview">
 			<OverviewPageError />
