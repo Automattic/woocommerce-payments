@@ -334,11 +334,14 @@ class Platform_Checkout_Tracker extends Jetpack_Tracks_Client {
 	 * @return void
 	 */
 	public function platform_checkout_locations_updated( $all_locations, $platform_checkout_enabled_locations ) {
-
-		$props = array_fill_keys( array_map( fn( $loc) => $loc . '_enabled', array_keys( $all_locations ) ), false );
-
-		foreach ( $platform_checkout_enabled_locations as $location ) {
-			$props[ $location . '_enabled' ] = true;
+		$props = [];
+		foreach ( array_keys( $all_locations ) as $location ) {
+			$key = $location . '_enabled';
+			if ( in_array( $location, $platform_checkout_enabled_locations, true ) ) {
+				$props[ $key ] = true;
+			} else {
+				$props[ $key ] = false;
+			}
 		}
 
 		$this->maybe_record_admin_event( 'woopay_express_button_locations_updated', $props );
