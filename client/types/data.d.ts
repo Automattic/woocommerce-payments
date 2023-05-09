@@ -1,12 +1,13 @@
 /**
  * External dependencies
  */
-import { StoreDescriptor } from '@wordpress/data';
+import { StoreDescriptor } from '@wordpress/data/build-types/types';
+import { AnyConfig } from '@wordpress/data/src/types';
 
 declare module '@wordpress/data' {
 	type ControlDescriptor = {
 		type: string;
-		storeKey: string | StoreDescriptor;
+		storeKey: string | StoreDescriptor< AnyConfig >;
 		actionName: string;
 		args: unknown[];
 	};
