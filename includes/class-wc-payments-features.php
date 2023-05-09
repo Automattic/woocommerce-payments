@@ -112,6 +112,30 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Indicates whether card payments are enabled for this (Stripe) account.
+	 *
+	 * @return bool True if account can accept card payments, false otherwise.
+	 */
+	public static function are_payments_enabled() {
+		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
+
+		return is_array( $account ) && ( $account['payments_enabled'] ?? false );
+	}
+
+	/**
+	 * Checks if WooPay is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_woopay_enabled() {
+		$is_woopay_eligible               = self::is_woopay_eligible(); // Feature flag.
+		$is_woopay_enabled                = 'yes' === WC_Payments::get_gateway()->get_option( 'platform_checkout' );
+		$is_woopay_express_button_enabled = self::is_woopay_express_checkout_enabled();
+
+		return $is_woopay_eligible && $is_woopay_enabled && $is_woopay_express_button_enabled;
+	}
+
+	/**
 	 * Checks whether the customer Multi-Currency feature is enabled
 	 *
 	 * @return bool
