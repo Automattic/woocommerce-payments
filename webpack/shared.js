@@ -20,6 +20,8 @@ module.exports = {
 			checkout: './client/checkout/classic/index.js',
 			upe_checkout: './client/checkout/classic/upe.js',
 			upe_split_checkout: './client/checkout/classic/upe-split.js',
+			upe_with_deferred_intent_creation_checkout:
+				'./client/checkout/classic/upe-deferred-intent-creation/event-handlers.js',
 			'payment-request': './client/payment-request/index.js',
 			'subscription-edit-page': './client/subscription-edit-page.js',
 			tos: './client/tos/index.js',

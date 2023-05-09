@@ -16,7 +16,6 @@ exports[`ProtectionLevelModalNotice renders the high notice when the level prop 
           class="component-notice__icon"
           focusable="false"
           height="24"
-          role="img"
           viewBox="0 0 24 24"
           width="24"
         >
@@ -47,7 +46,6 @@ exports[`ProtectionLevelModalNotice renders the standard notice when the level p
           class="component-notice__icon"
           focusable="false"
           height="24"
-          role="img"
           viewBox="0 0 24 24"
           width="24"
         >
