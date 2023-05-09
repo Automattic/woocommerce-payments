@@ -638,7 +638,7 @@ class WC_Payments_Utils {
 			return '';
 		}
 
-		return add_query_arg(
+		return add_query_arg( // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
 			array_merge(
 				[
 					'page' => 'wc-admin',

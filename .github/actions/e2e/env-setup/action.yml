@@ -20,7 +20,7 @@ runs:
     # Composer setup
     - name: Setup Composer
       shell: bash
-      run: composer self-update 2.0.6
+      run: composer self-update
 
     # Use node version from .nvmrc
     - name: Setup NodeJS
