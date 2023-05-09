@@ -115,7 +115,7 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 					],
 					'woo_store_stats' => [
 						'required'    => false,
-						'description' => 'The context about the merchant\'s current WooCommerce store.',
+						'description' => 'Context about the merchant\'s current WooCommerce store.',
 						'type'        => 'object',
 					],
 				],
@@ -132,7 +132,7 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	 *
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public function get_business_types( $request ) {
+	public function get_business_types( WP_REST_Request $request ) {
 		$business_types = $this->onboarding_service->get_cached_business_types();
 		return rest_ensure_response( [ 'data' => $business_types ] );
 	}
@@ -146,7 +146,7 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	 *
 	 * @throws Rest_Request_Exception
 	 */
-	public function get_required_verification_information( $request ) {
+	public function get_required_verification_information( WP_REST_Request $request ) {
 		$country_code = $request->get_param( 'country' ) ?? null;
 		$type         = $request->get_param( 'type' ) ?? null;
 		$structure    = $request->get_param( 'structure' ) ?? null;
