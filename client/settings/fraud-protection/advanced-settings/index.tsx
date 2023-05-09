@@ -39,9 +39,9 @@ import { readRuleset, writeRuleset } from './utils';
 import wcpayTracks from 'tracks';
 import {
 	CurrentProtectionLevelHook,
-	UseAdvancedFraudPreventionSettings,
+	AdvancedFraudPreventionSettingsHook,
 	ProtectionSettingsUI,
-	UseSettings,
+	SettingsHook,
 } from '../interfaces';
 
 const observerEventMapping: Record< string, string > = {
@@ -86,7 +86,7 @@ const SaveFraudProtectionSettingsButton: React.FC = ( { children } ) => {
 };
 
 const FraudProtectionAdvancedSettingsPage: React.FC = () => {
-	const { saveSettings, isLoading, isSaving } = useSettings() as UseSettings;
+	const { saveSettings, isLoading, isSaving } = useSettings() as SettingsHook;
 
 	const cardObserver = useRef< IntersectionObserver >();
 
@@ -97,7 +97,7 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 	const [
 		advancedFraudProtectionSettings,
 		updateAdvancedFraudProtectionSettings,
-	] = useAdvancedFraudProtectionSettings() as UseAdvancedFraudPreventionSettings;
+	] = useAdvancedFraudProtectionSettings() as AdvancedFraudPreventionSettingsHook;
 	const [ validationError, setValidationError ] = useState< string | null >(
 		null
 	);

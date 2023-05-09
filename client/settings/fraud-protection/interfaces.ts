@@ -62,12 +62,12 @@ export interface FraudProtectionRule {
 
 export type CurrentProtectionLevelHook = [ string, ( level: string ) => void ];
 
-export type UseAdvancedFraudPreventionSettings = [
+export type AdvancedFraudPreventionSettingsHook = [
 	FraudProtectionRule[] | string,
 	( settings: FraudProtectionRule[] ) => void
 ];
 
-export interface UseSettings {
+export interface SettingsHook {
 	isSaving: boolean;
 	isLoading: boolean;
 	saveSettings: () => void;
