@@ -1,18 +1,23 @@
+/**
+ * External dependencies
+ */
+import { StoreDescriptor } from '@wordpress/data';
+
 declare module '@wordpress/data' {
+	type ControlDescriptor = {
+		type: string;
+		storeKey: string | StoreDescriptor;
+		actionName: string;
+		args: unknown[];
+	};
+
 	interface Controls {
 		dispatch: (
 			storeKey: string,
 			actionName: string,
 			...args: unknown[]
-		) => unknown;
+		) => ControlDescriptor;
 	}
 
 	export const controls: Controls;
-
-	export function useDispatch( storeKey: string ): Controls;
-
-	export function useSelect< T >(
-		mapSelect: ( select: ( storeKey: string ) => unknown ) => T,
-		deps?: ReadonlyArray< unknown >
-	): T;
 }
