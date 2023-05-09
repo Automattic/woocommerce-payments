@@ -88,7 +88,7 @@ describe( 'Disputes > Save dispute for editing', () => {
 
 		// Verify we're on the challenge dispute page
 		await expect( page ).toMatchElement(
-			'div.wcpay-dispute-evidence .components-flex.components-card__header.is-size-large',
+			'div.wcpay-dispute-evidence .components-flex.components-card__header',
 			{
 				text: 'Challenge dispute',
 			}
