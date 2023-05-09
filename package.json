@@ -116,7 +116,7 @@
     "@wordpress/e2e-test-utils": "^8.0.0",
     "@wordpress/element": "4.4.1",
     "@wordpress/hooks": "3.6.1",
-    "@wordpress/html-entities": "2.11.2",
+    "@wordpress/html-entities": "3.6.1",
     "@wordpress/i18n": "4.6.1",
     "@wordpress/icons": "8.2.3",
     "@wordpress/jest-preset-default": "4.0.0",
