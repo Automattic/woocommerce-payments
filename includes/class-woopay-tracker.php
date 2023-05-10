@@ -286,7 +286,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		$this->maybe_record_event(
 			'order_checkout_complete',
 			[
-				'source' => isset( $_SERVER['HTTP_X_WCPAY_WOOPAY_USER'] ) ? 'platform' : 'standard',
+				'source' => ( isset( $_SERVER['HTTP_USER_AGENT'] ) && 'WooPay' === $_SERVER['HTTP_USER_AGENT'] ) ? 'platform' : 'standard',
 			]
 		);
 	}
