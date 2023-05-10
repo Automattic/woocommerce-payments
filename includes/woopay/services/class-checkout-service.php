@@ -11,9 +11,10 @@ use WC_Payments_Features;
 use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Request\WooPay_Create_And_Confirm_Intention;
 use WCPay\Core\Server\Request\WooPay_Create_And_Confirm_Setup_Intention;
+use WCPay\Payment\Flags;
 use WCPay\Payment_Information;
 use WCPay\Payment_Process\Order_Payment;
-use WCPay\Payment_Process\Payment;
+use WCPay\Payment\Payment;
 use WCPay\Payment_Process\Payment_Method\Saved_Payment_Method;
 
 /**
@@ -30,10 +31,10 @@ class Checkout_Service {
 	 * @return WooPay_Create_And_Confirm_Intention
 	 * @throws \WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception
 	 */
-	public function create_intention_request( Request $base_request, Order_Payment $payment ) {
+	public function create_intention_request( Request $base_request, Payment $payment ) {
 		$request = WooPay_Create_And_Confirm_Intention::extend( $base_request );
 		$request->set_has_woopay_subscription( '1' === $payment->get_order()->get_meta( '_woopay_has_subscription' ) );
-		$request->set_save_payment_method_to_platform( $payment->is( Payment::SAVE_PAYMENT_METHOD_TO_PLATFORM ) );
+		$request->set_save_payment_method_to_platform( $payment->is( Flags::SAVE_PAYMENT_METHOD_TO_PLATFORM ) );
 		$request->set_is_platform_payment_method( $this->is_platform_payment_method( $payment->get_payment_method() instanceof Saved_Payment_Method ) );
 		return $request;
 	}

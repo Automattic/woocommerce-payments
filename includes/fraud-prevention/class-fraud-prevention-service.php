@@ -86,6 +86,7 @@ class Fraud_Prevention_Service {
 	 * @return bool
 	 */
 	public function is_enabled(): bool {
+		return true;
 		return $this->wcpay_gateway->is_card_testing_protection_eligible();
 	}
 

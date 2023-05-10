@@ -568,6 +568,9 @@ class WC_Payments {
 
 		require_once __DIR__ . '/payment-process/test.php';
 		class_exists( \WCPay\Payment_Process\Payment::class );
+
+		require_once __DIR__ . '/payment/test.php';
+		class_exists( \WCPay\Payment\Payment::class );
 	}
 
 	/**
