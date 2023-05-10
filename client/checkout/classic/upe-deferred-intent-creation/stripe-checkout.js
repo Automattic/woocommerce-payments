@@ -64,12 +64,14 @@ function blockUI( jQueryForm ) {
  *
  * @param {Object} elements The Stripe elements object to be validated.
  * @param {Object} jQueryForm The jQuery object for the form being validated.
+ * @return {Promise} Promise for the checkout submission.
  */
 function validateElements( elements, jQueryForm ) {
-	elements.submit().then( ( result ) => {
+	return elements.submit().then( ( result ) => {
 		if ( result.error ) {
 			jQueryForm.removeClass( 'processing' ).unblock();
 			showErrorCheckout( result.error.message );
+			throw new Error( result.error.message );
 		}
 	} );
 }
@@ -201,21 +203,29 @@ export const checkout = ( api, jQueryForm, paymentMethodType ) => {
 	blockUI( jQueryForm );
 
 	const elements = gatewayUPEComponents[ paymentMethodType ].elements;
-	validateElements( elements, jQueryForm );
-	createStripePaymentMethod( api, elements )
-		.then( ( paymentMethodObject ) => {
-			appendFingerprintInputToForm( jQueryForm, fingerprint );
-			appendPaymentMethodIdToForm(
-				jQueryForm,
-				paymentMethodObject.paymentMethod.id
-			);
-			hasCheckoutCompleted = true;
-			submitForm( jQueryForm );
-		} )
-		.catch( ( error ) => {
-			jQueryForm.removeClass( 'processing' ).unblock();
-			showErrorCheckout( error.message );
-		} );
+
+	( async () => {
+		try {
+			await validateElements( elements, jQueryForm );
+
+			createStripePaymentMethod( api, elements )
+				.then( ( paymentMethodObject ) => {
+					appendFingerprintInputToForm( jQueryForm, fingerprint );
+					appendPaymentMethodIdToForm(
+						jQueryForm,
+						paymentMethodObject.paymentMethod.id
+					);
+					hasCheckoutCompleted = true;
+					submitForm( jQueryForm );
+				} )
+				.catch( ( error ) => {
+					jQueryForm.removeClass( 'processing' ).unblock();
+					showErrorCheckout( error.message );
+				} );
+		} catch ( err ) {
+			return false;
+		}
+	} )();
 
 	// Prevent WC Core default form submission (see woocommerce/assets/js/frontend/checkout.js) from happening.
 	return false;
