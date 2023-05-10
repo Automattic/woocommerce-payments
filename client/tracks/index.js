@@ -60,6 +60,8 @@ const events = {
 	CONNECT_ACCOUNT_LEARN_MORE: 'wcpay_welcome_learn_more',
 	CONNECT_ACCOUNT_STRIPE_CONNECTED: 'wcpay_stripe_connected',
 	CONNECT_ACCOUNT_KYC_MODAL_OPENED: 'wcpay_connect_account_kyc_modal_opened',
+	DEPOSITS_ROW_CLICK: 'wcpay_deposits_row_click',
+	DEPOSITS_DOWNLOAD_CSV_CLICK: 'wcpay_deposits_download',
 	OVERVIEW_DEPOSITS_VIEW_HISTORY_CLICK:
 		'wcpay_overview_deposits_view_history_click',
 	OVERVIEW_DEPOSITS_CHANGE_SCHEDULE_CLICK:
@@ -90,6 +92,15 @@ const events = {
 		'platform_checkout_express_button_offered',
 	PLATFORM_CHECKOUT_EXPRESS_BUTTON_CLICKED:
 		'platform_checkout_express_button_clicked',
+	// Onboarding flow.
+	ONBOARDING_FLOW_STARTED: 'wcpay_onboarding_flow_started',
+	ONBOARDING_FLOW_MODE_SELECTED: 'wcpay_onboarding_flow_mode_selected',
+	ONBOARDING_FLOW_STEP_COMPLETED: 'wcpay_onboarding_flow_step_completed',
+	ONBOARDING_FLOW_HIDDEN: 'wcpay_onboarding_flow_hidden',
+	ONBOARDING_FLOW_EXITED: 'wcpay_onboarding_flow_exited',
+	ONBOARDING_FLOW_REDIRECTED: 'wcpay_onboarding_flow_redirected',
+	ONBOARDING_FLOW_ELIGIBILITY_MODAL_CLOSED:
+		'wcpay_onboarding_flow_eligibility_modal_closed',
 };
 
 export default {

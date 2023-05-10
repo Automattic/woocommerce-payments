@@ -11,6 +11,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { useOnboardingContext } from '../context';
 import { EligibleData, EligibleResult } from '../types';
 import { fromDotNotation } from '../utils';
+import { trackRedirected, useTrackAbandoned } from '../tracking';
 import LoadBar from 'components/load-bar';
 import strings from '../strings';
 
@@ -20,6 +21,8 @@ interface Props {
 
 const LoadingStep: React.FC< Props > = () => {
 	const { data } = useOnboardingContext();
+
+	const { removeTrackListener } = useTrackAbandoned();
 
 	const isEligibleForPo = async () => {
 		if (
@@ -34,7 +37,7 @@ const LoadingStep: React.FC< Props > = () => {
 			business: {
 				country: data.country,
 				type: data.business_type,
-				mcc: 'computers_peripherals_and_software', // TODO GH-4853 add MCC from onboarding form
+				mcc: 'software_services', // TODO GH-4853 add MCC from onboarding form
 				annual_revenue: data.annual_revenue,
 				go_live_timeframe: data.go_live_timeframe,
 			},
@@ -62,6 +65,10 @@ const LoadingStep: React.FC< Props > = () => {
 			prefill: fromDotNotation( data ),
 			progressive: isEligible,
 		} );
+
+		trackRedirected( isEligible );
+		removeTrackListener();
+
 		window.location.href = resultUrl;
 	};
 
