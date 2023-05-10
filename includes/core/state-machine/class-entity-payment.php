@@ -7,6 +7,7 @@ class Entity_Payment {
 	const RESERVED_KEYS = [
 		'revision',
 		'current_state',
+		'order_id'
 	];
 
 	protected function set_data( string $key, $value) {
@@ -22,6 +23,7 @@ class Entity_Payment {
 	}
 
 	public function get_current_state(): ?string {
+		// TODO: return the State object. Maybe through a State Factory.
 		return $this->get_data('current_state');
 	}
 

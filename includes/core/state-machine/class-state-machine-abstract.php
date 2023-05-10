@@ -4,6 +4,13 @@ namespace WCPay\Core\State_Machine;
 abstract class State_Machine_Abstract {
 	abstract public function get_id(): string;
 
+	/**
+	 * The transaction configuration.
+	 *
+	 * @var array
+	 */
+	protected $config = [];
+
 	/** @var null | Input */
 	private $input = null;
 
@@ -24,7 +31,7 @@ abstract class State_Machine_Abstract {
 		return $this;
 	}
 
-	public function set_initial_state( $initial_state ) {
+	public function set_initial_state( State_Interface $initial_state ) {
 		$this->initial_state = $initial_state;
 		return $this;
 	}
@@ -73,6 +80,4 @@ abstract class State_Machine_Abstract {
 			|| is_subclass_of( $state, Failed_State::class )
 			|| is_subclass_of( $state, Async_State::class );
 	}
-
-	// TODO - based on the config, check a state is initial state or a final state?
 }

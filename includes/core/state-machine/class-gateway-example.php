@@ -1,12 +1,69 @@
 <?php
 namespace WCPay\Core\State_Machine;
+
+/**
+ * Simple example for the standard payment.
+ */
 abstract class Gateway_Example {
+
 
 	public function process_payment(\WC_Order $order) {
 
 		$payment_storage = new Entity_Storage_Payment();
 		$payment_entity = $payment_storage->get_or_create( $order );
-		$input = []; // TODO - define input here. May use a DTO class.
-		$state_machine = new State_Machine_Standard_Payment( $payment_entity );
+
+		// Build up input object, values from the HTTP request.
+		$input = new Input_Start_Payment_Standard();
+		$input->set_payment_method( wp_unslash( $_POST['payment_method'] ?? '' ) );
+
+		$state_machine = new State_Machine_Standard_Payment( $payment_storage );
+		$state_machine->set_initial_state( new Start_Standard_Payment_State() )
+			->set_entity( $payment_entity )
+			->set_input( $input );
+
+		$processed_entity = $state_machine->progress();
+		$current_state = $processed_entity->get_current_state();
+		// TODO: Decide return/output based on the current state.
+		// Current_state here can be either: any General_Failed_State, Need_3ds_State, Completed_State, Completed_Duplicate_State
 	}
+
+	/**
+	 * Similar to WC_Payment_Gateway_WCPay::update_order_status(),
+	 * which is handled after confirming the 3DS/SCA payment.
+	 *
+	 * @return void
+	 */
+	public function process_3ds_result() {
+
+		$order_id = isset( $_POST['order_id'] ) ? absint( $_POST['order_id'] ) : false;
+		$order    = wc_get_order( $order_id );
+		if ( ! $order ) {
+			throw new Process_Payment_Exception(
+				__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
+				'order_not_found'
+			);
+		}
+
+		$payment_storage = new Entity_Storage_Payment();
+		$payment_entity = $payment_storage->get_or_create( $order );
+
+		$intent_id_received = isset( $_POST['intent_id'] )
+			? sanitize_text_field( wp_unslash( $_POST['intent_id'] ) )
+			/* translators: This will be used to indicate an unknown value for an ID. */
+			: __( 'unknown', 'woocommerce-payments' );
+		$input = new Input_Process_3ds_Result();
+		$input->set_intent_id_received( $intent_id_received );
+
+		$state_machine = new State_Machine_Standard_Payment( $payment_storage );
+		$state_machine->set_initial_state( new Need_3ds_State() )
+		              ->set_entity( $payment_entity )
+		              ->set_input( $input );
+
+		$processed_entity = $state_machine->progress();
+		$current_state = $processed_entity->get_current_state();
+
+		// TODO: Decide return/output based on the current state.
+		// Based on the state machine config, current_state here can be either: any Completed_State, General_Failed_State.
+	}
+
 }
