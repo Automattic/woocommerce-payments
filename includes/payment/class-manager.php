@@ -10,6 +10,8 @@ namespace WCPay\Payment;
 use Exception;
 use WC_Order;
 use WCPay\Payment\Strategy\Strategy;
+use WCPay\Payment\Storage\Filesystem_Storage;
+use WCPay\Payment\Payment_Method\Payment_Method_Factory;
 use WCPay\Payment\State\{ Initial_State, Prepared_State, Processed_State, Verified_State };
 
 /**
@@ -17,10 +19,26 @@ use WCPay\Payment\State\{ Initial_State, Prepared_State, Processed_State, Verifi
  */
 class Manager {
 	/**
+	 * Payment method factory for the payment process.
+	 *
+	 * @var Payment_Method_Factory
+	 */
+	protected $payment_method_factory;
+
+	/**
+	 * A factory for payment objects.
+	 *
+	 * @var Payment_factory
+	 */
+	protected $payment_factory;
+
+	/**
 	 * Instantiates the manager.
 	 */
 	public function __construct() {
-
+		$storage                      = new Filesystem_Storage();
+		$this->payment_method_factory = new Payment_Method_Factory();
+		$this->payment_factory        = new Payment_Factory( $storage, $this->payment_method_factory );
 	}
 
 	/**
@@ -30,7 +48,7 @@ class Manager {
 	 * @return Payment        Newly created payment.
 	 */
 	public function instantiate_payment( WC_Order $order ) {
-		$payment = new Payment();
+		$payment = $this->payment_factory->create_payment();
 		$payment->set_order( $order );
 		return $payment;
 	}
@@ -77,7 +95,7 @@ class Manager {
 				// Add all states here...
 
 				default:
-					throw new Exception( 'The payment processed encountered an unexpected state.' );
+					throw new Exception( 'The payment processed encountered an unexpected state. Is the payment already completed?' );
 			}
 
 			if ( $payment->get_state() === $previous_state ) {

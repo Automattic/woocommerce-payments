@@ -1,15 +1,15 @@
 <?php
 /**
- * Class Order_Payment_Factory
+ * Class Payment_Factory
  *
  * @package WooCommerce\Payments
  */
 
-namespace WCPay\Payment_Process;
+namespace WCPay\Payment;
 
-use WCPay\Payment_Process\Storage\Payment_Storage;
-use WCPay\Payment_Process\Payment;
-use WCPay\Payment_Process\Payment_Method\Payment_Method_Factory;
+use WCPay\Payment\Storage\Payment_Storage;
+use WCPay\Payment\Payment;
+use WCPay\Payment\Payment_Method\Payment_Method_Factory;
 
 /**
  * Manages payment objects without orders to base them on.

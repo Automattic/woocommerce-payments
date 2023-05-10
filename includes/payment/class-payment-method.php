@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments
  */
 
-namespace WCPay\Payment_Process;
+namespace WCPay\Payment;
 
 /**
  * Base class, representing payment methods.

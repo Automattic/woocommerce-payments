@@ -113,9 +113,9 @@ final class Initial_State extends Payment_State {
 		/**
 		 * Allows the metadata to be modifeid before being set.
 		 *
-		 * @param array         $metadata Array of meta data for the payment.
-		 * @param WC_Order      $order    Order, which the payment belongs to.
-		 * @param Order_Payment $this->context  Complete payment object.
+		 * @param array     $metadata Array of meta data for the payment.
+		 * @param WC_Order  $order    Order, which the payment belongs to.
+		 * @param Payment   $this->context  Complete payment object.
 		 */
 		$metadata = apply_filters( 'wcpay_metadata_from_order', $metadata, $order, $payment );
 

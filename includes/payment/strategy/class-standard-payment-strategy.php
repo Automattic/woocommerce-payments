@@ -21,7 +21,7 @@ use WCPay\Payment\Payment;
 use WCPay\Payment\State\Authentication_Required_State;
 use WCPay\Payment\State\Processed_State;
 use WCPay\Payment\State\Processing_Failed_State;
-use WCPay\Payment_Process\Payment_Method\New_Payment_Method;
+use WCPay\Payment\Payment_Method\New_Payment_Method;
 use WCPay\Payment\State\Payment_State;
 
 /**

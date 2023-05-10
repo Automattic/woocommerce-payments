@@ -8,7 +8,7 @@
 use WCPay\Payment\Manager;
 use WCPay\Payment\Strategy\Setup_Payment_Strategy;
 use WCPay\Payment\Strategy\Standard_Payment_Strategy;
-use WCPay\Payment_Process\Payment_Method\New_Payment_Method;
+use WCPay\Payment\Payment_Method\New_Payment_Method;
 
 /**
  * Temporary loader.
@@ -23,7 +23,7 @@ function wcpay_load_payment_class( $class_name ) {
 	$class_name = strtolower( str_replace( '_', '-', $class_name ) );
 	$parts      = explode( '\\', $class_name );
 	array_shift( $parts ); // Remove WCPay.
-	array_shift( $parts ); // Remove Payment_Process.
+	array_shift( $parts ); // Remove Payment.
 	$last     = array_pop( $parts );
 	$template = __DIR__ . '/' . implode( '/', $parts ) . '/%s-' . $last . '.php';
 

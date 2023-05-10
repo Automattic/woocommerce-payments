@@ -5,11 +5,10 @@
  * @package WooCommerce\Payments
  */
 
-namespace WCPay\Payment_Process\Storage;
+namespace WCPay\Payment\Storage;
 
 use Exception;
-use WCPay\Payment_Process\Payment;
-use WCPay\Payment_Process\Order_Payment;
+use WCPay\Payment\Payment;
 
 /**
  * A class for storing and loading order payments from the filesystem.
@@ -22,10 +21,6 @@ class Filesystem_Order_Storage extends Filesystem_Storage {
 	 * @throws \Exception      In case the payment could not be loaded.
 	 */
 	public function load( Payment $payment ) {
-		if ( ! $payment instanceof Order_Payment ) {
-			throw new \Exception( 'The filesystem order storage requires an order payment.' );
-		}
-
 		// Load all files for the order ID.
 		$fs    = $this->get_filesystem();
 		$order = $payment->get_order()->get_id();
@@ -66,10 +61,6 @@ class Filesystem_Order_Storage extends Filesystem_Storage {
 	 * @throws \Exception      In case the payment is not related to an order.
 	 */
 	protected function generate_path( Payment $payment ) {
-		if ( ! $payment instanceof Order_Payment ) {
-			throw new \Exception( 'The filesystem order storage requires an order payment.' );
-		}
-
 		return $this->path . $payment->get_order()->get_id() . '/' . $payment->get_id() . '.json';
 	}
 }

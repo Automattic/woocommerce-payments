@@ -27,6 +27,8 @@ use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Logger;
+use WCPay\Payment\Flags;
+use WCPay\Payment\Manager;
 use WCPay\Payment_Information;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\Link_Payment_Method;
@@ -35,11 +37,12 @@ use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Tracker;
 
-use WCPay\Payment_Process\Payment_Method\Payment_Method_Factory;
-use WCPay\Payment_Process\Storage\Filesystem_Order_Storage;
-use WCPay\Payment_Process\Order_Payment_Factory;
-use WCPay\Payment_Process\Payment;
-use WCPay\Payment_Process\Payment_Method\New_Payment_Method;
+use WCPay\Payment\Payment;
+use WCPay\Payment\Payment_Method\New_Payment_Method;
+use WCPay\Payment\Payment_Method\Payment_Method_Factory;
+use WCPay\Payment\Strategy\Load_WooPay_Intent_Strategy;
+use WCPay\Payment\Strategy\Setup_Payment_Strategy;
+use WCPay\Payment\Strategy\Standard_Payment_Strategy;
 
 /**
  * Gateway class for WooCommerce Payments
@@ -909,30 +912,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Prepares the objects, needed for the payment process.
-	 *
-	 * Those should be injected as a dependency in the constructor.
-	 * This is just more flexible during development.
-	 */
-	protected function prepare_payment_objects() {
-		$storage                      = new Filesystem_Order_Storage();
-		$this->payment_method_factory = new Payment_Method_Factory();
-		$this->payment_factory        = new Order_Payment_Factory( $storage, $this->payment_method_factory );
-	}
-
-	/**
 	 * Performs payment through the new payment process.
 	 *
 	 * @param WC_Order $order Order which will be paid.
 	 * @return array          The same response as `process_payment`.
 	 */
 	protected function new_payment_process( WC_Order $order ) {
-		$this->prepare_payment_objects();
+		$manager = new Manager();
 
-		/**
-		 * Preparation part, defining the payment.
-		 */
-		$payment = $this->payment_factory->load_or_create_order_payment( $order );
+		// Maybe load?
+		$payment = $manager->instantiate_payment( $order );
 
 		// The sanitize_user call here is deliberate: it seems the most appropriate sanitization function
 		// for a string that will only contain latin alphanumeric characters and underscores.
@@ -940,27 +929,32 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$platform_checkout_intent_id = sanitize_user( wp_unslash( $_POST['platform-checkout-intent'] ?? '' ), true );
 		if ( ! empty( $platform_checkout_intent_id ) ) {
 			// Determing whether to use the WooPay flow, or not.
-			$payment->set_flow( Payment::WOOPAY_CHECKOUT_FLOW );
+			// Flags::WOOPAY_CHECKOUT_FLOW.
+			$strategy = new Load_WooPay_Intent_Strategy();
+
 			$payment->set_intent_id( $platform_checkout_intent_id );
 		} else {
-			$payment->set_flow( Payment::STANDARD_FLOW );
+			// Flags::STANDARD_FLOW.
+			$strategy = $order->get_total() > 0
+				? new Standard_Payment_Strategy()
+				: new Setup_Payment_Strategy();
 
 			// phpcs:ignore WordPress.Security.NonceVerification
-			$payment_method = $this->payment_method_factory->from_request( $_POST );
+			$payment_method = ( new Payment_Method_Factory() )->from_request( $_POST );
 			$payment->set_payment_method( $payment_method );
 
 			if ( $payment_method instanceof New_Payment_Method && New_Payment_Method::should_be_saved( $_POST ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-				$payment->set_flag( Payment::SAVE_PAYMENT_METHOD_TO_STORE );
+				$payment->set_flag( Flags::SAVE_PAYMENT_METHOD_TO_STORE );
 			}
 		}
 
 		if ( Payment_Capture_Type::MANUAL() === $this->get_capture_type() ) {
-			$payment->set_flag( Payment::MANUAL_CAPTURE );
+			$payment->set_flag( Flags::MANUAL_CAPTURE );
 		}
 
 		if ( $this->platform_checkout_util->should_save_platform_customer() ) {
 			do_action( 'woocommerce_payments_save_user_in_platform_checkout' );
-			$payment->set_flag( Payment::SAVE_PAYMENT_METHOD_TO_PLATFORM );
+			$payment->set_flag( Flags::SAVE_PAYMENT_METHOD_TO_PLATFORM );
 		}
 
 		$this->maybe_prepare_subscription_payment( $payment, $order );
@@ -971,7 +965,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		/**
 		 * Fun part: Processing the payment.
 		 */
-		$response = $payment->process();
+		$response = $manager->process( $payment, $strategy );
 
 		$payment->save();
 

@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments
  */
 
-namespace WCPay\Payment_Process\Payment_Method;
+namespace WCPay\Payment\Payment_Method;
 
 use WC_Payment_Tokens;
 use WC_Payment_Gateway_WCPay;

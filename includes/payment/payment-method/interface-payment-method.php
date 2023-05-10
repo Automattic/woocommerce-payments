@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments
  */
 
-namespace WCPay\Payment_Process\Payment_Method;
+namespace WCPay\Payment\Payment_Method;
 
 interface Payment_Method {
 	/**

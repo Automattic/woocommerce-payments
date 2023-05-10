@@ -5,9 +5,9 @@
  * @package WooCommerce\Payments
  */
 
-namespace WCPay\Payment_Process\Storage;
+namespace WCPay\Payment\Storage;
 
-use WCPay\Payment_Process\Payment;
+use WCPay\Payment\Payment;
 
 /**
  * An interface for storing payments.

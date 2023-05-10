@@ -5,12 +5,11 @@
  * @package WooCommerce\Payments
  */
 
-namespace WCPay\Payment_Process\Storage;
+namespace WCPay\Payment\Storage;
 
 use WP_Filesystem_Base;
 use Exception;
-use WCPay\Payment_Process\Payment;
-use WCPay\Payment_Process\Order_Payment;
+use WCPay\Payment\Payment;
 
 /**
  * A class for storing and loading payments from the filesystem.

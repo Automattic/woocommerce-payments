@@ -21,8 +21,7 @@ use WCPay\Payment\Flags;
 use WCPay\Payment\Payment;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
-use WCPay\Payment_Process\Payment_Method\Saved_Payment_Method;
-use WCPay\Payment_Process\Step;
+use WCPay\Payment\Payment_Method\Saved_Payment_Method;
 
 /**
  * Represents a payment in the complete state, which requires no further processing.

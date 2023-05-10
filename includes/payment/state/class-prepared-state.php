@@ -16,7 +16,7 @@ use WCPay\Payment\Duplicate_Payment_Prevention_Service;
 use WCPay\Payment\Flags;
 use WCPay\Payment\Payment;
 use WCPay\Core\Exceptions\Amount_Too_Small_Exception;
-use WCPay\Payment_Process\Payment_Method\Saved_Payment_Method;
+use WCPay\Payment\Payment_Method\Saved_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 
 /**
