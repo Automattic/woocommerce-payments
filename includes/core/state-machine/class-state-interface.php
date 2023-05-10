@@ -16,6 +16,12 @@ abstract class Failed_State implements State_Interface {
 	}
 }
 
+class General_Failed_State extends Failed_State {
+	public function get_id(): string {
+		return 'failed_state';
+	}
+}
+
 
 abstract class Happy_State implements State_Interface {
 	abstract public function act( Entity_Payment &$entity, Input $input = null ): State_Interface;
