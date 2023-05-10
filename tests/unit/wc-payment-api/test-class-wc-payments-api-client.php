@@ -909,7 +909,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 				'business' => [
 					'country'           => 'US',
 					'type'              => 'company',
-					'mcc'               => 'computers_peripherals_and_software',
+					'mcc'               => 'software_services',
 					'annual_revenue'    => 'less_than_250k',
 					'go_live_timeframe' => 'within_1month',
 				],
