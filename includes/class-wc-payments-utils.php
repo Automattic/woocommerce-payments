@@ -248,7 +248,6 @@ class WC_Payments_Utils {
 			'PL' => __( 'Poland', 'woocommerce-payments' ),
 			'PT' => __( 'Portugal', 'woocommerce-payments' ),
 			'RO' => __( 'Romania', 'woocommerce-payments' ),
-			'SE' => __( 'Sweden', 'woocommerce-payments' ),
 			'SI' => __( 'Slovenia', 'woocommerce-payments' ),
 			'SK' => __( 'Slovakia', 'woocommerce-payments' ),
 			'SG' => __( 'Singapore', 'woocommerce-payments' ),
