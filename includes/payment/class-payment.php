@@ -13,6 +13,9 @@ use WCPay\Payment\Vars;
 use WCPay\Payment_Process\Payment_Method\Payment_Method;
 use WC_Order;
 use WC_Payments;
+use WCPay\Payment\State\Prepared_State;
+use WCPay\Payment\State\Processed_State;
+use WCPay\Payment\State\Verified_State;
 use WCPay\Payment\Strategy\Strategy;
 
 /**
@@ -144,6 +147,15 @@ class Payment {
 	}
 
 	/**
+	 * Returns the current state of the payment.
+	 *
+	 * @return Payment_State
+	 */
+	public function get_state() {
+		return $this->state;
+	}
+
+	/**
 	 * Prepares all required payment details.
 	 *
 	 * @throws Exception In case the payment has already been prepared.
@@ -185,6 +197,44 @@ class Payment {
 	 */
 	public function complete() {
 		return $this->state->complete();
+	}
+
+	/**
+	 * Loads the intent after authentication.
+	 *
+	 * @return bool
+	 */
+	public function is_processing_finished() {
+		return $this->state->is_processing_finished();
+	}
+
+	/**
+	 * Processes a payment, going through all possible states.
+	 *
+	 * @param Strategy $strategy Which strategy to use to process the payment.
+	 */
+	public function process_full_payment( Strategy $strategy ) {
+		$response = null;
+		while ( is_null( $response ) ) {
+			switch ( get_class( $this->state ) ) {
+				case Initial_State::class:
+					$this->prepare();
+					break;
+
+				case Prepared_State::class:
+					$this->verify();
+					break;
+
+				case Verified_State::class:
+					$this->process( $strategy );
+					break;
+
+				case Processed_State::class:
+					$this->complete();
+					break;
+
+			}
+		}
 	}
 
 

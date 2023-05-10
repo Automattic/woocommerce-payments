@@ -5,8 +5,7 @@
  * @package WooCommerce\Payments
  */
 
-use WCPay\Payment\Process\Process;
-use WCPay\Payment\State\Verified_State;
+use WCPay\Payment\Manager;
 use WCPay\Payment\Strategy\Setup_Payment_Strategy;
 use WCPay\Payment\Strategy\Standard_Payment_Strategy;
 use WCPay\Payment_Process\Payment_Method\New_Payment_Method;
@@ -16,7 +15,7 @@ use WCPay\Payment_Process\Payment_Method\New_Payment_Method;
  *
  * @param string $class_name The name of the class.
  */
-function wcpay_load_Payment_class( $class_name ) {
+function wcpay_load_payment_class( $class_name ) {
 	if ( 0 !== strpos( $class_name, 'WCPay\\Payment\\' ) ) {
 		return;
 	}
@@ -35,28 +34,28 @@ function wcpay_load_Payment_class( $class_name ) {
 		}
 	}
 }
-spl_autoload_register( 'wcpay_load_Payment_class' );
-
-
+spl_autoload_register( 'wcpay_load_payment_class' );
 
 function wcpay_payment() {
+	// Add context.
 	$order = wc_get_order( 1314 );
 	$order->set_total( 12 );
 
-	$payment = new WCPay\Payment\Payment();
+	// Prepare.
+	$strategy = $order->get_total() > 0
+		? new Standard_Payment_Strategy() :
+		new Setup_Payment_Strategy();
+
+	$manager = new Manager();
+	$payment = $manager->instantiate_payment( $order );
+
+	// Set up.
 	$payment->set_payment_method( new New_Payment_Method( 'pm_1MrM1nQum4wPblDPPeQJZgun' ) );
-	$payment->set_order( $order );
 	// $payment->set_fraud_prevention_token( 'dasdsa' );
 	$payment->set_flag( WCPay\Payment\Flags::RECURRING );
-	$payment->prepare();
-	$payment->verify();
 
-	$strategy = $order->get_total() > 0 ? new Standard_Payment_Strategy() : new Setup_Payment_Strategy();
-	var_dump( $payment );
-	$payment->process( $strategy );
-	$payment->complete();
-
-	var_dump( $payment ); exit;
+	var_dump( $manager->process( $payment, $strategy ) );
+	exit;
 }
 
 add_action( 'template_redirect', function() {

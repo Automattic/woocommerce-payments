@@ -77,4 +77,14 @@ abstract class Payment_State {
 	public function complete() {
 		throw new Exception( 'The payment is not ready to be completed.' );
 	}
+
+	/**
+	 * Indicates if the state should interrupt the processing loop.
+	 * Overwrite in states inc ase they are final, and should interrupt the process.
+	 *
+	 * @return bool
+	 */
+	public function is_processing_finished() {
+		return false;
+	}
 }
