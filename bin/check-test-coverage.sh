@@ -2,17 +2,6 @@
 
 set -e
 
-WATCH_FLAG=false
-
-while getopts ':w' OPTION; do
-	case $OPTION in
-		w)
-		WATCH_FLAG=true
-		shift
-		;;
-	esac
-done
-
 echo "Installing the test environment..."
 
 docker-compose exec -u www-data wordpress \
