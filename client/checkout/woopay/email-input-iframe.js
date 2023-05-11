@@ -461,9 +461,7 @@ export const handleWooPayEmailInput = async (
 					.then( ( response ) => {
 						// Do nothing if the iframe has been closed.
 						if (
-							! document.querySelector(
-								'.platform-checkout-otp-iframe'
-							)
+							! document.querySelector( '.woopay-otp-iframe' )
 						) {
 							return;
 						}
@@ -509,9 +507,7 @@ export const handleWooPayEmailInput = async (
 					.then( ( response ) => {
 						// Do nothing if the iframe has been closed.
 						if (
-							! document.querySelector(
-								'.platform-checkout-otp-iframe'
-							)
+							! document.querySelector( '.woopay-otp-iframe' )
 						) {
 							return;
 						}
