@@ -71,6 +71,12 @@ const buildRuleset = (
 	const ruleBase = getRuleBase( ruleKey, shouldBlock );
 
 	switch ( ruleKey ) {
+		case Rules.RULE_AVS_VERIFICATION:
+			ruleBase.check = {
+				key: Checks.CHECK_AVS_MISMATCH,
+				operator: CheckOperators.OPERATOR_EQUALS,
+				value: true,
+			};
 		case Rules.RULE_ADDRESS_MISMATCH:
 			ruleBase.check = {
 				key: Checks.CHECK_BILLING_SHIPPING_ADDRESS_SAME,
@@ -230,7 +236,8 @@ export const readRuleset = (
 	rulesetConfig: FraudProtectionRule[] | string
 ): ProtectionSettingsUI => {
 	const isAVSChecksEnabled =
-		wcpaySettings?.accountStatus?.fraudProtection?.declineOnAVSFailure;
+		wcpaySettings?.accountStatus?.fraudProtection?.declineOnAVSFailure ||
+		false;
 
 	const defaultUIConfig = {
 		[ Rules.RULE_AVS_VERIFICATION ]: {
