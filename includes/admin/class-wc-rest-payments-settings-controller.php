@@ -426,6 +426,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		// Note: Both "current_protection_level" and "advanced_fraud_protection_settings"
 		// are handled in the below method.
 		$this->update_fraud_protection_settings( $request );
+		// $this->update_avs_mismatch_setting( $request );
 
 		return new WP_REST_Response( [], 200 );
 	}
@@ -620,6 +621,11 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		if ( ! isset( $updated_fields['deposit_schedule_interval'] ) && array_intersect( array_keys( $updated_fields ), [ 'deposit_schedule_monthly_anchor', 'deposit_schedule_weekly_anchor' ] ) ) {
 			$updated_fields['deposit_schedule_interval'] = $this->wcpay_gateway->get_option( 'deposit_schedule_interval' );
 		}
+
+		$card_payments = $this->wcpay_gateway->get_option( 'card_payments' );
+
+		$updated_fields['account_fraud_mitigation_settings'] = [];
+		$updated_fields['account_fraud_mitigation_settings']['avs_checks_enabled'] = $request->get_param( 'is_avs_mismatch_enabled' ) ?? false;
 
 		$this->wcpay_gateway->update_account_settings( $updated_fields );
 	}

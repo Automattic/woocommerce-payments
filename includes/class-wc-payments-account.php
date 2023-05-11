@@ -1322,6 +1322,17 @@ class WC_Payments_Account {
 		}
 
 		$diff = array_diff_assoc( $changes, $account );
+
+		foreach ( $changes as $key => $value ) {
+			if ( is_array( $value ) ) {
+				$change_diff = array_diff_assoc( $value, $account[ $key ] );
+
+				if ( ! empty( $change_diff ) ) {
+					$diff = array_merge( $diff, [ $key => $change_diff ] );
+				}
+			}
+		}
+
 		return ! empty( $diff );
 	}
 

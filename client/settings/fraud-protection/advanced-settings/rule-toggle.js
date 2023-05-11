@@ -11,7 +11,9 @@ import { ToggleControl, RadioControl } from '@wordpress/components';
 import './../style.scss';
 import FraudPreventionSettingsContext from './context';
 
-const filterActions = {
+const isReviewEnabled = false;
+
+export const filterActions = {
 	REVIEW: 'review',
 	BLOCK: 'block',
 };
@@ -29,15 +31,20 @@ const radioOptions = [
 
 const helpTextMapping = {
 	unchecked: __(
-		'When enabled, the payment method will not be charged until you review and approve the transaction.'
+		'When enabled, the payment method will be blocked.',
+		'woocommerce-payments'
 	),
 	[ filterActions.REVIEW ]: __(
-		'The payment method will not be charged until you review and approve the transaction.'
+		'The payment method will not be charged until you review and approve the transaction.',
+		'woocommerce-payments'
 	),
-	[ filterActions.BLOCK ]: __( 'The payment will be blocked.' ),
+	[ filterActions.BLOCK ]: __(
+		'The payment will be blocked.',
+		'woocommerce-payments'
+	),
 };
 
-const getHelpText = ( toggleState, filterAction ) => {
+export const getHelpText = ( toggleState, filterAction ) => {
 	if ( ! toggleState ) return helpTextMapping.unchecked;
 
 	return helpTextMapping[ filterAction ];
@@ -51,7 +58,9 @@ const FraudProtectionRuleToggle = ( { setting, label, children } ) => {
 	} = useContext( FraudPreventionSettingsContext );
 
 	const [ toggleState, setToggleState ] = useState( false );
-	const [ filterAction, setFilterAction ] = useState( filterActions.REVIEW );
+	const [ filterAction, setFilterAction ] = useState(
+		isReviewEnabled ? filterActions.REVIEW : filterActions.BLOCK
+	);
 
 	const settingUI = protectionSettingsUI?.[ setting ];
 
@@ -60,9 +69,11 @@ const FraudProtectionRuleToggle = ( { setting, label, children } ) => {
 		if ( ! settingUI ) return;
 
 		setToggleState( settingUI.enabled );
-		setFilterAction(
-			settingUI.block ? filterActions.BLOCK : filterActions.REVIEW
-		);
+		setFilterAction( () => {
+			if ( ! isReviewEnabled ) return filterActions.BLOCK;
+
+			return settingUI.block ? filterActions.BLOCK : filterActions.REVIEW;
+		} );
 	}, [ settingUI ] );
 
 	// Set global object values from input changes.
@@ -108,17 +119,23 @@ const FraudProtectionRuleToggle = ( { setting, label, children } ) => {
 			{ toggleState && (
 				<div>
 					{ children }
-					<div className="fraud-protection-rule-toggle-block">
-						<strong>
-							{ __( 'Filter action', 'woocommerce-payments' ) }
-						</strong>
 
-						<RadioControl
-							options={ radioOptions }
-							selected={ filterAction }
-							onChange={ setFilterAction }
-						/>
-					</div>
+					{ isReviewEnabled && (
+						<div className="fraud-protection-rule-toggle-block">
+							<strong>
+								{ __(
+									'Filter action',
+									'woocommerce-payments'
+								) }
+							</strong>
+
+							<RadioControl
+								options={ radioOptions }
+								selected={ filterAction }
+								onChange={ setFilterAction }
+							/>
+						</div>
+					) }
 				</div>
 			) }
 		</div>

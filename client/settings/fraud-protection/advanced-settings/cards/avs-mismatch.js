@@ -1,22 +1,30 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
-import interpolateComponents from '@automattic/interpolate-components';
-import { Link } from '@woocommerce/components';
+import { ToggleControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import FraudProtectionRuleCard from '../rule-card';
 import FraudProtectionRuleDescription from '../rule-description';
-import FraudProtectionRuleCardNotice from '../rule-card-notice';
+import { getHelpText, filterActions } from '../rule-toggle';
+import { useAVSMismatchSettings } from 'wcpay/data';
 
 const AVSMismatchRuleCard = () => {
-	const declineOnAVSFailure =
-		window.wcpaySettings?.accountStatus?.fraudProtection
-			?.declineOnAVSFailure ?? true;
+	const [ settingState, setSettingState ] = useAVSMismatchSettings();
+	const [ toggleState, setToggleState ] = useState( settingState );
+
+	useEffect( () => {
+		setSettingState( toggleState );
+	}, [ setSettingState, toggleState ] );
+
+	const handleToggleChange = () => {
+		setToggleState( ( value ) => ! value );
+	};
+
 	return (
 		<FraudProtectionRuleCard
 			title={ __( 'AVS Mismatch', 'woocommerce-payments' ) }
@@ -27,6 +35,23 @@ const AVSMismatchRuleCard = () => {
 			) }
 			id="avs-mismatch-card"
 		>
+			<div className="fraud-protection-rule-toggle">
+				<strong>
+					{ __( 'Enable filtering', 'woocommerce-payments' ) }
+				</strong>
+				<ToggleControl
+					label={ __(
+						'Screen transactions for mismatched AVS',
+						'woocommerce-payments'
+					) }
+					key="avs-mismatch"
+					help={ getHelpText( toggleState, filterActions.BLOCK ) }
+					checked={ toggleState }
+					className="fraud-protection-rule-toggle-toggle"
+					onChange={ handleToggleChange }
+				/>
+			</div>
+
 			<FraudProtectionRuleDescription>
 				{ __(
 					'Buyers who can provide the street number and post code on file with the issuing bank ' +
@@ -34,30 +59,6 @@ const AVSMismatchRuleCard = () => {
 					'woocommerce-payments'
 				) }
 			</FraudProtectionRuleDescription>
-			<FraudProtectionRuleCardNotice type="warning">
-				{ declineOnAVSFailure
-					? interpolateComponents( {
-							mixedString: __(
-								'For security, this filter is enabled and cannot be modified. Payments failing address ' +
-									'verification will be blocked. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-								'woocommerce-payments'
-							),
-							components: {
-								learnMoreLink: (
-									<Link
-										target="_blank"
-										type="external"
-										// eslint-disable-next-line max-len
-										href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
-									/>
-								),
-							},
-					  } )
-					: __(
-							'This filter is disabled, and can not be modified.',
-							'woocommerce-payments'
-					  ) }
-			</FraudProtectionRuleCardNotice>
 		</FraudProtectionRuleCard>
 	);
 };

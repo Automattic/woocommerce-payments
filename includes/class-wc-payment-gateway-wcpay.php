@@ -76,6 +76,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		'deposit_schedule_interval'        => 'deposit_schedule_interval',
 		'deposit_schedule_weekly_anchor'   => 'deposit_schedule_weekly_anchor',
 		'deposit_schedule_monthly_anchor'  => 'deposit_schedule_monthly_anchor',
+
+		'account_fraud_mitigation_settings' => 'fraud_mitigation_settings',
 	];
 
 	/**
@@ -1814,8 +1816,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function update_account_settings( array $settings ) : array {
 		$account_settings = [];
 		foreach ( static::ACCOUNT_SETTINGS_MAPPING as $name => $account_key ) {
-			if ( isset( $settings[ $name ] ) ) {
-				$account_settings[ $account_key ] = $settings[ $name ];
+			$setting_value = $settings[ $name ];
+
+			if ( isset( $setting_value ) ) {
+				$account_settings[ $account_key ] = $setting_value;
 			}
 		}
 		$this->update_account( $account_settings );

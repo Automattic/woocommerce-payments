@@ -253,3 +253,7 @@ export function updateAdvancedFraudProtectionSettings( settings ) {
 		advanced_fraud_protection_settings: settings,
 	} );
 }
+
+export function updateIsAVSMismatchEnabled( enabled ) {
+	return updateSettingsValues( { is_avs_mismatch_enabled: enabled } );
+}
