@@ -24,7 +24,7 @@ const AVSMismatchRuleCard: React.FC = () => {
 		>
 			<FraudProtectionRuleToggle
 				setting="avs_verification"
-				label="Screen transactions for mismatched AVS"
+				label="Block transactions for mismatched AVS"
 			/>
 
 			<FraudProtectionRuleDescription>
