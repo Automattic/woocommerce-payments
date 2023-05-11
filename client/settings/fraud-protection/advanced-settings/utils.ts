@@ -229,7 +229,14 @@ export const writeRuleset = (
 export const readRuleset = (
 	rulesetConfig: FraudProtectionRule[] | string
 ): ProtectionSettingsUI => {
+	const isAVSChecksEnabled =
+		wcpaySettings?.accountStatus?.fraudProtection?.declineOnAVSFailure;
+
 	const defaultUIConfig = {
+		[ Rules.RULE_AVS_VERIFICATION ]: {
+			enabled: isAVSChecksEnabled,
+			block: isAVSChecksEnabled,
+		},
 		[ Rules.RULE_ADDRESS_MISMATCH ]: { enabled: false, block: false },
 		[ Rules.RULE_INTERNATIONAL_IP_ADDRESS ]: {
 			enabled: false,
@@ -259,6 +266,12 @@ export const readRuleset = (
 			const rule = rulesetConfig[ id ];
 
 			switch ( rule.key ) {
+				case Rules.RULE_AVS_VERIFICATION:
+					parsedUIConfig[ rule.key ] = {
+						enabled: true,
+						block: rule.outcome === Outcomes.BLOCK,
+					};
+					break;
 				case Rules.RULE_ADDRESS_MISMATCH:
 					parsedUIConfig[ rule.key ] = {
 						enabled: true,

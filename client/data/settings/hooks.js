@@ -554,13 +554,3 @@ export const useAdvancedFraudProtectionSettings = () => {
 		];
 	} );
 };
-
-export const useAVSMismatchSettings = () => {
-	const { updateIsAVSMismatchEnabled } = useDispatch( STORE_NAME );
-
-	return [
-		window.wcpaySettings?.accountStatus?.fraudProtection
-			?.declineOnAVSFailure ?? true,
-		updateIsAVSMismatchEnabled,
-	];
-};

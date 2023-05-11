@@ -1,30 +1,17 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { ToggleControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import FraudProtectionRuleCard from '../rule-card';
 import FraudProtectionRuleDescription from '../rule-description';
-import { getHelpText, filterActions } from '../rule-toggle';
-import { useAVSMismatchSettings } from 'wcpay/data';
+import FraudProtectionRuleToggle from '../rule-toggle';
 
 const AVSMismatchRuleCard: React.FC = () => {
-	const [ settingState, setSettingState ] = useAVSMismatchSettings();
-	const [ toggleState, setToggleState ] = useState( !! settingState );
-
-	useEffect( () => {
-		setSettingState( toggleState );
-	}, [ setSettingState, toggleState ] );
-
-	const handleToggleChange = () => {
-		setToggleState( ( value ) => ! value );
-	};
-
 	return (
 		<FraudProtectionRuleCard
 			title={ __( 'AVS Mismatch', 'woocommerce-payments' ) }
@@ -35,22 +22,10 @@ const AVSMismatchRuleCard: React.FC = () => {
 			) }
 			id="avs-mismatch-card"
 		>
-			<div className="fraud-protection-rule-toggle">
-				<strong>
-					{ __( 'Enable filtering', 'woocommerce-payments' ) }
-				</strong>
-				<ToggleControl
-					label={ __(
-						'Screen transactions for mismatched AVS',
-						'woocommerce-payments'
-					) }
-					key="avs-mismatch"
-					help={ getHelpText( toggleState, filterActions.BLOCK ) }
-					checked={ toggleState }
-					className="fraud-protection-rule-toggle-toggle"
-					onChange={ handleToggleChange }
-				/>
-			</div>
+			<FraudProtectionRuleToggle
+				setting="avs_verification"
+				label="Screen transactions for mismatched AVS"
+			/>
 
 			<FraudProtectionRuleDescription>
 				{ __(

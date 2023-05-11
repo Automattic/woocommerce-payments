@@ -291,9 +291,6 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 							<AVSMismatchRuleCard />
 						</LoadableBlock>
 						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-							<CVCVerificationRuleCard />
-						</LoadableBlock>
-						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
 							<InternationalIPAddressRuleCard />
 						</LoadableBlock>
 						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
@@ -307,6 +304,9 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 						</LoadableBlock>
 						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
 							<OrderItemsThresholdRuleCard />
+						</LoadableBlock>
+						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+							<CVCVerificationRuleCard />
 						</LoadableBlock>
 
 						<footer className="fraud-protection-advanced-settings__footer">
