@@ -232,7 +232,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 
 		// Add event property for test mode vs. live mode events.
 		$properties['test_mode']     = WC_Payments::mode()->is_test() ? 1 : 0;
-		$properties['wcpay_version'] = get_option( 'woocommerce_woocommerce_payments_version' );
+		$properties['wcpay_version'] = WCPAY_VERSION_NUMBER;
 
 		$blog_details = [
 			'blog_lang' => isset( $properties['blog_lang'] ) ? $properties['blog_lang'] : get_bloginfo( 'language' ),
