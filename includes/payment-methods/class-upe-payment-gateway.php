@@ -36,15 +36,19 @@ use WC_Payments_Token_Service;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Utils;
 use WC_Payments_Features;
-use WCPay\Payment_Process\Payment;
-use WCPay\Payment_Process\Order_Payment;
-use WCPay\Payment_Process\Order_Payment_Factory;
-use WCPay\Payment_Process\Payment_Factory;
-use WCPay\Payment_Process\Payment_Method\New_Payment_Method;
-use WCPay\Payment_Process\Payment_Method\Payment_Method_Factory;
-use WCPay\Payment_Process\Payment_Method\Saved_Payment_Method;
-use WCPay\Payment_Process\Storage\Filesystem_Order_Storage;
-use WCPay\Payment_Process\Storage\Filesystem_Storage;
+use WCPay\Payment\Flags;
+use WCPay\Payment\Manager;
+use WCPay\Payment\Payment;
+use WCPay\Payment\Order_Payment;
+use WCPay\Payment\Order_Payment_Factory;
+use WCPay\Payment\Payment_Factory;
+use WCPay\Payment\Payment_Method\New_Payment_Method;
+use WCPay\Payment\Payment_Method\Payment_Method_Factory;
+use WCPay\Payment\Payment_Method\Saved_Payment_Method;
+use WCPay\Payment\State\Processed_State;
+use WCPay\Payment\Storage\Filesystem_Order_Storage;
+use WCPay\Payment\Storage\Filesystem_Storage;
+use WCPay\Payment\Strategy\Standard_Payment_Strategy;
 use WP_User;
 
 
@@ -452,41 +456,37 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		// phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
 		$order = wc_get_order( $order_id );
-		$this->prepare_payment_objects();
 
 		// Check if there is an ID to laod.
-		$payment = null;
-		$session_data = $this->get_payment_intent_data_from_session();
-		if ( $session_data ) {
-			$session_data = explode( '-', $session_data );
-			if ( 4 <= count( $session_data ) ) {
-				$payment_id = $session_data['3'];
-				if ( ! empty( $payment_id ) ) {
-					$storage                = new Filesystem_Storage();
-					$payment_method_factory = new Payment_Method_Factory();
-					$payment_factory        = new Payment_Factory( $storage, $payment_method_factory );
-					$payment                = $payment_factory->load_payment( $payment_id );
+		// $payment = null;
+		// $session_data = $this->get_payment_intent_data_from_session();
+		// if ( $session_data ) {
+		// 	$session_data = explode( '-', $session_data );
+		// 	if ( 4 <= count( $session_data ) ) {
+		// 		$payment_id = $session_data['3'];
+		// 		if ( ! empty( $payment_id ) ) {
+		// 			$storage                = new Filesystem_Storage();
+		// 			$payment_method_factory = new Payment_Method_Factory();
+		// 			$payment_factory        = new Payment_Factory( $storage, $payment_method_factory );
+		// 			$payment                = $payment_factory->load_payment( $payment_id );
 
-					if ( ! $payment instanceof Order_Payment ) {
-						$payment = $this->payment_factory->covert_payment_to_order_payment( $payment, $order );
-					}
-				}
-			}
-		}
+		// 			if ( ! $payment instanceof Order_Payment ) {
+		// 				$payment = $this->payment_factory->covert_payment_to_order_payment( $payment, $order );
+		// 			}
+		// 		}
+		// 	}
+		// }
 
-		if ( is_null( $payment ) ) {
-			// Create/load the payment object.
-			$payment = $this->payment_factory->load_or_create_order_payment( $order );
-		}
 
-		// Allows UPE steps to work.
-		$payment->set_flow( Payment::UPE_PROCESS_PAYMENT_FLOW );
+		// Create/load the payment object.
+		$manager = new Manager();
+		$payment = $manager->instantiate_payment( $order );
 
 		// Setup the payment object.
 		$payment_method = $this->payment_method_factory->from_request( $_POST, true );
 		$payment->set_payment_method( $payment_method );
 		if ( ! $payment_method instanceof Saved_Payment_Method && New_Payment_Method::should_be_saved( $_POST ) ) {
-			$payment->set_flag( Payment::SAVE_PAYMENT_METHOD_TO_STORE );
+			$payment->set_flag( Flags::SAVE_PAYMENT_METHOD_TO_STORE );
 		}
 
 		$payment->set_fraud_prevention_token( $_POST['wcpay-fraud-prevention-token'] ?? '' ); // Empty string to force checks. Null means skip.
@@ -504,7 +504,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$payment->set_payment_country( wc_clean( wp_unslash( $_POST['wcpay_payment_country'] ) ) );
 		}
 
-		$response = $payment->process();
+		if ( $payment_method instanceof Saved_Payment_Method ) {
+			$strategy = new Standard_Payment_Strategy();
+		} else {
+			$strategy = new UPE_Update_Intent_Strategy();
+		}
+
+		$response = $manager->process( $payment, $strategy );
 
 		// fall back to the full parent process if a saved PM is used, and there is no intent.
 		// the fallback to parent process payment should be here.

@@ -18,8 +18,9 @@ use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Intent_Status;
-use WCPay\Payment_Process\Payment;
-use WCPay\Payment_Process\Payment_Method\New_Payment_Method;
+use WCPay\Payment\Flags;
+use WCPay\Payment\Payment;
+use WCPay\Payment\Payment_Method\New_Payment_Method;
 use WCPay\Payment_Process\Order_Payment_Factory;
 use WCPay\Payment_Process\Payment_Method\Saved_Payment_Method;
 
@@ -300,15 +301,15 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		}
 
 		// Subs-specific behavior starts here.
-		$payment->set_flag( Payment::RECURRING );
+		$payment->set_flag( Flags::RECURRING );
 
 		// The payment method is always saved for subscriptions, unless already saved.
 		if ( $payment->get_payment_method() instanceof New_Payment_Method ) {
-			$payment->set_flag( Payment::SAVE_PAYMENT_METHOD_TO_STORE );
+			$payment->set_flag( Flags::SAVE_PAYMENT_METHOD_TO_STORE );
 		}
 
 		if ( $this->is_changing_payment_method_for_subscription() ) {
-			$payment->set_flag( Payment::CHANGING_SUBSCRIPTION_PAYMENT_METHOD );
+			$payment->set_flag( Flags::CHANGING_SUBSCRIPTION_PAYMENT_METHOD );
 		}
 	}
 
@@ -333,13 +334,13 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		}
 
 		try {
-			$this->prepare_payment_objects();
-			$payment = $this->payment_factory->load_or_create_order_payment( $renewal_order );
-			$payment->set_flow( Payment::SCHEDULED_SUBSCRIPTION_PAYMENT_FLOW );
-			$payment->set_flag( Payment::RECURRING );
-			$payment->set_flag( Payment::MERCHANT_INITIATED );
-			$payment->set_payment_method( new Saved_Payment_Method( $token ) );
-			$payment->process();
+			// $this->prepare_payment_objects();
+			// $payment = $this->payment_factory->load_or_create_order_payment( $renewal_order );
+			// $payment->set_flow( Payment::SCHEDULED_SUBSCRIPTION_PAYMENT_FLOW );
+			// $payment->set_flag( Payment::RECURRING );
+			// $payment->set_flag( Payment::MERCHANT_INITIATED );
+			// $payment->set_payment_method( new Saved_Payment_Method( $token ) );
+			// $payment->process();
 		} catch ( API_Exception $e ) {
 			Logger::error( 'Error processing subscription renewal: ' . $e->getMessage() );
 			// TODO: Update to use Order_Service->mark_payment_failed.

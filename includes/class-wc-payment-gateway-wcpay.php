@@ -40,6 +40,7 @@ use WCPay\Tracker;
 use WCPay\Payment\Payment;
 use WCPay\Payment\Payment_Method\New_Payment_Method;
 use WCPay\Payment\Payment_Method\Payment_Method_Factory;
+use WCPay\Payment\State\Authentication_Required_State;
 use WCPay\Payment\Strategy\Load_WooPay_Intent_Strategy;
 use WCPay\Payment\Strategy\Setup_Payment_Strategy;
 use WCPay\Payment\Strategy\Standard_Payment_Strategy;
@@ -966,8 +967,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		 * Fun part: Processing the payment.
 		 */
 		$response = $manager->process( $payment, $strategy );
-
-		$payment->save();
+		$payment->save_to_order( $payment, $order );
 
 		return $response;
 	}
@@ -2505,24 +2505,36 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			$this->prepare_payment_objects();
-			$payment = $this->payment_factory->load_or_create_order_payment( $order );
-			$payment->set_flow( Payment::POST_CHECKOUT_REDIRECT_FLOW );
+			$manager = new Manager();
+			$payment = $manager->load_payment( $order );
+
+			if ( ! $payment->get_state() instanceof Authentication_Required_State ) {
+				throw new Exception( 'The payment is not currently awaiting authentication!' );
+			}
 
 			$intent_id_received = isset( $_POST['intent_id'] )
 				? sanitize_text_field( wp_unslash( $_POST['intent_id'] ) )
 				/* translators: This will be used to indicate an unknown value for an ID. */
 				: __( 'unknown', 'woocommerce-payments' );
-			$payment->set_intent_id( $intent_id_received );
 
 			// @todo: This is a weird way to do it.
 			// The parameter was used to transfer the PM to store. The PM is in the intent, and will be used in `Save_Payment_Method_Step`.
 			if ( isset( $_POST['payment_method_id'] ) && wp_unslash( $_POST['payment_method_id'] ) ) {
-				$payment->set_flag( Payment::SAVE_PAYMENT_METHOD_TO_STORE );
+				$payment->set_flag( Flags::SAVE_PAYMENT_METHOD_TO_STORE );
 			}
 
+			// This should yield the next state.
+			$payment->load_intent_after_authentication( $intent_id_received );
+			$payment->complete();
+			$payment->save_to_order();
+
 			// Send back redirect URL in the successful case.
-			echo wp_json_encode( $payment->process() );
+			$response = $payment->get_response();
+			echo wp_json_encode(
+				[
+					'return_url' => $response['redirect'],
+				]
+			);
 			wp_die();
 		} catch ( Intent_Authentication_Exception $e ) {
 			$error_code = $e->get_error_code();

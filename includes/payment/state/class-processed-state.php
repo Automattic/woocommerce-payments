@@ -100,6 +100,16 @@ final class Processed_State extends Payment_State {
 
 		$this->cleanup();
 
+		// Unless another state already set it, add a return URL.
+		if ( ! $this->context->get_response() ) {
+			$this->context->set_response(
+				[
+					'result'   => 'success',
+					'redirect' => $this->gateway->get_return_url( $this->context->get_order() ),
+				]
+			);
+		}
+
 		$this->context->switch_state( new Completed_State( $this->context ) );
 	}
 

@@ -7,6 +7,7 @@
 
 namespace WCPay\Payment;
 
+use Exception;
 use WCPay\Payment\State\Initial_State;
 use WCPay\Payment\State\Payment_State;
 use WCPay\Payment\Vars;
@@ -14,7 +15,7 @@ use WCPay\Payment\Payment_Method\Payment_Method;
 use WC_Order;
 use WC_Payments;
 use WCPay\Payment\Strategy\Strategy;
-use WCPay\Payment\Storage\Payment_Storage;
+use WCPay\Payment\Storage\Storage_Interface;
 use WCPay\Payment\Payment_Method\Payment_Method_Factory;
 
 /**
@@ -33,9 +34,9 @@ class Payment {
 	/**
 	 * Payment storage, used to store the payment.
 	 *
-	 * @var Payment_Storage
+	 * @var Storage_Interface
 	 */
-	protected $payment_storage;
+	protected $storage;
 
 	/**
 	 * The factory for payment methods.
@@ -74,19 +75,26 @@ class Payment {
 	protected $vars = [];
 
 	/**
+	 * Holds the order, which is/will be paid.
+	 *
+	 * @var WC_Order
+	 */
+	protected $order;
+
+	/**
 	 * Instantiates the payment object.
 	 *
-	 * @param Payment_Storage        $storage                Storage to load/save payments from/to.
+	 * @param Storage_Interface      $storage                Storage to load/save payments from/to.
 	 * @param Payment_Method_Factory $payment_method_factory Factory for payment methods.
 	 * @param Payment_State          $state                  The state of the payment (optional).
 	 */
 	public function __construct(
-		Payment_Storage $storage,
+		Storage_Interface $storage,
 		Payment_Method_Factory $payment_method_factory,
 		Payment_State $state = null
 	) {
 		// Dependencies.
-		$this->payment_storage        = $storage;
+		$this->storage                = $storage;
 		$this->payment_method_factory = $payment_method_factory;
 
 		// State.
@@ -173,6 +181,11 @@ class Payment {
 	 * @param array $data The pre-existing payment data.
 	 */
 	public function load_data( array $data ) {
+		// Load the state.
+		if ( isset( $data['state'] ) && ! empty( $data['state'] ) ) {
+			$this->state = new $data['state']( $this );
+		}
+
 		// Scalar props.
 		foreach ( [ 'id', 'flags', 'vars' ] as $key ) {
 			if ( isset( $data[ $key ] ) && ! empty( $data[ $key ] ) ) {
@@ -200,22 +213,30 @@ class Payment {
 			'id'             => $this->id,
 			'flags'          => $this->flags,
 			'payment_method' => $payment_method,
+			'state'          => get_class( $this->state ),
 			'vars'           => $this->vars,
 		];
 	}
 
 	/**
-	 * Saves the payment data in storage.
+	 * Stores the payment's data without order association.
 	 */
-	public function save() {
-		$this->payment_storage->store( $this );
+	public function save_without_order() {
+		$this->storage->save( $this );
 	}
 
 	/**
-	 * Deletes the payment from storage.
+	 * Stores the payment to the associated order.
+	 *
+	 * @throws Exception In case there is no order to save the payment to.
 	 */
-	public function delete() {
-		$this->payment_storage->delete( $this );
+	public function save_to_order() {
+		$order = $this->get_order();
+		if ( ! $order ) {
+			throw new Exception( 'Payment has no order' );
+		}
+
+		$this->storage->save_to_order( $this, $order );
 	}
 
 	/**
@@ -234,15 +255,25 @@ class Payment {
 		return $this->id;
 	}
 
+	/**
+	 * Sets the order, used for the payment.
+	 * Orders are required for payments, but set through the order payment factory.
+	 *
+	 * @see Payment_Factory::load_or_create_payment()
+	 * @param WC_Order $order The order for the payment.
+	 */
+	public function set_order( WC_Order $order ) {
+		$this->order = $order;
+	}
 
-
-
-
-
-
-
-
-	// State-specific methods.
+	/**
+	 * Returns the order, associated with the payment.
+	 *
+	 * @return WC_Order The order for the payment.
+	 */
+	public function get_order() {
+		return $this->order;
+	}
 
 	/**
 	 * Changes the payment state.
@@ -313,49 +344,5 @@ class Payment {
 	 */
 	public function is_processing_finished() {
 		return $this->state->is_processing_finished();
-	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	// Order management.
-
-	/**
-	 * Holds the order, which is/will be paid.
-	 *
-	 * @var WC_Order
-	 */
-	protected $order;
-
-	/**
-	 * Sets the order, used for the payment.
-	 * Orders are required for payments, but set through the order payment factory.
-	 *
-	 * @see Payment_Factory::load_or_create_payment()
-	 * @param WC_Order $order The order for the payment.
-	 */
-	public function set_order( WC_Order $order ) {
-		$this->order = $order;
-	}
-
-	/**
-	 * Returns the order, associated with the payment.
-	 *
-	 * @return WC_Order The order for the payment.
-	 */
-	public function get_order() {
-		return $this->order;
 	}
 }

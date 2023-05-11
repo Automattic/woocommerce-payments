@@ -10,7 +10,7 @@ namespace WCPay\Payment;
 use Exception;
 use WC_Order;
 use WCPay\Payment\Strategy\Strategy;
-use WCPay\Payment\Storage\Filesystem_Storage;
+use WCPay\Payment\Storage\File_Storage;
 use WCPay\Payment\Payment_Method\Payment_Method_Factory;
 use WCPay\Payment\State\{ Initial_State, Prepared_State, Processed_State, Verified_State };
 
@@ -19,6 +19,13 @@ use WCPay\Payment\State\{ Initial_State, Prepared_State, Processed_State, Verifi
  */
 class Manager {
 	/**
+	 * Storage for payments.
+	 *
+	 * @param File_Storage
+	 */
+	protected $storage;
+
+	/**
 	 * Payment method factory for the payment process.
 	 *
 	 * @var Payment_Method_Factory
@@ -26,19 +33,11 @@ class Manager {
 	protected $payment_method_factory;
 
 	/**
-	 * A factory for payment objects.
-	 *
-	 * @var Payment_factory
-	 */
-	protected $payment_factory;
-
-	/**
 	 * Instantiates the manager.
 	 */
 	public function __construct() {
-		$storage                      = new Filesystem_Storage();
+		$this->storage                = new File_Storage();
 		$this->payment_method_factory = new Payment_Method_Factory();
-		$this->payment_factory        = new Payment_Factory( $storage, $this->payment_method_factory );
 	}
 
 	/**
@@ -48,8 +47,21 @@ class Manager {
 	 * @return Payment        Newly created payment.
 	 */
 	public function instantiate_payment( WC_Order $order ) {
-		$payment = $this->payment_factory->create_payment();
+		$payment = $this->create_payment_object();
 		$payment->set_order( $order );
+		return $payment;
+	}
+
+	/**
+	 * Loads the payment for an order.
+	 *
+	 * @param WC_Order $order Order to use for the payment.
+	 * @return Payment        Loaded payment.
+	 */
+	public function load_payment( WC_Order $order ) {
+		$payment = $this->create_payment_object();
+		$payment->set_order( $order );
+		$this->storage->load_from_order( $order, $payment );
 		return $payment;
 	}
 
@@ -108,5 +120,14 @@ class Manager {
 				return $payment->get_response();
 			}
 		}
+	}
+
+	/**
+	 * Creates a new payment object with the correct dependencies.
+	 *
+	 * @return Payment
+	 */
+	protected function create_payment_object() {
+		return new Payment( $this->storage, $this->payment_method_factory );
 	}
 }

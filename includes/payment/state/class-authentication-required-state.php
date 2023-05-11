@@ -61,11 +61,14 @@ final class Authentication_Required_State extends Payment_State {
 	 */
 	public function load_intent_after_authentication( string $intent_id ) {
 		// Make sure we're working with a valid intent.
-		$this->compare_received_and_stored_intents( $intent_id );
+		// $this->compare_received_and_stored_intents( $intent_id );
 
 		// Load the payment/setup intent, and make it available for the rest of the process.
 		$intent = $this->get_intent_from_server( $intent_id );
 		$this->context->set_intent( $intent );
+
+		// Clear the redirect.
+		$this->context->set_response( [] );
 
 		$successful_status = WC_Payment_Gateway_WCPay::SUCCESSFUL_INTENT_STATUS;
 		if ( in_array( $intent->get_status(), $successful_status, true ) ) {
@@ -73,6 +76,15 @@ final class Authentication_Required_State extends Payment_State {
 		} else {
 			$this->context->switch_state( new Processing_Failed_State( $this->context ) );
 		}
+	}
+
+	/**
+	 * Indicates that the state should interrupt the processing loop.
+	 *
+	 * @return bool
+	 */
+	public function is_processing_finished() {
+		return true;
 	}
 
 	/**
