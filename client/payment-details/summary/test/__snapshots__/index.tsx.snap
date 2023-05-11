@@ -253,6 +253,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
               capture
             </a>
              this charge within the next 
+           
             <abbr
               title="Jan 8, 2023 / 1:00AM"
             >
@@ -559,6 +560,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
               capture
             </a>
              this charge within the next 
+           
             <abbr
               title="Jan 8, 2023 / 1:00AM"
             >
