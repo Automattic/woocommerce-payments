@@ -57,6 +57,10 @@ to catalog our packages and provide guidance to a developer who wants to test an
 | [@wordpress/scripts](https://www.npmjs.com/package/@wordpress/scripts) | Collection of reusable scripts tailored for WordPress development. | JS tests and E2E pipeline works, which uses `wp-scripts` | `>=20` requires `jest >=27`, we're currently at `v26.x` so updated to  `v19.2.3`  |
 | [@woocommerce/explat](https://www.npmjs.com/package/@woocommerce/explat/) | Component and utility functions that can be used to run A/B Tests in WooCommerce dashboard and reports pages. | JS unit tests are passing | After update ensure types are still correct for `ExperimentProps`, or use a DefinitelyTyped package if available.  |
 | [@woocommerce/experimental](https://www.npmjs.com/package/@wordpress/plugins) | A collection of component imports and exports that are aliases for components transitioning from experimental to non-experimental.| JS unit tests are passing| Needed to install `@types/react-transition-group` as JS linting could not find a declaration file for module `react-transition-group/CSSTransition`. |
+| [@wordpress/dom-ready](https://www.npmjs.com/package/@wordpress/dom-ready) | Execute callback after the DOM is loaded.| JS unit tests are passing. ||
+| [@wordpress/html-entities](https://www.npmjs.com/package/@wordpress/html-entities) | HTML entity utilities for WordPress. | JS unit tests are passing. ||
+| [@wordpress/blocks](https://www.npmjs.com/package/@wordpress/blocks) | Blocks utilities for WordPress. | JS unit tests are passing. ||
+| [@wordpress/block-editor](https://www.npmjs.com/package/@wordpress/block-editor) | Allows you to create and use standalone block editors. | JS unit tests are passing. ||
 | [@wordpress/data-controls](https://www.npmjs.com/package/@wordpress/data-controls) | The data controls module is a module intended to simplify implementation of common controls used with the `@wordpress/data` package.| JS unit tests are passing| |
 
 
