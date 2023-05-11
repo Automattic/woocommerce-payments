@@ -102,7 +102,14 @@ export const DepositsList = (): JSX.Element => {
 
 	const rows = deposits.map( ( deposit ) => {
 		const clickable = ( children: React.ReactNode ): JSX.Element => (
-			<ClickableCell href={ getDetailsURL( deposit.id, 'deposits' ) }>
+			<ClickableCell
+				href={ getDetailsURL( deposit.id, 'deposits' ) }
+				onClick={ () =>
+					wcpayTracks.recordEvent(
+						wcpayTracks.events.DEPOSITS_ROW_CLICK
+					)
+				}
+			>
 				{ children }
 			</ClickableCell>
 		);
@@ -111,7 +118,14 @@ export const DepositsList = (): JSX.Element => {
 		);
 
 		const dateDisplay = (
-			<Link href={ getDetailsURL( deposit.id, 'deposits' ) }>
+			<Link
+				href={ getDetailsURL( deposit.id, 'deposits' ) }
+				onClick={ () =>
+					wcpayTracks.recordEvent(
+						wcpayTracks.events.DEPOSITS_ROW_CLICK
+					)
+				}
+			>
 				{ dateI18n(
 					'M j, Y',
 					moment.utc( deposit.date ).toISOString(),
@@ -261,11 +275,14 @@ export const DepositsList = (): JSX.Element => {
 						)
 					);
 
-					wcpayTracks.recordEvent( 'wcpay_deposits_download', {
-						exported_deposits: exportedDeposits,
-						total_deposits: exportedDeposits,
-						download_type: 'endpoint',
-					} );
+					wcpayTracks.recordEvent(
+						wcpayTracks.events.DEPOSITS_DOWNLOAD_CSV_CLICK,
+						{
+							exported_deposits: exportedDeposits,
+							total_deposits: exportedDeposits,
+							download_type: 'endpoint',
+						}
+					);
 				} catch {
 					createNotice(
 						'error',
@@ -305,11 +322,14 @@ export const DepositsList = (): JSX.Element => {
 				generateCSVDataFromTable( csvColumns, csvRows )
 			);
 
-			wcpayTracks.recordEvent( 'wcpay_deposits_download', {
-				exported_deposits: rows.length,
-				total_deposits: depositsSummary.count,
-				download_type: 'browser',
-			} );
+			wcpayTracks.recordEvent(
+				wcpayTracks.events.DEPOSITS_DOWNLOAD_CSV_CLICK,
+				{
+					exported_deposits: rows.length,
+					total_deposits: depositsSummary.count,
+					download_type: 'browser',
+				}
+			);
 		}
 
 		setIsDownloading( false );

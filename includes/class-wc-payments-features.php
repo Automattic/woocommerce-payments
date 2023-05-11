@@ -112,6 +112,30 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Indicates whether card payments are enabled for this (Stripe) account.
+	 *
+	 * @return bool True if account can accept card payments, false otherwise.
+	 */
+	public static function are_payments_enabled() {
+		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
+
+		return is_array( $account ) && ( $account['payments_enabled'] ?? false );
+	}
+
+	/**
+	 * Checks if WooPay is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_woopay_enabled() {
+		$is_platform_checkout_eligible               = self::is_platform_checkout_eligible(); // Feature flag.
+		$is_platform_checkout_enabled                = 'yes' === WC_Payments::get_gateway()->get_option( 'platform_checkout' );
+		$is_platform_checkout_express_button_enabled = self::is_woopay_express_checkout_enabled();
+
+		return $is_platform_checkout_eligible && $is_platform_checkout_enabled && $is_platform_checkout_express_button_enabled;
+	}
+
+	/**
 	 * Checks whether the customer Multi-Currency feature is enabled
 	 *
 	 * @return bool
@@ -186,6 +210,11 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_platform_checkout_eligible() {
+		// Checks for the dependency on Store API AbstractCartRoute.
+		if ( ! class_exists( 'Automattic\WooCommerce\StoreApi\Routes\V1\AbstractCartRoute' ) ) {
+			return false;
+		}
+
 		// read directly from cache, ignore cache expiration check.
 		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
 		return is_array( $account ) && ( $account['platform_checkout_eligible'] ?? false );
