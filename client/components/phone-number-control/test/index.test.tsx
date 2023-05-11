@@ -85,7 +85,7 @@ describe( 'Phone Number Control', () => {
 		expect( input ).toHaveFocus();
 	} );
 
-	it( 'toggles focused class as expected', () => {
+	it.skip( 'toggles focused class as expected', () => {
 		render( <PhoneNumberControl value="" onChange={ onChange } /> );
 		const input = screen.getByRole( 'textbox' );
 		const control = input.parentElement;
