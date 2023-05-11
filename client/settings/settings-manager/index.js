@@ -100,7 +100,7 @@ const DepositsDescription = () => {
 					depositDelayDays
 				) }
 			</p>
-			<ExternalLink href="/wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments">
+			<ExternalLink href="https://woocommerce.com/document/payments/faq/deposit-schedule/#section-2">
 				{ __(
 					'Learn more about pending schedules',
 					'woocommerce-payments'

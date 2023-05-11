@@ -163,13 +163,6 @@ const DepositsSchedule = () => {
 					href="https://woocommerce.com/document/payments/faq/deposit-schedule/"
 					target="_blank"
 					rel="external noreferrer noopener"
-					onClick={ () =>
-						wcpayTracks.recordEvent(
-							wcpayTracks.events
-								.SETTINGS_DEPOSITS_SCHEDULE_DISABLED_DOCS_CLICK,
-							{}
-						)
-					}
 				>
 					<HelpOutlineIcon size={ 18 } />
 				</a>
@@ -197,13 +190,6 @@ const DepositsSchedule = () => {
 					href="https://woocommerce.com/document/payments/faq/deposit-schedule/"
 					target="_blank"
 					rel="external noreferrer noopener"
-					onClick={ () =>
-						wcpayTracks.recordEvent(
-							wcpayTracks.events
-								.SETTINGS_DEPOSITS_WAITING_PERIOD_DOCS_CLICK,
-							{}
-						)
-					}
 				>
 					<HelpOutlineIcon size={ 18 } />
 				</a>
