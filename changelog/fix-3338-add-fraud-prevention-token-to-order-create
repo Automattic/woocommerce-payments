@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Add fraud prevention token to cart and checkout payment request buttons
