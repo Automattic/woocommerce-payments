@@ -2,13 +2,25 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 /**
  * Internal dependencies
  */
-import user from '@testing-library/user-event';
 import ConnectAccountPage from '..';
+
+declare const global: {
+	wcpaySettings: {
+		connectUrl: string;
+		connect: {
+			country: string;
+			availableCountries: Record< string, string >;
+		};
+		onBoardingDisabled?: boolean;
+	};
+};
 
 describe( 'ConnectAccountPage', () => {
 	beforeEach( () => {
@@ -51,7 +63,7 @@ describe( 'ConnectAccountPage', () => {
 		};
 
 		render( <ConnectAccountPage /> );
-		user.click( screen.getByRole( 'link', { name: /Finish setup/ } ) );
+		userEvent.click( screen.getByRole( 'link', { name: /Finish setup/ } ) );
 
 		const modalSelector =
 			'.woocommerce-payments__onboarding_location_check-modal';
