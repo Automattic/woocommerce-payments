@@ -571,6 +571,9 @@ class WC_Payments_Account {
 
 		try {
 			$link = $this->payments_api_client->get_link( $args );
+			if ( isset( $args['type'] ) && 'complete_kyc_link' === $args['type'] && isset( $link['state'] ) ) {
+				set_transient( 'wcpay_stripe_onboarding_state', $link['state'], DAY_IN_SECONDS );
+			}
 
 			$this->redirect_to( $link['url'] );
 		} catch ( API_Exception $e ) {

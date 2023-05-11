@@ -82,16 +82,14 @@ const events = {
 		'wcpay_subscriptions_account_not_connected_product_modal_finish_setup',
 	SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_DISMISS:
 		'wcpay_subscriptions_account_not_connected_product_modal_dismiss',
-	PLATFORM_CHECKOUT_OFFERED: 'platform_checkout_offered',
-	PLATFORM_CHECKOUT_OTP_START: 'platform_checkout_otp_prompt_start',
-	PLATFORM_CHECKOUT_OTP_COMPLETE: 'platform_checkout_otp_prompt_complete',
-	PLATFORM_CHECKOUT_OTP_FAILED: 'platform_checkout_otp_prompt_failed',
-	PLATFORM_CHECKOUT_AUTO_REDIRECT: 'platform_checkout_auto_redirect',
-	PLATFORM_CHECKOUT_SKIPPED: 'platform_checkout_skipped',
-	PLATFORM_CHECKOUT_EXPRESS_BUTTON_OFFERED:
-		'platform_checkout_express_button_offered',
-	PLATFORM_CHECKOUT_EXPRESS_BUTTON_CLICKED:
-		'platform_checkout_express_button_clicked',
+	WOOPAY_OFFERED: 'woopay_offered',
+	WOOPAY_OTP_START: 'woopay_otp_prompt_start',
+	WOOPAY_OTP_COMPLETE: 'woopay_otp_prompt_complete',
+	WOOPAY_OTP_FAILED: 'woopay_otp_prompt_failed',
+	WOOPAY_AUTO_REDIRECT: 'woopay_auto_redirect',
+	WOOPAY_SKIPPED: 'woopay_skipped',
+	WOOPAY_EXPRESS_BUTTON_OFFERED: 'woopay_express_button_offered',
+	WOOPAY_EXPRESS_BUTTON_CLICKED: 'woopay_express_button_clicked',
 	// Onboarding flow.
 	ONBOARDING_FLOW_STARTED: 'wcpay_onboarding_flow_started',
 	ONBOARDING_FLOW_MODE_SELECTED: 'wcpay_onboarding_flow_mode_selected',

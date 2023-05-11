@@ -101,7 +101,7 @@ abstract class Request {
 	private $route_list = [
 		WC_Payments_API_Client::ACCOUNTS_API           => 'accounts',
 		WC_Payments_API_Client::CAPABILITIES_API       => 'accounts/capabilities',
-		WC_Payments_API_Client::PLATFORM_CHECKOUT_API  => 'accounts/platform_checkout',
+		WC_Payments_API_Client::WOOPAY_API             => 'accounts/platform_checkout',
 		WC_Payments_API_Client::APPLE_PAY_API          => 'apple_pay',
 		WC_Payments_API_Client::CHARGES_API            => 'charges',
 		WC_Payments_API_Client::CONN_TOKENS_API        => 'terminal/connection_tokens',

@@ -23,7 +23,7 @@ import {
 	usePaymentRequestButtonSize,
 	usePaymentRequestButtonTheme,
 	usePaymentRequestEnabledSettings,
-	usePlatformCheckoutEnabledSettings,
+	useWooPayEnabledSettings,
 } from 'wcpay/data';
 
 const makeButtonSizeText = ( string ) =>
@@ -130,12 +130,10 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 	const [ buttonType, setButtonType ] = usePaymentRequestButtonType();
 	const [ size, setSize ] = usePaymentRequestButtonSize();
 	const [ theme, setTheme ] = usePaymentRequestButtonTheme();
-	const [ isPlatformCheckoutEnabled ] = usePlatformCheckoutEnabledSettings();
+	const [ isWooPayEnabled ] = useWooPayEnabledSettings();
 	const [ isPaymentRequestEnabled ] = usePaymentRequestEnabledSettings();
 	const {
-		featureFlags: {
-			platformCheckout: isPlatformCheckoutFeatureFlagEnabled,
-		},
+		featureFlags: { woopay: isWooPayFeatureFlagEnabled },
 	} = useContext( WCPaySettingsContext );
 
 	const stripePromise = useMemo( () => {
@@ -152,9 +150,9 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 			: __( 'WooPay button', 'woocommerce-payments' );
 
 	const showWarning =
-		isPlatformCheckoutEnabled &&
+		isWooPayEnabled &&
 		isPaymentRequestEnabled &&
-		isPlatformCheckoutFeatureFlagEnabled;
+		isWooPayFeatureFlagEnabled;
 
 	return (
 		<CardBody>

@@ -37,7 +37,7 @@ const LoadingStep: React.FC< Props > = () => {
 			business: {
 				country: data.country,
 				type: data.business_type,
-				mcc: 'computers_peripherals_and_software', // TODO GH-4853 add MCC from onboarding form
+				mcc: 'software_services', // TODO GH-4853 add MCC from onboarding form
 				annual_revenue: data.annual_revenue,
 				go_live_timeframe: data.go_live_timeframe,
 			},

@@ -38,7 +38,7 @@ class WC_Payments_API_Client {
 
 	const ACCOUNTS_API                 = 'accounts';
 	const CAPABILITIES_API             = 'accounts/capabilities';
-	const PLATFORM_CHECKOUT_API        = 'accounts/platform_checkout';
+	const WOOPAY_API                   = 'accounts/platform_checkout';
 	const APPLE_PAY_API                = 'apple_pay';
 	const CHARGES_API                  = 'charges';
 	const CONN_TOKENS_API              = 'terminal/connection_tokens';
@@ -762,24 +762,24 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Get current platform checkout eligibility
+	 * Get current woopay eligibility
 	 *
-	 * @return array An array describing platform checkout eligibility.
+	 * @return array An array describing woopay eligibility.
 	 *
 	 * @throws API_Exception - Error contacting the API.
 	 */
-	public function get_platform_checkout_eligibility() {
+	public function get_woopay_eligibility() {
 		return $this->request(
 			[
 				'test_mode' => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
 			],
-			self::PLATFORM_CHECKOUT_API,
+			self::WOOPAY_API,
 			self::GET
 		);
 	}
 
 	/**
-	 * Update platform checkout data
+	 * Update woopay data
 	 *
 	 * @param array $data Data to update.
 	 *
@@ -787,13 +787,13 @@ class WC_Payments_API_Client {
 	 *
 	 * @throws API_Exception - Error contacting the API.
 	 */
-	public function update_platform_checkout( $data ) {
+	public function update_woopay( $data ) {
 		return $this->request(
 			array_merge(
 				[ 'test_mode' => WC_Payments::mode()->is_dev() ],
 				$data
 			),
-			self::PLATFORM_CHECKOUT_API,
+			self::WOOPAY_API,
 			self::POST
 		);
 	}
