@@ -159,6 +159,11 @@ abstract class Request {
 	 * @throws Invalid_Request_Parameter_Exception|\Exception
 	 */
 	public static function get( string $api, $id = null ) {
+		/**
+		 * Request variable.
+		 *
+		 * @var Get_Request $request
+		 */
 		$request = WC_Payments::create_request( Get_Request::class, $id );
 		$request->set_api( $api );
 		return $request;
