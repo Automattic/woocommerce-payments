@@ -211,5 +211,5 @@ export const getCurrentProtectionLevel = ( state ) => {
 };
 
 export const getAdvancedFraudProtectionSettings = ( state ) => {
-	return getSettings( state ).advanced_fraud_protection_settings || EMPTY_OBJ;
+	return getSettings( state ).advanced_fraud_protection_settings || EMPTY_ARR;
 };
