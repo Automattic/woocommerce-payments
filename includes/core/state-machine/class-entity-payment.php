@@ -31,7 +31,7 @@ class Entity_Payment {
 		return $this->get_data('revision');
 	}
 
-	public function log( State_Interface $previous_state, State_Interface $current_state, Input $input, State_Machine_Abstract $state_machine, int $timestamp = null ) {
+	public function log( State $previous_state, State $current_state, Input $input, State_Machine_Abstract $state_machine, int $timestamp = null ) {
 		$this->data['revision'][] = [
 			'timestamp' => $timestamp ?? time(),
 			'input' => $input,

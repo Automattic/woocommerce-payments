@@ -31,7 +31,7 @@ abstract class State_Machine_Abstract {
 		return $this;
 	}
 
-	public function set_initial_state( State_Interface $initial_state ) {
+	public function set_initial_state( State $initial_state ) {
 		$this->initial_state = $initial_state;
 		return $this;
 	}
@@ -69,13 +69,13 @@ abstract class State_Machine_Abstract {
 		return $this->entity;
 	}
 
-	protected function is_valid_next_state( State_Interface $current_state, State_Interface $next_state): bool {
+	protected function is_valid_next_state( State $current_state, State $next_state): bool {
 		$current_state_class = get_class( $current_state );
 		$next_state_class = get_class( $next_state );
 		return in_array( $next_state_class, $this->config[ $current_state_class ] ) ;
 	}
 
-	protected function is_emit_state( State_Interface $state): bool {
+	protected function is_emit_state( State $state): bool {
 		return is_subclass_of( $state, Final_State::class )
 			|| is_subclass_of( $state, Failed_State::class )
 			|| is_subclass_of( $state, Async_State::class );
