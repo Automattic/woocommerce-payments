@@ -1814,10 +1814,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function update_account_settings( array $settings ) : array {
 		$account_settings = [];
 		foreach ( static::ACCOUNT_SETTINGS_MAPPING as $name => $account_key ) {
-			$setting_value = $settings[ $name ];
-
-			if ( isset( $setting_value ) ) {
-				$account_settings[ $account_key ] = $setting_value;
+			if ( isset( $settings[ $name ] ) ) {
+				$account_settings[ $account_key ] = $settings[ $name ];
 			}
 		}
 		$this->update_account( $account_settings );
