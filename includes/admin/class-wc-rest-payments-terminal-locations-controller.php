@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-use WCPay\Core\Server\Request\Get_Request;
+use WCPay\Core\Server\Request;
 use WCPay\Exceptions\API_Exception;
 /**
  * REST controller for account details and status.
@@ -237,8 +237,8 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 				}
 			}
 			// If the location is missing, fetch it individually and reload the transient.
-			$request = Get_Request::create( $location_id );
-			$request->set_api( WC_Payments_API_Client::TERMINAL_LOCATIONS_API );
+			$request = Request::get( WC_Payments_API_Client::TERMINAL_LOCATIONS_API, $location_id );
+
 			$location = $request->send( 'wcpay_get_terminal_location' );
 			$this->reload_locations();
 
@@ -304,8 +304,7 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 	private function fetch_locations(): array {
 		$locations = get_transient( static::STORE_LOCATIONS_TRANSIENT_KEY );
 		if ( ! $locations ) {
-			$request = Get_Request::create();
-			$request->set_api( WC_Payments_API_Client::TERMINAL_LOCATIONS_API );
+			$request   = Request::get( WC_Payments_API_Client::TERMINAL_LOCATIONS_API );
 			$locations = $request->send( 'wcpay_get_terminal_locations' );
 			set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
 		}
@@ -320,8 +319,7 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 	 * @throws API_Exception If request to server fails.
 	 */
 	private function reload_locations() {
-		$request = Get_Request::create();
-		$request->set_api( WC_Payments_API_Client::TERMINAL_LOCATIONS_API );
+		$request   = Request::get( WC_Payments_API_Client::TERMINAL_LOCATIONS_API );
 		$locations = $request->send( 'wcpay_get_terminal_locations' );
 		set_transient( static::STORE_LOCATIONS_TRANSIENT_KEY, $locations, DAY_IN_SECONDS );
 	}

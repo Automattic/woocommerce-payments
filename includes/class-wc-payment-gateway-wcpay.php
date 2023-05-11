@@ -16,7 +16,6 @@ use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Method;
 use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
-use WCPay\Core\Mode;
 use WCPay\Core\Server\Request\Cancel_Intention;
 use WCPay\Core\Server\Request\Capture_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
@@ -24,7 +23,7 @@ use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
 use WCPay\Core\Server\Request\Create_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
-use WCPay\Core\Server\Request\Get_Request;
+use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Request\List_Charge_Refunds;
 use WCPay\Core\Server\Request\Refund_Charge;
 use WCPay\Core\Server\Request\Update_Intention;
@@ -1178,8 +1177,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			if ( ! empty( $platform_checkout_intent_id ) ) {
 				// If the setup intent is included in the request use that intent.
-				$setup_intent_request = Get_Request::create( $platform_checkout_intent_id );
-				$setup_intent_request->set_api( WC_Payments_API_Client::SETUP_INTENTS_API );
+				$setup_intent_request = Request::get( WC_Payments_API_Client::SETUP_INTENTS_API );
 
 				$intent = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
 
@@ -2796,8 +2794,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$this->order_service->attach_transaction_fee_to_order( $order, $charge );
 			} else {
 				// For $0 orders, fetch the Setup Intent instead.
-				$setup_intent_request = Get_Request::create( $intent_id );
-				$setup_intent_request->set_api( WC_Payments_API_Client::SETUP_INTENTS_API );
+				$setup_intent_request = Request::get( WC_Payments_API_Client::SETUP_INTENTS_API );
 
 				$intent    = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
 				$status    = $intent['status'];
@@ -2901,8 +2898,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			$setup_intent_request = Get_Request::create( $setup_intent_id );
-			$setup_intent_request->set_api( WC_Payments_API_Client::SETUP_INTENTS_API );
+			$setup_intent_request = Request::get( WC_Payments_API_Client::SETUP_INTENTS_API, $setup_intent_id );
 
 			$setup_intent = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
 

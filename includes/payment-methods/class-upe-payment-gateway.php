@@ -15,7 +15,7 @@ use WCPay\Core\Server\Request\Create_Intention;
 use WCPay\Core\Server\Request\Create_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
-use WCPay\Core\Server\Request\Get_Request;
+use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
@@ -746,8 +746,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : null;
 				$error                  = $intent->get_last_payment_error();
 			} else {
-				$setup_intent_request = Get_Request::create( $intent_id );
-				$setup_intent_request->set_api( WC_Payments_API_Client::SETUP_INTENTS_API );
+				$setup_intent_request = Request::get( WC_Payments_API_Client::SETUP_INTENTS_API, $intent_id );
 
 				$intent = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
 
@@ -868,8 +867,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 */
 	public function create_token_from_setup_intent( $setup_intent_id, $user ) {
 		try {
-			$setup_intent_request = Get_Request::create( $setup_intent_id );
-			$setup_intent_request->set_api( WC_Payments_API_Client::SETUP_INTENTS_API );
+			$setup_intent_request = Request::get( WC_Payments_API_Client::SETUP_INTENTS_API, $setup_intent_id );
 
 			$setup_intent      = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
 			$payment_method_id = $setup_intent['payment_method'];

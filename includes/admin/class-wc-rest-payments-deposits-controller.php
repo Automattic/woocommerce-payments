@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
-use WCPay\Core\Server\Request\Get_Request;
+use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Request\List_Deposits;
 
 defined( 'ABSPATH' ) || exit;
@@ -118,8 +118,7 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 	 * Retrieve overview of deposits to respond with via API.
 	 */
 	public function get_deposits_overview() {
-		$request = Get_Request::create();
-		$request->set_api( WC_Payments_API_Client::DEPOSITS_API . '/overview' );
+		$request = Request::get( WC_Payments_API_Client::DEPOSITS_API . '/overview' );
 		return $request->send( 'wcpay_get_deposits_overview' );
 	}
 
@@ -127,8 +126,7 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 	 * Retrieve an overview of all deposits from the API.
 	 */
 	public function get_all_deposits_overviews() {
-		$request = Get_Request::create();
-		$request->set_api( WC_Payments_API_Client::DEPOSITS_API . '/overview-all' );
+		$request = Request::get( WC_Payments_API_Client::DEPOSITS_API . '/overview-all' );
 		return $request->send( 'wcpay_get_all_deposits_overviews' );
 	}
 
@@ -139,8 +137,7 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 	 */
 	public function get_deposit( $request ) {
 		$deposit_id    = $request->get_param( 'deposit_id' );
-		$wcpay_request = Get_Request::create( $deposit_id );
-		$wcpay_request->set_api( WC_Payments_API_Client::DEPOSITS_API );
+		$wcpay_request = Request::get( WC_Payments_API_Client::DEPOSITS_API, $deposit_id );
 		return $wcpay_request->send( 'wcpay_get_deposit' );
 	}
 

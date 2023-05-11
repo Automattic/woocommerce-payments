@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
-use WCPay\Core\Server\Request\Get_Request;
+use WCPay\Core\Server\Request;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -49,8 +49,7 @@ class WC_REST_Payments_Capital_Controller extends WC_Payments_REST_Controller {
 	 * Retrieve the summary of the active Capital loan.
 	 */
 	public function get_active_loan_summary() {
-		$request = Get_Request::create();
-		$request->set_api( WC_Payments_API_Client::CAPITAL_API . '/active_loan_summary' );
+		$request = Request::get( WC_Payments_API_Client::CAPITAL_API . '/active_loan_summary' );
 		return $request->send( 'wcpay_get_active_loan_summary_request' );
 	}
 
@@ -58,8 +57,7 @@ class WC_REST_Payments_Capital_Controller extends WC_Payments_REST_Controller {
 	 * Retrieve all the past and present Capital loans.
 	 */
 	public function get_loans() {
-		$request = Get_Request::create();
-		$request->set_api( WC_Payments_API_Client::CAPITAL_API . '/loans' );
+		$request = Request::get( WC_Payments_API_Client::CAPITAL_API . '/loans' );
 		return $request->send( 'wcpay_get_loans_request' );
 	}
 

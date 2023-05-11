@@ -7,7 +7,7 @@
 
 use Automattic\Jetpack\Identity_Crisis as Jetpack_Identity_Crisis;
 use Automattic\WooCommerce\Admin\PageController;
-use WCPay\Core\Server\Request\Get_Request;
+use WCPay\Core\Server\Request;
 use WCPay\Database_Cache;
 use WCPay\Logger;
 
@@ -1100,8 +1100,7 @@ class WC_Payments_Admin {
 	 * @return int The number of disputes which need a response.
 	 */
 	private function get_disputes_awaiting_response_count() {
-		$request = Get_Request::create();
-		$request->set_api( WC_Payments_API_Client::DISPUTES_API . '/status_counts' );
+		$request       = Request::get( WC_Payments_API_Client::DISPUTES_API . '/status_counts' );
 		$send_callback = function() use ( $request ) {
 			$request->send( 'wcpay_get_dispute_status_counts' );
 		};
@@ -1130,8 +1129,8 @@ class WC_Payments_Admin {
 		$test_mode = WC_Payments::mode()->is_test();
 		$cache_key = $test_mode ? DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE : DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY;
 
-		$request = Get_Request::create();
-		$request->set_api( WC_Payments_API_Client::AUTHORIZATIONS_API . '/summary' );
+		$request = Request::get( WC_Payments_API_Client::AUTHORIZATIONS_API . '/summary' );
+
 		$send_callback         = function() use ( $request ) {
 			$request->send( 'wc_pay_get_authorizations_summary' );
 		};

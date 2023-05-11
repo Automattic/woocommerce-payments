@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
-use WCPay\Core\Server\Request\Get_Request;
+use WCPay\Core\Server\Request;
 use WCPay\Exceptions\API_Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -67,7 +67,7 @@ class WC_REST_Payments_VAT_Controller extends WC_Payments_REST_Controller {
 	 */
 	public function validate_vat( $request ) {
 		$vat_number = $request->get_param( 'vat_number' );
-		$request    = Get_Request::create( $vat_number );
+		$request    = Request::get( WC_Payments_API_Client::VAT_API, $vat_number );
 		return $request->send( 'wcpay_validate_vat_request' );
 	}
 

@@ -14,7 +14,7 @@ use Automattic\WooCommerce\Admin\Notes\Note;
 use WCPay\Core\Server\Request\Get_Account;
 use WCPay\Core\Server\Request\Get_Account_Capital_Link;
 use WCPay\Core\Server\Request\Get_Account_Login_Data;
-use WCPay\Core\Server\Request\Get_Request;
+use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Request\Update_Account;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
@@ -1478,8 +1478,7 @@ class WC_Payments_Account {
 
 		// Get the loan summary.
 		try {
-			$request = Get_Request::create();
-			$request->set_api( WC_Payments_API_Client::CAPITAL_API . '/active_loan_summary' );
+			$request      = Request::get( WC_Payments_API_Client::CAPITAL_API . '/active_loan_summary' );
 			$loan_details = $request->send( 'wcpay_get_active_loan_summary_request' );
 
 		} catch ( API_Exception $ex ) {

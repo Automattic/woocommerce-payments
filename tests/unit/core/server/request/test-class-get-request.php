@@ -7,6 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
+use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Request\Get_Request;
 
 /**
@@ -72,5 +73,11 @@ class Get_Request_Test extends WCPAY_UnitTestCase {
 		$request->set_api( WC_Payments_API_Client::DEPOSITS_API . '/foo' );
 		$this->assertSame( 'GET', $request->get_method() );
 		$this->assertSame( WC_Payments_API_Client::DEPOSITS_API . '/foo', $request->get_api() );
+	}
+
+	public function test_get_method_from_parent_request_class_will_create_get_request() {
+		$request = Request::get( WC_Payments_API_Client::DEPOSITS_API );
+		$this->assertInstanceOf( Get_Request::class, $request );
+		$this->assertSame( WC_Payments_API_Client::DEPOSITS_API, $request->get_api() );
 	}
 }
