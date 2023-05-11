@@ -66,6 +66,10 @@ abstract class State_Machine_Abstract {
 
 		} while ( ! $this->is_emit_state( $current_state ) );
 
+		$order_id = $this->entity->get_order_id();
+		$order = wc_get_order( $order_id );
+		$this->storage->save( $order, $this->entity );
+
 		return $this->entity;
 	}
 

@@ -2,7 +2,6 @@
 namespace WCPay\Core\State_Machine;
 // TODO this would be a service
 class Entity_Storage_Payment {
-	// TODO - this implementation using Order Metadata. However, the final decision should be decided later.
 	const META_KEY = '_wcpay_payment_entity';
 	public function save( \WC_Order $order, Entity_Payment $entity ): bool {
 		$order->update_meta_data( self::META_KEY, serialize($entity), true );
@@ -21,12 +20,11 @@ class Entity_Storage_Payment {
 			return unserialize( $order->get_meta( self::META_KEY ) );
 		}
 
-		$entity = new Entity_Payment();
+		$entity = new Entity_Payment( $order->get_id() );
 		$this->save( $order, $entity );
 		return $entity;
 	}
 	public function delete( \WC_Order $order ): bool {
-		// TODO maybe do nothing here.
 		$order->delete_meta_data( self::META_KEY );
 	}
 }

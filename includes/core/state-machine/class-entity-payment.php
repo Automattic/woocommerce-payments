@@ -10,6 +10,10 @@ class Entity_Payment {
 		'order_id'
 	];
 
+	public function __construct( int $order_id ) {
+		$this->data['order_id'] = $order_id;
+	}
+
 	protected function set_data( string $key, $value) {
 		if ( in_array( $key, self::RESERVED_KEYS ) ) {
 			throw new \Exception( 'Please use another key. Input key is reserved: ' . $key );
@@ -44,5 +48,9 @@ class Entity_Payment {
 		];
 
 		$this->data['current_state'] = $current_state->get_id();
+	}
+
+	public function get_order_id(): ?int {
+		return $this->get_data('order_id');
 	}
 }
