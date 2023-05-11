@@ -50,6 +50,10 @@ declare global {
 				tpv: number;
 				firstTransactionDate?: string;
 			};
+			fraudProtection: {
+				declineOnAVSFailure: boolean;
+				declineOnCVCFailure: boolean;
+			};
 		};
 		accountLoans: {
 			has_active_loan: boolean;
@@ -77,11 +81,11 @@ declare global {
 			business_types: Country[];
 			mccs_display_tree: MccsDisplayTreeItem[];
 		};
+		storeCurrency: string;
+		isMultiCurrencyEnabled: string;
 	};
 
 	const wcTracks: any;
 
-	const wcSettings: {
-		adminUrl: string;
-	};
+	const wcSettings: Record< string, any >;
 }
