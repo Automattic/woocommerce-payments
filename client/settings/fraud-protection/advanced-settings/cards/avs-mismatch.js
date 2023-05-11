@@ -41,7 +41,7 @@ const AVSMismatchRuleCard = () => {
 				</strong>
 				<ToggleControl
 					label={ __(
-						'Screen transactions for mismatched AVS',
+						'Block transactions for mismatched AVS',
 						'woocommerce-payments'
 					) }
 					key="avs-mismatch"
