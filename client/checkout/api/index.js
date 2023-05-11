@@ -245,7 +245,7 @@ export default class WCPayAPI {
 				'accountIdForIntentConfirmation'
 			);
 
-			// If this is a setup intent we're not processing a platform checkout payment so we can
+			// If this is a setup intent we're not processing a woopay payment so we can
 			// use the regular getStripe function.
 			if ( isSetupIntent ) {
 				return this.getStripe().confirmCardSetup(
@@ -253,7 +253,7 @@ export default class WCPayAPI {
 				);
 			}
 
-			// For platform checkout we need the capability to switch up the account ID specifically for
+			// For woopay we need the capability to switch up the account ID specifically for
 			// the intent confirmation step, that's why we create a new instance of the Stripe JS here.
 			if ( accountIdForIntentConfirmation ) {
 				return this.createStripe(
@@ -268,7 +268,7 @@ export default class WCPayAPI {
 				);
 			}
 
-			// When not dealing with a setup intent or platform checkout we need to force an account
+			// When not dealing with a setup intent or woopay we need to force an account
 			// specific request in Stripe.
 			return this.getStripe( true ).confirmCardPayment(
 				decryptClientSecret( clientSecret )
@@ -671,17 +671,14 @@ export default class WCPayAPI {
 		} );
 	}
 
-	initPlatformCheckout( userEmail, platformCheckoutUserSession ) {
+	initWooPay( userEmail, woopayUserSession ) {
 		const wcAjaxUrl = getConfig( 'wcAjaxUrl' );
-		const nonce = getConfig( 'initPlatformCheckoutNonce' );
-		return this.request(
-			buildAjaxURL( wcAjaxUrl, 'init_platform_checkout' ),
-			{
-				_wpnonce: nonce,
-				email: userEmail,
-				user_session: platformCheckoutUserSession,
-			}
-		);
+		const nonce = getConfig( 'initWooPayNonce' );
+		return this.request( buildAjaxURL( wcAjaxUrl, 'init_woopay' ), {
+			_wpnonce: nonce,
+			email: userEmail,
+			user_session: woopayUserSession,
+		} );
 	}
 
 	expressCheckoutAddToCart( productData ) {
