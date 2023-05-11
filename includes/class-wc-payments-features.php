@@ -112,6 +112,30 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Indicates whether card payments are enabled for this (Stripe) account.
+	 *
+	 * @return bool True if account can accept card payments, false otherwise.
+	 */
+	public static function are_payments_enabled() {
+		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
+
+		return is_array( $account ) && ( $account['payments_enabled'] ?? false );
+	}
+
+	/**
+	 * Checks if WooPay is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_woopay_enabled() {
+		$is_woopay_eligible               = self::is_woopay_eligible(); // Feature flag.
+		$is_woopay_enabled                = 'yes' === WC_Payments::get_gateway()->get_option( 'platform_checkout' );
+		$is_woopay_express_button_enabled = self::is_woopay_express_checkout_enabled();
+
+		return $is_woopay_eligible && $is_woopay_enabled && $is_woopay_express_button_enabled;
+	}
+
+	/**
 	 * Checks whether the customer Multi-Currency feature is enabled
 	 *
 	 * @return bool
@@ -181,11 +205,11 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether platform checkout is enabled.
+	 * Checks whether woopay is enabled.
 	 *
 	 * @return bool
 	 */
-	public static function is_platform_checkout_eligible() {
+	public static function is_woopay_eligible() {
 		// Checks for the dependency on Store API AbstractCartRoute.
 		if ( ! class_exists( 'Automattic\WooCommerce\StoreApi\Routes\V1\AbstractCartRoute' ) ) {
 			return false;
@@ -213,8 +237,8 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_woopay_express_checkout_enabled() {
-		// Confirm platform checkout eligibility as well.
-		return '1' === get_option( self::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME, '1' ) && self::is_platform_checkout_eligible();
+		// Confirm woopay eligibility as well.
+		return '1' === get_option( self::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME, '1' ) && self::is_woopay_eligible();
 	}
 
 	/**
@@ -285,7 +309,7 @@ class WC_Payments_Features {
 				'upeSettingsPreview'      => self::is_upe_settings_preview_enabled(),
 				'multiCurrency'           => self::is_customer_multi_currency_enabled(),
 				'accountOverviewTaskList' => self::is_account_overview_task_list_enabled(),
-				'platformCheckout'        => self::is_platform_checkout_eligible(),
+				'woopay'                  => self::is_woopay_eligible(),
 				'documents'               => self::is_documents_section_enabled(),
 				'clientSecretEncryption'  => self::is_client_secret_encryption_enabled(),
 				'woopayExpressCheckout'   => self::is_woopay_express_checkout_enabled(),

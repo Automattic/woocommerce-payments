@@ -17,8 +17,8 @@ function isEnabled() {
 /**
  * Records site event.
  *
- * @param {string}  eventName       Name of the event.
- * @param {Object?} eventProperties Event properties.
+ * @param {string}  eventName        Name of the event.
+ * @param {Object} [eventProperties] Event properties (optional).
  */
 function recordEvent( eventName, eventProperties ) {
 	// Wc-admin track script is enqueued after ours, wrap in domReady
@@ -31,10 +31,10 @@ function recordEvent( eventName, eventProperties ) {
 }
 
 /**
- * Records events from buyers.
+ * Records events from buyers (aka shoppers).
  *
- * @param {string}  eventName       Name of the event.
- * @param {Object?} eventProperties Event properties.
+ * @param {string}  eventName         Name of the event.
+ * @param {Object}  [eventProperties] Event properties (optional).
  */
 function recordUserEvent( eventName, eventProperties ) {
 	const nonce =
@@ -60,6 +60,12 @@ const events = {
 	CONNECT_ACCOUNT_LEARN_MORE: 'wcpay_welcome_learn_more',
 	CONNECT_ACCOUNT_STRIPE_CONNECTED: 'wcpay_stripe_connected',
 	CONNECT_ACCOUNT_KYC_MODAL_OPENED: 'wcpay_connect_account_kyc_modal_opened',
+	DEPOSITS_ROW_CLICK: 'wcpay_deposits_row_click',
+	DEPOSITS_DOWNLOAD_CSV_CLICK: 'wcpay_deposits_download',
+	OVERVIEW_DEPOSITS_VIEW_HISTORY_CLICK:
+		'wcpay_overview_deposits_view_history_click',
+	OVERVIEW_DEPOSITS_CHANGE_SCHEDULE_CLICK:
+		'wcpay_overview_deposits_change_schedule_click',
 	MULTI_CURRENCY_ENABLED_CURRENCIES_UPDATED:
 		'wcpay_multi_currency_enabled_currencies_updated',
 	PAYMENT_REQUEST_SETTINGS_CHANGE: 'wcpay_payment_request_settings_change',
@@ -76,16 +82,23 @@ const events = {
 		'wcpay_subscriptions_account_not_connected_product_modal_finish_setup',
 	SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_DISMISS:
 		'wcpay_subscriptions_account_not_connected_product_modal_dismiss',
-	PLATFORM_CHECKOUT_OFFERED: 'platform_checkout_offered',
-	PLATFORM_CHECKOUT_OTP_START: 'platform_checkout_otp_prompt_start',
-	PLATFORM_CHECKOUT_OTP_COMPLETE: 'platform_checkout_otp_prompt_complete',
-	PLATFORM_CHECKOUT_OTP_FAILED: 'platform_checkout_otp_prompt_failed',
-	PLATFORM_CHECKOUT_AUTO_REDIRECT: 'platform_checkout_auto_redirect',
-	PLATFORM_CHECKOUT_SKIPPED: 'platform_checkout_skipped',
-	PLATFORM_CHECKOUT_EXPRESS_BUTTON_OFFERED:
-		'platform_checkout_express_button_offered',
-	PLATFORM_CHECKOUT_EXPRESS_BUTTON_CLICKED:
-		'platform_checkout_express_button_clicked',
+	WOOPAY_OFFERED: 'woopay_offered',
+	WOOPAY_OTP_START: 'woopay_otp_prompt_start',
+	WOOPAY_OTP_COMPLETE: 'woopay_otp_prompt_complete',
+	WOOPAY_OTP_FAILED: 'woopay_otp_prompt_failed',
+	WOOPAY_AUTO_REDIRECT: 'woopay_auto_redirect',
+	WOOPAY_SKIPPED: 'woopay_skipped',
+	WOOPAY_EXPRESS_BUTTON_OFFERED: 'woopay_express_button_offered',
+	WOOPAY_EXPRESS_BUTTON_CLICKED: 'woopay_express_button_clicked',
+	// Onboarding flow.
+	ONBOARDING_FLOW_STARTED: 'wcpay_onboarding_flow_started',
+	ONBOARDING_FLOW_MODE_SELECTED: 'wcpay_onboarding_flow_mode_selected',
+	ONBOARDING_FLOW_STEP_COMPLETED: 'wcpay_onboarding_flow_step_completed',
+	ONBOARDING_FLOW_HIDDEN: 'wcpay_onboarding_flow_hidden',
+	ONBOARDING_FLOW_EXITED: 'wcpay_onboarding_flow_exited',
+	ONBOARDING_FLOW_REDIRECTED: 'wcpay_onboarding_flow_redirected',
+	ONBOARDING_FLOW_ELIGIBILITY_MODAL_CLOSED:
+		'wcpay_onboarding_flow_eligibility_modal_closed',
 };
 
 export default {

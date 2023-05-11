@@ -12,8 +12,18 @@ import PersonalDetails from '../personal-details';
 import { OnboardingContextProvider } from '../../context';
 import strings from '../../strings';
 
+declare const global: {
+	wcpaySettings: {
+		connect: { country: string };
+	};
+};
+
 describe( 'PersonalDetails', () => {
 	it( 'renders and updates fields data when they are changed', () => {
+		global.wcpaySettings = {
+			connect: { country: 'US' },
+		};
+
 		render(
 			<OnboardingContextProvider>
 				<PersonalDetails />

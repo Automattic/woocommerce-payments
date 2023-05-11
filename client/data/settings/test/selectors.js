@@ -16,9 +16,9 @@ import {
 	getAccountBusinessSupportEmail,
 	getAccountBusinessSupportPhone,
 	getAccountBrandingLogo,
-	getIsPlatformCheckoutEnabled,
-	getPlatformCheckoutCustomMessage,
-	getPlatformCheckoutStoreLogo,
+	getIsWooPayEnabled,
+	getWooPayCustomMessage,
+	getWooPayStoreLogo,
 	getIsClientSecretEncryptionEnabled,
 } from '../selectors';
 
@@ -235,17 +235,17 @@ describe( 'Settings selectors tests', () => {
 		} );
 	} );
 
-	describe( 'getIsPlatformCheckoutEnabled()', () => {
-		test( 'returns the value of state.settings.data.is_platform_checkout_enabled', () => {
+	describe( 'getIsWooPayEnabled()', () => {
+		test( 'returns the value of state.settings.data.is_woopay_enabled', () => {
 			const state = {
 				settings: {
 					data: {
-						is_platform_checkout_enabled: true,
+						is_woopay_enabled: true,
 					},
 				},
 			};
 
-			expect( getIsPlatformCheckoutEnabled( state ) ).toBeTruthy();
+			expect( getIsWooPayEnabled( state ) ).toBeTruthy();
 		} );
 
 		test.each( [
@@ -254,23 +254,21 @@ describe( 'Settings selectors tests', () => {
 			[ { settings: {} } ],
 			[ { settings: { data: {} } } ],
 		] )( 'returns false if missing (tested state: %j)', ( state ) => {
-			expect( getIsPlatformCheckoutEnabled( state ) ).toBeFalsy();
+			expect( getIsWooPayEnabled( state ) ).toBeFalsy();
 		} );
 	} );
 
-	describe( 'getPlatformCheckoutCustomMessage()', () => {
-		test( 'returns the value of state.settings.data.platform_checkout_custom_message', () => {
+	describe( 'getWooPayCustomMessage()', () => {
+		test( 'returns the value of state.settings.data.woopay_custom_message', () => {
 			const state = {
 				settings: {
 					data: {
-						platform_checkout_custom_message: 'test',
+						woopay_custom_message: 'test',
 					},
 				},
 			};
 
-			expect( getPlatformCheckoutCustomMessage( state ) ).toEqual(
-				'test'
-			);
+			expect( getWooPayCustomMessage( state ) ).toEqual( 'test' );
 		} );
 
 		test.each( [
@@ -279,21 +277,21 @@ describe( 'Settings selectors tests', () => {
 			[ { settings: {} } ],
 			[ { settings: { data: {} } } ],
 		] )( 'returns [] if missing (tested state: %j)', ( state ) => {
-			expect( getPlatformCheckoutCustomMessage( state ) ).toEqual( '' );
+			expect( getWooPayCustomMessage( state ) ).toEqual( '' );
 		} );
 	} );
 
-	describe( 'getPlatformCheckoutStoreLogo()', () => {
-		test( 'returns the value of state.settings.data.platform_checkout_store_logo', () => {
+	describe( 'getWooPayStoreLogo()', () => {
+		test( 'returns the value of state.settings.data.woopay_store_logo', () => {
 			const state = {
 				settings: {
 					data: {
-						platform_checkout_store_logo: 'test',
+						woopay_store_logo: 'test',
 					},
 				},
 			};
 
-			expect( getPlatformCheckoutStoreLogo( state ) ).toEqual( 'test' );
+			expect( getWooPayStoreLogo( state ) ).toEqual( 'test' );
 		} );
 
 		test.each( [
@@ -302,7 +300,7 @@ describe( 'Settings selectors tests', () => {
 			[ { settings: {} } ],
 			[ { settings: { data: {} } } ],
 		] )( 'returns [] if missing (tested state: %j)', ( state ) => {
-			expect( getPlatformCheckoutStoreLogo( state ) ).toEqual( '' );
+			expect( getWooPayStoreLogo( state ) ).toEqual( '' );
 		} );
 	} );
 

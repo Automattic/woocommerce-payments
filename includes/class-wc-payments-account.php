@@ -570,6 +570,9 @@ class WC_Payments_Account {
 
 		try {
 			$link = $this->payments_api_client->get_link( $args );
+			if ( isset( $args['type'] ) && 'complete_kyc_link' === $args['type'] && isset( $link['state'] ) ) {
+				set_transient( 'wcpay_stripe_onboarding_state', $link['state'], DAY_IN_SECONDS );
+			}
 
 			$this->redirect_to( $link['url'] );
 		} catch ( API_Exception $e ) {
@@ -829,7 +832,7 @@ class WC_Payments_Account {
 	 * @return string Stripe account login url.
 	 */
 	private function get_login_url() {
-		return add_query_arg(
+		return add_query_arg( // nosemgrep: audit.php.wp.security.xss.query-arg -- no user input data used.
 			[
 				'wcpay-login' => '1',
 				'_wpnonce'    => wp_create_nonce( 'wcpay-login' ),
@@ -985,7 +988,7 @@ class WC_Payments_Account {
 		);
 
 		if ( 1 === $is_from_subscription_product_publish ) {
-			return add_query_arg(
+			return add_query_arg( // nosemgrep: audit.php.wp.security.xss.query-arg -- specific admin url passed in.
 				[ 'wcpay-subscriptions-onboarded' => '1' ],
 				get_edit_post_link( $matches[1], 'url' )
 			);
@@ -1100,7 +1103,7 @@ class WC_Payments_Account {
 				'site_locale'   => get_locale(),
 			],
 			$this->get_actioned_notes(),
-			array_filter( $account_data ),
+			array_filter( $account_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
 			$progressive,
 			$collect_payout_requirements
 		);
@@ -1319,6 +1322,17 @@ class WC_Payments_Account {
 		}
 
 		$diff = array_diff_assoc( $changes, $account );
+
+		foreach ( $changes as $key => $value ) {
+			if ( is_array( $value ) ) {
+				$change_diff = array_diff_assoc( $value, $account[ $key ] );
+
+				if ( ! empty( $change_diff ) ) {
+					$diff = array_merge( $diff, [ $key => $change_diff ] );
+				}
+			}
+		}
+
 		return ! empty( $diff );
 	}
 
