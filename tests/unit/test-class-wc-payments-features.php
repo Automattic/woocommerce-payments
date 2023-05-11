@@ -97,14 +97,14 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WC_Payments_Features::is_customer_multi_currency_enabled() );
 	}
 
-	public function test_is_platform_checkout_eligible_returns_true() {
+	public function test_is_woopay_eligible_returns_true() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
-		$this->assertTrue( WC_Payments_Features::is_platform_checkout_eligible() );
+		$this->assertTrue( WC_Payments_Features::is_woopay_eligible() );
 	}
 
-	public function test_is_platform_checkout_eligible_returns_false() {
+	public function test_is_woopay_eligible_returns_false() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => false ] );
-		$this->assertFalse( WC_Payments_Features::is_platform_checkout_eligible() );
+		$this->assertFalse( WC_Payments_Features::is_woopay_eligible() );
 	}
 
 	public function test_is_documents_section_enabled_returns_true_when_flag_is_true() {
@@ -233,7 +233,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WC_Payments_Features::is_woopay_express_checkout_enabled() );
 	}
 
-	public function test_is_woopay_express_checkout_enabled_returns_false_when_platform_checkout_eligible_is_false() {
+	public function test_is_woopay_express_checkout_enabled_returns_false_when_woopay_eligible_is_false() {
 		add_filter(
 			'pre_option_' . WC_Payments_Features::PROGRESSIVE_ONBOARDING_FLAG_NAME,
 			function ( $pre_option, $option, $default ) {

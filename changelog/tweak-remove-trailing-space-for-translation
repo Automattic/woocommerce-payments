@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Minor change for i18n - Remove extra trailing space in translation string, outside of the __ tag.

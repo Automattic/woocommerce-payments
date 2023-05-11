@@ -31,6 +31,24 @@ describe( 'ProtectionLevels', () => {
 
 		expect( protectionLevels ).toMatchSnapshot();
 	} );
+
+	it( 'renders with the advanced fraud protection settings selected', () => {
+		mockAdvancedFraudProtectionSettings = [
+			{
+				key: 'international_ip_address',
+				outcome: 'review',
+				check: {
+					key: 'ip_country',
+					operator: 'in',
+					value: '',
+				},
+			},
+		];
+		const { container: protectionLevels } = render( <ProtectionLevels /> );
+
+		expect( protectionLevels ).toMatchSnapshot();
+	} );
+
 	it( 'renders an error message when settings can not be fetched from the server', () => {
 		mockAdvancedFraudProtectionSettings = 'error';
 		const { container: protectionLevels } = render( <ProtectionLevels /> );
