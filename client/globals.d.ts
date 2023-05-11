@@ -59,6 +59,7 @@ declare global {
 		connect: {
 			country: string;
 			availableStates: Array< Record< string, string > >;
+			availableCountries: Record< string, string >;
 		};
 		accountEmail: string;
 		currentUserEmail: string;
@@ -77,6 +78,8 @@ declare global {
 			business_types: Country[];
 			mccs_display_tree: MccsDisplayTreeItem[];
 		};
+		errorMessage: string;
+		onBoardingDisabled: boolean;
 	};
 
 	const wcTracks: any;
