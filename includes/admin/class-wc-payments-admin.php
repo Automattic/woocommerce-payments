@@ -531,6 +531,7 @@ class WC_Payments_Admin {
 			'restUrl'                          => get_rest_url( null, '' ), // rest url to concatenate when merchant use Plain permalinks.
 			'numDisputesNeedingResponse'       => $this->get_disputes_awaiting_response_count(),
 			'isFraudProtectionSettingsEnabled' => WC_Payments_Features::is_fraud_protection_settings_enabled(),
+			'isFRTReviewFeatureActive'         => WC_Payments_Features::is_frt_review_feature_active(),
 			'fraudProtection'                  => [
 				'isWelcomeTourDismissed' => WC_Payments_Features::is_fraud_protection_welcome_tour_dismissed(),
 			],
