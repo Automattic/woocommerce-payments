@@ -127,7 +127,7 @@ class Platform_Checkout_Utilities {
 		$timezone          = new \DateTimeZone( wp_timezone_string() );
 		$current_date      = new \DateTime( 'now', $timezone );
 
-		if ( isset( $last_check_option ) ) {
+		if ( false !== $last_check_option ) {
 			$last_check = new \DateTime( $last_check_option, $timezone );
 
 			if ( $current_date < $last_check->modify( '+1 day' ) ) {
