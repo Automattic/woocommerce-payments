@@ -47,6 +47,10 @@ abstract class Gateway_Example {
 		$payment_storage = new Entity_Storage_Payment();
 		$payment_entity = $payment_storage->get_or_create( $order );
 
+		if( ! is_a( $payment_entity, Need_3ds_State::class ) ) {
+			throw new \Exception('Not a 3DS payment.') ;
+		}
+
 		$intent_id_received = isset( $_POST['intent_id'] )
 			? sanitize_text_field( wp_unslash( $_POST['intent_id'] ) )
 			/* translators: This will be used to indicate an unknown value for an ID. */
@@ -55,8 +59,7 @@ abstract class Gateway_Example {
 		$input->set_intent_id_received( $intent_id_received );
 
 		$state_machine = new State_Machine_Standard_Payment( $payment_storage );
-		$state_machine->set_initial_state( new Need_3ds_State() )
-		              ->set_entity( $payment_entity )
+		$state_machine->set_entity( $payment_entity )
 		              ->set_input( $input );
 
 		$processed_entity = $state_machine->progress();

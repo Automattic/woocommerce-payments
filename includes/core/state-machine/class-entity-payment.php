@@ -22,9 +22,11 @@ class Entity_Payment {
 		return $this->data[$key] ?? null;
 	}
 
-	public function get_current_state(): ?string {
-		// TODO: return the State object. Maybe through a State Factory.
-		return $this->get_data('current_state');
+	public function get_current_state(): ?State {
+		$current_state = $this->get_data('current_state');
+		return null === $current_state
+			? null
+			: new $current_state();
 	}
 
 	public function get_revision(): ?array {

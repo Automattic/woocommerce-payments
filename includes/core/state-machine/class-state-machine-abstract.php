@@ -15,7 +15,7 @@ abstract class State_Machine_Abstract {
 	private $input = null;
 
 	/**
-	 * @var Happy_State
+	 * @var Happy_State | Async_State
 	 */
 	private $initial_state;
 
@@ -46,11 +46,11 @@ abstract class State_Machine_Abstract {
 			throw new \Exception( 'Entity not set' );
 		}
 
-		if ( ! $this->initial_state ) {
-			throw new \Exception( 'Initial state not set' );
-		}
+		$current_state = $this->initial_state ?? $this->entity->get_current_state();
 
-		$current_state = $this->initial_state;
+		if ( ! $current_state ) {
+			throw new \Exception( 'Initial state is not set, or there is no current state' );
+		}
 
 		do {
 			$next_state = $current_state->act( $this->entity, $this->input);
