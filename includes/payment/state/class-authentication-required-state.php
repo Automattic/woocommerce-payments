@@ -61,7 +61,7 @@ final class Authentication_Required_State extends Payment_State {
 	 */
 	public function load_intent_after_authentication( string $intent_id ) {
 		// Make sure we're working with a valid intent.
-		// $this->compare_received_and_stored_intents( $intent_id );
+		$this->compare_received_and_stored_intents( $intent_id );
 
 		// Load the payment/setup intent, and make it available for the rest of the process.
 		$intent = $this->get_intent_from_server( $intent_id );

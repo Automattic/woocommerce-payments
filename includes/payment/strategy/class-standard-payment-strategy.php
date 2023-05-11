@@ -88,6 +88,7 @@ class Standard_Payment_Strategy extends Strategy {
 				return new Processing_Failed_State( $payment );
 			} else {
 				// Redirect if there is an action needed.
+				$this->add_authentication_required_data_to_order( $payment, $intent );
 				$payment->set_response( $this->redirect_if_action_is_required( $payment, $intent ) );
 				return new Authentication_Required_State( $payment );
 			}
@@ -215,5 +216,21 @@ class Standard_Payment_Strategy extends Strategy {
 		}
 
 		$request->set_cvc_confirmation( $_POST[ $cvc_request_key ] ); // phpcs:ignore
+	}
+
+	/**
+	 * Whenever authentication is required, this will add the necessary data to the order.
+	 *
+	 * @param Payment                   $payment Current payment.
+	 * @param WC_Payments_API_Intention $intent  The associated intent.
+	 */
+	protected function add_authentication_required_data_to_order( Payment $payment, WC_Payments_API_Intention $intent ) {
+		$order     = $payment->get_order();
+		$charge    = $intent->get_charge();
+		$charge_id = $charge ? $charge->get_id() : null;
+
+		$this->order_service->set_intent_id_for_order( $order, $intent->get_id() );
+		$this->order_service->set_intention_status_for_order( $order, $intent->get_status() );
+		$this->order_service->mark_payment_started( $order, $intent->get_id(), $intent->get_status(), $charge_id );
 	}
 }
