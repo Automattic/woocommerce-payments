@@ -216,7 +216,7 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Update an order to failed status, and add note with a link to the transaction. Context - when a Payment Intent expires.
+	 * Update an order to failed status, and add note with a link to the transaction. Context - when a Payment Intent expires. Changing the status to failed will enable the buyer to re-attempt payment.
 	 *
 	 * @param WC_Order $order         Order object.
 	 * @param string   $intent_id     The ID of the intent associated with this order.

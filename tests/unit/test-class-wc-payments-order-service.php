@@ -696,9 +696,9 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_capture_expired_with_provider( $fraud_outcome, $expected_fraud_outcome, $expected_fraud_meta_box ) {
 		// Arrange: Create the intent, get the proper order status variations, and get the charge. Set the fraud outcome status.
-		$intent            = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::CANCELED ] ); // Stripe uses single 'l'.
+		$intent            = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::CANCELED ] );
 		$order_status      = Order_Status::FAILED;
-		$wc_order_statuses = wc_get_order_statuses(); // WooCommerce uses single 'l' for US English.
+		$wc_order_statuses = wc_get_order_statuses();
 		$charge            = $intent->get_charge();
 		if ( $fraud_outcome ) {
 			$this->order_service->set_fraud_outcome_status_for_order( $this->order, $fraud_outcome );
