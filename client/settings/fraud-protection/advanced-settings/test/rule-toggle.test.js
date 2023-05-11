@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import { render } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 /**
  * Internal dependencies
@@ -32,7 +33,6 @@ describe( 'Fraud protection rule toggle tests', () => {
 				<FraudProtectionRuleToggle
 					setting={ 'test_rule' }
 					label={ 'Test rule toggle' }
-					helpText={ 'This is the help text of this toggle.' }
 				>
 					test content
 				</FraudProtectionRuleToggle>
@@ -43,7 +43,9 @@ describe( 'Fraud protection rule toggle tests', () => {
 			container.getByLabelText( 'Test rule toggle' )
 		).not.toBeChecked();
 		expect(
-			container.queryByText( 'This is the help text of this toggle.' )
+			container.queryByText(
+				'When enabled, the payment method will not be charged until you review and approve the transaction.'
+			)
 		).toBeInTheDocument();
 		expect(
 			container.queryByText( 'Test rule toggle' )
@@ -62,7 +64,6 @@ describe( 'Fraud protection rule toggle tests', () => {
 				<FraudProtectionRuleToggle
 					setting={ 'test_rule' }
 					label={ 'Test rule toggle' }
-					helpText={ 'This is the help text of this toggle.' }
 				>
 					test content
 				</FraudProtectionRuleToggle>
@@ -70,7 +71,9 @@ describe( 'Fraud protection rule toggle tests', () => {
 		);
 		expect( container ).toMatchSnapshot();
 		expect(
-			container.queryByText( 'This is the help text of this toggle.' )
+			container.queryByText(
+				'The payment method will not be charged until you review and approve the transaction.'
+			)
 		).toBeInTheDocument();
 		expect(
 			container.queryByText( 'Test rule toggle' )
@@ -88,7 +91,6 @@ describe( 'Fraud protection rule toggle tests', () => {
 				<FraudProtectionRuleToggle
 					setting={ 'test_rule' }
 					label={ 'Test rule toggle' }
-					helpText={ 'This is the help text of this toggle.' }
 				>
 					test content
 				</FraudProtectionRuleToggle>
@@ -96,7 +98,7 @@ describe( 'Fraud protection rule toggle tests', () => {
 		);
 		expect( container ).toMatchSnapshot();
 		expect(
-			container.queryByText( 'This is the help text of this toggle.' )
+			container.queryByText( 'The payment will be blocked.' )
 		).toBeInTheDocument();
 		expect(
 			container.queryByText( 'Test rule toggle' )
@@ -112,7 +114,6 @@ describe( 'Fraud protection rule toggle tests', () => {
 				<FraudProtectionRuleToggle
 					setting={ 'test_rule' }
 					label={ 'Test rule toggle' }
-					helpText={ 'This is the help text of this toggle.' }
 				>
 					test content
 				</FraudProtectionRuleToggle>
@@ -138,17 +139,22 @@ describe( 'Fraud protection rule toggle tests', () => {
 				<FraudProtectionRuleToggle
 					setting={ 'test_rule' }
 					label={ 'Test rule toggle' }
-					helpText={ 'This is the help text of this toggle.' }
 				>
 					test content
 				</FraudProtectionRuleToggle>
 			</FraudPreventionSettingsContext.Provider>
 		);
-		const activationToggle = container.getByLabelText( 'Block Payment' );
+		const blockRadio = container.getByLabelText( 'Block Payment' );
+		const reviewRadio = container.getByLabelText(
+			'Authorize and hold for review'
+		);
+
 		expect( mockContext.protectionSettingsUI.test_rule.block ).toBeFalsy();
-		activationToggle.click();
+
+		userEvent.click( blockRadio );
 		expect( mockContext.protectionSettingsUI.test_rule.block ).toBeTruthy();
-		activationToggle.click();
+
+		userEvent.click( reviewRadio );
 		expect( mockContext.protectionSettingsUI.test_rule.block ).toBeFalsy();
 	} );
 } );
