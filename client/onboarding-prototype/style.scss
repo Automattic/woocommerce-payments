@@ -93,11 +93,12 @@ body.wcpay-onboarding-prototype__body {
 			}
 		}
 
-		// TODO fix css on loading screen
-
 		.loading-step {
 			max-width: 520px;
-			margin: 50% auto 0;
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate( -50%, -50% );
 		}
 
 		.onboarding-mode__note {
