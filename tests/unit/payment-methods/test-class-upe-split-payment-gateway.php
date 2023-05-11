@@ -272,6 +272,8 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 						'is_payment_recurring',
 						'get_payment_method_ids_enabled_at_checkout',
 						'wc_payments_get_payment_gateway_by_id',
+						'get_selected_payment_method',
+						'remove_upe_payment_intent_from_session',
 					]
 				)
 				->getMock();
@@ -1199,6 +1201,8 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$intent_id           = 'pi_mock';
 		$payment_method_id   = 'pm_mock';
 
+		$card_method = $this->mock_payment_methods['card'];
+
 		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => $intent_status ] );
 
 		$mock_upe_gateway->expects( $this->once() )
@@ -1206,6 +1210,10 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->will(
 				$this->returnValue( [ $user, $customer_id ] )
 			);
+
+		$mock_upe_gateway->expects( $this->any() )
+			->method( 'get_selected_payment_method' )
+			->willReturn( $card_method );
 
 		$this->mock_wcpay_request( Get_Intention::class, 1, $intent_id )
 			->expects( $this->once() )
@@ -1215,6 +1223,9 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->set_cart_contains_subscription_items( false );
 
 		$mock_upe_gateway->process_redirect_payment( $order_id, $intent_id, $save_payment_method );
+
+		$mock_upe_gateway->expects( $this->any() )
+			->method( 'remove_upe_payment_intent_from_session' );
 
 		$result_order = wc_get_order( $order_id );
 		$note         = wc_get_order_notes(
@@ -1247,6 +1258,8 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$intent_id           = 'pi_mock';
 		$payment_method_id   = 'pm_mock';
 
+		$card_method = $this->mock_payment_methods['card'];
+
 		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => $intent_status ] );
 
 		$mock_upe_gateway->expects( $this->once() )
@@ -1259,6 +1272,10 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $payment_intent );
+
+		$mock_upe_gateway->expects( $this->any() )
+			->method( 'get_selected_payment_method' )
+			->willReturn( $card_method );
 
 		$this->set_cart_contains_subscription_items( false );
 
@@ -1288,6 +1305,8 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$intent_id           = 'si_mock';
 		$payment_method_id   = 'pm_mock';
 		$token               = WC_Helper_Token::create_token( $payment_method_id );
+
+		$card_method = $this->mock_payment_methods['card'];
 
 		$order->set_shipping_total( 0 );
 		$order->set_shipping_tax( 0 );
@@ -1327,6 +1346,10 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				$this->returnValue( $token )
 			);
 
+		$mock_upe_gateway->expects( $this->any() )
+			->method( 'get_selected_payment_method' )
+			->willReturn( $card_method );
+
 		$this->set_cart_contains_subscription_items( true );
 
 		$mock_upe_gateway->process_redirect_payment( $order_id, $intent_id, $save_payment_method );
@@ -1356,6 +1379,8 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$payment_method_id   = 'pm_mock';
 		$token               = WC_Helper_Token::create_token( $payment_method_id );
 
+		$card_method = $this->mock_payment_methods['card'];
+
 		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => $intent_status ] );
 
 		$mock_upe_gateway->expects( $this->once() )
@@ -1374,6 +1399,10 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->will(
 				$this->returnValue( $token )
 			);
+
+		$mock_upe_gateway->expects( $this->any() )
+			->method( 'get_selected_payment_method' )
+			->willReturn( $card_method );
 
 		$this->set_cart_contains_subscription_items( false );
 
@@ -1477,6 +1506,10 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		foreach ( $charge_payment_method_details as $i => $payment_method_details ) {
 			$payment_method_id = $payment_method_details['type'];
 			$mock_upe_gateway  = $this->mock_payment_gateways[ $payment_method_id ];
+			$payment_method    = $this->mock_payment_methods[ $payment_method_id ];
+			$mock_upe_gateway->expects( $this->any() )
+				->method( 'get_selected_payment_method' )
+				->willReturn( $payment_method );
 			$mock_upe_gateway->set_payment_method_title_for_order( $order, $payment_method_id, $payment_method_details );
 			$this->assertEquals( $expected_payment_method_titles[ $i ], $order->get_payment_method_title() );
 		}
