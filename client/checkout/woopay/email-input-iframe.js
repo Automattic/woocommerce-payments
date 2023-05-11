@@ -459,12 +459,6 @@ export const handleWooPayEmailInput = async (
 				hasCheckedLoginSession = true;
 				api.initWooPay( '', e.data.platformCheckoutUserSession )
 					.then( ( response ) => {
-						// Do nothing if the iframe has been closed.
-						if (
-							! document.querySelector( '.woopay-otp-iframe' )
-						) {
-							return;
-						}
 						if ( 'success' === response.result ) {
 							loginSessionIframeWrapper.classList.add(
 								'woopay-login-session-iframe-wrapper'
@@ -474,6 +468,14 @@ export const handleWooPayEmailInput = async (
 								wcpayTracks.events.WOOPAY_AUTO_REDIRECT
 							);
 							spinner.remove();
+							// Do nothing if the iframe has been closed.
+							if (
+								! document.querySelector(
+									'.woopay-login-session-iframe'
+								)
+							) {
+								return;
+							}
 							window.location = response.url;
 						} else {
 							closeLoginSessionIframe();
