@@ -77,6 +77,7 @@ const buildRuleset = (
 				operator: CheckOperators.OPERATOR_EQUALS,
 				value: true,
 			};
+			break;
 		case Rules.RULE_ADDRESS_MISMATCH:
 			ruleBase.check = {
 				key: Checks.CHECK_BILLING_SHIPPING_ADDRESS_SAME,
