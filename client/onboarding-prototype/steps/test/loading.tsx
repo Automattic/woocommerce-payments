@@ -31,6 +31,12 @@ jest.mock( '../../context', () => ( {
 	} ) ),
 } ) );
 
+jest.mock( 'components/stepper', () => ( {
+	useStepperContext: jest.fn( () => ( {
+		currentStep: 'loading',
+	} ) ),
+} ) );
+
 const checkLinkToContainNecessaryParams = ( link: string ) => {
 	expect( link ).toContain( 'prefill' );
 	expect( link ).toContain( 'progressive' );
@@ -69,7 +75,7 @@ describe( 'Loading', () => {
 		data = {
 			country: 'US',
 			business_type: 'individual',
-			mcc: 'computers_peripherals_and_software',
+			mcc: 'software_services',
 			annual_revenue: 'less_than_250k',
 			go_live_timeframe: 'within_1month',
 		};
@@ -87,7 +93,7 @@ describe( 'Loading', () => {
 					business: {
 						country: 'US',
 						type: 'individual',
-						mcc: 'computers_peripherals_and_software',
+						mcc: 'software_services',
 						annual_revenue: 'less_than_250k',
 						go_live_timeframe: 'within_1month',
 					},
@@ -104,7 +110,7 @@ describe( 'Loading', () => {
 		data = {
 			country: 'GB',
 			business_type: 'individual',
-			mcc: 'computers_peripherals_and_software',
+			mcc: 'software_services',
 			annual_revenue: 'less_than_250k',
 			go_live_timeframe: 'within_1month',
 		};
@@ -122,7 +128,7 @@ describe( 'Loading', () => {
 					business: {
 						country: 'GB',
 						type: 'individual',
-						mcc: 'computers_peripherals_and_software',
+						mcc: 'software_services',
 						annual_revenue: 'less_than_250k',
 						go_live_timeframe: 'within_1month',
 					},
