@@ -84,6 +84,6 @@ describe( 'Amount input', () => {
 		) ) as HTMLInputElement;
 		const testContent = 'a.123.123.323.v+';
 		writeKeyByKey( testInput, testContent );
-		expect( mockValue ).toBe( '' );
+		expect( mockValue ).toBe( '123.123323' );
 	} );
 } );

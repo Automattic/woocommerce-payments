@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useCallback, useEffect } from 'react';
 import './style.scss';
 
 interface AmountInputProps {
@@ -13,9 +13,6 @@ interface AmountInputProps {
 	onChange?: ( value: string ) => void;
 }
 
-// Only allow digits, a single dot, and more digits (or an empty value).
-const validateInput = ( subject: string ) => /^(\d+\.?\d*)?$/m.test( subject );
-
 const AmountInput: React.FC< AmountInputProps > = ( {
 	id,
 	prefix,
@@ -24,13 +21,31 @@ const AmountInput: React.FC< AmountInputProps > = ( {
 	help,
 	onChange = () => null,
 } ) => {
-	if ( isNaN( Number( value ) ) ) value = '';
+	// Only allow digits, a single dot, and more digits (or an empty value).
+	const validateInput = useCallback(
+		( subject ) => /^(\d+\.?\d*)?$/m.test( subject ),
+		[]
+	);
+
+	const validatedValue = validateInput( value ) ? value : '';
+
+	const [ internalValue, setInternalValue ] = React.useState(
+		validatedValue
+	);
+
+	useEffect( () => {
+		if ( ! validateInput( internalValue ) ) {
+			onChange( '' );
+		}
+	}, [ validateInput, internalValue, onChange ] );
+
+	if ( isNaN( Number( value ) ) || null === value || '0' === value )
+		value = '';
 
 	const handleChange = ( inputValue: string ) => {
 		if ( validateInput( inputValue ) ) {
+			setInternalValue( inputValue );
 			onChange( inputValue );
-		} else {
-			onChange( '' );
 		}
 	};
 
@@ -45,7 +60,7 @@ const AmountInput: React.FC< AmountInputProps > = ( {
 				<input
 					id={ id }
 					placeholder={ placeholder }
-					value={ value }
+					value={ internalValue }
 					data-testid="amount-input"
 					onChange={ ( e ) => handleChange( e.target.value ) }
 					className="components-text-control__input components-amount-input__input"
