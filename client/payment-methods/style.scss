@@ -1,6 +1,10 @@
 .payment-methods {
 	position: relative;
 
+	.wcpay-card-body {
+		padding: 0;
+	}
+
 	&__header {
 		justify-content: space-between;
 
