@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Prevent express checkout buttons from displaying when payments are disabled.
