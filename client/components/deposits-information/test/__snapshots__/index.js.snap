@@ -28,7 +28,7 @@ exports[`Deposits information renders correctly when loading 1`] = `
           >
             <g>
               <path
-                d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.105 0-2 .896-2 2v13c0 1.104.895 2 2 2h14c1.104 0 2-.896 2-2V6c0-1.104-.896-2-2-2zm0 15H5V8h14v11z"
+                d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 00-2 2v13a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2zm0 15H5V8h14v11z"
               />
             </g>
           </svg>
@@ -83,7 +83,7 @@ exports[`Deposits information renders correctly with multiple currencies 1`] = `
           >
             <g>
               <path
-                d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.105 0-2 .896-2 2v13c0 1.104.895 2 2 2h14c1.104 0 2-.896 2-2V6c0-1.104-.896-2-2-2zm0 15H5V8h14v11z"
+                d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 00-2 2v13a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2zm0 15H5V8h14v11z"
               />
             </g>
           </svg>
@@ -233,7 +233,7 @@ exports[`Deposits information renders correctly with multiple currencies 1`] = `
           >
             <g>
               <path
-                d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.105 0-2 .896-2 2v13c0 1.104.895 2 2 2h14c1.104 0 2-.896 2-2V6c0-1.104-.896-2-2-2zm0 15H5V8h14v11z"
+                d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 00-2 2v13a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2zm0 15H5V8h14v11z"
               />
             </g>
           </svg>
@@ -269,7 +269,7 @@ exports[`Deposits information renders correctly with multiple currencies 1`] = `
         <div
           class="wcpay-deposits-information-block__value"
         >
-          33,43 €
+          33,43 €
         </div>
         <div
           class="wcpay-deposits-information-block__extra"
@@ -294,7 +294,7 @@ exports[`Deposits information renders correctly with multiple currencies 1`] = `
         <div
           class="wcpay-deposits-information-block__value"
         >
-          33,43 €
+          33,43 €
         </div>
         <div
           class="wcpay-deposits-information-block__extra"
@@ -323,7 +323,7 @@ exports[`Deposits information renders correctly with multiple currencies 1`] = `
         <div
           class="wcpay-deposits-information-block__value"
         >
-          31,60 €
+          31,60 €
         </div>
         <div
           class="wcpay-deposits-information-block__extra"
@@ -348,7 +348,7 @@ exports[`Deposits information renders correctly with multiple currencies 1`] = `
         <div
           class="wcpay-deposits-information-block__value"
         >
-          20,30 €
+          20,30 €
         </div>
         <div
           class="wcpay-deposits-information-block__extra"
@@ -388,7 +388,7 @@ exports[`Deposits information renders instant deposit button only where applicab
           >
             <g>
               <path
-                d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.105 0-2 .896-2 2v13c0 1.104.895 2 2 2h14c1.104 0 2-.896 2-2V6c0-1.104-.896-2-2-2zm0 15H5V8h14v11z"
+                d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 00-2 2v13a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2zm0 15H5V8h14v11z"
               />
             </g>
           </svg>
@@ -545,7 +545,7 @@ exports[`Deposits information renders instant deposit button only where applicab
           >
             <g>
               <path
-                d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.105 0-2 .896-2 2v13c0 1.104.895 2 2 2h14c1.104 0 2-.896 2-2V6c0-1.104-.896-2-2-2zm0 15H5V8h14v11z"
+                d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 00-2 2v13a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2zm0 15H5V8h14v11z"
               />
             </g>
           </svg>
@@ -581,7 +581,7 @@ exports[`Deposits information renders instant deposit button only where applicab
         <div
           class="wcpay-deposits-information-block__value"
         >
-          33,43 €
+          33,43 €
         </div>
         <div
           class="wcpay-deposits-information-block__extra"
@@ -606,7 +606,7 @@ exports[`Deposits information renders instant deposit button only where applicab
         <div
           class="wcpay-deposits-information-block__value"
         >
-          33,43 €
+          33,43 €
         </div>
         <div
           class="wcpay-deposits-information-block__extra"
@@ -635,7 +635,7 @@ exports[`Deposits information renders instant deposit button only where applicab
         <div
           class="wcpay-deposits-information-block__value"
         >
-          31,60 €
+          31,60 €
         </div>
         <div
           class="wcpay-deposits-information-block__extra"
@@ -660,7 +660,7 @@ exports[`Deposits information renders instant deposit button only where applicab
         <div
           class="wcpay-deposits-information-block__value"
         >
-          20,30 €
+          20,30 €
         </div>
         <div
           class="wcpay-deposits-information-block__extra"

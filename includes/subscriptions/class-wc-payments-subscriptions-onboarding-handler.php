@@ -86,7 +86,7 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 		add_filter(
 			'redirect_post_location',
 			function() use ( $product ) {
-				return add_query_arg(
+				return add_query_arg( // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
 					[
 						'message' => 10, // Post saved as draft message.
 						'wcpay-subscription-saved-as-draft' => 1,

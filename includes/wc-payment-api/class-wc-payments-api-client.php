@@ -72,7 +72,6 @@ class WC_Payments_API_Client {
 	const AUTHORIZATIONS_API           = 'authorizations';
 	const FRAUD_OUTCOMES_API           = 'fraud_outcomes';
 	const FRAUD_RULESET_API            = 'fraud_ruleset';
-	const FRAUD_OUTCOME_API            = 'fraud_outcomes';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -904,6 +903,27 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Get the fields data to be used by the onboarding flow.
+	 *
+	 * @param string $locale The locale to ask for from the server.
+	 *
+	 * @throws API_Exception Exception thrown on request failure.
+	 * @return array An array containing the fields data.
+	 */
+	public function get_onboarding_fields_data( string $locale = '' ): array {
+		return $this->request(
+			[
+				'locale'    => $locale,
+				'test_mode' => WC_Payments::mode()->is_test(),
+			],
+			self::ONBOARDING_API . '/fields_data',
+			self::GET,
+			false,
+			true
+		);
+	}
+
+	/**
 	 * Get the business types, needed for our KYC onboarding flow.
 	 *
 	 * @return array An array containing the business types.
@@ -1626,7 +1646,7 @@ class WC_Payments_API_Client {
 	public function get_latest_fraud_outcome( $id ) {
 		$response = $this->request(
 			[],
-			self::FRAUD_OUTCOME_API . '/order_id/' . $id,
+			self::FRAUD_OUTCOMES_API . '/order_id/' . $id,
 			self::GET
 		);
 

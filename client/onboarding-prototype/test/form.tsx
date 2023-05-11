@@ -12,13 +12,23 @@ import {
 	OnboardingForm,
 	OnboardingTextField,
 	OnboardingSelectField,
+	OnboardingPhoneNumberField,
 } from '../form';
+
+declare const global: {
+	wcpaySettings: {
+		connect: { country: string };
+	};
+};
 
 let nextStep = jest.fn();
 let data = {};
 let errors = {};
+let temp = {};
+
 let setData = jest.fn();
 let setTouched = jest.fn();
+let setTemp = jest.fn();
 let validate = jest.fn();
 let error = jest.fn();
 
@@ -26,8 +36,10 @@ jest.mock( '../context', () => ( {
 	useOnboardingContext: jest.fn( () => ( {
 		data,
 		errors,
+		temp,
 		setData,
 		setTouched,
+		setTemp,
 	} ) ),
 } ) );
 
@@ -49,10 +61,16 @@ describe( 'Progressive Onboarding Prototype Form', () => {
 		nextStep = jest.fn();
 		data = {};
 		errors = {};
+		temp = {};
 		setData = jest.fn();
 		setTouched = jest.fn();
+		setTemp = jest.fn();
 		validate = jest.fn();
 		error = jest.fn();
+
+		global.wcpaySettings = {
+			connect: { country: 'US' },
+		};
 	} );
 
 	it( 'calls nextStep when the form is submitted by click and there are no errors', () => {
@@ -153,6 +171,41 @@ describe( 'Progressive Onboarding Prototype Form', () => {
 				business_type: 'individual',
 			} );
 			expect( validate ).toHaveBeenCalledWith( 'individual' );
+		} );
+
+		describe( 'OnboardingPhoneNumberField', () => {
+			it( 'renders component with provided props ', () => {
+				data = { phone: '+123' };
+				error.mockReturnValue( 'error message' );
+
+				render( <OnboardingPhoneNumberField name="phone" /> );
+
+				const textField = screen.getByLabelText(
+					'What’s your mobile phone number?'
+				);
+				const errorMessage = screen.getByText( 'error message' );
+
+				expect( textField ).toHaveValue( '23' );
+				expect( errorMessage ).toBeInTheDocument();
+			} );
+
+			it( 'calls setTemp, setData and validate on change', () => {
+				render( <OnboardingPhoneNumberField name="phone" /> );
+
+				const textField = screen.getByLabelText(
+					'What’s your mobile phone number?'
+				);
+				userEvent.type( textField, '23' );
+
+				expect( setTemp ).toHaveBeenCalledWith( {
+					phoneCountryCode: 'US',
+				} );
+
+				expect( setData ).toHaveBeenCalledWith( {
+					phone: '+123',
+				} );
+				expect( validate ).toHaveBeenCalledWith( '+123' );
+			} );
 		} );
 	} );
 } );

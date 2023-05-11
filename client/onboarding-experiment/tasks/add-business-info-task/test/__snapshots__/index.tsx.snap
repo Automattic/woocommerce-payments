@@ -25,13 +25,12 @@ exports[`AddBusinessInfoTask hides the structure when no structures are availabl
           class="wcpay-wizard-task__icon-checkmark"
           focusable="false"
           height="24"
-          role="img"
           viewBox="0 0 24 24"
           width="24"
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
-            d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
+            d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"
           />
         </svg>
       </div>
@@ -68,13 +67,16 @@ exports[`AddBusinessInfoTask hides the structure when no structures are availabl
           id="downshift-23-toggle-button"
           type="button"
         >
-          United States
+          <span
+            class="components-custom-select-control__button-value"
+          >
+            United States
+          </span>
           <svg
             aria-hidden="true"
             class="components-custom-select-control__button-icon"
             focusable="false"
             height="24"
-            role="img"
             viewBox="0 0 24 24"
             width="24"
             xmlns="http://www.w3.org/2000/svg"
@@ -117,13 +119,16 @@ exports[`AddBusinessInfoTask hides the structure when no structures are availabl
           id="downshift-25-toggle-button"
           type="button"
         >
-          Individual
+          <span
+            class="components-custom-select-control__button-value"
+          >
+            Individual
+          </span>
           <svg
             aria-hidden="true"
             class="components-custom-select-control__button-icon"
             focusable="false"
             height="24"
-            role="img"
             viewBox="0 0 24 24"
             width="24"
             xmlns="http://www.w3.org/2000/svg"
@@ -142,80 +147,6 @@ exports[`AddBusinessInfoTask hides the structure when no structures are availabl
           tabindex="-1"
         />
       </div>
-    </div>
-  </li>
-</div>
-`;
-
-exports[`AddBusinessInfoTask shows a loadable block 1`] = `
-<div>
-  <li
-    class="wcpay-wizard-task complete-business-info-task"
-  >
-    <div
-      class="wcpay-wizard-task__top-border"
-    />
-    <div
-      class="wcpay-wizard-task__headline"
-      tabindex="-1"
-    >
-      <div
-        class="wcpay-wizard-task__icon-wrapper"
-      >
-        <div
-          class="wcpay-wizard-task__icon-text"
-        >
-          1
-        </div>
-        <svg
-          aria-hidden="true"
-          class="wcpay-wizard-task__icon-checkmark"
-          focusable="false"
-          height="24"
-          role="img"
-          viewBox="0 0 24 24"
-          width="24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
-          />
-        </svg>
-      </div>
-      <span
-        class="wcpay-wizard-task__title"
-      >
-        Tell us more about your business
-      </span>
-    </div>
-    <div
-      class="wcpay-wizard-task__body"
-    >
-      <p
-        class="complete-business-info-task__subheading"
-      >
-        Preview the details we may require to verify your business and enable deposits.
-      </p>
-      <span
-        aria-busy="true"
-        class="is-loadable-placeholder is-block"
-      >
-        <p
-          style="line-height: 4;"
-        >
-          Block placeholder
-        </p>
-      </span>
-      <span
-        aria-busy="true"
-        class="is-loadable-placeholder is-block"
-      >
-        <p
-          style="line-height: 4;"
-        >
-          Block placeholder
-        </p>
-      </span>
     </div>
   </li>
 </div>
@@ -246,13 +177,12 @@ exports[`AddBusinessInfoTask shows business type and structure from a selected c
           class="wcpay-wizard-task__icon-checkmark"
           focusable="false"
           height="24"
-          role="img"
           viewBox="0 0 24 24"
           width="24"
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
-            d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
+            d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"
           />
         </svg>
       </div>
@@ -289,13 +219,16 @@ exports[`AddBusinessInfoTask shows business type and structure from a selected c
           id="downshift-3-toggle-button"
           type="button"
         >
-          United States
+          <span
+            class="components-custom-select-control__button-value"
+          >
+            United States
+          </span>
           <svg
             aria-hidden="true"
             class="components-custom-select-control__button-icon"
             focusable="false"
             height="24"
-            role="img"
             viewBox="0 0 24 24"
             width="24"
             xmlns="http://www.w3.org/2000/svg"
@@ -338,13 +271,16 @@ exports[`AddBusinessInfoTask shows business type and structure from a selected c
           id="downshift-5-toggle-button"
           type="button"
         >
-          Company
+          <span
+            class="components-custom-select-control__button-value"
+          >
+            Company
+          </span>
           <svg
             aria-hidden="true"
             class="components-custom-select-control__button-icon"
             focusable="false"
             height="24"
-            role="img"
             viewBox="0 0 24 24"
             width="24"
             xmlns="http://www.w3.org/2000/svg"
@@ -382,13 +318,16 @@ exports[`AddBusinessInfoTask shows business type and structure from a selected c
           id="downshift-16-toggle-button"
           type="button"
         >
-          Single member LLC
+          <span
+            class="components-custom-select-control__button-value"
+          >
+            Single member LLC
+          </span>
           <svg
             aria-hidden="true"
             class="components-custom-select-control__button-icon"
             focusable="false"
             height="24"
-            role="img"
             viewBox="0 0 24 24"
             width="24"
             xmlns="http://www.w3.org/2000/svg"
@@ -437,13 +376,12 @@ exports[`AddBusinessInfoTask shows the form 1`] = `
           class="wcpay-wizard-task__icon-checkmark"
           focusable="false"
           height="24"
-          role="img"
           viewBox="0 0 24 24"
           width="24"
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
-            d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
+            d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"
           />
         </svg>
       </div>
@@ -480,13 +418,16 @@ exports[`AddBusinessInfoTask shows the form 1`] = `
           id="downshift-0-toggle-button"
           type="button"
         >
-          United States
+          <span
+            class="components-custom-select-control__button-value"
+          >
+            United States
+          </span>
           <svg
             aria-hidden="true"
             class="components-custom-select-control__button-icon"
             focusable="false"
             height="24"
-            role="img"
             viewBox="0 0 24 24"
             width="24"
             xmlns="http://www.w3.org/2000/svg"
@@ -529,13 +470,16 @@ exports[`AddBusinessInfoTask shows the form 1`] = `
           id="downshift-2-toggle-button"
           type="button"
         >
-          What type of business do you run?
+          <span
+            class="components-custom-select-control__button-value"
+          >
+            What type of business do you run?
+          </span>
           <svg
             aria-hidden="true"
             class="components-custom-select-control__button-icon"
             focusable="false"
             height="24"
-            role="img"
             viewBox="0 0 24 24"
             width="24"
             xmlns="http://www.w3.org/2000/svg"

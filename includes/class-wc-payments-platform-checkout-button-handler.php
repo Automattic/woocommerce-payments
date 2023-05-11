@@ -54,8 +54,6 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		$this->account                     = $account;
 		$this->gateway                     = $gateway;
 		$this->platform_checkout_utilities = $platform_checkout_utilities;
-
-		add_action( 'init', [ $this, 'init' ] );
 	}
 
 	/**
@@ -118,12 +116,6 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		add_filter( 'wcpay_payment_fields_js_config', [ $this, 'add_platform_checkout_config' ] );
 
 		add_action( 'wc_ajax_wcpay_add_to_cart', [ $this, 'ajax_add_to_cart' ] );
-
-		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_platform_checkout_button_html' ], -2 );
-
-		add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_platform_checkout_button_html' ], -2 );
-
-		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_platform_checkout_button_html' ], -2 );
 
 		add_action( 'wp_ajax_woopay_express_checkout_button_show_error_notice', [ $this, 'show_error_notice' ] );
 		add_action( 'wp_ajax_nopriv_woopay_express_checkout_button_show_error_notice', [ $this, 'show_error_notice' ] );
@@ -490,6 +482,11 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 			return false;
 		}
 
+		// WooPay is not enabled.
+		if ( ! $this->is_woopay_enabled() ) {
+			return false;
+		}
+
 		// Page not supported.
 		if ( ! $this->is_product() && ! $this->is_cart() && ! $this->is_checkout() ) {
 			return false;
@@ -529,6 +526,28 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 
 		if ( $this->is_pay_for_order_page() ) {
 			return false;
+		}
+
+		if ( ! is_user_logged_in() ) {
+			// On product page for a subscription product, but not logged in, making WooPay unavailable.
+			if ( $this->is_product() ) {
+				$current_product = wc_get_product();
+
+				if ( $current_product && $this->is_product_subscription( $current_product ) ) {
+					return false;
+				}
+			}
+
+			// On cart or checkout page with a subscription product in cart, but not logged in, making WooPay unavailable.
+			if ( ( $this->is_checkout() || $this->is_cart() ) && class_exists( 'WC_Subscriptions_Cart' ) && WC_Subscriptions_Cart::cart_contains_subscription() ) {
+				// Check cart for subscription products.
+				return false;
+			}
+
+			// If guest checkout is not allowed, and customer is not logged in, disable the WooPay button.
+			if ( ! $this->platform_checkout_utilities->is_guest_checkout_enabled() ) {
+				return false;
+			}
 		}
 
 		/**
@@ -622,5 +641,18 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Returns true if the provided WC_Product is a subscription, false otherwise.
+	 *
+	 * @param WC_Product $product The product to check.
+	 *
+	 * @return bool  True if product is subscription, false otherwise.
+	 */
+	private function is_product_subscription( WC_Product $product ): bool {
+		return 'subscription' === $product->get_type()
+			|| 'subscription_variation' === $product->get_type()
+			|| 'variable-subscription' === $product->get_type();
 	}
 }
