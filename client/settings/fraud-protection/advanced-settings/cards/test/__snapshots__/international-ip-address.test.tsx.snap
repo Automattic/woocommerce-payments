@@ -72,14 +72,14 @@ exports[`International IP address card renders correctly 1`] = `
               class="components-toggle-control__label"
               for="inspector-toggle-control-0"
             >
-              Screen transactions for international IP addresses
+              Block transactions for international IP addresses
             </label>
           </div>
           <p
             class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
             id="inspector-toggle-control-0__help"
           >
-            When enabled, the payment method will not be charged until you review and approve the transaction.
+            When enabled, the payment method will be blocked.
           </p>
         </div>
       </div>
@@ -204,66 +204,17 @@ exports[`International IP address card renders correctly when enabled 1`] = `
               class="components-toggle-control__label"
               for="inspector-toggle-control-1"
             >
-              Screen transactions for international IP addresses
+              Block transactions for international IP addresses
             </label>
           </div>
           <p
             class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
             id="inspector-toggle-control-1__help"
           >
-            The payment method will not be charged until you review and approve the transaction.
+            The payment will be blocked.
           </p>
         </div>
-        <div>
-          <div
-            class="fraud-protection-rule-toggle-block"
-          >
-            <strong>
-              Filter action
-            </strong>
-            <div
-              class="components-base-control components-radio-control css-wdf2ti-Wrapper e1puf3u0"
-            >
-              <div
-                class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-              >
-                <div
-                  class="components-radio-control__option"
-                >
-                  <input
-                    checked=""
-                    class="components-radio-control__input"
-                    id="inspector-radio-control-0-0"
-                    name="inspector-radio-control-0"
-                    type="radio"
-                    value="review"
-                  />
-                  <label
-                    for="inspector-radio-control-0-0"
-                  >
-                    Authorize and hold for review
-                  </label>
-                </div>
-                <div
-                  class="components-radio-control__option"
-                >
-                  <input
-                    class="components-radio-control__input"
-                    id="inspector-radio-control-0-1"
-                    name="inspector-radio-control-0"
-                    type="radio"
-                    value="block"
-                  />
-                  <label
-                    for="inspector-radio-control-0-1"
-                  >
-                    Block Payment
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <div />
       </div>
       <div
         class="fraud-protection-rule-description"
@@ -386,7 +337,7 @@ exports[`International IP address card renders correctly when enabled and checke
               class="components-toggle-control__label"
               for="inspector-toggle-control-2"
             >
-              Screen transactions for international IP addresses
+              Block transactions for international IP addresses
             </label>
           </div>
           <p
@@ -396,56 +347,7 @@ exports[`International IP address card renders correctly when enabled and checke
             The payment will be blocked.
           </p>
         </div>
-        <div>
-          <div
-            class="fraud-protection-rule-toggle-block"
-          >
-            <strong>
-              Filter action
-            </strong>
-            <div
-              class="components-base-control components-radio-control css-wdf2ti-Wrapper e1puf3u0"
-            >
-              <div
-                class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-              >
-                <div
-                  class="components-radio-control__option"
-                >
-                  <input
-                    class="components-radio-control__input"
-                    id="inspector-radio-control-1-0"
-                    name="inspector-radio-control-1"
-                    type="radio"
-                    value="review"
-                  />
-                  <label
-                    for="inspector-radio-control-1-0"
-                  >
-                    Authorize and hold for review
-                  </label>
-                </div>
-                <div
-                  class="components-radio-control__option"
-                >
-                  <input
-                    checked=""
-                    class="components-radio-control__input"
-                    id="inspector-radio-control-1-1"
-                    name="inspector-radio-control-1"
-                    type="radio"
-                    value="block"
-                  />
-                  <label
-                    for="inspector-radio-control-1-1"
-                  >
-                    Block Payment
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <div />
       </div>
       <div
         class="fraud-protection-rule-description"
@@ -568,14 +470,14 @@ exports[`International IP address card renders like disabled when checked, but n
               class="components-toggle-control__label"
               for="inspector-toggle-control-3"
             >
-              Screen transactions for international IP addresses
+              Block transactions for international IP addresses
             </label>
           </div>
           <p
             class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
             id="inspector-toggle-control-3__help"
           >
-            When enabled, the payment method will not be charged until you review and approve the transaction.
+            When enabled, the payment method will be blocked.
           </p>
         </div>
       </div>

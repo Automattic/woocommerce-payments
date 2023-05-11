@@ -35,9 +35,7 @@ const radioOptions = [
 ];
 
 const helpTextMapping = {
-	unchecked: __(
-		'When enabled, the payment method will not be charged until you review and approve the transaction.'
-	),
+	unchecked: __( 'When enabled, the payment method will be blocked.' ),
 	[ filterActions.REVIEW ]: __(
 		'The payment method will not be charged until you review and approve the transaction.'
 	),
