@@ -10,6 +10,7 @@ import { Link } from '@woocommerce/components';
  */
 import { getAdminUrl } from 'wcpay/utils';
 import strings from './strings';
+import wcpayTracks from 'tracks';
 
 /**
  * Renders the footer of the deposits overview card.
@@ -34,10 +35,28 @@ const DepositsOverviewFooter: React.FC = () => {
 	return (
 		<CardFooter className="wcpay-deposits-overview__footer">
 			<Flex align="center" justify="flex-start">
-				<Button isSecondary={ true } href={ depositListTableUrl }>
+				<Button
+					isSecondary={ true }
+					href={ depositListTableUrl }
+					onClick={ () =>
+						wcpayTracks.recordEvent(
+							wcpayTracks.events
+								.OVERVIEW_DEPOSITS_VIEW_HISTORY_CLICK
+						)
+					}
+				>
 					{ strings.viewAllDeposits }
 				</Button>
-				<Link type="wp-admin" href={ depositScheduleUrl }>
+				<Link
+					type="wp-admin"
+					href={ depositScheduleUrl }
+					onClick={ () =>
+						wcpayTracks.recordEvent(
+							wcpayTracks.events
+								.OVERVIEW_DEPOSITS_CHANGE_SCHEDULE_CLICK
+						)
+					}
+				>
 					{ strings.changeDepositSchedule }
 				</Link>
 			</Flex>

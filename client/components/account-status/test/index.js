@@ -112,6 +112,13 @@ describe( 'StatusChip', () => {
 		expect( statusChip ).toMatchSnapshot();
 	} );
 
+	test( 'renders pending verification status', () => {
+		const { container: statusChip } = renderStatusChip(
+			'pending_verification'
+		);
+		expect( statusChip ).toMatchSnapshot();
+	} );
+
 	test( 'renders unknown status', () => {
 		const { container: statusChip } = renderStatusChip( 'foobar' );
 		expect( statusChip ).toMatchSnapshot();

@@ -24,7 +24,13 @@ import { getUPEConfig } from 'utils/checkout';
 import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
-import { getTerms, getPaymentIntentFromSession } from '../utils/upe';
+import {
+	getTerms,
+	getPaymentIntentFromSession,
+	getSelectedUPEGatewayPaymentMethod,
+	getUpeSettings,
+	isUsingSavedPaymentMethod,
+} from '../utils/upe';
 import { decryptClientSecret } from '../utils/encryption';
 import enableStripeLinkPaymentMethod from '../stripe-link';
 import apiRequest from '../utils/request';
@@ -42,7 +48,6 @@ jQuery( function ( $ ) {
 	const isUPEEnabled = getUPEConfig( 'isUPEEnabled' );
 	const isUPESplitEnabled = getUPEConfig( 'isUPESplitEnabled' );
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
-	const enabledBillingFields = getUPEConfig( 'enabledBillingFields' );
 	const isStripeLinkEnabled =
 		paymentMethodsConfig.link !== undefined &&
 		paymentMethodsConfig.card !== undefined;
@@ -78,40 +83,6 @@ jQuery( function ( $ ) {
 		apiRequest
 	);
 	let fingerprint = null;
-
-	const hiddenBillingFields = {
-		name:
-			enabledBillingFields.includes( 'billing_first_name' ) ||
-			enabledBillingFields.includes( 'billing_last_name' )
-				? 'never'
-				: 'auto',
-		email: enabledBillingFields.includes( 'billing_email' )
-			? 'never'
-			: 'auto',
-		phone: enabledBillingFields.includes( 'billing_phone' )
-			? 'never'
-			: 'auto',
-		address: {
-			country: enabledBillingFields.includes( 'billing_country' )
-				? 'never'
-				: 'auto',
-			line1: enabledBillingFields.includes( 'billing_address_1' )
-				? 'never'
-				: 'auto',
-			line2: enabledBillingFields.includes( 'billing_address_2' )
-				? 'never'
-				: 'auto',
-			city: enabledBillingFields.includes( 'billing_city' )
-				? 'never'
-				: 'auto',
-			state: enabledBillingFields.includes( 'billing_state' )
-				? 'never'
-				: 'auto',
-			postalCode: enabledBillingFields.includes( 'billing_postcode' )
-				? 'never'
-				: 'auto',
-		},
-	};
 
 	/**
 	 * Block UI to indicate processing and avoid duplicate submission.
@@ -209,7 +180,6 @@ jQuery( function ( $ ) {
 
 		// If paying from order, we need to create Payment Intent from order not cart.
 		const isOrderPay = getUPEConfig( 'isOrderPay' );
-		const isCheckout = getUPEConfig( 'isCheckout' );
 		let orderId;
 		if ( isOrderPay ) {
 			orderId = getUPEConfig( 'orderId' );
@@ -311,18 +281,8 @@ jQuery( function ( $ ) {
 			} );
 		}
 
-		const upeSettings = {};
-		if ( getUPEConfig( 'cartContainsSubscription' ) ) {
-			upeSettings.terms = getTerms( paymentMethodsConfig, 'always' );
-		}
-		if ( isCheckout && ! ( isOrderPay || isChangingPayment ) ) {
-			upeSettings.fields = {
-				billingDetails: hiddenBillingFields,
-			};
-		}
-
 		upeElement = elements.create( 'payment', {
-			...upeSettings,
+			...getUpeSettings(),
 			wallets: {
 				applePay: 'never',
 				googlePay: 'never',
@@ -560,6 +520,7 @@ jQuery( function ( $ ) {
 			obj[ field.name ] = field.value;
 			return obj;
 		}, {} );
+
 		try {
 			const upeComponents = gatewayUPEComponents[ paymentMethodType ];
 			formFields.wcpay_payment_country = upeComponents.country;
@@ -777,71 +738,6 @@ jQuery( function ( $ ) {
 		}
 	} );
 } );
-
-/**
- * Checks if the customer is using a saved payment method.
- *
- * @param {string} paymentMethodType Stripe payment method type ID.
- * @return {boolean} Boolean indicating whether a saved payment method is being used.
- */
-export function isUsingSavedPaymentMethod( paymentMethodType ) {
-	const prefix = '#wc-woocommerce_payments';
-	const suffix = '-payment-token-new';
-	const savedPaymentSelector =
-		'card' === paymentMethodType
-			? prefix + suffix
-			: prefix + '_' + paymentMethodType + suffix;
-
-	return (
-		null !== document.querySelector( savedPaymentSelector ) &&
-		! document.querySelector( savedPaymentSelector ).checked
-	);
-}
-
-/**
- * Finds selected payment gateway and returns matching Stripe payment method for gateway.
- *
- * @return {string} Stripe payment method type
- */
-export function getSelectedUPEGatewayPaymentMethod() {
-	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
-	const gatewayCardId = getUPEConfig( 'gatewayId' );
-	let selectedGatewayId = null;
-
-	// Handle payment method selection on the Checkout page or Add Payment Method page where class names differ.
-
-	if ( null !== document.querySelector( 'li.wc_payment_method' ) ) {
-		selectedGatewayId = document
-			.querySelector( 'li.wc_payment_method input.input-radio:checked' )
-			.getAttribute( 'id' );
-	} else if (
-		null !== document.querySelector( 'li.woocommerce-PaymentMethod' )
-	) {
-		selectedGatewayId = document
-			.querySelector(
-				'li.woocommerce-PaymentMethod input.input-radio:checked'
-			)
-			.getAttribute( 'id' );
-	}
-
-	if ( 'payment_method_woocommerce_payments' === selectedGatewayId ) {
-		selectedGatewayId = 'payment_method_woocommerce_payments_card';
-	}
-
-	let selectedPaymentMethod = null;
-
-	for ( const paymentMethodType in paymentMethodsConfig ) {
-		if (
-			`payment_method_${ gatewayCardId }_${ paymentMethodType }` ===
-			selectedGatewayId
-		) {
-			selectedPaymentMethod = paymentMethodType;
-			break;
-		}
-	}
-
-	return selectedPaymentMethod;
-}
 
 /**
  * Returns the cached setup intent.
