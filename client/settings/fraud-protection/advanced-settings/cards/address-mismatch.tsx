@@ -27,9 +27,6 @@ const AddressMismatchRuleCard: React.FC = () => (
 				'Screen transactions for mismatched addresses',
 				'woocommerce-payments'
 			) }
-			helpText={ __(
-				'When enabled, the payment method will not be charged until you review and approve the transaction'
-			) }
 		/>
 		<FraudProtectionRuleDescription>
 			{ __(

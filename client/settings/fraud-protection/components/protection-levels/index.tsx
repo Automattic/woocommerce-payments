@@ -33,7 +33,11 @@ const ProtectionLevels: React.FC = () => {
 		advancedFraudProtectionSettings,
 	] = useAdvancedFraudProtectionSettings();
 
-	const handleLevelChange = ( level: string ) => {
+	const isAdvancedSettingsConfigured =
+		Array.isArray( advancedFraudProtectionSettings ) &&
+		0 < advancedFraudProtectionSettings.length;
+
+	const handleLevelChange = ( level: string ) => () => {
 		wcpayTracks.recordEvent(
 			'wcpay_fraud_protection_risk_level_preset_enabled',
 			{ preset: level }
@@ -66,25 +70,23 @@ const ProtectionLevels: React.FC = () => {
 			<fieldset disabled={ 'error' === advancedFraudProtectionSettings }>
 				<ul>
 					<li>
-						<div className="fraud-protection-single-radio-wrapper">
+						<div className="fraud-protection-radio-wrapper">
 							<input
-								name={ 'fraud-protection-level-select' }
-								id={ 'fraud-protection__basic-level' }
+								name="fraud-protection-level-select"
+								id="fraud-protection__basic-level"
 								value={ ProtectionLevel.BASIC }
-								type={ 'radio' }
-								className={
-									'fraud-protection-single-radio-wrapper__item'
-								}
+								type="radio"
+								className="fraud-protection-radio-wrapper__item"
 								checked={
 									ProtectionLevel.BASIC ===
 									currentProtectionLevel
 								}
-								onChange={ () =>
-									handleLevelChange( ProtectionLevel.BASIC )
-								}
+								onChange={ handleLevelChange(
+									ProtectionLevel.BASIC
+								) }
 							/>
 							<label
-								className="fraud-protection-single-radio-wrapper__item"
+								className="fraud-protection-radio-wrapper__item"
 								htmlFor="fraud-protection__basic-level"
 							>
 								{ __( 'Basic', 'woocommerce-payments' ) }
@@ -108,25 +110,21 @@ const ProtectionLevels: React.FC = () => {
 					<hr className="fraud-protection__list-divider" />
 					<li className="fraud-protection__advanced-level-container">
 						<label htmlFor="fraud-protection-level-select_advanced-level">
-							<div className="fraud-protection-single-radio-wrapper">
+							<div className="fraud-protection-radio-wrapper">
 								<input
-									name={ 'fraud-protection-level-select' }
-									id={
-										'fraud-protection-level-select_advanced-level'
-									}
+									name="fraud-protection-level-select"
+									id="fraud-protection-level-select_advanced-level"
 									value={ ProtectionLevel.ADVANCED }
-									type={ 'radio' }
+									type="radio"
 									checked={
 										ProtectionLevel.ADVANCED ===
 										currentProtectionLevel
 									}
-									onChange={ () =>
-										handleLevelChange(
-											ProtectionLevel.ADVANCED
-										)
-									}
+									onChange={ handleLevelChange(
+										ProtectionLevel.ADVANCED
+									) }
 								/>
-								<p className="fraud-protection-single-radio-wrapper__item">
+								<p className="fraud-protection-radio-wrapper__item">
 									{ __( 'Advanced', 'woocommerce-payments' ) }
 								</p>
 							</div>
@@ -145,7 +143,9 @@ const ProtectionLevels: React.FC = () => {
 								currentProtectionLevel
 							}
 						>
-							{ __( 'Configure', 'woocommerce-payments' ) }
+							{ isAdvancedSettingsConfigured
+								? __( 'Edit', 'woocommerce-payments' )
+								: __( 'Configure', 'woocommerce-payments' ) }
 						</Button>
 					</li>
 				</ul>

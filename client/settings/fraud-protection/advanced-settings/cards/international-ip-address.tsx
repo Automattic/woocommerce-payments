@@ -52,9 +52,6 @@ const InternationalIPAddressRuleCard: React.FC = () => {
 					'Screen transactions for international IP addresses',
 					'woocommerce-payments'
 				) }
-				helpText={ __(
-					'When enabled, the payment method will not be charged until you review and approve the transaction'
-				) }
 			></FraudProtectionRuleToggle>
 			<FraudProtectionRuleDescription>
 				{ __(

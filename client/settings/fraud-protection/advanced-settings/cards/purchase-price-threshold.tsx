@@ -175,9 +175,6 @@ const PurchasePriceThresholdRuleCard: React.FC = () => (
 				'Screen transactions for abnormal purchase prices',
 				'woocommerce-payments'
 			) }
-			helpText={ __(
-				'When enabled, the payment method will not be charged until you review and approve the transaction'
-			) }
 		>
 			<PurchasePriceThresholdCustomForm
 				setting={ 'purchase_price_threshold' }

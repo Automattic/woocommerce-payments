@@ -166,9 +166,6 @@ const OrderItemsThresholdRuleCard: React.FC = () => (
 				'Screen transactions for abnormal item counts',
 				'woocommerce-payments'
 			) }
-			helpText={ __(
-				'When enabled, the payment method will not be charged until you review and approve the transaction'
-			) }
 		>
 			<OrderItemsThresholdCustomForm
 				setting={ 'order_items_threshold' }

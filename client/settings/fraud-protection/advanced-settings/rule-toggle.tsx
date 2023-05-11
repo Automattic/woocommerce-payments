@@ -3,25 +3,54 @@
  */
 import React, { useContext, useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
-import { CheckboxControl, Icon, ToggleControl } from '@wordpress/components';
+import { ToggleControl, RadioControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import './../style.scss';
-import { HoverTooltip } from 'components/tooltip';
 import FraudPreventionSettingsContext from './context';
 
 interface FraudProtectionRuleToggleProps {
 	setting: string;
 	label: string;
-	helpText: string;
 }
+
+const filterActions = {
+	REVIEW: 'review',
+	BLOCK: 'block',
+};
+
+const radioOptions = [
+	{
+		label: __( 'Authorize and hold for review', 'woocommerce-payments' ),
+		value: filterActions.REVIEW,
+	},
+	{
+		label: __( 'Block Payment', 'woocommerce-payments' ),
+		value: filterActions.BLOCK,
+	},
+];
+
+const helpTextMapping = {
+	unchecked: __(
+		'When enabled, the payment method will not be charged until you review and approve the transaction.'
+	),
+	[ filterActions.REVIEW ]: __(
+		'The payment method will not be charged until you review and approve the transaction.'
+	),
+	[ filterActions.BLOCK ]: __( 'The payment will be blocked.' ),
+};
+
+const getHelpText = ( toggleState: boolean, filterAction: string ) => {
+	if ( ! toggleState ) return helpTextMapping.unchecked;
+
+	return helpTextMapping[ filterAction ];
+};
 
 const FraudProtectionRuleToggle: React.FC< FraudProtectionRuleToggleProps > = ( {
 	setting,
 	label,
-	helpText,
 	children,
 } ) => {
 	const {
@@ -31,108 +60,77 @@ const FraudProtectionRuleToggle: React.FC< FraudProtectionRuleToggleProps > = ( 
 	} = useContext( FraudPreventionSettingsContext );
 
 	const [ toggleState, setToggleState ] = useState( false );
-	const [ checkState, setCheckState ] = useState( false );
+	const [ filterAction, setFilterAction ] = useState( filterActions.REVIEW );
+
+	const settingUI = protectionSettingsUI?.[ setting ];
 
 	// Set initial states from saved settings.
 	useEffect( () => {
-		if ( protectionSettingsUI && protectionSettingsUI[ setting ] ) {
-			setToggleState( protectionSettingsUI[ setting ].enabled );
-			setCheckState( protectionSettingsUI[ setting ].block );
-		}
-	}, [ protectionSettingsUI, setToggleState, setCheckState, setting ] );
+		if ( ! settingUI ) return;
+
+		setToggleState( settingUI.enabled );
+		setFilterAction(
+			settingUI.block ? filterActions.BLOCK : filterActions.REVIEW
+		);
+	}, [ settingUI ] );
 
 	// Set global object values from input changes.
 	useEffect( () => {
-		if ( protectionSettingsUI && protectionSettingsUI[ setting ] ) {
-			protectionSettingsUI[ setting ].enabled = toggleState;
-			protectionSettingsUI[ setting ].block = checkState;
-			setProtectionSettingsUI( protectionSettingsUI );
-			setProtectionSettingsChanged( ( prev ) => ! prev );
-		}
+		if ( ! settingUI ) return;
+
+		settingUI.enabled = toggleState;
+		settingUI.block = filterActions.BLOCK === filterAction;
+		setProtectionSettingsUI( protectionSettingsUI );
+		setProtectionSettingsChanged( ( prev ) => ! prev );
 	}, [
-		setting,
+		settingUI,
 		toggleState,
-		checkState,
+		filterAction,
 		setProtectionSettingsChanged,
 		protectionSettingsUI,
 		setProtectionSettingsUI,
 	] );
 
-	const renderTooltip = () => (
-		<HoverTooltip
-			content={ __(
-				'If enabled, WooCommerce Payments will automatically block payments for orders that match this filter.',
-				'woocommerce-payments'
-			) }
-		>
-			<div className="fraud-protection-rule-toggle-checkbox-container-help">
-				<Icon
-					icon={
-						<svg
-							width="16"
-							height="16"
-							viewBox="3 3 18 18"
-							fill="none"
-							xmlns="http://www.w3.org/2000/svg"
-						>
-							<path
-								d={
-									'M9.75 10.25C9.75 9.00736 10.7574 8 12 8C13.2426 8 14.25 9.00736 14.25 10.25C14.25 \
-														11.4083 13.3748 12.3621 12.2496 12.4863C12.1124 12.5015 12 12.6119 12 12.75V14M12 \
-														15V16.5M20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 \
-														7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z'
-								}
-								stroke="#1E1E1E"
-								strokeWidth="1.5"
-							/>
-						</svg>
-					}
-				></Icon>
-			</div>
-		</HoverTooltip>
-	);
+	const handleToggleChange = () => {
+		setToggleState( ( value ) => ! value );
+	};
+
+	if ( ! protectionSettingsUI ) {
+		return null;
+	}
 
 	// Render view.
 	return (
-		protectionSettingsUI && (
-			<div className="fraud-protection-rule-toggle">
-				<strong>
-					{ __( 'Enable filtering', 'woocommerce-payments' ) }
-				</strong>
-				<ToggleControl
-					label={ label }
-					key={ setting }
-					help={ helpText }
-					checked={ toggleState }
-					className="fraud-protection-rule-toggle-toggle"
-					onChange={ () => setToggleState( ( value ) => ! value ) }
-				></ToggleControl>
-				{ toggleState && (
-					<div>
-						{ children }
-						<div className="fraud-protection-rule-toggle-block">
-							<strong>
-								{ __( 'Advanced', 'woocommerce-payments' ) }
-							</strong>
-							<div className="fraud-protection-rule-toggle-checkbox-container">
-								<CheckboxControl
-									label={ __(
-										'Block Payment',
-										'woocommerce-payments'
-									) }
-									className="fraud-protection-rule-toggle-checkbox"
-									checked={ checkState }
-									onChange={ () =>
-										setCheckState( ( state ) => ! state )
-									}
-								/>
-								{ renderTooltip() }
-							</div>
-						</div>
+		<div className="fraud-protection-rule-toggle">
+			<strong>
+				{ __( 'Enable filtering', 'woocommerce-payments' ) }
+			</strong>
+			<ToggleControl
+				label={ label }
+				key={ setting }
+				help={ getHelpText( toggleState, filterAction ) }
+				checked={ toggleState }
+				className="fraud-protection-rule-toggle-toggle"
+				onChange={ handleToggleChange }
+			/>
+
+			{ toggleState && (
+				<div>
+					{ children }
+					<div className="fraud-protection-rule-toggle-block">
+						<strong>
+							{ __( 'Filter action', 'woocommerce-payments' ) }
+						</strong>
+
+						<RadioControl
+							options={ radioOptions }
+							selected={ filterAction }
+							onChange={ setFilterAction }
+						/>
 					</div>
-				) }
-			</div>
-		)
+				</div>
+			) }
+		</div>
 	);
 };
 

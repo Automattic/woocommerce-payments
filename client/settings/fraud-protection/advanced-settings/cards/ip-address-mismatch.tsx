@@ -40,9 +40,6 @@ const IPAddressMismatchRuleCard: React.FC = () => (
 				"Screen transactions where the IP country and billing country don't match",
 				'woocommerce-payments'
 			) }
-			helpText={ __(
-				'When enabled, the payment method will not be charged until you review and approve the transaction'
-			) }
 		></FraudProtectionRuleToggle>
 		<FraudProtectionRuleDescription>
 			{ __(

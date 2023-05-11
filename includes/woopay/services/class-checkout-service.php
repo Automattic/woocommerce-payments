@@ -86,7 +86,7 @@ class Checkout_Service {
 	 */
 	public function should_use_stripe_platform_on_checkout_page() {
 		if (
-			WC_Payments_Features::is_platform_checkout_eligible()
+			WC_Payments_Features::is_woopay_eligible()
 			&& 'yes' === \WC_Payments::get_gateway()->get_option( 'platform_checkout', 'no' )
 			&& ! ( WC_Payments_Features::is_upe_legacy_enabled() && ! WC_Payments_Features::is_upe_split_enabled() )
 			&& ( is_checkout() || has_block( 'woocommerce/checkout' ) )
