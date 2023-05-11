@@ -64,7 +64,7 @@ body.wcpay-onboarding-prototype__body {
 			}
 
 			&__heading {
-				@include title-large;
+				@include wp-title-large;
 				color: $studio-gray-100;
 				text-align: center;
 			}
