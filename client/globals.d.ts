@@ -75,6 +75,7 @@ declare global {
 		};
 		accountDefaultCurrency: string;
 		isFraudProtectionSettingsEnabled: boolean;
+		isFRTReviewFeatureActive: boolean;
 		frtDiscoverBannerSettings: string;
 		onboardingTestMode: boolean;
 		onboardingFieldsData?: {
@@ -89,3 +90,5 @@ declare global {
 
 	const wcSettings: Record< string, any >;
 }
+
+declare const wcTracks: any;
