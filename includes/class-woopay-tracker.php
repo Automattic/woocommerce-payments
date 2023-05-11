@@ -133,9 +133,26 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	/**
 	 * Override parent method to omit the jetpack TOS check.
 	 *
+	 * @param bool $is_admin_event Indicate whether the event is emitted from admin area.
+	 *
 	 * @return bool
 	 */
-	public function should_enable_tracking() {
+	public function should_enable_tracking( $is_admin_event = false ) {
+		// Always respect the user specific opt-out cookie.
+		if ( ! empty( $_COOKIE['tk_opt-out'] ) ) {
+			return false;
+		}
+
+		// Track all WooPay events from the admin area.
+		if ( $is_admin_event ) {
+			return true;
+		}
+
+		// For all other events ensure:
+		// 1. Only site pages are tracked.
+		// 2. Site Admin activity in site pages are not tracked.
+		// 3. Site page tracking is only enabled when WooPay is active.
+
 		// Track only site pages.
 		if ( is_admin() && ! wp_doing_ajax() ) {
 			return false;
@@ -143,11 +160,6 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 
 		// Don't track site admins.
 		if ( is_user_logged_in() && in_array( 'administrator', wp_get_current_user()->roles, true ) ) {
-			return false;
-		}
-
-		// Don't track if the opt-out cookie is set.
-		if ( ! empty( $_COOKIE['tk_opt-out'] ) ) {
 			return false;
 		}
 
@@ -180,7 +192,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 			return false;
 		}
 
-		if ( ! $is_admin_event && ! $this->should_enable_tracking() ) {
+		if ( ! $this->should_enable_tracking( $is_admin_event ) ) {
 			return false;
 		}
 
