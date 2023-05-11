@@ -459,6 +459,14 @@ export const handleWooPayEmailInput = async (
 				hasCheckedLoginSession = true;
 				api.initWooPay( '', e.data.platformCheckoutUserSession )
 					.then( ( response ) => {
+						// Do nothing if the iframe has been closed.
+						if (
+							! document.querySelector(
+								'.platform-checkout-otp-iframe'
+							)
+						) {
+							return;
+						}
 						if ( 'success' === response.result ) {
 							loginSessionIframeWrapper.classList.add(
 								'woopay-login-session-iframe-wrapper'
@@ -499,6 +507,14 @@ export const handleWooPayEmailInput = async (
 					e.data.platformCheckoutUserSession
 				)
 					.then( ( response ) => {
+						// Do nothing if the iframe has been closed.
+						if (
+							! document.querySelector(
+								'.platform-checkout-otp-iframe'
+							)
+						) {
+							return;
+						}
 						if ( 'success' === response.result ) {
 							window.location = response.url;
 						} else {

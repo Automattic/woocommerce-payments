@@ -224,6 +224,14 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 					userEmail,
 					e.data.platformCheckoutUserSession
 				).then( ( response ) => {
+					// Do nothing if the iframe has been closed.
+					if (
+						! document.querySelector(
+							'.platform-checkout-otp-iframe'
+						)
+					) {
+						return;
+					}
 					if ( 'success' === response.result ) {
 						window.location = response.url;
 					} else {
