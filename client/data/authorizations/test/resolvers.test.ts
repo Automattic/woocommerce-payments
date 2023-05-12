@@ -3,7 +3,8 @@
 /**
  * External dependencies
  */
-import { apiFetch, dispatch } from '@wordpress/data-controls';
+import { apiFetch } from '@wordpress/data-controls';
+import { controls } from '@wordpress/data';
 import { Query } from '@woocommerce/navigation';
 
 /**
@@ -68,7 +69,7 @@ describe( 'getAuthorizations resolver', () => {
 	describe( 'on error', () => {
 		test( 'should update state with error', () => {
 			expect( generator.throw( errorResponse ).value ).toEqual(
-				dispatch(
+				controls.dispatch(
 					'core/notices',
 					'createErrorNotice',
 					expect.any( String )
@@ -144,7 +145,7 @@ describe( 'getAuthorizationsSummary resolver', () => {
 	describe( 'on error', () => {
 		test( 'should update state with error', () => {
 			expect( generator.throw( errorResponse ).value ).toEqual(
-				dispatch(
+				controls.dispatch(
 					'core/notices',
 					'createErrorNotice',
 					expect.any( String )
