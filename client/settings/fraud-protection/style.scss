@@ -156,9 +156,13 @@
 				color: #1d2327;
 			}
 
-			> .components-base-control__field {
+			.components-base-control__field {
 				align-items: center;
 				display: flex;
+			}
+
+			.components-base-control__help {
+				line-height: 16px;
 			}
 		}
 
