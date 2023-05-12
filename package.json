@@ -79,6 +79,7 @@
   },
   "devDependencies": {
     "@automattic/color-studio": "2.3.1",
+    "@babel/eslint-parser": "7.21.8",
     "@jest/test-sequencer": "29.5.0",
     "@pmmmwh/react-refresh-webpack-plugin": "0.5.7",
     "@testing-library/jest-dom": "5.14.1",
@@ -100,7 +101,7 @@
     "@woocommerce/dependency-extraction-webpack-plugin": "2.2.0",
     "@woocommerce/e2e-environment": "0.2.3",
     "@woocommerce/e2e-utils": "0.2.0",
-    "@woocommerce/eslint-plugin": "1.1.0",
+    "@woocommerce/eslint-plugin": "2.2.0",
     "@woocommerce/experimental": "3.2.0",
     "@wordpress/api-fetch": "6.3.1",
     "@wordpress/babel-plugin-makepot": "4.2.0",
