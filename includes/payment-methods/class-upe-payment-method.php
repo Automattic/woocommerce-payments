@@ -14,7 +14,6 @@ use WC_Payments_Token_Service;
 use WC_Payment_Token_CC;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Subscriptions_Utilities;
-use WCPay\Logger;
 
 /**
  * Extendable abstract class for payment methods.
