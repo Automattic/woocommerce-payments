@@ -11,7 +11,7 @@ import { ToggleControl, RadioControl } from '@wordpress/components';
 import './../style.scss';
 import FraudPreventionSettingsContext from './context';
 
-const isReviewEnabled = false;
+const { isFRTReviewFeatureActive } = wcpaySettings;
 
 interface FraudProtectionRuleToggleProps {
 	setting: string;
@@ -64,7 +64,7 @@ const FraudProtectionRuleToggle: React.FC< FraudProtectionRuleToggleProps > = ( 
 
 	const [ toggleState, setToggleState ] = useState( false );
 	const [ filterAction, setFilterAction ] = useState(
-		isReviewEnabled ? filterActions.REVIEW : filterActions.BLOCK
+		isFRTReviewFeatureActive ? filterActions.REVIEW : filterActions.BLOCK
 	);
 
 	const settingUI = protectionSettingsUI?.[ setting ];
@@ -75,7 +75,7 @@ const FraudProtectionRuleToggle: React.FC< FraudProtectionRuleToggleProps > = ( 
 
 		setToggleState( settingUI.enabled );
 		setFilterAction( () => {
-			if ( ! isReviewEnabled ) return filterActions.BLOCK;
+			if ( ! isFRTReviewFeatureActive ) return filterActions.BLOCK;
 
 			return settingUI.block ? filterActions.BLOCK : filterActions.REVIEW;
 		} );
@@ -125,7 +125,7 @@ const FraudProtectionRuleToggle: React.FC< FraudProtectionRuleToggleProps > = ( 
 				<div>
 					{ children }
 
-					{ isReviewEnabled && (
+					{ !! isFRTReviewFeatureActive && (
 						<div className="fraud-protection-rule-toggle-block">
 							<strong>
 								{ __(
