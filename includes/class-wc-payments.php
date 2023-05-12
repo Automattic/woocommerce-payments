@@ -40,7 +40,6 @@ use WCPay\WC_Payments_UPE_Checkout;
 use WCPay\WooPay\Service\Checkout_Service;
 use WCPay\Core\WC_Payments_Customer_Service_API;
 use WCPay\Blocks_Data_Extractor;
-use WCPay\Platform_Checkout_Tracker;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -433,7 +432,7 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
 		// Load platform checkout tracking.
-		include_once WCPAY_ABSPATH . 'includes/class-platform-checkout-tracker.php';
+		include_once WCPAY_ABSPATH . 'includes/class-woopay-tracker.php';
 
 		self::$order_service                       = new WC_Payments_Order_Service( self::$api_client );
 		self::$action_scheduler_service            = new WC_Payments_Action_Scheduler_Service( self::$api_client, self::$order_service );
