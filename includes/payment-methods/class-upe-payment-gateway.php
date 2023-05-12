@@ -45,10 +45,12 @@ use WCPay\Payment\Payment_Factory;
 use WCPay\Payment\Payment_Method\New_Payment_Method;
 use WCPay\Payment\Payment_Method\Payment_Method_Factory;
 use WCPay\Payment\Payment_Method\Saved_Payment_Method;
+use WCPay\Payment\State\Intent_Without_Order_State;
 use WCPay\Payment\State\Processed_State;
 use WCPay\Payment\Storage\Filesystem_Order_Storage;
 use WCPay\Payment\Storage\Filesystem_Storage;
 use WCPay\Payment\Strategy\Standard_Payment_Strategy;
+use WCPay\Payment\Strategy\UPE_Update_Intent_Strategy;
 use WP_User;
 
 
@@ -327,35 +329,37 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return array
 	 */
 	public function create_payment_intent( $displayed_payment_methods, $order_id = null, $fingerprint = '' ) {
-		// Those objects should be stored somewhere else, as dependencies.
-		// Create the payment object based on whether there is an order available or not.
+		$manager = new Manager();
+
 		if ( $order_id ) {
-			$this->prepare_payment_objects();
-			$order = wc_get_order( $order_id );
-			$payment = $this->payment_factory->load_or_create_order_payment( $order );
+			$order   = wc_get_order( $order_id );
+			$payment = $manager->load_or_create_payment( $order );
 		} else {
-			$storage                = new Filesystem_Storage();
-			$payment_method_factory = new Payment_Method_Factory();
-			$payment_factory        = new Payment_Factory( $storage, $payment_method_factory );
-			$payment                = $payment_factory->create_payment();
+			$payment = $manager->instantiate_payment();
 		}
 
-		// Allows UPE steps to work.
-		$payment->set_flow( Payment::UPE_PREPARE_INTENT_FLOW );
+		// Transition to the right state.
+		$payment->switch_state( new Intent_Without_Order_State( $payment ) );
 
 		// Setup the payment object.
 		$manual_capture = ! empty( $this->settings['manual_capture'] ) && 'yes' === $this->settings['manual_capture'];
 		if ( $manual_capture ) {
-			$payment->set_flag( Payment::MANUAL_CAPTURE );
+			$payment->set_flag( Flags::MANUAL_CAPTURE );
 		}
 		$payment->set_fingerprint( $fingerprint );
 		$payment->set_payment_method_types( array_values( $displayed_payment_methods ) );
 
+		// Load the intent.
+		$response = $payment->get_or_create_intent();
+
 		// Save the prepared payment before trying to process it.
-		$payment->save();
+		if ( $order_id ) {
+			$payment->save_to_order( $order );
+		} else {
+			$payment->save_without_order();
+		}
 
 		// Let the payment be processed. The process should yield the response array.
-		$response               = $payment->process();
 		$response['payment_id'] = $payment->get_id(); // Used to store the payment in session.
 		return $response;
 	}
@@ -445,6 +449,31 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
+	 * Retrieves the ID of an existing intent from session.
+	 *
+	 * @return string|null
+	 */
+	protected function get_payment_from_session() {
+		$session_data = $this->get_payment_intent_data_from_session();
+
+		if ( ! $session_data ) {
+			return null;
+		}
+
+		$session_data = explode( '-', $session_data );
+		if ( 4 > count( $session_data ) ) {
+			return null;
+		}
+
+		$payment_id = $session_data['3'];
+		if ( empty( $payment_id ) ) {
+			return null;
+		}
+
+		return $payment_id;
+	}
+
+	/**
 	 * Update payment intent for completed checkout and return redirect URL for Stripe to confirm payment.
 	 *
 	 * @param int $order_id Order ID to process the payment for.
@@ -453,47 +482,34 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @throws Exception Error processing the payment.
 	 */
 	public function process_payment( $order_id ) {
+		$order   = wc_get_order( $order_id );
+		$manager = new Manager();
+
+		$existing_id = $this->get_payment_from_session( $order );
+		if ( $existing_id ) {
+			$payment = $manager->load_payment_by_id( $existing_id );
+			$payment->set_order( $order );
+			$payment->save_to_order( $order );
+		} else {
+			$payment = $manager->load_or_create_payment( $order );
+		}
+
 		// phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
-		$order = wc_get_order( $order_id );
-
-		// Check if there is an ID to laod.
-		// $payment = null;
-		// $session_data = $this->get_payment_intent_data_from_session();
-		// if ( $session_data ) {
-		// 	$session_data = explode( '-', $session_data );
-		// 	if ( 4 <= count( $session_data ) ) {
-		// 		$payment_id = $session_data['3'];
-		// 		if ( ! empty( $payment_id ) ) {
-		// 			$storage                = new Filesystem_Storage();
-		// 			$payment_method_factory = new Payment_Method_Factory();
-		// 			$payment_factory        = new Payment_Factory( $storage, $payment_method_factory );
-		// 			$payment                = $payment_factory->load_payment( $payment_id );
-
-		// 			if ( ! $payment instanceof Order_Payment ) {
-		// 				$payment = $this->payment_factory->covert_payment_to_order_payment( $payment, $order );
-		// 			}
-		// 		}
-		// 	}
-		// }
-
-
-		// Create/load the payment object.
-		$manager = new Manager();
-		$payment = $manager->instantiate_payment( $order );
-
 		// Setup the payment object.
-		$payment_method = $this->payment_method_factory->from_request( $_POST, true );
+		$payment_method = ( new Payment_Method_Factory() )->from_request( $_POST, true );
 		$payment->set_payment_method( $payment_method );
 		if ( ! $payment_method instanceof Saved_Payment_Method && New_Payment_Method::should_be_saved( $_POST ) ) {
 			$payment->set_flag( Flags::SAVE_PAYMENT_METHOD_TO_STORE );
 		}
 
-		$payment->set_fraud_prevention_token( $_POST['wcpay-fraud-prevention-token'] ?? '' ); // Empty string to force checks. Null means skip.
+		// Empty string to force checks. Null means skip.
+		$payment->set_fraud_prevention_token( $_POST['wcpay-fraud-prevention-token'] ?? '' );
 
 		$payment_intent_id = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : null;
 		$payment->set_intent_id( $payment_intent_id );
 
+		// @todo: Some of those could be method parameters.
 		$selected_upe_payment_type = ! empty( $_POST['wcpay_selected_upe_payment_type'] ) ? wc_clean( wp_unslash( $_POST['wcpay_selected_upe_payment_type'] ) ) : '';
 		$payment->set_selected_upe_payment_type( $selected_upe_payment_type );
 
@@ -511,10 +527,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		}
 
 		$response = $manager->process( $payment, $strategy );
-
-		// fall back to the full parent process if a saved PM is used, and there is no intent.
-		// the fallback to parent process payment should be here.
-		// there should be a catch block around here...
+		$payment->save_to_order();
 
 		// phpcs:enable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
@@ -617,27 +630,26 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @throws Process_Payment_Exception When the payment intent has an error.
 	 */
 	public function process_redirect_payment( $order_id, $intent_id, $save_payment_method ) {
-		$this->prepare_payment_objects();
+		$manager = new Manager();
 
 		// Load the order and the payment.
 		$order   = wc_get_order( $order_id );
-		$payment = $this->payment_factory->load_or_create_order_payment( $order );
+		$payment = $manager->load_payment( $order );
 
-		// Allows UPE steps to work.
-		$payment->set_flow( Payment::UPE_PROCESS_REDIRECT_FLOW );
-
-		// Setup the payment.
+		// Setup the payment. @todo: Compare this with the existing intent ID.
 		$payment->set_intent_id( $intent_id );
 
 		if ( $save_payment_method ) {
-			$payment->set_flag( Payment::SAVE_PAYMENT_METHOD_TO_STORE );
+			$payment->set_flag( Flags::SAVE_PAYMENT_METHOD_TO_STORE );
 		}
 
 		// restore the remove-upe-payment-intent-from-session step.
 
 		try {
-			$response = $payment->process();
-			wp_safe_redirect( $response['redirect'] );
+			// Try loading the intent and advancing to the next stage.
+			$payment->load_intent_after_confirmation( $intent_id );
+			$response = $manager->process( $payment );
+			wp_safe_redirect( $response['redirect_url'] );
 		} catch ( Exception $e ) {
 			echo $e->getMessage();
 			exit;

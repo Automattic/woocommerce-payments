@@ -79,6 +79,34 @@ abstract class Payment_State {
 	}
 
 	/**
+	 * Either retrieves the existing intent, or creates a new one.
+	 *
+	 * @throws Exception In case the method is not available.
+	 */
+	public function get_or_create_intent() {
+		throw new Exception( 'This method is only supported when creating UPE intents.' );
+	}
+
+	/**
+	 * Updates an intent once an order is available.
+	 *
+	 * @throws Exception In case the method is not available.
+	 */
+	public function update_intent_with_order() {
+		throw new Exception( 'This method is only supported when updating with UPE intents.' );
+	}
+
+	/**
+	 * Loads an intent into the payment process once it has been confirmed,
+	 * and transitions to the correct follow-up state.
+	 *
+	 * @param string $intent_id The ID of the intent to load.
+	 */
+	public function load_intent_after_confirmation( string $intent_id ) {
+		throw new Exception( 'Incorrect payment state.' );
+	}
+
+	/**
 	 * Indicates if the state should interrupt the processing loop.
 	 * Overwrite in states inc ase they are final, and should interrupt the process.
 	 *

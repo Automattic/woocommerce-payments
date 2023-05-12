@@ -72,6 +72,17 @@ class File_Storage implements Storage_Interface {
 	}
 
 	/**
+	 * Checks if an order has a payment.
+	 *
+	 * @param WC_Order $order The order to laod from.
+	 * @return bool
+	 */
+	public function order_has_payment( WC_Order $order ) {
+		$path = $this->order_path . $order->get_id() . '.json';
+		return $this->get_filesystem()->file_exists( $path );
+	}
+
+	/**
 	 * Saves a payment without an order.
 	 *
 	 * @param Payment $payment Payment to save.

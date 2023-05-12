@@ -345,4 +345,30 @@ class Payment {
 	public function is_processing_finished() {
 		return $this->state->is_processing_finished();
 	}
+
+	/**
+	 * Either retrieves the existing intent, or creates a new one.
+	 *
+	 * @return array
+	 */
+	public function get_or_create_intent() {
+		return $this->state->get_or_create_intent();
+	}
+
+	/**
+	 * Updates an intent once an order is available.
+	 */
+	public function update_intent_with_order() {
+		return $this->state->update_intent_with_order();
+	}
+
+	/**
+	 * Loads an intent into the payment process once it has been confirmed,
+	 * and transitions to the correct follow-up state.
+	 *
+	 * @param string $intent_id The ID of the intent to load.
+	 */
+	public function load_intent_after_confirmation( string $intent_id ) {
+		return $this->state->load_intent_after_confirmation( $intent_id );
+	}
 }

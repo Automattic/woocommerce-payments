@@ -12,7 +12,7 @@ use WC_Order;
 use WCPay\Payment\Strategy\Strategy;
 use WCPay\Payment\Storage\File_Storage;
 use WCPay\Payment\Payment_Method\Payment_Method_Factory;
-use WCPay\Payment\State\{ Initial_State, Prepared_State, Processed_State, Verified_State };
+use WCPay\Payment\State\{ Initial_State, Intent_Without_Order_State, Prepared_State, Processed_State, Verified_State };
 
 /**
  * Orchestrates the payment process.
@@ -43,12 +43,14 @@ class Manager {
 	/**
 	 * Instantiates a new payment.
 	 *
-	 * @param WC_Order $order Order to use for the payment.
+	 * @param WC_Order $order Order to use for the payment (Optional, but recommended).
 	 * @return Payment        Newly created payment.
 	 */
-	public function instantiate_payment( WC_Order $order ) {
+	public function instantiate_payment( WC_Order $order = null ) {
 		$payment = $this->create_payment_object();
-		$payment->set_order( $order );
+		if ( $order ) {
+			$payment->set_order( $order );
+		}
 		return $payment;
 	}
 
@@ -66,13 +68,40 @@ class Manager {
 	}
 
 	/**
+	 * Attempts to load the payment for an order, and creates one if not found.
+	 *
+	 * @param WC_Order $order Order to look for.
+	 * @return Payment
+	 */
+	public function load_or_create_payment( WC_Order $order ) {
+		$payment = $this->create_payment_object();
+		$payment->set_order( $order );
+		if ( $this->storage->order_has_payment( $order ) ) {
+			$this->storage->load_from_order( $order, $payment );
+		}
+		return $payment;
+	}
+
+	/**
+	 * Loads the payment for an order.
+	 *
+	 * @param string $id    The ID of the payment.
+	 * @return Payment|null Loaded payment.
+	 */
+	public function load_payment_by_id( string $id ) {
+		$payment = $this->create_payment_object();
+		$this->storage->load_by_id( $id, $payment );
+		return $payment;
+	}
+
+	/**
 	 * Processes a payment, going through all possible states.
 	 *
 	 * @param Payment  $payment  The payment object.
-	 * @param Strategy $strategy Which strategy to use to process the payment.
+	 * @param Strategy $strategy Which strategy to use to process the payment (Optional if the payment is already processed).
 	 * @throws Exception In case there is no payment to process.
 	 */
-	public function process( Payment $payment, Strategy $strategy ) {
+	public function process( Payment $payment, Strategy $strategy = null ) {
 		while ( true ) {
 			$previous_state = $payment->get_state();
 
@@ -102,6 +131,10 @@ class Manager {
 				// Transitions to Completed_State.
 				case Processed_State::class:
 					$payment->complete();
+					break;
+
+				case Intent_Without_Order_State::class:
+					$payment->update_intent_with_order();
 					break;
 
 				// Add all states here...
