@@ -65,7 +65,7 @@ const LoadingStep: React.FC< Props > = () => {
 			isEligible = false;
 		}
 		const resultUrl = addQueryArgs( connectUrl, {
-			prefill: fromDotNotation( data ),
+			self_assessment: fromDotNotation( data ),
 			progressive: isEligible,
 		} );
 

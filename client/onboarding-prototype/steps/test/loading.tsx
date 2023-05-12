@@ -38,7 +38,7 @@ jest.mock( 'components/stepper', () => ( {
 } ) );
 
 const checkLinkToContainNecessaryParams = ( link: string ) => {
-	expect( link ).toContain( 'prefill' );
+	expect( link ).toContain( 'self_assessment' );
 	expect( link ).toContain( 'progressive' );
 	expect( link ).toContain( 'country' );
 	expect( link ).toContain( 'mcc' );
