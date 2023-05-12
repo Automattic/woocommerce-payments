@@ -70,7 +70,6 @@ function validateElements( elements, jQueryForm ) {
 	return elements.submit().then( ( result ) => {
 		if ( result.error ) {
 			jQueryForm.removeClass( 'processing' ).unblock();
-			showErrorCheckout( result.error.message );
 			throw new Error( result.error.message );
 		}
 	} );
@@ -91,7 +90,7 @@ function submitForm( jQueryForm ) {
  *
  * @param {Object} api The API object used to call the Stripe API's createPaymentMethod method.
  * @param {Object} elements The Stripe elements object used to create a Stripe payment method.
- * @return {Object} A promise that resolves with the created Stripe payment method.
+ * @return {Promise<Object>} A promise that resolves with the created Stripe payment method.
  */
 function createStripePaymentMethod( api, elements ) {
 	return api.getStripe().createPaymentMethod( {
@@ -207,23 +206,20 @@ export const checkout = ( api, jQueryForm, paymentMethodType ) => {
 	( async () => {
 		try {
 			await validateElements( elements, jQueryForm );
-
-			createStripePaymentMethod( api, elements )
-				.then( ( paymentMethodObject ) => {
-					appendFingerprintInputToForm( jQueryForm, fingerprint );
-					appendPaymentMethodIdToForm(
-						jQueryForm,
-						paymentMethodObject.paymentMethod.id
-					);
-					hasCheckoutCompleted = true;
-					submitForm( jQueryForm );
-				} )
-				.catch( ( error ) => {
-					jQueryForm.removeClass( 'processing' ).unblock();
-					showErrorCheckout( error.message );
-				} );
+			const paymentMethodObject = await createStripePaymentMethod(
+				api,
+				elements
+			);
+			appendFingerprintInputToForm( jQueryForm, fingerprint );
+			appendPaymentMethodIdToForm(
+				jQueryForm,
+				paymentMethodObject.paymentMethod.id
+			);
+			hasCheckoutCompleted = true;
+			submitForm( jQueryForm );
 		} catch ( err ) {
-			return false;
+			jQueryForm.removeClass( 'processing' ).unblock();
+			showErrorCheckout( err.message );
 		}
 	} )();
 
