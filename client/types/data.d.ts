@@ -7,14 +7,14 @@ import { AnyConfig } from '@wordpress/data/src/types';
 declare module '@wordpress/data' {
 	type ControlDescriptor = {
 		type: string;
-		storeKey: string | StoreDescriptor< AnyConfig >;
+		storeKey: string;
 		actionName: string;
 		args: unknown[];
 	};
 
 	interface Controls {
 		dispatch: (
-			storeKey: string,
+			storeKey: string | StoreDescriptor< AnyConfig >,
 			actionName: string,
 			...args: unknown[]
 		) => ControlDescriptor;
