@@ -61,6 +61,7 @@ to catalog our packages and provide guidance to a developer who wants to test an
 | [@wordpress/html-entities](https://www.npmjs.com/package/@wordpress/html-entities) | HTML entity utilities for WordPress. | JS unit tests are passing. ||
 | [@wordpress/blocks](https://www.npmjs.com/package/@wordpress/blocks) | Blocks utilities for WordPress. | JS unit tests are passing. ||
 | [@wordpress/block-editor](https://www.npmjs.com/package/@wordpress/block-editor) | Allows you to create and use standalone block editors. | JS unit tests are passing. ||
+| [@wordpress/data-controls](https://www.npmjs.com/package/@wordpress/data-controls) | The data controls module is a module intended to simplify implementation of common controls used with the `@wordpress/data` package.| JS unit tests are passing| |
 | [react](https://www.npmjs.com/package/react) | JavaScript library for creating user interfaces. | JS unit tests are passing. ||
 | [react-dom](https://www.npmjs.com/package/react-dom) | Serves as the entry point to the DOM and server renderers for React. | JS unit tests are passing. ||
 | [@types/react](https://www.npmjs.com/package/@types/react) |  Contains type definitions for React. | JS unit tests are passing. ||
