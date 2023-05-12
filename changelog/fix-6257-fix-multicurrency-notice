@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix AJAX response notice for multi-currency due to empty currencies data

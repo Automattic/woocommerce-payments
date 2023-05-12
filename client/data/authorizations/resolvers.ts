@@ -3,7 +3,8 @@
 /**
  * External dependencies
  */
-import { apiFetch, dispatch } from '@wordpress/data-controls';
+import { apiFetch } from '@wordpress/data-controls';
+import { controls } from '@wordpress/data';
 import { addQueryArgs } from '@wordpress/url';
 import { __ } from '@wordpress/i18n';
 import { Query } from '@woocommerce/navigation';
@@ -53,7 +54,7 @@ export function* getAuthorizations( query: Query ): Generator< unknown > {
 			( result as GetAuthorizationsApiResponse ).data ?? []
 		);
 	} catch ( error ) {
-		yield dispatch(
+		yield controls.dispatch(
 			'core/notices',
 			'createErrorNotice',
 			__(
@@ -90,7 +91,7 @@ export function* getAuthorization(
 		// We might get an error when there is no authorization because the payment was not set to be captured later.
 		// We don't want to display an error to the merchant in that case.
 		if ( ( e as ApiError ).code !== 'authorization_missing' ) {
-			yield dispatch(
+			yield controls.dispatch(
 				'core/notices',
 				'createErrorNotice',
 				__( 'Error retrieving authorization.', 'woocommerce-payments' )
@@ -111,7 +112,7 @@ export function* getAuthorizationsSummary( query: Query ): any {
 		const results = yield apiFetch( { path } );
 		yield updateAuthorizationsSummary( query, results ?? [] );
 	} catch ( e ) {
-		yield dispatch(
+		yield controls.dispatch(
 			'core/notices',
 			'createErrorNotice',
 			__(

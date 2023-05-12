@@ -37,3 +37,34 @@ export interface EligibleData {
 		go_live_timeframe: string;
 	};
 }
+
+export type TempData = {
+	phoneCountryCode?: string;
+};
+
+export interface Country {
+	key: string;
+	name: string;
+	types: BusinessType[];
+}
+
+export interface BusinessType {
+	key: string;
+	name: string;
+	description: string;
+	structures: BusinessStructure[];
+}
+
+export interface BusinessStructure {
+	key: string;
+	name: string;
+}
+
+export interface MccsDisplayTreeItem {
+	id: string;
+	type: string;
+	title: string;
+	items?: MccsDisplayTreeItem[];
+	mcc?: number;
+	keywords?: string[];
+}
