@@ -3,7 +3,9 @@
 exports[`NewPill renders 1`] = `
 <div>
   <span
-    class="woocommerce-pill css-1qmnemh-Text e15wbhsk0"
+    class="components-truncate components-text woocommerce-pill wcpay-pill discoverability-card__new-feature-pill css-1g4vivm-View-Text-sx-Base em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Text"
   >
     New
   </span>

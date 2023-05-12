@@ -4,7 +4,7 @@
  * External dependencies
  */
 import * as React from 'react';
-import { render, waitFor, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { updateQueryString } from '@woocommerce/navigation';
 
 /**
@@ -12,12 +12,12 @@ import { updateQueryString } from '@woocommerce/navigation';
  */
 import TransactionsPage from '../';
 import {
-	useTransactions,
-	useTransactionsSummary,
-	useSettings,
-	useManualCapture,
 	useAuthorizationsSummary,
 	useFraudOutcomeTransactionsSummary,
+	useManualCapture,
+	useSettings,
+	useTransactions,
+	useTransactionsSummary,
 } from 'data/index';
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
@@ -26,7 +26,10 @@ jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 // See https://github.com/WordPress/gutenberg/issues/15031
 jest.mock( '@wordpress/data', () => ( {
 	createRegistryControl: jest.fn(),
-	dispatch: jest.fn( () => ( { setIsMatching: jest.fn() } ) ),
+	dispatch: jest.fn( () => ( {
+		setIsMatching: jest.fn(),
+		onLoad: jest.fn(),
+	} ) ),
 	registerStore: jest.fn(),
 	select: jest.fn(),
 	useDispatch: jest.fn( () => ( { createNotice: jest.fn() } ) ),
