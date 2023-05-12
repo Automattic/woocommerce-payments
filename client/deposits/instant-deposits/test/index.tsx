@@ -44,7 +44,7 @@ const mockZeroInstantBalance = {
 	fee_percentage: 1.5,
 	transaction_ids: [],
 	currency: 'USD',
-};
+} as AccountOverview.InstantBalance;
 
 declare const global: {
 	wcpaySettings: {
