@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { render } from '@wordpress/element';
 import {
 	Button,
@@ -44,6 +44,12 @@ const ConnectAccountPage: React.FC = () => {
 		connectUrl,
 		connect: { availableCountries, country },
 	} = wcpaySettings;
+
+	useEffect( () => {
+		wcpayTracks.recordEvent( wcpayTracks.events.CONNECT_ACCOUNT_VIEW, {
+			path: 'payments_connect_v2',
+		} );
+	}, [] );
 
 	const handleLocationCheck = () => {
 		// Reset the 'Set up' button state if merchant decided to stop
