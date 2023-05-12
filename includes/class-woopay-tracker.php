@@ -28,7 +28,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	private static $user_prefix = 'woocommerceanalytics';
 
 	/**
-	 * Platform checkout admin event prefix
+	 * WooPay admin event prefix
 	 *
 	 * @var string
 	 */

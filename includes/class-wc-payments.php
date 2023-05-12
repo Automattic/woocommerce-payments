@@ -431,7 +431,7 @@ class WC_Payments {
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
-		// Load platform checkout tracking.
+		// Load woopay tracking.
 		include_once WCPAY_ABSPATH . 'includes/class-woopay-tracker.php';
 
 		self::$order_service                       = new WC_Payments_Order_Service( self::$api_client );
