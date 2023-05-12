@@ -90,5 +90,3 @@ declare global {
 
 	const wcSettings: Record< string, any >;
 }
-
-declare const wcTracks: any;

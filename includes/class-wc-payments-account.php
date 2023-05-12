@@ -1322,7 +1322,6 @@ class WC_Payments_Account {
 		}
 
 		$diff = array_diff_assoc( $changes, $account );
-
 		return ! empty( $diff );
 	}
 
