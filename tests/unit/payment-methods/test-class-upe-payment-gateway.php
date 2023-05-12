@@ -1698,9 +1698,10 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $ideal_method->is_currency_valid() );
 		$this->assertFalse( $becs_method->is_currency_valid() );
 
-		$order             = WC_Helper_Order::create_order();
-		$order_id          = $order->get_id();
-		$_GET['order-pay'] = strval( $order_id );
+		global $wp;
+		$order          = WC_Helper_Order::create_order();
+		$order_id       = $order->get_id();
+		$wp->query_vars = [ 'order-pay' => strval( $order_id ) ];
 		$order->set_currency( 'USD' );
 
 		$this->assertTrue( $card_method->is_currency_valid() );
@@ -1713,7 +1714,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $ideal_method->is_currency_valid() );
 		$this->assertFalse( $becs_method->is_currency_valid() );
 
-		unset( $_GET['order-pay'] );
+		$wp->query_vars = [];
 	}
 
 	public function test_create_token_from_setup_intent_adds_token() {
