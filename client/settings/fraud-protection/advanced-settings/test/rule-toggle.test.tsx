@@ -11,6 +11,12 @@ import userEvent from '@testing-library/user-event';
 import FraudProtectionRuleToggle from '../rule-toggle';
 import FraudPreventionSettingsContext from '../context';
 
+declare const global: {
+	wcpaySettings: {
+		isFRTReviewFeatureActive?: boolean;
+	};
+};
+
 interface mockContext {
 	protectionSettingsUI: {
 		[ key: string ]: {
@@ -24,6 +30,10 @@ interface mockContext {
 }
 
 describe( 'Fraud protection rule toggle tests', () => {
+	global.wcpaySettings = {
+		isFRTReviewFeatureActive: false,
+	};
+
 	let mockContext: mockContext = {
 		protectionSettingsUI: {
 			test_rule: {

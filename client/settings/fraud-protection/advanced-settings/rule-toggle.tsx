@@ -11,8 +11,6 @@ import { ToggleControl, RadioControl } from '@wordpress/components';
 import './../style.scss';
 import FraudPreventionSettingsContext from './context';
 
-const { isFRTReviewFeatureActive } = wcpaySettings;
-
 interface FraudProtectionRuleToggleProps {
 	setting: string;
 	label: string;
@@ -62,6 +60,8 @@ const FraudProtectionRuleToggle: React.FC< FraudProtectionRuleToggleProps > = ( 
 		setProtectionSettingsChanged,
 	} = useContext( FraudPreventionSettingsContext );
 
+	const { isFRTReviewFeatureActive } = wcpaySettings;
+
 	const [ toggleState, setToggleState ] = useState( false );
 	const [ filterAction, setFilterAction ] = useState(
 		isFRTReviewFeatureActive ? filterActions.REVIEW : filterActions.BLOCK
@@ -79,7 +79,7 @@ const FraudProtectionRuleToggle: React.FC< FraudProtectionRuleToggleProps > = ( 
 
 			return settingUI.block ? filterActions.BLOCK : filterActions.REVIEW;
 		} );
-	}, [ settingUI ] );
+	}, [ settingUI, isFRTReviewFeatureActive ] );
 
 	// Set global object values from input changes.
 	useEffect( () => {

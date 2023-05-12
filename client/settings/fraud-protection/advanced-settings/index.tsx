@@ -160,6 +160,16 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 
 			const settings = writeRuleset( protectionSettingsUI );
 
+			// Persist the AVS verification setting until the account cache is updated locally.
+			if (
+				wcpaySettings?.accountStatus?.fraudProtection
+					?.declineOnAVSFailure
+			) {
+				wcpaySettings.accountStatus.fraudProtection.declineOnAVSFailure = settings.some(
+					( setting ) => setting.key === 'avs_verification'
+				);
+			}
+
 			updateAdvancedFraudProtectionSettings( settings );
 
 			saveSettings();

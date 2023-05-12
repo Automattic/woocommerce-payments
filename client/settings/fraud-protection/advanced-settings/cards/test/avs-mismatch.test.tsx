@@ -16,6 +16,7 @@ declare const global: {
 				declineOnAVSFailure: boolean;
 			};
 		};
+		isFRTReviewFeatureActive?: boolean;
 	};
 };
 
@@ -33,6 +34,7 @@ describe( 'AVS mismatch card', () => {
 					declineOnAVSFailure: true,
 				},
 			},
+			isFRTReviewFeatureActive: false,
 		};
 		const setSettings = jest.fn();
 		const contextValue = {
