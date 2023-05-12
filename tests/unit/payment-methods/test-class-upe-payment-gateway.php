@@ -17,7 +17,7 @@ use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Core\Server\Response;
 use WCPay\Constants\Payment_Method;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
-use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
+use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\WC_Payments_UPE_Checkout;
 use WCPAY_UnitTestCase;
@@ -111,11 +111,11 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	private $mock_wcpay_account;
 
 	/**
-	 * Platform_Checkout_Utilities instance.
+	 * WooPay_Utilities instance.
 	 *
-	 * @var Platform_Checkout_Utilities
+	 * @var WooPay_Utilities
 	 */
-	private $mock_platform_checkout_utilities;
+	private $mock_woopay_utilities;
 
 	/**
 	 * Mocked value of return_url.
@@ -177,7 +177,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'get_fees' )
 			->willReturn( $payment_methods );
 
-		$this->mock_platform_checkout_utilities = $this->createMock( Platform_Checkout_Utilities::class );
+		$this->mock_woopay_utilities = $this->createMock( WooPay_Utilities::class );
 
 		// Arrange: Mock WC_Payments_Customer_Service so its methods aren't called directly.
 		$this->mock_customer_service = $this->getMockBuilder( 'WC_Payments_Customer_Service' )
@@ -277,7 +277,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		// Add the UPE Checkout action.
 		new WC_Payments_UPE_Checkout(
 			$this->mock_upe_gateway,
-			$this->mock_platform_checkout_utilities,
+			$this->mock_woopay_utilities,
 			$this->mock_wcpay_account,
 			$this->mock_customer_service
 		);
@@ -1902,7 +1902,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$upe_checkout = new WC_Payments_UPE_Checkout(
 			$mock_upe_gateway,
-			$this->mock_platform_checkout_utilities,
+			$this->mock_woopay_utilities,
 			$this->mock_wcpay_account,
 			$this->mock_customer_service
 		);
@@ -1964,7 +1964,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$upe_checkout = new WC_Payments_UPE_Checkout(
 			$mock_upe_gateway,
-			$this->mock_platform_checkout_utilities,
+			$this->mock_woopay_utilities,
 			$this->mock_wcpay_account,
 			$this->mock_customer_service
 		);
