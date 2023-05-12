@@ -66,11 +66,9 @@ function blockUI( jQueryForm ) {
  * @param {Object} jQueryForm The jQuery object for the form being validated.
  * @return {Promise} Promise for the checkout submission.
  */
-function validateElements( elements, jQueryForm ) {
+function validateElements( elements ) {
 	return elements.submit().then( ( result ) => {
 		if ( result.error ) {
-			jQueryForm.removeClass( 'processing' ).unblock();
-			showErrorCheckout( result.error.message );
 			throw new Error( result.error.message );
 		}
 	} );
@@ -193,11 +191,11 @@ export async function mountStripePaymentElement( api, domElement ) {
  * @param {string} paymentMethodType The type of Stripe payment method being used.
  * @return {boolean} return false to prevent the default form submission from WC Core.
  */
-let hasCheckoutCompleted;
+let hasCheckoutCompleted = false;
 export const checkout = ( api, jQueryForm, paymentMethodType ) => {
 	if ( hasCheckoutCompleted ) {
 		hasCheckoutCompleted = false;
-		return;
+		return true;
 	}
 
 	blockUI( jQueryForm );
@@ -206,24 +204,22 @@ export const checkout = ( api, jQueryForm, paymentMethodType ) => {
 
 	( async () => {
 		try {
-			await validateElements( elements, jQueryForm );
+			await validateElements( elements );
 
-			createStripePaymentMethod( api, elements )
-				.then( ( paymentMethodObject ) => {
-					appendFingerprintInputToForm( jQueryForm, fingerprint );
-					appendPaymentMethodIdToForm(
-						jQueryForm,
-						paymentMethodObject.paymentMethod.id
-					);
-					hasCheckoutCompleted = true;
-					submitForm( jQueryForm );
-				} )
-				.catch( ( error ) => {
-					jQueryForm.removeClass( 'processing' ).unblock();
-					showErrorCheckout( error.message );
-				} );
+			const paymentMethodObject = await createStripePaymentMethod(
+				api,
+				elements
+			);
+			appendFingerprintInputToForm( jQueryForm, fingerprint );
+			appendPaymentMethodIdToForm(
+				jQueryForm,
+				paymentMethodObject.paymentMethod.id
+			);
+			hasCheckoutCompleted = true;
+			submitForm( jQueryForm );
 		} catch ( err ) {
-			return false;
+			jQueryForm.removeClass( 'processing' ).unblock();
+			showErrorCheckout( err.message );
 		}
 	} )();
 
