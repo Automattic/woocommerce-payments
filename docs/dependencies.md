@@ -62,6 +62,7 @@ to catalog our packages and provide guidance to a developer who wants to test an
 | [@wordpress/blocks](https://www.npmjs.com/package/@wordpress/blocks) | Blocks utilities for WordPress. | JS unit tests are passing. ||
 | [@wordpress/block-editor](https://www.npmjs.com/package/@wordpress/block-editor) | Allows you to create and use standalone block editors. | JS unit tests are passing. ||
 | [@wordpress/jest-preset-default](https://www.npmjs.com/package/@wordpress/jest-preset-default) | Default Jest preset for WordPress development. | JS unit tests are passing. ||
+| [@wordpress/babel-plugin-makepot](https://www.npmjs.com/package/@wordpress/babel-plugin-makepot) | Babel plugin used to scan JavaScript files for use of localization functions. | Ensure `languages/woocommerce-payments.pot` is created correctly on building release. ||
 
 
 ### PHP Runtime Dependencies
