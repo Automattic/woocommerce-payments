@@ -21,11 +21,18 @@ defined( 'ABSPATH' ) || exit; // block direct access.
 class WooPay_Tracker extends Jetpack_Tracks_Client {
 
 	/**
-	 * WooPay event prefix
+	 * WooPay user event prefix
 	 *
 	 * @var string
 	 */
-	private static $prefix = 'woocommerceanalytics';
+	private static $user_prefix = 'woocommerceanalytics';
+
+	/**
+	 * WooPay admin event prefix
+	 *
+	 * @var string
+	 */
+	private static $admin_prefix = 'wcadmin';
 
 	/**
 	 * WCPay http interface.
@@ -98,33 +105,54 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 * @param array  $data array of event properties.
 	 */
 	public function maybe_record_event( $event, $data = [] ) {
-
-		$user     = wp_get_current_user();
-		$site_url = get_option( 'siteurl' );
-
-		//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-		$data['_lg']      = isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '';
-		$data['blog_url'] = $site_url;
-		$data['blog_id']  = \Jetpack_Options::get_option( 'id' );
-
 		// Top level events should not be namespaced.
 		if ( '_aliasUser' !== $event ) {
-			$event = self::$prefix . '_' . $event;
+			$event = self::$user_prefix . '_' . $event;
 		}
 
-		// Add event property for test mode vs. live mode events.
-		$data['test_mode']     = WC_Payments::mode()->is_test() ? 1 : 0;
-		$data['wcpay_version'] = get_option( 'woocommerce_woocommerce_payments_version' );
+		return $this->tracks_record_event( $event, $data );
+	}
 
-		return $this->tracks_record_event( $user, $event, $data );
+	/**
+	 * Generic method to track admin events.
+	 *
+	 * @param string $event name of the event.
+	 * @param array  $data array of event properties.
+	 */
+	public function maybe_record_admin_event( $event, $data = [] ) {
+		// Top level events should not be namespaced.
+		if ( '_aliasUser' !== $event ) {
+			$event = self::$admin_prefix . '_' . $event;
+		}
+
+		$is_admin_event = true;
+
+		return $this->tracks_record_event( $event, $data, $is_admin_event );
 	}
 
 	/**
 	 * Override parent method to omit the jetpack TOS check.
 	 *
+	 * @param bool $is_admin_event Indicate whether the event is emitted from admin area.
+	 *
 	 * @return bool
 	 */
-	public function should_enable_tracking() {
+	public function should_enable_tracking( $is_admin_event = false ) {
+		// Always respect the user specific opt-out cookie.
+		if ( ! empty( $_COOKIE['tk_opt-out'] ) ) {
+			return false;
+		}
+
+		// Track all WooPay events from the admin area.
+		if ( $is_admin_event ) {
+			return true;
+		}
+
+		// For all other events ensure:
+		// 1. Only site pages are tracked.
+		// 2. Site Admin activity in site pages are not tracked.
+		// 3. Site page tracking is only enabled when WooPay is active.
+
 		// Track only site pages.
 		if ( is_admin() && ! wp_doing_ajax() ) {
 			return false;
@@ -132,11 +160,6 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 
 		// Don't track site admins.
 		if ( is_user_logged_in() && in_array( 'administrator', wp_get_current_user()->roles, true ) ) {
-			return false;
-		}
-
-		// Don't track if the opt-out cookie is set.
-		if ( ! empty( $_COOKIE['tk_opt-out'] ) ) {
 			return false;
 		}
 
@@ -154,20 +177,22 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	/**
 	 * Record an event in Tracks - this is the preferred way to record events from PHP.
 	 *
-	 * @param mixed  $user                   username, user_id, or WP_user object.
 	 * @param string $event_name             The name of the event.
 	 * @param array  $properties             Custom properties to send with the event.
+	 * @param bool   $is_admin_event         Indicate whether the event is emitted from admin area.
 	 *
 	 * @return bool|array|\WP_Error|\Jetpack_Tracks_Event
 	 */
-	public function tracks_record_event( $user, $event_name, $properties = [] ) {
+	public function tracks_record_event( $event_name, $properties = [], $is_admin_event = false ) {
+
+		$user = wp_get_current_user();
 
 		// We don't want to track user events during unit tests/CI runs.
 		if ( $user instanceof \WP_User && 'wptests_capabilities' === $user->cap_key ) {
 			return false;
 		}
 
-		if ( ! $this->should_enable_tracking() ) {
+		if ( ! $this->should_enable_tracking( $is_admin_event ) ) {
 			return false;
 		}
 
@@ -197,8 +222,17 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 */
 	private function tracks_build_event_obj( $user, $event_name, $properties = [] ) {
 		$identity = $this->tracks_get_identity( $user->ID );
+		$site_url = get_option( 'siteurl' );
 
+		//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+		$properties['_lg']       = isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '';
+		$properties['blog_url']  = $site_url;
+		$properties['blog_id']   = \Jetpack_Options::get_option( 'id' );
 		$properties['user_lang'] = $user->get( 'WPLANG' );
+
+		// Add event property for test mode vs. live mode events.
+		$properties['test_mode']     = WC_Payments::mode()->is_test() ? 1 : 0;
+		$properties['wcpay_version'] = WCPAY_VERSION_NUMBER;
 
 		$blog_details = [
 			'blog_lang' => isset( $properties['blog_lang'] ) ? $properties['blog_lang'] : get_bloginfo( 'language' ),
