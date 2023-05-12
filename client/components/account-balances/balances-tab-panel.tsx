@@ -15,7 +15,7 @@ import { getCurrencyTabTitle } from './utils';
 import BalanceBlock from './balance-block';
 import BalanceTooltip from './balance-tooltip';
 import { documentationUrls, fundLabelStrings } from './strings';
-import InstantDepositButton from 'deposits/instant-deposits/button-and-modal';
+import InstantDepositButton from 'deposits/instant-deposits';
 
 /**
  * BalanceTab

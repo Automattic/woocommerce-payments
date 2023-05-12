@@ -40,11 +40,11 @@ const InstantDepositButton = ( { instantBalance } ) => {
 	return (
 		<>
 			<Button
-				isSecondary
+				isPrimary
 				disabled={ buttonDisabled }
 				onClick={ () => setModalOpen( true ) }
 			>
-				{ __( 'Instant deposit', 'woocommerce-payments' ) }
+				{ __( 'Deposit available funds', 'woocommerce-payments' ) }
 			</Button>
 			{ ( isModalOpen || inProgress ) && (
 				<InstantDepositModal
