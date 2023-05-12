@@ -14,7 +14,6 @@ import AccountBalancesTabPanel from '../balances-tab-panel';
 import { getGreeting, getCurrencyTabTitle } from '../utils';
 import { useCurrentWpUser } from '../hooks';
 import { useAllDepositsOverviews, useInstantDeposit } from 'wcpay/data';
-import { documentationUrls } from '../strings';
 import { useSelectedCurrency } from 'wcpay/overview/hooks';
 
 const mockUser = {
@@ -406,7 +405,7 @@ describe( 'AccountBalancesTabPanel', () => {
 		} );
 		expect( within( tooltip ).getByRole( 'link' ) ).toHaveAttribute(
 			'href',
-			documentationUrls.depositSchedule
+			'https://woocommerce.com/document/woocommerce-payments/deposits/deposit-schedule'
 		);
 	} );
 
@@ -425,7 +424,26 @@ describe( 'AccountBalancesTabPanel', () => {
 		} );
 		expect( within( tooltip ).getByRole( 'link' ) ).toHaveAttribute(
 			'href',
-			documentationUrls.negativeBalance
+			'https://woocommerce.com/document/woocommerce-payments/fees-and-debits/account-showing-negative-balance'
+		);
+	} );
+
+	test( 'renders the correct tooltip text for a negative pending balance', () => {
+		mockOverviews( [ createMockOverview( 'usd', -10000, 20000, 0 ) ] );
+		render( <AccountBalancesTabPanel /> );
+
+		// Check the tooltips are rendered correctly.
+		const tooltipButton = screen.getByRole( 'button', {
+			name: 'Pending funds tooltip',
+		} );
+		fireEvent.click( tooltipButton );
+		const tooltip = screen.getByRole( 'tooltip', {
+			// Regex optional group for `(opens in a new tab)`.
+			name: /Learn more( \(.*?\))? about why your account balance may be negative./,
+		} );
+		expect( within( tooltip ).getByRole( 'link' ) ).toHaveAttribute(
+			'href',
+			'https://woocommerce.com/document/woocommerce-payments/fees-and-debits/account-showing-negative-balance'
 		);
 	} );
 
@@ -447,7 +465,7 @@ describe( 'AccountBalancesTabPanel', () => {
 		} );
 		expect( within( tooltip ).getByRole( 'link' ) ).toHaveAttribute(
 			'href',
-			documentationUrls.depositSchedule
+			'https://woocommerce.com/document/woocommerce-payments/deposits/deposit-schedule'
 		);
 	} );
 

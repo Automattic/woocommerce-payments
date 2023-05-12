@@ -908,7 +908,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			[
 				'country' => 'US',
 				'type'    => 'company',
-				'mcc'     => 'computers_peripherals_and_software',
+				'mcc'     => 'most_popular__software_services',
 			],
 			[
 				'annual_revenue'    => 'less_than_250k',
@@ -919,7 +919,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 
-	public function test_get_platform_checkout_eligibility_success() {
+	public function test_get_woopay_eligibility_success() {
 		$this->set_http_mock_response(
 			200,
 			[
@@ -927,7 +927,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$response = $this->payments_api_client->get_platform_checkout_eligibility();
+		$response = $this->payments_api_client->get_woopay_eligibility();
 		$this->assertTrue( $response['platform_checkout_eligible'] );
 	}
 
