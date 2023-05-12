@@ -60,8 +60,10 @@ const events = {
 	CONNECT_ACCOUNT_LEARN_MORE: 'wcpay_welcome_learn_more',
 	CONNECT_ACCOUNT_STRIPE_CONNECTED: 'wcpay_stripe_connected',
 	CONNECT_ACCOUNT_KYC_MODAL_OPENED: 'wcpay_connect_account_kyc_modal_opened',
+	TRANSACTIONS_DOWNLOAD_CSV_CLICK: 'wcpay_transactions_download',
 	DEPOSITS_ROW_CLICK: 'wcpay_deposits_row_click',
 	DEPOSITS_DOWNLOAD_CSV_CLICK: 'wcpay_deposits_download',
+	DEPOSITS_DETAIL_DOWNLOAD_CSV_CLICK: 'wcpay_deposit_detail_download',
 	OVERVIEW_DEPOSITS_VIEW_HISTORY_CLICK:
 		'wcpay_overview_deposits_view_history_click',
 	OVERVIEW_DEPOSITS_CHANGE_SCHEDULE_CLICK:

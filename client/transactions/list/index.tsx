@@ -580,11 +580,18 @@ export const TransactionsList = (
 						)
 					);
 
-					wcpayTracks.recordEvent( 'wcpay_transactions_download', {
-						exported_transactions: exportedTransactions,
-						total_transactions: exportedTransactions,
-						download_type: downloadType,
-					} );
+					wcpayTracks.recordEvent(
+						props.depositId
+							? wcpayTracks.events
+									.DEPOSITS_DETAIL_DOWNLOAD_CSV_CLICK
+							: wcpayTracks.events
+									.TRANSACTIONS_DOWNLOAD_CSV_CLICK,
+						{
+							exported_transactions: exportedTransactions,
+							total_transactions: exportedTransactions,
+							download_type: downloadType,
+						}
+					);
 				} catch {
 					createNotice(
 						'error',
@@ -601,11 +608,16 @@ export const TransactionsList = (
 				generateCSVDataFromTable( columnsToDisplay, rows )
 			);
 
-			wcpayTracks.recordEvent( 'wcpay_transactions_download', {
-				exported_transactions: rows.length,
-				total_transactions: transactionsSummary.count,
-				download_type: downloadType,
-			} );
+			wcpayTracks.recordEvent(
+				props.depositId
+					? wcpayTracks.events.DEPOSITS_DETAIL_DOWNLOAD_CSV_CLICK
+					: wcpayTracks.events.TRANSACTIONS_DOWNLOAD_CSV_CLICK,
+				{
+					exported_transactions: rows.length,
+					total_transactions: transactionsSummary.count,
+					download_type: downloadType,
+				}
+			);
 		}
 
 		setIsDownloading( false );
