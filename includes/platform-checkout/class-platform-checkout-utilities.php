@@ -123,7 +123,7 @@ class Platform_Checkout_Utilities {
 	 * @return array
 	 */
 	public function get_woopay_available_countries() {
-		$last_check_option = get_option( self::AVAILABLE_COUNTRIES_LAST_CHECK_KEY );
+		$last_check_option = get_option( self::AVAILABLE_COUNTRIES_LAST_CHECK_KEY, false );
 		$timezone          = new \DateTimeZone( wp_timezone_string() );
 		$current_date      = new \DateTime( 'now', $timezone );
 
