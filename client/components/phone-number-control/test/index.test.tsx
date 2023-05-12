@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -85,16 +85,18 @@ describe( 'Phone Number Control', () => {
 		expect( input ).toHaveFocus();
 	} );
 
-	it.skip( 'toggles focused class as expected', () => {
+	it( 'toggles focused class as expected', () => {
 		render( <PhoneNumberControl value="" onChange={ onChange } /> );
 		const input = screen.getByRole( 'textbox' );
 		const control = input.parentElement;
 
 		userEvent.click( input );
+		fireEvent.focus( input ); // Workaround for onFocus event not firing with jsdom <16.3.0
 		expect( input ).toHaveFocus();
 		expect( control ).toHaveClass( 'focused' );
 
 		userEvent.tab();
+		fireEvent.focusOut( input ); // Workaround for onFocus event not firing with jsdom <16.3.0
 		expect( input ).not.toHaveFocus();
 		expect( control ).not.toHaveClass( 'focused' );
 	} );
