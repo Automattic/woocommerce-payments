@@ -90,7 +90,7 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 			],
 			'Fraud_Meta_Box_Type_REVIEW_ALLOWED'   => [
 				'meta_box_type'   => Fraud_Meta_Box_Type::REVIEW_ALLOWED,
-				'expected_output' => '<p class="wcpay-fraud-risk-meta-allow"><img src="' . plugins_url( 'assets/images/icons/check-green.svg', WCPAY_PLUGIN_FILE ) . '" alt="Green check mark"> Held for review</p><p>This transaction was held for review by your risk filters, and the charge was manually approved after review.</p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=/payments/transactions/details&#038;id=pi_mock" target="_blank" rel="noopener noreferrer">Review payment</a>',
+				'expected_output' => '<p class="wcpay-fraud-risk-meta-allow"><img src="' . plugins_url( 'assets/images/icons/check-green.svg', WCPAY_PLUGIN_FILE ) . '" alt="Green check mark"> Approved</p><p>The payment for this order was held for review by your risk filtering and manually approved.</p>',
 			],
 			'Fraud_Meta_Box_Type_REVIEW_BLOCKED'   => [
 				'meta_box_type'   => Fraud_Meta_Box_Type::REVIEW_BLOCKED,
