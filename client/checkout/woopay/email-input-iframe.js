@@ -468,6 +468,14 @@ export const handleWooPayEmailInput = async (
 								wcpayTracks.events.WOOPAY_AUTO_REDIRECT
 							);
 							spinner.remove();
+							// Do nothing if the iframe has been closed.
+							if (
+								! document.querySelector(
+									'.woopay-login-session-iframe'
+								)
+							) {
+								return;
+							}
 							window.location = response.url;
 						} else {
 							closeLoginSessionIframe();
@@ -499,6 +507,12 @@ export const handleWooPayEmailInput = async (
 					e.data.platformCheckoutUserSession
 				)
 					.then( ( response ) => {
+						// Do nothing if the iframe has been closed.
+						if (
+							! document.querySelector( '.woopay-otp-iframe' )
+						) {
+							return;
+						}
 						if ( 'success' === response.result ) {
 							window.location = response.url;
 						} else {
