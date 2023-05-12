@@ -161,7 +161,7 @@ Object {
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                       id="inspector-toggle-control-12__help"
                     >
-                      When enabled, the payment method will be blocked.
+                      When enabled, the payment will be blocked.
                     </p>
                   </div>
                 </div>
@@ -254,7 +254,7 @@ Object {
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                       id="inspector-toggle-control-13__help"
                     >
-                      When enabled, the payment method will be blocked.
+                      When enabled, the payment will be blocked.
                     </p>
                   </div>
                 </div>
@@ -375,7 +375,7 @@ Object {
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                       id="inspector-toggle-control-14__help"
                     >
-                      When enabled, the payment method will be blocked.
+                      When enabled, the payment will be blocked.
                     </p>
                   </div>
                 </div>
@@ -454,7 +454,7 @@ Object {
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                       id="inspector-toggle-control-15__help"
                     >
-                      When enabled, the payment method will be blocked.
+                      When enabled, the payment will be blocked.
                     </p>
                   </div>
                 </div>
@@ -730,7 +730,7 @@ Object {
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                       id="inspector-toggle-control-17__help"
                     >
-                      When enabled, the payment method will be blocked.
+                      When enabled, the payment will be blocked.
                     </p>
                   </div>
                 </div>
@@ -976,7 +976,7 @@ Object {
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                     id="inspector-toggle-control-12__help"
                   >
-                    When enabled, the payment method will be blocked.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -1069,7 +1069,7 @@ Object {
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                     id="inspector-toggle-control-13__help"
                   >
-                    When enabled, the payment method will be blocked.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -1190,7 +1190,7 @@ Object {
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                     id="inspector-toggle-control-14__help"
                   >
-                    When enabled, the payment method will be blocked.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -1269,7 +1269,7 @@ Object {
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                     id="inspector-toggle-control-15__help"
                   >
-                    When enabled, the payment method will be blocked.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -1545,7 +1545,7 @@ Object {
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                     id="inspector-toggle-control-17__help"
                   >
-                    When enabled, the payment method will be blocked.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -1855,7 +1855,7 @@ Object {
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                       id="inspector-toggle-control-6__help"
                     >
-                      When enabled, the payment method will be blocked.
+                      When enabled, the payment will be blocked.
                     </p>
                   </div>
                 </div>
@@ -1948,7 +1948,7 @@ Object {
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                       id="inspector-toggle-control-7__help"
                     >
-                      When enabled, the payment method will be blocked.
+                      When enabled, the payment will be blocked.
                     </p>
                   </div>
                 </div>
@@ -2069,7 +2069,7 @@ Object {
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                       id="inspector-toggle-control-8__help"
                     >
-                      When enabled, the payment method will be blocked.
+                      When enabled, the payment will be blocked.
                     </p>
                   </div>
                 </div>
@@ -2148,7 +2148,7 @@ Object {
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                       id="inspector-toggle-control-9__help"
                     >
-                      When enabled, the payment method will be blocked.
+                      When enabled, the payment will be blocked.
                     </p>
                   </div>
                 </div>
@@ -2227,7 +2227,7 @@ Object {
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                       id="inspector-toggle-control-10__help"
                     >
-                      When enabled, the payment method will be blocked.
+                      When enabled, the payment will be blocked.
                     </p>
                   </div>
                 </div>
@@ -2306,7 +2306,7 @@ Object {
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                       id="inspector-toggle-control-11__help"
                     >
-                      When enabled, the payment method will be blocked.
+                      When enabled, the payment will be blocked.
                     </p>
                   </div>
                 </div>
@@ -2535,7 +2535,7 @@ Object {
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                     id="inspector-toggle-control-6__help"
                   >
-                    When enabled, the payment method will be blocked.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -2628,7 +2628,7 @@ Object {
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                     id="inspector-toggle-control-7__help"
                   >
-                    When enabled, the payment method will be blocked.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -2749,7 +2749,7 @@ Object {
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                     id="inspector-toggle-control-8__help"
                   >
-                    When enabled, the payment method will be blocked.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -2828,7 +2828,7 @@ Object {
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                     id="inspector-toggle-control-9__help"
                   >
-                    When enabled, the payment method will be blocked.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -2907,7 +2907,7 @@ Object {
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                     id="inspector-toggle-control-10__help"
                   >
-                    When enabled, the payment method will be blocked.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -2986,7 +2986,7 @@ Object {
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                     id="inspector-toggle-control-11__help"
                   >
-                    When enabled, the payment method will be blocked.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -3265,7 +3265,7 @@ Object {
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                     id="inspector-toggle-control-0__help"
                   >
-                    When enabled, the payment method will be blocked.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -3358,7 +3358,7 @@ Object {
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                     id="inspector-toggle-control-1__help"
                   >
-                    When enabled, the payment method will be blocked.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -3479,7 +3479,7 @@ Object {
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                     id="inspector-toggle-control-2__help"
                   >
-                    When enabled, the payment method will be blocked.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -3558,7 +3558,7 @@ Object {
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                     id="inspector-toggle-control-3__help"
                   >
-                    When enabled, the payment method will be blocked.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -3637,7 +3637,7 @@ Object {
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                     id="inspector-toggle-control-4__help"
                   >
-                    When enabled, the payment method will be blocked.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -3716,7 +3716,7 @@ Object {
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                     id="inspector-toggle-control-5__help"
                   >
-                    When enabled, the payment method will be blocked.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -3911,7 +3911,7 @@ Object {
                   class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                   id="inspector-toggle-control-0__help"
                 >
-                  When enabled, the payment method will be blocked.
+                  When enabled, the payment will be blocked.
                 </p>
               </div>
             </div>
@@ -4004,7 +4004,7 @@ Object {
                   class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                   id="inspector-toggle-control-1__help"
                 >
-                  When enabled, the payment method will be blocked.
+                  When enabled, the payment will be blocked.
                 </p>
               </div>
             </div>
@@ -4125,7 +4125,7 @@ Object {
                   class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                   id="inspector-toggle-control-2__help"
                 >
-                  When enabled, the payment method will be blocked.
+                  When enabled, the payment will be blocked.
                 </p>
               </div>
             </div>
@@ -4204,7 +4204,7 @@ Object {
                   class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                   id="inspector-toggle-control-3__help"
                 >
-                  When enabled, the payment method will be blocked.
+                  When enabled, the payment will be blocked.
                 </p>
               </div>
             </div>
@@ -4283,7 +4283,7 @@ Object {
                   class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                   id="inspector-toggle-control-4__help"
                 >
-                  When enabled, the payment method will be blocked.
+                  When enabled, the payment will be blocked.
                 </p>
               </div>
             </div>
@@ -4362,7 +4362,7 @@ Object {
                   class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                   id="inspector-toggle-control-5__help"
                 >
-                  When enabled, the payment method will be blocked.
+                  When enabled, the payment will be blocked.
                 </p>
               </div>
             </div>
@@ -4657,7 +4657,7 @@ Object {
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                       id="inspector-toggle-control-18__help"
                     >
-                      When enabled, the payment method will be blocked.
+                      When enabled, the payment will be blocked.
                     </p>
                   </div>
                 </div>
@@ -4750,7 +4750,7 @@ Object {
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                       id="inspector-toggle-control-19__help"
                     >
-                      When enabled, the payment method will be blocked.
+                      When enabled, the payment will be blocked.
                     </p>
                   </div>
                 </div>
@@ -4871,7 +4871,7 @@ Object {
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                       id="inspector-toggle-control-20__help"
                     >
-                      When enabled, the payment method will be blocked.
+                      When enabled, the payment will be blocked.
                     </p>
                   </div>
                 </div>
@@ -4950,7 +4950,7 @@ Object {
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                       id="inspector-toggle-control-21__help"
                     >
-                      When enabled, the payment method will be blocked.
+                      When enabled, the payment will be blocked.
                     </p>
                   </div>
                 </div>
@@ -5189,7 +5189,7 @@ Object {
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                       id="inspector-toggle-control-23__help"
                     >
-                      When enabled, the payment method will be blocked.
+                      When enabled, the payment will be blocked.
                     </p>
                   </div>
                 </div>
@@ -5403,7 +5403,7 @@ Object {
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                     id="inspector-toggle-control-18__help"
                   >
-                    When enabled, the payment method will be blocked.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -5496,7 +5496,7 @@ Object {
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                     id="inspector-toggle-control-19__help"
                   >
-                    When enabled, the payment method will be blocked.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -5617,7 +5617,7 @@ Object {
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                     id="inspector-toggle-control-20__help"
                   >
-                    When enabled, the payment method will be blocked.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -5696,7 +5696,7 @@ Object {
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                     id="inspector-toggle-control-21__help"
                   >
-                    When enabled, the payment method will be blocked.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -5935,7 +5935,7 @@ Object {
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
                     id="inspector-toggle-control-23__help"
                   >
-                    When enabled, the payment method will be blocked.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>

@@ -66,7 +66,7 @@ describe( 'Fraud protection rule toggle tests', () => {
 		).not.toBeChecked();
 		expect(
 			container.queryByText(
-				'When enabled, the payment method will be blocked.'
+				'When enabled, the payment will be blocked.'
 			)
 		).toBeInTheDocument();
 		expect(

@@ -65,7 +65,7 @@ exports[`Address mismatch card renders correctly 1`] = `
             class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
             id="inspector-toggle-control-0__help"
           >
-            When enabled, the payment method will be blocked.
+            When enabled, the payment will be blocked.
           </p>
         </div>
       </div>
@@ -319,7 +319,7 @@ exports[`Address mismatch card renders like disabled when checked, but not enabl
             class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
             id="inspector-toggle-control-3__help"
           >
-            When enabled, the payment method will be blocked.
+            When enabled, the payment will be blocked.
           </p>
         </div>
       </div>
