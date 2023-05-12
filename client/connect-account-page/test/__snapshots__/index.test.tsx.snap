@@ -13,7 +13,7 @@ exports[`ConnectAccountPage should render correctly 1`] = `
       >
         <img
           alt="logo"
-          src="assets/images/logo.svg"
+          src="assets/images/woopayments.svg"
         />
       </div>
       <div
