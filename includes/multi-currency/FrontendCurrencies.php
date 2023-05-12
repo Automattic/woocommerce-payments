@@ -108,7 +108,6 @@ class FrontendCurrencies {
 			add_filter( 'wc_get_price_thousand_separator', [ $this, 'get_price_thousand_separator' ], 900 );
 			add_filter( 'woocommerce_price_format', [ $this, 'get_woocommerce_price_format' ], 900 );
 			add_action( 'before_woocommerce_pay', [ $this, 'init_order_currency_from_query_vars' ] );
-			add_action( 'init_order_currency_from_query_vars', [ $this, 'init_order_currency_from_query_vars' ] );
 		}
 
 		add_filter( 'woocommerce_thankyou_order_id', [ $this, 'init_order_currency' ] );
