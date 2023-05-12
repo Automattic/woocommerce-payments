@@ -6,7 +6,7 @@ import momentLib from 'moment';
 /**
  * Internal dependencies
  */
-import { getDepositDate, getDepositMonthlyAnchorLabel } from './..';
+import { getDepositDate, getDepositMonthlyAnchorLabel } from '../';
 
 describe( 'Deposits Overview Utils / getDepositDate', () => {
 	test( 'returns a display value without a deposit', () => {

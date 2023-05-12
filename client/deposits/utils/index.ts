@@ -15,7 +15,7 @@ const formatDate = ( format: string, date: number | string ) =>
 interface DepositObject {
 	date: number | string;
 }
-export const getDepositDate = ( deposit: DepositObject | null ): string =>
+export const getDepositDate = ( deposit?: DepositObject | null ): string =>
 	deposit ? formatDate( 'F j, Y', deposit?.date ) : '—';
 
 interface GetDepositMonthlyAnchorLabelProps {
