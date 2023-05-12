@@ -7,7 +7,7 @@
 }
 
 /* stylelint-disable-next-line selector-id-pattern */
-#express-payment-method-platform_checkout {
+#express-payment-method-woopay {
 	width: 100%;
 }
 
@@ -49,5 +49,5 @@ button.wcpay-stripelink-modal-trigger:hover {
 	}
 }
 
-@import '../platform-checkout/style';
+@import '../woopay/style';
 @import '../../components/loadable/style';

@@ -25,11 +25,7 @@ exports[`FRTDiscoverabilityBanner renders 1`] = `
       <p
         class="discoverability-card__body"
       >
-        New features have been added to WooCommerce Payments to help 
-        <strong>
-          reduce fraudulent transactions
-        </strong>
-         on your store. By using a set of customizable rules to evaluate incoming orders, your store is better protected from fraudsters.
+        New features have been added to WooPayments to help reduce fraudulent transactions on your store. By using a set of rules to evaluate incoming orders, your store is better protected from fraudsters.
       </p>
       <div
         class="discoverability-card__actions"
@@ -74,11 +70,7 @@ exports[`FRTDiscoverabilityBanner renders when remindMeAt timestamp is in the pa
       <p
         class="discoverability-card__body"
       >
-        New features have been added to WooCommerce Payments to help 
-        <strong>
-          reduce fraudulent transactions
-        </strong>
-         on your store. By using a set of customizable rules to evaluate incoming orders, your store is better protected from fraudsters.
+        New features have been added to WooPayments to help reduce fraudulent transactions on your store. By using a set of rules to evaluate incoming orders, your store is better protected from fraudsters.
       </p>
       <div
         class="discoverability-card__actions"
@@ -123,11 +115,7 @@ exports[`FRTDiscoverabilityBanner renders with dismiss button if remindMeCount g
       <p
         class="discoverability-card__body"
       >
-        New features have been added to WooCommerce Payments to help 
-        <strong>
-          reduce fraudulent transactions
-        </strong>
-         on your store. By using a set of customizable rules to evaluate incoming orders, your store is better protected from fraudsters.
+        New features have been added to WooPayments to help reduce fraudulent transactions on your store. By using a set of rules to evaluate incoming orders, your store is better protected from fraudsters.
       </p>
       <div
         class="discoverability-card__actions"
@@ -172,11 +160,7 @@ exports[`FRTDiscoverabilityBanner renders without dismiss button if remindMeCoun
       <p
         class="discoverability-card__body"
       >
-        New features have been added to WooCommerce Payments to help 
-        <strong>
-          reduce fraudulent transactions
-        </strong>
-         on your store. By using a set of customizable rules to evaluate incoming orders, your store is better protected from fraudsters.
+        New features have been added to WooPayments to help reduce fraudulent transactions on your store. By using a set of rules to evaluate incoming orders, your store is better protected from fraudsters.
       </p>
       <div
         class="discoverability-card__actions"

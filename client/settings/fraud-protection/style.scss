@@ -55,7 +55,7 @@
 		margin-right: 8px;
 	}
 
-	&-single-radio-wrapper {
+	&-radio-wrapper {
 		display: flex;
 		align-items: center;
 		height: 20px;
@@ -63,10 +63,6 @@
 		&__item {
 			display: inline-block;
 			margin: 0 5px 0 0;
-			&--recommended {
-				margin-right: 5px;
-				color: #757575;
-			}
 		}
 	}
 
@@ -163,29 +159,36 @@
 
 		&-block {
 			margin-bottom: 24px;
-		}
 
-		&-checkbox {
-			& > div {
+			.components-base-control__field {
 				margin-bottom: 0;
-			}
-			&-container {
-				display: flex;
-				align-items: flex-start;
-				.fraud-protection-rule-toggle-checkbox-container-help {
-					margin-top: 3px;
-					margin-left: 12px;
+
+				& > .components-radio-control__option {
+					margin-bottom: 12px;
+
+					&:last-child {
+						margin-bottom: 0;
+					}
+
+					input[type='radio'] {
+						border-color: #757575;
+
+						&:checked {
+							background-color: #fff;
+							border-color: #757575;
+
+							&::before {
+								border: 6px solid #3582c4;
+								width: 12px;
+								height: 12px;
+								transform: translate( 3px, 3px );
+							}
+						}
+					}
 				}
 			}
-			span {
-				margin-right: 8px;
-			}
-			label {
-				line-height: 16px;
-				font-size: 13px;
-				color: #1e1e1e;
-			}
 		}
+
 		&-children {
 			&-container {
 				margin-bottom: 24px;
@@ -293,4 +296,14 @@
 	display: flex;
 	flex-direction: row;
 	align-items: flex-start;
+}
+
+#fraud-protection-welcome-tour-first-step {
+	bottom: 26px;
+	left: 207px;
+	position: absolute;
+}
+
+.tour-kit-frame__arrow[data-hide]::before {
+	visibility: hidden;
 }
