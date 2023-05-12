@@ -1,0 +1,158 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CVC verification card renders correctly when CVC check is disabled 1`] = `
+<div>
+  <div
+    class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="cvc-verification-card"
+  >
+    <div
+      class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
+    >
+      <div>
+        <p
+          class="fraud-protection-rule-card-header"
+        >
+          CVC Verification
+        </p>
+        <p
+          class="fraud-protection-rule-card-description"
+        >
+          This filter checks the security code submitted by the customer against the data on file with the card issuer.
+        </p>
+      </div>
+    </div>
+    <hr />
+    <div
+      class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
+    >
+      <div
+        class="fraud-protection-rule-description"
+      >
+        <strong>
+          How does this filter protect me?
+        </strong>
+        <p>
+          Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
+        </p>
+      </div>
+      <div
+        class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+      >
+        <div
+          class="components-notice__content"
+        >
+          <div
+            class="components-flex css-18koiq9-Flex eboqfv50"
+          >
+            <div
+              class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+            >
+              <svg
+                class="gridicon gridicons-notice-outline"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g>
+                  <path
+                    d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                  />
+                </g>
+              </svg>
+            </div>
+            <div
+              class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+            >
+              This filter is disabled, and can not be modified.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CVC verification card renders correctly when CVC check is enabled 1`] = `
+<div>
+  <div
+    class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="cvc-verification-card"
+  >
+    <div
+      class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
+    >
+      <div>
+        <p
+          class="fraud-protection-rule-card-header"
+        >
+          CVC Verification
+        </p>
+        <p
+          class="fraud-protection-rule-card-description"
+        >
+          This filter checks the security code submitted by the customer against the data on file with the card issuer.
+        </p>
+      </div>
+    </div>
+    <hr />
+    <div
+      class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
+    >
+      <div
+        class="fraud-protection-rule-description"
+      >
+        <strong>
+          How does this filter protect me?
+        </strong>
+        <p>
+          Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
+        </p>
+      </div>
+      <div
+        class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+      >
+        <div
+          class="components-notice__content"
+        >
+          <div
+            class="components-flex css-18koiq9-Flex eboqfv50"
+          >
+            <div
+              class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+            >
+              <svg
+                class="gridicon gridicons-notice-outline"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g>
+                  <path
+                    d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                  />
+                </g>
+              </svg>
+            </div>
+            <div
+              class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+            >
+              For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
+              <a
+                data-link-type="external"
+                href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                target="_blank"
+              >
+                Learn more
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
