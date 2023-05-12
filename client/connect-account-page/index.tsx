@@ -21,7 +21,7 @@ import wcpayTracks from 'tracks';
 import Page from 'components/page';
 import InfoNotice from './info-notice-modal';
 import OnboardingLocationCheckModal from './modal';
-import LogoImg from 'assets/images/logo.svg?asset';
+import LogoImg from 'assets/images/woopayments.svg?asset';
 import strings from './strings';
 import './style.scss';
 
