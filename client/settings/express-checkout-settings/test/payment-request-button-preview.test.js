@@ -34,7 +34,7 @@ jest.mock( 'wcpay/data', () => {
 	return {
 		__esModule: true,
 		...actual,
-		usePlatformCheckoutEnabledSettings: () => [ false, jest.fn() ],
+		useWooPayEnabledSettings: () => [ false, jest.fn() ],
 		usePaymentRequestEnabledSettings: () => [ true, jest.fn() ],
 	};
 } );

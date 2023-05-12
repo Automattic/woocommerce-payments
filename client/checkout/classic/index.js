@@ -6,7 +6,7 @@
 import './style.scss';
 import { PAYMENT_METHOD_NAME_CARD } from '../constants.js';
 import { getConfig } from 'utils/checkout';
-import { handlePlatformCheckoutEmailInput } from '../platform-checkout/email-input-iframe';
+import { handleWooPayEmailInput } from '../woopay/email-input-iframe';
 import WCPayAPI from './../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { isWCPayChosen } from '../utils/upe';
@@ -548,7 +548,7 @@ jQuery( function ( $ ) {
 		}
 	} );
 
-	if ( getConfig( 'isPlatformCheckoutEnabled' ) && ! isPreviewing() ) {
-		handlePlatformCheckoutEmailInput( '#billing_email', api );
+	if ( getConfig( 'isWooPayEnabled' ) && ! isPreviewing() ) {
+		handleWooPayEmailInput( '#billing_email', api );
 	}
 } );
