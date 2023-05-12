@@ -61,6 +61,7 @@ to catalog our packages and provide guidance to a developer who wants to test an
 | [@wordpress/html-entities](https://www.npmjs.com/package/@wordpress/html-entities) | HTML entity utilities for WordPress. | JS unit tests are passing. ||
 | [@wordpress/blocks](https://www.npmjs.com/package/@wordpress/blocks) | Blocks utilities for WordPress. | JS unit tests are passing. ||
 | [@wordpress/block-editor](https://www.npmjs.com/package/@wordpress/block-editor) | Allows you to create and use standalone block editors. | JS unit tests are passing. ||
+| [@wordpress/jest-preset-default](https://www.npmjs.com/package/@wordpress/jest-preset-default) | Default Jest preset for WordPress development. | JS unit tests are passing. ||
 
 
 ### PHP Runtime Dependencies
