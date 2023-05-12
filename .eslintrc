@@ -1,7 +1,6 @@
 /** @format */
 {
 	"root": true,
-	"parser": "@babel/eslint-parser",
 	"extends": [
 		"wpcalypso/react",
 		"plugin:jsx-a11y/recommended",

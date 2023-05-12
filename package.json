@@ -79,7 +79,6 @@
   },
   "devDependencies": {
     "@automattic/color-studio": "2.3.1",
-    "@babel/eslint-parser": "7.21.8",
     "@jest/test-sequencer": "29.5.0",
     "@pmmmwh/react-refresh-webpack-plugin": "0.5.7",
     "@testing-library/jest-dom": "5.14.1",
