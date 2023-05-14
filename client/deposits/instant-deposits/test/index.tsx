@@ -12,10 +12,14 @@ import { useInstantDeposit } from 'wcpay/data';
 
 jest.mock( 'wcpay/data', () => ( { useInstantDeposit: jest.fn() } ) );
 
-useInstantDeposit.mockReturnValue( {
+const mockUseInstantDeposit = useInstantDeposit as jest.MockedFunction<
+	typeof useInstantDeposit
+>;
+
+mockUseInstantDeposit.mockReturnValue( {
 	deposit: undefined,
-	isLoading: false,
-	submit: () => {},
+	inProgress: false,
+	submit: () => null,
 } );
 
 // eslint-disable-next-line no-unused-vars
@@ -30,7 +34,8 @@ const mockInstantBalance = {
 	net: 12221.55,
 	fee_percentage: 1.5,
 	transaction_ids: [ 'txn_ABC123', 'txn_DEF456' ],
-};
+	currency: 'USD',
+} as AccountOverview.InstantBalance;
 
 const mockZeroInstantBalance = {
 	amount: 0,
@@ -38,6 +43,17 @@ const mockZeroInstantBalance = {
 	net: 0,
 	fee_percentage: 1.5,
 	transaction_ids: [],
+	currency: 'USD',
+} as AccountOverview.InstantBalance;
+
+declare const global: {
+	wcpaySettings: {
+		zeroDecimalCurrencies: string[];
+		currencyData: Record< string, any >;
+		connect: {
+			country: string;
+		};
+	};
 };
 
 describe( 'Instant deposit button and modal', () => {
@@ -83,7 +99,7 @@ describe( 'Instant deposit button and modal', () => {
 			screen.queryByRole( 'dialog', { name: /instant deposit/i } )
 		).not.toBeInTheDocument();
 		fireEvent.click(
-			screen.getByRole( 'button', { name: /instant deposit/i } )
+			screen.getByRole( 'button', { name: /Deposit available funds/i } )
 		);
 		const modal = screen.queryByRole( 'dialog', {
 			name: /instant deposit/i,
