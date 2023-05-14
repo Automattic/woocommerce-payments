@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix keyboard navigation for account balance tooltips on the Payments → Overview screen.
