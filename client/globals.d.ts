@@ -10,7 +10,6 @@ declare global {
 		featureFlags: {
 			customSearch: boolean;
 			isAuthAndCaptureEnabled: boolean;
-			simplifyDepositsUi?: boolean;
 			paymentTimeline: boolean;
 		};
 		fraudServices: unknown[];
