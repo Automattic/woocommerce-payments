@@ -13,11 +13,11 @@ import userEvent from '@testing-library/user-event';
 import { HoverTooltip, ClickTooltip } from '..';
 
 describe( 'HoverTooltip', () => {
-	beforeEach( () => {
+	beforeAll( () => {
 		jest.useFakeTimers();
 	} );
 
-	afterEach( () => {
+	afterAll( () => {
 		jest.useRealTimers();
 	} );
 
@@ -121,11 +121,11 @@ describe( 'HoverTooltip', () => {
 } );
 
 describe( 'ClickTooltip', () => {
-	beforeEach( () => {
+	beforeAll( () => {
 		jest.useFakeTimers();
 	} );
 
-	afterEach( () => {
+	afterAll( () => {
 		jest.useRealTimers();
 	} );
 

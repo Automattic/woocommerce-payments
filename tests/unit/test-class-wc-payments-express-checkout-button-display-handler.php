@@ -6,11 +6,11 @@
  */
 
 use WCPay\Session_Rate_Limiter;
-use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
-use WCPay\Platform_Checkout_Button_Handler;
+use WCPay\WooPay;
+use WCPay\WooPay\WooPay_Utilities;
 
 /**
- * WC_Payments_Platform_Checkout_Button_Handler_Test class.
+ * WC_Payments_WooPay_Button_Handler_Test class.
  */
 class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_UnitTestCase {
 	/**
@@ -30,7 +30,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 	/**
 	 * WooPay Button Handler mock instance.
 	 *
-	 * @var Mock_WC_Payments_Platform_Checkout_Button_Handler
+	 * @var Mock_WC_Payments_WooPay_Button_Handler
 	 */
 	private $mock_woopay_button_handler;
 
@@ -56,11 +56,11 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 	private $mock_wcpay_gateway;
 
 	/**
-	 * Platform_Checkout_Utilities instance.
+	 * WooPay_Utilities instance.
 	 *
-	 * @var Platform_Checkout_Utilities
+	 * @var WooPay_Utilities
 	 */
-	private $mock_platform_checkout_utilities;
+	private $mock_woopay_utilities;
 
 	/**
 	 * Sets up things all tests need.
@@ -81,23 +81,23 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 
 		$this->mock_wcpay_gateway = $this->make_wcpay_gateway();
 
-		$this->mock_platform_checkout_utilities = $this->getMockBuilder( Platform_Checkout_Utilities::class )
+		$this->mock_woopay_utilities = $this->getMockBuilder( WooPay_Utilities::class )
 			->disableOriginalConstructor()
 			->setMethods( [ 'is_country_available' ] )
 			->getMock();
 
-		$this->mock_woopay_button_handler = $this->getMockBuilder( WC_Payments_Platform_Checkout_Button_Handler::class )
+		$this->mock_woopay_button_handler = $this->getMockBuilder( WC_Payments_WooPay_Button_Handler::class )
 			->setConstructorArgs(
 				[
 					$this->mock_wcpay_account,
 					$this->mock_wcpay_gateway,
-					$this->mock_platform_checkout_utilities,
+					$this->mock_woopay_utilities,
 				]
 			)
 			->setMethods(
 				[
 					'is_woopay_enabled',
-					'should_show_platform_checkout_button',
+					'should_show_woopay_button',
 				]
 			)
 			->getMock();
@@ -153,7 +153,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			->willReturn( true );
 
 		$this->mock_woopay_button_handler
-			->method( 'should_show_platform_checkout_button' )
+			->method( 'should_show_woopay_button' )
 			->willReturn( true );
 
 		$this->mock_payment_request_button_handler
@@ -173,7 +173,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			->willReturn( false );
 
 		$this->mock_woopay_button_handler
-			->method( 'should_show_platform_checkout_button' )
+			->method( 'should_show_woopay_button' )
 			->willReturn( false );
 
 		$this->mock_payment_request_button_handler
@@ -193,7 +193,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			->willReturn( true );
 
 		$this->mock_woopay_button_handler
-			->method( 'should_show_platform_checkout_button' )
+			->method( 'should_show_woopay_button' )
 			->willReturn( true );
 
 		$this->mock_payment_request_button_handler
@@ -213,7 +213,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			->willReturn( false );
 
 		$this->mock_woopay_button_handler
-			->method( 'should_show_platform_checkout_button' )
+			->method( 'should_show_woopay_button' )
 			->willReturn( false );
 
 		$this->mock_payment_request_button_handler
@@ -229,7 +229,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 
 	public function test_display_express_checkout_buttons_all_enabled() {
 		$this->mock_woopay_button_handler
-			->method( 'should_show_platform_checkout_button' )
+			->method( 'should_show_woopay_button' )
 			->willReturn( true );
 
 		$this->mock_payment_request_button_handler
@@ -239,14 +239,14 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 		ob_start();
 		$this->express_checkout_button_display_handler->display_express_checkout_buttons();
 
-		$this->assertStringContainsString( 'wcpay-platform-checkout-button', ob_get_contents() );
+		$this->assertStringContainsString( 'wcpay-woopay-button', ob_get_contents() );
 		$this->assertStringContainsString( 'wcpay-payment-request-button', ob_get_contents() );
 		ob_end_clean();
 	}
 
 	public function test_display_express_checkout_buttons_all_disabled() {
 		$this->mock_woopay_button_handler
-			->method( 'should_show_platform_checkout_button' )
+			->method( 'should_show_woopay_button' )
 			->willReturn( false );
 
 		$this->mock_payment_request_button_handler
@@ -262,7 +262,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 
 	public function test_display_express_checkout_buttons_only_woopay() {
 		$this->mock_woopay_button_handler
-			->method( 'should_show_platform_checkout_button' )
+			->method( 'should_show_woopay_button' )
 			->willReturn( true );
 
 		$this->mock_payment_request_button_handler
@@ -272,13 +272,13 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 		ob_start();
 		$this->express_checkout_button_display_handler->display_express_checkout_buttons();
 
-		$this->assertStringContainsString( 'wcpay-platform-checkout-button', ob_get_contents() );
+		$this->assertStringContainsString( 'wcpay-woopay-button', ob_get_contents() );
 		ob_end_clean();
 	}
 
 	public function test_display_express_checkout_buttons_only_payment_request() {
 		$this->mock_woopay_button_handler
-			->method( 'should_show_platform_checkout_button' )
+			->method( 'should_show_woopay_button' )
 			->willReturn( false );
 
 		$this->mock_payment_request_button_handler
