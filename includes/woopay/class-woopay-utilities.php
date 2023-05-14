@@ -22,6 +22,7 @@ class WooPay_Utilities {
 
 	const AVAILABLE_COUNTRIES_KEY            = 'woocommerce_woocommerce_payments_woopay_available_countries';
 	const AVAILABLE_COUNTRIES_LAST_CHECK_KEY = 'woocommerce_woocommerce_payments_woopay_available_countries_last_check';
+	const AVAILABLE_COUNTRIES_DEFAULT        = '["US"]';
 
 	/**
 	 * Check various conditions to determine if we should enable woopay.
@@ -107,10 +108,10 @@ class WooPay_Utilities {
 	 * @return array
 	 */
 	public function get_persisted_available_countries() {
-		$available_countries = json_decode( get_option( self::AVAILABLE_COUNTRIES_KEY, '["US"]' ), true );
+		$available_countries = json_decode( get_option( self::AVAILABLE_COUNTRIES_KEY, self::AVAILABLE_COUNTRIES_DEFAULT ), true );
 
 		if ( ! is_array( $available_countries ) ) {
-			return [];
+			return json_decode( self::AVAILABLE_COUNTRIES_DEFAULT );
 		}
 
 		return $available_countries;
@@ -122,10 +123,16 @@ class WooPay_Utilities {
 	 * @return array
 	 */
 	public function get_woopay_available_countries() {
-		$last_check = get_option( self::AVAILABLE_COUNTRIES_LAST_CHECK_KEY );
+		$last_check_option = get_option( self::AVAILABLE_COUNTRIES_LAST_CHECK_KEY, false );
+		$timezone          = new \DateTimeZone( wp_timezone_string() );
+		$current_date      = new \DateTime( 'now', $timezone );
 
-		if ( $last_check && gmdate( 'Y-m-d' ) === $last_check ) {
-			return $this->get_persisted_available_countries();
+		if ( false !== $last_check_option ) {
+			$last_check = new \DateTime( $last_check_option, $timezone );
+
+			if ( $current_date < $last_check->modify( '+1 day' ) ) {
+				return $this->get_persisted_available_countries();
+			}
 		}
 
 		$woopay_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'https://pay.woo.com';
@@ -152,13 +159,22 @@ class WooPay_Utilities {
 		/**
 		 * @psalm-suppress UndefinedDocblockClass
 		 */
-		if ( is_wp_error( $response ) || ! is_array( $response_body ) || ! empty( $response['code'] ) || $response['code'] >= 300 || $response['code'] < 200 ) {
+		if ( is_wp_error( $response ) || ! is_array( $response ) || ( ! empty( $response['code'] ) && ( $response['code'] >= 300 || $response['code'] < 200 ) ) ) {
 			Logger::error( 'HTTP_REQUEST_ERROR ' . var_export( $response, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
 		} else {
-			update_option( self::AVAILABLE_COUNTRIES_KEY, $response_body );
+			try {
+				$json = json_decode( $response_body, true );
+
+				if ( is_array( $json ) ) {
+					update_option( self::AVAILABLE_COUNTRIES_KEY, $response_body );
+				}
+			} catch ( \Exception $e ) {
+				Logger::error( 'Failed to decode WooPay available countries. ' . $e );
+			}
 		}
 
-		update_option( self::AVAILABLE_COUNTRIES_LAST_CHECK_KEY, gmdate( 'Y-m-d' ) );
+		$last_check = $current_date->format( 'Y-m-d H:i:s' );
+		update_option( self::AVAILABLE_COUNTRIES_LAST_CHECK_KEY, gmdate( $last_check ) );
 
 		return $this->get_persisted_available_countries();
 	}
