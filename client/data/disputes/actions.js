@@ -3,7 +3,8 @@
 /**
  * External dependencies
  */
-import { apiFetch, dispatch } from '@wordpress/data-controls';
+import { apiFetch } from '@wordpress/data-controls';
+import { controls } from '@wordpress/data';
 import { __, sprintf } from '@wordpress/i18n';
 
 /**
@@ -39,7 +40,9 @@ export function updateDisputesSummary( query, data ) {
 
 export function* acceptDispute( id ) {
 	try {
-		yield dispatch( STORE_NAME, 'startResolution', 'getDispute', [ id ] );
+		yield controls.dispatch( STORE_NAME, 'startResolution', 'getDispute', [
+			id,
+		] );
 
 		const dispute = yield apiFetch( {
 			path: `${ NAMESPACE }/disputes/${ id }/close`,
@@ -47,7 +50,9 @@ export function* acceptDispute( id ) {
 		} );
 
 		yield updateDispute( dispute );
-		yield dispatch( STORE_NAME, 'finishResolution', 'getDispute', [ id ] );
+		yield controls.dispatch( STORE_NAME, 'finishResolution', 'getDispute', [
+			id,
+		] );
 
 		// Redirect to Disputes list.
 		window.location.replace(
@@ -69,13 +74,17 @@ export function* acceptDispute( id ) {
 					dispute.order.number
 			  )
 			: __( 'You have accepted the dispute.', 'woocommerce-payments' );
-		yield dispatch( 'core/notices', 'createSuccessNotice', message );
+		yield controls.dispatch(
+			'core/notices',
+			'createSuccessNotice',
+			message
+		);
 	} catch ( e ) {
 		const message = __(
 			'There has been an error accepting the dispute. Please try again later.',
 			'woocommerce-payments'
 		);
 		wcpayTracks.recordEvent( 'wcpay_dispute_accept_failed' );
-		yield dispatch( 'core/notices', 'createErrorNotice', message );
+		yield controls.dispatch( 'core/notices', 'createErrorNotice', message );
 	}
 }
