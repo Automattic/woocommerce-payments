@@ -692,13 +692,10 @@ class WC_Payments {
 	/**
 	 * Called on Payments setting page.
 	 *
-	 * Remove all WCPay gateways except CC one. Comparison is done against
-	 * $self::legacy_card_gateway because it should be the same instance as
-	 * registered with WooCommerce and class can change depending on
-	 * environment (see `init` method where $card_gateway is set).
+	 * Remove all WCPay gateways except CC one.
 	 */
 	public static function hide_gateways_on_settings_page() {
-		$default_gateway = WC_Payments_Features::is_upe_split_enabled() ? self::$legacy_card_gateway : self::get_gateway();
+		$default_gateway = self::get_gateway();
 		foreach ( WC()->payment_gateways->payment_gateways as $index => $payment_gateway ) {
 			if ( $payment_gateway instanceof WC_Payment_Gateway_WCPay && $payment_gateway !== $default_gateway ) {
 				unset( WC()->payment_gateways->payment_gateways[ $index ] );
