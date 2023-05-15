@@ -39,7 +39,6 @@
 * Dev - Add the 'wcs_recurring_shipping_package_rates_match_standard_rates' filter to enable third-parties to override whether the subscription packages match during checkout validation.
 * Dev - Behind progressive onboarding feature flag – Add PO eligibility modal.
 * Dev - Convert fraud protection settings related JavaScript files to TypeScript.
-* Dev - covered by PR #6188
 * Dev - Enable third-party code to alter the delete payment token URL returned from flag_subscription_payment_token_deletions.
 * Dev - Explicitly mention gridicons and @wordpress/primitives as dev dependencies.
 * Dev - Pass the subscription object as the second parameter to `woocommerce_update_subscription` hook (and `woocommerce_update_order` for backwards compatibility).
