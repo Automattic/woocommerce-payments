@@ -258,7 +258,7 @@ class WC_Payments_Features {
 		return '1' === get_option( self::PROGRESSIVE_ONBOARDING_FLAG_NAME, '0' );
 	}
 
-  /**
+	/**
 	 * Checks whether the Fraud and Risk Tools feature flag is enabled.
 	 *
 	 * @return  bool
