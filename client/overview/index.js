@@ -15,7 +15,6 @@ import Page from 'components/page';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import AccountStatus from 'components/account-status';
 import ActiveLoanSummary from 'components/active-loan-summary';
-import DepositsInformation from 'components/deposits-information';
 import DepositsOverview from 'components/deposits-overview';
 import ErrorBoundary from 'components/error-boundary';
 import TaskList from './task-list';
@@ -58,7 +57,7 @@ const OverviewPage = () => {
 		overviewTasksVisibility,
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
-		featureFlags: { accountOverviewTaskList, simplifyDepositsUi },
+		featureFlags: { accountOverviewTaskList },
 	} = wcpaySettings;
 	const numDisputesNeedingResponse =
 		parseInt( wcpaySettings.numDisputesNeedingResponse, 10 ) || 0;
@@ -136,24 +135,18 @@ const OverviewPage = () => {
 
 			<TestModeNotice topic={ topics.overview } />
 
-			{ wcpaySettings.isFraudProtectionSettingsEnabled && (
-				<ErrorBoundary>
-					<FRTDiscoverabilityBanner />
-				</ErrorBoundary>
-			) }
+			<ErrorBoundary>
+				<FRTDiscoverabilityBanner />
+			</ErrorBoundary>
 
 			{ showConnectionSuccess && <ConnectionSuccessNotice /> }
 
 			{ ! accountRejected && (
 				<ErrorBoundary>
-					{ simplifyDepositsUi ? (
-						<>
-							<AccountBalances />
-							<DepositsOverview />
-						</>
-					) : (
-						<DepositsInformation />
-					) }
+					<>
+						<AccountBalances />
+						<DepositsOverview />
+					</>
 				</ErrorBoundary>
 			) }
 

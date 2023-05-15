@@ -3,7 +3,8 @@
 /**
  * External dependencies
  */
-import { apiFetch, dispatch } from '@wordpress/data-controls';
+import { apiFetch } from '@wordpress/data-controls';
+import { controls } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -19,7 +20,7 @@ export function* getCharge( id ) {
 		} );
 		yield updateCharge( id, results );
 	} catch ( e ) {
-		yield dispatch(
+		yield controls.dispatch(
 			'core/notices',
 			'createErrorNotice',
 			__( 'Error retrieving transaction.', 'woocommerce-payments' )
@@ -35,7 +36,7 @@ export function* getChargeFromOrder( id ) {
 		} );
 		yield updateCharge( id, results );
 	} catch ( e ) {
-		yield dispatch(
+		yield controls.dispatch(
 			'core/notices',
 			'createErrorNotice',
 			__( 'Error retrieving transaction.', 'woocommerce-payments' )
