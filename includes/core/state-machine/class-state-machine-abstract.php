@@ -83,8 +83,6 @@ abstract class State_Machine_Abstract {
 	}
 
 	protected function is_valid_next_state( State $current_state, State $next_state): bool {
-		$current_state_class = get_class( $current_state );
-		$next_state_class = get_class( $next_state );
-		return in_array( $next_state_class, $this->config[ $current_state_class ] ) ;
+		return in_array( $next_state->get_id(), $this->config[ $current_state->get_id() ] ) ;
 	}
 }
