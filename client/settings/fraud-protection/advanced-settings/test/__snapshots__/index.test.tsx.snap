@@ -123,6 +123,49 @@ Object {
                 class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
               >
                 <div
+                  class="fraud-protection-rule-toggle"
+                >
+                  <strong>
+                    Enable filtering
+                  </strong>
+                  <div
+                    class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
+                  >
+                    <div
+                      class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+                    >
+                      <span
+                        class="components-form-toggle"
+                      >
+                        <input
+                          aria-describedby="inspector-toggle-control-12__help"
+                          class="components-form-toggle__input"
+                          id="inspector-toggle-control-12"
+                          type="checkbox"
+                        />
+                        <span
+                          class="components-form-toggle__track"
+                        />
+                        <span
+                          class="components-form-toggle__thumb"
+                        />
+                      </span>
+                      <label
+                        class="components-toggle-control__label"
+                        for="inspector-toggle-control-12"
+                      >
+                        Block transactions for mismatched AVS
+                      </label>
+                    </div>
+                    <p
+                      class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+                      id="inspector-toggle-control-12__help"
+                    >
+                      When enabled, the payment will be blocked.
+                    </p>
+                  </div>
+                </div>
+                <div
                   class="fraud-protection-rule-description"
                 >
                   <strong>
@@ -131,124 +174,6 @@ Object {
                   <p>
                     Buyers who can provide the street number and post code on file with the issuing bank are more likely to be the actual account holder. AVS matches, however, are not a guarantee.
                   </p>
-                </div>
-                <div
-                  class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-                >
-                  <div
-                    class="components-notice__content"
-                  >
-                    <div
-                      class="components-flex css-18koiq9-Flex eboqfv50"
-                    >
-                      <div
-                        class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                      >
-                        <svg
-                          class="gridicon gridicons-notice-outline"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          width="24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <g>
-                            <path
-                              d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                            />
-                          </g>
-                        </svg>
-                      </div>
-                      <div
-                        class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                      >
-                        For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
-                        <a
-                          data-link-type="external"
-                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
-                          target="_blank"
-                        >
-                          Learn more
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div
-              class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
-              id="cvc-verification-card"
-            >
-              <div
-                class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
-              >
-                <div>
-                  <p
-                    class="fraud-protection-rule-card-header"
-                  >
-                    CVC Verification
-                  </p>
-                  <p
-                    class="fraud-protection-rule-card-description"
-                  >
-                    This filter checks the security code submitted by the customer against the data on file with the card issuer.
-                  </p>
-                </div>
-              </div>
-              <hr />
-              <div
-                class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
-              >
-                <div
-                  class="fraud-protection-rule-description"
-                >
-                  <strong>
-                    How does this filter protect me?
-                  </strong>
-                  <p>
-                    Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
-                  </p>
-                </div>
-                <div
-                  class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-                >
-                  <div
-                    class="components-notice__content"
-                  >
-                    <div
-                      class="components-flex css-18koiq9-Flex eboqfv50"
-                    >
-                      <div
-                        class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                      >
-                        <svg
-                          class="gridicon gridicons-notice-outline"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          width="24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <g>
-                            <path
-                              d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                            />
-                          </g>
-                        </svg>
-                      </div>
-                      <div
-                        class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                      >
-                        For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
-                        <a
-                          data-link-type="external"
-                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
-                          target="_blank"
-                        >
-                          Learn more
-                        </a>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -306,9 +231,9 @@ Object {
                         class="components-form-toggle"
                       >
                         <input
-                          aria-describedby="inspector-toggle-control-10__help"
+                          aria-describedby="inspector-toggle-control-13__help"
                           class="components-form-toggle__input"
-                          id="inspector-toggle-control-10"
+                          id="inspector-toggle-control-13"
                           type="checkbox"
                         />
                         <span
@@ -320,16 +245,16 @@ Object {
                       </span>
                       <label
                         class="components-toggle-control__label"
-                        for="inspector-toggle-control-10"
+                        for="inspector-toggle-control-13"
                       >
-                        Screen transactions for international IP addresses
+                        Block transactions for international IP addresses
                       </label>
                     </div>
                     <p
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                      id="inspector-toggle-control-10__help"
+                      id="inspector-toggle-control-13__help"
                     >
-                      When enabled, the payment method will not be charged until you review and approve the transaction.
+                      When enabled, the payment will be blocked.
                     </p>
                   </div>
                 </div>
@@ -427,9 +352,9 @@ Object {
                         class="components-form-toggle"
                       >
                         <input
-                          aria-describedby="inspector-toggle-control-11__help"
+                          aria-describedby="inspector-toggle-control-14__help"
                           class="components-form-toggle__input"
-                          id="inspector-toggle-control-11"
+                          id="inspector-toggle-control-14"
                           type="checkbox"
                         />
                         <span
@@ -441,16 +366,16 @@ Object {
                       </span>
                       <label
                         class="components-toggle-control__label"
-                        for="inspector-toggle-control-11"
+                        for="inspector-toggle-control-14"
                       >
                         Screen transactions where the IP country and billing country don't match
                       </label>
                     </div>
                     <p
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                      id="inspector-toggle-control-11__help"
+                      id="inspector-toggle-control-14__help"
                     >
-                      When enabled, the payment method will not be charged until you review and approve the transaction.
+                      When enabled, the payment will be blocked.
                     </p>
                   </div>
                 </div>
@@ -506,9 +431,9 @@ Object {
                         class="components-form-toggle"
                       >
                         <input
-                          aria-describedby="inspector-toggle-control-12__help"
+                          aria-describedby="inspector-toggle-control-15__help"
                           class="components-form-toggle__input"
-                          id="inspector-toggle-control-12"
+                          id="inspector-toggle-control-15"
                           type="checkbox"
                         />
                         <span
@@ -520,16 +445,16 @@ Object {
                       </span>
                       <label
                         class="components-toggle-control__label"
-                        for="inspector-toggle-control-12"
+                        for="inspector-toggle-control-15"
                       >
-                        Screen transactions for mismatched addresses
+                        Block transactions for mismatched addresses
                       </label>
                     </div>
                     <p
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                      id="inspector-toggle-control-12__help"
+                      id="inspector-toggle-control-15__help"
                     >
-                      When enabled, the payment method will not be charged until you review and approve the transaction.
+                      When enabled, the payment will be blocked.
                     </p>
                   </div>
                 </div>
@@ -585,9 +510,9 @@ Object {
                         class="components-form-toggle is-checked"
                       >
                         <input
-                          aria-describedby="inspector-toggle-control-13__help"
+                          aria-describedby="inspector-toggle-control-16__help"
                           class="components-form-toggle__input"
-                          id="inspector-toggle-control-13"
+                          id="inspector-toggle-control-16"
                           type="checkbox"
                         />
                         <span
@@ -599,14 +524,14 @@ Object {
                       </span>
                       <label
                         class="components-toggle-control__label"
-                        for="inspector-toggle-control-13"
+                        for="inspector-toggle-control-16"
                       >
-                        Screen transactions for abnormal purchase prices
+                        Block transactions for abnormal purchase prices
                       </label>
                     </div>
                     <p
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                      id="inspector-toggle-control-13__help"
+                      id="inspector-toggle-control-16__help"
                     >
                       The payment will be blocked.
                     </p>
@@ -728,54 +653,6 @@ Object {
                         </div>
                       </div>
                     </div>
-                    <div
-                      class="fraud-protection-rule-toggle-block"
-                    >
-                      <strong>
-                        Filter action
-                      </strong>
-                      <div
-                        class="components-base-control components-radio-control css-wdf2ti-Wrapper e1puf3u0"
-                      >
-                        <div
-                          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-                        >
-                          <div
-                            class="components-radio-control__option"
-                          >
-                            <input
-                              class="components-radio-control__input"
-                              id="inspector-radio-control-0-0"
-                              name="inspector-radio-control-0"
-                              type="radio"
-                              value="review"
-                            />
-                            <label
-                              for="inspector-radio-control-0-0"
-                            >
-                              Authorize and hold for review
-                            </label>
-                          </div>
-                          <div
-                            class="components-radio-control__option"
-                          >
-                            <input
-                              checked=""
-                              class="components-radio-control__input"
-                              id="inspector-radio-control-0-1"
-                              name="inspector-radio-control-0"
-                              type="radio"
-                              value="block"
-                            />
-                            <label
-                              for="inspector-radio-control-0-1"
-                            >
-                              Block Payment
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </div>
                 <div
@@ -830,9 +707,9 @@ Object {
                         class="components-form-toggle"
                       >
                         <input
-                          aria-describedby="inspector-toggle-control-14__help"
+                          aria-describedby="inspector-toggle-control-17__help"
                           class="components-form-toggle__input"
-                          id="inspector-toggle-control-14"
+                          id="inspector-toggle-control-17"
                           type="checkbox"
                         />
                         <span
@@ -844,16 +721,16 @@ Object {
                       </span>
                       <label
                         class="components-toggle-control__label"
-                        for="inspector-toggle-control-14"
+                        for="inspector-toggle-control-17"
                       >
-                        Screen transactions for abnormal item counts
+                        Block transactions for abnormal item counts
                       </label>
                     </div>
                     <p
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                      id="inspector-toggle-control-14__help"
+                      id="inspector-toggle-control-17__help"
                     >
-                      When enabled, the payment method will not be charged until you review and approve the transaction.
+                      When enabled, the payment will be blocked.
                     </p>
                   </div>
                 </div>
@@ -866,6 +743,83 @@ Object {
                   <p>
                     An unusually high item count, compared to the average for your business, can indicate potential fraudulent activity.
                   </p>
+                </div>
+              </div>
+            </div>
+            <div
+              class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="cvc-verification-card"
+            >
+              <div
+                class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
+              >
+                <div>
+                  <p
+                    class="fraud-protection-rule-card-header"
+                  >
+                    CVC Verification
+                  </p>
+                  <p
+                    class="fraud-protection-rule-card-description"
+                  >
+                    This filter checks the security code submitted by the customer against the data on file with the card issuer.
+                  </p>
+                </div>
+              </div>
+              <hr />
+              <div
+                class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
+              >
+                <div
+                  class="fraud-protection-rule-description"
+                >
+                  <strong>
+                    How does this filter protect me?
+                  </strong>
+                  <p>
+                    Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
+                  </p>
+                </div>
+                <div
+                  class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+                >
+                  <div
+                    class="components-notice__content"
+                  >
+                    <div
+                      class="components-flex css-18koiq9-Flex eboqfv50"
+                    >
+                      <div
+                        class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                      >
+                        <svg
+                          class="gridicon gridicons-notice-outline"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <g>
+                            <path
+                              d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                            />
+                          </g>
+                        </svg>
+                      </div>
+                      <div
+                        class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                      >
+                        For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
+                        <a
+                          data-link-type="external"
+                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          target="_blank"
+                        >
+                          Learn more
+                        </a>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -984,6 +938,49 @@ Object {
               class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
             >
               <div
+                class="fraud-protection-rule-toggle"
+              >
+                <strong>
+                  Enable filtering
+                </strong>
+                <div
+                  class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
+                >
+                  <div
+                    class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+                  >
+                    <span
+                      class="components-form-toggle"
+                    >
+                      <input
+                        aria-describedby="inspector-toggle-control-12__help"
+                        class="components-form-toggle__input"
+                        id="inspector-toggle-control-12"
+                        type="checkbox"
+                      />
+                      <span
+                        class="components-form-toggle__track"
+                      />
+                      <span
+                        class="components-form-toggle__thumb"
+                      />
+                    </span>
+                    <label
+                      class="components-toggle-control__label"
+                      for="inspector-toggle-control-12"
+                    >
+                      Block transactions for mismatched AVS
+                    </label>
+                  </div>
+                  <p
+                    class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+                    id="inspector-toggle-control-12__help"
+                  >
+                    When enabled, the payment will be blocked.
+                  </p>
+                </div>
+              </div>
+              <div
                 class="fraud-protection-rule-description"
               >
                 <strong>
@@ -992,124 +989,6 @@ Object {
                 <p>
                   Buyers who can provide the street number and post code on file with the issuing bank are more likely to be the actual account holder. AVS matches, however, are not a guarantee.
                 </p>
-              </div>
-              <div
-                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-              >
-                <div
-                  class="components-notice__content"
-                >
-                  <div
-                    class="components-flex css-18koiq9-Flex eboqfv50"
-                  >
-                    <div
-                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                    >
-                      <svg
-                        class="gridicon gridicons-notice-outline"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        width="24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <g>
-                          <path
-                            d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                          />
-                        </g>
-                      </svg>
-                    </div>
-                    <div
-                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                    >
-                      For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
-                      <a
-                        data-link-type="external"
-                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
-                        target="_blank"
-                      >
-                        Learn more
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div
-            class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
-            id="cvc-verification-card"
-          >
-            <div
-              class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
-            >
-              <div>
-                <p
-                  class="fraud-protection-rule-card-header"
-                >
-                  CVC Verification
-                </p>
-                <p
-                  class="fraud-protection-rule-card-description"
-                >
-                  This filter checks the security code submitted by the customer against the data on file with the card issuer.
-                </p>
-              </div>
-            </div>
-            <hr />
-            <div
-              class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
-            >
-              <div
-                class="fraud-protection-rule-description"
-              >
-                <strong>
-                  How does this filter protect me?
-                </strong>
-                <p>
-                  Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
-                </p>
-              </div>
-              <div
-                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-              >
-                <div
-                  class="components-notice__content"
-                >
-                  <div
-                    class="components-flex css-18koiq9-Flex eboqfv50"
-                  >
-                    <div
-                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                    >
-                      <svg
-                        class="gridicon gridicons-notice-outline"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        width="24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <g>
-                          <path
-                            d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                          />
-                        </g>
-                      </svg>
-                    </div>
-                    <div
-                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                    >
-                      For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
-                      <a
-                        data-link-type="external"
-                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
-                        target="_blank"
-                      >
-                        Learn more
-                      </a>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -1167,9 +1046,9 @@ Object {
                       class="components-form-toggle"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-10__help"
+                        aria-describedby="inspector-toggle-control-13__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-10"
+                        id="inspector-toggle-control-13"
                         type="checkbox"
                       />
                       <span
@@ -1181,16 +1060,16 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-10"
+                      for="inspector-toggle-control-13"
                     >
-                      Screen transactions for international IP addresses
+                      Block transactions for international IP addresses
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-10__help"
+                    id="inspector-toggle-control-13__help"
                   >
-                    When enabled, the payment method will not be charged until you review and approve the transaction.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -1288,9 +1167,9 @@ Object {
                       class="components-form-toggle"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-11__help"
+                        aria-describedby="inspector-toggle-control-14__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-11"
+                        id="inspector-toggle-control-14"
                         type="checkbox"
                       />
                       <span
@@ -1302,16 +1181,16 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-11"
+                      for="inspector-toggle-control-14"
                     >
                       Screen transactions where the IP country and billing country don't match
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-11__help"
+                    id="inspector-toggle-control-14__help"
                   >
-                    When enabled, the payment method will not be charged until you review and approve the transaction.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -1367,9 +1246,9 @@ Object {
                       class="components-form-toggle"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-12__help"
+                        aria-describedby="inspector-toggle-control-15__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-12"
+                        id="inspector-toggle-control-15"
                         type="checkbox"
                       />
                       <span
@@ -1381,16 +1260,16 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-12"
+                      for="inspector-toggle-control-15"
                     >
-                      Screen transactions for mismatched addresses
+                      Block transactions for mismatched addresses
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-12__help"
+                    id="inspector-toggle-control-15__help"
                   >
-                    When enabled, the payment method will not be charged until you review and approve the transaction.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -1446,9 +1325,9 @@ Object {
                       class="components-form-toggle is-checked"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-13__help"
+                        aria-describedby="inspector-toggle-control-16__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-13"
+                        id="inspector-toggle-control-16"
                         type="checkbox"
                       />
                       <span
@@ -1460,14 +1339,14 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-13"
+                      for="inspector-toggle-control-16"
                     >
-                      Screen transactions for abnormal purchase prices
+                      Block transactions for abnormal purchase prices
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-13__help"
+                    id="inspector-toggle-control-16__help"
                   >
                     The payment will be blocked.
                   </p>
@@ -1589,54 +1468,6 @@ Object {
                       </div>
                     </div>
                   </div>
-                  <div
-                    class="fraud-protection-rule-toggle-block"
-                  >
-                    <strong>
-                      Filter action
-                    </strong>
-                    <div
-                      class="components-base-control components-radio-control css-wdf2ti-Wrapper e1puf3u0"
-                    >
-                      <div
-                        class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-                      >
-                        <div
-                          class="components-radio-control__option"
-                        >
-                          <input
-                            class="components-radio-control__input"
-                            id="inspector-radio-control-0-0"
-                            name="inspector-radio-control-0"
-                            type="radio"
-                            value="review"
-                          />
-                          <label
-                            for="inspector-radio-control-0-0"
-                          >
-                            Authorize and hold for review
-                          </label>
-                        </div>
-                        <div
-                          class="components-radio-control__option"
-                        >
-                          <input
-                            checked=""
-                            class="components-radio-control__input"
-                            id="inspector-radio-control-0-1"
-                            name="inspector-radio-control-0"
-                            type="radio"
-                            value="block"
-                          />
-                          <label
-                            for="inspector-radio-control-0-1"
-                          >
-                            Block Payment
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
               <div
@@ -1691,9 +1522,9 @@ Object {
                       class="components-form-toggle"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-14__help"
+                        aria-describedby="inspector-toggle-control-17__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-14"
+                        id="inspector-toggle-control-17"
                         type="checkbox"
                       />
                       <span
@@ -1705,16 +1536,16 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-14"
+                      for="inspector-toggle-control-17"
                     >
-                      Screen transactions for abnormal item counts
+                      Block transactions for abnormal item counts
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-14__help"
+                    id="inspector-toggle-control-17__help"
                   >
-                    When enabled, the payment method will not be charged until you review and approve the transaction.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -1727,6 +1558,83 @@ Object {
                 <p>
                   An unusually high item count, compared to the average for your business, can indicate potential fraudulent activity.
                 </p>
+              </div>
+            </div>
+          </div>
+          <div
+            class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="cvc-verification-card"
+          >
+            <div
+              class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
+            >
+              <div>
+                <p
+                  class="fraud-protection-rule-card-header"
+                >
+                  CVC Verification
+                </p>
+                <p
+                  class="fraud-protection-rule-card-description"
+                >
+                  This filter checks the security code submitted by the customer against the data on file with the card issuer.
+                </p>
+              </div>
+            </div>
+            <hr />
+            <div
+              class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
+            >
+              <div
+                class="fraud-protection-rule-description"
+              >
+                <strong>
+                  How does this filter protect me?
+                </strong>
+                <p>
+                  Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
+                </p>
+              </div>
+              <div
+                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+              >
+                <div
+                  class="components-notice__content"
+                >
+                  <div
+                    class="components-flex css-18koiq9-Flex eboqfv50"
+                  >
+                    <div
+                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                    >
+                      <svg
+                        class="gridicon gridicons-notice-outline"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                          />
+                        </g>
+                      </svg>
+                    </div>
+                    <div
+                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                    >
+                      For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
+                      <a
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
+                      >
+                        Learn more
+                      </a>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1831,7 +1739,7 @@ Object {
       id="a11y-speak-polite"
       style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
     >
-                Enabling this filter will not have any effect because you are selling to all countries.  
+                For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.  Learn more   
     </div>
     <div>
       <div>
@@ -1909,6 +1817,49 @@ Object {
                 class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
               >
                 <div
+                  class="fraud-protection-rule-toggle"
+                >
+                  <strong>
+                    Enable filtering
+                  </strong>
+                  <div
+                    class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
+                  >
+                    <div
+                      class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+                    >
+                      <span
+                        class="components-form-toggle"
+                      >
+                        <input
+                          aria-describedby="inspector-toggle-control-6__help"
+                          class="components-form-toggle__input"
+                          id="inspector-toggle-control-6"
+                          type="checkbox"
+                        />
+                        <span
+                          class="components-form-toggle__track"
+                        />
+                        <span
+                          class="components-form-toggle__thumb"
+                        />
+                      </span>
+                      <label
+                        class="components-toggle-control__label"
+                        for="inspector-toggle-control-6"
+                      >
+                        Block transactions for mismatched AVS
+                      </label>
+                    </div>
+                    <p
+                      class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+                      id="inspector-toggle-control-6__help"
+                    >
+                      When enabled, the payment will be blocked.
+                    </p>
+                  </div>
+                </div>
+                <div
                   class="fraud-protection-rule-description"
                 >
                   <strong>
@@ -1917,124 +1868,6 @@ Object {
                   <p>
                     Buyers who can provide the street number and post code on file with the issuing bank are more likely to be the actual account holder. AVS matches, however, are not a guarantee.
                   </p>
-                </div>
-                <div
-                  class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-                >
-                  <div
-                    class="components-notice__content"
-                  >
-                    <div
-                      class="components-flex css-18koiq9-Flex eboqfv50"
-                    >
-                      <div
-                        class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                      >
-                        <svg
-                          class="gridicon gridicons-notice-outline"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          width="24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <g>
-                            <path
-                              d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                            />
-                          </g>
-                        </svg>
-                      </div>
-                      <div
-                        class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                      >
-                        For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
-                        <a
-                          data-link-type="external"
-                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
-                          target="_blank"
-                        >
-                          Learn more
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div
-              class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
-              id="cvc-verification-card"
-            >
-              <div
-                class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
-              >
-                <div>
-                  <p
-                    class="fraud-protection-rule-card-header"
-                  >
-                    CVC Verification
-                  </p>
-                  <p
-                    class="fraud-protection-rule-card-description"
-                  >
-                    This filter checks the security code submitted by the customer against the data on file with the card issuer.
-                  </p>
-                </div>
-              </div>
-              <hr />
-              <div
-                class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
-              >
-                <div
-                  class="fraud-protection-rule-description"
-                >
-                  <strong>
-                    How does this filter protect me?
-                  </strong>
-                  <p>
-                    Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
-                  </p>
-                </div>
-                <div
-                  class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-                >
-                  <div
-                    class="components-notice__content"
-                  >
-                    <div
-                      class="components-flex css-18koiq9-Flex eboqfv50"
-                    >
-                      <div
-                        class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                      >
-                        <svg
-                          class="gridicon gridicons-notice-outline"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          width="24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <g>
-                            <path
-                              d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                            />
-                          </g>
-                        </svg>
-                      </div>
-                      <div
-                        class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                      >
-                        For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
-                        <a
-                          data-link-type="external"
-                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
-                          target="_blank"
-                        >
-                          Learn more
-                        </a>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -2092,9 +1925,9 @@ Object {
                         class="components-form-toggle"
                       >
                         <input
-                          aria-describedby="inspector-toggle-control-5__help"
+                          aria-describedby="inspector-toggle-control-7__help"
                           class="components-form-toggle__input"
-                          id="inspector-toggle-control-5"
+                          id="inspector-toggle-control-7"
                           type="checkbox"
                         />
                         <span
@@ -2106,16 +1939,16 @@ Object {
                       </span>
                       <label
                         class="components-toggle-control__label"
-                        for="inspector-toggle-control-5"
+                        for="inspector-toggle-control-7"
                       >
-                        Screen transactions for international IP addresses
+                        Block transactions for international IP addresses
                       </label>
                     </div>
                     <p
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                      id="inspector-toggle-control-5__help"
+                      id="inspector-toggle-control-7__help"
                     >
-                      When enabled, the payment method will not be charged until you review and approve the transaction.
+                      When enabled, the payment will be blocked.
                     </p>
                   </div>
                 </div>
@@ -2213,9 +2046,9 @@ Object {
                         class="components-form-toggle"
                       >
                         <input
-                          aria-describedby="inspector-toggle-control-6__help"
+                          aria-describedby="inspector-toggle-control-8__help"
                           class="components-form-toggle__input"
-                          id="inspector-toggle-control-6"
+                          id="inspector-toggle-control-8"
                           type="checkbox"
                         />
                         <span
@@ -2227,16 +2060,16 @@ Object {
                       </span>
                       <label
                         class="components-toggle-control__label"
-                        for="inspector-toggle-control-6"
+                        for="inspector-toggle-control-8"
                       >
                         Screen transactions where the IP country and billing country don't match
                       </label>
                     </div>
                     <p
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                      id="inspector-toggle-control-6__help"
+                      id="inspector-toggle-control-8__help"
                     >
-                      When enabled, the payment method will not be charged until you review and approve the transaction.
+                      When enabled, the payment will be blocked.
                     </p>
                   </div>
                 </div>
@@ -2292,9 +2125,9 @@ Object {
                         class="components-form-toggle"
                       >
                         <input
-                          aria-describedby="inspector-toggle-control-7__help"
+                          aria-describedby="inspector-toggle-control-9__help"
                           class="components-form-toggle__input"
-                          id="inspector-toggle-control-7"
+                          id="inspector-toggle-control-9"
                           type="checkbox"
                         />
                         <span
@@ -2306,16 +2139,16 @@ Object {
                       </span>
                       <label
                         class="components-toggle-control__label"
-                        for="inspector-toggle-control-7"
+                        for="inspector-toggle-control-9"
                       >
-                        Screen transactions for mismatched addresses
+                        Block transactions for mismatched addresses
                       </label>
                     </div>
                     <p
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                      id="inspector-toggle-control-7__help"
+                      id="inspector-toggle-control-9__help"
                     >
-                      When enabled, the payment method will not be charged until you review and approve the transaction.
+                      When enabled, the payment will be blocked.
                     </p>
                   </div>
                 </div>
@@ -2371,9 +2204,9 @@ Object {
                         class="components-form-toggle"
                       >
                         <input
-                          aria-describedby="inspector-toggle-control-8__help"
+                          aria-describedby="inspector-toggle-control-10__help"
                           class="components-form-toggle__input"
-                          id="inspector-toggle-control-8"
+                          id="inspector-toggle-control-10"
                           type="checkbox"
                         />
                         <span
@@ -2385,16 +2218,16 @@ Object {
                       </span>
                       <label
                         class="components-toggle-control__label"
-                        for="inspector-toggle-control-8"
+                        for="inspector-toggle-control-10"
                       >
-                        Screen transactions for abnormal purchase prices
+                        Block transactions for abnormal purchase prices
                       </label>
                     </div>
                     <p
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                      id="inspector-toggle-control-8__help"
+                      id="inspector-toggle-control-10__help"
                     >
-                      When enabled, the payment method will not be charged until you review and approve the transaction.
+                      When enabled, the payment will be blocked.
                     </p>
                   </div>
                 </div>
@@ -2450,9 +2283,9 @@ Object {
                         class="components-form-toggle"
                       >
                         <input
-                          aria-describedby="inspector-toggle-control-9__help"
+                          aria-describedby="inspector-toggle-control-11__help"
                           class="components-form-toggle__input"
-                          id="inspector-toggle-control-9"
+                          id="inspector-toggle-control-11"
                           type="checkbox"
                         />
                         <span
@@ -2464,16 +2297,16 @@ Object {
                       </span>
                       <label
                         class="components-toggle-control__label"
-                        for="inspector-toggle-control-9"
+                        for="inspector-toggle-control-11"
                       >
-                        Screen transactions for abnormal item counts
+                        Block transactions for abnormal item counts
                       </label>
                     </div>
                     <p
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                      id="inspector-toggle-control-9__help"
+                      id="inspector-toggle-control-11__help"
                     >
-                      When enabled, the payment method will not be charged until you review and approve the transaction.
+                      When enabled, the payment will be blocked.
                     </p>
                   </div>
                 </div>
@@ -2486,6 +2319,83 @@ Object {
                   <p>
                     An unusually high item count, compared to the average for your business, can indicate potential fraudulent activity.
                   </p>
+                </div>
+              </div>
+            </div>
+            <div
+              class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="cvc-verification-card"
+            >
+              <div
+                class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
+              >
+                <div>
+                  <p
+                    class="fraud-protection-rule-card-header"
+                  >
+                    CVC Verification
+                  </p>
+                  <p
+                    class="fraud-protection-rule-card-description"
+                  >
+                    This filter checks the security code submitted by the customer against the data on file with the card issuer.
+                  </p>
+                </div>
+              </div>
+              <hr />
+              <div
+                class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
+              >
+                <div
+                  class="fraud-protection-rule-description"
+                >
+                  <strong>
+                    How does this filter protect me?
+                  </strong>
+                  <p>
+                    Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
+                  </p>
+                </div>
+                <div
+                  class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+                >
+                  <div
+                    class="components-notice__content"
+                  >
+                    <div
+                      class="components-flex css-18koiq9-Flex eboqfv50"
+                    >
+                      <div
+                        class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                      >
+                        <svg
+                          class="gridicon gridicons-notice-outline"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <g>
+                            <path
+                              d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                            />
+                          </g>
+                        </svg>
+                      </div>
+                      <div
+                        class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                      >
+                        For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
+                        <a
+                          data-link-type="external"
+                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          target="_blank"
+                        >
+                          Learn more
+                        </a>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -2587,6 +2497,49 @@ Object {
               class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
             >
               <div
+                class="fraud-protection-rule-toggle"
+              >
+                <strong>
+                  Enable filtering
+                </strong>
+                <div
+                  class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
+                >
+                  <div
+                    class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+                  >
+                    <span
+                      class="components-form-toggle"
+                    >
+                      <input
+                        aria-describedby="inspector-toggle-control-6__help"
+                        class="components-form-toggle__input"
+                        id="inspector-toggle-control-6"
+                        type="checkbox"
+                      />
+                      <span
+                        class="components-form-toggle__track"
+                      />
+                      <span
+                        class="components-form-toggle__thumb"
+                      />
+                    </span>
+                    <label
+                      class="components-toggle-control__label"
+                      for="inspector-toggle-control-6"
+                    >
+                      Block transactions for mismatched AVS
+                    </label>
+                  </div>
+                  <p
+                    class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+                    id="inspector-toggle-control-6__help"
+                  >
+                    When enabled, the payment will be blocked.
+                  </p>
+                </div>
+              </div>
+              <div
                 class="fraud-protection-rule-description"
               >
                 <strong>
@@ -2595,124 +2548,6 @@ Object {
                 <p>
                   Buyers who can provide the street number and post code on file with the issuing bank are more likely to be the actual account holder. AVS matches, however, are not a guarantee.
                 </p>
-              </div>
-              <div
-                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-              >
-                <div
-                  class="components-notice__content"
-                >
-                  <div
-                    class="components-flex css-18koiq9-Flex eboqfv50"
-                  >
-                    <div
-                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                    >
-                      <svg
-                        class="gridicon gridicons-notice-outline"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        width="24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <g>
-                          <path
-                            d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                          />
-                        </g>
-                      </svg>
-                    </div>
-                    <div
-                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                    >
-                      For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
-                      <a
-                        data-link-type="external"
-                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
-                        target="_blank"
-                      >
-                        Learn more
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div
-            class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
-            id="cvc-verification-card"
-          >
-            <div
-              class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
-            >
-              <div>
-                <p
-                  class="fraud-protection-rule-card-header"
-                >
-                  CVC Verification
-                </p>
-                <p
-                  class="fraud-protection-rule-card-description"
-                >
-                  This filter checks the security code submitted by the customer against the data on file with the card issuer.
-                </p>
-              </div>
-            </div>
-            <hr />
-            <div
-              class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
-            >
-              <div
-                class="fraud-protection-rule-description"
-              >
-                <strong>
-                  How does this filter protect me?
-                </strong>
-                <p>
-                  Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
-                </p>
-              </div>
-              <div
-                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-              >
-                <div
-                  class="components-notice__content"
-                >
-                  <div
-                    class="components-flex css-18koiq9-Flex eboqfv50"
-                  >
-                    <div
-                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                    >
-                      <svg
-                        class="gridicon gridicons-notice-outline"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        width="24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <g>
-                          <path
-                            d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                          />
-                        </g>
-                      </svg>
-                    </div>
-                    <div
-                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                    >
-                      For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
-                      <a
-                        data-link-type="external"
-                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
-                        target="_blank"
-                      >
-                        Learn more
-                      </a>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -2770,9 +2605,9 @@ Object {
                       class="components-form-toggle"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-5__help"
+                        aria-describedby="inspector-toggle-control-7__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-5"
+                        id="inspector-toggle-control-7"
                         type="checkbox"
                       />
                       <span
@@ -2784,16 +2619,16 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-5"
+                      for="inspector-toggle-control-7"
                     >
-                      Screen transactions for international IP addresses
+                      Block transactions for international IP addresses
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-5__help"
+                    id="inspector-toggle-control-7__help"
                   >
-                    When enabled, the payment method will not be charged until you review and approve the transaction.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -2891,9 +2726,9 @@ Object {
                       class="components-form-toggle"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-6__help"
+                        aria-describedby="inspector-toggle-control-8__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-6"
+                        id="inspector-toggle-control-8"
                         type="checkbox"
                       />
                       <span
@@ -2905,16 +2740,16 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-6"
+                      for="inspector-toggle-control-8"
                     >
                       Screen transactions where the IP country and billing country don't match
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-6__help"
+                    id="inspector-toggle-control-8__help"
                   >
-                    When enabled, the payment method will not be charged until you review and approve the transaction.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -2970,9 +2805,9 @@ Object {
                       class="components-form-toggle"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-7__help"
+                        aria-describedby="inspector-toggle-control-9__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-7"
+                        id="inspector-toggle-control-9"
                         type="checkbox"
                       />
                       <span
@@ -2984,16 +2819,16 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-7"
+                      for="inspector-toggle-control-9"
                     >
-                      Screen transactions for mismatched addresses
+                      Block transactions for mismatched addresses
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-7__help"
+                    id="inspector-toggle-control-9__help"
                   >
-                    When enabled, the payment method will not be charged until you review and approve the transaction.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -3049,9 +2884,9 @@ Object {
                       class="components-form-toggle"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-8__help"
+                        aria-describedby="inspector-toggle-control-10__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-8"
+                        id="inspector-toggle-control-10"
                         type="checkbox"
                       />
                       <span
@@ -3063,16 +2898,16 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-8"
+                      for="inspector-toggle-control-10"
                     >
-                      Screen transactions for abnormal purchase prices
+                      Block transactions for abnormal purchase prices
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-8__help"
+                    id="inspector-toggle-control-10__help"
                   >
-                    When enabled, the payment method will not be charged until you review and approve the transaction.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -3128,9 +2963,9 @@ Object {
                       class="components-form-toggle"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-9__help"
+                        aria-describedby="inspector-toggle-control-11__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-9"
+                        id="inspector-toggle-control-11"
                         type="checkbox"
                       />
                       <span
@@ -3142,16 +2977,16 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-9"
+                      for="inspector-toggle-control-11"
                     >
-                      Screen transactions for abnormal item counts
+                      Block transactions for abnormal item counts
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-9__help"
+                    id="inspector-toggle-control-11__help"
                   >
-                    When enabled, the payment method will not be charged until you review and approve the transaction.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -3164,6 +2999,83 @@ Object {
                 <p>
                   An unusually high item count, compared to the average for your business, can indicate potential fraudulent activity.
                 </p>
+              </div>
+            </div>
+          </div>
+          <div
+            class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="cvc-verification-card"
+          >
+            <div
+              class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
+            >
+              <div>
+                <p
+                  class="fraud-protection-rule-card-header"
+                >
+                  CVC Verification
+                </p>
+                <p
+                  class="fraud-protection-rule-card-description"
+                >
+                  This filter checks the security code submitted by the customer against the data on file with the card issuer.
+                </p>
+              </div>
+            </div>
+            <hr />
+            <div
+              class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
+            >
+              <div
+                class="fraud-protection-rule-description"
+              >
+                <strong>
+                  How does this filter protect me?
+                </strong>
+                <p>
+                  Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
+                </p>
+              </div>
+              <div
+                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+              >
+                <div
+                  class="components-notice__content"
+                >
+                  <div
+                    class="components-flex css-18koiq9-Flex eboqfv50"
+                  >
+                    <div
+                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                    >
+                      <svg
+                        class="gridicon gridicons-notice-outline"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                          />
+                        </g>
+                      </svg>
+                    </div>
+                    <div
+                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                    >
+                      For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
+                      <a
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
+                      >
+                        Learn more
+                      </a>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -3269,7 +3181,7 @@ Object {
       id="a11y-speak-polite"
       style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
     >
-                Enabling this filter will not have any effect because you are selling to all countries.  
+                For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.  Learn more   
     </div>
     <div>
       <div
@@ -3315,6 +3227,49 @@ Object {
               class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
             >
               <div
+                class="fraud-protection-rule-toggle"
+              >
+                <strong>
+                  Enable filtering
+                </strong>
+                <div
+                  class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
+                >
+                  <div
+                    class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+                  >
+                    <span
+                      class="components-form-toggle"
+                    >
+                      <input
+                        aria-describedby="inspector-toggle-control-0__help"
+                        class="components-form-toggle__input"
+                        id="inspector-toggle-control-0"
+                        type="checkbox"
+                      />
+                      <span
+                        class="components-form-toggle__track"
+                      />
+                      <span
+                        class="components-form-toggle__thumb"
+                      />
+                    </span>
+                    <label
+                      class="components-toggle-control__label"
+                      for="inspector-toggle-control-0"
+                    >
+                      Block transactions for mismatched AVS
+                    </label>
+                  </div>
+                  <p
+                    class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+                    id="inspector-toggle-control-0__help"
+                  >
+                    When enabled, the payment will be blocked.
+                  </p>
+                </div>
+              </div>
+              <div
                 class="fraud-protection-rule-description"
               >
                 <strong>
@@ -3323,124 +3278,6 @@ Object {
                 <p>
                   Buyers who can provide the street number and post code on file with the issuing bank are more likely to be the actual account holder. AVS matches, however, are not a guarantee.
                 </p>
-              </div>
-              <div
-                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-              >
-                <div
-                  class="components-notice__content"
-                >
-                  <div
-                    class="components-flex css-18koiq9-Flex eboqfv50"
-                  >
-                    <div
-                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                    >
-                      <svg
-                        class="gridicon gridicons-notice-outline"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        width="24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <g>
-                          <path
-                            d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                          />
-                        </g>
-                      </svg>
-                    </div>
-                    <div
-                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                    >
-                      For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
-                      <a
-                        data-link-type="external"
-                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
-                        target="_blank"
-                      >
-                        Learn more
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div
-            class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
-            id="cvc-verification-card"
-          >
-            <div
-              class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
-            >
-              <div>
-                <p
-                  class="fraud-protection-rule-card-header"
-                >
-                  CVC Verification
-                </p>
-                <p
-                  class="fraud-protection-rule-card-description"
-                >
-                  This filter checks the security code submitted by the customer against the data on file with the card issuer.
-                </p>
-              </div>
-            </div>
-            <hr />
-            <div
-              class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
-            >
-              <div
-                class="fraud-protection-rule-description"
-              >
-                <strong>
-                  How does this filter protect me?
-                </strong>
-                <p>
-                  Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
-                </p>
-              </div>
-              <div
-                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-              >
-                <div
-                  class="components-notice__content"
-                >
-                  <div
-                    class="components-flex css-18koiq9-Flex eboqfv50"
-                  >
-                    <div
-                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                    >
-                      <svg
-                        class="gridicon gridicons-notice-outline"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        width="24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <g>
-                          <path
-                            d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                          />
-                        </g>
-                      </svg>
-                    </div>
-                    <div
-                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                    >
-                      For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
-                      <a
-                        data-link-type="external"
-                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
-                        target="_blank"
-                      >
-                        Learn more
-                      </a>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -3498,9 +3335,9 @@ Object {
                       class="components-form-toggle"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-0__help"
+                        aria-describedby="inspector-toggle-control-1__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-0"
+                        id="inspector-toggle-control-1"
                         type="checkbox"
                       />
                       <span
@@ -3512,16 +3349,16 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-0"
+                      for="inspector-toggle-control-1"
                     >
-                      Screen transactions for international IP addresses
+                      Block transactions for international IP addresses
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-0__help"
+                    id="inspector-toggle-control-1__help"
                   >
-                    When enabled, the payment method will not be charged until you review and approve the transaction.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -3619,9 +3456,9 @@ Object {
                       class="components-form-toggle"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-1__help"
+                        aria-describedby="inspector-toggle-control-2__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-1"
+                        id="inspector-toggle-control-2"
                         type="checkbox"
                       />
                       <span
@@ -3633,16 +3470,16 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-1"
+                      for="inspector-toggle-control-2"
                     >
                       Screen transactions where the IP country and billing country don't match
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-1__help"
+                    id="inspector-toggle-control-2__help"
                   >
-                    When enabled, the payment method will not be charged until you review and approve the transaction.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -3698,9 +3535,9 @@ Object {
                       class="components-form-toggle"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-2__help"
+                        aria-describedby="inspector-toggle-control-3__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-2"
+                        id="inspector-toggle-control-3"
                         type="checkbox"
                       />
                       <span
@@ -3712,16 +3549,16 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-2"
+                      for="inspector-toggle-control-3"
                     >
-                      Screen transactions for mismatched addresses
+                      Block transactions for mismatched addresses
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-2__help"
+                    id="inspector-toggle-control-3__help"
                   >
-                    When enabled, the payment method will not be charged until you review and approve the transaction.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -3777,9 +3614,9 @@ Object {
                       class="components-form-toggle"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-3__help"
+                        aria-describedby="inspector-toggle-control-4__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-3"
+                        id="inspector-toggle-control-4"
                         type="checkbox"
                       />
                       <span
@@ -3791,16 +3628,16 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-3"
+                      for="inspector-toggle-control-4"
                     >
-                      Screen transactions for abnormal purchase prices
+                      Block transactions for abnormal purchase prices
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-3__help"
+                    id="inspector-toggle-control-4__help"
                   >
-                    When enabled, the payment method will not be charged until you review and approve the transaction.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -3856,9 +3693,9 @@ Object {
                       class="components-form-toggle"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-4__help"
+                        aria-describedby="inspector-toggle-control-5__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-4"
+                        id="inspector-toggle-control-5"
                         type="checkbox"
                       />
                       <span
@@ -3870,16 +3707,16 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-4"
+                      for="inspector-toggle-control-5"
                     >
-                      Screen transactions for abnormal item counts
+                      Block transactions for abnormal item counts
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-4__help"
+                    id="inspector-toggle-control-5__help"
                   >
-                    When enabled, the payment method will not be charged until you review and approve the transaction.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -3892,6 +3729,83 @@ Object {
                 <p>
                   An unusually high item count, compared to the average for your business, can indicate potential fraudulent activity.
                 </p>
+              </div>
+            </div>
+          </div>
+          <div
+            class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="cvc-verification-card"
+          >
+            <div
+              class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
+            >
+              <div>
+                <p
+                  class="fraud-protection-rule-card-header"
+                >
+                  CVC Verification
+                </p>
+                <p
+                  class="fraud-protection-rule-card-description"
+                >
+                  This filter checks the security code submitted by the customer against the data on file with the card issuer.
+                </p>
+              </div>
+            </div>
+            <hr />
+            <div
+              class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
+            >
+              <div
+                class="fraud-protection-rule-description"
+              >
+                <strong>
+                  How does this filter protect me?
+                </strong>
+                <p>
+                  Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
+                </p>
+              </div>
+              <div
+                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+              >
+                <div
+                  class="components-notice__content"
+                >
+                  <div
+                    class="components-flex css-18koiq9-Flex eboqfv50"
+                  >
+                    <div
+                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                    >
+                      <svg
+                        class="gridicon gridicons-notice-outline"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                          />
+                        </g>
+                      </svg>
+                    </div>
+                    <div
+                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                    >
+                      For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
+                      <a
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
+                      >
+                        Learn more
+                      </a>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -3959,6 +3873,49 @@ Object {
             class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
           >
             <div
+              class="fraud-protection-rule-toggle"
+            >
+              <strong>
+                Enable filtering
+              </strong>
+              <div
+                class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
+              >
+                <div
+                  class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+                >
+                  <span
+                    class="components-form-toggle"
+                  >
+                    <input
+                      aria-describedby="inspector-toggle-control-0__help"
+                      class="components-form-toggle__input"
+                      id="inspector-toggle-control-0"
+                      type="checkbox"
+                    />
+                    <span
+                      class="components-form-toggle__track"
+                    />
+                    <span
+                      class="components-form-toggle__thumb"
+                    />
+                  </span>
+                  <label
+                    class="components-toggle-control__label"
+                    for="inspector-toggle-control-0"
+                  >
+                    Block transactions for mismatched AVS
+                  </label>
+                </div>
+                <p
+                  class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+                  id="inspector-toggle-control-0__help"
+                >
+                  When enabled, the payment will be blocked.
+                </p>
+              </div>
+            </div>
+            <div
               class="fraud-protection-rule-description"
             >
               <strong>
@@ -3967,124 +3924,6 @@ Object {
               <p>
                 Buyers who can provide the street number and post code on file with the issuing bank are more likely to be the actual account holder. AVS matches, however, are not a guarantee.
               </p>
-            </div>
-            <div
-              class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-            >
-              <div
-                class="components-notice__content"
-              >
-                <div
-                  class="components-flex css-18koiq9-Flex eboqfv50"
-                >
-                  <div
-                    class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                  >
-                    <svg
-                      class="gridicon gridicons-notice-outline"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      width="24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <g>
-                        <path
-                          d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                        />
-                      </g>
-                    </svg>
-                  </div>
-                  <div
-                    class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                  >
-                    For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
-                    <a
-                      data-link-type="external"
-                      href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
-                      target="_blank"
-                    >
-                      Learn more
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div
-          class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
-          id="cvc-verification-card"
-        >
-          <div
-            class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
-          >
-            <div>
-              <p
-                class="fraud-protection-rule-card-header"
-              >
-                CVC Verification
-              </p>
-              <p
-                class="fraud-protection-rule-card-description"
-              >
-                This filter checks the security code submitted by the customer against the data on file with the card issuer.
-              </p>
-            </div>
-          </div>
-          <hr />
-          <div
-            class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
-          >
-            <div
-              class="fraud-protection-rule-description"
-            >
-              <strong>
-                How does this filter protect me?
-              </strong>
-              <p>
-                Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
-              </p>
-            </div>
-            <div
-              class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-            >
-              <div
-                class="components-notice__content"
-              >
-                <div
-                  class="components-flex css-18koiq9-Flex eboqfv50"
-                >
-                  <div
-                    class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                  >
-                    <svg
-                      class="gridicon gridicons-notice-outline"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      width="24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <g>
-                        <path
-                          d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                        />
-                      </g>
-                    </svg>
-                  </div>
-                  <div
-                    class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                  >
-                    For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
-                    <a
-                      data-link-type="external"
-                      href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
-                      target="_blank"
-                    >
-                      Learn more
-                    </a>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -4142,9 +3981,9 @@ Object {
                     class="components-form-toggle"
                   >
                     <input
-                      aria-describedby="inspector-toggle-control-0__help"
+                      aria-describedby="inspector-toggle-control-1__help"
                       class="components-form-toggle__input"
-                      id="inspector-toggle-control-0"
+                      id="inspector-toggle-control-1"
                       type="checkbox"
                     />
                     <span
@@ -4156,16 +3995,16 @@ Object {
                   </span>
                   <label
                     class="components-toggle-control__label"
-                    for="inspector-toggle-control-0"
+                    for="inspector-toggle-control-1"
                   >
-                    Screen transactions for international IP addresses
+                    Block transactions for international IP addresses
                   </label>
                 </div>
                 <p
                   class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                  id="inspector-toggle-control-0__help"
+                  id="inspector-toggle-control-1__help"
                 >
-                  When enabled, the payment method will not be charged until you review and approve the transaction.
+                  When enabled, the payment will be blocked.
                 </p>
               </div>
             </div>
@@ -4263,9 +4102,9 @@ Object {
                     class="components-form-toggle"
                   >
                     <input
-                      aria-describedby="inspector-toggle-control-1__help"
+                      aria-describedby="inspector-toggle-control-2__help"
                       class="components-form-toggle__input"
-                      id="inspector-toggle-control-1"
+                      id="inspector-toggle-control-2"
                       type="checkbox"
                     />
                     <span
@@ -4277,16 +4116,16 @@ Object {
                   </span>
                   <label
                     class="components-toggle-control__label"
-                    for="inspector-toggle-control-1"
+                    for="inspector-toggle-control-2"
                   >
                     Screen transactions where the IP country and billing country don't match
                   </label>
                 </div>
                 <p
                   class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                  id="inspector-toggle-control-1__help"
+                  id="inspector-toggle-control-2__help"
                 >
-                  When enabled, the payment method will not be charged until you review and approve the transaction.
+                  When enabled, the payment will be blocked.
                 </p>
               </div>
             </div>
@@ -4342,9 +4181,9 @@ Object {
                     class="components-form-toggle"
                   >
                     <input
-                      aria-describedby="inspector-toggle-control-2__help"
+                      aria-describedby="inspector-toggle-control-3__help"
                       class="components-form-toggle__input"
-                      id="inspector-toggle-control-2"
+                      id="inspector-toggle-control-3"
                       type="checkbox"
                     />
                     <span
@@ -4356,16 +4195,16 @@ Object {
                   </span>
                   <label
                     class="components-toggle-control__label"
-                    for="inspector-toggle-control-2"
+                    for="inspector-toggle-control-3"
                   >
-                    Screen transactions for mismatched addresses
+                    Block transactions for mismatched addresses
                   </label>
                 </div>
                 <p
                   class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                  id="inspector-toggle-control-2__help"
+                  id="inspector-toggle-control-3__help"
                 >
-                  When enabled, the payment method will not be charged until you review and approve the transaction.
+                  When enabled, the payment will be blocked.
                 </p>
               </div>
             </div>
@@ -4421,9 +4260,9 @@ Object {
                     class="components-form-toggle"
                   >
                     <input
-                      aria-describedby="inspector-toggle-control-3__help"
+                      aria-describedby="inspector-toggle-control-4__help"
                       class="components-form-toggle__input"
-                      id="inspector-toggle-control-3"
+                      id="inspector-toggle-control-4"
                       type="checkbox"
                     />
                     <span
@@ -4435,16 +4274,16 @@ Object {
                   </span>
                   <label
                     class="components-toggle-control__label"
-                    for="inspector-toggle-control-3"
+                    for="inspector-toggle-control-4"
                   >
-                    Screen transactions for abnormal purchase prices
+                    Block transactions for abnormal purchase prices
                   </label>
                 </div>
                 <p
                   class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                  id="inspector-toggle-control-3__help"
+                  id="inspector-toggle-control-4__help"
                 >
-                  When enabled, the payment method will not be charged until you review and approve the transaction.
+                  When enabled, the payment will be blocked.
                 </p>
               </div>
             </div>
@@ -4500,9 +4339,9 @@ Object {
                     class="components-form-toggle"
                   >
                     <input
-                      aria-describedby="inspector-toggle-control-4__help"
+                      aria-describedby="inspector-toggle-control-5__help"
                       class="components-form-toggle__input"
-                      id="inspector-toggle-control-4"
+                      id="inspector-toggle-control-5"
                       type="checkbox"
                     />
                     <span
@@ -4514,16 +4353,16 @@ Object {
                   </span>
                   <label
                     class="components-toggle-control__label"
-                    for="inspector-toggle-control-4"
+                    for="inspector-toggle-control-5"
                   >
-                    Screen transactions for abnormal item counts
+                    Block transactions for abnormal item counts
                   </label>
                 </div>
                 <p
                   class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                  id="inspector-toggle-control-4__help"
+                  id="inspector-toggle-control-5__help"
                 >
-                  When enabled, the payment method will not be charged until you review and approve the transaction.
+                  When enabled, the payment will be blocked.
                 </p>
               </div>
             </div>
@@ -4536,6 +4375,83 @@ Object {
               <p>
                 An unusually high item count, compared to the average for your business, can indicate potential fraudulent activity.
               </p>
+            </div>
+          </div>
+        </div>
+        <div
+          class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+          id="cvc-verification-card"
+        >
+          <div
+            class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
+          >
+            <div>
+              <p
+                class="fraud-protection-rule-card-header"
+              >
+                CVC Verification
+              </p>
+              <p
+                class="fraud-protection-rule-card-description"
+              >
+                This filter checks the security code submitted by the customer against the data on file with the card issuer.
+              </p>
+            </div>
+          </div>
+          <hr />
+          <div
+            class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
+          >
+            <div
+              class="fraud-protection-rule-description"
+            >
+              <strong>
+                How does this filter protect me?
+              </strong>
+              <p>
+                Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
+              </p>
+            </div>
+            <div
+              class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+            >
+              <div
+                class="components-notice__content"
+              >
+                <div
+                  class="components-flex css-18koiq9-Flex eboqfv50"
+                >
+                  <div
+                    class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                  >
+                    <svg
+                      class="gridicon gridicons-notice-outline"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <g>
+                        <path
+                          d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                        />
+                      </g>
+                    </svg>
+                  </div>
+                  <div
+                    class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                  >
+                    For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
+                    <a
+                      data-link-type="external"
+                      href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                      target="_blank"
+                    >
+                      Learn more
+                    </a>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -4639,7 +4555,7 @@ Object {
       id="a11y-speak-polite"
       style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
     >
-                Enabling this filter will not have any effect because you are selling to all countries.  
+                For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.  Learn more   
     </div>
     <div>
       <div>
@@ -4703,6 +4619,49 @@ Object {
                 class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
               >
                 <div
+                  class="fraud-protection-rule-toggle"
+                >
+                  <strong>
+                    Enable filtering
+                  </strong>
+                  <div
+                    class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
+                  >
+                    <div
+                      class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+                    >
+                      <span
+                        class="components-form-toggle"
+                      >
+                        <input
+                          aria-describedby="inspector-toggle-control-18__help"
+                          class="components-form-toggle__input"
+                          id="inspector-toggle-control-18"
+                          type="checkbox"
+                        />
+                        <span
+                          class="components-form-toggle__track"
+                        />
+                        <span
+                          class="components-form-toggle__thumb"
+                        />
+                      </span>
+                      <label
+                        class="components-toggle-control__label"
+                        for="inspector-toggle-control-18"
+                      >
+                        Block transactions for mismatched AVS
+                      </label>
+                    </div>
+                    <p
+                      class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+                      id="inspector-toggle-control-18__help"
+                    >
+                      When enabled, the payment will be blocked.
+                    </p>
+                  </div>
+                </div>
+                <div
                   class="fraud-protection-rule-description"
                 >
                   <strong>
@@ -4711,124 +4670,6 @@ Object {
                   <p>
                     Buyers who can provide the street number and post code on file with the issuing bank are more likely to be the actual account holder. AVS matches, however, are not a guarantee.
                   </p>
-                </div>
-                <div
-                  class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-                >
-                  <div
-                    class="components-notice__content"
-                  >
-                    <div
-                      class="components-flex css-18koiq9-Flex eboqfv50"
-                    >
-                      <div
-                        class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                      >
-                        <svg
-                          class="gridicon gridicons-notice-outline"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          width="24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <g>
-                            <path
-                              d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                            />
-                          </g>
-                        </svg>
-                      </div>
-                      <div
-                        class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                      >
-                        For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
-                        <a
-                          data-link-type="external"
-                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
-                          target="_blank"
-                        >
-                          Learn more
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div
-              class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
-              id="cvc-verification-card"
-            >
-              <div
-                class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
-              >
-                <div>
-                  <p
-                    class="fraud-protection-rule-card-header"
-                  >
-                    CVC Verification
-                  </p>
-                  <p
-                    class="fraud-protection-rule-card-description"
-                  >
-                    This filter checks the security code submitted by the customer against the data on file with the card issuer.
-                  </p>
-                </div>
-              </div>
-              <hr />
-              <div
-                class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
-              >
-                <div
-                  class="fraud-protection-rule-description"
-                >
-                  <strong>
-                    How does this filter protect me?
-                  </strong>
-                  <p>
-                    Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
-                  </p>
-                </div>
-                <div
-                  class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-                >
-                  <div
-                    class="components-notice__content"
-                  >
-                    <div
-                      class="components-flex css-18koiq9-Flex eboqfv50"
-                    >
-                      <div
-                        class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                      >
-                        <svg
-                          class="gridicon gridicons-notice-outline"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          width="24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <g>
-                            <path
-                              d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                            />
-                          </g>
-                        </svg>
-                      </div>
-                      <div
-                        class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                      >
-                        For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
-                        <a
-                          data-link-type="external"
-                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
-                          target="_blank"
-                        >
-                          Learn more
-                        </a>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -4886,9 +4727,9 @@ Object {
                         class="components-form-toggle"
                       >
                         <input
-                          aria-describedby="inspector-toggle-control-15__help"
+                          aria-describedby="inspector-toggle-control-19__help"
                           class="components-form-toggle__input"
-                          id="inspector-toggle-control-15"
+                          id="inspector-toggle-control-19"
                           type="checkbox"
                         />
                         <span
@@ -4900,16 +4741,16 @@ Object {
                       </span>
                       <label
                         class="components-toggle-control__label"
-                        for="inspector-toggle-control-15"
+                        for="inspector-toggle-control-19"
                       >
-                        Screen transactions for international IP addresses
+                        Block transactions for international IP addresses
                       </label>
                     </div>
                     <p
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                      id="inspector-toggle-control-15__help"
+                      id="inspector-toggle-control-19__help"
                     >
-                      When enabled, the payment method will not be charged until you review and approve the transaction.
+                      When enabled, the payment will be blocked.
                     </p>
                   </div>
                 </div>
@@ -5007,9 +4848,9 @@ Object {
                         class="components-form-toggle"
                       >
                         <input
-                          aria-describedby="inspector-toggle-control-16__help"
+                          aria-describedby="inspector-toggle-control-20__help"
                           class="components-form-toggle__input"
-                          id="inspector-toggle-control-16"
+                          id="inspector-toggle-control-20"
                           type="checkbox"
                         />
                         <span
@@ -5021,16 +4862,16 @@ Object {
                       </span>
                       <label
                         class="components-toggle-control__label"
-                        for="inspector-toggle-control-16"
+                        for="inspector-toggle-control-20"
                       >
                         Screen transactions where the IP country and billing country don't match
                       </label>
                     </div>
                     <p
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                      id="inspector-toggle-control-16__help"
+                      id="inspector-toggle-control-20__help"
                     >
-                      When enabled, the payment method will not be charged until you review and approve the transaction.
+                      When enabled, the payment will be blocked.
                     </p>
                   </div>
                 </div>
@@ -5086,9 +4927,9 @@ Object {
                         class="components-form-toggle"
                       >
                         <input
-                          aria-describedby="inspector-toggle-control-17__help"
+                          aria-describedby="inspector-toggle-control-21__help"
                           class="components-form-toggle__input"
-                          id="inspector-toggle-control-17"
+                          id="inspector-toggle-control-21"
                           type="checkbox"
                         />
                         <span
@@ -5100,16 +4941,16 @@ Object {
                       </span>
                       <label
                         class="components-toggle-control__label"
-                        for="inspector-toggle-control-17"
+                        for="inspector-toggle-control-21"
                       >
-                        Screen transactions for mismatched addresses
+                        Block transactions for mismatched addresses
                       </label>
                     </div>
                     <p
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                      id="inspector-toggle-control-17__help"
+                      id="inspector-toggle-control-21__help"
                     >
-                      When enabled, the payment method will not be charged until you review and approve the transaction.
+                      When enabled, the payment will be blocked.
                     </p>
                   </div>
                 </div>
@@ -5165,9 +5006,9 @@ Object {
                         class="components-form-toggle is-checked"
                       >
                         <input
-                          aria-describedby="inspector-toggle-control-18__help"
+                          aria-describedby="inspector-toggle-control-22__help"
                           class="components-form-toggle__input"
-                          id="inspector-toggle-control-18"
+                          id="inspector-toggle-control-22"
                           type="checkbox"
                         />
                         <span
@@ -5179,14 +5020,14 @@ Object {
                       </span>
                       <label
                         class="components-toggle-control__label"
-                        for="inspector-toggle-control-18"
+                        for="inspector-toggle-control-22"
                       >
-                        Screen transactions for abnormal purchase prices
+                        Block transactions for abnormal purchase prices
                       </label>
                     </div>
                     <p
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                      id="inspector-toggle-control-18__help"
+                      id="inspector-toggle-control-22__help"
                     >
                       The payment will be blocked.
                     </p>
@@ -5271,54 +5112,6 @@ Object {
                         </div>
                       </div>
                     </div>
-                    <div
-                      class="fraud-protection-rule-toggle-block"
-                    >
-                      <strong>
-                        Filter action
-                      </strong>
-                      <div
-                        class="components-base-control components-radio-control css-wdf2ti-Wrapper e1puf3u0"
-                      >
-                        <div
-                          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-                        >
-                          <div
-                            class="components-radio-control__option"
-                          >
-                            <input
-                              class="components-radio-control__input"
-                              id="inspector-radio-control-1-0"
-                              name="inspector-radio-control-1"
-                              type="radio"
-                              value="review"
-                            />
-                            <label
-                              for="inspector-radio-control-1-0"
-                            >
-                              Authorize and hold for review
-                            </label>
-                          </div>
-                          <div
-                            class="components-radio-control__option"
-                          >
-                            <input
-                              checked=""
-                              class="components-radio-control__input"
-                              id="inspector-radio-control-1-1"
-                              name="inspector-radio-control-1"
-                              type="radio"
-                              value="block"
-                            />
-                            <label
-                              for="inspector-radio-control-1-1"
-                            >
-                              Block Payment
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </div>
                 <div
@@ -5373,9 +5166,9 @@ Object {
                         class="components-form-toggle"
                       >
                         <input
-                          aria-describedby="inspector-toggle-control-19__help"
+                          aria-describedby="inspector-toggle-control-23__help"
                           class="components-form-toggle__input"
-                          id="inspector-toggle-control-19"
+                          id="inspector-toggle-control-23"
                           type="checkbox"
                         />
                         <span
@@ -5387,16 +5180,16 @@ Object {
                       </span>
                       <label
                         class="components-toggle-control__label"
-                        for="inspector-toggle-control-19"
+                        for="inspector-toggle-control-23"
                       >
-                        Screen transactions for abnormal item counts
+                        Block transactions for abnormal item counts
                       </label>
                     </div>
                     <p
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                      id="inspector-toggle-control-19__help"
+                      id="inspector-toggle-control-23__help"
                     >
-                      When enabled, the payment method will not be charged until you review and approve the transaction.
+                      When enabled, the payment will be blocked.
                     </p>
                   </div>
                 </div>
@@ -5409,6 +5202,83 @@ Object {
                   <p>
                     An unusually high item count, compared to the average for your business, can indicate potential fraudulent activity.
                   </p>
+                </div>
+              </div>
+            </div>
+            <div
+              class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+              id="cvc-verification-card"
+            >
+              <div
+                class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
+              >
+                <div>
+                  <p
+                    class="fraud-protection-rule-card-header"
+                  >
+                    CVC Verification
+                  </p>
+                  <p
+                    class="fraud-protection-rule-card-description"
+                  >
+                    This filter checks the security code submitted by the customer against the data on file with the card issuer.
+                  </p>
+                </div>
+              </div>
+              <hr />
+              <div
+                class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
+              >
+                <div
+                  class="fraud-protection-rule-description"
+                >
+                  <strong>
+                    How does this filter protect me?
+                  </strong>
+                  <p>
+                    Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
+                  </p>
+                </div>
+                <div
+                  class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+                >
+                  <div
+                    class="components-notice__content"
+                  >
+                    <div
+                      class="components-flex css-18koiq9-Flex eboqfv50"
+                    >
+                      <div
+                        class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                      >
+                        <svg
+                          class="gridicon gridicons-notice-outline"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <g>
+                            <path
+                              d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                            />
+                          </g>
+                        </svg>
+                      </div>
+                      <div
+                        class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                      >
+                        For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
+                        <a
+                          data-link-type="external"
+                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          target="_blank"
+                        >
+                          Learn more
+                        </a>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -5495,6 +5365,49 @@ Object {
               class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
             >
               <div
+                class="fraud-protection-rule-toggle"
+              >
+                <strong>
+                  Enable filtering
+                </strong>
+                <div
+                  class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
+                >
+                  <div
+                    class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+                  >
+                    <span
+                      class="components-form-toggle"
+                    >
+                      <input
+                        aria-describedby="inspector-toggle-control-18__help"
+                        class="components-form-toggle__input"
+                        id="inspector-toggle-control-18"
+                        type="checkbox"
+                      />
+                      <span
+                        class="components-form-toggle__track"
+                      />
+                      <span
+                        class="components-form-toggle__thumb"
+                      />
+                    </span>
+                    <label
+                      class="components-toggle-control__label"
+                      for="inspector-toggle-control-18"
+                    >
+                      Block transactions for mismatched AVS
+                    </label>
+                  </div>
+                  <p
+                    class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+                    id="inspector-toggle-control-18__help"
+                  >
+                    When enabled, the payment will be blocked.
+                  </p>
+                </div>
+              </div>
+              <div
                 class="fraud-protection-rule-description"
               >
                 <strong>
@@ -5503,124 +5416,6 @@ Object {
                 <p>
                   Buyers who can provide the street number and post code on file with the issuing bank are more likely to be the actual account holder. AVS matches, however, are not a guarantee.
                 </p>
-              </div>
-              <div
-                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-              >
-                <div
-                  class="components-notice__content"
-                >
-                  <div
-                    class="components-flex css-18koiq9-Flex eboqfv50"
-                  >
-                    <div
-                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                    >
-                      <svg
-                        class="gridicon gridicons-notice-outline"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        width="24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <g>
-                          <path
-                            d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                          />
-                        </g>
-                      </svg>
-                    </div>
-                    <div
-                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                    >
-                      For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
-                      <a
-                        data-link-type="external"
-                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
-                        target="_blank"
-                      >
-                        Learn more
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div
-            class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
-            id="cvc-verification-card"
-          >
-            <div
-              class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
-            >
-              <div>
-                <p
-                  class="fraud-protection-rule-card-header"
-                >
-                  CVC Verification
-                </p>
-                <p
-                  class="fraud-protection-rule-card-description"
-                >
-                  This filter checks the security code submitted by the customer against the data on file with the card issuer.
-                </p>
-              </div>
-            </div>
-            <hr />
-            <div
-              class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
-            >
-              <div
-                class="fraud-protection-rule-description"
-              >
-                <strong>
-                  How does this filter protect me?
-                </strong>
-                <p>
-                  Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
-                </p>
-              </div>
-              <div
-                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
-              >
-                <div
-                  class="components-notice__content"
-                >
-                  <div
-                    class="components-flex css-18koiq9-Flex eboqfv50"
-                  >
-                    <div
-                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
-                    >
-                      <svg
-                        class="gridicon gridicons-notice-outline"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        width="24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <g>
-                          <path
-                            d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                          />
-                        </g>
-                      </svg>
-                    </div>
-                    <div
-                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                    >
-                      For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
-                      <a
-                        data-link-type="external"
-                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
-                        target="_blank"
-                      >
-                        Learn more
-                      </a>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -5678,9 +5473,9 @@ Object {
                       class="components-form-toggle"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-15__help"
+                        aria-describedby="inspector-toggle-control-19__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-15"
+                        id="inspector-toggle-control-19"
                         type="checkbox"
                       />
                       <span
@@ -5692,16 +5487,16 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-15"
+                      for="inspector-toggle-control-19"
                     >
-                      Screen transactions for international IP addresses
+                      Block transactions for international IP addresses
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-15__help"
+                    id="inspector-toggle-control-19__help"
                   >
-                    When enabled, the payment method will not be charged until you review and approve the transaction.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -5799,9 +5594,9 @@ Object {
                       class="components-form-toggle"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-16__help"
+                        aria-describedby="inspector-toggle-control-20__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-16"
+                        id="inspector-toggle-control-20"
                         type="checkbox"
                       />
                       <span
@@ -5813,16 +5608,16 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-16"
+                      for="inspector-toggle-control-20"
                     >
                       Screen transactions where the IP country and billing country don't match
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-16__help"
+                    id="inspector-toggle-control-20__help"
                   >
-                    When enabled, the payment method will not be charged until you review and approve the transaction.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -5878,9 +5673,9 @@ Object {
                       class="components-form-toggle"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-17__help"
+                        aria-describedby="inspector-toggle-control-21__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-17"
+                        id="inspector-toggle-control-21"
                         type="checkbox"
                       />
                       <span
@@ -5892,16 +5687,16 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-17"
+                      for="inspector-toggle-control-21"
                     >
-                      Screen transactions for mismatched addresses
+                      Block transactions for mismatched addresses
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-17__help"
+                    id="inspector-toggle-control-21__help"
                   >
-                    When enabled, the payment method will not be charged until you review and approve the transaction.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -5957,9 +5752,9 @@ Object {
                       class="components-form-toggle is-checked"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-18__help"
+                        aria-describedby="inspector-toggle-control-22__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-18"
+                        id="inspector-toggle-control-22"
                         type="checkbox"
                       />
                       <span
@@ -5971,14 +5766,14 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-18"
+                      for="inspector-toggle-control-22"
                     >
-                      Screen transactions for abnormal purchase prices
+                      Block transactions for abnormal purchase prices
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-18__help"
+                    id="inspector-toggle-control-22__help"
                   >
                     The payment will be blocked.
                   </p>
@@ -6063,54 +5858,6 @@ Object {
                       </div>
                     </div>
                   </div>
-                  <div
-                    class="fraud-protection-rule-toggle-block"
-                  >
-                    <strong>
-                      Filter action
-                    </strong>
-                    <div
-                      class="components-base-control components-radio-control css-wdf2ti-Wrapper e1puf3u0"
-                    >
-                      <div
-                        class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-                      >
-                        <div
-                          class="components-radio-control__option"
-                        >
-                          <input
-                            class="components-radio-control__input"
-                            id="inspector-radio-control-1-0"
-                            name="inspector-radio-control-1"
-                            type="radio"
-                            value="review"
-                          />
-                          <label
-                            for="inspector-radio-control-1-0"
-                          >
-                            Authorize and hold for review
-                          </label>
-                        </div>
-                        <div
-                          class="components-radio-control__option"
-                        >
-                          <input
-                            checked=""
-                            class="components-radio-control__input"
-                            id="inspector-radio-control-1-1"
-                            name="inspector-radio-control-1"
-                            type="radio"
-                            value="block"
-                          />
-                          <label
-                            for="inspector-radio-control-1-1"
-                          >
-                            Block Payment
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
               <div
@@ -6165,9 +5912,9 @@ Object {
                       class="components-form-toggle"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-19__help"
+                        aria-describedby="inspector-toggle-control-23__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-19"
+                        id="inspector-toggle-control-23"
                         type="checkbox"
                       />
                       <span
@@ -6179,16 +5926,16 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-19"
+                      for="inspector-toggle-control-23"
                     >
-                      Screen transactions for abnormal item counts
+                      Block transactions for abnormal item counts
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-19__help"
+                    id="inspector-toggle-control-23__help"
                   >
-                    When enabled, the payment method will not be charged until you review and approve the transaction.
+                    When enabled, the payment will be blocked.
                   </p>
                 </div>
               </div>
@@ -6201,6 +5948,83 @@ Object {
                 <p>
                   An unusually high item count, compared to the average for your business, can indicate potential fraudulent activity.
                 </p>
+              </div>
+            </div>
+          </div>
+          <div
+            class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+            id="cvc-verification-card"
+          >
+            <div
+              class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
+            >
+              <div>
+                <p
+                  class="fraud-protection-rule-card-header"
+                >
+                  CVC Verification
+                </p>
+                <p
+                  class="fraud-protection-rule-card-description"
+                >
+                  This filter checks the security code submitted by the customer against the data on file with the card issuer.
+                </p>
+              </div>
+            </div>
+            <hr />
+            <div
+              class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
+            >
+              <div
+                class="fraud-protection-rule-description"
+              >
+                <strong>
+                  How does this filter protect me?
+                </strong>
+                <p>
+                  Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
+                </p>
+              </div>
+              <div
+                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+              >
+                <div
+                  class="components-notice__content"
+                >
+                  <div
+                    class="components-flex css-18koiq9-Flex eboqfv50"
+                  >
+                    <div
+                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                    >
+                      <svg
+                        class="gridicon gridicons-notice-outline"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                          />
+                        </g>
+                      </svg>
+                    </div>
+                    <div
+                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                    >
+                      For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
+                      <a
+                        data-link-type="external"
+                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        target="_blank"
+                      >
+                        Learn more
+                      </a>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
