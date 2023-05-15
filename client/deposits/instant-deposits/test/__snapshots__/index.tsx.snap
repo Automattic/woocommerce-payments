@@ -3,10 +3,10 @@
 exports[`Instant deposit button and modal button renders correctly with balance 1`] = `
 <div>
   <button
-    class="components-button is-secondary"
+    class="components-button is-primary"
     type="button"
   >
-    Instant deposit
+    Deposit available funds
   </button>
 </div>
 `;
@@ -14,11 +14,11 @@ exports[`Instant deposit button and modal button renders correctly with balance 
 exports[`Instant deposit button and modal button renders correctly with zero balance 1`] = `
 <div>
   <button
-    class="components-button is-secondary"
+    class="components-button is-primary"
     disabled=""
     type="button"
   >
-    Instant deposit
+    Deposit available funds
   </button>
 </div>
 `;

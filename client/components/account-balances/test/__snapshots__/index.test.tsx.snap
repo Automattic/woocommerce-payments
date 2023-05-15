@@ -90,6 +90,7 @@ exports[`AccountBalances renders 1`] = `
                       aria-label="Available funds tooltip"
                       class="wcpay-account-balances__balances__item__tooltip-button"
                       role="button"
+                    tabindex="0"
                     >
                       <svg
                         class="gridicon gridicons-help-outline wcpay-account-balances__balances__item__tooltip-button__icon needs-offset"
@@ -136,6 +137,7 @@ exports[`AccountBalances renders 1`] = `
                       aria-label="Pending funds tooltip"
                       class="wcpay-account-balances__balances__item__tooltip-button"
                       role="button"
+                    tabindex="0"
                     >
                       <svg
                         class="gridicon gridicons-help-outline wcpay-account-balances__balances__item__tooltip-button__icon needs-offset"
