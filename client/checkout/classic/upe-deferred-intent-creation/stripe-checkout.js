@@ -63,13 +63,11 @@ function blockUI( jQueryForm ) {
  * and shows an error message in the checkout.
  *
  * @param {Object} elements The Stripe elements object to be validated.
- * @param {Object} jQueryForm The jQuery object for the form being validated.
  * @return {Promise} Promise for the checkout submission.
  */
-function validateElements( elements, jQueryForm ) {
+function validateElements( elements ) {
 	return elements.submit().then( ( result ) => {
 		if ( result.error ) {
-			jQueryForm.removeClass( 'processing' ).unblock();
 			throw new Error( result.error.message );
 		}
 	} );
@@ -205,7 +203,7 @@ export const checkout = ( api, jQueryForm, paymentMethodType ) => {
 
 	( async () => {
 		try {
-			await validateElements( elements, jQueryForm );
+			await validateElements( elements );
 			const paymentMethodObject = await createStripePaymentMethod(
 				api,
 				elements
