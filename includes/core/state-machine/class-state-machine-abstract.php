@@ -2,10 +2,8 @@
 
 namespace WCPay\Core\State_Machine;
 abstract class State_Machine_Abstract {
-	abstract public function get_id(): string;
-
 	/**
-	 * The transaction configuration.
+	 *  Transit configuration, from which state to which state.
 	 *
 	 * @var array
 	 */
@@ -15,32 +13,46 @@ abstract class State_Machine_Abstract {
 	private $input = null;
 
 	/**
-	 * @var Happy_State | Async_State
+	 * @var Internal_State | Async_State
 	 */
 	private $initial_state;
 
 	/** @var Entity_Payment */
 	private $entity;
+
+	/**
+	 * @var Entity_Storage_Payment
+	 */
+	private $storage;
+
 	public function __construct( Entity_Storage_Payment $storage ) {
 		$this->storage       = $storage;
 	}
 
+	public function get_id(): string {
+		return self::class;
+	}
 
-	public function set_input( Input $input ) {
+	public function set_input( Input $input ): State_Machine_Abstract {
 		$this->input = $input;
 		return $this;
 	}
 
-	public function set_initial_state( State $initial_state ) {
+	public function set_entity( Entity_Payment $entity ): State_Machine_Abstract {
+		$this->entity = $entity;
+		return $this;
+	}
+
+	public function set_initial_state( State $initial_state ): State_Machine_Abstract {
 		$this->initial_state = $initial_state;
 		return $this;
 	}
 
-	public function set_entity( Entity_Payment $entity ) {
-		$this->entity = $entity;
-		return $this;
-	}
+
 	public function progress(): Entity_Payment {
+		if ( count( $this->config ) === 0 ) {
+			throw new \Exception( 'Transit configuration is not set' );
+		}
 
 		if ( ! $this->entity ) {
 			throw new \Exception( 'Entity not set' );
@@ -56,19 +68,16 @@ abstract class State_Machine_Abstract {
 			$next_state = $current_state->act( $this->entity, $this->input);
 
 			if( ! $this->is_valid_next_state($current_state, $next_state) ) {
-				// TODO - create a separate exception.
-				throw new \Exception( 'Invalid next state: ' . $next_state->get_id() . ' from previous state: ' . $current_state->get_id() );
+				throw new \Exception( 'Transition does not exist from state: ' . $current_state->get_id() . ' to ' . $next_state->get_id() );
 			}
 
 			// Log the transition.
 			$this->entity->log( $current_state, $next_state, $this->input, $this );
 			$current_state = $next_state;
 
-		} while ( ! $this->is_emit_state( $current_state ) );
+		} while ( is_a( $current_state, Internal_State::class ) );
 
-		$order_id = $this->entity->get_order_id();
-		$order = wc_get_order( $order_id );
-		$this->storage->save( $order, $this->entity );
+		$this->storage->save( $this->entity );
 
 		return $this->entity;
 	}
@@ -77,11 +86,5 @@ abstract class State_Machine_Abstract {
 		$current_state_class = get_class( $current_state );
 		$next_state_class = get_class( $next_state );
 		return in_array( $next_state_class, $this->config[ $current_state_class ] ) ;
-	}
-
-	protected function is_emit_state( State $state): bool {
-		return is_subclass_of( $state, Final_State::class )
-			|| is_subclass_of( $state, Failed_State::class )
-			|| is_subclass_of( $state, Async_State::class );
 	}
 }

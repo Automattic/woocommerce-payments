@@ -2,14 +2,20 @@
 namespace WCPay\Core\State_Machine;
 
 abstract class Input {
-	/** @var ?array */
-	private $data = null;
+	/**
+	 * @var array
+	 */
+	private $data = [];
 
-	protected function set(string $key, $value) {
+	public function set( string $key, $value) {
 		$this->data[$key] = $value;
 	}
 
-	protected function get(string $key) {
+	public function get(string $key) {
 		return $this->data[$key] ?? null;
+	}
+
+	public function exist( string $key ): bool {
+		return isset( $this->data[$key] );
 	}
 }

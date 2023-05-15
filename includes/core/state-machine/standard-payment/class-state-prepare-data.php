@@ -2,7 +2,7 @@
 
 namespace WCPay\Core\State_Machine;
 
-class Prepare_Data_State extends Happy_State {
+class Prepare_Data_State extends Internal_State {
 	public function act( Entity_Payment &$entity, Input $input = null ): State {
 		/**
 		 * - prepare_metadata
