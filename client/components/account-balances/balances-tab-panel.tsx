@@ -15,7 +15,7 @@ import { getCurrencyTabTitle } from './utils';
 import BalanceBlock from './balance-block';
 import BalanceTooltip from './balance-tooltip';
 import { documentationUrls, fundLabelStrings } from './strings';
-import InstantDepositButton from 'deposits/instant-deposits/button-and-modal';
+import InstantDepositButton from 'deposits/instant-deposits';
 
 /**
  * BalanceTab
@@ -191,29 +191,50 @@ const AccountBalancesTabPanel: React.FC = () => {
 							tooltip={
 								<BalanceTooltip
 									label={ `${ fundLabelStrings.pending } tooltip` }
-									content={ interpolateComponents( {
-										mixedString: sprintf(
-											_n(
-												'The amount of funds still in the %d day pending period. {{learnMoreLink}}Learn more.{{/learnMoreLink}}',
-												'The amount of funds still in the %d day pending period. {{learnMoreLink}}Learn more.{{/learnMoreLink}}',
-												tab.delayDays,
-												'woocommerce-payments'
-											),
-											tab.delayDays
-										),
-										components: {
-											learnMoreLink: (
-												// eslint-disable-next-line jsx-a11y/anchor-has-content
-												<a
-													rel="external noopener noreferrer"
-													target="_blank"
-													href={
-														documentationUrls.depositSchedule
-													}
-												/>
-											),
-										},
-									} ) }
+									content={
+										tab.pendingFunds < 0
+											? interpolateComponents( {
+													mixedString: __(
+														'{{learnMoreLink}}Learn more{{/learnMoreLink}} about why your account balance may be negative.',
+														'woocommerce-payments'
+													),
+													components: {
+														learnMoreLink: (
+															// eslint-disable-next-line jsx-a11y/anchor-has-content
+															<a
+																rel="external noopener noreferrer"
+																target="_blank"
+																href={
+																	documentationUrls.negativeBalance
+																}
+															/>
+														),
+													},
+											  } )
+											: interpolateComponents( {
+													mixedString: sprintf(
+														_n(
+															'The amount of funds still in the %d day pending period. {{learnMoreLink}}Learn more.{{/learnMoreLink}}',
+															'The amount of funds still in the %d day pending period. {{learnMoreLink}}Learn more.{{/learnMoreLink}}',
+															tab.delayDays,
+															'woocommerce-payments'
+														),
+														tab.delayDays
+													),
+													components: {
+														learnMoreLink: (
+															// eslint-disable-next-line jsx-a11y/anchor-has-content
+															<a
+																rel="external noopener noreferrer"
+																target="_blank"
+																href={
+																	documentationUrls.depositSchedule
+																}
+															/>
+														),
+													},
+											  } )
+									}
 								/>
 							}
 						/>

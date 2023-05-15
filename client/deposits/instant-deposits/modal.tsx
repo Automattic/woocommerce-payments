@@ -3,6 +3,7 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { Button, Modal } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
@@ -13,7 +14,14 @@ import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
  */
 import './style.scss';
 
-const InstantDepositModal = ( {
+interface InstantDepositModalProps {
+	instantBalance: AccountOverview.InstantBalance;
+	onClose: () => void;
+	onSubmit: () => void;
+	inProgress: boolean;
+}
+
+const InstantDepositModal: React.FC< InstantDepositModalProps > = ( {
 	instantBalance: { amount, fee, net, fee_percentage: percentage },
 	onClose,
 	onSubmit,
