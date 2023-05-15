@@ -73,7 +73,6 @@ declare global {
 			isWelcomeTourDismissed?: boolean;
 		};
 		accountDefaultCurrency: string;
-		isFraudProtectionSettingsEnabled: boolean;
 		isFRTReviewFeatureActive: boolean;
 		frtDiscoverBannerSettings: string;
 		onboardingTestMode: boolean;
