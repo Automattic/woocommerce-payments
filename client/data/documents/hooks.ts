@@ -42,6 +42,8 @@ export const useDocuments = ( {
 	date_between: dateBetween,
 	type_is: typeIs,
 	type_is_not: typeIsNot,
+	source_device_is: sourceDeviceIs,
+	source_device_is_not: sourceDeviceIsNot,
 }: Query ): Documents =>
 	useSelect(
 		( select ) => {
@@ -68,6 +70,8 @@ export const useDocuments = ( {
 					),
 				typeIs,
 				typeIsNot,
+				sourceDeviceIs,
+				sourceDeviceIsNot,
 			};
 
 			return {
@@ -87,6 +91,8 @@ export const useDocuments = ( {
 			JSON.stringify( dateBetween ),
 			typeIs,
 			typeIsNot,
+			sourceDeviceIs,
+			sourceDeviceIsNot,
 		]
 	);
 
@@ -97,6 +103,8 @@ export const useDocumentsSummary = ( {
 	date_between: dateBetween,
 	type_is: typeIs,
 	type_is_not: typeIsNot,
+	source_device_is: sourceDeviceIs,
+	source_device_is_not: sourceDeviceIsNot,
 }: Query ): DocumentsSummary =>
 	useSelect(
 		( select ) => {
@@ -109,6 +117,8 @@ export const useDocumentsSummary = ( {
 				dateBetween,
 				typeIs,
 				typeIsNot,
+				sourceDeviceIs,
+				sourceDeviceIsNot,
 			};
 
 			return {
@@ -123,5 +133,7 @@ export const useDocumentsSummary = ( {
 			JSON.stringify( dateBetween ),
 			typeIs,
 			typeIsNot,
+			sourceDeviceIs,
+			sourceDeviceIsNot,
 		]
 	);
