@@ -28,7 +28,6 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		'_wcpay_feature_account_overview_task_list' => 'accountOverviewTaskList',
 		'_wcpay_feature_auth_and_capture'           => 'isAuthAndCaptureEnabled',
 		'_wcpay_feature_progressive_onboarding'     => 'progressiveOnboarding',
-		'_wcpay_feature_simplify_deposits_ui'       => 'simplifyDepositsUi',
 	];
 
 	public function set_up() {
