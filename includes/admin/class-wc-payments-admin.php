@@ -742,11 +742,12 @@ class WC_Payments_Admin {
 				'deletedTodoTasks'       => get_option( 'woocommerce_deleted_todo_tasks', [] ),
 				'remindMeLaterTodoTasks' => get_option( 'woocommerce_remind_me_later_todo_tasks', [] ),
 			],
-			'currentUserEmail'           => $current_user_email,
-			'currencyData'               => $currency_data,
-			'restUrl'                    => get_rest_url( null, '' ), // rest url to concatenate when merchant use Plain permalinks.
-			'numDisputesNeedingResponse' => $this->get_disputes_awaiting_response_count(),
-			'fraudProtection'            => [
+			'currentUserEmail'                 => $current_user_email,
+			'currencyData'                     => $currency_data,
+			'restUrl'                          => get_rest_url( null, '' ), // rest url to concatenate when merchant use Plain permalinks.
+			'numDisputesNeedingResponse'       => $this->get_disputes_awaiting_response_count(),
+			'isFRTReviewFeatureActive'         => WC_Payments_Features::is_frt_review_feature_active(),
+			'fraudProtection'                  => [
 				'isWelcomeTourDismissed' => WC_Payments_Features::is_fraud_protection_welcome_tour_dismissed(),
 			],
 			'accountDefaultCurrency'     => $this->account->get_account_default_currency(),

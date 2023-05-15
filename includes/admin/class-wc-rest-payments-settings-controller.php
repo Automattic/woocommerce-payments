@@ -795,10 +795,34 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->api_client->save_fraud_ruleset( $ruleset_config );
 
 		// Update local cache.
+		$this->wcpay_gateway->update_cached_account_data(
+			'fraud_mitigation_settings',
+			[ 'avs_check_enabled' => $this->get_avs_check_enabled( $ruleset_config ) ]
+		);
 		delete_transient( 'wcpay_fraud_protection_settings' );
 		set_transient( 'wcpay_fraud_protection_settings', $ruleset_config, 1 * DAY_IN_SECONDS );
 
 		// Update the option only when server update succeeds.
 		update_option( 'current_protection_level', $protection_level );
+	}
+
+	/**
+	 * Get the AVS check enabled status from the ruleset config.
+	 *
+	 * @param array $ruleset_config The ruleset config.
+	 *
+	 * @return bool
+	 */
+	private function get_avs_check_enabled( array $ruleset_config ) {
+		$avs_check_enabled = false;
+
+		foreach ( $ruleset_config as $rule_definition ) {
+			if ( 'avs_verification' === $rule_definition['key'] ) {
+				$avs_check_enabled = true;
+				break;
+			}
+		}
+
+		return $avs_check_enabled;
 	}
 }

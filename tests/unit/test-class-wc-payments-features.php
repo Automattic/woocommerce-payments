@@ -373,6 +373,23 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( WC_Payments_Features::is_upe_deferred_intent_enabled() );
 	}
 
+	public function test_is_wcpay_frt_review_feature_active_returns_true() {
+		add_filter(
+			'pre_option_wcpay_frt_review_feature_active',
+			function ( $pre_option, $option, $default ) {
+				return '1';
+			},
+			10,
+			3
+		);
+		$this->assertTrue( WC_Payments_Features::is_frt_review_feature_active() );
+		remove_all_filters( 'pre_option_wcpay_frt_review_feature_active' );
+	}
+
+	public function test_is_frt_review_feature_active_returns_false_when_flag_is_not_set() {
+		$this->assertFalse( WC_Payments_Features::is_frt_review_feature_active() );
+	}
+
 	private function setup_enabled_flags( array $enabled_flags ) {
 		foreach ( array_keys( self::FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING ) as $flag ) {
 			add_filter(

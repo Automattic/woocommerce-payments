@@ -203,6 +203,5 @@ describe( 'TransactionsPage', () => {
 
 		await renderTransactionsPage();
 		expect( screen.queryByText( /blocked/i ) ).toBeInTheDocument();
-		expect( screen.queryByText( /risk review/i ) ).toBeInTheDocument();
 	} );
 } );

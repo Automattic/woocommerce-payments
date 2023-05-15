@@ -73,6 +73,7 @@ declare global {
 			isWelcomeTourDismissed?: boolean;
 		};
 		accountDefaultCurrency: string;
+		isFRTReviewFeatureActive: boolean;
 		frtDiscoverBannerSettings: string;
 		onboardingTestMode: boolean;
 		onboardingFieldsData?: {
