@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { noop } from 'lodash';
 
 /**
@@ -83,6 +83,11 @@ export const ClickTooltip: React.FC< TooltipProps > = ( {
 } ) => {
 	const [ isClicked, setIsClicked ] = useState( false );
 
+	// For interactive tooltips, we pass the tooltip button as the tooltip content's parent element.
+	// This will allow the tooltip content to render with the correct tab index, aiding keyboard navigation.
+	// Otherwise, the tooltip will be appended to the end of the document with an incorrect tab index.
+	const tooltipParentRef = useRef< HTMLButtonElement | null >( null );
+
 	const handleMouseClick = () => {
 		setIsClicked( ( val ) => ! val );
 		if ( isClicked ) {
@@ -99,9 +104,11 @@ export const ClickTooltip: React.FC< TooltipProps > = ( {
 			className="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
 			onClick={ handleMouseClick }
 			type={ 'button' }
+			ref={ tooltipParentRef }
 		>
 			<TooltipBase
 				{ ...props }
+				parentElement={ tooltipParentRef.current || undefined }
 				onHide={ handleHide }
 				isVisible={ isVisible || isClicked }
 			/>
