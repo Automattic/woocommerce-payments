@@ -69,22 +69,6 @@ class Fraud_Risk_Tools {
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			add_action( 'admin_menu', [ $this, 'init_advanced_settings_page' ] );
 		}
-
-		// Adds the required parameter on server.
-		if ( WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
-			add_filter(
-				'wcpay_api_request_params',
-				function( $params, $api, $method ) {
-					if ( false !== strpos( $api, WC_Payments_API_Client::INTENTIONS_API ) && WC_Payments_API_Client::POST === $method ) {
-						$params['fraud_settings_enabled'] = 'true';
-					}
-
-					return $params;
-				},
-				10,
-				3
-			);
-		}
 	}
 
 	/**
@@ -99,11 +83,6 @@ class Fraud_Risk_Tools {
 		}
 
 		if ( ! $this->payments_account->is_stripe_connected() ) {
-			return;
-		}
-
-		// Skip registering the page if the fraud and risk tools feature is not enabled.
-		if ( ! WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
 			return;
 		}
 
