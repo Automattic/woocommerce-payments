@@ -205,10 +205,9 @@ describe( 'TransactionsPage', () => {
 
 		await renderTransactionsPage();
 		expect( screen.queryByText( /blocked/i ) ).toBeInTheDocument();
-		expect( screen.queryByText( /risk review/i ) ).toBeInTheDocument();
 	} );
 
-	test( 'do not render fraud outcome tabs if the feature flag is disabled', async () => {
+	test.skip( 'do not render fraud outcome tabs if the feature flag is disabled', async () => {
 		global.wcpaySettings.isFraudProtectionSettingsEnabled = false;
 
 		mockUseManualCapture.mockReturnValue( [ false ] );

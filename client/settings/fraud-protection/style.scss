@@ -143,18 +143,32 @@
 			font-weight: 600;
 			line-height: 16px;
 			color: #1e1e1e;
-			margin: 0;
-			margin-bottom: 8px;
 			display: block;
 		}
+
 		&-toggle {
 			margin-bottom: 24px;
+
 			label {
 				padding-left: 8px;
 				line-height: 21px;
 				font-size: 13px;
 				color: #1d2327;
 			}
+
+			.components-base-control__field {
+				align-items: center;
+				display: flex;
+			}
+
+			.components-base-control__help {
+				line-height: 16px;
+			}
+		}
+
+		strong,
+		&-toggle > div {
+			margin: 0 0 12px;
 		}
 
 		&-block {

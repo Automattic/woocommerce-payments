@@ -268,6 +268,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the Fraud and Risk Tools feature flag is enabled.
+	 *
+	 * @return  bool
+	 */
+	public static function is_frt_review_feature_active(): bool {
+		return '1' === get_option( 'wcpay_frt_review_feature_active', '0' );
+	}
+
+	/**
 	 * Checks whether the Fraud and Risk Tools welcome tour was dismissed.
 	 *
 	 * @return bool
