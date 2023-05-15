@@ -48,8 +48,7 @@ abstract class State_Machine_Abstract {
 		return $this;
 	}
 
-
-	public function progress(): Entity_Payment {
+	public function process(): Entity_Payment {
 		if ( count( $this->config ) === 0 ) {
 			throw new \Exception( 'Transit configuration is not set' );
 		}

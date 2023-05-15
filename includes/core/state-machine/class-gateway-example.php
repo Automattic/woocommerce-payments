@@ -21,7 +21,7 @@ class Standard_Gateway_Example {
 		$state_machine->set_initial_state( new Start_Standard_Payment_State() )
 			->set_entity( $payment_entity )
 			->set_input( $input );
-		$processed_entity = $state_machine->progress();
+		$processed_entity = $state_machine->process();
 
 		// current_state at this point can be either:
 		// - failed state: General_Failed_State
@@ -69,7 +69,7 @@ class Standard_Gateway_Example {
 		$state_machine = new State_Machine_Standard_Payment( $payment_storage );
 		$state_machine->set_entity( $payment_entity )
 		              ->set_input( $input );
-		$processed_entity = $state_machine->progress();
+		$processed_entity = $state_machine->process();
 
 		// Based on the state machine config, current_state here can be either:
 		// - Completed_State
