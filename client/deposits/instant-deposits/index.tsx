@@ -3,6 +3,7 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
@@ -14,7 +15,7 @@ import './style.scss';
 import InstantDepositModal from './modal';
 import { useInstantDeposit } from 'wcpay/data';
 
-const isButtonDisabled = ( instantBalance ) => {
+const isButtonDisabled = ( instantBalance: AccountOverview.InstantBalance ) => {
 	let buttonDisabled = false;
 	if ( 0 === instantBalance.amount ) {
 		buttonDisabled = true;
@@ -23,7 +24,12 @@ const isButtonDisabled = ( instantBalance ) => {
 	return buttonDisabled;
 };
 
-const InstantDepositButton = ( { instantBalance } ) => {
+interface InstantDepositButtonProps {
+	instantBalance: AccountOverview.InstantBalance;
+}
+const InstantDepositButton: React.FC< InstantDepositButtonProps > = ( {
+	instantBalance,
+} ) => {
 	const [ isModalOpen, setModalOpen ] = useState( false );
 	const buttonDisabled = isButtonDisabled( instantBalance );
 	const { inProgress, submit } = useInstantDeposit(
