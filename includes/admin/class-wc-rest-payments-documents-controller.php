@@ -132,14 +132,12 @@ class WC_REST_Payments_Documents_Controller extends WC_Payments_REST_Controller 
 	private function get_documents_filters( $request ) {
 		return array_filter(
 			[
-				'match'                => $request->get_param( 'match' ),
-				'date_before'          => $request->get_param( 'date_before' ),
-				'date_after'           => $request->get_param( 'date_after' ),
-				'date_between'         => $request->get_param( 'date_between' ),
-				'type_is'              => $request->get_param( 'type_is' ),
-				'type_is_not'          => $request->get_param( 'type_is_not' ),
-				'source_device_is'     => $request->get_param( 'source_device_is' ),
-				'source_device_is_not' => $request->get_param( 'source_device_is_not' ),
+				'match'        => $request->get_param( 'match' ),
+				'date_before'  => $request->get_param( 'date_before' ),
+				'date_after'   => $request->get_param( 'date_after' ),
+				'date_between' => $request->get_param( 'date_between' ),
+				'type_is'      => $request->get_param( 'type_is' ),
+				'type_is_not'  => $request->get_param( 'type_is_not' ),
 			],
 			static function ( $filter ) {
 				return null !== $filter;
