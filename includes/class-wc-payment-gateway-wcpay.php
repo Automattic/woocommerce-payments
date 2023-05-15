@@ -2282,11 +2282,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return  string The current fraud protection level.
 	 */
 	protected function get_current_protection_level() {
-		// If fraud and risk tools feature is not enabled, do not expose the settings.
-		if ( ! WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
-			return '';
-		}
-
 		$this->maybe_refresh_fraud_protection_settings();
 		return get_option( 'current_protection_level', 'basic' );
 	}
@@ -2298,11 +2293,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *                       If there's a fetch error, it returns "error".
 	 */
 	protected function get_advanced_fraud_protection_settings() {
-		// If fraud and risk tools feature is not enabled, do not expose the settings.
-		if ( ! WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
-			return [];
-		}
-
 		// Check if Stripe is connected.
 		if ( ! $this->is_connected() ) {
 			return [];

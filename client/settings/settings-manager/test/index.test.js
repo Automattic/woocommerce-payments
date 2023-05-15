@@ -40,12 +40,9 @@ describe( 'SettingsManager', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	it( 'renders the Fraud Protection settings section if the option flag is enabled', () => {
+	it( 'renders the Fraud Protection settings section', () => {
 		const context = { featureFlags: {} };
-		global.wcpaySettings = {
-			isFraudProtectionSettingsEnabled: true,
-		};
-
+		global.wcpaySettings = {};
 		render(
 			<WCPaySettingsContext.Provider value={ context }>
 				<SettingsManager />
@@ -53,22 +50,5 @@ describe( 'SettingsManager', () => {
 		);
 
 		expect( screen.queryByText( 'Fraud protection' ) ).toBeInTheDocument();
-	} );
-
-	it( 'does not render the Fraud Protection settings section if the option flag is disabled', () => {
-		const context = { featureFlags: {} };
-		global.wcpaySettings = {
-			isFraudProtectionSettingsEnabled: false,
-		};
-
-		render(
-			<WCPaySettingsContext.Provider value={ context }>
-				<SettingsManager />
-			</WCPaySettingsContext.Provider>
-		);
-
-		expect(
-			screen.queryByText( 'Fraud protection' )
-		).not.toBeInTheDocument();
 	} );
 } );
