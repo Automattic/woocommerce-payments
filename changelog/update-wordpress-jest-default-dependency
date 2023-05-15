@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Update @wordpress/jest-preset-default to v8.1.2
