@@ -16,11 +16,9 @@ import { STORE_NAME } from '../../../data/constants';
 import {
 	useAuthorization,
 	useChargeFromOrder,
-	useLatestFraudOutcome,
 	useTimeline,
 } from '../../../data';
 import { ApiError } from '../../../types/errors';
-import { latestFraudOutcomeMock } from '../../../data/fraud-outcomes/test/hooks';
 
 declare const global: {
 	wcSettings: { countries: Record< string, string > };
@@ -72,6 +70,7 @@ const chargeFromOrderMock = {
 		customer_url:
 			'admin.php?page=wc-admin&path=/customers&filter=single_customer&customers=55',
 		subscriptions: [],
+		fraud_meta_box_type: 'succeeded',
 	},
 	paid: false,
 	paydown: null,
@@ -88,7 +87,6 @@ const chargeFromOrderMock = {
 
 jest.mock( 'data/index', () => ( {
 	useChargeFromOrder: jest.fn(),
-	useLatestFraudOutcome: jest.fn(),
 	useAuthorization: jest.fn(),
 	useTimeline: jest.fn(),
 } ) );
@@ -106,10 +104,6 @@ jest.mock( '@wordpress/data', () => ( {
 	withSelect: jest.fn( () => jest.fn() ),
 	useSelect: jest.fn(),
 } ) );
-
-const mockUseLatestFraudOutcome = useLatestFraudOutcome as jest.MockedFunction<
-	typeof useLatestFraudOutcome
->;
 
 const mockUseChargeFromOrder = useChargeFromOrder as jest.MockedFunction<
 	typeof useChargeFromOrder
@@ -176,12 +170,6 @@ describe( 'Order details page', () => {
 	} );
 
 	it( 'should match the snapshot - Charge without payment intent', () => {
-		mockUseLatestFraudOutcome.mockReturnValue( {
-			data: latestFraudOutcomeMock,
-			error: undefined,
-			isLoading: false,
-		} );
-
 		mockUseChargeFromOrder.mockReturnValue( {
 			data: chargeFromOrderMock,
 			error: {} as ApiError,
@@ -202,12 +190,6 @@ describe( 'Order details page', () => {
 	} );
 
 	it( 'should match the snapshot - Charge with payment intent', () => {
-		mockUseLatestFraudOutcome.mockReturnValue( {
-			data: latestFraudOutcomeMock,
-			error: undefined,
-			isLoading: false,
-		} );
-
 		mockUseChargeFromOrder.mockReturnValue( {
 			data: chargeMock,
 			error: {} as ApiError,

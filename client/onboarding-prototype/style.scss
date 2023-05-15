@@ -1,0 +1,119 @@
+body.wcpay-onboarding-prototype__body {
+	background-color: #fff;
+
+	.wcpay-onboarding-prototype {
+		a {
+			text-decoration: none;
+		}
+
+		.stepper {
+			&__progress {
+				position: fixed;
+				top: 0;
+				left: 0;
+				height: 8px;
+				background-color: $gutenberg-blue;
+				z-index: 11;
+				transition: width 250ms;
+			}
+
+			&__nav {
+				position: fixed;
+				top: 0;
+				left: 0;
+				right: 0;
+				height: 80px;
+				padding-top: 8px;
+				display: grid;
+				grid-template-columns: 102px 1fr 102px;
+				align-items: stretch;
+				background-color: #fff;
+				z-index: 10;
+
+				&-button {
+					cursor: pointer;
+					background-color: transparent;
+					border: none;
+					display: flex;
+					align-items: center;
+					padding: $gap-large;
+					font-size: 14px;
+
+					.gridicons-chevron-left {
+						margin-right: 2px;
+					}
+
+					&:last-child {
+						justify-self: end;
+					}
+				}
+
+				&-logo {
+					justify-self: center;
+					align-self: center;
+					height: 28px;
+				}
+			}
+
+			&__wrapper {
+				max-width: 600px;
+				margin: 88px auto 0;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+			}
+
+			&__heading {
+				@include title-large;
+				color: $studio-gray-100;
+				text-align: center;
+			}
+
+			&__subheading {
+				font-size: 16px;
+				line-height: 24px;
+				font-weight: 400;
+				text-align: center;
+				color: $studio-gray-60;
+				margin: $gap-small 0 $gap-largest;
+			}
+
+			&__content {
+				max-width: 400px;
+
+				@media screen and ( min-width: $break-mobile ) {
+					width: 400px;
+				}
+			}
+
+			&__cta {
+				display: block;
+				width: 100%;
+				margin-top: $gap-larger;
+			}
+		}
+
+		.loading-step {
+			max-width: 520px;
+			margin: 50% auto 0;
+		}
+
+		.onboarding-mode__note {
+			background-color: $wp-blue-0;
+			padding: $gap-small $gap;
+		}
+
+		.wcpay-banner-notice {
+			margin: 0;
+		}
+
+		.components-base-control,
+		.components-custom-select-control {
+			margin-bottom: $gap-large;
+		}
+
+		.components-form-field__error {
+			margin: -$gap 0 $gap;
+		}
+	}
+}

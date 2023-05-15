@@ -465,8 +465,15 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @throws Order_Not_Found_Exception
 	 */
 	public function process_payment( $order_id ) {
+		$order = wc_get_order( $order_id );
+
+		if ( 20 < strlen( $order->get_billing_phone() ) ) {
+			throw new Process_Payment_Exception(
+				__( 'Invalid phone number.', 'woocommerce-payments' ),
+				'invalid_phone_number'
+			);
+		}
 		$payment_intent_id         = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$order                     = wc_get_order( $order_id );
 		$amount                    = $order->get_total();
 		$currency                  = $order->get_currency();
 		$converted_amount          = WC_Payments_Utils::prepare_amount( $amount, $currency );
@@ -584,7 +591,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			return $this->parent_process_payment( $order_id );
 		}
 
-		return [
+		return [ // nosemgrep: audit.php.wp.security.xss.query-arg  -- The output of add_query_arg is being escaped.
 			'result'         => 'success',
 			'payment_needed' => $payment_needed,
 			'redirect_url'   => wp_sanitize_redirect(

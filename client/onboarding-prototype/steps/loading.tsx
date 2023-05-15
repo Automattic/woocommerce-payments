@@ -11,9 +11,18 @@ import apiFetch from '@wordpress/api-fetch';
 import { useOnboardingContext } from '../context';
 import { EligibleData, EligibleResult } from '../types';
 import { fromDotNotation } from '../utils';
+import { trackRedirected, useTrackAbandoned } from '../tracking';
+import LoadBar from 'components/load-bar';
+import strings from '../strings';
 
-const Loading: React.FC = () => {
+interface Props {
+	name: string;
+}
+
+const LoadingStep: React.FC< Props > = () => {
 	const { data } = useOnboardingContext();
+
+	const { removeTrackListener } = useTrackAbandoned();
 
 	const isEligibleForPo = async () => {
 		if (
@@ -28,7 +37,7 @@ const Loading: React.FC = () => {
 			business: {
 				country: data.country,
 				type: data.business_type,
-				mcc: 'computers_peripherals_and_software', // TODO GH-4853 add MCC from onboarding form
+				mcc: 'software_services', // TODO GH-4853 add MCC from onboarding form
 				annual_revenue: data.annual_revenue,
 				go_live_timeframe: data.go_live_timeframe,
 			},
@@ -56,6 +65,10 @@ const Loading: React.FC = () => {
 			prefill: fromDotNotation( data ),
 			progressive: isEligible,
 		} );
+
+		trackRedirected( isEligible );
+		removeTrackListener();
+
 		window.location.href = resultUrl;
 	};
 
@@ -65,8 +78,17 @@ const Loading: React.FC = () => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [] );
 
-	// TODO implement in GH-4744 (Create or extend components needed for PO)
-	return <></>;
+	return (
+		<div className="loading-step">
+			<h1 className="stepper__heading">
+				{ strings.steps.loading.heading }
+			</h1>
+			<LoadBar />
+			<h2 className="stepper__subheading">
+				{ strings.steps.loading.subheading }
+			</h2>
+		</div>
+	);
 };
 
-export default Loading;
+export default LoadingStep;

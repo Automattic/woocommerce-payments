@@ -51,17 +51,6 @@ jobs:
           release-version: ${{ env.RELEASE_VERSION }}
           release-date: ${{ steps.format_date.outputs.RELEASE_DATE }}
           action-type: ${{ env.CHANGELOG_ACTION }}
-        
-      - name: "Update readme.txt"
-        env:
-          RELEASE_DATE: ${{ steps.format_date.outputs.RELEASE_DATE }}
-          CHANGELOG: ${{ steps.process_changelog.outputs.changelog }}
-        run: |
-          if ${{ env.CHANGELOG_ACTION == 'amend' }}; then
-            perl -i -p0e "s/= $RELEASE_VERSION.*?(\n){2}//s" readme.txt # Delete the existing changelog for the release version
-          fi
-            
-          sed -ri "s|(== Changelog ==)|\1\n\n= $RELEASE_VERSION - $RELEASE_DATE =\n$CHANGELOG|" readme.txt
                     
       - name: "Commit and push the changes"
         run: |

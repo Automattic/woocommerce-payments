@@ -612,8 +612,11 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'charges'  => [
 				'data' => [
 					[
-						'id'             => $charge_id         = 'py_123123123123123',
-						'payment_method' => $payment_method_id = 'pm_foo',
+						'id'                     => $charge_id         = 'py_123123123123123',
+						'payment_method'         => $payment_method_id = 'pm_foo',
+						'payment_method_details' => [
+							'type' => 'card',
+						],
 					],
 				],
 			],
@@ -691,8 +694,11 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'charges'  => [
 				'data' => [
 					[
-						'id'             => $charge_id         = 'py_123123123123123',
-						'payment_method' => $payment_method_id = 'pm_foo',
+						'id'                     => $charge_id         = 'py_123123123123123',
+						'payment_method'         => $payment_method_id = 'pm_foo',
+						'payment_method_details' => [
+							'type' => 'card',
+						],
 					],
 				],
 			],
@@ -951,6 +957,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 							'card' => [
 								'mandate' => $mandate_id = 'mandate_123123123',
 							],
+							'type' => 'card',
 						],
 					],
 				],

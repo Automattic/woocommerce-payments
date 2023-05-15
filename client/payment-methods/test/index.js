@@ -24,6 +24,14 @@ import WcPayUpeContextProvider from '../../settings/wcpay-upe-toggle/provider';
 import WcPayUpeContext from '../../settings/wcpay-upe-toggle/context';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 
+jest.mock( '@woocommerce/components', () => {
+	return {
+		Pill: ( { className, children } ) => (
+			<span className={ className }>{ children }</span>
+		),
+	};
+} );
+
 jest.mock( '../../data', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
 	useGetAvailablePaymentMethodIds: jest.fn(),

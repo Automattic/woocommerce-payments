@@ -6,12 +6,15 @@ import { __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 
 const enhancedFraudProtectionStep = {
+	referenceElements: {
+		desktop: '#fraud-protection-welcome-tour-first-step',
+	},
 	meta: {
 		name: 'enhanced-fraud-protection',
 		heading: __( 'Enhanced fraud protection is here 🔒' ),
 		descriptions: {
 			desktop: __(
-				'You can now choose a level of protection to have for screening incoming transactions. You will then be able to review any caught transactions and select whether you would like to approve or decline them.'
+				'You can now choose a level of protection for screening incoming transactions. You can then review any flagged transactions and decide to approve or block them.'
 			),
 		},
 		primaryButton: {
@@ -28,12 +31,9 @@ const chooseYourFilterLevelStep = {
 		name: 'choose-your-filter-level',
 		heading: __( 'Choose your filter level 🚦' ),
 		descriptions: {
-			desktop: interpolateComponents( {
-				mixedString: __(
-					'Decide how aggressively you want to filter suspicious payments, from {{strong}}standard{{/strong}} to {{strong}}advanced{{/strong}}.'
-				),
-				components: { strong: <strong /> },
-			} ),
+			desktop: __(
+				"Choose how you'd like to filter suspicious transactions, from Basic to Advanced."
+			),
 		},
 	},
 };
@@ -47,7 +47,7 @@ const takeMoreControlStep = {
 		heading: __( 'Take more control 🎚️' ),
 		descriptions: {
 			desktop: __(
-				'We recommend using one of the preset risk levels, but if you need more control, head to Advanced to fine-tune the various filters.'
+				'Choose Advanced settings for full control over each filter. You can enable and configure filters and choose an action between risk review or block.'
 			),
 		},
 	},
@@ -63,10 +63,13 @@ const readyForReviewStep = {
 		descriptions: {
 			desktop: interpolateComponents( {
 				mixedString: __(
-					"Payments that have been caught by a risk filter will appear under {{strong}}Payments > Transactions{{/strong}}. We'll let you know why each payment was flagged so that you can determine whether to approve or block it."
+					"Payments that have been caught by a risk filter will appear in {{strong}}Payments > Transactions{{/strong}}. We'll let you know why each payment was flagged so you can determine whether to approve or block it."
 				),
 				components: { strong: <strong /> },
 			} ),
+		},
+		primaryButton: {
+			text: __( 'Got it' ),
 		},
 	},
 };

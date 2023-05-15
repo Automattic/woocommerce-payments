@@ -119,8 +119,8 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 		if ( $this->supports( 'tokenization' ) ) {
 			$script_dependencies[] = 'woocommerce-tokenization-form';
 		}
-		WC_Payments::register_script_with_dependencies( 'wcpay-upe-checkout', 'dist/upe_split_checkout', $script_dependencies );
-
+		$script = WC_Payments_Features::is_upe_deferred_intent_enabled() ? 'dist/upe_with_deferred_intent_creation_checkout' : 'dist/upe_split_checkout';
+		WC_Payments::register_script_with_dependencies( 'wcpay-upe-checkout', $script, $script_dependencies );
 	}
 
 	/**
@@ -160,13 +160,31 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 * @return UPE_Payment_Method|false UPE payment method instance.
 	 */
 	public function get_selected_payment_method( $payment_method_type ) {
-		if ( $payment_method_type !== $this->stripe_id ) {
-			return false;
-		}
-
-		return $this->payment_method;
+		return WC_Payments::get_payment_method_by_id( $payment_method_type );
 	}
 
+	/**
+	 * Set formatted readable payment method title for order,
+	 * using payment method details from accompanying charge.
+	 *
+	 * @param WC_Order   $order WC Order being processed.
+	 * @param string     $payment_method_type Stripe payment method key.
+	 * @param array|bool $payment_method_details Array of payment method details from charge or false.
+	 */
+	public function set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details ) {
+		$payment_method = $this->get_selected_payment_method( $payment_method_type );
+		if ( ! $payment_method ) {
+			return;
+		}
+
+		$payment_method_title = $payment_method->get_title( $payment_method_details );
+
+		$payment_gateway = 'card' === $payment_method->get_id() ? self::GATEWAY_ID : self::GATEWAY_ID . '_' . $payment_method_type;
+
+		$order->set_payment_method( $payment_gateway );
+		$order->set_payment_method_title( $payment_method_title );
+		$order->save();
+	}
 
 	/**
 	 * Handle AJAX request for updating a payment intent for Stripe UPE.
@@ -497,5 +515,14 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 */
 	public function get_payment_method() {
 		return $this->payment_method;
+	}
+
+	/**
+	 * Returns Stripe payment method type ID.
+	 *
+	 * @return string
+	 */
+	public function get_stripe_id() {
+		return $this->stripe_id;
 	}
 }

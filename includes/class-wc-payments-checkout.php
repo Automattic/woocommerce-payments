@@ -17,7 +17,7 @@ use WC_Payments_Customer_Service;
 use WC_Payments_Features;
 use WC_Payments_Utils;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
-use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
+use WCPay\WooPay\WooPay_Utilities;
 
 
 /**
@@ -33,11 +33,11 @@ class WC_Payments_Checkout {
 	protected $gateway;
 
 	/**
-	 * Platform Checkout Utilities.
+	 * WooPay Utilities.
 	 *
-	 * @var Platform_Checkout_Utilities
+	 * @var WooPay_Utilities
 	 */
-	protected $platform_checkout_util;
+	protected $woopay_util;
 
 	/**
 	 * WC Payments Account.
@@ -58,20 +58,20 @@ class WC_Payments_Checkout {
 	 * Construct.
 	 *
 	 * @param WC_Payment_Gateway_WCPay     $gateway                WC Payment Gateway.
-	 * @param Platform_Checkout_Utilities  $platform_checkout_util Platform Checkout Utilities.
+	 * @param WooPay_Utilities             $woopay_util WooPay Utilities.
 	 * @param WC_Payments_Account          $account                WC Payments Account.
 	 * @param WC_Payments_Customer_Service $customer_service       WC Payments Customer Service.
 	 */
 	public function __construct(
 		WC_Payment_Gateway_WCPay $gateway,
-		Platform_Checkout_Utilities $platform_checkout_util,
+		WooPay_Utilities $woopay_util,
 		WC_Payments_Account $account,
 		WC_Payments_Customer_Service $customer_service
 	) {
-		$this->gateway                = $gateway;
-		$this->platform_checkout_util = $platform_checkout_util;
-		$this->account                = $account;
-		$this->customer_service       = $customer_service;
+		$this->gateway          = $gateway;
+		$this->woopay_util      = $woopay_util;
+		$this->account          = $account;
+		$this->customer_service = $customer_service;
 
 		add_action( 'wc_payments_add_payment_fields', [ $this, 'payment_fields' ] );
 	}
@@ -106,7 +106,7 @@ class WC_Payments_Checkout {
 			'createPaymentIntentNonce'       => wp_create_nonce( 'wcpay_create_payment_intent_nonce' ),
 			'updatePaymentIntentNonce'       => wp_create_nonce( 'wcpay_update_payment_intent_nonce' ),
 			'logPaymentErrorNonce'           => wp_create_nonce( 'wcpay_log_payment_error_nonce' ),
-			'initPlatformCheckoutNonce'      => wp_create_nonce( 'wcpay_init_platform_checkout_nonce' ),
+			'initWooPayNonce'                => wp_create_nonce( 'wcpay_init_woopay_nonce' ),
 			'saveUPEAppearanceNonce'         => wp_create_nonce( 'wcpay_save_upe_appearance_nonce' ),
 			'genericErrorMessage'            => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
 			'fraudServices'                  => $this->account->get_fraud_services_config(),
@@ -117,17 +117,15 @@ class WC_Payments_Checkout {
 			'isUPEEnabled'                   => WC_Payments_Features::is_upe_enabled(),
 			'isUPESplitEnabled'              => WC_Payments_Features::is_upe_split_enabled(),
 			'isSavedCardsEnabled'            => $this->gateway->is_saved_cards_enabled(),
-			'isPlatformCheckoutEnabled'      => $this->platform_checkout_util->should_enable_platform_checkout( $this->gateway ),
-			'isWoopayExpressCheckoutEnabled' => $this->platform_checkout_util->is_woopay_express_checkout_enabled(),
+			'isWooPayEnabled'                => $this->woopay_util->should_enable_woopay( $this->gateway ),
+			'isWoopayExpressCheckoutEnabled' => $this->woopay_util->is_woopay_express_checkout_enabled(),
 			'isClientEncryptionEnabled'      => WC_Payments_Features::is_client_secret_encryption_enabled(),
-			'platformCheckoutHost'           => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'https://pay.woo.com',
+			'woopayHost'                     => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'https://pay.woo.com',
 			'platformTrackerNonce'           => wp_create_nonce( 'platform_tracks_nonce' ),
 			'accountIdForIntentConfirmation' => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
 			'wcpayVersionNumber'             => WCPAY_VERSION_NUMBER,
-			'platformCheckoutNeedLogin'      => ! is_user_logged_in() && $wc_checkout->is_registration_required(),
-			'userExistsEndpoint'             => get_rest_url( null, '/wc/v3/users/exists' ),
-			'platformCheckoutSignatureNonce' => wp_create_nonce( 'platform_checkout_signature_nonce' ),
-			'platformCheckoutMerchantId'     => Jetpack_Options::get_option( 'id' ),
+			'woopaySignatureNonce'           => wp_create_nonce( 'woopay_signature_nonce' ),
+			'woopayMerchantId'               => Jetpack_Options::get_option( 'id' ),
 			'icon'                           => $this->gateway->get_icon_url(),
 		];
 

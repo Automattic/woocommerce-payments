@@ -47,13 +47,14 @@ export const BlockedList = (): JSX.Element => {
 	const columnsToDisplay = getBlockedListColumns();
 	const { isLoading, transactions } = useFraudOutcomeTransactions(
 		'block',
-		query
+		query,
+		'review'
 	);
 
 	const {
 		transactionsSummary,
 		isLoading: isSummaryLoading,
-	} = useFraudOutcomeTransactionsSummary( 'block', query );
+	} = useFraudOutcomeTransactionsSummary( 'block', query, 'review' );
 
 	const rows = transactions.map( ( transaction ) =>
 		getBlockedListColumnsStructure( transaction, columnsToDisplay )
@@ -128,7 +129,10 @@ export const BlockedList = (): JSX.Element => {
 			const { data } = await apiFetch< {
 				data: FraudOutcomeTransaction[];
 			} >( {
-				path: getFraudOutcomeTransactionsExport( 'block', params ),
+				path: getFraudOutcomeTransactionsExport( 'block', {
+					...params,
+					additionalStatus: 'review',
+				} ),
 				method: 'GET',
 			} );
 

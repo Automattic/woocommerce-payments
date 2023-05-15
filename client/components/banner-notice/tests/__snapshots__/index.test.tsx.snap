@@ -9,7 +9,7 @@ exports[`Info BannerNotices renders with dismiss 1`] = `
       class="components-notice__content"
     >
       <div
-        class="components-flex css-1nh0b0-Flex eboqfv50"
+        class="components-flex css-18koiq9-Flex eboqfv50"
       >
         <div
           class="components-flex__item wcpay-banner-notice__content wcpay-banner-info-notice__content css-1s295sp-Item eboqfv51"
@@ -26,9 +26,10 @@ exports[`Info BannerNotices renders with dismiss 1`] = `
       <svg
         aria-hidden="true"
         focusable="false"
+        height="24"
         role="img"
-        size="24"
         viewBox="0 0 24 24"
+        width="24"
         xmlns="http://www.w3.org/2000/svg"
       >
         <path
@@ -49,7 +50,7 @@ exports[`Info BannerNotices renders with dismiss and icon 1`] = `
       class="components-notice__content"
     >
       <div
-        class="components-flex css-1nh0b0-Flex eboqfv50"
+        class="components-flex css-18koiq9-Flex eboqfv50"
       >
         <div
           class="components-flex__item wcpay-banner-notice__icon wcpay-banner-info-notice__icon css-1s295sp-Item eboqfv51"
@@ -73,9 +74,10 @@ exports[`Info BannerNotices renders with dismiss and icon 1`] = `
       <svg
         aria-hidden="true"
         focusable="false"
+        height="24"
         role="img"
-        size="24"
         viewBox="0 0 24 24"
+        width="24"
         xmlns="http://www.w3.org/2000/svg"
       >
         <path
@@ -96,7 +98,7 @@ exports[`Info BannerNotices renders with dismiss and icon and actions 1`] = `
       class="components-notice__content"
     >
       <div
-        class="components-flex css-1nh0b0-Flex eboqfv50"
+        class="components-flex css-18koiq9-Flex eboqfv50"
       >
         <div
           class="components-flex__item wcpay-banner-notice__content wcpay-banner-info-notice__content css-1s295sp-Item eboqfv51"
@@ -129,9 +131,10 @@ exports[`Info BannerNotices renders with dismiss and icon and actions 1`] = `
       <svg
         aria-hidden="true"
         focusable="false"
+        height="24"
         role="img"
-        size="24"
         viewBox="0 0 24 24"
+        width="24"
         xmlns="http://www.w3.org/2000/svg"
       >
         <path
@@ -152,7 +155,7 @@ exports[`Info BannerNotices renders without dismiss and icon 1`] = `
       class="components-notice__content"
     >
       <div
-        class="components-flex css-1nh0b0-Flex eboqfv50"
+        class="components-flex css-18koiq9-Flex eboqfv50"
       >
         <div
           class="components-flex__item wcpay-banner-notice__content wcpay-banner-info-notice__content css-1s295sp-Item eboqfv51"

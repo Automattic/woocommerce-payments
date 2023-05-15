@@ -16,6 +16,7 @@ import {
 	CachedDeposit,
 	DepositsSummaryCache,
 } from 'wcpay/types/deposits';
+import { Transaction } from 'wcpay/data/transactions';
 
 export const useDeposit = (
 	id: string
@@ -31,6 +32,47 @@ export const useDeposit = (
 		},
 		[ id ]
 	);
+
+export const useDepositIncludesLoan = (
+	depositId?: string
+): {
+	includesFinancingPayout: boolean;
+	isLoading: boolean;
+} => {
+	const hasActiveLoan = wcpaySettings.accountLoans.has_active_loan;
+
+	return useSelect(
+		( select ) => {
+			// Using a conditional select here to avoid fetching transactions if there is no active loan.
+			if ( ! depositId || ! hasActiveLoan ) {
+				return {
+					includesFinancingPayout: false,
+					isLoading: false,
+				};
+			}
+
+			const { getTransactions, isResolving } = select( STORE_NAME );
+			const query = {
+				depositId,
+				page: '1',
+				typeIs: 'financing_payout',
+				perPage: '1',
+				orderby: 'date',
+				order: 'desc',
+			};
+			const financingPayoutTransactions = getTransactions(
+				query
+			) as Transaction[];
+			const isLoading = !! isResolving( 'getTransactions', [ query ] );
+
+			return {
+				includesFinancingPayout: financingPayoutTransactions.length > 0,
+				isLoading,
+			};
+		},
+		[ depositId, hasActiveLoan ]
+	);
+};
 
 export const useDepositsOverview = (): {
 	overviewError: unknown;

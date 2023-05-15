@@ -125,6 +125,22 @@
 			pointer-events: none;
 		}
 	}
+
+	.wcpay-pill {
+		margin-left: $gap-smaller;
+
+		&.payment-status-pending-approval,
+		&.payment-status-pending-verification {
+			border: 0 solid transparent;
+			background: #f0b849;
+			color: #1f1f1f;
+		}
+		&.payment-status-inactive {
+			border: 0 solid transparent;
+			background: #cc1818;
+			color: #fff;
+		}
+	}
 }
 
 .woocommerce-payments__payment-method-icon {
@@ -132,20 +148,5 @@
 		svg {
 			margin-right: 4px;
 		}
-	}
-}
-
-.wcpay-pill {
-	margin-left: $gap-smaller;
-	&.payment-status-pending-approval,
-	&.payment-status-pending-verification {
-		border: 0 solid transparent;
-		background: #f0b849;
-		color: #1f1f1f;
-	}
-	&.payment-status-inactive {
-		border: 0 solid transparent;
-		background: #cc1818;
-		color: #fff;
 	}
 }

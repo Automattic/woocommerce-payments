@@ -16,7 +16,11 @@ import { Badge } from '@woocommerce/components';
 import { CollapsibleList, TaskItem } from '@woocommerce/experimental';
 import { useDispatch } from '@wordpress/data';
 import { useCallback, useEffect, useState } from '@wordpress/element';
-const DAY_IN_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Internal dependencies
+ */
+import { TIME } from '../../constants';
 
 const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 	const { createNotice } = useDispatch( 'core/notices' );
@@ -130,7 +134,7 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 	};
 
 	const remindTaskLater = async ( { key, onDismiss } ) => {
-		const dismissTime = Date.now() + DAY_IN_MS;
+		const dismissTime = Date.now() + TIME.DAY_IN_MS;
 		remindMeLaterTodoTasks[ key ] = dismissTime;
 		setVisibleTasks( getVisibleTasks() );
 

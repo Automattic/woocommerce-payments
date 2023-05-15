@@ -207,6 +207,10 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
+		if ( Rule::FRAUD_OUTCOME_REVIEW === $this->get_fraud_outcome_status_for_order( $order ) ) {
+			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::REVIEW_FAILED );
+		}
+
 		$order->add_order_note( $note );
 		$this->complete_order_processing( $order, $intent_status );
 	}
@@ -230,6 +234,10 @@ class WC_Payments_Order_Service {
 		if ( $this->order_note_exists( $order, $note ) ) {
 			$this->complete_order_processing( $order );
 			return;
+		}
+
+		if ( Rule::FRAUD_OUTCOME_REVIEW === $this->get_fraud_outcome_status_for_order( $order ) ) {
+			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::REVIEW_EXPIRED );
 		}
 
 		$this->update_order_status( $order, Order_Status::CANCELLED );
@@ -336,6 +344,7 @@ class WC_Payments_Order_Service {
 	 */
 	public function mark_terminal_payment_completed( $order, $intent_id, $intent_status ) {
 		$this->update_order_status( $order, Order_Status::COMPLETED, $intent_id );
+		$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::TERMINAL_PAYMENT );
 		$this->complete_order_processing( $order, $intent_status );
 	}
 
@@ -746,11 +755,11 @@ class WC_Payments_Order_Service {
 		/**
 		 * If we have a status for the fraud outcome, we want to add the proper meta data.
 		 */
-		if ( isset( $intent_data['fraud_outcome'] ) && Rule::is_valid_fraud_outcome_status( $intent_data['fraud_outcome'] ) ) {
-			if ( Rule::FRAUD_OUTCOME_REVIEW === $intent_data['fraud_outcome'] ) {
-				$this->set_fraud_outcome_status_for_order( $order, $intent_data['fraud_outcome'] );
-				$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::REVIEW_BLOCKED );
-			}
+		if ( isset( $intent_data['fraud_outcome'] )
+			&& Rule::is_valid_fraud_outcome_status( $intent_data['fraud_outcome'] )
+			&& Rule::FRAUD_OUTCOME_ALLOW !== $intent_data['fraud_outcome'] ) {
+			$this->set_fraud_outcome_status_for_order( $order, $intent_data['fraud_outcome'] );
+			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::REVIEW_BLOCKED );
 		}
 
 		$this->update_order_status( $order, Order_Status::CANCELLED );
@@ -785,6 +794,10 @@ class WC_Payments_Order_Service {
 			$fraud_meta_box_type = Order_Status::ON_HOLD === $order->get_status() ? Fraud_Meta_Box_Type::REVIEW_ALLOWED : Fraud_Meta_Box_Type::ALLOW;
 			$this->set_fraud_outcome_status_for_order( $order, $intent_data['fraud_outcome'] );
 			$this->set_fraud_meta_box_type_for_order( $order, $fraud_meta_box_type );
+		}
+
+		if ( ! $this->intent_has_card_payment_type( $intent_data ) ) {
+			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::NOT_CARD );
 		}
 
 		$this->update_order_status( $order, 'payment_complete', $intent_data['intent_id'] );
@@ -864,6 +877,9 @@ class WC_Payments_Order_Service {
 			|| ! $order->has_status( [ Order_Status::PENDING ] ) ) {
 			return;
 		}
+
+		$fraud_meta_box_type = $this->intent_has_card_payment_type( $intent_data ) ? Fraud_Meta_Box_Type::PAYMENT_STARTED : Fraud_Meta_Box_Type::NOT_CARD;
+		$this->set_fraud_meta_box_type_for_order( $order, $fraud_meta_box_type );
 
 		$order->add_order_note( $note );
 		$this->set_intention_status_for_order( $order, $intent_data['intent_status'] );
@@ -1132,11 +1148,12 @@ class WC_Payments_Order_Service {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url(
 			$intent_id,
 			$charge_id,
-			$query_args  = [
-				'status_is' => 'review',
+			[
+				'status_is' => Rule::FRAUD_OUTCOME_REVIEW,
 				'type_is'   => 'order_note',
 			]
 		);
+
 		$note = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
@@ -1165,11 +1182,12 @@ class WC_Payments_Order_Service {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url(
 			$order->get_id(),
 			'',
-			$query_args  = [
-				'status_is' => 'block',
+			[
+				'status_is' => Rule::FRAUD_OUTCOME_BLOCK,
 				'type_is'   => 'order_note',
 			]
 		);
+
 		$note = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the blocked amount, %2: transaction ID of the payment */
@@ -1419,18 +1437,22 @@ class WC_Payments_Order_Service {
 		$intent_data = [];
 		if ( is_array( $intent ) ) {
 			$intent_data = [
-				'intent_id'     => $intent['id'],
-				'intent_status' => $intent['status'],
-				'charge_id'     => $intent['charge_id'] ?? '',
-				'fraud_outcome' => $intent['fraud_outcome'] ?? '',
+				'intent_id'           => $intent['id'],
+				'intent_status'       => $intent['status'],
+				'charge_id'           => $intent['charge_id'] ?? '',
+				'fraud_outcome'       => $intent['fraud_outcome'] ?? '',
+				'payment_method_type' => $intent['payment_method_type'] ?? '',
 			];
 		} elseif ( is_object( $intent ) ) {
-			$charge      = $intent->get_charge();
+			$charge               = $intent->get_charge();
+			$payment_method_types = $intent->get_payment_method_types();
+
 			$intent_data = [
-				'intent_id'     => $intent->get_id(),
-				'intent_status' => $intent->get_status(),
-				'charge_id'     => $charge ? $charge->get_id() : null,
-				'fraud_outcome' => $intent->get_metadata()['fraud_outcome'] ?? '',
+				'intent_id'           => $intent->get_id(),
+				'intent_status'       => $intent->get_status(),
+				'charge_id'           => $charge ? $charge->get_id() : null,
+				'fraud_outcome'       => $intent->get_metadata()['fraud_outcome'] ?? '',
+				'payment_method_type' => 1 === count( $payment_method_types ) ? $payment_method_types[0] : '',
 			];
 		}
 		return $intent_data;
@@ -1490,5 +1512,16 @@ class WC_Payments_Order_Service {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Checks to see if the intent data has just card set as the payment method type.
+	 *
+	 * @param array $intent_data The intent data obtained from get_intent_data.
+	 *
+	 * @return bool
+	 */
+	private function intent_has_card_payment_type( $intent_data ): bool {
+		return isset( $intent_data['payment_method_type'] ) && 'card' === $intent_data['payment_method_type'];
 	}
 }

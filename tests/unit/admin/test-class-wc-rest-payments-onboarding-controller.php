@@ -133,7 +133,7 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 				'business' => [
 					'country'           => 'US',
 					'type'              => 'company',
-					'mcc'               => 'computers_peripherals_and_software',
+					'mcc'               => 'software_services',
 					'annual_revenue'    => 'less_than_250k',
 					'go_live_timeframe' => 'within_1month',
 				],
@@ -168,7 +168,7 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 				'business' => [
 					'country'           => 'US',
 					'type'              => 'company',
-					'mcc'               => 'computers_peripherals_and_software',
+					'mcc'               => 'software_services',
 					'annual_revenue'    => 'from_1m_to_20m',
 					'go_live_timeframe' => 'from_1_to_3months',
 				],
