@@ -32,8 +32,7 @@ exports[`FRTDiscoverabilityBanner renders 1`] = `
       >
         <a
           class="components-button is-primary"
-          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/"
-          target="_blank"
+          href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
         >
           Learn more
         </a>
@@ -77,8 +76,7 @@ exports[`FRTDiscoverabilityBanner renders when remindMeAt timestamp is in the pa
       >
         <a
           class="components-button is-primary"
-          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/"
-          target="_blank"
+          href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
         >
           Learn more
         </a>
@@ -122,8 +120,7 @@ exports[`FRTDiscoverabilityBanner renders with dismiss button if remindMeCount g
       >
         <a
           class="components-button is-primary"
-          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/"
-          target="_blank"
+          href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
         >
           Learn more
         </a>
@@ -167,8 +164,7 @@ exports[`FRTDiscoverabilityBanner renders without dismiss button if remindMeCoun
       >
         <a
           class="components-button is-primary"
-          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/"
-          target="_blank"
+          href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
         >
           Learn more
         </a>
