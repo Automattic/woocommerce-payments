@@ -28,9 +28,9 @@ exports[`Order details page should match the snapshot - Charge without payment i
                 USD
               </span>
               <span
-                class="chip chip-alert"
+                class="chip chip-light"
               >
-                Payment blocked
+                Pending
               </span>
             </p>
             <div
