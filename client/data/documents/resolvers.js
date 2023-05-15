@@ -31,8 +31,6 @@ export const formatQueryFilters = ( query ) => ( {
 	],
 	type_is: query.typeIs,
 	type_is_not: query.typeIsNot,
-	source_device_is: query.sourceDeviceIs,
-	source_device_is_not: query.sourceDeviceIsNot,
 } );
 
 /**

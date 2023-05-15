@@ -523,7 +523,7 @@ export const TransactionsList = (
 				type_is: typeIs,
 				type_is_not: typeIsNot,
 				source_device_is: sourceDeviceIs,
-				source_device_is: sourceDeviceIsNot,
+				source_device_is_not: sourceDeviceIsNot,
 				customer_currency_is: customerCurrencyIs,
 				customer_currency_is_not: customerCurrencyIsNot,
 			} = params;
