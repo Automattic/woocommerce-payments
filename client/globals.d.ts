@@ -74,6 +74,7 @@ declare global {
 		};
 		accountDefaultCurrency: string;
 		isFraudProtectionSettingsEnabled: boolean;
+		isFRTReviewFeatureActive: boolean;
 		frtDiscoverBannerSettings: string;
 		onboardingTestMode: boolean;
 		onboardingFieldsData?: {
