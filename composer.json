@@ -40,7 +40,7 @@
       "php-stubs/woocommerce-stubs": "6.8.0",
       "rregeer/phpunit-coverage-check": "0.3.1",
       "yoast/phpunit-polyfills": "1.0.3",
-      "cweagans/composer-patches": "1.7.1",
+      "cweagans/composer-patches": "1.7.3",
       "automattic/jetpack-changelogger": "3.3.2",
       "spatie/phpunit-watcher": "^1.23"
     },

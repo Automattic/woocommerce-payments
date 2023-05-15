@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "89b4b68a03f740d9e6834cde32ee71d9",
+    "content-hash": "c4453a773869f6dd2ad1dfdd9476c52d",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -1725,16 +1725,16 @@
         },
         {
             "name": "cweagans/composer-patches",
-            "version": "1.7.1",
+            "version": "1.7.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/cweagans/composer-patches.git",
-                "reference": "9888dcc74993c030b75f3dd548bb5e20cdbd740c"
+                "reference": "e190d4466fe2b103a55467dfa83fc2fecfcaf2db"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/cweagans/composer-patches/zipball/9888dcc74993c030b75f3dd548bb5e20cdbd740c",
-                "reference": "9888dcc74993c030b75f3dd548bb5e20cdbd740c",
+                "url": "https://api.github.com/repos/cweagans/composer-patches/zipball/e190d4466fe2b103a55467dfa83fc2fecfcaf2db",
+                "reference": "e190d4466fe2b103a55467dfa83fc2fecfcaf2db",
                 "shasum": ""
             },
             "require": {
@@ -1767,9 +1767,9 @@
             "description": "Provides a way to patch Composer packages.",
             "support": {
                 "issues": "https://github.com/cweagans/composer-patches/issues",
-                "source": "https://github.com/cweagans/composer-patches/tree/1.7.1"
+                "source": "https://github.com/cweagans/composer-patches/tree/1.7.3"
             },
-            "time": "2021-06-08T15:12:46+00:00"
+            "time": "2022-12-20T22:53:13+00:00"
         },
         {
             "name": "dealerdirect/phpcodesniffer-composer-installer",
@@ -6464,5 +6464,5 @@
     "platform-overrides": {
         "php": "7.3"
     },
-    "plugin-api-version": "2.2.0"
+    "plugin-api-version": "2.3.0"
 }
