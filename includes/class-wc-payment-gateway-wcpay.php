@@ -28,6 +28,7 @@ use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Logger;
 use WCPay\Payment\Flags;
+use WCPay\Payment\Loader;
 use WCPay\Payment\Manager;
 use WCPay\Payment_Information;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
@@ -41,6 +42,11 @@ use WCPay\Payment\Payment;
 use WCPay\Payment\Payment_Method\New_Payment_Method;
 use WCPay\Payment\Payment_Method\Payment_Method_Factory;
 use WCPay\Payment\State\Authentication_Required_State;
+use WCPay\Payment\State\Completed_State;
+use WCPay\Payment\State\Completed_Without_Payment_State;
+use WCPay\Payment\State\Failed_Preparation_State;
+use WCPay\Payment\State\Processed_State;
+use WCPay\Payment\State\Processing_Failed_State;
 use WCPay\Payment\Strategy\Load_WooPay_Intent_Strategy;
 use WCPay\Payment\Strategy\Setup_Payment_Strategy;
 use WCPay\Payment\Strategy\Standard_Payment_Strategy;
@@ -919,57 +925,85 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array          The same response as `process_payment`.
 	 */
 	protected function new_payment_process( WC_Order $order ) {
-		$manager = new Manager();
+		$loader = new Loader();
 
-		// Maybe load?
-		$payment = $manager->instantiate_payment( $order );
+		// @todo: What do we do if there is a payment already?
+		$payment = $loader->load_or_create_payment( $order );
 
+		// phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$payment_method         = ( new Payment_Method_Factory() )->from_request( $_POST );
+		$fraud_prevention_token = $_POST['wcpay-fraud-prevention-token'] ?? ''; // Empty string to force checks. Null means skip.
+		if ( ! empty( $_POST['wcpay-fingerprint'] ) ) {
+			$normalized  = wc_clean( $_POST['wcpay-fingerprint'] );
+			$fingerprint = is_string( $normalized ) ? $normalized : '';
+		}
 		// The sanitize_user call here is deliberate: it seems the most appropriate sanitization function
 		// for a string that will only contain latin alphanumeric characters and underscores.
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$platform_checkout_intent_id = sanitize_user( wp_unslash( $_POST['platform-checkout-intent'] ?? '' ), true );
-		if ( ! empty( $platform_checkout_intent_id ) ) {
-			// Determing whether to use the WooPay flow, or not.
-			// Flags::WOOPAY_CHECKOUT_FLOW.
-			$strategy = new Load_WooPay_Intent_Strategy();
+		// phpcs:enable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
-			$payment->set_intent_id( $platform_checkout_intent_id );
-		} else {
-			// Flags::STANDARD_FLOW.
-			$strategy = $order->get_total() > 0
-				? new Standard_Payment_Strategy()
-				: new Setup_Payment_Strategy();
-
-			// phpcs:ignore WordPress.Security.NonceVerification
-			$payment_method = ( new Payment_Method_Factory() )->from_request( $_POST );
-			$payment->set_payment_method( $payment_method );
-
-			if ( $payment_method instanceof New_Payment_Method && New_Payment_Method::should_be_saved( $_POST ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-				$payment->set_flag( Flags::SAVE_PAYMENT_METHOD_TO_STORE );
-			}
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( $payment_method instanceof New_Payment_Method && New_Payment_Method::should_be_saved( $_POST ) ) {
+			$payment->set_flag( Flags::SAVE_PAYMENT_METHOD_TO_STORE );
 		}
-
 		if ( Payment_Capture_Type::MANUAL() === $this->get_capture_type() ) {
 			$payment->set_flag( Flags::MANUAL_CAPTURE );
 		}
-
 		if ( $this->platform_checkout_util->should_save_platform_customer() ) {
 			do_action( 'woocommerce_payments_save_user_in_platform_checkout' );
 			$payment->set_flag( Flags::SAVE_PAYMENT_METHOD_TO_PLATFORM );
 		}
-
 		$this->maybe_prepare_subscription_payment( $payment, $order );
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		$payment->set_fraud_prevention_token( $_POST['wcpay-fraud-prevention-token'] ?? '' ); // Empty string to force checks. Null means skip.
+		// Prepare all needed data in advance.
+		$payment->prepare();
+		if ( $payment->get_state() instanceof Failed_Preparation_State ) {
+			return $this->save_payment_and_return_response( $payment );
+		}
 
-		/**
-		 * Fun part: Processing the payment.
-		 */
-		$response = $manager->process( $payment, $strategy );
-		$payment->save_to_order( $payment, $order );
+		// Verify that we can proceed with the payment process.
+		$payment->verify( $payment_method, $fraud_prevention_token );
+		if ( $payment->get_state() instanceof Completed_State ) {
+			return $this->save_payment_and_return_response( $payment );
+		}
+		if ( $payment->get_state() instanceof Completed_Without_Payment_State ) {
+			$response = $payment->get_response();
+			$payment->mark_mark_as_completed();
+			$payment->save_to_order();
+			return $response;
+		}
 
-		return $response;
+		// Unless the payment is already processed, do it.
+		if ( ! $payment->get_state() instanceof Processed_State ) {
+			// Determing whether to use the WooPay flow, or not.
+			if ( ! empty( $platform_checkout_intent_id ) ) {
+				$payment->process( new Load_WooPay_Intent_Strategy( $platform_checkout_intent_id ) );
+			} elseif ( $order->get_total() < 1 ) {
+				$payment->process( new Setup_Payment_Strategy() );
+			} else {
+				$payment->process( new Standard_Payment_Strategy( $fingerprint ) );
+			}
+		}
+
+		// If processing failed, or authentication is required, we should not proceed.
+		if ( $payment->get_state() instanceof Processing_Failed_State || $payment->get_state() instanceof Authentication_Required_State ) {
+			return $this->save_payment_and_return_response( $payment );
+		}
+
+		// Complete the payment, and return the response.
+		$payment->complete();
+		return $this->save_payment_and_return_response( $payment );
+	}
+
+	/**
+	 * Small helper to save a payment before retrieving its response.
+	 *
+	 * @param Payment $payment The payment to store.
+	 * @return array
+	 */
+	protected function save_payment_and_return_response( Payment $payment ) {
+		$payment->save_to_order();
+		return $payment->get_response();
 	}
 
 	/**

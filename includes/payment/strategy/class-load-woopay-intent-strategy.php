@@ -26,11 +26,21 @@ class Load_WooPay_Intent_Strategy extends Strategy {
 	protected $gateway;
 
 	/**
-	 * Instantiates the step.
+	 * Holds the intent ID that should be loaded by the strategy.
+	 *
+	 * @var string
 	 */
-	public function __construct() {
+	protected $intent_id;
+
+	/**
+	 * Instantiates the step.
+	 *
+	 * @param string $intent_id The WooPay intent ID.
+	 */
+	public function __construct( string $intent_id ) {
 		// @todo: Change this with proper dependencies.
-		$this->gateway = WC_Payments::get_gateway();
+		$this->gateway   = WC_Payments::get_gateway();
+		$this->intent_id = $intent_id;
 	}
 
 	/**
@@ -44,7 +54,7 @@ class Load_WooPay_Intent_Strategy extends Strategy {
 		$order = $payment->get_order();
 
 		// @todo: Code here is identical for payment and setup intents, we just need the right call.
-		$request = Get_Intention::create( $payment->get_intent_id() );
+		$request = Get_Intention::create( $this->intent_id );
 		$intent  = $request->send( 'wcpay_get_intent_request', $order );
 
 		$intent_meta_order_id_raw = $intent->get_metadata()['order_id'] ?? '';
@@ -58,6 +68,7 @@ class Load_WooPay_Intent_Strategy extends Strategy {
 		}
 
 		// Store the intent. Other steps will use it.
+		$payment->set_intent_id( $this->intent_id );
 		$payment->set_intent( $intent );
 
 		// This is the happy path.

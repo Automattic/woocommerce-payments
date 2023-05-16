@@ -12,10 +12,13 @@ use WC_Order;
 use WC_Payment_Token_CC;
 use WC_Payments_Utils;
 use WC_Payments;
+use WCPay\Exceptions\Process_Payment_Exception;
 use WCPay\Payment\Duplicate_Payment_Prevention_Service;
 use WCPay\Payment\Flags;
 use WCPay\Payment\Payment;
 use WCPay\Core\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
+use WCPay\Payment\Payment_Method\Payment_Method;
 use WCPay\Payment\Payment_Method\Saved_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 
@@ -47,6 +50,13 @@ final class Prepared_State extends Payment_State {
 	protected $gateway;
 
 	/**
+	 * Holds the fraud prevention service.
+	 *
+	 * @var Fraud_Prevention_Service
+	 */
+	protected $fraud_prevention_service;
+
+	/**
 	 * Instantiates the state and dependencies.
 	 *
 	 * @param Payment $payment The context of the state.
@@ -58,34 +68,74 @@ final class Prepared_State extends Payment_State {
 		$this->gateway                              = WC_Payments::get_gateway();
 		$this->failed_transaction_rate_limiter      = WC_Payments::get_transaction_rate_limiter();
 		$this->duplicate_payment_prevention_service = new Duplicate_Payment_Prevention_Service( WC_Payments::get_gateway(), WC()->session );
+		$this->fraud_prevention_service             = Fraud_Prevention_Service::get_instance();
 	}
 
 	/**
 	 * Verifies whether the payment can and should be processed.
 	 *
-	 * @throws Exception In case the payment cannot be verified.
+	 * @param Payment_Method $payment_method         Payment method to use for the payment.
+	 * @param string         $fraud_prevention_token Verification token to prevent fraud.
+	 * @throws Exception In case the payment has already been verified.
 	 */
-	public function verify() {
-		$this->check_transaction_limiter();
+	public function verify( Payment_Method $payment_method, string $fraud_prevention_token ) {
+		try {
+			// Store the payment method.
+			$this->context->set_payment_method( $payment_method );
 
-		if ( $this->check_for_duplicate_order() ) {
-			return; // State was already changed.
+			// Verify.
+			$this->check_transaction_limiter();
+			$this->verify_fraud_token( $fraud_prevention_token );
+
+			if ( $this->check_for_duplicate_order() ) {
+				return; // State was already changed.
+			}
+
+			$this->store_order_in_session();
+
+			if ( $this->check_attached_intent() ) {
+				return; // State was already changed.
+			}
+
+			if ( $this->maybe_complete_without_payment() ) {
+				return; // State was already changed.
+			}
+
+			$this->verify_minimum_amount();
+
+			// If there are no exceptions or state changes, it's time to proceed.
+			$this->context->switch_state( new Verified_State( $this->context ) );
+		} catch ( Process_Payment_Exception $e ) {
+			$this->context->switch_state( new Failed_Preparation_State( $this->context ) );
+		}
+	}
+
+	/**
+	 * While collecting data for a payment, checks if it should be prevented altogether.
+	 *
+	 * @param  string $token The token to verify.
+	 * @throws Process_Payment_Exception In case the token could not be verified.
+	 */
+	public function verify_fraud_token( string $token ) {
+		// Entry points should set a non-null token to enable checks.
+		if (
+			! is_string( $token )
+			// The service might not be available if the WC session is not initialized.
+			|| ! $this->fraud_prevention_service
+			// We need the service to be not just there, but enabled.
+			|| ! $this->fraud_prevention_service->is_enabled()
+		) {
+			return;
 		}
 
-		$this->store_order_in_session();
-
-		if ( $this->check_attached_intent() ) {
-			return; // State was already changed.
+		if ( $this->fraud_prevention_service->verify_token( $token ) ) {
+			return;
 		}
 
-		if ( $this->maybe_complete_without_payment() ) {
-			return; // State was already changed.
-		}
-
-		$this->verify_minimum_amount();
-
-		// If there are no exceptions or state changes, it's time to proceed.
-		$this->context->switch_state( new Verified_State( $this->context ) );
+		throw new Process_Payment_Exception(
+			__( 'We are not able to process this payment. Please refresh the page and try again.', 'woocommerce-payments' ),
+			'fraud_prevention_enabled'
+		);
 	}
 
 	/**

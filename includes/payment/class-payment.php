@@ -305,10 +305,12 @@ class Payment {
 	/**
 	 * Verifies that the payment should be processed.
 	 *
+	 * @param Payment_Method $payment_method         Payment method to use for the payment.
+	 * @param string         $fraud_prevention_token Verification token to prevent fraud.
 	 * @throws Exception In case the payment has already been verified or is not ready for verification.
 	 */
-	public function verify() {
-		return $this->state->verify();
+	public function verify( Payment_Method $payment_method, string $fraud_prevention_token ) {
+		return $this->state->verify( $payment_method, $fraud_prevention_token );
 	}
 
 	/**
@@ -349,10 +351,11 @@ class Payment {
 	/**
 	 * Either retrieves the existing intent, or creates a new one.
 	 *
+	 * @param string[] $payment_method_types The allowed payment methods.
 	 * @return array
 	 */
-	public function get_or_create_intent() {
-		return $this->state->get_or_create_intent();
+	public function get_or_create_intent( array $payment_method_types ) {
+		return $this->state->get_or_create_intent( $payment_method_types );
 	}
 
 	/**

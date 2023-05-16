@@ -7,8 +7,7 @@
 
 namespace WCPay\Payment\State;
 
-use WCPay\Exceptions\Process_Payment_Exception;
-use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
+use Exception;
 use WCPay\Payment\Payment;
 use WCPay\Payment\Flags;
 use WC_Order;
@@ -32,13 +31,6 @@ final class Initial_State extends Payment_State {
 	protected $customer_service;
 
 	/**
-	 * Holds the fraud prevention service.
-	 *
-	 * @var Fraud_Prevention_Service
-	 */
-	protected $fraud_prevention_service;
-
-	/**
 	 * Instantiates the state and dependencies.
 	 *
 	 * @param Payment $payment The context of the state.
@@ -47,8 +39,7 @@ final class Initial_State extends Payment_State {
 		parent::__construct( $payment );
 
 		// @todo: Use a proper dependency here.
-		$this->customer_service         = WC_Payments::get_customer_service();
-		$this->fraud_prevention_service = Fraud_Prevention_Service::get_instance();
+		$this->customer_service = WC_Payments::get_customer_service();
 	}
 
 	/**
@@ -61,19 +52,8 @@ final class Initial_State extends Payment_State {
 			$this->prepare_metadata( $this->context, $this->context->get_order() );
 			$this->prepare_customer_data( $this->context );
 
-			// Entry points should set a non-null token to enable checks.
-			if (
-				is_string( $this->context->get_fraud_prevention_token() )
-				// The service might not be available if the WC session is not initialized.
-				&& $this->fraud_prevention_service
-				// We need the service to be not just there, but enabled.
-				&& $this->fraud_prevention_service->is_enabled()
-			) {
-				$this->verify_fraud_token( $this->context->get_fraud_prevention_token() );
-			}
-
 			$this->context->switch_state( new Prepared_State( $this->context ) );
-		} catch ( Process_Payment_Exception $e ) {
+		} catch ( Exception $e ) {
 			$this->context->switch_state( new Failed_Preparation_State( $this->context ) );
 		}
 	}
@@ -142,22 +122,5 @@ final class Initial_State extends Payment_State {
 			$payment->set_user_id( $user->ID );
 			$payment->set_customer_id( $customer_id );
 		}
-	}
-
-	/**
-	 * While collecting data for a payment, checks if it should be prevented altogether.
-	 *
-	 * @param  string $token The token to verify.
-	 * @throws Process_Payment_Exception In case the token could not be verified.
-	 */
-	public function verify_fraud_token( string $token ) {
-		if ( $this->fraud_prevention_service->verify_token( $token ) ) {
-			return;
-		}
-
-		throw new Process_Payment_Exception(
-			__( 'We are not able to process this payment. Please refresh the page and try again.', 'woocommerce-payments' ),
-			'fraud_prevention_enabled'
-		);
 	}
 }

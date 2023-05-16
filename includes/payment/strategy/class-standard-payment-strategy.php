@@ -52,13 +52,24 @@ class Standard_Payment_Strategy extends Strategy {
 	protected $account;
 
 	/**
-	 * Instantiates the step.
+	 * Fingerprint.
+	 *
+	 * @var string
 	 */
-	public function __construct() {
+	protected $fingerprint;
+
+	/**
+	 * Instantiates the step.
+	 *
+	 * @param string $fingerprint The payment fingerprint.
+	 */
+	public function __construct( string $fingerprint ) {
 		// @todo: Change this with proper dependencies.
 		$this->gateway       = WC_Payments::get_gateway();
 		$this->order_service = WC_Payments::$order_service;
 		$this->account       = WC_Payments::get_account_service();
+
+		$this->fingerprint = $fingerprint;
 	}
 
 	/**
@@ -68,6 +79,9 @@ class Standard_Payment_Strategy extends Strategy {
 	 * @return Payment_State    The next state of the payment.
 	 */
 	public function process( Payment $payment ): Payment_State {
+		// Store the fingerprint in the payment.
+		$payment->set_fingerprint( $this->fingerprint );
+
 		$intent = $this->request_intent_from_server( $payment );
 		$status = $intent->get_status();
 
@@ -141,7 +155,7 @@ class Standard_Payment_Strategy extends Strategy {
 		// For customer-initiated payments, get some details from the request.
 		if ( ! $payment->is( Flags::MERCHANT_INITIATED ) ) {
 			$this->add_cvc_confirmation_to_request( $request );
-			// $request->set_fingerprint( $payment->get_fingerprint() );
+			$request->set_fingerprint( $payment->get_fingerprint() );
 		}
 
 		return $request;

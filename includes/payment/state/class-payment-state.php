@@ -9,6 +9,7 @@ namespace WCPay\Payment\State;
 
 use Exception;
 use WCPay\Payment\Payment;
+use WCPay\Payment\Payment_Method\Payment_Method;
 use WCPay\Payment\Strategy\Strategy;
 
 /**
@@ -43,9 +44,11 @@ abstract class Payment_State {
 	/**
 	 * Verifies the payment, transitioning to a verified state.
 	 *
+	 * @param Payment_Method $payment_method         Payment method to use for the payment.
+	 * @param string         $fraud_prevention_token Verification token to prevent fraud.
 	 * @throws Exception In case the payment has already been verified.
 	 */
-	public function verify() {
+	public function verify( Payment_Method $payment_method, string $fraud_prevention_token ) {
 		throw new Exception( 'This payment has already been verified.' );
 	}
 
@@ -81,9 +84,10 @@ abstract class Payment_State {
 	/**
 	 * Either retrieves the existing intent, or creates a new one.
 	 *
+	 * @param string[] $payment_method_types The allowed payment methods.
 	 * @throws Exception In case the method is not available.
 	 */
-	public function get_or_create_intent() {
+	public function get_or_create_intent( array $payment_method_types ) {
 		throw new Exception( 'This method is only supported when creating UPE intents.' );
 	}
 

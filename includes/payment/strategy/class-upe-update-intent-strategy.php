@@ -33,11 +33,41 @@ class UPE_Update_Intent_Strategy extends Strategy {
 	protected $gateway;
 
 	/**
-	 * Instantiates the strategy.
+	 * ID of the intent to load.
+	 *
+	 * @var string
 	 */
-	public function __construct() {
+	protected $intent_id;
+
+	/**
+	 * The only allowed payment method type.
+	 *
+	 * @var string
+	 */
+	protected $selected_payment_type;
+
+	/**
+	 * Payment country to use to calculate fees.
+	 *
+	 * @var string
+	 */
+	protected $payment_country;
+
+	/**
+	 * Instantiates the strategy.
+	 *
+	 * @param string $intent_id             ID of the intent to load. Will be compared with the stored ID.
+	 * @param string $selected_payment_type The only allowed payment method type.
+	 * @param string $payment_country       Country used for fee calculation (Optional).
+	 */
+	public function __construct( string $intent_id, string $selected_payment_type, string $payment_country = null ) {
 		// Load dependencies. @todo not here.
 		$this->gateway = WC_Payments::get_gateway();
+
+		// Store parameters.
+		$this->intent_id             = $intent_id;
+		$this->selected_payment_type = $selected_payment_type;
+		$this->payment_country       = $payment_country;
 	}
 
 	/**
@@ -48,6 +78,18 @@ class UPE_Update_Intent_Strategy extends Strategy {
 	 */
 	public function process( Payment $payment ): Awaiting_UPE_Confirmation_State {
 		$order = $payment->get_order();
+
+		// Store parameters within the payment.
+		if ( $payment->get_intent_id() && $payment->get_intent_id() !== $this->intent_id ) {
+			throw new Exception( 'Unexpected intent ID. What should we do about it?' );
+		} elseif ( $payment->get_intent_id() !== $this->intent_id ) {
+			$payment->set_intent_id( $this->intent_id );
+		}
+		$payment->set_selected_upe_payment_type( $this->selected_payment_type );
+		if ( $this->payment_country ) {
+			$payment->set_payment_country( $this->payment_country );
+		}
+
 		if ( $order->get_total() > 0 ) {
 			// Setup intents already contain enough information, only update Payment intents.
 			$intent = $this->request_intent_update_from_server( $payment );

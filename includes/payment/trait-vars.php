@@ -197,24 +197,6 @@ trait Vars {
 	}
 
 	/**
-	 * Sets the fraud prevention token.
-	 *
-	 * @param string $fraud_prevention_token The token.
-	 */
-	public function set_fraud_prevention_token( string $fraud_prevention_token ) {
-		$this->set_var( 'fraud_prevention_token', $fraud_prevention_token );
-	}
-
-	/**
-	 * Retrieves the fraud prevention token.
-	 *
-	 * @return string|null
-	 */
-	public function get_fraud_prevention_token() {
-		return $this->get_var( 'fraud_prevention_token' );
-	}
-
-	/**
 	 * Stores the response from processing.
 	 * This should follow the format, returned by gateways' process_payment().
 	 *

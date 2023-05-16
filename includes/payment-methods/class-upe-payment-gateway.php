@@ -45,6 +45,9 @@ use WCPay\Payment\Payment_Factory;
 use WCPay\Payment\Payment_Method\New_Payment_Method;
 use WCPay\Payment\Payment_Method\Payment_Method_Factory;
 use WCPay\Payment\Payment_Method\Saved_Payment_Method;
+use WCPay\Payment\State\Completed_State;
+use WCPay\Payment\State\Completed_Without_Payment_State;
+use WCPay\Payment\State\Failed_Preparation_State;
 use WCPay\Payment\State\Intent_Without_Order_State;
 use WCPay\Payment\State\Processed_State;
 use WCPay\Payment\Storage\Filesystem_Order_Storage;
@@ -496,42 +499,52 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 		// phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
-		// Setup the payment object.
+		// Start with the payment method. If it is a saved one, we fall-back to standard payment.
 		$payment_method = ( new Payment_Method_Factory() )->from_request( $_POST, true );
-		$payment->set_payment_method( $payment_method );
-		if ( ! $payment_method instanceof Saved_Payment_Method && New_Payment_Method::should_be_saved( $_POST ) ) {
-			$payment->set_flag( Flags::SAVE_PAYMENT_METHOD_TO_STORE );
-		}
-
-		// Empty string to force checks. Null means skip.
-		$payment->set_fraud_prevention_token( $_POST['wcpay-fraud-prevention-token'] ?? '' );
-
-		$payment_intent_id = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : null;
-		$payment->set_intent_id( $payment_intent_id );
-
-		// @todo: Some of those could be method parameters.
-		$selected_upe_payment_type = ! empty( $_POST['wcpay_selected_upe_payment_type'] ) ? wc_clean( wp_unslash( $_POST['wcpay_selected_upe_payment_type'] ) ) : '';
-		$payment->set_selected_upe_payment_type( $selected_upe_payment_type );
-
-		$payment_method_types = $this->get_selected_upe_payment_methods( (string) $selected_upe_payment_type, $this->get_payment_method_ids_enabled_at_checkout( null, true ) ?? [] );
-		$payment->set_payment_method_types( $payment_method_types );
-
-		if ( ! empty( $_POST['wcpay_payment_country'] ) ) {
-			$payment->set_payment_country( wc_clean( wp_unslash( $_POST['wcpay_payment_country'] ) ) );
-		}
-
 		if ( $payment_method instanceof Saved_Payment_Method ) {
-			$strategy = new Standard_Payment_Strategy();
-		} else {
-			$strategy = new UPE_Update_Intent_Strategy();
+			return parent::new_payment_process( $order );
 		}
 
-		$response = $manager->process( $payment, $strategy );
-		$payment->save_to_order();
+		$intent_id              = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : null;
+		$selected_payment_type  = ! empty( $_POST['wcpay_selected_upe_payment_type'] ) ? wc_clean( wp_unslash( $_POST['wcpay_selected_upe_payment_type'] ) ) : '';
+		$payment_country        = ! empty( $_POST['wcpay_payment_country'] ) ? wc_clean( wp_unslash( $_POST['wcpay_payment_country'] ) ) : null;
+		$fraud_prevention_token = $_POST['wcpay-fraud-prevention-token'] ?? '';
+		$save_payment_method    = New_Payment_Method::should_be_saved( $_POST );
 
 		// phpcs:enable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
-		return $response;
+		// Setup the payment object.
+		if ( $save_payment_method ) {
+			$payment->set_flag( Flags::SAVE_PAYMENT_METHOD_TO_STORE );
+		}
+
+		// Prepare all data now that the order is available.
+		$payment->prepare();
+		if ( $payment->get_state() instanceof Failed_Preparation_State ) {
+			return $this->save_payment_and_return_response( $payment );
+		}
+
+		// Verify that we can proceed with the payment process.
+		$payment->verify( $payment_method, $fraud_prevention_token );
+		// No payment needed.
+		if (
+			$payment->get_state() instanceof Completed_State
+			|| $payment->get_state() instanceof Completed_Without_Payment_State
+		) {
+			return $this->save_payment_and_return_response( $payment );
+		}
+		// Another intent was loaded.
+		if ( $payment->get_state() instanceof Processed_State ) {
+			$payment->complete();
+			return $this->save_payment_and_return_response( $payment );
+		}
+
+		// Continue as usual.
+		$strategy = new UPE_Update_Intent_Strategy( $intent_id, $selected_payment_type, $payment_country );
+		$payment->process( $strategy );
+
+		// Either a failure state (not able to update), or awaiting UPE confirmation.
+		return $this->save_payment_and_return_response( $payment );
 	}
 
 	/**
