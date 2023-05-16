@@ -536,7 +536,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Confirm that the fraud outcome status was set and the fraud meta box type was not set.
 		$this->assertEquals( false, $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
-		$this->assertEquals( false, $this->order_service->get_fraud_meta_box_type_for_order( $this->order ) );
+		$this->assertEquals( Fraud_Meta_Box_Type::NOT_CARD, $this->order_service->get_fraud_meta_box_type_for_order( $this->order ) );
 
 		// Assert: Check that the order status was not updated.
 		$this->assertTrue( $this->order->has_status( Order_Status::PENDING ) );
