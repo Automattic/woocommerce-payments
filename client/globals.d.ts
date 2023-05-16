@@ -62,6 +62,7 @@ declare global {
 		connect: {
 			country: string;
 			availableStates: Array< Record< string, string > >;
+			availableCountries: Record< string, string >;
 		};
 		accountEmail: string;
 		currentUserEmail: string;
@@ -82,6 +83,8 @@ declare global {
 		};
 		storeCurrency: string;
 		isMultiCurrencyEnabled: string;
+		errorMessage: string;
+		onBoardingDisabled: boolean;
 	};
 
 	const wcTracks: any;
