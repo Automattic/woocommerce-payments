@@ -31,8 +31,7 @@ const BannerActions: React.FC< BannerActionsProps > = ( {
 	return (
 		<div className="discoverability-card__actions">
 			<Button
-				href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/"
-				target="_blank"
+				href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
 				isPrimary
 				onClick={ handleLearnMoreButtonClick }
 			>

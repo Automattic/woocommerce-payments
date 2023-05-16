@@ -172,7 +172,7 @@ const PurchasePriceThresholdRuleCard: React.FC = () => (
 		<FraudProtectionRuleToggle
 			setting={ 'purchase_price_threshold' }
 			label={ __(
-				'Screen transactions for abnormal purchase prices',
+				'Block transactions for abnormal purchase prices',
 				'woocommerce-payments'
 			) }
 		>

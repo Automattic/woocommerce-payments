@@ -235,6 +235,13 @@ class WC_Payments {
 	private static $woopay_util;
 
 	/**
+	 * WooPay Tracker.
+	 *
+	 * @var WooPay_Tracker
+	 */
+	private static $woopay_tracker;
+
+	/**
 	 * WC Payments Checkout
 	 *
 	 * @var WC_Payments_Checkout|WC_Payments_UPE_Checkout
@@ -424,6 +431,9 @@ class WC_Payments {
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
+		// Load woopay tracking.
+		include_once WCPAY_ABSPATH . 'includes/class-woopay-tracker.php';
+
 		self::$order_service                       = new WC_Payments_Order_Service( self::$api_client );
 		self::$action_scheduler_service            = new WC_Payments_Action_Scheduler_Service( self::$api_client, self::$order_service );
 		self::$account                             = new WC_Payments_Account( self::$api_client, self::$database_cache, self::$action_scheduler_service );
@@ -437,6 +447,7 @@ class WC_Payments {
 		self::$order_success_page                  = new WC_Payments_Order_Success_Page();
 		self::$onboarding_service                  = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
 		self::$woopay_util                         = new WooPay_Utilities();
+		self::$woopay_tracker                      = new WooPay_Tracker( self::get_wc_payments_http() );
 
 		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
 
@@ -540,9 +551,7 @@ class WC_Payments {
 
 			new WC_Payments_Status( self::get_wc_payments_http(), self::get_account_service() );
 
-			if ( WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
-				new WCPay\Fraud_Prevention\Order_Fraud_And_Risk_Meta_Box( self::$order_service );
-			}
+			new WCPay\Fraud_Prevention\Order_Fraud_And_Risk_Meta_Box( self::$order_service );
 		}
 
 		// Load WCPay Subscriptions.
@@ -964,6 +973,15 @@ class WC_Payments {
 			return (string) filemtime( WCPAY_ABSPATH . trim( $file, '/' ) );
 		}
 		return WCPAY_VERSION_NUMBER;
+	}
+
+	/**
+	 * Returns the WooPay_Tracker instance
+	 *
+	 * @return WooPay_Tracker instance
+	 */
+	public static function woopay_tracker(): WooPay_Tracker {
+		return self::$woopay_tracker;
 	}
 
 	/**
@@ -1573,11 +1591,8 @@ class WC_Payments {
 			add_filter( 'woocommerce_form_field_email', [ __CLASS__, 'filter_woocommerce_form_field_woopay_email' ], 20, 4 );
 
 			include_once __DIR__ . '/woopay-user/class-woopay-save-user.php';
-			// Load woopay tracking.
-			include_once WCPAY_ABSPATH . 'includes/class-woopay-tracker.php';
 
 			new WooPay_Save_User();
-			new WooPay_Tracker( self::get_wc_payments_http() );
 		}
 	}
 

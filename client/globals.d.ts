@@ -10,7 +10,6 @@ declare global {
 		featureFlags: {
 			customSearch: boolean;
 			isAuthAndCaptureEnabled: boolean;
-			simplifyDepositsUi?: boolean;
 			paymentTimeline: boolean;
 		};
 		fraudServices: unknown[];
@@ -74,7 +73,7 @@ declare global {
 			isWelcomeTourDismissed?: boolean;
 		};
 		accountDefaultCurrency: string;
-		isFraudProtectionSettingsEnabled: boolean;
+		isFRTReviewFeatureActive: boolean;
 		frtDiscoverBannerSettings: string;
 		onboardingTestMode: boolean;
 		onboardingFieldsData?: {

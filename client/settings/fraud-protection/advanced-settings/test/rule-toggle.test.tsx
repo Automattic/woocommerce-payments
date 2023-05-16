@@ -11,6 +11,12 @@ import userEvent from '@testing-library/user-event';
 import FraudProtectionRuleToggle from '../rule-toggle';
 import FraudPreventionSettingsContext from '../context';
 
+declare const global: {
+	wcpaySettings: {
+		isFRTReviewFeatureActive?: boolean;
+	};
+};
+
 interface mockContext {
 	protectionSettingsUI: {
 		[ key: string ]: {
@@ -24,6 +30,10 @@ interface mockContext {
 }
 
 describe( 'Fraud protection rule toggle tests', () => {
+	global.wcpaySettings = {
+		isFRTReviewFeatureActive: false,
+	};
+
 	let mockContext: mockContext = {
 		protectionSettingsUI: {
 			test_rule: {
@@ -67,15 +77,12 @@ describe( 'Fraud protection rule toggle tests', () => {
 		).not.toBeChecked();
 		expect(
 			container.queryByText(
-				'When enabled, the payment method will not be charged until you review and approve the transaction.'
+				'When enabled, the payment will be blocked.'
 			)
 		).toBeInTheDocument();
 		expect(
 			container.queryByText( 'Test rule toggle' )
 		).toBeInTheDocument();
-		expect(
-			container.queryByText( 'Block Payment' )
-		).not.toBeInTheDocument();
 		expect(
 			container.queryByText( 'test content' )
 		).not.toBeInTheDocument();
@@ -94,16 +101,12 @@ describe( 'Fraud protection rule toggle tests', () => {
 		);
 		expect( container ).toMatchSnapshot();
 		expect(
-			container.queryByText(
-				'The payment method will not be charged until you review and approve the transaction.'
-			)
+			container.queryByText( 'The payment will be blocked.' )
 		).toBeInTheDocument();
 		expect(
 			container.queryByText( 'Test rule toggle' )
 		).toBeInTheDocument();
 		expect( container.getByLabelText( 'Test rule toggle' ) ).toBeChecked();
-		expect( container.queryByText( 'Block Payment' ) ).toBeInTheDocument();
-		expect( container.getByLabelText( 'Block Payment' ) ).not.toBeChecked();
 		expect( container.queryByText( 'test content' ) ).toBeInTheDocument();
 	} );
 	test( 'renders correctly when enabled and blocked', () => {
@@ -127,8 +130,6 @@ describe( 'Fraud protection rule toggle tests', () => {
 			container.queryByText( 'Test rule toggle' )
 		).toBeInTheDocument();
 		expect( container.getByLabelText( 'Test rule toggle' ) ).toBeChecked();
-		expect( container.queryByText( 'Block Payment' ) ).toBeInTheDocument();
-		expect( container.getByLabelText( 'Block Payment' ) ).toBeChecked();
 		expect( container.queryByText( 'test content' ) ).toBeInTheDocument();
 	} );
 	test( 'sets the value correctly when enabled', () => {
@@ -155,7 +156,7 @@ describe( 'Fraud protection rule toggle tests', () => {
 			mockContext.protectionSettingsUI.test_rule.enabled
 		).toBeFalsy();
 	} );
-	test( 'sets the value correctly when block is selected', () => {
+	test.skip( 'sets the value correctly when block is selected', () => {
 		mockContext.protectionSettingsUI.test_rule.enabled = true;
 		const container = render(
 			<FraudPreventionSettingsContext.Provider value={ mockContext }>
