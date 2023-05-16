@@ -5,6 +5,7 @@
 * Add - Add support for 6 new countries in WCPay: Bulgaria, Croatia, and Romania
 * Add - Add support for complete_kyc_link wcpay-link-handler
 * Add - Disable the WooPay auto-redirect and SMS OTP modal in unsupported contexts.
+* Add - Enhanced fraud protection for your store. Reduce fraudulent transactions by using a set of customizable rules.
 * Add - Hide WooPay button in unsupported contexts
 * Add - PO fields data and controls, behind a feature flag.
 * Add - Support pending verification account status
@@ -42,6 +43,7 @@
 * Dev - Enable third-party code to alter the delete payment token URL returned from flag_subscription_payment_token_deletions.
 * Dev - Explicitly mention gridicons and @wordpress/primitives as dev dependencies.
 * Dev - Pass the subscription object as the second parameter to `woocommerce_update_subscription` hook (and `woocommerce_update_order` for backwards compatibility).
+* Dev - Remove fraud and risk tools feature flag checks and tests
 * Dev - Remove pinned composer version 2.0.6 from workflows
 * Dev - Resolve errors for third-party code using the URLs returned from WC_Subscriptions_Admin::add_subscription_url() and WCS_Cart_Renewal::get_checkout_payment_url() because they were erroneously escaped.
 * Dev - Return a response from the WC_Subscription::set_status() function in line with the parent WC_Order::set_status() function.
