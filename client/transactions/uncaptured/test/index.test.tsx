@@ -212,10 +212,10 @@ describe( 'Authorizations list', () => {
 			} );
 
 			( { container } = render( <Authorizations /> ) );
-			let tableSummary = container.querySelectorAll(
-				'.woocommerce-table__summary'
+			let tableSummaryIsLoading = container.querySelector(
+				'.woocommerce-table__summary.is-loading'
 			);
-			expect( tableSummary ).toHaveLength( 0 );
+			expect( tableSummaryIsLoading ).toBeInTheDocument();
 
 			mockUseAuthorizationsSummary.mockReturnValue( {
 				authorizationsSummary: {
@@ -228,7 +228,11 @@ describe( 'Authorizations list', () => {
 			} );
 
 			( { container } = render( <Authorizations /> ) );
-			tableSummary = container.querySelectorAll(
+			tableSummaryIsLoading = container.querySelector(
+				'.woocommerce-table__summary.is-loading'
+			);
+			expect( tableSummaryIsLoading ).not.toBeInTheDocument();
+			const tableSummary = container.querySelectorAll(
 				'.woocommerce-table__summary'
 			);
 

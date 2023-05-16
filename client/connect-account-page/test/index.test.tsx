@@ -69,6 +69,8 @@ describe( 'ConnectAccountPage', () => {
 			'.woocommerce-payments__onboarding_location_check-modal';
 		expect( document.body.querySelector( modalSelector ) ).not.toBeNull();
 
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+		// @ts-ignore
 		expect( console ).toHaveWarnedWith(
 			// eslint-disable-next-line max-len
 			'List with items prop is deprecated is deprecated and will be removed in version 9.0.0. Note: See ExperimentalList / ExperimentalListItem for the new API that will replace this component in future versions.'
