@@ -11,6 +11,10 @@ const types = [ 'primary', 'light', 'warning', 'alert' ] as const;
 
 export type ChipType = typeof types[ number ];
 
+const isChipType = ( type?: string ): type is ChipType => {
+	return types.includes( type as ChipType );
+};
+
 interface Props {
 	message: string;
 	type?: ChipType;
@@ -24,7 +28,7 @@ const Chip: React.FC< Props > = ( props ) => {
 
 	const classNames = [
 		'chip',
-		`chip-${ types.find( ( t ) => t === type ) || 'primary' }`,
+		`chip-${ isChipType( type ) ? type : 'primary' }`,
 		isCompact ? 'is-compact' : '',
 		className ?? '',
 	];
