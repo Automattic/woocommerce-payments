@@ -7,8 +7,7 @@ exports[`BannerActions renders with dismiss button when remindMeCount greater th
   >
     <a
       class="components-button is-primary"
-      href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/"
-      target="_blank"
+      href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
     >
       Learn more
     </a>
@@ -29,8 +28,7 @@ exports[`BannerActions renders without dismiss button when remindMeCount less th
   >
     <a
       class="components-button is-primary"
-      href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/"
-      target="_blank"
+      href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
     >
       Learn more
     </a>

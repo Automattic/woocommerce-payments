@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Fatal error from third-party extensions using the `woocommerce_update_order` expecting the second parameter.

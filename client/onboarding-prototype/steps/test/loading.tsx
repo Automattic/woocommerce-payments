@@ -75,7 +75,7 @@ describe( 'Loading', () => {
 		data = {
 			country: 'US',
 			business_type: 'individual',
-			mcc: 'computers_peripherals_and_software',
+			mcc: 'software_services',
 			annual_revenue: 'less_than_250k',
 			go_live_timeframe: 'within_1month',
 		};
@@ -93,7 +93,7 @@ describe( 'Loading', () => {
 					business: {
 						country: 'US',
 						type: 'individual',
-						mcc: 'computers_peripherals_and_software',
+						mcc: 'software_services',
 						annual_revenue: 'less_than_250k',
 						go_live_timeframe: 'within_1month',
 					},
@@ -110,7 +110,7 @@ describe( 'Loading', () => {
 		data = {
 			country: 'GB',
 			business_type: 'individual',
-			mcc: 'computers_peripherals_and_software',
+			mcc: 'software_services',
 			annual_revenue: 'less_than_250k',
 			go_live_timeframe: 'within_1month',
 		};
@@ -128,7 +128,7 @@ describe( 'Loading', () => {
 					business: {
 						country: 'GB',
 						type: 'individual',
-						mcc: 'computers_peripherals_and_software',
+						mcc: 'software_services',
 						annual_revenue: 'less_than_250k',
 						go_live_timeframe: 'within_1month',
 					},
