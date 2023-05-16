@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Show a link to the documentation in the tooltip when the pending balance is negative.

@@ -1,0 +1,573 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Purchase price threshold card renders correctly 1`] = `
+<div>
+  <div
+    class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="purchase-price-threshold-card"
+  >
+    <div
+      class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
+    >
+      <div>
+        <p
+          class="fraud-protection-rule-card-header"
+        >
+          Purchase Price Threshold
+        </p>
+        <p
+          class="fraud-protection-rule-card-description"
+        >
+          This filter compares the purchase price of an order to the minimum and maximum purchase amounts that you specify.
+        </p>
+      </div>
+    </div>
+    <hr />
+    <div
+      class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
+    >
+      <div
+        class="fraud-protection-rule-toggle"
+      >
+        <strong>
+          Enable filtering
+        </strong>
+        <div
+          class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
+        >
+          <div
+            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+          >
+            <span
+              class="components-form-toggle"
+            >
+              <input
+                aria-describedby="inspector-toggle-control-0__help"
+                class="components-form-toggle__input"
+                id="inspector-toggle-control-0"
+                type="checkbox"
+              />
+              <span
+                class="components-form-toggle__track"
+              />
+              <span
+                class="components-form-toggle__thumb"
+              />
+            </span>
+            <label
+              class="components-toggle-control__label"
+              for="inspector-toggle-control-0"
+            >
+              Block transactions for abnormal purchase prices
+            </label>
+          </div>
+          <p
+            class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+            id="inspector-toggle-control-0__help"
+          >
+            When enabled, the payment will be blocked.
+          </p>
+        </div>
+      </div>
+      <div
+        class="fraud-protection-rule-description"
+      >
+        <strong>
+          How does this filter protect me?
+        </strong>
+        <p>
+          An unusually high purchase amount, compared to the average for your business, can indicate potential fraudulent activity.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Purchase price threshold card renders correctly when enabled 1`] = `
+<div>
+  <div
+    class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="purchase-price-threshold-card"
+  >
+    <div
+      class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
+    >
+      <div>
+        <p
+          class="fraud-protection-rule-card-header"
+        >
+          Purchase Price Threshold
+        </p>
+        <p
+          class="fraud-protection-rule-card-description"
+        >
+          This filter compares the purchase price of an order to the minimum and maximum purchase amounts that you specify.
+        </p>
+      </div>
+    </div>
+    <hr />
+    <div
+      class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
+    >
+      <div
+        class="fraud-protection-rule-toggle"
+      >
+        <strong>
+          Enable filtering
+        </strong>
+        <div
+          class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
+        >
+          <div
+            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+          >
+            <span
+              class="components-form-toggle is-checked"
+            >
+              <input
+                aria-describedby="inspector-toggle-control-1__help"
+                class="components-form-toggle__input"
+                id="inspector-toggle-control-1"
+                type="checkbox"
+              />
+              <span
+                class="components-form-toggle__track"
+              />
+              <span
+                class="components-form-toggle__thumb"
+              />
+            </span>
+            <label
+              class="components-toggle-control__label"
+              for="inspector-toggle-control-1"
+            >
+              Block transactions for abnormal purchase prices
+            </label>
+          </div>
+          <p
+            class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+            id="inspector-toggle-control-1__help"
+          >
+            The payment will be blocked.
+          </p>
+        </div>
+        <div>
+          <div
+            class="fraud-protection-rule-toggle-children-container"
+          >
+            <strong>
+              Limits
+            </strong>
+            <div
+              class="fraud-protection-rule-toggle-children-horizontal-form"
+            >
+              <div
+                class="fraud-protection-rule-toggle-children-vertical-form"
+              >
+                <label
+                  for="fraud-protection-purchase-price-minimum"
+                >
+                  Minimum purchase price
+                </label>
+                <div
+                  class="components-base-control components-amount-input__container"
+                >
+                  <div
+                    class="components-base-control__field components-amount-input__input_container"
+                  >
+                    <span
+                      class="components-amount-input__prefix"
+                    >
+                      $
+                    </span>
+                    <input
+                      class="components-text-control__input components-amount-input__input"
+                      data-testid="amount-input"
+                      id="fraud-protection-purchase-price-minimum"
+                      placeholder="0.00"
+                      value=""
+                    />
+                  </div>
+                  <span
+                    class="components-amount-input__help_text"
+                  >
+                    Leave blank for no limit
+                  </span>
+                </div>
+              </div>
+              <div
+                class="fraud-protection-rule-toggle-children-vertical-form"
+              >
+                <label
+                  for="fraud-protection-purchase-price-maximum"
+                >
+                  Maximum purchase price
+                </label>
+                <div
+                  class="components-base-control components-amount-input__container"
+                >
+                  <div
+                    class="components-base-control__field components-amount-input__input_container"
+                  >
+                    <span
+                      class="components-amount-input__prefix"
+                    >
+                      $
+                    </span>
+                    <input
+                      class="components-text-control__input components-amount-input__input"
+                      data-testid="amount-input"
+                      id="fraud-protection-purchase-price-maximum"
+                      placeholder="0.00"
+                      value=""
+                    />
+                  </div>
+                  <span
+                    class="components-amount-input__help_text"
+                  >
+                    Leave blank for no limit
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <br />
+              <div
+                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+              >
+                <div
+                  class="components-notice__content"
+                >
+                  <div
+                    class="components-flex css-18koiq9-Flex eboqfv50"
+                  >
+                    <div
+                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                    >
+                      <svg
+                        class="gridicon gridicons-notice-outline"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                          />
+                        </g>
+                      </svg>
+                    </div>
+                    <div
+                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                    >
+                      A price range must be set for this filter to take effect.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="fraud-protection-rule-description"
+      >
+        <strong>
+          How does this filter protect me?
+        </strong>
+        <p>
+          An unusually high purchase amount, compared to the average for your business, can indicate potential fraudulent activity.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Purchase price threshold card renders correctly when enabled and checked 1`] = `
+<div>
+  <div
+    class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="purchase-price-threshold-card"
+  >
+    <div
+      class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
+    >
+      <div>
+        <p
+          class="fraud-protection-rule-card-header"
+        >
+          Purchase Price Threshold
+        </p>
+        <p
+          class="fraud-protection-rule-card-description"
+        >
+          This filter compares the purchase price of an order to the minimum and maximum purchase amounts that you specify.
+        </p>
+      </div>
+    </div>
+    <hr />
+    <div
+      class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
+    >
+      <div
+        class="fraud-protection-rule-toggle"
+      >
+        <strong>
+          Enable filtering
+        </strong>
+        <div
+          class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
+        >
+          <div
+            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+          >
+            <span
+              class="components-form-toggle is-checked"
+            >
+              <input
+                aria-describedby="inspector-toggle-control-2__help"
+                class="components-form-toggle__input"
+                id="inspector-toggle-control-2"
+                type="checkbox"
+              />
+              <span
+                class="components-form-toggle__track"
+              />
+              <span
+                class="components-form-toggle__thumb"
+              />
+            </span>
+            <label
+              class="components-toggle-control__label"
+              for="inspector-toggle-control-2"
+            >
+              Block transactions for abnormal purchase prices
+            </label>
+          </div>
+          <p
+            class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+            id="inspector-toggle-control-2__help"
+          >
+            The payment will be blocked.
+          </p>
+        </div>
+        <div>
+          <div
+            class="fraud-protection-rule-toggle-children-container"
+          >
+            <strong>
+              Limits
+            </strong>
+            <div
+              class="fraud-protection-rule-toggle-children-horizontal-form"
+            >
+              <div
+                class="fraud-protection-rule-toggle-children-vertical-form"
+              >
+                <label
+                  for="fraud-protection-purchase-price-minimum"
+                >
+                  Minimum purchase price
+                </label>
+                <div
+                  class="components-base-control components-amount-input__container"
+                >
+                  <div
+                    class="components-base-control__field components-amount-input__input_container"
+                  >
+                    <span
+                      class="components-amount-input__prefix"
+                    >
+                      $
+                    </span>
+                    <input
+                      class="components-text-control__input components-amount-input__input"
+                      data-testid="amount-input"
+                      id="fraud-protection-purchase-price-minimum"
+                      placeholder="0.00"
+                      value=""
+                    />
+                  </div>
+                  <span
+                    class="components-amount-input__help_text"
+                  >
+                    Leave blank for no limit
+                  </span>
+                </div>
+              </div>
+              <div
+                class="fraud-protection-rule-toggle-children-vertical-form"
+              >
+                <label
+                  for="fraud-protection-purchase-price-maximum"
+                >
+                  Maximum purchase price
+                </label>
+                <div
+                  class="components-base-control components-amount-input__container"
+                >
+                  <div
+                    class="components-base-control__field components-amount-input__input_container"
+                  >
+                    <span
+                      class="components-amount-input__prefix"
+                    >
+                      $
+                    </span>
+                    <input
+                      class="components-text-control__input components-amount-input__input"
+                      data-testid="amount-input"
+                      id="fraud-protection-purchase-price-maximum"
+                      placeholder="0.00"
+                      value=""
+                    />
+                  </div>
+                  <span
+                    class="components-amount-input__help_text"
+                  >
+                    Leave blank for no limit
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <br />
+              <div
+                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+              >
+                <div
+                  class="components-notice__content"
+                >
+                  <div
+                    class="components-flex css-18koiq9-Flex eboqfv50"
+                  >
+                    <div
+                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                    >
+                      <svg
+                        class="gridicon gridicons-notice-outline"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                          />
+                        </g>
+                      </svg>
+                    </div>
+                    <div
+                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+                    >
+                      A price range must be set for this filter to take effect.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="fraud-protection-rule-description"
+      >
+        <strong>
+          How does this filter protect me?
+        </strong>
+        <p>
+          An unusually high purchase amount, compared to the average for your business, can indicate potential fraudulent activity.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Purchase price threshold card renders like disabled when checked, but not enabled 1`] = `
+<div>
+  <div
+    class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    id="purchase-price-threshold-card"
+  >
+    <div
+      class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
+    >
+      <div>
+        <p
+          class="fraud-protection-rule-card-header"
+        >
+          Purchase Price Threshold
+        </p>
+        <p
+          class="fraud-protection-rule-card-description"
+        >
+          This filter compares the purchase price of an order to the minimum and maximum purchase amounts that you specify.
+        </p>
+      </div>
+    </div>
+    <hr />
+    <div
+      class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
+    >
+      <div
+        class="fraud-protection-rule-toggle"
+      >
+        <strong>
+          Enable filtering
+        </strong>
+        <div
+          class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
+        >
+          <div
+            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+          >
+            <span
+              class="components-form-toggle"
+            >
+              <input
+                aria-describedby="inspector-toggle-control-3__help"
+                class="components-form-toggle__input"
+                id="inspector-toggle-control-3"
+                type="checkbox"
+              />
+              <span
+                class="components-form-toggle__track"
+              />
+              <span
+                class="components-form-toggle__thumb"
+              />
+            </span>
+            <label
+              class="components-toggle-control__label"
+              for="inspector-toggle-control-3"
+            >
+              Block transactions for abnormal purchase prices
+            </label>
+          </div>
+          <p
+            class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+            id="inspector-toggle-control-3__help"
+          >
+            When enabled, the payment will be blocked.
+          </p>
+        </div>
+      </div>
+      <div
+        class="fraud-protection-rule-description"
+      >
+        <strong>
+          How does this filter protect me?
+        </strong>
+        <p>
+          An unusually high purchase amount, compared to the average for your business, can indicate potential fraudulent activity.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+`;

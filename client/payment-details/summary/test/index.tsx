@@ -4,7 +4,7 @@
  */
 import { render, screen } from '@testing-library/react';
 import React from 'react';
-
+import moment from 'moment';
 /**
  * Internal dependencies
  */
@@ -14,6 +14,11 @@ import { useAuthorization } from 'wcpay/data';
 import { paymentIntentMock } from '../../../data/payment-intents/test/hooks';
 
 declare const global: {
+	wcSettings: {
+		locale: {
+			siteLocale: string;
+		};
+	};
 	wcpaySettings: {
 		isSubscriptionsActive: boolean;
 		zeroDecimalCurrencies: string[];
@@ -24,7 +29,6 @@ declare const global: {
 		featureFlags: {
 			isAuthAndCaptureEnabled: boolean;
 		};
-		isFraudProtectionSettingsEnabled: boolean;
 	};
 };
 
@@ -126,7 +130,6 @@ describe( 'PaymentDetailsSummary', () => {
 					precision: 2,
 				},
 			},
-			isFraudProtectionSettingsEnabled: false,
 		};
 	} );
 
@@ -206,91 +209,97 @@ describe( 'PaymentDetailsSummary', () => {
 		expect( renderCharge( {} as any, true ) ).toMatchSnapshot();
 	} );
 
-	test( 'renders capture section correctly', () => {
-		mockUseAuthorization.mockReturnValueOnce( {
-			authorization: {
-				captured: false,
-				charge_id: 'ch_mock',
-				amount: 1000,
-				currency: 'usd',
-				created: '2019-09-19 17:24:00',
-				order_id: 123,
-				risk_level: 1,
-				customer_country: 'US',
-				customer_email: 'test@example.com',
-				customer_name: 'Test Customer',
-				payment_intent_id: 'pi_mock',
-			},
-			isLoading: false,
-			isRequesting: false,
-			doCaptureAuthorization: jest.fn(),
-			doCancelAuthorization: jest.fn(),
-		} );
-		const charge = getBaseCharge();
-		charge.captured = false;
-
-		const container = renderCharge( charge );
-
-		expect(
-			screen.getByRole( 'button', { name: /Capture/i } )
-		).toBeInTheDocument();
-
-		expect(
-			screen.getByText( /You need to capture this charge/i )
-		).toHaveTextContent(
-			'You need to capture this charge before Sep 26, 2019 / 5:24PM'
-		);
-
-		expect( container ).toMatchSnapshot();
-	} );
-
-	test( 'renders the fraud outcome buttons', () => {
-		global.wcpaySettings.isFraudProtectionSettingsEnabled = true;
-
-		mockUseAuthorization.mockReturnValueOnce( {
-			authorization: {
-				captured: false,
-				charge_id: 'ch_mock',
-				amount: 1000,
-				currency: 'usd',
-				created: '2019-09-19 17:24:00',
-				order_id: 123,
-				risk_level: 1,
-				customer_country: 'US',
-				customer_email: 'test@example.com',
-				customer_name: 'Test Customer',
-				payment_intent_id: 'pi_mock',
-			},
-			isLoading: false,
-			isRequesting: false,
-			doCaptureAuthorization: jest.fn(),
-			doCancelAuthorization: jest.fn(),
-		} );
-		const charge = getBaseCharge();
-		charge.captured = false;
-
-		const container = renderCharge( charge, {}, false, {
-			paymentIntent: paymentIntentMock,
+	describe( 'capture notification and fraud buttons', () => {
+		beforeAll( () => {
+			// Mock current date and time to fixed value in moment
+			const fixedCurrentDate = new Date( '2023-01-01T01:00:00.000Z' );
+			jest.spyOn( Date, 'now' ).mockImplementation( () =>
+				fixedCurrentDate.getTime()
+			);
 		} );
 
-		expect(
-			screen.getByRole( 'button', { name: /Approve Transaction/i } )
-		).toBeInTheDocument();
+		afterAll( () => {
+			jest.spyOn( Date, 'now' ).mockRestore();
+		} );
 
-		expect(
-			screen.getByRole( 'button', { name: /Block Transaction/i } )
-		).toBeInTheDocument();
+		test( 'renders capture section correctly', () => {
+			mockUseAuthorization.mockReturnValueOnce( {
+				authorization: {
+					captured: false,
+					charge_id: 'ch_mock',
+					amount: 1000,
+					currency: 'usd',
+					created: moment.utc().format(),
+					order_id: 123,
+					risk_level: 1,
+					customer_country: 'US',
+					customer_email: 'test@example.com',
+					customer_name: 'Test Customer',
+					payment_intent_id: 'pi_mock',
+				},
+				isLoading: false,
+				isRequesting: false,
+				doCaptureAuthorization: jest.fn(),
+				doCancelAuthorization: jest.fn(),
+			} );
+			const charge = getBaseCharge();
+			charge.captured = false;
 
-		expect(
-			screen.queryByRole( 'button', { name: /Capture/i } )
-		).not.toBeInTheDocument();
+			const container = renderCharge( charge );
 
-		expect(
-			screen.getByText(
-				/Approving this transaction will capture the charge./
-			)
-		).toBeInTheDocument();
+			expect(
+				screen.getByRole( 'button', { name: /Capture/i } )
+			).toBeInTheDocument();
 
-		expect( container ).toMatchSnapshot();
+			expect( container ).toMatchSnapshot();
+		} );
+
+		test( 'renders the fraud outcome buttons', () => {
+			mockUseAuthorization.mockReturnValueOnce( {
+				authorization: {
+					captured: false,
+					charge_id: 'ch_mock',
+					amount: 1000,
+					currency: 'usd',
+					created: new Date( Date.now() ).toISOString(),
+					order_id: 123,
+					risk_level: 1,
+					customer_country: 'US',
+					customer_email: 'test@example.com',
+					customer_name: 'Test Customer',
+					payment_intent_id: 'pi_mock',
+				},
+				isLoading: false,
+				isRequesting: false,
+				doCaptureAuthorization: jest.fn(),
+				doCancelAuthorization: jest.fn(),
+			} );
+			const charge = getBaseCharge();
+			charge.captured = false;
+
+			const container = renderCharge( charge, {}, false, {
+				paymentIntent: paymentIntentMock,
+			} );
+
+			expect(
+				screen.getByRole( 'button', { name: /Approve Transaction/i } )
+			).toBeInTheDocument();
+
+			expect(
+				screen.getByRole( 'button', { name: /Block Transaction/i } )
+			).toBeInTheDocument();
+
+			expect(
+				screen.queryByRole( 'button', { name: /Capture/i } )
+			).not.toBeInTheDocument();
+
+			expect(
+				screen.getByText(
+					/Approving this transaction will capture the charge./
+				)
+			).toBeInTheDocument();
+
+			expect( container ).toMatchSnapshot();
+		} );
 	} );
 } );

@@ -4,9 +4,9 @@ on:
   pull_request
 
 env:
-  WC_MIN_SUPPORTED_VERSION: '7.3.0'
+  WC_MIN_SUPPORTED_VERSION: '7.5.0'
   WP_MIN_SUPPORTED_VERSION: '6.0'
-  PHP_MIN_SUPPORTED_VERSION: '7.2'
+  PHP_MIN_SUPPORTED_VERSION: '7.3'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

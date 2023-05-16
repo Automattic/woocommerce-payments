@@ -16,7 +16,7 @@ use WC_Payments_Features;
 use WCPay\Constants\Payment_Method;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
-use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
+use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 
 
@@ -33,11 +33,11 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 	protected $gateway;
 
 	/**
-	 * Platform Checkout Utilities.
+	 * WooPay Utilities.
 	 *
-	 * @var Platform_Checkout_Utilities
+	 * @var WooPay_Utilities
 	 */
-	protected $platform_checkout_util;
+	protected $woopay_util;
 
 	/**
 	 * WC Payments Account.
@@ -57,20 +57,20 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 	 * Construct.
 	 *
 	 * @param UPE_Payment_Gateway          $gateway                WC Payment Gateway.
-	 * @param Platform_Checkout_Utilities  $platform_checkout_util Platform Checkout Utilities.
+	 * @param WooPay_Utilities             $woopay_util WooPay Utilities.
 	 * @param WC_Payments_Account          $account                WC Payments Account.
 	 * @param WC_Payments_Customer_Service $customer_service       WC Payments Customer Service.
 	 */
 	public function __construct(
 		UPE_Payment_Gateway $gateway,
-		Platform_Checkout_Utilities $platform_checkout_util,
+		WooPay_Utilities $woopay_util,
 		WC_Payments_Account $account,
 		WC_Payments_Customer_Service $customer_service
 	) {
-		$this->gateway                = $gateway;
-		$this->platform_checkout_util = $platform_checkout_util;
-		$this->account                = $account;
-		$this->customer_service       = $customer_service;
+		$this->gateway          = $gateway;
+		$this->woopay_util      = $woopay_util;
+		$this->account          = $account;
+		$this->customer_service = $customer_service;
 
 		add_action( 'wc_payments_set_gateway', [ $this, 'set_gateway' ] );
 		add_action( 'wc_payments_add_upe_payment_fields', [ $this, 'payment_fields' ] );
@@ -111,7 +111,11 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		$payment_fields['wcBlocksUPEAppearance']    = get_transient( UPE_Payment_Gateway::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
 		$payment_fields['cartContainsSubscription'] = $this->gateway->is_subscription_item_in_cart();
 
-		if ( WC_Payments_Features::is_upe_legacy_enabled() ) {
+		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+			$payment_fields['currency']  = get_woocommerce_currency();
+			$cart_total                  = ( WC()->cart ? WC()->cart->get_total( '' ) : 0 );
+			$payment_fields['cartTotal'] = WC_Payments_Utils::prepare_amount( $cart_total, get_woocommerce_currency() );
+		} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
 			$payment_fields['checkoutTitle']        = $this->gateway->get_checkout_title();
 			$payment_fields['upePaymentIntentData'] = $this->gateway->get_payment_intent_data_from_session();
 			$payment_fields['upeSetupIntentData']   = $this->gateway->get_setup_intent_data_from_session();
@@ -137,7 +141,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 						$payment_fields['newTokenFormId'] = '#wc-' . $token->get_gateway_id() . '-payment-token-' . $token->get_id();
 					}
 				}
-				return $payment_fields;
+				return $payment_fields; // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
 			}
 
 			$payment_fields['isOrderPay'] = true;
@@ -158,7 +162,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 				);
 			}
 		}
-		return $payment_fields;
+		return $payment_fields; // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
 	}
 
 	/**
@@ -167,7 +171,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 	 * @return bool - True if WooPay enabled, false otherwise.
 	 */
 	private function is_woopay_enabled() {
-		return WC_Payments_Features::is_platform_checkout_eligible() && 'yes' === $this->gateway->get_option( 'platform_checkout', 'no' ) && WC_Payments_Features::is_woopay_express_checkout_enabled();
+		return WC_Payments_Features::is_woopay_eligible() && 'yes' === $this->gateway->get_option( 'platform_checkout', 'no' ) && WC_Payments_Features::is_woopay_express_checkout_enabled();
 	}
 
 	/**
@@ -198,7 +202,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 				'showSaveOption' => $this->should_upe_payment_method_show_save_option( $payment_method ),
 			];
 
-			if ( WC_Payments_Features::is_upe_split_enabled() ) {
+			if ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 				$settings[ $payment_method_id ]['upePaymentIntentData'] = $this->gateway->get_payment_intent_data_from_session( $payment_method_id );
 				$settings[ $payment_method_id ]['upeSetupIntentData']   = $this->gateway->get_setup_intent_data_from_session( $payment_method_id );
 				$settings[ $payment_method_id ]['testingInstructions']  = WC_Payments_Utils::esc_interpolated_html(
@@ -243,7 +247,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 			 * before `$this->saved_payment_methods()`.
 			 */
 			$payment_fields  = $this->get_payment_fields_js_config();
-			$upe_object_name = WC_Payments_Features::is_upe_split_enabled() ? 'wcpay_upe_config' : 'wcpayConfig';
+			$upe_object_name = ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) ? 'wcpay_upe_config' : 'wcpayConfig';
 			wp_enqueue_script( 'wcpay-upe-checkout' );
 			add_action(
 				'wp_footer',

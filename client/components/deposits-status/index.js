@@ -13,14 +13,18 @@ import { createInterpolateElement } from '@wordpress/element';
  */
 import 'components/account-status/shared.scss';
 
-const DepositsStatus = ( { status, interval, iconSize } ) => {
+const DepositsStatus = ( { status, interval, accountStatus, iconSize } ) => {
 	let className = 'account-status__info__green';
 	let description;
 	let icon = <GridiconCheckmarkCircle size={ iconSize } />;
 	const automaticIntervals = [ 'daily', 'weekly', 'monthly' ];
 	const showSuspendedNotice = 'blocked' === status;
 
-	if ( 'disabled' === status ) {
+	if ( 'pending_verification' === accountStatus ) {
+		description = __( 'Pending verification', 'woocommerce-payments' );
+		className = 'account-status__info__gray';
+		icon = <GridiconNotice size={ iconSize } />;
+	} else if ( 'disabled' === status ) {
 		description = __( 'Disabled', 'woocommerce-payments' );
 		className = 'account-status__info__red';
 		icon = <GridiconNotice size={ iconSize } />;

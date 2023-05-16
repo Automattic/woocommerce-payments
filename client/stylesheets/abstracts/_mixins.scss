@@ -43,9 +43,54 @@
 	}
 }
 
+// WooCommerce/Body Large
+@mixin wc-body-large {
+	font-size: 16px;
+	line-height: 24px;
+}
+
+// WooCommerce/Body Small
+@mixin wc-body-small {
+	font-size: 14px;
+	line-height: 18px;
+}
+
+// WooCommerce/Others/Caption
+@mixin wc-others-caption {
+	font-size: 12px;
+	line-height: 16px;
+	font-weight: 400;
+}
+
+// WordPress/Title Large
+@mixin wp-title-large {
+	font-size: 32px;
+	line-height: 40px;
+	font-weight: 400;
+}
+
+// WordPress/Title Medium
+@mixin wp-title-medium {
+	font-size: 24px;
+	line-height: 32px;
+	font-weight: 400;
+}
+
 // WordPress/Title Small
-@mixin title-small {
+@mixin wp-title-small {
 	font-size: 20px;
 	line-height: 28px;
+}
+
+// WordPress/Label
+@mixin wp-label {
+	font-size: 13px;
+	line-height: 16px;
 	font-weight: 400;
+}
+
+// WordPress/Subtitle
+@mixin wp-subtitle {
+	@include wc-body-large;
+	font-weight: 600;
 }

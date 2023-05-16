@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Explicitly mention gridicons and @wordpress/primitives as dev dependencies.

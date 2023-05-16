@@ -73,6 +73,7 @@ class WC_Payments_Account {
 		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
 		add_action( 'updated_option', [ $this, 'possibly_update_wcpay_account_locale' ], 10, 3 );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'clear_cache' ] );
 
 		// Add capital offer redirection.
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_capital_offer' ] );
@@ -569,6 +570,9 @@ class WC_Payments_Account {
 
 		try {
 			$link = $this->payments_api_client->get_link( $args );
+			if ( isset( $args['type'] ) && 'complete_kyc_link' === $args['type'] && isset( $link['state'] ) ) {
+				set_transient( 'wcpay_stripe_onboarding_state', $link['state'], DAY_IN_SECONDS );
+			}
 
 			$this->redirect_to( $link['url'] );
 		} catch ( API_Exception $e ) {
@@ -776,7 +780,7 @@ class WC_Payments_Account {
 
 			if ( isset( $_GET['wcpay-disable-onboarding-test-mode'] ) ) {
 				WC_Payments_Onboarding_Service::set_test_mode( false );
-				$this->redirect_to_onboarding_page();
+				$this->redirect_to_prototype_onboarding_page();
 				return;
 			}
 
@@ -828,7 +832,7 @@ class WC_Payments_Account {
 	 * @return string Stripe account login url.
 	 */
 	private function get_login_url() {
-		return add_query_arg(
+		return add_query_arg( // nosemgrep: audit.php.wp.security.xss.query-arg -- no user input data used.
 			[
 				'wcpay-login' => '1',
 				'_wpnonce'    => wp_create_nonce( 'wcpay-login' ),
@@ -984,7 +988,7 @@ class WC_Payments_Account {
 		);
 
 		if ( 1 === $is_from_subscription_product_publish ) {
-			return add_query_arg(
+			return add_query_arg( // nosemgrep: audit.php.wp.security.xss.query-arg -- specific admin url passed in.
 				[ 'wcpay-subscriptions-onboarded' => '1' ],
 				get_edit_post_link( $matches[1], 'url' )
 			);
@@ -1099,7 +1103,7 @@ class WC_Payments_Account {
 				'site_locale'   => get_locale(),
 			],
 			$this->get_actioned_notes(),
-			array_filter( $account_data ),
+			array_filter( $account_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
 			$progressive,
 			$collect_payout_requirements
 		);
@@ -1233,12 +1237,38 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Updates the cached account data.
+	 *
+	 * @param string $property Property to update.
+	 * @param mixed  $data     Data to update.
+	 *
+	 * @return void
+	 */
+	public function update_cached_account_data( $property, $data ) {
+		$account_data = $this->database_cache->get( Database_Cache::ACCOUNT_KEY );
+
+		$account_data[ $property ] = is_array( $data ) ? array_merge( $account_data[ $property ] ?? [], $data ) : $data;
+
+		$this->database_cache->add( Database_Cache::ACCOUNT_KEY, $account_data );
+	}
+
+	/**
 	 * Refetches account data and returns the fresh data.
 	 *
 	 * @return array|bool|string Either the new account data or false if unavailable.
 	 */
 	public function refresh_account_data() {
 		return $this->get_cached_account_data( true );
+	}
+
+	/**
+	 * Updates the account data.
+	 *
+	 * @param string $property Property to update.
+	 * @param mixed  $data     Data to update.
+	 */
+	public function update_account_data( $property, $data ) {
+		return $this->update_cached_account_data( $property, $data );
 	}
 
 	/**

@@ -25,19 +25,14 @@ exports[`FRTDiscoverabilityBanner renders 1`] = `
       <p
         class="discoverability-card__body"
       >
-        New features have been added to WooCommerce Payments to help 
-        <strong>
-          reduce fraudulent transactions
-        </strong>
-         on your store. By using a set of customizable rules to evaluate incoming orders, your store is better protected from fraudsters.
+        New features have been added to WooPayments to help reduce fraudulent transactions on your store. By using a set of rules to evaluate incoming orders, your store is better protected from fraudsters.
       </p>
       <div
         class="discoverability-card__actions"
       >
         <a
           class="components-button is-primary"
-          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/"
-          target="_blank"
+          href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
         >
           Learn more
         </a>
@@ -74,19 +69,14 @@ exports[`FRTDiscoverabilityBanner renders when remindMeAt timestamp is in the pa
       <p
         class="discoverability-card__body"
       >
-        New features have been added to WooCommerce Payments to help 
-        <strong>
-          reduce fraudulent transactions
-        </strong>
-         on your store. By using a set of customizable rules to evaluate incoming orders, your store is better protected from fraudsters.
+        New features have been added to WooPayments to help reduce fraudulent transactions on your store. By using a set of rules to evaluate incoming orders, your store is better protected from fraudsters.
       </p>
       <div
         class="discoverability-card__actions"
       >
         <a
           class="components-button is-primary"
-          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/"
-          target="_blank"
+          href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
         >
           Learn more
         </a>
@@ -102,7 +92,7 @@ exports[`FRTDiscoverabilityBanner renders when remindMeAt timestamp is in the pa
 </div>
 `;
 
-exports[`FRTDiscoverabilityBanner renders with dont show again button if remindMeCount greater than or equal to 3 1`] = `
+exports[`FRTDiscoverabilityBanner renders with dismiss button if remindMeCount greater than or equal to 3 1`] = `
 <div>
   <div
     class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
@@ -123,19 +113,14 @@ exports[`FRTDiscoverabilityBanner renders with dont show again button if remindM
       <p
         class="discoverability-card__body"
       >
-        New features have been added to WooCommerce Payments to help 
-        <strong>
-          reduce fraudulent transactions
-        </strong>
-         on your store. By using a set of customizable rules to evaluate incoming orders, your store is better protected from fraudsters.
+        New features have been added to WooPayments to help reduce fraudulent transactions on your store. By using a set of rules to evaluate incoming orders, your store is better protected from fraudsters.
       </p>
       <div
         class="discoverability-card__actions"
       >
         <a
           class="components-button is-primary"
-          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/"
-          target="_blank"
+          href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
         >
           Learn more
         </a>
@@ -143,13 +128,7 @@ exports[`FRTDiscoverabilityBanner renders with dont show again button if remindM
           class="components-button is-tertiary"
           type="button"
         >
-          Remind me later
-        </button>
-        <button
-          class="components-button is-tertiary"
-          type="button"
-        >
-          Don't show me this again
+          Dismiss
         </button>
       </div>
     </div>
@@ -157,7 +136,7 @@ exports[`FRTDiscoverabilityBanner renders with dont show again button if remindM
 </div>
 `;
 
-exports[`FRTDiscoverabilityBanner renders without dont show again button if remindMeCount greater than 0 but less than 3 1`] = `
+exports[`FRTDiscoverabilityBanner renders without dismiss button if remindMeCount greater than 0 but less than 3 1`] = `
 <div>
   <div
     class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
@@ -178,19 +157,14 @@ exports[`FRTDiscoverabilityBanner renders without dont show again button if remi
       <p
         class="discoverability-card__body"
       >
-        New features have been added to WooCommerce Payments to help 
-        <strong>
-          reduce fraudulent transactions
-        </strong>
-         on your store. By using a set of customizable rules to evaluate incoming orders, your store is better protected from fraudsters.
+        New features have been added to WooPayments to help reduce fraudulent transactions on your store. By using a set of rules to evaluate incoming orders, your store is better protected from fraudsters.
       </p>
       <div
         class="discoverability-card__actions"
       >
         <a
           class="components-button is-primary"
-          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/"
-          target="_blank"
+          href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
         >
           Learn more
         </a>

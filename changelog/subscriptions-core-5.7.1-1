@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Resolve errors for third-party code using the URLs returned from WC_Subscriptions_Admin::add_subscription_url() and WCS_Cart_Renewal::get_checkout_payment_url() because they were erroneously escaped.
