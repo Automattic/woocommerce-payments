@@ -2,40 +2,48 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 
 export default {
 	button: __( 'Finish setup', 'woocommerce-payments' ),
-
-	heading: __( 'WooCommerce Payments', 'woocommerce-payments' ),
-
-	learnMore: __( 'Learn more', 'woocommerce-payments' ),
-
-	onboarding: {
-		heading: __(
-			'Finish setup to enable credit card payments',
-			'woocommerce-payments'
-		),
-		description: __(
-			'With WooCommerce Payments, you can securely accept major cards, Apple Pay, and payments in over 100 currencies. Track cash flow and manage recurring revenue directly from your store’s dashboard - with no setup costs or monthly fees.',
-			'woocommerce-payments'
-		),
-		descriptionUS: __(
-			'With WooCommerce Payments, you can securely accept major cards, Apple Pay, and payments in over 100 currencies – with no setup costs or monthly fees – and you can now accept in-person payments with the Woo mobile app.',
-			'woocommerce-payments'
-		),
-	},
-
-	paymentMethodsHeading: __(
-		'Accepted payment methods',
+	heading: __(
+		'Accept payments and manage your business.',
 		'woocommerce-payments'
 	),
-
+	description: createInterpolateElement(
+		__(
+			'By using Woo Payments you agree to our <a1>Terms of Service</a1> and acknowledge that you have read our <a2>Privacy Policy</a2>.',
+			'woocommerce-payments'
+		),
+		{
+			a1: (
+				// eslint-disable-next-line jsx-a11y/anchor-has-content
+				<a
+					href="https://wordpress.com/tos"
+					target="_blank"
+					rel="noopener noreferrer"
+				/>
+			),
+			a2: (
+				// eslint-disable-next-line jsx-a11y/anchor-has-content
+				<a
+					href="https://automattic.com/privacy/"
+					target="_blank"
+					rel="noopener noreferrer"
+				/>
+			),
+		}
+	),
+	acceptedPaymentMethods: __(
+		'Accepted payment methods include:',
+		'woocommerce-payments'
+	),
 	infoNotice: {
 		description: createInterpolateElement(
 			__(
-				"In order to receive deposits with <a>WooCommerce Payments</a>, you'll need to share business details to verify who you are.",
+				"In order to receive deposits with <a>Woo Payments</a>, you'll need to share business details to verify who you are.",
 				'woocommerce-payments'
 			),
 			{
@@ -54,10 +62,9 @@ export default {
 			'woocommerce-payments'
 		),
 	},
-
 	infoModal: {
 		title: __(
-			'Verifying your information with WooCommerce Payments',
+			'Verifying your information with Woo Payments',
 			'woocommerce-payments'
 		),
 		whyWeAsk: {
@@ -66,7 +73,7 @@ export default {
 				'woocommerce-payments'
 			),
 			description: __(
-				"As you continue the process of signing up for WooCommerce Payments, we'll ask for information about your business, including the business owner's date of birth and tax ID number. We know you may wonder why we ask for this information, and how it will be used. The “Know Your Customer” process, explained below, helps us provide a safe, ethical environment for all financial transactions.",
+				"As you continue the process of signing up for Woo Payments, we'll ask for information about your business, including the business owner's date of birth and tax ID number. We know you may wonder why we ask for this information, and how it will be used. The “Know Your Customer” process, explained below, helps us provide a safe, ethical environment for all financial transactions.",
 				'woocommerce-payments'
 			),
 		},
@@ -100,7 +107,7 @@ export default {
 				'woocommerce-payments'
 			),
 			description: __(
-				"If you're setting up WooCommerce Payments for someone else, it's best to have that person complete the account creation process. As you can see above, we ask for very specific information about the business owner - and you might not have all the details at hand. It's not always possible to change account information once it's been saved, especially if the site accepts live transactions before the correct account information is entered.",
+				"If you're setting up Woo Payments for someone else, it's best to have that person complete the account creation process. As you can see above, we ask for very specific information about the business owner - and you might not have all the details at hand. It's not always possible to change account information once it's been saved, especially if the site accepts live transactions before the correct account information is entered.",
 				'woocommerce-payments'
 			),
 		},
@@ -110,7 +117,7 @@ export default {
 				'woocommerce-payments'
 			),
 			description: __(
-				'We take every step required to safeguard your personal data. WooCommerce Payments is built in partnership with Stripe to store your data in a safe and secure manner.',
+				'We take every step required to safeguard your personal data. Woo Payments is built in partnership with Stripe to store your data in a safe and secure manner.',
 				'woocommerce-payments'
 			),
 		},
@@ -163,12 +170,10 @@ export default {
 			],
 		},
 	},
-
 	stepsHeading: __(
 		'You’re only steps away from getting paid',
 		'woocommerce-payments'
 	),
-
 	step1: {
 		heading: __(
 			'Create and connect your account',
@@ -179,7 +184,6 @@ export default {
 			'woocommerce-payments'
 		),
 	},
-
 	step2: {
 		heading: __( 'Provide a few business details', 'woocommerce-payments' ),
 		description: __(
@@ -187,36 +191,14 @@ export default {
 			'woocommerce-payments'
 		),
 	},
-
 	step3: {
 		heading: __( 'Setup complete!', 'woocommerce-payments' ),
 		description: __(
-			'You’re ready to start using the features and benefits of WooCommerce Payments.'
+			'You’re ready to start using the features and benefits of Woo Payments.'
 		),
 	},
-
-	terms: createInterpolateElement(
-		__(
-			'By clicking “Finish setup”, you agree to the <a>Terms of Service</a>',
-			'woocommerce-payments'
-		),
-		{
-			a: (
-				// eslint-disable-next-line jsx-a11y/anchor-has-content
-				<a
-					href="https://wordpress.com/tos"
-					target="_blank"
-					rel="noopener noreferrer"
-				/>
-			),
-		}
+	onboardingDisabled: __(
+		"We've temporarily paused new account creation. We'll notify you when we resume!",
+		'woocommerce-payments'
 	),
-
-	onboardingDisabled: [
-		__(
-			"We've temporarily paused new account creation.",
-			'woocommerce-payments'
-		),
-		__( "We'll notify you when we resume!", 'woocommerce-payments' ),
-	],
 };
