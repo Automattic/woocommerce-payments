@@ -126,9 +126,6 @@ Please note that our support for the checkout block is still experimental and th
 * Update - Show a link to the documentation in the tooltip when the pending balance is negative.
 * Update - Update @woocommerce/experimental to v3.2.0
 * Update - Update @wordpress/data-controls to v2.6.1
-* Update - Update fraud and risk tools banner to match the latest design changes.
-* Update - Update fraud and risk tools welcome tour copy.
-* Update - Update the title on fraud risk metabox for flagged but approved orders.
 * Update - WooPay specific admin area usage tracking
 * Dev - Adds HTML coverage report for developer reference.
 * Dev - Add the 'wcs_recurring_shipping_package_rates_match_standard_rates' filter to enable third-parties to override whether the subscription packages match during checkout validation.
@@ -137,7 +134,6 @@ Please note that our support for the checkout block is still experimental and th
 * Dev - Enable third-party code to alter the delete payment token URL returned from flag_subscription_payment_token_deletions.
 * Dev - Explicitly mention gridicons and @wordpress/primitives as dev dependencies.
 * Dev - Pass the subscription object as the second parameter to `woocommerce_update_subscription` hook (and `woocommerce_update_order` for backwards compatibility).
-* Dev - Remove fraud and risk tools feature flag checks and tests
 * Dev - Remove pinned composer version 2.0.6 from workflows
 * Dev - Resolve errors for third-party code using the URLs returned from WC_Subscriptions_Admin::add_subscription_url() and WCS_Cart_Renewal::get_checkout_payment_url() because they were erroneously escaped.
 * Dev - Return a response from the WC_Subscription::set_status() function in line with the parent WC_Order::set_status() function.
