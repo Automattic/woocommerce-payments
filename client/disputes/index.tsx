@@ -30,14 +30,13 @@ import DetailsLink, { getDetailsURL } from 'components/details-link';
 import Page from 'components/page';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import { reasons } from './strings';
-import { formatStringValue } from 'utils';
+import { formatStringValue, applyThousandSeparator } from 'utils';
 import { formatExplicitCurrency } from 'utils/currency';
 import DisputesFilters from './filters';
 import DownloadButton from 'components/download-button';
 import disputeStatusMapping from 'components/dispute-status-chip/mappings';
 import { DisputesTableHeader } from 'wcpay/types/disputes';
 import { getDisputesCSV } from 'wcpay/data/disputes/resolvers';
-import { applyThousandSeparator } from '../utils/index.js';
 
 import './style.scss';
 

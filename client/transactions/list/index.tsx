@@ -39,7 +39,7 @@ import ClickableCell from 'components/clickable-cell';
 import { getDetailsURL } from 'components/details-link';
 import { displayType } from 'transactions/strings';
 import { displayStatus as displayDepositStatus } from 'deposits/strings';
-import { formatStringValue } from 'utils';
+import { formatStringValue, applyThousandSeparator } from 'utils';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import { getChargeChannel } from 'utils/charge';
 import Deposit from './deposit';
@@ -52,7 +52,6 @@ import wcpayTracks from 'tracks';
 import DownloadButton from 'components/download-button';
 import { getTransactionsCSV } from '../../data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
-import { applyThousandSeparator } from '../../utils/index.js';
 import { HoverTooltip } from 'components/tooltip';
 
 interface TransactionsListProps {

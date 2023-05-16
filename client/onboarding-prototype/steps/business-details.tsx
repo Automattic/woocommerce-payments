@@ -8,14 +8,13 @@ import React from 'react';
  */
 import { useOnboardingContext } from '../context';
 import { Item } from 'components/custom-select-control';
-import { OnboardingFields } from '../types';
+import { OnboardingFields, BusinessType } from '../types';
 import {
 	OnboardingTextField,
 	OnboardingSelectField,
 	OnboardingGroupedSelectField,
 } from '../form';
 import { getBusinessTypes, getMccsFlatList } from 'onboarding-prototype/utils';
-import { BusinessType } from 'onboarding-prototype/types';
 
 const BusinessDetails: React.FC = () => {
 	const { data, setData } = useOnboardingContext();

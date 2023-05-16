@@ -140,7 +140,7 @@
 				"no-shadow": "off",
 				"@typescript-eslint/no-shadow": "error",
 				"no-duplicate-imports": "off",
-				"import/no-duplicates": [ "error", { "prefer-inline": true } ]
+				"import/no-duplicates": [ "error" ]
 			}
 		}
 	]
