@@ -39,6 +39,16 @@ exports[`Chip renders a primary chip 1`] = `
 </div>
 `;
 
+exports[`Chip renders a primary chip by default 1`] = `
+<div>
+  <span
+    class="chip chip-primary"
+  >
+    Message
+  </span>
+</div>
+`;
+
 exports[`Chip renders a warning chip 1`] = `
 <div>
   <span

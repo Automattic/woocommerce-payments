@@ -13,7 +13,7 @@ export type ChipType = typeof types[ number ];
 
 interface Props {
 	message: string;
-	type: ChipType;
+	type?: ChipType;
 	isCompact?: boolean;
 	className?: string;
 	tooltip?: React.ReactNode;
