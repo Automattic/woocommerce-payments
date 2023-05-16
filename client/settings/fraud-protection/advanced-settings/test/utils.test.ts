@@ -11,6 +11,10 @@ import { CheckOperators, Checks, Outcomes, Rules } from '../constants';
 import { readRuleset, writeRuleset } from '../utils';
 
 const defaultUIConfig = {
+	avs_verification: {
+		block: false,
+		enabled: false,
+	},
 	address_mismatch: {
 		block: false,
 		enabled: false,

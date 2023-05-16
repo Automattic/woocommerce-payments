@@ -16,6 +16,7 @@ declare const global: {
 				declineOnCVCFailure: boolean;
 			};
 		};
+		isFRTReviewFeatureActive?: boolean;
 	};
 };
 
@@ -33,6 +34,7 @@ describe( 'CVC verification card', () => {
 					declineOnCVCFailure: true,
 				},
 			},
+			isFRTReviewFeatureActive: false,
 		};
 		const setSettings = jest.fn();
 		const contextValue = {

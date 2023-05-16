@@ -21,6 +21,10 @@ declare const global: {
 			};
 		};
 	};
+
+	wcpaySettings: {
+		isFRTReviewFeatureActive: boolean;
+	};
 };
 
 describe( 'International billing address card', () => {
@@ -47,6 +51,9 @@ describe( 'International billing address card', () => {
 				},
 			},
 		},
+	};
+	global.wcpaySettings = {
+		isFRTReviewFeatureActive: false,
 	};
 	test( 'renders correctly', () => {
 		const { container } = render(

@@ -552,9 +552,7 @@ class WC_Payments {
 
 			new WC_Payments_Status( self::get_wc_payments_http(), self::get_account_service() );
 
-			if ( WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
-				new WCPay\Fraud_Prevention\Order_Fraud_And_Risk_Meta_Box( self::$order_service );
-			}
+			new WCPay\Fraud_Prevention\Order_Fraud_And_Risk_Meta_Box( self::$order_service );
 		}
 
 		// Load WCPay Subscriptions.
