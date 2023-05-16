@@ -279,7 +279,9 @@ describe( 'Checkout', () => {
 		expect( mockJqueryForm.removeClass ).not.toHaveBeenCalledWith(
 			'processing'
 		);
-		expect( mockSubmit ).toHaveBeenCalled();
+		await waitFor( () => {
+			expect( mockSubmit ).toHaveBeenCalled();
+		} );
 		expect( mockCreatePaymentMethod ).toHaveBeenCalled();
 		expect( mockThen ).toHaveBeenCalled();
 		expect( checkoutResult ).toBe( false );
