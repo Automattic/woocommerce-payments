@@ -15,8 +15,7 @@ interface DetailsLinkProps {
 	id: string;
 
 	/**
-	 * The parent segment of the URL.
-	 * e.g. 'transactions' or 'disputes'
+	 * The parent segment of the URL. e.g. 'transactions' or 'disputes'.
 	 */
 	parentSegment: string;
 }
