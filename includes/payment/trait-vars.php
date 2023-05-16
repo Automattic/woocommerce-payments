@@ -195,23 +195,4 @@ trait Vars {
 	public function get_payment_country() {
 		return $this->get_var( 'payment_country' );
 	}
-
-	/**
-	 * Stores the response from processing.
-	 * This should follow the format, returned by gateways' process_payment().
-	 *
-	 * @param array $response The response to use.
-	 */
-	public function set_response( array $response ) {
-		$this->set_var( 'response', $response );
-	}
-
-	/**
-	 * Returns the response from the payment.
-	 *
-	 * @return array
-	 */
-	public function get_response() {
-		return $this->get_var( 'response' );
-	}
 }

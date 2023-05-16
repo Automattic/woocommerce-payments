@@ -96,7 +96,6 @@ class UPE_Update_Intent_Strategy extends Strategy {
 			$payment->set_intent( $intent );
 		}
 
-		$payment->set_response( $this->get_redirect_array( $payment ) );
 		return new Awaiting_UPE_Confirmation_State( $payment );
 	}
 
@@ -142,33 +141,5 @@ class UPE_Update_Intent_Strategy extends Strategy {
 			// This code would only be reached if the cache has already expired.
 			throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
 		}
-	}
-
-	/**
-	 * Generates the array for redirection upon intent update.
-	 *
-	 * @param Payment $payment The payment details.
-	 * @return array
-	 */
-	protected function get_redirect_array( Payment $payment ) {
-		$order = $payment->get_order();
-
-		return [
-			'result'         => 'success',
-			'payment_needed' => $order->get_total() > 0,
-			'redirect_url'   => wp_sanitize_redirect(
-				esc_url_raw(
-					add_query_arg(
-						[
-							'order_id'            => $order->get_id(),
-							'wc_payment_method'   => $this->gateway::GATEWAY_ID,
-							'_wpnonce'            => wp_create_nonce( 'wcpay_process_redirect_order_nonce' ),
-							'save_payment_method' => $payment->is( Flags::SAVE_PAYMENT_METHOD_TO_STORE ) ? 'yes' : 'no',
-						],
-						$this->gateway->get_return_url( $order )
-					)
-				)
-			),
-		];
 	}
 }

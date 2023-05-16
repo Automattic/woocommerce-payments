@@ -29,7 +29,6 @@ use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Logger;
 use WCPay\Payment\Flags;
 use WCPay\Payment\Loader;
-use WCPay\Payment\Manager;
 use WCPay\Payment_Information;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\Link_Payment_Method;
@@ -2539,8 +2538,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			$manager = new Manager();
-			$payment = $manager->load_payment( $order );
+			$loader  = new Loader();
+			$payment = $loader->load_payment( $order );
 
 			if ( ! $payment->get_state() instanceof Authentication_Required_State ) {
 				throw new Exception( 'The payment is not currently awaiting authentication!' );

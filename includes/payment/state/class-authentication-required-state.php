@@ -11,14 +11,19 @@ use WC_Payments;
 use WC_Payments_Order_Service;
 use WC_Payment_Gateway_WCPay;
 use WC_Payments_API_Client;
+use WC_Payments_API_Intention;
+use WC_Payments_Account;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Exceptions\Intent_Authentication_Exception;
 use WCPay\Payment\Payment;
+use WCPay\Payment\Strategy\Redirect_If_Action_Is_Required;
 
 /**
  * Indicates that authentication is required before the payment can be processed.
  */
 final class Authentication_Required_State extends Payment_State {
+	use Redirect_If_Action_Is_Required;
+
 	/**
 	 * Order service.
 	 *
@@ -41,6 +46,13 @@ final class Authentication_Required_State extends Payment_State {
 	protected $payments_api_client;
 
 	/**
+	 * WC_Payments_Account instance to get information about the account.
+	 *
+	 * @var WC_Payments_Account
+	 */
+	protected $account;
+
+	/**
 	 * Instantiates the state.
 	 *
 	 * @param Payment $payment The context of the state.
@@ -49,9 +61,25 @@ final class Authentication_Required_State extends Payment_State {
 		parent::__construct( $payment );
 
 		// Load dependencies. @todo not here.
+		$this->account             = WC_Payments::get_account_service();
 		$this->order_service       = WC_Payments::get_order_service();
 		$this->gateway             = WC_Payments::get_gateway();
 		$this->payments_api_client = WC_Payments::get_payments_api_client();
+	}
+
+	/**
+	 * Returns the response from the payment process.
+	 *
+	 * @return array
+	 */
+	public function get_response() {
+		$intent = $this->context->get_intent();
+
+		if ( ! $intent instanceof WC_Payments_API_Intention ) {
+			return []; // Once there is an object for all intents, this can be removed.
+		}
+
+		return $this->redirect_if_action_is_required( $this->context, $intent );
 	}
 
 	/**
@@ -67,24 +95,12 @@ final class Authentication_Required_State extends Payment_State {
 		$intent = $this->get_intent_from_server( $intent_id );
 		$this->context->set_intent( $intent );
 
-		// Clear the redirect.
-		$this->context->set_response( [] );
-
 		$successful_status = WC_Payment_Gateway_WCPay::SUCCESSFUL_INTENT_STATUS;
 		if ( in_array( $intent->get_status(), $successful_status, true ) ) {
 			$this->context->switch_state( new Processed_State( $this->context ) );
 		} else {
 			$this->context->switch_state( new Processing_Failed_State( $this->context ) );
 		}
-	}
-
-	/**
-	 * Indicates that the state should interrupt the processing loop.
-	 *
-	 * @return bool
-	 */
-	public function is_processing_finished() {
-		return true;
 	}
 
 	/**

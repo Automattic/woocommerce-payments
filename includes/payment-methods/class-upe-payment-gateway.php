@@ -37,7 +37,7 @@ use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Utils;
 use WC_Payments_Features;
 use WCPay\Payment\Flags;
-use WCPay\Payment\Manager;
+use WCPay\Payment\Loader;
 use WCPay\Payment\Payment;
 use WCPay\Payment\Order_Payment;
 use WCPay\Payment\Order_Payment_Factory;
@@ -332,28 +332,26 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return array
 	 */
 	public function create_payment_intent( $displayed_payment_methods, $order_id = null, $fingerprint = '' ) {
-		$manager = new Manager();
+		$loader = new Loader();
 
+		// Load and setup the payment.
 		if ( $order_id ) {
 			$order   = wc_get_order( $order_id );
-			$payment = $manager->load_or_create_payment( $order );
+			$payment = $loader->load_or_create_payment( $order );
 		} else {
-			$payment = $manager->instantiate_payment();
+			$payment = $loader->create_payment();
 		}
 
-		// Transition to the right state.
-		$payment->switch_state( new Intent_Without_Order_State( $payment ) );
-
-		// Setup the payment object.
 		$manual_capture = ! empty( $this->settings['manual_capture'] ) && 'yes' === $this->settings['manual_capture'];
 		if ( $manual_capture ) {
 			$payment->set_flag( Flags::MANUAL_CAPTURE );
 		}
-		$payment->set_fingerprint( $fingerprint );
-		$payment->set_payment_method_types( array_values( $displayed_payment_methods ) );
+
+		// This state comes before the standard Initial_State.
+		$payment->switch_state( new Intent_Without_Order_State( $payment ) );
 
 		// Load the intent.
-		$response = $payment->get_or_create_intent();
+		$response = $payment->get_or_create_intent( array_values( $displayed_payment_methods ), $fingerprint );
 
 		// Save the prepared payment before trying to process it.
 		if ( $order_id ) {
@@ -485,16 +483,16 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @throws Exception Error processing the payment.
 	 */
 	public function process_payment( $order_id ) {
-		$order   = wc_get_order( $order_id );
-		$manager = new Manager();
+		$order  = wc_get_order( $order_id );
+		$loader = new Loader();
 
 		$existing_id = $this->get_payment_from_session( $order );
 		if ( $existing_id ) {
-			$payment = $manager->load_payment_by_id( $existing_id );
+			$payment = $loader->load_payment_by_id( $existing_id );
 			$payment->set_order( $order );
 			$payment->save_to_order( $order );
 		} else {
-			$payment = $manager->load_or_create_payment( $order );
+			$payment = $loader->load_or_create_payment( $order );
 		}
 
 		// phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
@@ -517,6 +515,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		if ( $save_payment_method ) {
 			$payment->set_flag( Flags::SAVE_PAYMENT_METHOD_TO_STORE );
 		}
+
+		// This will transition to the initial state.
+		$payment->update_intent_with_order();
 
 		// Prepare all data now that the order is available.
 		$payment->prepare();
@@ -643,14 +644,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @throws Process_Payment_Exception When the payment intent has an error.
 	 */
 	public function process_redirect_payment( $order_id, $intent_id, $save_payment_method ) {
-		$manager = new Manager();
+		$loader = new Loader();
 
 		// Load the order and the payment.
 		$order   = wc_get_order( $order_id );
-		$payment = $manager->load_payment( $order );
-
-		// Setup the payment. @todo: Compare this with the existing intent ID.
-		$payment->set_intent_id( $intent_id );
+		$payment = $loader->load_payment( $order );
 
 		if ( $save_payment_method ) {
 			$payment->set_flag( Flags::SAVE_PAYMENT_METHOD_TO_STORE );
@@ -658,35 +656,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 		// restore the remove-upe-payment-intent-from-session step.
 
-		try {
-			// Try loading the intent and advancing to the next stage.
-			$payment->load_intent_after_confirmation( $intent_id );
-			$response = $manager->process( $payment );
-			wp_safe_redirect( $response['redirect_url'] );
-		} catch ( Exception $e ) {
-			echo $e->getMessage();
-			exit;
-		}
-
-		try {
-
-		} catch ( Exception $e ) {
-			Logger::log( 'Error: ' . $e->getMessage() );
-
-			// Confirm our needed variables are set before using them due to there could be a server issue during the get_intent process.
-			$status    = $status ?? null;
-			$charge_id = $charge_id ?? null;
-
-			/* translators: localized exception message */
-			$message = sprintf( __( 'UPE payment failed: %s', 'woocommerce-payments' ), $e->getMessage() );
-			$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id, $message );
-
-			self::remove_upe_payment_intent_from_session();
-
-			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
-			wp_safe_redirect( wc_get_checkout_url() );
-			exit;
-		}
+		// Load the intent. This should advance to the processed or processing failed state.
+		$payment->load_intent_after_confirmation( $intent_id );
+		$payment->complete();
+		$response = $payment->get_response();
+		wp_safe_redirect( $response['redirect'] );
+		exit;
 	}
 
 	/**

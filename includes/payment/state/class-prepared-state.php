@@ -78,7 +78,7 @@ final class Prepared_State extends Payment_State {
 	 * @param string         $fraud_prevention_token Verification token to prevent fraud.
 	 * @throws Exception In case the payment has already been verified.
 	 */
-	public function verify( Payment_Method $payment_method, string $fraud_prevention_token ) {
+	public function verify( Payment_Method $payment_method = null, string $fraud_prevention_token ) {
 		try {
 			// Store the payment method.
 			$this->context->set_payment_method( $payment_method );
@@ -87,9 +87,9 @@ final class Prepared_State extends Payment_State {
 			$this->check_transaction_limiter();
 			$this->verify_fraud_token( $fraud_prevention_token );
 
-			if ( $this->check_for_duplicate_order() ) {
-				return; // State was already changed.
-			}
+			// if ( $this->check_for_duplicate_order() ) {
+			// 	return; // State was already changed.
+			// }
 
 			$this->store_order_in_session();
 

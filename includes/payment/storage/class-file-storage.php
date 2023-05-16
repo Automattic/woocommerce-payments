@@ -79,7 +79,7 @@ class File_Storage implements Storage_Interface {
 	 */
 	public function order_has_payment( WC_Order $order ) {
 		$path = $this->order_path . $order->get_id() . '.json';
-		return $this->get_filesystem()->file_exists( $path );
+		return $this->get_filesystem()->exists( $path );
 	}
 
 	/**

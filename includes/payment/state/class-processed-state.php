@@ -17,6 +17,7 @@ use WC_Payments_Action_Scheduler_Service;
 use WC_Payments_API_Intention;
 use WC_Payments_Subscriptions_Utilities;
 use WCPay\Core\Mode;
+use WCPay\Payment\Duplicate_Payment_Prevention_Service;
 use WCPay\Payment\Flags;
 use WCPay\Payment\Payment;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
@@ -99,16 +100,6 @@ final class Processed_State extends Payment_State {
 		$this->update_order();
 
 		$this->cleanup();
-
-		// Unless another state already set it, add a return URL.
-		if ( ! $this->context->get_response() ) {
-			$this->context->set_response(
-				[
-					'result'   => 'success',
-					'redirect' => $this->gateway->get_return_url( $this->context->get_order() ),
-				]
-			);
-		}
 
 		$this->context->switch_state( new Completed_State( $this->context ) );
 	}

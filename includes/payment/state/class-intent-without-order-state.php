@@ -42,11 +42,13 @@ class Intent_Without_Order_State extends Payment_State {
 	 * Either retrieves the existing intent, or creates a new one.
 	 *
 	 * @param string[] $payment_method_types The allowed payment methods.
+	 * @param string   $fingerprint          Anti-fraud fingerprint.
 	 * @return array The data needed to display payment fields.
 	 */
-	public function get_or_create_intent( array $payment_method_types ) {
-		// Store the payment method types within the payment.
+	public function get_or_create_intent( array $payment_method_types, string $fingerprint ) {
+		// Store the payment method types and fingerprint within the payment.
 		$this->context->set_payment_method_types( $payment_method_types );
+		$this->context->set_fingerprint( $fingerprint );
 
 		// If there is an intent already, use it for payment.
 		// @todo: We might need to switch between setup and payment intents.

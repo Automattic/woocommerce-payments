@@ -17,14 +17,11 @@ use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Exceptions\Process_Payment_Exception;
 use WCPay\Payment\Flags;
 use WCPay\Payment\Payment;
-use WCPay\Payment\Strategy\Redirect_If_Action_Is_Required;
 
 /**
  * At this point UPE requires confirmation on the front-end.
  */
 final class Awaiting_UPE_Confirmation_State extends Payment_State {
-	use Redirect_If_Action_Is_Required;
-
 	/**
 	 * The client for connection with the server.
 	 * Should be replaced with request classes soon.
@@ -54,13 +51,30 @@ final class Awaiting_UPE_Confirmation_State extends Payment_State {
 	}
 
 	/**
-	 * Indicates if the state should interrupt the processing loop.
-	 * Overwrite in states inc ase they are final, and should interrupt the process.
+	 * Returns a response to allow client-side confirmation.
 	 *
-	 * @return bool
+	 * @return array
 	 */
-	public function is_processing_finished() {
-		return true;
+	public function get_response() {
+		$order = $this->context->get_order();
+
+		return [
+			'result'         => 'success',
+			'payment_needed' => $order->get_total() > 0,
+			'redirect_url'   => wp_sanitize_redirect(
+				esc_url_raw(
+					add_query_arg(
+						[
+							'order_id'            => $order->get_id(),
+							'wc_payment_method'   => $this->gateway::GATEWAY_ID,
+							'_wpnonce'            => wp_create_nonce( 'wcpay_process_redirect_order_nonce' ),
+							'save_payment_method' => $this->context->is( Flags::SAVE_PAYMENT_METHOD_TO_STORE ) ? 'yes' : 'no',
+						],
+						$this->gateway->get_return_url( $order )
+					)
+				)
+			),
+		];
 	}
 
 	/**
@@ -94,8 +108,6 @@ final class Awaiting_UPE_Confirmation_State extends Payment_State {
 
 		// Check for required actions (redirect to another service or 3DS modal).
 		if ( Payment_Intent_Status::REQUIRES_ACTION === $intent->get_status() ) {
-			$result = $this->redirect_if_action_is_required( $this->context, $intent );
-			$this->context->set_response( $result );
 			$this->context->switch_state( new Authentication_Required_State( $this->context ) );
 			return;
 		}

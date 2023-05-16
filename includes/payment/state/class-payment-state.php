@@ -48,7 +48,7 @@ abstract class Payment_State {
 	 * @param string         $fraud_prevention_token Verification token to prevent fraud.
 	 * @throws Exception In case the payment has already been verified.
 	 */
-	public function verify( Payment_Method $payment_method, string $fraud_prevention_token ) {
+	public function verify( Payment_Method $payment_method = null, string $fraud_prevention_token ) {
 		throw new Exception( 'This payment has already been verified.' );
 	}
 
@@ -85,9 +85,10 @@ abstract class Payment_State {
 	 * Either retrieves the existing intent, or creates a new one.
 	 *
 	 * @param string[] $payment_method_types The allowed payment methods.
+	 * @param string   $fingerprint          Anti-fraud fingerprint.
 	 * @throws Exception In case the method is not available.
 	 */
-	public function get_or_create_intent( array $payment_method_types ) {
+	public function get_or_create_intent( array $payment_method_types, string $fingerprint ) {
 		throw new Exception( 'This method is only supported when creating UPE intents.' );
 	}
 
@@ -111,12 +112,14 @@ abstract class Payment_State {
 	}
 
 	/**
-	 * Indicates if the state should interrupt the processing loop.
-	 * Overwrite in states inc ase they are final, and should interrupt the process.
+	 * Returns the response from the payment process.
 	 *
-	 * @return bool
+	 * Typically this is an array with `result` and `redirect`,
+	 * but might vary based on the specific state.
+	 *
+	 * @return array
 	 */
-	public function is_processing_finished() {
-		return false;
+	public function get_response() {
+		throw new Exception( 'The current payment state cannot generate a response' );
 	}
 }

@@ -103,18 +103,10 @@ class Standard_Payment_Strategy extends Strategy {
 			} else {
 				// Redirect if there is an action needed.
 				$this->add_authentication_required_data_to_order( $payment, $intent );
-				$payment->set_response( $this->redirect_if_action_is_required( $payment, $intent ) );
 				return new Authentication_Required_State( $payment );
 			}
 		}
 
-		// This is the happy path.
-		$payment->set_response(
-			[
-				'result'   => 'success',
-				'redirect' => $this->gateway->get_return_url( $payment->get_order() ),
-			]
-		);
 		return new Processed_State( $payment );
 	}
 

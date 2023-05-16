@@ -309,7 +309,7 @@ class Payment {
 	 * @param string         $fraud_prevention_token Verification token to prevent fraud.
 	 * @throws Exception In case the payment has already been verified or is not ready for verification.
 	 */
-	public function verify( Payment_Method $payment_method, string $fraud_prevention_token ) {
+	public function verify( Payment_Method $payment_method = null, string $fraud_prevention_token ) {
 		return $this->state->verify( $payment_method, $fraud_prevention_token );
 	}
 
@@ -340,22 +340,14 @@ class Payment {
 	}
 
 	/**
-	 * Loads the intent after authentication.
-	 *
-	 * @return bool
-	 */
-	public function is_processing_finished() {
-		return $this->state->is_processing_finished();
-	}
-
-	/**
 	 * Either retrieves the existing intent, or creates a new one.
 	 *
 	 * @param string[] $payment_method_types The allowed payment methods.
+	 * @param string   $fingerprint          Anti-fraud fingerprint.
 	 * @return array
 	 */
-	public function get_or_create_intent( array $payment_method_types ) {
-		return $this->state->get_or_create_intent( $payment_method_types );
+	public function get_or_create_intent( array $payment_method_types, string $fingerprint ) {
+		return $this->state->get_or_create_intent( $payment_method_types, $fingerprint );
 	}
 
 	/**
@@ -373,5 +365,17 @@ class Payment {
 	 */
 	public function load_intent_after_confirmation( string $intent_id ) {
 		return $this->state->load_intent_after_confirmation( $intent_id );
+	}
+
+	/**
+	 * Returns the response from the payment process.
+	 *
+	 * Typically this is an array with `result` and `redirect`,
+	 * but might vary based on the specific state.
+	 *
+	 * @return array
+	 */
+	public function get_response() {
+		return $this->state->get_response();
 	}
 }
