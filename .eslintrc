@@ -138,7 +138,9 @@
 				"wpcalypso/jsx-classname-namespace": "off",
 				"react/react-in-jsx-scope": "error",
 				"no-shadow": "off",
-				"@typescript-eslint/no-shadow": "error"
+				"@typescript-eslint/no-shadow": "error",
+				"no-duplicate-imports": "off",
+				"import/no-duplicates": [ "error", { "prefer-inline": true } ]
 			}
 		}
 	]

@@ -9,7 +9,6 @@ import { render } from '@testing-library/react';
  * Internal dependencies
  */
 import Chip from '../';
-// eslint-disable-next-line no-duplicate-imports
 import type { ChipType } from '../';
 
 describe( 'Chip', () => {
