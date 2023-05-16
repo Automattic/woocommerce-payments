@@ -67,10 +67,7 @@ export const isOnHoldByFraudTools = (
 ): boolean => {
 	const fraudMetaBoxType = getFraudMetaBoxType( charge, paymentIntent );
 
-	if (
-		! wcpaySettings.isFraudProtectionSettingsEnabled ||
-		! fraudMetaBoxType
-	) {
+	if ( ! fraudMetaBoxType ) {
 		return false;
 	}
 
@@ -86,10 +83,7 @@ export const isBlockedByFraudTools = (
 ): boolean => {
 	const fraudMetaBoxType = getFraudMetaBoxType( charge, paymentIntent );
 
-	if (
-		! wcpaySettings.isFraudProtectionSettingsEnabled ||
-		! fraudMetaBoxType
-	) {
+	if ( ! fraudMetaBoxType ) {
 		return false;
 	}
 

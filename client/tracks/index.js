@@ -64,6 +64,8 @@ const events = {
 	DEPOSITS_ROW_CLICK: 'wcpay_deposits_row_click',
 	DEPOSITS_DOWNLOAD_CSV_CLICK: 'wcpay_deposits_download',
 	DEPOSITS_DETAIL_DOWNLOAD_CSV_CLICK: 'wcpay_deposits_detail_download',
+	OVERVIEW_BALANCES_CURRENCY_CLICK:
+		'wcpay_overview_balances_currency_tab_click',
 	OVERVIEW_DEPOSITS_VIEW_HISTORY_CLICK:
 		'wcpay_overview_deposits_view_history_click',
 	OVERVIEW_DEPOSITS_CHANGE_SCHEDULE_CLICK:

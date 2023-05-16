@@ -49,7 +49,7 @@ const InternationalIPAddressRuleCard: React.FC = () => {
 			<FraudProtectionRuleToggle
 				setting={ 'international_ip_address' }
 				label={ __(
-					'Screen transactions for international IP addresses',
+					'Block transactions for international IP addresses',
 					'woocommerce-payments'
 				) }
 			></FraudProtectionRuleToggle>

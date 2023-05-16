@@ -9,7 +9,19 @@ import { render } from '@testing-library/react';
 import AddressMismatchRuleCard from '../address-mismatch';
 import FraudPreventionSettingsContext from '../../context';
 
+declare const global: {
+	wcpaySettings: {
+		isFRTReviewFeatureActive: boolean;
+	};
+};
+
 describe( 'Address mismatch card', () => {
+	beforeEach( () => {
+		global.wcpaySettings = {
+			isFRTReviewFeatureActive: false,
+		};
+	} );
+
 	const settings = {
 		address_mismatch: {
 			enabled: false,
