@@ -1,44 +1,27 @@
-# State Machine
+# State Machine Proposal 
 
-## States: 
+## Input 
+Input is simply a DTO abstract class. It serves two purposes:
 
-There are four types of states with different purposes: 
+- Ensure a standard way to pass data to the state machine.
+- Each of its concrete classes represents a type of input and at a different points. This requires developers to be more specific about the input type and the starting point before processing in the state machine.
 
-- Failed_State: any fail action will use this state.
-- Internal_State: a state during the happy path, and it's expected to have the next state.
-- Async_State: when reaching this state, the state machine will stop and relay information to UI. It will only continue when having more inputs from UI.
-- Final_State: the last state of the state machine. It's expected to have no next state.
-
-Business logics will be added to the `act` function for Internal_State and Async_State that require next steps, and it must return the next State.
+For example, in two input classes in the diagram below, one is used for initiating a payment, and the other is used for processing 3DS result.
 
 ```mermaid
 classDiagram
-  State <|-- Failed_State
-  State <|-- Internal_State
-  State <|-- Async_State
-  State <|-- Final_State
-
-  <<abstract>> State
-  State : +get_id() string
-  
-  class Failed_State{
-    - string $error_code
-    - string $reason
-  }
-  
-  class Internal_State{
-    +act( Entity_Payment &$entity, Input $input = null ): State
-  }
-
-  class Async_State{
-    +act( Entity_Payment &$entity, Input $input = null ): State
-  }
-  
+  Input <|-- Input_Start_Payment_Standard
+  Input <|-- Input_Process_3ds_Result
+  <<abstract>> Input
+  Input: -array $data
+  Input: +get( string $key )
+  Input: +set( string $key, $value )
+  Input: +exist( string $key ) bool
 ```
 
 ## Entity_Payment and Entity_Storage_Payment
 
-An entity is to let state machine interact with data via multiple states, save the current state and history changes. 
+An entity is to let state machine interact with data via multiple states, save the current state and history changes.
 
 - $revisions: an array of changes of the entity including timestamp, previous state, current state, input, data diff before and after the transition.
 - $current_state: the current state of the entity.
@@ -71,6 +54,41 @@ classDiagram
   Entity_Storage_Payment : +load( int $order_id ) Entity_Payment
 ```
 
+## States
+
+There are four types of states with different purposes: 
+
+- Failed_State: any fail action will use this state.
+- Internal_State: a state during the happy path, and it's expected to have the next state.
+- Async_State: when reaching this state, the state machine will stop and relay information to UI. It will only continue when having more inputs from UI.
+- Final_State: the last state of the state machine. It's expected to have no next state.
+
+Business logics will be executed to the `act` function for Internal_State and Async_State based on two parameters an $entity and an $input, and it must return the next State. If needed, each state can inject relevant services to `act` on them. 
+
+```mermaid
+classDiagram
+  State <|-- Failed_State
+  State <|-- Internal_State
+  State <|-- Async_State
+  State <|-- Final_State
+
+  <<abstract>> State
+  State : +get_id() string
+  
+  class Failed_State{
+    - string $error_code
+    - string $reason
+  }
+  
+  class Internal_State{
+    +act( Entity_Payment &$entity, Input $input = null ): State
+  }
+
+  class Async_State{
+    +act( Entity_Payment &$entity, Input $input = null ): State
+  }
+  
+```
 
 ## State Machine:
 
@@ -134,6 +152,7 @@ The secret sauce is in the `process` function:
 ### Validator
 
 Since we have a config, we can incorporate a validator to validate the config before processing the state machine in the development environment: 
+- Ensure that each element of $config is a valid State class.
 - Ensure that a Final_State must not have a next state.
 - Ensure that an Async_State must have both incoming and outgoing transitions.
 - Ensure that an Internal_State must have a next state.
@@ -176,5 +195,79 @@ As we have a limit set of states and their transitions, we can use the $config t
 
 We can also have a bit more advanced feature to export all relevant transitions from start to finish for a specific state. With that, it can reduce distractions by focusing on changes regarding that state. 
 
+## Q&A 
 
+### 1, As we have many flows that share states, how can we reuse the code?
 
+Yes, they can declare the shared parts and then merge them together when declaring a new concrete State_Machine class.
+
+E.g.
+
+```php
+
+const SHARED_CONFIG = [
+  Prepare_Data_State::class => [
+    General_Failed_State::class,
+    Validate_Data_State::class
+  ],
+];
+
+class Standard_Payment_Flow extends State_Machine_Abstract {
+  protected $config;
+  public function __construct( Entity_Storage_Payment $storage ) {
+    parent::__construct( $storage );
+    $this->config = array_merge( 
+        Start_Standard_Payment_State::class => [ Prepare_Data_State::class ],
+        SHARED_CONFIG,
+    );
+  }
+}
+
+class UPE_Payment_Flow extends State_Machine_Abstract {
+  protected $config;
+  public function __construct( Entity_Storage_Payment $storage ) {
+    parent::__construct( $storage );
+    $this->config = array_merge( 
+        Start_UPE_Payment_State::class => [ Prepare_Data_State::class ],
+        SHARED_CONFIG,
+    );
+  }
+}
+```
+### 2, How to add or modify a state? 
+
+Steps: 
+
+- Add a new State extending from one of four `State` types.
+- Add it to the $config of State_Machine concrete classes.
+- Review the state diagram to ensure that the new state is in the right place.
+
+### 3, How to trigger a state machine?
+
+See more in the [`Standard_Gateway_Example`](https://github.com/Automattic/woocommerce-payments/blob/poc/state-pattern-regineering-payment-process/includes/core/state-machine/class-gateway-example.php) class.
+
+Basically, you will need to clarify inputs and entiy, and then process all of these via State_Machine, and handle the result of this process. 
+
+```php
+		// Load the payment entity based on the order.
+		$payment_storage = new Entity_Storage_Payment();
+		$payment_entity = $payment_storage->load( $order );
+
+		// Build up input object from the HTTP request.
+		$input = new Input_Start_Payment_Standard();
+		$input->set_payment_method( wp_unslash( $_POST['payment_method'] ?? '' ) );
+		// ... Many more inputs here.
+
+		// Set required variables for the state machine, and progress.
+		$state_machine = new State_Machine_Standard_Payment( $payment_storage );
+		$state_machine->set_initial_state( new Start_Standard_Payment_State() )
+			->set_entity( $payment_entity )
+			->set_input( $input );
+		$processed_entity = $state_machine->process();
+
+		// current_state at this point can be either:
+		// - failed state: General_Failed_State
+		// - async state: Need_3ds_State
+		// - final states: Completed_State, Completed_Duplicate_State
+		$current_state = $processed_entity->get_current_state();
+```
