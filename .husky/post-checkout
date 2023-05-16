@@ -6,22 +6,3 @@ npx --no-install yarnhook
 
 # make sure composer packages are installed and the autoload files are regenerated
 composer install
-
-DEV_TOOLS_PATH="docker/wordpress/wp-content/plugins/woocommerce-payments-dev-tools"
-if [[ "$(cd $DEV_TOOLS_PATH && git rev-parse --show-toplevel 2>/dev/null)" = "$(cd $DEV_TOOLS_PATH && pwd)" ]]; then
-	echo
-	echo "\033[32mDetermining if there is an update for the WCPay Dev Tools plugin...\033[0m"
-
-	DEV_TOOLS_BRANCH=$(cd $DEV_TOOLS_PATH && git branch --show-current)
-	if [[ $DEV_TOOLS_BRANCH = "trunk" ]]; then
-		echo "  \033[32mThe current branch is trunk. Check if we are safe to pull from origin/trunk...\033[0m"
-		if [[ `cd $DEV_TOOLS_PATH && git status --porcelain` ]]; then
-			echo "  There are uncommitted local changes on the WCPay Dev Tools repo. Skipping any attempt to update it."
-		else
-			echo "  \033[32mPulling the latest changes from origin/trunk, if any...\033[0m"
-			cd $DEV_TOOLS_PATH && git pull
-		fi
-	else
-		echo "  The WCPay Dev Tools local clone is not on the trunk branch. Skipping any attempt to update it."
-	fi
-fi
