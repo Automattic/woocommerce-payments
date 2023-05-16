@@ -59,7 +59,7 @@ const AccountBalancesTabPanel: React.FC = () => {
 	const onTabSelect = ( tabName: BalanceTab[ 'name' ] ) => {
 		setSelectedCurrency( tabName );
 		wcpayTracks.recordEvent(
-			wcpayTracks.events.OVERVIEW_BALANCE_CURRENCY_CLICK,
+			wcpayTracks.events.OVERVIEW_BALANCES_CURRENCY_CLICK,
 			{
 				selected_currency: tabName,
 			}
