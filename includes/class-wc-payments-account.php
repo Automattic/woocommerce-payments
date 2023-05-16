@@ -780,7 +780,7 @@ class WC_Payments_Account {
 
 			if ( isset( $_GET['wcpay-disable-onboarding-test-mode'] ) ) {
 				WC_Payments_Onboarding_Service::set_test_mode( false );
-				$this->redirect_to_onboarding_page();
+				$this->redirect_to_prototype_onboarding_page();
 				return;
 			}
 
