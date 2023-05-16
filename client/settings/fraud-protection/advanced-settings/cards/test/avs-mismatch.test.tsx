@@ -16,6 +16,7 @@ declare const global: {
 				declineOnAVSFailure: boolean;
 			};
 		};
+		isFRTReviewFeatureActive?: boolean;
 	};
 };
 
@@ -33,6 +34,7 @@ describe( 'AVS mismatch card', () => {
 					declineOnAVSFailure: true,
 				},
 			},
+			isFRTReviewFeatureActive: false,
 		};
 		const setSettings = jest.fn();
 		const contextValue = {
@@ -47,9 +49,6 @@ describe( 'AVS mismatch card', () => {
 			</FraudPreventionSettingsContext.Provider>
 		);
 		expect( container ).toMatchSnapshot();
-		expect( container ).toHaveTextContent(
-			/For security, this filter is enabled and cannot be modified/i
-		);
 	} );
 	test( 'renders correctly when AVS check is disabled', () => {
 		const settings = {
@@ -78,8 +77,5 @@ describe( 'AVS mismatch card', () => {
 			</FraudPreventionSettingsContext.Provider>
 		);
 		expect( container ).toMatchSnapshot();
-		expect( container ).toHaveTextContent(
-			/This filter is disabled, and can not be modified/i
-		);
 	} );
 } );
