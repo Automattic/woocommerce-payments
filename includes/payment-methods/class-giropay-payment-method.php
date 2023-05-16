@@ -25,7 +25,7 @@ class Giropay_Payment_Method extends UPE_Payment_Method {
 	public function __construct( $token_service ) {
 		parent::__construct( $token_service );
 		$this->stripe_id   = self::PAYMENT_METHOD_STRIPE_ID;
-		$this->title       = Payment_Method::GIROPAY;
+		$this->title       = 'giropay';
 		$this->is_reusable = false;
 		$this->currencies  = [ 'EUR' ];
 		$this->icon_url    = plugins_url( 'assets/images/payment-methods/giropay.svg', WCPAY_PLUGIN_FILE );
