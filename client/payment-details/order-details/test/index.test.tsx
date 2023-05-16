@@ -190,6 +190,12 @@ describe( 'Order details page', () => {
 		expect( window.location.href ).toEqual( 'http://example.com' );
 
 		expect( container ).toMatchSnapshot();
+
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+		// @ts-ignore
+		expect( console ).toHaveWarnedWith(
+			'List with items prop is deprecated is deprecated and will be removed in version 9.0.0. Note: See ExperimentalList / ExperimentalListItem for the new API that will replace this component in future versions.'
+		);
 	} );
 
 	it( 'should match the snapshot - Charge with payment intent', () => {
