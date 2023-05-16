@@ -85,6 +85,12 @@ export const paymentIntentMock: PaymentIntent = {
 	metadata: {},
 	payment_method: 'pm_mock',
 	status: 'requires_capture',
+	order: {
+		number: 123,
+		url: 'http://order.url',
+		customer_url: 'customer.url',
+		fraud_meta_box_type: 'review',
+	},
 };
 
 describe( 'Payment Intent hooks', () => {

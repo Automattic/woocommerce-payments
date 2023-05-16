@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Core\Server\Request\Get_Account_Capital_Link;
+use WCPay\Core\Server\Response;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Database_Cache;
 
@@ -97,7 +99,7 @@ class WC_Payments_Account_Capital_Test extends WCPAY_UnitTestCase {
 	public function test_maybe_redirect_to_capital_offer_skips_ajax_requests() {
 		add_filter( 'wp_doing_ajax', '__return_true' );
 
-		$this->mock_api_client->expects( $this->never() )->method( 'get_capital_link' );
+		$this->mock_wcpay_request( Get_Account_Capital_Link::class, 0 );
 
 		$this->wcpay_account->maybe_redirect_to_capital_offer();
 	}
@@ -105,7 +107,7 @@ class WC_Payments_Account_Capital_Test extends WCPAY_UnitTestCase {
 	public function test_maybe_redirect_to_capital_offer_skips_non_admin_users() {
 		wp_set_current_user( 0 );
 
-		$this->mock_api_client->expects( $this->never() )->method( 'get_capital_link' );
+		$this->mock_wcpay_request( Get_Account_Capital_Link::class, 0 );
 
 		$this->wcpay_account->maybe_redirect_to_capital_offer();
 	}
@@ -113,20 +115,31 @@ class WC_Payments_Account_Capital_Test extends WCPAY_UnitTestCase {
 	public function test_maybe_redirect_to_capital_offer_skips_regular_requests() {
 		unset( $_GET['wcpay-loan-offer'] );
 
-		$this->mock_api_client->expects( $this->never() )->method( 'get_capital_link' );
+		$this->mock_wcpay_request( Get_Account_Capital_Link::class, 0 );
 
 		$this->wcpay_account->maybe_redirect_to_capital_offer();
 	}
 
 	public function test_maybe_redirect_to_capital_offer_redirects_to_capital_offer() {
-		$this->mock_api_client
-			->method( 'get_capital_link' )
-			->with(
-				'capital_financing_offer',
-				'http://example.org/wp-admin/admin.php?page=wc-admin&path=/payments/overview',
-				'http://example.org/wp-admin/admin.php?wcpay-loan-offer'
-			)
-			->willReturn( [ 'url' => 'https://capital.url' ] );
+		$request = $this->mock_wcpay_request( Get_Account_Capital_Link::class );
+		$request
+			->expects( $this->once() )
+			->method( 'set_type' )
+			->with( 'capital_financing_offer' );
+
+		$request
+			->expects( $this->once() )
+			->method( 'set_return_url' )
+			->with( 'http://example.org/wp-admin/admin.php?page=wc-admin&path=/payments/overview' );
+
+		$request
+			->expects( $this->once() )
+			->method( 'set_refresh_url' )
+			->with( 'http://example.org/wp-admin/admin.php?wcpay-loan-offer' );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( new Response( [ 'url' => 'https://capital.url' ] ) );
 
 		$this->wcpay_account->expects( $this->once() )->method( 'redirect_to' )->with( 'https://capital.url' );
 
@@ -134,14 +147,27 @@ class WC_Payments_Account_Capital_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_maybe_redirect_to_capital_offer_redirects_to_overview_on_error() {
-		$this->mock_api_client
-			->method( 'get_capital_link' )
-			->with(
-				'capital_financing_offer',
-				'http://example.org/wp-admin/admin.php?page=wc-admin&path=/payments/overview',
-				'http://example.org/wp-admin/admin.php?wcpay-loan-offer'
-			)
-			->willThrowException( new API_Exception( 'Error: This account has no offer of financing from Capital.', 'invalid_request_error', 400 ) );
+		$request = $this->mock_wcpay_request( Get_Account_Capital_Link::class );
+		$request
+			->expects( $this->once() )
+			->method( 'set_type' )
+			->with( 'capital_financing_offer' );
+
+		$request
+			->expects( $this->once() )
+			->method( 'set_return_url' )
+			->with( 'http://example.org/wp-admin/admin.php?page=wc-admin&path=/payments/overview' );
+
+		$request
+			->expects( $this->once() )
+			->method( 'set_refresh_url' )
+			->with( 'http://example.org/wp-admin/admin.php?wcpay-loan-offer' );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willThrowException(
+				new API_Exception( 'Error: This account has no offer of financing from Capital.', 'invalid_request_error', 400 )
+			);
 
 		$this->wcpay_account->expects( $this->once() )->method( 'redirect_to' )->with( 'http://example.org/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Foverview&wcpay-loan-offer-error=1' );
 

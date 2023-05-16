@@ -22,13 +22,12 @@
     "require": {
       "php": ">=7.2",
       "ext-json": "*",
-      "automattic/jetpack-connection": "1.37.3",
-      "automattic/jetpack-config": "1.6.1",
-      "automattic/jetpack-autoloader": "2.10.11",
-      "automattic/jetpack-identity-crisis": "0.8.4",
-      "automattic/jetpack-sync": "1.30.5",
-      "automattic/jetpack-tracking": "1.14.5",
-      "woocommerce/subscriptions-core": "5.5.0"
+      "automattic/jetpack-connection": "1.51.7",
+      "automattic/jetpack-config": "1.15.2",
+      "automattic/jetpack-autoloader": "2.11.18",
+      "automattic/jetpack-identity-crisis": "0.8.43",
+      "automattic/jetpack-sync": "1.47.7",
+      "woocommerce/subscriptions-core": "5.7.1"
     },
     "require-dev": {
       "composer/installers": "1.10.0",
@@ -42,7 +41,7 @@
       "rregeer/phpunit-coverage-check": "0.3.1",
       "yoast/phpunit-polyfills": "1.0.3",
       "cweagans/composer-patches": "1.7.1",
-      "automattic/jetpack-changelogger": "^3.0.7",
+      "automattic/jetpack-changelogger": "3.3.2",
       "spatie/phpunit-watcher": "^1.23"
     },
     "scripts": {

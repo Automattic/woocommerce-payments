@@ -24,4 +24,3 @@ export * from './capital/hooks';
 export * from './documents/hooks';
 export * from './payment-intents/hooks';
 export * from './authorizations/hooks';
-export * from './fraud-outcomes/hooks';

@@ -8,6 +8,7 @@ import { dateI18n } from '@wordpress/date';
 import { Card, CardBody, CardFooter, CardDivider } from '@wordpress/components';
 import moment from 'moment';
 import React, { useContext } from 'react';
+import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies.
@@ -142,7 +143,6 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	charge = {} as Charge,
 	metadata = {},
 	isLoading,
-	fraudOutcome,
 	paymentIntent,
 } ) => {
 	const balance = charge.amount
@@ -170,10 +170,21 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		shouldFetchAuthorization
 	);
 
-	const isFraudOutcomeReview = isOnHoldByFraudTools(
-		fraudOutcome,
-		paymentIntent
-	);
+	const isFraudOutcomeReview = isOnHoldByFraudTools( charge, paymentIntent );
+
+	// WP translation strings are injected into Moment.js for relative time terms, since Moment's own translation library increases the bundle size significantly.
+	moment.updateLocale( 'en', {
+		relativeTime: {
+			s: __( 'a second', 'woocommerce-payments' ),
+			ss: __( '%d seconds', 'woocommerce-payments' ),
+			m: __( 'a minute', 'woocommerce-payments' ),
+			mm: __( '%d minutes', 'woocommerce-payments' ),
+			h: __( 'an hour', 'woocommerce-payments' ),
+			hh: __( '%d hours', 'woocommerce-payments' ),
+			d: __( 'a day', 'woocommerce-payments' ),
+			dd: __( '%d days', 'woocommerce-payments' ),
+		},
+	} );
 
 	return (
 		<Card>
@@ -196,7 +207,6 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								<PaymentStatusChip
 									status={ getChargeStatus(
 										charge,
-										fraudOutcome,
 										paymentIntent
 									) }
 								/>
@@ -367,18 +377,38 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 						<CardFooter className="payment-details-capture-notice">
 							<div className="payment-details-capture-notice__section">
 								<div className="payment-details-capture-notice__text">
-									{ `${ __(
-										'You need to capture this charge before',
-										'woocommerce-payments'
-									) } ` }
-									<b>
-										{ dateI18n(
+									{ createInterpolateElement(
+										__(
+											'You must <a>capture</a> this charge within the next',
+											'woocommerce-payments'
+										),
+										{
+											a: (
+												// eslint-disable-next-line jsx-a11y/anchor-has-content, react/jsx-no-target-blank
+												<a
+													href="https://woocommerce.com/document/woocommerce-payments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
+													target="_blank"
+													rel="noreferer"
+												/>
+											),
+										}
+									) }{ ' ' }
+									<abbr
+										title={ dateI18n(
 											'M j, Y / g:iA',
 											moment
 												.utc( authorization.created )
-												.add( 7, 'days' )
+												.add( 7, 'days' ),
+											'UTC'
 										) }
-									</b>
+									>
+										<b>
+											{ moment
+												.utc( authorization.created )
+												.add( 7, 'days' )
+												.fromNow( true ) }
+										</b>
+									</abbr>
 									{ isFraudOutcomeReview &&
 										`. ${ __(
 											'Approving this transaction will capture the charge.',

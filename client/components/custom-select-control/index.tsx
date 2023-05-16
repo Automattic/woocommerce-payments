@@ -170,7 +170,9 @@ function CustomSelectControl< ItemType extends Item >( {
 					),
 				} ) }
 			>
-				{ itemString || placeholder }
+				<span className="components-custom-select-control__button-value">
+					{ itemString || placeholder }
+				</span>
 				<Icon
 					icon={ chevronDown }
 					className="components-custom-select-control__button-icon"

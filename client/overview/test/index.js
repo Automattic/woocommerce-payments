@@ -49,6 +49,9 @@ jest.mock( 'wcpay/data', () => ( {
 	useSettings: jest.fn().mockReturnValue( {
 		settings: { enabled_payment_method_ids: [ 'foo', 'bar' ] },
 	} ),
+	useDeposits: jest
+		.fn()
+		.mockReturnValue( { deposits: [], isLoading: false } ),
 	useAllDepositsOverviews: jest
 		.fn()
 		.mockReturnValue( { overviews: { currencies: [] } } ),
@@ -268,7 +271,7 @@ describe( 'Overview page', () => {
 		} );
 	} );
 
-	it( 'dismisses the FRTDiscoverabilityBanner when dont show again button is clicked', async () => {
+	it( 'dismisses the FRTDiscoverabilityBanner when dismiss button is clicked', async () => {
 		global.wcpaySettings = {
 			...global.wcpaySettings,
 			frtDiscoverBannerSettings: JSON.stringify( {
@@ -286,7 +289,7 @@ describe( 'Overview page', () => {
 
 		expect( bannerHeader ).toBeInTheDocument();
 
-		userEvent.click( screen.getByText( "Don't show me this again" ) );
+		userEvent.click( screen.getByText( 'Dismiss' ) );
 
 		await waitFor( () => {
 			expect( bannerHeader ).not.toBeInTheDocument();
@@ -312,5 +315,71 @@ describe( 'Overview page', () => {
 		expect(
 			screen.queryByText( 'Enhanced fraud protection for your store' )
 		).toBeInTheDocument();
+	} );
+
+	it( 'displays SetupRealPayments if onboardingTestMode is true', () => {
+		global.wcpaySettings = {
+			...global.wcpaySettings,
+			onboardingTestMode: true,
+		};
+
+		render( <OverviewPage /> );
+
+		expect(
+			screen.getByText( 'Ready to setup real payments on your store?' )
+		).toBeInTheDocument();
+	} );
+
+	it( 'does not displays SetupRealPayments if onboardingTestMode is false', () => {
+		global.wcpaySettings = {
+			...global.wcpaySettings,
+			onboardingTestMode: false,
+		};
+
+		render( <OverviewPage /> );
+
+		expect(
+			screen.queryByText( 'Ready to setup real payments on your store?' )
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'displays ProgressiveOnboardingEligibilityModal if showProgressiveOnboardingEligibilityModal is true', () => {
+		getQuery.mockReturnValue( { 'wcpay-connection-success': '1' } );
+
+		global.wcpaySettings.accountStatus.progressiveOnboarding.isEnabled = true;
+
+		render( <OverviewPage /> );
+
+		expect(
+			screen.getByText(
+				'You’re eligible to start selling now and fast-track the setup process.'
+			)
+		).toBeInTheDocument();
+	} );
+
+	it( 'does not displays ProgressiveOnboardingEligibilityModal if showProgressiveOnboardingEligibilityModal is false', () => {
+		const query = () =>
+			screen.queryByText(
+				'You’re eligible to start selling now and fast-track the setup process.'
+			);
+
+		render( <OverviewPage /> );
+
+		expect( query() ).not.toBeInTheDocument();
+
+		getQuery.mockReturnValue( { 'wcpay-connection-success': '1' } );
+
+		render( <OverviewPage /> );
+
+		expect( query() ).not.toBeInTheDocument();
+
+		global.wcpaySettings.accountStatus.progressiveOnboarding = {
+			isEnabled: true,
+			isComplete: true,
+		};
+
+		render( <OverviewPage /> );
+
+		expect( query() ).not.toBeInTheDocument();
 	} );
 } );

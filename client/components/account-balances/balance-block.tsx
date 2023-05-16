@@ -26,7 +26,7 @@ interface BalanceBlockProps {
 	id: string;
 	title: string;
 	currencyCode: string;
-	tooltip: React.ReactElement< typeof BalanceTooltip >;
+	tooltip?: React.ReactElement< typeof BalanceTooltip >;
 	amount?: number;
 	isLoading?: boolean;
 }

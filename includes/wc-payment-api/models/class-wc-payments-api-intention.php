@@ -112,6 +112,13 @@ class WC_Payments_API_Intention implements \JsonSerializable {
 	private $payment_method_types;
 
 	/**
+	 * The order data associated with this intention.
+	 *
+	 * @var array
+	 */
+	private $order;
+
+	/**
 	 * WC_Payments_API_Intention constructor.
 	 *
 	 * @param string                 $id                   - ID of the intention.
@@ -128,6 +135,7 @@ class WC_Payments_API_Intention implements \JsonSerializable {
 	 * @param array                  $metadata             - An array containing additional metadata of associated charge or order.
 	 * @param array                  $processing           - An array containing details of the processing state of the payment.
 	 * @param array                  $payment_method_types - An array containing the possible payment methods for the intent.
+	 * @param array                  $order                - An array containing the order data associated with this intention.
 	 */
 	public function __construct(
 		$id,
@@ -143,7 +151,8 @@ class WC_Payments_API_Intention implements \JsonSerializable {
 		$last_payment_error = [],
 		$metadata = [],
 		$processing = [],
-		$payment_method_types = []
+		$payment_method_types = [],
+		$order = []
 	) {
 		$this->id                   = $id;
 		$this->amount               = $amount;
@@ -159,6 +168,7 @@ class WC_Payments_API_Intention implements \JsonSerializable {
 		$this->metadata             = $metadata;
 		$this->processing           = $processing;
 		$this->payment_method_types = $payment_method_types;
+		$this->order                = $order;
 	}
 
 	/**
@@ -288,6 +298,15 @@ class WC_Payments_API_Intention implements \JsonSerializable {
 	}
 
 	/**
+	 * Returns the order data associated with this intention
+	 *
+	 * @return array
+	 */
+	public function get_order() {
+		return $this->order;
+	}
+
+	/**
 	 * Defines which data will be serialized to JSON
 	 */
 	public function jsonSerialize(): array {
@@ -303,6 +322,7 @@ class WC_Payments_API_Intention implements \JsonSerializable {
 			'payment_method_types' => $this->get_payment_method_types(),
 			'processing'           => $this->get_processing(),
 			'status'               => $this->get_status(),
+			'order'                => $this->get_order(),
 		];
 	}
 }

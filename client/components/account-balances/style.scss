@@ -70,6 +70,10 @@
 	align-items: center;
 	margin-left: 0.5em;
 
+	&:focus {
+		outline: auto;
+	}
+
 	&__icon {
 		fill: var( --wp-admin-theme-color );
 	}
@@ -90,6 +94,11 @@
 		width: 1px;
 		word-wrap: normal;
 	}
+}
+
+.wcpay-account-balances__instant-deposit {
+	border-top: 1px solid $gray-200;
+	padding: 24px;
 }
 
 @media screen and ( max-width: 500px ) {
