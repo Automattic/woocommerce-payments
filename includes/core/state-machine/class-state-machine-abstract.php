@@ -44,6 +44,12 @@ abstract class State_Machine_Abstract {
 	}
 
 	public function set_initial_state( State $initial_state ): State_Machine_Abstract {
+		// Allow only Internal_State or Async_State as initial state as they are the only ones that can act in $this->process().
+		$is_valid_state = is_a( $initial_state, Internal_State::class ) || is_a( $initial_state, Async_State::class );
+		if ( ! $is_valid_state ) {
+			throw new \Exception( 'Initial state must be either Internal_State or Async_State.' );
+		}
+
 		$this->initial_state = $initial_state;
 		return $this;
 	}
