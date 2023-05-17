@@ -1896,10 +1896,73 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	/**
 	 * @dataProvider maybe_filter_gateway_title_data_provider
 	 */
-	public function test_maybe_filter_gateway_title( $data ) {
+	public function test_maybe_filter_gateway_title_with_no_additional_feature_flags_enabled( $data ) {
 		$data           = $data[0];
 		$default_option = $this->mock_upe_gateway->get_option( 'upe_enabled_payment_method_ids' );
 		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', $data['methods'] );
+		WC_Helper_Site_Currency::$mock_site_currency = $data['currency'];
+		$this->set_get_upe_enabled_payment_method_statuses_return_value( $data['statuses'] );
+		$this->assertSame( $data['expected'], $this->mock_upe_gateway->maybe_filter_gateway_title( $data['title'], $data['id'] ) );
+		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', $default_option );
+	}
+
+	public function test_maybe_filter_gateway_title_skips_update_due_to_enabled_split_upe() {
+		update_option( '_wcpay_feature_upe_split', '1' );
+		update_option( '_wcpay_feature_upe_deferred_intent', '0' );
+
+		$data = [
+			'methods'  => [
+				'card',
+				'bancontact',
+			],
+			'statuses' => [
+				'card_payments'       => [
+					'status' => 'active',
+				],
+				'bancontact_payments' => [
+					'status' => 'active',
+				],
+			],
+			'currency' => 'EUR',
+			'title'    => 'WooCommerce Payments',
+			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
+			'expected' => 'WooCommerce Payments',
+		];
+
+		$default_option = $this->mock_upe_gateway->get_option( 'upe_enabled_payment_method_ids' );
+		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', $data['methods'] );
+
+		WC_Helper_Site_Currency::$mock_site_currency = $data['currency'];
+		$this->set_get_upe_enabled_payment_method_statuses_return_value( $data['statuses'] );
+		$this->assertSame( $data['expected'], $this->mock_upe_gateway->maybe_filter_gateway_title( $data['title'], $data['id'] ) );
+		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', $default_option );
+	}
+
+	public function test_maybe_filter_gateway_title_skips_update_due_to_enabled_upe_with_deferred_intent_creation() {
+		update_option( '_wcpay_feature_upe_split', '0' );
+		update_option( '_wcpay_feature_upe_deferred_intent', '1' );
+		$data = [
+			'methods'  => [
+				'card',
+				'bancontact',
+			],
+			'statuses' => [
+				'card_payments'       => [
+					'status' => 'active',
+				],
+				'bancontact_payments' => [
+					'status' => 'active',
+				],
+			],
+			'currency' => 'EUR',
+			'title'    => 'WooCommerce Payments',
+			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
+			'expected' => 'WooCommerce Payments',
+		];
+
+		$default_option = $this->mock_upe_gateway->get_option( 'upe_enabled_payment_method_ids' );
+		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', $data['methods'] );
+
 		WC_Helper_Site_Currency::$mock_site_currency = $data['currency'];
 		$this->set_get_upe_enabled_payment_method_statuses_return_value( $data['statuses'] );
 		$this->assertSame( $data['expected'], $this->mock_upe_gateway->maybe_filter_gateway_title( $data['title'], $data['id'] ) );
