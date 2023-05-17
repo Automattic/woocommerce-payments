@@ -977,6 +977,10 @@ class WC_Payments {
 		$onboarding_controller = new WC_REST_Payments_Onboarding_Controller( self::$api_client, self::$onboarding_service );
 		$onboarding_controller->register_routes();
 
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-woopay-store-data-controller.php';
+		$woopay_store_data_controller = new WC_REST_WooPay_Store_Data_Controller();
+		$woopay_store_data_controller->register_routes();
+
 		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-upe-flag-toggle-controller.php';
 			$upe_flag_toggle_controller = new WC_REST_UPE_Flag_Toggle_Controller( self::get_gateway() );
@@ -1443,13 +1447,6 @@ class WC_Payments {
 			$customer_id   = self::$customer_service->create_customer_for_user( $user, $customer_data );
 		}
 
-		$account_id = self::get_account_service()->get_stripe_account_id();
-
-		$store_logo = self::get_gateway()->get_option( 'platform_checkout_store_logo' );
-
-		include_once WCPAY_ABSPATH . 'includes/compat/blocks/class-blocks-data-extractor.php';
-		$blocks_data_extractor = new Blocks_Data_Extractor();
-
 		$body = [
 			'wcpay_version'   => WCPAY_VERSION_NUMBER,
 			'user_id'         => $user->ID,
@@ -1457,25 +1454,7 @@ class WC_Payments {
 			'session_nonce'   => wp_create_nonce( 'wc_store_api' ),
 			'store_api_token' => self::init_store_api_token(),
 			'email'           => $email,
-			'store_data'      => [
-				'store_name'                     => get_bloginfo( 'name' ),
-				'store_logo'                     => ! empty( $store_logo ) ? get_rest_url( null, 'wc/v3/payments/file/' . $store_logo ) : '',
-				'custom_message'                 => self::get_gateway()->get_option( 'platform_checkout_custom_message' ),
-				'blog_id'                        => Jetpack_Options::get_option( 'id' ),
-				'blog_url'                       => get_site_url(),
-				'blog_checkout_url'              => wc_get_checkout_url(),
-				'blog_shop_url'                  => get_permalink( wc_get_page_id( 'shop' ) ),
-				'store_api_url'                  => self::get_store_api_url(),
-				'account_id'                     => $account_id,
-				'test_mode'                      => self::$mode->is_test(),
-				'capture_method'                 => empty( self::get_gateway()->get_option( 'manual_capture' ) ) || 'no' === self::get_gateway()->get_option( 'manual_capture' ) ? 'automatic' : 'manual',
-				'is_subscriptions_plugin_active' => self::get_gateway()->is_subscriptions_plugin_active(),
-				'woocommerce_tax_display_cart'   => get_option( 'woocommerce_tax_display_cart' ),
-				'ship_to_billing_address_only'   => wc_ship_to_billing_address_only(),
-				'return_url'                     => wc_get_cart_url(),
-				'blocks_data'                    => $blocks_data_extractor->get_data(),
-				'checkout_schema_namespaces'     => $blocks_data_extractor->get_checkout_schema_namespaces(),
-			],
+			'store_data'      => self::$woopay_util->get_store_data( self::get_account_service() ),
 			'user_session'    => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];
 		$args = [
