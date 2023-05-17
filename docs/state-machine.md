@@ -1,5 +1,12 @@
 # State Machine Proposal 
 
+This proposal would have these characteristics:
+
+- Log entity data changes between states, input, and timestamp.
+- Generate a diagram of the state machine based on the configuration, which is like a blueprint.
+- Enforce developers to follow the configuration set by themselves.
+- Terminate the state machine at a point (async state) and continue when having more inputs.
+
 ## Input 
 Input is simply a DTO abstract class. It serves two purposes:
 
@@ -17,6 +24,16 @@ classDiagram
   Input: +get( string $key )
   Input: +set( string $key, $value )
   Input: +exist( string $key ) bool
+  
+  Input_Start_Payment_Standard: get_payment_method() string
+  Input_Start_Payment_Standard: set_payment_method(string $pm)
+  Input_Start_Payment_Standard: other_getter_setters()
+  
+  Input_Process_3ds_Result: get_intent_id_received() string
+  Input_Process_3ds_Result: set_intent_id_received(string $id)
+  Input_Process_3ds_Result: other_getter_setters()
+
+
 ```
 
 ## Entity_Payment and Entity_Storage_Payment

@@ -7,15 +7,15 @@ abstract class Input {
 	 */
 	private $data = [];
 
-	public function set( string $key, $value) {
+	protected function set( string $key, $value) {
 		$this->data[$key] = $value;
 	}
 
-	public function get(string $key) {
+	protected function get(string $key) {
 		return $this->data[$key] ?? null;
 	}
 
-	public function exist( string $key ): bool {
+	protected function exist( string $key ): bool {
 		return isset( $this->data[$key] );
 	}
 }
