@@ -2,15 +2,27 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 /**
  * Internal dependencies
  */
-import user from '@testing-library/user-event';
-import ConnectAccountPageExperiment from '..';
+import ConnectAccountPage from '..';
 
-describe( 'ConnectAccountPageExperimentExperiment', () => {
+declare const global: {
+	wcpaySettings: {
+		connectUrl: string;
+		connect: {
+			country: string;
+			availableCountries: Record< string, string >;
+		};
+		onBoardingDisabled?: boolean;
+	};
+};
+
+describe( 'ConnectAccountPage', () => {
 	beforeEach( () => {
 		Object.defineProperty( window, 'location', {
 			value: {
@@ -28,13 +40,13 @@ describe( 'ConnectAccountPageExperimentExperiment', () => {
 	} );
 
 	test( 'should render correctly', () => {
-		const { container: page } = render( <ConnectAccountPageExperiment /> );
+		const { container: page } = render( <ConnectAccountPage /> );
 		expect( page ).toMatchSnapshot();
 	} );
 
 	test( 'should render correctly when on-boarding disabled', () => {
 		global.wcpaySettings.onBoardingDisabled = true;
-		const { container: page } = render( <ConnectAccountPageExperiment /> );
+		const { container: page } = render( <ConnectAccountPage /> );
 		expect( page ).toMatchSnapshot();
 	} );
 
@@ -50,8 +62,8 @@ describe( 'ConnectAccountPageExperimentExperiment', () => {
 			},
 		};
 
-		render( <ConnectAccountPageExperiment /> );
-		user.click( screen.getByRole( 'link', { name: /Get started/ } ) );
+		render( <ConnectAccountPage /> );
+		userEvent.click( screen.getByRole( 'link', { name: /Finish setup/ } ) );
 
 		const modalSelector =
 			'.woocommerce-payments__onboarding_location_check-modal';
