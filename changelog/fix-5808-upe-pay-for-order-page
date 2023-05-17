@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixes pay for order page functionality in split and deferred intent UPE.

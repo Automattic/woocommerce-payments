@@ -28,6 +28,7 @@ declare const global: {
 				precision: number;
 			};
 		};
+		isFRTReviewFeatureActive?: boolean;
 	};
 };
 
@@ -48,6 +49,7 @@ describe( 'Purchase price threshold card', () => {
 					precision: 2,
 				},
 			},
+			isFRTReviewFeatureActive: false,
 		};
 	} );
 

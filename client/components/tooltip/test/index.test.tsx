@@ -13,11 +13,11 @@ import userEvent from '@testing-library/user-event';
 import { HoverTooltip, ClickTooltip } from '..';
 
 describe( 'HoverTooltip', () => {
-	beforeEach( () => {
+	beforeAll( () => {
 		jest.useFakeTimers();
 	} );
 
-	afterEach( () => {
+	afterAll( () => {
 		jest.useRealTimers();
 	} );
 
@@ -121,11 +121,11 @@ describe( 'HoverTooltip', () => {
 } );
 
 describe( 'ClickTooltip', () => {
-	beforeEach( () => {
+	beforeAll( () => {
 		jest.useFakeTimers();
 	} );
 
-	afterEach( () => {
+	afterAll( () => {
 		jest.useRealTimers();
 	} );
 
@@ -233,6 +233,44 @@ describe( 'ClickTooltip', () => {
 			screen.queryByText( 'Tooltip content' )
 		).not.toBeInTheDocument();
 		expect( handleHideMock ).not.toHaveBeenCalled();
+	} );
+
+	it( `correctly navigates to link in tooltip content via keyboard navigation`, () => {
+		const handleHideMock = jest.fn();
+		render(
+			<ClickTooltip
+				content={
+					// Tooltip content includes a link element which should be navigable via keyboard
+					<span>
+						Tooltip content <a href="woocommerce.com">Link</a>
+					</span>
+				}
+				onHide={ handleHideMock }
+			>
+				<span role="button" tabIndex={ 0 }>
+					Trigger element
+				</span>
+			</ClickTooltip>
+		);
+
+		expect(
+			screen.queryByText( 'Tooltip content' )
+		).not.toBeInTheDocument();
+
+		act( () => {
+			userEvent.click( screen.getByText( 'Trigger element' ) );
+			fireEvent.focus( screen.getByText( 'Trigger element' ) );
+			jest.runAllTimers();
+		} );
+
+		expect( screen.queryByText( 'Tooltip content' ) ).toBeInTheDocument();
+		expect( handleHideMock ).not.toHaveBeenCalled();
+
+		userEvent.tab();
+
+		expect(
+			screen.getAllByRole( 'link', { name: 'Link' } )[ 0 ]
+		).toHaveFocus();
 	} );
 } );
 

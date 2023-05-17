@@ -855,11 +855,12 @@ class WC_Payments_API_Client {
 	 *
 	 * @param string $locale The locale to ask for from the server.
 	 *
-	 * @throws API_Exception Exception thrown on request failure.
 	 * @return array An array containing the fields data.
+	 *
+	 * @throws API_Exception Exception thrown on request failure.
 	 */
 	public function get_onboarding_fields_data( string $locale = '' ): array {
-		return $this->request(
+		$fields_data = $this->request(
 			[
 				'locale'    => $locale,
 				'test_mode' => WC_Payments::mode()->is_test(),
@@ -869,6 +870,12 @@ class WC_Payments_API_Client {
 			false,
 			true
 		);
+
+		if ( ! is_array( $fields_data ) ) {
+			return [];
+		}
+
+		return $fields_data;
 	}
 
 	/**
@@ -878,14 +885,20 @@ class WC_Payments_API_Client {
 	 *
 	 * @throws API_Exception Exception thrown on request failure.
 	 */
-	public function get_onboarding_business_types() {
-		return $this->request(
+	public function get_onboarding_business_types(): array {
+		$business_types = $this->request(
 			[],
 			self::ONBOARDING_API . '/business_types',
 			self::GET,
 			true,
 			true
 		);
+
+		if ( ! is_array( $business_types ) ) {
+			return [];
+		}
+
+		return $business_types;
 	}
 
 	/**
@@ -1732,6 +1745,7 @@ class WC_Payments_API_Client {
 			$retries++;
 		}
 
+		// @todo We don't always return an array. `extract_response_body` can also return a string. We should standardize this!
 		if ( ! $raw_response ) {
 			$response_body = $this->extract_response_body( $response );
 		} else {

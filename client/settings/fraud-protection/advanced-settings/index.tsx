@@ -160,6 +160,16 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 
 			const settings = writeRuleset( protectionSettingsUI );
 
+			// Persist the AVS verification setting until the account cache is updated locally.
+			if (
+				wcpaySettings?.accountStatus?.fraudProtection
+					?.declineOnAVSFailure
+			) {
+				wcpaySettings.accountStatus.fraudProtection.declineOnAVSFailure = settings.some(
+					( setting ) => setting.key === 'avs_verification'
+				);
+			}
+
 			updateAdvancedFraudProtectionSettings( settings );
 
 			saveSettings();
@@ -291,9 +301,6 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 							<AVSMismatchRuleCard />
 						</LoadableBlock>
 						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-							<CVCVerificationRuleCard />
-						</LoadableBlock>
-						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
 							<InternationalIPAddressRuleCard />
 						</LoadableBlock>
 						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
@@ -307,6 +314,9 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 						</LoadableBlock>
 						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
 							<OrderItemsThresholdRuleCard />
+						</LoadableBlock>
+						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+							<CVCVerificationRuleCard />
 						</LoadableBlock>
 
 						<footer className="fraud-protection-advanced-settings__footer">

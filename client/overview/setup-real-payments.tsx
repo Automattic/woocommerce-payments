@@ -75,7 +75,7 @@ const SetupRealPayments: React.FC = () => {
 						'woocommerce-payments'
 					) }
 					className="wcpay-setup-real-payments-modal"
-					isDismissible={ false }
+					isDismissible={ true }
 					onRequestClose={ () => setModalVisible( false ) }
 				>
 					<p className="wcpay-setup-real-payments-modal__headline">

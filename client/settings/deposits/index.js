@@ -25,6 +25,7 @@ import {
 	useCompletedWaitingPeriod,
 } from '../../data';
 import './style.scss';
+import wcpayTracks from 'wcpay/tracks';
 
 const daysOfWeek = [
 	{ label: __( 'Monday', 'woocommerce-payments' ), value: 'monday' },
@@ -220,7 +221,16 @@ const Deposits = () => {
 							'Manage and update your deposit account information to receive payments and deposits.',
 							'woocommerce-payments'
 						) }{ ' ' }
-						<ExternalLink href={ accountLink }>
+						<ExternalLink
+							href={ accountLink }
+							onClick={ () =>
+								wcpayTracks.recordEvent(
+									wcpayTracks.events
+										.SETTINGS_DEPOSITS_MANAGE_IN_STRIPE_CLICK,
+									{}
+								)
+							}
+						>
 							{ __( 'Manage in Stripe', 'woocommerce-payments' ) }
 						</ExternalLink>
 					</p>
