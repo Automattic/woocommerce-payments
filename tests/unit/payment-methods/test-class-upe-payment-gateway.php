@@ -1675,6 +1675,48 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		WC_Helper_Site_Currency::$mock_site_currency = '';
 	}
 
+	public function test_payment_method_compares_correct_currency() {
+		$card_method       = $this->mock_payment_methods['card'];
+		$giropay_method    = $this->mock_payment_methods['giropay'];
+		$sofort_method     = $this->mock_payment_methods['sofort'];
+		$bancontact_method = $this->mock_payment_methods['bancontact'];
+		$eps_method        = $this->mock_payment_methods['eps'];
+		$sepa_method       = $this->mock_payment_methods['sepa_debit'];
+		$p24_method        = $this->mock_payment_methods['p24'];
+		$ideal_method      = $this->mock_payment_methods['ideal'];
+		$becs_method       = $this->mock_payment_methods['au_becs_debit'];
+
+		WC_Helper_Site_Currency::$mock_site_currency = 'EUR';
+
+		$this->assertTrue( $card_method->is_currency_valid() );
+		$this->assertTrue( $giropay_method->is_currency_valid() );
+		$this->assertTrue( $sofort_method->is_currency_valid() );
+		$this->assertTrue( $bancontact_method->is_currency_valid() );
+		$this->assertTrue( $eps_method->is_currency_valid() );
+		$this->assertTrue( $sepa_method->is_currency_valid() );
+		$this->assertTrue( $p24_method->is_currency_valid() );
+		$this->assertTrue( $ideal_method->is_currency_valid() );
+		$this->assertFalse( $becs_method->is_currency_valid() );
+
+		global $wp;
+		$order          = WC_Helper_Order::create_order();
+		$order_id       = $order->get_id();
+		$wp->query_vars = [ 'order-pay' => strval( $order_id ) ];
+		$order->set_currency( 'USD' );
+
+		$this->assertTrue( $card_method->is_currency_valid() );
+		$this->assertFalse( $giropay_method->is_currency_valid() );
+		$this->assertFalse( $sofort_method->is_currency_valid() );
+		$this->assertFalse( $bancontact_method->is_currency_valid() );
+		$this->assertFalse( $eps_method->is_currency_valid() );
+		$this->assertFalse( $sepa_method->is_currency_valid() );
+		$this->assertFalse( $p24_method->is_currency_valid() );
+		$this->assertFalse( $ideal_method->is_currency_valid() );
+		$this->assertFalse( $becs_method->is_currency_valid() );
+
+		$wp->query_vars = [];
+	}
+
 	public function test_create_token_from_setup_intent_adds_token() {
 		$mock_token           = WC_Helper_Token::create_token( 'pm_mock' );
 		$mock_setup_intent_id = 'si_mock';

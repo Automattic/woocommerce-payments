@@ -373,32 +373,21 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( WC_Payments_Features::is_upe_deferred_intent_enabled() );
 	}
 
-	public function test_is_fraud_protection_settings_enabled_returns_true() {
+	public function test_is_wcpay_frt_review_feature_active_returns_true() {
 		add_filter(
-			'pre_option_wcpay_fraud_protection_settings_active',
+			'pre_option_wcpay_frt_review_feature_active',
 			function ( $pre_option, $option, $default ) {
 				return '1';
 			},
 			10,
 			3
 		);
-		$this->assertTrue( WC_Payments_Features::is_fraud_protection_settings_enabled() );
+		$this->assertTrue( WC_Payments_Features::is_frt_review_feature_active() );
+		remove_all_filters( 'pre_option_wcpay_frt_review_feature_active' );
 	}
 
-	public function test_is_fraud_protection_settings_enabled_returns_false_when_flag_is_false() {
-		add_filter(
-			'pre_option_wcpay_fraud_protection_settings_active',
-			function ( $pre_option, $option, $default ) {
-				return '0';
-			},
-			10,
-			3
-		);
-		$this->assertFalse( WC_Payments_Features::is_fraud_protection_settings_enabled() );
-	}
-
-	public function test_is_fraud_protection_settings_enabled_returns_false_when_flag_is_not_set() {
-		$this->assertFalse( WC_Payments_Features::is_fraud_protection_settings_enabled() );
+	public function test_is_frt_review_feature_active_returns_false_when_flag_is_not_set() {
+		$this->assertFalse( WC_Payments_Features::is_frt_review_feature_active() );
 	}
 
 	private function setup_enabled_flags( array $enabled_flags ) {

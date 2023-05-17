@@ -780,7 +780,7 @@ class WC_Payments_Account {
 
 			if ( isset( $_GET['wcpay-disable-onboarding-test-mode'] ) ) {
 				WC_Payments_Onboarding_Service::set_test_mode( false );
-				$this->redirect_to_onboarding_page();
+				$this->redirect_to_prototype_onboarding_page();
 				return;
 			}
 
@@ -1237,12 +1237,38 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Updates the cached account data.
+	 *
+	 * @param string $property Property to update.
+	 * @param mixed  $data     Data to update.
+	 *
+	 * @return void
+	 */
+	public function update_cached_account_data( $property, $data ) {
+		$account_data = $this->database_cache->get( Database_Cache::ACCOUNT_KEY );
+
+		$account_data[ $property ] = is_array( $data ) ? array_merge( $account_data[ $property ] ?? [], $data ) : $data;
+
+		$this->database_cache->add( Database_Cache::ACCOUNT_KEY, $account_data );
+	}
+
+	/**
 	 * Refetches account data and returns the fresh data.
 	 *
 	 * @return array|bool|string Either the new account data or false if unavailable.
 	 */
 	public function refresh_account_data() {
 		return $this->get_cached_account_data( true );
+	}
+
+	/**
+	 * Updates the account data.
+	 *
+	 * @param string $property Property to update.
+	 * @param mixed  $data     Data to update.
+	 */
+	public function update_account_data( $property, $data ) {
+		return $this->update_cached_account_data( $property, $data );
 	}
 
 	/**
