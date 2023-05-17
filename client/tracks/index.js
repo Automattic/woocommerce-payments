@@ -60,7 +60,6 @@ const events = {
 	CONNECT_ACCOUNT_LEARN_MORE: 'wcpay_welcome_learn_more',
 	CONNECT_ACCOUNT_STRIPE_CONNECTED: 'wcpay_stripe_connected',
 	CONNECT_ACCOUNT_KYC_MODAL_OPENED: 'wcpay_connect_account_kyc_modal_opened',
-	TRANSACTIONS_DOWNLOAD_CSV_CLICK: 'wcpay_transactions_download_csv_click',
 	DEPOSITS_ROW_CLICK: 'wcpay_deposits_row_click',
 	DEPOSITS_DOWNLOAD_CSV_CLICK: 'wcpay_deposits_download',
 	OVERVIEW_BALANCES_CURRENCY_CLICK:
@@ -87,6 +86,7 @@ const events = {
 		'wcpay_subscriptions_account_not_connected_product_modal_finish_setup',
 	SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_DISMISS:
 		'wcpay_subscriptions_account_not_connected_product_modal_dismiss',
+	TRANSACTIONS_DOWNLOAD_CSV_CLICK: 'wcpay_transactions_download_csv_click',
 	WOOPAY_OFFERED: 'woopay_offered',
 	WOOPAY_OTP_START: 'woopay_otp_prompt_start',
 	WOOPAY_OTP_COMPLETE: 'woopay_otp_prompt_complete',
