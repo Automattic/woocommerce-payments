@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Ensures 3DS authenticated payment methods can be saved and reused with deferred intent UPE.
