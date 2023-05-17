@@ -17,7 +17,7 @@ export default {
 			),
 			live: {
 				label: __(
-					'I’d like to set up payments for my store',
+					'I’d like to set up payments on my own store',
 					'woocommerce-payments'
 				),
 				note: __(
@@ -27,7 +27,7 @@ export default {
 			},
 			test: {
 				label: __(
-					'I’d like to set up test payments',
+					'I’m building a store for someone else and would like to test payments',
 					'woocommerce-payments'
 				),
 				note: __(
@@ -37,13 +37,16 @@ export default {
 			},
 		},
 		personal: {
-			heading: __( 'Tell us about yourself', 'woocommerce-payments' ),
+			heading: __(
+				'First, you’ll need to create an account',
+				'woocommerce-payments'
+			),
 			subheading: __(
 				'The information below should reflect that of the business owner or a significant shareholder.',
 				'woocommerce-payments'
 			),
 			notice: __(
-				'We will use this email address to contact you with any important notifications or information related to your account.',
+				'We’ll use the email address to contact you with any important notifications related to your account, and the phone number will only be used to protect your account with two-factor authentication.',
 				'woocommerce-payments'
 			),
 		},
@@ -53,27 +56,27 @@ export default {
 				'woocommerce-payments'
 			),
 			subheading: __(
-				'We will use these details to enable payments for your store.',
+				'We’ll use these details to enable payments for your store.',
 				'woocommerce-payments'
 			),
 		},
 		store: {
 			heading: __(
-				'Tell us more about your business',
+				'Please share a few more details',
 				'woocommerce-payments'
 			),
 			subheading: __(
-				'This information will assist us in getting you set up quickly.',
+				'This info will help us speed up the set up process.',
 				'woocommerce-payments'
 			),
 		},
 		loading: {
 			heading: __(
-				'Let’s get you setup for payments',
+				'Let’s get you set up for payments',
 				'woocommerce-payments'
 			),
 			subheading: __(
-				'All you need is to confirm your identity with our partner',
+				'Confirm your identity with our partner',
 				'woocommerce-payments'
 			),
 		},
@@ -123,7 +126,10 @@ export default {
 		url: __( 'Please provide a valid website', 'woocommerce-payments' ),
 	},
 	placeholders: {
-		country: __( 'Select a location', 'woocommerce-payments' ),
+		country: __(
+			'Select the primary country of your business',
+			'woocommerce-payments'
+		),
 		business_type: __(
 			'Select the legal structure of your business',
 			'woocommerce-payments'
@@ -132,7 +138,10 @@ export default {
 			'Select the legal category of your business',
 			'woocommerce-payments'
 		),
-		mcc: __( 'Please select your industry', 'woocommerce-payments' ),
+		mcc: __(
+			'Select the primary industry of your business',
+			'woocommerce-payments'
+		),
 		annual_revenue: __(
 			'Select your annual revenue',
 			'woocommerce-payments'
@@ -154,4 +163,5 @@ export default {
 		more_than_6months: __( '6+ months', 'woocommerce-payments' ),
 	},
 	continue: __( 'Continue', 'woocommerce-payments' ),
+	back: __( 'Back', 'woocommerce-payments' ),
 };

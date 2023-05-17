@@ -11,6 +11,7 @@ import { addQueryArgs } from '@wordpress/url';
  */
 import RadioCard from 'components/radio-card';
 import { useStepperContext } from 'components/stepper';
+import { trackModeSelected } from '../tracking';
 import strings from '../strings';
 
 const ModeChoice: React.FC = () => {
@@ -21,6 +22,8 @@ const ModeChoice: React.FC = () => {
 	const { nextStep } = useStepperContext();
 
 	const handleContinue = () => {
+		trackModeSelected( selected );
+
 		if ( selected === 'live' ) return nextStep();
 
 		const { connectUrl } = wcpaySettings;
@@ -59,7 +62,11 @@ const ModeChoice: React.FC = () => {
 					},
 				] }
 			/>
-			<Button isPrimary onClick={ handleContinue }>
+			<Button
+				isPrimary
+				onClick={ handleContinue }
+				className="stepper__cta"
+			>
 				{ strings.continue }
 			</Button>
 		</>

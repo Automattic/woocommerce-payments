@@ -8,11 +8,11 @@
  * Woo: 5278104:bf3cf30871604e15eec560c962593c1f
  * Text Domain: woocommerce-payments
  * Domain Path: /languages
- * WC requires at least: 7.4
- * WC tested up to: 7.6.0
+ * WC requires at least: 7.5
+ * WC tested up to: 7.7.0
  * Requires at least: 6.0
- * Requires PHP: 7.2
- * Version: 5.8.1
+ * Requires PHP: 7.3
+ * Version: 5.9.0
  *
  * @package WooCommerce\Payments
  */
@@ -26,8 +26,8 @@ define( 'WCPAY_SUBSCRIPTIONS_ABSPATH', __DIR__ . '/vendor/woocommerce/subscripti
 
 require_once __DIR__ . '/vendor/autoload_packages.php';
 require_once __DIR__ . '/includes/class-wc-payments-features.php';
-require_once __DIR__ . '/includes/platform-checkout-user/class-platform-checkout-extension.php';
-require_once __DIR__ . '/includes/platform-checkout/class-platform-checkout-session.php';
+require_once __DIR__ . '/includes/woopay-user/class-woopay-extension.php';
+require_once __DIR__ . '/includes/woopay/class-woopay-session.php';
 
 /**
  * Plugin activation hook.
@@ -137,7 +137,7 @@ Automattic\Jetpack\Connection\Rest_Authentication::init();
  * Needs to be loaded as soon as possible
  * Check https://github.com/Automattic/woocommerce-payments/issues/4759
  */
-\WCPay\Platform_Checkout\Platform_Checkout_Session::init();
+\WCPay\WooPay\WooPay_Session::init();
 
 
 // Jetpack-config will initialize the modules on "plugins_loaded" with priority 2, so this code needs to be run before that.
@@ -325,13 +325,13 @@ function wcpay_tasks_init() {
 add_action( 'plugins_loaded', 'wcpay_tasks_init' );
 
 /**
- * Register blocks extension for platform checkout.
+ * Register blocks extension for woopay.
  */
-function register_platform_checkout_extension() {
-	( new Platform_Checkout_Extension() )->register_extend_rest_api_update_callback();
+function register_woopay_extension() {
+	( new WooPay_Extension() )->register_extend_rest_api_update_callback();
 }
 
-add_action( 'woocommerce_blocks_loaded', 'register_platform_checkout_extension' );
+add_action( 'woocommerce_blocks_loaded', 'register_woopay_extension' );
 
 /**
  * As the class is defined in later versions of WC, Psalm infers error.
