@@ -14,7 +14,7 @@ const enhancedFraudProtectionStep = {
 		heading: __( 'Enhanced fraud protection is here 🔒' ),
 		descriptions: {
 			desktop: __(
-				'You can now choose a level of protection for screening incoming transactions. You can then review any flagged transactions and decide to approve or block them.'
+				'You can now choose a level of protection for screening incoming transactions. Screened transactions are automatically blocked.'
 			),
 		},
 		primaryButton: {
@@ -32,7 +32,7 @@ const chooseYourFilterLevelStep = {
 		heading: __( 'Choose your filter level 🚦' ),
 		descriptions: {
 			desktop: __(
-				"Choose how you'd like to filter suspicious transactions, from Basic to Advanced."
+				"Choose how you'd like to screen incoming transactions using our Basic or Advanced options."
 			),
 		},
 	},
@@ -47,7 +47,7 @@ const takeMoreControlStep = {
 		heading: __( 'Take more control 🎚️' ),
 		descriptions: {
 			desktop: __(
-				'Choose Advanced settings for full control over each filter. You can enable and configure filters and choose an action between risk review or block.'
+				'Choose Advanced settings for full control over each filter. You can enable and configure filters to block risky transactions.'
 			),
 		},
 	},
@@ -63,7 +63,7 @@ const readyForReviewStep = {
 		descriptions: {
 			desktop: interpolateComponents( {
 				mixedString: __(
-					"Payments that have been caught by a risk filter will appear in {{strong}}Payments > Transactions{{/strong}}. We'll let you know why each payment was flagged so you can determine whether to approve or block it."
+					"Payments that have been blocked by a risk filter will appear in the blocked column in {{strong}}Payments > Transactions{{/strong}}. We'll let you know why each payment was blocked so you can determine if you need to adjust your risk filters."
 				),
 				components: { strong: <strong /> },
 			} ),
