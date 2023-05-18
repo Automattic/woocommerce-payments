@@ -12,15 +12,12 @@ const { shopper, merchant, uiUnblocked } = require( '@woocommerce/e2e-utils' );
 
 const MIN_WAIT_TIME_BETWEEN_PAYMENT_METHODS = 20000;
 
-const sepaPaymentMethod = '#inspector-checkbox-control-8';
 const card = config.get( 'cards.basic' );
 
 describe( 'Enabled Split UPE', () => {
 	beforeAll( async () => {
 		await merchant.login();
 		await merchantWCP.activateSplitUpe();
-		// enable SEPA
-		await merchantWCP.enablePaymentMethod( [ sepaPaymentMethod ] );
 		await merchant.logout();
 		await shopper.login();
 		await shopperWCP.changeAccountCurrencyTo( 'EUR' );
@@ -30,8 +27,6 @@ describe( 'Enabled Split UPE', () => {
 		await shopperWCP.changeAccountCurrencyTo( 'USD' );
 		await shopperWCP.logout();
 		await merchant.login();
-		//disable SEPA
-		await merchantWCP.disablePaymentMethod( [ sepaPaymentMethod ] );
 		await merchantWCP.deactivateSplitUpe();
 		await merchant.logout();
 	} );
