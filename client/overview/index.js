@@ -144,7 +144,11 @@ const OverviewPage = () => {
 			{ ! accountRejected && (
 				<ErrorBoundary>
 					<>
-						<AccountBalances />
+						<AccountBalances
+							numDisputesNeedingResponse={
+								numDisputesNeedingResponse
+							}
+						/>
 						<DepositsOverview />
 					</>
 				</ErrorBoundary>
