@@ -72,7 +72,14 @@ class WC_Payments_Checkout {
 		$this->woopay_util      = $woopay_util;
 		$this->account          = $account;
 		$this->customer_service = $customer_service;
+	}
 
+	/**
+	 * Initializes this class's WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		add_action( 'wc_payments_add_payment_fields', [ $this, 'payment_fields' ] );
 	}
 

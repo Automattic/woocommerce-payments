@@ -470,8 +470,12 @@ class WC_Payments {
 				$payment_methods[ $payment_method->get_id() ] = $payment_method;
 			}
 			foreach ( $payment_methods as $payment_method ) {
-				self::$upe_payment_method_map[ $payment_method->get_id() ]  = $payment_method;
-				self::$upe_payment_gateway_map[ $payment_method->get_id() ] = new UPE_Split_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service );
+				self::$upe_payment_method_map[ $payment_method->get_id() ] = $payment_method;
+
+				$split_gateway = new UPE_Split_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service );
+				$split_gateway->init_hooks();
+
+				self::$upe_payment_gateway_map[ $payment_method->get_id() ] = $split_gateway;
 			}
 
 			self::$card_gateway         = self::get_payment_gateway_by_id( 'card' );
@@ -490,6 +494,9 @@ class WC_Payments {
 			self::$card_gateway         = self::$legacy_card_gateway;
 			self::$wc_payments_checkout = new WC_Payments_Checkout( self::$legacy_card_gateway, self::$woopay_util, self::$account, self::$customer_service );
 		}
+
+		self::$card_gateway->init_hooks();
+		self::$wc_payments_checkout->init_hooks();
 
 		self::$mode = new Mode( self::$card_gateway );
 
