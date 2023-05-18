@@ -21,8 +21,8 @@ classDiagram
   Input <|-- Input_Process_3ds_Result
   <<abstract>> Input
   Input: -array $data
-  Input: +get( string $key )
-  Input: +set( string $key, $value )
+  Input: #get( string $key )
+  Input: #set( string $key, $value )
   Input: +exist( string $key ) bool
   
   Input_Start_Payment_Standard: get_payment_method() string
@@ -53,9 +53,11 @@ classDiagram
   Entity <|-- Entity_Payment
 
   <<interface>> Entity
-  Entity: array $revisions
-  Entity: ?string $current_state
-  Entity: array $data
+  Entity: -array $revisions
+  Entity: -?string $current_state
+  Entity: -array $data
+  Entity: -array $diff_data
+  
   Entity: +get_current_state() ?State
   Entity: +get_revisions() array
   Entity: +log( State $previous_state, State $current_state, Input $input, State_Machine_Abstract $state_machine, int $timestamp = null )
@@ -159,7 +161,7 @@ As illustrated in the diagram above, a state machine will have:
 - $initial_state: the initial state of the state machine.
 
 Before processing the state machine, the entity, initial state, and input must be set to the state machine. The initial state is optional, if not set, it will try using the current state saved in the entity and continue from there.
-The secret sauce is in the `process` function: 
+The secret sauce is in [the `process` method](https://github.com/Automattic/woocommerce-payments/blob/5141de5079ddaea6551170f82e9d13b9f6e91d3e/includes/core/state-machine/class-state-machine-abstract.php#L57-L88): 
 
 - It runs through actions of the current state, and get the next state.
 - It verifies the next state is valid by checking `$config`.
@@ -255,9 +257,9 @@ class UPE_Payment_Flow extends State_Machine_Abstract {
 
 Steps: 
 
-- Add a new State extending from one of four `State` types.
 - Add it to the $config of State_Machine concrete classes.
 - Review the state diagram to ensure that the new state is in the right place.
+- Implement a concrete class extending from one of four `State` types for that new state.
 
 ### 3, How to trigger a state machine?
 

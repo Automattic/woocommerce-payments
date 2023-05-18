@@ -1,12 +1,6 @@
 Syntax: https://mermaid.js.org/syntax/stateDiagram.html
 
-## TODOs: 
-
-- [ ] Integrate webhook flow? 
-- [x] Maybe simplify the `start_processing` down the flow.
-- [x] Consider another `complete` state between `success` and run post-payment actions.
-- [x] Move state actions into notes? - Did not work well.
-- [x] Move to Excalidraw - last update https://excalidraw.com/#json=JwZ2GsZgG4Jm1Wyx-ASc_,X6eXxqskkufGdmtppPxqOw, but can see other versions in https://github.com/Automattic/woocommerce-payments/pull/6163
+See a better visualization and more up-to-date version at https://excalidraw.com/#json=JwZ2GsZgG4Jm1Wyx-ASc_,X6eXxqskkufGdmtppPxqOw
 
 ## Mermaid Diagram for Payment Processing States
 
