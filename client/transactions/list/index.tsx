@@ -513,6 +513,16 @@ export const TransactionsList = (
 		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
 		const userEmail = wcpaySettings.currentUserEmail;
 
+		wcpayTracks.recordEvent(
+			wcpayTracks.events.TRANSACTIONS_DOWNLOAD_CSV_CLICK,
+			{
+				location: props.depositId ? 'deposit_details' : 'transactions',
+				download_type: downloadType,
+				exported_transactions: rows.length,
+				total_transactions: transactionsSummary.count,
+			}
+		);
+
 		if ( 'endpoint' === downloadType ) {
 			const {
 				date_after: dateAfter,
@@ -550,18 +560,6 @@ export const TransactionsList = (
 				window.confirm( confirmMessage )
 			) {
 				try {
-					wcpayTracks.recordEvent(
-						wcpayTracks.events.TRANSACTIONS_DOWNLOAD_CSV_CLICK,
-						{
-							location: props.depositId
-								? 'deposit_details'
-								: 'transactions',
-							download_type: downloadType,
-							exported_transactions: rows.length,
-							total_transactions: transactionsSummary.count,
-						}
-					);
-
 					const {
 						exported_transactions: exportedTransactions,
 					} = await apiFetch( {
@@ -608,18 +606,6 @@ export const TransactionsList = (
 				}
 			}
 		} else {
-			wcpayTracks.recordEvent(
-				wcpayTracks.events.TRANSACTIONS_DOWNLOAD_CSV_CLICK,
-				{
-					location: props.depositId
-						? 'deposit_details'
-						: 'transactions',
-					download_type: downloadType,
-					exported_transactions: rows.length,
-					total_transactions: transactionsSummary.count,
-				}
-			);
-
 			downloadCSVFile(
 				generateCSVFileName( title, params ),
 				generateCSVDataFromTable( columnsToDisplay, rows )
