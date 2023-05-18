@@ -1338,7 +1338,7 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Get all of the currencies that have been used in the store.
+	 * Get all the currencies that have been used in the store.
 	 *
 	 * @return array
 	 */
@@ -1367,7 +1367,7 @@ class MultiCurrency {
 			}
 		);
 
-		if ( isset( $data['currencies'] ) && is_array( $data['currencies'] ) ) {
+		if ( ! empty( $data['currencies'] ) && is_array( $data['currencies'] ) ) {
 			return $data['currencies'];
 		}
 

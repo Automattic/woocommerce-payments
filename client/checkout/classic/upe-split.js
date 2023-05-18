@@ -26,7 +26,6 @@ import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
 import {
 	getTerms,
-	isWCPayChosen,
 	getPaymentIntentFromSession,
 	getSelectedUPEGatewayPaymentMethod,
 	getUpeSettings,
@@ -693,7 +692,7 @@ jQuery( function ( $ ) {
 		const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
 		if (
 			! isUsingSavedPaymentMethod( paymentMethodType ) &&
-			isWCPayChosen()
+			null !== paymentMethodType
 		) {
 			if ( isChangingPayment ) {
 				handleUPEAddPayment( $( '#order_review' ) );

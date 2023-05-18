@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Return a response from the WC_Subscription::set_status() function in line with the parent WC_Order::set_status() function.

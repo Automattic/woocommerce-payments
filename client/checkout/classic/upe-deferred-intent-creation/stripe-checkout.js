@@ -63,13 +63,12 @@ function blockUI( jQueryForm ) {
  * and shows an error message in the checkout.
  *
  * @param {Object} elements The Stripe elements object to be validated.
- * @param {Object} jQueryForm The jQuery object for the form being validated.
+ * @return {Promise} Promise for the checkout submission.
  */
-function validateElements( elements, jQueryForm ) {
-	elements.submit().then( ( result ) => {
+function validateElements( elements ) {
+	return elements.submit().then( ( result ) => {
 		if ( result.error ) {
-			jQueryForm.removeClass( 'processing' ).unblock();
-			showErrorCheckout( result.error.message );
+			throw new Error( result.error.message );
 		}
 	} );
 }
@@ -89,7 +88,7 @@ function submitForm( jQueryForm ) {
  *
  * @param {Object} api The API object used to call the Stripe API's createPaymentMethod method.
  * @param {Object} elements The Stripe elements object used to create a Stripe payment method.
- * @return {Object} A promise that resolves with the created Stripe payment method.
+ * @return {Promise<Object>} A promise that resolves with the created Stripe payment method.
  */
 function createStripePaymentMethod( api, elements ) {
 	return api.getStripe().createPaymentMethod( {
@@ -201,9 +200,14 @@ export const checkout = ( api, jQueryForm, paymentMethodType ) => {
 	blockUI( jQueryForm );
 
 	const elements = gatewayUPEComponents[ paymentMethodType ].elements;
-	validateElements( elements, jQueryForm );
-	createStripePaymentMethod( api, elements )
-		.then( ( paymentMethodObject ) => {
+
+	( async () => {
+		try {
+			await validateElements( elements );
+			const paymentMethodObject = await createStripePaymentMethod(
+				api,
+				elements
+			);
 			appendFingerprintInputToForm( jQueryForm, fingerprint );
 			appendPaymentMethodIdToForm(
 				jQueryForm,
@@ -211,11 +215,11 @@ export const checkout = ( api, jQueryForm, paymentMethodType ) => {
 			);
 			hasCheckoutCompleted = true;
 			submitForm( jQueryForm );
-		} )
-		.catch( ( error ) => {
+		} catch ( err ) {
 			jQueryForm.removeClass( 'processing' ).unblock();
-			showErrorCheckout( error.message );
-		} );
+			showErrorCheckout( err.message );
+		}
+	} )();
 
 	// Prevent WC Core default form submission (see woocommerce/assets/js/frontend/checkout.js) from happening.
 	return false;

@@ -28,10 +28,10 @@ use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
-use WCPay\Platform_Checkout_Tracker;
-use WCPay\Platform_Checkout\Platform_Checkout_Store_Api_Token;
-use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
-use WCPay\Platform_Checkout\Platform_Checkout_Order_Status_Sync;
+use WCPay\Platform_Checkout\WooPay_Store_Api_Token;
+use WCPay\WooPay_Tracker;
+use WCPay\WooPay\WooPay_Utilities;
+use WCPay\WooPay\WooPay_Order_Status_Sync;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Database_Cache;
@@ -228,11 +228,18 @@ class WC_Payments {
 	private static $mode;
 
 	/**
-	 * Platform Checkout Utilities.
+	 * WooPay Utilities.
 	 *
-	 * @var Platform_Checkout_Utilities
+	 * @var WooPay_Utilities
 	 */
-	private static $platform_checkout_util;
+	private static $woopay_util;
+
+	/**
+	 * WooPay Tracker.
+	 *
+	 * @var WooPay_Tracker
+	 */
+	private static $woopay_tracker;
 
 	/**
 	 * WC Payments Checkout
@@ -364,7 +371,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
 		include_once __DIR__ . '/class-wc-payments-express-checkout-button-display-handler.php';
 		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
-		include_once __DIR__ . '/class-wc-payments-platform-checkout-button-handler.php';
+		include_once __DIR__ . '/class-wc-payments-woopay-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-apple-pay-registration.php';
 		include_once __DIR__ . '/exceptions/class-add-payment-method-exception.php';
 		include_once __DIR__ . '/exceptions/class-amount-too-small-exception.php';
@@ -400,10 +407,10 @@ class WC_Payments {
 		include_once __DIR__ . '/fraud-prevention/class-buyer-fingerprinting-service.php';
 		include_once __DIR__ . '/fraud-prevention/class-fraud-risk-tools.php';
 		include_once __DIR__ . '/fraud-prevention/wc-payments-fraud-risk-tools.php';
-		include_once __DIR__ . '/platform-checkout/class-platform-checkout-store-api-token.php';
-		include_once __DIR__ . '/platform-checkout/class-platform-checkout-utilities.php';
-		include_once __DIR__ . '/platform-checkout/class-platform-checkout-order-status-sync.php';
-		include_once __DIR__ . '/platform-checkout/class-platform-checkout-store-api-session-handler.php';
+		include_once __DIR__ . '/woopay/class-woopay-store-api-token.php';
+		include_once __DIR__ . '/woopay/class-woopay-utilities.php';
+		include_once __DIR__ . '/woopay/class-woopay-order-status-sync.php';
+		include_once __DIR__ . '/woopay/class-woopay-store-api-session-handler.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-link.php';
 		include_once __DIR__ . '/core/service/class-wc-payments-customer-service-api.php';
 
@@ -415,14 +422,17 @@ class WC_Payments {
 		self::$woopay_checkout_service = new Checkout_Service();
 		self::$woopay_checkout_service->init();
 
-		// // Load platform checkout save user section if feature is enabled.
-		add_action( 'woocommerce_cart_loaded_from_session', [ __CLASS__, 'init_platform_checkout' ] );
+		// // Load woopay save user section if feature is enabled.
+		add_action( 'woocommerce_cart_loaded_from_session', [ __CLASS__, 'init_woopay' ] );
 
 		// Init the email template for In Person payment receipt email. We need to do it before passing the mailer to the service.
 		add_filter( 'woocommerce_email_classes', [ __CLASS__, 'add_ipp_emails' ], 10 );
 
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
+
+		// Load woopay tracking.
+		include_once WCPAY_ABSPATH . 'includes/class-woopay-tracker.php';
 
 		self::$order_service                       = new WC_Payments_Order_Service( self::$api_client );
 		self::$action_scheduler_service            = new WC_Payments_Action_Scheduler_Service( self::$api_client, self::$order_service );
@@ -436,7 +446,8 @@ class WC_Payments {
 		self::$failed_transaction_rate_limiter     = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
 		self::$order_success_page                  = new WC_Payments_Order_Success_Page();
 		self::$onboarding_service                  = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
-		self::$platform_checkout_util              = new Platform_Checkout_Utilities();
+		self::$woopay_util                         = new WooPay_Utilities();
+		self::$woopay_tracker                      = new WooPay_Tracker( self::get_wc_payments_http() );
 
 		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
 
@@ -464,8 +475,8 @@ class WC_Payments {
 			}
 
 			self::$card_gateway         = self::get_payment_gateway_by_id( 'card' );
-			$card_payments_checkout     = new WC_Payments_Checkout( self::$legacy_card_gateway, self::$platform_checkout_util, self::$account, self::$customer_service );
-			self::$wc_payments_checkout = new WC_Payments_UPE_Checkout( self::get_gateway(), self::$platform_checkout_util, self::$account, self::$customer_service );
+			$card_payments_checkout     = new WC_Payments_Checkout( self::$legacy_card_gateway, self::$woopay_util, self::$account, self::$customer_service );
+			self::$wc_payments_checkout = new WC_Payments_UPE_Checkout( self::get_gateway(), self::$woopay_util, self::$account, self::$customer_service );
 		} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
 			$payment_methods = [];
 			foreach ( $payment_method_classes as $payment_method_class ) {
@@ -474,10 +485,10 @@ class WC_Payments {
 			}
 
 			self::$card_gateway         = new UPE_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service );
-			self::$wc_payments_checkout = new WC_Payments_UPE_Checkout( self::get_gateway(), self::$platform_checkout_util, self::$account, self::$customer_service );
+			self::$wc_payments_checkout = new WC_Payments_UPE_Checkout( self::get_gateway(), self::$woopay_util, self::$account, self::$customer_service );
 		} else {
 			self::$card_gateway         = self::$legacy_card_gateway;
-			self::$wc_payments_checkout = new WC_Payments_Checkout( self::$legacy_card_gateway, self::$platform_checkout_util, self::$account, self::$customer_service );
+			self::$wc_payments_checkout = new WC_Payments_Checkout( self::$legacy_card_gateway, self::$woopay_util, self::$account, self::$customer_service );
 		}
 
 		self::$mode = new Mode( self::$card_gateway );
@@ -487,7 +498,7 @@ class WC_Payments {
 
 		self::$customer_service_api = new WC_Payments_Customer_Service_API( self::$customer_service );
 
-		self::maybe_register_platform_checkout_hooks();
+		self::maybe_register_woopay_hooks();
 
 		self::$apple_pay_registration = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
 
@@ -509,11 +520,11 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-allowed-payment-request-button-types-update.php';
 		require_once __DIR__ . '/migrations/class-update-service-data-from-server.php';
 		require_once __DIR__ . '/migrations/class-track-upe-status.php';
-		require_once __DIR__ . '/migrations/class-delete-active-platform-checkout-webhook.php';
+		require_once __DIR__ . '/migrations/class-delete-active-woopay-webhook.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Track_Upe_Status', 'maybe_track' ] );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Delete_Active_Platform_Checkout_Webhook', 'maybe_delete' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Delete_Active_WooPay_Webhook', 'maybe_delete' ] );
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
 		WC_Payments_Explicit_Price_Formatter::init();
@@ -540,9 +551,7 @@ class WC_Payments {
 
 			new WC_Payments_Status( self::get_wc_payments_http(), self::get_account_service() );
 
-			if ( WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
-				new WCPay\Fraud_Prevention\Order_Fraud_And_Risk_Meta_Box( self::$order_service );
-			}
+			new WCPay\Fraud_Prevention\Order_Fraud_And_Risk_Meta_Box( self::$order_service );
 		}
 
 		// Load WCPay Subscriptions.
@@ -967,6 +976,15 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns the WooPay_Tracker instance
+	 *
+	 * @return WooPay_Tracker instance
+	 */
+	public static function woopay_tracker(): WooPay_Tracker {
+		return self::$woopay_tracker;
+	}
+
+	/**
 	 * Load script with all required dependencies.
 	 *
 	 * @param string $handler Script handler.
@@ -1290,17 +1308,17 @@ class WC_Payments {
 	}
 
 	/**
-	 * Registers platform checkout hooks if the platform checkout feature flag is enabled.
+	 * Registers woopay hooks if the woopay feature flag is enabled.
 	 *
 	 * @return void
 	 */
-	public static function maybe_register_platform_checkout_hooks() {
-		$is_platform_checkout_eligible = WC_Payments_Features::is_platform_checkout_eligible(); // Feature flag.
-		$is_platform_checkout_enabled  = 'yes' === self::get_gateway()->get_option( 'platform_checkout', 'no' );
+	public static function maybe_register_woopay_hooks() {
+		$is_woopay_eligible = WC_Payments_Features::is_woopay_eligible(); // Feature flag.
+		$is_woopay_enabled  = 'yes' === self::get_gateway()->get_option( 'platform_checkout', 'no' );
 
-		if ( $is_platform_checkout_eligible && $is_platform_checkout_enabled ) {
-			add_action( 'wc_ajax_wcpay_init_platform_checkout', [ __CLASS__, 'ajax_init_platform_checkout' ] );
-			add_action( 'wc_ajax_wcpay_get_platform_checkout_signature', [ __CLASS__, 'ajax_get_platform_checkout_signature' ] );
+		if ( $is_woopay_eligible && $is_woopay_enabled ) {
+			add_action( 'wc_ajax_wcpay_init_woopay', [ __CLASS__, 'ajax_init_woopay' ] );
+			add_action( 'wc_ajax_wcpay_get_woopay_signature', [ __CLASS__, 'ajax_get_woopay_signature' ] );
 
 			// This injects the payments API and draft orders into core, so the WooCommerce Blocks plugin is not necessary.
 			// We should remove this once both features are available by default in the WC minimum supported version.
@@ -1337,7 +1355,7 @@ class WC_Payments {
 				add_action( 'admin_init', [ $draft_orders, 'install' ] );
 			}
 
-			new Platform_Checkout_Order_Status_Sync( self::$api_client );
+			new WooPay_Order_Status_Sync( self::$api_client );
 		}
 	}
 
@@ -1349,18 +1367,19 @@ class WC_Payments {
 	public static function maybe_display_express_checkout_buttons() {
 		if ( WC_Payments_Features::are_payments_enabled() ) {
 			$payment_request_button_handler          = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway() );
-			$platform_checkout_button_handler        = new WC_Payments_Platform_Checkout_Button_Handler( self::$account, self::get_gateway(), self::$platform_checkout_util );
-			$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $payment_request_button_handler, $platform_checkout_button_handler );
+			$woopay_button_handler                   = new WC_Payments_WooPay_Button_Handler( self::$account, self::get_gateway(), self::$woopay_util );
+			$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $payment_request_button_handler, $woopay_button_handler );
 		}
 	}
 
+
 	/**
-	 * Used to initialize platform checkout session.
+	 * Used to initialize woopay session.
 	 *
 	 * @return void
 	 */
-	public static function ajax_init_platform_checkout() {
-		$is_nonce_valid = check_ajax_referer( 'wcpay_init_platform_checkout_nonce', false, false );
+	public static function ajax_init_woopay() {
+		$is_nonce_valid = check_ajax_referer( 'wcpay_init_woopay_nonce', false, false );
 
 		if ( ! $is_nonce_valid ) {
 			wp_send_json_error(
@@ -1380,8 +1399,8 @@ class WC_Payments {
 
 		$account_id = self::get_account_service()->get_stripe_account_id();
 
-		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'https://pay.woo.com';
-		$url                    = $platform_checkout_host . '/wp-json/platform-checkout/v1/init';
+		$woopay_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'https://pay.woo.com';
+		$url         = $woopay_host . '/wp-json/platform-checkout/v1/init';
 
 		$store_logo = self::get_gateway()->get_option( 'platform_checkout_store_logo' );
 
@@ -1455,23 +1474,23 @@ class WC_Payments {
 	}
 
 	/**
-	 * Initializes the Platform_Checkout_Store_Api_Token class and returns the Cart token.
+	 * Initializes the WooPay_Store_Api_Token class and returns the Cart token.
 	 *
 	 * @return string The Cart Token.
 	 */
 	private static function init_store_api_token() {
-		$cart_route = Platform_Checkout_Store_Api_Token::init();
+		$cart_route = WooPay_Store_Api_Token::init();
 
 		return $cart_route->get_cart_token();
 	}
 
 	/**
-	 * Retrieve a platform checkout request signature.
+	 * Retrieve a woopay request signature.
 	 *
 	 * @return void
 	 */
-	public static function ajax_get_platform_checkout_signature() {
-		$is_nonce_valid = check_ajax_referer( 'platform_checkout_signature_nonce', false, false );
+	public static function ajax_get_woopay_signature() {
+		$is_nonce_valid = check_ajax_referer( 'woopay_signature_nonce', false, false );
 
 		if ( ! $is_nonce_valid ) {
 			wp_send_json_error(
@@ -1480,9 +1499,9 @@ class WC_Payments {
 			);
 		}
 
-		$platform_checkout_util = new Platform_Checkout_Utilities();
+		$woopay_util = new WooPay_Utilities();
 
-		$signature = $platform_checkout_util->get_platform_checkout_request_signature();
+		$signature = $woopay_util->get_woopay_request_signature();
 
 		wp_send_json_success(
 			[
@@ -1513,7 +1532,7 @@ class WC_Payments {
 	/**
 	 * Adds custom email field.
 	 */
-	public static function platform_checkout_fields_before_billing_details() {
+	public static function woopay_fields_before_billing_details() {
 		$checkout = WC()->checkout;
 
 		echo '<div class="woocommerce-billing-fields" id="contact_details">';
@@ -1526,8 +1545,8 @@ class WC_Payments {
 			[
 				'type'        => 'email',
 				'label'       => __( 'Email address', 'woocommerce-payments' ),
-				'class'       => [ 'form-row-wide platform-checkout-billing-email' ],
-				'input_class' => [ 'platform-checkout-billing-email-input' ],
+				'class'       => [ 'form-row-wide woopay-billing-email' ],
+				'input_class' => [ 'woopay-billing-email-input' ],
 				'validate'    => [ 'email' ],
 				'required'    => true,
 			],
@@ -1551,32 +1570,29 @@ class WC_Payments {
 	 * @param string $value Field value.
 	 * @return string
 	 */
-	public static function filter_woocommerce_form_field_platform_checkout_email( $field, $key, $args, $value ) {
+	public static function filter_woocommerce_form_field_woopay_email( $field, $key, $args, $value ) {
 		$class = $args['class'][0];
-		if ( false === strpos( $class, 'platform-checkout-billing-email' ) && is_checkout() && ! is_checkout_pay_page() ) {
+		if ( false === strpos( $class, 'woopay-billing-email' ) && is_checkout() && ! is_checkout_pay_page() ) {
 			$field = '';
 		}
 		return $field;
 	}
 
 	/**
-	 * Register platform checkout hooks and scripts if feature is available.
+	 * Register woopay hooks and scripts if feature is available.
 	 *
 	 * @return void
 	 */
-	public static function init_platform_checkout() {
-		// Load platform checkout save user section if feature is enabled.
-		if ( self::$platform_checkout_util->should_enable_platform_checkout( self::get_gateway() ) ) {
+	public static function init_woopay() {
+		// Load woopay save user section if feature is enabled.
+		if ( self::$woopay_util->should_enable_woopay( self::get_gateway() ) ) {
 			// Update email field location.
-			add_action( 'woocommerce_checkout_billing', [ __CLASS__, 'platform_checkout_fields_before_billing_details' ], -50 );
-			add_filter( 'woocommerce_form_field_email', [ __CLASS__, 'filter_woocommerce_form_field_platform_checkout_email' ], 20, 4 );
+			add_action( 'woocommerce_checkout_billing', [ __CLASS__, 'woopay_fields_before_billing_details' ], -50 );
+			add_filter( 'woocommerce_form_field_email', [ __CLASS__, 'filter_woocommerce_form_field_woopay_email' ], 20, 4 );
 
-			include_once __DIR__ . '/platform-checkout-user/class-platform-checkout-save-user.php';
-			// Load platform checkout tracking.
-			include_once WCPAY_ABSPATH . 'includes/class-platform-checkout-tracker.php';
+			include_once __DIR__ . '/woopay-user/class-woopay-save-user.php';
 
-			new Platform_Checkout_Save_User();
-			new Platform_Checkout_Tracker( self::get_wc_payments_http() );
+			new WooPay_Save_User();
 		}
 	}
 

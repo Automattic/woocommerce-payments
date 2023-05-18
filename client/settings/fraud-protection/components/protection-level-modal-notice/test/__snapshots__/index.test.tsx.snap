@@ -1,0 +1,65 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ProtectionLevelModalNotice renders the high notice when the level prop is high 1`] = `
+<div>
+  <div
+    class="component-notice--is-info components-notice is-info"
+  >
+    <div
+      class="components-notice__content"
+    >
+      <div
+        class="component-notice__content--flex"
+      >
+        <svg
+          aria-hidden="true"
+          class="component-notice__icon"
+          focusable="false"
+          height="24"
+          viewBox="0 0 24 24"
+          width="24"
+        >
+          <path
+            d="M12 15.8c-3.7 0-6.8-3-6.8-6.8s3-6.8 6.8-6.8c3.7 0 6.8 3 6.8 6.8s-3.1 6.8-6.8 6.8zm0-12C9.1 3.8  6.8 6.1 6.8 9s2.4 5.2 5.2 5.2c2.9 0 5.2-2.4 5.2-5.2S14.9 3.8 12 3.8zM8 17.5h8V19H8zM10 20.5h4V22h-4z"
+          />
+        </svg>
+        <p>
+          Offers the highest level of filtering for stores, but may catch some legitimate transactions.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ProtectionLevelModalNotice renders the standard notice when the level prop is standard 1`] = `
+<div>
+  <div
+    class="component-notice--is-info components-notice is-info"
+  >
+    <div
+      class="components-notice__content"
+    >
+      <div
+        class="component-notice__content--flex"
+      >
+        <svg
+          aria-hidden="true"
+          class="component-notice__icon"
+          focusable="false"
+          height="24"
+          viewBox="0 0 24 24"
+          width="24"
+        >
+          <path
+            d="M12 15.8c-3.7 0-6.8-3-6.8-6.8s3-6.8 6.8-6.8c3.7 0 6.8 3 6.8 6.8s-3.1 6.8-6.8 6.8zm0-12C9.1 3.8  6.8 6.1 6.8 9s2.4 5.2 5.2 5.2c2.9 0 5.2-2.4 5.2-5.2S14.9 3.8 12 3.8zM8 17.5h8V19H8zM10 20.5h4V22h-4z"
+          />
+        </svg>
+        <p>
+          Provides a standard level of filtering that's suitable for most business.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+`;

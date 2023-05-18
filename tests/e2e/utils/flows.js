@@ -471,6 +471,14 @@ export const merchantWCP = {
 		} );
 
 		for ( const paymentMethod of paymentMethods ) {
+			// Skip fraud protection tools tour.
+			const tourKitDismissButton = await page.$(
+				`.woocommerce-tour-kit-step-controls button`
+			);
+			if ( tourKitDismissButton ) {
+				await tourKitDismissButton.click();
+			}
+
 			await page.$eval( paymentMethod, ( method ) => method.click() );
 			await new Promise( ( resolve ) => setTimeout( resolve, 2000 ) );
 		}
@@ -486,6 +494,13 @@ export const merchantWCP = {
 		} );
 
 		for ( const paymentMethod of paymentMethods ) {
+			// Skip fraud protection tools tour.
+			const tourKitDismissButton = await page.$(
+				`.woocommerce-tour-kit-step-controls button`
+			);
+			if ( tourKitDismissButton ) {
+				await tourKitDismissButton.click();
+			}
 			await page.$eval( paymentMethod, ( method ) => method.click() );
 			await expect( page ).toClick( 'button', {
 				text: 'Remove',
@@ -614,6 +629,15 @@ export const merchantWCP = {
 		await merchant.openSettings( 'checkout', 'woocommerce_payments' );
 	},
 
+	skipFraudProtectionTour: async () => {
+		const tourKitDismissButton = await page.$(
+			`.woocommerce-tour-kit-step-controls button`
+		);
+		if ( tourKitDismissButton ) {
+			await tourKitDismissButton.click();
+		}
+	},
+
 	wcpSettingsSaveChanges: async () => {
 		const snackbarSettingsSaved = '.components-snackbar';
 
@@ -690,23 +714,15 @@ export const merchantWCP = {
 			waitUntil: 'networkidle0',
 		} );
 
-		if (
-			! ( await page.$( '#override_platform_checkout_eligible:checked' ) )
-		) {
+		if ( ! ( await page.$( '#override_woopay_eligible:checked' ) ) ) {
 			await expect( page ).toClick( 'label', {
-				text:
-					'Override the platform_checkout_eligible flag in the account cache',
+				text: 'Override the woopay_eligible flag in the account cache',
 			} );
 		}
 
-		if (
-			! ( await page.$(
-				'#override_platform_checkout_eligible_value:checked'
-			) )
-		) {
+		if ( ! ( await page.$( '#override_woopay_eligible_value:checked' ) ) ) {
 			await expect( page ).toClick( 'label', {
-				text:
-					'Set platform_checkout_eligible flag to true, false otherwise',
+				text: 'Set woopay_eligible flag to true, false otherwise',
 			} );
 		}
 
@@ -721,19 +737,15 @@ export const merchantWCP = {
 			waitUntil: 'networkidle0',
 		} );
 
-		if ( await page.$( '#override_platform_checkout_eligible:checked' ) ) {
+		if ( await page.$( '#override_woopay_eligible:checked' ) ) {
 			await expect( page ).toClick( 'label', {
-				text:
-					'Override the platform_checkout_eligible flag in the account cache',
+				text: 'Override the woopay_eligible flag in the account cache',
 			} );
 		}
 
-		if (
-			await page.$( '#override_platform_checkout_eligible_value:checked' )
-		) {
+		if ( await page.$( '#override_woopay_eligible_value:checked' ) ) {
 			await expect( page ).toClick( 'label', {
-				text:
-					'Set platform_checkout_eligible flag to true, false otherwise',
+				text: 'Set woopay_eligible flag to true, false otherwise',
 			} );
 		}
 
