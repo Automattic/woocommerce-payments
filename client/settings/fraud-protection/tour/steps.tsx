@@ -58,12 +58,12 @@ const readyForReviewStep = {
 		desktop: '#toplevel_page_wc-admin-path--payments-overview',
 	},
 	meta: {
-		name: 'ready-for-review',
-		heading: __( 'Ready for review 📥️' ),
+		name: 'review-blocked-transactions',
+		heading: __( 'Review blocked transactions 📥️' ),
 		descriptions: {
 			desktop: interpolateComponents( {
 				mixedString: __(
-					"Payments that have been blocked by a risk filter will appear in the blocked column in {{strong}}Payments > Transactions{{/strong}}. We'll let you know why each payment was blocked so you can determine if you need to adjust your risk filters."
+					"Payments that have been blocked by a risk filter will appear under the blocked tab in {{strong}}Payments > Transactions{{/strong}}. We'll let you know why each payment was blocked so you can determine if you need to adjust your risk filters."
 				),
 				components: { strong: <strong /> },
 			} ),
