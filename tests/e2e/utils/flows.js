@@ -501,7 +501,9 @@ export const merchantWCP = {
 				`button.woocommerce-tour-kit-step-controls__close-btn`
 			);
 			if ( tourKitDismissButton ) {
-				await tourKitDismissButton.click();
+				await tourKitDismissButton.evaluate( ( button ) =>
+					button.click()
+				);
 			}
 			await page.$eval( paymentMethod, ( method ) => method.click() );
 			await expect( page ).toClick( 'button', {
@@ -636,7 +638,7 @@ export const merchantWCP = {
 			`button.woocommerce-tour-kit-step-controls__close-btn`
 		);
 		if ( tourKitDismissButton ) {
-			await tourKitDismissButton.click();
+			await tourKitDismissButton.evaluate( ( button ) => button.click() );
 		}
 	},
 
