@@ -18,10 +18,20 @@ When creating `Get_Request` requests, the ID parameter could be passed to the `:
 
 
 
-## Example:
+## Examples:
 
 ```php
 $request = Get_Request::create( $id );
 $request->set_method ('deposits')
+$request->send( 'wcpay_get_deposit_request' );
+```
+
+```php
+$request = Request::get( ('deposits', $id );
+$request->send( 'wcpay_get_deposit_request' );
+```
+
+```php
+$request = Request::get( ('deposits' ); // Without ID argument.
 $request->send( 'wcpay_get_deposits_request' );
 ```

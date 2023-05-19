@@ -21,7 +21,6 @@ class Get_Request extends Request {
 	 */
 	private $api = ''; // Just to be safe in case someone misses to add it. It will be validated by default.
 
-
 	/**
 	 * Set api route.
 	 *
@@ -34,7 +33,6 @@ class Get_Request extends Request {
 
 		$this->api = null === $this->id ? $api : $api . "/$this->id";
 	}
-
 
 	/**
 	 * Get API route.
@@ -73,9 +71,6 @@ class Get_Request extends Request {
 	 * @return void
 	 */
 	public function set_id( $id ) {
-		// We won't validate it in detail. Just to be sure it is not empty.
-		if ( $id ) {
-			$this->id = $id;
-		}
+		$this->id = $id;
 	}
 }
