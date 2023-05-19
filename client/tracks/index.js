@@ -86,6 +86,7 @@ const events = {
 		'wcpay_subscriptions_account_not_connected_product_modal_finish_setup',
 	SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_DISMISS:
 		'wcpay_subscriptions_account_not_connected_product_modal_dismiss',
+	TRANSACTIONS_DOWNLOAD_CSV_CLICK: 'wcpay_transactions_download_csv_click',
 	WOOPAY_OFFERED: 'woopay_offered',
 	WOOPAY_OTP_START: 'woopay_otp_prompt_start',
 	WOOPAY_OTP_COMPLETE: 'woopay_otp_prompt_complete',
