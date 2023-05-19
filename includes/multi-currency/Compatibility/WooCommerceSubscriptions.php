@@ -84,7 +84,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 
 			// There should only ever be one item, so use that item.
 			$item                   = array_shift( $switch_cart_items );
-			$item_id                = isset( $item['variation_id'] ) ? $item['variation_id'] : $item['product_id'];
+			$item_id                = ! empty( $item['variation_id'] ) ? $item['variation_id'] : $item['product_id'];
 			$switch_cart_item       = $this->switch_cart_item;
 			$this->switch_cart_item = $item['key'];
 
