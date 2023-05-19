@@ -3,16 +3,20 @@
 import { __ } from '@wordpress/i18n';
 import ReactDOM from 'react-dom';
 import { dispatch } from '@wordpress/data';
+import { Button } from '@wordpress/components';
+
 /**
  * Internal dependencies
  */
 import { getConfig } from 'utils/order';
 import RefundConfirmationModal from './refund-confirm-modal';
 import CancelConfirmationModal from './cancel-confirm-modal';
+import BannerNotice from 'wcpay/components/banner-notice';
 
 jQuery( function ( $ ) {
 	const disableManualRefunds = getConfig( 'disableManualRefunds' ) ?? false;
 	const manualRefundsTip = getConfig( 'manualRefundsTip' ) ?? '';
+	const hasDispute = getConfig( 'hasDispute' ) ?? true; // hardcoded as true for example
 
 	$( '#woocommerce-order-items' ).on(
 		'click',
@@ -96,5 +100,29 @@ jQuery( function ( $ ) {
 		container.id = 'wcpay-orderstatus-confirm-container';
 		document.body.appendChild( container );
 		ReactDOM.render( modalToRender, container );
+	}
+
+	function renderDisputeNotice() {
+		const Notice = () => (
+			<BannerNotice status="info" isDismissible={ false }>
+				<div style={ { marginBottom: 10 } }>
+					This order has a chargeback dispute of $123 for the reason
+					of &quot;product damaged&quot;. Please respond to this
+					dispute before May 29, 2023.
+				</div>
+				<Button isSecondary>See dispute details</Button>
+			</BannerNotice>
+		);
+
+		const noticeWrapper = document.createElement( 'div' );
+		document
+			.querySelector( '.woocommerce-order-data__meta ' )
+			.insertAdjacentElement( 'afterend', noticeWrapper );
+
+		ReactDOM.render( <Notice />, noticeWrapper );
+	}
+
+	if ( hasDispute ) {
+		renderDisputeNotice();
 	}
 } );
