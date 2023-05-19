@@ -3,7 +3,8 @@
 /**
  * External dependencies
  */
-import { apiFetch, dispatch } from '@wordpress/data-controls';
+import { apiFetch } from '@wordpress/data-controls';
+import { controls } from '@wordpress/data';
 import { addQueryArgs } from '@wordpress/url';
 import { __ } from '@wordpress/i18n';
 import { formatDateValue } from 'utils';
@@ -55,7 +56,7 @@ export function* getDispute( id ) {
 		const result = yield apiFetch( { path } );
 		yield updateDispute( result );
 	} catch ( e ) {
-		yield dispatch(
+		yield controls.dispatch(
 			'core/notices',
 			'createErrorNotice',
 			__( 'Error retrieving dispute.', 'woocommerce-payments' )
@@ -81,7 +82,7 @@ export function* getDisputes( query ) {
 		const results = yield apiFetch( { path } ) || {};
 		yield updateDisputes( query, results.data );
 	} catch ( e ) {
-		yield dispatch(
+		yield controls.dispatch(
 			'core/notices',
 			'createErrorNotice',
 			__( 'Error retrieving disputes.', 'woocommerce-payments' )
@@ -100,7 +101,7 @@ export function* getDisputesSummary( query ) {
 		const summary = yield apiFetch( { path } );
 		yield updateDisputesSummary( query, summary );
 	} catch ( e ) {
-		yield dispatch(
+		yield controls.dispatch(
 			'core/notices',
 			'createErrorNotice',
 			__(

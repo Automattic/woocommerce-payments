@@ -239,11 +239,67 @@ exports[`Order details page should match the snapshot - Charge without payment i
         <div
           class="woocommerce-timeline"
         >
-          <p
-            class="timeline_no_events"
-          >
-            No data to display
-          </p>
+          <ul>
+            <li
+              class="woocommerce-timeline-group"
+            >
+              <p
+                class="woocommerce-timeline-group__title"
+              >
+                March 27, 2023
+              </p>
+              <ul>
+                <li
+                  class="woocommerce-timeline-item"
+                >
+                  <div
+                    class="woocommerce-timeline-item__top-border"
+                  />
+                  <div
+                    class="woocommerce-timeline-item__title"
+                  >
+                    <div
+                      class="woocommerce-timeline-item__headline"
+                    >
+                      <svg
+                        class="gridicon gridicons-cross is-error"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M18.36 19.78L12 13.41l-6.36 6.37-1.42-1.42L10.59 12 4.22 5.64l1.42-1.42L12 10.59l6.36-6.36 1.41 1.41L13.41 12l6.36 6.36z"
+                          />
+                        </g>
+                      </svg>
+                      <span>
+                        Payment was screened by your fraud filters and blocked.
+                      </span>
+                    </div>
+                    <span
+                      class="woocommerce-timeline-item__timestamp"
+                    >
+                      6:09am
+                    </span>
+                  </div>
+                  <div
+                    class="woocommerce-timeline-item__body"
+                  >
+                    <span>
+                      <p
+                        class="fraud-outcome-ruleset-item"
+                      >
+                        Block if the purchase price is not in your defined range
+                      </p>
+                    </span>
+                  </div>
+                </li>
+              </ul>
+              <hr />
+            </li>
+          </ul>
         </div>
       </div>
     </div>

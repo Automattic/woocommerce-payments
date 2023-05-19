@@ -510,8 +510,6 @@ export const composeFeeBreakdown = ( event ) => {
 };
 
 const getManualFraudOutcomeTimelineItem = ( event, status ) => {
-	if ( ! wcpaySettings.isFraudProtectionSettingsEnabled ) return [];
-
 	const isBlock = 'block' === status;
 
 	const headline = isBlock
@@ -561,8 +559,6 @@ const buildAutomaticFraudOutcomeRuleset = ( event ) => {
 };
 
 const getAutomaticFraudOutcomeTimelineItem = ( event, status ) => {
-	if ( ! wcpaySettings.isFraudProtectionSettingsEnabled ) return [];
-
 	const isBlock = 'block' === status;
 
 	const headline = isBlock
@@ -582,9 +578,12 @@ const getAutomaticFraudOutcomeTimelineItem = ( event, status ) => {
 	);
 
 	return [
-		getMainTimelineItem( event, headline, icon, [
-			buildAutomaticFraudOutcomeRuleset( event ),
-		] ),
+		getMainTimelineItem(
+			event,
+			headline,
+			icon,
+			buildAutomaticFraudOutcomeRuleset( event )
+		),
 	];
 };
 

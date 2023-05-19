@@ -75,3 +75,4 @@ class WC_REST_User_Exists_Controller extends WP_REST_Controller {
 		);
 	}
 }
+

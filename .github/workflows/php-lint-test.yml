@@ -6,9 +6,9 @@ on:
 
 env:
   WP_VERSION:        latest
-  WC_MIN_SUPPORTED_VERSION: '7.4.1'
+  WC_MIN_SUPPORTED_VERSION: '7.5.0'
   GUTENBERG_VERSION: latest
-  PHP_MIN_SUPPORTED_VERSION: '7.2'
+  PHP_MIN_SUPPORTED_VERSION: '7.3'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -33,7 +33,7 @@ jobs:
           tools: composer
           coverage: none
       # install dependencies and run linter
-      - run: composer self-update 2.0.6 && composer install --no-progress && ./vendor/bin/phpcs --standard=phpcs.xml.dist $(git ls-files | grep .php$) && ./vendor/bin/psalm
+      - run: composer self-update && composer install --no-progress && ./vendor/bin/phpcs --standard=phpcs.xml.dist $(git ls-files | grep .php$) && ./vendor/bin/psalm
 
   generate-test-matrix:
     name: "Generate the matrix for php tests dynamically"
@@ -46,7 +46,7 @@ jobs:
         run: |
           PHP_VERSIONS=$( echo "[\"$PHP_MIN_SUPPORTED_VERSION\", \"7.3\", \"7.4\"]" )
           echo "matrix={\"php\":$PHP_VERSIONS}" >> $GITHUB_OUTPUT
-  
+
   test:
     name: PHP testing
     needs: generate-test-matrix
