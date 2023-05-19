@@ -653,7 +653,7 @@ class WC_Payments_Account {
 		$http_referer = sanitize_text_field( wp_unslash( $_SERVER['HTTP_REFERER'] ?? '' ) );
 		if ( 0 < strpos( $http_referer, 'task=payments' ) ) {
 			$this->maybe_redirect_to_treatment_onboarding_page();
-			$this->redirect_to_prototype_onboarding_page();
+			$this->redirect_to_onboarding_flow_page();
 		}
 
 		// Redirect if not connected.
@@ -775,12 +775,12 @@ class WC_Payments_Account {
 			$from_wc_pay_connect_page = false !== strpos( wp_get_referer(), 'path=%2Fpayments%2Fconnect' );
 			if ( ( $from_wc_admin_task || $from_wc_pay_connect_page ) ) {
 				$this->maybe_redirect_to_treatment_onboarding_page();
-				$this->redirect_to_prototype_onboarding_page();
+				$this->redirect_to_onboarding_flow_page();
 			}
 
 			if ( isset( $_GET['wcpay-disable-onboarding-test-mode'] ) ) {
 				WC_Payments_Onboarding_Service::set_test_mode( false );
-				$this->redirect_to_prototype_onboarding_page();
+				$this->redirect_to_onboarding_flow_page();
 				return;
 			}
 
@@ -1588,12 +1588,12 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Redirects to the onboarding prototype page if the feature flag is enabled.
+	 * Redirects to the onboarding flow page if the Progressive Onboarding feature flag is enabled.
 	 * Also checks if the server is connect and try to connect it otherwise.
 	 *
 	 * @return void
 	 */
-	private function redirect_to_prototype_onboarding_page() {
+	private function redirect_to_onboarding_flow_page() {
 		if ( ! WC_Payments_Features::is_progressive_onboarding_enabled() ) {
 			return;
 		}
