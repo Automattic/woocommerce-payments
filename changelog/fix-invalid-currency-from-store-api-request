@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Fix Multi-Currency switcher support in WooPay.
