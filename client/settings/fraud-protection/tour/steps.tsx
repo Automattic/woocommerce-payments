@@ -11,14 +11,18 @@ const enhancedFraudProtectionStep = {
 	},
 	meta: {
 		name: 'enhanced-fraud-protection',
-		heading: __( 'Enhanced fraud protection is here 🔒' ),
+		heading: __(
+			'Enhanced fraud protection is here 🔒',
+			'woocommerce-payments'
+		),
 		descriptions: {
 			desktop: __(
-				'You can now choose a level of protection for screening incoming transactions. Screened transactions are automatically blocked.'
+				'You can now choose a level of protection for screening incoming transactions. Screened transactions will be automatically blocked by your customized fraud filters.',
+				'woocommerce-payments'
 			),
 		},
 		primaryButton: {
-			text: __( "See what's new" ),
+			text: __( "See what's new", 'woocommerce-payments' ),
 		},
 	},
 };
@@ -29,10 +33,11 @@ const chooseYourFilterLevelStep = {
 	},
 	meta: {
 		name: 'choose-your-filter-level',
-		heading: __( 'Choose your filter level 🚦' ),
+		heading: __( 'Choose your filter level 🚦', 'woocommerce-payments' ),
 		descriptions: {
 			desktop: __(
-				"Choose how you'd like to screen incoming transactions using our Basic or Advanced options."
+				"Choose how you'd like to screen incoming transactions using our Basic or Advanced options.",
+				'woocommerce-payments'
 			),
 		},
 	},
@@ -44,10 +49,11 @@ const takeMoreControlStep = {
 	},
 	meta: {
 		name: 'take-more-control',
-		heading: __( 'Take more control 🎚️' ),
+		heading: __( 'Take more control 🎚️', 'woocommerce-payments' ),
 		descriptions: {
 			desktop: __(
-				'Choose Advanced settings for full control over each filter. You can enable and configure filters to block risky transactions.'
+				'Choose Advanced settings for full control over each filter. You can enable and configure filters to block risky transactions.',
+				'woocommerce-payments'
 			),
 		},
 	},
@@ -59,17 +65,21 @@ const readyForReviewStep = {
 	},
 	meta: {
 		name: 'review-blocked-transactions',
-		heading: __( 'Review blocked transactions 📥️' ),
+		heading: __(
+			'Review blocked transactions 📥️',
+			'woocommerce-payments'
+		),
 		descriptions: {
 			desktop: interpolateComponents( {
 				mixedString: __(
-					"Payments that have been blocked by a risk filter will appear under the blocked tab in {{strong}}Payments > Transactions{{/strong}}. We'll let you know why each payment was blocked so you can determine if you need to adjust your risk filters."
+					"Payments that have been blocked by a risk filter will appear under the blocked tab in {{strong}}Payments > Transactions{{/strong}}. We'll let you know why each payment was blocked so you can determine if you need to adjust your risk filters.",
+					'woocommerce-payments'
 				),
 				components: { strong: <strong /> },
 			} ),
 		},
 		primaryButton: {
-			text: __( 'Got it' ),
+			text: __( 'Got it', 'woocommerce-payments' ),
 		},
 	},
 };
