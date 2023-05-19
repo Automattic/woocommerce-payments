@@ -533,8 +533,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		// Cart total is 0 or is on prouct page and product price is 0.
 		if (
-			( 0 === (float) WC()->cart->get_total( 'edit' ) && ! $this->is_product() ) ||
-			( $this->is_product() && 0 === (float) $this->get_product()->get_price() )
+			( 0.0 === (float) WC()->cart->get_total( 'edit' ) && ! $this->is_product() ) ||
+			( $this->is_product() && 0.0 === (float) $this->get_product()->get_price() )
 
 		) {
 			Logger::log( 'Order price is 0 ( Payment Request button disabled )' );
