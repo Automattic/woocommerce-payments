@@ -16,7 +16,7 @@ import BannerNotice from 'wcpay/components/banner-notice';
 jQuery( function ( $ ) {
 	const disableManualRefunds = getConfig( 'disableManualRefunds' ) ?? false;
 	const manualRefundsTip = getConfig( 'manualRefundsTip' ) ?? '';
-	const hasDispute = getConfig( 'hasDispute' ) ?? true; // hardcoded as true for example
+	const hasDispute = getConfig( 'hasDispute' ) ?? false;
 
 	$( '#woocommerce-order-items' ).on(
 		'click',
