@@ -1,4 +1,3 @@
-
 # Handling Dependabot PRs
 We use [Dependabot](https://github.com/Automattic/woocommerce-payments/security/dependabot) to monitor our PHP and JavaScript package dependencies.
 Dependabot will open a PR when an update is available for a package. We can then review the PR, test the change, and
