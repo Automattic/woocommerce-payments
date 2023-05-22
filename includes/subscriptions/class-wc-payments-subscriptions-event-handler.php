@@ -218,7 +218,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 		$subscription     = WC_Payments_Subscription_Service::get_subscription_from_wcpay_subscription_id( $wcpay_subscription_id );
 
 		if ( ! $subscription ) {
-			throw new Invalid_Webhook_Data_Exception( __( 'Cannot find subscription for the incoming "invoice.upcoming" event.', 'woocommerce-payments' ) );
+			throw new Invalid_Webhook_Data_Exception( __( 'Cannot find subscription for the incoming "invoice.payment_failed" event.', 'woocommerce-payments' ) );
 		}
 
 		$order = wc_get_order( WC_Payments_Invoice_Service::get_order_id_by_invoice_id( $wcpay_invoice_id ) );

@@ -105,14 +105,14 @@ class WC_Payments_Subscription_Service {
 	private $is_creating_subscription_from_update_payment_method = false;
 
 	/**
-	 * WC Payments Subscriptions Constructor
+	 * WC Payments Subscriptions Constructor.
+	 *
+	 * Attaches callbacks for managing WC Subscriptions.
 	 *
 	 * @param WC_Payments_API_Client       $api_client       WC payments API Client.
-	 * @param WC_Payments_Customer_Service $customer_service WC payments customer serivce.
+	 * @param WC_Payments_Customer_Service $customer_service WC payments customer service.
 	 * @param WC_Payments_Product_Service  $product_service  WC payments Products service.
 	 * @param WC_Payments_Invoice_Service  $invoice_service  WC payments Invoice service.
-	 *
-	 * @return void
 	 */
 	public function __construct(
 		WC_Payments_API_Client $api_client,
