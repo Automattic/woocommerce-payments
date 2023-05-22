@@ -13,9 +13,8 @@ use WCPay\Core\Server\Request\WooPay_Create_And_Confirm_Intention;
 use WCPay\Core\Server\Request\WooPay_Create_And_Confirm_Setup_Intention;
 use WCPay\Payment\Flags;
 use WCPay\Payment_Information;
-use WCPay\Payment_Process\Order_Payment;
 use WCPay\Payment\Payment;
-use WCPay\Payment_Process\Payment_Method\Saved_Payment_Method;
+use WCPay\Payment\Payment_Method\Saved_Payment_Method;
 
 /**
  * Checkout service class.
@@ -25,8 +24,8 @@ class Checkout_Service {
 	/**
 	 * Create woopay request from base create and confirm request.
 	 *
-	 * @param Request       $base_request Base request.
-	 * @param Order_Payment $payment      Using saved payment method.
+	 * @param Request $base_request Base request.
+	 * @param Payment $payment      Using saved payment method.
 	 *
 	 * @return WooPay_Create_And_Confirm_Intention
 	 * @throws \WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception

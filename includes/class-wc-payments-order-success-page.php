@@ -5,8 +5,7 @@
  * @package WooCommerce\Payments
  */
 
-use WCPay\Payment_Process\Step\Check_Attached_Intent_Success_Step;
-use WCPay\Payment_Process\Step\Check_Session_Against_Processing_Order_Step;
+use WCPay\Payment\Duplicate_Payment_Prevention_Service;
 
 /**
  * Class handling order success page.
@@ -81,7 +80,7 @@ class WC_Payments_Order_Success_Page {
 	 * @return string
 	 */
 	public function add_notice_previous_paid_order( $text ) {
-		if ( isset( $_GET[ Check_Session_Against_Processing_Order_Step::FLAG_PREVIOUS_ORDER_PAID ] ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_GET[ Duplicate_Payment_Prevention_Service::FLAG_PREVIOUS_ORDER_PAID ] ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
 			$text .= sprintf(
 				'<div class="woocommerce-info">%s</div>',
 				esc_attr__( 'We detected and prevented an attempt to pay for a duplicate order. If this was a mistake and you wish to try again, please create a new order.', 'woocommerce-payments' )
@@ -99,7 +98,7 @@ class WC_Payments_Order_Success_Page {
 	 * @return string
 	 */
 	public function add_notice_previous_successful_intent( $text ) {
-		if ( isset( $_GET[ Check_Attached_Intent_Success_Step::FLAG_PREVIOUS_SUCCESSFUL_INTENT ] ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_GET[ Duplicate_Payment_Prevention_Service::FLAG_PREVIOUS_SUCCESSFUL_INTENT ] ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
 			$text .= sprintf(
 				'<div class="woocommerce-info">%s</div>',
 				esc_attr__( 'We prevented multiple payments for the same order. If this was a mistake and you wish to try again, please create a new order.', 'woocommerce-payments' )
