@@ -31,13 +31,19 @@ jest.mock( '@woocommerce/experimental', () => {
 		Text: () => <div>text</div>,
 	};
 } );
-jest.mock( '@woocommerce/navigation', () => ( { getQuery: jest.fn() } ) );
+jest.mock( '@woocommerce/navigation', () => ( {
+	getQuery: jest.fn(),
+	addHistoryListener: jest.fn(),
+} ) );
 
 jest.mock( '@wordpress/data', () => ( {
 	registerStore: jest.fn(),
 	combineReducers: jest.fn(),
 	useDispatch: jest.fn( () => ( { updateOptions: jest.fn() } ) ),
-	dispatch: jest.fn( () => ( { setIsMatching: jest.fn() } ) ),
+	dispatch: jest.fn( () => ( {
+		setIsMatching: jest.fn(),
+		onLoad: jest.fn(),
+	} ) ),
 	withDispatch: jest.fn( () => jest.fn() ),
 	createRegistryControl: jest.fn(),
 	select: jest.fn(),
@@ -49,6 +55,9 @@ jest.mock( 'wcpay/data', () => ( {
 	useSettings: jest.fn().mockReturnValue( {
 		settings: { enabled_payment_method_ids: [ 'foo', 'bar' ] },
 	} ),
+	useDeposits: jest
+		.fn()
+		.mockReturnValue( { deposits: [], isLoading: false } ),
 	useAllDepositsOverviews: jest
 		.fn()
 		.mockReturnValue( { overviews: { currencies: [] } } ),
@@ -93,7 +102,6 @@ describe( 'Overview page', () => {
 				accountOverviewTaskList: true,
 			},
 			accountLoans: {},
-			isFraudProtectionSettingsEnabled: true,
 			frtDiscoverBannerSettings: JSON.stringify( {
 				remindMeCount: 0,
 				remindMeAt: null,
@@ -293,20 +301,7 @@ describe( 'Overview page', () => {
 		} );
 	} );
 
-	it( 'does not render FRTDiscoverabilityBanner if feature flag option is false', () => {
-		global.wcpaySettings = {
-			...global.wcpaySettings,
-			isFraudProtectionSettingsEnabled: false,
-		};
-
-		render( <OverviewPage /> );
-
-		expect(
-			screen.queryByText( 'Enhanced fraud protection for your store' )
-		).not.toBeInTheDocument();
-	} );
-
-	it( 'renders FRTDiscoverabilityBanner if feature flag option is true', () => {
+	it( 'renders FRTDiscoverabilityBanner', () => {
 		render( <OverviewPage /> );
 
 		expect(
@@ -338,5 +333,45 @@ describe( 'Overview page', () => {
 		expect(
 			screen.queryByText( 'Ready to setup real payments on your store?' )
 		).not.toBeInTheDocument();
+	} );
+
+	it( 'displays ProgressiveOnboardingEligibilityModal if showProgressiveOnboardingEligibilityModal is true', () => {
+		getQuery.mockReturnValue( { 'wcpay-connection-success': '1' } );
+
+		global.wcpaySettings.accountStatus.progressiveOnboarding.isEnabled = true;
+
+		render( <OverviewPage /> );
+
+		expect(
+			screen.getByText(
+				'You’re eligible to start selling now and fast-track the setup process.'
+			)
+		).toBeInTheDocument();
+	} );
+
+	it( 'does not displays ProgressiveOnboardingEligibilityModal if showProgressiveOnboardingEligibilityModal is false', () => {
+		const query = () =>
+			screen.queryByText(
+				'You’re eligible to start selling now and fast-track the setup process.'
+			);
+
+		render( <OverviewPage /> );
+
+		expect( query() ).not.toBeInTheDocument();
+
+		getQuery.mockReturnValue( { 'wcpay-connection-success': '1' } );
+
+		render( <OverviewPage /> );
+
+		expect( query() ).not.toBeInTheDocument();
+
+		global.wcpaySettings.accountStatus.progressiveOnboarding = {
+			isEnabled: true,
+			isComplete: true,
+		};
+
+		render( <OverviewPage /> );
+
+		expect( query() ).not.toBeInTheDocument();
 	} );
 } );

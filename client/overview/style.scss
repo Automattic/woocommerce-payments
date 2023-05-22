@@ -134,18 +134,17 @@
 
 	.components-modal__header {
 		position: initial;
-		height: initial;
 		padding: 0;
 		border: 0;
 
 		h1 {
-			@include title-small;
+			@include wp-title-small;
 			margin-bottom: $gap-smaller;
 		}
 	}
 
 	&__title {
-		@include title-small;
+		@include wp-title-small;
 	}
 
 	&__headline {

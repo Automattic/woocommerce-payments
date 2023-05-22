@@ -62,12 +62,12 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'callback'            => [ $this, 'update_settings' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
-					'is_wcpay_enabled'                    => [
+					'is_wcpay_enabled'                  => [
 						'description'       => __( 'If WooCommerce Payments should be enabled.', 'woocommerce-payments' ),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'enabled_payment_method_ids'          => [
+					'enabled_payment_method_ids'        => [
 						'description'       => __( 'Payment method IDs that should be enabled. Other methods will be disabled.', 'woocommerce-payments' ),
 						'type'              => 'array',
 						'items'             => [
@@ -76,93 +76,93 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						],
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'is_manual_capture_enabled'           => [
+					'is_manual_capture_enabled'         => [
 						'description'       => __( 'If WooCommerce Payments manual capture of charges should be enabled.', 'woocommerce-payments' ),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'is_saved_cards_enabled'              => [
+					'is_saved_cards_enabled'            => [
 						'description'       => __( 'If WooCommerce Payments "Saved cards" should be enabled.', 'woocommerce-payments' ),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'is_test_mode_enabled'                => [
+					'is_test_mode_enabled'              => [
 						'description'       => __( 'WooCommerce Payments test mode setting.', 'woocommerce-payments' ),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'is_multi_currency_enabled'           => [
+					'is_multi_currency_enabled'         => [
 						'description'       => __( 'WooCommerce Payments Multi-Currency feature flag setting.', 'woocommerce-payments' ),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'is_wcpay_subscription_enabled'       => [
+					'is_wcpay_subscription_enabled'     => [
 						'description'       => __( 'WooCommerce Payments Subscriptions feature flag setting.', 'woocommerce-payments' ),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'account_statement_descriptor'        => [
+					'account_statement_descriptor'      => [
 						'description'       => __( 'WooCommerce Payments bank account descriptor to be displayed in customers\' bank accounts.', 'woocommerce-payments' ),
 						'type'              => 'string',
 						'validate_callback' => [ $this, 'validate_statement_descriptor' ],
 					],
-					'account_business_name'               => [
+					'account_business_name'             => [
 						'description' => __( 'The customer-facing business name.', 'woocommerce-payments' ),
 						'type'        => 'string',
 					],
-					'account_business_url'                => [
+					'account_business_url'              => [
 						'description' => __( 'The business’s publicly available website.', 'woocommerce-payments' ),
 						'type'        => 'string',
 					],
-					'account_business_support_address'    => [
+					'account_business_support_address'  => [
 						'description'       => __( 'A publicly available mailing address for sending support issues to.', 'woocommerce-payments' ),
 						'type'              => 'object',
 						'validate_callback' => [ $this, 'validate_business_support_address' ],
 					],
-					'account_business_support_email'      => [
+					'account_business_support_email'    => [
 						'description'       => __( 'A publicly available email address for sending support issues to.', 'woocommerce-payments' ),
 						'type'              => 'string',
 						'validate_callback' => [ $this, 'validate_business_support_email_address' ],
 					],
-					'account_business_support_phone'      => [
+					'account_business_support_phone'    => [
 						'description'       => __( 'A publicly available phone number to call with support issues.', 'woocommerce-payments' ),
 						'type'              => 'string',
 						'validate_callback' => [ $this, 'validate_business_support_phone' ],
 					],
-					'account_branding_logo'               => [
+					'account_branding_logo'             => [
 						'description' => __( 'A logo id for the account that will be used in Checkout', 'woocommerce-payments' ),
 						'type'        => 'string',
 					],
-					'account_branding_icon'               => [
+					'account_branding_icon'             => [
 						'description' => __( 'An icon for the account.', 'woocommerce-payments' ),
 						'type'        => 'string',
 					],
-					'account_branding_primary_color'      => [
+					'account_branding_primary_color'    => [
 						'description' => __( 'A CSS hex color value representing the primary branding color for this account.', 'woocommerce-payments' ),
 						'type'        => 'string',
 					],
-					'account_branding_secondary_color'    => [
+					'account_branding_secondary_color'  => [
 						'description' => __( 'A CSS hex color value representing the secondary branding color for this account.', 'woocommerce-payments' ),
 						'type'        => 'string',
 					],
-					'deposit_schedule_interval'           => [
+					'deposit_schedule_interval'         => [
 						'description' => __( 'An interval for deposit scheduling.', 'woocommerce-payments' ),
 						'type'        => 'string',
 					],
-					'deposit_schedule_weekly_anchor'      => [
+					'deposit_schedule_weekly_anchor'    => [
 						'description' => __( 'Weekly anchor for deposit scheduling when interval is set to weekly', 'woocommerce-payments' ),
 						'type'        => 'string',
 					],
-					'deposit_schedule_monthly_anchor'     => [
+					'deposit_schedule_monthly_anchor'   => [
 						'description' => __( 'Monthly anchor for deposit scheduling when interval is set to monthly', 'woocommerce-payments' ),
 						'type'        => [ 'integer', 'null' ],
 					],
-					'is_payment_request_enabled'          => [
+					'is_payment_request_enabled'        => [
 						'description'       => __( 'If WooCommerce Payments express checkouts should be enabled.', 'woocommerce-payments' ),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'payment_request_enabled_locations'   => [
+					'payment_request_enabled_locations' => [
 						'description'       => __( 'Express checkout locations that should be enabled.', 'woocommerce-payments' ),
 						'type'              => 'array',
 						'items'             => [
@@ -171,7 +171,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						],
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'payment_request_button_type'         => [
+					'payment_request_button_type'       => [
 						'description'       => __( '1-click checkout button types.', 'woocommerce-payments' ),
 						'type'              => 'string',
 						'items'             => [
@@ -180,7 +180,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						],
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'payment_request_button_size'         => [
+					'payment_request_button_size'       => [
 						'description'       => __( '1-click checkout button sizes.', 'woocommerce-payments' ),
 						'type'              => 'string',
 						'items'             => [
@@ -190,7 +190,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						],
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'payment_request_button_theme'        => [
+					'payment_request_button_theme'      => [
 						'description'       => __( '1-click checkout button themes.', 'woocommerce-payments' ),
 						'type'              => 'string',
 						'items'             => [
@@ -199,22 +199,22 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						],
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'is_platform_checkout_enabled'        => [
+					'is_woopay_enabled'                 => [
 						'description'       => __( 'If WooPay should be enabled.', 'woocommerce-payments' ),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'platform_checkout_custom_message'    => [
+					'woopay_custom_message'             => [
 						'description'       => __( 'Custom message to display to WooPay customers.', 'woocommerce-payments' ),
 						'type'              => 'string',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'platform_checkout_store_logo'        => [
+					'woopay_store_logo'                 => [
 						'description'       => __( 'Store logo to display to WooPay customers.', 'woocommerce-payments' ),
 						'type'              => 'string',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'platform_checkout_enabled_locations' => [
+					'woopay_enabled_locations'          => [
 						'description'       => __( 'Express checkout locations that should be enabled.', 'woocommerce-payments' ),
 						'type'              => 'array',
 						'items'             => [
@@ -384,10 +384,10 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'payment_request_button_theme'        => $this->wcpay_gateway->get_option( 'payment_request_button_theme' ),
 				'is_saved_cards_enabled'              => $this->wcpay_gateway->is_saved_cards_enabled(),
 				'is_card_present_eligible'            => $this->wcpay_gateway->is_card_present_eligible(),
-				'is_platform_checkout_enabled'        => 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),
-				'platform_checkout_custom_message'    => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),
-				'platform_checkout_store_logo'        => $this->wcpay_gateway->get_option( 'platform_checkout_store_logo' ),
-				'platform_checkout_enabled_locations' => $this->wcpay_gateway->get_option( 'platform_checkout_button_locations', [] ),
+				'is_woopay_enabled'                   => 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),
+				'woopay_custom_message'               => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),
+				'woopay_store_logo'                   => $this->wcpay_gateway->get_option( 'platform_checkout_store_logo' ),
+				'woopay_enabled_locations'            => $this->wcpay_gateway->get_option( 'platform_checkout_button_locations', [] ),
 				'deposit_schedule_interval'           => $this->wcpay_gateway->get_option( 'deposit_schedule_interval' ),
 				'deposit_schedule_monthly_anchor'     => $this->wcpay_gateway->get_option( 'deposit_schedule_monthly_anchor' ),
 				'deposit_schedule_weekly_anchor'      => $this->wcpay_gateway->get_option( 'deposit_schedule_weekly_anchor' ),
@@ -419,10 +419,10 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_payment_request_appearance( $request );
 		$this->update_is_saved_cards_enabled( $request );
 		$this->update_account( $request );
-		$this->update_is_platform_checkout_enabled( $request );
-		$this->update_platform_checkout_store_logo( $request );
-		$this->update_platform_checkout_custom_message( $request );
-		$this->update_platform_checkout_enabled_locations( $request );
+		$this->update_is_woopay_enabled( $request );
+		$this->update_woopay_store_logo( $request );
+		$this->update_woopay_custom_message( $request );
+		$this->update_woopay_enabled_locations( $request );
 		// Note: Both "current_protection_level" and "advanced_fraud_protection_settings"
 		// are handled in the below method.
 		$this->update_fraud_protection_settings( $request );
@@ -691,48 +691,48 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Updates the "platform checkout" enable/disable settings.
+	 * Updates the "woopay" enable/disable settings.
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 */
-	private function update_is_platform_checkout_enabled( WP_REST_Request $request ) {
-		if ( ! $request->has_param( 'is_platform_checkout_enabled' ) ) {
+	private function update_is_woopay_enabled( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'is_woopay_enabled' ) ) {
 			return;
 		}
 
-		$is_platform_checkout_enabled = $request->get_param( 'is_platform_checkout_enabled' );
+		$is_woopay_enabled = $request->get_param( 'is_woopay_enabled' );
 
-		$this->wcpay_gateway->update_is_platform_checkout_enabled( $is_platform_checkout_enabled );
+		$this->wcpay_gateway->update_is_woopay_enabled( $is_woopay_enabled );
 	}
 
 	/**
-	 * Updates the custom message that will appear for platform checkout customers.
+	 * Updates the custom message that will appear for woopay customers.
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 */
-	private function update_platform_checkout_custom_message( WP_REST_Request $request ) {
-		if ( ! $request->has_param( 'platform_checkout_custom_message' ) ) {
+	private function update_woopay_custom_message( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'woopay_custom_message' ) ) {
 			return;
 		}
 
-		$platform_checkout_custom_message = $request->get_param( 'platform_checkout_custom_message' );
+		$woopay_custom_message = $request->get_param( 'woopay_custom_message' );
 
-		$this->wcpay_gateway->update_option( 'platform_checkout_custom_message', $platform_checkout_custom_message );
+		$this->wcpay_gateway->update_option( 'platform_checkout_custom_message', $woopay_custom_message );
 	}
 
 	/**
-	 * Updates the store logo that will appear for platform checkout customers.
+	 * Updates the store logo that will appear for woopay customers.
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 */
-	private function update_platform_checkout_store_logo( WP_REST_Request $request ) {
-		if ( ! $request->has_param( 'platform_checkout_store_logo' ) ) {
+	private function update_woopay_store_logo( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'woopay_store_logo' ) ) {
 			return;
 		}
 
-		$platform_checkout_store_logo = $request->get_param( 'platform_checkout_store_logo' );
+		$woopay_store_logo = $request->get_param( 'woopay_store_logo' );
 
-		$this->wcpay_gateway->update_option( 'platform_checkout_store_logo', $platform_checkout_store_logo );
+		$this->wcpay_gateway->update_option( 'platform_checkout_store_logo', $woopay_store_logo );
 	}
 
 	/**
@@ -740,14 +740,14 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 */
-	private function update_platform_checkout_enabled_locations( WP_REST_Request $request ) {
-		if ( ! $request->has_param( 'platform_checkout_enabled_locations' ) ) {
+	private function update_woopay_enabled_locations( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'woopay_enabled_locations' ) ) {
 			return;
 		}
 
-		$platform_checkout_enabled_locations = $request->get_param( 'platform_checkout_enabled_locations' );
+		$woopay_enabled_locations = $request->get_param( 'woopay_enabled_locations' );
 
-		$this->wcpay_gateway->update_option( 'platform_checkout_button_locations', $platform_checkout_enabled_locations );
+		$this->wcpay_gateway->update_option( 'platform_checkout_button_locations', $woopay_enabled_locations );
 	}
 
 	/**
@@ -756,10 +756,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Request object.
 	 */
 	private function update_fraud_protection_settings( WP_REST_Request $request ) {
-		if ( ! WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
-			return;
-		}
-
 		if ( ! $request->has_param( 'current_protection_level' ) || ! $request->has_param( 'advanced_fraud_protection_settings' ) ) {
 			return;
 		}
@@ -799,10 +795,34 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->api_client->save_fraud_ruleset( $ruleset_config );
 
 		// Update local cache.
+		$this->wcpay_gateway->update_cached_account_data(
+			'fraud_mitigation_settings',
+			[ 'avs_check_enabled' => $this->get_avs_check_enabled( $ruleset_config ) ]
+		);
 		delete_transient( 'wcpay_fraud_protection_settings' );
 		set_transient( 'wcpay_fraud_protection_settings', $ruleset_config, 1 * DAY_IN_SECONDS );
 
 		// Update the option only when server update succeeds.
 		update_option( 'current_protection_level', $protection_level );
+	}
+
+	/**
+	 * Get the AVS check enabled status from the ruleset config.
+	 *
+	 * @param array $ruleset_config The ruleset config.
+	 *
+	 * @return bool
+	 */
+	private function get_avs_check_enabled( array $ruleset_config ) {
+		$avs_check_enabled = false;
+
+		foreach ( $ruleset_config as $rule_definition ) {
+			if ( 'avs_verification' === $rule_definition['key'] ) {
+				$avs_check_enabled = true;
+				break;
+			}
+		}
+
+		return $avs_check_enabled;
 	}
 }

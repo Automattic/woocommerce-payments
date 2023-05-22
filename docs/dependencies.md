@@ -16,10 +16,10 @@ to catalog our packages and provide guidance to a developer who wants to test an
   minimum supported versions of [WordPress](https://github.com/WordPress/wordpress-develop/blob/x.y.z/package.json) and [WooCommerce](https://github.com/woocommerce/woocommerce/blob/x.y.z/plugins/woocommerce/package.json) (replace `x.y.z` by the minimum supported version in the link), giving us the best chance of catching any issues with the bundled
   packages early.
 * Following on from above, we use the `@woocommerce/dependency-extraction-webpack-plugin` to make WebPack aware of what
-  can be found globally at runtime. The configuration for this can be found in 
-  [`webpack.config.js`](https://github.com/Automattic/woocommerce-payments/blob/develop/webpack.config.js). Any `wordpress/*`, `woocommerce/*` 
-  and [some other packages](https://www.npmjs.com/package/@woocommerce/dependency-extraction-webpack-plugin) are removed from 
-  the built bundle by default, in addition to any packages listed in the configuration file. Returning `null` in the configuration 
+  can be found globally at runtime. The configuration for this can be found in
+  [`webpack.config.js`](https://github.com/Automattic/woocommerce-payments/blob/develop/webpack.config.js). Any `wordpress/*`, `woocommerce/*`
+  and [some other packages](https://www.npmjs.com/package/@woocommerce/dependency-extraction-webpack-plugin) are removed from
+  the built bundle by default, in addition to any packages listed in the configuration file. Returning `null` in the configuration
   indicates that we want to bundle the package rather than using the globally available one.
 
 ## Review Process
@@ -47,6 +47,28 @@ to catalog our packages and provide guidance to a developer who wants to test an
 | [@wordpress/url](https://www.npmjs.com/package/@wordpress/url) | A collection of utilities to manipulate URLs.| JS unit tests are passing| |
 | [@wordpress/data](https://www.npmjs.com/package/@wordpress/data) | It serves as a hub to manage application state for both plugins and WordPress itself, providing tools to manage data within and between distinct modules.| JS unit tests are passing| |
 | [@wordpress/i18n](https://www.npmjs.com/package/@wordpress/i18n) | Internationalization utilities for client-side localization.| JS unit tests are passing. | The `wpi18n` used in `postbuild:client` script comes from `node-wp-i18n` and is thus separate from this. |
+| [@wordpress/date](https://www.npmjs.com/package/@wordpress/date) | Date module for WordPress.| JS unit tests are passing| From v4.6.0, the `TZ` env var from the Jest global setup is not taken into account anymore, hence unit tests fail. |
+| [@wordpress/api-fetch](https://www.npmjs.com/package/@wordpress/api-fetch) | Utility to make WordPress REST API requests. | JS unit tests are passing. | |
+| [@woocommerce/date](https://www.npmjs.com/package/@woocommerce/date) | A collection of utilities to display and work with date values. | JS unit tests are passing. | Though there is no direct use of this package, it is used by [jest-test-file-setup.js](https://github.com/Automattic/woocommerce-payments/blob/b64178138d44d3bd3aa2a692d1c84e4d91e521b9/tests/js/jest-test-file-setup.js#L25)  |
+| [@wordpress/hooks](https://www.npmjs.com/package/@wordpress/hooks) | A lightweight & efficient EventManager for JavaScript.| JS unit tests are passing| |
+| [@wordpress/plugins](https://www.npmjs.com/package/@wordpress/plugins) | Plugins module for WordPress.| JS unit tests are passing| |
+| [@wordpress/icons](https://www.npmjs.com/package/@wordpress/icons) | WordPress Icons Library. | JS unit tests are passing and UI isn't affected at places of usage. | Only case in current usage where a `@wordpress/x` doesn't come from WordPress directly. |
+| [@wordpress/element](https://www.npmjs.com/package/@wordpress/element) | An abstraction layer atop React. | JS unit tests are passing. | Removed [@types/wordpress__element](https://www.npmjs.com/package/@types/wordpress__element) since @wordpress/element has built-in types |
+| [@wordpress/scripts](https://www.npmjs.com/package/@wordpress/scripts) | Collection of reusable scripts tailored for WordPress development. | JS tests and E2E pipeline works, which uses `wp-scripts` | `>=20` requires `jest >=27`, we're currently at `v26.x` so updated to  `v19.2.3`  |
+| [@woocommerce/explat](https://www.npmjs.com/package/@woocommerce/explat/) | Component and utility functions that can be used to run A/B Tests in WooCommerce dashboard and reports pages. | JS unit tests are passing | After update ensure types are still correct for `ExperimentProps`, or use a DefinitelyTyped package if available.  |
+| [@woocommerce/experimental](https://www.npmjs.com/package/@wordpress/plugins) | A collection of component imports and exports that are aliases for components transitioning from experimental to non-experimental.| JS unit tests are passing| Needed to install `@types/react-transition-group` as JS linting could not find a declaration file for module `react-transition-group/CSSTransition`. |
+| [@wordpress/dom-ready](https://www.npmjs.com/package/@wordpress/dom-ready) | Execute callback after the DOM is loaded.| JS unit tests are passing. ||
+| [@wordpress/html-entities](https://www.npmjs.com/package/@wordpress/html-entities) | HTML entity utilities for WordPress. | JS unit tests are passing. ||
+| [@wordpress/blocks](https://www.npmjs.com/package/@wordpress/blocks) | Blocks utilities for WordPress. | JS unit tests are passing. ||
+| [@wordpress/block-editor](https://www.npmjs.com/package/@wordpress/block-editor) | Allows you to create and use standalone block editors. | JS unit tests are passing. ||
+| [@wordpress/jest-preset-default](https://www.npmjs.com/package/@wordpress/jest-preset-default) | Default Jest preset for WordPress development. | JS unit tests are passing. ||
+| [@wordpress/babel-plugin-makepot](https://www.npmjs.com/package/@wordpress/babel-plugin-makepot) | Babel plugin used to scan JavaScript files for use of localization functions. | Ensure `languages/woocommerce-payments.pot` is created correctly on building release. ||
+| [@wordpress/base-styles](https://www.npmjs.com/package/@wordpress/base-styles) | Base SCSS utilities and variables for WordPress.| JS unit tests are passing. ||
+| [@wordpress/data-controls](https://www.npmjs.com/package/@wordpress/data-controls) | The data controls module is a module intended to simplify implementation of common controls used with the `@wordpress/data` package.| JS unit tests are passing| |
+| [react](https://www.npmjs.com/package/react) | JavaScript library for creating user interfaces. | JS unit tests are passing. ||
+| [react-dom](https://www.npmjs.com/package/react-dom) | Serves as the entry point to the DOM and server renderers for React. | JS unit tests are passing. ||
+| [@types/react](https://www.npmjs.com/package/@types/react) |  Contains type definitions for React. | JS unit tests are passing. ||
+
 
 ### PHP Runtime Dependencies
 | Package Name | Usage Summary | Testing | Notes |
