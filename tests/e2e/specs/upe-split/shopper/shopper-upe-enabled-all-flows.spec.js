@@ -34,6 +34,7 @@ describe( 'Enabled Split UPE', () => {
 		await shopperWCP.changeAccountCurrencyTo( 'USD' );
 		await shopperWCP.logout();
 		await merchant.login();
+		await merchantWCP.disablePaymentMethod( upeMethodCheckboxes );
 		await merchantWCP.deactivateSplitUpe();
 		await merchant.logout();
 	} );
