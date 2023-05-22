@@ -287,7 +287,7 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether the BNLP Affirm Afterpay is enabled.
+	 * Checks whether the BNPL Affirm Afterpay is enabled.
 	 */
 	public static function is_bnpl_affirm_afterpay_enabled(): bool {
 		$account = WC_Payments::get_account_service()->get_cached_account_data();
