@@ -106,7 +106,9 @@ exports[`Deposits Overview information Component Renders 1`] = `
           class="components-flex__item wcpay-deposits-overview__table__cell css-1s295sp-Item eboqfv51"
         >
           <span
-            class="woocommerce-pill css-1qmnemh-Text e15wbhsk0"
+            class="components-truncate components-text woocommerce-pill wcpay-pill__light css-1g4vivm-View-Text-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="Text"
           >
             Estimated
           </span>
@@ -200,7 +202,9 @@ exports[`Deposits Overview information Component Renders 1`] = `
           class="components-flex__item wcpay-deposits-overview__table__cell css-1s295sp-Item eboqfv51"
         >
           <span
-            class="woocommerce-pill css-1qmnemh-Text e15wbhsk0"
+            class="components-truncate components-text woocommerce-pill wcpay-pill__success css-1g4vivm-View-Text-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="Text"
           >
             Paid
           </span>
@@ -239,7 +243,9 @@ exports[`Deposits Overview information Component Renders 1`] = `
           class="components-flex__item wcpay-deposits-overview__table__cell css-1s295sp-Item eboqfv51"
         >
           <span
-            class="woocommerce-pill css-1qmnemh-Text e15wbhsk0"
+            class="components-truncate components-text woocommerce-pill wcpay-pill__alert css-1g4vivm-View-Text-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="Text"
           >
             Pending
           </span>

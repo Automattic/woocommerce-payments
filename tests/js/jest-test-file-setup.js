@@ -31,6 +31,21 @@ global.window.wcTracks = {
 	recordEvent: () => null,
 };
 
+// Can be removed once a new version of @wordpress/jest-preset-default include it ( >= 10.1.0 )
+global.window.matchMedia = () => ( {
+	matches: false,
+	addListener: () => {},
+	addEventListener: () => {},
+	removeListener: () => {},
+	removeEventListener: () => {},
+} );
+
+global.window.ResizeObserver = jest.fn().mockImplementation( () => ( {
+	observe: jest.fn(),
+	unobserve: jest.fn(),
+	disconnect: jest.fn(),
+} ) );
+
 wordPressPackages.forEach( ( lib ) => {
 	Object.defineProperty( global.wp, lib, {
 		get: () => require( `@wordpress/${ lib }` ),
