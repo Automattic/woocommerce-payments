@@ -333,7 +333,8 @@ class WC_Payments_Product_Service {
 	 *
 	 * @param int $post_id The ID of the post to handle. Only subscription product IDs will be archived in WC Pay.
 	 */
-	public function maybe_archive_product( int $post_id ) { // Non-product `wc_get_product` calls throw exceptions, check for product first.
+	public function maybe_archive_product( int $post_id ) {
+		// Non-product `wc_get_product` calls throw exceptions, check for product first.
 		$post = get_post( $post_id ); // No redundant calls, this will be cached.
 		if ( 'product' !== $post->post_type ) {
 			return;
