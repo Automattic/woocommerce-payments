@@ -106,6 +106,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		if ( ! is_admin() ) {
 			add_filter( 'woocommerce_gateway_title', [ $this, 'maybe_filter_gateway_title' ], 10, 2 );
 		}
+		add_action( 'woocommerce_email_before_order_table', [ $this, 'set_payment_method_title_for_email' ], 10, 3 );
 	}
 
 	/**
@@ -1069,6 +1070,20 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			}
 		}
 		return $title;
+	}
+
+	/**
+	 * Sets the payment method title on the order for emails.
+	 *
+	 * @param WC_Order $order   WC Order object.
+	 * @param bool     $sent_to_admin Whether the email is being sent to the admin or not.
+	 * @param bool     $plain_text Whether the email is being sent as plain text or not.
+	 */
+	public function set_payment_method_title_for_email( $order, $sent_to_admin, $plain_text = false ) {
+		$payment_method_id      = $this->order_service->get_payment_method_id_for_order( $order );
+		$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
+		$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : null;
+		$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 	}
 
 	/**
