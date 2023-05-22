@@ -81,6 +81,17 @@ class WC_Payments_Product_Service {
 	public function __construct( WC_Payments_API_Client $payments_api_client ) {
 		$this->payments_api_client = $payments_api_client;
 
+		/**
+		 * When a store is in staging mode, we don't want any product handling to be sent to the server.
+		 *
+		 * Sending these requests from staging sites can have unintended consequences for the live store. For example,
+		 * changing a subscription product's name would update the product at Stripe which is used for live subscription
+		 * on the live site.
+		 */
+		if ( WCS_Staging::is_duplicate_site() ) {
+			return;
+		}
+
 		add_action( 'shutdown', [ $this, 'create_or_update_products' ] );
 		add_action( 'wp_trash_post', [ $this, 'maybe_archive_product' ] );
 		add_action( 'untrashed_post', [ $this, 'maybe_unarchive_product' ] );

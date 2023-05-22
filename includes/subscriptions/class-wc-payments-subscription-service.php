@@ -120,6 +120,18 @@ class WC_Payments_Subscription_Service {
 		WC_Payments_Product_Service $product_service,
 		WC_Payments_Invoice_Service $invoice_service
 	) {
+
+		/**
+		 * When a store is in staging mode, we don't want any updates or subscription purchases to be sent to the server.
+		 *
+		 * Sending these requests from staging sites can have unintended consequences on the live store. For example,
+		 * Subscriptions which renew on the staging site will lead to paused subscriptions at Stripe and result in
+		 * missed renewal payments.
+		 */
+		if ( WCS_Staging::is_duplicate_site() ) {
+			return;
+		}
+
 		$this->payments_api_client = $api_client;
 		$this->customer_service    = $customer_service;
 		$this->product_service     = $product_service;
@@ -247,12 +259,15 @@ class WC_Payments_Subscription_Service {
 	/**
 	 * Determines if a given WC subscription is a WCPay subscription.
 	 *
+	 * On duplicate sites (staging or dev environments) all WCPay Subscrptions are disabled and so return false.
+	 * This is to avoid dev environments interacting with WCPay Subscriptions and communicating on behalf of the live store.
+	 *
 	 * @param WC_Subscription $subscription WC Subscription object.
 	 *
 	 * @return bool
 	 */
 	public static function is_wcpay_subscription( WC_Subscription $subscription ) : bool {
-		return WC_Payment_Gateway_WCPay::GATEWAY_ID === $subscription->get_payment_method() && (bool) self::get_wcpay_subscription_id( $subscription );
+		return ! WCS_Staging::is_duplicate_site() && WC_Payment_Gateway_WCPay::GATEWAY_ID === $subscription->get_payment_method() && (bool) self::get_wcpay_subscription_id( $subscription );
 	}
 
 	/**

@@ -556,7 +556,7 @@ class WC_Payments {
 			}
 		}
 
-		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() && ! WCS_Staging::is_duplicate_site() ) {
+		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
 			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
 			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account );
 		}
