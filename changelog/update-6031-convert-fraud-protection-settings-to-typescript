@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Convert fraud protection settings related JavaScript files to TypeScript.
