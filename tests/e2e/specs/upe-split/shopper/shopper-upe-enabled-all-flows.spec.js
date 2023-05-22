@@ -11,7 +11,7 @@ import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
 const { shopper, merchant, uiUnblocked } = require( '@woocommerce/e2e-utils' );
 
 const MIN_WAIT_TIME_BETWEEN_PAYMENT_METHODS = 20000;
-const upeMethodCheckboxes = [
+const UPE_METHOD_CHECKBOXES = [
 	'#inspector-checkbox-control-3', // bancontact
 	'#inspector-checkbox-control-4', // eps
 	'#inspector-checkbox-control-5', // giropay
@@ -24,7 +24,7 @@ describe( 'Enabled Split UPE', () => {
 	beforeAll( async () => {
 		await merchant.login();
 		await merchantWCP.activateSplitUpe();
-		await merchantWCP.enablePaymentMethod( upeMethodCheckboxes );
+		await merchantWCP.enablePaymentMethod( UPE_METHOD_CHECKBOXES );
 		await merchant.logout();
 		await shopper.login();
 		await shopperWCP.changeAccountCurrencyTo( 'EUR' );
@@ -34,7 +34,7 @@ describe( 'Enabled Split UPE', () => {
 		await shopperWCP.changeAccountCurrencyTo( 'USD' );
 		await shopperWCP.logout();
 		await merchant.login();
-		await merchantWCP.disablePaymentMethod( upeMethodCheckboxes );
+		await merchantWCP.disablePaymentMethod( UPE_METHOD_CHECKBOXES );
 		await merchantWCP.deactivateSplitUpe();
 		await merchant.logout();
 	} );
