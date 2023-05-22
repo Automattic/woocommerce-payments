@@ -21,6 +21,7 @@ use WCPay\Payment\Loader;
 use WCPay\Payment\Flags;
 use WCPay\Payment\Payment_Method\New_Payment_Method;
 use WCPay\Payment\Payment_Method\Saved_Payment_Method;
+use WCPay\Payment\Payment_Service;
 use WCPay\Payment\State\Authentication_Required_State;
 use WCPay\Payment\State\Failed_Preparation_State;
 use WCPay\Payment\State\Processing_Failed_State;
@@ -297,24 +298,6 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		return $payment_information;
 	}
 
-	protected function maybe_prepare_subscription_payment( $payment, $order ) {
-		if ( ! $this->is_payment_recurring( $order ) ) {
-			return;
-		}
-
-		// Subs-specific behavior starts here.
-		$payment->set_flag( Flags::RECURRING );
-
-		// The payment method is always saved for subscriptions, unless already saved.
-		if ( $payment->get_payment_method() instanceof New_Payment_Method ) {
-			$payment->set_flag( Flags::SAVE_PAYMENT_METHOD_TO_STORE );
-		}
-
-		if ( $this->is_changing_payment_method_for_subscription() ) {
-			$payment->set_flag( Flags::CHANGING_SUBSCRIPTION_PAYMENT_METHOD );
-		}
-	}
-
 	/**
 	 * Process a scheduled subscription payment.
 	 *
@@ -336,30 +319,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		}
 
 		try {
-			$loader  = new Loader();
-			$payment = $loader->create_payment( $renewal_order );
-			$payment->set_flag( Flags::RECURRING );
-			$payment->set_flag( Flags::MERCHANT_INITIATED );
-
-			// Prepare all needed data in advance.
-			$payment->prepare();
-			if ( $payment->get_state() instanceof Failed_Preparation_State ) {
-				return $payment->get_response();
-			}
-
-			// Verify that we can proceed with the payment process.
-			$payment->verify( new Saved_Payment_Method( $token ), '' );
-
-			// Unless the payment is already processed, do it.
-			$payment->process( new Subscription_Renewal_Strategy( '' ) );
-
-			// If processing failed, or authentication is required, we should not proceed.
-			if ( $payment->get_state() instanceof Processing_Failed_State || $payment->get_state() instanceof Authentication_Required_State ) {
-				return $payment->get_response();
-			}
-
-			// Complete the payment, and return the response.
-			$payment->complete();
+			$payment_service = new Payment_Service();
+			$payment_service->process_renewal_payment( $renewal_order, $token );
 		} catch ( API_Exception $e ) {
 			Logger::error( 'Error processing subscription renewal: ' . $e->getMessage() );
 			// TODO: Update to use Order_Service->mark_payment_failed.

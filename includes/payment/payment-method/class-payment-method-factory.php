@@ -23,12 +23,15 @@ class Payment_Method_Factory {
 	/**
 	 * Retrieves the payment method from a request.
 	 *
-	 * @param array $request    The request object, normally equal to $_POST.
+	 * @param array $request    The request object, defaults to $_POST.
 	 * @param bool  $ignore_new Sometimes this should just check for a saved payment method.
 	 * @return Payment_Method|null
 	 * @throws Exception If something smeels.
 	 */
-	public function from_request( array $request, bool $ignore_new = false ) {
+	public function from_request( array $request = null, bool $ignore_new = false ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$request = $request ?? $_POST;
+
 		// Check if WCPay is the chosen gateway.
 		if ( ! isset( $request['payment_method'] ) || WC_Payment_Gateway_WCPay::GATEWAY_ID !== $request['payment_method'] ) {
 			throw new Exception( 'WooCommerce Payments is not used during checkout, cannot retrieve payment method.' );

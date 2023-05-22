@@ -40,6 +40,7 @@ use WCPay\Tracker;
 use WCPay\Payment\Payment;
 use WCPay\Payment\Payment_Method\New_Payment_Method;
 use WCPay\Payment\Payment_Method\Payment_Method_Factory;
+use WCPay\Payment\Payment_Service;
 use WCPay\Payment\State\Authentication_Required_State;
 use WCPay\Payment\State\Completed_State;
 use WCPay\Payment\State\Completed_Without_Payment_State;
@@ -724,9 +725,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				];
 			}
 
-			return $this->new_payment_process( $order );
+			$service = new Payment_Service();
+			return $service->process_standard_payment( $order, Payment_Capture_Type::MANUAL() === $this->get_capture_type() );
 
-			UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
+			// UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
 		} catch ( Exception $e ) {
 			/**
 			 * TODO: Determine how to do this update with Order_Service.
@@ -915,94 +917,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// If updating the payment method fails, log the error message.
 			Logger::log( 'Error when updating saved payment method: ' . $e->getMessage() );
 		}
-	}
-
-	/**
-	 * Performs payment through the new payment process.
-	 *
-	 * @param WC_Order $order Order which will be paid.
-	 * @return array          The same response as `process_payment`.
-	 */
-	protected function new_payment_process( WC_Order $order ) {
-		$loader = new Loader();
-
-		// @todo: What do we do if there is a payment already?
-		$payment = $loader->load_or_create_payment( $order );
-
-		// phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		$payment_method         = ( new Payment_Method_Factory() )->from_request( $_POST );
-		$fraud_prevention_token = $_POST['wcpay-fraud-prevention-token'] ?? ''; // Empty string to force checks. Null means skip.
-		if ( ! empty( $_POST['wcpay-fingerprint'] ) ) {
-			$normalized  = wc_clean( $_POST['wcpay-fingerprint'] );
-			$fingerprint = is_string( $normalized ) ? $normalized : '';
-		}
-		// The sanitize_user call here is deliberate: it seems the most appropriate sanitization function
-		// for a string that will only contain latin alphanumeric characters and underscores.
-		$platform_checkout_intent_id = sanitize_user( wp_unslash( $_POST['platform-checkout-intent'] ?? '' ), true );
-		// phpcs:enable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		if ( $payment_method instanceof New_Payment_Method && New_Payment_Method::should_be_saved( $_POST ) ) {
-			$payment->set_flag( Flags::SAVE_PAYMENT_METHOD_TO_STORE );
-		}
-		if ( Payment_Capture_Type::MANUAL() === $this->get_capture_type() ) {
-			$payment->set_flag( Flags::MANUAL_CAPTURE );
-		}
-		if ( $this->platform_checkout_util->should_save_platform_customer() ) {
-			do_action( 'woocommerce_payments_save_user_in_platform_checkout' );
-			$payment->set_flag( Flags::SAVE_PAYMENT_METHOD_TO_PLATFORM );
-		}
-		$this->maybe_prepare_subscription_payment( $payment, $order );
-
-		// Prepare all needed data in advance.
-		$payment->prepare();
-		if ( $payment->get_state() instanceof Failed_Preparation_State ) {
-			return $this->save_payment_and_return_response( $payment );
-		}
-
-		// Verify that we can proceed with the payment process.
-		$payment->verify( $payment_method, $fraud_prevention_token );
-		if ( $payment->get_state() instanceof Completed_State ) {
-			return $this->save_payment_and_return_response( $payment );
-		}
-		if ( $payment->get_state() instanceof Completed_Without_Payment_State ) {
-			$response = $payment->get_response();
-			$payment->mark_mark_as_completed();
-			$payment->save_to_order();
-			return $response;
-		}
-
-		// Unless the payment is already processed, do it.
-		if ( ! $payment->get_state() instanceof Processed_State ) {
-			// Determing whether to use the WooPay flow, or not.
-			if ( ! empty( $platform_checkout_intent_id ) ) {
-				$payment->process( new Load_WooPay_Intent_Strategy( $platform_checkout_intent_id ) );
-			} elseif ( $order->get_total() < 1 ) {
-				$payment->process( new Setup_Payment_Strategy() );
-			} else {
-				$payment->process( new Standard_Payment_Strategy( $fingerprint ) );
-			}
-		}
-
-		// If processing failed, or authentication is required, we should not proceed.
-		if ( $payment->get_state() instanceof Processing_Failed_State || $payment->get_state() instanceof Authentication_Required_State ) {
-			return $this->save_payment_and_return_response( $payment );
-		}
-
-		// Complete the payment, and return the response.
-		$payment->complete();
-		return $this->save_payment_and_return_response( $payment );
-	}
-
-	/**
-	 * Small helper to save a payment before retrieving its response.
-	 *
-	 * @param Payment $payment The payment to store.
-	 * @return array
-	 */
-	protected function save_payment_and_return_response( Payment $payment ) {
-		$payment->save_to_order();
-		return $payment->get_response();
 	}
 
 	/**
@@ -2521,47 +2435,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function update_order_status() {
 		try {
-			$is_nonce_valid = check_ajax_referer( 'wcpay_update_order_status_nonce', false, false );
-			if ( ! $is_nonce_valid ) {
-				throw new Process_Payment_Exception(
-					__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
-					'invalid_referrer'
-				);
-			}
-
-			$order_id = isset( $_POST['order_id'] ) ? absint( $_POST['order_id'] ) : false;
-			$order    = wc_get_order( $order_id );
-			if ( ! $order ) {
-				throw new Process_Payment_Exception(
-					__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
-					'order_not_found'
-				);
-			}
-
-			$loader  = new Loader();
-			$payment = $loader->load_payment( $order );
-
-			if ( ! $payment->get_state() instanceof Authentication_Required_State ) {
-				throw new Exception( 'The payment is not currently awaiting authentication!' );
-			}
-
-			$intent_id_received = isset( $_POST['intent_id'] )
-				? sanitize_text_field( wp_unslash( $_POST['intent_id'] ) )
-				/* translators: This will be used to indicate an unknown value for an ID. */
-				: __( 'unknown', 'woocommerce-payments' );
-
-			// @todo: This is a weird way to do it.
-			// The parameter was used to transfer the PM to store. The PM is in the intent, and will be used in `Save_Payment_Method_Step`.
-			if ( isset( $_POST['payment_method_id'] ) && wp_unslash( $_POST['payment_method_id'] ) ) {
-				$payment->set_flag( Flags::SAVE_PAYMENT_METHOD_TO_STORE );
-			}
-
-			// This should yield the next state.
-			$payment->load_intent_after_authentication( $intent_id_received );
-			$payment->complete();
-			$payment->save_to_order();
-
-			// Send back redirect URL in the successful case.
+			$service  = new Payment_Service();
+			$payment  = $service->process_standard_payment_after_authenticaton();
 			$response = $payment->get_response();
 			echo wp_json_encode(
 				[
@@ -2578,12 +2453,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$note = sprintf(
 						WC_Payments_Utils::esc_interpolated_html(
 							/* translators: %1: transaction ID of the payment or a translated string indicating an unknown ID. */
-							__( 'A payment with ID <code>%1$s</code> was used in an attempt to pay for this order. This payment intent ID does not match any payments for this order, so it was ignored and the order was not updated.', 'woocommerce-payments' ),
+							__( 'A payment with ID <code>unknown</code> was used in an attempt to pay for this order. This payment intent ID does not match any payments for this order, so it was ignored and the order was not updated.', 'woocommerce-payments' ),
 							[
 								'code' => '<code>',
 							]
-						),
-						$intent_id_received
+						)
 					);
 					$order->add_order_note( $note );
 					break;
