@@ -261,10 +261,10 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                     </h4>
                     <div>
                       <div
-                        class="components-base-control with-value"
+                      class="components-base-control with-value css-ij2po-Wrapper-boxSizingReset ej5x27r4"
                       >
                         <div
-                          class="components-base-control__field"
+                        class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
                         >
                           <div
                             class="text-control-with-affixes text-control-with-suffix"
