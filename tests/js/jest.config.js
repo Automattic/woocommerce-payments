@@ -41,6 +41,8 @@ module.exports = {
 		...tsjPreset.transform,
 		'^.+\\.(jpg|svg|png|gif)(\\?.*)?$': '<rootDir>/tests/js/fileMock.js',
 	},
-	transformIgnorePatterns: [ 'node_modules/(?!(@woocommerce/.+)/)' ],
+	transformIgnorePatterns: [
+		'node_modules/(?!(@woocommerce/.+)|gridicons|@automattic/components/)',
+	],
 	verbose: true,
 };
