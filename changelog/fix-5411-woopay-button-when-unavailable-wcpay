@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Prevent the WooPay Express button from showing up for pre-order products to be paid upon release.

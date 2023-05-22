@@ -36,7 +36,10 @@ jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 // See https://github.com/WordPress/gutenberg/issues/15031
 jest.mock( '@wordpress/data', () => ( {
 	createRegistryControl: jest.fn(),
-	dispatch: jest.fn( () => ( { setIsMatching: jest.fn() } ) ),
+	dispatch: jest.fn( () => ( {
+		setIsMatching: jest.fn(),
+		onLoad: jest.fn(),
+	} ) ),
 	registerStore: jest.fn(),
 	select: jest.fn(),
 	useDispatch: jest.fn( () => ( { createNotice: jest.fn() } ) ),
@@ -160,6 +163,7 @@ const getMockTransactions: () => Transaction[] = () => [
 		},
 		channel: 'in_person',
 		source_identifier: '1234',
+		source_device: 'ios',
 		customer_name: 'Best customer',
 		customer_email: 'best@customer.com',
 		customer_country: 'US',
@@ -386,6 +390,15 @@ describe( 'Transactions list', () => {
 
 			expect( tableSummary ).toHaveLength( 1 );
 			expect( container ).toMatchSnapshot();
+		} );
+
+		test( 'renders table with a TTP source device', () => {
+			( { container } = render( <TransactionsList /> ) );
+			const ttpLogo = container.querySelectorAll(
+				'.woocommerce-taptopay__icon'
+			);
+
+			expect( ttpLogo ).toHaveLength( 1 );
 		} );
 	} );
 

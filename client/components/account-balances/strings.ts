@@ -22,7 +22,13 @@ export const greetingStrings = {
 export const fundLabelStrings = {
 	available: __( 'Available funds', 'woocommerce-payments' ),
 	pending: __( 'Pending funds', 'woocommerce-payments' ),
-	reserved: __( 'Reserved funds', 'woocommerce-payments' ),
+};
+
+export const documentationUrls = {
+	depositSchedule:
+		'https://woocommerce.com/document/woocommerce-payments/deposits/deposit-schedule',
+	negativeBalance:
+		'https://woocommerce.com/document/woocommerce-payments/fees-and-debits/account-showing-negative-balance',
 };
 
 /** translators: %s is the currency code, e.g. USD. */

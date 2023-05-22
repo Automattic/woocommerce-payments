@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Enable third-party code to alter the delete payment token URL returned from flag_subscription_payment_token_deletions.

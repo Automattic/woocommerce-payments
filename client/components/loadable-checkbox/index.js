@@ -6,11 +6,15 @@
 import { __, sprintf } from '@wordpress/i18n';
 import React, { useEffect, useState } from 'react';
 import { CheckboxControl, VisuallyHidden } from '@wordpress/components';
-import './style.scss';
 import classNames from 'classnames';
-import { useManualCapture } from 'wcpay/data';
 import { Icon, warning } from '@wordpress/icons';
-import Tooltip from '../tooltip';
+
+/**
+ * Internal dependencies
+ */
+import { useManualCapture } from 'wcpay/data';
+import { HoverTooltip } from 'components/tooltip';
+import './style.scss';
 
 const LoadableCheckboxControl = ( {
 	label,
@@ -81,7 +85,7 @@ const LoadableCheckboxControl = ( {
 				</div>
 			) }
 			{ isManualCaptureEnabled && ! isAllowingManualCapture ? (
-				<Tooltip
+				<HoverTooltip
 					content={ sprintf(
 						/* translators: %s: a payment method name. */
 						__(
@@ -109,7 +113,7 @@ const LoadableCheckboxControl = ( {
 							</VisuallyHidden>
 						</div>
 					</div>
-				</Tooltip>
+				</HoverTooltip>
 			) : (
 				<CheckboxControl
 					label={ label }

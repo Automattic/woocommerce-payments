@@ -1,6 +1,10 @@
 .fraud-protection {
 	&-advanced-settings {
 		&-layout {
+			margin: 0 auto;
+			max-width: 680px;
+			width: 100%;
+
 			.is-loadable-placeholder.is-block {
 				margin-top: 2em;
 			}
@@ -27,6 +31,15 @@
 				padding: 0;
 			}
 		}
+
+		&__footer {
+			display: flex;
+			justify-content: flex-end;
+
+			> .components-button + .components-button {
+				margin-left: 24px;
+			}
+		}
 	}
 	&-header-breadcrumb {
 		margin-top: 0;
@@ -42,7 +55,7 @@
 		margin-right: 8px;
 	}
 
-	&-single-radio-wrapper {
+	&-radio-wrapper {
 		display: flex;
 		align-items: center;
 		height: 20px;
@@ -50,10 +63,6 @@
 		&__item {
 			display: inline-block;
 			margin: 0 5px 0 0;
-			&--recommended {
-				margin-right: 5px;
-				color: #757575;
-			}
 		}
 	}
 
@@ -134,43 +143,73 @@
 			font-weight: 600;
 			line-height: 16px;
 			color: #1e1e1e;
-			margin: 0;
-			margin-bottom: 8px;
 			display: block;
 		}
+
 		&-toggle {
 			margin-bottom: 24px;
+
 			label {
 				padding-left: 8px;
 				line-height: 21px;
 				font-size: 13px;
 				color: #1d2327;
 			}
-		}
-		&-checkbox {
-			& > div {
-				margin-bottom: 0;
-			}
-			&-container {
+
+			.components-base-control__field {
+				align-items: center;
 				display: flex;
-				align-items: flex-start;
-				.fraud-protection-rule-toggle-checkbox-container-help {
-					margin-top: 3px;
-					margin-left: 12px;
+			}
+
+			.components-base-control__help {
+				line-height: 16px;
+			}
+		}
+
+		strong,
+		&-toggle > div {
+			margin: 0 0 12px;
+		}
+
+		&-block {
+			margin-bottom: 24px;
+
+			.components-base-control__field {
+				margin-bottom: 0;
+
+				& > .components-radio-control__option {
+					margin-bottom: 12px;
+
+					&:last-child {
+						margin-bottom: 0;
+					}
+
+					input[type='radio'] {
+						border-color: #757575;
+
+						&:checked {
+							background-color: #fff;
+							border-color: #757575;
+
+							&::before {
+								border: 6px solid #3582c4;
+								width: 12px;
+								height: 12px;
+								transform: translate( 3px, 3px );
+							}
+						}
+					}
 				}
 			}
-			span {
-				margin-right: 8px;
-			}
-			label {
-				line-height: 16px;
-				font-size: 13px;
-				color: #1e1e1e;
-			}
 		}
+
 		&-children {
 			&-container {
-				margin-bottom: 16px;
+				margin-bottom: 24px;
+
+				.components-base-control__help {
+					margin-bottom: 0;
+				}
 			}
 			&-horizontal-form {
 				display: flex;
@@ -192,8 +231,7 @@
 			padding: 16px 24px;
 		}
 		&-header {
-			margin: 0;
-			margin-bottom: 4px;
+			margin: 0 0 4px 0;
 			font-size: 20px;
 			line-height: 28px;
 			font-weight: 400;
@@ -211,32 +249,17 @@
 			border-bottom: 1px solid #e0e0e0;
 			border-top: 0;
 		}
-		&-notice {
-			padding: 12px 16px;
-			display: flex;
-			&-warning {
-				background-color: #fcf9e8;
-			}
-			&-info {
-				background-color: #f0f6fc;
-			}
-			&-error {
-				background-color: #fcf0f1;
-			}
-			&-icon svg {
-				margin: 2px 16px 2px 2px;
-			}
-			&-text {
-				font-size: 13px;
-				line-height: 24px;
-				font-weight: 400;
-				color: #1e1e1e;
-				flex: 1;
-			}
+		.wcpay-banner-notice.fraud-protection-rule-card-notice {
+			margin-left: 0;
+			margin-right: 0;
 		}
 	}
 
 	&__help-icon {
+		fill: var(
+			--wp-components-color-accent,
+			var( --wp-admin-theme-color, #007cba )
+		);
 		cursor: pointer;
 	}
 }
@@ -287,4 +310,14 @@
 	display: flex;
 	flex-direction: row;
 	align-items: flex-start;
+}
+
+#fraud-protection-welcome-tour-first-step {
+	bottom: 26px;
+	left: 207px;
+	position: absolute;
+}
+
+.tour-kit-frame__arrow[data-hide]::before {
+	visibility: hidden;
 }

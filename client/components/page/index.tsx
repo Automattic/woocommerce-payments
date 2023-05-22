@@ -13,7 +13,7 @@ import './style.scss';
 
 interface PageProps {
 	isNarrow?: boolean;
-	maxWidth?: string;
+	maxWidth?: string | number;
 	className?: string;
 }
 

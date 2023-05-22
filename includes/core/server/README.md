@@ -168,6 +168,7 @@ Currently the WooCommerce Payments API client contains around 100 requests. The 
 	- [List_Disputes](request/class-list-disputes.md)
 	- [List_Documents](request/class-list-documents.md)
 	- [List_Transactions](request/class-list-transactions.md)
+  - [List_Fraud_Outcome_Transactions](request/class-list-fraud-outcome-transactions.md)
 - WooPay-specific
 	- [WooPay_Create_Intent](request/class-woopay-create-intent.md)
 	- [WooPay_Create_And_Confirm_Intention](request/class-woopay-create-and-confirm-intention.md)

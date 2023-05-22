@@ -31,7 +31,7 @@ exports[`DepositsStatus renders blocked status 1`] = `
 </div>
 `;
 
-exports[`DepositsStatus renders blocked status with feature flag enabled 1`] = `
+exports[`DepositsStatus renders blocked status 2`] = `
 <div>
   <span
     class="account-status__info__yellow"
@@ -76,7 +76,7 @@ exports[`DepositsStatus renders daily status 1`] = `
     >
       <g>
         <path
-          d="M11 17.768l-4.884-4.884 1.768-1.768L11 14.232l8.658-8.658C17.823 3.39 15.075 2 12 2 6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10c0-1.528-.353-2.97-.966-4.266L11 17.768z"
+          d="M11 17.768l-4.884-4.884 1.768-1.768L11 14.232l8.658-8.658A9.98 9.98 0 0012 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10a9.94 9.94 0 00-.966-4.266L11 17.768z"
         />
       </g>
     </svg>
@@ -111,37 +111,6 @@ exports[`DepositsStatus renders disabled status 1`] = `
 exports[`DepositsStatus renders manual status 1`] = `
 <div>
   <span
-    class="account-status__info__yellow"
-  >
-    <svg
-      class="gridicon gridicons-notice"
-      height="20"
-      viewBox="0 0 24 24"
-      width="20"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <g>
-        <path
-          d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 15h-2v-2h2v2zm0-4h-2l-.5-6h3l-.5 6z"
-        />
-      </g>
-    </svg>
-    Temporarily suspended (
-    <a
-      href="https://woocommerce.com/document/payments/faq/deposits-suspended/"
-      rel="noopener noreferrer"
-      target="_blank"
-    >
-      learn more
-    </a>
-    )
-  </span>
-</div>
-`;
-
-exports[`DepositsStatus renders manual status with feature flag enabled 1`] = `
-<div>
-  <span
     class="account-status__info__green"
   >
     <svg
@@ -153,7 +122,7 @@ exports[`DepositsStatus renders manual status with feature flag enabled 1`] = `
     >
       <g>
         <path
-          d="M11 17.768l-4.884-4.884 1.768-1.768L11 14.232l8.658-8.658C17.823 3.39 15.075 2 12 2 6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10c0-1.528-.353-2.97-.966-4.266L11 17.768z"
+          d="M11 17.768l-4.884-4.884 1.768-1.768L11 14.232l8.658-8.658A9.98 9.98 0 0012 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10a9.94 9.94 0 00-.966-4.266L11 17.768z"
         />
       </g>
     </svg>
@@ -176,11 +145,34 @@ exports[`DepositsStatus renders monthly status 1`] = `
     >
       <g>
         <path
-          d="M11 17.768l-4.884-4.884 1.768-1.768L11 14.232l8.658-8.658C17.823 3.39 15.075 2 12 2 6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10c0-1.528-.353-2.97-.966-4.266L11 17.768z"
+          d="M11 17.768l-4.884-4.884 1.768-1.768L11 14.232l8.658-8.658A9.98 9.98 0 0012 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10a9.94 9.94 0 00-.966-4.266L11 17.768z"
         />
       </g>
     </svg>
     Automatic
+  </span>
+</div>
+`;
+
+exports[`DepositsStatus renders pending verification status 1`] = `
+<div>
+  <span
+    class="account-status__info__gray"
+  >
+    <svg
+      class="gridicon gridicons-notice"
+      height="20"
+      viewBox="0 0 24 24"
+      width="20"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <g>
+        <path
+          d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 15h-2v-2h2v2zm0-4h-2l-.5-6h3l-.5 6z"
+        />
+      </g>
+    </svg>
+    Pending verification
   </span>
 </div>
 `;
@@ -199,7 +191,7 @@ exports[`DepositsStatus renders unknown status 1`] = `
     >
       <g>
         <path
-          d="M11 17.768l-4.884-4.884 1.768-1.768L11 14.232l8.658-8.658C17.823 3.39 15.075 2 12 2 6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10c0-1.528-.353-2.97-.966-4.266L11 17.768z"
+          d="M11 17.768l-4.884-4.884 1.768-1.768L11 14.232l8.658-8.658A9.98 9.98 0 0012 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10a9.94 9.94 0 00-.966-4.266L11 17.768z"
         />
       </g>
     </svg>
@@ -222,7 +214,7 @@ exports[`DepositsStatus renders weekly status 1`] = `
     >
       <g>
         <path
-          d="M11 17.768l-4.884-4.884 1.768-1.768L11 14.232l8.658-8.658C17.823 3.39 15.075 2 12 2 6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10c0-1.528-.353-2.97-.966-4.266L11 17.768z"
+          d="M11 17.768l-4.884-4.884 1.768-1.768L11 14.232l8.658-8.658A9.98 9.98 0 0012 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10a9.94 9.94 0 00-.966-4.266L11 17.768z"
         />
       </g>
     </svg>

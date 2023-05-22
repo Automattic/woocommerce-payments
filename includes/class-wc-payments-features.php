@@ -15,11 +15,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WC_Payments_Features {
 	const UPE_FLAG_NAME                     = '_wcpay_feature_upe';
 	const UPE_SPLIT_FLAG_NAME               = '_wcpay_feature_upe_split';
+	const UPE_DEFERRED_INTENT_FLAG_NAME     = '_wcpay_feature_upe_deferred_intent';
 	const WCPAY_SUBSCRIPTIONS_FLAG_NAME     = '_wcpay_feature_subscriptions';
 	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME = '_wcpay_feature_woopay_express_checkout';
 	const AUTH_AND_CAPTURE_FLAG_NAME        = '_wcpay_feature_auth_and_capture';
 	const PROGRESSIVE_ONBOARDING_FLAG_NAME  = '_wcpay_feature_progressive_onboarding';
-	const SIMPLIFY_DEPOSITS_UI_FLAG_NAME    = '_wcpay_feature_simplify_deposits_ui';
 
 	/**
 	 * Checks whether any UPE gateway is enabled.
@@ -27,7 +27,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_upe_enabled() {
-		return self::is_upe_legacy_enabled() || self::is_upe_split_enabled();
+		return self::is_upe_legacy_enabled() || self::is_upe_split_enabled() || self::is_upe_deferred_intent_enabled();
 	}
 
 	/**
@@ -36,7 +36,7 @@ class WC_Payments_Features {
 	 * @return string
 	 */
 	public static function get_enabled_upe_type() {
-		if ( self::is_upe_split_enabled() ) {
+		if ( self::is_upe_split_enabled() || self::is_upe_deferred_intent_enabled() ) {
 			return 'split';
 		}
 
@@ -58,8 +58,12 @@ class WC_Payments_Features {
 			return true;
 		}
 
+		$upe_split_flag_value    = '1' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' );
+		$upe_deferred_flag_value = '1' === get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, '0' );
+
 		// if the merchant is not eligible for the Split UPE, but they have the flag enabled, fallback to the "legacy" UPE (for now).
-		return '1' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' ) && ! self::is_upe_split_eligible();
+		return ( $upe_split_flag_value || $upe_deferred_flag_value )
+			&& ! self::is_upe_split_eligible();
 	}
 
 	/**
@@ -67,6 +71,13 @@ class WC_Payments_Features {
 	 */
 	public static function is_upe_split_enabled() {
 		return '1' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' ) && self::is_upe_split_eligible();
+	}
+
+	/**
+	 * Checks whether the Split UPE with deferred intent is enabled
+	 */
+	public static function is_upe_deferred_intent_enabled() {
+		return '1' === get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, '0' ) && self::is_upe_split_eligible();
 	}
 
 	/**
@@ -97,6 +108,30 @@ class WC_Payments_Features {
 	 */
 	public static function is_upe_settings_preview_enabled() {
 		return '1' === get_option( '_wcpay_feature_upe_settings_preview', '1' );
+	}
+
+	/**
+	 * Indicates whether card payments are enabled for this (Stripe) account.
+	 *
+	 * @return bool True if account can accept card payments, false otherwise.
+	 */
+	public static function are_payments_enabled() {
+		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
+
+		return is_array( $account ) && ( $account['payments_enabled'] ?? false );
+	}
+
+	/**
+	 * Checks if WooPay is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_woopay_enabled() {
+		$is_woopay_eligible               = self::is_woopay_eligible(); // Feature flag.
+		$is_woopay_enabled                = 'yes' === WC_Payments::get_gateway()->get_option( 'platform_checkout' );
+		$is_woopay_express_button_enabled = self::is_woopay_express_checkout_enabled();
+
+		return $is_woopay_eligible && $is_woopay_enabled && $is_woopay_express_button_enabled;
 	}
 
 	/**
@@ -169,11 +204,16 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether platform checkout is enabled.
+	 * Checks whether woopay is enabled.
 	 *
 	 * @return bool
 	 */
-	public static function is_platform_checkout_eligible() {
+	public static function is_woopay_eligible() {
+		// Checks for the dependency on Store API AbstractCartRoute.
+		if ( ! class_exists( 'Automattic\WooCommerce\StoreApi\Routes\V1\AbstractCartRoute' ) ) {
+			return false;
+		}
+
 		// read directly from cache, ignore cache expiration check.
 		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
 		return is_array( $account ) && ( $account['platform_checkout_eligible'] ?? false );
@@ -191,22 +231,13 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether custom deposit schedules are enabled.
-	 *
-	 * @return bool
-	 */
-	public static function is_custom_deposit_schedules_enabled() {
-		return '1' === get_option( '_wcpay_feature_custom_deposit_schedules', '1' );
-	}
-
-	/**
 	 * Checks whether WooPay Express Checkout is enabled.
 	 *
 	 * @return bool
 	 */
 	public static function is_woopay_express_checkout_enabled() {
-		// Confirm platform checkout eligibility as well.
-		return '1' === get_option( self::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME, '1' ) && self::is_platform_checkout_eligible();
+		// Confirm woopay eligibility as well.
+		return '1' === get_option( self::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME, '1' ) && self::is_woopay_eligible();
 	}
 
 	/**
@@ -232,17 +263,17 @@ class WC_Payments_Features {
 	 *
 	 * @return  bool
 	 */
-	public static function is_fraud_protection_settings_enabled(): bool {
-		return '1' === get_option( 'wcpay_fraud_protection_settings_active', '0' );
+	public static function is_frt_review_feature_active(): bool {
+		return '1' === get_option( 'wcpay_frt_review_feature_active', '0' );
 	}
 
 	/**
-	 * Checks whether Simplify Deposits UI is enabled.
+	 * Checks whether the Fraud and Risk Tools welcome tour was dismissed.
 	 *
 	 * @return bool
 	 */
-	public static function is_simplify_deposits_ui_enabled(): bool {
-		return '1' === get_option( self::SIMPLIFY_DEPOSITS_UI_FLAG_NAME, '0' );
+	public static function is_fraud_protection_welcome_tour_dismissed(): bool {
+		return '1' === get_option( 'wcpay_fraud_protection_welcome_tour_dismissed', '0' );
 	}
 
 	/**
@@ -254,17 +285,17 @@ class WC_Payments_Features {
 		return array_filter(
 			[
 				'upe'                     => self::is_upe_enabled(),
+				'upeSplit'                => self::is_upe_split_enabled(),
+				'upeDeferred'             => self::is_upe_deferred_intent_enabled(),
 				'upeSettingsPreview'      => self::is_upe_settings_preview_enabled(),
 				'multiCurrency'           => self::is_customer_multi_currency_enabled(),
 				'accountOverviewTaskList' => self::is_account_overview_task_list_enabled(),
-				'platformCheckout'        => self::is_platform_checkout_eligible(),
+				'woopay'                  => self::is_woopay_eligible(),
 				'documents'               => self::is_documents_section_enabled(),
-				'customDepositSchedules'  => self::is_custom_deposit_schedules_enabled(),
 				'clientSecretEncryption'  => self::is_client_secret_encryption_enabled(),
 				'woopayExpressCheckout'   => self::is_woopay_express_checkout_enabled(),
 				'isAuthAndCaptureEnabled' => self::is_auth_and_capture_enabled(),
 				'progressiveOnboarding'   => self::is_progressive_onboarding_enabled(),
-				'simplifyDepositsUi'      => self::is_simplify_deposits_ui_enabled(),
 			]
 		);
 	}

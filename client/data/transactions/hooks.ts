@@ -41,6 +41,7 @@ export interface Transaction {
 	// A field to identify the payment's source.
 	// Usually last 4 digits for card payments, bank name for bank transfers...
 	source_identifier: string;
+	source_device?: string;
 	source:
 		| 'ach_credit_transfer'
 		| 'ach_debit'
@@ -89,6 +90,49 @@ interface TransactionsSummary {
 		currency?: string;
 		store_currencies?: string[];
 		customer_currencies?: string[];
+	};
+	isLoading: boolean;
+}
+
+export type FraudOutcomeStatus = 'allow' | 'review' | 'block';
+export type FraudMetaBoxType =
+	| 'allow'
+	| 'block'
+	| 'not_card'
+	| 'not_wcpay'
+	| 'payment_started'
+	| 'review'
+	| 'review_allowed'
+	| 'review_blocked'
+	| 'review_expired'
+	| 'review_failed'
+	| 'terminal_payment';
+
+export interface FraudOutcomeTransaction {
+	amount: number;
+	created: string;
+	currency: string;
+	customer_name: string;
+	order_id: number;
+	payment_intent: {
+		id: string;
+		status: string;
+	};
+	status: FraudOutcomeStatus;
+	fraud_meta_box_type: FraudMetaBoxType;
+}
+
+interface FraudOutcomeTransactions {
+	transactions: FraudOutcomeTransaction[];
+	transactionsError?: string;
+	isLoading: boolean;
+}
+
+interface FraudOutcomeTransactionsSummary {
+	transactionsSummary: {
+		count?: number;
+		total?: number;
+		currencies?: string[];
 	};
 	isLoading: boolean;
 }
@@ -230,4 +274,78 @@ export const useTransactionsSummary = (
 			depositId,
 			JSON.stringify( search ),
 		]
+	);
+
+export const useFraudOutcomeTransactions = (
+	status: string,
+	{ paged, per_page: perPage, orderby, order, search }: Query,
+	additionalStatus?: string
+): FraudOutcomeTransactions =>
+	useSelect(
+		( select ) => {
+			const {
+				getFraudOutcomeTransactions,
+				getFraudOutcomeTransactionsError,
+				isResolving,
+			} = select( STORE_NAME );
+
+			const query = {
+				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
+					? '1'
+					: paged,
+				perPage: Number.isNaN( parseInt( perPage ?? '', 10 ) )
+					? '25'
+					: perPage,
+				orderby: orderby || 'date',
+				order: order || 'desc',
+				search,
+				additionalStatus,
+			};
+
+			return {
+				transactions: getFraudOutcomeTransactions( status, query ),
+				transactionsError: getFraudOutcomeTransactionsError(
+					status,
+					query
+				),
+				isLoading: isResolving( 'getFraudOutcomeTransactions', [
+					status,
+					query,
+				] ),
+			};
+		},
+		[ paged, perPage, orderby, order, JSON.stringify( search ) ]
+	);
+
+export const useFraudOutcomeTransactionsSummary = (
+	status: string,
+	{ search }: Query,
+	additionalStatus?: string
+): FraudOutcomeTransactionsSummary =>
+	useSelect(
+		( select ) => {
+			const {
+				getFraudOutcomeTransactionsSummary,
+				getFraudOutcomeTransactionsSummaryError,
+				isResolving,
+			} = select( STORE_NAME );
+
+			const query = { search, additionalStatus };
+
+			return {
+				transactionsSummary: getFraudOutcomeTransactionsSummary(
+					status,
+					query
+				),
+				transactionsSummaryError: getFraudOutcomeTransactionsSummaryError(
+					status,
+					query
+				),
+				isLoading: isResolving( 'getFraudOutcomeTransactionsSummary', [
+					status,
+					query,
+				] ),
+			};
+		},
+		[ status, JSON.stringify( search ) ]
 	);

@@ -2,6 +2,13 @@
  * Internal dependencies
  */
 
+export type OnboardingSteps =
+	| 'mode'
+	| 'personal'
+	| 'business'
+	| 'store'
+	| 'loading';
+
 export type OnboardingFields = {
 	email?: string;
 	'individual.first_name'?: string;
@@ -17,4 +24,47 @@ export type OnboardingFields = {
 	go_live_timeframe?: string;
 };
 
-export type OnboardingSteps = 'personal' | 'business' | 'store';
+export interface EligibleResult {
+	result: 'eligible' | 'not_eligible';
+}
+
+export interface EligibleData {
+	business: {
+		country: string;
+		type: string;
+		mcc: string;
+		annual_revenue: string;
+		go_live_timeframe: string;
+	};
+}
+
+export type TempData = {
+	phoneCountryCode?: string;
+};
+
+export interface Country {
+	key: string;
+	name: string;
+	types: BusinessType[];
+}
+
+export interface BusinessType {
+	key: string;
+	name: string;
+	description: string;
+	structures: BusinessStructure[];
+}
+
+export interface BusinessStructure {
+	key: string;
+	name: string;
+}
+
+export interface MccsDisplayTreeItem {
+	id: string;
+	type: string;
+	title: string;
+	items?: MccsDisplayTreeItem[];
+	mcc?: number;
+	keywords?: string[];
+}

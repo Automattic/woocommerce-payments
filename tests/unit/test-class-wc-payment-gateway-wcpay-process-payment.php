@@ -218,11 +218,6 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// Arrange: Return a successful response from create_and_confirm_intention().
 		$intent = WC_Helper_Intention::create_intention();
 
-		$this->mock_customer_service
-			->expects( $this->once() )
-			->method( 'get_customer_id_by_user_id' )
-			->willReturn( 'cus_mock' );
-
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
 
 		$request->expects( $this->once() )
@@ -264,8 +259,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_order_service
 			->expects( $this->once() )
-			->method( 'mark_payment_completed' )
-			->with( $mock_order, $intent_id, $status, $charge_id );
+			->method( 'update_order_status_from_intent' )
+			->with( $mock_order, $intent );
 
 		// Assert: empty_cart() was called.
 		$mock_cart
@@ -432,8 +427,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// Assert: The Order_Service is called correctly.
 		$this->mock_order_service
 			->expects( $this->once() )
-			->method( 'mark_payment_authorized' )
-			->with( $mock_order, $intent_id, $status, $charge_id );
+			->method( 'update_order_status_from_intent' )
+			->with( $mock_order, $intent );
 
 		// Assert: empty_cart() was called.
 		$mock_cart
@@ -513,6 +508,15 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 			throw $e;
 		}
+	}
+
+	public function test_exception_will_be_thrown_if_phone_number_is_invalid() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_billing_phone( '+1123456789123456789123' );
+		$order->save();
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Invalid phone number.' );
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
 	public function test_connection_exception_thrown() {
@@ -870,8 +874,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_order_service
 			->expects( $this->once() )
-			->method( 'mark_payment_started' )
-			->with( $mock_order, $intent_id, $status, $charge_id );
+			->method( 'update_order_status_from_intent' )
+			->with( $mock_order, $intent );
 
 		// Assert: empty_cart() was not called.
 		$mock_cart
@@ -1419,7 +1423,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		$intent = WC_Helper_Intention::create_intention();
 
-		$_POST['save_user_in_platform_checkout'] = 'true';
+		$_POST['save_user_in_woopay'] = 'true';
 
 		$this->mock_customer_service
 			->expects( $this->once() )

@@ -1,5 +1,24 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Chip renders a chip with a tooltip 1`] = `
+<div>
+  <button
+    class="wcpay-tooltip__content-wrapper"
+    type="button"
+  >
+    <div
+      class="wcpay-tooltip__content-wrapper"
+    >
+      <span
+        class="chip chip-light"
+      >
+        Light message
+      </span>
+    </div>
+  </button>
+</div>
+`;
+
 exports[`Chip renders a light chip 1`] = `
 <div>
   <span

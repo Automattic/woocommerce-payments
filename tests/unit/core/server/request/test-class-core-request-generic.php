@@ -32,9 +32,9 @@ class Core_Request_Generic_Test extends WCPAY_UnitTestCase {
 		$params  = [
 			$key = 'foo' => $value = 'bar',
 		];
-		$request = new Generic( $api, Requests::POST, $params );
+		$request = new Generic( $api, 'POST', $params );
 		$this->assertSame( $api, $request->get_api() );
-		$this->assertSame( Requests::POST, $request->get_method() );
+		$this->assertSame( 'POST', $request->get_method() );
 		$this->assertArrayHasKey( $key, $params );
 		$this->assertSame( $value, $request->get_param( $key ) );
 		$this->assertFalse( $request->should_use_user_token() );
@@ -43,13 +43,13 @@ class Core_Request_Generic_Test extends WCPAY_UnitTestCase {
 	public function test_set_function_will_set_parameter() {
 		$key     = 'foo';
 		$value   = 'bar';
-		$request = new Generic( 'api', Requests::POST );
+		$request = new Generic( 'api', 'POST' );
 		$request->set( $key, $value );
 		$this->assertSame( $value, $request->get_param( $key ) );
 	}
 
 	public function test_should_use_user_token_function_will_return_wanted_result() {
-		$request = new Generic( 'api', Requests::POST );
+		$request = new Generic( 'api', 'POST' );
 		$this->assertFalse( $request->should_use_user_token() );
 		$request->use_user_token();
 
@@ -61,7 +61,7 @@ class Core_Request_Generic_Test extends WCPAY_UnitTestCase {
 			$key      = 'foo'      => $value = 'bar',
 			$bool_key = 'bool_key' => true,
 		];
-		$request = new Generic( 'API', Requests::POST, $params );
+		$request = new Generic( 'API', 'POST', $params );
 		$params  = $request->get_params();
 
 		$this->assertIsArray( $params );
@@ -75,7 +75,7 @@ class Core_Request_Generic_Test extends WCPAY_UnitTestCase {
 		$data     = [
 			$key = 'foo' => $value = 'bar',
 		];
-		$request  = new Generic( 'API', Requests::POST );
+		$request  = new Generic( 'API', 'POST' );
 		$response = $request->format_response( $data );
 		$this->assertInstanceOf( Response::class, $response );
 		$this->assertTrue( $response->offsetExists( $key ) );

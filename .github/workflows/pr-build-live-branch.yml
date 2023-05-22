@@ -38,7 +38,7 @@ jobs:
           PR_NUMBER: ${{ github.event.number }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          DEV_SUFFIX_VERSION="dev_PR-${PR_NUMBER}_commit-${PR_HEAD_SHA}"
+          DEV_SUFFIX_VERSION="dev_PR-${PR_NUMBER}_commit-${PR_HEAD_SHA:0:7}"
           DEV_VERSION="${NEXT_RELEASE_VERSION}-${DEV_SUFFIX_VERSION}"
           echo "Dev Version: $DEV_VERSION" >> $GITHUB_STEP_SUMMARY          
           echo "DEV_VERSION=$DEV_VERSION" >> $GITHUB_OUTPUT
@@ -113,12 +113,23 @@ jobs:
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           PR_HEAD_REF: ${{ github.head_ref }}
         run: |
-          BODY="### Test the build on Jurassic Ninja 
+          BODY="### Test the build 
           
-          This feature is only available for A12s. Please log in into https://jurassic.ninja/specialops/ before clicking the link below:
+          #### Option 1. Jetpack Beta
           
+          - Install and activate [Jetpack Beta](https://jetpack.com/download-jetpack-beta/).
+          - Use this build by searching for PR number \`${PR_NUMBER}\` or branch name \`${PR_HEAD_REF}\` in your-test.site/wp-admin/admin.php?page=jetpack-beta&plugin=woocommerce-payments          
+          
+          #### Option 2. Jurassic Ninja - available for logged-in A12s
+         
           :rocket: [Launch a JN site with this branch](https://jurassic.ninja/create/?jetpack-beta&shortlived&nojetpack&woocommerce&branches.woocommerce-payments=${PR_HEAD_REF}) :rocket:
+          
+          :information_source: Install this [Tampermonkey script](https://github.com/Automattic/woocommerce-payments/tree/develop/bin/wcpay-live-branches) to get more options.
+          
+          ---
 
+          Build info: 
+          
           - Latest commit: ${PR_HEAD_SHA}
           - Build time: $(date -u "+%Y-%m-%d %H:%M:%S UTC")
 

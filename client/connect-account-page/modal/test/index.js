@@ -38,6 +38,10 @@ describe( 'Onboarding: location check dialog', () => {
 		);
 
 		expect( modalContent() ).toMatchSnapshot();
+		expect( console ).toHaveWarnedWith(
+			// eslint-disable-next-line max-len
+			'List with items prop is deprecated is deprecated and will be removed in version 9.0.0. Note: See ExperimentalList / ExperimentalListItem for the new API that will replace this component in future versions.'
+		);
 	} );
 
 	test( 'renders correctly when continue button is clicked', () => {

@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-Add GitHub workflow to build live branch and inform the zip file to Jetpack Beta Builder.

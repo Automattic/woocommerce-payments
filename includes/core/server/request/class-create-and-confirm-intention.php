@@ -20,6 +20,7 @@ class Create_And_Confirm_Intention extends Create_Intention {
 		'amount',
 		'currency',
 		'payment_method',
+		'return_url',
 	];
 
 	const REQUIRED_PARAMS = [
@@ -87,7 +88,7 @@ class Create_And_Confirm_Intention extends Create_Intention {
 			);
 		}
 
-		$this->set_param( 'payment_methods_types', $payment_methods );
+		$this->set_param( 'payment_method_types', $payment_methods );
 	}
 
 	/**
@@ -97,5 +98,14 @@ class Create_And_Confirm_Intention extends Create_Intention {
 	 */
 	public function set_cvc_confirmation( $cvc_confirmation = null ) {
 		$this->set_param( 'cvc_confirmation', $cvc_confirmation );
+	}
+
+	/**
+	 * Return URL setter.
+	 *
+	 * @param string $return_url The URL to redirect the customer back to after they authenticate their payment on the payment method’s site.
+	 */
+	public function set_return_url( $return_url ) {
+		$this->set_param( 'return_url', $return_url );
 	}
 }

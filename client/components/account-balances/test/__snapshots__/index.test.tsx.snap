@@ -59,12 +59,43 @@ exports[`AccountBalances renders 1`] = `
           >
             <p
               class="wcpay-account-balances__balances__item__title"
-              id="wcpay-account-balances-usd-available-title"
+              id="wcpay-account-balances-usd-available"
             >
-              Available funds
+              <span>
+                Available funds
+              </span>
+              <button
+                class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
+                type="button"
+              >
+                <div
+                  class="wcpay-tooltip__content-wrapper"
+                >
+                  <div
+                    aria-label="Available funds tooltip"
+                    class="wcpay-account-balances__balances__item__tooltip-button"
+                    role="button"
+                    tabindex="0"
+                  >
+                    <svg
+                      class="gridicon gridicons-help-outline wcpay-account-balances__balances__item__tooltip-button__icon needs-offset"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      width="18"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <g>
+                        <path
+                          d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4 8a4 4 0 00-8 0h2c0-1.103.897-2 2-2s2 .897 2 2-.897 2-2 2a1 1 0 00-1 1v2h2v-1.141A3.991 3.991 0 0016 10zm-3 6h-2v2h2v-2z"
+                        />
+                      </g>
+                    </svg>
+                  </div>
+                </div>
+              </button>
             </p>
             <p
-              aria-labelledby="wcpay-account-balances-usd-available-title"
+              aria-labelledby="wcpay-account-balances-usd-available"
               class="wcpay-account-balances__balances__item__amount"
             >
               $2.00
@@ -75,31 +106,46 @@ exports[`AccountBalances renders 1`] = `
           >
             <p
               class="wcpay-account-balances__balances__item__title"
-              id="wcpay-account-balances-usd-pending-title"
+              id="wcpay-account-balances-usd-pending"
             >
-              Pending funds
+              <span>
+                Pending funds
+              </span>
+              <button
+                class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
+                type="button"
+              >
+                <div
+                  class="wcpay-tooltip__content-wrapper"
+                >
+                  <div
+                    aria-label="Pending funds tooltip"
+                    class="wcpay-account-balances__balances__item__tooltip-button"
+                    role="button"
+                    tabindex="0"
+                  >
+                    <svg
+                      class="gridicon gridicons-help-outline wcpay-account-balances__balances__item__tooltip-button__icon needs-offset"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      width="18"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <g>
+                        <path
+                          d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4 8a4 4 0 00-8 0h2c0-1.103.897-2 2-2s2 .897 2 2-.897 2-2 2a1 1 0 00-1 1v2h2v-1.141A3.991 3.991 0 0016 10zm-3 6h-2v2h2v-2z"
+                        />
+                      </g>
+                    </svg>
+                  </div>
+                </div>
+              </button>
             </p>
             <p
-              aria-labelledby="wcpay-account-balances-usd-pending-title"
+              aria-labelledby="wcpay-account-balances-usd-pending"
               class="wcpay-account-balances__balances__item__amount"
             >
               $1.00
-            </p>
-          </div>
-          <div
-            class="wcpay-account-balances__balances__item"
-          >
-            <p
-              class="wcpay-account-balances__balances__item__title"
-              id="wcpay-account-balances-usd-reserved-title"
-            >
-              Reserved funds
-            </p>
-            <p
-              aria-labelledby="wcpay-account-balances-usd-reserved-title"
-              class="wcpay-account-balances__balances__item__amount"
-            >
-              $0.00
             </p>
           </div>
         </div>

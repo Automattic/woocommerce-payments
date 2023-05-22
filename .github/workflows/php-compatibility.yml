@@ -17,6 +17,6 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '7.4'
-          tools:       composer:2.5.0
-          coverage:    none
+          tools: composer
+          coverage: none
       - run: bash bin/phpcs-compat.sh

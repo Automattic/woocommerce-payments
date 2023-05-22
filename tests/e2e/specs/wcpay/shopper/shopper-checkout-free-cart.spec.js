@@ -2,6 +2,11 @@
  * External dependencies
  */
 import config from 'config';
+/**
+ * Internal dependencies
+ */
+import { fillCardDetails, setupCheckout } from '../../../utils/payments';
+import { merchantWCP, shopperWCP } from '../../../utils';
 
 const {
 	shopper,
@@ -9,12 +14,6 @@ const {
 	clearAndFillInput,
 	uiUnblocked,
 } = require( '@woocommerce/e2e-utils' );
-
-/**
- * Internal dependencies
- */
-import { setupCheckout, fillCardDetails } from '../../../utils/payments';
-import { shopperWCP, merchantWCP } from '../../../utils';
 
 const productName = config.get( 'products.simple.name' );
 const billingDetails = config.get( 'addresses.customer.billing' );
@@ -31,11 +30,7 @@ describe( 'Checkout with free coupon & after modifying cart on Checkout page', (
 			await shopper.goToCart();
 			await clearAndFillInput( couponInputSelector, 'free' );
 			await expect( page ).toClick( applyCouponSelector );
-		} );
-
-		afterAll( async () => {
-			// Clear the cart at the end so it's ready for another test
-			await shopperWCP.emptyCart();
+			await uiUnblocked();
 		} );
 
 		it( 'Checkout with a free coupon', async () => {
@@ -56,6 +51,11 @@ describe( 'Checkout with free coupon & after modifying cart on Checkout page', (
 			await shopper.placeOrder();
 			await expect( page ).toMatch( 'Order received' );
 		} );
+
+		afterAll( async () => {
+			// Clear the cart at the end so it's ready for another test
+			await shopperWCP.emptyCart();
+		} );
 	} );
 
 	describe( 'UPE', () => {
@@ -65,18 +65,13 @@ describe( 'Checkout with free coupon & after modifying cart on Checkout page', (
 			await merchant.logout();
 		} );
 
-		afterAll( async () => {
-			await merchant.login();
-			await merchantWCP.deactivateSplitUpe();
-			await merchant.logout();
-		} );
-
 		beforeEach( async () => {
 			await shopper.goToShop();
 			await shopper.addToCartFromShopPage( productName );
 			await shopper.goToCart();
 			await clearAndFillInput( couponInputSelector, 'free' );
 			await expect( page ).toClick( applyCouponSelector );
+			await uiUnblocked();
 		} );
 
 		it( 'Remove free coupon, then checkout with UPE', async () => {
@@ -87,6 +82,12 @@ describe( 'Checkout with free coupon & after modifying cart on Checkout page', (
 			await fillCardDetails( page, card );
 			await shopper.placeOrder();
 			await expect( page ).toMatch( 'Order received' );
+		} );
+
+		afterAll( async () => {
+			await merchant.login();
+			await merchantWCP.deactivateSplitUpe();
+			await merchant.logout();
 		} );
 	} );
 } );

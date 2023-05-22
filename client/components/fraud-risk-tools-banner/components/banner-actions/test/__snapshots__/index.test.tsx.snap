@@ -1,0 +1,43 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`BannerActions renders with dismiss button when remindMeCount greater than or equal to 3 1`] = `
+<div>
+  <div
+    class="discoverability-card__actions"
+  >
+    <a
+      class="components-button is-primary"
+      href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
+    >
+      Learn more
+    </a>
+    <button
+      class="components-button is-tertiary"
+      type="button"
+    >
+      Dismiss
+    </button>
+  </div>
+</div>
+`;
+
+exports[`BannerActions renders without dismiss button when remindMeCount less than 3 1`] = `
+<div>
+  <div
+    class="discoverability-card__actions"
+  >
+    <a
+      class="components-button is-primary"
+      href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
+    >
+      Learn more
+    </a>
+    <button
+      class="components-button is-tertiary"
+      type="button"
+    >
+      Remind me later
+    </button>
+  </div>
+</div>
+`;

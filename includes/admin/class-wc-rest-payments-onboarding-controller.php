@@ -67,6 +67,54 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/router/po_eligible',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'args'                => [
+					'business'        => [
+						'required'    => true,
+						'description' => 'The context about the merchant\'s business (self-assessment data).',
+						'type'        => 'object',
+						'properties'  => [
+							'country'           => [
+								'type'        => 'string',
+								'description' => 'The country code where the company is legally registered.',
+								'required'    => true,
+							],
+							'type'              => [
+								'type'        => 'string',
+								'description' => 'The company incorporation type.',
+								'required'    => true,
+							],
+							'mcc'               => [
+								'type'        => 'string',
+								'description' => 'The merchant category code id.',
+								'required'    => true,
+							],
+							'annual_revenue'    => [
+								'type'        => 'string',
+								'description' => 'The estimated annual revenue bucket id.',
+								'required'    => true,
+							],
+							'go_live_timeframe' => [
+								'type'        => 'string',
+								'description' => 'The timeframe bucket for the estimated first live transaction.',
+								'required'    => true,
+							],
+						],
+					],
+					'woo_store_stats' => [
+						'required'    => false,
+						'description' => 'The context about the merchant\'s current WooCommerce store.',
+						'type'        => 'object',
+					],
+				],
+				'callback'            => [ $this, 'get_progressive_onboarding_eligible' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
 	}
 
 	/**
@@ -110,5 +158,16 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 		} catch ( Rest_Request_Exception $e ) {
 			return new WP_REST_Response( [ 'result' => self::RESULT_BAD_REQUEST ], 400 );
 		}
+	}
+
+	/**
+	 * Get progressive onboarding eligibility via API.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function get_progressive_onboarding_eligible( $request ) {
+		$business_info = $request->get_param( 'business' );
+		return $this->forward_request( 'get_onboarding_po_eligible', [ $business_info ] );
 	}
 }

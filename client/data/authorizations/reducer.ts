@@ -6,15 +6,16 @@
 import TYPES from './action-types';
 import { getResourceId } from 'utils/data';
 import {
-	Authorization,
 	AuthorizationsState,
-	AuthorizationsSummary,
+	SetErrorForAuthorizationsAction,
+	SetErrorForAuthorizationsSummaryAction,
+	SetIsRequestingAuthorizationsAction,
 	UpdateAuthorizationAction,
 	UpdateAuthorizationsAction,
 	UpdateAuthorizationsSummaryAction,
 } from 'wcpay/types/authorizations';
 
-const defaultState = { summary: {}, byId: {} };
+const defaultState = { summary: {}, byId: {}, isRequesting: false };
 
 const receiveAuthorizations = (
 	state: AuthorizationsState = defaultState,
@@ -22,56 +23,80 @@ const receiveAuthorizations = (
 		| UpdateAuthorizationAction
 		| UpdateAuthorizationsAction
 		| UpdateAuthorizationsSummaryAction
+		| SetErrorForAuthorizationsAction
+		| SetErrorForAuthorizationsSummaryAction
+		| SetIsRequestingAuthorizationsAction
 ): AuthorizationsState => {
 	switch ( action.type ) {
-		case TYPES.SET_AUTHORIZATION:
-			const authorization = action.data as Authorization;
+		case TYPES.SET_AUTHORIZATION: {
+			const { data } = action as UpdateAuthorizationAction;
 
 			return {
 				...state,
 				byId: {
 					...state.byId,
-					[ authorization.payment_intent_id ]: {
-						...state.byId[ authorization.payment_intent_id ],
-						...action.data,
+					[ data.payment_intent_id ]: {
+						...state.byId[ data.payment_intent_id ],
+						...data,
 					},
 				},
 			};
-		case TYPES.SET_AUTHORIZATIONS:
+		}
+		case TYPES.SET_AUTHORIZATIONS: {
+			const { data, query } = action as UpdateAuthorizationsAction;
+
 			return {
 				...state,
-				[ getResourceId( action.query ) ]: {
-					data: action.data,
-				},
+				[ getResourceId( query ) ]: { data },
 			};
-		case TYPES.SET_ERROR_FOR_AUTHORIZATIONS:
+		}
+		case TYPES.SET_ERROR_FOR_AUTHORIZATIONS: {
+			const { error, query } = action as SetErrorForAuthorizationsAction;
+
 			return {
 				...state,
-				[ getResourceId( action.query ) ]: {
-					error: action.error,
+				[ getResourceId( query ) ]: {
+					error: error,
 				},
 			};
-		case TYPES.SET_AUTHORIZATIONS_SUMMARY:
-			const summary = action.data as AuthorizationsSummary;
+		}
+		case TYPES.SET_AUTHORIZATIONS_SUMMARY: {
+			const { data, query } = action as UpdateAuthorizationsSummaryAction;
+
 			return {
 				...state,
 				summary: {
 					...state.summary,
-					[ getResourceId( action.query ) ]: {
-						data: summary || {},
+					[ getResourceId( query ) ]: {
+						data: data || {},
 					},
 				},
 			};
-		case TYPES.SET_ERROR_FOR_AUTHORIZATIONS_SUMMARY:
+		}
+		case TYPES.SET_ERROR_FOR_AUTHORIZATIONS_SUMMARY: {
+			const {
+				query,
+				error,
+			} = action as SetErrorForAuthorizationsSummaryAction;
+
 			return {
 				...state,
 				summary: {
 					...state.summary,
-					[ getResourceId( action.query ) ]: {
-						error: action.error || '',
+					[ getResourceId( query ) ]: {
+						error: error || '',
 					},
 				},
 			};
+		}
+		case TYPES.SET_IS_REQUESTING_AUTHORIZATION: {
+			const { data } = action as SetIsRequestingAuthorizationsAction;
+
+			return {
+				...state,
+				isRequesting: data,
+			};
+		}
 	}
 
 	// Fallback to returning the same state.

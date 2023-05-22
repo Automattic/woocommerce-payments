@@ -403,7 +403,7 @@ export const useSettings = () => {
 			} = select( STORE_NAME );
 
 			const isLoading =
-				isResolving( 'getSettings' ) ||
+				!! isResolving( 'getSettings' ) ||
 				! hasFinishedResolution( 'getSettings' );
 
 			return {
@@ -484,65 +484,52 @@ export const useGetSavingError = () => {
 	}, [] );
 };
 
-export const usePlatformCheckoutEnabledSettings = () => {
-	const { updateIsPlatformCheckoutEnabled } = useDispatch( STORE_NAME );
+export const useWooPayEnabledSettings = () => {
+	const { updateIsWooPayEnabled } = useDispatch( STORE_NAME );
 
 	return useSelect( ( select ) => {
-		const { getIsPlatformCheckoutEnabled } = select( STORE_NAME );
+		const { getIsWooPayEnabled } = select( STORE_NAME );
 
-		return [
-			getIsPlatformCheckoutEnabled(),
-			updateIsPlatformCheckoutEnabled,
-		];
+		return [ getIsWooPayEnabled(), updateIsWooPayEnabled ];
 	} );
 };
 
-export const usePlatformCheckoutCustomMessage = () => {
-	const { updatePlatformCheckoutCustomMessage } = useDispatch( STORE_NAME );
+export const useWooPayCustomMessage = () => {
+	const { updateWooPayCustomMessage } = useDispatch( STORE_NAME );
 
 	return useSelect(
 		( select ) => {
-			const { getPlatformCheckoutCustomMessage } = select( STORE_NAME );
+			const { getWooPayCustomMessage } = select( STORE_NAME );
 
-			return [
-				getPlatformCheckoutCustomMessage(),
-				updatePlatformCheckoutCustomMessage,
-			];
+			return [ getWooPayCustomMessage(), updateWooPayCustomMessage ];
 		},
-		[ updatePlatformCheckoutCustomMessage ]
+		[ updateWooPayCustomMessage ]
 	);
 };
 
-export const usePlatformCheckoutStoreLogo = () => {
-	const { updatePlatformCheckoutStoreLogo } = useDispatch( STORE_NAME );
+export const useWooPayStoreLogo = () => {
+	const { updateWooPayStoreLogo } = useDispatch( STORE_NAME );
 
 	return useSelect(
 		( select ) => {
-			const { getPlatformCheckoutStoreLogo } = select( STORE_NAME );
+			const { getWooPayStoreLogo } = select( STORE_NAME );
 
-			return [
-				getPlatformCheckoutStoreLogo(),
-				updatePlatformCheckoutStoreLogo,
-			];
+			return [ getWooPayStoreLogo(), updateWooPayStoreLogo ];
 		},
-		[ updatePlatformCheckoutStoreLogo ]
+		[ updateWooPayStoreLogo ]
 	);
 };
 
-export const usePlatformCheckoutLocations = () => {
-	const { updatePlatformCheckoutLocations } = useDispatch( STORE_NAME );
+export const useWooPayLocations = () => {
+	const { updateWooPayLocations } = useDispatch( STORE_NAME );
 
 	return useSelect( ( select ) => {
-		const { getPlatformCheckoutLocations } = select( STORE_NAME );
+		const { getWooPayLocations } = select( STORE_NAME );
 
-		return [
-			getPlatformCheckoutLocations(),
-			updatePlatformCheckoutLocations,
-		];
+		return [ getWooPayLocations(), updateWooPayLocations ];
 	} );
 };
 
-// TODO: Finish implementation once server API endpoints are deployed.
 export const useCurrentProtectionLevel = () => {
 	const { updateProtectionLevel } = useDispatch( STORE_NAME );
 

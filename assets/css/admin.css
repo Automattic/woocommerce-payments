@@ -149,3 +149,31 @@
 	margin: 0 5px;
 	padding-top: 2px;
 }
+
+.wcpay-fraud-risk-meta-allow,
+.wcpay-fraud-risk-meta-review,
+.wcpay-fraud-risk-meta-blocked {
+	font-weight: 600;
+	font-size: 14px;
+}
+
+.wcpay-fraud-risk-meta-allow img {
+	margin: 0 5px 0 0;
+}
+
+.wcpay-fraud-risk-meta-review img,
+.wcpay-fraud-risk-meta-blocked img {
+	margin: 0 3px -3px 0;
+}
+
+.wcpay-fraud-risk-meta-allow {
+	color: #008a20;
+}
+
+.wcpay-fraud-risk-meta-review {
+	color: #b26200;
+}
+
+.wcpay-fraud-risk-meta-blocked {
+	color: #b32d2e;
+}

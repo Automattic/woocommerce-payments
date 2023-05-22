@@ -2,9 +2,10 @@
 /**
  * External dependencies
  */
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useLayoutEffect } from 'react';
 import { ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
+import { getQuery } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -22,7 +23,7 @@ import WCPaySettingsContext from '../wcpay-settings-context';
 import LoadableSettingsSection from '../loadable-settings-section';
 import WcPayUpeContextProvider from '../wcpay-upe-toggle/provider';
 import ErrorBoundary from '../../components/error-boundary';
-import { useDepositDelayDays } from '../../data';
+import { useDepositDelayDays, useSettings } from '../../data';
 import FraudProtection from '../fraud-protection';
 
 const PaymentMethodsDescription = () => (
@@ -119,7 +120,7 @@ const FraudProtectionDescription = () => {
 					'woocommerce-payments'
 				) }
 			</p>
-			<ExternalLink href="#">
+			<ExternalLink href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/">
 				{ __(
 					'Learn more about risk filtering',
 					'woocommerce-payments'
@@ -141,9 +142,42 @@ const SettingsManager = () => {
 		true
 	);
 
+	const { isLoading } = useSettings();
+
+	useLayoutEffect( () => {
+		const { anchor } = getQuery();
+		const { hash } = window.location;
+		const scrollTo = anchor || hash;
+
+		if ( ! isLoading && scrollTo ) {
+			const element = document.querySelector( scrollTo );
+
+			if ( ! element ) {
+				return;
+			}
+
+			const headerElement = document.querySelector(
+				'.woocommerce-layout__header'
+			);
+			const headerSize = headerElement ? headerElement.clientHeight : 60;
+			const headerOffset = headerSize + 50; // header size + margin
+			const elementPosition = element.getBoundingClientRect().top;
+			const offsetPosition =
+				elementPosition + window.pageYOffset - headerOffset;
+
+			window.scrollTo( {
+				top: offsetPosition,
+				behavior: 'smooth',
+			} );
+		}
+	}, [ isLoading ] );
+
 	return (
 		<SettingsLayout>
-			<SettingsSection description={ GeneralSettingsDescription }>
+			<SettingsSection
+				description={ GeneralSettingsDescription }
+				id="general"
+			>
 				<LoadableSettingsSection numLines={ 20 }>
 					<ErrorBoundary>
 						<GeneralSettings />
@@ -151,7 +185,10 @@ const SettingsManager = () => {
 				</LoadableSettingsSection>
 			</SettingsSection>
 			{ isUPESettingsPreviewEnabled && (
-				<SettingsSection description={ PaymentMethodsDescription }>
+				<SettingsSection
+					description={ PaymentMethodsDescription }
+					id="payment-methods"
+				>
 					<LoadableSettingsSection numLines={ 60 }>
 						<ErrorBoundary>
 							<WcPayUpeContextProvider
@@ -164,14 +201,20 @@ const SettingsManager = () => {
 					</LoadableSettingsSection>
 				</SettingsSection>
 			) }
-			<SettingsSection description={ ExpressCheckoutDescription }>
+			<SettingsSection
+				id="express-checkouts"
+				description={ ExpressCheckoutDescription }
+			>
 				<LoadableSettingsSection numLines={ 20 }>
 					<ErrorBoundary>
 						<ExpressCheckout />
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			<SettingsSection description={ TransactionsDescription }>
+			<SettingsSection
+				description={ TransactionsDescription }
+				id="transactions"
+			>
 				<LoadableSettingsSection numLines={ 20 }>
 					<ErrorBoundary>
 						<WcPayUpeContextProvider
@@ -186,7 +229,7 @@ const SettingsManager = () => {
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			<SettingsSection description={ DepositsDescription }>
+			<SettingsSection description={ DepositsDescription } id="deposits">
 				<div id={ 'deposit-schedule' }>
 					<LoadableSettingsSection numLines={ 20 }>
 						<ErrorBoundary>
@@ -195,15 +238,16 @@ const SettingsManager = () => {
 					</LoadableSettingsSection>
 				</div>
 			</SettingsSection>
-			{ wcpaySettings.isFraudProtectionSettingsEnabled && (
-				<SettingsSection description={ FraudProtectionDescription }>
-					<LoadableSettingsSection numLines={ 20 }>
-						<ErrorBoundary>
-							<FraudProtection />
-						</ErrorBoundary>
-					</LoadableSettingsSection>
-				</SettingsSection>
-			) }
+			<SettingsSection
+				description={ FraudProtectionDescription }
+				id="fp-settings"
+			>
+				<LoadableSettingsSection numLines={ 20 }>
+					<ErrorBoundary>
+						<FraudProtection />
+					</ErrorBoundary>
+				</LoadableSettingsSection>
+			</SettingsSection>
 			<AdvancedSettings />
 			<SaveSettingsSection disabled={ ! isTransactionInputsValid } />
 		</SettingsLayout>

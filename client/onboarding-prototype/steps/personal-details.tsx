@@ -2,46 +2,32 @@
  * External dependencies
  */
 import React from 'react';
-import { Flex, FlexBlock, TextControl } from '@wordpress/components';
+import { Flex, FlexBlock } from '@wordpress/components';
+import { info } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
 import strings from '../strings';
-import { useOnboardingContext } from '../context';
-import { OnboardingFields } from '../types';
+import { OnboardingTextField, OnboardingPhoneNumberField } from '../form';
+import BannerNotice from 'components/banner-notice';
 
 const PersonalDetails: React.FC = () => {
-	const { data, setData } = useOnboardingContext();
-
-	const getFieldProps = ( name: keyof OnboardingFields ) => ( {
-		label: strings.fields[ name ],
-		value: data[ name ] || '',
-		onChange: ( value: string ) => setData( { [ name ]: value } ),
-	} );
-
 	return (
 		<>
-			<Flex>
+			<Flex align="top">
 				<FlexBlock>
-					<TextControl
-						{ ...getFieldProps( 'individual.first_name' ) }
-					/>
+					<OnboardingTextField name="individual.first_name" />
 				</FlexBlock>
 				<FlexBlock>
-					<TextControl
-						{ ...getFieldProps( 'individual.last_name' ) }
-					/>
+					<OnboardingTextField name="individual.last_name" />
 				</FlexBlock>
 			</Flex>
-			<TextControl { ...getFieldProps( 'email' ) } />
-			<div>
-				{
-					// TODO  [GH-4744]: Create a notice component
-					strings.steps.personal.notice
-				}
-			</div>
-			<TextControl { ...getFieldProps( 'phone' ) } />
+			<OnboardingTextField name="email" />
+			<OnboardingPhoneNumberField name="phone" />
+			<BannerNotice status="info" icon={ info } isDismissible={ false }>
+				{ strings.steps.personal.notice }
+			</BannerNotice>
 		</>
 	);
 };

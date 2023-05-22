@@ -2,21 +2,24 @@
  * External dependencies
  */
 import React from 'react';
-import { TextControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import strings from '../strings';
 import { useOnboardingContext } from '../context';
-import CustomSelectControl, { Item } from 'components/custom-select-control';
-import { useBusinessTypes } from 'onboarding-experiment/hooks';
+import { Item } from 'components/custom-select-control';
 import { OnboardingFields } from '../types';
-import { BusinessType } from 'onboarding-experiment/types';
+import {
+	OnboardingTextField,
+	OnboardingSelectField,
+	OnboardingGroupedSelectField,
+} from '../form';
+import { getBusinessTypes, getMccsFlatList } from 'onboarding-prototype/utils';
+import { BusinessType } from 'onboarding-prototype/types';
 
 const BusinessDetails: React.FC = () => {
 	const { data, setData } = useOnboardingContext();
-	const { countries } = useBusinessTypes();
+	const countries = getBusinessTypes();
 
 	const selectedCountry = countries.find(
 		( country ) => country.key === data.country
@@ -24,55 +27,38 @@ const BusinessDetails: React.FC = () => {
 	const selectedBusinessType = selectedCountry?.types.find(
 		( type ) => type.key === data.business_type
 	);
-	const selectedCompanyStructure = selectedBusinessType?.structures.find(
-		( structure ) => structure.key === data[ 'company.structure' ]
-	);
 
-	const getFieldProps = ( name: keyof OnboardingFields ) => ( {
-		label: strings.fields[ name ],
-	} );
+	const handleTiedChange = (
+		name: keyof OnboardingFields,
+		selectedItem?: Item
+	) => {
+		let newData: OnboardingFields = {
+			[ name ]: selectedItem?.key,
+		};
+		if ( name === 'business_type' ) {
+			newData = { ...newData, 'company.structure': undefined };
+		} else if ( name === 'country' ) {
+			newData = { ...newData, business_type: undefined };
+		}
+		setData( newData );
+	};
 
-	const getTextFieldProps = ( name: keyof OnboardingFields ) => ( {
-		...getFieldProps( name ),
-		value: data[ name ] || '',
-		onChange: ( value: string ) => setData( { [ name ]: value } ),
-	} );
-
-	const getSelectFieldProps = (
-		name: keyof Pick<
-			OnboardingFields,
-			'country' | 'business_type' | 'company.structure' | 'mcc'
-		>
-	) => ( {
-		...getFieldProps( name ),
-		placeholder: strings.placeholders[ name ],
-		onChange: ( { selectedItem }: { selectedItem?: Item } ) => {
-			let newData: OnboardingFields = {
-				[ name ]: selectedItem?.key,
-			};
-			if ( name === 'business_type' ) {
-				newData = { ...newData, 'company.structure': undefined };
-			} else if ( name === 'country' ) {
-				newData = { ...newData, business_type: undefined };
-			}
-			setData( newData );
-		},
-	} );
+	const mccsFlatList = getMccsFlatList();
 
 	return (
 		<>
-			<TextControl { ...getTextFieldProps( 'business_name' ) } />
-			<TextControl { ...getTextFieldProps( 'url' ) } />
-			<CustomSelectControl
-				{ ...getSelectFieldProps( 'country' ) }
-				value={ selectedCountry }
+			<OnboardingTextField name="business_name" />
+			<OnboardingTextField name="url" />
+			<OnboardingSelectField
+				name="country"
 				options={ countries }
+				onChange={ handleTiedChange }
 			/>
 			{ selectedCountry && selectedCountry.types.length > 0 && (
-				<CustomSelectControl
-					{ ...getSelectFieldProps( 'business_type' ) }
-					value={ selectedBusinessType }
+				<OnboardingSelectField
+					name="business_type"
 					options={ selectedCountry.types }
+					onChange={ handleTiedChange }
 				>
 					{ ( item: Item & BusinessType ) => (
 						<div>
@@ -82,21 +68,21 @@ const BusinessDetails: React.FC = () => {
 							</div>
 						</div>
 					) }
-				</CustomSelectControl>
+				</OnboardingSelectField>
 			) }
 			{ selectedBusinessType &&
 				selectedBusinessType.structures.length > 0 && (
-					<CustomSelectControl
-						{ ...getSelectFieldProps( 'company.structure' ) }
-						value={ selectedCompanyStructure }
+					<OnboardingSelectField
+						name="company.structure"
 						options={ selectedBusinessType.structures }
+						onChange={ handleTiedChange }
 					/>
 				) }
-			<CustomSelectControl
-				{ ...getSelectFieldProps( 'mcc' ) }
-				// TODO [GH-4744]: The select control must provide search functionality.
-				// TODO [GH-4853]: Populate MCC options
-				options={ [] }
+
+			<OnboardingGroupedSelectField
+				name="mcc"
+				options={ mccsFlatList }
+				searchable
 			/>
 		</>
 	);

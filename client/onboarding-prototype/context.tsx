@@ -2,18 +2,32 @@
  * External dependencies
  */
 import React, { createContext, useContext, useState } from 'react';
+import { isNil, omitBy } from 'lodash';
 
 /**
  * Internal dependencies
  */
-import { OnboardingFields } from './types';
+import { OnboardingFields, TempData } from './types';
 
 const useContextValue = () => {
 	const [ data, setData ] = useState( {} as OnboardingFields );
+	const [ errors, setErrors ] = useState( {} as OnboardingFields );
+	const [ touched, setTouched ] = useState( {} as OnboardingFields );
+	const [ temp, setTemp ] = useState( {} as TempData );
+
 	return {
 		data,
 		setData: ( value: Record< string, string | undefined > ) =>
-			setData( { ...data, ...value } ),
+			setData( ( prev ) => ( { ...prev, ...value } ) ),
+		errors,
+		setErrors: ( value: Record< string, string | undefined > ) =>
+			setErrors( ( prev ) => omitBy( { ...prev, ...value }, isNil ) ),
+		touched,
+		setTouched: ( value: Record< string, boolean > ) =>
+			setTouched( ( prev ) => ( { ...prev, ...value } ) ),
+		temp,
+		setTemp: ( value: Partial< TempData > ) =>
+			setTemp( ( prev ) => ( { ...prev, ...value } ) ),
 	};
 };
 

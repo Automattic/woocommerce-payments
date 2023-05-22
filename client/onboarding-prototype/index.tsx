@@ -1,70 +1,86 @@
 /**
  * External dependencies
  */
-import React from 'react';
-import { Button } from '@wordpress/components';
-import { addQueryArgs } from '@wordpress/url';
+import React, { useEffect } from 'react';
 
 /**
  * Internal dependencies
  */
-import { OnboardingContextProvider, useOnboardingContext } from './context';
-import { Stepper, useStepperContext } from 'components/stepper';
-import { OnboardingSteps } from './types';
-import { fromDotNotation } from './utils';
+import { OnboardingContextProvider } from './context';
+import { Stepper } from 'components/stepper';
+import { OnboardingForm } from './form';
+import Step from './step';
+import ModeChoice from './steps/mode-choice';
 import PersonalDetails from './steps/personal-details';
 import BusinessDetails from './steps/business-details';
 import StoreDetails from './steps/store-details';
-import strings from './strings';
-
-interface Props {
-	name: OnboardingSteps;
-}
-const Step: React.FC< Props > = ( { name, children } ) => {
-	const { nextStep } = useStepperContext();
-	return (
-		<>
-			<h1>{ strings.steps[ name ].heading }</h1>
-			<h1>{ strings.steps[ name ].subheading }</h1>
-			{ children }
-			<Button isPrimary onClick={ nextStep }>
-				{ strings.continue }
-			</Button>
-		</>
-	);
-};
+import LoadingStep from './steps/loading';
+import { trackStarted } from './tracking';
+import './style.scss';
 
 const OnboardingStepper = () => {
-	const { data } = useOnboardingContext();
-
-	const handleComplete = () => {
-		const { connectUrl } = wcpaySettings;
-		const url = addQueryArgs( connectUrl, {
-			progressive: fromDotNotation( data ),
-		} );
-		window.location.href = url;
+	const handleExit = () => {
+		if (
+			window.history.length > 1 &&
+			document.referrer.includes( wcSettings.adminUrl )
+		)
+			return window.history.back();
+		window.location.href = wcSettings.adminUrl;
 	};
 
+	const handleStepChange = () => window.scroll( 0, 0 );
+
 	return (
-		<Stepper onComplete={ handleComplete }>
+		<Stepper onStepChange={ handleStepChange } onExit={ handleExit }>
+			<Step name="mode">
+				<ModeChoice />
+			</Step>
 			<Step name="personal">
-				<PersonalDetails />
+				<OnboardingForm>
+					<PersonalDetails />
+				</OnboardingForm>
 			</Step>
 			<Step name="business">
-				<BusinessDetails />
+				<OnboardingForm>
+					<BusinessDetails />
+				</OnboardingForm>
 			</Step>
 			<Step name="store">
-				<StoreDetails />
+				<OnboardingForm>
+					<StoreDetails />
+				</OnboardingForm>
 			</Step>
+			<LoadingStep name="loading" />
 		</Stepper>
 	);
 };
 
 const OnboardingPrototype: React.FC = () => {
+	useEffect( () => {
+		trackStarted();
+
+		// Remove loading class and add those requires for full screen.
+		document.body.classList.remove( 'woocommerce-admin-is-loading' );
+		document.body.classList.add( 'woocommerce-admin-full-screen' );
+		document.body.classList.add( 'is-wp-toolbar-disabled' );
+		document.body.classList.add( 'wcpay-onboarding-prototype__body' );
+
+		// Remove full screen classes on unmount.
+		return () => {
+			document.body.classList.remove( 'woocommerce-admin-full-screen' );
+			document.body.classList.remove( 'is-wp-toolbar-disabled' );
+			document.body.classList.remove(
+				'wcpay-onboarding-prototype__body'
+			);
+		};
+	}, [] );
+
 	return (
-		<OnboardingContextProvider>
-			<OnboardingStepper />
-		</OnboardingContextProvider>
+		<div className="wcpay-onboarding-prototype">
+			<OnboardingContextProvider>
+				<OnboardingStepper />
+			</OnboardingContextProvider>
+		</div>
 	);
 };
 

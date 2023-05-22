@@ -269,6 +269,8 @@ class WC_Payments_Invoice_Service {
 	 *
 	 * @param WC_Order $order The order to update.
 	 * @param string   $intent_id The intent ID.
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function get_and_attach_intent_info_to_order( $order, $intent_id ) {
 		try {

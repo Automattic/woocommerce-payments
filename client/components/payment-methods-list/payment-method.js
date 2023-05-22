@@ -9,7 +9,7 @@ import classNames from 'classnames';
  * Internal dependencies
  */
 import Pill from '../pill';
-import Tooltip from '../tooltip';
+import { HoverTooltip } from 'components/tooltip';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import LoadableCheckboxControl from '../loadable-checkbox';
 import { __, sprintf } from '@wordpress/i18n';
@@ -89,7 +89,7 @@ const PaymentMethod = ( {
 							</span>
 						) }
 						{ upeCapabilityStatuses.PENDING_APPROVAL === status && (
-							<Tooltip
+							<HoverTooltip
 								content={ __(
 									'This payment method is pending approval. Once approved, you will be able to use it.',
 									'woocommerce-payments'
@@ -105,11 +105,11 @@ const PaymentMethod = ( {
 										'woocommerce-payments'
 									) }
 								</Pill>
-							</Tooltip>
+							</HoverTooltip>
 						) }
 						{ upeCapabilityStatuses.PENDING_VERIFICATION ===
 							status && (
-							<Tooltip
+							<HoverTooltip
 								content={ sprintf(
 									__(
 										"%s won't be visible to your customers until you provide the required " +
@@ -130,10 +130,10 @@ const PaymentMethod = ( {
 										'woocommerce-payments'
 									) }
 								</Pill>
-							</Tooltip>
+							</HoverTooltip>
 						) }
 						{ disabled && (
-							<Tooltip
+							<HoverTooltip
 								content={ sprintf(
 									__(
 										'To use %s, please contact WooCommerce support.',
@@ -148,7 +148,7 @@ const PaymentMethod = ( {
 										'woocommerce-payments'
 									) }
 								</Pill>
-							</Tooltip>
+							</HoverTooltip>
 						) }
 					</div>
 					<div className="payment-method__description">
@@ -157,7 +157,7 @@ const PaymentMethod = ( {
 				</div>
 				{ accountFees && accountFees[ id ] && (
 					<div className="payment-method__fees">
-						<Tooltip
+						<HoverTooltip
 							maxWidth={ '300px' }
 							content={ formatMethodFeesTooltip(
 								accountFees[ id ]
@@ -180,7 +180,7 @@ const PaymentMethod = ( {
 									) }
 								</span>
 							</Pill>
-						</Tooltip>
+						</HoverTooltip>
 					</div>
 				) }
 			</div>

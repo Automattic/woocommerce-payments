@@ -97,6 +97,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 	 * @param array $body The event body that triggered the webhook.
 	 *
 	 * @throws Invalid_Webhook_Data_Exception Required parameters not found.
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function handle_invoice_paid( array $body ) {
 		$event_data            = $this->get_event_property( $body, 'data' );

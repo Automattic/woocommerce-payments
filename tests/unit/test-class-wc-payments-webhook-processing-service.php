@@ -612,13 +612,17 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'charges'  => [
 				'data' => [
 					[
-						'id'             => $charge_id         = 'py_123123123123123',
-						'payment_method' => $payment_method_id = 'pm_foo',
+						'id'                     => $charge_id         = 'py_123123123123123',
+						'payment_method'         => $payment_method_id = 'pm_foo',
+						'payment_method_details' => [
+							'type' => 'card',
+						],
 					],
 				],
 			],
 			'currency' => $currency      = 'eur',
 			'status'   => $intent_status = Payment_Intent_Status::SUCCEEDED,
+			'metadata' => [],
 		];
 
 		$this->mock_order
@@ -661,6 +665,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'get_data_store' )
 			->willReturn( new \WC_Mock_WC_Data_Store() );
 
+		$this->mock_order
+			->method( 'get_meta' )
+			->willReturn( '' );
+
 		$this->mock_receipt_service
 			->expects( $this->never() )
 			->method( 'send_customer_ipp_receipt_email' );
@@ -686,8 +694,11 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'charges'  => [
 				'data' => [
 					[
-						'id'             => $charge_id         = 'py_123123123123123',
-						'payment_method' => $payment_method_id = 'pm_foo',
+						'id'                     => $charge_id         = 'py_123123123123123',
+						'payment_method'         => $payment_method_id = 'pm_foo',
+						'payment_method_details' => [
+							'type' => 'card',
+						],
 					],
 				],
 			],
@@ -742,6 +753,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'get_data_store' )
 			->willReturn( new \WC_Mock_WC_Data_Store() );
 
+		$this->mock_order
+			->method( 'get_meta' )
+			->willReturn( '' );
+
 		$this->mock_receipt_service
 			->expects( $this->never() )
 			->method( 'send_customer_ipp_receipt_email' );
@@ -775,6 +790,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			],
 			'currency' => $currency      = 'eur',
 			'status'   => $intent_status = Payment_Intent_Status::SUCCEEDED,
+			'metadata' => [],
 		];
 
 		$this->mock_order
@@ -852,6 +868,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			],
 			'currency' => 'eur',
 			'status'   => Payment_Intent_Status::SUCCEEDED,
+			'metadata' => [],
 		];
 
 		$mock_merchant_settings = [
@@ -887,6 +904,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->method( 'get_data_store' )
 			->willReturn( new \WC_Mock_WC_Data_Store() );
+
+		$this->mock_order
+			->method( 'get_meta' )
+			->willReturn( '' );
 
 		$this->mock_receipt_service
 			->expects( $this->once() )
@@ -936,12 +957,14 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 							'card' => [
 								'mandate' => $mandate_id = 'mandate_123123123',
 							],
+							'type' => 'card',
 						],
 					],
 				],
 			],
 			'currency' => $currency      = 'eur',
 			'status'   => $intent_status = Payment_Intent_Status::SUCCEEDED,
+			'metadata' => [],
 		];
 
 		$this->mock_order
@@ -975,15 +998,19 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'payment_complete' );
 
+		$this->mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+
+		$this->mock_order
+			->method( 'get_meta' )
+			->willReturn( '' );
+
 		$this->mock_db_wrapper
 			->expects( $this->once() )
 			->method( 'order_from_intent_id' )
 			->with( 'pi_123123123123123' )
 			->willReturn( $this->mock_order );
-
-		$this->mock_order
-			->method( 'get_data_store' )
-			->willReturn( new \WC_Mock_WC_Data_Store() );
 
 		$this->mock_receipt_service
 			->expects( $this->never() )
@@ -1030,24 +1057,18 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		];
 
 		$this->mock_order
-			->expects( $this->exactly( 2 ) )
+			->expects( $this->once() )
 			->method( 'get_meta' )
-			->withConsecutive(
-				[ '_payment_method_id' ],
-				[ '_intention_status' ]
-			)
-			->willReturnOnConsecutiveCalls(
-				'pm_123123123123123',
-				false
-			);
+			->with( '_payment_method_id' )
+			->willReturn( 'pm_123123123123123' );
 
 		$this->mock_order
 			->expects( $this->exactly( 3 ) )
 			->method( 'has_status' )
 			->withConsecutive(
-				[ [ Order_Status::FAILED ] ],
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
-				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ]
+				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
+				[ [ Order_Status::FAILED ] ]
 			)
 			->willReturn( false );
 
@@ -1103,24 +1124,18 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		];
 
 		$this->mock_order
-			->expects( $this->exactly( 2 ) )
+			->expects( $this->once() )
 			->method( 'get_meta' )
-			->withConsecutive(
-				[ '_payment_method_id' ],
-				[ '_intention_status' ]
-			)
-			->willReturnOnConsecutiveCalls(
-				'pm_123123123123123',
-				false
-			);
+			->with( '_payment_method_id' )
+			->willReturn( 'pm_123123123123123' );
 
 		$this->mock_order
 			->expects( $this->exactly( 3 ) )
 			->method( 'has_status' )
 			->withConsecutive(
-				[ [ Order_Status::FAILED ] ],
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
-				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ]
+				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
+				[ [ Order_Status::FAILED ] ]
 			)
 			->willReturn( false );
 

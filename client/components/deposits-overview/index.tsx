@@ -7,59 +7,83 @@ import { Card, CardHeader } from '@wordpress/components';
 /**
  * Internal dependencies.
  */
-import { useAllDepositsOverviews } from 'wcpay/data';
+import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
 import strings from './strings';
 import NextDepositDetails from './next-deposit';
-
-interface OverviewProps {
-	overview?: AccountOverview.Overview;
-	account?: AccountOverview.Account;
-	isLoading: boolean;
-}
-
-/**
- * Renders a deposits overview
- *
- * @param {OverviewProps} props Deposits overview
- * @return {JSX.Element} Rendered element with deposits overview
- */
-const DepositsOverviewDetails: React.FunctionComponent< OverviewProps > = ( {
-	isLoading,
-} ) => {
-	return (
-		<Card>
-			<CardHeader>{ strings.heading }</CardHeader>
-			<NextDepositDetails isLoading={ isLoading } />
-
-			<p>Deposits History Section Goes here</p>
-
-			<p>Deposits Card Footer/Action Goes here</p>
-		</Card>
-	);
-};
+import RecentDepositsList from './recent-deposits-list';
+import DepositSchedule from './deposit-schedule';
+import SuspendedDepositNotice from './suspended-deposit-notice';
+import DepositsOverviewFooter from './footer';
+import DepositOverviewSectionHeading from './section-heading';
+import useRecentDeposits from './hooks';
+import './style.scss';
 
 const DepositsOverview = (): JSX.Element => {
 	const {
-		overviews,
-		isLoading,
-	} = useAllDepositsOverviews() as AccountOverview.OverviewsResponse;
+		account,
+		overview,
+		isLoading: isLoadingOverview,
+	} = useSelectedCurrencyOverview();
 
-	const { currencies, account } = overviews;
+	let currency = wcpaySettings.accountDefaultCurrency;
 
-	if ( isLoading ) {
-		return <DepositsOverviewDetails isLoading={ isLoading } />;
+	if ( overview?.currency ) {
+		currency = overview.currency;
 	}
 
-	const overview = currencies[ 0 ]; // TODO: To handle multiple currencies we'll need to fetch the currently selected currency.
+	const { isLoading: isLoadingDeposits, deposits } = useRecentDeposits(
+		currency
+	);
+
+	const hasNextDeposit = !! overview?.nextScheduled;
+
+	const isLoading = isLoadingOverview || isLoadingDeposits;
+
+	// This card isn't shown if there are no deposits, so we can bail early.
+	if ( ! hasNextDeposit && ! isLoading && deposits.length === 0 ) {
+		return <></>;
+	}
 
 	return (
-		<>
-			<DepositsOverviewDetails
-				account={ account }
-				overview={ overview }
-				isLoading={ isLoading }
-			/>
-		</>
+		<Card className="wcpay-deposits-overview">
+			<CardHeader>{ strings.heading }</CardHeader>
+			{ /* Only show the next deposit section if the page is loading or if deposits are not blocked. */ }
+			{ ( isLoading || ! account?.deposits_blocked ) && (
+				<>
+					<DepositOverviewSectionHeading
+						title={ strings.nextDeposit.title }
+						text={ strings.nextDeposit.description }
+						isLoading={ isLoading }
+					/>
+					<NextDepositDetails
+						isLoading={ isLoading }
+						overview={ overview }
+					/>
+				</>
+			) }
+			{ /* Only show the deposit history section if the page is finished loading and there are deposits. */ }
+			{ ! isLoading && !! account && !! deposits && deposits.length > 0 && (
+				<>
+					{ account.deposits_blocked ? (
+						<DepositOverviewSectionHeading
+							title={ strings.depositHistoryHeading }
+							children={ <SuspendedDepositNotice /> }
+						/>
+					) : (
+						<DepositOverviewSectionHeading
+							title={ strings.depositHistoryHeading }
+							text={
+								<DepositSchedule
+									{ ...account.deposits_schedule }
+								/>
+							}
+						/>
+					) }
+					<RecentDepositsList deposits={ deposits } />
+				</>
+			) }
+			<DepositsOverviewFooter />
+		</Card>
 	);
 };
 
