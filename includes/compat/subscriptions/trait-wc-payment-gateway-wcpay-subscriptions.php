@@ -16,16 +16,9 @@ use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
+use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Intent_Status;
-use WCPay\Payment\Loader;
-use WCPay\Payment\Flags;
-use WCPay\Payment\Payment_Method\New_Payment_Method;
-use WCPay\Payment\Payment_Method\Saved_Payment_Method;
 use WCPay\Payment\Payment_Service;
-use WCPay\Payment\State\Authentication_Required_State;
-use WCPay\Payment\State\Failed_Preparation_State;
-use WCPay\Payment\State\Processing_Failed_State;
-use WCPay\Payment\Strategy\Subscription_Renewal_Strategy;
 
 /**
  * Gateway class for WooCommerce Payments, with added compatibility with WooCommerce Subscriptions.
@@ -33,13 +26,6 @@ use WCPay\Payment\Strategy\Subscription_Renewal_Strategy;
 trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 	use WC_Payments_Subscriptions_Utilities;
-
-	/**
-	 * A factory for payment objects.
-	 *
-	 * @var Order_Payment_Factory
-	 */
-	protected $payment_factory;
 
 	/**
 	 * Retrieve payment token from a subscription or order.
@@ -319,32 +305,40 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		}
 
 		try {
-			$payment_service = new Payment_Service();
-			$payment_service->process_renewal_payment( $renewal_order, $token );
+			$payment_information = new Payment_Information( '', $renewal_order, Payment_Type::RECURRING(), $token, Payment_Initiated_By::MERCHANT() );
+
+			if ( true || true ) {
+				$payment_service = new Payment_Service();
+				$payment_service->process_renewal_payment( $renewal_order, $token );
+			} else {
+				$this->process_payment_for_order( null, $payment_information, true );
+			}
 		} catch ( API_Exception $e ) {
 			Logger::error( 'Error processing subscription renewal: ' . $e->getMessage() );
 			// TODO: Update to use Order_Service->mark_payment_failed.
 			$renewal_order->update_status( 'failed' );
 
-			$note = sprintf(
-				WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the failed payment amount, %2: error message  */
-					__(
-						'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
-						'woocommerce-payments'
+			if ( ! empty( $payment_information ) ) {
+				$note = sprintf(
+					WC_Payments_Utils::esc_interpolated_html(
+					/* translators: %1: the failed payment amount, %2: error message  */
+						__(
+							'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
+							'woocommerce-payments'
+						),
+						[
+							'strong' => '<strong>',
+							'code'   => '<code>',
+						]
 					),
-					[
-						'strong' => '<strong>',
-						'code'   => '<code>',
-					]
-				),
-				WC_Payments_Explicit_Price_Formatter::get_explicit_price(
-					wc_price( $amount, [ 'currency' => WC_Payments_Utils::get_order_intent_currency( $renewal_order ) ] ),
-					$renewal_order
-				),
-				esc_html( rtrim( $e->getMessage(), '.' ) )
-			);
-			$renewal_order->add_order_note( $note );
+					WC_Payments_Explicit_Price_Formatter::get_explicit_price(
+						wc_price( $amount, [ 'currency' => WC_Payments_Utils::get_order_intent_currency( $renewal_order ) ] ),
+						$renewal_order
+					),
+					esc_html( rtrim( $e->getMessage(), '.' ) )
+				);
+				$renewal_order->add_order_note( $note );
+			}
 		}
 	}
 
@@ -703,6 +697,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 *
 	 * @param int           $order_id  The ID of the order that has been created.
 	 * @param WC_Order|null $order     The order that has been created.
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function maybe_schedule_subscription_order_tracking( $order_id, $order = null ) {
 		if ( ! $this->is_subscriptions_enabled() ) {
@@ -887,7 +883,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return $result;
 		}
 
-		// TEMP Fix – Stripe validates mandate params for cards not
+		// TEMP Fix – Stripe validates mandate params for cards not
 		// issued by Indian banks. Apply them only for INR as Indian banks
 		// only support it for now.
 		$currency = $order->get_currency();
@@ -903,7 +899,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		$amount = WC_Payments_Utils::prepare_amount( $subs_amount, $order->get_currency() );
 
-		// TEMP Fix – Prevent stale free subscription data to throw
+		// TEMP Fix – Prevent stale free subscription data to throw
 		// an error due amount < 1.
 		if ( 0 === $amount ) {
 			return $result;
