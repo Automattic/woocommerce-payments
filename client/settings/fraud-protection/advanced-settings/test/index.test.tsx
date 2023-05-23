@@ -28,6 +28,7 @@ jest.mock( '@wordpress/data', () => ( {
 	dispatch: jest.fn( () => ( {
 		setIsMatching: jest.fn(),
 		createSuccessNotice: jest.fn(),
+		onLoad: jest.fn(),
 	} ) ),
 	registerStore: jest.fn(),
 	select: jest.fn(),

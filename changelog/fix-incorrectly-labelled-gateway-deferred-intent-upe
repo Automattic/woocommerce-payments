@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix incorrectly labelled card gateway for the enabled deferred intent creation UPE
