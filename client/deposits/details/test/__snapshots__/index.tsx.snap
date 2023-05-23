@@ -6,49 +6,67 @@ exports[`Deposit overview renders automatic deposit correctly 1`] = `
     class="wcpay-deposit-overview"
   >
     <div
-      class="components-card is-size-medium wcpay-deposit-automatic css-1xs3c37-CardUI e1q7k77g0"
+      class="components-surface components-card wcpay-deposit-automatic css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Card"
     >
-      <ul>
-        <li
-          class="woocommerce-summary__item-container"
-        >
-          <div
-            class="woocommerce-summary__item"
+      <div
+        class="css-mgwsf4-View-Content em57xhy0"
+      >
+        <ul>
+          <li
+            class="woocommerce-summary__item-container"
           >
             <div
-              class="woocommerce-summary__item-label"
-            >
-              Deposit date: Jan 2, 2020
-            </div>
-            <div
-              class="woocommerce-summary__item-data"
+              class="woocommerce-summary__item"
             >
               <div
-                class="woocommerce-summary__item-value"
+                class="woocommerce-summary__item-label"
+              >
+                Deposit date: Jan 2, 2020
+              </div>
+              <div
+                class="woocommerce-summary__item-data"
               >
                 <div
-                  class="woocommerce-order-status"
+                  class="woocommerce-summary__item-value"
                 >
-                  <span
-                    class="woocommerce-order-status__indicator is-paid"
-                  />
-                  Paid
+                  <div
+                    class="woocommerce-order-status"
+                  >
+                    <span
+                      class="woocommerce-order-status__indicator is-paid"
+                    />
+                    Paid
+                  </div>
                 </div>
               </div>
+              <div
+                class="wcpay-summary__item-detail"
+              >
+                MOCK BANK •••• 1234 (USD)
+              </div>
             </div>
-            <div
-              class="wcpay-summary__item-detail"
-            >
-              MOCK BANK •••• 1234 (USD)
-            </div>
-          </div>
-        </li>
-        <li
-          class="wcpay-deposit-amount"
-        >
-          $20.00
-        </li>
-      </ul>
+          </li>
+          <li
+            class="wcpay-deposit-amount"
+          >
+            $20.00
+          </li>
+        </ul>
+      </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
     </div>
   </div>
 </div>
