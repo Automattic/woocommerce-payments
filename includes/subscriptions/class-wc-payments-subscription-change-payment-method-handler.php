@@ -109,7 +109,7 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 	public function redirect_pay_for_order_to_update_payment_method() {
 		global $wp;
 
-		if ( ! isset( $_GET['pay_for_order'], $_GET['key'] ) || ! empty( $_GET['change_payment_method'] ) || ( ! isset( $_GET['order_id'] ) && ! isset( $wp->query_vars['order-pay'] ) ) ) {
+		if ( ! isset( $_GET['pay_for_order'], $_GET['key'] ) || ! empty( $_GET['change_payment_method'] ) || ( ! isset( $_GET['order_id'] ) && ! isset( $wp->query_vars['order-pay'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return;
 		}
 
