@@ -12,7 +12,7 @@ import '@wordpress/jest-console';
 import PaymentDetailsSummary from '../';
 import { Charge } from 'wcpay/types/charges';
 import { useAuthorization } from 'wcpay/data';
-import { paymentIntentMock } from '../../../data/payment-intents/test/hooks';
+import { paymentIntentMock } from 'wcpay/data/payment-intents/test/hooks';
 
 declare const global: {
 	wcSettings: {

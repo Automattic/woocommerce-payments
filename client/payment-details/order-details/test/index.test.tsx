@@ -11,14 +11,10 @@ import React from 'react';
  * Internal dependencies
  */
 import PaymentOrderDetails from '..';
-import { chargeMock } from '../../../data/payment-intents/test/hooks';
-import { STORE_NAME } from '../../../data/constants';
-import {
-	useAuthorization,
-	useChargeFromOrder,
-	useTimeline,
-} from '../../../data';
-import { ApiError } from '../../../types/errors';
+import { chargeMock } from 'wcpay/data/payment-intents/test/hooks';
+import { STORE_NAME } from 'wcpay/data/constants';
+import { useAuthorization, useChargeFromOrder, useTimeline } from 'wcpay/data';
+import { ApiError } from 'wcpay/types/errors';
 
 declare const global: {
 	wcSettings: { countries: Record< string, string > };
