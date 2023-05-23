@@ -473,7 +473,11 @@ class WC_Payments {
 				self::$upe_payment_method_map[ $payment_method->get_id() ] = $payment_method;
 
 				$split_gateway = new UPE_Split_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service );
-				$split_gateway->init_hooks();
+
+				// Card gateway hooks are registered once below.
+				if ( 'card' !== $payment_method->get_id() ) {
+					$split_gateway->init_hooks();
+				}
 
 				self::$upe_payment_gateway_map[ $payment_method->get_id() ] = $split_gateway;
 			}
