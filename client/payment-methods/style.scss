@@ -1,7 +1,7 @@
 .payment-methods {
 	position: relative;
 
-	.wcpay-card-body {
+	.wcpay-card-body:not( .payment-methods__express-checkouts ) {
 		padding: 0;
 	}
 
