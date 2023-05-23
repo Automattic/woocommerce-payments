@@ -130,7 +130,7 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 			if ( ! empty( $subscriptions ) ) {
 				$subscription = array_pop( $subscriptions );
 
-				if ( $subscription && WC_Payments_Invoice_Service::get_pending_invoice_id( $subscription ) ) {
+				if ( $subscription && current_user_can( 'edit_shop_subscription_payment_method', $subscription->get_id() ) && WC_Payments_Invoice_Service::get_pending_invoice_id( $subscription ) ) {
 					wp_safe_redirect( $this->get_subscription_update_payment_url( $subscription ) );
 					exit;
 				}
