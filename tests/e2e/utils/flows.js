@@ -846,7 +846,16 @@ export const merchantWCP = {
 
 		if ( settings ) {
 			for ( const [ selector, value ] of Object.entries( settings ) ) {
-				await expect( page ).toFill( selector, value );
+				const settingInput = await page.waitForSelector( selector );
+
+				await settingInput.click( { clickCount: 3 } );
+				await page.keyboard.press( 'Backspace' );
+
+				if ( '' !== value ) {
+					await page.keyboard.type( value );
+				}
+
+				await page.waitFor( 500 );
 			}
 		}
 
