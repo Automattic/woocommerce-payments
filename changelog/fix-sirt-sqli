@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix a security incident where shop managere role was able to perform SQLi.
