@@ -2,7 +2,7 @@
  * External Dependencies
  */
 import React, { useRef, useState } from 'react';
-import { Icon, check, chevronDown, chevronUp } from '@wordpress/icons';
+import { check, chevronDown, chevronUp, Icon } from '@wordpress/icons';
 import classNames from 'classnames';
 import { __ } from '@wordpress/i18n';
 import { useSelect, UseSelectState } from 'downshift';
@@ -24,7 +24,7 @@ export interface ListItem {
 export interface GroupedSelectControlProps< ItemType > {
 	label: string;
 	options: ItemType[];
-	value?: ItemType;
+	value?: ItemType | null;
 	placeholder?: string;
 	searchable?: boolean;
 	className?: string;
@@ -72,7 +72,7 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 		getItemProps,
 	} = useSelect( {
 		items: itemsToRender,
-		itemToString: ( item ) => item.name,
+		itemToString: ( item ) => item?.name || '',
 		selectedItem: value || ( {} as ItemType ),
 		onSelectedItemChange,
 		stateReducer: ( state, { changes, type } ) => {
@@ -179,7 +179,7 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 				} ) }
 			>
 				<span className="wcpay-component-grouped-select-control__button-value">
-					{ selectedItem.name || placeholder }
+					{ selectedItem?.name || placeholder }
 				</span>
 				<Icon
 					icon={ chevronDown }
@@ -231,7 +231,7 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 										<div className="wcpay-component-grouped-select-control__item-content">
 											{ item.name }
 										</div>
-										{ item.key === selectedItem.key && (
+										{ item.key === selectedItem?.key && (
 											<Icon icon={ check } />
 										) }
 										{ ! searchText && isGroup && (
