@@ -152,7 +152,7 @@
     "is-ci": "3.0.0",
     "iti": "0.6.0",
     "lint-staged": "10.5.4",
-    "mini-css-extract-plugin": "2.3.0",
+    "mini-css-extract-plugin": "2.7.6",
     "moment": "2.29.4",
     "node-wp-i18n": "1.2.5",
     "postcss": "8.3.5",
