@@ -137,7 +137,6 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 			}
 		}
 	}
-	}
 
 	/**
 	 * Modifies the change payment method page title (and page breadcrumbs) when updating card details for WC Pay subscriptions.
