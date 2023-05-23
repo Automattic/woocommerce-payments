@@ -115,7 +115,7 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 		}
 
 		$order_id  = ( isset( $wp->query_vars['order-pay'] ) ) ? absint( $wp->query_vars['order-pay'] ) : absint( $_GET['order_id'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$order_key = isset( $_GET['key'] ) ? wc_clean( wp_unslash( $_GET['key'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$order_key = wc_clean( wp_unslash( $_GET['key'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$order     = wc_get_order( $order_id );
 
 		if ( ! $order || ! hash_equals( $order->get_order_key(), $order_key ) || ! current_user_can( 'pay_for_order', $order->get_id() ) ) {
