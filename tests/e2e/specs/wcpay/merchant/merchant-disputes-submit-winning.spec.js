@@ -2,6 +2,11 @@
  * External dependencies
  */
 import config from 'config';
+/**
+ * Internal dependencies
+ */
+import { merchantWCP, uiLoaded } from '../../../utils';
+import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
 
 const {
 	merchant,
@@ -9,12 +14,6 @@ const {
 	evalAndClick,
 	uiUnblocked,
 } = require( '@woocommerce/e2e-utils' );
-
-/**
- * Internal dependencies
- */
-import { merchantWCP, uiLoaded } from '../../../utils';
-import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
 
 let orderId;
 
@@ -84,7 +83,7 @@ describe( 'Disputes > Submit winning dispute', () => {
 			}
 		);
 		await expect( page ).toMatchElement(
-			'div.wcpay-dispute-details .components-card > .components-card__header',
+			'div.wcpay-dispute-details .components-card .components-card__header',
 			{
 				text: 'Dispute: Fraudulent',
 			}
@@ -154,7 +153,7 @@ describe( 'Disputes > Submit winning dispute', () => {
 
 		// Check view submitted evidence is present on page.
 		await expect( page ).toMatchElement(
-			'div.wcpay-dispute-details .components-card > div.components-flex > div > a',
+			'div.wcpay-dispute-details .components-card div.components-flex > div > a',
 			{
 				text: 'View submitted evidence',
 			}

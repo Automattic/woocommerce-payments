@@ -47,17 +47,22 @@
 		padding-top: 0;
 	}
 
+	// Override display:block on the first FlexItem with the date and icon
+	.wcpay-deposits-overview__table__cell:first-child {
+		display: flex;
+	}
+
 	&__table {
 		&__row {
 			&__header {
 				font-weight: 600;
+
 				div {
 					padding: 8px 0;
 				}
 			}
 		}
 		&__cell {
-			display: flex;
 			font-size: 13px;
 			align-items: center;
 			padding: 16px 0;
