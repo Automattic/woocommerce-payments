@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Avoid redirecting customers to the change subscription payment method URL erroneously after viewing a Pay for renewal order URL
