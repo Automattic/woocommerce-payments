@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Ensures WCPay is present as default gateway on WC Settings screen when split UPE is enabled.
