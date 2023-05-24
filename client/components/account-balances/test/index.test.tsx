@@ -8,11 +8,10 @@ import { render, screen, fireEvent, within } from '@testing-library/react';
  * Internal dependencies
  */
 import AccountBalances from '../';
-import AccountBalancesHeader from '../header';
 import AccountBalancesTabPanel from '../balances-tab-panel';
-
-import { getGreeting, getCurrencyTabTitle } from '../utils';
-import { useCurrentWpUser } from '../hooks';
+import { getCurrencyTabTitle } from '../utils';
+import { getGreeting } from 'components/account-overview-header/utils';
+import { useCurrentWpUser } from 'components/account-overview-header/hooks';
 import { useAllDepositsOverviews, useInstantDeposit } from 'wcpay/data';
 import { useSelectedCurrency } from 'wcpay/overview/hooks';
 
@@ -70,11 +69,14 @@ const mockWcPaySettings = {
 
 jest.mock( '../utils', () => ( {
 	getTimeOfDayString: jest.fn(),
-	getGreeting: jest.fn(),
 	getCurrencyTabTitle: jest.fn(),
 } ) );
 
-jest.mock( '../hooks', () => ( {
+jest.mock( 'components/account-overview-header/utils', () => ( {
+	getGreeting: jest.fn(),
+} ) );
+
+jest.mock( 'components/account-overview-header/hooks', () => ( {
 	useCurrentWpUser: jest.fn(),
 } ) );
 
@@ -204,19 +206,6 @@ describe( 'AccountBalances', () => {
 
 		const { container } = render( <AccountBalances /> );
 		expect( container ).toMatchSnapshot();
-	} );
-} );
-
-describe( 'AccountBalancesHeader', () => {
-	test( 'renders the correct greeting in the header', () => {
-		const expectedGreeting = 'Good afternoon, Tester 👋';
-		mockGetGreeting.mockReturnValue( expectedGreeting );
-		mockUseCurrentWpUser.mockReturnValue( {
-			user: mockUser,
-			isLoading: false,
-		} );
-		const { getByText } = render( <AccountBalancesHeader /> );
-		getByText( expectedGreeting );
 	} );
 } );
 

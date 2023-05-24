@@ -11,17 +11,17 @@ exports[`AccountBalances renders 1`] = `
       class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="components-flex components-card__header components-card-header wcpay-account-balances__header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+        class="components-flex components-card__header components-card-header wcpay-account-overview-header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardHeader"
       >
         <div
-          class="components-flex wcpay-account-balances__header__flex css-1giw1wa-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex wcpay-account-overview-header__flex css-1giw1wa-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item wcpay-account-balances__header__flex__greeting css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-account-overview-header__flex__greeting css-mw3lhz-View-Item-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -34,7 +34,7 @@ exports[`AccountBalances renders 1`] = `
           >
             <img
               alt="Woo Payments logo"
-              class="wcpay-account-balances__header__flex__logo"
+              class="wcpay-account-overview-header__flex__logo"
               src="assets/images/woopayments.svg"
               width="107"
             />

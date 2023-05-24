@@ -3,7 +3,7 @@
  */
 import { getTimeOfDayString, getGreeting } from '../utils';
 
-describe( 'Account Balances Utils', () => {
+describe( 'Account Overview Header Utils', () => {
 	it( 'getTimeOfDayString returns the correct time of day', () => {
 		const date = new Date();
 		// set the time to 8am

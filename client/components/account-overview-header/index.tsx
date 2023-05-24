@@ -17,23 +17,23 @@ import './style.scss';
  *
  * @return {JSX.Element} Rendered element with the account balances card header.
  */
-const AccountBalancesHeader: React.FC = () => {
+const AccountOverviewHeader: React.FC = () => {
 	const { user } = useCurrentWpUser();
 	const greeting = getGreeting( user?.first_name );
 
 	return (
-		<CardHeader className="wcpay-account-balances__header">
+		<CardHeader className="wcpay-account-overview-header">
 			<Flex
 				align="center"
 				justify="space-between"
-				className="wcpay-account-balances__header__flex"
+				className="wcpay-account-overview-header__flex"
 			>
-				<FlexItem className="wcpay-account-balances__header__flex__greeting">
+				<FlexItem className="wcpay-account-overview-header__flex__greeting">
 					{ greeting }
 				</FlexItem>
 				<FlexItem>
 					<img
-						className="wcpay-account-balances__header__flex__logo"
+						className="wcpay-account-overview-header__flex__logo"
 						src={ wooPaymentsLogo }
 						alt="Woo Payments logo"
 						width={ 107 }
@@ -44,4 +44,4 @@ const AccountBalancesHeader: React.FC = () => {
 	);
 };
 
-export default AccountBalancesHeader;
+export default AccountOverviewHeader;

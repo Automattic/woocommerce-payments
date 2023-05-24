@@ -2,18 +2,18 @@
  * External dependencies
  */
 import React from 'react';
-import { Card, Notice } from '@wordpress/components';
+import { Card } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import AccountBalancesHeader from './header';
 import './style.scss';
 import AccountBalancesTabPanel from './balances-tab-panel';
+import AccountOverviewHeader from 'components/account-overview-header';
 
 interface Props {
 	/**
-	 * The number of the disputes that need a response.
+	 * The number of disputes that need a response.
 	 */
 	numDisputesNeedingResponse?: number;
 }
@@ -28,18 +28,14 @@ const AccountBalances: React.FC< Props > = ( {
 	numDisputesNeedingResponse = 0,
 } ) => {
 	if ( numDisputesNeedingResponse > 0 ) {
-		// When there are disputes that need a response, we want to show the
-		// welcome header and the notice at the top of the page, separate from
-		// the tab panel.
+		// If there are disputes that need a response, we want to show the
+		// welcome header and the notice at the top of the page, in a separate card
+		// to the balances tab panel.
 		return (
 			<>
 				<Card>
-					<AccountBalancesHeader />
-					<Notice status="error" isDismissible={ false }>
-						{ numDisputesNeedingResponse } disputes need a response
-					</Notice>
+					<AccountOverviewHeader />
 				</Card>
-
 				<Card className="wcpay-account-balances">
 					<AccountBalancesTabPanel />
 				</Card>
@@ -49,7 +45,7 @@ const AccountBalances: React.FC< Props > = ( {
 
 	return (
 		<Card className="wcpay-account-balances">
-			<AccountBalancesHeader />
+			<AccountOverviewHeader />
 
 			<AccountBalancesTabPanel />
 		</Card>
