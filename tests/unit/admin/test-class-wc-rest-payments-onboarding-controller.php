@@ -107,7 +107,7 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 			[
 				'country'   => 'US',
 				'type'      => 'company',
-				'structure' => 'sole_propreitor',
+				'structure' => 'sole_proprietor',
 			]
 		);
 		$response = $this->controller->get_required_verification_information( $request );
@@ -130,13 +130,16 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_body_params(
 			[
-				'business' => [
-					'country'           => 'US',
-					'type'              => 'company',
-					'mcc'               => 'software_services',
+				'business'        => [
+					'country' => 'US',
+					'type'    => 'company',
+					'mcc'     => 'most_popular__software_services',
+				],
+				'store'           => [
 					'annual_revenue'    => 'less_than_250k',
 					'go_live_timeframe' => 'within_1month',
 				],
+				'woo_store_stats' => [],
 			]
 		);
 
@@ -165,13 +168,17 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_body_params(
 			[
-				'business' => [
-					'country'           => 'US',
-					'type'              => 'company',
-					'mcc'               => 'software_services',
-					'annual_revenue'    => 'from_1m_to_20m',
-					'go_live_timeframe' => 'from_1_to_3months',
+
+				'business'        => [
+					'country' => 'US',
+					'type'    => 'company',
+					'mcc'     => 'most_popular__software_services',
 				],
+				'store'           => [
+					'annual_revenue'    => 'from_1m_to_20m',
+					'go_live_timeframe' => 'from_1_to_3months', // Fails because of the go live timeframe.
+				],
+				'woo_store_stats' => [],
 			]
 		);
 
