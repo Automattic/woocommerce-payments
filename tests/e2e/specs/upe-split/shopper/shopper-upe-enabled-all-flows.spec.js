@@ -11,16 +11,20 @@ import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
 const { shopper, merchant, uiUnblocked } = require( '@woocommerce/e2e-utils' );
 
 const MIN_WAIT_TIME_BETWEEN_PAYMENT_METHODS = 20000;
-
-const sepaPaymentMethod = '#inspector-checkbox-control-8';
+const UPE_METHOD_CHECKBOXES = [
+	'#inspector-checkbox-control-3', // bancontact
+	'#inspector-checkbox-control-4', // eps
+	'#inspector-checkbox-control-5', // giropay
+	'#inspector-checkbox-control-6', // ideal
+	'#inspector-checkbox-control-7', // sofort
+];
 const card = config.get( 'cards.basic' );
 
 describe( 'Enabled Split UPE', () => {
 	beforeAll( async () => {
 		await merchant.login();
 		await merchantWCP.activateSplitUpe();
-		// enable SEPA
-		await merchantWCP.enablePaymentMethod( [ sepaPaymentMethod ] );
+		await merchantWCP.enablePaymentMethod( UPE_METHOD_CHECKBOXES );
 		await merchant.logout();
 		await shopper.login();
 		await shopperWCP.changeAccountCurrencyTo( 'EUR' );
@@ -30,8 +34,7 @@ describe( 'Enabled Split UPE', () => {
 		await shopperWCP.changeAccountCurrencyTo( 'USD' );
 		await shopperWCP.logout();
 		await merchant.login();
-		//disable SEPA
-		await merchantWCP.disablePaymentMethod( [ sepaPaymentMethod ] );
+		await merchantWCP.disablePaymentMethod( UPE_METHOD_CHECKBOXES );
 		await merchantWCP.deactivateSplitUpe();
 		await merchant.logout();
 	} );
