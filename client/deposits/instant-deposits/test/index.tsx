@@ -22,12 +22,6 @@ mockUseInstantDeposit.mockReturnValue( {
 	submit: () => null,
 } );
 
-// eslint-disable-next-line no-unused-vars
-const isButtonDisabled = jest
-	.fn()
-	.mockReturnValue( false ) // Default response to show enabled button.
-	.mockReturnValueOnce( true ); // Response for first test that should have button disabled.
-
 const mockInstantBalance = {
 	amount: 12345,
 	fee: 123.45,

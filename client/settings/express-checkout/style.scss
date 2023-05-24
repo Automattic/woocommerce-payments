@@ -1,4 +1,8 @@
 .express-checkouts {
+	.wcpay-card-body {
+		padding: 0;
+	}
+
 	.express-checkouts-list {
 		.express-checkout {
 			display: flex;
@@ -17,6 +21,7 @@
 			&__description {
 				color: #757575;
 				font-size: 12px;
+				padding: 1px;
 			}
 
 			&:not( :last-child ) {
