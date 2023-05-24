@@ -3,83 +3,105 @@
 exports[`Address mismatch card renders correctly 1`] = `
 <div>
   <div
-    class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
     id="address-mismatch-card"
   >
     <div
-      class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
-    >
-      <div>
-        <p
-          class="fraud-protection-rule-card-header"
-        >
-          Address Mismatch
-        </p>
-        <p
-          class="fraud-protection-rule-card-description"
-        >
-          This filter screens for differences between the shipping information and the billing information (country).
-        </p>
-      </div>
-    </div>
-    <hr />
-    <div
-      class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
+      class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="fraud-protection-rule-toggle"
+        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
-        <strong>
-          Enable filtering
-        </strong>
-        <div
-          class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
-        >
-          <div
-            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-          >
-            <span
-              class="components-form-toggle"
-            >
-              <input
-                aria-describedby="inspector-toggle-control-0__help"
-                class="components-form-toggle__input"
-                id="inspector-toggle-control-0"
-                type="checkbox"
-              />
-              <span
-                class="components-form-toggle__track"
-              />
-              <span
-                class="components-form-toggle__thumb"
-              />
-            </span>
-            <label
-              class="components-toggle-control__label"
-              for="inspector-toggle-control-0"
-            >
-              Block transactions for mismatched addresses
-            </label>
-          </div>
+        <div>
           <p
-            class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-            id="inspector-toggle-control-0__help"
+            class="fraud-protection-rule-card-header"
           >
-            When enabled, the payment will be blocked.
+            Address Mismatch
+          </p>
+          <p
+            class="fraud-protection-rule-card-description"
+          >
+            This filter screens for differences between the shipping information and the billing information (country).
           </p>
         </div>
       </div>
+      <hr />
       <div
-        class="fraud-protection-rule-description"
+        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
-        <strong>
-          How does this filter protect me?
-        </strong>
-        <p>
-          There are legitimate reasons for a billing/shipping mismatch with a customer purchase, but a mismatch could also indicate that someone is using a stolen identity to complete a purchase.
-        </p>
+        <div
+          class="fraud-protection-rule-toggle"
+        >
+          <strong>
+            Enable filtering
+          </strong>
+          <div
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
+          >
+            <div
+              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+            >
+              <span
+                class="components-form-toggle"
+              >
+                <input
+                  aria-describedby="inspector-toggle-control-0__help"
+                  class="components-form-toggle__input"
+                  id="inspector-toggle-control-0"
+                  type="checkbox"
+                />
+                <span
+                  class="components-form-toggle__track"
+                />
+                <span
+                  class="components-form-toggle__thumb"
+                />
+              </span>
+              <label
+                class="components-toggle-control__label"
+                for="inspector-toggle-control-0"
+              >
+                Block transactions for mismatched addresses
+              </label>
+            </div>
+            <p
+              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
+              id="inspector-toggle-control-0__help"
+            >
+              When enabled, the payment will be blocked.
+            </p>
+          </div>
+        </div>
+        <div
+          class="fraud-protection-rule-description"
+        >
+          <strong>
+            How does this filter protect me?
+          </strong>
+          <p>
+            There are legitimate reasons for a billing/shipping mismatch with a customer purchase, but a mismatch could also indicate that someone is using a stolen identity to complete a purchase.
+          </p>
+        </div>
       </div>
     </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
   </div>
 </div>
 `;
@@ -87,84 +109,106 @@ exports[`Address mismatch card renders correctly 1`] = `
 exports[`Address mismatch card renders correctly when enabled 1`] = `
 <div>
   <div
-    class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
     id="address-mismatch-card"
   >
     <div
-      class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
-    >
-      <div>
-        <p
-          class="fraud-protection-rule-card-header"
-        >
-          Address Mismatch
-        </p>
-        <p
-          class="fraud-protection-rule-card-description"
-        >
-          This filter screens for differences between the shipping information and the billing information (country).
-        </p>
-      </div>
-    </div>
-    <hr />
-    <div
-      class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
+      class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="fraud-protection-rule-toggle"
+        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
-        <strong>
-          Enable filtering
-        </strong>
-        <div
-          class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
-        >
-          <div
-            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-          >
-            <span
-              class="components-form-toggle is-checked"
-            >
-              <input
-                aria-describedby="inspector-toggle-control-1__help"
-                class="components-form-toggle__input"
-                id="inspector-toggle-control-1"
-                type="checkbox"
-              />
-              <span
-                class="components-form-toggle__track"
-              />
-              <span
-                class="components-form-toggle__thumb"
-              />
-            </span>
-            <label
-              class="components-toggle-control__label"
-              for="inspector-toggle-control-1"
-            >
-              Block transactions for mismatched addresses
-            </label>
-          </div>
+        <div>
           <p
-            class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-            id="inspector-toggle-control-1__help"
+            class="fraud-protection-rule-card-header"
           >
-            The payment will be blocked.
+            Address Mismatch
+          </p>
+          <p
+            class="fraud-protection-rule-card-description"
+          >
+            This filter screens for differences between the shipping information and the billing information (country).
           </p>
         </div>
-        <div />
       </div>
+      <hr />
       <div
-        class="fraud-protection-rule-description"
+        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
-        <strong>
-          How does this filter protect me?
-        </strong>
-        <p>
-          There are legitimate reasons for a billing/shipping mismatch with a customer purchase, but a mismatch could also indicate that someone is using a stolen identity to complete a purchase.
-        </p>
+        <div
+          class="fraud-protection-rule-toggle"
+        >
+          <strong>
+            Enable filtering
+          </strong>
+          <div
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
+          >
+            <div
+              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+            >
+              <span
+                class="components-form-toggle is-checked"
+              >
+                <input
+                  aria-describedby="inspector-toggle-control-1__help"
+                  class="components-form-toggle__input"
+                  id="inspector-toggle-control-1"
+                  type="checkbox"
+                />
+                <span
+                  class="components-form-toggle__track"
+                />
+                <span
+                  class="components-form-toggle__thumb"
+                />
+              </span>
+              <label
+                class="components-toggle-control__label"
+                for="inspector-toggle-control-1"
+              >
+                Block transactions for mismatched addresses
+              </label>
+            </div>
+            <p
+              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
+              id="inspector-toggle-control-1__help"
+            >
+              The payment will be blocked.
+            </p>
+          </div>
+          <div />
+        </div>
+        <div
+          class="fraud-protection-rule-description"
+        >
+          <strong>
+            How does this filter protect me?
+          </strong>
+          <p>
+            There are legitimate reasons for a billing/shipping mismatch with a customer purchase, but a mismatch could also indicate that someone is using a stolen identity to complete a purchase.
+          </p>
+        </div>
       </div>
     </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
   </div>
 </div>
 `;
@@ -172,84 +216,106 @@ exports[`Address mismatch card renders correctly when enabled 1`] = `
 exports[`Address mismatch card renders correctly when enabled and checked 1`] = `
 <div>
   <div
-    class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
     id="address-mismatch-card"
   >
     <div
-      class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
-    >
-      <div>
-        <p
-          class="fraud-protection-rule-card-header"
-        >
-          Address Mismatch
-        </p>
-        <p
-          class="fraud-protection-rule-card-description"
-        >
-          This filter screens for differences between the shipping information and the billing information (country).
-        </p>
-      </div>
-    </div>
-    <hr />
-    <div
-      class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
+      class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="fraud-protection-rule-toggle"
+        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
-        <strong>
-          Enable filtering
-        </strong>
-        <div
-          class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
-        >
-          <div
-            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-          >
-            <span
-              class="components-form-toggle is-checked"
-            >
-              <input
-                aria-describedby="inspector-toggle-control-2__help"
-                class="components-form-toggle__input"
-                id="inspector-toggle-control-2"
-                type="checkbox"
-              />
-              <span
-                class="components-form-toggle__track"
-              />
-              <span
-                class="components-form-toggle__thumb"
-              />
-            </span>
-            <label
-              class="components-toggle-control__label"
-              for="inspector-toggle-control-2"
-            >
-              Block transactions for mismatched addresses
-            </label>
-          </div>
+        <div>
           <p
-            class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-            id="inspector-toggle-control-2__help"
+            class="fraud-protection-rule-card-header"
           >
-            The payment will be blocked.
+            Address Mismatch
+          </p>
+          <p
+            class="fraud-protection-rule-card-description"
+          >
+            This filter screens for differences between the shipping information and the billing information (country).
           </p>
         </div>
-        <div />
       </div>
+      <hr />
       <div
-        class="fraud-protection-rule-description"
+        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
-        <strong>
-          How does this filter protect me?
-        </strong>
-        <p>
-          There are legitimate reasons for a billing/shipping mismatch with a customer purchase, but a mismatch could also indicate that someone is using a stolen identity to complete a purchase.
-        </p>
+        <div
+          class="fraud-protection-rule-toggle"
+        >
+          <strong>
+            Enable filtering
+          </strong>
+          <div
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
+          >
+            <div
+              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+            >
+              <span
+                class="components-form-toggle is-checked"
+              >
+                <input
+                  aria-describedby="inspector-toggle-control-2__help"
+                  class="components-form-toggle__input"
+                  id="inspector-toggle-control-2"
+                  type="checkbox"
+                />
+                <span
+                  class="components-form-toggle__track"
+                />
+                <span
+                  class="components-form-toggle__thumb"
+                />
+              </span>
+              <label
+                class="components-toggle-control__label"
+                for="inspector-toggle-control-2"
+              >
+                Block transactions for mismatched addresses
+              </label>
+            </div>
+            <p
+              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
+              id="inspector-toggle-control-2__help"
+            >
+              The payment will be blocked.
+            </p>
+          </div>
+          <div />
+        </div>
+        <div
+          class="fraud-protection-rule-description"
+        >
+          <strong>
+            How does this filter protect me?
+          </strong>
+          <p>
+            There are legitimate reasons for a billing/shipping mismatch with a customer purchase, but a mismatch could also indicate that someone is using a stolen identity to complete a purchase.
+          </p>
+        </div>
       </div>
     </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
   </div>
 </div>
 `;
@@ -257,83 +323,105 @@ exports[`Address mismatch card renders correctly when enabled and checked 1`] = 
 exports[`Address mismatch card renders like disabled when checked, but not enabled 1`] = `
 <div>
   <div
-    class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
     id="address-mismatch-card"
   >
     <div
-      class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
-    >
-      <div>
-        <p
-          class="fraud-protection-rule-card-header"
-        >
-          Address Mismatch
-        </p>
-        <p
-          class="fraud-protection-rule-card-description"
-        >
-          This filter screens for differences between the shipping information and the billing information (country).
-        </p>
-      </div>
-    </div>
-    <hr />
-    <div
-      class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
+      class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="fraud-protection-rule-toggle"
+        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
-        <strong>
-          Enable filtering
-        </strong>
-        <div
-          class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
-        >
-          <div
-            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-          >
-            <span
-              class="components-form-toggle"
-            >
-              <input
-                aria-describedby="inspector-toggle-control-3__help"
-                class="components-form-toggle__input"
-                id="inspector-toggle-control-3"
-                type="checkbox"
-              />
-              <span
-                class="components-form-toggle__track"
-              />
-              <span
-                class="components-form-toggle__thumb"
-              />
-            </span>
-            <label
-              class="components-toggle-control__label"
-              for="inspector-toggle-control-3"
-            >
-              Block transactions for mismatched addresses
-            </label>
-          </div>
+        <div>
           <p
-            class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-            id="inspector-toggle-control-3__help"
+            class="fraud-protection-rule-card-header"
           >
-            When enabled, the payment will be blocked.
+            Address Mismatch
+          </p>
+          <p
+            class="fraud-protection-rule-card-description"
+          >
+            This filter screens for differences between the shipping information and the billing information (country).
           </p>
         </div>
       </div>
+      <hr />
       <div
-        class="fraud-protection-rule-description"
+        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
-        <strong>
-          How does this filter protect me?
-        </strong>
-        <p>
-          There are legitimate reasons for a billing/shipping mismatch with a customer purchase, but a mismatch could also indicate that someone is using a stolen identity to complete a purchase.
-        </p>
+        <div
+          class="fraud-protection-rule-toggle"
+        >
+          <strong>
+            Enable filtering
+          </strong>
+          <div
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
+          >
+            <div
+              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+            >
+              <span
+                class="components-form-toggle"
+              >
+                <input
+                  aria-describedby="inspector-toggle-control-3__help"
+                  class="components-form-toggle__input"
+                  id="inspector-toggle-control-3"
+                  type="checkbox"
+                />
+                <span
+                  class="components-form-toggle__track"
+                />
+                <span
+                  class="components-form-toggle__thumb"
+                />
+              </span>
+              <label
+                class="components-toggle-control__label"
+                for="inspector-toggle-control-3"
+              >
+                Block transactions for mismatched addresses
+              </label>
+            </div>
+            <p
+              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
+              id="inspector-toggle-control-3__help"
+            >
+              When enabled, the payment will be blocked.
+            </p>
+          </div>
+        </div>
+        <div
+          class="fraud-protection-rule-description"
+        >
+          <strong>
+            How does this filter protect me?
+          </strong>
+          <p>
+            There are legitimate reasons for a billing/shipping mismatch with a customer purchase, but a mismatch could also indicate that someone is using a stolen identity to complete a purchase.
+          </p>
+        </div>
       </div>
     </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
   </div>
 </div>
 `;

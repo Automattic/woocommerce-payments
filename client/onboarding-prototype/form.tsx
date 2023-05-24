@@ -11,12 +11,12 @@ import { isEmpty, mapValues } from 'lodash';
 import { useStepperContext } from 'components/stepper';
 import { Item } from 'components/custom-select-control';
 import {
-	TextField,
-	TextFieldProps,
-	SelectField,
-	SelectFieldProps,
 	PhoneNumberField,
 	PhoneNumberFieldProps,
+	SelectField,
+	SelectFieldProps,
+	TextField,
+	TextFieldProps,
 } from 'components/form/fields';
 import { useOnboardingContext } from './context';
 import { OnboardingFields } from './types';
@@ -110,7 +110,7 @@ export const OnboardingPhoneNumberField: React.FC< OnboardingPhoneNumberFieldPro
 interface OnboardingSelectFieldProps< ItemType >
 	extends Partial< Omit< SelectFieldProps< ItemType >, 'onChange' > > {
 	name: keyof OnboardingFields;
-	onChange?: ( name: keyof OnboardingFields, item?: ItemType ) => void;
+	onChange?: ( name: keyof OnboardingFields, item?: ItemType | null ) => void;
 }
 
 export const OnboardingSelectField = < ItemType extends Item >( {
