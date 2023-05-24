@@ -60,13 +60,13 @@ const Info = ( {
 } ): JSX.Element => {
 	const data: Record< string, any > = isLoading
 		? {
-				created: 'Created date',
-				amount: 'Amount',
-				dueBy: 'Due by date',
-				reason: 'Dispute reason',
-				order: 'Order link',
-				customer: 'Customer name',
-				transactionId: 'Transaction link',
+				created: __( 'Created date', 'woocommerce-payments' ),
+				amount: __( 'Amount', 'woocommerce-payments' ),
+				dueBy: __( 'Due by date', 'woocommerce-payments' ),
+				reason: __( 'Dispute reason', 'woocommerce-payments' ),
+				order: __( 'Order link', 'woocommerce-payments' ),
+				customer: __( 'Customer name', 'woocommerce-payments' ),
+				transactionId: __( 'Transaction link', 'woocommerce-payments' ),
 		  }
 		: {
 				created: dateI18n(

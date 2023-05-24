@@ -319,14 +319,21 @@ export const handleWooPayEmailInput = async (
 					return response.data;
 				}
 
-				throw new Error( 'Request for signature failed.' );
+				throw new Error(
+					__(
+						'Request for signature failed.',
+						'woocommerce-payments'
+					)
+				);
 			} )
 			.then( ( data ) => {
 				if ( data.signature ) {
 					return data.signature;
 				}
 
-				throw new Error( 'Signature not found.' );
+				throw new Error(
+					__( 'Signature not found.', 'woocommerce-payments' )
+				);
 			} )
 			.then( ( signature ) => {
 				const emailExistsQuery = new URLSearchParams();

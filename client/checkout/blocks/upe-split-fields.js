@@ -236,8 +236,10 @@ const WCPayUPEFields = ( {
 				) {
 					return {
 						type: 'error',
-						message:
+						message: __(
 							'This payment method can not be saved for future use.',
+							'woocommerce-payment'
+						),
 					};
 				}
 
@@ -438,7 +440,10 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 				setErrorMessage(
 					error.message
 						? error.message
-						: 'There was an error loading the payment gateway.'
+						: __(
+								'There was an error loading the payment gateway.',
+								'woocommerce-payments'
+						  )
 				);
 			}
 		}

@@ -69,14 +69,14 @@ const formatPaymentMethodDetails = ( charge ) => {
  */
 const paymentMethodPlaceholders = {
 	last4: '0000',
-	fingerprint: 'fingerprint placeholder',
-	date: 'date placeholder',
-	cardType: 'card type placeholder',
-	id: 'id placeholder',
-	name: 'name placeholder',
-	email: 'email placeholder',
-	formattedAddress: 'address placeholder',
-	country: 'country placeholder',
+	fingerprint: __( 'fingerprint placeholder', 'woocommerce-payments' ),
+	date: __( 'date placeholder', 'woocommerce-payments' ),
+	cardType: __( 'card type placeholder', 'woocommerce-payments' ),
+	id: __( 'id placeholder', 'woocommerce-payments' ),
+	name: __( 'name placeholder', 'woocommerce-payments' ),
+	email: __( 'email placeholder', 'woocommerce-payments' ),
+	formattedAddress: __( 'address placeholder', 'woocommerce-payments' ),
+	country: __( 'country placeholder', 'woocommerce-payments' ),
 };
 
 const CardPresentDetails = ( { charge = {}, isLoading } ) => {

@@ -93,9 +93,10 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 					className="wcpay-deposits-overview__business-day-delay-notice"
 					status="info"
 					icon={ <InfoOutlineIcon /> }
-					children={
-						'Deposits pending or in-transit may take 1-2 business days to appear in your bank account once dispatched'
-					}
+					children={ __(
+						'Deposits pending or in-transit may take 1-2 business days to appear in your bank account once dispatched',
+						'woocommerce-payments'
+					) }
 					isDismissible={ false }
 				/>
 			) }

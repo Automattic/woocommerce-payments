@@ -54,7 +54,10 @@ const ActiveLoanSummaryLoading = (): JSX.Element => {
 						<Loadable
 							isLoading={ true }
 							display="inline"
-							placeholder="Total repaid placeholder"
+							placeholder={ __(
+								'Total repaid placeholder',
+								'woocommerce-payments'
+							) }
 						/>
 					</Block>
 					<Block
@@ -66,7 +69,10 @@ const ActiveLoanSummaryLoading = (): JSX.Element => {
 						<Loadable
 							isLoading={ true }
 							display="inline"
-							placeholder="Repaid this period placeholder"
+							placeholder={ __(
+								'Repaid this period placeholder',
+								'woocommerce-payments'
+							) }
 						/>
 					</Block>
 				</Flex>
@@ -114,7 +120,10 @@ const ActiveLoanSummaryLoading = (): JSX.Element => {
 						<Loadable
 							isLoading={ true }
 							display="inline"
-							placeholder="First paydown"
+							placeholder={ __(
+								'First paydown',
+								'woocommerce-payments'
+							) }
 						/>
 					</Block>
 				</Flex>
