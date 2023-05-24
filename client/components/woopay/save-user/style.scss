@@ -88,6 +88,10 @@
 				display: flex;
 			}
 
+			span {
+				color: #333 !important;
+			}
+
 			svg {
 				fill: currentColor;
 				color: $alert-green;
