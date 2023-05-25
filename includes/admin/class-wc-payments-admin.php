@@ -117,6 +117,9 @@ class WC_Payments_Admin {
 		add_action( 'admin_notices', [ $this, 'display_not_supported_currency_notice' ], 9999 );
 		add_action( 'admin_notices', [ $this, 'display_isk_decimal_notice' ] );
 
+		add_action( 'woocommerce_order_details_after_payment_info', [ $this, 'maybe_render_order_edit_dispute_notice' ] );
+
+
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
@@ -192,6 +195,15 @@ class WC_Payments_Admin {
 			</div>
 			<?php
 		}
+	}
+
+	public function maybe_render_order_edit_dispute_notice() {
+		?>
+			<div id="wcpay-order-detail-dispute-notice" class="bing">
+				<p>This order has a chargeback dispute of {AMOUNT}, labeled as {REASON}.
+					Please respond to this dispute before {DEADLINE}</p>
+			</div>
+		<?php
 	}
 
 	/**
