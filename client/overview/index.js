@@ -153,12 +153,12 @@ const OverviewPage = () => {
 								<Card>
 									<AccountOverviewHeader />
 								</Card>
-								<Card className="wcpay-account-balances">
+								<Card>
 									<AccountBalances />
 								</Card>
 							</>
 						) : (
-							<Card className="wcpay-account-balances">
+							<Card>
 								<AccountOverviewHeader />
 								<AccountBalances />
 							</Card>

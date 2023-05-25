@@ -17,6 +17,7 @@ import BalanceTooltip from './balance-tooltip';
 import { documentationUrls, fundLabelStrings } from './strings';
 import InstantDepositButton from 'deposits/instant-deposits';
 import wcpayTracks from 'tracks';
+import './style.scss';
 
 /**
  * BalanceTab
