@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-
+import React from 'react';
 import { Card, Notice } from '@wordpress/components';
 import { getQuery } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
@@ -29,7 +29,6 @@ import JetpackIdcNotice from 'components/jetpack-idc-notice';
 import FRTDiscoverabilityBanner from 'components/fraud-risk-tools-banner';
 import { useSettings } from 'wcpay/data';
 import './style.scss';
-import React from 'react';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
