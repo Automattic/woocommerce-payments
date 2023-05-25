@@ -16,6 +16,7 @@ import { TestModeNotice, topics } from 'components/test-mode-notice';
 import AccountStatus from 'components/account-status';
 import Welcome from 'components/welcome';
 import AccountBalances from 'components/account-balances';
+import ActiveDisputesNotice from 'components/active-disputes-notice';
 import DepositsOverview from 'components/deposits-overview';
 import ActiveLoanSummary from 'components/active-loan-summary';
 import ErrorBoundary from 'components/error-boundary';
@@ -152,6 +153,7 @@ const OverviewPage = () => {
 							<>
 								<Card>
 									<Welcome />
+									<ActiveDisputesNotice />
 								</Card>
 								<Card>
 									<AccountBalances />
