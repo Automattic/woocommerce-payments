@@ -176,7 +176,7 @@ export const generateCheckoutEventNames = () => {
 
 export const appendPaymentMethodIdToForm = ( form, paymentMethodId ) => {
 	form.append(
-		`<input type="hidden" name="wcpay-payment-method" value="${ paymentMethodId }" />`
+		`<input type="hidden" id="wcpay-payment-method" name="wcpay-payment-method" value="${ paymentMethodId }" />`
 	);
 };
 

@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Remove the `simplifyDepositsUi` feature flag and legacy deposits UI code.

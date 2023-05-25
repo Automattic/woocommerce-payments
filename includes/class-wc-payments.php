@@ -48,7 +48,7 @@ class WC_Payments {
 	/**
 	 * Main payment gateway controller instance, created in init function.
 	 *
-	 * @var WC_Payment_Gateway_WCPay|UPE_Payment_Gateway
+	 * @var WC_Payment_Gateway_WCPay|UPE_Payment_Gateway|UPE_Split_Payment_Gateway
 	 */
 	private static $card_gateway;
 
@@ -58,6 +58,14 @@ class WC_Payments {
 	 * @var WC_Payment_Gateway_WCPay
 	 */
 	private static $legacy_card_gateway;
+
+	/**
+	 * Copy of either $card_gateway or $legacy_card_gateway,
+	 * depending on which gateway is registered as main CC gateway.
+	 *
+	 * @var WC_Payment_Gateway_WCPay|UPE_Payment_Gateway|UPE_Split_Payment_Gateway
+	 */
+	private static $registered_card_gateway;
 
 	/**
 	 * Instance of WC_Payments_API_Client, created in init function.
@@ -233,6 +241,13 @@ class WC_Payments {
 	 * @var WooPay_Utilities
 	 */
 	private static $woopay_util;
+
+	/**
+	 * WooPay Tracker.
+	 *
+	 * @var WooPay_Tracker
+	 */
+	private static $woopay_tracker;
 
 	/**
 	 * WC Payments Checkout
@@ -424,6 +439,9 @@ class WC_Payments {
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
+		// Load woopay tracking.
+		include_once WCPAY_ABSPATH . 'includes/class-woopay-tracker.php';
+
 		self::$order_service                       = new WC_Payments_Order_Service( self::$api_client );
 		self::$action_scheduler_service            = new WC_Payments_Action_Scheduler_Service( self::$api_client, self::$order_service );
 		self::$account                             = new WC_Payments_Account( self::$api_client, self::$database_cache, self::$action_scheduler_service );
@@ -437,6 +455,7 @@ class WC_Payments {
 		self::$order_success_page                  = new WC_Payments_Order_Success_Page();
 		self::$onboarding_service                  = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
 		self::$woopay_util                         = new WooPay_Utilities();
+		self::$woopay_tracker                      = new WooPay_Tracker( self::get_wc_payments_http() );
 
 		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
 
@@ -540,9 +559,7 @@ class WC_Payments {
 
 			new WC_Payments_Status( self::get_wc_payments_http(), self::get_account_service() );
 
-			if ( WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
-				new WCPay\Fraud_Prevention\Order_Fraud_And_Risk_Meta_Box( self::$order_service );
-			}
+			new WCPay\Fraud_Prevention\Order_Fraud_And_Risk_Meta_Box( self::$order_service );
 		}
 
 		// Load WCPay Subscriptions.
@@ -647,10 +664,11 @@ class WC_Payments {
 			}
 
 			if ( WC_Payments_Features::is_woopay_enabled() ) {
-				$gateways[] = self::$legacy_card_gateway;
+				self::$registered_card_gateway = self::$legacy_card_gateway;
 			} else {
-				$gateways[] = self::$card_gateway;
+				self::$registered_card_gateway = self::$card_gateway;
 			}
+			$gateways[]       = self::$registered_card_gateway;
 			$all_upe_gateways = [];
 			$reusable_methods = [];
 			foreach ( $payment_methods as $payment_method_id ) {
@@ -674,22 +692,29 @@ class WC_Payments {
 
 			return array_merge( $gateways, $all_upe_gateways );
 		} elseif ( WC_Payments_Features::is_upe_enabled() ) {
-			return array_merge( $gateways, [ self::$card_gateway ] );
+			self::$registered_card_gateway = self::$card_gateway;
 		} else {
-			return array_merge( $gateways, [ self::$legacy_card_gateway ] );
+			self::$registered_card_gateway = self::$legacy_card_gateway;
 		}
+		return array_merge( $gateways, [ self::$registered_card_gateway ] );
+	}
+
+	/**
+	 * Returns main CC gateway registered for WCPay.
+	 *
+	 * @return WC_Payment_Gateway_WCPay|UPE_Payment_Gateway|UPE_Split_Payment_Gateway
+	 */
+	public static function get_registered_card_gateway() {
+		return self::$registered_card_gateway;
 	}
 
 	/**
 	 * Called on Payments setting page.
 	 *
-	 * Remove all WCPay gateways except CC one. Comparison is done against
-	 * $self::legacy_card_gateway because it should be the same instance as
-	 * registered with WooCommerce and class can change depending on
-	 * environment (see `init` method where $card_gateway is set).
+	 * Remove all WCPay gateways except CC one.
 	 */
 	public static function hide_gateways_on_settings_page() {
-		$default_gateway = WC_Payments_Features::is_upe_split_enabled() ? self::$legacy_card_gateway : self::get_gateway();
+		$default_gateway = self::get_registered_card_gateway();
 		foreach ( WC()->payment_gateways->payment_gateways as $index => $payment_gateway ) {
 			if ( $payment_gateway instanceof WC_Payment_Gateway_WCPay && $payment_gateway !== $default_gateway ) {
 				unset( WC()->payment_gateways->payment_gateways[ $index ] );
@@ -964,6 +989,15 @@ class WC_Payments {
 			return (string) filemtime( WCPAY_ABSPATH . trim( $file, '/' ) );
 		}
 		return WCPAY_VERSION_NUMBER;
+	}
+
+	/**
+	 * Returns the WooPay_Tracker instance
+	 *
+	 * @return WooPay_Tracker instance
+	 */
+	public static function woopay_tracker(): WooPay_Tracker {
+		return self::$woopay_tracker;
 	}
 
 	/**
@@ -1573,11 +1607,8 @@ class WC_Payments {
 			add_filter( 'woocommerce_form_field_email', [ __CLASS__, 'filter_woocommerce_form_field_woopay_email' ], 20, 4 );
 
 			include_once __DIR__ . '/woopay-user/class-woopay-save-user.php';
-			// Load woopay tracking.
-			include_once WCPAY_ABSPATH . 'includes/class-woopay-tracker.php';
 
 			new WooPay_Save_User();
-			new WooPay_Tracker( self::get_wc_payments_http() );
 		}
 	}
 

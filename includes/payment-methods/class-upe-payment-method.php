@@ -14,6 +14,7 @@ use WC_Payments_Token_Service;
 use WC_Payment_Token_CC;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Subscriptions_Utilities;
+use WCPay\Logger;
 
 /**
  * Extendable abstract class for payment methods.
@@ -130,10 +131,12 @@ abstract class UPE_Payment_Method {
 	 * Returns boolean dependent on whether payment method will accept charges
 	 * with chosen currency
 	 *
+	 * @param int $order_id Optional order ID, if order currency should take precedence.
+	 *
 	 * @return bool
 	 */
-	public function is_currency_valid() {
-		return empty( $this->currencies ) || in_array( get_woocommerce_currency(), $this->currencies, true );
+	public function is_currency_valid( $order_id = null ) {
+		return empty( $this->currencies ) || in_array( $this->get_currency( $order_id ), $this->currencies, true );
 	}
 
 	/**
@@ -162,5 +165,24 @@ abstract class UPE_Payment_Method {
 	 */
 	public function get_icon() {
 		return isset( $this->icon_url ) ? $this->icon_url : '';
+	}
+
+	/**
+	 * Returns valid currency to use to filter payment methods.
+	 *
+	 * @param int $order_id Optional order ID, if order currency should take precedence.
+	 *
+	 * @return string
+	 */
+	private function get_currency( $order_id = null ) {
+		if ( is_wc_endpoint_url( 'order-pay' ) || null !== $order_id ) {
+			global $wp;
+			if ( null === $order_id ) {
+				$order_id = absint( $wp->query_vars['order-pay'] );
+			}
+			$order = wc_get_order( $order_id );
+			return $order->get_currency();
+		}
+		return get_woocommerce_currency();
 	}
 }

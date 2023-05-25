@@ -22,7 +22,7 @@ import Loadable from 'components/loadable';
 import { getNextDeposit } from './utils';
 import DepositStatusPill from 'components/deposit-status-pill';
 import { getDepositDate } from 'deposits/utils';
-import { useDepositIncludesLoan, useAllDepositsOverviews } from 'wcpay/data';
+import { useAllDepositsOverviews, useDepositIncludesLoan } from 'wcpay/data';
 import BannerNotice from 'wcpay/components/banner-notice';
 import { useSelectedCurrency } from 'wcpay/overview/hooks';
 
