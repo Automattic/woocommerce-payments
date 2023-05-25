@@ -1,14 +1,9 @@
 /**
  * External dependencies
  */
-import { sprintf } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
-/**
- * Internal dependencies
- */
-import { greetingStrings } from './strings';
-
-export type TimeOfDay = 'morning' | 'afternoon' | 'evening';
+type TimeOfDay = 'morning' | 'afternoon' | 'evening';
 
 /**
  * Calculates the time of day based on the browser's time.
@@ -28,6 +23,22 @@ export const getTimeOfDayString = ( date: Date = new Date() ): TimeOfDay => {
 	}
 	// Evening 5pm – 4:59am
 	return 'evening';
+};
+
+const greetingStrings = {
+	withName: {
+		/** translators: %s name of the person being greeted. */
+		morning: __( 'Good morning, %s', 'woocommerce-payments' ),
+		/** translators: %s name of the person being greeted. */
+		afternoon: __( 'Good afternoon, %s', 'woocommerce-payments' ),
+		/** translators: %s name of the person being greeted. */
+		evening: __( 'Good evening, %s', 'woocommerce-payments' ),
+	},
+	withoutName: {
+		morning: __( 'Good morning', 'woocommerce-payments' ),
+		afternoon: __( 'Good afternoon', 'woocommerce-payments' ),
+		evening: __( 'Good evening', 'woocommerce-payments' ),
+	},
 };
 
 /**
