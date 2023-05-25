@@ -14,7 +14,7 @@ import { __ } from '@wordpress/i18n';
 import Page from 'components/page';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import AccountStatus from 'components/account-status';
-import AccountOverviewHeader from 'components/account-overview-header';
+import Welcome from 'components/welcome';
 import AccountBalances from 'components/account-balances';
 import DepositsOverview from 'components/deposits-overview';
 import ActiveLoanSummary from 'components/active-loan-summary';
@@ -150,7 +150,7 @@ const OverviewPage = () => {
 							// to the balances tab panel.
 							<>
 								<Card>
-									<AccountOverviewHeader />
+									<Welcome />
 								</Card>
 								<Card>
 									<AccountBalances />
@@ -158,7 +158,7 @@ const OverviewPage = () => {
 							</>
 						) : (
 							<Card>
-								<AccountOverviewHeader />
+								<Welcome />
 								<AccountBalances />
 							</Card>
 						) }

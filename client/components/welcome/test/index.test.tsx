@@ -7,7 +7,7 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import AccountOverviewHeader from '../';
+import Welcome from '..';
 import { getGreeting } from '../utils';
 import { useCurrentWpUser } from '../hooks';
 
@@ -37,7 +37,7 @@ const mockUser = {
 	locale: 'en',
 };
 
-describe( 'AccountOverviewHeader', () => {
+describe( 'Welcome', () => {
 	test( 'renders the correct greeting in the header', () => {
 		const expectedGreeting = 'Good afternoon, Tester 👋';
 		mockGetGreeting.mockReturnValue( expectedGreeting );
@@ -45,7 +45,7 @@ describe( 'AccountOverviewHeader', () => {
 			user: mockUser,
 			isLoading: false,
 		} );
-		const { getByText } = render( <AccountOverviewHeader /> );
+		const { getByText } = render( <Welcome /> );
 		getByText( expectedGreeting );
 	} );
 } );

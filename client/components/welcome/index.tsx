@@ -13,27 +13,27 @@ import wooPaymentsLogo from 'assets/images/woopayments.svg?asset';
 import './style.scss';
 
 /**
- * Renders the header of the account's balances card.
+ * Renders a welcome card header with a greeting and the Woo Payments logo.
  *
  * @return {JSX.Element} Rendered element with the account balances card header.
  */
-const AccountOverviewHeader: React.FC = () => {
+const Welcome: React.FC = () => {
 	const { user } = useCurrentWpUser();
 	const greeting = getGreeting( user?.first_name );
 
 	return (
-		<CardHeader className="wcpay-account-overview-header">
+		<CardHeader className="wcpay-welcome">
 			<Flex
 				align="center"
 				justify="space-between"
-				className="wcpay-account-overview-header__flex"
+				className="wcpay-welcome__flex"
 			>
-				<FlexItem className="wcpay-account-overview-header__flex__greeting">
+				<FlexItem className="wcpay-welcome__flex__greeting">
 					{ greeting }
 				</FlexItem>
 				<FlexItem>
 					<img
-						className="wcpay-account-overview-header__flex__logo"
+						className="wcpay-welcome__flex__logo"
 						src={ wooPaymentsLogo }
 						alt="Woo Payments logo"
 						width={ 107 }
@@ -44,4 +44,4 @@ const AccountOverviewHeader: React.FC = () => {
 	);
 };
 
-export default AccountOverviewHeader;
+export default Welcome;
