@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import moment from 'moment';
+
+/**
  * Internal dependencies
  */
 import type { CachedDispute } from 'wcpay/types/disputes';
@@ -24,6 +29,14 @@ declare const global: {
 	};
 };
 
+const addHoursToCurrentDate = ( hours: number ): string => {
+	const now = moment();
+	const duration = moment.duration( hours, 'hours' );
+	const futureDate = now.add( duration );
+	const dateString = futureDate.format( 'YYYY-MM-DD HH:mm:ss' );
+	return dateString;
+};
+
 const mockDisputes: CachedDispute[] = [
 	{
 		wcpay_disputes_cache_id: 4,
@@ -39,8 +52,8 @@ const mockDisputes: CachedDispute[] = [
 		customer_email: 'mock@customer.net',
 		customer_country: 'US',
 		status: 'needs_response',
-		created: '2019-11-01 23:59:59',
-		due_by: '2019-11-08 02:46:00',
+		created: '2023-01-01 23:59:59',
+		due_by: addHoursToCurrentDate( 20 ), // Due within 24h of current time.
 		order: {
 			number: 1,
 			customer_url: 'https://shop.local',
@@ -61,8 +74,8 @@ const mockDisputes: CachedDispute[] = [
 		customer_email: 'mock@customer.net',
 		customer_country: 'US',
 		status: 'warning_needs_response',
-		created: '2019-11-01 23:59:59',
-		due_by: '2019-11-08 02:46:00',
+		created: '2023-01-01 23:59:59',
+		due_by: addHoursToCurrentDate( 48 ), // Due > 24h of current time.
 		order: {
 			number: 2,
 			customer_url: 'https://shop.local',
@@ -83,8 +96,8 @@ const mockDisputes: CachedDispute[] = [
 		customer_email: 'mock@customer.net',
 		customer_country: 'US',
 		status: 'needs_response',
-		created: '2019-11-01 23:59:59',
-		due_by: '2019-11-08 02:46:00',
+		created: '2023-01-01 23:59:59',
+		due_by: addHoursToCurrentDate( 72 ), // Due > 24h of current time.
 		order: {
 			number: 3,
 			customer_url: 'https://shop.local',
@@ -117,9 +130,17 @@ describe( 'getDisputesNoticeString', () => {
 	it( 'returns the correct string for a single dispute', () => {
 		expect(
 			getDisputesNoticeString( {
+				activeDisputes: [ mockDisputes[ 1 ] ],
+			} )
+		).toEqual( `Respond to a dispute for $10.00` );
+	} );
+
+	it( 'returns the correct string for a single dispute due within 24h', () => {
+		expect(
+			getDisputesNoticeString( {
 				activeDisputes: [ mockDisputes[ 0 ] ],
 			} )
-		).toEqual( `Respond to a dispute for $12.34` );
+		).toEqual( `Respond to a dispute for $12.34 – last day` );
 	} );
 
 	it( 'returns the correct string for multiple disputes', () => {
