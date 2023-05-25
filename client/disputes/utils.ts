@@ -16,6 +16,7 @@ interface GetDisputesNoticeStringArgs {
 	 */
 	activeDisputes: CachedDispute[];
 }
+
 export const getDisputesNoticeString = ( {
 	activeDisputes,
 }: GetDisputesNoticeStringArgs ): string | null => {
@@ -50,15 +51,33 @@ export const getDisputesNoticeString = ( {
 		);
 	}
 
-	const disputeTotalAmount = activeDisputes.reduce(
-		( total, dispute ) => total + dispute.amount,
-		0
+	// Calculate dispute total per currency.
+	const disputeTotalPerCurrency = activeDisputes.reduce(
+		( totalPerCurrency, dispute ) => {
+			const { currency, amount } = dispute;
+			const total = totalPerCurrency[ currency ] || 0;
+
+			return {
+				...totalPerCurrency,
+				[ currency ]: total + amount,
+			};
+		},
+		{} as Record< string, number >
 	);
-	const disputeTotalCurrency = activeDisputes[ 0 ].currency;
+
+	// Generate a formatted total amount for each currency: "€10.00, $20.00".
+	const disputeTotalAmounts: string = Object.entries(
+		disputeTotalPerCurrency
+	)
+		.map( ( [ currency, amount ] ) => formatCurrency( amount, currency ) )
+		.join( ', ' );
 
 	return sprintf(
-		__( 'Respond to %d active disputes for %s', 'woocommerce-payments' ),
+		__(
+			'Respond to %d active disputes for a total of %s',
+			'woocommerce-payments'
+		),
 		disputeCount,
-		formatCurrency( disputeTotalAmount, disputeTotalCurrency )
+		disputeTotalAmounts
 	);
 };

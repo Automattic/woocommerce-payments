@@ -88,7 +88,7 @@ const mockDisputes: CachedDispute[] = [
 		dispute_id: 'dp_asd654l',
 		charge_id: 'ch_mock',
 		amount: 2000,
-		currency: 'usd',
+		currency: 'chf',
 		reason: 'bank_cannot_process',
 		source: 'visa',
 		order_number: 3,
@@ -154,8 +154,19 @@ describe( 'getDisputesNoticeString', () => {
 	it( 'returns the correct string for multiple disputes', () => {
 		expect(
 			getDisputesNoticeString( {
+				activeDisputes: mockDisputes.slice( 0, 2 ),
+			} )
+		).toEqual( `Respond to 2 active disputes for a total of $22.34` );
+	} );
+
+	it( 'returns the correct string for multiple disputes with multiple currencies', () => {
+		expect(
+			getDisputesNoticeString( {
 				activeDisputes: mockDisputes,
 			} )
-		).toEqual( `Respond to 3 active disputes for a total of $42.34` );
+		).toEqual(
+			// eslint-disable-next-line no-irregular-whitespace -- needed for test since this character is being returned by the currency formatter
+			`Respond to 3 active disputes for a total of $22.34, CHF 20.00`
+		);
 	} );
 } );
