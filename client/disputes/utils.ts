@@ -18,8 +18,12 @@ interface GetDisputesNoticeStringArgs {
 }
 export const getDisputesNoticeString = ( {
 	activeDisputes,
-}: GetDisputesNoticeStringArgs ): string => {
+}: GetDisputesNoticeStringArgs ): string | null => {
 	const disputeCount = activeDisputes.length;
+
+	if ( disputeCount === 0 ) {
+		return null;
+	}
 
 	if ( disputeCount === 1 ) {
 		const dispute = activeDisputes[ 0 ];

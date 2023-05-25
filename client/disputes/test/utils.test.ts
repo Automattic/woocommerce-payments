@@ -127,6 +127,14 @@ describe( 'getDisputesNoticeString', () => {
 		};
 	} );
 
+	it( 'returns null if passed an empty array', () => {
+		expect(
+			getDisputesNoticeString( {
+				activeDisputes: [],
+			} )
+		).toBe( null );
+	} );
+
 	it( 'returns the correct string for a single dispute', () => {
 		expect(
 			getDisputesNoticeString( {
@@ -148,6 +156,6 @@ describe( 'getDisputesNoticeString', () => {
 			getDisputesNoticeString( {
 				activeDisputes: mockDisputes,
 			} )
-		).toEqual( `Respond to 3 active disputes for $42.34` );
+		).toEqual( `Respond to 3 active disputes for a total of $42.34` );
 	} );
 } );
