@@ -1,54 +1,264 @@
 /**
  * External dependencies
  */
-import React from 'react';
-import { Card } from '@wordpress/components';
+import * as React from 'react';
+import { Flex, TabPanel } from '@wordpress/components';
+import { __, _n, sprintf } from '@wordpress/i18n';
+import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies
  */
-import './style.scss';
-import AccountBalancesTabPanel from './balances-tab-panel';
-import AccountOverviewHeader from 'components/account-overview-header';
-
-interface Props {
-	/**
-	 * The number of disputes that need a response.
-	 */
-	numDisputesNeedingResponse?: number;
-}
+import { useAllDepositsOverviews } from 'wcpay/data';
+import { useSelectedCurrency } from 'wcpay/overview/hooks';
+import { getCurrencyTabTitle } from './utils';
+import BalanceBlock from './balance-block';
+import BalanceTooltip from './balance-tooltip';
+import { documentationUrls, fundLabelStrings } from './strings';
+import InstantDepositButton from 'deposits/instant-deposits';
+import wcpayTracks from 'tracks';
 
 /**
- * Renders an overview of the account's balances.
+ * BalanceTab
  *
- * @param {Object} props Component props.
- * @return {JSX.Element} Rendered element with the account balances card.
+ * @typedef {Object} BalanceTab
+ *
+ * @param {string} name           Name of the tab.
+ * @param {string} title          Title of the tab.
+ * @param {string} currencyCode   Currency code of the tab.
+ * @param {number} availableFunds Available funds of the tab.
+ * @param {number} pendingFunds   Pending funds of the tab.
+ * @param {number} delayDays	  The account's pending period in days.
  */
-const AccountBalances: React.FC< Props > = ( {
-	numDisputesNeedingResponse = 0,
-} ) => {
-	if ( numDisputesNeedingResponse > 0 ) {
-		// If there are disputes that need a response, we want to show the
-		// welcome header and the notice at the top of the page, in a separate card
-		// to the balances tab panel.
+type BalanceTab = {
+	name: string;
+	title: string;
+	currencyCode: string;
+	availableFunds: number;
+	pendingFunds: number;
+	delayDays: number;
+	instantBalance?: AccountOverview.InstantBalance;
+};
+
+/**
+ * Renders an account balances panel with tab navigation for each deposit currency.
+ *
+ * @return {JSX.Element} Rendered balances panel with tab navigation for each currency.
+ */
+const AccountBalances: React.FC = () => {
+	const {
+		overviews,
+		isLoading,
+	} = useAllDepositsOverviews() as AccountOverview.OverviewsResponse;
+	const { selectedCurrency, setSelectedCurrency } = useSelectedCurrency();
+
+	if ( ! isLoading && overviews.currencies.length === 0 ) {
+		return null;
+	}
+
+	const onTabSelect = ( tabName: BalanceTab[ 'name' ] ) => {
+		setSelectedCurrency( tabName );
+		wcpayTracks.recordEvent(
+			wcpayTracks.events.OVERVIEW_BALANCES_CURRENCY_CLICK,
+			{
+				selected_currency: tabName,
+			}
+		);
+	};
+
+	if ( isLoading ) {
+		// While the data is loading, we show a loading currency tab.
+		const loadingTabs: BalanceTab[] = [
+			{
+				name: 'loading',
+				title: getCurrencyTabTitle(
+					wcpaySettings.accountDefaultCurrency
+				),
+				currencyCode: wcpaySettings.accountDefaultCurrency,
+				availableFunds: 0,
+				pendingFunds: 0,
+				delayDays: 0,
+			},
+		];
 		return (
-			<>
-				<Card>
-					<AccountOverviewHeader />
-				</Card>
-				<Card className="wcpay-account-balances">
-					<AccountBalancesTabPanel />
-				</Card>
-			</>
+			<TabPanel tabs={ loadingTabs }>
+				{ ( tab: BalanceTab ) => (
+					<Flex
+						gap={ 0 }
+						className="wcpay-account-balances__balances"
+					>
+						<BalanceBlock
+							id={ `wcpay-account-balances-${ tab.currencyCode }-available` }
+							title={ fundLabelStrings.available }
+							amount={ tab.availableFunds }
+							currencyCode={ tab.currencyCode }
+							isLoading
+						/>
+						<BalanceBlock
+							id={ `wcpay-account-balances-${ tab.currencyCode }-pending` }
+							title={ fundLabelStrings.pending }
+							amount={ tab.pendingFunds }
+							currencyCode={ tab.currencyCode }
+							isLoading
+						/>
+					</Flex>
+				) }
+			</TabPanel>
 		);
 	}
 
-	return (
-		<Card className="wcpay-account-balances">
-			<AccountOverviewHeader />
+	const { currencies, account } = overviews;
 
-			<AccountBalancesTabPanel />
-		</Card>
+	const depositCurrencyTabs = currencies.map(
+		( overview: AccountOverview.Overview ) => ( {
+			name: overview.currency,
+			title: getCurrencyTabTitle( overview.currency ),
+			currencyCode: overview.currency,
+			availableFunds: overview.available?.amount ?? 0,
+			pendingFunds: overview.pending?.amount ?? 0,
+			delayDays: account.deposits_schedule.delay_days,
+			instantBalance: overview.instant,
+		} )
+	);
+
+	// Selected currency is not valid if it is not in the list of deposit currencies.
+	const isSelectedCurrencyValid =
+		selectedCurrency &&
+		depositCurrencyTabs.some( ( tab ) => tab.name === selectedCurrency );
+
+	return (
+		<TabPanel
+			tabs={ depositCurrencyTabs }
+			onSelect={ onTabSelect }
+			initialTabName={
+				isSelectedCurrencyValid ? selectedCurrency : undefined
+			}
+		>
+			{ ( tab: BalanceTab ) => (
+				<>
+					<Flex
+						gap={ 0 }
+						className="wcpay-account-balances__balances"
+					>
+						<BalanceBlock
+							id={ `wcpay-account-balances-${ tab.currencyCode }-available` }
+							title={ fundLabelStrings.available }
+							amount={ tab.availableFunds }
+							currencyCode={ tab.currencyCode }
+							tooltip={
+								<BalanceTooltip
+									label={ `${ fundLabelStrings.available } tooltip` }
+									content={
+										tab.availableFunds < 0
+											? interpolateComponents( {
+													mixedString: __(
+														'{{learnMoreLink}}Learn more{{/learnMoreLink}} about why your account balance may be negative.',
+														'woocommerce-payments'
+													),
+													components: {
+														learnMoreLink: (
+															// eslint-disable-next-line jsx-a11y/anchor-has-content
+															<a
+																rel="external noopener noreferrer"
+																target="_blank"
+																href={
+																	documentationUrls.negativeBalance
+																}
+															/>
+														),
+													},
+											  } )
+											: interpolateComponents( {
+													mixedString: __(
+														'The amount of funds available to be deposited. {{learnMoreLink}}Learn more.{{/learnMoreLink}}',
+														'woocommerce-payments'
+													),
+													components: {
+														learnMoreLink: (
+															// eslint-disable-next-line jsx-a11y/anchor-has-content
+															<a
+																rel="external noopener noreferrer"
+																target="_blank"
+																href={
+																	documentationUrls.depositSchedule
+																}
+															/>
+														),
+													},
+											  } )
+									}
+								/>
+							}
+						/>
+						<BalanceBlock
+							id={ `wcpay-account-balances-${ tab.currencyCode }-pending` }
+							title={ fundLabelStrings.pending }
+							amount={ tab.pendingFunds }
+							currencyCode={ tab.currencyCode }
+							tooltip={
+								<BalanceTooltip
+									label={ `${ fundLabelStrings.pending } tooltip` }
+									content={
+										tab.pendingFunds < 0
+											? interpolateComponents( {
+													mixedString: __(
+														'{{learnMoreLink}}Learn more{{/learnMoreLink}} about why your account balance may be negative.',
+														'woocommerce-payments'
+													),
+													components: {
+														learnMoreLink: (
+															// eslint-disable-next-line jsx-a11y/anchor-has-content
+															<a
+																rel="external noopener noreferrer"
+																target="_blank"
+																href={
+																	documentationUrls.negativeBalance
+																}
+															/>
+														),
+													},
+											  } )
+											: interpolateComponents( {
+													mixedString: sprintf(
+														_n(
+															'The amount of funds still in the %d day pending period. {{learnMoreLink}}Learn more.{{/learnMoreLink}}',
+															'The amount of funds still in the %d day pending period. {{learnMoreLink}}Learn more.{{/learnMoreLink}}',
+															tab.delayDays,
+															'woocommerce-payments'
+														),
+														tab.delayDays
+													),
+													components: {
+														learnMoreLink: (
+															// eslint-disable-next-line jsx-a11y/anchor-has-content
+															<a
+																rel="external noopener noreferrer"
+																target="_blank"
+																href={
+																	documentationUrls.depositSchedule
+																}
+															/>
+														),
+													},
+											  } )
+									}
+								/>
+							}
+						/>
+					</Flex>
+					{ tab.instantBalance && tab.instantBalance.amount > 0 && (
+						<Flex
+							gap={ 0 }
+							className="wcpay-account-balances__instant-deposit"
+						>
+							<InstantDepositButton
+								instantBalance={ tab.instantBalance }
+							/>
+						</Flex>
+					) }
+				</>
+			) }
+		</TabPanel>
 	);
 };
 

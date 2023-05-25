@@ -4,7 +4,7 @@
  * External dependencies
  */
 
-import { Notice } from '@wordpress/components';
+import { Card, Notice } from '@wordpress/components';
 import { getQuery } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
 
@@ -14,8 +14,10 @@ import { __ } from '@wordpress/i18n';
 import Page from 'components/page';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import AccountStatus from 'components/account-status';
-import ActiveLoanSummary from 'components/active-loan-summary';
+import AccountOverviewHeader from 'components/account-overview-header';
+import AccountBalances from 'components/account-balances';
 import DepositsOverview from 'components/deposits-overview';
+import ActiveLoanSummary from 'components/active-loan-summary';
 import ErrorBoundary from 'components/error-boundary';
 import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
@@ -24,7 +26,6 @@ import ConnectionSuccessNotice from './connection-sucess-notice';
 import SetupRealPayments from './setup-real-payments';
 import ProgressiveOnboardingEligibilityModal from './modal/progressive-onboarding-eligibility';
 import JetpackIdcNotice from 'components/jetpack-idc-notice';
-import AccountBalances from 'components/account-balances';
 import FRTDiscoverabilityBanner from 'components/fraud-risk-tools-banner';
 import { useSettings } from 'wcpay/data';
 import './style.scss';
@@ -144,11 +145,25 @@ const OverviewPage = () => {
 			{ ! accountRejected && (
 				<ErrorBoundary>
 					<>
-						<AccountBalances
-							numDisputesNeedingResponse={
-								numDisputesNeedingResponse
-							}
-						/>
+						{ 0 < numDisputesNeedingResponse ? (
+							// If there are disputes that need a response, we want to show the
+							// welcome header and the notice at the top of the page, in a separate card
+							// to the balances tab panel.
+							<>
+								<Card>
+									<AccountOverviewHeader />
+								</Card>
+								<Card className="wcpay-account-balances">
+									<AccountBalances />
+								</Card>
+							</>
+						) : (
+							<Card className="wcpay-account-balances">
+								<AccountOverviewHeader />
+								<AccountBalances />
+							</Card>
+						) }
+
 						<DepositsOverview />
 					</>
 				</ErrorBoundary>
