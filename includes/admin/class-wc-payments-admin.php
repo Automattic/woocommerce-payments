@@ -198,12 +198,16 @@ class WC_Payments_Admin {
 	}
 
 	public function maybe_render_order_edit_dispute_notice() {
-		?>
-			<div id="wcpay-order-detail-dispute-notice" class="bing">
-				<p>This order has a chargeback dispute of {AMOUNT}, labeled as {REASON}.
-					Please respond to this dispute before {DEADLINE}</p>
-			</div>
-		<?php
+		if ( ! method_exists( 'WC_Admin_Notices', 'render_contextual_notice' ) ) {
+			// Fallback for older version of WC core – add a legacy notice?
+			return;
+		}
+
+		$notice_html = "<b>This order has a chargeback dispute of {AMOUNT}, labeled as {REASON}. Please respond to this dispute before {DEADLINE}.</b>";
+		$button_text = "Respond now";
+		$severity = 'error';
+		$button_url = ''; // Link to dispute details!
+		WC_Admin_Notices::render_contextual_notice( $notice_html, $button_text, $severity, $button_url );
 	}
 
 	/**
