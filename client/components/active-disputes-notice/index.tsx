@@ -8,7 +8,7 @@ import React from 'react';
  */
 
 import { useDisputes } from 'wcpay/data';
-import BannerNotice from '../banner-notice';
+import BannerNotice from 'wcpay/components/banner-notice';
 import { getDisputesNoticeString } from 'wcpay/disputes/utils';
 
 const ActiveDisputesNotice: React.FC = () => {
