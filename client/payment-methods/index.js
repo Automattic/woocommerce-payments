@@ -77,9 +77,41 @@ const UpeSetupBanner = () => {
 		} );
 	};
 
-	return (
-		<>
-			<CardDivider />
+	let card;
+	if ( wcpaySettings.isBnplAffirmAfterpayEnabled ) {
+		card = (
+			<CardBody className="payment-methods__upe-methods">
+				<h3>
+					{ __(
+						'Boost your sales by accepting additional payment methods',
+						'woocommerce-payments'
+					) }
+				</h3>
+				<p>
+					{ __(
+						/* eslint-disable-next-line max-len */
+						'Get access to additional payment methods and an improved checkout experience.',
+						'woocommerce-payments'
+					) }
+				</p>
+
+				<div className="payment-methods__upe-methods-actions">
+					<span className="payment-methods__upe-methods-get-started">
+						<Button isSecondary onClick={ handleEnableUpeClick }>
+							{ __(
+								'Enable in your store',
+								'woocommerce-payments'
+							) }
+						</Button>
+					</span>
+					<ExternalLink href="https://woocommerce.com/document/payments/additional-payment-methods/">
+						{ __( 'Learn more', 'woocommerce-payments' ) }
+					</ExternalLink>
+				</div>
+			</CardBody>
+		);
+	} else {
+		card = (
 			<CardBody className="payment-methods__express-checkouts">
 				<h3>
 					{ __(
@@ -109,6 +141,13 @@ const UpeSetupBanner = () => {
 					</ExternalLink>
 				</div>
 			</CardBody>
+		);
+	}
+
+	return (
+		<>
+			<CardDivider />
+			{ card }
 		</>
 	);
 };

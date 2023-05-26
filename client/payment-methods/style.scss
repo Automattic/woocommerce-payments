@@ -60,6 +60,36 @@
 		}
 	}
 
+	&__upe-methods {
+		background: url( 'assets/images/payment-methods/all_local_payments.svg?asset' )
+			no-repeat right;
+		background-size: auto;
+		margin-right: 10px;
+
+		h3 {
+			font-size: 14px;
+			padding-right: 215px;
+		}
+		p {
+			padding-right: 230px;
+		}
+
+		&-get-started {
+			margin-right: 16px;
+		}
+		&-actions {
+			padding-top: 11px;
+		}
+
+		@media ( max-width: 1024px ) {
+			h3,
+			p {
+				padding-right: 0;
+			}
+			background-image: none;
+		}
+	}
+
 	.payment-methods-header {
 		justify-content: flex-end;
 	}
