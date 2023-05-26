@@ -37,7 +37,7 @@ class WC_Payments_Task_Disputes extends Task {
 		$dispute_count = $this->get_disputes_awaiting_response_count();
 
 		// Translators: The placeholder is the number of disputes.
-		return sprintf( _n( '%d disputed payment needs your response', '%d disputed payments need your response', $dispute_count, 'woocommerce-payments' ), $dispute_count );
+		return sprintf( _n( '%d 🐘 disputed payment needs your response', '%d 🐘 disputed payments need your response', $dispute_count, 'woocommerce-payments' ), $dispute_count );
 	}
 
 	/**

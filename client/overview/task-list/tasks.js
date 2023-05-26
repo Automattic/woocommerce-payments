@@ -183,8 +183,8 @@ export const getTasks = ( {
 			level: 3,
 			title: sprintf(
 				_n(
-					'1 disputed payment needs your response',
-					'%s disputed payments need your response',
+					'1 🙈 disputed payment needs your response',
+					'%s 🙈 disputed payments need your response',
 					numDisputesNeedingResponse,
 					'woocommerce-payments'
 				),
