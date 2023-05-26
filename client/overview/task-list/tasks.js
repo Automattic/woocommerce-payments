@@ -5,7 +5,7 @@
  */
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { __, _n, sprintf } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 
@@ -17,6 +17,7 @@ import wcpayTracks from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
 import UpdateBusinessDetailsModal from '../modal/update-business-details';
 import { getVerifyBankAccountTask } from './po-tasks';
+import { getDisputesNoticeString } from 'wcpay/disputes/utils';
 
 const renderModal = ( errorMessages, status, accountLink, currentDeadline ) => {
 	let container = document.querySelector(
@@ -63,7 +64,7 @@ export const getTasks = ( {
 	showUpdateDetailsTask,
 	wpcomReconnectUrl,
 	isAccountOverviewTasksEnabled,
-	numDisputesNeedingResponse = 0,
+	activeDisputes,
 } ) => {
 	const {
 		status,
@@ -81,7 +82,7 @@ export const getTasks = ( {
 		errorMessageDescription,
 		accountDetailsUpdateByDescription;
 
-	const isDisputeTaskVisible = 0 < numDisputesNeedingResponse;
+	const isDisputeTaskVisible = !! activeDisputes && 0 < activeDisputes.length;
 	const hasMultipleErrors = 1 < errorMessages.length;
 	const hasSingleError = 1 === errorMessages.length;
 
@@ -181,15 +182,7 @@ export const getTasks = ( {
 		isDisputeTaskVisible && {
 			key: 'dispute-resolution-task',
 			level: 3,
-			title: sprintf(
-				_n(
-					'1 disputed payment needs your response',
-					'%s disputed payments need your response',
-					numDisputesNeedingResponse,
-					'woocommerce-payments'
-				),
-				numDisputesNeedingResponse
-			),
+			title: getDisputesNoticeString( activeDisputes ),
 			additionalInfo: __( 'View and respond', 'woocommerce-payments' ),
 			completed: false,
 			isDeletable: true,
