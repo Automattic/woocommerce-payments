@@ -13,7 +13,7 @@ import wooPaymentsLogo from 'assets/images/woopayments.svg?asset';
 import './style.scss';
 
 /**
- * Renders a welcome card header with a greeting and the Woo Payments logo.
+ * Renders a welcome card header with a greeting, the Woo Payments logo and important notices.
  *
  * @return {JSX.Element} Rendered element with the account balances card header.
  */
