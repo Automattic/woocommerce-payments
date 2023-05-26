@@ -357,7 +357,7 @@ class Analytics {
 		if ( ! empty( $currency_args['currency'] ) ) {
 			global $wpdb;
 			$expression = "AND {$currency_field} = '%s'";
-			$clauses[] = $wpdb->prepare( $expression, $currency_args['currency'] );
+			$clauses[]  = $wpdb->prepare( $expression, $currency_args['currency'] ); //phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		}
 
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_where_clauses', $clauses );
