@@ -271,6 +271,7 @@ describe( 'Checkout', () => {
 			} ),
 			removeClass: jest.fn(),
 			unblock: jest.fn(),
+			attr: jest.fn().mockReturnValue( 'checkout' ),
 		};
 
 		const checkoutResult = checkout( apiMock, mockJqueryForm, 'card' );
