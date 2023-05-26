@@ -668,7 +668,10 @@ class WC_Payments {
 			} else {
 				self::$registered_card_gateway = self::$card_gateway;
 			}
-			$gateways[]       = self::$registered_card_gateway;
+			$gateways[] = self::$registered_card_gateway;
+			if ( self::$registered_card_gateway->is_changing_payment_method_for_subscription() ) {
+				return $gateways;
+			}
 			$all_upe_gateways = [];
 			$reusable_methods = [];
 			foreach ( $payment_methods as $payment_method_id ) {

@@ -174,6 +174,19 @@ export async function mountStripePaymentElement( api, domElement ) {
 		showErrorCheckout( error.message );
 		return;
 	}
+
+	/*
+	 * Trigger this event to ensure the tokenization-form.js init
+	 * is executed.
+	 *
+	 * This script handles the radio input interaction when toggling
+	 * between the user's saved card / entering new card details.
+	 *
+	 * Ref: https://github.com/woocommerce/woocommerce/blob/2429498/assets/js/frontend/tokenization-form.js#L109
+	 */
+	const event = new Event( 'wc-credit-card-form-init' );
+	document.body.dispatchEvent( event );
+
 	const paymentMethodType = domElement.dataset.paymentMethodType;
 	const upeElement =
 		gatewayUPEComponents[ paymentMethodType ].upeElement ||
@@ -257,6 +270,19 @@ function appendSetupIntentToForm( form, confirmedIntent ) {
 
 	form.append( input );
 }
+
+/**
+ * Saves the payment method ID in a hidden input, and re-submits the form.
+ *
+ * @param {Object} $form         The jQuery object for the form.
+ * @param {Object} paymentMethod Payment method object.
+ */
+export const handleOrderPayment = ( $form, { id } ) => {
+	const paymentSelector = '#wcpay-payment-method';
+
+	// Populate form with the payment method.
+	document.querySelector( paymentSelector ).value = id;
+};
 
 /**
  * Updates the terms parameter in the Payment Element based on the "save payment information" checkbox.

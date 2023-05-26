@@ -14,6 +14,7 @@ import {
 	mountStripePaymentElement,
 	renderTerms,
 	createAndConfirmSetupIntent,
+	handleOrderPayment,
 } from './stripe-checkout';
 import enqueueFraudScripts from 'fraud-scripts';
 import { showAuthenticationModalIfRequired } from './3ds-flow-handling';
@@ -68,7 +69,10 @@ jQuery( function ( $ ) {
 		}
 	} );
 
-	if ( $( 'form#add_payment_method' ).length ) {
+	if (
+		$( 'form#add_payment_method' ).length ||
+		$( 'form#order_review' ).length
+	) {
 		if (
 			$( '.wcpay-upe-element' ).length &&
 			! $( '.wcpay-upe-element' ).children().length &&
@@ -91,5 +95,17 @@ jQuery( function ( $ ) {
 			getSelectedUPEGatewayPaymentMethod(),
 			createAndConfirmSetupIntent
 		);
+	} );
+
+	$( 'form#order_review' ).on( 'submit', function () {
+		const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
+		if ( ! isUsingSavedPaymentMethod( paymentMethodType ) ) {
+			return checkout(
+				api,
+				$( 'form#order_review' ),
+				paymentMethodType,
+				handleOrderPayment
+			);
+		}
 	} );
 } );
