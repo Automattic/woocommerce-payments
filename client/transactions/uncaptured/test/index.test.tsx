@@ -19,7 +19,10 @@ import { Authorization } from 'wcpay/types/authorizations';
 // See https://github.com/WordPress/gutenberg/issues/15031
 jest.mock( '@wordpress/data', () => ( {
 	createRegistryControl: jest.fn(),
-	dispatch: jest.fn( () => ( { setIsMatching: jest.fn() } ) ),
+	dispatch: jest.fn( () => ( {
+		setIsMatching: jest.fn(),
+		onLoad: jest.fn(),
+	} ) ),
 	registerStore: jest.fn(),
 	select: jest.fn(),
 	useDispatch: jest.fn( () => ( { createNotice: jest.fn() } ) ),
@@ -209,10 +212,10 @@ describe( 'Authorizations list', () => {
 			} );
 
 			( { container } = render( <Authorizations /> ) );
-			let tableSummary = container.querySelectorAll(
-				'.woocommerce-table__summary'
+			let tableSummaryIsLoading = container.querySelector(
+				'.woocommerce-table__summary.is-loading'
 			);
-			expect( tableSummary ).toHaveLength( 0 );
+			expect( tableSummaryIsLoading ).toBeInTheDocument();
 
 			mockUseAuthorizationsSummary.mockReturnValue( {
 				authorizationsSummary: {
@@ -225,7 +228,11 @@ describe( 'Authorizations list', () => {
 			} );
 
 			( { container } = render( <Authorizations /> ) );
-			tableSummary = container.querySelectorAll(
+			tableSummaryIsLoading = container.querySelector(
+				'.woocommerce-table__summary.is-loading'
+			);
+			expect( tableSummaryIsLoading ).not.toBeInTheDocument();
+			const tableSummary = container.querySelectorAll(
 				'.woocommerce-table__summary'
 			);
 

@@ -5,13 +5,14 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import moment from 'moment';
+import '@wordpress/jest-console';
 /**
  * Internal dependencies
  */
 import PaymentDetailsSummary from '../';
 import { Charge } from 'wcpay/types/charges';
 import { useAuthorization } from 'wcpay/data';
-import { paymentIntentMock } from '../../../data/payment-intents/test/hooks';
+import { paymentIntentMock } from 'wcpay/data/payment-intents/test/hooks';
 
 declare const global: {
 	wcSettings: {
@@ -135,6 +136,11 @@ describe( 'PaymentDetailsSummary', () => {
 
 	test( 'correctly renders a charge', () => {
 		expect( renderCharge( getBaseCharge() ) ).toMatchSnapshot();
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+		// @ts-ignore
+		expect( console ).toHaveWarnedWith(
+			'List with items prop is deprecated is deprecated and will be removed in version 9.0.0. Note: See ExperimentalList / ExperimentalListItem for the new API that will replace this component in future versions.'
+		);
 	} );
 
 	test( 'renders partially refunded information for a charge', () => {
