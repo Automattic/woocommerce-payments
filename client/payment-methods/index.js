@@ -57,7 +57,7 @@ const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 					onClick: () => setOpenModal( 'survey' ),
 				},
 				{
-					title: 'Disable',
+					title: __( 'Disable', 'woocommerce-payments' ),
 					onClick: () => setOpenModal( 'disable' ),
 				},
 			] }

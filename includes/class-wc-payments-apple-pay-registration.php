@@ -291,7 +291,15 @@ class WC_Payments_Apple_Pay_Registration {
 		$this->gateway->update_option( 'apple_pay_verified_domain', $this->domain_name );
 		$this->gateway->update_option( 'apple_pay_domain_set', 'no' );
 
-		Logger::log( 'Error registering domain with Apple: ' . $error );
+		Logger::log(
+			sprintf(
+				__(
+					'Error registering domain with Apple:  %s',
+					'woocommerce-payments'
+				),
+				$error
+			)
+		);
 		Tracker::track_admin(
 			'wcpay_apple_pay_domain_registration_failure',
 			[
@@ -357,7 +365,8 @@ class WC_Payments_Apple_Pay_Registration {
 		?>
 		<div class="notice notice-warning apple-pay-message">
 			<p>
-				<strong><?php echo esc_html( 'Apple Pay:' ); ?></strong>
+				<strong><?php echo esc_html_e( 'Apple Pay:', 'woocommerce-payments' ); ?>
+						</strong>
 				<?php echo esc_html_e( 'Express checkouts are enabled. To use Apple Pay, please use a live WooCommerce Payments account.', 'woocommerce-payments' ); ?>
 			</p>
 		</div>

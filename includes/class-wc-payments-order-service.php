@@ -1421,7 +1421,16 @@ class WC_Payments_Order_Service {
 			}
 		} catch ( Exception $e ) {
 			// Continue further, something unexpected happened, but we can't really do anything with that.
-			Logger::log( 'Error when updating status for order ' . $order->get_id() . ': ' . $e->getMessage() );
+			Logger::log(
+				sprintf(
+					__(
+						'Error when updating status for order %1$s: %2$s',
+						'woocommerce-payments'
+					),
+					$order->get_id(),
+					$e->getMessage()
+				)
+			);
 		}
 	}
 

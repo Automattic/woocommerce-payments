@@ -93,7 +93,10 @@ const ProtectionLevels: React.FC = () => {
 							</label>
 							<HelpOutlineIcon
 								size={ 18 }
-								title="Basic level help icon"
+								title={ __(
+									'Basic level help icon',
+									'woocommerce-payments'
+								) }
 								className="fraud-protection__help-icon"
 								onClick={ handleBasicModalOpen }
 							/>
