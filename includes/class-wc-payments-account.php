@@ -1592,13 +1592,13 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Redirects to the onboarding prototype page if the feature flag is enabled.
+	 * Redirects to the onboarding prototype page if the experiment is enabled.
 	 * Also checks if the server is connect and try to connect it otherwise.
 	 *
 	 * @return void
 	 */
 	private function redirect_to_prototype_onboarding_page() {
-		if ( ! WC_Payments_Features::is_progressive_onboarding_enabled() ) {
+		if ( ! WC_Payments_Utils::is_in_progressive_onboarding_treatment_mode() ) {
 			return;
 		}
 
