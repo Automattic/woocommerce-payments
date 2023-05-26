@@ -161,18 +161,18 @@ const OverviewPage = () => {
 					</ErrorBoundary>
 				) }
 
+			{ wcpaySettings.onboardingTestMode && (
+				<ErrorBoundary>
+					<SetupRealPayments />
+				</ErrorBoundary>
+			) }
+
 			<ErrorBoundary>
 				<AccountStatus
 					accountStatus={ wcpaySettings.accountStatus }
 					accountFees={ activeAccountFees }
 				/>
 			</ErrorBoundary>
-
-			{ wcpaySettings.onboardingTestMode && (
-				<ErrorBoundary>
-					<SetupRealPayments />
-				</ErrorBoundary>
-			) }
 
 			{ wcpaySettings.accountLoans.has_active_loan && (
 				<ErrorBoundary>

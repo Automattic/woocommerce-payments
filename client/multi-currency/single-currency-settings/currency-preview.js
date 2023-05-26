@@ -6,7 +6,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card, CardBody } from '@wordpress/components';
 import { TextControlWithAffixes } from '@woocommerce/components';
-import { formatCurrency } from 'wcpay/utils/currency';
+import { formatCurrency, isZeroDecimalCurrency } from 'wcpay/utils/currency';
 
 const CurrencyPreview = ( {
 	storeCurrency,
@@ -32,7 +32,9 @@ const CurrencyPreview = ( {
 			return isNaN( charmed )
 				? __( 'Please enter a valid number', 'woocommerce-payments' )
 				: formatCurrency(
-						charmed * 100,
+						isZeroDecimalCurrency( targetCurrency.code )
+							? charmed
+							: charmed * 100,
 						targetCurrency.code,
 						storeCurrency.code
 				  );

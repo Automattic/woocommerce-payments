@@ -7,43 +7,61 @@ exports[`FRTDiscoverabilityBanner does not render when remindMeAt timestamp is i
 exports[`FRTDiscoverabilityBanner renders 1`] = `
 <div>
   <div
-    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
   >
     <div
-      class="discoverability-card"
+      class="css-mgwsf4-View-Content em57xhy0"
     >
-      <span
-        class="wcpay-pill discoverability-card__new-feature-pill"
-      >
-        New
-      </span>
-      <h3
-        class="discoverability-card__header"
-      >
-        Enhanced fraud protection for your store
-      </h3>
-      <p
-        class="discoverability-card__body"
-      >
-        New features have been added to WooPayments to help reduce fraudulent transactions on your store. By using a set of rules to evaluate incoming orders, your store is better protected from fraudsters.
-      </p>
       <div
-        class="discoverability-card__actions"
+        class="discoverability-card"
       >
-        <a
-          class="components-button is-primary"
-          href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
+        <span
+          class="wcpay-pill discoverability-card__new-feature-pill"
         >
-          Learn more
-        </a>
-        <button
-          class="components-button is-tertiary"
-          type="button"
+          New
+        </span>
+        <h3
+          class="discoverability-card__header"
         >
-          Remind me later
-        </button>
+          Enhanced fraud protection for your store
+        </h3>
+        <p
+          class="discoverability-card__body"
+        >
+          New features have been added to WooPayments to help reduce fraudulent transactions on your store. By using a set of rules to evaluate incoming orders, your store is better protected from fraudsters.
+        </p>
+        <div
+          class="discoverability-card__actions"
+        >
+          <a
+            class="components-button is-primary"
+            href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
+          >
+            Learn more
+          </a>
+          <button
+            class="components-button is-tertiary"
+            type="button"
+          >
+            Remind me later
+          </button>
+        </div>
       </div>
     </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
   </div>
 </div>
 `;
@@ -51,43 +69,61 @@ exports[`FRTDiscoverabilityBanner renders 1`] = `
 exports[`FRTDiscoverabilityBanner renders when remindMeAt timestamp is in the past 1`] = `
 <div>
   <div
-    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
   >
     <div
-      class="discoverability-card"
+      class="css-mgwsf4-View-Content em57xhy0"
     >
-      <span
-        class="wcpay-pill discoverability-card__new-feature-pill"
-      >
-        New
-      </span>
-      <h3
-        class="discoverability-card__header"
-      >
-        Enhanced fraud protection for your store
-      </h3>
-      <p
-        class="discoverability-card__body"
-      >
-        New features have been added to WooPayments to help reduce fraudulent transactions on your store. By using a set of rules to evaluate incoming orders, your store is better protected from fraudsters.
-      </p>
       <div
-        class="discoverability-card__actions"
+        class="discoverability-card"
       >
-        <a
-          class="components-button is-primary"
-          href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
+        <span
+          class="wcpay-pill discoverability-card__new-feature-pill"
         >
-          Learn more
-        </a>
-        <button
-          class="components-button is-tertiary"
-          type="button"
+          New
+        </span>
+        <h3
+          class="discoverability-card__header"
         >
-          Remind me later
-        </button>
+          Enhanced fraud protection for your store
+        </h3>
+        <p
+          class="discoverability-card__body"
+        >
+          New features have been added to WooPayments to help reduce fraudulent transactions on your store. By using a set of rules to evaluate incoming orders, your store is better protected from fraudsters.
+        </p>
+        <div
+          class="discoverability-card__actions"
+        >
+          <a
+            class="components-button is-primary"
+            href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
+          >
+            Learn more
+          </a>
+          <button
+            class="components-button is-tertiary"
+            type="button"
+          >
+            Remind me later
+          </button>
+        </div>
       </div>
     </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
   </div>
 </div>
 `;
@@ -95,43 +131,61 @@ exports[`FRTDiscoverabilityBanner renders when remindMeAt timestamp is in the pa
 exports[`FRTDiscoverabilityBanner renders with dismiss button if remindMeCount greater than or equal to 3 1`] = `
 <div>
   <div
-    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
   >
     <div
-      class="discoverability-card"
+      class="css-mgwsf4-View-Content em57xhy0"
     >
-      <span
-        class="wcpay-pill discoverability-card__new-feature-pill"
-      >
-        New
-      </span>
-      <h3
-        class="discoverability-card__header"
-      >
-        Enhanced fraud protection for your store
-      </h3>
-      <p
-        class="discoverability-card__body"
-      >
-        New features have been added to WooPayments to help reduce fraudulent transactions on your store. By using a set of rules to evaluate incoming orders, your store is better protected from fraudsters.
-      </p>
       <div
-        class="discoverability-card__actions"
+        class="discoverability-card"
       >
-        <a
-          class="components-button is-primary"
-          href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
+        <span
+          class="wcpay-pill discoverability-card__new-feature-pill"
         >
-          Learn more
-        </a>
-        <button
-          class="components-button is-tertiary"
-          type="button"
+          New
+        </span>
+        <h3
+          class="discoverability-card__header"
         >
-          Dismiss
-        </button>
+          Enhanced fraud protection for your store
+        </h3>
+        <p
+          class="discoverability-card__body"
+        >
+          New features have been added to WooPayments to help reduce fraudulent transactions on your store. By using a set of rules to evaluate incoming orders, your store is better protected from fraudsters.
+        </p>
+        <div
+          class="discoverability-card__actions"
+        >
+          <a
+            class="components-button is-primary"
+            href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
+          >
+            Learn more
+          </a>
+          <button
+            class="components-button is-tertiary"
+            type="button"
+          >
+            Dismiss
+          </button>
+        </div>
       </div>
     </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
   </div>
 </div>
 `;
@@ -139,43 +193,61 @@ exports[`FRTDiscoverabilityBanner renders with dismiss button if remindMeCount g
 exports[`FRTDiscoverabilityBanner renders without dismiss button if remindMeCount greater than 0 but less than 3 1`] = `
 <div>
   <div
-    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
   >
     <div
-      class="discoverability-card"
+      class="css-mgwsf4-View-Content em57xhy0"
     >
-      <span
-        class="wcpay-pill discoverability-card__new-feature-pill"
-      >
-        New
-      </span>
-      <h3
-        class="discoverability-card__header"
-      >
-        Enhanced fraud protection for your store
-      </h3>
-      <p
-        class="discoverability-card__body"
-      >
-        New features have been added to WooPayments to help reduce fraudulent transactions on your store. By using a set of rules to evaluate incoming orders, your store is better protected from fraudsters.
-      </p>
       <div
-        class="discoverability-card__actions"
+        class="discoverability-card"
       >
-        <a
-          class="components-button is-primary"
-          href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
+        <span
+          class="wcpay-pill discoverability-card__new-feature-pill"
         >
-          Learn more
-        </a>
-        <button
-          class="components-button is-tertiary"
-          type="button"
+          New
+        </span>
+        <h3
+          class="discoverability-card__header"
         >
-          Remind me later
-        </button>
+          Enhanced fraud protection for your store
+        </h3>
+        <p
+          class="discoverability-card__body"
+        >
+          New features have been added to WooPayments to help reduce fraudulent transactions on your store. By using a set of rules to evaluate incoming orders, your store is better protected from fraudsters.
+        </p>
+        <div
+          class="discoverability-card__actions"
+        >
+          <a
+            class="components-button is-primary"
+            href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
+          >
+            Learn more
+          </a>
+          <button
+            class="components-button is-tertiary"
+            type="button"
+          >
+            Remind me later
+          </button>
+        </div>
       </div>
     </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
   </div>
 </div>
 `;

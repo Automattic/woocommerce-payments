@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { render, fireEvent } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -16,7 +16,10 @@ jest.mock( 'wcpay/data', () => ( {
 
 jest.mock( '@wordpress/data', () => ( {
 	createRegistryControl: jest.fn(),
-	dispatch: jest.fn( () => ( { setIsMatching: jest.fn() } ) ),
+	dispatch: jest.fn( () => ( {
+		setIsMatching: jest.fn(),
+		onLoad: jest.fn(),
+	} ) ),
 	registerStore: jest.fn(),
 	select: jest.fn(),
 	useDispatch: jest.fn( () => ( { createErrorNotice: jest.fn() } ) ),

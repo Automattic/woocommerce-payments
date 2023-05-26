@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Supply correct payment method instance to process_redirect_payment.
