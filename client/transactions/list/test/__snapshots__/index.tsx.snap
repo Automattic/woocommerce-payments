@@ -916,13 +916,13 @@ exports[`Transactions list renders correctly when can filter by several currenci
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
@@ -1861,13 +1861,13 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
@@ -2483,13 +2483,13 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
@@ -3460,13 +3460,13 @@ exports[`Transactions list subscription column renders correctly 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
@@ -4405,13 +4405,13 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
@@ -5350,13 +5350,13 @@ exports[`Transactions list when not filtered by deposit renders table summary on
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
