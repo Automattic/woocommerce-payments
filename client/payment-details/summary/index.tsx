@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import { Card, CardBody, CardFooter, CardDivider } from '@wordpress/components';
 import moment from 'moment';
@@ -194,7 +194,10 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 						<p className="payment-details-summary__amount">
 							<Loadable
 								isLoading={ isLoading }
-								placeholder="Amount placeholder"
+								placeholder={ __(
+									'Amount placeholder',
+									'woocommerce-payments'
+								) }
 							>
 								{ formatCurrency(
 									charge.amount,
@@ -345,7 +348,13 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 						<div className="payment-details-summary__id">
 							<Loadable
 								isLoading={ isLoading }
-								placeholder="Payment ID: pi_xxxxxxxxxxxxxxxxxxxxxxxx"
+								placeholder={ sprintf(
+									__(
+										'Payment ID: %s',
+										'woocommerce-payments'
+									),
+									'pi_xxxxxxxxxxxxxxxxxxxxxxxx'
+								) }
 							>
 								{ `${ __(
 									'Payment ID',

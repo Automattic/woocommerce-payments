@@ -51,7 +51,7 @@
     "install-if-deps-outdated": "node bin/install-if-deps-outdated.js",
     "lint": "npm run lint:js && npm run lint:css && npm run lint:php",
     "lint:css": "stylelint 'client/**/*.scss' 'client/**/*.css' 'assets/**/*.scss' 'assets/**/*.css'",
-    "lint:js": "tsc --noEmit && eslint . --ext=js,jsx,ts,tsx",
+    "lint:js": "tsc --noEmit && eslint . --ext=js,jsx,ts,tsx --fix",
     "lint:php": "./vendor/bin/phpcs --standard=phpcs.xml.dist $(git ls-files | grep .php$)",
     "lint:php-fix": "./vendor/bin/phpcbf --standard=phpcs.xml.dist $(git ls-files | grep .php$)",
     "format": "npm run format:js && npm run format:css",
