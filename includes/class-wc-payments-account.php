@@ -1592,7 +1592,7 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Redirects to the onboarding prototype page if the experiment is enabled.
+	 * Redirects to the onboarding prototype page if the experiment or PO feature flag is enabled.
 	 * Also checks if the server is connect and try to connect it otherwise.
 	 *
 	 * @return void
