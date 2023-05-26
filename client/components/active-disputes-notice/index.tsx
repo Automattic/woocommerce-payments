@@ -23,9 +23,7 @@ const ActiveDisputesNotice: React.FC = () => {
 		return null;
 	}
 
-	const disputesNoticeString = getDisputesNoticeString( {
-		activeDisputes,
-	} );
+	const disputesNoticeString = getDisputesNoticeString( activeDisputes );
 
 	if ( ! disputesNoticeString ) {
 		return null;

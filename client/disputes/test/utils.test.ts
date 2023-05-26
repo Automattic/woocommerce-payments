@@ -128,43 +128,29 @@ describe( 'getDisputesNoticeString', () => {
 	} );
 
 	it( 'returns null if passed an empty array', () => {
-		expect(
-			getDisputesNoticeString( {
-				activeDisputes: [],
-			} )
-		).toBe( null );
+		expect( getDisputesNoticeString( [] ) ).toBe( null );
 	} );
 
 	it( 'returns the correct string for a single dispute', () => {
-		expect(
-			getDisputesNoticeString( {
-				activeDisputes: [ mockDisputes[ 1 ] ],
-			} )
-		).toEqual( `Respond to a dispute for $10.00` );
+		expect( getDisputesNoticeString( [ mockDisputes[ 1 ] ] ) ).toEqual(
+			`Respond to a dispute for $10.00`
+		);
 	} );
 
 	it( 'returns the correct string for a single dispute due within 24h', () => {
-		expect(
-			getDisputesNoticeString( {
-				activeDisputes: [ mockDisputes[ 0 ] ],
-			} )
-		).toEqual( `Respond to a dispute for $12.34 – last day` );
+		expect( getDisputesNoticeString( [ mockDisputes[ 0 ] ] ) ).toEqual(
+			`Respond to a dispute for $12.34 – last day`
+		);
 	} );
 
 	it( 'returns the correct string for multiple disputes', () => {
-		expect(
-			getDisputesNoticeString( {
-				activeDisputes: mockDisputes.slice( 0, 2 ),
-			} )
-		).toEqual( `Respond to 2 active disputes for a total of $22.34` );
+		expect( getDisputesNoticeString( mockDisputes.slice( 0, 2 ) ) ).toEqual(
+			`Respond to 2 active disputes for a total of $22.34`
+		);
 	} );
 
 	it( 'returns the correct string for multiple disputes with multiple currencies', () => {
-		expect(
-			getDisputesNoticeString( {
-				activeDisputes: mockDisputes,
-			} )
-		).toEqual(
+		expect( getDisputesNoticeString( mockDisputes ) ).toEqual(
 			// eslint-disable-next-line no-irregular-whitespace -- needed for test since this character is being returned by the currency formatter
 			`Respond to 3 active disputes for a total of $22.34, CHF 20.00`
 		);

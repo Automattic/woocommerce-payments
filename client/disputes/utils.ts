@@ -10,16 +10,12 @@ import moment from 'moment';
 import type { CachedDispute } from 'wcpay/types/disputes';
 import { formatCurrency } from 'wcpay/utils/currency';
 
-interface GetDisputesNoticeStringArgs {
+export const getDisputesNoticeString = (
 	/**
 	 * Active disputes (awaiting a response) to generate the notice string for.
 	 */
-	activeDisputes: CachedDispute[];
-}
-
-export const getDisputesNoticeString = ( {
-	activeDisputes,
-}: GetDisputesNoticeStringArgs ): string | null => {
+	activeDisputes: CachedDispute[]
+): string | null => {
 	const disputeCount = activeDisputes.length;
 
 	if ( disputeCount === 0 ) {
