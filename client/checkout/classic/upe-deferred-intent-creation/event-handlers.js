@@ -13,6 +13,7 @@ import {
 	checkout,
 	mountStripePaymentElement,
 	renderTerms,
+	createAndConfirmSetupIntent,
 } from './stripe-checkout';
 import enqueueFraudScripts from 'fraud-scripts';
 import { showAuthenticationModalIfRequired } from './3ds-flow-handling';
@@ -65,5 +66,30 @@ jQuery( function ( $ ) {
 		) {
 			renderTerms( event );
 		}
+	} );
+
+	if ( $( 'form#add_payment_method' ).length ) {
+		if (
+			$( '.wcpay-upe-element' ).length &&
+			! $( '.wcpay-upe-element' ).children().length &&
+			getUPEConfig( 'isUPEEnabled' )
+		) {
+			$( '.wcpay-upe-element' )
+				.toArray()
+				.forEach( ( domElement ) =>
+					mountStripePaymentElement( api, domElement )
+				);
+		}
+	}
+
+	$( 'form#add_payment_method' ).on( 'submit', function () {
+		$.blockUI.defaults.ignoreIfBlocked = true;
+
+		return checkout(
+			api,
+			$( 'form#add_payment_method' ),
+			getSelectedUPEGatewayPaymentMethod(),
+			createAndConfirmSetupIntent
+		);
 	} );
 } );

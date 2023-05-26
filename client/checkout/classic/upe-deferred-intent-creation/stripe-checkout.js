@@ -88,12 +88,13 @@ function submitForm( jQueryForm ) {
  *
  * @param {Object} api The API object used to call the Stripe API's createPaymentMethod method.
  * @param {Object} elements The Stripe elements object used to create a Stripe payment method.
+ * @param {Object} jQueryForm The jQuery object for the form being submitted.
  * @return {Promise<Object>} A promise that resolves with the created Stripe payment method.
  */
-function createStripePaymentMethod( api, elements ) {
-	return api.getStripe().createPaymentMethod( {
-		elements,
-		params: {
+function createStripePaymentMethod( api, elements, jQueryForm ) {
+	let params = {};
+	if ( 'checkout' === jQueryForm.attr( 'name' ) ) {
+		params = {
 			billing_details: {
 				name: document.querySelector( '#billing_first_name' )
 					? (
@@ -115,8 +116,9 @@ function createStripePaymentMethod( api, elements ) {
 					state: document.querySelector( '#billing_state' ).value,
 				},
 			},
-		},
-	} );
+		};
+	}
+	return api.getStripe().createPaymentMethod( { elements, params: params } );
 }
 
 /**
@@ -191,7 +193,12 @@ export async function mountStripePaymentElement( api, domElement ) {
  * @return {boolean} return false to prevent the default form submission from WC Core.
  */
 let hasCheckoutCompleted;
-export const checkout = ( api, jQueryForm, paymentMethodType ) => {
+export const checkout = (
+	api,
+	jQueryForm,
+	paymentMethodType,
+	additionalActionsHandler = () => {}
+) => {
 	if ( hasCheckoutCompleted ) {
 		hasCheckoutCompleted = false;
 		return;
@@ -206,16 +213,23 @@ export const checkout = ( api, jQueryForm, paymentMethodType ) => {
 			await validateElements( elements );
 			const paymentMethodObject = await createStripePaymentMethod(
 				api,
-				elements
+				elements,
+				jQueryForm
 			);
 			appendFingerprintInputToForm( jQueryForm, fingerprint );
 			appendPaymentMethodIdToForm(
 				jQueryForm,
 				paymentMethodObject.paymentMethod.id
 			);
+			await additionalActionsHandler(
+				jQueryForm,
+				paymentMethodObject.paymentMethod,
+				api
+			);
 			hasCheckoutCompleted = true;
 			submitForm( jQueryForm );
 		} catch ( err ) {
+			hasCheckoutCompleted = false;
 			jQueryForm.removeClass( 'processing' ).unblock();
 			showErrorCheckout( err.message );
 		}
@@ -224,6 +238,25 @@ export const checkout = ( api, jQueryForm, paymentMethodType ) => {
 	// Prevent WC Core default form submission (see woocommerce/assets/js/frontend/checkout.js) from happening.
 	return false;
 };
+
+export const createAndConfirmSetupIntent = ( $form, paymentMethod, api ) => {
+	return api
+		.setupIntent( paymentMethod.id )
+		.then( function ( confirmedSetupIntent ) {
+			appendSetupIntentToForm( $form, confirmedSetupIntent );
+			return confirmedSetupIntent;
+		} );
+};
+
+function appendSetupIntentToForm( form, confirmedIntent ) {
+	const input = document.createElement( 'input' );
+	input.type = 'hidden';
+	input.id = 'wcpay-setup-intent';
+	input.name = 'wcpay-setup-intent';
+	input.value = confirmedIntent.id;
+
+	form.append( input );
+}
 
 /**
  * Updates the terms parameter in the Payment Element based on the "save payment information" checkbox.
