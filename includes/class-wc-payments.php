@@ -669,7 +669,7 @@ class WC_Payments {
 				self::$registered_card_gateway = self::$card_gateway;
 			}
 			$gateways[] = self::$registered_card_gateway;
-			if ( self::$registered_card_gateway->is_changing_payment_method_for_subscription() ) {
+			if ( self::$registered_card_gateway->is_subscriptions_enabled() && self::$registered_card_gateway->is_changing_payment_method_for_subscription() ) {
 				return $gateways;
 			}
 			$all_upe_gateways = [];
