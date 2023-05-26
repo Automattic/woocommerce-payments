@@ -1119,12 +1119,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		try {
 			$is_nonce_valid = check_ajax_referer( 'wcpay_log_payment_error_nonce', false, false );
 			if ( ! $is_nonce_valid ) {
-				throw new Exception( 'Invalid request.' );
+				throw new Exception( __( 'Invalid request.', 'woocommerce-payments' ) );
 			}
 
 			$charge_id = isset( $_POST['charge_id'] ) ? wc_clean( wp_unslash( $_POST['charge_id'] ) ) : '';
 			if ( empty( $charge_id ) ) {
-				throw new Exception( 'Charge ID cannot be empty.' );
+				throw new Exception( __( 'Charge ID cannot be empty.', 'woocommerce-payments' ) );
 			}
 
 			// Get charge data from WCPay Server.
@@ -1135,7 +1135,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			// Validate Order ID and proceed with logging errors and updating order status.
 			$order = wc_get_order( $order_id );
 			if ( ! $order ) {
-				throw new Exception( 'Order not found. Unable to log error.' );
+				throw new Exception( __( 'Order not found. Unable to log error.', 'woocommerce-payments' ) );
 			}
 
 			$intent_id = $charge_data['payment_intent'] ?? $order->get_meta( '_intent_id' );

@@ -514,13 +514,13 @@ class WC_Payments_WooPay_Button_Handler {
 
 		// Product page, but has unsupported product type.
 		if ( $this->is_product() && ! $this->is_product_supported() ) {
-			Logger::log( 'Product page has unsupported product type ( WooPay Express button disabled )' );
+			Logger::log( __( 'Product page has unsupported product type ( WooPay Express button disabled )', 'woocommerce-payments' ) );
 			return false;
 		}
 
 		// Cart has unsupported product type.
 		if ( ( $this->is_checkout() || $this->is_cart() ) && ! $this->has_allowed_items_in_cart() ) {
-			Logger::log( 'Items in the cart have unsupported product type ( WooPay Express button disabled )' );
+			Logger::log( __( 'Items in the cart have unsupported product type ( WooPay Express button disabled )', 'woocommerce-payments' ) );
 			return false;
 		}
 

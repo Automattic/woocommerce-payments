@@ -713,7 +713,7 @@ class WC_Payments_Product_Service {
 	 */
 	private function validate_product_data( $product_data ) {
 		if ( empty( $product_data['name'] ) ) {
-			throw new Exception( 'The product "name" is required.' );
+			throw new Exception( __( 'The product "name" is required.', 'woocommerce-payments' ) );
 		}
 	}
 
