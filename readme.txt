@@ -94,6 +94,11 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 5.9.1 - 2023-05-29 =
+* Fix - Improved validation of the order key arg when redirecting to subscription's change payment method URL.
+* Fix - Improve validation of WC analytics query filters
+* Dev - Update subscriptions-core to 5.7.2
+
 = 5.9.0 - 2023-05-17 =
 * Add - Adds the minimal functionality for the new Stripe payment flow that allows deferred payment/setup intent creation. The functionality is hidden behind the feature flag.
 * Add - Add support for 6 new countries in WCPay: Bulgaria, Croatia, and Romania
