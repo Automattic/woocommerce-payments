@@ -1,5 +1,13 @@
 *** WooCommerce Payments Changelog ***
 
+= 4.9.2 - 2023-05-29 =
+* Fix - Improved validation of the order key arg when redirecting to subscription's change payment method URL.
+* Fix - Improve validation of WC analytics query filters
+* Dev - Update subscriptions-core to 5.7.2
+
+= 4.9.1 - 2023-03-23 =
+* Fix - Security update.
+
 = 4.9.0 - 2022-10-20 =
 * Add - Adds new notice and modal informing users about verifying their account during onboarding.
 * Add - Declare WooCommerce Payments incompatible with COT
