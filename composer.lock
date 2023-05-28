@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "41836a9d944c0ebfae18044da0409615",
+    "content-hash": "19749364cdd8ee15eb8249ea04efea8a",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -1060,16 +1060,16 @@
         },
         {
             "name": "woocommerce/subscriptions-core",
-            "version": "5.1.0",
+            "version": "dev-test/shendy-merge-upstream",
             "source": {
                 "type": "git",
-                "url": "https://github.com/Automattic/woocommerce-subscriptions-core.git",
-                "reference": "121ef4b833aa9ae47e91e22389fca8d30057deba"
+                "url": "git@github.com:Automattic/woocommerce-subscriptions-core-private.git",
+                "reference": "3a97bf8cbd8c0c3dea6856cb29dc317b040521d0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/121ef4b833aa9ae47e91e22389fca8d30057deba",
-                "reference": "121ef4b833aa9ae47e91e22389fca8d30057deba",
+                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core-private/zipball/3a97bf8cbd8c0c3dea6856cb29dc317b040521d0",
+                "reference": "3a97bf8cbd8c0c3dea6856cb29dc317b040521d0",
                 "shasum": ""
             },
             "require": {
@@ -1110,10 +1110,10 @@
             "description": "Sell products and services with recurring payments in your WooCommerce Store.",
             "homepage": "https://github.com/Automattic/woocommerce-subscriptions-core",
             "support": {
-                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/5.1.0",
-                "issues": "https://github.com/Automattic/woocommerce-subscriptions-core/issues"
+                "source": "https://github.com/Automattic/woocommerce-subscriptions-core-private/tree/test/shendy-merge-upstream",
+                "issues": "https://github.com/Automattic/woocommerce-subscriptions-core-private/issues"
             },
-            "time": "2022-11-24T01:28:40+00:00"
+            "time": "2023-05-28T04:16:19+00:00"
         }
     ],
     "packages-dev": [
@@ -6569,6 +6569,7 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
+        "woocommerce/subscriptions-core": 20,
         "kalessil/production-dependencies-guard": 20
     },
     "prefer-stable": true,
