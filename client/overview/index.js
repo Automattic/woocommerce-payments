@@ -16,7 +16,6 @@ import { TestModeNotice, topics } from 'components/test-mode-notice';
 import AccountStatus from 'components/account-status';
 import Welcome from 'components/welcome';
 import AccountBalances from 'components/account-balances';
-import ActiveDisputesNotice from 'components/active-disputes-notice';
 import DepositsOverview from 'components/deposits-overview';
 import ActiveLoanSummary from 'components/active-loan-summary';
 import ErrorBoundary from 'components/error-boundary';
@@ -62,7 +61,6 @@ const OverviewPage = () => {
 	} = wcpaySettings;
 	const numDisputesNeedingResponse =
 		parseInt( wcpaySettings.numDisputesNeedingResponse, 10 ) || 0;
-	const someDisputesNeedAttention = 0 < numDisputesNeedingResponse;
 	const { isLoading: settingsIsLoading, settings } = useSettings();
 
 	const tasksUnsorted = getTasks( {
@@ -146,25 +144,10 @@ const OverviewPage = () => {
 			{ ! accountRejected && (
 				<ErrorBoundary>
 					<>
-						{ someDisputesNeedAttention ? (
-							// If there are disputes that need a response, we want to show the
-							// welcome header and the notice at the top of the page, in a separate card
-							// to the balances tab panel.
-							<>
-								<Card>
-									<Welcome />
-									<ActiveDisputesNotice />
-								</Card>
-								<Card>
-									<AccountBalances />
-								</Card>
-							</>
-						) : (
-							<Card>
-								<Welcome />
-								<AccountBalances />
-							</Card>
-						) }
+						<Card>
+							<Welcome />
+							<AccountBalances />
+						</Card>
 
 						<DepositsOverview />
 					</>
