@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0736b15e02fc8de5449d6f28bfae3df7",
+    "content-hash": "011fb31fbbfc1a6f057f694fe3f9be1c",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -1060,22 +1060,17 @@
         },
         {
             "name": "woocommerce/subscriptions-core",
-            "version": "2.2.1",
+            "version": "dev-test/shendy-merge-upstream",
             "source": {
                 "type": "git",
-                "url": "https://github.com/Automattic/woocommerce-subscriptions-core.git",
-                "reference": "c4debb6c3150b0732eb29b2b897bcbaef8cc6f97"
+                "url": "git@github.com:Automattic/woocommerce-subscriptions-core-private.git",
+                "reference": "3a97bf8cbd8c0c3dea6856cb29dc317b040521d0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/c4debb6c3150b0732eb29b2b897bcbaef8cc6f97",
-                "reference": "c4debb6c3150b0732eb29b2b897bcbaef8cc6f97",
+                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core-private/zipball/3a97bf8cbd8c0c3dea6856cb29dc317b040521d0",
+                "reference": "3a97bf8cbd8c0c3dea6856cb29dc317b040521d0",
                 "shasum": ""
-            },
-            "archive": {
-                "exclude": [
-                    "!/build"
-                ]
             },
             "require": {
                 "composer/installers": "~1.2",
@@ -1090,6 +1085,13 @@
             "type": "wordpress-plugin",
             "extra": {
                 "phpcodesniffer-search-depth": 2
+            },
+            "archive": {
+                "exclude": [
+                    "!/build",
+                    "*.zip",
+                    "node_modules"
+                ]
             },
             "scripts": {
                 "phpcs": [
@@ -1108,10 +1110,10 @@
             "description": "Sell products and services with recurring payments in your WooCommerce Store.",
             "homepage": "https://github.com/Automattic/woocommerce-subscriptions-core",
             "support": {
-                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/2.2.1",
-                "issues": "https://github.com/Automattic/woocommerce-subscriptions-core/issues"
+                "source": "https://github.com/Automattic/woocommerce-subscriptions-core-private/tree/test/shendy-merge-upstream",
+                "issues": "https://github.com/Automattic/woocommerce-subscriptions-core-private/issues"
             },
-            "time": "2022-08-25T22:15:47+00:00"
+            "time": "2023-05-28T04:16:19+00:00"
         }
     ],
     "packages-dev": [
@@ -5822,6 +5824,7 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
+        "woocommerce/subscriptions-core": 20,
         "kalessil/production-dependencies-guard": 20
     },
     "prefer-stable": true,
@@ -5834,5 +5837,5 @@
     "platform-overrides": {
         "php": "7.3"
     },
-    "plugin-api-version": "2.0.0"
+    "plugin-api-version": "2.3.0"
 }
