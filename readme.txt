@@ -125,6 +125,12 @@ Please note that our support for the checkout block is still experimental and th
 * Dev - Tracking for account balance section on the Payments > Overview page.
 * Dev - Update @woocommerce/components to v12.0.0
 
+= 5.9.1 - 2023-05-29 =
+* Fix - Improved validation of the order key arg when redirecting to subscription's change payment method URL.
+* Fix - Improve validation of WC analytics query filters
+* Fix - Resolved an issue with customers being redirected to an incorrect Pay for Order URL after login.
+* Dev - Update subscriptions-core to 5.7.2
+
 = 5.9.0 - 2023-05-17 =
 * Add - Adds the minimal functionality for the new Stripe payment flow that allows deferred payment/setup intent creation. The functionality is hidden behind the feature flag.
 * Add - Add support for 6 new countries in WCPay: Bulgaria, Croatia, and Romania
