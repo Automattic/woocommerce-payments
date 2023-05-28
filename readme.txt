@@ -98,6 +98,14 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 5.4.2 - 2023-05-29 =
+* Fix - Improved validation of the order key arg when redirecting to subscription's change payment method URL.
+* Fix - Improve validation of WC analytics query filters
+* Dev - Update subscriptions-core to 5.7.2
+
+= 5.4.1 - 2023-03-23 =
+* Update - Security update.
+
 = 5.4.0 - 2023-02-01 =
 * Add - Add logging and order notes when WCPay Subscriptions are suspended or put on-hold.
 * Add - Highlight subscriptions with overdue payment in list view with red icon == Changelog == tooltip.
