@@ -98,6 +98,11 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 5.7.1 - 2023-05-29 =
+* Fix - Improved validation of the order key arg when redirecting to subscription's change payment method URL.
+* Fix - Improve validation of WC analytics query filters
+* Dev - Update subscriptions-core to 5.7.2
+
 = 5.7.0 - 2023-04-05 =
 * Add - Add ClickTooltip and HoverTooltip components to improve mobile UX when tooltip content is interactive.
 * Add - Add concurrency to workflows
@@ -118,26 +123,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Implement connection to the Intelligent Router and flow switching
 * Add - Introduce a Banner Notice component to be used in upcoming UI elements
 * Add - Prefill Stripe KYC data for non-progressive onboarding scenario
-* Add - Record the following events:
-wcpay_fraud_protection_banner_rendered
-wcpay_fraud_protection_banner_learn_more_button_clicked
-wcpay_fraud_protection_banner_remind_later_button_clicked
-wcpay_fraud_protection_tour_clicked_through
-wcpay_fraud_protection_tour_abandoned
-wcpay_fraud_protection_risk_level_preset_enabled
-wcpay_fraud_protection_advanced_settings_saved
-wcpay_fraud_protection_transaction_reviewed_merchant_blocked
-wcpay_fraud_protection_transaction_reviewed_merchant_approved
-wcpay_fraud_protection_standard_modal_viewed
-wcpay_fraud_protection_high_modal_viewed
-wcpay_fraud_protection_advanced_settings_card_avs_mismatch_viewed
-wcpay_fraud_protection_advanced_settings_card_cvc_verification_viewed
-wcpay_fraud_protection_advanced_settings_card_international_ip_address_card_viewed
-wcpay_fraud_protection_advanced_settings_card_international_billing_address_viewed
-wcpay_fraud_protection_advanced_settings_card_address_mismatch_viewed
-wcpay_fraud_protection_advanced_settings_card_price_threshold_viewed
-wcpay_fraud_protection_advanced_settings_card_items_threshold_viewed
-wcpay_fraud_protection_order_details_link_clicked
+* Add - Record the following events: wcpay_fraud_protection_banner_rendered, wcpay_fraud_protection_banner_learn_more_button_clicked, wcpay_fraud_protection_banner_remind_later_button_clicked, wcpay_fraud_protection_tour_clicked_through, wcpay_fraud_protection_tour_abandoned, wcpay_fraud_protection_risk_level_preset_enabled, wcpay_fraud_protection_advanced_settings_saved, wcpay_fraud_protection_transaction_reviewed_merchant_blocked, wcpay_fraud_protection_transaction_reviewed_merchant_approved, wcpay_fraud_protection_standard_modal_viewed, wcpay_fraud_protection_high_modal_viewed, wcpay_fraud_protection_advanced_settings_card_avs_mismatch_viewed, wcpay_fraud_protection_advanced_settings_card_cvc_verification_viewed, wcpay_fraud_protection_advanced_settings_card_international_ip_address_card_viewed, wcpay_fraud_protection_advanced_settings_card_international_billing_address_viewed, wcpay_fraud_protection_advanced_settings_card_address_mismatch_viewed, wcpay_fraud_protection_advanced_settings_card_price_threshold_viewed, wcpay_fraud_protection_advanced_settings_card_items_threshold_viewed, wcpay_fraud_protection_order_details_link_clicked
 * Add - Show Tap to Pay icon in transactions list page for Tap to Pay transactions
 * Fix - Check whether we have an instance of WC_Cart before invoking its methods on checkout
 * Fix - Fatal errors on the thank-you page due to the strong type check in our filters.
