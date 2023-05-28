@@ -1,5 +1,10 @@
 *** WooCommerce Payments Changelog ***
 
+= 4.7.3 - 2023-05-29 =
+* Fix - Improved validation of the order key arg when redirecting to subscription's change payment method URL.
+* Fix - Improve validation of WC analytics query filters
+* Dev - Update subscriptions-core to 5.7.2
+
 = 4.7.2 - 2022-09-15 =
 * Fix - Fixes Order ID appearing as N/A in Payments > Transactions
 
