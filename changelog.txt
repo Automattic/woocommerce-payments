@@ -1,7 +1,11 @@
 *** WooCommerce Payments Changelog ***
 
+= 4.2.3 - 2023-05-29 =
+* Fix - Avoid redirecting customers to the change subscription payment method URL erroneously after viewing a Pay for renewal order URL
+* Fix - Improved validation of the order key arg when redirecting to subscription's change payment method URL.
+
 = 4.2.2 - 2022-08-08 =
-* Security update.
+* Fix - Security update.
 
 = 4.2.1 - 2022-06-06 =
 * Fix - Add check to prevent fatal errors on checkout
