@@ -98,8 +98,12 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 4.3.2 - 2023-05-29 =
+* Fix - Avoid redirecting customers to the change subscription payment method URL erroneously after viewing a Pay for renewal order URL
+* Fix - Improved validation of the order key arg when redirecting to subscription's change payment method URL.
+
 = 4.3.1 - 2022-08-08 =
-* Security update.
+* Fix - Security update.
 
 = 4.3.0 - 2022-06-15 =
 * Add - Add ARN (Acquirer Reference Number) to refunds in payment details timeline.
