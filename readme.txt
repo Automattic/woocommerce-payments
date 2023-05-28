@@ -101,6 +101,7 @@ Please note that our support for the checkout block is still experimental and th
 = 4.2.3 - 2023-05-29 =
 * Fix - Avoid redirecting customers to the change subscription payment method URL erroneously after viewing a Pay for renewal order URL
 * Fix - Improved validation of the order key arg when redirecting to subscription's change payment method URL.
+* Dev - Update subscriptions-core to 5.7.2
 
 = 4.2.2 - 2022-08-08 =
 * Fix - Security update.
