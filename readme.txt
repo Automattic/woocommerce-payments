@@ -94,9 +94,13 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 5.8.2 - 2023-05-29 =
+* Fix - Improved validation of the order key arg when redirecting to subscription's change payment method URL.
+* Fix - Improve validation of WC analytics query filters
+* Dev - Update subscriptions-core to 5.7.2
+
 = 5.8.1 - 2023-05-03 =
 * Fix - Fix WooPay express checkout button display issue on Cart blocks.
-
 
 = 5.8.0 - 2023-04-26 =
 * Add - Add additional fruad meta box statuses and messages.
