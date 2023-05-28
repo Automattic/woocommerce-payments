@@ -98,6 +98,14 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 5.5.3 - 2023-05-29 =
+* Fix - Improved validation of the order key arg when redirecting to subscription's change payment method URL.
+* Fix - Improve validation of WC analytics query filters
+* Dev - Update subscriptions-core to 5.7.2
+
+= 5.5.2 - 2023-03-23 =
+* Update - Security update.
+
 = 5.5.1 - 2023-03-01 =
 * Add - When enabling WooPay, if legacy UPE is enabled, upgrades feature flag to split UPE instead.
 * Fix - Avoid rendering save cards checkbox for logged out users
