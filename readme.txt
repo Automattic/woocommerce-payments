@@ -98,6 +98,14 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 5.1.4 - 2023-05-29 =
+* Fix - Improved validation of the order key arg when redirecting to subscription's change payment method URL.
+* Fix - Improve validation of WC analytics query filters
+* Dev - Update subscriptions-core to 5.7.2
+
+= 5.1.3 - 2023-03-23 =
+* Update - Security update.
+
 = 5.1.2 - 2022-12-03 =
 * Fix - Import critical package instead of lazy loading.
 
