@@ -98,6 +98,14 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 5.0.5 - 2023-05-29 =
+* Fix - Improved validation of the order key arg when redirecting to subscription's change payment method URL.
+* Fix - Improve validation of WC analytics query filters
+* Dev - Update subscriptions-core to 5.7.2
+
+= 5.0.4 - 2023-03-23 =
+* Fix - Security update.
+
 = 5.0.3 - 2022-11-15 =
 * Fix - Purchasing a synced subscription with WCPay Subscriptions correctly sets the next payment date to the sync date in Stripe.
 
