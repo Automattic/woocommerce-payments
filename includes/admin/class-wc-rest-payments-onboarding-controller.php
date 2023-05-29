@@ -183,7 +183,7 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 			[
 				'business_info'   => $request->get_param( 'business' ),
 				'store_info'      => $request->get_param( 'store' ),
-				'woo_store_stats' => $request->get_param( 'woo_store_stats' ),
+				'woo_store_stats' => $request->get_param( 'woo_store_stats' ) ?? [],
 			]
 		);
 	}
