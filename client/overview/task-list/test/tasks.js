@@ -5,10 +5,97 @@
  */
 import { getTasks, taskSort } from '../tasks';
 
+const mockActiveDisputes = [
+	{
+		wcpay_disputes_cache_id: 4,
+		stripe_account_id: 'acct_test',
+		dispute_id: 'dp_asdfghjkl',
+		charge_id: 'ch_mock',
+		amount: 1000,
+		currency: 'usd',
+		reason: 'fraudulent',
+		source: 'visa',
+		order_number: 1,
+		customer_name: 'Mock customer',
+		customer_email: 'mock@customer.net',
+		customer_country: 'US',
+		status: 'needs_response',
+		created: '2019-11-01 23:59:59',
+		due_by: '2019-11-08 02:46:00',
+		order: {
+			number: '1',
+			customer_url: 'https://shop.local',
+			url: 'http://test.local/order/1',
+		},
+	},
+	{
+		wcpay_disputes_cache_id: 4,
+		stripe_account_id: 'acct_test',
+		dispute_id: 'dp_asdfghjkl',
+		charge_id: 'ch_mock',
+		amount: 1000,
+		currency: 'usd',
+		reason: 'fraudulent',
+		source: 'visa',
+		order_number: 2,
+		customer_name: 'Mock customer',
+		customer_email: 'mock@customer.net',
+		customer_country: 'US',
+		status: 'needs_response',
+		created: '2019-11-01 23:59:59',
+		due_by: '2019-11-08 02:46:00',
+		order: {
+			number: '1',
+			customer_url: 'https://shop.local',
+			url: 'http://test.local/order/1',
+		},
+	},
+	{
+		wcpay_disputes_cache_id: 4,
+		stripe_account_id: 'acct_test',
+		dispute_id: 'dp_asdfghjkl',
+		charge_id: 'ch_mock',
+		amount: 1000,
+		currency: 'eur',
+		reason: 'fraudulent',
+		source: 'visa',
+		order_number: 2,
+		customer_name: 'Mock customer',
+		customer_email: 'mock@customer.net',
+		customer_country: 'US',
+		status: 'needs_response',
+		created: '2019-11-01 23:59:59',
+		due_by: '2019-11-08 02:46:00',
+		order: {
+			number: '1',
+			customer_url: 'https://shop.local',
+			url: 'http://test.local/order/1',
+		},
+	},
+];
+
 describe( 'getTasks()', () => {
 	beforeEach( () => {
 		// mock Date.now that moment library uses to get current date for testing purposes
 		Date.now = jest.fn( () => new Date( '2023-02-01T12:33:37.000Z' ) );
+
+		global.wcpaySettings = {
+			zeroDecimalCurrencies: [],
+			connect: {
+				country: 'US',
+			},
+			currentUserEmail: 'mock@example.com',
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
+		};
 	} );
 	afterEach( () => {
 		// roll it back
@@ -188,7 +275,7 @@ describe( 'getTasks()', () => {
 	} );
 
 	it( 'should not include the dispute resolution task', () => {
-		const numDisputesNeedingResponse = 0;
+		const activeDisputes = [];
 		const actual = getTasks( {
 			accountStatus: {
 				status: 'restricted_soon',
@@ -199,14 +286,13 @@ describe( 'getTasks()', () => {
 					isEnabled: false,
 				},
 			},
-			numDisputesNeedingResponse,
+			activeDisputes,
 		} );
 
 		expect( actual ).toEqual( [] );
 	} );
 
 	it( 'should include the dispute resolution task', () => {
-		const numDisputesNeedingResponse = 1;
 		const actual = getTasks( {
 			accountStatus: {
 				status: 'restricted_soon',
@@ -217,7 +303,7 @@ describe( 'getTasks()', () => {
 					isEnabled: false,
 				},
 			},
-			numDisputesNeedingResponse,
+			activeDisputes: [ mockActiveDisputes[ 0 ] ],
 		} );
 
 		expect( actual ).toEqual(
@@ -225,16 +311,15 @@ describe( 'getTasks()', () => {
 				expect.objectContaining( {
 					key: 'dispute-resolution-task',
 					completed: false,
-					level: 3,
-					title: '1 disputed payment needs your response',
-					additionalInfo: 'View and respond',
+					level: 2,
+					title: 'Respond to a dispute for $10.00',
+					actionLabel: 'Respond now',
 				} ),
 			] )
 		);
 	} );
 
 	it( 'should include the dispute resolution task with multiple disputes', () => {
-		const numDisputesNeedingResponse = 2000;
 		const actual = getTasks( {
 			accountStatus: {
 				status: 'restricted_soon',
@@ -245,7 +330,7 @@ describe( 'getTasks()', () => {
 					isEnabled: false,
 				},
 			},
-			numDisputesNeedingResponse,
+			activeDisputes: mockActiveDisputes,
 		} );
 
 		expect( actual ).toEqual(
@@ -253,13 +338,15 @@ describe( 'getTasks()', () => {
 				expect.objectContaining( {
 					key: 'dispute-resolution-task',
 					completed: false,
-					level: 3,
-					title: '2000 disputed payments need your response',
-					additionalInfo: 'View and respond',
+					level: 2,
+					title:
+						'Respond to 3 active disputes for a total of $20.00, €10.00',
+					actionLabel: 'Respond now',
 				} ),
 			] )
 		);
 	} );
+
 	it( 'should include the po task', () => {
 		global.wcpaySettings = {
 			accountStatus: {
@@ -303,13 +390,30 @@ describe( 'taskSort()', () => {
 	beforeEach( () => {
 		// mock Date.now that moment library uses to get current date for testing purposes
 		Date.now = jest.fn( () => new Date( '2023-02-01T12:33:37.000Z' ) );
+
+		global.wcpaySettings = {
+			zeroDecimalCurrencies: [],
+			connect: {
+				country: 'US',
+			},
+			currentUserEmail: 'mock@example.com',
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
+		};
 	} );
 	afterEach( () => {
 		// roll it back
 		Date.now = () => new Date();
 	} );
 	it( 'should sort the tasks without po', () => {
-		const numDisputesNeedingResponse = 1;
 		const unsortedTasks = getTasks( {
 			accountStatus: {
 				status: 'restricted_soon',
@@ -321,7 +425,7 @@ describe( 'taskSort()', () => {
 				},
 			},
 			isAccountOverviewTasksEnabled: true,
-			numDisputesNeedingResponse,
+			activeDisputes: mockActiveDisputes,
 		} );
 		unsortedTasks.unshift( {
 			key: 'test-element',
@@ -340,7 +444,7 @@ describe( 'taskSort()', () => {
 			expect.objectContaining( {
 				key: 'dispute-resolution-task',
 				completed: false,
-				level: 3,
+				level: 2,
 			} )
 		);
 	} );

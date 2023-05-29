@@ -55,6 +55,9 @@ jest.mock( 'wcpay/data', () => ( {
 	useSettings: jest.fn().mockReturnValue( {
 		settings: { enabled_payment_method_ids: [ 'foo', 'bar' ] },
 	} ),
+	useDisputes: jest
+		.fn()
+		.mockReturnValue( { disputes: [], isLoading: false } ),
 	useDeposits: jest
 		.fn()
 		.mockReturnValue( { deposits: [], isLoading: false } ),
