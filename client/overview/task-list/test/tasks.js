@@ -50,6 +50,28 @@ const mockActiveDisputes = [
 			url: 'http://test.local/order/1',
 		},
 	},
+	{
+		wcpay_disputes_cache_id: 4,
+		stripe_account_id: 'acct_test',
+		dispute_id: 'dp_asdfghjkl',
+		charge_id: 'ch_mock',
+		amount: 1000,
+		currency: 'eur',
+		reason: 'fraudulent',
+		source: 'visa',
+		order_number: 2,
+		customer_name: 'Mock customer',
+		customer_email: 'mock@customer.net',
+		customer_country: 'US',
+		status: 'needs_response',
+		created: '2019-11-01 23:59:59',
+		due_by: '2019-11-08 02:46:00',
+		order: {
+			number: '1',
+			customer_url: 'https://shop.local',
+			url: 'http://test.local/order/1',
+		},
+	},
 ];
 
 describe( 'getTasks()', () => {
@@ -317,7 +339,8 @@ describe( 'getTasks()', () => {
 					key: 'dispute-resolution-task',
 					completed: false,
 					level: 2,
-					title: 'Respond to 2 active disputes for a total of $20.00',
+					title:
+						'Respond to 3 active disputes for a total of $20.00, €10.00',
 					actionLabel: 'Respond now',
 				} ),
 			] )
