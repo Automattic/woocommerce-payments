@@ -1598,7 +1598,7 @@ class WC_Payments_Account {
 	 * @return void
 	 */
 	private function redirect_to_prototype_onboarding_page() {
-		if ( ! WC_Payments_Utils::is_in_progressive_onboarding_treatment_mode() || WC_Payments_Features::is_progressive_onboarding_enabled() ) {
+		if ( ! WC_Payments_Utils::is_in_progressive_onboarding_treatment_mode() && ! WC_Payments_Features::is_progressive_onboarding_enabled() ) {
 			return;
 		}
 
