@@ -72,7 +72,10 @@ const OverviewPage = () => {
 	} );
 	const tasks =
 		Array.isArray( tasksUnsorted ) && tasksUnsorted.sort( taskSort );
+
 	const queryParams = getQuery();
+	const accountRejected =
+		accountStatus.status && accountStatus.status.startsWith( 'rejected' );
 
 	const showConnectionSuccess =
 		'1' === queryParams[ 'wcpay-connection-success' ];
@@ -85,8 +88,8 @@ const OverviewPage = () => {
 		accountStatus.progressiveOnboarding.isEnabled &&
 		! accountStatus.progressiveOnboarding.isComplete &&
 		'pending_verification' !== accountStatus.status;
-	const accountRejected =
-		accountStatus.status && accountStatus.status.startsWith( 'rejected' );
+	const showTaskList =
+		!! accountOverviewTaskList && ! accountRejected && 0 < tasks.length;
 
 	const activeAccountFees = Object.entries( wcpaySettings.accountFees )
 		.map( ( [ key, value ] ) => {
@@ -144,26 +147,34 @@ const OverviewPage = () => {
 			{ ! accountRejected && (
 				<ErrorBoundary>
 					<>
-						<Card>
-							<Welcome />
-							<AccountBalances />
-						</Card>
+						{ showTaskList ? (
+							<>
+								<Card>
+									<Welcome />
+									<ErrorBoundary>
+										<TaskList
+											tasks={ tasks }
+											overviewTasksVisibility={
+												overviewTasksVisibility
+											}
+										/>
+									</ErrorBoundary>
+								</Card>
+								<Card>
+									<AccountBalances />
+								</Card>
+							</>
+						) : (
+							<Card>
+								<Welcome />
+								<AccountBalances />
+							</Card>
+						) }
 
 						<DepositsOverview />
 					</>
 				</ErrorBoundary>
 			) }
-
-			{ !! accountOverviewTaskList &&
-				0 < tasks.length &&
-				! accountRejected && (
-					<ErrorBoundary>
-						<TaskList
-							tasks={ tasks }
-							overviewTasksVisibility={ overviewTasksVisibility }
-						/>
-					</ErrorBoundary>
-				) }
 
 			{ wcpaySettings.onboardingTestMode && (
 				<ErrorBoundary>
