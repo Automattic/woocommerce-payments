@@ -157,6 +157,16 @@ async function createStripePaymentElement( api, paymentMethodType ) {
 	return createdStripePaymentElement;
 }
 
+function appendSetupIntentToForm( form, confirmedIntent ) {
+	const input = document.createElement( 'input' );
+	input.type = 'hidden';
+	input.id = 'wcpay-setup-intent';
+	input.name = 'wcpay-setup-intent';
+	input.value = confirmedIntent.id;
+
+	form.append( input );
+}
+
 /**
  * Mounts the existing Stripe Payment Element to the DOM element.
  * Creates the Stipe Payment Element instance if it doesn't exist and mounts it to the DOM element.
@@ -194,6 +204,46 @@ export async function mountStripePaymentElement( api, domElement ) {
 	upeElement.mount( domElement );
 }
 
+export const createAndConfirmSetupIntent = ( $form, { id }, api ) => {
+	return api.setupIntent( id ).then( function ( confirmedSetupIntent ) {
+		appendSetupIntentToForm( $form, confirmedSetupIntent );
+		return confirmedSetupIntent;
+	} );
+};
+
+/**
+ * Saves the payment method ID in a hidden input, and re-submits the form.
+ *
+ * @param {Object} $form         The jQuery object for the form.
+ * @param {Object} paymentMethod Payment method object.
+ */
+export const handleOrderPayment = ( $form, { id } ) => {
+	const paymentSelector = '#wcpay-payment-method';
+
+	// Populate form with the payment method.
+	document.querySelector( paymentSelector ).value = id;
+};
+
+/**
+ * Updates the terms parameter in the Payment Element based on the "save payment information" checkbox.
+ *
+ * @param {Event} event The change event that triggers the function.
+ */
+export function renderTerms( event ) {
+	const isChecked = event.target.checked;
+	const value = isChecked ? 'always' : 'never';
+	const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
+	if ( ! paymentMethodType ) {
+		return;
+	}
+	const upeElement = gatewayUPEComponents[ paymentMethodType ].upeElement;
+	if ( getUPEConfig( 'isUPEEnabled' ) && upeElement ) {
+		upeElement.update( {
+			terms: getTerms( getUPEConfig( 'paymentMethodsConfig' ), value ),
+		} );
+	}
+}
+
 /**
  * Handles the checkout process for the provided jQuery form and Stripe payment method type. The function blocks the
  * form UI to prevent duplicate submission and validates the Stripe elements. It then creates a Stripe payment method
@@ -206,7 +256,7 @@ export async function mountStripePaymentElement( api, domElement ) {
  * @return {boolean} return false to prevent the default form submission from WC Core.
  */
 let hasCheckoutCompleted;
-export const checkout = (
+export const processPayment = (
 	api,
 	jQueryForm,
 	paymentMethodType,
@@ -251,55 +301,3 @@ export const checkout = (
 	// Prevent WC Core default form submission (see woocommerce/assets/js/frontend/checkout.js) from happening.
 	return false;
 };
-
-export const createAndConfirmSetupIntent = ( $form, paymentMethod, api ) => {
-	return api
-		.setupIntent( paymentMethod.id )
-		.then( function ( confirmedSetupIntent ) {
-			appendSetupIntentToForm( $form, confirmedSetupIntent );
-			return confirmedSetupIntent;
-		} );
-};
-
-function appendSetupIntentToForm( form, confirmedIntent ) {
-	const input = document.createElement( 'input' );
-	input.type = 'hidden';
-	input.id = 'wcpay-setup-intent';
-	input.name = 'wcpay-setup-intent';
-	input.value = confirmedIntent.id;
-
-	form.append( input );
-}
-
-/**
- * Saves the payment method ID in a hidden input, and re-submits the form.
- *
- * @param {Object} $form         The jQuery object for the form.
- * @param {Object} paymentMethod Payment method object.
- */
-export const handleOrderPayment = ( $form, { id } ) => {
-	const paymentSelector = '#wcpay-payment-method';
-
-	// Populate form with the payment method.
-	document.querySelector( paymentSelector ).value = id;
-};
-
-/**
- * Updates the terms parameter in the Payment Element based on the "save payment information" checkbox.
- *
- * @param {Event} event The change event that triggers the function.
- */
-export function renderTerms( event ) {
-	const isChecked = event.target.checked;
-	const value = isChecked ? 'always' : 'never';
-	const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
-	if ( ! paymentMethodType ) {
-		return;
-	}
-	const upeElement = gatewayUPEComponents[ paymentMethodType ].upeElement;
-	if ( getUPEConfig( 'isUPEEnabled' ) && upeElement ) {
-		upeElement.update( {
-			terms: getTerms( getUPEConfig( 'paymentMethodsConfig' ), value ),
-		} );
-	}
-}
