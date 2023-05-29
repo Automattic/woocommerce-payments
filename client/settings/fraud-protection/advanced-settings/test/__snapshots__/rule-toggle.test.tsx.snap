@@ -36,10 +36,10 @@ Object {
           Enable filtering
         </strong>
         <div
-          class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
+          class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
         >
           <div
-            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+            class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
           >
             <span
               class="components-form-toggle"
@@ -65,10 +65,10 @@ Object {
             </label>
           </div>
           <p
-            class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+            class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
             id="inspector-toggle-control-0__help"
           >
-            When enabled, the payment method will not be charged until you review and approve the transaction.
+            When enabled, the payment will be blocked.
           </p>
         </div>
       </div>
@@ -82,10 +82,10 @@ Object {
         Enable filtering
       </strong>
       <div
-        class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
+        class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
       >
         <div
-          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+          class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
         >
           <span
             class="components-form-toggle"
@@ -111,10 +111,10 @@ Object {
           </label>
         </div>
         <p
-          class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+          class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
           id="inspector-toggle-control-0__help"
         >
-          When enabled, the payment method will not be charged until you review and approve the transaction.
+          When enabled, the payment will be blocked.
         </p>
       </div>
     </div>
@@ -209,10 +209,10 @@ Object {
           Enable filtering
         </strong>
         <div
-          class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
+          class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
         >
           <div
-            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+            class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
           >
             <span
               class="components-form-toggle is-checked"
@@ -238,62 +238,14 @@ Object {
             </label>
           </div>
           <p
-            class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+            class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
             id="inspector-toggle-control-1__help"
           >
-            The payment method will not be charged until you review and approve the transaction.
+            The payment will be blocked.
           </p>
         </div>
         <div>
           test content
-          <div
-            class="fraud-protection-rule-toggle-block"
-          >
-            <strong>
-              Filter action
-            </strong>
-            <div
-              class="components-base-control components-radio-control css-wdf2ti-Wrapper e1puf3u0"
-            >
-              <div
-                class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-              >
-                <div
-                  class="components-radio-control__option"
-                >
-                  <input
-                    checked=""
-                    class="components-radio-control__input"
-                    id="inspector-radio-control-0-0"
-                    name="inspector-radio-control-0"
-                    type="radio"
-                    value="review"
-                  />
-                  <label
-                    for="inspector-radio-control-0-0"
-                  >
-                    Authorize and hold for review
-                  </label>
-                </div>
-                <div
-                  class="components-radio-control__option"
-                >
-                  <input
-                    class="components-radio-control__input"
-                    id="inspector-radio-control-0-1"
-                    name="inspector-radio-control-0"
-                    type="radio"
-                    value="block"
-                  />
-                  <label
-                    for="inspector-radio-control-0-1"
-                  >
-                    Block Payment
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -306,10 +258,10 @@ Object {
         Enable filtering
       </strong>
       <div
-        class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
+        class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
       >
         <div
-          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+          class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
         >
           <span
             class="components-form-toggle is-checked"
@@ -335,62 +287,14 @@ Object {
           </label>
         </div>
         <p
-          class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+          class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
           id="inspector-toggle-control-1__help"
         >
-          The payment method will not be charged until you review and approve the transaction.
+          The payment will be blocked.
         </p>
       </div>
       <div>
         test content
-        <div
-          class="fraud-protection-rule-toggle-block"
-        >
-          <strong>
-            Filter action
-          </strong>
-          <div
-            class="components-base-control components-radio-control css-wdf2ti-Wrapper e1puf3u0"
-          >
-            <div
-              class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-            >
-              <div
-                class="components-radio-control__option"
-              >
-                <input
-                  checked=""
-                  class="components-radio-control__input"
-                  id="inspector-radio-control-0-0"
-                  name="inspector-radio-control-0"
-                  type="radio"
-                  value="review"
-                />
-                <label
-                  for="inspector-radio-control-0-0"
-                >
-                  Authorize and hold for review
-                </label>
-              </div>
-              <div
-                class="components-radio-control__option"
-              >
-                <input
-                  class="components-radio-control__input"
-                  id="inspector-radio-control-0-1"
-                  name="inspector-radio-control-0"
-                  type="radio"
-                  value="block"
-                />
-                <label
-                  for="inspector-radio-control-0-1"
-                >
-                  Block Payment
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </div>,
@@ -484,10 +388,10 @@ Object {
           Enable filtering
         </strong>
         <div
-          class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
+          class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
         >
           <div
-            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+            class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
           >
             <span
               class="components-form-toggle is-checked"
@@ -513,7 +417,7 @@ Object {
             </label>
           </div>
           <p
-            class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+            class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
             id="inspector-toggle-control-2__help"
           >
             The payment will be blocked.
@@ -521,54 +425,6 @@ Object {
         </div>
         <div>
           test content
-          <div
-            class="fraud-protection-rule-toggle-block"
-          >
-            <strong>
-              Filter action
-            </strong>
-            <div
-              class="components-base-control components-radio-control css-wdf2ti-Wrapper e1puf3u0"
-            >
-              <div
-                class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-              >
-                <div
-                  class="components-radio-control__option"
-                >
-                  <input
-                    class="components-radio-control__input"
-                    id="inspector-radio-control-1-0"
-                    name="inspector-radio-control-1"
-                    type="radio"
-                    value="review"
-                  />
-                  <label
-                    for="inspector-radio-control-1-0"
-                  >
-                    Authorize and hold for review
-                  </label>
-                </div>
-                <div
-                  class="components-radio-control__option"
-                >
-                  <input
-                    checked=""
-                    class="components-radio-control__input"
-                    id="inspector-radio-control-1-1"
-                    name="inspector-radio-control-1"
-                    type="radio"
-                    value="block"
-                  />
-                  <label
-                    for="inspector-radio-control-1-1"
-                  >
-                    Block Payment
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -581,10 +437,10 @@ Object {
         Enable filtering
       </strong>
       <div
-        class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
+        class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
       >
         <div
-          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+          class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
         >
           <span
             class="components-form-toggle is-checked"
@@ -610,7 +466,7 @@ Object {
           </label>
         </div>
         <p
-          class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+          class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
           id="inspector-toggle-control-2__help"
         >
           The payment will be blocked.
@@ -618,54 +474,6 @@ Object {
       </div>
       <div>
         test content
-        <div
-          class="fraud-protection-rule-toggle-block"
-        >
-          <strong>
-            Filter action
-          </strong>
-          <div
-            class="components-base-control components-radio-control css-wdf2ti-Wrapper e1puf3u0"
-          >
-            <div
-              class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-            >
-              <div
-                class="components-radio-control__option"
-              >
-                <input
-                  class="components-radio-control__input"
-                  id="inspector-radio-control-1-0"
-                  name="inspector-radio-control-1"
-                  type="radio"
-                  value="review"
-                />
-                <label
-                  for="inspector-radio-control-1-0"
-                >
-                  Authorize and hold for review
-                </label>
-              </div>
-              <div
-                class="components-radio-control__option"
-              >
-                <input
-                  checked=""
-                  class="components-radio-control__input"
-                  id="inspector-radio-control-1-1"
-                  name="inspector-radio-control-1"
-                  type="radio"
-                  value="block"
-                />
-                <label
-                  for="inspector-radio-control-1-1"
-                >
-                  Block Payment
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </div>,

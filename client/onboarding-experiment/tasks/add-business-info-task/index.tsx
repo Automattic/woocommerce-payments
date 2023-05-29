@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -28,11 +28,15 @@ const AddBusinessInfoTask = ( { onChange }: TaskProps ): JSX.Element => {
 	const { isCompleted, setCompleted } = useContext( WizardTaskContext );
 	const countries = getBusinessTypes();
 
-	const [ businessCountry, setBusinessCountry ] = useState< Country >();
-	const [ businessType, setBusinessType ] = useState< BusinessType >();
-	const [ businessStructure, setBusinessStructure ] = useState<
-		BusinessStructure
-	>();
+	const [
+		businessCountry,
+		setBusinessCountry,
+	] = useState< Country | null >();
+	const [ businessType, setBusinessType ] = useState< BusinessType | null >();
+	const [
+		businessStructure,
+		setBusinessStructure,
+	] = useState< BusinessStructure | null >();
 
 	useEffect( () => {
 		if ( ! businessCountry && countries.length ) {
@@ -52,20 +56,22 @@ const AddBusinessInfoTask = ( { onChange }: TaskProps ): JSX.Element => {
 		} );
 	}, [ businessCountry, businessType, businessStructure, onChange ] );
 
-	const handleBusinessCountryUpdate = ( country?: Country ) => {
+	const handleBusinessCountryUpdate = ( country?: Country | null ) => {
 		setBusinessCountry( country );
 		setBusinessType( undefined );
 		setBusinessStructure( undefined );
 		setCompleted( false );
 	};
 
-	const handleBusinessTypeUpdate = ( type?: BusinessType ) => {
+	const handleBusinessTypeUpdate = ( type?: BusinessType | null ) => {
 		setBusinessType( type );
 		setBusinessStructure( undefined );
 		setCompleted( 0 === type?.structures.length );
 	};
 
-	const handleBusinessStructureUpdate = ( structure?: BusinessStructure ) => {
+	const handleBusinessStructureUpdate = (
+		structure?: BusinessStructure | null
+	) => {
 		setBusinessStructure( structure );
 		setCompleted( true );
 	};
