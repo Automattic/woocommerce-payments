@@ -525,11 +525,13 @@ class WC_Payments_Webhook_Processing_Service {
 		$charge_id    = $this->read_webhook_property( $event_object, 'charge' );
 		$reason       = $this->read_webhook_property( $event_object, 'reason' );
 		$amount_raw   = $this->read_webhook_property( $event_object, 'amount' );
-		$order        = $this->wcpay_db->order_from_charge_id( $charge_id );
+		$evidence     = $this->read_webhook_property( $event_object, 'evidence_details' );
+		$due_by       = $this->read_webhook_property( $evidence, 'due_by' );
+
+		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
 
 		$currency = $order->get_currency();
 		$amount   = wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount_raw, $currency ), [ 'currency' => strtoupper( $currency ) ] );
-		$deadline = 'asap';
 
 		if ( ! $order ) {
 			throw new Invalid_Webhook_Data_Exception(
@@ -541,7 +543,7 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
-		$this->order_service->mark_payment_dispute_created( $order, $dispute_id, $amount, $reason, $deadline );
+		$this->order_service->mark_payment_dispute_created( $order, $dispute_id, $amount, $reason, $due_by );
 
 		// Clear the dispute statuses cache to trigger a fetch of new data.
 		$this->database_cache->delete( DATABASE_CACHE::DISPUTE_STATUS_COUNTS_KEY );
