@@ -81,8 +81,6 @@ class WC_Payments_Checkout {
 	 */
 	public function init_hooks() {
 		add_action( 'wc_payments_add_payment_fields', [ $this, 'payment_fields' ] );
-		add_action( 'woocommerce_order_action_capture_charge', [ $this->gateway, 'capture_charge' ] );
-		add_action( 'woocommerce_order_action_cancel_authorization', [ $this->gateway, 'cancel_authorization' ] );
 	}
 
 	/**
