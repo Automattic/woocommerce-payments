@@ -27,7 +27,7 @@ import SetupRealPayments from './setup-real-payments';
 import ProgressiveOnboardingEligibilityModal from './modal/progressive-onboarding-eligibility';
 import JetpackIdcNotice from 'components/jetpack-idc-notice';
 import FRTDiscoverabilityBanner from 'components/fraud-risk-tools-banner';
-import { useSettings } from 'wcpay/data';
+import { useDisputes, useSettings } from 'wcpay/data';
 import './style.scss';
 
 const OverviewPageError = () => {
@@ -59,16 +59,19 @@ const OverviewPage = () => {
 		wpcomReconnectUrl,
 		featureFlags: { accountOverviewTaskList },
 	} = wcpaySettings;
-	const numDisputesNeedingResponse =
-		parseInt( wcpaySettings.numDisputesNeedingResponse, 10 ) || 0;
+
 	const { isLoading: settingsIsLoading, settings } = useSettings();
+
+	const { disputes: activeDisputes } = useDisputes( {
+		filter: 'awaiting_response',
+	} );
 
 	const tasksUnsorted = getTasks( {
 		accountStatus,
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
 		isAccountOverviewTasksEnabled: Boolean( accountOverviewTaskList ),
-		numDisputesNeedingResponse,
+		activeDisputes,
 	} );
 	const tasks =
 		Array.isArray( tasksUnsorted ) && tasksUnsorted.sort( taskSort );
