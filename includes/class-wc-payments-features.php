@@ -277,6 +277,25 @@ class WC_Payments_Features {
 	}
 
 	/**
+
+	 * Checks whether Simplify Deposits UI is enabled. Enabled by default.
+	 *
+	 * @return bool
+	 */
+	public static function is_simplify_deposits_ui_enabled(): bool {
+		return '1' === get_option( self::SIMPLIFY_DEPOSITS_UI_FLAG_NAME, '1' );
+	}
+
+	/**
+	 * Checks whether the BNPL Affirm Afterpay is enabled.
+	 */
+	public static function is_bnpl_affirm_afterpay_enabled(): bool {
+		$account = WC_Payments::get_account_service()->get_cached_account_data();
+		return ! isset( $account['is_bnpl_affirm_afterpay_enabled'] ) || true === $account['is_bnpl_affirm_afterpay_enabled'];
+	}
+
+	/**
+
 	 * Returns feature flags as an array suitable for display on the front-end.
 	 *
 	 * @return bool[]
