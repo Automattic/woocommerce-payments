@@ -289,9 +289,9 @@ describe( 'getTasks()', () => {
 				expect.objectContaining( {
 					key: 'dispute-resolution-task',
 					completed: false,
-					level: 3,
+					level: 2,
 					title: 'Respond to a dispute for $10.00',
-					additionalInfo: 'View and respond',
+					actionLabel: 'Respond now',
 				} ),
 			] )
 		);
@@ -316,9 +316,9 @@ describe( 'getTasks()', () => {
 				expect.objectContaining( {
 					key: 'dispute-resolution-task',
 					completed: false,
-					level: 3,
+					level: 2,
 					title: 'Respond to 2 active disputes for a total of $20.00',
-					additionalInfo: 'View and respond',
+					actionLabel: 'Respond now',
 				} ),
 			] )
 		);
@@ -421,7 +421,7 @@ describe( 'taskSort()', () => {
 			expect.objectContaining( {
 				key: 'dispute-resolution-task',
 				completed: false,
-				level: 3,
+				level: 2,
 			} )
 		);
 	} );

@@ -13,11 +13,9 @@ import moment from 'moment';
  * Internal dependencies.
  */
 import strings from './strings';
-import wcpayTracks from 'tracks';
-import { getAdminUrl } from 'wcpay/utils';
 import UpdateBusinessDetailsModal from '../modal/update-business-details';
 import { getVerifyBankAccountTask } from './po-tasks';
-import { getDisputesNoticeString } from 'wcpay/disputes/utils';
+import { getDisputeResolutionTask } from './dispute-tasks';
 
 const renderModal = ( errorMessages, status, accountLink, currentDeadline ) => {
 	let container = document.querySelector(
@@ -180,26 +178,7 @@ export const getTasks = ( {
 				expanded: true,
 				showActionButton: true,
 			},
-		isDisputeTaskVisible && {
-			key: 'dispute-resolution-task',
-			level: 3,
-			title: getDisputesNoticeString( activeDisputes ),
-			additionalInfo: __( 'View and respond', 'woocommerce-payments' ),
-			completed: false,
-			isDeletable: true,
-			isDismissable: true,
-			allowSnooze: true,
-			onClick: () => {
-				wcpayTracks.recordEvent( 'wcpay_overview_task', {
-					task: 'dispute-resolution-task',
-				} );
-				window.location.href = getAdminUrl( {
-					page: 'wc-admin',
-					path: '/payments/disputes',
-					filter: 'awaiting_response',
-				} );
-			},
-		},
+		isDisputeTaskVisible && getDisputeResolutionTask( activeDisputes ),
 		isPoEnabled && getVerifyBankAccountTask(),
 	].filter( Boolean );
 };
