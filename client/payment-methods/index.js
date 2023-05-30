@@ -120,6 +120,8 @@ const PaymentMethods = () => {
 
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
 
+	// We filter link payment method since this will be displayed in other section (express checkout).
+	// We further split the available methods into pay later and non-pay later methods to sort them in the required order later.
 	const availableNonPayLaterMethods = availablePaymentMethodIds.filter(
 		( id ) =>
 			'link' !== id &&
@@ -137,7 +139,6 @@ const PaymentMethods = () => {
 		...availableNonPayLaterMethods,
 	];
 
-	// We filter link payment method since this will be displayed in other section (express checkout).
 	const availableMethods = orderedAvailablePaymentMethodIds.map(
 		( methodId ) => methodsConfiguration[ methodId ]
 	);
