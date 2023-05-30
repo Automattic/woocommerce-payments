@@ -413,8 +413,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
 		add_action( 'admin_notices', [ $this, 'display_errors' ], 9999 );
 		add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
-		add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
-		add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
 
 		add_action( 'wp_ajax_update_order_status', [ $this, 'update_order_status' ] );
 		add_action( 'wp_ajax_nopriv_update_order_status', [ $this, 'update_order_status' ] );
@@ -2282,11 +2280,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return  string The current fraud protection level.
 	 */
 	protected function get_current_protection_level() {
-		// If fraud and risk tools feature is not enabled, do not expose the settings.
-		if ( ! WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
-			return '';
-		}
-
 		$this->maybe_refresh_fraud_protection_settings();
 		return get_option( 'current_protection_level', 'basic' );
 	}
@@ -2298,11 +2291,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *                       If there's a fetch error, it returns "error".
 	 */
 	protected function get_advanced_fraud_protection_settings() {
-		// If fraud and risk tools feature is not enabled, do not expose the settings.
-		if ( ! WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
-			return [];
-		}
-
 		// Check if Stripe is connected.
 		if ( ! $this->is_connected() ) {
 			return [];
@@ -3203,6 +3191,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function refresh_cached_account_data() {
 		$this->account->refresh_account_data();
+	}
+
+	/**
+	 * Updates the cached account data.
+	 *
+	 * @param string $property Property to update.
+	 * @param mixed  $data     Data to update.
+	 */
+	public function update_cached_account_data( $property, $data ) {
+		$this->account->update_account_data( $property, $data );
 	}
 
 	/**

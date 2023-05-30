@@ -780,7 +780,7 @@ class WC_Payments_Account {
 
 			if ( isset( $_GET['wcpay-disable-onboarding-test-mode'] ) ) {
 				WC_Payments_Onboarding_Service::set_test_mode( false );
-				$this->redirect_to_onboarding_page();
+				$this->redirect_to_prototype_onboarding_page();
 				return;
 			}
 
@@ -1038,24 +1038,28 @@ class WC_Payments_Account {
 		$progressive                 = isset( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
 		$collect_payout_requirements = isset( $_GET['collect_payout_requirements'] ) && 'true' === $_GET['collect_payout_requirements'];
 
-		// Onboarding data prefill.
-		$prefill_data = isset( $_GET['prefill'] ) ? wc_clean( wp_unslash( $_GET['prefill'] ) ) : [];
-		if ( $prefill_data ) {
-			$business_type = $prefill_data['business_type'] ?? null;
+		// Onboarding self-assessment data.
+		$self_assessment_data = isset( $_GET['self_assessment'] ) ? wc_clean( wp_unslash( $_GET['self_assessment'] ) ) : [];
+		if ( $self_assessment_data ) {
+			$business_type = $self_assessment_data['business_type'] ?? null;
 			$account_data  = [
-				'country'       => $prefill_data['country'] ?? null,
-				'email'         => $prefill_data['email'] ?? null,
-				'business_name' => $prefill_data['business_name'] ?? null,
-				'url'           => $prefill_data['url'] ?? null,
-				'mcc'           => $prefill_data['mcc'] ?? null,
+				'country'       => $self_assessment_data['country'] ?? null,
+				'email'         => $self_assessment_data['email'] ?? null,
+				'business_name' => $self_assessment_data['business_name'] ?? null,
+				'url'           => $self_assessment_data['url'] ?? null,
+				'mcc'           => $self_assessment_data['mcc'] ?? null,
 				'business_type' => $business_type,
 				'company'       => [
-					'structure' => 'company' === $business_type ? ( isset( $prefill_data['company']['structure'] ) ? ( $prefill_data['company']['structure'] ?? null ) : null ) : null,
+					'structure' => 'company' === $business_type ? ( $self_assessment_data['company']['structure'] ?? null ) : null,
 				],
 				'individual'    => [
-					'first_name' => isset( $prefill_data['individual']['first_name'] ) ? ( $prefill_data['individual']['first_name'] ?? null ) : null,
-					'last_name'  => isset( $prefill_data['individual']['last_name'] ) ? ( $prefill_data['individual']['last_name'] ?? null ) : null,
-					'phone'      => ! $progressive && 'individual' === $business_type ? ( $prefill_data['phone'] ?? null ) : null,
+					'first_name' => $self_assessment_data['individual']['first_name'] ?? null,
+					'last_name'  => $self_assessment_data['individual']['last_name'] ?? null,
+					'phone'      => $self_assessment_data['phone'] ?? null,
+				],
+				'store'         => [
+					'annual_revenue'    => $self_assessment_data['annual_revenue'] ?? null,
+					'go_live_timeframe' => $self_assessment_data['go_live_timeframe'] ?? null,
 				],
 			];
 		} elseif ( $test_mode ) {
@@ -1063,7 +1067,7 @@ class WC_Payments_Account {
 			$default_url = 'http://wcpay.test';
 			$url         = wp_http_validate_url( $home_url ) ? $home_url : $default_url;
 			// If the site is running on localhost, use the default URL. This is to avoid Stripe's errors.
-			// wp_http_validate_url does not check that unfortunately.
+			// wp_http_validate_url does not check that, unfortunately.
 			if ( wp_parse_url( $home_url, PHP_URL_HOST ) === 'localhost' ) {
 				$url = $default_url;
 			}
@@ -1237,12 +1241,38 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Updates the cached account data.
+	 *
+	 * @param string $property Property to update.
+	 * @param mixed  $data     Data to update.
+	 *
+	 * @return void
+	 */
+	public function update_cached_account_data( $property, $data ) {
+		$account_data = $this->database_cache->get( Database_Cache::ACCOUNT_KEY );
+
+		$account_data[ $property ] = is_array( $data ) ? array_merge( $account_data[ $property ] ?? [], $data ) : $data;
+
+		$this->database_cache->add( Database_Cache::ACCOUNT_KEY, $account_data );
+	}
+
+	/**
 	 * Refetches account data and returns the fresh data.
 	 *
 	 * @return array|bool|string Either the new account data or false if unavailable.
 	 */
 	public function refresh_account_data() {
 		return $this->get_cached_account_data( true );
+	}
+
+	/**
+	 * Updates the account data.
+	 *
+	 * @param string $property Property to update.
+	 * @param mixed  $data     Data to update.
+	 */
+	public function update_account_data( $property, $data ) {
+		return $this->update_cached_account_data( $property, $data );
 	}
 
 	/**

@@ -12,7 +12,19 @@ import OrderItemsThresholdRuleCard, {
 } from '../order-items-threshold';
 import { FraudPreventionOrderItemsThresholdSetting } from 'wcpay/settings/fraud-protection/interfaces';
 
+declare const global: {
+	wcpaySettings: {
+		isFRTReviewFeatureActive: boolean;
+	};
+};
+
 describe( 'Order items threshold card', () => {
+	beforeEach( () => {
+		global.wcpaySettings = {
+			isFRTReviewFeatureActive: false,
+		};
+	} );
+
 	const settings = {
 		order_items_threshold: {
 			enabled: false,

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Resolves issue with multiple charge attempts during manual capture with UPE.
