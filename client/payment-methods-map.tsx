@@ -16,6 +16,8 @@ import SepaIcon from 'assets/images/payment-methods/sepa-debit.svg?asset';
 import P24Icon from 'assets/images/payment-methods/p24.svg?asset';
 import IdealIcon from 'assets/images/payment-methods/ideal.svg?asset';
 import BankDebitIcon from 'assets/images/payment-methods/bank-debit.svg?asset';
+import AffirmIcon from 'assets/images/payment-methods/affirm.svg?asset';
+import AfterpayIcon from 'assets/images/payment-methods/afterpay.svg?asset';
 
 const iconComponent = ( src: string, alt: string ): ReactImgFuncComponent => (
 	props
@@ -141,6 +143,30 @@ const PaymentMethodInformationObject: Record<
 		icon: iconComponent( SofortIcon, 'Sofort' ),
 		currencies: [ 'EUR' ],
 		stripe_key: 'sofort_payments',
+		allows_manual_capture: false,
+	},
+	affirm: {
+		id: 'affirm',
+		label: __( 'Affirm', 'woocommerce-payments' ),
+		description: __(
+			'Expand your business with Affirm',
+			'woocommerce-payments'
+		),
+		icon: iconComponent( AffirmIcon, 'Affirm' ),
+		currencies: [ 'USD', 'CAD' ],
+		stripe_key: 'affirm_payments',
+		allows_manual_capture: false,
+	},
+	afterpay_clearpay: {
+		id: 'afterpay_clearpay',
+		label: __( 'Afterpay/Clearpay', 'woocommerce-payments' ),
+		description: __(
+			'Expand your business with Afterpay/Clearpay',
+			'woocommerce-payments'
+		),
+		icon: iconComponent( AfterpayIcon, 'Afterpay/Clearpay' ),
+		currencies: [ 'USD', 'AUD', 'CAD', 'NZD', 'GBP', 'EUR' ],
+		stripe_key: 'afterpay_clearpay_payments',
 		allows_manual_capture: false,
 	},
 };
