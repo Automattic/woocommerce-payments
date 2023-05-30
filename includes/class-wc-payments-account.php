@@ -1592,13 +1592,13 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Redirects to the onboarding flow page if the Progressive Onboarding feature flag is enabled.
+	 * Redirects to the onboarding flow page if the Progressive Onboarding feature flag is enabled or in the experiment treatment mode.
 	 * Also checks if the server is connect and try to connect it otherwise.
 	 *
 	 * @return void
 	 */
 	private function redirect_to_onboarding_flow_page() {
-		if ( ! WC_Payments_Features::is_progressive_onboarding_enabled() ) {
+		if ( ! WC_Payments_Utils::is_in_progressive_onboarding_treatment_mode() && ! WC_Payments_Features::is_progressive_onboarding_enabled() ) {
 			return;
 		}
 
