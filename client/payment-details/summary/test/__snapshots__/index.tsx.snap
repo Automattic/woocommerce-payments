@@ -3,262 +3,290 @@
 exports[`PaymentDetailsSummary capture notification and fraud buttons renders capture section correctly 1`] = `
 <div>
   <div
-    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
   >
     <div
-      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
+      class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="payment-details-summary"
+        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
         <div
-          class="payment-details-summary__section"
+          class="payment-details-summary"
         >
-          <p
-            class="payment-details-summary__amount"
-          >
-            $20.00
-            <span
-              class="payment-details-summary__amount-currency"
-            >
-              usd
-            </span>
-            <span
-              class="chip chip-primary"
-            >
-              Payment authorized
-            </span>
-          </p>
           <div
-            class="payment-details-summary__breakdown"
+            class="payment-details-summary__section"
           >
-            
-            <p>
-              Fee: 
-              $-0.70
+            <p
+              class="payment-details-summary__amount"
+            >
+              $20.00
+              <span
+                class="payment-details-summary__amount-currency"
+              >
+                usd
+              </span>
+              <span
+                class="chip chip-primary"
+              >
+                Payment authorized
+              </span>
             </p>
-            
-            <p>
-              Net: 
-              $19.30
-            </p>
+            <div
+              class="payment-details-summary__breakdown"
+            >
+              
+              <p>
+                Fee: 
+                $-0.70
+              </p>
+              
+              <p>
+                Net: 
+                $19.30
+              </p>
+            </div>
           </div>
-        </div>
-        <div
-          class="payment-details-summary__section"
-        >
           <div
-            class="payment-details-summary__id"
+            class="payment-details-summary__section"
           >
-            Payment ID: 
-            ch_38jdHA39KKA
+            <div
+              class="payment-details-summary__id"
+            >
+              Payment ID: 
+              ch_38jdHA39KKA
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <hr
-      class="components-card__divider css-lh2anh-DividerUI e1q7k77g5"
-      role="separator"
-    />
-    <div
-      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
-    >
-      <ul
-        class="woocommerce-list woocommerce-list--horizontal"
-        role="menu"
+      <hr
+        aria-orientation="horizontal"
+        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        data-wp-c16t="true"
+        data-wp-component="CardDivider"
+        role="separator"
+      />
+      <div
+        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
-        <li
-          class="woocommerce-list__item"
+        <ul
+          class="woocommerce-list woocommerce-list--horizontal"
+          role="menu"
         >
-          <div
-            class="woocommerce-list__item-inner"
+          <li
+            class="woocommerce-list__item"
           >
             <div
-              class="woocommerce-list__item-text"
+              class="woocommerce-list__item-inner"
             >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Date
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                Sep 19, 2019, 5:24pm
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Channel
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <span>
-                  Online
-                </span>
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Customer
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <a
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
-                >
-                  Customer name
-                </a>
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Order
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <a
-                  data-link-type="external"
-                  href="https://somerandomorderurl.com/?edit_order=45981"
-                >
-                  45981
-                </a>
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Payment method
-              </span>
-              <span
-                class="woocommerce-list__item-content"
+              <div
+                class="woocommerce-list__item-text"
               >
                 <span
-                  class="payment-method-details"
+                  class="woocommerce-list__item-title"
                 >
-                  <span
-                    class="payment-method__brand payment-method__brand--visa"
-                  />
-                   •••• 
-                  4242
+                  Date
                 </span>
-              </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  Sep 19, 2019, 5:24pm
+                </span>
+              </div>
             </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
+          </li>
+          <li
+            class="woocommerce-list__item"
           >
             <div
-              class="woocommerce-list__item-text"
+              class="woocommerce-list__item-inner"
             >
-              <span
-                class="woocommerce-list__item-title"
+              <div
+                class="woocommerce-list__item-text"
               >
-                Risk evaluation
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                Normal
-              </span>
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Channel
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <span>
+                    Online
+                  </span>
+                </span>
+              </div>
             </div>
-          </div>
-        </li>
-      </ul>
-    </div>
-    <div
-      class="components-flex components-card__footer is-size-medium payment-details-capture-notice e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
-    >
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Customer
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <a
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                  >
+                    Customer name
+                  </a>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Order
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <a
+                    data-link-type="external"
+                    href="https://somerandomorderurl.com/?edit_order=45981"
+                  >
+                    45981
+                  </a>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Payment method
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <span
+                    class="payment-method-details"
+                  >
+                    <span
+                      class="payment-method__brand payment-method__brand--visa"
+                    />
+                     •••• 
+                    4242
+                  </span>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Risk evaluation
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  Normal
+                </span>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
       <div
-        class="payment-details-capture-notice__section"
+        class="components-flex components-card__footer components-card-footer payment-details-capture-notice css-p1v47q-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardFooter"
       >
         <div
-          class="payment-details-capture-notice__text"
+          class="payment-details-capture-notice__section"
         >
-          You must 
-          <a
-            href="https://woocommerce.com/document/woocommerce-payments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
-            rel="noreferer"
-            target="_blank"
+          <div
+            class="payment-details-capture-notice__text"
           >
-            capture
-          </a>
-           this charge within the next 
-          <abbr
-            title="Jan 8, 2023 / 1:00AM"
+            You must 
+            <a
+              href="https://woocommerce.com/document/woocommerce-payments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
+              rel="noreferer"
+              target="_blank"
+            >
+              capture
+            </a>
+             this charge within the next
+             
+            <abbr
+              title="Jan 8, 2023 / 1:00AM"
+            >
+              <b>
+                7 days
+              </b>
+            </abbr>
+          </div>
+          <div
+            class="payment-details-capture-notice__button"
           >
-            <b>
-              7 days
-            </b>
-          </abbr>
-        </div>
-        <div
-          class="payment-details-capture-notice__button"
-        >
-          <button
-            class="components-button is-primary"
-            type="button"
-          >
-            Capture
-          </button>
+            <button
+              class="components-button is-primary"
+              type="button"
+            >
+              Capture
+            </button>
+          </div>
         </div>
       </div>
     </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
   </div>
 </div>
 `;
@@ -266,269 +294,297 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
 exports[`PaymentDetailsSummary capture notification and fraud buttons renders the fraud outcome buttons 1`] = `
 <div>
   <div
-    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
   >
     <div
-      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
+      class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="payment-details-summary"
+        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
         <div
-          class="payment-details-summary__section"
-        >
-          <p
-            class="payment-details-summary__amount"
-          >
-            $20.00
-            <span
-              class="payment-details-summary__amount-currency"
-            >
-              usd
-            </span>
-            <span
-              class="chip chip-warning"
-            >
-              Needs review
-            </span>
-          </p>
-          <div
-            class="payment-details-summary__breakdown"
-          >
-            
-            <p>
-              Fee: 
-              $-0.70
-            </p>
-            
-            <p>
-              Net: 
-              $19.30
-            </p>
-          </div>
-        </div>
-        <div
-          class="payment-details-summary__section"
+          class="payment-details-summary"
         >
           <div
-            class="payment-details-summary__fraud-outcome-action"
+            class="payment-details-summary__section"
           >
-            <button
-              class="components-button is-destructive"
-              type="button"
+            <p
+              class="payment-details-summary__amount"
             >
-              Block transaction
-            </button>
-            <button
-              class="components-button is-primary"
-              type="button"
+              $20.00
+              <span
+                class="payment-details-summary__amount-currency"
+              >
+                usd
+              </span>
+              <span
+                class="chip chip-warning"
+              >
+                Needs review
+              </span>
+            </p>
+            <div
+              class="payment-details-summary__breakdown"
             >
-              Approve Transaction
-            </button>
+              
+              <p>
+                Fee: 
+                $-0.70
+              </p>
+              
+              <p>
+                Net: 
+                $19.30
+              </p>
+            </div>
           </div>
           <div
-            class="payment-details-summary__id"
+            class="payment-details-summary__section"
           >
-            Payment ID: 
-            ch_38jdHA39KKA
+            <div
+              class="payment-details-summary__fraud-outcome-action"
+            >
+              <button
+                class="components-button is-destructive"
+                type="button"
+              >
+                Block transaction
+              </button>
+              <button
+                class="components-button is-primary"
+                type="button"
+              >
+                Approve Transaction
+              </button>
+            </div>
+            <div
+              class="payment-details-summary__id"
+            >
+              Payment ID: 
+              ch_38jdHA39KKA
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <hr
-      class="components-card__divider css-lh2anh-DividerUI e1q7k77g5"
-      role="separator"
-    />
-    <div
-      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
-    >
-      <ul
-        class="woocommerce-list woocommerce-list--horizontal"
-        role="menu"
+      <hr
+        aria-orientation="horizontal"
+        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        data-wp-c16t="true"
+        data-wp-component="CardDivider"
+        role="separator"
+      />
+      <div
+        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
-        <li
-          class="woocommerce-list__item"
+        <ul
+          class="woocommerce-list woocommerce-list--horizontal"
+          role="menu"
         >
-          <div
-            class="woocommerce-list__item-inner"
+          <li
+            class="woocommerce-list__item"
           >
             <div
-              class="woocommerce-list__item-text"
+              class="woocommerce-list__item-inner"
             >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Date
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                Sep 19, 2019, 5:24pm
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Channel
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <span>
-                  Online
-                </span>
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Customer
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <a
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
-                >
-                  Customer name
-                </a>
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Order
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <a
-                  data-link-type="external"
-                  href="https://somerandomorderurl.com/?edit_order=45981"
-                >
-                  45981
-                </a>
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Payment method
-              </span>
-              <span
-                class="woocommerce-list__item-content"
+              <div
+                class="woocommerce-list__item-text"
               >
                 <span
-                  class="payment-method-details"
+                  class="woocommerce-list__item-title"
                 >
-                  <span
-                    class="payment-method__brand payment-method__brand--visa"
-                  />
-                   •••• 
-                  4242
+                  Date
                 </span>
-              </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  Sep 19, 2019, 5:24pm
+                </span>
+              </div>
             </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
+          </li>
+          <li
+            class="woocommerce-list__item"
           >
             <div
-              class="woocommerce-list__item-text"
+              class="woocommerce-list__item-inner"
             >
-              <span
-                class="woocommerce-list__item-title"
+              <div
+                class="woocommerce-list__item-text"
               >
-                Risk evaluation
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                Normal
-              </span>
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Channel
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <span>
+                    Online
+                  </span>
+                </span>
+              </div>
             </div>
-          </div>
-        </li>
-      </ul>
-    </div>
-    <div
-      class="components-flex components-card__footer is-size-medium payment-details-capture-notice e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
-    >
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Customer
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <a
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                  >
+                    Customer name
+                  </a>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Order
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <a
+                    data-link-type="external"
+                    href="https://somerandomorderurl.com/?edit_order=45981"
+                  >
+                    45981
+                  </a>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Payment method
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <span
+                    class="payment-method-details"
+                  >
+                    <span
+                      class="payment-method__brand payment-method__brand--visa"
+                    />
+                     •••• 
+                    4242
+                  </span>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Risk evaluation
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  Normal
+                </span>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
       <div
-        class="payment-details-capture-notice__section"
+        class="components-flex components-card__footer components-card-footer payment-details-capture-notice css-p1v47q-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardFooter"
       >
         <div
-          class="payment-details-capture-notice__text"
+          class="payment-details-capture-notice__section"
         >
-          You must 
-          <a
-            href="https://woocommerce.com/document/woocommerce-payments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
-            rel="noreferer"
-            target="_blank"
+          <div
+            class="payment-details-capture-notice__text"
           >
-            capture
-          </a>
-           this charge within the next 
-          <abbr
-            title="Jan 8, 2023 / 1:00AM"
-          >
-            <b>
-              7 days
-            </b>
-          </abbr>
-          . Approving this transaction will capture the charge.
+            You must 
+            <a
+              href="https://woocommerce.com/document/woocommerce-payments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
+              rel="noreferer"
+              target="_blank"
+            >
+              capture
+            </a>
+             this charge within the next
+             
+            <abbr
+              title="Jan 8, 2023 / 1:00AM"
+            >
+              <b>
+                7 days
+              </b>
+            </abbr>
+            . Approving this transaction will capture the charge.
+          </div>
         </div>
       </div>
     </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
   </div>
 </div>
 `;
@@ -536,224 +592,249 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
 exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
 <div>
   <div
-    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
   >
     <div
-      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
+      class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="payment-details-summary"
+        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
         <div
-          class="payment-details-summary__section"
+          class="payment-details-summary"
         >
-          <p
-            class="payment-details-summary__amount"
-          >
-            $20.00
-            <span
-              class="payment-details-summary__amount-currency"
-            >
-              usd
-            </span>
-            <span
-              class="chip chip-light"
-            >
-              Paid
-            </span>
-          </p>
           <div
-            class="payment-details-summary__breakdown"
+            class="payment-details-summary__section"
           >
-            
-            <p>
-              Fee: 
-              $-0.70
+            <p
+              class="payment-details-summary__amount"
+            >
+              $20.00
+              <span
+                class="payment-details-summary__amount-currency"
+              >
+                usd
+              </span>
+              <span
+                class="chip chip-light"
+              >
+                Paid
+              </span>
             </p>
-            
-            <p>
-              Net: 
-              $19.30
-            </p>
+            <div
+              class="payment-details-summary__breakdown"
+            >
+              
+              <p>
+                Fee: 
+                $-0.70
+              </p>
+              
+              <p>
+                Net: 
+                $19.30
+              </p>
+            </div>
           </div>
-        </div>
-        <div
-          class="payment-details-summary__section"
-        >
           <div
-            class="payment-details-summary__id"
+            class="payment-details-summary__section"
           >
-            Payment ID: 
-            ch_38jdHA39KKA
+            <div
+              class="payment-details-summary__id"
+            >
+              Payment ID: 
+              ch_38jdHA39KKA
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <hr
-      class="components-card__divider css-lh2anh-DividerUI e1q7k77g5"
-      role="separator"
-    />
-    <div
-      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
-    >
-      <ul
-        class="woocommerce-list woocommerce-list--horizontal"
-        role="menu"
+      <hr
+        aria-orientation="horizontal"
+        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        data-wp-c16t="true"
+        data-wp-component="CardDivider"
+        role="separator"
+      />
+      <div
+        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
-        <li
-          class="woocommerce-list__item"
+        <ul
+          class="woocommerce-list woocommerce-list--horizontal"
+          role="menu"
         >
-          <div
-            class="woocommerce-list__item-inner"
+          <li
+            class="woocommerce-list__item"
           >
             <div
-              class="woocommerce-list__item-text"
+              class="woocommerce-list__item-inner"
             >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Date
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                Sep 19, 2019, 5:24pm
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Channel
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <span>
-                  Online
-                </span>
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Customer
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <a
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
-                >
-                  Customer name
-                </a>
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Order
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <a
-                  data-link-type="external"
-                  href="https://somerandomorderurl.com/?edit_order=45981"
-                >
-                  45981
-                </a>
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Payment method
-              </span>
-              <span
-                class="woocommerce-list__item-content"
+              <div
+                class="woocommerce-list__item-text"
               >
                 <span
-                  class="payment-method-details"
+                  class="woocommerce-list__item-title"
                 >
-                  <span
-                    class="payment-method__brand payment-method__brand--visa"
-                  />
-                   •••• 
-                  4242
+                  Date
                 </span>
-              </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  Sep 19, 2019, 5:24pm
+                </span>
+              </div>
             </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
+          </li>
+          <li
+            class="woocommerce-list__item"
           >
             <div
-              class="woocommerce-list__item-text"
+              class="woocommerce-list__item-inner"
             >
-              <span
-                class="woocommerce-list__item-title"
+              <div
+                class="woocommerce-list__item-text"
               >
-                Risk evaluation
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                Normal
-              </span>
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Channel
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <span>
+                    Online
+                  </span>
+                </span>
+              </div>
             </div>
-          </div>
-        </li>
-      </ul>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Customer
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <a
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                  >
+                    Customer name
+                  </a>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Order
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <a
+                    data-link-type="external"
+                    href="https://somerandomorderurl.com/?edit_order=45981"
+                  >
+                    45981
+                  </a>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Payment method
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <span
+                    class="payment-method-details"
+                  >
+                    <span
+                      class="payment-method__brand payment-method__brand--visa"
+                    />
+                     •••• 
+                    4242
+                  </span>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Risk evaluation
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  Normal
+                </span>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
     </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
   </div>
 </div>
 `;
@@ -761,251 +842,276 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
 exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
 <div>
   <div
-    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
   >
     <div
-      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
+      class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="payment-details-summary"
+        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
         <div
-          class="payment-details-summary__section"
+          class="payment-details-summary"
         >
-          <p
-            class="payment-details-summary__amount"
-          >
-            $20.00
-            <span
-              class="payment-details-summary__amount-currency"
-            >
-              usd
-            </span>
-            <span
-              class="chip chip-light"
-            >
-              Paid
-            </span>
-          </p>
           <div
-            class="payment-details-summary__breakdown"
+            class="payment-details-summary__section"
           >
-            
-            <p>
-              Fee: 
-              $-0.70
+            <p
+              class="payment-details-summary__amount"
+            >
+              $20.00
+              <span
+                class="payment-details-summary__amount-currency"
+              >
+                usd
+              </span>
+              <span
+                class="chip chip-light"
+              >
+                Paid
+              </span>
             </p>
-            
-            <p>
-              Net: 
-              $19.30
-            </p>
+            <div
+              class="payment-details-summary__breakdown"
+            >
+              
+              <p>
+                Fee: 
+                $-0.70
+              </p>
+              
+              <p>
+                Net: 
+                $19.30
+              </p>
+            </div>
           </div>
-        </div>
-        <div
-          class="payment-details-summary__section"
-        >
           <div
-            class="payment-details-summary__id"
+            class="payment-details-summary__section"
           >
-            Payment ID: 
-            ch_38jdHA39KKA
+            <div
+              class="payment-details-summary__id"
+            >
+              Payment ID: 
+              ch_38jdHA39KKA
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <hr
-      class="components-card__divider css-lh2anh-DividerUI e1q7k77g5"
-      role="separator"
-    />
-    <div
-      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
-    >
-      <ul
-        class="woocommerce-list woocommerce-list--horizontal"
-        role="menu"
+      <hr
+        aria-orientation="horizontal"
+        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        data-wp-c16t="true"
+        data-wp-component="CardDivider"
+        role="separator"
+      />
+      <div
+        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
-        <li
-          class="woocommerce-list__item"
+        <ul
+          class="woocommerce-list woocommerce-list--horizontal"
+          role="menu"
         >
-          <div
-            class="woocommerce-list__item-inner"
+          <li
+            class="woocommerce-list__item"
           >
             <div
-              class="woocommerce-list__item-text"
+              class="woocommerce-list__item-inner"
             >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Date
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                Sep 19, 2019, 5:24pm
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Channel
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <span>
-                  Online
-                </span>
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Customer
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <a
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
-                >
-                  Customer name
-                </a>
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Order
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <a
-                  data-link-type="external"
-                  href="https://somerandomorderurl.com/?edit_order=45981"
-                >
-                  45981
-                </a>
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Subscription
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <a
-                  data-link-type="external"
-                  href="https://example.com/subscription/246"
-                >
-                  246
-                </a>
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Payment method
-              </span>
-              <span
-                class="woocommerce-list__item-content"
+              <div
+                class="woocommerce-list__item-text"
               >
                 <span
-                  class="payment-method-details"
+                  class="woocommerce-list__item-title"
                 >
-                  <span
-                    class="payment-method__brand payment-method__brand--visa"
-                  />
-                   •••• 
-                  4242
+                  Date
                 </span>
-              </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  Sep 19, 2019, 5:24pm
+                </span>
+              </div>
             </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
+          </li>
+          <li
+            class="woocommerce-list__item"
           >
             <div
-              class="woocommerce-list__item-text"
+              class="woocommerce-list__item-inner"
             >
-              <span
-                class="woocommerce-list__item-title"
+              <div
+                class="woocommerce-list__item-text"
               >
-                Risk evaluation
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                Normal
-              </span>
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Channel
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <span>
+                    Online
+                  </span>
+                </span>
+              </div>
             </div>
-          </div>
-        </li>
-      </ul>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Customer
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <a
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                  >
+                    Customer name
+                  </a>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Order
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <a
+                    data-link-type="external"
+                    href="https://somerandomorderurl.com/?edit_order=45981"
+                  >
+                    45981
+                  </a>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Subscription
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <a
+                    data-link-type="external"
+                    href="https://example.com/subscription/246"
+                  >
+                    246
+                  </a>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Payment method
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <span
+                    class="payment-method-details"
+                  >
+                    <span
+                      class="payment-method__brand payment-method__brand--visa"
+                    />
+                     •••• 
+                    4242
+                  </span>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Risk evaluation
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  Normal
+                </span>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
     </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
   </div>
 </div>
 `;
@@ -1013,227 +1119,252 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
 exports[`PaymentDetailsSummary renders fully refunded information for a charge 1`] = `
 <div>
   <div
-    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
   >
     <div
-      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
+      class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="payment-details-summary"
+        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
         <div
-          class="payment-details-summary__section"
+          class="payment-details-summary"
         >
-          <p
-            class="payment-details-summary__amount"
-          >
-            $20.00
-            <span
-              class="payment-details-summary__amount-currency"
-            >
-              usd
-            </span>
-            <span
-              class="chip chip-light"
-            >
-              Refunded
-            </span>
-          </p>
           <div
-            class="payment-details-summary__breakdown"
+            class="payment-details-summary__section"
           >
-            <p>
-              Refunded: 
-              $-20.00
+            <p
+              class="payment-details-summary__amount"
+            >
+              $20.00
+              <span
+                class="payment-details-summary__amount-currency"
+              >
+                usd
+              </span>
+              <span
+                class="chip chip-light"
+              >
+                Refunded
+              </span>
             </p>
-            <p>
-              Fee: 
-              $-0.70
-            </p>
-            
-            <p>
-              Net: 
-              $-0.70
-            </p>
+            <div
+              class="payment-details-summary__breakdown"
+            >
+              <p>
+                Refunded: 
+                $-20.00
+              </p>
+              <p>
+                Fee: 
+                $-0.70
+              </p>
+              
+              <p>
+                Net: 
+                $-0.70
+              </p>
+            </div>
           </div>
-        </div>
-        <div
-          class="payment-details-summary__section"
-        >
           <div
-            class="payment-details-summary__id"
+            class="payment-details-summary__section"
           >
-            Payment ID: 
-            ch_38jdHA39KKA
+            <div
+              class="payment-details-summary__id"
+            >
+              Payment ID: 
+              ch_38jdHA39KKA
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <hr
-      class="components-card__divider css-lh2anh-DividerUI e1q7k77g5"
-      role="separator"
-    />
-    <div
-      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
-    >
-      <ul
-        class="woocommerce-list woocommerce-list--horizontal"
-        role="menu"
+      <hr
+        aria-orientation="horizontal"
+        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        data-wp-c16t="true"
+        data-wp-component="CardDivider"
+        role="separator"
+      />
+      <div
+        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
-        <li
-          class="woocommerce-list__item"
+        <ul
+          class="woocommerce-list woocommerce-list--horizontal"
+          role="menu"
         >
-          <div
-            class="woocommerce-list__item-inner"
+          <li
+            class="woocommerce-list__item"
           >
             <div
-              class="woocommerce-list__item-text"
+              class="woocommerce-list__item-inner"
             >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Date
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                Sep 19, 2019, 5:24pm
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Channel
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <span>
-                  Online
-                </span>
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Customer
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <a
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
-                >
-                  Customer name
-                </a>
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Order
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <a
-                  data-link-type="external"
-                  href="https://somerandomorderurl.com/?edit_order=45981"
-                >
-                  45981
-                </a>
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Payment method
-              </span>
-              <span
-                class="woocommerce-list__item-content"
+              <div
+                class="woocommerce-list__item-text"
               >
                 <span
-                  class="payment-method-details"
+                  class="woocommerce-list__item-title"
                 >
-                  <span
-                    class="payment-method__brand payment-method__brand--visa"
-                  />
-                   •••• 
-                  4242
+                  Date
                 </span>
-              </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  Sep 19, 2019, 5:24pm
+                </span>
+              </div>
             </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
+          </li>
+          <li
+            class="woocommerce-list__item"
           >
             <div
-              class="woocommerce-list__item-text"
+              class="woocommerce-list__item-inner"
             >
-              <span
-                class="woocommerce-list__item-title"
+              <div
+                class="woocommerce-list__item-text"
               >
-                Risk evaluation
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                Normal
-              </span>
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Channel
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <span>
+                    Online
+                  </span>
+                </span>
+              </div>
             </div>
-          </div>
-        </li>
-      </ul>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Customer
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <a
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                  >
+                    Customer name
+                  </a>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Order
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <a
+                    data-link-type="external"
+                    href="https://somerandomorderurl.com/?edit_order=45981"
+                  >
+                    45981
+                  </a>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Payment method
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <span
+                    class="payment-method-details"
+                  >
+                    <span
+                      class="payment-method__brand payment-method__brand--visa"
+                    />
+                     •••• 
+                    4242
+                  </span>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Risk evaluation
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  Normal
+                </span>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
     </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
   </div>
 </div>
 `;
@@ -1241,207 +1372,232 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
 exports[`PaymentDetailsSummary renders loading state 1`] = `
 <div>
   <div
-    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
   >
     <div
-      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
+      class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="payment-details-summary"
+        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
         <div
-          class="payment-details-summary__section"
+          class="payment-details-summary"
         >
-          <p
-            class="payment-details-summary__amount"
+          <div
+            class="payment-details-summary__section"
           >
-            
-            <span
-              class="payment-details-summary__amount-currency"
+            <p
+              class="payment-details-summary__amount"
             >
-              USD
-            </span>
-            <span
-              class="chip chip-light"
-            />
-          </p>
-          <div
-            class="payment-details-summary__breakdown"
-          >
-            
-            <p>
-              Fee: 
-              $0.00
+              
+              <span
+                class="payment-details-summary__amount-currency"
+              >
+                USD
+              </span>
+              <span
+                class="chip chip-light"
+              />
             </p>
-            
-            <p>
-              Net: 
-              $0.00
-            </p>
+            <div
+              class="payment-details-summary__breakdown"
+            >
+              
+              <p>
+                Fee: 
+                $0.00
+              </p>
+              
+              <p>
+                Net: 
+                $0.00
+              </p>
+            </div>
           </div>
-        </div>
-        <div
-          class="payment-details-summary__section"
-        >
           <div
-            class="payment-details-summary__id"
+            class="payment-details-summary__section"
           >
-            Payment ID: 
+            <div
+              class="payment-details-summary__id"
+            >
+              Payment ID: 
+            </div>
           </div>
         </div>
       </div>
+      <hr
+        aria-orientation="horizontal"
+        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        data-wp-c16t="true"
+        data-wp-component="CardDivider"
+        role="separator"
+      />
+      <div
+        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
+      >
+        <ul
+          class="woocommerce-list woocommerce-list--horizontal"
+          role="menu"
+        >
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Date
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  –
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Channel
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <span>
+                    Online
+                  </span>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Customer
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  –
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Order
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <span>
+                    –
+                  </span>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Payment method
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <span>
+                    –
+                  </span>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Risk evaluation
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  –
+                </span>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
     </div>
-    <hr
-      class="components-card__divider css-lh2anh-DividerUI e1q7k77g5"
-      role="separator"
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
     />
     <div
-      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
-    >
-      <ul
-        class="woocommerce-list woocommerce-list--horizontal"
-        role="menu"
-      >
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Date
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                –
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Channel
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <span>
-                  Online
-                </span>
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Customer
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                –
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Order
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <span>
-                  –
-                </span>
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Payment method
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <span>
-                  –
-                </span>
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Risk evaluation
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                –
-              </span>
-            </div>
-          </div>
-        </li>
-      </ul>
-    </div>
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
   </div>
 </div>
 `;
@@ -1449,227 +1605,252 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
 exports[`PaymentDetailsSummary renders partially refunded information for a charge 1`] = `
 <div>
   <div
-    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
   >
     <div
-      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
+      class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="payment-details-summary"
+        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
         <div
-          class="payment-details-summary__section"
+          class="payment-details-summary"
         >
-          <p
-            class="payment-details-summary__amount"
-          >
-            $20.00
-            <span
-              class="payment-details-summary__amount-currency"
-            >
-              usd
-            </span>
-            <span
-              class="chip chip-light"
-            >
-              Partial refund
-            </span>
-          </p>
           <div
-            class="payment-details-summary__breakdown"
+            class="payment-details-summary__section"
           >
-            <p>
-              Refunded: 
-              $-12.00
+            <p
+              class="payment-details-summary__amount"
+            >
+              $20.00
+              <span
+                class="payment-details-summary__amount-currency"
+              >
+                usd
+              </span>
+              <span
+                class="chip chip-light"
+              >
+                Partial refund
+              </span>
             </p>
-            <p>
-              Fee: 
-              $-0.70
-            </p>
-            
-            <p>
-              Net: 
-              $7.30
-            </p>
+            <div
+              class="payment-details-summary__breakdown"
+            >
+              <p>
+                Refunded: 
+                $-12.00
+              </p>
+              <p>
+                Fee: 
+                $-0.70
+              </p>
+              
+              <p>
+                Net: 
+                $7.30
+              </p>
+            </div>
           </div>
-        </div>
-        <div
-          class="payment-details-summary__section"
-        >
           <div
-            class="payment-details-summary__id"
+            class="payment-details-summary__section"
           >
-            Payment ID: 
-            ch_38jdHA39KKA
+            <div
+              class="payment-details-summary__id"
+            >
+              Payment ID: 
+              ch_38jdHA39KKA
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <hr
-      class="components-card__divider css-lh2anh-DividerUI e1q7k77g5"
-      role="separator"
-    />
-    <div
-      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
-    >
-      <ul
-        class="woocommerce-list woocommerce-list--horizontal"
-        role="menu"
+      <hr
+        aria-orientation="horizontal"
+        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        data-wp-c16t="true"
+        data-wp-component="CardDivider"
+        role="separator"
+      />
+      <div
+        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
-        <li
-          class="woocommerce-list__item"
+        <ul
+          class="woocommerce-list woocommerce-list--horizontal"
+          role="menu"
         >
-          <div
-            class="woocommerce-list__item-inner"
+          <li
+            class="woocommerce-list__item"
           >
             <div
-              class="woocommerce-list__item-text"
+              class="woocommerce-list__item-inner"
             >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Date
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                Sep 19, 2019, 5:24pm
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Channel
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <span>
-                  Online
-                </span>
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Customer
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <a
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
-                >
-                  Customer name
-                </a>
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Order
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <a
-                  data-link-type="external"
-                  href="https://somerandomorderurl.com/?edit_order=45981"
-                >
-                  45981
-                </a>
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Payment method
-              </span>
-              <span
-                class="woocommerce-list__item-content"
+              <div
+                class="woocommerce-list__item-text"
               >
                 <span
-                  class="payment-method-details"
+                  class="woocommerce-list__item-title"
                 >
-                  <span
-                    class="payment-method__brand payment-method__brand--visa"
-                  />
-                   •••• 
-                  4242
+                  Date
                 </span>
-              </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  Sep 19, 2019, 5:24pm
+                </span>
+              </div>
             </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
+          </li>
+          <li
+            class="woocommerce-list__item"
           >
             <div
-              class="woocommerce-list__item-text"
+              class="woocommerce-list__item-inner"
             >
-              <span
-                class="woocommerce-list__item-title"
+              <div
+                class="woocommerce-list__item-text"
               >
-                Risk evaluation
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                Normal
-              </span>
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Channel
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <span>
+                    Online
+                  </span>
+                </span>
+              </div>
             </div>
-          </div>
-        </li>
-      </ul>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Customer
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <a
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                  >
+                    Customer name
+                  </a>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Order
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <a
+                    data-link-type="external"
+                    href="https://somerandomorderurl.com/?edit_order=45981"
+                  >
+                    45981
+                  </a>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Payment method
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <span
+                    class="payment-method-details"
+                  >
+                    <span
+                      class="payment-method__brand payment-method__brand--visa"
+                    />
+                     •••• 
+                    4242
+                  </span>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Risk evaluation
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  Normal
+                </span>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
     </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
   </div>
 </div>
 `;
@@ -1677,224 +1858,249 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
 exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] = `
 <div>
   <div
-    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
   >
     <div
-      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
+      class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="payment-details-summary"
+        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
         <div
-          class="payment-details-summary__section"
+          class="payment-details-summary"
         >
-          <p
-            class="payment-details-summary__amount"
-          >
-            $20.00
-            <span
-              class="payment-details-summary__amount-currency"
-            >
-              usd
-            </span>
-            <span
-              class="chip chip-light"
-            >
-              Paid
-            </span>
-          </p>
           <div
-            class="payment-details-summary__breakdown"
+            class="payment-details-summary__section"
           >
-            
-            <p>
-              Fee: 
-              $-0.70
+            <p
+              class="payment-details-summary__amount"
+            >
+              $20.00
+              <span
+                class="payment-details-summary__amount-currency"
+              >
+                usd
+              </span>
+              <span
+                class="chip chip-light"
+              >
+                Paid
+              </span>
             </p>
-            
-            <p>
-              Net: 
-              $19.30
-            </p>
+            <div
+              class="payment-details-summary__breakdown"
+            >
+              
+              <p>
+                Fee: 
+                $-0.70
+              </p>
+              
+              <p>
+                Net: 
+                $19.30
+              </p>
+            </div>
           </div>
-        </div>
-        <div
-          class="payment-details-summary__section"
-        >
           <div
-            class="payment-details-summary__id"
+            class="payment-details-summary__section"
           >
-            Payment ID: 
-            ch_38jdHA39KKA
+            <div
+              class="payment-details-summary__id"
+            >
+              Payment ID: 
+              ch_38jdHA39KKA
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <hr
-      class="components-card__divider css-lh2anh-DividerUI e1q7k77g5"
-      role="separator"
-    />
-    <div
-      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
-    >
-      <ul
-        class="woocommerce-list woocommerce-list--horizontal"
-        role="menu"
+      <hr
+        aria-orientation="horizontal"
+        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        data-wp-c16t="true"
+        data-wp-component="CardDivider"
+        role="separator"
+      />
+      <div
+        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
-        <li
-          class="woocommerce-list__item"
+        <ul
+          class="woocommerce-list woocommerce-list--horizontal"
+          role="menu"
         >
-          <div
-            class="woocommerce-list__item-inner"
+          <li
+            class="woocommerce-list__item"
           >
             <div
-              class="woocommerce-list__item-text"
+              class="woocommerce-list__item-inner"
             >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Date
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                Sep 19, 2019, 5:24pm
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Channel
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <span>
-                  Tap to Pay on iPhone
-                </span>
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Customer
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <a
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
-                >
-                  Customer name
-                </a>
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Order
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <a
-                  data-link-type="external"
-                  href="https://somerandomorderurl.com/?edit_order=45981"
-                >
-                  45981
-                </a>
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Payment method
-              </span>
-              <span
-                class="woocommerce-list__item-content"
+              <div
+                class="woocommerce-list__item-text"
               >
                 <span
-                  class="payment-method-details"
+                  class="woocommerce-list__item-title"
                 >
-                  <span
-                    class="payment-method__brand payment-method__brand--visa"
-                  />
-                   •••• 
-                  4242
+                  Date
                 </span>
-              </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  Sep 19, 2019, 5:24pm
+                </span>
+              </div>
             </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
+          </li>
+          <li
+            class="woocommerce-list__item"
           >
             <div
-              class="woocommerce-list__item-text"
+              class="woocommerce-list__item-inner"
             >
-              <span
-                class="woocommerce-list__item-title"
+              <div
+                class="woocommerce-list__item-text"
               >
-                Risk evaluation
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                Normal
-              </span>
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Channel
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <span>
+                    Tap to Pay on iPhone
+                  </span>
+                </span>
+              </div>
             </div>
-          </div>
-        </li>
-      </ul>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Customer
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <a
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                  >
+                    Customer name
+                  </a>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Order
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <a
+                    data-link-type="external"
+                    href="https://somerandomorderurl.com/?edit_order=45981"
+                  >
+                    45981
+                  </a>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Payment method
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <span
+                    class="payment-method-details"
+                  >
+                    <span
+                      class="payment-method__brand payment-method__brand--visa"
+                    />
+                     •••• 
+                    4242
+                  </span>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Risk evaluation
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  Normal
+                </span>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
     </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
   </div>
 </div>
 `;
@@ -1902,227 +2108,252 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] 
 exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] = `
 <div>
   <div
-    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
   >
     <div
-      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
+      class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="payment-details-summary"
+        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
         <div
-          class="payment-details-summary__section"
+          class="payment-details-summary"
         >
-          <p
-            class="payment-details-summary__amount"
-          >
-            $20.00
-            <span
-              class="payment-details-summary__amount-currency"
-            >
-              usd
-            </span>
-            <span
-              class="chip chip-light"
-            >
-              Disputed: Under review
-            </span>
-          </p>
           <div
-            class="payment-details-summary__breakdown"
+            class="payment-details-summary__section"
           >
-            <p>
-              Refunded: 
-              $-15.00
+            <p
+              class="payment-details-summary__amount"
+            >
+              $20.00
+              <span
+                class="payment-details-summary__amount-currency"
+              >
+                usd
+              </span>
+              <span
+                class="chip chip-light"
+              >
+                Disputed: Under review
+              </span>
             </p>
-            <p>
-              Fee: 
-              $-15.70
-            </p>
-            
-            <p>
-              Net: 
-              $-10.70
-            </p>
+            <div
+              class="payment-details-summary__breakdown"
+            >
+              <p>
+                Refunded: 
+                $-15.00
+              </p>
+              <p>
+                Fee: 
+                $-15.70
+              </p>
+              
+              <p>
+                Net: 
+                $-10.70
+              </p>
+            </div>
           </div>
-        </div>
-        <div
-          class="payment-details-summary__section"
-        >
           <div
-            class="payment-details-summary__id"
+            class="payment-details-summary__section"
           >
-            Payment ID: 
-            ch_38jdHA39KKA
+            <div
+              class="payment-details-summary__id"
+            >
+              Payment ID: 
+              ch_38jdHA39KKA
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <hr
-      class="components-card__divider css-lh2anh-DividerUI e1q7k77g5"
-      role="separator"
-    />
-    <div
-      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
-    >
-      <ul
-        class="woocommerce-list woocommerce-list--horizontal"
-        role="menu"
+      <hr
+        aria-orientation="horizontal"
+        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        data-wp-c16t="true"
+        data-wp-component="CardDivider"
+        role="separator"
+      />
+      <div
+        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
-        <li
-          class="woocommerce-list__item"
+        <ul
+          class="woocommerce-list woocommerce-list--horizontal"
+          role="menu"
         >
-          <div
-            class="woocommerce-list__item-inner"
+          <li
+            class="woocommerce-list__item"
           >
             <div
-              class="woocommerce-list__item-text"
+              class="woocommerce-list__item-inner"
             >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Date
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                Sep 19, 2019, 5:24pm
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Channel
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <span>
-                  Online
-                </span>
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Customer
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <a
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
-                >
-                  Customer name
-                </a>
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Order
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                <a
-                  data-link-type="external"
-                  href="https://somerandomorderurl.com/?edit_order=45981"
-                >
-                  45981
-                </a>
-              </span>
-            </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
-          >
-            <div
-              class="woocommerce-list__item-text"
-            >
-              <span
-                class="woocommerce-list__item-title"
-              >
-                Payment method
-              </span>
-              <span
-                class="woocommerce-list__item-content"
+              <div
+                class="woocommerce-list__item-text"
               >
                 <span
-                  class="payment-method-details"
+                  class="woocommerce-list__item-title"
                 >
-                  <span
-                    class="payment-method__brand payment-method__brand--visa"
-                  />
-                   •••• 
-                  4242
+                  Date
                 </span>
-              </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  Sep 19, 2019, 5:24pm
+                </span>
+              </div>
             </div>
-          </div>
-        </li>
-        <li
-          class="woocommerce-list__item"
-        >
-          <div
-            class="woocommerce-list__item-inner"
+          </li>
+          <li
+            class="woocommerce-list__item"
           >
             <div
-              class="woocommerce-list__item-text"
+              class="woocommerce-list__item-inner"
             >
-              <span
-                class="woocommerce-list__item-title"
+              <div
+                class="woocommerce-list__item-text"
               >
-                Risk evaluation
-              </span>
-              <span
-                class="woocommerce-list__item-content"
-              >
-                Normal
-              </span>
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Channel
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <span>
+                    Online
+                  </span>
+                </span>
+              </div>
             </div>
-          </div>
-        </li>
-      </ul>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Customer
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <a
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                  >
+                    Customer name
+                  </a>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Order
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <a
+                    data-link-type="external"
+                    href="https://somerandomorderurl.com/?edit_order=45981"
+                  >
+                    45981
+                  </a>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Payment method
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <span
+                    class="payment-method-details"
+                  >
+                    <span
+                      class="payment-method__brand payment-method__brand--visa"
+                    />
+                     •••• 
+                    4242
+                  </span>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Risk evaluation
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  Normal
+                </span>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
     </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
   </div>
 </div>
 `;

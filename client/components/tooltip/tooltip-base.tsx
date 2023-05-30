@@ -11,7 +11,7 @@ import { debounce, noop } from 'lodash';
  */
 import './style.scss';
 
-const rootElement =
+const defaultParentElement =
 	document.getElementById( 'wpbody-content' ) || document.body;
 
 const isEventTriggeredWithin = (
@@ -34,6 +34,7 @@ type UseHideDelayProps = {
 	hideDelayMs?: number;
 	triggerRef: React.RefObject< HTMLElement >;
 	tooltipRef: React.RefObject< HTMLElement >;
+	parentElement: HTMLElement;
 	onHide?: () => void;
 };
 const useHideDelay = (
@@ -42,6 +43,7 @@ const useHideDelay = (
 		hideDelayMs = 600,
 		triggerRef,
 		tooltipRef,
+		parentElement,
 		onHide = noop,
 	}: UseHideDelayProps
 ) => {
@@ -65,7 +67,7 @@ const useHideDelay = (
 
 		// element is marked as visible, no need to hide it
 		if ( isVisibleProp ) {
-			rootElement.dispatchEvent( new Event( 'wcpay-tooltip-open' ) );
+			parentElement.dispatchEvent( new Event( 'wcpay-tooltip-open' ) );
 			setIsVisible( true );
 			return;
 		}
@@ -85,7 +87,7 @@ const useHideDelay = (
 				clearTimeout( timer );
 			}
 		};
-	}, [ setIsVisible, hideDelayMs, isVisibleProp, isVisible ] );
+	}, [ setIsVisible, hideDelayMs, isVisibleProp, isVisible, parentElement ] );
 
 	// listen to other events to hide
 	useEffect( () => {
@@ -114,41 +116,45 @@ const useHideDelay = (
 		};
 
 		document.addEventListener( 'click', handleDocumentClick );
-		rootElement.addEventListener( 'wcpay-tooltip-open', handleHideElement );
+		parentElement.addEventListener(
+			'wcpay-tooltip-open',
+			handleHideElement
+		);
 
 		return () => {
 			document.removeEventListener( 'click', handleDocumentClick );
-			rootElement.removeEventListener(
+			parentElement.removeEventListener(
 				'wcpay-tooltip-open',
 				handleHideElement
 			);
 		};
-	}, [ isVisibleProp, isVisible, triggerRef, tooltipRef ] );
+	}, [ isVisibleProp, isVisible, triggerRef, tooltipRef, parentElement ] );
 
 	return isVisible;
 };
 
 type TooltipPortalProps = {
 	children: React.ReactNode;
+	parentElement: HTMLElement;
 };
 
 const TooltipPortal: React.FC< TooltipPortalProps > = memo(
-	( { children } ) => {
+	( { children, parentElement } ) => {
 		const node = useRef< HTMLElement | null >( null );
 		if ( ! node.current ) {
 			node.current = document.createElement( 'div' );
-			rootElement.appendChild( node.current );
+			parentElement.appendChild( node.current );
 		}
 
 		// on component unmount, clear any reference to the created node
 		useEffect( () => {
 			return () => {
 				if ( node.current ) {
-					rootElement.removeChild( node.current );
+					parentElement.removeChild( node.current );
 					node.current = null;
 				}
 			};
-		}, [] );
+		}, [ parentElement ] );
 
 		return createPortal( children, node.current );
 	}
@@ -158,6 +164,7 @@ export type TooltipBaseProps = {
 	className?: string;
 	children?: React.ReactNode;
 	content: React.ReactNode;
+	parentElement?: HTMLElement;
 	hideDelayMs?: number;
 	isVisible?: boolean;
 	onHide?: () => void;
@@ -168,6 +175,7 @@ const TooltipBase: React.FC< TooltipBaseProps > = ( {
 	className,
 	children,
 	content,
+	parentElement = defaultParentElement,
 	hideDelayMs = 600,
 	isVisible,
 	onHide,
@@ -181,6 +189,7 @@ const TooltipBase: React.FC< TooltipBaseProps > = ( {
 		hideDelayMs,
 		triggerRef: wrapperRef,
 		tooltipRef: tooltipWrapperRef,
+		parentElement,
 		onHide,
 	} );
 
@@ -241,7 +250,7 @@ const TooltipBase: React.FC< TooltipBaseProps > = ( {
 				{ children }
 			</div>
 			{ isTooltipVisible && (
-				<TooltipPortal>
+				<TooltipPortal parentElement={ parentElement }>
 					<div
 						ref={ tooltipWrapperRef }
 						className={ classNames(

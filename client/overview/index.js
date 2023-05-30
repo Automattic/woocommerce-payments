@@ -15,7 +15,6 @@ import Page from 'components/page';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import AccountStatus from 'components/account-status';
 import ActiveLoanSummary from 'components/active-loan-summary';
-import DepositsInformation from 'components/deposits-information';
 import DepositsOverview from 'components/deposits-overview';
 import ErrorBoundary from 'components/error-boundary';
 import TaskList from './task-list';
@@ -29,6 +28,28 @@ import AccountBalances from 'components/account-balances';
 import FRTDiscoverabilityBanner from 'components/fraud-risk-tools-banner';
 import { useSettings } from 'wcpay/data';
 import './style.scss';
+import React from 'react';
+
+const OverviewPageError = () => {
+	const queryParams = getQuery();
+	const showLoginError = '1' === queryParams[ 'wcpay-login-error' ];
+	if ( ! wcpaySettings.errorMessage && ! showLoginError ) {
+		return null;
+	}
+	return (
+		<Notice
+			status="error"
+			isDismissible={ false }
+			className="wcpay-login-error"
+		>
+			{ wcpaySettings.errorMessage ||
+				__(
+					'There was a problem redirecting you to the account dashboard. Please try again.',
+					'woocommerce-payments'
+				) }
+		</Notice>
+	);
+};
 
 const OverviewPage = () => {
 	const {
@@ -36,7 +57,7 @@ const OverviewPage = () => {
 		overviewTasksVisibility,
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
-		featureFlags: { accountOverviewTaskList, simplifyDepositsUi },
+		featureFlags: { accountOverviewTaskList },
 	} = wcpaySettings;
 	const numDisputesNeedingResponse =
 		parseInt( wcpaySettings.numDisputesNeedingResponse, 10 ) || 0;
@@ -56,7 +77,6 @@ const OverviewPage = () => {
 	const showConnectionSuccess =
 		'1' === queryParams[ 'wcpay-connection-success' ];
 
-	const showLoginError = '1' === queryParams[ 'wcpay-login-error' ];
 	const showLoanOfferError = '1' === queryParams[ 'wcpay-loan-offer-error' ];
 	const showServerLinkError =
 		'1' === queryParams[ 'wcpay-server-link-error' ];
@@ -91,18 +111,7 @@ const OverviewPage = () => {
 
 	return (
 		<Page isNarrow className="wcpay-overview">
-			{ showLoginError && (
-				<Notice
-					status="error"
-					isDismissible={ false }
-					className="wcpay-login-error"
-				>
-					{ __(
-						'There was a problem redirecting you to the account dashboard. Please try again.',
-						'woocommerce-payments'
-					) }
-				</Notice>
-			) }
+			<OverviewPageError />
 
 			<JetpackIdcNotice />
 
@@ -126,24 +135,18 @@ const OverviewPage = () => {
 
 			<TestModeNotice topic={ topics.overview } />
 
-			{ wcpaySettings.isFraudProtectionSettingsEnabled && (
-				<ErrorBoundary>
-					<FRTDiscoverabilityBanner />
-				</ErrorBoundary>
-			) }
+			<ErrorBoundary>
+				<FRTDiscoverabilityBanner />
+			</ErrorBoundary>
 
 			{ showConnectionSuccess && <ConnectionSuccessNotice /> }
 
 			{ ! accountRejected && (
 				<ErrorBoundary>
-					{ simplifyDepositsUi ? (
-						<>
-							<AccountBalances />
-							<DepositsOverview />
-						</>
-					) : (
-						<DepositsInformation />
-					) }
+					<>
+						<AccountBalances />
+						<DepositsOverview />
+					</>
 				</ErrorBoundary>
 			) }
 
@@ -158,18 +161,18 @@ const OverviewPage = () => {
 					</ErrorBoundary>
 				) }
 
+			{ wcpaySettings.onboardingTestMode && (
+				<ErrorBoundary>
+					<SetupRealPayments />
+				</ErrorBoundary>
+			) }
+
 			<ErrorBoundary>
 				<AccountStatus
 					accountStatus={ wcpaySettings.accountStatus }
 					accountFees={ activeAccountFees }
 				/>
 			</ErrorBoundary>
-
-			{ wcpaySettings.onboardingTestMode && (
-				<ErrorBoundary>
-					<SetupRealPayments />
-				</ErrorBoundary>
-			) }
 
 			{ wcpaySettings.accountLoans.has_active_loan && (
 				<ErrorBoundary>

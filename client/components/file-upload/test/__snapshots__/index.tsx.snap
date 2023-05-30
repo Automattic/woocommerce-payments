@@ -3,24 +3,21 @@
 exports[`FileUploadControl renders default file upload control 1`] = `
 <div>
   <div
-    class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+    class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
   >
     <div
-      class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+      class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
     >
       <label
-        class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+        class="components-base-control__label css-eweeby-StyledLabel-labelStyles ej5x27r2"
         for="form-file-upload-base-control-field_key"
       >
         Upload file
       </label>
       <div
-        class="components-drop-zone__provider"
-      >
-        <div
-          class="components-drop-zone"
-        />
-      </div>
+        class="components-drop-zone"
+        data-is-drop-zone="true"
+      />
       <div
         class="file-upload"
       >
@@ -41,7 +38,7 @@ exports[`FileUploadControl renders default file upload control 1`] = `
             >
               <g>
                 <path
-                  d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                  d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
                 />
               </g>
             </svg>
@@ -49,6 +46,7 @@ exports[`FileUploadControl renders default file upload control 1`] = `
           </button>
           <input
             accept=".pdf, image/png, image/jpeg"
+            data-testid="form-file-upload-input"
             style="display: none;"
             type="file"
           />
@@ -63,24 +61,21 @@ exports[`FileUploadControl renders default file upload control 1`] = `
 exports[`FileUploadControl renders disabled state 1`] = `
 <div>
   <div
-    class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+    class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
   >
     <div
-      class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+      class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
     >
       <label
-        class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+        class="components-base-control__label css-eweeby-StyledLabel-labelStyles ej5x27r2"
         for="form-file-upload-base-control-field_key"
       >
         Upload file
       </label>
       <div
-        class="components-drop-zone__provider"
-      >
-        <div
-          class="components-drop-zone"
-        />
-      </div>
+        class="components-drop-zone"
+        data-is-drop-zone="true"
+      />
       <div
         class="file-upload"
       >
@@ -102,7 +97,7 @@ exports[`FileUploadControl renders disabled state 1`] = `
             >
               <g>
                 <path
-                  d="M9 19.414l-6.707-6.707 1.414-1.414L9 16.586 20.293 5.293l1.414 1.414"
+                  d="M9 19.414l-6.707-6.707 1.414-1.414L9 16.586 20.293 5.293l1.414 1.414z"
                 />
               </g>
             </svg>
@@ -110,6 +105,7 @@ exports[`FileUploadControl renders disabled state 1`] = `
           </button>
           <input
             accept=".pdf, image/png, image/jpeg"
+            data-testid="form-file-upload-input"
             style="display: none;"
             type="file"
           />
@@ -128,24 +124,21 @@ exports[`FileUploadControl renders disabled state 1`] = `
 exports[`FileUploadControl renders loading state 1`] = `
 <div>
   <div
-    class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+    class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
   >
     <div
-      class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+      class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
     >
       <label
-        class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+        class="components-base-control__label css-eweeby-StyledLabel-labelStyles ej5x27r2"
         for="form-file-upload-base-control-field_key"
       >
         Upload file
       </label>
       <div
-        class="components-drop-zone__provider"
-      >
-        <div
-          class="components-drop-zone"
-        />
-      </div>
+        class="components-drop-zone"
+        data-is-drop-zone="true"
+      />
       <div
         class="file-upload"
       >
@@ -167,7 +160,7 @@ exports[`FileUploadControl renders loading state 1`] = `
             >
               <g>
                 <path
-                  d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                  d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
                 />
               </g>
             </svg>
@@ -175,6 +168,7 @@ exports[`FileUploadControl renders loading state 1`] = `
           </button>
           <input
             accept=".pdf, image/png, image/jpeg"
+            data-testid="form-file-upload-input"
             style="display: none;"
             type="file"
           />
@@ -189,24 +183,21 @@ exports[`FileUploadControl renders loading state 1`] = `
 exports[`FileUploadControl renders upload done state 1`] = `
 <div>
   <div
-    class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+    class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
   >
     <div
-      class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+      class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
     >
       <label
-        class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+        class="components-base-control__label css-eweeby-StyledLabel-labelStyles ej5x27r2"
         for="form-file-upload-base-control-field_key"
       >
         Upload file
       </label>
       <div
-        class="components-drop-zone__provider"
-      >
-        <div
-          class="components-drop-zone"
-        />
-      </div>
+        class="components-drop-zone"
+        data-is-drop-zone="true"
+      />
       <div
         class="file-upload"
       >
@@ -227,7 +218,7 @@ exports[`FileUploadControl renders upload done state 1`] = `
             >
               <g>
                 <path
-                  d="M9 19.414l-6.707-6.707 1.414-1.414L9 16.586 20.293 5.293l1.414 1.414"
+                  d="M9 19.414l-6.707-6.707 1.414-1.414L9 16.586 20.293 5.293l1.414 1.414z"
                 />
               </g>
             </svg>
@@ -235,6 +226,7 @@ exports[`FileUploadControl renders upload done state 1`] = `
           </button>
           <input
             accept=".pdf, image/png, image/jpeg"
+            data-testid="form-file-upload-input"
             style="display: none;"
             type="file"
           />
@@ -258,7 +250,7 @@ exports[`FileUploadControl renders upload done state 1`] = `
           >
             <g>
               <path
-                d="M6.187 8h11.625l-.695 11.125C17.05 20.18 16.177 21 15.12 21H8.88c-1.057 0-1.93-.82-1.997-1.875L6.187 8zM19 5v2H5V5h3V4c0-1.105.895-2 2-2h4c1.105 0 2 .895 2 2v1h3zm-9 0h4V4h-4v1z"
+                d="M6.187 8h11.625l-.695 11.125A2 2 0 0115.121 21H8.879a2 2 0 01-1.996-1.875L6.187 8zM19 5v2H5V5h3V4a2 2 0 012-2h4a2 2 0 012 2v1h3zm-9 0h4V4h-4v1z"
               />
             </g>
           </svg>
@@ -272,24 +264,21 @@ exports[`FileUploadControl renders upload done state 1`] = `
 exports[`FileUploadControl renders upload failed state 1`] = `
 <div>
   <div
-    class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+    class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
   >
     <div
-      class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+      class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
     >
       <label
-        class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+        class="components-base-control__label css-eweeby-StyledLabel-labelStyles ej5x27r2"
         for="form-file-upload-base-control-field_key"
       >
         Upload file
       </label>
       <div
-        class="components-drop-zone__provider"
-      >
-        <div
-          class="components-drop-zone"
-        />
-      </div>
+        class="components-drop-zone"
+        data-is-drop-zone="true"
+      />
       <div
         class="file-upload"
       >
@@ -310,7 +299,7 @@ exports[`FileUploadControl renders upload failed state 1`] = `
             >
               <g>
                 <path
-                  d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                  d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
                 />
               </g>
             </svg>
@@ -318,6 +307,7 @@ exports[`FileUploadControl renders upload failed state 1`] = `
           </button>
           <input
             accept=".pdf, image/png, image/jpeg"
+            data-testid="form-file-upload-input"
             style="display: none;"
             type="file"
           />

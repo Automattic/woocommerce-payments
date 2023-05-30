@@ -8,14 +8,18 @@ import React from 'react';
  */
 import { useOnboardingContext } from '../context';
 import { Item } from 'components/custom-select-control';
-import { useBusinessTypes } from 'onboarding-experiment/hooks';
 import { OnboardingFields } from '../types';
-import { BusinessType } from 'onboarding-experiment/types';
-import { OnboardingTextField, OnboardingSelectField } from '../form';
+import {
+	OnboardingGroupedSelectField,
+	OnboardingSelectField,
+	OnboardingTextField,
+} from '../form';
+import { getBusinessTypes, getMccsFlatList } from 'onboarding-prototype/utils';
+import { BusinessType } from 'onboarding-prototype/types';
 
 const BusinessDetails: React.FC = () => {
 	const { data, setData } = useOnboardingContext();
-	const { countries } = useBusinessTypes();
+	const countries = getBusinessTypes();
 
 	const selectedCountry = countries.find(
 		( country ) => country.key === data.country
@@ -26,7 +30,7 @@ const BusinessDetails: React.FC = () => {
 
 	const handleTiedChange = (
 		name: keyof OnboardingFields,
-		selectedItem?: Item
+		selectedItem?: Item | null
 	) => {
 		let newData: OnboardingFields = {
 			[ name ]: selectedItem?.key,
@@ -38,6 +42,8 @@ const BusinessDetails: React.FC = () => {
 		}
 		setData( newData );
 	};
+
+	const mccsFlatList = getMccsFlatList();
 
 	return (
 		<>
@@ -72,11 +78,12 @@ const BusinessDetails: React.FC = () => {
 						onChange={ handleTiedChange }
 					/>
 				) }
-			{ /* <OnboardingSelectField
+
+			<OnboardingGroupedSelectField
 				name="mcc"
-				// TODO [GH-4853]: Create a Field component for GroupedSelectControl and Populate MCC options.
-				options={ [] }
-			/> */ }
+				options={ mccsFlatList }
+				searchable
+			/>
 		</>
 	);
 };

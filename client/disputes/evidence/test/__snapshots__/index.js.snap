@@ -3,171 +3,213 @@
 exports[`Dispute evidence form needing response, renders correctly 1`] = `
 <div>
   <div
-    class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
   >
     <div
-      class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
-    >
-      General evidence
-    </div>
-    <div
-      class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+      class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+        class="components-flex components-card__header components-card-header css-1e8ifbz-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-large em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardHeader"
       >
-        <div
-          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-        >
-          <label
-            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
-            for="inspector-textarea-control-0"
-          >
-            Product description
-          </label>
-          <textarea
-            class="components-textarea-control__input css-gw3wbu-StyledTextarea-inputStyleNeutral-inputStyleFocus-inputControl ebk7yr50"
-            id="inspector-textarea-control-0"
-            rows="4"
-          />
-        </div>
+        General evidence
       </div>
       <div
-        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+        class="components-card__body components-card-body css-1nonx1n-View-Body-borderRadius-large em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
         <div
-          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+          class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
         >
-          <label
-            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
-            for="inspector-text-control-0"
-          >
-            Customer name
-          </label>
-          <input
-            class="components-text-control__input"
-            id="inspector-text-control-0"
-            type="text"
-            value=""
-          />
-        </div>
-      </div>
-      <div
-        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
-      >
-        <div
-          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-        >
-          <label
-            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
-            for="form-file-upload-base-control-customer_signature"
-          >
-            Customer signature
-          </label>
           <div
-            class="components-drop-zone__provider"
+            class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
           >
-            <div
-              class="components-drop-zone"
+            <label
+              class="components-base-control__label css-eweeby-StyledLabel-labelStyles ej5x27r2"
+              for="inspector-textarea-control-0"
+            >
+              Product description
+            </label>
+            <textarea
+              class="components-textarea-control__input css-zika3g-StyledTextarea-inputStyleNeutral-inputStyleFocus-inputControl ebk7yr50"
+              id="inspector-textarea-control-0"
+              rows="4"
             />
           </div>
+        </div>
+        <div
+          class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
+        >
           <div
-            class="file-upload"
+            class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
           >
-            <div
-              class="components-form-file-upload"
+            <label
+              class="components-base-control__label css-eweeby-StyledLabel-labelStyles ej5x27r2"
+              for="inspector-text-control-0"
             >
-              <button
-                class="components-button is-secondary has-text has-icon"
-                id="form-file-upload-customer_signature"
-                type="button"
+              Customer name
+            </label>
+            <input
+              class="components-text-control__input"
+              id="inspector-text-control-0"
+              type="text"
+              value=""
+            />
+          </div>
+        </div>
+        <div
+          class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
+        >
+          <div
+            class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+          >
+            <label
+              class="components-base-control__label css-eweeby-StyledLabel-labelStyles ej5x27r2"
+              for="form-file-upload-base-control-customer_signature"
+            >
+              Customer signature
+            </label>
+            <div
+              class="components-drop-zone"
+              data-is-drop-zone="true"
+            />
+            <div
+              class="file-upload"
+            >
+              <div
+                class="components-form-file-upload"
               >
-                <svg
-                  class="gridicon gridicons-add-outline"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  xmlns="http://www.w3.org/2000/svg"
+                <button
+                  class="components-button is-secondary has-text has-icon"
+                  id="form-file-upload-customer_signature"
+                  type="button"
                 >
-                  <g>
-                    <path
-                      d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
-                    />
-                  </g>
-                </svg>
-                Upload file
-              </button>
-              <input
-                accept=".pdf, image/png, image/jpeg"
-                style="display: none;"
-                type="file"
-              />
+                  <svg
+                    class="gridicon gridicons-add-outline"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g>
+                      <path
+                        d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                      />
+                    </g>
+                  </svg>
+                  Upload file
+                </button>
+                <input
+                  accept=".pdf, image/png, image/jpeg"
+                  data-testid="form-file-upload-input"
+                  style="display: none;"
+                  type="file"
+                />
+              </div>
+              
             </div>
-            
+          </div>
+        </div>
+        <div
+          class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
+        >
+          <div
+            class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+          >
+            <label
+              class="components-base-control__label css-eweeby-StyledLabel-labelStyles ej5x27r2"
+              for="inspector-text-control-1"
+            >
+              Service date
+            </label>
+            <input
+              class="components-text-control__input"
+              id="inspector-text-control-1"
+              type="text"
+              value=""
+            />
           </div>
         </div>
       </div>
+    </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+  </div>
+  <div
+    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
+  >
+    <div
+      class="css-mgwsf4-View-Content em57xhy0"
+    >
       <div
-        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+        class="components-card__body components-card-body css-1nonx1n-View-Body-borderRadius-large em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
-        <div
-          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-        >
-          <label
-            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
-            for="inspector-text-control-1"
+        <p>
+          When you submit your evidence, we'll format it and send it to the cardholder's bank, then email you once the dispute has been decided.
+        </p>
+        <p>
+          <strong>
+            Evidence submission is final.
+          </strong>
+           
+          You can also save this evidence for later instead of submitting it immediately.
+           
+          <strong>
+            We will automatically submit any saved evidence at the due date.
+          </strong>
+        </p>
+      </div>
+      <div
+        class="components-flex components-card__footer components-card-footer css-1vemep6-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-large em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardFooter"
+      >
+        <div>
+          <button
+            class="components-button is-primary"
+            type="button"
           >
-            Service date
-          </label>
-          <input
-            class="components-text-control__input"
-            id="inspector-text-control-1"
-            type="text"
-            value=""
-          />
+            Submit evidence
+          </button>
+          <button
+            class="components-button is-secondary"
+            type="button"
+          >
+            Save for later
+          </button>
         </div>
       </div>
     </div>
-  </div>
-  <div
-    class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
-  >
     <div
-      class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
-    >
-      <p>
-        When you submit your evidence, we'll format it and send it to the cardholder's bank, then email you once the dispute has been decided.
-      </p>
-      <p>
-        <strong>
-          Evidence submission is final.
-        </strong>
-         
-        You can also save this evidence for later instead of submitting it immediately.
-         
-        <strong>
-          We will automatically submit any saved evidence at the due date.
-        </strong>
-      </p>
-    </div>
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
     <div
-      class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
-    >
-      <div>
-        <button
-          class="components-button is-primary"
-          type="button"
-        >
-          Submit evidence
-        </button>
-        <button
-          class="components-button is-secondary"
-          type="button"
-        >
-          Save for later
-        </button>
-      </div>
-    </div>
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
   </div>
 </div>
 `;
@@ -175,79 +217,101 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
 exports[`Dispute evidence form not needing response, renders correctly 1`] = `
 <div>
   <div
-    class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
   >
     <div
-      class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+      class="css-mgwsf4-View-Content em57xhy0"
     >
-      General evidence
+      <div
+        class="components-flex components-card__header components-card-header css-1e8ifbz-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-large em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardHeader"
+      >
+        General evidence
+      </div>
+      <div
+        class="components-card__body components-card-body css-1nonx1n-View-Body-borderRadius-large em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
+      >
+        
+        <div
+          class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
+        >
+          <div
+            class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+          >
+            <label
+              class="components-base-control__label css-eweeby-StyledLabel-labelStyles ej5x27r2"
+              for="inspector-text-control-2"
+            >
+              Customer name
+            </label>
+            <input
+              class="components-text-control__input"
+              disabled=""
+              id="inspector-text-control-2"
+              type="text"
+              value="No information submitted"
+            />
+          </div>
+        </div>
+        <div
+          class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
+        >
+          <div
+            class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+          >
+            <label
+              class="components-base-control__label css-eweeby-StyledLabel-labelStyles ej5x27r2"
+              for="form-file-upload-base-control-customer_signature"
+            >
+              Customer signature
+            </label>
+            <span
+              class="upload-message"
+            >
+              : Evidence file was not uploaded
+            </span>
+          </div>
+        </div>
+        <div
+          class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
+        >
+          <div
+            class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+          >
+            <label
+              class="components-base-control__label css-eweeby-StyledLabel-labelStyles ej5x27r2"
+              for="inspector-text-control-3"
+            >
+              Service date
+            </label>
+            <input
+              class="components-text-control__input"
+              disabled=""
+              id="inspector-text-control-3"
+              type="text"
+              value="Date not submitted"
+            />
+          </div>
+        </div>
+      </div>
     </div>
     <div
-      class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
-    >
-      
-      <div
-        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
-      >
-        <div
-          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-        >
-          <label
-            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
-            for="inspector-text-control-2"
-          >
-            Customer name
-          </label>
-          <input
-            class="components-text-control__input"
-            disabled=""
-            id="inspector-text-control-2"
-            type="text"
-            value="No information submitted"
-          />
-        </div>
-      </div>
-      <div
-        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
-      >
-        <div
-          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-        >
-          <label
-            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
-            for="form-file-upload-base-control-customer_signature"
-          >
-            Customer signature
-          </label>
-          <span
-            class="upload-message"
-          >
-            : Evidence file was not uploaded
-          </span>
-        </div>
-      </div>
-      <div
-        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
-      >
-        <div
-          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-        >
-          <label
-            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
-            for="inspector-text-control-3"
-          >
-            Service date
-          </label>
-          <input
-            class="components-text-control__input"
-            disabled=""
-            id="inspector-text-control-3"
-            type="text"
-            value="Date not submitted"
-          />
-        </div>
-      </div>
-    </div>
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
   </div>
 </div>
 `;
@@ -258,183 +322,230 @@ exports[`Dispute evidence page renders correctly 1`] = `
     class="wcpay-dispute-evidence woocommerce-payments-page is-narrow"
   >
     <div
-      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Card"
     >
       <div
-        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
-      >
-        Challenge dispute
-      </div>
-      <div
-        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+        class="css-mgwsf4-View-Content em57xhy0"
       >
         <div
-          class="wcpay-dispute-info"
+          class="components-flex components-card__header components-card-header css-1e8ifbz-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-large em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardHeader"
+        >
+          Challenge dispute
+        </div>
+        <div
+          class="components-card__body components-card-body css-1nonx1n-View-Body-borderRadius-large em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
         >
           <div
-            class="wcpay-dispute-info-item"
+            class="wcpay-dispute-info"
           >
-            <span
-              class="wcpay-dispute-info-key"
+            <div
+              class="wcpay-dispute-info-item"
             >
-              Dispute date: 
-            </span>
-            <span
-              class="wcpay-dispute-info-value"
+              <span
+                class="wcpay-dispute-info-key"
+              >
+                Dispute date: 
+              </span>
+              <span
+                class="wcpay-dispute-info-value"
+              >
+                Nov 1, 2019
+              </span>
+            </div>
+            <div
+              class="wcpay-dispute-info-item"
             >
-              Nov 1, 2019
-            </span>
-          </div>
-          <div
-            class="wcpay-dispute-info-item"
-          >
-            <span
-              class="wcpay-dispute-info-key"
+              <span
+                class="wcpay-dispute-info-key"
+              >
+                Disputed amount: 
+              </span>
+              <span
+                class="wcpay-dispute-info-value"
+              >
+                $10.00
+              </span>
+            </div>
+            <div
+              class="wcpay-dispute-info-item"
             >
-              Disputed amount: 
-            </span>
-            <span
-              class="wcpay-dispute-info-value"
+              <span
+                class="wcpay-dispute-info-key"
+              >
+                Respond by: 
+              </span>
+              <span
+                class="wcpay-dispute-info-value"
+              >
+                Nov 8, 2019 - 2:46AM
+              </span>
+            </div>
+            <div
+              class="wcpay-dispute-info-item"
             >
-              $10.00
-            </span>
-          </div>
-          <div
-            class="wcpay-dispute-info-item"
-          >
-            <span
-              class="wcpay-dispute-info-key"
+              <span
+                class="wcpay-dispute-info-key"
+              >
+                Reason: 
+              </span>
+              <span
+                class="wcpay-dispute-info-value"
+              >
+                Fraudulent
+              </span>
+            </div>
+            <div
+              class="wcpay-dispute-info-item"
             >
-              Respond by: 
-            </span>
-            <span
-              class="wcpay-dispute-info-value"
-            >
-              Nov 8, 2019 - 2:46AM
-            </span>
-          </div>
-          <div
-            class="wcpay-dispute-info-item"
-          >
-            <span
-              class="wcpay-dispute-info-key"
-            >
-              Reason: 
-            </span>
-            <span
-              class="wcpay-dispute-info-value"
-            >
-              Fraudulent
-            </span>
-          </div>
-          <div
-            class="wcpay-dispute-info-item"
-          >
-            <span
-              class="wcpay-dispute-info-key"
-            >
-              Transaction ID: 
-            </span>
-            <span
-              class="wcpay-dispute-info-value"
-            >
-              <a
-                data-link-type="wc-admin"
-                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
-              />
-            </span>
+              <span
+                class="wcpay-dispute-info-key"
+              >
+                Transaction ID: 
+              </span>
+              <span
+                class="wcpay-dispute-info-value"
+              >
+                <a
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
+                />
+              </span>
+            </div>
           </div>
         </div>
       </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
     </div>
     <div
-      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Card"
     >
       <div
-        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
-      >
-        Product type
-      </div>
-      <div
-        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+        class="css-mgwsf4-View-Content em57xhy0"
       >
         <div
-          class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+          class="components-flex components-card__header components-card-header css-1e8ifbz-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-large em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardHeader"
+        >
+          Product type
+        </div>
+        <div
+          class="components-card__body components-card-body css-1nonx1n-View-Body-borderRadius-large em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
         >
           <div
-            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+            class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
           >
             <div
-              class="components-flex components-select-control e1cr7zh10 css-38uqbv-Flex-Root eboqfv50"
+              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
             >
               <div
-                class="components-flex__item e1cr7zh14 css-d373l0-Item-LabelWrapper eboqfv51"
-              />
-              <div
-                class="components-input-control__container css-1ih9r4d-Container e1cr7zh11"
+                class="components-flex components-select-control em5sgkm7 css-c0mqng-View-Flex-sx-Base-sx-Items-ItemsColumn-Root-rootLabelPositionStyles em57xhy0"
+                data-wp-c16t="true"
+                data-wp-component="Flex"
               >
-                <select
-                  class="components-select-control__input css-1hft3f5-Select e12x0a390"
-                  data-testid="dispute-challenge-product-type-selector"
-                  id="inspector-select-control-0"
-                >
-                  <option
-                    disabled=""
-                    value=""
-                  >
-                    Select one…
-                  </option>
-                  <option
-                    value="physical_product"
-                  >
-                    Physical product
-                  </option>
-                  <option
-                    value="digital_product_or_service"
-                  >
-                    Digital product or service
-                  </option>
-                  <option
-                    value="offline_service"
-                  >
-                    Offline service
-                  </option>
-                  <option
-                    value="multiple"
-                  >
-                    Multiple product types
-                  </option>
-                </select>
-                <span
-                  class="components-input-control__suffix css-1lym30p-Suffix e1cr7zh17"
-                >
-                  <div
-                    class="css-163e8ky-DownArrowWrapper e12x0a391"
-                  >
-                    <svg
-                      aria-hidden="true"
-                      focusable="false"
-                      height="18"
-                      role="img"
-                      viewBox="0 0 24 24"
-                      width="18"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
-                      />
-                    </svg>
-                  </div>
-                </span>
                 <div
-                  aria-hidden="true"
-                  class="components-input-control__backdrop css-96sjau-BackdropUI e1cr7zh15"
+                  class="components-flex-item em5sgkm3 css-1fmchc6-View-Item-sx-Base-LabelWrapper em57xhy0"
+                  data-wp-c16t="true"
+                  data-wp-component="FlexItem"
                 />
+                <div
+                  class="components-input-control__container css-1sy20aj-Container-containerDisabledStyles-containerMarginStyles-containerWidthStyles em5sgkm6"
+                >
+                  <select
+                    class="components-select-control__input css-t4qksx-Select-fontSizeStyles-sizeStyles e1mv6sxx1"
+                    data-testid="dispute-challenge-product-type-selector"
+                    id="inspector-select-control-0"
+                  >
+                    <option
+                      disabled=""
+                      value=""
+                    >
+                      Select one…
+                    </option>
+                    <option
+                      value="physical_product"
+                    >
+                      Physical product
+                    </option>
+                    <option
+                      value="digital_product_or_service"
+                    >
+                      Digital product or service
+                    </option>
+                    <option
+                      value="offline_service"
+                    >
+                      Offline service
+                    </option>
+                    <option
+                      value="multiple"
+                    >
+                      Multiple product types
+                    </option>
+                  </select>
+                  <span
+                    class="components-input-control__suffix css-oobb1x-Suffix em5sgkm0"
+                  >
+                    <div
+                      class="css-1einvap-DownArrowWrapper e1mv6sxx0"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        focusable="false"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        width="18"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                        />
+                      </svg>
+                    </div>
+                  </span>
+                  <div
+                    aria-hidden="true"
+                    class="components-input-control__backdrop css-1gb9p1j-BackdropUI-backdropFocusedStyles em5sgkm2"
+                  />
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
     </div>
   </div>
 </div>
