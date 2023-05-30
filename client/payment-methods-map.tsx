@@ -159,7 +159,7 @@ const PaymentMethodInformationObject: Record<
 	},
 	afterpay_clearpay: {
 		id: 'afterpay_clearpay',
-		label: __( 'Afterpay/Clearpay', 'woocommerce-payments' ),
+		label: __( 'Afterpay / Clearpay', 'woocommerce-payments' ),
 		description: __(
 			'Expand your business with Afterpay/Clearpay',
 			'woocommerce-payments'
