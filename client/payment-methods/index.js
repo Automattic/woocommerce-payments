@@ -120,10 +120,27 @@ const PaymentMethods = () => {
 
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
 
+	const availableNonPayLaterMethods = availablePaymentMethodIds.filter(
+		( id ) =>
+			'link' !== id &&
+			'card' !== id &&
+			! methodsConfiguration[ id ].allows_pay_later
+	);
+
+	const availablePayLaterMethods = availablePaymentMethodIds.filter(
+		( id ) => 'link' !== id && methodsConfiguration[ id ].allows_pay_later
+	);
+
+	const orderedAvailablePaymentMethodIds = [
+		'card',
+		...availablePayLaterMethods,
+		...availableNonPayLaterMethods,
+	];
+
 	// We filter link payment method since this will be displayed in other section (express checkout).
-	const availableMethods = availablePaymentMethodIds
-		.filter( ( id ) => 'link' !== id )
-		.map( ( methodId ) => methodsConfiguration[ methodId ] );
+	const availableMethods = orderedAvailablePaymentMethodIds.map(
+		( methodId ) => methodsConfiguration[ methodId ]
+	);
 
 	const [ activationModalParams, handleActivationModalOpen ] = useState(
 		null
