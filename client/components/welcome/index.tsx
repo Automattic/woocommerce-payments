@@ -67,7 +67,7 @@ const getGreeting = ( name?: string, date: Date = new Date() ): string => {
 };
 
 /**
- * Renders a welcome card header with a greeting, the Woo Payments logo and important notices.
+ * Renders a welcome card header with a greeting and the Woo Payments logo.
  *
  * @return {JSX.Element} Rendered element with the account balances card header.
  */
