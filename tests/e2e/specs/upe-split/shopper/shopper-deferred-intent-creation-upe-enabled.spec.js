@@ -15,7 +15,7 @@ import {
 import { uiUnblocked } from '@woocommerce/e2e-utils/build/page-utils';
 const { shopper, merchant } = require( '@woocommerce/e2e-utils' );
 
-const upeMethodCheckboxes = [
+const UPE_METHOD_CHECKBOXES = [
 	'#inspector-checkbox-control-3', // bancontact
 	'#inspector-checkbox-control-4', // eps
 	'#inspector-checkbox-control-5', // giropay
@@ -28,7 +28,7 @@ describe( 'Enabled enhanced UPE', () => {
 	beforeAll( async () => {
 		await merchant.login();
 		await merchantWCP.activateUPEWithDefferedIntentCreation();
-		await merchantWCP.enablePaymentMethod( upeMethodCheckboxes );
+		await merchantWCP.enablePaymentMethod( UPE_METHOD_CHECKBOXES );
 		await merchant.logout();
 		await shopper.login();
 		await shopperWCP.changeAccountCurrencyTo( 'EUR' );
@@ -38,7 +38,7 @@ describe( 'Enabled enhanced UPE', () => {
 		await shopperWCP.changeAccountCurrencyTo( 'USD' );
 		await shopperWCP.logout();
 		await merchant.login();
-		await merchantWCP.disablePaymentMethod( upeMethodCheckboxes );
+		await merchantWCP.disablePaymentMethod( UPE_METHOD_CHECKBOXES );
 		await merchantWCP.deactivateUPEWithDefferedIntentCreation();
 		await merchant.logout();
 	} );

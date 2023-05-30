@@ -136,6 +136,8 @@ class WC_Payments_Onboarding_Service {
 	 * @param string|null $structure    The currently selected business structure (optional).
 	 *
 	 * @return array
+	 *
+	 * @throws API_Exception
 	 */
 	public function get_required_verification_information( string $country_code, string $type, $structure = null ): array {
 		return $this->payments_api_client->get_onboarding_required_verification_information( $country_code, $type, $structure );
