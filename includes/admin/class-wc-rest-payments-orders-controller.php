@@ -197,7 +197,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				'id'     => $intent->get_id(),
 			];
 
-			$result = $is_intent_captured ? $result_for_captured_intent : $this->gateway->capture_charge( $order, false );
+			$result = $is_intent_captured ? $result_for_captured_intent : $this->gateway->capture_charge( $order, false, $intent_metadata );
 
 			if ( Payment_Intent_Status::SUCCEEDED !== $result['status'] ) {
 				$http_code = $result['http_code'] ?? 502;
@@ -272,7 +272,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 			$this->add_fraud_outcome_manual_entry( $order, 'approve' );
 
-			$result = $this->gateway->capture_charge( $order, false );
+			$result = $this->gateway->capture_charge( $order, false, $intent_metadata );
 
 			if ( Payment_Intent_Status::SUCCEEDED !== $result['status'] ) {
 				return new WP_Error(
