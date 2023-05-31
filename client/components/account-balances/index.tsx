@@ -47,10 +47,7 @@ type BalanceTab = {
  * @return {JSX.Element} Rendered balances panel with tab navigation for each currency.
  */
 const AccountBalances: React.FC = () => {
-	const {
-		overviews,
-		isLoading,
-	} = useAllDepositsOverviews() as AccountOverview.OverviewsResponse;
+	const { overviews, isLoading } = useAllDepositsOverviews();
 	const { selectedCurrency, setSelectedCurrency } = useSelectedCurrency();
 
 	if ( ! isLoading && overviews.currencies.length === 0 ) {
