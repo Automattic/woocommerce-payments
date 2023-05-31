@@ -108,7 +108,7 @@ export const reasons: Record<
 		],
 	},
 	fraudulent: {
-		display: __( 'Fraudulent', 'woocommerce-payments' ),
+		display: __( 'Transaction unauthorized', 'woocommerce-payments' ),
 		overview: [
 			__(
 				'If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next screen.',
@@ -257,7 +257,7 @@ export const reasons: Record<
 				'woocommerce-payments'
 			),
 			__(
-				'If you can not prove the customer’s subscription was canceled, and or they did not follow your cancelation policy, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.',
+				'If you can not prove the customer’s subscription was canceled, and or they did not follow your cancellation policy, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.',
 				'woocommerce-payments'
 			),
 		],
