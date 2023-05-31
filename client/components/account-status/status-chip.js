@@ -17,6 +17,7 @@ const StatusChip = ( props ) => {
 	let description = __( 'Unknown', 'woocommerce-payments' );
 	let type = 'light';
 	let tooltip = '';
+	// TODO support Pending for PO accounts.
 	if ( 'complete' === accountStatus ) {
 		description = __( 'Complete', 'woocommerce-payments' );
 		type = 'primary';
