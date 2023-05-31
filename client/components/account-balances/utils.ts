@@ -1,12 +1,7 @@
 /**
  * External dependencies
  */
-import { sprintf } from '@wordpress/i18n';
-
-/**
- * Internal dependencies
- */
-import { currencyBalanceString } from './strings';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Generates a currency tab title.
@@ -16,8 +11,8 @@ import { currencyBalanceString } from './strings';
  */
 export const getCurrencyTabTitle = ( currencyCode: string ): string => {
 	return sprintf(
-		// string format: {currency} balance
-		currencyBalanceString,
+		/** translators: %s is the currency code, e.g. USD. */
+		__( '%s Balance', 'woocommerce-payments' ),
 		currencyCode.toUpperCase()
 	);
 };
