@@ -20,7 +20,7 @@ import wcpayTracks from 'tracks';
 import './style.scss';
 
 /**
- * BalanceTab
+ * BalanceTabProps
  *
  * @typedef {Object} BalanceTab
  *
@@ -31,7 +31,7 @@ import './style.scss';
  * @param {number} pendingFunds   Pending funds of the tab.
  * @param {number} delayDays	  The account's pending period in days.
  */
-type BalanceTab = {
+type BalanceTabProps = {
 	name: string;
 	title: string;
 	currencyCode: string;
@@ -54,7 +54,7 @@ const AccountBalances: React.FC = () => {
 		return null;
 	}
 
-	const onTabSelect = ( tabName: BalanceTab[ 'name' ] ) => {
+	const onTabSelect = ( tabName: BalanceTabProps[ 'name' ] ) => {
 		setSelectedCurrency( tabName );
 		wcpayTracks.recordEvent(
 			wcpayTracks.events.OVERVIEW_BALANCES_CURRENCY_CLICK,
@@ -66,7 +66,7 @@ const AccountBalances: React.FC = () => {
 
 	if ( isLoading ) {
 		// While the data is loading, we show a loading currency tab.
-		const loadingTabs: BalanceTab[] = [
+		const loadingTabs: BalanceTabProps[] = [
 			{
 				name: 'loading',
 				title: getCurrencyTabTitle(
@@ -80,7 +80,7 @@ const AccountBalances: React.FC = () => {
 		];
 		return (
 			<TabPanel tabs={ loadingTabs }>
-				{ ( tab: BalanceTab ) => (
+				{ ( tab: BalanceTabProps ) => (
 					<Flex
 						gap={ 0 }
 						className="wcpay-account-balances__balances"
@@ -132,7 +132,7 @@ const AccountBalances: React.FC = () => {
 				isSelectedCurrencyValid ? selectedCurrency : undefined
 			}
 		>
-			{ ( tab: BalanceTab ) => (
+			{ ( tab: BalanceTabProps ) => (
 				<>
 					<Flex
 						gap={ 0 }
