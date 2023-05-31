@@ -29,7 +29,7 @@
       "automattic/jetpack-sync": "1.30.5",
       "automattic/jetpack-tracking": "1.14.5",
       "myclabs/php-enum": "1.7.7",
-      "woocommerce/subscriptions-core": "dev-test/shendy-merge-upstream"
+      "woocommerce/subscriptions-core": "dev-trunk"
     },
     "require-dev": {
       "composer/installers": "1.10.0",
@@ -93,7 +93,7 @@
     "repositories": [
       {
         "type": "vcs",
-        "url": "https://github.com/automattic/woocommerce-subscriptions-core-private.git"
+        "url": "https://github.com/automattic/woocommerce-subscriptions-core.git"
       }
     ]
 }
