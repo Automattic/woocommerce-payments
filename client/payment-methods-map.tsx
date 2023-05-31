@@ -159,7 +159,7 @@ const PaymentMethodInformationObject: Record<
 		id: 'affirm',
 		label: __( 'Affirm', 'woocommerce-payments' ),
 		description: __(
-			'Expand your business with Affirm.',
+			'Expand your business with Affirm',
 			'woocommerce-payments'
 		),
 		icon: iconComponent( AffirmIcon, 'Affirm' ),
@@ -172,7 +172,7 @@ const PaymentMethodInformationObject: Record<
 		id: 'afterpay_clearpay',
 		label: __( 'Afterpay / Clearpay', 'woocommerce-payments' ),
 		description: __(
-			'Expand your business with Afterpay / Clearpay. <a>Learn more</a>',
+			'Expand your business with Afterpay / Clearpay',
 			'woocommerce-payments'
 		),
 		icon: iconComponent( AfterpayIcon, 'Afterpay/Clearpay' ),
