@@ -248,7 +248,7 @@ exports[`Dispute details screen renders correctly for charge_refunded dispute st
             <span
               class="wcpay-dispute-info-value"
             >
-              Fraudulent
+              Transaction unauthorized
             </span>
           </div>
           <div
@@ -305,7 +305,7 @@ exports[`Dispute details screen renders correctly for charge_refunded dispute st
       <div
         class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
-        Dispute: Fraudulent
+        Dispute: Transaction unauthorized
       </div>
       <div
         class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
@@ -1334,7 +1334,7 @@ exports[`Dispute details screen renders correctly for fraudulent dispute 1`] = `
             <span
               class="wcpay-dispute-info-value"
             >
-              Fraudulent
+              Transaction unauthorized
             </span>
           </div>
           <div
@@ -1406,7 +1406,7 @@ exports[`Dispute details screen renders correctly for fraudulent dispute 1`] = `
       <div
         class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
-        Dispute: Fraudulent
+        Dispute: Transaction unauthorized
       </div>
       <div
         class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
@@ -2055,7 +2055,7 @@ exports[`Dispute details screen renders correctly for lost dispute status 1`] = 
             <span
               class="wcpay-dispute-info-value"
             >
-              Fraudulent
+              Transaction unauthorized
             </span>
           </div>
           <div
@@ -2112,7 +2112,7 @@ exports[`Dispute details screen renders correctly for lost dispute status 1`] = 
       <div
         class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
-        Dispute: Fraudulent
+        Dispute: Transaction unauthorized
       </div>
       <div
         class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
@@ -2226,7 +2226,7 @@ exports[`Dispute details screen renders correctly for needs_response dispute sta
             <span
               class="wcpay-dispute-info-value"
             >
-              Fraudulent
+              Transaction unauthorized
             </span>
           </div>
           <div
@@ -2298,7 +2298,7 @@ exports[`Dispute details screen renders correctly for needs_response dispute sta
       <div
         class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
-        Dispute: Fraudulent
+        Dispute: Transaction unauthorized
       </div>
       <div
         class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
@@ -2876,7 +2876,7 @@ exports[`Dispute details screen renders correctly for subscription_canceled disp
           If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next screen.
         </p>
         <p>
-          If you can not prove the customer’s subscription was canceled, and or they did not follow your cancelation policy, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.
+          If you can not prove the customer’s subscription was canceled, and or they did not follow your cancellation policy, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.
         </p>
       </div>
       <div
@@ -3033,7 +3033,7 @@ exports[`Dispute details screen renders correctly for under_review dispute statu
             <span
               class="wcpay-dispute-info-value"
             >
-              Fraudulent
+              Transaction unauthorized
             </span>
           </div>
           <div
@@ -3090,7 +3090,7 @@ exports[`Dispute details screen renders correctly for under_review dispute statu
       <div
         class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
-        Dispute: Fraudulent
+        Dispute: Transaction unauthorized
       </div>
       <div
         class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
@@ -3402,7 +3402,7 @@ exports[`Dispute details screen renders correctly for warning_closed dispute sta
             <span
               class="wcpay-dispute-info-value"
             >
-              Fraudulent
+              Transaction unauthorized
             </span>
           </div>
           <div
@@ -3459,7 +3459,7 @@ exports[`Dispute details screen renders correctly for warning_closed dispute sta
       <div
         class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
-        Dispute: Fraudulent
+        Dispute: Transaction unauthorized
       </div>
       <div
         class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
@@ -3573,7 +3573,7 @@ exports[`Dispute details screen renders correctly for warning_needs_response dis
             <span
               class="wcpay-dispute-info-value"
             >
-              Fraudulent
+              Transaction unauthorized
             </span>
           </div>
           <div
@@ -3645,7 +3645,7 @@ exports[`Dispute details screen renders correctly for warning_needs_response dis
       <div
         class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
-        Dispute: Fraudulent
+        Dispute: Transaction unauthorized
       </div>
       <div
         class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
@@ -3774,7 +3774,7 @@ exports[`Dispute details screen renders correctly for warning_under_review dispu
             <span
               class="wcpay-dispute-info-value"
             >
-              Fraudulent
+              Transaction unauthorized
             </span>
           </div>
           <div
@@ -3831,7 +3831,7 @@ exports[`Dispute details screen renders correctly for warning_under_review dispu
       <div
         class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
-        Dispute: Fraudulent
+        Dispute: Transaction unauthorized
       </div>
       <div
         class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
@@ -3945,7 +3945,7 @@ exports[`Dispute details screen renders correctly for won dispute status 1`] = `
             <span
               class="wcpay-dispute-info-value"
             >
-              Fraudulent
+              Transaction unauthorized
             </span>
           </div>
           <div
@@ -4002,7 +4002,7 @@ exports[`Dispute details screen renders correctly for won dispute status 1`] = `
       <div
         class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
-        Dispute: Fraudulent
+        Dispute: Transaction unauthorized
       </div>
       <div
         class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"

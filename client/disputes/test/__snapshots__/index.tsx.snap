@@ -429,7 +429,7 @@ exports[`Disputes list renders correctly 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
                     tabindex="-1"
                   >
-                    Fraudulent
+                    Transaction unauthorized
                   </a>
                 </td>
                 <td
