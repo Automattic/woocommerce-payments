@@ -534,7 +534,6 @@ class WC_Payments_Webhook_Processing_Service {
 		$amount   = wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount_raw, $currency ), [ 'currency' => strtoupper( $currency ) ] );
 
 		// Convert due_by to a date string in the store timezone.
-		// Need to confirm this is in the correct timezone.
 		$due_by = date_i18n( wc_date_format(), $due_by );
 
 		if ( ! $order ) {
