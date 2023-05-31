@@ -1689,7 +1689,9 @@ class WC_Payments_API_Client {
 				'woo_store_stats' => $woo_store_stats,
 			],
 			self::ONBOARDING_API . '/router/po_eligible',
-			self::POST
+			self::POST,
+			true,
+			true
 		);
 	}
 
