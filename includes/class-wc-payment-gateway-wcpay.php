@@ -2495,6 +2495,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$error_message = $e->getMessage();
 				$http_code     = $e->get_http_code();
 
+				$request = Get_Intention::create( $intent_id );
 				// Fetch the Intent to check if it's already expired and the site missed the "charge.expired" webhook.
 				$intent = $request->send( 'wcpay_get_intent_request', $order );
 

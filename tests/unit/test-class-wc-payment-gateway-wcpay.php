@@ -815,12 +815,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_CAPTURE ] );
 
-		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
-
-		$request->expects( $this->once() )
-			->method( 'format_response' )
-			->willReturn( $mock_intent );
-
 		$update_intent_request = $this->mock_wcpay_request( Update_Intention::class, 1, $intent_id );
 		$update_intent_request->expects( $this->once() )
 			->method( 'set_metadata' )
@@ -889,12 +883,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
-
-		$request->expects( $this->once() )
-			->method( 'format_response' )
-			->willReturn( $mock_intent );
-
 		$update_intent_request = $this->mock_wcpay_request( Update_Intention::class, 1, $intent_id );
 		$update_intent_request->expects( $this->once() )
 			->method( 'set_metadata' );
@@ -958,12 +946,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_CAPTURE ] );
 
-		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
-
-		$request->expects( $this->once() )
-			->method( 'format_response' )
-			->willReturn( $mock_intent );
-
 		$update_intent_request = $this->mock_wcpay_request( Update_Intention::class, 1, $intent_id );
 		$update_intent_request->expects( $this->once() )
 			->method( 'set_metadata' );
@@ -1025,12 +1007,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
-
-		$request->expects( $this->once() )
-			->method( 'format_response' )
-			->willReturn( $mock_intent );
-
 		$update_intent_request = $this->mock_wcpay_request( Update_Intention::class, 1, $intent_id );
 		$update_intent_request->expects( $this->once() )
 			->method( 'set_metadata' );
@@ -1088,9 +1064,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_CAPTURE ] );
 
-		$request = $this->mock_wcpay_request( Get_Intention::class, 2, $intent_id );
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
 
-		$request->expects( $this->exactly( 2 ) )
+		$request->expects( $this->exactly( 1 ) )
 			->method( 'format_response' )
 			->willReturn( $mock_intent );
 
@@ -1156,9 +1132,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$request = $this->mock_wcpay_request( Get_Intention::class, 2, $intent_id );
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
 
-		$request->expects( $this->exactly( 2 ) )
+		$request->expects( $this->exactly( 1 ) )
 			->method( 'format_response' )
 			->willReturn( $mock_intent );
 
@@ -1225,9 +1201,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::CANCELED ] );
 
-		$request = $this->mock_wcpay_request( Get_Intention::class, 2, $intent_id );
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
 
-		$request->expects( $this->exactly( 2 ) )
+		$request->expects( $this->exactly( 1 ) )
 			->method( 'format_response' )
 			->willReturn( $mock_intent );
 
@@ -1304,12 +1280,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			'payment_type'   => Payment_Type::SINGLE(),
 		];
 
-		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
-
-		$request->expects( $this->once() )
-			->method( 'format_response' )
-			->willReturn( $mock_intent );
-
 		$update_intent_request = $this->mock_wcpay_request( Update_Intention::class, 1, $intent_id );
 		$update_intent_request->expects( $this->once() )
 			->method( 'set_metadata' )
@@ -1329,7 +1299,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'get_account_country' )
 			->willReturn( 'US' );
 
-		$result = $this->wcpay_gateway->capture_charge( $order );
+		$result = $this->wcpay_gateway->capture_charge( $order, true, $merged_metadata );
 
 		$note = wc_get_order_notes(
 			[
@@ -1366,12 +1336,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->update_status( Order_Status::ON_HOLD );
 
 		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_CAPTURE ] );
-
-		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
-
-		$request->expects( $this->once() )
-			->method( 'format_response' )
-			->willReturn( $mock_intent );
 
 		$update_intent_request = $this->mock_wcpay_request( Update_Intention::class, 1, $intent_id );
 		$update_intent_request->expects( $this->once() )
