@@ -65,8 +65,7 @@
       },
       "installer-disable": true,
       "production-dependencies-guard": [
-        "check-lock-file",
-        "check-abandoned"
+        "check-lock-file"
       ],
       "composer-exit-on-patch-failure": true,
       "patches": {
