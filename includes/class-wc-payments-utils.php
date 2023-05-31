@@ -699,6 +699,26 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Check to see if the current user is in progressive onboarding experiment treatment mode.
+	 *
+	 * @return bool
+	 */
+	public static function is_in_progressive_onboarding_treatment_mode(): bool {
+		if ( ! isset( $_COOKIE['tk_ai'] ) ) {
+			return false;
+		}
+
+		$abtest = new \WCPay\Experimental_Abtest(
+			sanitize_text_field( wp_unslash( $_COOKIE['tk_ai'] ) ),
+			'woocommerce',
+			'yes' === get_option( 'woocommerce_allow_tracking' )
+		);
+
+		return 'treatment' === $abtest->get_variation( 'woocommerce_payments_onboarding_progressive_express_2023_v1' )
+			|| 'treatment' === $abtest->get_variation( 'woocommerce_payments_onboarding_progressive_express_2023_v2' );
+	}
+
+	/**
 	 * Return the currency format based on the symbol position.
 	 * Similar to get_woocommerce_price_format but with an input.
 	 *
