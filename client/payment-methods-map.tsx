@@ -3,7 +3,6 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -159,21 +158,9 @@ const PaymentMethodInformationObject: Record<
 	affirm: {
 		id: 'affirm',
 		label: __( 'Affirm', 'woocommerce-payments' ),
-		description: createInterpolateElement(
-			__(
-				'Expand your business with Affirm. <a>Learn more</a>',
-				'woocommerce-payments'
-			),
-			{
-				a: (
-					// eslint-disable-next-line jsx-a11y/anchor-has-content
-					<a
-						href="#add-affirm-link-here" // TODO: Add link to docs once available.
-						target="_blank"
-						rel="noopener noreferrer"
-					/>
-				),
-			}
+		description: __(
+			'Expand your business with Affirm.',
+			'woocommerce-payments'
 		),
 		icon: iconComponent( AffirmIcon, 'Affirm' ),
 		currencies: [ 'USD', 'CAD' ],
@@ -184,21 +171,9 @@ const PaymentMethodInformationObject: Record<
 	afterpay_clearpay: {
 		id: 'afterpay_clearpay',
 		label: __( 'Afterpay / Clearpay', 'woocommerce-payments' ),
-		description: createInterpolateElement(
-			__(
-				'Expand your business with Afterpay / Clearpay. <a>Learn more</a>',
-				'woocommerce-payments'
-			),
-			{
-				a: (
-					// eslint-disable-next-line jsx-a11y/anchor-has-content
-					<a
-						href="#add-afterpay-link-here" // TODO: Add link to docs once available.
-						target="_blank"
-						rel="noopener noreferrer"
-					/>
-				),
-			}
+		description: __(
+			'Expand your business with Afterpay / Clearpay. <a>Learn more</a>',
+			'woocommerce-payments'
 		),
 		icon: iconComponent( AfterpayIcon, 'Afterpay/Clearpay' ),
 		currencies: [ 'USD', 'AUD', 'CAD', 'NZD', 'GBP', 'EUR' ],
