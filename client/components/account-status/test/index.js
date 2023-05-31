@@ -119,12 +119,31 @@ describe( 'StatusChip', () => {
 		expect( statusChip ).toMatchSnapshot();
 	} );
 
+	test( 'renders pending verification status for po', () => {
+		const { container: statusChip } = renderStatusChip(
+			'pending_verification',
+			true,
+			false
+		);
+		expect( statusChip ).toMatchSnapshot();
+	} );
+
 	test( 'renders unknown status', () => {
 		const { container: statusChip } = renderStatusChip( 'foobar' );
 		expect( statusChip ).toMatchSnapshot();
 	} );
 
-	function renderStatusChip( accountStatus ) {
-		return render( <StatusChip accountStatus={ accountStatus } /> );
+	function renderStatusChip(
+		accountStatus,
+		poEnabled = false,
+		poComplete = false
+	) {
+		return render(
+			<StatusChip
+				accountStatus={ accountStatus }
+				poEnabled={ poEnabled }
+				poComplete={ poComplete }
+			/>
+		);
 	}
 } );
