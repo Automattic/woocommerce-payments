@@ -26,7 +26,7 @@ const iconComponent = ( src: string, alt: string ): ReactImgFuncComponent => (
 export interface PaymentMethodMapEntry {
 	id: string;
 	label: string;
-	description: string | React.ReactNode;
+	description: string;
 	icon: ReactImgFuncComponent;
 	currencies: string[];
 	stripe_key: string;
