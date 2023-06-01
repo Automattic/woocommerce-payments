@@ -15,6 +15,7 @@ use WCPay\Payment\Payment_Method\Payment_Method;
 use WC_Order;
 use WC_Payments;
 use WCPay\Payment\Strategy\Strategy;
+use WCPay\Payment\State\Prepared_State;
 use WCPay\Payment\Storage\Storage_Interface;
 use WCPay\Payment\Payment_Method\Payment_Method_Factory;
 
@@ -307,9 +308,14 @@ class Payment {
 	 *
 	 * @param Payment_Method $payment_method         Payment method to use for the payment.
 	 * @param string         $fraud_prevention_token Verification token to prevent fraud.
-	 * @throws Exception In case the payment has already been verified or is not ready for verification.
+	 * @throws Exception      In case the payment has already been verified or is not ready for verification.
 	 */
 	public function verify( Payment_Method $payment_method = null, string $fraud_prevention_token ) {
+		// This method is only implemented by `Prepared_State`.
+		if ( ! $this->state instanceof Prepared_State ) {
+			return; // Could be an exception.
+		}
+
 		return $this->state->verify( $payment_method, $fraud_prevention_token );
 	}
 
