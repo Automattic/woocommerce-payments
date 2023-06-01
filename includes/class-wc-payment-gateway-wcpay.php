@@ -428,9 +428,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			add_action( 'wp_ajax_update_order_status', [ $this, 'update_order_status' ] );
 			add_action( 'wp_ajax_nopriv_update_order_status', [ $this, 'update_order_status' ] );
 
-			add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
-			add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts_for_zero_order_total' ], 11 );
-
 			add_action( 'wp_ajax_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
 			add_action( 'wp_ajax_nopriv_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
 
@@ -605,61 +602,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			<div id="wcpay-account-settings-container"></div>
 			<?php
 		endif;
-	}
-
-	/**
-	 * Registers all scripts, necessary for the gateway.
-	 */
-	public function register_scripts() {
-		// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
-		// loaded twice in the event a site has both plugins enabled. We still run the risk of different plugins
-		// loading different versions however. If Stripe release a v4 of their JavaScript, we could consider
-		// changing the ID to stripe_v4. This would allow older plugins to keep using v3 while we used any new
-		// feature in v4. Stripe have allowed loading of 2 different versions of stripe.js in the past (
-		// https://stripe.com/docs/stripe-js/elements/migrating).
-		wp_register_script(
-			'stripe',
-			'https://js.stripe.com/v3/',
-			[],
-			'3.0',
-			true
-		);
-
-		$script_dependencies = [ 'stripe', 'wc-checkout' ];
-
-		if ( $this->supports( 'tokenization' ) ) {
-			$script_dependencies[] = 'woocommerce-tokenization-form';
-		}
-		WC_Payments::register_script_with_dependencies( 'WCPAY_CHECKOUT', 'dist/checkout', $script_dependencies );
-		wp_set_script_translations( 'WCPAY_CHECKOUT', 'woocommerce-payments' );
-
-	}
-
-	/**
-	 * Registers scripts necessary for the gateway, even when cart order total is 0.
-	 * This is done so that if the cart is modified via AJAX on checkout,
-	 * the scripts are still loaded.
-	 */
-	public function register_scripts_for_zero_order_total() {
-		if (
-			isset( WC()->cart ) &&
-			! WC()->cart->is_empty() &&
-			! WC()->cart->needs_payment() &&
-			is_checkout() &&
-			! has_block( 'woocommerce/checkout' )
-		) {
-			WC_Payments::get_gateway()->tokenization_script();
-			$script_handle = 'WCPAY_CHECKOUT';
-			$js_object     = 'wcpayConfig';
-			if ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
-				$script_handle = 'wcpay-upe-checkout';
-				$js_object     = 'wcpay_upe_config';
-			} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
-				$script_handle = 'wcpay-upe-checkout';
-			}
-			wp_localize_script( $script_handle, $js_object, WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() );
-			wp_enqueue_script( $script_handle );
-		}
 	}
 
 	/**
