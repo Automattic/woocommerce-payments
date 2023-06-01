@@ -850,20 +850,28 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	public function test_mark_payment_dispute_created() {
 		// Arrange: Set the dispute_id and reason, and the order status.
 		$dispute_id   = 'dp_123';
+		$amount       = '$123.45';
 		$reason       = 'product_not_received';
+		$deadline     = 'June 7, 2023';
 		$order_status = Order_Status::ON_HOLD;
 
 		// Act: Attempt to mark payment dispute created.
-		$this->order_service->mark_payment_dispute_created( $this->order, $dispute_id, $reason );
+		$this->order_service->mark_payment_dispute_created( $this->order, $dispute_id, $amount, $reason, $deadline );
 
 		// Assert: Check that the order status was updated to on-hold status.
 		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
 
-		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+
+		// Assert: Check that dispute order note was added with relevant info and link to dispute detail.
+		$this->assertStringContainsString( 'Payment has been disputed', $notes[0]->content );
+		$this->assertStringContainsString( $amount, $notes[0]->content );
+		$this->assertStringContainsString( $reason, $notes[0]->content );
+		$this->assertStringContainsString( $deadline, $notes[0]->content );
+		$this->assertStringContainsString( '/payments/disputes/details&id=dp_123" target="_blank" rel="noopener noreferrer">Response due by', $notes[0]->content );
+
+		// Assert: Check that order status change note was added.
 		$this->assertStringContainsString( 'Pending payment to On hold', $notes[1]->content );
-		$this->assertStringContainsString( 'Payment has been disputed as product_not_received', $notes[0]->content );
-		$this->assertStringContainsString( '/payments/disputes/details&id=dp_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
 
 		// Assert: Applying the same data multiple times does not cause duplicate actions.
 		$this->order_service->mark_payment_dispute_created( $this->order, $dispute_id, $reason );
