@@ -30,6 +30,7 @@ import {
 
 import useIsUpeEnabled from '../settings/wcpay-upe-toggle/hook.js';
 import WcPayUpeContext from '../settings/wcpay-upe-toggle/context';
+import PAYMENT_METHOD_IDS from './constants';
 
 // Survey modal imports.
 import WcPaySurveyContextProvider from '../settings/survey-modal/provider';
@@ -124,17 +125,19 @@ const PaymentMethods = () => {
 	// We further split the available methods into pay later and non-pay later methods to sort them in the required order later.
 	const availableNonPayLaterMethods = availablePaymentMethodIds.filter(
 		( id ) =>
-			'link' !== id &&
-			'card' !== id &&
+			PAYMENT_METHOD_IDS.LINK !== id &&
+			PAYMENT_METHOD_IDS.CARD !== id &&
 			! methodsConfiguration[ id ].allows_pay_later
 	);
 
 	const availablePayLaterMethods = availablePaymentMethodIds.filter(
-		( id ) => 'link' !== id && methodsConfiguration[ id ].allows_pay_later
+		( id ) =>
+			PAYMENT_METHOD_IDS.LINK !== id &&
+			methodsConfiguration[ id ].allows_pay_later
 	);
 
 	const orderedAvailablePaymentMethodIds = [
-		'card',
+		PAYMENT_METHOD_IDS.CARD,
 		...availablePayLaterMethods,
 		...availableNonPayLaterMethods,
 	];
@@ -287,8 +290,14 @@ const PaymentMethods = () => {
 												.status
 									}
 									// The card payment method is required when UPE is active, and it can't be disabled/unchecked.
-									required={ 'card' === id && isUpeEnabled }
-									locked={ 'card' === id && isUpeEnabled }
+									required={
+										PAYMENT_METHOD_IDS.CARD === id &&
+										isUpeEnabled
+									}
+									locked={
+										PAYMENT_METHOD_IDS.CARD === id &&
+										isUpeEnabled
+									}
 									Icon={ Icon }
 									status={
 										getStatusAndRequirements( id ).status
