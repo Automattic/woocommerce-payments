@@ -6,13 +6,19 @@
 import { __ } from '@wordpress/i18n';
 import GridiconCheckmarkCircle from 'gridicons/dist/checkmark-circle';
 import GridiconNotice from 'gridicons/dist/notice';
+import React from 'react';
 
 /**
  * Internal dependencies
  */
 import 'components/account-status/shared.scss';
+import type { AccountStatus } from 'wcpay/types/account/account-status';
 
-const PaymentsStatusEnabled = ( props ) => {
+interface PaymentsStatusProps {
+	iconSize: number;
+}
+
+const PaymentsStatusEnabled: React.FC< PaymentsStatusProps > = ( props ) => {
 	const { iconSize } = props;
 
 	return (
@@ -23,7 +29,7 @@ const PaymentsStatusEnabled = ( props ) => {
 	);
 };
 
-const PaymentsStatusDisabled = ( props ) => {
+const PaymentsStatusDisabled: React.FC< PaymentsStatusProps > = ( props ) => {
 	const { iconSize } = props;
 
 	return (
@@ -34,7 +40,7 @@ const PaymentsStatusDisabled = ( props ) => {
 	);
 };
 
-const PaymentsStatusPending = ( props ) => {
+const PaymentsStatusPending: React.FC< PaymentsStatusProps > = ( props ) => {
 	const { iconSize } = props;
 
 	return (
@@ -45,16 +51,22 @@ const PaymentsStatusPending = ( props ) => {
 	);
 };
 
-const PaymentsStatus = ( props ) => {
+interface Props {
+	paymentsEnabled: string;
+	accountStatus: AccountStatus;
+	iconSize: number;
+}
+
+const PaymentsStatus: React.FC< Props > = ( props ) => {
 	const { paymentsEnabled, accountStatus } = props;
 
 	if ( 'pending_verification' === accountStatus ) {
-		return <PaymentsStatusPending { ...props } />;
+		return <PaymentsStatusPending iconSize={ props.iconSize } />;
 	}
 	return paymentsEnabled ? (
-		<PaymentsStatusEnabled { ...props } />
+		<PaymentsStatusEnabled iconSize={ props.iconSize } />
 	) : (
-		<PaymentsStatusDisabled { ...props } />
+		<PaymentsStatusDisabled iconSize={ props.iconSize } />
 	);
 };
 
