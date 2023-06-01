@@ -271,6 +271,13 @@ class WC_Payments {
 	private static $customer_service_api;
 
 	/**
+	 * Duplicate payment prevention service.
+	 *
+	 * @var WC_Payments_Duplicate_Payment_Prevention_Service
+	 */
+	private static $duplicate_payment_prevention_service;
+
+	/**
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
@@ -421,6 +428,7 @@ class WC_Payments {
 		include_once __DIR__ . '/woopay/class-woopay-store-api-session-handler.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-link.php';
 		include_once __DIR__ . '/core/service/class-wc-payments-customer-service-api.php';
+		include_once __DIR__ . '/class-wc-payments-duplicate-payment-prevention-service.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
@@ -442,20 +450,21 @@ class WC_Payments {
 		// Load woopay tracking.
 		include_once WCPAY_ABSPATH . 'includes/class-woopay-tracker.php';
 
-		self::$order_service                       = new WC_Payments_Order_Service( self::$api_client );
-		self::$action_scheduler_service            = new WC_Payments_Action_Scheduler_Service( self::$api_client, self::$order_service );
-		self::$account                             = new WC_Payments_Account( self::$api_client, self::$database_cache, self::$action_scheduler_service );
-		self::$customer_service                    = new WC_Payments_Customer_Service( self::$api_client, self::$account, self::$database_cache );
-		self::$token_service                       = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
-		self::$remote_note_service                 = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
-		self::$fraud_service                       = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
-		self::$in_person_payments_receipts_service = new WC_Payments_In_Person_Payments_Receipts_Service();
-		self::$localization_service                = new WC_Payments_Localization_Service();
-		self::$failed_transaction_rate_limiter     = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
-		self::$order_success_page                  = new WC_Payments_Order_Success_Page();
-		self::$onboarding_service                  = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
-		self::$woopay_util                         = new WooPay_Utilities();
-		self::$woopay_tracker                      = new WooPay_Tracker( self::get_wc_payments_http() );
+		self::$order_service                        = new WC_Payments_Order_Service( self::$api_client );
+		self::$action_scheduler_service             = new WC_Payments_Action_Scheduler_Service( self::$api_client, self::$order_service );
+		self::$account                              = new WC_Payments_Account( self::$api_client, self::$database_cache, self::$action_scheduler_service );
+		self::$customer_service                     = new WC_Payments_Customer_Service( self::$api_client, self::$account, self::$database_cache );
+		self::$token_service                        = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
+		self::$remote_note_service                  = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
+		self::$fraud_service                        = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
+		self::$in_person_payments_receipts_service  = new WC_Payments_In_Person_Payments_Receipts_Service();
+		self::$localization_service                 = new WC_Payments_Localization_Service();
+		self::$failed_transaction_rate_limiter      = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
+		self::$order_success_page                   = new WC_Payments_Order_Success_Page();
+		self::$onboarding_service                   = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
+		self::$woopay_util                          = new WooPay_Utilities();
+		self::$woopay_tracker                       = new WooPay_Tracker( self::get_wc_payments_http() );
+		self::$duplicate_payment_prevention_service = new WC_Payments_Duplicate_Payment_Prevention_Service();
 
 		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
 
