@@ -245,6 +245,25 @@ exports[`StatusChip renders pending verification status 1`] = `
 </div>
 `;
 
+exports[`StatusChip renders pending verification status for po 1`] = `
+<div>
+  <button
+    class="wcpay-tooltip__content-wrapper"
+    type="button"
+  >
+    <div
+      class="wcpay-tooltip__content-wrapper"
+    >
+      <span
+        class="chip chip-light is-compact"
+      >
+        Pending
+      </span>
+    </div>
+  </button>
+</div>
+`;
+
 exports[`StatusChip renders rejected status 1`] = `
 <div>
   <span

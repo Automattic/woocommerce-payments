@@ -440,7 +440,7 @@ jQuery( ( $ ) => {
 
 		getElements: () => {
 			return $(
-				'#wcpay-payment-request-wrapper,#wcpay-payment-request-button-separator'
+				'.wcpay-payment-request-wrapper,#wcpay-payment-request-button-separator'
 			);
 		},
 
