@@ -874,7 +874,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( 'Pending payment to On hold', $notes[1]->content );
 
 		// Assert: Applying the same data multiple times does not cause duplicate actions.
-		$this->order_service->mark_payment_dispute_created( $this->order, $dispute_id, $reason );
+		$this->order_service->mark_payment_dispute_created( $this->order, $dispute_id, $amount, $reason, $deadline );
 		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertCount( 2, $notes_2 );
 	}
@@ -884,13 +884,16 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_dispute_created_exits_if_order_invalid() {
 		// Arrange: Set the dispute_id and reason, and the order status.
-		$dispute_id     = 'dp_123';
-		$reason         = 'product_not_received';
+		$dispute_id = 'dp_123';
+		$amount     = '$123.45';
+		$reason     = 'product_not_received';
+		$deadline   = 'June 7, 2023';
+
 		$order_status   = $this->order->get_status();
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Act: Attempt to mark payment dispute created.
-		$this->order_service->mark_payment_dispute_created( 'fake_order', $dispute_id, $reason );
+		$this->order_service->mark_payment_dispute_created( 'fake_order', $dispute_id, $amount, $reason, $deadline );
 
 		// Assert: Check that the order status was not updated.
 		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
