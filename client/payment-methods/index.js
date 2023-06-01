@@ -77,10 +77,14 @@ const UpeSetupBanner = () => {
 		} );
 	};
 
-	let card;
-	if ( wcpaySettings.isBnplAffirmAfterpayEnabled ) {
-		card = (
-			<CardBody className="payment-methods__upe-methods">
+	return (
+		<>
+			<CardDivider />
+			<CardBody
+				className={ classNames( 'payment-methods__upe-methods', {
+					'background-local-payment-methods': ! wcpaySettings.isBnplAffirmAfterpayEnabled,
+				} ) }
+			>
 				<h3>
 					{ __(
 						'Boost your sales by accepting additional payment methods',
@@ -109,45 +113,6 @@ const UpeSetupBanner = () => {
 					</ExternalLink>
 				</div>
 			</CardBody>
-		);
-	} else {
-		card = (
-			<CardBody className="payment-methods__express-checkouts">
-				<h3>
-					{ __(
-						'Enable the new WooCommerce Payments checkout experience',
-						'woocommerce-payments'
-					) }
-				</h3>
-				<p>
-					{ __(
-						/* eslint-disable-next-line max-len */
-						'Get access to additional payment methods and an improved checkout experience.',
-						'woocommerce-payments'
-					) }
-				</p>
-
-				<div className="payment-methods__express-checkouts-actions">
-					<span className="payment-methods__express-checkouts-get-started">
-						<Button isPrimary onClick={ handleEnableUpeClick }>
-							{ __(
-								'Enable in your store',
-								'woocommerce-payments'
-							) }
-						</Button>
-					</span>
-					<ExternalLink href="https://woocommerce.com/document/payments/additional-payment-methods/">
-						{ __( 'Learn more', 'woocommerce-payments' ) }
-					</ExternalLink>
-				</div>
-			</CardBody>
-		);
-	}
-
-	return (
-		<>
-			<CardDivider />
-			{ card }
 		</>
 	);
 };

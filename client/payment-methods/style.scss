@@ -63,6 +63,10 @@
 	&__upe-methods {
 		background: url( 'assets/images/payment-methods/all_local_payments.svg?asset' )
 			no-repeat right;
+		&.background-local-payment-methods {
+			background: url( 'assets/images/payment-methods/local_payments.svg?asset' )
+				no-repeat right;
+		}
 		background-size: auto;
 		margin-right: 10px;
 
