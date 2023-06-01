@@ -293,31 +293,34 @@ const AddPaymentMethodsTask = () => {
 							</LoadableSettingsSection>
 						</LoadableBlock>
 					</CardBody>
-					{ 0 < buyNowPayLaterUpeMethods.length && (
-						<>
-							<CardDivider />
-							<CardBody>
-								<p className="add-payment-methods-task__payment-selector-title wcpay-wizard-task__description-element">
-									{ __(
-										'Buy Now, Pay Later',
-										'woocommerce-payments'
-									) }
-								</p>
-								<LoadableBlock
-									numLines={ 10 }
-									isLoading={ ! isActive }
-								>
-									<LoadableSettingsSection numLines={ 10 }>
-										<PaymentMethodCheckboxes>
-											{ prepareUpePaymentMethods(
-												buyNowPayLaterUpeMethods
-											) }
-										</PaymentMethodCheckboxes>
-									</LoadableSettingsSection>
-								</LoadableBlock>
-							</CardBody>
-						</>
-					) }
+					{ wcpaySettings.isBnplAffirmAfterpayEnabled &&
+						0 < buyNowPayLaterUpeMethods.length && (
+							<>
+								<CardDivider />
+								<CardBody>
+									<p className="add-payment-methods-task__payment-selector-title wcpay-wizard-task__description-element">
+										{ __(
+											'Buy Now, Pay Later',
+											'woocommerce-payments'
+										) }
+									</p>
+									<LoadableBlock
+										numLines={ 10 }
+										isLoading={ ! isActive }
+									>
+										<LoadableSettingsSection
+											numLines={ 10 }
+										>
+											<PaymentMethodCheckboxes>
+												{ prepareUpePaymentMethods(
+													buyNowPayLaterUpeMethods
+												) }
+											</PaymentMethodCheckboxes>
+										</LoadableSettingsSection>
+									</LoadableBlock>
+								</CardBody>
+							</>
+						) }
 					{ activationModalParams && (
 						<ConfirmPaymentMethodActivationModal
 							onClose={ () => {
