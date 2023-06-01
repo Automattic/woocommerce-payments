@@ -85,8 +85,8 @@ class WC_Payments_Product_Service {
 		 * When a store is in staging mode, we don't want any product handling to be sent to the server.
 		 *
 		 * Sending these requests from staging sites can have unintended consequences for the live store. For example,
-		 * changing a subscription product's name would update the product at Stripe which is used for live subscription
-		 * on the live site.
+		 * deleting a subscription product on a staging site would delete the product record at Stripe and that product
+		 * would be in use for the live site.
 		 */
 		if ( WCS_Staging::is_duplicate_site() ) {
 			return;

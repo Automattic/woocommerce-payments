@@ -121,21 +121,21 @@ class WC_Payments_Subscription_Service {
 		WC_Payments_Invoice_Service $invoice_service
 	) {
 
-		/**
-		 * When a store is in staging mode, we don't want any updates or subscription purchases to be sent to the server.
-		 *
-		 * Sending these requests from staging sites can have unintended consequences on the live store. For example,
-		 * Subscriptions which renew on the staging site will lead to paused subscriptions at Stripe and result in
-		 * missed renewal payments.
-		 */
-		if ( WCS_Staging::is_duplicate_site() ) {
-			return;
-		}
-
 		$this->payments_api_client = $api_client;
 		$this->customer_service    = $customer_service;
 		$this->product_service     = $product_service;
 		$this->invoice_service     = $invoice_service;
+
+		/**
+		 * When a store is in staging mode, we don't want any subscription updates or purchases to be sent to the server.
+		 *
+		 * Sending these requests from staging sites can have unintended consequences for the live store. For example,
+		 * Subscriptions which renew on the staging site will lead to pausing the shared subscription record at Stripe
+		 * and that will result in inexplicable paused subscriptions and missed renewal payments for the live site.
+		 */
+		if ( WCS_Staging::is_duplicate_site() ) {
+			return;
+		}
 
 		if ( ! $this->is_subscriptions_plugin_active() ) {
 			add_action( 'woocommerce_checkout_subscription_created', [ $this, 'create_subscription' ] );

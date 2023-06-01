@@ -276,7 +276,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 	}
 
 	/**
-	 * Create a log entry noting that a subscription-related webhook has been skipped due to the current site being in staging mode.
+	 * Creates a log entry noting that a subscription-related webhook has been skipped due to the current site being in staging mode.
 	 *
 	 * @param string $event                 The webhook event type. eg "invoice.paid".
 	 * @param string $wcpay_subscription_id The WCPay subsciption ID.
