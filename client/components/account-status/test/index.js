@@ -47,6 +47,10 @@ describe( 'AccountStatus', () => {
 					status: 'enabled',
 					interval: 'weekly',
 				},
+				progressiveOnboarding: {
+					isEnabled: false,
+					isComplete: false,
+				},
 			},
 			[
 				{
