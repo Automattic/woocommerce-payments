@@ -417,8 +417,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return void
 	 */
 	public function init_hooks() {
-		add_action( 'woocommerce_update_order', [ $this, 'schedule_order_tracking' ], 10, 2 );
-
 		// Only add certain actions/filter if this is the main gateway (i.e. not split UPE).
 		if ( self::GATEWAY_ID === $this->id ) {
 			add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
@@ -441,6 +439,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			// Priority 21 to run right after wc_clear_cart_after_payment.
 			add_action( 'template_redirect', [ $this, 'clear_session_processing_order_after_landing_order_received_page' ], 21 );
+
+			add_action( 'woocommerce_update_order', [ $this, 'schedule_order_tracking' ], 10, 2 );
 		}
 
 		$this->maybe_init_subscriptions_hooks();
