@@ -244,7 +244,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->mock_rate_limiter = $this->createMock( Session_Rate_Limiter::class );
 		$this->order_service     = new WC_Payments_Order_Service( $this->mock_api_client );
 
-		$this->mock_dpps = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+		$this->mock_dpps = new Duplicate_Payment_Prevention_Service();
 
 		// Arrange: Define a $_POST array which includes the payment method,
 		// so that get_payment_method_from_request() does not throw error.
@@ -304,6 +304,8 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				);
 
 			$this->mock_payment_gateways[ $payment_method_id ] = $mock_gateway;
+
+			$this->mock_dpps->init( $mock_gateway, $this->order_service );
 
 			WC_Helper_Site_Currency::$mock_site_currency = '';
 
@@ -932,7 +934,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$session_order->set_status( Order_Status::COMPLETED );
 		$session_order->save();
 		WC()->session->set(
-			WC_Payment_Gateway_WCPay::SESSION_KEY_PROCESSING_ORDER,
+			Duplicate_Payment_Prevention_Service::SESSION_KEY_PROCESSING_ORDER,
 			$session_order->get_id()
 		);
 
@@ -959,7 +961,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( Order_Status::TRASH, wc_get_order( $current_order_id )->get_status() );
 		$this->assertSame(
 			null,
-			WC()->session->get( WC_Payment_Gateway_WCPay::SESSION_KEY_PROCESSING_ORDER )
+			WC()->session->get( Duplicate_Payment_Prevention_Service::SESSION_KEY_PROCESSING_ORDER )
 		);
 	}
 
@@ -969,7 +971,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		// Arrange the order saved in the session.
 		WC()->session->set(
-			WC_Payment_Gateway_WCPay::SESSION_KEY_PROCESSING_ORDER,
+			Duplicate_Payment_Prevention_Service::SESSION_KEY_PROCESSING_ORDER,
 			null
 		);
 
@@ -992,12 +994,12 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		// Assert: maybe_update_session_processing_order takes action and its value is kept.
 		$this->assertSame(
 			$current_order_id,
-			WC()->session->get( WC_Payment_Gateway_WCPay::SESSION_KEY_PROCESSING_ORDER )
+			WC()->session->get( Duplicate_Payment_Prevention_Service::SESSION_KEY_PROCESSING_ORDER )
 		);
 
 		// Destroy the session value after running test.
 		WC()->session->set(
-			WC_Payment_Gateway_WCPay::SESSION_KEY_PROCESSING_ORDER,
+			Duplicate_Payment_Prevention_Service::SESSION_KEY_PROCESSING_ORDER,
 			null
 		);
 	}
@@ -1015,7 +1017,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$session_order->set_status( $session_order_status );
 		$session_order->save();
 		WC()->session->set(
-			WC_Payment_Gateway_WCPay::SESSION_KEY_PROCESSING_ORDER,
+			Duplicate_Payment_Prevention_Service::SESSION_KEY_PROCESSING_ORDER,
 			$session_order->get_id()
 		);
 
@@ -1044,7 +1046,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		// Assert: no order ID is saved in the session.
 		$this->assertSame(
 			null,
-			WC()->session->get( WC_Payment_Gateway_WCPay::SESSION_KEY_PROCESSING_ORDER )
+			WC()->session->get( Duplicate_Payment_Prevention_Service::SESSION_KEY_PROCESSING_ORDER )
 		);
 	}
 
