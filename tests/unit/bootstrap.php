@@ -112,5 +112,6 @@ if ( defined( 'PHP_VERSION_ID' ) && PHP_VERSION_ID >= 70400 ) {
  * This function's purpose is to load specific mocked classes that need to be loaded before the WC Payments plugin is inited.
  */
 function wcpay_init_subscriptions_core() {
+	require_once dirname( __FILE__ ) . '/helpers/class-wc-helper-subscription.php';
 	require_once dirname( __FILE__ ) . '/helpers/class-wc-helper-subscriptions-staging.php';
 }
