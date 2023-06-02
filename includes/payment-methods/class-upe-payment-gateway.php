@@ -221,13 +221,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			return;
 		}
 
-		$check_session_order = $this->check_against_session_processing_order( $order );
+		$check_session_order = $this->duplicate_payment_prevention_service->check_against_session_processing_order( $order );
 		if ( is_array( $check_session_order ) ) {
 			return $check_session_order;
 		}
-		$this->maybe_update_session_processing_order( $order_id );
+		$this->duplicate_payment_prevention_service->maybe_update_session_processing_order( $order_id );
 
-		$check_existing_intention = $this->check_payment_intent_attached_to_order_succeeded( $order );
+		$check_existing_intention = $this->duplicate_payment_prevention_service->check_payment_intent_attached_to_order_succeeded( $order );
 		if ( is_array( $check_existing_intention ) ) {
 			return $check_existing_intention;
 		}
@@ -515,13 +515,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $exception ) );
 				}
 
-				$check_session_order = $this->check_against_session_processing_order( $order );
+				$check_session_order = $this->duplicate_payment_prevention_service->check_against_session_processing_order( $order );
 				if ( is_array( $check_session_order ) ) {
 					return $check_session_order;
 				}
-				$this->maybe_update_session_processing_order( $order_id );
+				$this->duplicate_payment_prevention_service->maybe_update_session_processing_order( $order_id );
 
-				$check_existing_intention = $this->check_payment_intent_attached_to_order_succeeded( $order );
+				$check_existing_intention = $this->duplicate_payment_prevention_service->check_payment_intent_attached_to_order_succeeded( $order );
 				if ( is_array( $check_existing_intention ) ) {
 					return $check_existing_intention;
 				}
@@ -580,7 +580,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$this->attach_exchange_info_to_order( $order, $charge_id );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 				if ( Payment_Intent_Status::SUCCEEDED === $intent_status ) {
-					$this->remove_session_processing_order( $order->get_id() );
+					$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 				}
 				$this->order_service->update_order_status_from_intent( $order, $updated_payment_intent );
 
@@ -786,7 +786,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$this->order_service->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method_id, $customer_id, $charge_id, $currency );
 				$this->attach_exchange_info_to_order( $order, $charge_id );
 				if ( Payment_Intent_Status::SUCCEEDED === $status ) {
-					$this->remove_session_processing_order( $order->get_id() );
+					$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 				}
 				$this->order_service->update_order_status_from_intent( $order, $intent );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
