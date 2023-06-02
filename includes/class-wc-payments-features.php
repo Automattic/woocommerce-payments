@@ -278,16 +278,6 @@ class WC_Payments_Features {
 	}
 
 	/**
-
-	 * Checks whether Simplify Deposits UI is enabled. Enabled by default.
-	 *
-	 * @return bool
-	 */
-	public static function is_simplify_deposits_ui_enabled(): bool {
-		return '1' === get_option( self::SIMPLIFY_DEPOSITS_UI_FLAG_NAME, '1' );
-	}
-
-	/**
 	 * Checks whether the BNPL Affirm Afterpay is enabled.
 	 */
 	public static function is_bnpl_affirm_afterpay_enabled(): bool {
@@ -296,7 +286,6 @@ class WC_Payments_Features {
 	}
 
 	/**
-
 	 * Returns feature flags as an array suitable for display on the front-end.
 	 *
 	 * @return bool[]
@@ -316,7 +305,6 @@ class WC_Payments_Features {
 				'woopayExpressCheckout'   => self::is_woopay_express_checkout_enabled(),
 				'isAuthAndCaptureEnabled' => self::is_auth_and_capture_enabled(),
 				'progressiveOnboarding'   => self::is_progressive_onboarding_enabled(),
-				'simplifyDepositsUi'      => self::is_simplify_deposits_ui_enabled(),
 			]
 		);
 	}

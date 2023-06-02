@@ -11,7 +11,6 @@ declare global {
 			customSearch: boolean;
 			isAuthAndCaptureEnabled: boolean;
 			paymentTimeline: boolean;
-			simplifyDepositsUi?: boolean;
 		};
 		fraudServices: unknown[];
 		isJetpackConnected: boolean;
