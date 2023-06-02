@@ -9,13 +9,14 @@ import { dispatch } from '@wordpress/data';
 import { getConfig } from 'utils/order';
 import RefundConfirmationModal from './refund-confirm-modal';
 import CancelConfirmationModal from './cancel-confirm-modal';
+import InlineNotice from '../components/inline-notice';
 
 jQuery( function ( $ ) {
 	const disableManualRefunds = getConfig( 'disableManualRefunds' ) ?? false;
 	const manualRefundsTip = getConfig( 'manualRefundsTip' ) ?? '';
 	const isDisputed = getConfig( 'hasDispute' );
 
-	if (isDisputed) {
+	if ( isDisputed ) {
 		renderInlineNotice( '#wcpay-order-payment-details-container' );
 	}
 
@@ -103,13 +104,13 @@ jQuery( function ( $ ) {
 		ReactDOM.render( modalToRender, container );
 	}
 
-	function renderInlineNotice ( selector ) {
+	function renderInlineNotice( selector ) {
 		const container = document.querySelector( selector );
-		ReactDOM.render(
-			<div className="wcpay-order-disputed-inline-notice">
-				{ __( 'Order disputed', 'woocommerce-payments' ) }
-			</div>,
-			container
+		const notice = (
+			<InlineNotice status="error" isDismissible={ false }>
+				Dispute situation detected.
+			</InlineNotice>
 		);
+		ReactDOM.render( notice, container );
 	}
 } );
