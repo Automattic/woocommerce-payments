@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix to an API route for Progressive Onboarding feature which was previously only used in development environment.
