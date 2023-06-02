@@ -204,20 +204,18 @@ export async function mountStripePaymentElement( api, domElement ) {
 	upeElement.mount( domElement );
 }
 
-export const createAndConfirmSetupIntent = ( $form, { id }, api ) => {
+export const createAndConfirmSetupIntent = ( { id }, $form, api ) => {
 	return api.setupIntent( id ).then( function ( confirmedSetupIntent ) {
 		appendSetupIntentToForm( $form, confirmedSetupIntent );
-		return confirmedSetupIntent;
 	} );
 };
 
 /**
  * Saves the payment method ID in a hidden input, and re-submits the form.
  *
- * @param {Object} $form         The jQuery object for the form.
- * @param {Object} paymentMethod Payment method object.
+ * @param {Object} id Payment method object ID.
  */
-export const handleOrderPayment = ( $form, { id } ) => {
+export const handleOrderPayment = ( { id } ) => {
 	const paymentSelector = '#wcpay-payment-method';
 
 	// Populate form with the payment method.
@@ -285,8 +283,8 @@ export const processPayment = (
 				paymentMethodObject.paymentMethod.id
 			);
 			await additionalActionsHandler(
-				jQueryForm,
 				paymentMethodObject.paymentMethod,
+				jQueryForm,
 				api
 			);
 			hasCheckoutCompleted = true;
