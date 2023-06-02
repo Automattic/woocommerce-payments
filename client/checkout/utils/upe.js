@@ -146,12 +146,13 @@ export const getHiddenBillingFields = ( enabledBillingFields ) => {
 
 export const getUpeSettings = () => {
 	const upeSettings = {};
-	if ( getUPEConfig( 'cartContainsSubscription' ) ) {
-		upeSettings.terms = getTerms(
-			getUPEConfig( 'paymentMethodsConfig' ),
-			'always'
-		);
-	}
+	const showTerms = shouldIncludeTerms() ? 'always' : 'never';
+
+	upeSettings.terms = getTerms(
+		getUPEConfig( 'paymentMethodsConfig' ),
+		showTerms
+	);
+
 	if (
 		getUPEConfig( 'isCheckout' ) &&
 		! (
@@ -167,6 +168,14 @@ export const getUpeSettings = () => {
 
 	return upeSettings;
 };
+
+function shouldIncludeTerms() {
+	return (
+		getUPEConfig( 'cartContainsSubscription' ) ||
+		document.getElementById( 'wc-woocommerce_payments-new-payment-method' )
+			.checked
+	);
+}
 
 export const generateCheckoutEventNames = () => {
 	return getPaymentMethodsConstants()
