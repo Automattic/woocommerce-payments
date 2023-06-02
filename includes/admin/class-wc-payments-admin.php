@@ -119,7 +119,6 @@ class WC_Payments_Admin {
 
 		add_action( 'woocommerce_admin_order_data_after_payment_info', [ $this, 'render_order_edit_payment_details_container' ] );
 
-
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
@@ -197,21 +196,14 @@ class WC_Payments_Admin {
 		}
 	}
 
+	/**
+	 * Render a container for adding notices to order details screen payment box.
+	 */
 	public function render_order_edit_payment_details_container() {
-		// if ( ! method_exists( 'WC_Admin_Notices', 'render_contextual_notice' ) ) {
-		// 	// Fallback for older version of WC core – add a legacy notice?
-		// 	return;
-		// }
-
-		$notice_html = "<b>This order has a chargeback dispute of {AMOUNT}, labeled as {REASON}. Please respond to this dispute before {DEADLINE}.</b>";
-		$button_text = "Respond now";
-		$severity = 'error';
-		$button_url = 'https://woocommerce.com'; // Link to dispute details!
-		// WC_Admin_Notices::render_contextual_notice( $notice_html, $severity, $button_text, $button_url );
 		?>
 		<div id="wcpay-order-payment-details-container" class=""></div>
 		<?php
-}
+	}
 
 	/**
 	 * Add notice explaining that ISK cannot have decimals.
@@ -677,8 +669,6 @@ class WC_Payments_Admin {
 		$screen = get_current_screen();
 		if ( 'shop_order' === $screen->id ) {
 			$order = wc_get_order();
-
-			// wp_enqueue_script( 'WCPAY_ADMIN_EDIT_ORDER' );
 
 			if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $order->get_payment_method() ) {
 				$refund_amount = $order->get_remaining_refund_amount();
