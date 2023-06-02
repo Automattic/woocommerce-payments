@@ -467,9 +467,7 @@ describe( 'Order payment', () => {
 			mockPaymentElement
 		);
 
-		const mockJqueryForm = jest.fn();
-
-		handleOrderPayment( mockJqueryForm, { id: 'pm_123xyz' } );
+		handleOrderPayment( { id: 'pm_123xyz' } );
 
 		// Assert the value has been set successfully
 		expect( mockPaymentElement.value ).toEqual( 'pm_123xyz' );
