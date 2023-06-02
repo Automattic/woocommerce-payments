@@ -170,11 +170,21 @@ export const getUpeSettings = () => {
 };
 
 function shouldIncludeTerms() {
-	return (
-		getUPEConfig( 'cartContainsSubscription' ) ||
-		document.getElementById( 'wc-woocommerce_payments-new-payment-method' )
-			.checked
+	if ( getUPEConfig( 'cartContainsSubscription' ) ) {
+		return true;
+	}
+
+	const savePaymentMethodCheckbox = document.getElementById(
+		'wc-woocommerce_payments-new-payment-method'
 	);
+	if (
+		null !== savePaymentMethodCheckbox &&
+		savePaymentMethodCheckbox.checked
+	) {
+		return true;
+	}
+
+	return false;
 }
 
 export const generateCheckoutEventNames = () => {
