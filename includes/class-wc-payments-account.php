@@ -1043,6 +1043,7 @@ class WC_Payments_Account {
 		if ( $self_assessment_data ) {
 			$business_type = $self_assessment_data['business_type'] ?? null;
 			$account_data  = [
+				'setup_mode'    => 'live',  // If there is self assessment data, the user chose the 'live' setup mode.
 				'country'       => $self_assessment_data['country'] ?? null,
 				'email'         => $self_assessment_data['email'] ?? null,
 				'business_name' => $self_assessment_data['business_name'] ?? null,
@@ -1072,6 +1073,7 @@ class WC_Payments_Account {
 				$url = $default_url;
 			}
 			$account_data = [
+				'setup_mode'    => 'test',
 				'country'       => 'US',
 				'business_type' => 'individual',
 				'individual'    => [
