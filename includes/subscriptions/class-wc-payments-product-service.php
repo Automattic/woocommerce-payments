@@ -88,7 +88,7 @@ class WC_Payments_Product_Service {
 		 * deleting a subscription product on a staging site would delete the product record at Stripe and that product
 		 * would be in use for the live site.
 		 */
-		if ( WCS_Staging::is_duplicate_site() ) {
+		if ( WC_Payments_Subscriptions::is_duplicate_site() ) {
 			return;
 		}
 

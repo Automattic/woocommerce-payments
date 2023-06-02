@@ -133,7 +133,7 @@ class WC_Payments_Subscription_Service {
 		 * Subscriptions which renew on the staging site will lead to pausing the shared subscription record at Stripe
 		 * and that will result in inexplicable paused subscriptions and missed renewal payments for the live site.
 		 */
-		if ( WCS_Staging::is_duplicate_site() ) {
+		if ( WC_Payments_Subscriptions::is_duplicate_site() ) {
 			return;
 		}
 
@@ -267,7 +267,7 @@ class WC_Payments_Subscription_Service {
 	 * @return bool
 	 */
 	public static function is_wcpay_subscription( WC_Subscription $subscription ) : bool {
-		return ! WCS_Staging::is_duplicate_site() && WC_Payment_Gateway_WCPay::GATEWAY_ID === $subscription->get_payment_method() && (bool) self::get_wcpay_subscription_id( $subscription );
+		return ! WC_Payments_Subscriptions::is_duplicate_site() && WC_Payment_Gateway_WCPay::GATEWAY_ID === $subscription->get_payment_method() && (bool) self::get_wcpay_subscription_id( $subscription );
 	}
 
 	/**

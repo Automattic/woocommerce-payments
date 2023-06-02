@@ -63,7 +63,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 		 * Subscriptions which renew on the staging site will lead to paused subscriptions at Stripe and result in
 		 * missed renewal payments.
 		 */
-		if ( WCS_Staging::is_duplicate_site() ) {
+		if ( WC_Payments_Subscriptions::is_duplicate_site() ) {
 			$this->log_skipped_webhook_due_to_staging( 'invoice.upcoming', $wcpay_subscription_id );
 			return;
 		}
@@ -123,7 +123,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 		 * Subscriptions which renew on the staging site will lead to paused subscriptions at Stripe and result in
 		 * missed renewal payments.
 		 */
-		if ( WCS_Staging::is_duplicate_site() ) {
+		if ( WC_Payments_Subscriptions::is_duplicate_site() ) {
 			$this->log_skipped_webhook_due_to_staging( 'invoice.paid', $wcpay_subscription_id );
 			return;
 		}
@@ -208,7 +208,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 		 * Subscriptions which renew on the staging site will lead to paused subscriptions at Stripe and result in
 		 * missed renewal payments.
 		 */
-		if ( WCS_Staging::is_duplicate_site() ) {
+		if ( WC_Payments_Subscriptions::is_duplicate_site() ) {
 			$this->log_skipped_webhook_due_to_staging( 'invoice.payment_failed', $wcpay_subscription_id );
 			return;
 		}

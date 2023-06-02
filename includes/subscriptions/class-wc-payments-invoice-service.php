@@ -76,7 +76,7 @@ class WC_Payments_Invoice_Service {
 		 * renewal order's status on a duplicate site, would lead to the corrisponding subscription being marked as paid in the live
 		 * account at Stripe.
 		 */
-		if ( WCS_Staging::is_duplicate_site() ) {
+		if ( WC_Payments_Subscriptions::is_duplicate_site() ) {
 			return;
 		}
 
@@ -189,7 +189,7 @@ class WC_Payments_Invoice_Service {
 	 */
 	public function maybe_record_invoice_payment( int $order_id ) {
 
-		if ( WCS_Staging::is_duplicate_site() ) {
+		if ( WC_Payments_Subscriptions::is_duplicate_site() ) {
 			return;
 		}
 
