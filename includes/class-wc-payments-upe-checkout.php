@@ -123,12 +123,12 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 			$script_dependencies[] = 'woocommerce-tokenization-form';
 		}
 
-		if ( ! WC_Payments_Features::is_upe_split_enabled() ) {
-			$script = 'dist/upe_checkout';
-		} elseif ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 			$script = 'dist/upe_with_deferred_intent_creation_checkout';
-		} else {
+		} elseif ( WC_Payments_Features::is_upe_split_enabled() ) {
 			$script = 'dist/upe_split_checkout';
+		} else {
+			$script = 'dist/upe_checkout';
 		}
 
 		WC_Payments::register_script_with_dependencies( 'wcpay-upe-checkout', $script, $script_dependencies );
