@@ -117,7 +117,7 @@ class WC_Payments_Admin {
 		add_action( 'admin_notices', [ $this, 'display_not_supported_currency_notice' ], 9999 );
 		add_action( 'admin_notices', [ $this, 'display_isk_decimal_notice' ] );
 
-		add_action( 'woocommerce_admin_order_data_after_payment_info', [ $this, 'maybe_render_order_edit_dispute_notice' ] );
+		add_action( 'woocommerce_admin_order_data_after_payment_info', [ $this, 'render_order_edit_payment_details_container' ] );
 
 
 		// Add menu items.
@@ -197,18 +197,21 @@ class WC_Payments_Admin {
 		}
 	}
 
-	public function maybe_render_order_edit_dispute_notice() {
-		if ( ! method_exists( 'WC_Admin_Notices', 'render_contextual_notice' ) ) {
-			// Fallback for older version of WC core – add a legacy notice?
-			return;
-		}
+	public function render_order_edit_payment_details_container() {
+		// if ( ! method_exists( 'WC_Admin_Notices', 'render_contextual_notice' ) ) {
+		// 	// Fallback for older version of WC core – add a legacy notice?
+		// 	return;
+		// }
 
 		$notice_html = "<b>This order has a chargeback dispute of {AMOUNT}, labeled as {REASON}. Please respond to this dispute before {DEADLINE}.</b>";
 		$button_text = "Respond now";
 		$severity = 'error';
 		$button_url = 'https://woocommerce.com'; // Link to dispute details!
-		WC_Admin_Notices::render_contextual_notice( $notice_html, $severity, $button_text, $button_url );
-	}
+		// WC_Admin_Notices::render_contextual_notice( $notice_html, $severity, $button_text, $button_url );
+		?>
+		<div id="wcpay-order-payment-details-container" class=""></div>
+		<?php
+}
 
 	/**
 	 * Add notice explaining that ISK cannot have decimals.
