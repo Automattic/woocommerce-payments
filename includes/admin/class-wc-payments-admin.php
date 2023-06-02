@@ -678,6 +678,8 @@ class WC_Payments_Admin {
 		if ( 'shop_order' === $screen->id ) {
 			$order = wc_get_order();
 
+			// wp_enqueue_script( 'WCPAY_ADMIN_EDIT_ORDER' );
+
 			if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $order->get_payment_method() ) {
 				$refund_amount = $order->get_remaining_refund_amount();
 				wp_localize_script(
@@ -690,6 +692,7 @@ class WC_Payments_Admin {
 						'formattedRefundAmount' => wp_strip_all_tags( wc_price( $refund_amount, [ 'currency' => $order->get_currency() ] ) ),
 						'refundedAmount'        => $order->get_total_refunded(),
 						'canRefund'             => $this->wcpay_gateway->can_refund_order( $order ),
+						'hasDispute'            => true,
 					]
 				);
 

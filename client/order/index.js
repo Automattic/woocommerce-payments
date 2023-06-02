@@ -13,6 +13,11 @@ import CancelConfirmationModal from './cancel-confirm-modal';
 jQuery( function ( $ ) {
 	const disableManualRefunds = getConfig( 'disableManualRefunds' ) ?? false;
 	const manualRefundsTip = getConfig( 'manualRefundsTip' ) ?? '';
+	const isDisputed = getConfig( 'hasDispute' );
+
+	if (isDisputed) {
+		renderInlineNotice( '#wcpay-order-payment-details-container' );
+	}
 
 	$( '#woocommerce-order-items' ).on(
 		'click',
@@ -96,5 +101,15 @@ jQuery( function ( $ ) {
 		container.id = 'wcpay-orderstatus-confirm-container';
 		document.body.appendChild( container );
 		ReactDOM.render( modalToRender, container );
+	}
+
+	function renderInlineNotice ( selector ) {
+		const container = document.querySelector( selector );
+		ReactDOM.render(
+			<div className="wcpay-order-disputed-inline-notice">
+				{ __( 'Order disputed', 'woocommerce-payments' ) }
+			</div>,
+			container
+		);
 	}
 } );
