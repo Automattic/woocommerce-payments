@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments
  */
 
+namespace WCPay;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
@@ -13,6 +15,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Used for methods, which detect existing payments or payment intents,
  * and prevent creating duplicate payments.
  */
-class WC_Payments_Duplicate_Payment_Prevention_Service {
+class Duplicate_Payment_Prevention_Service {
 
 }

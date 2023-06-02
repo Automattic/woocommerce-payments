@@ -32,6 +32,7 @@ use WC_Payment_Gateway_WCPay;
 use WC_Payments_Order_Service;
 use WC_Payments_Token_Service;
 use Exception;
+use WCPay\Duplicate_Payment_Prevention_Service;
 
 require_once dirname( __FILE__ ) . '/../helpers/class-wc-helper-site-currency.php';
 
@@ -118,6 +119,12 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	private $mock_woopay_utilities;
 
 	/**
+	 * Duplicate_Payment_Prevention_Service instance.
+	 * @var Duplicate_Payment_Prevention_Service
+	 */
+	private $mock_dpps;
+
+	/**
 	 * Mocked value of return_url.
 	 * The value is used in the set up and tests, so it's set as a private
 	 * variable for easy reference.
@@ -195,6 +202,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
+		$this->mock_dpps = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+
 		$this->mock_payment_methods = [];
 		$payment_method_classes     = [
 			CC_Payment_Method::class,
@@ -233,6 +242,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_payment_methods,
 					$this->mock_rate_limiter,
 					$this->order_service,
+					$this->mock_dpps,
 				]
 			)
 			->setMethods(
@@ -1982,6 +1992,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_payment_methods,
 					$this->mock_rate_limiter,
 					$this->order_service,
+					$this->mock_dpps,
 				]
 			)
 			->setMethods(
@@ -2029,6 +2040,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_payment_methods,
 					$this->mock_rate_limiter,
 					$this->order_service,
+					$this->mock_dpps,
 				]
 			)
 			->setMethods(
