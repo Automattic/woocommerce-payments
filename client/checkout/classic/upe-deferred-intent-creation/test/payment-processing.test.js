@@ -428,7 +428,7 @@ describe( 'Payment processing', () => {
 } );
 
 describe( 'Setup intent creation and confirmation', () => {
-	test( 'Setup intent is creation and confirmation', async () => {
+	test( 'Setup intent is created and confirmed', async () => {
 		const mockDomElement = document.createElement( 'div' );
 		mockDomElement.dataset.paymentMethodType = 'card';
 

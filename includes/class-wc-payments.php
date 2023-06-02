@@ -668,10 +668,7 @@ class WC_Payments {
 			} else {
 				self::$registered_card_gateway = self::$card_gateway;
 			}
-			$gateways[] = self::$registered_card_gateway;
-			if ( self::$registered_card_gateway->is_subscriptions_enabled() && self::$registered_card_gateway->is_changing_payment_method_for_subscription() ) {
-				return $gateways;
-			}
+			$gateways[]       = self::$registered_card_gateway;
 			$all_upe_gateways = [];
 			$reusable_methods = [];
 			foreach ( $payment_methods as $payment_method_id ) {
@@ -689,7 +686,7 @@ class WC_Payments {
 
 			}
 
-			if ( is_add_payment_method_page() ) {
+			if ( is_add_payment_method_page() || ( self::$registered_card_gateway->is_subscriptions_enabled() && self::$registered_card_gateway->is_changing_payment_method_for_subscription() ) ) {
 				return array_merge( $gateways, $reusable_methods );
 			}
 
