@@ -20,7 +20,6 @@ class WC_Payments_Features {
 	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME = '_wcpay_feature_woopay_express_checkout';
 	const AUTH_AND_CAPTURE_FLAG_NAME        = '_wcpay_feature_auth_and_capture';
 	const PROGRESSIVE_ONBOARDING_FLAG_NAME  = '_wcpay_feature_progressive_onboarding';
-	const SIMPLIFY_DEPOSITS_UI_FLAG_NAME    = '_wcpay_feature_simplify_deposits_ui';
 
 	/**
 	 * Checks whether any UPE gateway is enabled.
