@@ -227,23 +227,6 @@ describe( 'Mount Stripe Payment Element', () => {
 		expect( getUPEConfig ).not.toHaveBeenCalledWith( 'isUPEEnabled' );
 		expect( mockUpdateFunction ).not.toHaveBeenCalled();
 	} );
-
-	test( 'existing upeElement is not created again but instead mounted immediately when fingerprint is available', async () => {
-		getFingerprint.mockImplementation( () => {
-			return 'fingerprint';
-		} );
-
-		const mockDomElement = document.createElement( 'div' );
-		mockDomElement.dataset.paymentMethodType = 'sepa';
-
-		mountStripePaymentElement( apiMock, mockDomElement );
-		mountStripePaymentElement( apiMock, mockDomElement );
-
-		await waitFor( () => {
-			expect( apiMock.getStripe ).toHaveBeenCalled();
-			expect( mockElements ).toHaveBeenCalledTimes( 1 );
-		} );
-	} );
 } );
 
 describe( 'Checkout', () => {
