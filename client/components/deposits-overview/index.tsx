@@ -64,7 +64,8 @@ const DepositsOverview = (): JSX.Element => {
 			{ /* Only show the deposit history section if the page is finished loading and there are deposits. */ }
 			{ ! isLoading && !! account && !! deposits && deposits.length > 0 && (
 				<>
-					{ account.deposits_blocked ? (
+					{ account.deposits_blocked &&
+					'blocked' === account.deposits_restrictions ? (
 						<DepositOverviewSectionHeading
 							title={ strings.depositHistoryHeading }
 							children={ <SuspendedDepositNotice /> }

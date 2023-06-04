@@ -16,10 +16,12 @@ import 'components/account-status/shared.scss';
 import type { AccountStatus } from 'wcpay/types/account/account-status';
 
 type DepositsStatus = 'enabled' | 'disabled' | 'blocked';
+type DepositRestrictions = 'blocked' | 'not_blocked' | 'schedule_locked';
 type DepositsIntervals = 'daily' | 'weekly' | 'monthly' | 'manual';
 
 interface Props {
 	status: DepositsStatus;
+	restrictions: DepositRestrictions;
 	interval: DepositsIntervals;
 	accountStatus: AccountStatus;
 	poEnabled: boolean;
@@ -29,6 +31,7 @@ interface Props {
 
 const DepositsStatus: React.FC< Props > = ( {
 	status,
+	restrictions,
 	interval,
 	accountStatus,
 	poEnabled,
@@ -43,7 +46,8 @@ const DepositsStatus: React.FC< Props > = ( {
 		'weekly',
 		'monthly',
 	];
-	const showSuspendedNotice = 'blocked' === status;
+	const showSuspendedNotice =
+		'blocked' === status && 'blocked' === restrictions;
 
 	if ( 'pending_verification' === accountStatus ) {
 		description = __( 'Pending verification', 'woocommerce-payments' );

@@ -394,6 +394,16 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Gets the deposit restrictions
+	 *
+	 * @return string  e.g. not_blocked, blocked, schedule locked.
+	 */
+	public function get_deposit_restrictions(): string {
+		$account = $this->get_cached_account_data();
+		return $account['deposits']['restrictions'] ?? '';
+	}
+
+	/**
 	 * Gets whether the account has completed the deposit waiting period.
 	 *
 	 * @return bool

@@ -3,6 +3,7 @@ declare namespace AccountOverview {
 		default_currency: string;
 		deposits_blocked: boolean;
 		deposits_disabled: boolean;
+		deposits_restrictions: string;
 		deposits_schedule: {
 			delay_days: number;
 			interval: string;
