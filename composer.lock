@@ -944,12 +944,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:Automattic/woocommerce-subscriptions-core-private.git",
-                "reference": "3a97bf8cbd8c0c3dea6856cb29dc317b040521d0"
+                "reference": "46608379a1d319fd980d93eb14eebbd0a6d67b81"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core-private/zipball/3a97bf8cbd8c0c3dea6856cb29dc317b040521d0",
-                "reference": "3a97bf8cbd8c0c3dea6856cb29dc317b040521d0",
+                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core-private/zipball/46608379a1d319fd980d93eb14eebbd0a6d67b81",
+                "reference": "46608379a1d319fd980d93eb14eebbd0a6d67b81",
                 "shasum": ""
             },
             "require": {
@@ -993,7 +993,7 @@
                 "source": "https://github.com/Automattic/woocommerce-subscriptions-core-private/tree/test/shendy-merge-upstream",
                 "issues": "https://github.com/Automattic/woocommerce-subscriptions-core-private/issues"
             },
-            "time": "2023-05-28T04:16:19+00:00"
+            "time": "2023-06-04T13:25:13+00:00"
         }
     ],
     "packages-dev": [
