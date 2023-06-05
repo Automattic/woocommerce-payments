@@ -226,8 +226,10 @@ const AddPaymentMethodsTask = () => {
 		);
 	};
 
-	const buyNowPayLaterUpeMethods = upeMethods.filter(
-		( id ) => paymentMethodsMap[ id ].allows_pay_later
+	const availableBuyNowPayLaterUpeMethods = upeMethods.filter(
+		( id ) =>
+			paymentMethodsMap[ id ].allows_pay_later &&
+			availablePaymentMethods.includes( id )
 	);
 
 	return (
@@ -294,7 +296,7 @@ const AddPaymentMethodsTask = () => {
 						</LoadableBlock>
 					</CardBody>
 					{ wcpaySettings.isBnplAffirmAfterpayEnabled &&
-						0 < buyNowPayLaterUpeMethods.length && (
+						0 < availableBuyNowPayLaterUpeMethods.length && (
 							<>
 								<CardDivider />
 								<CardBody>
@@ -313,7 +315,7 @@ const AddPaymentMethodsTask = () => {
 										>
 											<PaymentMethodCheckboxes>
 												{ prepareUpePaymentMethods(
-													buyNowPayLaterUpeMethods
+													availableBuyNowPayLaterUpeMethods
 												) }
 											</PaymentMethodCheckboxes>
 										</LoadableSettingsSection>
