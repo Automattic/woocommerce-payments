@@ -86,8 +86,7 @@ const OverviewPage = () => {
 	const showProgressiveOnboardingEligibilityModal =
 		showConnectionSuccess &&
 		accountStatus.progressiveOnboarding.isEnabled &&
-		! accountStatus.progressiveOnboarding.isComplete &&
-		'pending_verification' !== accountStatus.status;
+		! accountStatus.progressiveOnboarding.isComplete;
 	const accountRejected =
 		accountStatus.status && accountStatus.status.startsWith( 'rejected' );
 
