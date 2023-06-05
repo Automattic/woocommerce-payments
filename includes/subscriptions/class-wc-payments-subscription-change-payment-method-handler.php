@@ -173,7 +173,7 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 	 */
 	private function does_subscription_need_payment_updated( $subscription ) {
 		// We're only interested in WC Pay subscriptions that are on hold due to a failed payment.
-		if ( ! $subscription->has_status( 'on-hold' ) || ! WC_Payments_Subscription_Service::get_wcpay_subscription_id( $subscription ) ) {
+		if ( ! $subscription->has_status( 'on-hold' ) || ! WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ) {
 			return false;
 		}
 

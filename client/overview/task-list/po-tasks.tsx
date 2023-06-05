@@ -39,9 +39,14 @@ export const getVerifyBankAccountTask = (): any => {
 			.format( 'MMMM D, YYYY' );
 		const daysFromAccountCreation = moment().diff( createdDate, 'days' );
 
-		// when account is created less than 14 days ago, no need to show any notice
+		// when account is created less than 14 days ago, we also show a notice but it's just info
 		if ( 14 > daysFromAccountCreation ) {
-			return null;
+			title = strings.po_tasks.after_payment.title;
+			level = 3;
+			description = strings.po_tasks.after_payment.description(
+				verifyDetailsDueDate
+			);
+			actionLabelText = strings.po_tasks.after_payment.action_label;
 		}
 
 		if ( 14 <= daysFromAccountCreation ) {

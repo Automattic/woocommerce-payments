@@ -6,21 +6,44 @@ exports[`PreviewReceipt should render error when fetch from API fails 1`] = `
     class="wcpay-card-readers-preview-receipt-page woocommerce-payments-page is-narrow"
   >
     <div
-      class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Card"
     >
       <div
-        class="components-card__body is-size-small css-xmjzce-BodyUI e1q7k77g3"
+        class="css-mgwsf4-View-Content em57xhy0"
       >
         <div
-          class="components-notice is-error"
+          class="components-card__body components-card-body css-5spj1a-View-Body-borderRadius-small em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
         >
           <div
-            class="components-notice__content"
+            class="components-notice is-error"
           >
-            There was a problem generating the receipt preview. Please try again later.
+            <div
+              class="components-notice__content"
+            >
+              There was a problem generating the receipt preview. Please try again later.
+              <div
+                class="components-notice__actions"
+              />
+            </div>
           </div>
         </div>
       </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
     </div>
   </div>
 </div>
@@ -32,25 +55,45 @@ exports[`PreviewReceipt should render loading block while fetching from API 1`] 
     class="wcpay-card-readers-preview-receipt-page woocommerce-payments-page is-narrow"
   >
     <div
-      class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Card"
     >
       <div
-        class="components-card__body is-size-small css-xmjzce-BodyUI e1q7k77g3"
+        class="css-mgwsf4-View-Content em57xhy0"
       >
-        <p>
-          Generating preview.
-        </p>
-        <span
-          aria-busy="true"
-          class="is-loadable-placeholder is-block"
+        <div
+          class="components-card__body components-card-body css-5spj1a-View-Body-borderRadius-small em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
         >
-          <p
-            style="line-height: 25;"
-          >
-            Block placeholder
+          <p>
+            Generating preview.
           </p>
-        </span>
+          <span
+            aria-busy="true"
+            class="is-loadable-placeholder is-block"
+          >
+            <p
+              style="line-height: 25;"
+            >
+              Block placeholder
+            </p>
+          </span>
+        </div>
       </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
     </div>
   </div>
 </div>
@@ -62,17 +105,37 @@ exports[`PreviewReceipt should render preview when fetch from API succeeds 1`] =
     class="wcpay-card-readers-preview-receipt-page woocommerce-payments-page is-narrow"
   >
     <div
-      class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Card"
     >
       <div
-        class="components-card__body is-size-small css-xmjzce-BodyUI e1q7k77g3"
+        class="css-mgwsf4-View-Content em57xhy0"
       >
-        <iframe
-          class="card-readers-preview-receipt__preview"
-          srcdoc="<!DOCTYPE html>"
-          title="Preview Receipt"
-        />
+        <div
+          class="components-card__body components-card-body css-5spj1a-View-Body-borderRadius-small em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
+        >
+          <iframe
+            class="card-readers-preview-receipt__preview"
+            srcdoc="<!DOCTYPE html>"
+            title="Preview Receipt"
+          />
+        </div>
       </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
     </div>
   </div>
 </div>

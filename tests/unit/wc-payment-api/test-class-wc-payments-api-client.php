@@ -906,13 +906,13 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 
 		$po_eligible = $this->payments_api_client->get_onboarding_po_eligible(
 			[
-				'business' => [
-					'country'           => 'US',
-					'type'              => 'company',
-					'mcc'               => 'software_services',
-					'annual_revenue'    => 'less_than_250k',
-					'go_live_timeframe' => 'within_1month',
-				],
+				'country' => 'US',
+				'type'    => 'company',
+				'mcc'     => 'most_popular__software_services',
+			],
+			[
+				'annual_revenue'    => 'less_than_250k',
+				'go_live_timeframe' => 'within_1month',
 			]
 		);
 		$this->assertSame( 'eligible', $po_eligible['result'] );
