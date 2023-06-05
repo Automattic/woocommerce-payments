@@ -98,8 +98,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 4.3.2 - 2023-06-11 =
-* Fix - Improve validation of WC analytics query filters
+= 4.3.2 - 2023-06-05 =
 * Fix - Improved validation of the order key arg when redirecting to subscription's change payment method URL.
 * Fix - Resolved an issue with customers being redirected to an incorrect Pay for Order URL after login.
 * Dev - Update subscriptions-core to 5.7.2
