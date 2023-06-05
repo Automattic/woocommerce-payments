@@ -713,30 +713,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order = wc_get_order( $order_id );
 
 		try {
-			if ( 20 < strlen( $order->get_billing_phone() ) ) {
-				throw new Process_Payment_Exception(
-					__( 'Invalid phone number.', 'woocommerce-payments' ),
-					'invalid_phone_number'
-				);
-			}
-			// Check if session exists before instantiating Fraud_Prevention_Service.
-			if ( WC()->session ) {
-				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
-				// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-				if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $_POST['wcpay-fraud-prevention-token'] ?? null ) ) {
-					throw new Process_Payment_Exception(
-						__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
-						'fraud_prevention_enabled'
-					);
-				}
-			}
 
-			if ( $this->failed_transaction_rate_limiter->is_limited() ) {
-				throw new Process_Payment_Exception(
-					__( 'Your payment was not processed.', 'woocommerce-payments' ),
-					'rate_limiter_enabled'
-				);
-			}
+			$this->verify_phone_number( $order->get_billing_phone() );
+
+			$this->verify_fraud_token();
+
+			$this->verify_not_rate_limited();
 
 			// The request is a preflight check from WooPay.
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -853,6 +835,55 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// Re-throw the exception after setting everything up.
 			// This makes the error notice show up both in the regular and block checkout.
 			throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
+		}
+	}
+
+	/**
+	 * Verifies the phone number to be within valid length.
+	 *
+	 * @param string $phone_number Phone number to be validated.
+	 *
+	 * @throws Process_Payment_Exception
+	 */
+	private function verify_phone_number( string $phone_number ) {
+		if ( 20 < strlen( $phone_number ) ) {
+			throw new Process_Payment_Exception(
+				__( 'Invalid phone number.', 'woocommerce-payments' ),
+				'invalid_phone_number'
+			);
+		}
+	}
+
+	/**
+	 * Verifies the fraud prevention token.
+	 *
+	 * @throws Process_Payment_Exception
+	 */
+	private function verify_fraud_token(): void {
+		// Check if session exists before instantiating Fraud_Prevention_Service.
+		if ( WC()->session ) {
+			$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $_POST['wcpay-fraud-prevention-token'] ?? null ) ) {
+				throw new Process_Payment_Exception(
+					__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
+					'fraud_prevention_enabled'
+				);
+			}
+		}
+	}
+
+	/**
+	 * Verifies that request is not rate limited.
+	 *
+	 * @throws Process_Payment_Exception
+	 */
+	private function verify_not_rate_limited() {
+		if ( $this->failed_transaction_rate_limiter->is_limited() ) {
+			throw new Process_Payment_Exception(
+				__( 'Your payment was not processed.', 'woocommerce-payments' ),
+				'rate_limiter_enabled'
+			);
 		}
 	}
 
