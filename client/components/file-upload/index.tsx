@@ -5,10 +5,9 @@ import * as React from 'react';
 import { __ } from '@wordpress/i18n';
 import {
 	BaseControl,
-	DropZone,
-	DropZoneProvider,
-	FormFileUpload,
 	Button,
+	DropZone,
+	FormFileUpload,
 } from '@wordpress/components';
 import CheckmarkIcon from 'gridicons/dist/checkmark';
 import ImageIcon from 'gridicons/dist/image';
@@ -71,13 +70,11 @@ export const FileUploadControl = ( {
 			label={ field.label }
 			help={ help }
 		>
-			<DropZoneProvider>
-				<DropZone
-					onFilesDrop={ ( files: Array< File > ) =>
-						onFileChange( field.key, files[ 0 ] )
-					}
-				/>
-			</DropZoneProvider>
+			<DropZone
+				onFilesDrop={ ( files: Array< File > ) =>
+					onFileChange( field.key, files[ 0 ] )
+				}
+			/>
 			<div className="file-upload">
 				<FormFileUpload
 					accept={ accept }

@@ -1,9 +1,7 @@
 .wcpay-card-body {
-	&.is-size-medium {
-		// increasing the specificity of the styles to override the Gutenberg ones
-		&#{&} {
-			padding: $grid-unit-30;
-		}
+	// increasing the specificity of the styles to override the Gutenberg ones
+	&#{&} {
+		padding: $grid-unit-30;
 	}
 
 	h4 {

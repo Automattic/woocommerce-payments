@@ -3,7 +3,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render, within, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -76,7 +76,7 @@ describe( 'PaymentMethodsCheckboxes', () => {
 			userEvent.click( p24.getByRole( 'checkbox' ) );
 			userEvent.click( sepa.getByRole( 'checkbox' ) );
 			userEvent.click( sofort.getByRole( 'checkbox' ) );
-			jest.runAllTimers();
+			jest.runOnlyPendingTimers();
 		} );
 
 		expect( handleChange ).toHaveBeenCalledTimes( upeMethods.length );
@@ -115,7 +115,7 @@ describe( 'PaymentMethodsCheckboxes', () => {
 		jest.useFakeTimers();
 		act( () => {
 			userEvent.click( sofortCheckbox );
-			jest.runAllTimers();
+			jest.runOnlyPendingTimers();
 		} );
 		expect( handleChange ).toHaveBeenCalledTimes( 1 );
 		expect( handleChange ).toHaveBeenNthCalledWith( 1, 'sofort', true );

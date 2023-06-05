@@ -3,25 +3,45 @@
 exports[`Multi-Currency enabled currencies list wizard renders correctly: snapshot-multi-currency-setup-wizard 1`] = `
 <div>
   <div
-    class="components-card is-size-medium multi-currency-setup-wizard css-1xs3c37-CardUI e1q7k77g0"
+    class="components-surface components-card multi-currency-setup-wizard css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
   >
     <div
-      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
+      class="css-mgwsf4-View-Content em57xhy0"
     >
-      <div>
-        <ul>
-          <p>
-            Currency selector
-          </p>
-          <p>
-            Store settings form
-          </p>
-          <p>
-            Setup complete screen
-          </p>
-        </ul>
+      <div
+        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
+      >
+        <div>
+          <ul>
+            <p>
+              Currency selector
+            </p>
+            <p>
+              Store settings form
+            </p>
+            <p>
+              Setup complete screen
+            </p>
+          </ul>
+        </div>
       </div>
     </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
   </div>
 </div>
 `;

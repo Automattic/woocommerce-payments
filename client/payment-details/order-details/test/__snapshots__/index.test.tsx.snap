@@ -7,484 +7,553 @@ exports[`Order details page should match the snapshot - Charge without payment i
     style="max-width: 1032px;"
   >
     <div
-      class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Card"
     >
       <div
-        class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
+        class="css-mgwsf4-View-Content em57xhy0"
       >
         <div
-          class="payment-details-summary"
+          class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
         >
           <div
-            class="payment-details-summary__section"
+            class="payment-details-summary"
           >
-            <p
-              class="payment-details-summary__amount"
-            >
-              $15.00
-              <span
-                class="payment-details-summary__amount-currency"
-              >
-                USD
-              </span>
-              <span
-                class="chip chip-light"
-              >
-                Pending
-              </span>
-            </p>
             <div
-              class="payment-details-summary__breakdown"
+              class="payment-details-summary__section"
             >
-              
-              <p>
-                Fee: 
-                -$0.00
-              </p>
-              
-              <p>
-                Net: 
+              <p
+                class="payment-details-summary__amount"
+              >
                 $15.00
+                <span
+                  class="payment-details-summary__amount-currency"
+                >
+                  USD
+                </span>
+                <span
+                  class="chip chip-light"
+                >
+                  Pending
+                </span>
               </p>
+              <div
+                class="payment-details-summary__breakdown"
+              >
+                
+                <p>
+                  Fee: 
+                  -$0.00
+                </p>
+                
+                <p>
+                  Net: 
+                  $15.00
+                </p>
+              </div>
             </div>
-          </div>
-          <div
-            class="payment-details-summary__section"
-          >
             <div
-              class="payment-details-summary__id"
+              class="payment-details-summary__section"
             >
-              Payment ID: 
-              776
+              <div
+                class="payment-details-summary__id"
+              >
+                Payment ID: 
+                776
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <hr
-        class="components-card__divider css-lh2anh-DividerUI e1q7k77g5"
-        role="separator"
-      />
-      <div
-        class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
-      >
-        <ul
-          class="woocommerce-list woocommerce-list--horizontal"
-          role="menu"
+        <hr
+          aria-orientation="horizontal"
+          class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+          data-wp-c16t="true"
+          data-wp-component="CardDivider"
+          role="separator"
+        />
+        <div
+          class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
         >
-          <li
-            class="woocommerce-list__item"
+          <ul
+            class="woocommerce-list woocommerce-list--horizontal"
+            role="menu"
           >
-            <div
-              class="woocommerce-list__item-inner"
+            <li
+              class="woocommerce-list__item"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="woocommerce-list__item-inner"
               >
-                <span
-                  class="woocommerce-list__item-title"
-                >
-                  Date
-                </span>
-                <span
-                  class="woocommerce-list__item-content"
-                >
-                  Mar 27, 2023, 9:09am
-                </span>
-              </div>
-            </div>
-          </li>
-          <li
-            class="woocommerce-list__item"
-          >
-            <div
-              class="woocommerce-list__item-inner"
-            >
-              <div
-                class="woocommerce-list__item-text"
-              >
-                <span
-                  class="woocommerce-list__item-title"
-                >
-                  Channel
-                </span>
-                <span
-                  class="woocommerce-list__item-content"
-                >
-                  <span>
-                    Online
-                  </span>
-                </span>
-              </div>
-            </div>
-          </li>
-          <li
-            class="woocommerce-list__item"
-          >
-            <div
-              class="woocommerce-list__item-inner"
-            >
-              <div
-                class="woocommerce-list__item-text"
-              >
-                <span
-                  class="woocommerce-list__item-title"
-                >
-                  Customer
-                </span>
-                <span
-                  class="woocommerce-list__item-content"
-                >
-                  <a
-                    data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=First%20Last%20(admin_test_example%40email.com)"
-                  >
-                    First Last
-                  </a>
-                </span>
-              </div>
-            </div>
-          </li>
-          <li
-            class="woocommerce-list__item"
-          >
-            <div
-              class="woocommerce-list__item-inner"
-            >
-              <div
-                class="woocommerce-list__item-text"
-              >
-                <span
-                  class="woocommerce-list__item-title"
-                >
-                  Order
-                </span>
-                <span
-                  class="woocommerce-list__item-content"
-                >
-                  <a
-                    data-link-type="external"
-                    href="http://wcpay.test/wp-admin/post.php?post=776&action=edit"
-                  >
-                    776
-                  </a>
-                </span>
-              </div>
-            </div>
-          </li>
-          <li
-            class="woocommerce-list__item"
-          >
-            <div
-              class="woocommerce-list__item-inner"
-            >
-              <div
-                class="woocommerce-list__item-text"
-              >
-                <span
-                  class="woocommerce-list__item-title"
-                >
-                  Payment method
-                </span>
-                <span
-                  class="woocommerce-list__item-content"
+                <div
+                  class="woocommerce-list__item-text"
                 >
                   <span
-                    class="payment-method-details"
+                    class="woocommerce-list__item-title"
                   >
-                    <span
-                      class="payment-method__brand payment-method__brand--card"
-                    />
-                     •••• 
+                    Date
                   </span>
-                </span>
+                  <span
+                    class="woocommerce-list__item-content"
+                  >
+                    Mar 27, 2023, 9:09am
+                  </span>
+                </div>
               </div>
-            </div>
-          </li>
-          <li
-            class="woocommerce-list__item"
-          >
-            <div
-              class="woocommerce-list__item-inner"
+            </li>
+            <li
+              class="woocommerce-list__item"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="woocommerce-list__item-inner"
               >
-                <span
-                  class="woocommerce-list__item-title"
+                <div
+                  class="woocommerce-list__item-text"
                 >
-                  Risk evaluation
-                </span>
-                <span
-                  class="woocommerce-list__item-content"
-                >
-                  –
-                </span>
-              </div>
-            </div>
-          </li>
-        </ul>
-      </div>
-    </div>
-    <div
-      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
-    >
-      <div
-        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
-      >
-        Timeline
-      </div>
-      <div
-        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
-      >
-        <div
-          class="woocommerce-timeline"
-        >
-          <ul>
-            <li
-              class="woocommerce-timeline-group"
-            >
-              <p
-                class="woocommerce-timeline-group__title"
-              >
-                March 27, 2023
-              </p>
-              <ul>
-                <li
-                  class="woocommerce-timeline-item"
-                >
-                  <div
-                    class="woocommerce-timeline-item__top-border"
-                  />
-                  <div
-                    class="woocommerce-timeline-item__title"
+                  <span
+                    class="woocommerce-list__item-title"
                   >
-                    <div
-                      class="woocommerce-timeline-item__headline"
-                    >
-                      <svg
-                        class="gridicon gridicons-cross is-error"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        width="24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <g>
-                          <path
-                            d="M18.36 19.78L12 13.41l-6.36 6.37-1.42-1.42L10.59 12 4.22 5.64l1.42-1.42L12 10.59l6.36-6.36 1.41 1.41L13.41 12l6.36 6.36z"
-                          />
-                        </g>
-                      </svg>
-                      <span>
-                        Payment was screened by your fraud filters and blocked.
-                      </span>
-                    </div>
-                    <span
-                      class="woocommerce-timeline-item__timestamp"
-                    >
-                      6:09am
-                    </span>
-                  </div>
-                  <div
-                    class="woocommerce-timeline-item__body"
+                    Channel
+                  </span>
+                  <span
+                    class="woocommerce-list__item-content"
                   >
                     <span>
-                      <p
-                        class="fraud-outcome-ruleset-item"
-                      >
-                        Block if the purchase price is not in your defined range
-                      </p>
+                      Online
                     </span>
-                  </div>
-                </li>
-              </ul>
-              <hr />
+                  </span>
+                </div>
+              </div>
+            </li>
+            <li
+              class="woocommerce-list__item"
+            >
+              <div
+                class="woocommerce-list__item-inner"
+              >
+                <div
+                  class="woocommerce-list__item-text"
+                >
+                  <span
+                    class="woocommerce-list__item-title"
+                  >
+                    Customer
+                  </span>
+                  <span
+                    class="woocommerce-list__item-content"
+                  >
+                    <a
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=First%20Last%20(admin_test_example%40email.com)"
+                    >
+                      First Last
+                    </a>
+                  </span>
+                </div>
+              </div>
+            </li>
+            <li
+              class="woocommerce-list__item"
+            >
+              <div
+                class="woocommerce-list__item-inner"
+              >
+                <div
+                  class="woocommerce-list__item-text"
+                >
+                  <span
+                    class="woocommerce-list__item-title"
+                  >
+                    Order
+                  </span>
+                  <span
+                    class="woocommerce-list__item-content"
+                  >
+                    <a
+                      data-link-type="external"
+                      href="http://wcpay.test/wp-admin/post.php?post=776&action=edit"
+                    >
+                      776
+                    </a>
+                  </span>
+                </div>
+              </div>
+            </li>
+            <li
+              class="woocommerce-list__item"
+            >
+              <div
+                class="woocommerce-list__item-inner"
+              >
+                <div
+                  class="woocommerce-list__item-text"
+                >
+                  <span
+                    class="woocommerce-list__item-title"
+                  >
+                    Payment method
+                  </span>
+                  <span
+                    class="woocommerce-list__item-content"
+                  >
+                    <span
+                      class="payment-method-details"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--card"
+                      />
+                       •••• 
+                    </span>
+                  </span>
+                </div>
+              </div>
+            </li>
+            <li
+              class="woocommerce-list__item"
+            >
+              <div
+                class="woocommerce-list__item-inner"
+              >
+                <div
+                  class="woocommerce-list__item-text"
+                >
+                  <span
+                    class="woocommerce-list__item-title"
+                  >
+                    Risk evaluation
+                  </span>
+                  <span
+                    class="woocommerce-list__item-content"
+                  >
+                    –
+                  </span>
+                </div>
+              </div>
             </li>
           </ul>
         </div>
       </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
     </div>
     <div
-      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Card"
     >
       <div
-        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
-      >
-        Payment method
-      </div>
-      <div
-        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+        class="css-mgwsf4-View-Content em57xhy0"
       >
         <div
-          class="payment-method-details"
+          class="components-flex components-card__header components-card-header css-1e8ifbz-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-large em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardHeader"
+        >
+          Timeline
+        </div>
+        <div
+          class="components-card__body components-card-body css-1nonx1n-View-Body-borderRadius-large em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
         >
           <div
-            class="payment-method-details__column"
+            class="woocommerce-timeline"
           >
-            <div
-              class="payment-method-detail"
-            >
-              <h4
-                class="payment-method-detail__label"
+            <ul>
+              <li
+                class="woocommerce-timeline-group"
               >
-                Number
-              </h4>
-              <p
-                class="payment-method-detail__value"
-              >
-                –
-              </p>
-            </div>
-            <div
-              class="payment-method-detail"
-            >
-              <h4
-                class="payment-method-detail__label"
-              >
-                Expires
-              </h4>
-              <p
-                class="payment-method-detail__value"
-              >
-                –
-              </p>
-            </div>
-            <div
-              class="payment-method-detail"
-            >
-              <h4
-                class="payment-method-detail__label"
-              >
-                Type
-              </h4>
-              <p
-                class="payment-method-detail__value"
-              >
-                –
-              </p>
-            </div>
-            <div
-              class="payment-method-detail"
-            >
-              <h4
-                class="payment-method-detail__label"
-              >
-                ID
-              </h4>
-              <p
-                class="payment-method-detail__value"
-              >
-                –
-              </p>
-            </div>
+                <p
+                  class="woocommerce-timeline-group__title"
+                >
+                  March 27, 2023
+                </p>
+                <ul>
+                  <li
+                    class="woocommerce-timeline-item"
+                  >
+                    <div
+                      class="woocommerce-timeline-item__top-border"
+                    />
+                    <div
+                      class="woocommerce-timeline-item__title"
+                    >
+                      <div
+                        class="woocommerce-timeline-item__headline"
+                      >
+                        <svg
+                          class="gridicon gridicons-cross is-error"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <g>
+                            <path
+                              d="M18.36 19.78L12 13.41l-6.36 6.37-1.42-1.42L10.59 12 4.22 5.64l1.42-1.42L12 10.59l6.36-6.36 1.41 1.41L13.41 12l6.36 6.36z"
+                            />
+                          </g>
+                        </svg>
+                        <span>
+                          Payment was screened by your fraud filters and blocked.
+                        </span>
+                      </div>
+                      <span
+                        class="woocommerce-timeline-item__timestamp"
+                      >
+                        6:09am
+                      </span>
+                    </div>
+                    <div
+                      class="woocommerce-timeline-item__body"
+                    >
+                      <span>
+                        <p
+                          class="fraud-outcome-ruleset-item"
+                        >
+                          Block if the purchase price is not in your defined range
+                        </p>
+                      </span>
+                    </div>
+                  </li>
+                </ul>
+                <hr />
+              </li>
+            </ul>
           </div>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+    </div>
+    <div
+      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Card"
+    >
+      <div
+        class="css-mgwsf4-View-Content em57xhy0"
+      >
+        <div
+          class="components-flex components-card__header components-card-header css-1e8ifbz-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-large em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardHeader"
+        >
+          Payment method
+        </div>
+        <div
+          class="components-card__body components-card-body css-1nonx1n-View-Body-borderRadius-large em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
+        >
           <div
-            class="payment-method-details__column"
+            class="payment-method-details"
           >
             <div
-              class="payment-method-detail"
+              class="payment-method-details__column"
             >
-              <h4
-                class="payment-method-detail__label"
+              <div
+                class="payment-method-detail"
               >
-                Owner
-              </h4>
-              <p
-                class="payment-method-detail__value"
+                <h4
+                  class="payment-method-detail__label"
+                >
+                  Number
+                </h4>
+                <p
+                  class="payment-method-detail__value"
+                >
+                  –
+                </p>
+              </div>
+              <div
+                class="payment-method-detail"
               >
-                First Last
-              </p>
+                <h4
+                  class="payment-method-detail__label"
+                >
+                  Expires
+                </h4>
+                <p
+                  class="payment-method-detail__value"
+                >
+                  –
+                </p>
+              </div>
+              <div
+                class="payment-method-detail"
+              >
+                <h4
+                  class="payment-method-detail__label"
+                >
+                  Type
+                </h4>
+                <p
+                  class="payment-method-detail__value"
+                >
+                  –
+                </p>
+              </div>
+              <div
+                class="payment-method-detail"
+              >
+                <h4
+                  class="payment-method-detail__label"
+                >
+                  ID
+                </h4>
+                <p
+                  class="payment-method-detail__value"
+                >
+                  –
+                </p>
+              </div>
             </div>
             <div
-              class="payment-method-detail"
+              class="payment-method-details__column"
             >
-              <h4
-                class="payment-method-detail__label"
+              <div
+                class="payment-method-detail"
               >
-                Owner email
-              </h4>
-              <p
-                class="payment-method-detail__value"
+                <h4
+                  class="payment-method-detail__label"
+                >
+                  Owner
+                </h4>
+                <p
+                  class="payment-method-detail__value"
+                >
+                  First Last
+                </p>
+              </div>
+              <div
+                class="payment-method-detail"
               >
-                admin_test_example@email.com
-              </p>
-            </div>
-            <div
-              class="payment-method-detail"
-            >
-              <h4
-                class="payment-method-detail__label"
+                <h4
+                  class="payment-method-detail__label"
+                >
+                  Owner email
+                </h4>
+                <p
+                  class="payment-method-detail__value"
+                >
+                  admin_test_example@email.com
+                </p>
+              </div>
+              <div
+                class="payment-method-detail"
               >
-                Address
-              </h4>
-              <p
-                class="payment-method-detail__value"
+                <h4
+                  class="payment-method-detail__label"
+                >
+                  Address
+                </h4>
+                <p
+                  class="payment-method-detail__value"
+                >
+                  <span>
+                    60 29th street
+                    <br />
+                    San Francisco, CA 91140
+                  </span>
+                </p>
+              </div>
+              <div
+                class="payment-method-detail"
               >
-                <span>
-                  60 29th street
-                  <br />
-                  San Francisco, CA 91140
-                </span>
-              </p>
-            </div>
-            <div
-              class="payment-method-detail"
-            >
-              <h4
-                class="payment-method-detail__label"
+                <h4
+                  class="payment-method-detail__label"
+                >
+                  Origin
+                </h4>
+                <p
+                  class="payment-method-detail__value"
+                >
+                  United States of America
+                </p>
+              </div>
+              <div
+                class="payment-method-detail"
               >
-                Origin
-              </h4>
-              <p
-                class="payment-method-detail__value"
+                <h4
+                  class="payment-method-detail__label"
+                >
+                  CVC check
+                </h4>
+                <p
+                  class="payment-method-detail__value"
+                >
+                  Not checked
+                </p>
+              </div>
+              <div
+                class="payment-method-detail"
               >
-                United States of America
-              </p>
-            </div>
-            <div
-              class="payment-method-detail"
-            >
-              <h4
-                class="payment-method-detail__label"
+                <h4
+                  class="payment-method-detail__label"
+                >
+                  Street check
+                </h4>
+                <p
+                  class="payment-method-detail__value"
+                >
+                  Not checked
+                </p>
+              </div>
+              <div
+                class="payment-method-detail"
               >
-                CVC check
-              </h4>
-              <p
-                class="payment-method-detail__value"
-              >
-                Not checked
-              </p>
-            </div>
-            <div
-              class="payment-method-detail"
-            >
-              <h4
-                class="payment-method-detail__label"
-              >
-                Street check
-              </h4>
-              <p
-                class="payment-method-detail__value"
-              >
-                Not checked
-              </p>
-            </div>
-            <div
-              class="payment-method-detail"
-            >
-              <h4
-                class="payment-method-detail__label"
-              >
-                Zip check
-              </h4>
-              <p
-                class="payment-method-detail__value"
-              >
-                Not checked
-              </p>
+                <h4
+                  class="payment-method-detail__label"
+                >
+                  Zip check
+                </h4>
+                <p
+                  class="payment-method-detail__value"
+                >
+                  Not checked
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
     </div>
   </div>
 </div>

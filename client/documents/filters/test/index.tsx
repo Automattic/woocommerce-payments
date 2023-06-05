@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 
@@ -31,6 +31,13 @@ describe( 'Documents filters', () => {
 			screen.getByRole( 'button', { name: /Advanced filters/i } )
 		);
 		rerender( <DocumentsFilters /> );
+	} );
+
+	// Waiting for the microtask queue to be flushed to prevent "TypeError: Cannot read properties of null (reading 'documentElement')"
+	// See https://github.com/floating-ui/floating-ui/issues/1908 and https://floating-ui.com/docs/react#testing
+	afterEach( async () => {
+		// eslint-disable-next-line @typescript-eslint/no-empty-function
+		await act( async () => {} );
 	} );
 
 	describe( 'when filtering by date', () => {
