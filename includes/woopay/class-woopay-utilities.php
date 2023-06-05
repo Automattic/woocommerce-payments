@@ -12,6 +12,7 @@ use WC_Payments_Subscriptions_Utilities;
 use WooPay_Extension;
 use WCPay\Logger;
 use WC_Geolocation;
+use WC_Order;
 use WC_Payments;
 
 /**
@@ -266,4 +267,25 @@ class WooPay_Utilities {
 	public function is_guest_checkout_enabled(): bool {
 		return 'yes' === get_option( 'woocommerce_enable_guest_checkout', 'no' );
 	}
+
+
+	/**
+	 * Respond to a WooPay pre-flight request, updates order status and returns response.
+	 *
+	 * @param WC_Order $order The order for which the request is made.
+	 *
+	 * @return array
+	 */
+	public function preflight_response( WC_Order $order ): array {
+		// Set the order status to "pending payment".
+		$order->update_status( 'pending' );
+
+		// Bail out with success so we don't process the payment now,
+		// but still let WooPay continue with the payment processing.
+		return [
+			'result'   => 'success',
+			'redirect' => '',
+		];
+	}
+
 }
