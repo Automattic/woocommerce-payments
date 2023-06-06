@@ -16,6 +16,7 @@ import { HoverTooltip } from 'components/tooltip';
 import {
 	useEnabledPaymentMethodIds,
 	useWooPayEnabledSettings,
+	useWooPayShowIncompatibilityNotice,
 } from 'wcpay/data';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import Warning from 'components/icons/warning';
@@ -27,6 +28,8 @@ const WooPayExpressCheckoutItem = () => {
 		isWooPayEnabled,
 		updateIsWooPayEnabled,
 	] = useWooPayEnabledSettings();
+
+	const showIncompatibilityNotice = useWooPayShowIncompatibilityNotice();
 
 	const isStripeLinkEnabled = enabledMethodIds.includes( 'link' );
 
@@ -140,30 +143,32 @@ const WooPayExpressCheckoutItem = () => {
 							</a>
 						</div>
 					</div>
-					<div className="express-checkout__row express-checkout__row-warning">
-						<Icon icon={ Warning } />
-						<p>
-							{ interpolateComponents( {
-								mixedString: __(
-									/* eslint-disable-next-line max-len */
-									'WooPay has been disabled because one or more of your extensions are incompatible.' +
-										' ' +
-										'{{learnMoreLink}}Learn More{{/learnMoreLink}}',
-									'woocommerce-payments'
-								),
-								components: {
-									learnMoreLink: (
-										// eslint-disable-next-line jsx-a11y/anchor-has-content
-										<a
-											target="_blank"
-											rel="noreferrer"
-											href="https://woocommerce.com/document/woopay-merchant-documentation/#compatibility"
-										/>
+					{ showIncompatibilityNotice && (
+						<div className="express-checkout__row express-checkout__row-warning">
+							<Icon icon={ Warning } />
+							<p>
+								{ interpolateComponents( {
+									mixedString: __(
+										/* eslint-disable-next-line max-len */
+										'WooPay has been disabled because one or more of your extensions are incompatible.' +
+											' ' +
+											'{{learnMoreLink}}Learn More{{/learnMoreLink}}',
+										'woocommerce-payments'
 									),
-								},
-							} ) }
-						</p>
-					</div>
+									components: {
+										learnMoreLink: (
+											// eslint-disable-next-line jsx-a11y/anchor-has-content
+											<a
+												target="_blank"
+												rel="noreferrer"
+												href="https://woocommerce.com/document/woopay-merchant-documentation/#compatibility"
+											/>
+										),
+									},
+								} ) }
+							</p>
+						</div>
+					) }
 				</li>
 			) }
 		</>
