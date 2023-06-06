@@ -62,7 +62,7 @@ export const OnboardingTextField: React.FC< OnboardingTextFieldProps > = ( {
 	name,
 	...rest
 } ) => {
-	const { data, setData } = useOnboardingContext();
+	const { data, setData, touched } = useOnboardingContext();
 	const { validate, error } = useValidation( name );
 
 	return (
@@ -71,8 +71,9 @@ export const OnboardingTextField: React.FC< OnboardingTextFieldProps > = ( {
 			value={ data[ name ] || '' }
 			onChange={ ( value: string ) => {
 				setData( { [ name ]: value } );
-				validate( value );
+				if ( touched[ name ] ) validate( value );
 			} }
+			onBlur={ () => validate() }
 			error={ error() }
 			{ ...rest }
 		/>
@@ -88,7 +89,7 @@ export const OnboardingPhoneNumberField: React.FC< OnboardingPhoneNumberFieldPro
 	name,
 	...rest
 } ) => {
-	const { data, setData, temp, setTemp } = useOnboardingContext();
+	const { data, setData, temp, setTemp, touched } = useOnboardingContext();
 	const { validate, error } = useValidation( name );
 
 	return (
@@ -99,8 +100,9 @@ export const OnboardingPhoneNumberField: React.FC< OnboardingPhoneNumberFieldPro
 			onChange={ ( value: string, phoneCountryCode: string ) => {
 				setTemp( { phoneCountryCode } );
 				setData( { [ name ]: value } );
-				validate( value );
+				if ( touched[ name ] ) validate( value );
 			} }
+			onBlur={ () => validate() }
 			error={ error() }
 			{ ...rest }
 		/>

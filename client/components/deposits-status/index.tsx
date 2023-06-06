@@ -22,6 +22,8 @@ interface Props {
 	status: DepositsStatus;
 	interval: DepositsIntervals;
 	accountStatus: AccountStatus;
+	poEnabled: boolean;
+	poComplete: boolean;
 	iconSize: number;
 }
 
@@ -29,6 +31,8 @@ const DepositsStatus: React.FC< Props > = ( {
 	status,
 	interval,
 	accountStatus,
+	poEnabled,
+	poComplete,
 	iconSize,
 } ) => {
 	let className = 'account-status__info__green';
@@ -46,8 +50,14 @@ const DepositsStatus: React.FC< Props > = ( {
 		className = 'account-status__info__gray';
 		icon = <GridiconNotice size={ iconSize } />;
 	} else if ( 'disabled' === status ) {
-		description = __( 'Disabled', 'woocommerce-payments' );
-		className = 'account-status__info__red';
+		description =
+			poEnabled && ! poComplete
+				? __( 'Not connected', 'woocommerce-payments' )
+				: __( 'Disabled', 'woocommerce-payments' );
+		className =
+			poEnabled && ! poComplete
+				? 'account-status__info__gray'
+				: 'account-status__info__red';
 		icon = <GridiconNotice size={ iconSize } />;
 	} else if ( showSuspendedNotice ) {
 		const learnMoreHref =
