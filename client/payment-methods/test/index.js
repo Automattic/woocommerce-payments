@@ -249,7 +249,11 @@ describe( 'PaymentMethods', () => {
 			'sofort',
 		] );
 
-		render( <PaymentMethods /> );
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
 
 		const affirm = screen.getByRole( 'checkbox', { name: 'Affirm' } );
 		const afterpay = screen.getByRole( 'checkbox', {
@@ -279,6 +283,21 @@ describe( 'PaymentMethods', () => {
 			'affirm',
 			'afterpay_clearpay',
 		] );
+
+		useGetPaymentMethodStatuses.mockReturnValue( {
+			card_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			affirm_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			afterpay_clearpay_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+		} );
 
 		render( <PaymentMethods /> );
 
