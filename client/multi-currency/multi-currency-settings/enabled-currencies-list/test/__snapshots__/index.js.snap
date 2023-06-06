@@ -259,10 +259,10 @@ exports[`Multi-Currency enabled currencies list Enabled currencies list renders 
             data-wp-component="CardBody"
           >
             <button
-              class="components-button wcpay-multi-currency__available-currencies-modal is-secondary"
+              class="components-button wcpay-multi-currency__available-currencies-modal"
               type="button"
             >
-              Add currencies
+              Add/remove currencies
             </button>
           </div>
         </div>
