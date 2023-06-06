@@ -1725,12 +1725,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function update_is_woopay_enabled( $is_woopay_enabled ) {
 		$current_is_woopay_enabled = 'yes' === $this->get_option( 'platform_checkout', 'no' );
+
 		if ( $is_woopay_enabled !== $current_is_woopay_enabled ) {
 			WC_Payments::woopay_tracker()->maybe_record_admin_event(
 				$is_woopay_enabled ? 'woopay_enabled' : 'woopay_disabled',
 				[ 'test_mode' => WC_Payments::mode()->is_test() ? 1 : 0 ]
 			);
+
 			$this->update_option( 'platform_checkout', $is_woopay_enabled ? 'yes' : 'no' );
+
 			if ( ! $is_woopay_enabled ) {
 				WooPay_Order_Status_Sync::remove_webhook();
 			} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
