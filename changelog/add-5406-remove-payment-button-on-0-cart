@@ -1,4 +1,4 @@
 Significance: minor
 Type: fix
 
-Remove Google Pay and Apple Pay for zero balance owed carts.
+Hide Google Pay and Apple Pay buttons when total amount is zero on item details, cart, and checkout pages.
