@@ -15,7 +15,7 @@ use WC_Payments_Localization_Service;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Database_Cache;
 use WCPay\Logger;
-use WCPay\MultiCurrency\Exceptions\Invalid_Currency_Exception;
+use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
 use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
 
 defined( 'ABSPATH' ) || exit;
@@ -590,25 +590,20 @@ class MultiCurrency {
 	 *
 	 * @return void
 	 *
-	 * @throws Invalid_Currency_Exception
+	 * @throws InvalidCurrencyException
 	 */
 	public function set_enabled_currencies( $currencies = [] ) {
-		// If there are no currencies, just exit.
-		if ( 0 === count( $currencies ) ) {
+		// If curriencies is not an array, or if there are no currencies, just exit.
+		if ( ! is_array( $currencies ) || 0 === count( $currencies ) ) {
 			return;
 		}
-
-		$currencies[] = 'banana';
 
 		// Confirm the currencies submitted are available/valid currencies.
 		$invalid_currencies = array_diff( $currencies, array_keys( $this->get_available_currencies() ) );
 		if ( 0 < count( $invalid_currencies ) ) {
-			$message = 'Invalid currency/currencies passed to set_enabled_currencies';
-			Logger::error(
-				"$message: " . var_export( $invalid_currencies, true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
-			);
-
-			throw new Invalid_Currency_Exception( $message, 'wcpay_multi_currency_invalid_currency', 500 );
+			$message = 'Invalid currency/currencies passed to set_enabled_currencies: ' . implode( ', ', $invalid_currencies );
+			Logger::error( $message );
+			throw new InvalidCurrencyException( $message, 'wcpay_multi_currency_invalid_currency', 500 );
 		}
 
 		// Get the currencies that were removed before they are updated.

@@ -1,6 +1,6 @@
 <?php
 /**
- * Class Invalid_Currency_Exception
+ * Class InvalidCurrencyException
  *
  * @package WooCommerce\Payments
  */
@@ -14,4 +14,4 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Exception for throwing errors when an invalid currency is used.
  */
-class Invalid_Currency_Exception extends Base_Exception {}
+class InvalidCurrencyException extends Base_Exception {}
