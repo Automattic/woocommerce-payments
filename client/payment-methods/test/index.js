@@ -428,7 +428,7 @@ describe( 'PaymentMethods', () => {
 		act( () => {
 			// Enabling a PM with requirements should show the activation modal
 			user.click( bancontactCheckbox );
-			jest.runAllTimers();
+			jest.runOnlyPendingTimers();
 		} );
 
 		expect(
@@ -470,7 +470,7 @@ describe( 'PaymentMethods', () => {
 		act( () => {
 			// Disabling an already active PM should show the delete modal
 			user.click( bancontactCheckbox );
-			jest.runAllTimers();
+			jest.runOnlyPendingTimers();
 		} );
 
 		expect(

@@ -163,7 +163,7 @@ const OrderItemsThresholdRuleCard: React.FC = () => (
 		<FraudProtectionRuleToggle
 			setting={ 'order_items_threshold' }
 			label={ __(
-				'Screen transactions for abnormal item counts',
+				'Block transactions for abnormal item counts',
 				'woocommerce-payments'
 			) }
 		>

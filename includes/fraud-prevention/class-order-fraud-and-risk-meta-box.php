@@ -39,8 +39,8 @@ class Order_Fraud_And_Risk_Meta_Box {
 	 * Maybe add the meta box.
 	 */
 	public function maybe_add_meta_box() {
-		// If fraud settings are off, or if we cannot get the screen ID, exit.
-		if ( ! WC_Payments_Features::is_fraud_protection_settings_enabled() || ! function_exists( '\wc_get_page_screen_id' ) ) {
+		// If we cannot get the screen ID, exit.
+		if ( ! function_exists( '\wc_get_page_screen_id' ) ) {
 			return;
 		}
 

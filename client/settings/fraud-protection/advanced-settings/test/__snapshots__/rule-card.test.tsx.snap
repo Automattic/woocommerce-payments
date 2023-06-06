@@ -30,11 +30,70 @@ Object {
     />
     <div>
       <div
-        class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+        class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Card"
         id="test-id"
       >
         <div
-          class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
+          class="css-mgwsf4-View-Content em57xhy0"
+        >
+          <div
+            class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="CardBody"
+          >
+            <div>
+              <p
+                class="fraud-protection-rule-card-header"
+              >
+                test title
+              </p>
+              <p
+                class="fraud-protection-rule-card-description"
+              >
+                test description
+              </p>
+            </div>
+          </div>
+          <hr />
+          <div
+            class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="CardBody"
+          >
+            test content
+          </div>
+        </div>
+        <div
+          aria-hidden="true"
+          class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Elevation"
+        />
+        <div
+          aria-hidden="true"
+          class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Elevation"
+        />
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Card"
+      id="test-id"
+    >
+      <div
+        class="css-mgwsf4-View-Content em57xhy0"
+      >
+        <div
+          class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
         >
           <div>
             <p
@@ -51,40 +110,25 @@ Object {
         </div>
         <hr />
         <div
-          class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
+          class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
         >
           test content
         </div>
       </div>
-    </div>
-  </body>,
-  "container": <div>
-    <div
-      class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
-      id="test-id"
-    >
       <div
-        class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
-      >
-        <div>
-          <p
-            class="fraud-protection-rule-card-header"
-          >
-            test title
-          </p>
-          <p
-            class="fraud-protection-rule-card-description"
-          >
-            test description
-          </p>
-        </div>
-      </div>
-      <hr />
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
       <div
-        class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
-      >
-        test content
-      </div>
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
     </div>
   </div>,
   "debug": [Function],

@@ -27,6 +27,7 @@ const BalanceTooltip: React.FC< BalanceTooltipProps > = ( {
 				className="wcpay-account-balances__balances__item__tooltip-button"
 				role="button"
 				aria-label={ label }
+				tabIndex={ 0 }
 			>
 				<HelpOutlineIcon
 					size={ 18 }
