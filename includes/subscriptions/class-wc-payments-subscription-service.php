@@ -105,14 +105,14 @@ class WC_Payments_Subscription_Service {
 	private $is_creating_subscription_from_update_payment_method = false;
 
 	/**
-	 * WC Payments Subscriptions Constructor
+	 * WC Payments Subscriptions Constructor.
+	 *
+	 * Attaches callbacks for managing WC Subscriptions.
 	 *
 	 * @param WC_Payments_API_Client       $api_client       WC payments API Client.
-	 * @param WC_Payments_Customer_Service $customer_service WC payments customer serivce.
+	 * @param WC_Payments_Customer_Service $customer_service WC payments customer service.
 	 * @param WC_Payments_Product_Service  $product_service  WC payments Products service.
 	 * @param WC_Payments_Invoice_Service  $invoice_service  WC payments Invoice service.
-	 *
-	 * @return void
 	 */
 	public function __construct(
 		WC_Payments_API_Client $api_client,
@@ -120,10 +120,22 @@ class WC_Payments_Subscription_Service {
 		WC_Payments_Product_Service $product_service,
 		WC_Payments_Invoice_Service $invoice_service
 	) {
+
 		$this->payments_api_client = $api_client;
 		$this->customer_service    = $customer_service;
 		$this->product_service     = $product_service;
 		$this->invoice_service     = $invoice_service;
+
+		/**
+		 * When a store is in staging mode, we don't want any subscription updates or purchases to be sent to the server.
+		 *
+		 * Sending these requests from staging sites can have unintended consequences for the live store. For example,
+		 * Subscriptions which renew on the staging site will lead to pausing the shared subscription record at Stripe
+		 * and that will result in inexplicable paused subscriptions and missed renewal payments for the live site.
+		 */
+		if ( WC_Payments_Subscriptions::is_duplicate_site() ) {
+			return;
+		}
 
 		if ( ! $this->is_subscriptions_plugin_active() ) {
 			add_action( 'woocommerce_checkout_subscription_created', [ $this, 'create_subscription' ] );
@@ -247,12 +259,15 @@ class WC_Payments_Subscription_Service {
 	/**
 	 * Determines if a given WC subscription is a WCPay subscription.
 	 *
+	 * On duplicate sites (staging or dev environments) all WCPay Subscrptions are disabled and so return false.
+	 * This is to avoid dev environments interacting with WCPay Subscriptions and communicating on behalf of the live store.
+	 *
 	 * @param WC_Subscription $subscription WC Subscription object.
 	 *
 	 * @return bool
 	 */
 	public static function is_wcpay_subscription( WC_Subscription $subscription ) : bool {
-		return WC_Payment_Gateway_WCPay::GATEWAY_ID === $subscription->get_payment_method() && (bool) self::get_wcpay_subscription_id( $subscription );
+		return ! WC_Payments_Subscriptions::is_duplicate_site() && WC_Payment_Gateway_WCPay::GATEWAY_ID === $subscription->get_payment_method() && (bool) self::get_wcpay_subscription_id( $subscription );
 	}
 
 	/**

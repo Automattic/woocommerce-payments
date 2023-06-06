@@ -123,7 +123,13 @@ const AccountStatus = ( props ) => {
 	return (
 		<div>
 			<div>
-				<StatusChip accountStatus={ accountStatus.status } />
+				<StatusChip
+					accountStatus={ accountStatus.status }
+					poEnabled={ accountStatus.progressiveOnboarding.isEnabled }
+					poComplete={
+						accountStatus.progressiveOnboarding.isComplete
+					}
+				/>
 				{ renderPaymentsStatus( accountStatus.paymentsEnabled ) }
 				{ renderDepositsStatus( { deposits: accountStatus.deposits } ) }
 			</div>
