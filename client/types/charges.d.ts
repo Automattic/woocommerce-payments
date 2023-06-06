@@ -39,7 +39,9 @@ export interface PaymentMethodDetails {
 		| 'ideal'
 		| 'p24'
 		| 'sepa_debit'
-		| 'sofort';
+		| 'sofort'
+		| 'affirm'
+		| 'afterpay_clearpay';
 }
 
 export type OutcomeRiskLevel =

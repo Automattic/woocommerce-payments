@@ -1118,7 +1118,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_off_session( $payment_information->is_merchant_initiated() );
 				$request->set_payment_methods( $payment_methods );
 				$request->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
-
 				// The below if-statement ensures the support for UPE payment methods.
 				if ( $this->upe_needs_redirection( $payment_methods ) ) {
 					$request->set_return_url(
@@ -1136,6 +1135,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						)
 					);
 				}
+
+				$request->set_shipping( $this->get_shipping_data_from_order( $order ) );
 
 				// Make sure that setting fingerprint is performed after setting metadata because metadata will override any values you set before for metadata param.
 				$request->set_fingerprint( $payment_information->get_fingerprint() );
@@ -2619,6 +2620,35 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'id'        => ! empty( $intent ) ? $intent->get_id() : null,
 			'message'   => $error_message,
 			'http_code' => $http_code,
+		];
+	}
+
+	/**
+	 * Create the shiping data array to send to Stripe when making a purchase.
+	 *
+	 * @param WC_Order $order The order that is being paid for.
+	 * @return array          The shipping data to send to Stripe.
+	 */
+	public function get_shipping_data_from_order( WC_Order $order ): array {
+		$object_to_parse = $order;
+		return [
+			'name'    => implode(
+				' ',
+				array_filter(
+					[
+						$object_to_parse->get_shipping_first_name(),
+						$object_to_parse->get_shipping_last_name(),
+					]
+				)
+			),
+			'address' => [
+				'line1'       => $object_to_parse->get_shipping_address_1(),
+				'line2'       => $object_to_parse->get_shipping_address_2(),
+				'postal_code' => $object_to_parse->get_shipping_postcode(),
+				'city'        => $object_to_parse->get_shipping_city(),
+				'state'       => $object_to_parse->get_shipping_state(),
+				'country'     => $object_to_parse->get_shipping_country(),
+			],
 		];
 	}
 

@@ -27,7 +27,7 @@ class Affirm_Payment_Method extends UPE_Payment_Method {
 		$this->title       = __( 'Affirm', 'woocommerce-payments' );
 		$this->is_reusable = false;
 		$this->currencies  = [ 'USD', 'CAD' ];
-		$this->icon_url    = plugins_url( 'assets/images/payment-methods/woo.svg', WCPAY_PLUGIN_FILE );
+		$this->icon_url    = plugins_url( 'assets/images/payment-methods/affirm.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**

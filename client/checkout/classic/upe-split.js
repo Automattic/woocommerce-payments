@@ -19,6 +19,8 @@ import {
 	PAYMENT_METHOD_NAME_P24,
 	PAYMENT_METHOD_NAME_SEPA,
 	PAYMENT_METHOD_NAME_SOFORT,
+	PAYMENT_METHOD_NAME_AFFIRM,
+	PAYMENT_METHOD_NAME_AFTERPAY,
 } from '../constants.js';
 import { getUPEConfig } from 'utils/checkout';
 import WCPayAPI from '../api';
@@ -645,6 +647,8 @@ jQuery( function ( $ ) {
 		PAYMENT_METHOD_NAME_P24,
 		PAYMENT_METHOD_NAME_SEPA,
 		PAYMENT_METHOD_NAME_SOFORT,
+		PAYMENT_METHOD_NAME_AFFIRM,
+		PAYMENT_METHOD_NAME_AFTERPAY,
 		paymentMethodsConfig.card !== undefined && PAYMENT_METHOD_NAME_CARD,
 	].filter( Boolean );
 	const checkoutEvents = wcpayPaymentMethods
