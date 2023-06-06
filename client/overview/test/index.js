@@ -31,13 +31,19 @@ jest.mock( '@woocommerce/experimental', () => {
 		Text: () => <div>text</div>,
 	};
 } );
-jest.mock( '@woocommerce/navigation', () => ( { getQuery: jest.fn() } ) );
+jest.mock( '@woocommerce/navigation', () => ( {
+	getQuery: jest.fn(),
+	addHistoryListener: jest.fn(),
+} ) );
 
 jest.mock( '@wordpress/data', () => ( {
 	registerStore: jest.fn(),
 	combineReducers: jest.fn(),
 	useDispatch: jest.fn( () => ( { updateOptions: jest.fn() } ) ),
-	dispatch: jest.fn( () => ( { setIsMatching: jest.fn() } ) ),
+	dispatch: jest.fn( () => ( {
+		setIsMatching: jest.fn(),
+		onLoad: jest.fn(),
+	} ) ),
 	withDispatch: jest.fn( () => jest.fn() ),
 	createRegistryControl: jest.fn(),
 	select: jest.fn(),

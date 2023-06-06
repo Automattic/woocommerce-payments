@@ -3,19 +3,40 @@
 exports[`AccountStatus renders error status 1`] = `
 <div>
   <div
-    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
   >
     <div
-      class="components-flex components-card__header is-size-medium woocommerce-account-status__header e1q7k77g1 css-2ewdaq-Flex-HeaderUI eboqfv50"
-      direction="row"
+      class="css-mgwsf4-View-Content em57xhy0"
     >
-      Account details
+      <div
+        class="components-flex components-card__header components-card-header woocommerce-account-status__header css-1g7xfrj-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardHeader"
+      >
+        Account details
+      </div>
+      <div
+        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
+      >
+        Error determining the connection status.
+      </div>
     </div>
     <div
-      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
-    >
-      Error determining the connection status.
-    </div>
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
   </div>
 </div>
 `;
@@ -23,127 +44,164 @@ exports[`AccountStatus renders error status 1`] = `
 exports[`AccountStatus renders normal status 1`] = `
 <div>
   <div
-    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
   >
     <div
-      class="components-flex components-card__header is-size-medium woocommerce-account-status__header e1q7k77g1 css-2ewdaq-Flex-HeaderUI eboqfv50"
-      direction="row"
+      class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="components-flex__item account-details css-1s295sp-Item eboqfv51"
+        class="components-flex components-card__header components-card-header woocommerce-account-status__header css-1g7xfrj-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardHeader"
       >
-        Account details
+        <div
+          class="components-flex-item account-details css-mw3lhz-View-Item-sx-Base em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="FlexItem"
+        >
+          Account details
+        </div>
+        <div
+          class="components-flex-item components-flex-block account-status css-14wzr73-View-Item-sx-Base-block em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="FlexBlock"
+        >
+          <span
+            class="chip chip-primary is-compact"
+          >
+            Complete
+          </span>
+        </div>
+        <div
+          class="components-flex-item edit-details css-mw3lhz-View-Item-sx-Base em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="FlexItem"
+        >
+          <button
+            class="components-button is-link"
+            type="button"
+          >
+            Edit details
+          </button>
+        </div>
       </div>
       <div
-        class="components-flex__block account-status css-yr442k-Item-Block eboqfv52"
+        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
-        <span
-          class="chip chip-primary is-compact"
+        <div
+          class="components-flex woocommerce-account-status-item css-h2ogiv-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
         >
-          Complete
-        </span>
-      </div>
-      <div
-        class="components-flex__item edit-details css-1s295sp-Item eboqfv51"
-      >
-        <button
-          class="components-button is-link"
-          type="button"
+          <div
+            class="components-flex-item item-label css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            Payments:
+          </div>
+          <div
+            class="components-flex-item components-flex-block item-value css-14wzr73-View-Item-sx-Base-block em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexBlock"
+          >
+            <span
+              class="account-status__info__green"
+            >
+              <svg
+                class="gridicon gridicons-checkmark-circle"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g>
+                  <path
+                    d="M11 17.768l-4.884-4.884 1.768-1.768L11 14.232l8.658-8.658A9.98 9.98 0 0012 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10a9.94 9.94 0 00-.966-4.266L11 17.768z"
+                  />
+                </g>
+              </svg>
+              Enabled
+            </span>
+          </div>
+        </div>
+        <div
+          class="components-flex woocommerce-account-status-item css-h2ogiv-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
         >
-          Edit details
-        </button>
+          <div
+            class="components-flex-item item-label css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            Deposits:
+          </div>
+          <div
+            class="components-flex-item components-flex-block item-value css-14wzr73-View-Item-sx-Base-block em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexBlock"
+          >
+            <span
+              class="account-status__info__green"
+            >
+              <svg
+                class="gridicon gridicons-checkmark-circle"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g>
+                  <path
+                    d="M11 17.768l-4.884-4.884 1.768-1.768L11 14.232l8.658-8.658A9.98 9.98 0 0012 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10a9.94 9.94 0 00-.966-4.266L11 17.768z"
+                  />
+                </g>
+              </svg>
+              Automatic
+            </span>
+          </div>
+        </div>
+        <h4>
+          Active discounts
+        </h4>
+        <p>
+          Card transactions
+          :
+        </p>
+        Euro 
+        (EUR) 
+        <s>
+          2.9% + 0,00 € per transaction
+        </s>
+         2.9% + 0,30 € per transaction
+        <p>
+          <a
+            href="https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            Learn more
+          </a>
+        </p>
       </div>
     </div>
     <div
-      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
-    >
-      <div
-        class="components-flex woocommerce-account-status-item css-1cw5ysz-Flex eboqfv50"
-        direction="row"
-      >
-        <div
-          class="components-flex__item item-label css-1s295sp-Item eboqfv51"
-        >
-          Payments:
-        </div>
-        <div
-          class="components-flex__block item-value css-yr442k-Item-Block eboqfv52"
-        >
-          <span
-            class="account-status__info__green"
-          >
-            <svg
-              class="gridicon gridicons-checkmark-circle"
-              height="24"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <g>
-                <path
-                  d="M11 17.768l-4.884-4.884 1.768-1.768L11 14.232l8.658-8.658A9.98 9.98 0 0012 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10a9.94 9.94 0 00-.966-4.266L11 17.768z"
-                />
-              </g>
-            </svg>
-            Enabled
-          </span>
-        </div>
-      </div>
-      <div
-        class="components-flex woocommerce-account-status-item css-1cw5ysz-Flex eboqfv50"
-        direction="row"
-      >
-        <div
-          class="components-flex__item item-label css-1s295sp-Item eboqfv51"
-        >
-          Deposits:
-        </div>
-        <div
-          class="components-flex__block item-value css-yr442k-Item-Block eboqfv52"
-        >
-          <span
-            class="account-status__info__green"
-          >
-            <svg
-              class="gridicon gridicons-checkmark-circle"
-              height="24"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <g>
-                <path
-                  d="M11 17.768l-4.884-4.884 1.768-1.768L11 14.232l8.658-8.658A9.98 9.98 0 0012 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10a9.94 9.94 0 00-.966-4.266L11 17.768z"
-                />
-              </g>
-            </svg>
-            Automatic
-          </span>
-        </div>
-      </div>
-      <h4>
-        Active discounts
-      </h4>
-      <p>
-        Card transactions
-        :
-      </p>
-      Euro 
-      (EUR) 
-      <s>
-        2.9% + 0,00 € per transaction
-      </s>
-       2.9% + 0,30 € per transaction
-      <p>
-        <a
-          href="https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          Learn more
-        </a>
-      </p>
-    </div>
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
   </div>
 </div>
 `;
@@ -169,6 +227,25 @@ exports[`StatusChip renders partially restricted status 1`] = `
 `;
 
 exports[`StatusChip renders pending verification status 1`] = `
+<div>
+  <button
+    class="wcpay-tooltip__content-wrapper"
+    type="button"
+  >
+    <div
+      class="wcpay-tooltip__content-wrapper"
+    >
+      <span
+        class="chip chip-light is-compact"
+      >
+        Pending
+      </span>
+    </div>
+  </button>
+</div>
+`;
+
+exports[`StatusChip renders pending verification status for po 1`] = `
 <div>
   <button
     class="wcpay-tooltip__content-wrapper"
