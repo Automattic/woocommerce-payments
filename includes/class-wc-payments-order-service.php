@@ -8,6 +8,7 @@
 use WCPay\Constants\Fraud_Meta_Box_Type;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Fraud_Prevention\Models\Rule;
 use WCPay\Logger;
@@ -514,6 +515,28 @@ class WC_Payments_Order_Service {
 	public function get_charge_id_for_order( $order ) : string {
 		$order = $this->get_order( $order );
 		return $order->get_meta( self::CHARGE_ID_META_KEY, true );
+	}
+
+	/**
+	 * Get any dispute data for specified order.
+	 *
+	 * @param  mixed $order The order Id or order object.
+	 *
+	 * @return array|null The dispute data, or null if no dispute found.
+	 *
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function get_dispute_data_for_order( $order ) {
+		$charge_id = $this->get_charge_id_for_order( $order );
+
+		// Get charge data from WCPay Server.
+		$request = Get_Charge::create( $charge_id );
+		// Strange that we pass $charge_id as a constructor param and as a direct param to `send()`.
+		// `send()` could be overrode in each request class, so clients don't need to pass params twice or hard-code the hook name.
+		$charge_data = $request->send( 'wcpay_get_charge_request', $charge_id );
+
+		// Might need to check existence here before returning.
+		return $charge_data['dispute'];
 	}
 
 	/**
