@@ -14,11 +14,9 @@ import InlineNotice from '../components/inline-notice';
 jQuery( function ( $ ) {
 	const disableManualRefunds = getConfig( 'disableManualRefunds' ) ?? false;
 	const manualRefundsTip = getConfig( 'manualRefundsTip' ) ?? '';
-	const isDisputed = getConfig( 'hasDispute' );
+	const disputeNoticeData = getConfig( 'disputeNoticeData' );
 
-	if ( isDisputed ) {
-		renderInlineNotice( '#wcpay-order-payment-details-container' );
-	}
+	maybeShowDisputeNotice( disputeNoticeData );
 
 	$( '#woocommerce-order-items' ).on(
 		'click',
@@ -104,11 +102,24 @@ jQuery( function ( $ ) {
 		ReactDOM.render( modalToRender, container );
 	}
 
-	function renderInlineNotice( selector ) {
-		const container = document.querySelector( selector );
+	function maybeShowDisputeNotice( disputeData ) {
+		if ( ! disputeData ) {
+			return;
+		}
+
+		const container = document.querySelector( '#wcpay-order-payment-details-container' );
 		const notice = (
-			<InlineNotice status="error" isDismissible={ false }>
-				Dispute situation detected.
+			<InlineNotice
+				status="error"
+				isDismissible={ false }
+				actions={ [
+					{
+						label: __( 'Respond now', 'woocommerce-payments' ),
+						url: disputeData.disputeUrl
+					}
+				] }
+			>
+				This order has a chargeback dispute of { disputeData.amountHtml } labeled as "{ disputeData.reason }". Please respond to this dispute before { disputeData.dueBy }.
 			</InlineNotice>
 		);
 		ReactDOM.render( notice, container );

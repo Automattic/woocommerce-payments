@@ -1280,7 +1280,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @return string Dispute details page url.
 	 */
-	private function compose_dispute_url( $dispute_id ) {
+	public function compose_dispute_url( $dispute_id ) {
 		return add_query_arg(
 			[
 				'page' => 'wc-admin',

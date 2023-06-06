@@ -216,6 +216,35 @@ class WC_Payments_Admin {
 		<?php
 	}
 
+	private function get_order_dispute_notice_js_data( $order ) {
+		$dispute_data     = $this->order_service->get_dispute_data_for_order( $order );
+		$dispute_id       = $dispute_data['dispute_id'];
+		$amount_raw       = $dispute_data['amount'];
+		$reason           = $dispute_data['reason'];
+		$currency         = $dispute_data['currency'];
+		$evidence_details = $dispute_data['evidence_details'];
+		$due_by           = $evidence_details['due_by'];
+
+		if ( ! $dispute_data || ! $evidence_details ) {
+			return false;
+		}
+
+		$due_by      = date_i18n( wc_date_format(), $due_by );
+		$dispute_url = $this->order_service->compose_dispute_url( $dispute_id );
+		// To do – need to render to currency value, might be better to do this on client.
+		// $amountHtml  = wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount_raw, $currency ), [ 'currency' => strtoupper( $currency ) ] );
+
+		return [
+			// Coming soon.
+			'daysRemaining' => 99,
+			'dueBy'         => $due_by,
+			'amountHtml'    => $amount_raw,
+			'reason'        => $reason,
+			'disputeUrl'    => $dispute_url,
+
+		];
+	}
+
 	/**
 	 * Add notice explaining that ISK cannot have decimals.
 	 */
@@ -683,11 +712,6 @@ class WC_Payments_Admin {
 
 			if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $order->get_payment_method() ) {
 				$refund_amount = $order->get_remaining_refund_amount();
-
-				// Sending the whole dispute object as js data.
-				// We don't need it all, so we could slim this down to specific fields.
-				$dispute_data = $this->order_service->get_dispute_data_for_order( $order );
-
 				wp_localize_script(
 					'WCPAY_ADMIN_ORDER_ACTIONS',
 					'wcpay_order_config',
@@ -698,7 +722,7 @@ class WC_Payments_Admin {
 						'formattedRefundAmount' => wp_strip_all_tags( wc_price( $refund_amount, [ 'currency' => $order->get_currency() ] ) ),
 						'refundedAmount'        => $order->get_total_refunded(),
 						'canRefund'             => $this->wcpay_gateway->can_refund_order( $order ),
-						'disputeData'           => $dispute_data,
+						'disputeNoticeData'     => $this->get_order_dispute_notice_js_data( $order ),
 					]
 				);
 
