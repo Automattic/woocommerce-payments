@@ -108,8 +108,12 @@ class RestController extends \WC_Payments_REST_Controller {
 	 */
 	public function update_enabled_currencies( $request ) {
 		$params = $request->get_params();
-		WC_Payments_Multi_Currency()->set_enabled_currencies( $params['enabled'] );
-		return $this->get_store_currencies();
+		try {
+			WC_Payments_Multi_Currency()->set_enabled_currencies( $params['enabled'] );
+			return $this->get_store_currencies();
+		} catch ( \Exception $e ) {
+			return rest_ensure_response( new \WP_Error( $e->get_error_code(), $e->getMessage() ) );
+		}
 	}
 
 	/**

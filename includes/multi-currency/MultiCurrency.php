@@ -15,6 +15,7 @@ use WC_Payments_Localization_Service;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Database_Cache;
 use WCPay\Logger;
+use WCPay\MultiCurrency\Exceptions\Invalid_Currency_Exception;
 use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
 
 defined( 'ABSPATH' ) || exit;
@@ -588,24 +589,42 @@ class MultiCurrency {
 	 * @param string[] $currencies Array of currency codes to be enabled.
 	 *
 	 * @return void
+	 *
+	 * @throws Invalid_Currency_Exception
 	 */
 	public function set_enabled_currencies( $currencies = [] ) {
-		if ( 0 < count( $currencies ) ) {
-			// Get the currencies that were removed before they are updated.
-			$removed_currencies = array_diff( array_keys( $this->get_enabled_currencies() ), $currencies );
+		// If there are no currencies, just exit.
+		if ( 0 === count( $currencies ) ) {
+			return;
+		}
 
-			// Update the enabled currencies and reinitialize.
-			update_option( $this->id . '_enabled_currencies', $currencies );
-			$this->initialize_enabled_currencies();
+		$currencies[] = 'banana';
 
-			Logger::debug(
-				'Enabled currencies updated: '
-				. var_export( $currencies, true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+		// Confirm the currencies submitted are available/valid currencies.
+		$invalid_currencies = array_diff( $currencies, array_keys( $this->get_available_currencies() ) );
+		if ( 0 < count( $invalid_currencies ) ) {
+			$message = 'Invalid currency/currencies passed to set_enabled_currencies';
+			Logger::error(
+				"$message: " . var_export( $invalid_currencies, true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
 			);
 
-			// Now remove the removed currencies settings.
-			$this->remove_currencies_settings( $removed_currencies );
+			throw new Invalid_Currency_Exception( $message, 'wcpay_multi_currency_invalid_currency', 500 );
 		}
+
+		// Get the currencies that were removed before they are updated.
+		$removed_currencies = array_diff( array_keys( $this->get_enabled_currencies() ), $currencies );
+
+		// Update the enabled currencies and reinitialize.
+		update_option( $this->id . '_enabled_currencies', $currencies );
+		$this->initialize_enabled_currencies();
+
+		Logger::debug(
+			'Enabled currencies updated: '
+			. var_export( $currencies, true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+		);
+
+		// Now remove the removed currencies settings.
+		$this->remove_currencies_settings( $removed_currencies );
 	}
 
 	/**
