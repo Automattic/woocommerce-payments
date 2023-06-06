@@ -1671,21 +1671,27 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Get if the merchant is eligible for Progressive Onboarding.
+	 * Check if the merchant is eligible for Progressive Onboarding based on self-assessment information.
 	 *
-	 * @param array $business_info Business information.
+	 * @param array $business_info   Business information.
+	 * @param array $store_info      Store information.
+	 * @param array $woo_store_stats Optional. Stats about the WooCommerce store to given more context to the PO eligibility decision.
 	 *
 	 * @return array HTTP response on success.
 	 *
 	 * @throws API_Exception - If not connected to server or request failed.
 	 */
-	public function get_onboarding_po_eligible( $business_info ) {
+	public function get_onboarding_po_eligible( array $business_info, array $store_info, array $woo_store_stats = [] ): array {
 		return $this->request(
 			[
-				'business' => $business_info,
+				'business'        => $business_info,
+				'store'           => $store_info,
+				'woo_store_stats' => $woo_store_stats,
 			],
 			self::ONBOARDING_API . '/router/po_eligible',
-			self::POST
+			self::POST,
+			true,
+			true
 		);
 	}
 

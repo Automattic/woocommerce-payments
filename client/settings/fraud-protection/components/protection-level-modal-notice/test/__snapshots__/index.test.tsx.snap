@@ -27,6 +27,9 @@ exports[`ProtectionLevelModalNotice renders the high notice when the level prop 
           Offers the highest level of filtering for stores, but may catch some legitimate transactions.
         </p>
       </div>
+      <div
+        class="components-notice__actions"
+      />
     </div>
   </div>
 </div>
@@ -59,6 +62,9 @@ exports[`ProtectionLevelModalNotice renders the standard notice when the level p
           Provides a standard level of filtering that's suitable for most business.
         </p>
       </div>
+      <div
+        class="components-notice__actions"
+      />
     </div>
   </div>
 </div>

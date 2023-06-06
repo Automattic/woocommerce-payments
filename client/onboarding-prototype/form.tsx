@@ -11,12 +11,12 @@ import { isEmpty, mapValues } from 'lodash';
 import { useStepperContext } from 'components/stepper';
 import { Item } from 'components/custom-select-control';
 import {
-	TextField,
-	TextFieldProps,
-	SelectField,
-	SelectFieldProps,
 	PhoneNumberField,
 	PhoneNumberFieldProps,
+	SelectField,
+	SelectFieldProps,
+	TextField,
+	TextFieldProps,
 } from 'components/form/fields';
 import { useOnboardingContext } from './context';
 import { OnboardingFields } from './types';
@@ -62,7 +62,7 @@ export const OnboardingTextField: React.FC< OnboardingTextFieldProps > = ( {
 	name,
 	...rest
 } ) => {
-	const { data, setData } = useOnboardingContext();
+	const { data, setData, touched } = useOnboardingContext();
 	const { validate, error } = useValidation( name );
 
 	return (
@@ -71,8 +71,9 @@ export const OnboardingTextField: React.FC< OnboardingTextFieldProps > = ( {
 			value={ data[ name ] || '' }
 			onChange={ ( value: string ) => {
 				setData( { [ name ]: value } );
-				validate( value );
+				if ( touched[ name ] ) validate( value );
 			} }
+			onBlur={ () => validate() }
 			error={ error() }
 			{ ...rest }
 		/>
@@ -88,7 +89,7 @@ export const OnboardingPhoneNumberField: React.FC< OnboardingPhoneNumberFieldPro
 	name,
 	...rest
 } ) => {
-	const { data, setData, temp, setTemp } = useOnboardingContext();
+	const { data, setData, temp, setTemp, touched } = useOnboardingContext();
 	const { validate, error } = useValidation( name );
 
 	return (
@@ -99,8 +100,9 @@ export const OnboardingPhoneNumberField: React.FC< OnboardingPhoneNumberFieldPro
 			onChange={ ( value: string, phoneCountryCode: string ) => {
 				setTemp( { phoneCountryCode } );
 				setData( { [ name ]: value } );
-				validate( value );
+				if ( touched[ name ] ) validate( value );
 			} }
+			onBlur={ () => validate() }
 			error={ error() }
 			{ ...rest }
 		/>
@@ -110,7 +112,7 @@ export const OnboardingPhoneNumberField: React.FC< OnboardingPhoneNumberFieldPro
 interface OnboardingSelectFieldProps< ItemType >
 	extends Partial< Omit< SelectFieldProps< ItemType >, 'onChange' > > {
 	name: keyof OnboardingFields;
-	onChange?: ( name: keyof OnboardingFields, item?: ItemType ) => void;
+	onChange?: ( name: keyof OnboardingFields, item?: ItemType | null ) => void;
 }
 
 export const OnboardingSelectField = < ItemType extends Item >( {
