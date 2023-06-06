@@ -30,6 +30,3 @@ export const documentationUrls = {
 	negativeBalance:
 		'https://woocommerce.com/document/woocommerce-payments/fees-and-debits/account-showing-negative-balance',
 };
-
-/** translators: %s is the currency code, e.g. USD. */
-export const currencyBalanceString = __( '%s Balance', 'woocommerce-payments' );
