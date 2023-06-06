@@ -7,6 +7,8 @@
 
 namespace WCPay\MultiCurrency;
 
+use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -104,14 +106,14 @@ class RestController extends \WC_Payments_REST_Controller {
 	 *
 	 * @param \WP_REST_Request $request Full data about the request.
 	 *
-	 * @return array The store currencies structure.
+	 * @return array|\WP_REST_Response|\WP_Error The store currencies structure or WP_Error as a WP_REST_Response.
 	 */
 	public function update_enabled_currencies( $request ) {
 		$params = $request->get_params();
 		try {
 			WC_Payments_Multi_Currency()->set_enabled_currencies( $params['enabled'] );
 			return $this->get_store_currencies();
-		} catch ( \Exception $e ) {
+		} catch ( InvalidCurrencyException $e ) {
 			return rest_ensure_response( new \WP_Error( $e->get_error_code(), $e->getMessage() ) );
 		}
 	}
