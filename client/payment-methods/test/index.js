@@ -234,7 +234,7 @@ describe( 'PaymentMethods', () => {
 		expect( enableWooCommercePaymentText ).toBeInTheDocument();
 	} );
 
-	test( 'affirm afterpay pms rendered correctly', () => {
+	test( 'affirm afterpay pms renders correctly', () => {
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
 			'card',
 			'au_becs_debit',
@@ -258,6 +258,37 @@ describe( 'PaymentMethods', () => {
 
 		expect( affirm ).toBeInTheDocument();
 		expect( afterpay ).toBeInTheDocument();
+	} );
+
+	test( 'affirm and afterpay appear checked when enabled', () => {
+		useGetAvailablePaymentMethodIds.mockReturnValue( [
+			'card',
+			'au_becs_debit',
+			'affirm',
+			'afterpay_clearpay',
+			'bancontact',
+			'eps',
+			'giropay',
+			'ideal',
+			'p24',
+			'sepa_debit',
+			'sofort',
+		] );
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			'card',
+			'affirm',
+			'afterpay_clearpay',
+		] );
+
+		render( <PaymentMethods /> );
+
+		const affirm = screen.getByRole( 'checkbox', { name: 'Affirm' } );
+		const afterpay = screen.getByRole( 'checkbox', {
+			name: 'Afterpay / Clearpay',
+		} );
+
+		expect( affirm ).toBeChecked();
+		expect( afterpay ).toBeChecked();
 	} );
 
 	test.each( [
