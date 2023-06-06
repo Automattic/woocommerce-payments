@@ -175,7 +175,7 @@ const PaymentMethodInformationObject: Record<
 			'Expand your business with Afterpay / Clearpay',
 			'woocommerce-payments'
 		),
-		icon: iconComponent( AfterpayIcon, 'Afterpay/Clearpay' ),
+		icon: iconComponent( AfterpayIcon, 'Afterpay / Clearpay' ),
 		currencies: [ 'USD', 'AUD', 'CAD', 'NZD', 'GBP', 'EUR' ],
 		stripe_key: 'afterpay_clearpay_payments',
 		allows_manual_capture: false,
