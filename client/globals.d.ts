@@ -85,6 +85,7 @@ declare global {
 		isMultiCurrencyEnabled: string;
 		errorMessage: string;
 		onBoardingDisabled: boolean;
+		isBnplAffirmAfterpayEnabled: boolean;
 	};
 
 	const wcTracks: any;
