@@ -94,7 +94,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 6.0.0 - 2023-06-07 =
+= 6.0.0 - 2023-06-08 =
 * Add - Show Progressive Onboarding Express using Explat experiment
 * Fix - Add a session check to avoid fatal errors.
 * Fix - Add error notice when using ISK with decimals
