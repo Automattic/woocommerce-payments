@@ -38,6 +38,15 @@ class WooPay_Scheduler {
 	public function init() {
 		add_action( 'init', [ $this, 'schedule' ] );
 		add_action( 'validate_incompatible_extensions', [ $this, 'disable_woopay_if_incompatible_extension_active' ] );
+
+		register_deactivation_hook( WCPAY_PLUGIN_FILE, [ $this, 'remove_scheduler' ] );
+	}
+
+	/**
+	 * Disables the scheduler when the plugin is disabled.
+	 */
+	public function remove_scheduler() {
+		wp_clear_scheduled_hook( 'validate_incompatible_extensions' );
 	}
 
 	/**
