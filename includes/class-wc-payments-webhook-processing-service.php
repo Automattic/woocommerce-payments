@@ -530,8 +530,11 @@ class WC_Payments_Webhook_Processing_Service {
 
 		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
 
-		$currency = $order->get_currency();
-		$amount   = wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount_raw, $currency ), [ 'currency' => strtoupper( $currency ) ] );
+		$currency      = $order->get_currency();
+		$amount_string = wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount_raw, $currency ), [ 'currency' => strtoupper( $currency ) ] );
+
+		// Explicitly add currency info if needed (multi-currency stores).
+		$amount = WC_Payments_Explicit_Price_Formatter::render_explicit_price_with_currency( $amount_string, $currency );
 
 		// Convert due_by to a date string in the store timezone.
 		$due_by = date_i18n( wc_date_format(), $due_by );
