@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Add a session check to avoid fatal errors.
