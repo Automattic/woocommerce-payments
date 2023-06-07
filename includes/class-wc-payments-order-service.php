@@ -1223,7 +1223,7 @@ class WC_Payments_Order_Service {
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the disputed amount and currency; %2: the dispute reason; %3 the deadline date for responding to dispute */
-				__( 'Payment has been disputed for %1$s with reason %2$s. <a>Response due by %3$s</a>.', 'woocommerce-payments' ),
+				__( 'Payment has been disputed for %1$s with reason "%2$s". <a>Response due by %3$s</a>.', 'woocommerce-payments' ),
 				[
 					'a' => '<a href="' . $dispute_url . '" target="_blank" rel="noopener noreferrer">',
 				]
