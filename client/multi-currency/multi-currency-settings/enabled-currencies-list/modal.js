@@ -210,6 +210,7 @@ const EnabledCurrenciesModal = ( { className } ) => {
 				</ConfirmationModal>
 			) }
 			<Button
+				variant="secondary"
 				className={ className }
 				onClick={ handleEnabledCurrenciesAddButtonClick }
 			>

@@ -7,6 +7,7 @@
 
 use WCPay\MultiCurrency\Utils;
 use WCPay\Database_Cache;
+use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
 use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\MultiCurrency\Settings;
 use WCPay\MultiCurrency\SettingsOnboardCta;
@@ -262,10 +263,55 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->assertSame( $expected, array_keys( $this->multi_currency->get_enabled_currencies() ) );
 	}
 
-	public function test_set_enabled_currencies() {
+	public function test_set_enabled_currencies_properly_saves_currencies() {
+		// Arrange: Set the currencies to change to.
 		$currencies = [ 'USD', 'EUR', 'GBP', 'CLP' ];
+
+		// Assert: Confirm the currencies are the default currencies.
+		$this->assertSame( $this->mock_enabled_currencies, get_option( self::ENABLED_CURRENCIES_OPTION ) );
+
+		// Act: Set the currencies.
 		$this->multi_currency->set_enabled_currencies( $currencies );
+
+		// Assert: Confirm the currencies were updated.
 		$this->assertSame( $currencies, get_option( self::ENABLED_CURRENCIES_OPTION ) );
+	}
+
+	public function test_set_enabled_currencies_exits_if_currencies_not_array() {
+		// Arrange: Set the currencies to change to.
+		$currencies = 'banana';
+
+		// Act: Set the currencies.
+		$this->multi_currency->set_enabled_currencies( $currencies );
+
+		// Assert: Confirm the currencies have not been updated from the default currencies.
+		$this->assertSame( $this->mock_enabled_currencies, get_option( self::ENABLED_CURRENCIES_OPTION ) );
+	}
+
+	public function test_set_enabled_currencies_exits_if_currencies_array_empty() {
+		// Arrange: Set the currencies to change to.
+		$currencies = [];
+
+		// Act: Set the currencies.
+		$this->multi_currency->set_enabled_currencies( $currencies );
+
+		// Assert: Confirm the currencies have not been updated from the default currencies.
+		$this->assertSame( $this->mock_enabled_currencies, get_option( self::ENABLED_CURRENCIES_OPTION ) );
+	}
+
+	public function test_set_enabled_currencies_throws_exception_on_unavailable_currency() {
+		// Arrange: Set the currencies to change to.
+		$currencies = [ 'USD', 'EUR', 'GBP', 'banana' ];
+
+		// Arrange/Assert: Set expected exception and message.
+		$this->expectException( InvalidCurrencyException::class );
+		$this->expectExceptionMessage( 'Invalid currency/currencies passed to set_enabled_currencies: banana' );
+
+		// Act: Set the currencies.
+		$this->multi_currency->set_enabled_currencies( $currencies );
+
+		// Assert: Confirm the currencies have not been updated from the default currencies.
+		$this->assertSame( $this->mock_enabled_currencies, get_option( self::ENABLED_CURRENCIES_OPTION ) );
 	}
 
 	public function test_set_enabled_currencies_triggers_removing_currency_settings() {
