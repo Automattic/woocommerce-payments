@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: Fix changelog generated during pre-release workflow for the last test package
+
+
