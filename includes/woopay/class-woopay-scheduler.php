@@ -102,7 +102,7 @@ class WooPay_Scheduler {
 	 */
 	private function get_incompatible_extensions() {
 		$args = [
-			'url'     => WooPay_Utilities::get_woopay_rest_url( 'incompatible-extensions' ),
+			'url'     => WooPay_Utilities::get_woopay_rest_url( 'extensions/incompatible' ),
 			'method'  => 'GET',
 			'timeout' => 30,
 			'headers' => [
