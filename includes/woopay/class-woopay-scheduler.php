@@ -100,7 +100,7 @@ class WooPay_Scheduler {
 	 *
 	 * @return array
 	 */
-	private function get_incompatible_extensions() {
+	public function get_incompatible_extensions() {
 		$args = [
 			'url'     => WooPay_Utilities::get_woopay_rest_url( 'extensions/incompatible' ),
 			'method'  => 'GET',
