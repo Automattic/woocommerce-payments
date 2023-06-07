@@ -1216,6 +1216,9 @@ class WC_Payments_Order_Service {
 	private function generate_dispute_created_note( $dispute_id, $reason ) {
 		$dispute_url = $this->compose_dispute_url( $dispute_id );
 
+		// Get merchant-friendly dispute reason description.
+		$reason = WC_Payments_Utils::get_dispute_reason_description( $reason );
+
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the dispute reason */
