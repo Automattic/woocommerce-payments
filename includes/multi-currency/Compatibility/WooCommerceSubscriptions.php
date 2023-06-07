@@ -387,19 +387,24 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 
 		switch ( $type ) {
 			case 'renewal':
-				$subscription = $this->cart_contains_renewal();
+				$subscription_item = $this->cart_contains_renewal();
+
+				if ( $subscription_item ) {
+					$subscription = wcs_get_subscription( $subscription_item['subscription_renewal']['subscription_id'] );
+				}
 				break;
 
 			case 'resubscribe':
-				$subscription = $this->cart_contains_resubscribe();
+				$subscription_item = $this->cart_contains_resubscribe();
+
+				if ( $subscription_item ) {
+					$subscription = wcs_get_subscription( $subscription_item['subscription_resubscribe']['subscription_id'] );
+				}
 				break;
 		}
 
-		if ( $subscription && $product ) {
-			if ( ( isset( $subscription['variation_id'] ) && $subscription['variation_id'] === $product->get_id() )
-				|| $subscription['product_id'] === $product->get_id() ) {
-				return true;
-			}
+		if ( $subscription && $product && $subscription->has_product( $product->get_id() ) ) {
+			return true;
 		}
 
 		return false;
