@@ -537,7 +537,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 			( $this->is_product() && 0.0 === (float) $this->get_product()->get_price() )
 
 		) {
-			Logger::log( 'Order price is 0 ( Payment Request button disabled )' );
+			$product_id = $this->is_product() ? 'Product Id: ' . $this->get_product()->get_id() . ';' : '';
+			Logger::log( $product_id . 'Order price is 0 ( Payment Request button disabled )' );
 			return false;
 		}
 
