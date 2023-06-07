@@ -249,6 +249,8 @@ describe( 'PaymentMethods', () => {
 			'sofort',
 		] );
 
+		global.wcpaySettings.isBnplAffirmAfterpayEnabled = true;
+
 		render(
 			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
 				<PaymentMethods />
@@ -284,6 +286,8 @@ describe( 'PaymentMethods', () => {
 			'afterpay_clearpay',
 		] );
 
+		global.wcpaySettings.isBnplAffirmAfterpayEnabled = true;
+
 		useGetPaymentMethodStatuses.mockReturnValue( {
 			card_payments: {
 				status: upeCapabilityStatuses.ACTIVE,
@@ -299,15 +303,19 @@ describe( 'PaymentMethods', () => {
 			},
 		} );
 
-		render( <PaymentMethods /> );
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
 
 		const affirm = screen.getByRole( 'checkbox', { name: 'Affirm' } );
 		const afterpay = screen.getByRole( 'checkbox', {
 			name: 'Afterpay / Clearpay',
 		} );
 
-		expect( affirm ).toBeChecked();
 		expect( afterpay ).toBeChecked();
+		expect( affirm ).toBeChecked();
 	} );
 
 	test.each( [
