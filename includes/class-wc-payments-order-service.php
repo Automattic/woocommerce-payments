@@ -278,16 +278,16 @@ class WC_Payments_Order_Service {
 	 * @param string   $dispute_id The ID of the dispute associated with this order.
 	 * @param string   $amount     The disputed amount – formatted currency value.
 	 * @param string   $reason     The reason for the dispute – human-readable text.
-	 * @param string   $deadline   The deadline for responding to the dispute - formatted date string.
+	 * @param string   $due_by     The deadline for responding to the dispute - formatted date string.
 	 *
 	 * @return void
 	 */
-	public function mark_payment_dispute_created( $order, $dispute_id, $amount, $reason, $deadline ) {
+	public function mark_payment_dispute_created( $order, $dispute_id, $amount, $reason, $due_by ) {
 		if ( ! is_a( $order, 'WC_Order' ) ) {
 			return;
 		}
 
-		$note = $this->generate_dispute_created_note( $dispute_id, $amount, $reason, $deadline );
+		$note = $this->generate_dispute_created_note( $dispute_id, $amount, $reason, $due_by );
 		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
 		}
@@ -1213,11 +1213,11 @@ class WC_Payments_Order_Service {
 	 * @param string $dispute_id The ID of the dispute associated with this order.
 	 * @param string $amount     The disputed amount – formatted currency value.
 	 * @param string $reason     The reason for the dispute – human-readable text.
-	 * @param string $deadline   The deadline for responding to the dispute - formatted date string.
+	 * @param string $due_by     The deadline for responding to the dispute - formatted date string.
 	 *
 	 * @return string Note content.
 	 */
-	private function generate_dispute_created_note( $dispute_id, $amount, $reason, $deadline ) {
+	private function generate_dispute_created_note( $dispute_id, $amount, $reason, $due_by ) {
 		$dispute_url = $this->compose_dispute_url( $dispute_id );
 
 		return sprintf(
@@ -1230,7 +1230,7 @@ class WC_Payments_Order_Service {
 			),
 			$amount,
 			$reason,
-			$deadline
+			$due_by
 		);
 	}
 
