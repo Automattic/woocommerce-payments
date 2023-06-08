@@ -7,6 +7,7 @@
 
 namespace WCPay\Payment_Methods;
 
+use WC_Payments_API_Intention;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Constants\Payment_Method;
@@ -733,8 +734,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			// Get payment intent to confirm status.
 			if ( $payment_needed ) {
 				$request = Get_Intention::create( $intent_id );
-
+				/** @var WC_Payments_API_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 				$intent                 = $request->send( 'wcpay_get_intent_request', $order );
+				$intent_metadata        = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
 				$client_secret          = $intent->get_client_secret();
 				$status                 = $intent->get_status();
 				$charge                 = $intent->get_charge();
@@ -746,6 +748,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$error                  = $intent->get_last_payment_error();
 			} else {
 				$intent                 = $this->payments_api_client->get_setup_intent( $intent_id );
+				$intent_metadata        = ( isset( $intent['metadata'] ) && is_array( $intent['metadata'] ) )
+					? $intent['metadata']
+					: [];
 				$client_secret          = $intent['client_secret'];
 				$status                 = $intent['status'];
 				$charge_id              = '';
@@ -757,6 +762,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$payment_method_type    = $payment_method_options ? $payment_method_options[0] : null;
 				$error                  = $intent['last_setup_error'];
 			}
+
+			$this->validate_order_id_received_vs_intent_meta_order_id( $order, $intent_metadata );
 
 			if ( ! empty( $error ) ) {
 				Logger::log( 'Error when processing payment: ' . $error['message'] );
@@ -1069,6 +1076,35 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			}
 		}
 		return $title;
+	}
+
+	/**
+	 * Validate order_id received from the request vs value saved in the intent metadata.
+	 *
+	 * @param  WC_Order $order The received order to process.
+	 * @param  array    $intent_metadata The metadata of attached intent to the order.
+	 *
+	 * @return void
+	 * @throws Process_Payment_Exception
+	 */
+	private function validate_order_id_received_vs_intent_meta_order_id( WC_Order $order, array $intent_metadata ): void {
+		$intent_meta_order_id_raw = $intent_metadata['order_id'] ?? '';
+		$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
+
+		if ( $order->get_id() !== $intent_meta_order_id ) {
+			Logger::error(
+				sprintf(
+					'UPE Process Redirect Payment - Order ID mismatched. Received: %1$d. Intent Metadata Value: %2$d',
+					$order->get_id(),
+					$intent_meta_order_id
+				)
+			);
+
+			throw new Process_Payment_Exception(
+				__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
+				'upe_process_redirect_order_id_mismatched'
+			);
+		}
 	}
 
 	/**
