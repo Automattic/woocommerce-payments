@@ -117,8 +117,9 @@ jQuery( function ( $ ) {
 				actions={ [
 					{
 						label: __( 'Respond now', 'woocommerce-payments' ),
-						variant: 'primary',
-						url: disputeData.disputeUrl,
+						variant: 'secondary',
+						onClick: () =>
+							( window.location = disputeData.disputeUrl ),
 					},
 				] }
 			>
