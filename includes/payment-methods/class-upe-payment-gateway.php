@@ -820,13 +820,19 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		} catch ( Exception $e ) {
 			Logger::log( 'Error: ' . $e->getMessage() );
 
-			// Confirm our needed variables are set before using them due to there could be a server issue during the get_intent process.
-			$status    = $status ?? null;
-			$charge_id = $charge_id ?? null;
+			$is_order_id_mismatched_exception =
+				is_a( $e, Process_Payment_Exception::class )
+				&& 'upe_process_redirect_order_id_mismatched' === $e->get_error_code();
 
-			/* translators: localized exception message */
-			$message = sprintf( __( 'UPE payment failed: %s', 'woocommerce-payments' ), $e->getMessage() );
-			$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id, $message );
+			if ( ! $is_order_id_mismatched_exception ) {
+				// Confirm our needed variables are set before using them due to there could be a server issue during the get_intent process.
+				$status    = $status ?? null;
+				$charge_id = $charge_id ?? null;
+
+				/* translators: localized exception message */
+				$message = sprintf( __( 'UPE payment failed: %s', 'woocommerce-payments' ), $e->getMessage() );
+				$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id, $message );
+			}
 
 			self::remove_upe_payment_intent_from_session();
 
