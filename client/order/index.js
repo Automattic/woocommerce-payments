@@ -113,7 +113,7 @@ jQuery( function ( $ ) {
 		);
 		const defaultTest = (
 			<InlineNotice status="info" isDismissible={ true }>
-				<p>All good here.</p>
+				<div>All good here.</div>
 			</InlineNotice>
 		);
 		const infoTest = (
@@ -129,12 +129,12 @@ jQuery( function ( $ ) {
 					},
 				] }
 			>
-				<p>
+				<div>
 					This order has a chargeback dispute of{ ' ' }
 					{ disputeData.amountHtml } labeled as &quot;
 					{ disputeData.reason }&quot;. Please respond to this dispute
 					before { disputeData.dueBy }
-				</p>
+				</div>
 			</InlineNotice>
 		);
 		const warningTest = (
@@ -150,12 +150,12 @@ jQuery( function ( $ ) {
 					},
 				] }
 			>
-				<p>
+				<div>
 					This order has a chargeback dispute of{ ' ' }
 					{ disputeData.amountHtml } labeled as &quot;
 					{ disputeData.reason }&quot;. Please respond to this dispute
 					before { disputeData.dueBy }
-				</p>
+				</div>
 			</InlineNotice>
 		);
 		const errorTest = (
@@ -171,12 +171,12 @@ jQuery( function ( $ ) {
 					},
 				] }
 			>
-				<p>
+				<div>
 					This order has a chargeback dispute of{ ' ' }
 					{ disputeData.amountHtml } labeled as &quot;
 					{ disputeData.reason }&quot;. Please respond to this dispute
 					before { disputeData.dueBy } (Last day today)
-				</p>
+				</div>
 			</InlineNotice>
 		);
 		ReactDOM.render(

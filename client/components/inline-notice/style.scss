@@ -3,6 +3,7 @@
 	&#{&} {
 		color: $gray-900;
 		border-left: none;
+		padding: 12px 16px;
 		margin: 0;
 		margin-bottom: $grid-unit-30;
 	}
@@ -10,6 +11,7 @@
 	.components-button.is-secondary:not( :disabled ) {
 		box-shadow: none;
 		transition: background-color 0.2s;
+		margin: 16px 0 0;
 	}
 
 	&,
