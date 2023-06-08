@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "89b4b68a03f740d9e6834cde32ee71d9",
+    "content-hash": "d4e47d4e8cb78fa2d773fe126f69bc43",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -6236,6 +6236,39 @@
             "time": "2020-05-12T16:22:33+00:00"
         },
         {
+            "name": "woocommerce/qit-cli",
+            "version": "0.3.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/woocommerce/qit-cli.git",
+                "reference": "d970c6332035ca5577c33ce308befb87fd87411b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/woocommerce/qit-cli/zipball/d970c6332035ca5577c33ce308befb87fd87411b",
+                "reference": "d970c6332035ca5577c33ce308befb87fd87411b",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "php": "^7.2.5 | ^8"
+            },
+            "bin": [
+                "qit"
+            ],
+            "type": "library",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-3.0-or-later"
+            ],
+            "description": "A command line interface for WooCommerce Quality Insights Toolkit (QIT).",
+            "support": {
+                "issues": "https://github.com/woocommerce/qit-cli/issues",
+                "source": "https://github.com/woocommerce/qit-cli/tree/0.3.3"
+            },
+            "time": "2023-05-30T17:27:09+00:00"
+        },
+        {
             "name": "woocommerce/woocommerce-sniffs",
             "version": "0.1.0",
             "source": {
@@ -6464,5 +6497,5 @@
     "platform-overrides": {
         "php": "7.3"
     },
-    "plugin-api-version": "2.2.0"
+    "plugin-api-version": "2.1.0"
 }
