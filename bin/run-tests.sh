@@ -13,10 +13,10 @@ while getopts ':w' OPTION; do
 	esac
 done
 
-echo "Installing the test environment..."
-
-docker-compose exec -u www-data wordpress \
-	/var/www/html/wp-content/plugins/woocommerce-payments/bin/install-wp-tests.sh
+#echo "Installing the test environment..."
+#
+#docker-compose exec -u www-data wordpress \
+#	/var/www/html/wp-content/plugins/woocommerce-payments/bin/install-wp-tests.sh
 
 if $WATCH_FLAG; then
 	echo "Running the tests on watch mode..."
