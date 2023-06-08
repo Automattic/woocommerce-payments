@@ -34,7 +34,6 @@ const renderDepositsStatus = ( { deposits } ) => {
 			<DepositsStatus
 				iconSize={ 18 }
 				status={ deposits?.status }
-				restrictions={ deposits?.restrictions }
 				interval={ deposits?.interval }
 			/>
 		</span>

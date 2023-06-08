@@ -16,7 +16,6 @@ const mockAccount: AccountOverview.Account = {
 	default_currency: 'USD',
 	deposits_blocked: false,
 	deposits_disabled: false,
-	deposits_restrictions: 'deposits_unrestricted',
 	deposits_schedule: {
 		delay_days: 17,
 		interval: 'weekly',

@@ -16,15 +16,10 @@ import 'components/account-status/shared.scss';
 import type { AccountStatus } from 'wcpay/types/account/account-status';
 
 type DepositsStatus = 'enabled' | 'disabled' | 'blocked';
-type DepositRestrictions =
-	| 'deposits_blocked'
-	| 'deposits_unrestricted'
-	| 'schedule_restricted';
 type DepositsIntervals = 'daily' | 'weekly' | 'monthly' | 'manual';
 
 interface Props {
 	status: DepositsStatus;
-	restrictions: DepositRestrictions;
 	interval: DepositsIntervals;
 	accountStatus: AccountStatus;
 	poEnabled: boolean;
@@ -34,7 +29,6 @@ interface Props {
 
 const DepositsStatus: React.FC< Props > = ( {
 	status,
-	restrictions,
 	interval,
 	accountStatus,
 	poEnabled,
