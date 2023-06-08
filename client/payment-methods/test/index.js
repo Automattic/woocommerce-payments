@@ -266,7 +266,7 @@ describe( 'PaymentMethods', () => {
 		expect( afterpay ).toBeInTheDocument();
 	} );
 
-	test( 'affirm and afterpay appear checked when enabled', async () => {
+	test( 'affirm and afterpay appear checked when enabled', () => {
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
 			'card',
 			'au_becs_debit',
@@ -281,9 +281,7 @@ describe( 'PaymentMethods', () => {
 			'sofort',
 		] );
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			'card',
-			'affirm',
-			'afterpay_clearpay',
+			[ 'card', 'affirm', 'afterpay_clearpay' ],
 		] );
 
 		global.wcpaySettings.isBnplAffirmAfterpayEnabled = true;
@@ -303,25 +301,25 @@ describe( 'PaymentMethods', () => {
 			},
 		} );
 
-		const renderPaymentElements = async () => {
-			await render(
+		const renderPaymentElements = () => {
+			render(
 				<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
 					<PaymentMethods />
 				</WcPayUpeContextProvider>
 			);
 		};
 
-		await renderPaymentElements();
+		renderPaymentElements();
 
-		const affirm = await screen.findByRole( 'checkbox', {
+		const affirm = screen.getByRole( 'checkbox', {
 			name: 'Affirm',
 		} );
-		const afterpay = await screen.findByRole( 'checkbox', {
+		const afterpay = screen.getByRole( 'checkbox', {
 			name: 'Afterpay / Clearpay',
 		} );
 
-		expect( afterpay ).toBeChecked();
 		expect( affirm ).toBeChecked();
+		expect( afterpay ).toBeChecked();
 	} );
 
 	test.each( [
