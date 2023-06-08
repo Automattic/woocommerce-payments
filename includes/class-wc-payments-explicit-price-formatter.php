@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Class for displaying the explicit prices on total amounts.
  *
- * Also used for consistent rendering of price values with currency (render_explicit_price_with_currency()).
+ * Also used for consistent rendering of price values with currency (get_explicit_price_with_currency()).
  */
 class WC_Payments_Explicit_Price_Formatter {
 
@@ -115,13 +115,13 @@ class WC_Payments_Explicit_Price_Formatter {
 			$currency_code = $order->get_currency();
 		}
 
-		return static::render_explicit_price_with_currency( $price, $currency_code );
+		return static::get_explicit_price_with_currency( $price, $currency_code );
 	}
 
 	/**
-	 * Returns a rendered price value suffixed with the appropriate currency code (if necessary).
+	 * Returns a formatted price string suffixed with the appropriate currency code (if necessary).
 	 *
-	 * In multicurrency stores, order and price values are rendered with currency suffix.
+	 * In multi-currency stores, order and price values are rendered with currency suffix.
 	 * This method only renders the currency suffix if appropriate (see `should_output_explicit_price`).
 	 *
 	 * @param string  $price A price value (as a string).
@@ -129,7 +129,7 @@ class WC_Payments_Explicit_Price_Formatter {
 	 *
 	 * @return string Price value with currency code suffix if necessary.
 	 */
-	public static function render_explicit_price_with_currency( string $price, ?string $currency_code ) {
+	public static function get_explicit_price_with_currency( string $price, ?string $currency_code ) {
 		if ( false === static::should_output_explicit_price() ) {
 			return $price;
 		}
