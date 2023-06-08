@@ -686,7 +686,7 @@ class WC_Payments {
 
 			}
 
-			if ( is_add_payment_method_page() || ( self::$registered_card_gateway->is_subscriptions_enabled() && self::$registered_card_gateway->is_changing_payment_method_for_subscription() ) ) {
+			if ( is_add_payment_method_page() ) {
 				return array_merge( $gateways, $reusable_methods );
 			}
 
