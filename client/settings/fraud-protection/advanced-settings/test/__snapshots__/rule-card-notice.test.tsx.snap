@@ -37,10 +37,14 @@ Object {
           class="components-notice__content"
         >
           <div
-            class="components-flex css-18koiq9-Flex eboqfv50"
+            class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="Flex"
           >
             <div
-              class="components-flex__item wcpay-banner-notice__icon wcpay-banner-error-notice__icon css-1s295sp-Item eboqfv51"
+              class="components-flex-item wcpay-banner-notice__icon wcpay-banner-error-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+              data-wp-c16t="true"
+              data-wp-component="FlexItem"
             >
               <svg
                 class="gridicon gridicons-notice-outline"
@@ -57,11 +61,16 @@ Object {
               </svg>
             </div>
             <div
-              class="components-flex__item wcpay-banner-notice__content wcpay-banner-error-notice__content css-1s295sp-Item eboqfv51"
+              class="components-flex-item wcpay-banner-notice__content wcpay-banner-error-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+              data-wp-c16t="true"
+              data-wp-component="FlexItem"
             >
               This is the test content
             </div>
           </div>
+          <div
+            class="components-notice__actions"
+          />
         </div>
       </div>
     </div>
@@ -74,10 +83,14 @@ Object {
         class="components-notice__content"
       >
         <div
-          class="components-flex css-18koiq9-Flex eboqfv50"
+          class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
         >
           <div
-            class="components-flex__item wcpay-banner-notice__icon wcpay-banner-error-notice__icon css-1s295sp-Item eboqfv51"
+            class="components-flex-item wcpay-banner-notice__icon wcpay-banner-error-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
           >
             <svg
               class="gridicon gridicons-notice-outline"
@@ -94,11 +107,16 @@ Object {
             </svg>
           </div>
           <div
-            class="components-flex__item wcpay-banner-notice__content wcpay-banner-error-notice__content css-1s295sp-Item eboqfv51"
+            class="components-flex-item wcpay-banner-notice__content wcpay-banner-error-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
           >
             This is the test content
           </div>
         </div>
+        <div
+          class="components-notice__actions"
+        />
       </div>
     </div>
   </div>,
@@ -193,10 +211,14 @@ Object {
           class="components-notice__content"
         >
           <div
-            class="components-flex css-18koiq9-Flex eboqfv50"
+            class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="Flex"
           >
             <div
-              class="components-flex__item wcpay-banner-notice__icon wcpay-banner-info-notice__icon css-1s295sp-Item eboqfv51"
+              class="components-flex-item wcpay-banner-notice__icon wcpay-banner-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+              data-wp-c16t="true"
+              data-wp-component="FlexItem"
             >
               <svg
                 aria-hidden="true"
@@ -212,11 +234,16 @@ Object {
               </svg>
             </div>
             <div
-              class="components-flex__item wcpay-banner-notice__content wcpay-banner-info-notice__content css-1s295sp-Item eboqfv51"
+              class="components-flex-item wcpay-banner-notice__content wcpay-banner-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+              data-wp-c16t="true"
+              data-wp-component="FlexItem"
             >
               This is the test content
             </div>
           </div>
+          <div
+            class="components-notice__actions"
+          />
         </div>
       </div>
     </div>
@@ -229,10 +256,14 @@ Object {
         class="components-notice__content"
       >
         <div
-          class="components-flex css-18koiq9-Flex eboqfv50"
+          class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
         >
           <div
-            class="components-flex__item wcpay-banner-notice__icon wcpay-banner-info-notice__icon css-1s295sp-Item eboqfv51"
+            class="components-flex-item wcpay-banner-notice__icon wcpay-banner-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
           >
             <svg
               aria-hidden="true"
@@ -248,11 +279,16 @@ Object {
             </svg>
           </div>
           <div
-            class="components-flex__item wcpay-banner-notice__content wcpay-banner-info-notice__content css-1s295sp-Item eboqfv51"
+            class="components-flex-item wcpay-banner-notice__content wcpay-banner-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
           >
             This is the test content
           </div>
         </div>
+        <div
+          class="components-notice__actions"
+        />
       </div>
     </div>
   </div>,
@@ -347,10 +383,14 @@ Object {
           class="components-notice__content"
         >
           <div
-            class="components-flex css-18koiq9-Flex eboqfv50"
+            class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="Flex"
           >
             <div
-              class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+              class="components-flex-item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+              data-wp-c16t="true"
+              data-wp-component="FlexItem"
             >
               <svg
                 class="gridicon gridicons-notice-outline"
@@ -367,11 +407,16 @@ Object {
               </svg>
             </div>
             <div
-              class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+              class="components-flex-item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+              data-wp-c16t="true"
+              data-wp-component="FlexItem"
             >
               This is the test content
             </div>
           </div>
+          <div
+            class="components-notice__actions"
+          />
         </div>
       </div>
     </div>
@@ -384,10 +429,14 @@ Object {
         class="components-notice__content"
       >
         <div
-          class="components-flex css-18koiq9-Flex eboqfv50"
+          class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
         >
           <div
-            class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+            class="components-flex-item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
           >
             <svg
               class="gridicon gridicons-notice-outline"
@@ -404,11 +453,16 @@ Object {
             </svg>
           </div>
           <div
-            class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+            class="components-flex-item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
           >
             This is the test content
           </div>
         </div>
+        <div
+          class="components-notice__actions"
+        />
       </div>
     </div>
   </div>,

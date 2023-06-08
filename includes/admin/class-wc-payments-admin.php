@@ -115,6 +115,7 @@ class WC_Payments_Admin {
 		$this->database_cache      = $database_cache;
 
 		add_action( 'admin_notices', [ $this, 'display_not_supported_currency_notice' ], 9999 );
+		add_action( 'admin_notices', [ $this, 'display_isk_decimal_notice' ] );
 
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
@@ -187,6 +188,40 @@ class WC_Payments_Admin {
 						<?php esc_html( ' ' . get_woocommerce_currency() ); ?>
 					</b>
 					<?php esc_html_e( 'The selected currency is not available for the country set in your WooCommerce Payments account.', 'woocommerce-payments' ); ?>
+				</p>
+			</div>
+			<?php
+		}
+	}
+
+	/**
+	 * Add notice explaining that ISK cannot have decimals.
+	 */
+	public function display_isk_decimal_notice() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		if ( get_woocommerce_currency() === 'ISK' && wc_get_price_decimals() !== 0 ) {
+			$url = get_admin_url( null, 'admin.php?page=wc-settings' );
+
+			?>
+			<div id="wcpay-unsupported-currency-notice" class="notice notice-error">
+				<p>
+					<b>
+						<?php esc_html_e( 'Unsupported currency:', 'woocommerce-payments' ); ?>
+						<?php esc_html( ' ' . get_woocommerce_currency() ); ?>
+					</b>
+					<?php
+						echo wp_kses_post(
+							sprintf(
+								/* Translators: %1$s: Opening anchor tag. %2$s: Closing anchor tag.*/
+								__( 'Icelandic Króna does not accept decimals. Please update your currency number of decimals to 0 or select a different currency. %1$sVisit settings%2$s', 'woocommerce-payments' ),
+								'<a href="' . $url . '">',
+								'</a>'
+							)
+						);
+					?>
 				</p>
 			</div>
 			<?php
@@ -300,20 +335,20 @@ class WC_Payments_Admin {
 				);
 				remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding' );
 			}
-			if ( WC_Payments_Features::is_progressive_onboarding_enabled() ) {
+			if ( WC_Payments_Utils::is_in_progressive_onboarding_treatment_mode() || WC_Payments_Features::is_progressive_onboarding_enabled() ) {
 				wc_admin_register_page(
 					[
-						'id'         => 'wc-payments-onboarding-prototype',
-						'title'      => __( 'Onboarding Prototype', 'woocommerce-payments' ),
+						'id'         => 'wc-payments-onboarding-flow',
+						'title'      => __( 'Onboarding', 'woocommerce-payments' ),
 						'parent'     => 'wc-payments',
-						'path'       => '/payments/onboarding-prototype',
+						'path'       => '/payments/onboarding-flow',
 						'capability' => 'manage_woocommerce',
 						'nav_args'   => [
 							'parent' => 'wc-payments',
 						],
 					]
 				);
-				remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding-prototype' );
+				remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding-flow' );
 			}
 		}
 

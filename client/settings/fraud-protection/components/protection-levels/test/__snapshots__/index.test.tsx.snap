@@ -95,6 +95,9 @@ exports[`ProtectionLevels renders an error message when settings can not be fetc
       class="components-notice__content"
     >
       There was an error retrieving your fraud protection settings. Please refresh the page to try again.
+      <div
+        class="components-notice__actions"
+      />
     </div>
   </div>
   <fieldset
