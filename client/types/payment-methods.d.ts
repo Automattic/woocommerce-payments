@@ -16,4 +16,6 @@ export type PaymentMethod =
 	| 'ideal'
 	| 'p24'
 	| 'sepa_debit'
-	| 'sofort';
+	| 'sofort'
+	| 'affirm'
+	| 'afterpay_clearpay';
