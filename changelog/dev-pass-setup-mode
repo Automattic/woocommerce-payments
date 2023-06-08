@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Pass the setup mode selected during Progressive Onboarding to the server onboarding init.

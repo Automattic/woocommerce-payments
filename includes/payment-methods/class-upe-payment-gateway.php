@@ -1004,6 +1004,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$available_methods[] = Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Affirm_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 
 		$available_methods = array_values(
 			apply_filters(

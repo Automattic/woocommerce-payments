@@ -568,7 +568,7 @@ class WC_Payments_WooPay_Button_Handler {
 		}
 
 		?>
-		<div id="wcpay-payment-request-wrapper" style="clear:both;padding-top:1.5em;">
+		<div class="wcpay-payment-request-wrapper" style="clear:both;padding-top:1.5em;">
 			<div id="wcpay-woopay-button" data-product_page=<?php echo esc_attr( $this->is_product() ); ?>>
 				<?php // The WooPay express checkout button React component will go here. ?>
 			</div>
