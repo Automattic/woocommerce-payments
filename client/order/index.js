@@ -107,7 +107,9 @@ jQuery( function ( $ ) {
 			return;
 		}
 
-		const container = document.querySelector( '#wcpay-order-payment-details-container' );
+		const container = document.querySelector(
+			'#wcpay-order-payment-details-container'
+		);
 		const notice = (
 			<InlineNotice
 				status="error"
@@ -115,11 +117,17 @@ jQuery( function ( $ ) {
 				actions={ [
 					{
 						label: __( 'Respond now', 'woocommerce-payments' ),
-						url: disputeData.disputeUrl
-					}
+						variant: 'primary',
+						url: disputeData.disputeUrl,
+					},
 				] }
 			>
-				This order has a chargeback dispute of { disputeData.amountHtml } labeled as "{ disputeData.reason }". Please respond to this dispute before { disputeData.dueBy }.
+				<p>
+					This order has a chargeback dispute of{ ' ' }
+					{ disputeData.amountHtml } labeled as &quot;
+					{ disputeData.reason }&quot;. Please respond to this dispute
+					before { disputeData.dueBy }.
+				</p>
 			</InlineNotice>
 		);
 		ReactDOM.render( notice, container );
