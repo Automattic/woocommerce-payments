@@ -42,8 +42,8 @@
       "yoast/phpunit-polyfills": "1.0.3",
       "cweagans/composer-patches": "1.7.1",
       "automattic/jetpack-changelogger": "3.3.2",
-      "spatie/phpunit-watcher": "^1.23",
-      "woocommerce/qit-cli": "^0.3.3"
+      "spatie/phpunit-watcher": "1.23",
+      "woocommerce/qit-cli": "0.3.3"
     },
     "scripts": {
       "test": [
