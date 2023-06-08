@@ -81,7 +81,7 @@ const UpeSetupBanner = () => {
 		<>
 			<CardDivider />
 			<CardBody
-				className={ classNames( 'payment-methods__upe-methods', {
+				className={ classNames( 'payment-methods__express-checkouts', {
 					'background-local-payment-methods': ! wcpaySettings.isBnplAffirmAfterpayEnabled,
 				} ) }
 			>
@@ -99,8 +99,8 @@ const UpeSetupBanner = () => {
 					) }
 				</p>
 
-				<div className="payment-methods__upe-methods-actions">
-					<span className="payment-methods__upe-methods-get-started">
+				<div className="payment-methods__express-checkouts-actions">
+					<span className="payment-methods__express-checkouts-get-started">
 						<Button isSecondary onClick={ handleEnableUpeClick }>
 							{ __(
 								'Enable in your store',

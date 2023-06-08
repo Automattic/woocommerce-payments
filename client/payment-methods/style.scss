@@ -38,33 +38,6 @@
 	}
 
 	&__express-checkouts {
-		background: url( 'assets/images/upe_preview_illustration.svg?asset' )
-			no-repeat right;
-		background-color: #f7edf7;
-		background-size: auto;
-
-		h3,
-		p {
-			padding-right: 215px;
-		}
-
-		&-get-started {
-			margin-right: 16px;
-		}
-		&-actions {
-			padding-top: 11px;
-		}
-
-		@media ( max-width: 1024px ) {
-			h3,
-			p {
-				padding-right: 0;
-			}
-			background-image: none;
-		}
-	}
-
-	&__upe-methods {
 		background: url( 'assets/images/payment-methods/all_local_payments.svg?asset' )
 			no-repeat right;
 		&.background-local-payment-methods {
