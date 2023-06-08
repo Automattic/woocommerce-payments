@@ -35,16 +35,7 @@ jQuery( function ( $ ) {
 	showAuthenticationModalIfRequired( api );
 
 	$( document.body ).on( 'updated_checkout', () => {
-		if (
-			$( '.wcpay-upe-element' ).length &&
-			! $( '.wcpay-upe-element' ).children().length
-		) {
-			$( '.wcpay-upe-element' )
-				.toArray()
-				.forEach( ( domElement ) =>
-					mountStripePaymentElement( api, domElement )
-				);
-		}
+		maybeMountStripePaymentElement();
 	} );
 
 	$( 'form.checkout' ).on( generateCheckoutEventNames(), function () {
@@ -73,16 +64,8 @@ jQuery( function ( $ ) {
 		$( 'form#add_payment_method' ).length ||
 		$( 'form#order_review' ).length
 	) {
-		if (
-			$( '.wcpay-upe-element' ).length &&
-			! $( '.wcpay-upe-element' ).children().length &&
-			getUPEConfig( 'isUPEEnabled' )
-		) {
-			$( '.wcpay-upe-element' )
-				.toArray()
-				.forEach( ( domElement ) =>
-					mountStripePaymentElement( api, domElement )
-				);
+		if ( getUPEConfig( 'isUPEEnabled' ) ) {
+			maybeMountStripePaymentElement();
 		}
 	}
 
@@ -110,4 +93,17 @@ jQuery( function ( $ ) {
 			);
 		}
 	} );
+
+	function maybeMountStripePaymentElement() {
+		if (
+			$( '.wcpay-upe-element' ).length &&
+			! $( '.wcpay-upe-element' ).children().length
+		) {
+			$( '.wcpay-upe-element' )
+				.toArray()
+				.forEach( ( domElement ) =>
+					mountStripePaymentElement( api, domElement )
+				);
+		}
+	}
 } );
