@@ -3,7 +3,6 @@
  */
 import {
 	createAndConfirmSetupIntent,
-	handleOrderPayment,
 	mountStripePaymentElement,
 	processPayment,
 	renderTerms,
@@ -451,25 +450,5 @@ describe( 'Setup intent creation and confirmation', () => {
 		);
 
 		expect( setupIntentMock ).toHaveBeenCalled();
-	} );
-} );
-
-describe( 'Order payment', () => {
-	test( 'Saves payment method ID to a hidden input when handling order payment', async () => {
-		// Create a mock element
-		const mockPaymentElement = document.createElement( 'input' );
-
-		// Set the value of the mock element
-		mockPaymentElement.value = 'mocked-id';
-
-		// Mock the document.querySelector method
-		jest.spyOn( document, 'querySelector' ).mockReturnValue(
-			mockPaymentElement
-		);
-
-		handleOrderPayment( { id: 'pm_123xyz' } );
-
-		// Assert the value has been set successfully
-		expect( mockPaymentElement.value ).toEqual( 'pm_123xyz' );
 	} );
 } );

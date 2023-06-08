@@ -226,18 +226,6 @@ export const createAndConfirmSetupIntent = ( { id }, $form, api ) => {
 };
 
 /**
- * Saves the payment method ID in a hidden input, and re-submits the form.
- *
- * @param {Object} id Payment method object ID.
- */
-export const handleOrderPayment = ( { id } ) => {
-	const paymentSelector = '#wcpay-payment-method';
-
-	// Populate form with the payment method.
-	document.querySelector( paymentSelector ).value = id;
-};
-
-/**
  * Updates the terms parameter in the Payment Element based on the "save payment information" checkbox.
  *
  * @param {Event} event The change event that triggers the function.

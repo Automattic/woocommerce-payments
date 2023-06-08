@@ -14,7 +14,6 @@ import {
 	mountStripePaymentElement,
 	renderTerms,
 	createAndConfirmSetupIntent,
-	handleOrderPayment,
 } from './payment-processing';
 import enqueueFraudScripts from 'fraud-scripts';
 import { showAuthenticationModalIfRequired } from './3ds-flow-handling';
@@ -88,8 +87,7 @@ jQuery( function ( $ ) {
 			return processPayment(
 				api,
 				$( 'form#order_review' ),
-				paymentMethodType,
-				handleOrderPayment
+				paymentMethodType
 			);
 		}
 	} );
