@@ -12,7 +12,7 @@
  * WC tested up to: 7.7.0
  * Requires at least: 6.0
  * Requires PHP: 7.3
- * Version: 5.9.0
+ * Version: 6.0.0
  *
  * @package WooCommerce\Payments
  */
