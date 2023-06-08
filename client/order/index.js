@@ -10,6 +10,7 @@ import { getConfig } from 'utils/order';
 import RefundConfirmationModal from './refund-confirm-modal';
 import CancelConfirmationModal from './cancel-confirm-modal';
 import InlineNotice from '../components/inline-notice';
+import './style.scss';
 
 jQuery( function ( $ ) {
 	const disableManualRefunds = getConfig( 'disableManualRefunds' ) ?? false;
@@ -110,9 +111,14 @@ jQuery( function ( $ ) {
 		const container = document.querySelector(
 			'#wcpay-order-payment-details-container'
 		);
-		const notice = (
+		const defaultTest = (
+			<InlineNotice status="info" isDismissible={ true }>
+				<p>All good here.</p>
+			</InlineNotice>
+		);
+		const infoTest = (
 			<InlineNotice
-				status="error"
+				status="info"
 				isDismissible={ false }
 				actions={ [
 					{
@@ -127,10 +133,55 @@ jQuery( function ( $ ) {
 					This order has a chargeback dispute of{ ' ' }
 					{ disputeData.amountHtml } labeled as &quot;
 					{ disputeData.reason }&quot;. Please respond to this dispute
-					before { disputeData.dueBy }.
+					before { disputeData.dueBy }
 				</p>
 			</InlineNotice>
 		);
-		ReactDOM.render( notice, container );
+		const warningTest = (
+			<InlineNotice
+				status="warning"
+				isDismissible={ false }
+				actions={ [
+					{
+						label: __( 'Respond now', 'woocommerce-payments' ),
+						variant: 'secondary',
+						onClick: () =>
+							( window.location = disputeData.disputeUrl ),
+					},
+				] }
+			>
+				<p>
+					This order has a chargeback dispute of{ ' ' }
+					{ disputeData.amountHtml } labeled as &quot;
+					{ disputeData.reason }&quot;. Please respond to this dispute
+					before { disputeData.dueBy }
+				</p>
+			</InlineNotice>
+		);
+		const errorTest = (
+			<InlineNotice
+				status="error"
+				isDismissible={ false }
+				actions={ [
+					{
+						label: __( 'Respond today', 'woocommerce-payments' ),
+						variant: 'secondary',
+						onClick: () =>
+							( window.location = disputeData.disputeUrl ),
+					},
+				] }
+			>
+				<p>
+					This order has a chargeback dispute of{ ' ' }
+					{ disputeData.amountHtml } labeled as &quot;
+					{ disputeData.reason }&quot;. Please respond to this dispute
+					before { disputeData.dueBy } (Last day today)
+				</p>
+			</InlineNotice>
+		);
+		ReactDOM.render(
+			[ defaultTest, infoTest, warningTest, errorTest ],
+			container
+		);
 	}
 } );
