@@ -2,6 +2,7 @@
 	// increasing the specificity of the styles to override the Gutenberg ones
 	&#{&} {
 		color: $gray-900;
+		border-left: none;
 		margin: 0;
 		margin-bottom: $grid-unit-30;
 	}
