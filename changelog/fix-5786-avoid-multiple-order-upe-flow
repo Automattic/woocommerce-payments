@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Avoid creating duplicate paid orders from a single payment intent.
