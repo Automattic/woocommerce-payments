@@ -124,12 +124,12 @@ class WC_Payments_Explicit_Price_Formatter {
 	 * In multicurrency stores, order and price values are rendered with currency suffix.
 	 * This method only renders the currency suffix if appropriate (see `should_output_explicit_price`).
 	 *
-	 * @param string $price A price value (as a string).
-	 * @param string $currency_code Currency of the price.
+	 * @param string  $price A price value (as a string).
+	 * @param ?string $currency_code Currency of the price.
 	 *
 	 * @return string Price value with currency code suffix if necessary.
 	 */
-	public static function render_explicit_price_with_currency( string $price, string $currency_code ) {
+	public static function render_explicit_price_with_currency( string $price, ?string $currency_code ) {
 		if ( false === static::should_output_explicit_price() ) {
 			return $price;
 		}
