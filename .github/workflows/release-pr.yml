@@ -104,13 +104,10 @@ jobs:
         env:
           RELEASE_VERSION: ${{ steps.create_branch.outputs.trimmed-version }}
           BRANCH_NAME: ${{ steps.create_branch.outputs.branch-name }}
-        run: |
-          git config user.name "github-actions[bot]"
-          # We could consider fetching the bot's ID through an API call to be future-proof. Hardcoded for now.
-          # See https://github.com/Automattic/woocommerce-payments/pull/5200#discussion_r1034560144
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -am "Update version and add changelog entries for release $RELEASE_VERSION"
-          git push --set-upstream origin $BRANCH_NAME
+        uses: ./.github/actions/commit-push-as-bot
+        with:
+          release-version: ${{ env.RELEASE_VERSION }}
+          branch: ${{ env.BRANCH_NAME }}
 
       - name: "Create a PR to trunk"
         id: create-pr-to-trunk
