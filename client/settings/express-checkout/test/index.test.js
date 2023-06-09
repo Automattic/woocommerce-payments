@@ -190,4 +190,28 @@ describe( 'ExpressCheckout', () => {
 		).not.toBeInTheDocument();
 		expect( screen.getByLabelText( 'Link by Stripe' ) ).toBeChecked();
 	} );
+
+	it( 'should show incompatibility warning', async () => {
+		const updateIsWooPayEnabledHandler = jest.fn();
+		useWooPayEnabledSettings.mockReturnValue(
+			getMockWooPayEnabledSettings( false, updateIsWooPayEnabledHandler )
+		);
+		const context = { featureFlags: { woopay: true } };
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
+		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card', 'link' ] ] );
+
+		useWooPayShowIncompatibilityNotice.mockReturnValue( true );
+
+		render(
+			<WCPaySettingsContext.Provider value={ context }>
+				<ExpressCheckout />
+			</WCPaySettingsContext.Provider>
+		);
+
+		expect(
+			screen.queryByText(
+				'One or more of your extensions are incompatible with WooPay.'
+			)
+		).toBeInTheDocument();
+	} );
 } );
