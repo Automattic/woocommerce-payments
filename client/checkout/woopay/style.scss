@@ -129,9 +129,9 @@
 		sans-serif;
 	letter-spacing: 0.8px;
 	height: 40px;
-	background: #f2deff;
-	border: 1px solid $white;
-	color: $studio-woocommerce-purple-60;
+	background: #f2deff !important;
+	border: 1px solid $white !important;
+	color: $studio-woocommerce-purple-60 !important;
 	width: 100%;
 	border-radius: 4px;
 	padding-top: 1px;
@@ -142,7 +142,7 @@
 	white-space: nowrap;
 
 	&:hover {
-		background: #d9baff;
+		background: #d9baff !important;
 		cursor: pointer;
 	}
 
@@ -153,22 +153,22 @@
 	}
 
 	&[data-theme='dark'] {
-		background: $studio-woocommerce-purple-60;
-		color: $white;
-		border-color: $studio-woocommerce-purple-60;
+		background: $studio-woocommerce-purple-60 !important;
+		color: $white !important;
+		border-color: $studio-woocommerce-purple-60 !important;
 
 		svg {
 			fill: $white;
 		}
 		&:hover {
-			background: #533582;
+			background: #533582 !important;
 		}
 	}
 
 	&[data-theme='light-outline'] {
-		border-color: #674399;
+		border-color: #674399 !important;
 		&:hover {
-			background: #d9baff;
+			background: #d9baff !important;
 		}
 	}
 

@@ -120,4 +120,15 @@ class WC_Payments_Subscriptions {
 	public static function get_subscription_service() {
 		return self::$subscription_service;
 	}
+
+	/**
+	 * Determines if this is a duplicate/staging site.
+	 *
+	 * This function is a wrapper for WCS_Staging::is_duplicate_site().
+	 *
+	 * @return bool Whether the site is a duplicate URL or not.
+	 */
+	public static function is_duplicate_site() {
+		return class_exists( 'WCS_Staging' ) && WCS_Staging::is_duplicate_site();
+	}
 }
