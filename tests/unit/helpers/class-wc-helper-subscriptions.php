@@ -167,13 +167,6 @@ class WC_Subscriptions {
 	public static $wcs_create_renewal_order = null;
 
 	/**
-	 * is_duplicate_site mock.
-	 *
-	 * @var function
-	 */
-	public static $is_duplicate_site = null;
-
-	/**
 	 * wcs_order_contains_renewal mock.
 	 *
 	 * @var function
