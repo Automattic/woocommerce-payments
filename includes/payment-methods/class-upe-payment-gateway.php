@@ -200,6 +200,30 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		}
 	}
 
+	private function check_if_intent_has_different_order_id( WC_Order $order, $intent_id ) {
+		$request       = Get_Intention::create( $intent_id );
+		/** @var WC_Payments_API_Intention $intent*/
+		$intent        = $request->send( 'wcpay_get_intention_request' );
+		$intent_meta_order_id_raw = $intent->get_metadata()['order_id'] ?? null;
+		if ( is_null( $intent_meta_order_id_raw ) ) {
+			return;
+		}
+		$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
+		if ( $intent_meta_order_id !== $order->get_id() ) {
+
+			Logger::error( sprintf(
+				/* translators: %1$s: order id, %2$s: intent id */
+				__( 'Payment intent attached to order %1$s does not match current order. Meta order_id in intent: %2$s', 'woocommerce-payments' ),
+				$order->get_id(),
+				$intent_meta_order_id
+			) );
+
+			throw new Process_Payment_Exception(
+				__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
+				'upe_process_redirect_order_id_mismatched'
+			);
+		}
+	}
 	/**
 	 * Updates payment intent to be able to save payment method.
 	 *
@@ -233,6 +257,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$currency = $order->get_currency();
 
 		if ( $payment_intent_id ) {
+			$this->check_if_intent_has_different_order_id( $order, $payment_intent_id );
+
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
 			$payment_type               = $this->is_payment_recurring( $order_id ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
 			$payment_methods            = $this->get_selected_upe_payment_methods( (string) $selected_upe_payment_type, $this->get_payment_method_ids_enabled_at_checkout( null, true ) ?? [] );
@@ -522,6 +548,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				if ( is_array( $check_existing_intention ) ) {
 					return $check_existing_intention;
 				}
+
+				$this->check_if_intent_has_different_order_id( $order, $payment_intent_id );
 
 				// @toDo: This is now not used?
 				$additional_api_parameters = $this->get_mandate_params_for_order( $order );
