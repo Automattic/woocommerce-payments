@@ -7,7 +7,6 @@
 
 namespace WCPay\WooPay;
 
-use WC_Payment_Gateway_WCPay;
 use WCPay\Logger;
 
 /**
@@ -15,22 +14,6 @@ use WCPay\Logger;
  * If one is found WooPay is disabled.
  */
 class WooPay_Scheduler {
-
-	/**
-	 * Instance of WC_Payment_Gateway_WCPay.
-	 *
-	 * @var WC_Payment_Gateway_WCPay
-	 */
-	private $wcpay_gateway;
-
-	/**
-	 * WC_REST_Payments_Settings_Controller constructor.
-	 *
-	 * @param WC_Payment_Gateway_WCPay $wcpay_gateway WC_Payment_Gateway_WCPay instance.
-	 */
-	public function __construct( WC_Payment_Gateway_WCPay $wcpay_gateway ) {
-		$this->wcpay_gateway = $wcpay_gateway;
-	}
 
 	/**
 	 * Init the hooks.
@@ -73,7 +56,6 @@ class WooPay_Scheduler {
 					$plugin = $this->format_extension_name( $plugin );
 
 					if ( in_array( $plugin, $incompatible_extensions, true ) ) {
-						$this->wcpay_gateway->update_is_woopay_enabled( false );
 						update_option( 'woopay_disabled_invalid_extensions', true );
 					}
 				}

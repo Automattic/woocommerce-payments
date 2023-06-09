@@ -13,13 +13,6 @@ use WCPay\WooPay\WooPay_Scheduler;
 class WooPay_Scheduler_Test extends WP_UnitTestCase {
 
 	/**
-	 * WC_Payment_Gateway_WCPay mock instance.
-	 *
-	 * @var WC_Payment_Gateway_WCPay
-	 */
-	private $mock_gateway;
-
-	/**
 	 * WooPay_Scheduler instance.
 	 * @var WooPay_Scheduler
 	 */
@@ -28,11 +21,7 @@ class WooPay_Scheduler_Test extends WP_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
-		$this->mock_gateway = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
-			->disableOriginalConstructor()
-			->getMock();
-
-		$this->scheduler = new WooPay_Scheduler( $this->mock_gateway );
+		$this->scheduler = new WooPay_Scheduler();
 	}
 
 	public function test_get_incompatible_extensions() {
@@ -58,12 +47,6 @@ class WooPay_Scheduler_Test extends WP_UnitTestCase {
 
 		$this->mock_api( $incompatible_extensions );
 
-		// Asserts that the update_is_woopay_enabled is called.
-		$this->mock_gateway
-			->expects( $this->once() )
-			->method( 'update_is_woopay_enabled' )
-			->with( false );
-
 		$pre_http_request = function () {
 			return [ 'test-extension/test-extension.php' ];
 		};
@@ -85,11 +68,6 @@ class WooPay_Scheduler_Test extends WP_UnitTestCase {
 		];
 
 		$this->mock_api( $incompatible_extensions );
-
-		// Asserts that the update_is_woopay_enabled is never.
-		$this->mock_gateway
-			->expects( $this->never() )
-			->method( 'update_is_woopay_enabled' );
 
 		$pre_http_request = function () {
 			return [ 'test-extension/test-extension-3.php' ];

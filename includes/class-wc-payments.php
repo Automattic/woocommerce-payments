@@ -463,6 +463,8 @@ class WC_Payments {
 		self::$woopay_util                         = new WooPay_Utilities();
 		self::$woopay_tracker                      = new WooPay_Tracker( self::get_wc_payments_http() );
 
+		( new WooPay_Scheduler() )->init();
+
 		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
 
 		$payment_method_classes = [
@@ -522,8 +524,6 @@ class WC_Payments {
 		self::$wc_payments_checkout->init_hooks();
 
 		self::$mode = new Mode( self::$card_gateway );
-
-		( new WooPay_Scheduler( self::get_gateway() ) )->init();
 
 		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$customer_service, self::$database_cache );
 		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
