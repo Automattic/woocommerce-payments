@@ -47,7 +47,7 @@ class Create_Intention extends Request {
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
 	public function set_payment_method( string $payment_method_id ) {
-		$this->validate_stripe_id( $payment_method_id, [ 'pm', 'src' ] );
+		$this->validate_stripe_id( $payment_method_id, [ 'pm', 'src', 'card' ] );
 		$this->set_param( 'payment_method', $payment_method_id );
 	}
 
