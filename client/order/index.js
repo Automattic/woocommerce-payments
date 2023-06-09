@@ -12,6 +12,7 @@ import { getConfig } from 'utils/order';
 import RefundConfirmationModal from './refund-confirm-modal';
 import CancelConfirmationModal from './cancel-confirm-modal';
 import InlineNotice from '../components/inline-notice';
+import { formatExplicitCurrency } from 'utils/currency';
 import './style.scss';
 
 jQuery( function ( $ ) {
@@ -121,6 +122,11 @@ jQuery( function ( $ ) {
 			true
 		);
 
+		const amount = formatExplicitCurrency(
+			disputeData.amount,
+			disputeData.currency
+		);
+
 		let urgency = 'info';
 		let buttonLabel = __( 'Respond now', 'woocommerce-payments' );
 		let suffix = '';
@@ -146,8 +152,8 @@ jQuery( function ( $ ) {
 				] }
 			>
 				<div>
-					This order has a chargeback dispute of{ ' ' }
-					{ disputeData.amountHtml } labeled as &quot;
+					This order has a chargeback dispute of { amount } labeled as
+					&quot;
 					{ disputeData.reason }&quot;.{ ' ' }
 					<b>
 						Please respond to this dispute before{ ' ' }

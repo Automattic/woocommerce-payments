@@ -216,10 +216,15 @@ class WC_Payments_Admin {
 		<?php
 	}
 
+	/**
+	 * Generate dispute data for this order for JavaScript client.
+	 *
+	 * @param WC_Order $order The order being displayed.
+	 */
 	private function get_order_dispute_notice_js_data( $order ) {
 		$dispute_data     = $this->order_service->get_dispute_data_for_order( $order );
 		$dispute_id       = $dispute_data['dispute_id'];
-		$amount_raw       = $dispute_data['amount'];
+		$stripe_amount    = $dispute_data['amount'];
 		$reason           = $dispute_data['reason'];
 		$currency         = $dispute_data['currency'];
 		$evidence_details = $dispute_data['evidence_details'];
@@ -231,14 +236,12 @@ class WC_Payments_Admin {
 
 		$due_by      = date_i18n( wc_date_format(), $due_by );
 		$dispute_url = $this->order_service->compose_dispute_url( $dispute_id );
-		// To do – need to render to currency value, might be better to do this on client.
-		// $amountHtml  = wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount_raw, $currency ), [ 'currency' => strtoupper( $currency ) ] );
 
 		return [
 			// Coming soon.
 			'daysRemaining' => 99,
 			'dueBy'         => $due_by,
-			'amountHtml'    => $amount_raw,
+			'amount'        => $stripe_amount,
 			'reason'        => $reason,
 			'disputeUrl'    => $dispute_url,
 
@@ -724,6 +727,11 @@ class WC_Payments_Admin {
 						'canRefund'             => $this->wcpay_gateway->can_refund_order( $order ),
 						'disputeNoticeData'     => $this->get_order_dispute_notice_js_data( $order ),
 					]
+				);
+				wp_localize_script(
+					'WCPAY_ADMIN_ORDER_ACTIONS',
+					'wcpaySettings',
+					$this->get_js_settings()
 				);
 
 				wp_enqueue_script( 'WCPAY_ADMIN_ORDER_ACTIONS' );
