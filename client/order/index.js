@@ -3,6 +3,8 @@
 import { __ } from '@wordpress/i18n';
 import ReactDOM from 'react-dom';
 import { dispatch } from '@wordpress/data';
+import moment from 'moment';
+
 /**
  * Internal dependencies
  */
@@ -111,18 +113,32 @@ jQuery( function ( $ ) {
 		const container = document.querySelector(
 			'#wcpay-order-payment-details-container'
 		);
-		const defaultTest = (
-			<InlineNotice status="info" isDismissible={ true }>
-				<div>All good here.</div>
-			</InlineNotice>
+
+		const now = moment();
+		const countdownDays = moment( disputeData.dueBy ).diff(
+			now,
+			'days',
+			true
 		);
-		const infoTest = (
+
+		let urgency = 'info';
+		let buttonLabel = __( 'Respond now', 'woocommerce-payments' );
+		let suffix = '';
+		if ( 7 > countdownDays ) {
+			urgency = 'warning';
+		} else if ( 1 > countdownDays ) {
+			urgency = 'error';
+			buttonLabel = __( 'Respond today', 'woocommerce-payments' );
+			suffix = '(Last day today)';
+		}
+
+		const notice = (
 			<InlineNotice
-				status="info"
+				status={ urgency }
 				isDismissible={ false }
 				actions={ [
 					{
-						label: __( 'Respond now', 'woocommerce-payments' ),
+						label: buttonLabel,
 						variant: 'secondary',
 						onClick: () =>
 							( window.location = disputeData.disputeUrl ),
@@ -132,56 +148,15 @@ jQuery( function ( $ ) {
 				<div>
 					This order has a chargeback dispute of{ ' ' }
 					{ disputeData.amountHtml } labeled as &quot;
-					{ disputeData.reason }&quot;. Please respond to this dispute
-					before { disputeData.dueBy }
+					{ disputeData.reason }&quot;.{ ' ' }
+					<b>
+						Please respond to this dispute before{ ' ' }
+						{ disputeData.dueBy }
+					</b>
+					.{ suffix }
 				</div>
 			</InlineNotice>
 		);
-		const warningTest = (
-			<InlineNotice
-				status="warning"
-				isDismissible={ false }
-				actions={ [
-					{
-						label: __( 'Respond now', 'woocommerce-payments' ),
-						variant: 'secondary',
-						onClick: () =>
-							( window.location = disputeData.disputeUrl ),
-					},
-				] }
-			>
-				<div>
-					This order has a chargeback dispute of{ ' ' }
-					{ disputeData.amountHtml } labeled as &quot;
-					{ disputeData.reason }&quot;. Please respond to this dispute
-					before { disputeData.dueBy }
-				</div>
-			</InlineNotice>
-		);
-		const errorTest = (
-			<InlineNotice
-				status="error"
-				isDismissible={ false }
-				actions={ [
-					{
-						label: __( 'Respond today', 'woocommerce-payments' ),
-						variant: 'secondary',
-						onClick: () =>
-							( window.location = disputeData.disputeUrl ),
-					},
-				] }
-			>
-				<div>
-					This order has a chargeback dispute of{ ' ' }
-					{ disputeData.amountHtml } labeled as &quot;
-					{ disputeData.reason }&quot;. Please respond to this dispute
-					before { disputeData.dueBy } (Last day today)
-				</div>
-			</InlineNotice>
-		);
-		ReactDOM.render(
-			[ defaultTest, infoTest, warningTest, errorTest ],
-			container
-		);
+		ReactDOM.render( notice, container );
 	}
 } );
