@@ -15,6 +15,7 @@ import {
 	useGetAvailablePaymentMethodIds,
 	usePaymentRequestEnabledSettings,
 	useWooPayEnabledSettings,
+	useWooPayShowIncompatibilityNotice,
 } from 'wcpay/data';
 import WCPaySettingsContext from '../../wcpay-settings-context';
 
@@ -23,6 +24,7 @@ jest.mock( 'wcpay/data', () => ( {
 	useWooPayEnabledSettings: jest.fn(),
 	useEnabledPaymentMethodIds: jest.fn(),
 	useGetAvailablePaymentMethodIds: jest.fn(),
+	useWooPayShowIncompatibilityNotice: jest.fn(),
 } ) );
 
 const getMockPaymentRequestEnabledSettings = (
@@ -43,6 +45,8 @@ describe( 'ExpressCheckout', () => {
 		useWooPayEnabledSettings.mockReturnValue(
 			getMockWooPayEnabledSettings( false, jest.fn() )
 		);
+
+		useWooPayShowIncompatibilityNotice.mockReturnValue( false );
 	} );
 
 	it( 'should dispatch enabled status update if express checkout is being toggled', async () => {

@@ -150,7 +150,7 @@ const WooPayExpressCheckoutItem = () => {
 								{ interpolateComponents( {
 									mixedString: __(
 										/* eslint-disable-next-line max-len */
-										'WooPay has been disabled because one or more of your extensions are incompatible.' +
+										'One or more of your extensions are incompatible with WooPay.' +
 											' ' +
 											'{{learnMoreLink}}Learn More{{/learnMoreLink}}',
 										'woocommerce-payments'
