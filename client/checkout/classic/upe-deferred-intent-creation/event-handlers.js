@@ -38,10 +38,7 @@ jQuery( function ( $ ) {
 	} );
 
 	$( 'form.checkout' ).on( generateCheckoutEventNames(), function () {
-		const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
-		if ( ! isUsingSavedPaymentMethod( paymentMethodType ) ) {
-			return processPayment( api, jQuery( this ), paymentMethodType );
-		}
+		return processPaymentIfNotUsingSavedMethod( $( this ) );
 	} );
 
 	window.addEventListener( 'hashchange', () => {
@@ -82,15 +79,15 @@ jQuery( function ( $ ) {
 	} );
 
 	$( 'form#order_review' ).on( 'submit', function () {
+		return processPaymentIfNotUsingSavedMethod( $( 'form#order_review' ) );
+	} );
+
+	function processPaymentIfNotUsingSavedMethod( $form ) {
 		const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
 		if ( ! isUsingSavedPaymentMethod( paymentMethodType ) ) {
-			return processPayment(
-				api,
-				$( 'form#order_review' ),
-				paymentMethodType
-			);
+			return processPayment( api, $form, paymentMethodType );
 		}
-	} );
+	}
 
 	function maybeMountStripePaymentElement() {
 		if (
