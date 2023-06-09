@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Disabled subscription-related actions, webhooks, and invoice services on staging sites to avoid unintended interactions with the server and live site.
