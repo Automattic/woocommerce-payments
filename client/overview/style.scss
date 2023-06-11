@@ -15,6 +15,16 @@
 	.woocommerce-experimental-list__item {
 		position: initial;
 	}
+
+	.woocommerce-task-list__item:not( .wcpay-dispute-resolution-task--urgent ) {
+		// Style non-urgent dispute tasks as yellow, keeping the level-1 exclamation icon.
+		.gridicons-notice-outline {
+			fill: #f0b849;
+		}
+		&::before {
+			background-color: #f0b849;
+		}
+	}
 }
 
 .wcpay-overview {
