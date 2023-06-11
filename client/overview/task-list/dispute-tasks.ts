@@ -120,5 +120,6 @@ export const getDisputeResolutionTask = (
 		disputeCount,
 		disputeTotalAmounts
 	);
+	disputeTask.actionLabel = __( 'See disputes', 'woocommerce-payments' );
 	return disputeTask;
 };
