@@ -33,11 +33,21 @@ export const getDisputeResolutionTask = (
 		wcpayTracks.recordEvent( 'wcpay_overview_task', {
 			task: 'dispute-resolution-task',
 		} );
-		window.location.href = getAdminUrl( {
-			page: 'wc-admin',
-			path: '/payments/disputes',
-			filter: 'awaiting_response',
-		} );
+		if ( disputeCount === 1 ) {
+			// Redirect to the dispute details page if there is only one dispute.
+			const disputeId = activeDisputes[ 0 ].dispute_id;
+			window.location.href = getAdminUrl( {
+				page: 'wc-admin',
+				path: '/payments/disputes/details',
+				id: disputeId,
+			} );
+		} else {
+			window.location.href = getAdminUrl( {
+				page: 'wc-admin',
+				path: '/payments/disputes',
+				filter: 'awaiting_response',
+			} );
+		}
 	};
 
 	const isDueWithin24h = ( dispute: CachedDispute ) => {
