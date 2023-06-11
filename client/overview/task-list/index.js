@@ -169,6 +169,11 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 			{ visibleTasks.map( ( task ) => (
 				<TaskItem
 					key={ task.key }
+					className={
+						// Allow optional overriding of the className.
+						task.className &&
+						`woocommerce-task-list__item ${ task.className } level-${ task.level }`
+					}
 					title={ task.title }
 					actionLabel={ task.actionLabel }
 					completed={ task.completed }
