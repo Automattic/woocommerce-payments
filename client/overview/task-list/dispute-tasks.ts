@@ -40,10 +40,20 @@ export const getDisputeResolutionTask = (
 		} );
 	};
 
+	const isDueWithin24h = ( dispute: CachedDispute ) => {
+		const now = moment();
+		const dueBy = moment( dispute.due_by );
+		return (
+			dueBy.diff( now, 'hours' ) > 0 && dueBy.diff( now, 'hours' ) <= 24
+		);
+	};
+
+	const dueWithin24h = activeDisputes.some( isDueWithin24h );
+
 	const disputeTask: TaskItemProps = {
 		key: 'dispute-resolution-task',
 		title: '',
-		level: 2, // TODO: add dynamic level here
+		level: 1,
 		completed: false,
 		content: '', // TODO: add task subtitle here
 		expanded: true,
@@ -51,15 +61,15 @@ export const getDisputeResolutionTask = (
 		actionLabel: __( 'Respond now', 'woocommerce-payments' ),
 		action: handleClick,
 		onClick: handleClick,
+		className: 'wcpay-dispute-resolution-task',
 	};
+
+	if ( dueWithin24h ) {
+		disputeTask.className += ' wcpay-dispute-resolution-task--urgent';
+	}
 
 	if ( disputeCount === 1 ) {
 		const dispute = activeDisputes[ 0 ];
-		const now = moment();
-		const dueBy = moment( dispute.due_by );
-
-		const dueWithin24h =
-			dueBy.diff( now, 'hours' ) > 0 && dueBy.diff( now, 'hours' ) <= 24;
 
 		if ( dueWithin24h ) {
 			// If the dispute is due within 24 hours, show a more urgent message.
