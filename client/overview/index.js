@@ -64,6 +64,7 @@ const OverviewPage = () => {
 
 	const { disputes: activeDisputes } = useDisputes( {
 		filter: 'awaiting_response',
+		per_page: 50,
 	} );
 
 	const tasksUnsorted = getTasks( {
