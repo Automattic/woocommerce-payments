@@ -49,10 +49,20 @@ final class SessionHandler extends WC_Session {
 	}
 
 	/**
-	 * Note: This method was added to the original class for compatibility with WooPay.
+	 * Note: Init session cookie.
 	 */
 	public function init_session_cookie() {
-		$this->init();
+		if ( is_user_logged_in() && strval( get_current_user_id() ) !== $this->_customer_id ) {
+			$old_data           = (array) $this->get_session( $this->_customer_id, [] );
+			$this->_customer_id = strval( get_current_user_id() );
+			$this->_data        = $old_data;
+
+			$customer                = maybe_unserialize( $this->_data['customer'] );
+			$customer['id']          = strval( $this->_customer_id );
+			$this->_data['customer'] = maybe_serialize( $customer );
+
+			$this->save_data();
+		}
 	}
 
 	/**
