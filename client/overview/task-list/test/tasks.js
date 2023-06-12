@@ -274,7 +274,7 @@ describe( 'getTasks()', () => {
 		);
 	} );
 
-	it( 'should not include the dispute resolution task', () => {
+	it( 'should not include the dispute resolution task if no active disputes', () => {
 		const activeDisputes = [];
 		const actual = getTasks( {
 			accountStatus: {
@@ -287,6 +287,25 @@ describe( 'getTasks()', () => {
 				},
 			},
 			activeDisputes,
+		} );
+
+		expect( actual ).toEqual( [] );
+	} );
+
+	it( 'should not include the dispute resolution task if dispute due_by > 7 days', () => {
+		// Set Date.now to - 7 days to reduce urgency of disputes.
+		Date.now = jest.fn( () => new Date( '2023-01-25T08:00:00.000Z' ) );
+		const actual = getTasks( {
+			accountStatus: {
+				status: 'restricted_soon',
+				currentDeadline: 1620857083,
+				pastDue: false,
+				accountLink: 'http://example.com',
+				progressiveOnboarding: {
+					isEnabled: false,
+				},
+			},
+			activeDisputes: mockActiveDisputes,
 		} );
 
 		expect( actual ).toEqual( [] );

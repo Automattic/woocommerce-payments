@@ -15,7 +15,10 @@ import moment from 'moment';
 import strings from './strings';
 import UpdateBusinessDetailsModal from '../modal/update-business-details';
 import { getVerifyBankAccountTask } from './po-tasks';
-import { getDisputeResolutionTask } from './dispute-tasks';
+import {
+	getDisputeResolutionTask,
+	getDisputesDueWithinDays,
+} from './dispute-tasks';
 
 const renderModal = ( errorMessages, status, accountLink, currentDeadline ) => {
 	let container = document.querySelector(
@@ -81,7 +84,10 @@ export const getTasks = ( {
 		accountDetailsUpdateByDescription;
 
 	const isDisputeTaskVisible =
-		!! activeDisputes && 0 < activeDisputes?.length;
+		!! activeDisputes &&
+		// Only show the dispute task if there are disputes due within 7 days.
+		0 < getDisputesDueWithinDays( activeDisputes, 7 ).length;
+
 	const hasMultipleErrors = 1 < errorMessages.length;
 	const hasSingleError = 1 === errorMessages.length;
 

@@ -34,6 +34,20 @@ const isDueWithin = ( dispute: CachedDispute, days = 1 ) => {
 	);
 };
 
+/**
+ * Returns an array of disputes that are due within the specified number of days.
+ *
+ * @param {CachedDispute[]} activeDisputes - The active disputes to filter.
+ * @param {number} days - The number of days to check.
+ *
+ * @return {CachedDispute[]} The disputes that are due within the specified number of days.
+ */
+export const getDisputesDueWithinDays = (
+	activeDisputes: CachedDispute[],
+	days: number
+): CachedDispute[] =>
+	activeDisputes.filter( ( dispute ) => isDueWithin( dispute, days ) );
+
 export const getDisputeResolutionTask = (
 	/**
 	 * Active disputes (awaiting a response) to generate the notice string for.
