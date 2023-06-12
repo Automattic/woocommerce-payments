@@ -1,3 +1,4 @@
+
 # `Get_Request` request class
 
 [ℹ️ This document is a part of __WooCommerce Payments Server Requests__](../requests.md)
@@ -21,12 +22,6 @@ When creating `Get_Request` requests, the ID parameter could be passed to the `:
 ## Examples:
 
 ```php
-$request = Get_Request::create( $id );
-$request->set_method ('deposits')
-$request->send( 'wcpay_get_deposit_request' );
-```
-
-```php
 $request = Request::get( ('deposits', $id );
 $request->send( 'wcpay_get_deposit_request' );
 ```
@@ -34,4 +29,11 @@ $request->send( 'wcpay_get_deposit_request' );
 ```php
 $request = Request::get( ('deposits' ); // Without ID argument.
 $request->send( 'wcpay_get_deposits_request' );
+```
+
+You could also create request with the following code, but it is not recommended.
+```php
+$request = Get_Request::create( $id );
+$request->set_method ('deposits')
+$request->send( 'wcpay_get_deposit_request' );
 ```

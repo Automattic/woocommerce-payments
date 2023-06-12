@@ -350,7 +350,7 @@ abstract class Request {
 	 * @return void
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
-	public function set_request_route_id_parameter( $id ) {
+	protected function set_request_route_id_parameter( $id ) {
 		if ( method_exists( $this, 'set_id' ) ) {
 			if ( null !== $id ) {
 				$this->set_id( $id );
