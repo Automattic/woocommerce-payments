@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Corrected bug where checkbox remained disabled when credit card was disabled
