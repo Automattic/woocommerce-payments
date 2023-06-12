@@ -46,15 +46,13 @@ class Get_Request_Test extends WCPAY_UnitTestCase {
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
 		$request->send( '' );
 	}
-	public function test_exception_will_throw_if_api_route_is_invalid() {
-		$request = new Get_Request( $this->mock_api_client, $this->mock_wc_payments_http_client );
+	/**
+	 * @dataProvider invalid_api_routes_provider
+	 */
+	public function test_exception_will_throw_if_api_route_is_invalid( $route, $id ) {
+		$request = new Get_Request( $this->mock_api_client, $this->mock_wc_payments_http_client, $id );
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
-		$request->set_api( 'foo' );
-	}
-	public function test_exception_will_throw_if_api_route_is_invalid_when_id_is_passed() {
-		$request = new Get_Request( $this->mock_api_client, $this->mock_wc_payments_http_client, '1' );
-		$this->expectException( Invalid_Request_Parameter_Exception::class );
-		$request->set_api( 'foo' );
+		$request->set_api( $route );
 	}
 
 	public function test_exception_will_throw_if_api_route_is_invalid_when_request_filter_is_applied() {
@@ -73,33 +71,37 @@ class Get_Request_Test extends WCPAY_UnitTestCase {
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
 		$request->apply_filters( 'test_exception_will_throw_if_invalid_api_route_is_set_when_filter_is_applied' );
 	}
-	public function test_request_will_be_created_correctly_when_id_is_not_passed() {
-		$request = new Get_Request( $this->mock_api_client, $this->mock_wc_payments_http_client );
+
+	/**
+	 * @dataProvider valid_api_routes_provider
+	 */
+	public function test_request_will_be_created( $route, $id ) {
+		$request = new Get_Request( $this->mock_api_client, $this->mock_wc_payments_http_client, $id );
 		$request->set_api( WC_Payments_API_Client::DEPOSITS_API );
 		$this->assertSame( 'GET', $request->get_method() );
-		$this->assertSame( WC_Payments_API_Client::DEPOSITS_API, $request->get_api() );
-	}
-	public function test_request_will_be_created_correctly_when_id_is_passed() {
-		$request = new Get_Request( $this->mock_api_client, $this->mock_wc_payments_http_client, '1' );
-		$request->set_api( WC_Payments_API_Client::DEPOSITS_API );
-		$this->assertSame( 'GET', $request->get_method() );
-		$this->assertSame( WC_Payments_API_Client::DEPOSITS_API . '/1', $request->get_api() );
-	}
-	public function test_request_will_be_created_correctly_passed_api_endpoint_has_additional_route_arguments() {
-		$request = new Get_Request( $this->mock_api_client, $this->mock_wc_payments_http_client );
-		$request->set_api( WC_Payments_API_Client::DEPOSITS_API . '/foo' );
-		$this->assertSame( 'GET', $request->get_method() );
-		$this->assertSame( WC_Payments_API_Client::DEPOSITS_API . '/foo', $request->get_api() );
+		$this->assertSame( $id ? $route . '/' . $id : $route, $request->get_api() );
 	}
 
-	public function test_get_method_from_parent_request_class_will_create_get_request() {
-		$request = Request::get( WC_Payments_API_Client::DEPOSITS_API );
+	/**
+	 * @dataProvider valid_api_routes_provider
+	 */
+	public function test_get_method_from_parent_request_class_will_create_get_request( $route, $id ) {
+		$request = Request::get( $route, $id );
 		$this->assertInstanceOf( Get_Request::class, $request );
-		$this->assertSame( WC_Payments_API_Client::DEPOSITS_API, $request->get_api() );
+		$this->assertSame( $id ? $route . '/' . $id : $route, $request->get_api() );
 	}
-	public function test_get_method_from_parent_request_class_with_id_argument_will_create_get_request() {
-		$request = Request::get( WC_Payments_API_Client::DEPOSITS_API, 'foo' );
-		$this->assertInstanceOf( Get_Request::class, $request );
-		$this->assertSame( WC_Payments_API_Client::DEPOSITS_API . '/foo', $request->get_api() );
+
+	public function invalid_api_routes_provider(): array {
+		return [
+			'invalid_api_route_without_id_param' => [ 'foo', null ],
+			'invalid_api_route_with_id_param'    => [ 'foo', '1' ],
+		];
+	}
+
+	public function valid_api_routes_provider(): array {
+		return [
+			'valid_api_route_without_id_param' => [ WC_Payments_API_Client::DEPOSITS_API, null ],
+			'valid_api_route_with_id_param'    => [ WC_Payments_API_Client::DEPOSITS_API, '1' ],
+		];
 	}
 }
