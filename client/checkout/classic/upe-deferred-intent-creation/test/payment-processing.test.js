@@ -2,10 +2,11 @@
  * Internal dependencies
  */
 import {
-	checkout,
+	createAndConfirmSetupIntent,
 	mountStripePaymentElement,
+	processPayment,
 	renderTerms,
-} from '../stripe-checkout';
+} from '../payment-processing';
 import { getAppearance } from '../../../upe-styles';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { getFingerprint } from 'wcpay/checkout/utils/fingerprint';
@@ -100,17 +101,29 @@ const mockGetStripe = jest.fn( () => {
 
 const saveUPEAppearanceMock = jest.fn();
 
+const mockSetupIntentThen = jest.fn();
+const setupIntentMock = jest.fn( () => {
+	return {
+		then: mockSetupIntentThen,
+	};
+} );
+
 const apiMock = {
 	saveUPEAppearance: saveUPEAppearanceMock,
 	getStripe: mockGetStripe,
+	setupIntent: setupIntentMock,
 };
 
-describe( 'Mount Stripe Payment Element', () => {
+describe( 'Stripe Payment Element mounting', () => {
 	afterEach( () => {
 		jest.clearAllMocks();
 	} );
 
 	test( 'initializes the appearance when it is not set and saves it', async () => {
+		// Create a mock function to track the event dispatch for tokenization-form.js execution
+		const dispatchMock = jest.fn();
+		document.body.dispatchEvent = dispatchMock;
+
 		const appearanceMock = { backgroundColor: '#fff' };
 		getAppearance.mockReturnValue( appearanceMock );
 		getFingerprint.mockImplementation( () => {
@@ -127,6 +140,7 @@ describe( 'Mount Stripe Payment Element', () => {
 			expect( apiMock.saveUPEAppearance ).toHaveBeenCalledWith(
 				appearanceMock
 			);
+			expect( dispatchMock ).toHaveBeenCalled();
 		} );
 	} );
 
@@ -246,12 +260,12 @@ describe( 'Mount Stripe Payment Element', () => {
 	} );
 } );
 
-describe( 'Checkout', () => {
+describe( 'Payment processing', () => {
 	afterEach( () => {
 		jest.clearAllMocks();
 	} );
 
-	test( 'Successful checkout', async () => {
+	test( 'Successful payment processing', async () => {
 		setupBillingDetailsFields();
 		getFingerprint.mockImplementation( () => {
 			return 'fingerprint';
@@ -271,9 +285,14 @@ describe( 'Checkout', () => {
 			} ),
 			removeClass: jest.fn(),
 			unblock: jest.fn(),
+			attr: jest.fn().mockReturnValue( 'checkout' ),
 		};
 
-		const checkoutResult = checkout( apiMock, mockJqueryForm, 'card' );
+		const checkoutResult = processPayment(
+			apiMock,
+			mockJqueryForm,
+			'card'
+		);
 
 		expect( mockJqueryForm.addClass ).toHaveBeenCalledWith( 'processing' );
 		expect( mockJqueryForm.removeClass ).not.toHaveBeenCalledWith(
@@ -285,6 +304,70 @@ describe( 'Checkout', () => {
 		expect( mockCreatePaymentMethod ).toHaveBeenCalled();
 		expect( mockThen ).toHaveBeenCalled();
 		expect( checkoutResult ).toBe( false );
+	} );
+
+	test( 'Payment processing adds billing details for checkout', async () => {
+		setupBillingDetailsFields();
+		getFingerprint.mockImplementation( () => {
+			return 'fingerprint';
+		} );
+
+		const mockDomElement = document.createElement( 'div' );
+		mockDomElement.dataset.paymentMethodType = 'card';
+
+		await mountStripePaymentElement( apiMock, mockDomElement );
+
+		const checkoutForm = {
+			submit: jest.fn(),
+			addClass: jest.fn( () => {
+				return {
+					block: jest.fn(),
+				};
+			} ),
+			removeClass: jest.fn(),
+			unblock: jest.fn(),
+			attr: jest.fn().mockReturnValue( 'checkout' ),
+		};
+
+		await processPayment( apiMock, checkoutForm, 'card' );
+
+		expect( mockCreatePaymentMethod ).toHaveBeenCalledWith( {
+			elements: expect.any( Object ),
+			params: {
+				billing_details: expect.any( Object ),
+			},
+		} );
+	} );
+
+	test( 'Payment processing does not add billing details for non-checkout forms', async () => {
+		setupBillingDetailsFields();
+		getFingerprint.mockImplementation( () => {
+			return 'fingerprint';
+		} );
+
+		const mockDomElement = document.createElement( 'div' );
+		mockDomElement.dataset.paymentMethodType = 'card';
+
+		await mountStripePaymentElement( apiMock, mockDomElement );
+
+		const addPaymentMethodForm = {
+			submit: jest.fn(),
+			addClass: jest.fn( () => {
+				return {
+					block: jest.fn(),
+				};
+			} ),
+			removeClass: jest.fn(),
+			unblock: jest.fn(),
+			attr: jest.fn().mockReturnValue( 'add_payment_method' ),
+		};
+
+		await processPayment( apiMock, addPaymentMethodForm, 'card' );
+
+		expect( mockCreatePaymentMethod ).toHaveBeenCalledWith( {
+			elements: expect.any( Object ),
+			params: {},
+		} );
 	} );
 
 	function setupBillingDetailsFields() {
@@ -341,4 +424,31 @@ describe( 'Checkout', () => {
 		document.body.appendChild( postcodeInput );
 		document.body.appendChild( stateInput );
 	}
+} );
+
+describe( 'Setup intent creation and confirmation', () => {
+	test( 'Setup intent is created and confirmed', async () => {
+		const mockDomElement = document.createElement( 'div' );
+		mockDomElement.dataset.paymentMethodType = 'card';
+
+		const mockJqueryForm = {
+			submit: jest.fn(),
+			addClass: jest.fn( () => {
+				return {
+					block: jest.fn(),
+				};
+			} ),
+			removeClass: jest.fn(),
+			unblock: jest.fn(),
+			attr: jest.fn().mockReturnValue( 'add_payment_method' ),
+		};
+
+		await createAndConfirmSetupIntent(
+			mockJqueryForm,
+			{ id: 'si123xyz' },
+			apiMock
+		);
+
+		expect( setupIntentMock ).toHaveBeenCalled();
+	} );
 } );
