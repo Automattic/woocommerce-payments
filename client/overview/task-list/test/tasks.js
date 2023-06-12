@@ -21,7 +21,7 @@ const mockActiveDisputes = [
 		customer_country: 'US',
 		status: 'needs_response',
 		created: '2019-11-01 23:59:59',
-		due_by: '2019-11-08 02:46:00',
+		due_by: '2023-02-01 23:59:59',
 		order: {
 			number: '1',
 			customer_url: 'https://shop.local',
@@ -43,7 +43,7 @@ const mockActiveDisputes = [
 		customer_country: 'US',
 		status: 'needs_response',
 		created: '2019-11-01 23:59:59',
-		due_by: '2019-11-08 02:46:00',
+		due_by: '2023-02-03 23:59:59',
 		order: {
 			number: '1',
 			customer_url: 'https://shop.local',
@@ -65,7 +65,7 @@ const mockActiveDisputes = [
 		customer_country: 'US',
 		status: 'needs_response',
 		created: '2019-11-01 23:59:59',
-		due_by: '2019-11-08 02:46:00',
+		due_by: '2023-02-07 23:59:59',
 		order: {
 			number: '1',
 			customer_url: 'https://shop.local',
@@ -77,7 +77,7 @@ const mockActiveDisputes = [
 describe( 'getTasks()', () => {
 	beforeEach( () => {
 		// mock Date.now that moment library uses to get current date for testing purposes
-		Date.now = jest.fn( () => new Date( '2023-02-01T12:33:37.000Z' ) );
+		Date.now = jest.fn( () => new Date( '2023-02-01T08:00:00.000Z' ) );
 
 		global.wcpaySettings = {
 			zeroDecimalCurrencies: [],
@@ -292,7 +292,37 @@ describe( 'getTasks()', () => {
 		expect( actual ).toEqual( [] );
 	} );
 
+	it( 'should include the dispute resolution task with 1 urgent dispute', () => {
+		const actual = getTasks( {
+			accountStatus: {
+				status: 'restricted_soon',
+				currentDeadline: 1620857083,
+				pastDue: false,
+				accountLink: 'http://example.com',
+				progressiveOnboarding: {
+					isEnabled: false,
+				},
+			},
+			activeDisputes: [ mockActiveDisputes[ 0 ] ],
+		} );
+
+		expect( actual ).toEqual(
+			expect.arrayContaining( [
+				expect.objectContaining( {
+					key: 'dispute-resolution-task',
+					completed: false,
+					level: 1,
+					title: 'Respond to a dispute for $10.00 – Last day',
+					content: 'Respond today by 11:59 PM',
+					actionLabel: 'Respond now',
+				} ),
+			] )
+		);
+	} );
+
 	it( 'should include the dispute resolution task', () => {
+		// Set Date.now to - 5 days to reduce urgency of dispute.
+		Date.now = jest.fn( () => new Date( '2023-01-27T08:00:00.000Z' ) );
 		const actual = getTasks( {
 			accountStatus: {
 				status: 'restricted_soon',
@@ -313,13 +343,14 @@ describe( 'getTasks()', () => {
 					completed: false,
 					level: 1,
 					title: 'Respond to a dispute for $10.00',
+					content: 'By Feb 1, 2023 – 6 days left to respond',
 					actionLabel: 'Respond now',
 				} ),
 			] )
 		);
 	} );
 
-	it( 'should include the dispute resolution task with multiple disputes', () => {
+	it( 'should include the dispute resolution task with multiple disputes and 1 urgent dispute', () => {
 		const actual = getTasks( {
 			accountStatus: {
 				status: 'restricted_soon',
@@ -341,6 +372,38 @@ describe( 'getTasks()', () => {
 					level: 1,
 					title:
 						'Respond to 3 active disputes for a total of $20.00, €10.00',
+					content: 'Final day to respond for 1 of the disputes',
+					actionLabel: 'See disputes',
+				} ),
+			] )
+		);
+	} );
+
+	it( 'should include the dispute resolution task with multiple disputes', () => {
+		// Set Date.now to - 5 days to reduce urgency of disputes.
+		Date.now = jest.fn( () => new Date( '2023-01-27T08:00:00.000Z' ) );
+		const actual = getTasks( {
+			accountStatus: {
+				status: 'restricted_soon',
+				currentDeadline: 1620857083,
+				pastDue: false,
+				accountLink: 'http://example.com',
+				progressiveOnboarding: {
+					isEnabled: false,
+				},
+			},
+			activeDisputes: mockActiveDisputes,
+		} );
+
+		expect( actual ).toEqual(
+			expect.arrayContaining( [
+				expect.objectContaining( {
+					key: 'dispute-resolution-task',
+					completed: false,
+					level: 1,
+					title:
+						'Respond to 3 active disputes for a total of $20.00, €10.00',
+					content: 'Last week to respond for 1 of the disputes',
 					actionLabel: 'See disputes',
 				} ),
 			] )
