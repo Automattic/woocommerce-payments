@@ -9,17 +9,11 @@
 }
 
 // Adapted from woocommerce-admin:client/homescreen/style.scss
-.components-card.woocommerce-task-card {
-	.components-card__body {
-		padding: 0;
-	}
+.wcpay-task-list.woocommerce-experimental-list {
+	position: relative;
 
-	.wcpay-task-list.woocommerce-experimental-list {
-		position: relative;
-
-		.woocommerce-experimental-list__item {
-			position: initial;
-		}
+	.woocommerce-experimental-list__item {
+		position: initial;
 	}
 }
 
