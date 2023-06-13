@@ -40,6 +40,7 @@
     "test:php": "./bin/run-tests.sh",
     "test:php-coverage": "./bin/check-test-coverage.sh",
     "test:php-watch": "npm run test:php -- -w",
+    "test:qit": "npm run build:release && ./tests/qit/security.sh",
     "watch": "webpack --watch",
     "hmr": "webpack server",
     "start": "npm run watch",
