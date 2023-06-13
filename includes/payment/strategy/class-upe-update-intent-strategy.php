@@ -1,0 +1,145 @@
+<?php
+/**
+ * Class UPE_Update_Intent_Strategy
+ *
+ * @package WooCommerce\Payments
+ */
+
+namespace WCPay\Payment\Strategy;
+
+use Exception;
+use Payment_State;
+use WC_Payments_API_Intention;
+use WC_Payments_Utils;
+use WC_Payments;
+use WCPay\Payment_Methods\UPE_Payment_Gateway;
+use WCPay\Core\Server\Request\Update_Intention;
+use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Payment\Flags;
+use WCPay\Payment\Payment;
+use WCPay\Payment\State\Awaiting_UPE_Confirmation_State;
+
+/**
+ * Represents a payment processing strategy.
+ */
+class UPE_Update_Intent_Strategy extends Strategy {
+	use Redirect_If_Action_Is_Required;
+
+	/**
+	 * Holds the gateway instance.
+	 *
+	 * @var UPE_Payment_Gateway
+	 */
+	protected $gateway;
+
+	/**
+	 * ID of the intent to load.
+	 *
+	 * @var string
+	 */
+	protected $intent_id;
+
+	/**
+	 * The only allowed payment method type.
+	 *
+	 * @var string
+	 */
+	protected $selected_payment_type;
+
+	/**
+	 * Payment country to use to calculate fees.
+	 *
+	 * @var string
+	 */
+	protected $payment_country;
+
+	/**
+	 * Instantiates the strategy.
+	 *
+	 * @param string $intent_id             ID of the intent to load. Will be compared with the stored ID.
+	 * @param string $selected_payment_type The only allowed payment method type.
+	 * @param string $payment_country       Country used for fee calculation (Optional).
+	 */
+	public function __construct( string $intent_id, string $selected_payment_type, string $payment_country = null ) {
+		// Load dependencies. @todo not here.
+		$this->gateway = WC_Payments::get_gateway();
+
+		// Store parameters.
+		$this->intent_id             = $intent_id;
+		$this->selected_payment_type = $selected_payment_type;
+		$this->payment_country       = $payment_country;
+	}
+
+	/**
+	 * Processes the payment.
+	 *
+	 * @param  Payment $payment The payment to process.
+	 * @return Payment_State    The next state the payment should transition to.
+	 */
+	public function process( Payment $payment ): Awaiting_UPE_Confirmation_State {
+		$order = $payment->get_order();
+
+		// Store parameters within the payment.
+		if ( $payment->get_intent_id() && $payment->get_intent_id() !== $this->intent_id ) {
+			throw new Exception( 'Unexpected intent ID. What should we do about it?' );
+		} elseif ( $payment->get_intent_id() !== $this->intent_id ) {
+			$payment->set_intent_id( $this->intent_id );
+		}
+		$payment->set_selected_upe_payment_type( $this->selected_payment_type );
+		if ( $this->payment_country ) {
+			$payment->set_payment_country( $this->payment_country );
+		}
+
+		if ( $order->get_total() > 0 ) {
+			// Setup intents already contain enough information, only update Payment intents.
+			$intent = $this->request_intent_update_from_server( $payment );
+			$payment->set_intent( $intent );
+		}
+
+		return new Awaiting_UPE_Confirmation_State( $payment );
+	}
+
+	/**
+	 * Requests an intent to be updated on the server.
+	 *
+	 * @param Payment $payment           The payment object.
+	 * @return WC_Payments_API_Intention The updated intention.
+	 *
+	 * @throws Amount_Too_Small_Exception If the amount is insufficient for the intent.
+	 */
+	protected function request_intent_update_from_server( Payment $payment ) {
+		$order           = $payment->get_order();
+		$intent_id       = $payment->get_intent_id();
+		$selected        = (string) $payment->get_selected_upe_payment_type();
+		$payment_methods = $this->gateway->get_selected_upe_payment_methods( $selected, $this->gateway->get_payment_method_ids_enabled_at_checkout( null, true ) ?? [] );
+
+		try {
+			$request = Update_Intention::create( $intent_id );
+			$request->set_currency_code( strtolower( $order->get_currency() ) );
+			$request->set_amount( WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() ) );
+			$request->set_metadata( $payment->get_metadata() );
+			$request->set_level3( $this->gateway->get_level3_data_from_order( $order ) );
+			$request->set_payment_method_types( $payment_methods );
+			$payment_country = $payment->get_payment_country();
+			if ( $payment_country ) {
+				$request->set_payment_country( $payment_country );
+			}
+			if ( $payment->is( Flags::SAVE_PAYMENT_METHOD_TO_STORE ) ) {
+				$request->setup_future_usage();
+			}
+			if ( $payment->get_customer_id() ) {
+				$request->set_customer( $payment->get_customer_id() );
+			}
+			$payment_method_options = $this->gateway->get_mandate_params_for_order( $order );
+			if ( $payment_method_options ) {
+				$request->setup_future_usage();
+				$request->set_payment_method_options( $payment_method_options );
+			}
+
+			return $request->send( 'wcpay_update_intention_request', $order, $intent_id );
+		} catch ( Amount_Too_Small_Exception $e ) {
+			// This code would only be reached if the cache has already expired.
+			throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
+		}
+	}
+}

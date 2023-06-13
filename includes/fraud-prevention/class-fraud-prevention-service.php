@@ -54,11 +54,17 @@ class Fraud_Prevention_Service {
 	 *
 	 * @param null $session Session instance.
 	 * @param null $gateway WC_Payment_Gateway_WCPay instance.
-	 * @return Fraud_Prevention_Service
+	 * @return Fraud_Prevention_Service|null
 	 */
 	public static function get_instance( $session = null, $gateway = null ): self {
+		$session = $session ?? WC()->session;
+
+		if ( ! $session ) {
+			return null; // to indicate that an instance cannot be created yet.
+		}
+
 		if ( null === self::$instance ) {
-			self::$instance = new self( $session ?? WC()->session, $gateway ?? WC_Payments::get_gateway() );
+			self::$instance = new self( $session, $gateway ?? WC_Payments::get_gateway() );
 		}
 
 		return self::$instance;

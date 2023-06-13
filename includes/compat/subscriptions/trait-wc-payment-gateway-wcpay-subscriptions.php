@@ -18,6 +18,7 @@ use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Payment\Payment_Service;
 
 /**
  * Gateway class for WooCommerce Payments, with added compatibility with WooCommerce Subscriptions.
@@ -305,7 +306,13 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		try {
 			$payment_information = new Payment_Information( '', $renewal_order, Payment_Type::RECURRING(), $token, Payment_Initiated_By::MERCHANT() );
-			$this->process_payment_for_order( null, $payment_information, true );
+
+			if ( true || true ) {
+				$payment_service = new Payment_Service();
+				$payment_service->process_renewal_payment( $renewal_order, $token );
+			} else {
+				$this->process_payment_for_order( null, $payment_information, true );
+			}
 		} catch ( API_Exception $e ) {
 			Logger::error( 'Error processing subscription renewal: ' . $e->getMessage() );
 			// TODO: Update to use Order_Service->mark_payment_failed.
@@ -876,7 +883,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return $result;
 		}
 
-		// TEMP Fix – Stripe validates mandate params for cards not
+		// TEMP Fix – Stripe validates mandate params for cards not
 		// issued by Indian banks. Apply them only for INR as Indian banks
 		// only support it for now.
 		$currency = $order->get_currency();
@@ -892,7 +899,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		$amount = WC_Payments_Utils::prepare_amount( $subs_amount, $order->get_currency() );
 
-		// TEMP Fix – Prevent stale free subscription data to throw
+		// TEMP Fix – Prevent stale free subscription data to throw
 		// an error due amount < 1.
 		if ( 0 === $amount ) {
 			return $result;

@@ -38,6 +38,8 @@ use WC_Payments_Token_Service;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Utils;
 use WC_Payments_Features;
+use WCPay\Constants\Payment_Capture_Type;
+use WCPay\Payment\Payment_Service;
 use WP_User;
 
 
@@ -290,7 +292,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			}
 
 			if ( strpos( $response['id'], 'pi_' ) === 0 ) { // response is a payment intent (could possibly be a setup intent).
-				$this->add_upe_payment_intent_to_session( $response['id'], $response['client_secret'] );
+				$this->add_upe_payment_intent_to_session( $response['id'], $response['client_secret'], $response['payment_id'] );
 			}
 
 			wp_send_json_success( $response, 200 );
@@ -316,6 +318,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return array
 	 */
 	public function create_payment_intent( $displayed_payment_methods, $order_id = null, $fingerprint = '' ) {
+		if ( true || true ) {
+			$service = new Payment_Service();
+
+			$manual_capture = Payment_Capture_Type::MANUAL() === $this->get_capture_type();
+			return $service->create_upe_payment_intent( $displayed_payment_methods, $order_id, $fingerprint, $manual_capture );
+		}
+
 		$amount   = WC()->cart->get_total( '' );
 		$currency = get_woocommerce_currency();
 		$number   = 0;
@@ -465,6 +474,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @throws Order_Not_Found_Exception
 	 */
 	public function process_payment( $order_id ) {
+		if ( true || true ) {
+			$service = new Payment_Service();
+			return $service->process_upe_payment( $order_id, $this->get_payment_intent_data_from_session() );
+		}
+
 		$order = wc_get_order( $order_id );
 
 		if ( 20 < strlen( $order->get_billing_phone() ) ) {
@@ -631,7 +645,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 *
 	 * @return array
 	 */
-	private function get_selected_upe_payment_methods( string $selected_upe_payment_type, array $enabled_payment_methods ) {
+	public function get_selected_upe_payment_methods( string $selected_upe_payment_type, array $enabled_payment_methods ) {
 		$payment_methods = [];
 		if ( '' !== $selected_upe_payment_type ) {
 			// Only update the payment_method_types if we have a reference to the payment type the customer selected.
@@ -706,6 +720,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @throws Process_Payment_Exception When the payment intent has an error.
 	 */
 	public function process_redirect_payment( $order_id, $intent_id, $save_payment_method ) {
+		if ( true || true ) {
+			$service  = new Payment_Service();
+			$response = $service->process_redirect_payment( $order_id, $intent_id, $save_payment_method );
+			wp_safe_redirect( $response['redirect'] );
+			exit;
+		}
+
 		try {
 			$order = wc_get_order( $order_id );
 
@@ -1191,15 +1212,16 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 *
 	 * @param string $intent_id     The payment intent id.
 	 * @param string $client_secret The payment intent client secret.
+	 * @param string $payment_id    The ID of a payment.
 	 */
-	private function add_upe_payment_intent_to_session( string $intent_id = '', string $client_secret = '' ) {
+	private function add_upe_payment_intent_to_session( string $intent_id = '', string $client_secret = '', string $payment_id ) {
 		$cart_hash = 'undefined';
 
 		if ( isset( $_COOKIE['woocommerce_cart_hash'] ) ) {
 			$cart_hash = sanitize_text_field( wp_unslash( $_COOKIE['woocommerce_cart_hash'] ) );
 		}
 
-		$value = $cart_hash . '-' . $intent_id . '-' . $client_secret;
+		$value = $cart_hash . '-' . $intent_id . '-' . $client_secret . '-' . $payment_id;
 
 		WC()->session->set( self::KEY_UPE_PAYMENT_INTENT, $value );
 	}
@@ -1218,9 +1240,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 *
 	 * @param string $intent_id     The setup intent id.
 	 * @param string $client_secret The setup intent client secret.
+	 * @param string $payment_id    The ID of a payment.
 	 */
-	private function add_upe_setup_intent_to_session( string $intent_id = '', string $client_secret = '' ) {
-		$value = $intent_id . '-' . $client_secret;
+	private function add_upe_setup_intent_to_session( string $intent_id = '', string $client_secret = '', string $payment_id ) {
+		$value = $intent_id . '-' . $client_secret . '-' . $payment_id;
 
 		WC()->session->set( self::KEY_UPE_SETUP_INTENT, $value );
 	}

@@ -151,7 +151,7 @@ class WC_Payments {
 	 *
 	 * @var WC_Payments_Order_Service
 	 */
-	private static $order_service;
+	public static $order_service;
 
 	/**
 	 * Instance of WC_Payments_Order_Success_Page, created in init function
@@ -581,6 +581,8 @@ class WC_Payments {
 
 		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
+
+		require_once __DIR__ . '/payment/autoloader.php';
 	}
 
 	/**
@@ -1679,5 +1681,32 @@ class WC_Payments {
 				'url' => plugins_url( '/dist/', WCPAY_PLUGIN_FILE ),
 			]
 		);
+	}
+
+	/**
+	 * Returns an instance of the token service.
+	 *
+	 * @return WC_Payments_Token_Service
+	 */
+	public static function get_token_service() {
+		return self::$token_service;
+	}
+
+	/**
+	 * Returns an instance of the token service.
+	 *
+	 * @return WC_Payments_Order_Service
+	 */
+	public static function get_order_service() {
+		return self::$order_service;
+	}
+
+	/**
+	 * Returns the transaction rate limiter instance.
+	 *
+	 * @return Session_Rate_Limiter
+	 */
+	public static function get_transaction_rate_limiter() {
+		return self::$failed_transaction_rate_limiter;
 	}
 }

@@ -197,6 +197,11 @@ class WC_Payments_Product_Service {
 	 * @param int $product_id The ID of the product to handle.
 	 */
 	public function maybe_schedule_product_create_or_update( int $product_id ) {
+		// Non-product `wc_get_product` calls throw exceptions, check for product first.
+		$post = get_post( $product_id ); // No redundant calls, this will be cached.
+		if ( 'product' !== $post->post_type ) {
+			return;
+		}
 
 		// Skip products which have already been scheduled or aren't subscriptions.
 		$product = wc_get_product( $product_id );
@@ -340,6 +345,12 @@ class WC_Payments_Product_Service {
 	 * @param int $post_id The ID of the post to handle. Only subscription product IDs will be archived in WC Pay.
 	 */
 	public function maybe_archive_product( int $post_id ) {
+		// Non-product `wc_get_product` calls throw exceptions, check for product first.
+		$post = get_post( $post_id ); // No redundant calls, this will be cached.
+		if ( 'product' !== $post->post_type ) {
+			return;
+		}
+
 		$product = wc_get_product( $post_id );
 
 		if ( $product && WC_Subscriptions_Product::is_subscription( $product ) ) {
