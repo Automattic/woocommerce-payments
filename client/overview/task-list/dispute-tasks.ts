@@ -91,8 +91,14 @@ export const getDisputeResolutionTask = (
 		1
 	).length;
 
+	// Create a unique key for each combination of dispute IDs
+	// to ensure the task is rendered if a previous task was dismissed.
+	const disputeTaskKey = `dispute-resolution-task-${ activeDisputes
+		.map( ( dispute ) => dispute.dispute_id )
+		.join( '-' ) }`;
+
 	const disputeTask: TaskItemProps = {
-		key: 'dispute-resolution-task',
+		key: disputeTaskKey,
 		title: '', // Title text defined below.
 		content: '', // Subtitle text defined below.
 		level: 1,

@@ -9,7 +9,7 @@ const mockActiveDisputes = [
 	{
 		wcpay_disputes_cache_id: 4,
 		stripe_account_id: 'acct_test',
-		dispute_id: 'dp_asdfghjkl',
+		dispute_id: 'dp_1',
 		charge_id: 'ch_mock',
 		amount: 1000,
 		currency: 'usd',
@@ -31,7 +31,7 @@ const mockActiveDisputes = [
 	{
 		wcpay_disputes_cache_id: 4,
 		stripe_account_id: 'acct_test',
-		dispute_id: 'dp_asdfghjkl',
+		dispute_id: 'dp_2',
 		charge_id: 'ch_mock',
 		amount: 1000,
 		currency: 'usd',
@@ -53,7 +53,7 @@ const mockActiveDisputes = [
 	{
 		wcpay_disputes_cache_id: 4,
 		stripe_account_id: 'acct_test',
-		dispute_id: 'dp_asdfghjkl',
+		dispute_id: 'dp_3',
 		charge_id: 'ch_mock',
 		amount: 1000,
 		currency: 'eur',
@@ -328,7 +328,7 @@ describe( 'getTasks()', () => {
 		expect( actual ).toEqual(
 			expect.arrayContaining( [
 				expect.objectContaining( {
-					key: 'dispute-resolution-task',
+					key: 'dispute-resolution-task-dp_1',
 					completed: false,
 					level: 1,
 					title: 'Respond to a dispute for $10.00 – Last day',
@@ -358,7 +358,7 @@ describe( 'getTasks()', () => {
 		expect( actual ).toEqual(
 			expect.arrayContaining( [
 				expect.objectContaining( {
-					key: 'dispute-resolution-task',
+					key: 'dispute-resolution-task-dp_1',
 					completed: false,
 					level: 1,
 					title: 'Respond to a dispute for $10.00',
@@ -386,7 +386,7 @@ describe( 'getTasks()', () => {
 		expect( actual ).toEqual(
 			expect.arrayContaining( [
 				expect.objectContaining( {
-					key: 'dispute-resolution-task',
+					key: 'dispute-resolution-task-dp_1-dp_2-dp_3',
 					completed: false,
 					level: 1,
 					title:
@@ -417,7 +417,7 @@ describe( 'getTasks()', () => {
 		expect( actual ).toEqual(
 			expect.arrayContaining( [
 				expect.objectContaining( {
-					key: 'dispute-resolution-task',
+					key: 'dispute-resolution-task-dp_1-dp_2-dp_3',
 					completed: false,
 					level: 1,
 					title:
@@ -524,7 +524,7 @@ describe( 'taskSort()', () => {
 		const sortedTasks = unsortedTasks.sort( taskSort );
 		expect( sortedTasks[ 0 ] ).toEqual(
 			expect.objectContaining( {
-				key: 'dispute-resolution-task',
+				key: 'dispute-resolution-task-dp_1-dp_2-dp_3',
 				completed: false,
 				level: 1,
 			} )
