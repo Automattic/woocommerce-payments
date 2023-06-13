@@ -275,12 +275,13 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->set_get_upe_enabled_payment_method_statuses_return_value();
 
 		// Add the UPE Checkout action.
-		new WC_Payments_UPE_Checkout(
+		$checkout = new WC_Payments_UPE_Checkout(
 			$this->mock_upe_gateway,
 			$this->mock_woopay_utilities,
 			$this->mock_wcpay_account,
 			$this->mock_customer_service
 		);
+		$checkout->init_hooks();
 
 		$this->mock_upe_gateway->payment_fields();
 
