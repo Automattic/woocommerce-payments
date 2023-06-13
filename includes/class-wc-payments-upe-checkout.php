@@ -150,6 +150,9 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 			$order                        = wc_get_order( $order_id );
 
 			if ( is_a( $order, 'WC_Order' ) ) {
+				$order_currency                   = $order->get_currency();
+				$payment_fields['currency']       = $order_currency;
+				$payment_fields['cartTotal']      = WC_Payments_Utils::prepare_amount( $order->get_total(), $order_currency );
 				$payment_fields['orderReturnURL'] = esc_url_raw(
 					add_query_arg(
 						[
