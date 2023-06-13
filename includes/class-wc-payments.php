@@ -33,6 +33,8 @@ use WCPay\WooPay_Tracker;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\WooPay\WooPay_Order_Status_Sync;
 use WCPay\Payment_Methods\Link_Payment_Method;
+use WCPay\Payment_Methods\Affirm_Payment_Method;
+use WCPay\Payment_Methods\Afterpay_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Database_Cache;
 use WCPay\WC_Payments_Checkout;
@@ -374,6 +376,8 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-becs-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-eps-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-link-payment-method.php';
+		include_once __DIR__ . '/payment-methods/class-affirm-payment-method.php';
+		include_once __DIR__ . '/payment-methods/class-afterpay-payment-method.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-status.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
@@ -470,6 +474,8 @@ class WC_Payments {
 			Becs_Payment_Method::class,
 			Eps_Payment_Method::class,
 			Link_Payment_Method::class,
+			Affirm_Payment_Method::class,
+			Afterpay_Payment_Method::class,
 		];
 		if ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 			$payment_methods = [];
@@ -478,12 +484,23 @@ class WC_Payments {
 				$payment_methods[ $payment_method->get_id() ] = $payment_method;
 			}
 			foreach ( $payment_methods as $payment_method ) {
-				self::$upe_payment_method_map[ $payment_method->get_id() ]  = $payment_method;
-				self::$upe_payment_gateway_map[ $payment_method->get_id() ] = new UPE_Split_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service );
+				self::$upe_payment_method_map[ $payment_method->get_id() ] = $payment_method;
+
+				$split_gateway = new UPE_Split_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service );
+
+				// Card gateway hooks are registered once below.
+				if ( 'card' !== $payment_method->get_id() ) {
+					$split_gateway->init_hooks();
+				}
+
+				self::$upe_payment_gateway_map[ $payment_method->get_id() ] = $split_gateway;
 			}
 
-			self::$card_gateway         = self::get_payment_gateway_by_id( 'card' );
-			$card_payments_checkout     = new WC_Payments_Checkout( self::$legacy_card_gateway, self::$woopay_util, self::$account, self::$customer_service );
+			self::$card_gateway = self::get_payment_gateway_by_id( 'card' );
+
+			$card_payments_checkout = new WC_Payments_Checkout( self::$legacy_card_gateway, self::$woopay_util, self::$account, self::$customer_service );
+			$card_payments_checkout->init_hooks();
+
 			self::$wc_payments_checkout = new WC_Payments_UPE_Checkout( self::get_gateway(), self::$woopay_util, self::$account, self::$customer_service );
 		} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
 			$payment_methods = [];
@@ -498,6 +515,9 @@ class WC_Payments {
 			self::$card_gateway         = self::$legacy_card_gateway;
 			self::$wc_payments_checkout = new WC_Payments_Checkout( self::$legacy_card_gateway, self::$woopay_util, self::$account, self::$customer_service );
 		}
+
+		self::$card_gateway->init_hooks();
+		self::$wc_payments_checkout->init_hooks();
 
 		self::$mode = new Mode( self::$card_gateway );
 
