@@ -104,7 +104,9 @@ export const getDisputeResolutionTask = (
 		showActionButton: true,
 		actionLabel: __( 'Respond now', 'woocommerce-payments' ),
 		action: handleClick,
-		onClick: handleClick,
+		onClick: () => {
+			// Only handle clicks on the action button.
+		},
 		dataAttrs: {
 			'data-urgent': !! ( numDisputesDueWithin24h >= 1 ),
 		},
