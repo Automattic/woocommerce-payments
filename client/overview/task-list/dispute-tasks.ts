@@ -3,6 +3,7 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
+import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -60,20 +61,25 @@ export const getDisputeResolutionTask = (
 		wcpayTracks.recordEvent( 'wcpay_overview_task', {
 			task: 'dispute-resolution-task',
 		} );
+		const history = getHistory();
 		if ( disputeCount === 1 ) {
 			// Redirect to the dispute details page if there is only one dispute.
 			const disputeId = activeDisputes[ 0 ].dispute_id;
-			window.location.href = getAdminUrl( {
-				page: 'wc-admin',
-				path: '/payments/disputes/details',
-				id: disputeId,
-			} );
+			history.push(
+				getAdminUrl( {
+					page: 'wc-admin',
+					path: '/payments/disputes/details',
+					id: disputeId,
+				} )
+			);
 		} else {
-			window.location.href = getAdminUrl( {
-				page: 'wc-admin',
-				path: '/payments/disputes',
-				filter: 'awaiting_response',
-			} );
+			history.push(
+				getAdminUrl( {
+					page: 'wc-admin',
+					path: '/payments/disputes',
+					filter: 'awaiting_response',
+				} )
+			);
 		}
 	};
 
