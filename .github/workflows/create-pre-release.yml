@@ -33,23 +33,32 @@ jobs:
         with:
           version: ${{ env.RELEASE_VERSION }}
 
+      - name: "Generate the changelog"
+        id: generate_changelog
+        uses: ./.github/actions/process-changelog
+        with:
+          release-version: ${{ steps.create_branch.outputs.trimmed-version }}
+
+      - name: "Bump version header"
+        env:
+          VERSION: ${{ steps.create_branch.outputs.trimmed-version }}
+        run: |
+          sed -i "s/^ \* Version: .*$/ * Version: $VERSION/" woocommerce-payments.php
+
+      - name: "Commit and push changes"
+        env:
+          BRANCH_NAME: ${{ steps.create_branch.outputs.branch-name }}
+          RELEASE_VERSION: ${{ steps.create_branch.outputs.trimmed-version }}
+        uses: ./.github/actions/commit-push-as-bot
+        with:
+          release-version: ${{ env.RELEASE_VERSION }}
+          branch: ${{ env.BRANCH_NAME }}
+
       - name: "Create a test tag"
         id: create_tag
         uses: ./.github/actions/create-tag
         with:
           version: ${{ env.RELEASE_VERSION }}
-
-      - name: "Generate the changelog"
-        id: generate_changelog
-        uses: ./.github/actions/process-changelog
-        with:
-          release-version: ${{ steps.create_tag.outputs.trimmed-version }}
-
-      - name: "Bump version header"
-        env:
-          VERSION: ${{ steps.create_tag.outputs.trimmed-version }}
-        run: |
-          sed -i "s/^ \* Version: .*$/ * Version: $VERSION/" woocommerce-payments.php
 
       - name: "Build the plugin"
         id: build_plugin

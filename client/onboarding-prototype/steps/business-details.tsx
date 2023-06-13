@@ -10,9 +10,9 @@ import { useOnboardingContext } from '../context';
 import { Item } from 'components/custom-select-control';
 import { OnboardingFields } from '../types';
 import {
-	OnboardingTextField,
-	OnboardingSelectField,
 	OnboardingGroupedSelectField,
+	OnboardingSelectField,
+	OnboardingTextField,
 } from '../form';
 import { getBusinessTypes, getMccsFlatList } from 'onboarding-prototype/utils';
 import { BusinessType } from 'onboarding-prototype/types';
@@ -30,7 +30,7 @@ const BusinessDetails: React.FC = () => {
 
 	const handleTiedChange = (
 		name: keyof OnboardingFields,
-		selectedItem?: Item
+		selectedItem?: Item | null
 	) => {
 		let newData: OnboardingFields = {
 			[ name ]: selectedItem?.key,

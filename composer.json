@@ -27,7 +27,7 @@
       "automattic/jetpack-autoloader": "2.11.18",
       "automattic/jetpack-identity-crisis": "0.8.43",
       "automattic/jetpack-sync": "1.47.7",
-      "woocommerce/subscriptions-core": "5.7.1"
+      "woocommerce/subscriptions-core": "5.7.2"
     },
     "require-dev": {
       "composer/installers": "1.10.0",
@@ -42,7 +42,8 @@
       "yoast/phpunit-polyfills": "1.0.3",
       "cweagans/composer-patches": "1.7.1",
       "automattic/jetpack-changelogger": "3.3.2",
-      "spatie/phpunit-watcher": "^1.23"
+      "spatie/phpunit-watcher": "1.23",
+      "woocommerce/qit-cli": "0.3.4"
     },
     "scripts": {
       "test": [

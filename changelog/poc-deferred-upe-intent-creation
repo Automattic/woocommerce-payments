@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-Adds the minimal functionality for the new Stripe payment flow that allows deferred payment/setup intent creation. The functionality is hidden behind the feature flag.

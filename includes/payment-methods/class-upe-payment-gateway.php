@@ -103,37 +103,19 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$this->description     = '';
 		$this->checkout_title  = __( 'Popular payment methods', 'woocommerce-payments' );
 		$this->payment_methods = $payment_methods;
+	}
+
+	/**
+	 * Initializes this class's WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		if ( ! is_admin() ) {
 			add_filter( 'woocommerce_gateway_title', [ $this, 'maybe_filter_gateway_title' ], 10, 2 );
 		}
 		add_action( 'woocommerce_email_before_order_table', [ $this, 'set_payment_method_title_for_email' ], 10, 3 );
-	}
-
-	/**
-	 * Registers all scripts, necessary for the gateway.
-	 */
-	public function register_scripts() {
-		// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
-		// loaded twice in the event a site has both plugins enabled. We still run the risk of different plugins
-		// loading different versions however. If Stripe release a v4 of their JavaScript, we could consider
-		// changing the ID to stripe_v4. This would allow older plugins to keep using v3 while we used any new
-		// feature in v4. Stripe have allowed loading of 2 different versions of stripe.js in the past (
-		// https://stripe.com/docs/stripe-js/elements/migrating).
-		wp_register_script(
-			'stripe',
-			'https://js.stripe.com/v3/',
-			[],
-			'3.0',
-			true
-		);
-
-		$script_dependencies = [ 'stripe', 'wc-checkout', 'wp-i18n' ];
-
-		if ( $this->supports( 'tokenization' ) ) {
-			$script_dependencies[] = 'woocommerce-tokenization-form';
-		}
-		WC_Payments::register_script_with_dependencies( 'wcpay-upe-checkout', 'dist/upe_checkout', $script_dependencies );
-
+		parent::init_hooks();
 	}
 
 	/**
@@ -992,6 +974,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$available_methods[] = Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Affirm_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 
 		$available_methods = array_values(
 			apply_filters(
@@ -1079,7 +1063,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @param bool     $sent_to_admin Whether the email is being sent to the admin or not.
 	 * @param bool     $plain_text Whether the email is being sent as plain text or not.
 	 */
-	public function set_payment_method_title_for_email( $order, $sent_to_admin, $plain_text = false ) {
+	public function set_payment_method_title_for_email( $order, $sent_to_admin, $plain_text ) {
 		$payment_method_id      = $this->order_service->get_payment_method_id_for_order( $order );
 		$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
 		$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : null;
@@ -1242,7 +1226,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * Removes the setup intent created for UPE from WC session.
 	 */
 	public function remove_upe_setup_intent_from_session() {
-		WC()->session->__unset( self::KEY_UPE_SETUP_INTENT );
+		if ( isset( WC()->session ) ) {
+			WC()->session->__unset( self::KEY_UPE_SETUP_INTENT );
+		}
 	}
 
 	/**

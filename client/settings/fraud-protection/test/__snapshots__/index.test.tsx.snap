@@ -3,99 +3,119 @@
 exports[`FraudProtection should render correctly 1`] = `
 <div>
   <div
-    class="components-card is-size-medium fraud-protection css-1xs3c37-CardUI e1q7k77g0"
+    class="components-surface components-card fraud-protection css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
   >
     <div
-      class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
+      class="css-mgwsf4-View-Content em57xhy0"
     >
-      <h4>
-        <span
-          id="fraud-protection-card-title"
-        >
-          Set your payment risk level
-        </span>
-      </h4>
-      <fieldset>
-        <ul>
-          <li>
-            <div
-              class="fraud-protection-radio-wrapper"
-            >
-              <input
-                class="fraud-protection-radio-wrapper__item"
-                id="fraud-protection__basic-level"
-                name="fraud-protection-level-select"
-                type="radio"
-                value="basic"
-              />
-              <label
-                class="fraud-protection-radio-wrapper__item"
-                for="fraud-protection__basic-level"
-              >
-                Basic
-              </label>
-              <svg
-                class="gridicon gridicons-help-outline fraud-protection__help-icon needs-offset"
-                height="18"
-                title="Basic level help icon"
-                viewBox="0 0 24 24"
-                width="18"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <g>
-                  <path
-                    d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4 8a4 4 0 00-8 0h2c0-1.103.897-2 2-2s2 .897 2 2-.897 2-2 2a1 1 0 00-1 1v2h2v-1.141A3.991 3.991 0 0016 10zm-3 6h-2v2h2v-2z"
-                  />
-                </g>
-              </svg>
-            </div>
-            <p
-              class="fraud-protection__text--help-text"
-            >
-              Provides the base level of platform protection.
-            </p>
-          </li>
-          <hr
-            class="fraud-protection__list-divider"
-          />
-          <li
-            class="fraud-protection__advanced-level-container"
+      <div
+        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
+      >
+        <h4>
+          <span
+            id="fraud-protection-card-title"
           >
-            <label
-              for="fraud-protection-level-select_advanced-level"
-            >
+            Set your payment risk level
+          </span>
+        </h4>
+        <fieldset>
+          <ul>
+            <li>
               <div
                 class="fraud-protection-radio-wrapper"
               >
                 <input
-                  id="fraud-protection-level-select_advanced-level"
+                  class="fraud-protection-radio-wrapper__item"
+                  id="fraud-protection__basic-level"
                   name="fraud-protection-level-select"
                   type="radio"
-                  value="advanced"
+                  value="basic"
                 />
-                <p
+                <label
                   class="fraud-protection-radio-wrapper__item"
+                  for="fraud-protection__basic-level"
                 >
-                  Advanced
-                </p>
+                  Basic
+                </label>
+                <svg
+                  class="gridicon gridicons-help-outline fraud-protection__help-icon needs-offset"
+                  height="18"
+                  title="Basic level help icon"
+                  viewBox="0 0 24 24"
+                  width="18"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g>
+                    <path
+                      d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4 8a4 4 0 00-8 0h2c0-1.103.897-2 2-2s2 .897 2 2-.897 2-2 2a1 1 0 00-1 1v2h2v-1.141A3.991 3.991 0 0016 10zm-3 6h-2v2h2v-2z"
+                    />
+                  </g>
+                </svg>
               </div>
               <p
                 class="fraud-protection__text--help-text"
               >
-                Allows you to fine-tune the level of filtering according to your business needs.
+                Provides the base level of platform protection.
               </p>
-            </label>
-            <button
-              class="components-button is-secondary"
-              disabled=""
-              type="button"
+            </li>
+            <hr
+              class="fraud-protection__list-divider"
+            />
+            <li
+              class="fraud-protection__advanced-level-container"
             >
-              Configure
-            </button>
-          </li>
-        </ul>
-      </fieldset>
+              <label
+                for="fraud-protection-level-select_advanced-level"
+              >
+                <div
+                  class="fraud-protection-radio-wrapper"
+                >
+                  <input
+                    id="fraud-protection-level-select_advanced-level"
+                    name="fraud-protection-level-select"
+                    type="radio"
+                    value="advanced"
+                  />
+                  <p
+                    class="fraud-protection-radio-wrapper__item"
+                  >
+                    Advanced
+                  </p>
+                </div>
+                <p
+                  class="fraud-protection__text--help-text"
+                >
+                  Allows you to fine-tune the level of filtering according to your business needs.
+                </p>
+              </label>
+              <button
+                class="components-button is-secondary"
+                disabled=""
+                type="button"
+              >
+                Configure
+              </button>
+            </li>
+          </ul>
+        </fieldset>
+      </div>
     </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
   </div>
   <div
     id="fraud-protection-welcome-tour-first-step"
@@ -109,99 +129,119 @@ exports[`FraudProtection should render correctly 1`] = `
 exports[`FraudProtection should render with the welcome tour dismissed 1`] = `
 <div>
   <div
-    class="components-card is-size-medium fraud-protection css-1xs3c37-CardUI e1q7k77g0"
+    class="components-surface components-card fraud-protection css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
   >
     <div
-      class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
+      class="css-mgwsf4-View-Content em57xhy0"
     >
-      <h4>
-        <span
-          id="fraud-protection-card-title"
-        >
-          Set your payment risk level
-        </span>
-      </h4>
-      <fieldset>
-        <ul>
-          <li>
-            <div
-              class="fraud-protection-radio-wrapper"
-            >
-              <input
-                class="fraud-protection-radio-wrapper__item"
-                id="fraud-protection__basic-level"
-                name="fraud-protection-level-select"
-                type="radio"
-                value="basic"
-              />
-              <label
-                class="fraud-protection-radio-wrapper__item"
-                for="fraud-protection__basic-level"
-              >
-                Basic
-              </label>
-              <svg
-                class="gridicon gridicons-help-outline fraud-protection__help-icon needs-offset"
-                height="18"
-                title="Basic level help icon"
-                viewBox="0 0 24 24"
-                width="18"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <g>
-                  <path
-                    d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4 8a4 4 0 00-8 0h2c0-1.103.897-2 2-2s2 .897 2 2-.897 2-2 2a1 1 0 00-1 1v2h2v-1.141A3.991 3.991 0 0016 10zm-3 6h-2v2h2v-2z"
-                  />
-                </g>
-              </svg>
-            </div>
-            <p
-              class="fraud-protection__text--help-text"
-            >
-              Provides the base level of platform protection.
-            </p>
-          </li>
-          <hr
-            class="fraud-protection__list-divider"
-          />
-          <li
-            class="fraud-protection__advanced-level-container"
+      <div
+        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
+      >
+        <h4>
+          <span
+            id="fraud-protection-card-title"
           >
-            <label
-              for="fraud-protection-level-select_advanced-level"
-            >
+            Set your payment risk level
+          </span>
+        </h4>
+        <fieldset>
+          <ul>
+            <li>
               <div
                 class="fraud-protection-radio-wrapper"
               >
                 <input
-                  id="fraud-protection-level-select_advanced-level"
+                  class="fraud-protection-radio-wrapper__item"
+                  id="fraud-protection__basic-level"
                   name="fraud-protection-level-select"
                   type="radio"
-                  value="advanced"
+                  value="basic"
                 />
-                <p
+                <label
                   class="fraud-protection-radio-wrapper__item"
+                  for="fraud-protection__basic-level"
                 >
-                  Advanced
-                </p>
+                  Basic
+                </label>
+                <svg
+                  class="gridicon gridicons-help-outline fraud-protection__help-icon needs-offset"
+                  height="18"
+                  title="Basic level help icon"
+                  viewBox="0 0 24 24"
+                  width="18"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g>
+                    <path
+                      d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4 8a4 4 0 00-8 0h2c0-1.103.897-2 2-2s2 .897 2 2-.897 2-2 2a1 1 0 00-1 1v2h2v-1.141A3.991 3.991 0 0016 10zm-3 6h-2v2h2v-2z"
+                    />
+                  </g>
+                </svg>
               </div>
               <p
                 class="fraud-protection__text--help-text"
               >
-                Allows you to fine-tune the level of filtering according to your business needs.
+                Provides the base level of platform protection.
               </p>
-            </label>
-            <button
-              class="components-button is-secondary"
-              disabled=""
-              type="button"
+            </li>
+            <hr
+              class="fraud-protection__list-divider"
+            />
+            <li
+              class="fraud-protection__advanced-level-container"
             >
-              Configure
-            </button>
-          </li>
-        </ul>
-      </fieldset>
+              <label
+                for="fraud-protection-level-select_advanced-level"
+              >
+                <div
+                  class="fraud-protection-radio-wrapper"
+                >
+                  <input
+                    id="fraud-protection-level-select_advanced-level"
+                    name="fraud-protection-level-select"
+                    type="radio"
+                    value="advanced"
+                  />
+                  <p
+                    class="fraud-protection-radio-wrapper__item"
+                  >
+                    Advanced
+                  </p>
+                </div>
+                <p
+                  class="fraud-protection__text--help-text"
+                >
+                  Allows you to fine-tune the level of filtering according to your business needs.
+                </p>
+              </label>
+              <button
+                class="components-button is-secondary"
+                disabled=""
+                type="button"
+              >
+                Configure
+              </button>
+            </li>
+          </ul>
+        </fieldset>
+      </div>
     </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
   </div>
 </div>
 `;
