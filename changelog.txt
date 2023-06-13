@@ -1,5 +1,11 @@
 *** WooCommerce Payments Changelog ***
 
+= 6.1.0 - unreleased =
+* Add - Adds implementation to handle deferred intent for the UPE in My account page
+* Add - Add usage tracking to WooPay express button location updates
+* Fix - Add deadline and amount to clarify disputed order note
+* Update - Moved the overview task list to the welcome greeting to improve visibility of important tasks.
+
 = 6.0.0 - 2023-06-08 =
 * Add - Show Progressive Onboarding Express using Explat experiment
 * Fix - Add a session check to avoid fatal errors.
