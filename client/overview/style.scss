@@ -13,7 +13,7 @@
 	position: relative;
 
 	.woocommerce-experimental-list__item {
-		position: initial;
+		position: relative;
 	}
 
 	.woocommerce-task-list__item[data-key^='dispute-resolution-task']:not( [data-urgent='true'] ) {
