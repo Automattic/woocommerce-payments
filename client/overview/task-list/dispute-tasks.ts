@@ -86,16 +86,17 @@ export const getDisputeResolutionTask = (
 		moment( a.due_by ).diff( moment( b.due_by ) )
 	);
 
-	const numDisputesDueWithin24h = activeDisputes.filter( ( dispute ) =>
-		isDueWithin( dispute, 1 )
+	const numDisputesDueWithin24h = getDisputesDueWithinDays(
+		activeDisputes,
+		1
 	).length;
 
 	const disputeTask: TaskItemProps = {
 		key: 'dispute-resolution-task',
-		title: '',
+		title: '', // Title text defined below.
+		content: '', // Subtitle text defined below.
 		level: 1,
 		completed: false,
-		content: '', // TODO: add task subtitle here
 		expanded: true,
 		showActionButton: true,
 		actionLabel: __( 'Respond now', 'woocommerce-payments' ),
@@ -111,35 +112,44 @@ export const getDisputeResolutionTask = (
 	// Single dispute.
 	if ( disputeCount === 1 ) {
 		const dispute = activeDisputes[ 0 ];
-
-		if ( numDisputesDueWithin24h >= 1 ) {
-			// If the dispute is due within 24 hours, show a more urgent message.
-			const title = sprintf(
-				__(
-					'Respond to a dispute for %s – Last day',
-					'woocommerce-payments'
-				),
-				formatCurrency( dispute.amount, dispute.currency )
-			);
-			disputeTask.title = title;
-			disputeTask.content = sprintf(
-				__( 'Respond today by %s', 'woocommerce-payments' ),
-				// Show due_by time in local time.
-				moment( dispute.due_by ).format( 'h:mm A' )
-			);
-			return disputeTask;
-		}
-
-		disputeTask.title = sprintf(
-			__( 'Respond to a dispute for %s', 'woocommerce-payments' ),
-			formatCurrency( dispute.amount, dispute.currency )
+		const amountFormatted = formatCurrency(
+			dispute.amount,
+			dispute.currency
 		);
-		disputeTask.content = sprintf(
-			// By Apr 25, 2023 – 1 week left to respond
-			__( 'By %s – %s left to respond', 'woocommerce-payments' ),
-			moment( dispute.due_by ).format( 'MMM D, YYYY' ),
-			moment( dispute.due_by ).fromNow( true )
-		);
+
+		disputeTask.title =
+			numDisputesDueWithin24h >= 1
+				? sprintf(
+						__(
+							'Respond to a dispute for %s – Last day',
+							'woocommerce-payments'
+						),
+						amountFormatted
+				  )
+				: sprintf(
+						__(
+							'Respond to a dispute for %s',
+							'woocommerce-payments'
+						),
+						amountFormatted
+				  );
+
+		disputeTask.content =
+			numDisputesDueWithin24h >= 1
+				? sprintf(
+						__( 'Respond today by %s', 'woocommerce-payments' ),
+						// Show due_by time in local time.
+						moment( dispute.due_by ).format( 'h:mm A' ) // E.g. "11:59 PM".
+				  )
+				: sprintf(
+						__(
+							'By %s – %s left to respond',
+							'woocommerce-payments'
+						),
+						moment( dispute.due_by ).format( 'MMM D, YYYY' ), // E.g. "Jan 1, 2021".
+						moment( dispute.due_by ).fromNow( true ) // E.g. "2 days".
+				  );
+
 		return disputeTask;
 	}
 
@@ -165,10 +175,19 @@ export const getDisputeResolutionTask = (
 		.map( ( [ currency, amount ] ) => formatCurrency( amount, currency ) )
 		.join( ', ' );
 
-	const numDisputesDueWithin7Days = activeDisputes.filter( ( dispute ) =>
-		isDueWithin( dispute, 7 )
+	const numDisputesDueWithin7Days = getDisputesDueWithinDays(
+		activeDisputes,
+		7
 	).length;
 
+	disputeTask.title = sprintf(
+		__(
+			'Respond to %d active disputes for a total of %s',
+			'woocommerce-payments'
+		),
+		disputeCount,
+		disputeTotalAmounts
+	);
 	disputeTask.content =
 		// Final day / Last week to respond for N of the disputes
 		numDisputesDueWithin24h >= 1
@@ -187,14 +206,6 @@ export const getDisputeResolutionTask = (
 					numDisputesDueWithin7Days
 			  );
 
-	disputeTask.title = sprintf(
-		__(
-			'Respond to %d active disputes for a total of %s',
-			'woocommerce-payments'
-		),
-		disputeCount,
-		disputeTotalAmounts
-	);
 	disputeTask.actionLabel = __( 'See disputes', 'woocommerce-payments' );
 
 	return disputeTask;
