@@ -104,12 +104,10 @@ export const getDisputeResolutionTask = (
 		actionLabel: __( 'Respond now', 'woocommerce-payments' ),
 		action: handleClick,
 		onClick: handleClick,
-		className: 'wcpay-dispute-resolution-task',
+		dataAttrs: {
+			'data-urgent': !! ( numDisputesDueWithin24h >= 1 ),
+		},
 	};
-
-	if ( numDisputesDueWithin24h >= 1 ) {
-		disputeTask.className += ' wcpay-dispute-resolution-task--urgent';
-	}
 
 	// Single dispute.
 	if ( disputeCount === 1 ) {
