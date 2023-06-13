@@ -437,6 +437,9 @@ class WC_Payments {
 		// // Load woopay save user section if feature is enabled.
 		add_action( 'woocommerce_cart_loaded_from_session', [ __CLASS__, 'init_woopay' ] );
 
+		// Load Stripe site messaging.
+		add_action( 'woocommerce_single_product_summary', [ __CLASS__, 'load_stripe_site_messaging' ], 30 );
+
 		// Init the email template for In Person payment receipt email. We need to do it before passing the mailer to the service.
 		add_filter( 'woocommerce_email_classes', [ __CLASS__, 'add_ipp_emails' ], 10 );
 
@@ -1616,6 +1619,44 @@ class WC_Payments {
 
 			new WooPay_Save_User();
 		}
+	}
+
+	/**
+	 * Load stripe site messaging script.
+	 *
+	 * @return void
+	 */
+	public static function load_stripe_site_messaging() {
+		// WIP
+		// TODO: feature flag this.
+		global $product;
+		$price         = $product->get_price();
+		$currency_code = get_woocommerce_currency();
+
+		if ( WC()->customer ) {
+			$billing_country = WC()->customer->get_billing_country();
+		}
+		if ( ! $billing_country ) {
+			$billing_country = WC()->countries->get_base_country();
+		}
+		// register the script.
+		self::register_script_with_dependencies( 'WCPAY_PRODUCT_DETAILS', 'dist/product-details', [ 'stripe' ] ); // TODO only inject the site messaging script if the feature is enabled.
+		wp_enqueue_script( 'WCPAY_PRODUCT_DETAILS' );
+		// Create script tag with config.
+		wp_localize_script(
+			'WCPAY_PRODUCT_DETAILS',
+			'wcpayStripeSiteMessaging',
+			[
+				'price'          => $price * 100,
+				'currency'       => $currency_code,
+				'country'        => $billing_country,
+				'publishableKey' => self::$account->get_publishable_key( self::mode()->is_test() ),
+				'paymentMethods' => self::$card_gateway->get_payment_method_ids_enabled_at_checkout(),
+			]
+		);
+
+		// Render container div.
+		echo '<div id="payment-method-message"></div>'; // TODO: escape output.
 	}
 
 	/**
