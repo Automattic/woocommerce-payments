@@ -2145,8 +2145,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
 		$this->assertTrue( $this->woopay_utilities->should_enable_woopay( $this->wcpay_gateway ) );
 
-		// This will return TRUE because woopay_utilities->should_enable_woopay() will return true.
-		$this->assertTrue( $this->payments_checkout->get_payment_fields_js_config()['isWooPayEnabled'] );
+		// This will return false because woopay_utilities->should_enable_woopay_on_cart_or_checkout() will return false.
+		$this->assertFalse( $this->payments_checkout->get_payment_fields_js_config()['isWooPayEnabled'] );
 	}
 
 	public function test_should_use_stripe_platform_on_checkout_page_not_woopay_eligible() {
