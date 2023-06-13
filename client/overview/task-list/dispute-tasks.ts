@@ -2,20 +2,16 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { TaskItem } from '@woocommerce/experimental';
 import moment from 'moment';
 
 /**
  * Internal dependencies
  */
+import type { TaskItemProps } from './types';
 import type { CachedDispute } from 'wcpay/types/disputes';
 import { formatCurrency } from 'wcpay/utils/currency';
 import { getAdminUrl } from 'wcpay/utils';
 import wcpayTracks from 'wcpay/tracks';
-
-interface TaskItemProps extends React.ComponentProps< typeof TaskItem > {
-	key: string;
-}
 
 /**
  * Returns true if the dispute is due within the specified number of days.
