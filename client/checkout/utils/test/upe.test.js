@@ -7,8 +7,12 @@ import {
 	isWCPayChosen,
 	getPaymentIntentFromSession,
 	generateCheckoutEventNames,
+	getUpeSettings,
 } from '../upe';
 import { getPaymentMethodsConstants } from '../../constants';
+import { getUPEConfig } from 'wcpay/utils/checkout';
+
+jest.mock( 'wcpay/utils/checkout' );
 
 jest.mock( '../../constants', () => {
 	return {
@@ -163,6 +167,96 @@ describe( 'UPE checkout utils', () => {
 				getPaymentIntentFromSession( paymentMethodsConfig, 'card' )
 			).toEqual( {} );
 		} );
+	} );
+
+	describe( 'getUPESettings', () => {
+		afterEach( () => {
+			const checkboxElement = document.getElementById(
+				'wc-woocommerce_payments-new-payment-method'
+			);
+			if ( checkboxElement ) {
+				checkboxElement.remove();
+			}
+		} );
+
+		it( 'should not provide terms when cart does not contain subscriptions and the saving checkbox is unchecked', () => {
+			getUPEConfig.mockImplementation( ( argument ) => {
+				if ( 'paymentMethodsConfig' === argument ) {
+					return {
+						card: {
+							label: 'Card',
+							isReusable: true,
+						},
+					};
+				}
+
+				if ( 'cartContainsSubscription' === argument ) {
+					return false;
+				}
+			} );
+
+			createCheckboxElementWhich( false );
+
+			const upeSettings = getUpeSettings();
+
+			expect( upeSettings.terms.card ).toEqual( 'never' );
+		} );
+
+		it( 'should provide terms when cart does not contain subscriptions but the saving checkbox is checked', () => {
+			getUPEConfig.mockImplementation( ( argument ) => {
+				if ( 'paymentMethodsConfig' === argument ) {
+					return {
+						card: {
+							label: 'Card',
+							isReusable: true,
+						},
+					};
+				}
+
+				if ( 'cartContainsSubscription' === argument ) {
+					return false;
+				}
+			} );
+
+			createCheckboxElementWhich( true );
+
+			const upeSettings = getUpeSettings();
+
+			// console.log(result);
+			expect( upeSettings.terms.card ).toEqual( 'always' );
+		} );
+
+		it( 'should provide terms when cart contains subscriptions but the saving checkbox is unchecked', () => {
+			getUPEConfig.mockImplementation( ( argument ) => {
+				if ( 'paymentMethodsConfig' === argument ) {
+					return {
+						card: {
+							label: 'Card',
+							isReusable: true,
+						},
+					};
+				}
+
+				if ( 'cartContainsSubscription' === argument ) {
+					return true;
+				}
+			} );
+
+			createCheckboxElementWhich( false );
+			const upeSettings = getUpeSettings();
+
+			expect( upeSettings.terms.card ).toEqual( 'always' );
+		} );
+
+		function createCheckboxElementWhich( isChecked ) {
+			// Create the checkbox element
+			const checkboxElement = document.createElement( 'input' );
+			checkboxElement.type = 'checkbox';
+			checkboxElement.checked = isChecked;
+			checkboxElement.id = 'wc-woocommerce_payments-new-payment-method';
+
+			document.body.appendChild( checkboxElement );
+		}
 	} );
 
 	describe( 'generateCheckoutEventNames', () => {
