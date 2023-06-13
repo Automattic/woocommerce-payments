@@ -12,4 +12,9 @@ export interface TaskItemProps extends React.ComponentProps< typeof TaskItem > {
 	 * Used to pass data attributes be rendered with a task, e.g. `data-urgent="true"`.
 	 */
 	dataAttrs?: Record< string, string | boolean >;
+
+	/**
+	 * Whether the task is dismissable.
+	 */
+	isDismissable?: boolean;
 }
