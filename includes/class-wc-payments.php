@@ -1629,34 +1629,9 @@ class WC_Payments {
 	public static function load_stripe_site_messaging() {
 		// WIP
 		// TODO: feature flag this.
-		global $product;
-		$price         = $product->get_price();
-		$currency_code = get_woocommerce_currency();
-
-		if ( WC()->customer ) {
-			$billing_country = WC()->customer->get_billing_country();
-		}
-		if ( ! $billing_country ) {
-			$billing_country = WC()->countries->get_base_country();
-		}
-		// register the script.
-		self::register_script_with_dependencies( 'WCPAY_PRODUCT_DETAILS', 'dist/product-details', [ 'stripe' ] ); // TODO only inject the site messaging script if the feature is enabled.
-		wp_enqueue_script( 'WCPAY_PRODUCT_DETAILS' );
-		// Create script tag with config.
-		wp_localize_script(
-			'WCPAY_PRODUCT_DETAILS',
-			'wcpayStripeSiteMessaging',
-			[
-				'price'          => $price * 100,
-				'currency'       => $currency_code,
-				'country'        => $billing_country,
-				'publishableKey' => self::$account->get_publishable_key( self::mode()->is_test() ),
-				'paymentMethods' => self::$card_gateway->get_payment_method_ids_enabled_at_checkout(),
-			]
-		);
-
-		// Render container div.
-		echo '<div id="payment-method-message"></div>'; // TODO: escape output.
+		require_once __DIR__ . '/class-wc-payments-payment-method-messaging-element.php';
+		$stripe_site_messaging = new WC_Payments_Payment_Method_Messaging_Element( self::$account, self::$card_gateway );
+		echo wp_kses( $stripe_site_messaging->init(), 'post' );
 	}
 
 	/**
