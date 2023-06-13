@@ -35,7 +35,7 @@ import { getAppearance, getFontRulesFromPage } from '../upe-styles';
 import { useFingerprint } from './hooks';
 import { LoadableBlock } from '../../components/loadable';
 
-const useCustomerData = () => {
+export const useCustomerData = () => {
 	const { customerData, isInitialized } = useSelect( ( select ) => {
 		const store = select( WC_STORE_CART );
 		return {

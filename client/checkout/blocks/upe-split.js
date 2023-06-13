@@ -15,7 +15,8 @@ import {
  */
 import { getUPEConfig } from 'utils/checkout';
 import WCPayAPI from './../api';
-import WCPayUPEFields from './upe-split-fields.js';
+import WCPayUPEFields from './upe-deferred-intent-creation/payment-elements.js';
+// import WCPayUPEFields from './upe-split-fields.js';
 import { SavedTokenHandler } from './saved-token-handler';
 import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
