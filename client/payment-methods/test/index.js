@@ -209,7 +209,7 @@ describe( 'PaymentMethods', () => {
 		).toEqual( 4 );
 	} );
 
-	test( 'express payments rendered when UPE preview feture flag is enabled', () => {
+	test( 'upe setup banner is rendered when UPE preview feature flag is enabled', () => {
 		const featureFlagContext = {
 			featureFlags: { upeSettingsPreview: true, upe: false },
 		};
@@ -228,7 +228,7 @@ describe( 'PaymentMethods', () => {
 		);
 
 		const enableWooCommercePaymentText = screen.getByText(
-			'Enable the new WooCommerce Payments checkout experience'
+			'Boost your sales by accepting additional payment methods'
 		);
 
 		expect( enableWooCommercePaymentText ).toBeInTheDocument();
@@ -322,6 +322,64 @@ describe( 'PaymentMethods', () => {
 		expect( afterpay ).toBeChecked();
 	} );
 
+	test( 'upe setup banner has Buy Now Pay Later methods asset for eligible merchants', () => {
+		const featureFlagContext = {
+			featureFlags: { upeSettingsPreview: true, upe: false },
+		};
+		const upeContext = {
+			isUpeEnabled: false,
+			setIsUpeEnabled: () => null,
+			status: 'resolved',
+		};
+
+		global.wcpaySettings.isBnplAffirmAfterpayEnabled = true;
+
+		render(
+			<WCPaySettingsContext.Provider value={ featureFlagContext }>
+				<WcPayUpeContext.Provider value={ upeContext }>
+					<PaymentMethods />
+				</WcPayUpeContext.Provider>
+			</WCPaySettingsContext.Provider>
+		);
+
+		const enableWooCommercePaymentText = screen.getByText(
+			'Boost your sales by accepting additional payment methods'
+		);
+
+		expect( enableWooCommercePaymentText.parentElement ).not.toHaveClass(
+			'background-local-payment-methods'
+		);
+	} );
+
+	test( 'upe setup banner has only local methods in asset for non-BNPL-eligible merchants', () => {
+		const featureFlagContext = {
+			featureFlags: { upeSettingsPreview: true, upe: false },
+		};
+		const upeContext = {
+			isUpeEnabled: false,
+			setIsUpeEnabled: () => null,
+			status: 'resolved',
+		};
+
+		global.wcpaySettings.isBnplAffirmAfterpayEnabled = false;
+
+		render(
+			<WCPaySettingsContext.Provider value={ featureFlagContext }>
+				<WcPayUpeContext.Provider value={ upeContext }>
+					<PaymentMethods />
+				</WcPayUpeContext.Provider>
+			</WCPaySettingsContext.Provider>
+		);
+
+		const enableWooCommercePaymentText = screen.getByText(
+			'Boost your sales by accepting additional payment methods'
+		);
+
+		expect( enableWooCommercePaymentText.parentElement ).toHaveClass(
+			'background-local-payment-methods'
+		);
+	} );
+
 	test.each( [
 		[ false, false ],
 		[ false, true ],
@@ -347,7 +405,7 @@ describe( 'PaymentMethods', () => {
 			);
 
 			const enableWooCommercePaymentText = screen.queryByText(
-				'Enable the new WooCommerce Payments checkout experience'
+				'Boost your sales by accepting additional payment methods'
 			);
 
 			expect( enableWooCommercePaymentText ).toBeNull();
