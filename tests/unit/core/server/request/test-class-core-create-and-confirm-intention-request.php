@@ -130,12 +130,23 @@ class Create_And_Confirm_Intention_Test extends WCPAY_UnitTestCase {
 		$cs         = 'cus_1';
 		$cvc        = 'cvc';
 		$return_url = 'localhost/order-received/';
-
-		$request = new Create_And_Confirm_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$shipping   = [
+			'address' => [
+				'line1'       => 'line1',
+				'line2'       => 'line2',
+				'city'        => 'city',
+				'country'     => 'country',
+				'postal_code' => 'postal_code',
+				'state'       => 'state',
+			],
+			'name'    => 'name',
+		];
+		$request    = new Create_And_Confirm_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$request->set_amount( $amount );
 		$request->set_currency_code( $currency );
 		$request->set_payment_method( $pm );
 		$request->set_customer( $cs );
+		$request->set_shipping( $shipping );
 		$request->set_capture_method( true );
 		$request->setup_future_usage();
 		$request->set_metadata( [ 'order_number' => 1 ] );
@@ -181,12 +192,24 @@ class Create_And_Confirm_Intention_Test extends WCPAY_UnitTestCase {
 		$amount     = 1;
 		$currency   = 'usd';
 		$cvc        = 'cvc';
+		$shipping   = [
+			'address' => [
+				'line1'       => 'line1',
+				'line2'       => 'line2',
+				'city'        => 'city',
+				'country'     => 'country',
+				'postal_code' => 'postal_code',
+				'state'       => 'state',
+			],
+			'name'    => 'name',
+		];
 		$return_url = 'localhost/order-received/';
 		$request    = new WooPay_Create_And_Confirm_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$request->set_amount( 1 );
 		$request->set_currency_code( 'usd' );
 		$request->set_payment_method( $payment_method );
 		$request->set_customer( $customer_id );
+		$request->set_shipping( $shipping );
 		$request->set_capture_method( true );
 		$request->setup_future_usage();
 		$request->set_metadata( [ 'order_number' => 1 ] );
