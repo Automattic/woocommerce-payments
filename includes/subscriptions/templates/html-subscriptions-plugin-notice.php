@@ -21,7 +21,7 @@
 						<?php
 							printf(
 								// Translators: placeholders are opening and closing strong HTML tags.
-								esc_html__( 'By deactivating the %1$sWooCommerce Subscriptions%2$s plugin, your store will switch to using the subscriptions functionality %1$sbuilt into WooCommerce Payments%2$s.%1$s%3$sLearn more.%4$s%2$s', 'woocommerce-payments' ),
+								esc_html__( 'By deactivating the %1$sWooCommerce Subscriptions%2$s plugin, your store will switch to using the subscriptions functionality %1$sbuilt into WooCommerce Payments%2$s. %1$s%3$sLearn more.%4$s%2$s', 'woocommerce-payments' ),
 								'<strong>',
 								'</strong>',
 								'<a href="https://woocommerce.com/document/subscriptions/renewal-process/#section-4">',
