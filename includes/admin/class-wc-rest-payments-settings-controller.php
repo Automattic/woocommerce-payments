@@ -7,7 +7,6 @@
 
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Constants\Track_Events;
-use WCPay\Constants\Payment_Methods;
 
 defined( 'ABSPATH' ) || exit;
 
