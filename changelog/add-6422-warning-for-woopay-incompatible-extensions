@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Added a check to disable WooPay in case incompatible extensions are found
