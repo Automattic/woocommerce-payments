@@ -259,7 +259,7 @@ describe( 'PaymentMethods', () => {
 
 		const affirm = screen.getByRole( 'checkbox', { name: 'Affirm' } );
 		const afterpay = screen.getByRole( 'checkbox', {
-			name: 'Afterpay / Clearpay',
+			name: 'Afterpay',
 		} );
 
 		expect( affirm ).toBeInTheDocument();
@@ -315,7 +315,7 @@ describe( 'PaymentMethods', () => {
 			name: 'Affirm',
 		} );
 		const afterpay = screen.getByRole( 'checkbox', {
-			name: 'Afterpay / Clearpay',
+			name: 'Afterpay',
 		} );
 
 		expect( affirm ).toBeChecked();
