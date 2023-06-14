@@ -7,6 +7,8 @@
 
 declare( strict_types=1 );
 
+use WCPay\Constants\Payment_Method;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -46,7 +48,7 @@ class WC_Payments_Payment_Method_Messaging_Element {
 	 *
 	 * @return string The HTML markup for the payment method message container.
 	 */
-	public function init() {
+	public function init(): string {
 		global $product;
 		$price         = $product->get_price();
 		$currency_code = get_woocommerce_currency();
@@ -59,11 +61,11 @@ class WC_Payments_Payment_Method_Messaging_Element {
 		}
 
 		$enabled_upe_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
-		// Filter card out of the list of payment methods.
-		$enabled_upe_payment_methods_excluding_card = array_filter(
+		// Filter non BNPL out of the list of payment methods.
+		$bnpl_payment_methods = array_filter(
 			$enabled_upe_payment_methods,
 			function ( $payment_method ) {
-				return 'card' !== $payment_method;
+				return in_array( $payment_method, [ Payment_Method::AFFIRM, Payment_Method::AFTERPAY ], true );
 			}
 		);
 
@@ -79,7 +81,7 @@ class WC_Payments_Payment_Method_Messaging_Element {
 				'currency'       => $currency_code,
 				'country'        => $billing_country,
 				'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
-				'paymentMethods' => array_values( $enabled_upe_payment_methods_excluding_card ),
+				'paymentMethods' => array_values( $bnpl_payment_methods ),
 			]
 		);
 
