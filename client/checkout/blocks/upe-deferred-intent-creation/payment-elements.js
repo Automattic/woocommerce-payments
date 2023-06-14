@@ -3,9 +3,14 @@
  */
 import { getAppearance } from 'wcpay/checkout/upe-styles';
 import { getUPEConfig } from 'wcpay/utils/checkout';
-import { useFingerprint } from '../hooks';
+import { useFingerprint, usePaymentCompleteHandler } from '../hooks';
 import { LoadableBlock } from 'wcpay/components/loadable';
-import { Elements, PaymentElement, useElements } from '@stripe/react-stripe-js';
+import {
+	Elements,
+	PaymentElement,
+	useElements,
+	useStripe,
+} from '@stripe/react-stripe-js';
 import {
 	getPaymentMethods,
 	// eslint-disable-next-line import/no-unresolved
@@ -16,13 +21,11 @@ import {
 	validateElements,
 } from 'wcpay/checkout/classic/upe-deferred-intent-creation/stripe-checkout';
 import { getTerms } from 'wcpay/checkout/utils/upe';
-import confirmUPEPayment from '../confirm-upe-payment';
 
 const WCPayUPEFields = ( {
 	api,
 	activePaymentMethod,
 	testingInstructions,
-	billing: { billingData },
 	eventRegistration: {
 		onPaymentProcessing,
 		onCheckoutAfterProcessingWithSuccess,
@@ -30,19 +33,16 @@ const WCPayUPEFields = ( {
 	emitResponse,
 	paymentMethodId,
 	upeMethods,
-	paymentIntentId,
-	paymentIntentSecret,
 	errorMessage,
 	shouldSavePayment,
 	fingerprint,
 } ) => {
-	// const stripe = useStripe();
+	const stripe = useStripe();
 	const elements = useElements();
 	// const [ isUPEComplete, setIsUPEComplete ] = useState( false );
 	const [ selectedUPEPaymentType, setSelectedUPEPaymentType ] = useState(
 		''
 	);
-	const [ paymentCountry, setPaymentCountry ] = useState( null );
 
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 	const isTestMode = getUPEConfig( 'testMode' );
@@ -127,51 +127,13 @@ const WCPayUPEFields = ( {
 		upeMethods,
 	] );
 
-	useEffect(
-		() =>
-			onCheckoutAfterProcessingWithSuccess(
-				( { orderId, processingResponse: { paymentDetails } } ) => {
-					async function updateIntent() {
-						if ( api.handleDuplicatePayments( paymentDetails ) ) {
-							return;
-						}
-
-						await api.updateIntent(
-							paymentIntentId,
-							orderId,
-							shouldSavePayment ? 'yes' : 'no',
-							selectedUPEPaymentType,
-							paymentCountry,
-							fingerprint
-						);
-
-						return confirmUPEPayment(
-							api,
-							paymentDetails.redirect_url,
-							paymentDetails.payment_needed,
-							paymentIntentSecret,
-							elements,
-							billingData,
-							emitResponse
-						);
-					}
-
-					return updateIntent();
-				}
-			),
-		[
-			api,
-			billingData,
-			fingerprint,
-			elements,
-			emitResponse,
-			onCheckoutAfterProcessingWithSuccess,
-			paymentCountry,
-			paymentIntentId,
-			paymentIntentSecret,
-			selectedUPEPaymentType,
-			shouldSavePayment,
-		]
+	usePaymentCompleteHandler(
+		api,
+		stripe,
+		elements,
+		onCheckoutAfterProcessingWithSuccess,
+		emitResponse,
+		shouldSavePayment
 	);
 
 	const elementOptions = {
@@ -212,7 +174,6 @@ const WCPayUPEFields = ( {
 
 		// setIsUPEComplete( event.complete );
 		setSelectedUPEPaymentType( paymentType );
-		setPaymentCountry( event.value.country );
 	};
 
 	return (
