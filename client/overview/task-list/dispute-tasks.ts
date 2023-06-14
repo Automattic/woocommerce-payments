@@ -58,8 +58,9 @@ export const getDisputeResolutionTask = (
 	}
 
 	const handleClick = () => {
-		wcpayTracks.recordEvent( 'wcpay_overview_task', {
+		wcpayTracks.recordEvent( wcpayTracks.events.OVERVIEW_TASK_CLICK, {
 			task: 'dispute-resolution-task',
+			activeDisputeCount: disputeCount,
 		} );
 		const history = getHistory();
 		if ( disputeCount === 1 ) {
