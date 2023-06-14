@@ -58,7 +58,13 @@ class WC_Payments_Payment_Method_Messaging_Element {
 			$billing_country = WC()->countries->get_base_country();
 		}
 
-		$enabled_upe_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
+		$enabled_upe_payment_methods                = $this->gateway->get_payment_method_ids_enabled_at_checkout();
+		$enabled_upe_payment_methods_excluding_card = array_filter(
+			$enabled_upe_payment_methods,
+			function ( $payment_method ) {
+				return 'card' !== $payment_method;
+			}
+		);
 
 		// register the script.
 		WC_Payments::register_script_with_dependencies( 'WCPAY_PRODUCT_DETAILS', 'dist/product-details', [ 'stripe' ] ); // TODO only inject the site messaging script if the feature is enabled.
@@ -72,12 +78,7 @@ class WC_Payments_Payment_Method_Messaging_Element {
 				'currency'       => $currency_code,
 				'country'        => $billing_country,
 				'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
-				'paymentMethods' => array_filter(
-					$enabled_upe_payment_methods,
-					function ( $payment_method ) {
-						return 'card' !== $payment_method;
-					}
-				),
+				'paymentMethods' => array_values( $enabled_upe_payment_methods_excluding_card ),
 			]
 		);
 
