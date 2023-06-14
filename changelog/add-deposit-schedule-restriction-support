@@ -1,4 +1,4 @@
 Significance: minor
 Type: add
 
-Restricted deposit schedule fixes on settings page
+Deposit schedule changes are disabled when an account has restrictions on it.
