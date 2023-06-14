@@ -1627,11 +1627,11 @@ class WC_Payments {
 	 * @return void
 	 */
 	public static function load_stripe_site_messaging() {
-		// WIP
-		// TODO: feature flag this.
-		require_once __DIR__ . '/class-wc-payments-payment-method-messaging-element.php';
-		$stripe_site_messaging = new WC_Payments_Payment_Method_Messaging_Element( self::$account, self::$card_gateway );
-		echo wp_kses( $stripe_site_messaging->init(), 'post' );
+		if ( WC_Payments_Features::is_bnpl_affirm_afterpay_enabled() ) {
+			require_once __DIR__ . '/class-wc-payments-payment-method-messaging-element.php';
+			$stripe_site_messaging = new WC_Payments_Payment_Method_Messaging_Element( self::$account, self::$card_gateway );
+			echo wp_kses( $stripe_site_messaging->init(), 'post' );
+		}
 	}
 
 	/**

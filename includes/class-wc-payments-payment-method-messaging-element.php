@@ -70,7 +70,7 @@ class WC_Payments_Payment_Method_Messaging_Element {
 		);
 
 		// register the script.
-		WC_Payments::register_script_with_dependencies( 'WCPAY_PRODUCT_DETAILS', 'dist/product-details', [ 'stripe' ] ); // TODO only inject the site messaging script if the feature is enabled.
+		WC_Payments::register_script_with_dependencies( 'WCPAY_PRODUCT_DETAILS', 'dist/product-details', [ 'stripe' ] );
 		wp_enqueue_script( 'WCPAY_PRODUCT_DETAILS' );
 		// Create script tag with config.
 		wp_localize_script(
