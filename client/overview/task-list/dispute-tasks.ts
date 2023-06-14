@@ -18,11 +18,11 @@ import wcpayTracks from 'wcpay/tracks';
  * Returns true if the dispute is due within the specified number of days.
  *
  * @param {CachedDispute} dispute - The dispute to check.
- * @param {number} [days] - The number of days to check. Defaults to 1.
+ * @param {number} days - The number of days to check. Defaults to 1.
  *
  * @return {boolean} True if the dispute is due within the specified number of days.
  */
-const isDueWithin = ( dispute: CachedDispute, days = 1 ) => {
+const isDueWithin = ( dispute: CachedDispute, days: number ) => {
 	const now = moment();
 	const dueBy = moment( dispute.due_by );
 	return (
