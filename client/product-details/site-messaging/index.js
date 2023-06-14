@@ -1,5 +1,5 @@
 // global Stripe, wcpayStripeSiteMessaging
-function SiteMessaging() {
+function siteMessaging() {
 	const {
 		price,
 		currency,
@@ -17,11 +17,20 @@ function SiteMessaging() {
 		countryCode: country, // Customer's country or base country of the store.
 	};
 	const elements = stripe.elements();
-	const PaymentMessageElement = elements.create(
+	const paymentMessageElement = elements.create(
 		'paymentMethodMessaging',
 		options
 	);
-	PaymentMessageElement.mount( '#payment-method-message' );
+	paymentMessageElement.mount( '#payment-method-message' );
+
+	const quantitySelector = document.querySelector( '.quantity input' );
+	quantitySelector.addEventListener( 'change', ( event ) => {
+		const newQuantity = event.target.value;
+
+		paymentMessageElement.update( {
+			amount: parseInt( price, 10 ) * newQuantity,
+		} );
+	} );
 }
 
-export default SiteMessaging;
+export default siteMessaging;

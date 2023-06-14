@@ -1,6 +1,6 @@
 /**
  * Internal dependencies
  */
-import SiteMessaging from './site-messaging';
+import siteMessaging from './site-messaging';
 
-SiteMessaging();
+siteMessaging();

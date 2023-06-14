@@ -55,10 +55,11 @@ class WC_Payments_Payment_Method_Messaging_Element {
 			$billing_country = WC()->customer->get_billing_country();
 		}
 		if ( ! $billing_country ) {
-			$billing_country = WC()->countries->get_base_country();
+			$billing_country = WC()->countries->get_base_country(); // Fallback to merchant's country.
 		}
 
-		$enabled_upe_payment_methods                = $this->gateway->get_payment_method_ids_enabled_at_checkout();
+		$enabled_upe_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
+		// Filter card out of the list of payment methods.
 		$enabled_upe_payment_methods_excluding_card = array_filter(
 			$enabled_upe_payment_methods,
 			function ( $payment_method ) {
