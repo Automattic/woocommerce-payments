@@ -827,6 +827,17 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Returns status of BNPL-enabled flag for the account for Affirm and
+	 * Afterpay payment methods.
+	 *
+	 * @return bool
+	 */
+	public function is_bnpl_affirm_afterpay_enabled() {
+		$account = $this->get_cached_account_data();
+		return $account['is_bnpl_affirm_afterpay_enabled'] ?? false;
+	}
+
+	/**
 	 * Get Stripe login url
 	 *
 	 * @return string Stripe account login url.

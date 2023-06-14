@@ -6,6 +6,8 @@
  */
 
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
+use WCPay\Constants\Track_Events;
+use WCPay\Constants\Payment_Methods;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -471,6 +473,30 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				}
 			)
 		);
+
+		if ( function_exists( 'wc_admin_record_tracks_event' ) ) {
+			$active_payment_methods   = $this->wcpay_gateway->get_upe_enabled_payment_method_ids();
+			$disabled_payment_methods = array_diff( $active_payment_methods, $payment_method_ids_to_enable );
+			$enabled_payment_methods  = array_diff( $payment_method_ids_to_enable, $active_payment_methods );
+
+			foreach ( $disabled_payment_methods as $disabled_payment_method ) {
+				wc_admin_record_tracks_event(
+					Track_Events::PAYMENT_METHOD_DISABLED,
+					[
+						'payment_method_id' => $disabled_payment_method,
+					]
+				);
+			}
+
+			foreach ( $enabled_payment_methods as $enabled_payment_method ) {
+				wc_admin_record_tracks_event(
+					Track_Events::PAYMENT_METHOD_ENABLED,
+					[
+						'payment_method_id' => $enabled_payment_method,
+					]
+				);
+			}
+		}
 
 		$this->wcpay_gateway->update_option( 'upe_enabled_payment_method_ids', $payment_method_ids_to_enable );
 		if ( $payment_method_ids_to_enable ) {
