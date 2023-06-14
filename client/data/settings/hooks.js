@@ -554,3 +554,11 @@ export const useAdvancedFraudProtectionSettings = () => {
 		];
 	} );
 };
+
+export const useWooPayShowIncompatibilityNotice = () => {
+	return useSelect( ( select ) => {
+		const { getShowWooPayIncompatibilityNotice } = select( STORE_NAME );
+
+		return getShowWooPayIncompatibilityNotice();
+	} );
+};
