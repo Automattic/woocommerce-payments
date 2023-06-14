@@ -537,8 +537,7 @@ class WC_Payments_Order_Service {
 		// `send()` could be overrode in each request class, so clients don't need to pass params twice or hard-code the hook name.
 		$charge_data = $request->send( 'wcpay_get_charge_request', $charge_id );
 
-		// Might need to check existence here before returning.
-		return $charge_data['dispute'];
+		return $charge_data['dispute'] ?? null;
 	}
 
 	/**
