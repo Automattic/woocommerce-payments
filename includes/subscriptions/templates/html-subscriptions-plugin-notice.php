@@ -24,7 +24,7 @@
 								esc_html__( 'By deactivating the %1$sWooCommerce Subscriptions%2$s plugin, your store will switch to using the subscriptions functionality %1$sbuilt into WooCommerce Payments%2$s. %1$s%3$sLearn more.%4$s%2$s', 'woocommerce-payments' ),
 								'<strong>',
 								'</strong>',
-								'<a href="https://woocommerce.com/document/subscriptions/renewal-process/#section-4">',
+								'<a href="https://woocommerce.com/document/subscriptions/renewal-process/#section-4" target="_blank" rel="noopener noreferrer">',
 								'</a>'
 							);
 							?>
@@ -36,7 +36,7 @@
 								esc_html__( 'Existing subscribers will need to pay for their next renewal manually, after which automatic payments will resume. You will also no longer have access to the %1$s%3$sadvanced features%4$s%2$s of WooCommerce Subscriptions.', 'woocommerce-payments' ),
 								'<strong>',
 								'</strong>',
-								'<a href="https://woocommerce.com/document/payments/subscriptions-basics/comparison/">',
+								'<a href="https://woocommerce.com/document/payments/subscriptions-basics/comparison/" target="_blank" rel="noopener noreferrer">',
 								'</a>'
 							);
 							?>
