@@ -9,7 +9,6 @@ use Automattic\Jetpack\Identity_Crisis as Jetpack_Identity_Crisis;
 use Automattic\WooCommerce\Admin\PageController;
 use WCPay\Database_Cache;
 use WCPay\Logger;
-use WC_Payments_Order_Service;
 
 defined( 'ABSPATH' ) || exit;
 
