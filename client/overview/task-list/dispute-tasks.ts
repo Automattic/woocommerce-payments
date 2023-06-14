@@ -51,19 +51,19 @@ export const getDisputeResolutionTask = (
 	 */
 	activeDisputes: CachedDispute[]
 ): TaskItemProps | null => {
-	const disputeCount = activeDisputes.length;
+	const activeDisputeCount = activeDisputes.length;
 
-	if ( disputeCount === 0 ) {
+	if ( activeDisputeCount === 0 ) {
 		return null;
 	}
 
 	const handleClick = () => {
 		wcpayTracks.recordEvent( wcpayTracks.events.OVERVIEW_TASK_CLICK, {
 			task: 'dispute-resolution-task',
-			activeDisputeCount: disputeCount,
+			activeDisputeCount,
 		} );
 		const history = getHistory();
-		if ( disputeCount === 1 ) {
+		if ( activeDisputeCount === 1 ) {
 			// Redirect to the dispute details page if there is only one dispute.
 			const disputeId = activeDisputes[ 0 ].dispute_id;
 			history.push(
@@ -120,7 +120,7 @@ export const getDisputeResolutionTask = (
 	};
 
 	// Single dispute.
-	if ( disputeCount === 1 ) {
+	if ( activeDisputeCount === 1 ) {
 		const dispute = activeDisputes[ 0 ];
 		const amountFormatted = formatCurrency(
 			dispute.amount,
@@ -195,7 +195,7 @@ export const getDisputeResolutionTask = (
 			'Respond to %d active disputes for a total of %s',
 			'woocommerce-payments'
 		),
-		disputeCount,
+		activeDisputeCount,
 		disputeTotalAmounts
 	);
 	disputeTask.content =
