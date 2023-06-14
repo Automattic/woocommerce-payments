@@ -2309,5 +2309,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->mock_wcpay_account,
 			$this->mock_customer_service
 		);
+
+		$this->payments_checkout->init_hooks();
 	}
 }
