@@ -68,6 +68,7 @@ const events = {
 		'wcpay_overview_deposits_view_history_click',
 	OVERVIEW_DEPOSITS_CHANGE_SCHEDULE_CLICK:
 		'wcpay_overview_deposits_change_schedule_click',
+	OVERVIEW_TASK_CLICK: 'wcpay_overview_task_click',
 	SETTINGS_DEPOSITS_MANAGE_IN_STRIPE_CLICK:
 		'wcpay_settings_deposits_manage_in_stripe_click',
 	MULTI_CURRENCY_ENABLED_CURRENCIES_UPDATED:
