@@ -50,7 +50,6 @@ const WCPayUPEFields = ( {
 		? testingInstructions
 		: '';
 	const gatewayConfig = getPaymentMethods()[ upeMethods[ paymentMethodId ] ];
-	// const customerData = useCustomerData();
 
 	useEffect(
 		() =>
