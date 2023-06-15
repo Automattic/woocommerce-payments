@@ -80,10 +80,14 @@ const UpeSetupBanner = () => {
 	return (
 		<>
 			<CardDivider />
-			<CardBody className="payment-methods__express-checkouts">
+			<CardBody
+				className={ classNames( 'payment-methods__express-checkouts', {
+					'background-local-payment-methods': ! wcpaySettings.isBnplAffirmAfterpayEnabled,
+				} ) }
+			>
 				<h3>
 					{ __(
-						'Enable the new WooCommerce Payments checkout experience',
+						'Boost your sales by accepting additional payment methods',
 						'woocommerce-payments'
 					) }
 				</h3>
@@ -97,7 +101,7 @@ const UpeSetupBanner = () => {
 
 				<div className="payment-methods__express-checkouts-actions">
 					<span className="payment-methods__express-checkouts-get-started">
-						<Button isPrimary onClick={ handleEnableUpeClick }>
+						<Button isSecondary onClick={ handleEnableUpeClick }>
 							{ __(
 								'Enable in your store',
 								'woocommerce-payments'

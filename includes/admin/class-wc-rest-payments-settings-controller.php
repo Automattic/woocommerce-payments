@@ -385,6 +385,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'is_saved_cards_enabled'              => $this->wcpay_gateway->is_saved_cards_enabled(),
 				'is_card_present_eligible'            => $this->wcpay_gateway->is_card_present_eligible(),
 				'is_woopay_enabled'                   => 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),
+				'show_woopay_incompatibility_notice'  => get_option( 'woopay_disabled_invalid_extensions', false ),
 				'woopay_custom_message'               => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),
 				'woopay_store_logo'                   => $this->wcpay_gateway->get_option( 'platform_checkout_store_logo' ),
 				'woopay_enabled_locations'            => $this->wcpay_gateway->get_option( 'platform_checkout_button_locations', [] ),
@@ -746,6 +747,9 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		}
 
 		$woopay_enabled_locations = $request->get_param( 'woopay_enabled_locations' );
+
+		$all_locations = $this->wcpay_gateway->form_fields['payment_request_button_locations']['options'];
+		WC_Payments::woopay_tracker()->woopay_locations_updated( $all_locations, $woopay_enabled_locations );
 
 		$this->wcpay_gateway->update_option( 'platform_checkout_button_locations', $woopay_enabled_locations );
 	}

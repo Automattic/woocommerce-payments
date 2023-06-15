@@ -759,7 +759,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		$gateways = WC()->payment_gateways->get_available_payment_gateways();
 		if ( isset( $gateways['woocommerce_payments'] ) ) {
-			$gateways['woocommerce_payments']->register_scripts();
+			WC_Payments::get_wc_payments_checkout()->register_scripts();
 		}
 	}
 
@@ -773,7 +773,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if ( WC()->session && Fraud_Prevention_Service::get_instance()->is_enabled() ) : ?>
 			<input type="hidden" name="wcpay-fraud-prevention-token" value="<?php echo esc_attr( Fraud_Prevention_Service::get_instance()->get_token() ); ?>">
 		<?php endif; ?>
-		<div id="wcpay-payment-request-wrapper" style="clear:both;padding-top:1.5em;display:none;">
+		<div class="wcpay-payment-request-wrapper" style="clear:both;padding-top:1.5em;display:none;">
 			<div id="wcpay-payment-request-button">
 				<!-- A Stripe Element will be inserted here. -->
 			</div>
