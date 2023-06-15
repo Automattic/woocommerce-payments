@@ -42,9 +42,7 @@ const formatDetails = ( payment ) => {
 				</Fragment>
 			);
 		case 'affirm':
-			return <Fragment />;
 		case 'afterpay_clearpay':
-			return <Fragment />;
 		default:
 			return <Fragment />;
 	}
