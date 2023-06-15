@@ -446,6 +446,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			add_filter( 'rest_request_before_callbacks', [ $this, 'remove_all_actions_on_preflight_check' ], 10, 3 );
 		}
+
+		$this->maybe_init_subscriptions_hooks();
 	}
 
 	/**
