@@ -62,7 +62,7 @@ class WC_REST_UPE_Flag_Toggle_Controller_Test extends WCPAY_UnitTestCase {
 			$rate_limiter,
 			$order_service
 		);
-		$this->controller = new WC_REST_UPE_Flag_Toggle_Controller( $this->gateway );
+		$this->controller = new WC_REST_UPE_Flag_Toggle_Controller( $this->gateway, $mock_wcpay_account );
 	}
 
 	public function test_get_flag_fails_if_user_cannot_manage_woocommerce() {
