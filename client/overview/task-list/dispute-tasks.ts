@@ -56,6 +56,11 @@ export const getDisputeResolutionTask = (
 	 */
 	activeDisputes: CachedDispute[]
 ): TaskItemProps | null => {
+	// Create a new array and sort by `due_by` ascending.
+	activeDisputes = [ ...activeDisputes ]
+		.filter( ( dispute ) => dispute.due_by !== '' )
+		.sort( ( a, b ) => moment( a.due_by ).diff( moment( b.due_by ) ) );
+
 	const activeDisputeCount = activeDisputes.length;
 
 	if ( activeDisputeCount === 0 ) {
@@ -88,11 +93,6 @@ export const getDisputeResolutionTask = (
 			);
 		}
 	};
-
-	// Create a new array and sort by `due_by` ascending.
-	activeDisputes = [ ...activeDisputes ].sort( ( a, b ) =>
-		moment( a.due_by ).diff( moment( b.due_by ) )
-	);
 
 	const numDisputesDueWithin24h = getDisputesDueWithinDays(
 		activeDisputes,

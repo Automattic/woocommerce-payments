@@ -72,6 +72,28 @@ const mockActiveDisputes = [
 			url: 'http://test.local/order/1',
 		},
 	},
+	{
+		wcpay_disputes_cache_id: 1234,
+		stripe_account_id: 'acct_test',
+		dispute_id: 'dp_1',
+		charge_id: 'ch_mock',
+		amount: 1000,
+		currency: 'usd',
+		reason: 'fraudulent',
+		source: 'visa',
+		order_number: 1,
+		customer_name: 'Mock customer',
+		customer_email: 'mock@customer.net',
+		customer_country: 'US',
+		status: 'needs_response',
+		created: '2019-11-01 23:59:59',
+		due_by: '', // Adding this to cover an edge case where due_by is an empty string. This should be ignored by the task list.
+		order: {
+			number: '1',
+			customer_url: 'https://shop.local',
+			url: 'http://test.local/order/1',
+		},
+	},
 ];
 
 describe( 'getTasks()', () => {
