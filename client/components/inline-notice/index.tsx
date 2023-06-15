@@ -10,7 +10,14 @@ import classNames from 'classnames';
  */
 import './style.scss';
 
-const InlineNotice = ( { className, ...restProps } ) => (
+interface InlineNoticeProps extends Notice.Props {
+	className?: string;
+}
+
+const InlineNotice: React.FC< InlineNoticeProps > = ( {
+	className,
+	...restProps
+} ) => (
 	<Notice
 		className={ classNames( 'wcpay-inline-notice', className ) }
 		{ ...restProps }
