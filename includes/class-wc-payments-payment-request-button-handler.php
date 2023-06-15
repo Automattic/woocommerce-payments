@@ -671,7 +671,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	/**
 	 * Get product from product page or product_page shortcode.
 	 *
-	 * @return WC_Product|false|null Product object.
+	 * @return WC_Product|null Product object.
 	 */
 	public function get_product() {
 		global $post;
