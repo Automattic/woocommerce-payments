@@ -111,7 +111,7 @@ abstract class UPE_Payment_Method {
 	 * @return bool
 	 */
 	public function is_enabled_at_checkout() {
-		if ( $this->is_subscription_item_in_cart() ) {
+		if ( $this->is_subscription_item_in_cart() || $this->is_changing_payment_method_for_subscription() ) {
 			return $this->is_reusable();
 		}
 		return true;
