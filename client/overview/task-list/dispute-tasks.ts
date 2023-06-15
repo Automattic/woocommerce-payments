@@ -70,7 +70,7 @@ export const getDisputeResolutionTask = (
 	const handleClick = () => {
 		wcpayTracks.recordEvent( wcpayTracks.events.OVERVIEW_TASK_CLICK, {
 			task: 'dispute-resolution-task',
-			activeDisputeCount,
+			active_dispute_count: activeDisputeCount,
 		} );
 		const history = getHistory();
 		if ( activeDisputeCount === 1 ) {
