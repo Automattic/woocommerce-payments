@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Migrate DepositsStatus and PaymentsStatus components to Typescript
