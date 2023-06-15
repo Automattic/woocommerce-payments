@@ -390,20 +390,49 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WC_Payments_Features::is_frt_review_feature_active() );
 	}
 
-	public function test_is_fraud_protection_settings_enabled_returns_false_when_flag_is_false() {
-		add_filter(
-			'pre_option_wcpay_fraud_protection_settings_active',
-			function ( $pre_option, $option, $default ) {
-				return '0';
-			},
-			10,
-			3
-		);
-		$this->assertFalse( WC_Payments_Features::is_fraud_protection_settings_enabled() );
+	public function test_is_bnpl_affirm_afterpay_enabled_return_true_if_flag_not_present_in_account_cache() {
+		$account_service_mock = $this->getMockBuilder( WC_Payments_Account::class )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$account_service_mock
+			->expects( $this->once() )
+			->method( 'get_cached_account_data' )
+			->willReturn( [] );
+
+		WC_Payments::set_account_service( $account_service_mock );
+
+		$this->assertTrue( WC_Payments_Features::is_bnpl_affirm_afterpay_enabled() );
 	}
 
-	public function test_is_fraud_protection_settings_enabled_returns_false_when_flag_is_not_set() {
-		$this->assertFalse( WC_Payments_Features::is_fraud_protection_settings_enabled() );
+	public function test_is_bnpl_affirm_afterpay_enabled_return_true_if_flag_is_enabled_in_account_cache() {
+		$account_service_mock = $this->getMockBuilder( WC_Payments_Account::class )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$account_service_mock
+			->expects( $this->once() )
+			->method( 'get_cached_account_data' )
+			->willReturn( [ 'is_bnpl_affirm_afterpay_enabled' => true ] );
+
+		WC_Payments::set_account_service( $account_service_mock );
+
+		$this->assertTrue( WC_Payments_Features::is_bnpl_affirm_afterpay_enabled() );
+	}
+
+	public function test_is_bnpl_affirm_afterpay_enabled_return_false_if_flag_is_disabled_in_account_cache() {
+		$account_service_mock = $this->getMockBuilder( WC_Payments_Account::class )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$account_service_mock
+			->expects( $this->once() )
+			->method( 'get_cached_account_data' )
+			->willReturn( [ 'is_bnpl_affirm_afterpay_enabled' => false ] );
+
+		WC_Payments::set_account_service( $account_service_mock );
+
+		$this->assertFalse( WC_Payments_Features::is_bnpl_affirm_afterpay_enabled() );
 	}
 
 	private function setup_enabled_flags( array $enabled_flags ) {

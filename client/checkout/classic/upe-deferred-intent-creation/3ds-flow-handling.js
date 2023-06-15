@@ -1,15 +1,8 @@
 /**
  * Internal dependencies
  */
-import { isWCPayChosen } from 'wcpay/checkout/utils/upe';
 import { getConfig } from 'wcpay/utils/checkout';
 import showErrorCheckout from 'wcpay/checkout/utils/show-error-checkout';
-
-const getPaymentMethodId = () => {
-	return isWCPayChosen()
-		? document.querySelector( '#wcpay-payment-method-sepa' )?.value ?? ''
-		: document.querySelector( '#wcpay-payment-method' )?.value ?? '';
-};
 
 export const shouldSavePaymentPaymentMethod = () => {
 	return (
@@ -30,7 +23,8 @@ const cleanupURL = () => {
 
 export const showAuthenticationModalIfRequired = ( api ) => {
 	const url = window.location.href;
-	const paymentMethodId = getPaymentMethodId();
+	const paymentMethodId = document.querySelector( '#wcpay-payment-method' )
+		?.value;
 
 	const confirmation = api.confirmIntent(
 		url,

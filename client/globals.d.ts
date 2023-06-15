@@ -62,6 +62,7 @@ declare global {
 		connect: {
 			country: string;
 			availableStates: Array< Record< string, string > >;
+			availableCountries: Record< string, string >;
 		};
 		accountEmail: string;
 		currentUserEmail: string;
@@ -73,7 +74,6 @@ declare global {
 			isWelcomeTourDismissed?: boolean;
 		};
 		accountDefaultCurrency: string;
-		isFraudProtectionSettingsEnabled: boolean;
 		isFRTReviewFeatureActive: boolean;
 		frtDiscoverBannerSettings: string;
 		onboardingTestMode: boolean;
@@ -83,6 +83,9 @@ declare global {
 		};
 		storeCurrency: string;
 		isMultiCurrencyEnabled: string;
+		errorMessage: string;
+		onBoardingDisabled: boolean;
+		isBnplAffirmAfterpayEnabled: boolean;
 	};
 
 	const wcTracks: any;

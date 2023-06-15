@@ -21,9 +21,10 @@
     "types": [
       "node",
       "jest",
-      "@testing-library/jest-dom",
+      "@testing-library/jest-dom"
     ],
     "resolveJsonModule": true,
+    "skipLibCheck": true // To be removed when the lint errors related to types and multiple resolutions are gone
   },
   "include": [
     "./client/"

@@ -32,6 +32,8 @@ class Payment_Method extends Base_Constant {
 	const SEPA            = 'sepa_debit';
 	const SOFORT          = 'sofort';
 	const US_BANK_ACCOUNT = 'us_bank_account';
+	const AFFIRM          = 'affirm';
+	const AFTERPAY        = 'afterpay_clearpay';
 
 	const IPP_ALLOWED_PAYMENT_METHODS = [
 		self::CARD_PRESENT,

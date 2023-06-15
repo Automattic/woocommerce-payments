@@ -26,6 +26,7 @@ const countryCodes = window.intlTelInputGlobals
 interface Props {
 	value: string;
 	onChange: ( value: string, country: string ) => void;
+	onBlur?: () => void;
 	country?: string;
 	className?: string;
 	label?: string;
@@ -36,6 +37,7 @@ const PhoneNumberControl: React.FC< Props > = ( {
 	value,
 	country,
 	onChange,
+	onBlur,
 	...rest
 } ) => {
 	const [ focused, setFocused ] = useState( false );
@@ -107,7 +109,10 @@ const PhoneNumberControl: React.FC< Props > = ( {
 					value={ phoneNumber }
 					onChange={ handleInput }
 					onFocus={ () => setFocused( true ) }
-					onBlur={ () => setFocused( false ) }
+					onBlur={ () => {
+						setFocused( false );
+						onBlur?.();
+					} }
 					style={ {
 						paddingLeft: spanWidth + 8,
 						marginLeft: -spanWidth,

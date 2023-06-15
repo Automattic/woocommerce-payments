@@ -152,9 +152,6 @@ export function* getFraudOutcomeTransactions( status, query ) {
  * @param { string } query Data on which to parameterize the selection.
  */
 export function* getFraudOutcomeTransactionsSummary( status, query ) {
-	// @todo Remove feature flag
-	if ( ! wcpaySettings.isFraudProtectionSettingsEnabled ) return;
-
 	const path = addQueryArgs(
 		`${ NAMESPACE }/transactions/fraud-outcomes/summary`,
 		{
