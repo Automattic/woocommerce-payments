@@ -457,6 +457,61 @@ class MultiCurrency {
 	}
 
 	/**
+	 * Returns the store's current available, enabled, and default currencies.
+	 *
+	 * @return array
+	 */
+	public function get_store_currencies(): array {
+		return [
+			'available' => $this->get_available_currencies(),
+			'enabled'   => $this->get_enabled_currencies(),
+			'default'   => $this->get_default_currency(),
+		];
+	}
+
+	/**
+	 * Gets the currency settings for a single currency.
+	 *
+	 * @param   string $currency_code The currency code to get settings for.
+	 *
+	 * @return  array The currency's settings.
+	 */
+	public function get_single_currency_settings( string $currency_code ): array {
+		$currency_code = strtolower( $currency_code );
+		return [
+			'exchange_rate_type' => get_option( 'wcpay_multi_currency_exchange_rate_' . $currency_code, 'automatic' ),
+			'manual_rate'        => get_option( 'wcpay_multi_currency_manual_rate_' . $currency_code, null ),
+			'price_rounding'     => get_option( 'wcpay_multi_currency_price_rounding_' . $currency_code, null ),
+			'price_charm'        => get_option( 'wcpay_multi_currency_price_charm_' . $currency_code, null ),
+		];
+	}
+
+	/**
+	 * Updates the currency settings for a single currency.
+	 *
+	 * @param string $currency_code      The single currency code to be updated.
+	 * @param string $exchange_rate_type The exchange rate type setting.
+	 * @param float  $price_rounding     The price rounding setting.
+	 * @param float  $price_charm        The price charm setting.
+	 * @param ?float $manual_rate        The manual rate setting, or null.
+	 *
+	 * @return void
+	 */
+	public function update_single_currency_settings( string $currency_code, string $exchange_rate_type, float $price_rounding, float $price_charm, $manual_rate = null ) {
+		$currency_code = strtolower( $currency_code );
+		if ( array_key_exists( strtoupper( $currency_code ), $this->get_available_currencies() ) ) {
+			update_option( 'wcpay_multi_currency_price_rounding_' . $currency_code, $price_rounding );
+			update_option( 'wcpay_multi_currency_price_charm_' . $currency_code, $price_charm );
+			if ( in_array( $exchange_rate_type, [ 'automatic', 'manual' ], true ) ) {
+				update_option( 'wcpay_multi_currency_exchange_rate_' . $currency_code, esc_attr( $exchange_rate_type ) );
+			}
+			if ( 'manual' === $exchange_rate_type && ! is_null( $manual_rate ) ) {
+				update_option( 'wcpay_multi_currency_manual_rate_' . $currency_code, $manual_rate );
+			}
+		}
+	}
+
+	/**
 	 * Sets up the available currencies, which are alphabetical by name.
 	 *
 	 * @return void
@@ -619,7 +674,9 @@ class MultiCurrency {
 		);
 
 		// Now remove the removed currencies settings.
-		$this->remove_currencies_settings( $removed_currencies );
+		if ( 0 < count( $removed_currencies ) ) {
+			$this->remove_currencies_settings( $removed_currencies );
+		}
 	}
 
 	/**
