@@ -443,9 +443,50 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			add_action( 'template_redirect', [ $this, 'clear_session_processing_order_after_landing_order_received_page' ], 21 );
 
 			add_action( 'woocommerce_update_order', [ $this, 'schedule_order_tracking' ], 10, 2 );
+
+			add_filter( 'rest_request_before_callbacks', [ $this, 'remove_all_actions_on_preflight_check' ], 10, 3 );
 		}
 
 		$this->maybe_init_subscriptions_hooks();
+	}
+
+	/**
+	 * If we're in a WooPay preflight check, remove all the checkout order processed
+	 * actions to prevent reduce available resources quantity.
+	 *
+	 * @param mixed           $response The response object.
+	 * @param mixed           $handler The handler used for the response.
+	 * @param WP_REST_Request $request The request used to generate the response.
+	 *
+	 * @return mixed
+	 */
+	public function remove_all_actions_on_preflight_check( $response, $handler, $request ) {
+		$payment_data = $this->get_request_payment_data( $request );
+		if ( ! empty( $payment_data['is-woopay-preflight-check'] ) ) {
+			remove_all_actions( 'woocommerce_store_api_checkout_order_processed' );
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Gets and formats payment request data.
+	 *
+	 * @param \WP_REST_Request $request Request object.
+	 * @return array
+	 */
+	private function get_request_payment_data( \WP_REST_Request $request ) {
+		static $payment_data = [];
+		if ( ! empty( $payment_data ) ) {
+			return $payment_data;
+		}
+		if ( ! empty( $request['payment_data'] ) ) {
+			foreach ( $request['payment_data'] as $data ) {
+				$payment_data[ sanitize_key( $data['key'] ) ] = wc_clean( $data['value'] );
+			}
+		}
+
+		return $payment_data;
 	}
 
 	/**
