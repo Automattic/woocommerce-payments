@@ -23,11 +23,6 @@ HTMLOptionsCollection [
 exports[`Transactions filters when filtering by source device should render all types 1`] = `
 HTMLOptionsCollection [
   <option
-    value="android"
-  >
-    Android
-  </option>,
-  <option
     value="ios"
   >
     iPhone
