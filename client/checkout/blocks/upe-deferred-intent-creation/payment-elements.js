@@ -52,80 +52,175 @@ const WCPayUPEFields = ( {
 	const gatewayConfig = getPaymentMethods()[ upeMethods[ paymentMethodId ] ];
 	// const customerData = useCustomerData();
 
-	useEffect( () => {
-		const handlePaymentProcessing = async () => {
-			if ( upeMethods[ paymentMethodId ] !== activePaymentMethod ) {
-				return;
-			}
+	useEffect(
+		() =>
+			onPaymentProcessing( () => {
+				async function handlePaymentProcessing() {
+					if (
+						upeMethods[ paymentMethodId ] !== activePaymentMethod
+					) {
+						return;
+					}
 
-			// if ( ! isUPEComplete ) {
-			//     return {
-			//         type: 'error',
-			//         message: __(
-			//             'Your payment information is incomplete.',
-			//             'woocommerce-payments'
-			//         ),
-			//     };
-			// }
+					// if ( ! isUPEComplete ) {
+					//     return {
+					//         type: 'error',
+					//         message: __(
+					//             'Your payment information is incomplete.',
+					//             'woocommerce-payments'
+					//         ),
+					//     };
+					// }
 
-			if ( errorMessage ) {
-				return {
-					type: 'error',
-					message: errorMessage,
-				};
-			}
+					if ( errorMessage ) {
+						return {
+							type: 'error',
+							message: errorMessage,
+						};
+					}
 
-			if (
-				gatewayConfig.supports.showSaveOption &&
-				shouldSavePayment &&
-				! paymentMethodsConfig[ selectedUPEPaymentType ].isReusable
-			) {
-				return {
-					type: 'error',
-					message:
-						'This payment method cannot be saved for future use.',
-				};
-			}
+					if (
+						gatewayConfig.supports.showSaveOption &&
+						shouldSavePayment &&
+						! paymentMethodsConfig[ selectedUPEPaymentType ]
+							.isReusable
+					) {
+						return {
+							type: 'error',
+							message:
+								'This payment method cannot be saved for future use.',
+						};
+					}
 
-			const fraudPreventionToken = document
-				.querySelector( '#wcpay-fraud-prevention-token' )
-				?.getAttribute( 'value' );
+					const fraudPreventionToken = document
+						.querySelector( '#wcpay-fraud-prevention-token' )
+						?.getAttribute( 'value' );
 
-			await validateElements( elements );
-			const paymentMethodObject = await createStripePaymentMethod(
-				api,
-				elements
-			);
+					console.log(
+						'we have now: ' +
+							elements._commonOptions.paymentMethodTypes[ 0 ]
+					);
 
-			return {
-				type: 'success',
-				meta: {
-					paymentMethodData: {
-						payment_method: paymentMethodId,
-						'wcpay-payment-method':
-							paymentMethodObject.paymentMethod.id,
-						'wcpay-fraud-prevention-token': fraudPreventionToken,
-						'wcpay-fingerprint': fingerprint,
-					},
-				},
-			};
-		};
+					await validateElements( elements );
 
-		onPaymentProcessing( handlePaymentProcessing );
-	}, [
-		activePaymentMethod,
-		api,
-		elements,
-		errorMessage,
-		fingerprint,
-		gatewayConfig,
-		onPaymentProcessing,
-		paymentMethodId,
-		paymentMethodsConfig,
-		selectedUPEPaymentType,
-		shouldSavePayment,
-		upeMethods,
-	] );
+					console.log(
+						'we have now 2 : ' +
+							elements._commonOptions.paymentMethodTypes[ 0 ]
+					);
+					const paymentMethodObject = await createStripePaymentMethod(
+						api,
+						elements
+					);
+
+					return {
+						type: 'success',
+						meta: {
+							paymentMethodData: {
+								payment_method: paymentMethodId,
+								'wcpay-payment-method':
+									paymentMethodObject.paymentMethod.id,
+								'wcpay-fraud-prevention-token': fraudPreventionToken,
+								'wcpay-fingerprint': fingerprint,
+							},
+						},
+					};
+				}
+				return handlePaymentProcessing();
+			} ),
+		[
+			activePaymentMethod,
+			api,
+			elements,
+			fingerprint,
+			gatewayConfig,
+			paymentMethodId,
+			paymentMethodsConfig,
+			selectedUPEPaymentType,
+			shouldSavePayment,
+			upeMethods,
+			errorMessage,
+			onPaymentProcessing,
+		]
+	);
+
+	// useEffect( () => {
+	// 	const handlePaymentProcessing = async () => {
+	// 		if ( upeMethods[ paymentMethodId ] !== activePaymentMethod ) {
+	// 			return;
+	// 		}
+
+	// 		// if ( ! isUPEComplete ) {
+	// 		//     return {
+	// 		//         type: 'error',
+	// 		//         message: __(
+	// 		//             'Your payment information is incomplete.',
+	// 		//             'woocommerce-payments'
+	// 		//         ),
+	// 		//     };
+	// 		// }
+
+	// 		if ( errorMessage ) {
+	// 			return {
+	// 				type: 'error',
+	// 				message: errorMessage,
+	// 			};
+	// 		}
+
+	// 		if (
+	// 			gatewayConfig.supports.showSaveOption &&
+	// 			shouldSavePayment &&
+	// 			! paymentMethodsConfig[ selectedUPEPaymentType ].isReusable
+	// 		) {
+	// 			return {
+	// 				type: 'error',
+	// 				message:
+	// 					'This payment method cannot be saved for future use.',
+	// 			};
+	// 		}
+
+	// 		const fraudPreventionToken = document
+	// 			.querySelector( '#wcpay-fraud-prevention-token' )
+	// 			?.getAttribute( 'value' );
+
+	// 			console.log('we have now: ' + elements._commonOptions.paymentMethodTypes[0]);
+
+	// 		await validateElements( elements );
+
+	// 		console.log('we have now 2 : ' + elements._commonOptions.paymentMethodTypes[0]);
+	// 		const paymentMethodObject = await createStripePaymentMethod(
+	// 			api,
+	// 			elements
+	// 		);
+
+	// 		return {
+	// 			type: 'success',
+	// 			meta: {
+	// 				paymentMethodData: {
+	// 					payment_method: paymentMethodId,
+	// 					'wcpay-payment-method':
+	// 						paymentMethodObject.paymentMethod.id,
+	// 					'wcpay-fraud-prevention-token': fraudPreventionToken,
+	// 					'wcpay-fingerprint': fingerprint,
+	// 				},
+	// 			},
+	// 		};
+	// 	};
+
+	// 	onPaymentProcessing( handlePaymentProcessing );
+	// }, [
+	// 	activePaymentMethod,
+	// 	api,
+	// 	elements,
+	// 	errorMessage,
+	// 	fingerprint,
+	// 	gatewayConfig,
+	// 	onPaymentProcessing,
+	// 	paymentMethodId,
+	// 	paymentMethodsConfig,
+	// 	selectedUPEPaymentType,
+	// 	shouldSavePayment,
+	// 	upeMethods,
+	// ] );
 
 	usePaymentCompleteHandler(
 		api,
@@ -223,7 +318,13 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 		// if ( ! fingerprint ) {
 		// return;
 		// }
-	}, [ api, appearance, fingerprint, fingerprintErrorMessage ] );
+	}, [
+		api,
+		appearance,
+		fingerprint,
+		fingerprintErrorMessage,
+		props.paymentMethodId,
+	] );
 
 	return (
 		<LoadableBlock isLoading={ ! appearance } numLines={ 3 }>
