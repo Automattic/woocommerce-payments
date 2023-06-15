@@ -234,6 +234,94 @@ describe( 'PaymentMethods', () => {
 		expect( enableWooCommercePaymentText ).toBeInTheDocument();
 	} );
 
+	test( 'affirm afterpay pms renders correctly', () => {
+		useGetAvailablePaymentMethodIds.mockReturnValue( [
+			'card',
+			'au_becs_debit',
+			'affirm',
+			'afterpay_clearpay',
+			'bancontact',
+			'eps',
+			'giropay',
+			'ideal',
+			'p24',
+			'sepa_debit',
+			'sofort',
+		] );
+
+		global.wcpaySettings.isBnplAffirmAfterpayEnabled = true;
+
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
+
+		const affirm = screen.getByRole( 'checkbox', { name: 'Affirm' } );
+		const afterpay = screen.getByRole( 'checkbox', {
+			name: 'Afterpay',
+		} );
+
+		expect( affirm ).toBeInTheDocument();
+		expect( afterpay ).toBeInTheDocument();
+	} );
+
+	test( 'affirm and afterpay appear checked when enabled', () => {
+		useGetAvailablePaymentMethodIds.mockReturnValue( [
+			'card',
+			'au_becs_debit',
+			'affirm',
+			'afterpay_clearpay',
+			'bancontact',
+			'eps',
+			'giropay',
+			'ideal',
+			'p24',
+			'sepa_debit',
+			'sofort',
+		] );
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[ 'card', 'affirm', 'afterpay_clearpay' ],
+		] );
+
+		global.wcpaySettings.isBnplAffirmAfterpayEnabled = true;
+
+		useGetPaymentMethodStatuses.mockReturnValue( {
+			card_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			affirm_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			afterpay_clearpay_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+		} );
+
+		const renderPaymentElements = () => {
+			render(
+				<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+					<PaymentMethods />
+				</WcPayUpeContextProvider>
+			);
+		};
+
+		renderPaymentElements();
+
+		const affirm = screen.getByRole( 'checkbox', {
+			name: 'Affirm',
+		} );
+		const afterpay = screen.getByRole( 'checkbox', {
+			name: 'Afterpay',
+		} );
+
+		expect( affirm ).toBeChecked();
+		expect( afterpay ).toBeChecked();
+	} );
+
 	test( 'upe setup banner has Buy Now Pay Later methods asset for eligible merchants', () => {
 		const featureFlagContext = {
 			featureFlags: { upeSettingsPreview: true, upe: false },
