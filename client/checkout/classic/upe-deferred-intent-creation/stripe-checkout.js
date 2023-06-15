@@ -90,35 +90,29 @@ function submitForm( jQueryForm ) {
  * @param {Object} elements The Stripe elements object used to create a Stripe payment method.
  * @return {Promise<Object>} A promise that resolves with the created Stripe payment method.
  */
-export function createStripePaymentMethod( api, elements ) {
+function createStripePaymentMethod( api, elements ) {
 	return api.getStripe().createPaymentMethod( {
 		elements,
 		params: {
 			billing_details: {
-				name: document.querySelector( '#shipping-first_name' )
+				name: document.querySelector( '#billing_first_name' )
 					? (
-							document.querySelector( '#shipping-first_name' )
+							document.querySelector( '#billing_first_name' )
 								.value +
 							' ' +
-							document.querySelector( '#shipping-last_name' )
-								.value
+							document.querySelector( '#billing_last_name' ).value
 					  ).trim()
 					: undefined,
-				email: document.querySelector( '#email' ).value,
-				phone: document.querySelector( '#shipping-phone' ).value,
+				email: document.querySelector( '#billing_email' ).value,
+				phone: document.querySelector( '#billing_phone' ).value,
 				address: {
-					city: document.querySelector( '#shipping-city' ).value,
-					country: 'US',
-					// country: document.querySelector( '#components-form-token-input-0' ).value,
-					line1: document.querySelector( '#shipping-address_1' )
+					city: document.querySelector( '#billing_city' ).value,
+					country: document.querySelector( '#billing_country' ).value,
+					line1: document.querySelector( '#billing_address_1' ).value,
+					line2: document.querySelector( '#billing_address_2' ).value,
+					postal_code: document.querySelector( '#billing_postcode' )
 						.value,
-					line2: document.querySelector( '#shipping-address_2' )
-						.value,
-					postal_code: document.querySelector( '#shipping-postcode' )
-						.value,
-					state: document.querySelector(
-						'#components-form-token-input-1'
-					).value,
+					state: document.querySelector( '#billing_state' ).value,
 				},
 			},
 		},

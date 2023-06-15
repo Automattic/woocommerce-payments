@@ -16,11 +16,9 @@ import {
 	// eslint-disable-next-line import/no-unresolved
 } from '@woocommerce/blocks-registry';
 import { useEffect, useState } from 'react';
-import {
-	createStripePaymentMethod,
-	validateElements,
-} from 'wcpay/checkout/classic/upe-deferred-intent-creation/stripe-checkout';
+import { validateElements } from 'wcpay/checkout/classic/upe-deferred-intent-creation/stripe-checkout';
 import { getTerms } from 'wcpay/checkout/utils/upe';
+import { useCustomerData } from '../upe-split-fields';
 
 const WCPayUPEFields = ( {
 	api,
@@ -50,6 +48,7 @@ const WCPayUPEFields = ( {
 		? testingInstructions
 		: '';
 	const gatewayConfig = getPaymentMethods()[ upeMethods[ paymentMethodId ] ];
+	const billingData = useCustomerData().billingAddress;
 
 	useEffect(
 		() =>
@@ -95,21 +94,35 @@ const WCPayUPEFields = ( {
 						.querySelector( '#wcpay-fraud-prevention-token' )
 						?.getAttribute( 'value' );
 
-					console.log(
-						'we have now: ' +
-							elements._commonOptions.paymentMethodTypes[ 0 ]
-					);
-
 					await validateElements( elements );
 
-					console.log(
-						'we have now 2 : ' +
-							elements._commonOptions.paymentMethodTypes[ 0 ]
-					);
-					const paymentMethodObject = await createStripePaymentMethod(
-						api,
-						elements
-					);
+					const billingDetails = {
+						name: (
+							billingData.first_name +
+							' ' +
+							billingData.last_name
+						).trim(),
+						email: billingData.email,
+						phone: billingData.phone,
+						address: {
+							city: billingData.city,
+							country: billingData.country,
+
+							line1: billingData.address_1,
+							line2: billingData.address_2,
+							postal_code: billingData.postcode,
+							state: billingData.state,
+						},
+					};
+
+					const paymentMethodObject = await api
+						.getStripe()
+						.createPaymentMethod( {
+							elements,
+							params: {
+								billing_details: billingDetails,
+							},
+						} );
 
 					return {
 						type: 'success',
@@ -139,6 +152,7 @@ const WCPayUPEFields = ( {
 			upeMethods,
 			errorMessage,
 			onPaymentProcessing,
+			billingData,
 		]
 	);
 
