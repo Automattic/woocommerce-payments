@@ -16,9 +16,8 @@ import {
 	// eslint-disable-next-line import/no-unresolved
 } from '@woocommerce/blocks-registry';
 import { useEffect, useState } from 'react';
-import { getTerms } from 'wcpay/checkout/utils/upe';
+import { getTerms, validateElements } from 'wcpay/checkout/utils/upe';
 import { useCustomerData } from '../upe-split-fields';
-import { validateElements } from 'wcpay/checkout/classic/upe-deferred-intent-creation/payment-processing';
 import { __ } from '@wordpress/i18n';
 
 const WCPayUPEFields = ( {
