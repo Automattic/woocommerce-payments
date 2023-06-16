@@ -307,12 +307,13 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_payment_fields_outputs_fields() {
 		foreach ( $this->mock_payment_gateways as $payment_method_id => $mock_payment_gateway ) {
-			new WC_Payments_UPE_Checkout(
+			$checkout = new WC_Payments_UPE_Checkout(
 				$mock_payment_gateway,
 				$this->mock_woopay_utilities,
 				$this->mock_wcpay_account,
 				$this->mock_customer_service
 			);
+			$checkout->init_hooks();
 
 			$mock_payment_gateway
 				->method( 'get_payment_method_ids_enabled_at_checkout' )
