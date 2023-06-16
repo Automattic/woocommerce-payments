@@ -16,9 +16,9 @@ import {
 	// eslint-disable-next-line import/no-unresolved
 } from '@woocommerce/blocks-registry';
 import { useEffect, useState } from 'react';
-import { validateElements } from 'wcpay/checkout/classic/upe-deferred-intent-creation/stripe-checkout';
 import { getTerms } from 'wcpay/checkout/utils/upe';
 import { useCustomerData } from '../upe-split-fields';
+import { validateElements } from 'wcpay/checkout/classic/upe-deferred-intent-creation/payment-processing';
 
 const WCPayUPEFields = ( {
 	api,
