@@ -114,8 +114,8 @@ jQuery( function ( $ ) {
 	/**
 	 * Converts form fields object into Stripe `shipping` object.
 	 *
-	 * @param {Object} fields Object mapping checkout shippinh fields to values.
-	 * @return {Object} Stripe formatted `shpping` object.
+	 * @param {Object} fields Object mapping checkout shipping fields to values.
+	 * @return {Object} Stripe formatted `shipping` object.
 	 */
 	const getShippingDetails = ( fields ) => {
 		return {
