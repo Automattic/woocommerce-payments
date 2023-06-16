@@ -24,6 +24,23 @@ import {
 } from 'wcpay/checkout/utils/upe';
 import { __ } from '@wordpress/i18n';
 
+const getBillingDetails = ( billingData ) => {
+	return {
+		name: ( billingData.first_name + ' ' + billingData.last_name ).trim(),
+		email: billingData.email,
+		phone: billingData.phone,
+		address: {
+			city: billingData.city,
+			country: billingData.country,
+
+			line1: billingData.address_1,
+			line2: billingData.address_2,
+			postal_code: billingData.postcode,
+			state: billingData.state,
+		},
+	};
+};
+
 const WCPayUPEFields = ( {
 	api,
 	activePaymentMethod,
@@ -97,31 +114,14 @@ const WCPayUPEFields = ( {
 
 					await validateElements( elements );
 
-					const billingDetails = {
-						name: (
-							billingData.first_name +
-							' ' +
-							billingData.last_name
-						).trim(),
-						email: billingData.email,
-						phone: billingData.phone,
-						address: {
-							city: billingData.city,
-							country: billingData.country,
-
-							line1: billingData.address_1,
-							line2: billingData.address_2,
-							postal_code: billingData.postcode,
-							state: billingData.state,
-						},
-					};
-
 					const paymentMethodObject = await api
 						.getStripe()
 						.createPaymentMethod( {
 							elements,
 							params: {
-								billing_details: billingDetails,
+								billing_details: getBillingDetails(
+									billingData
+								),
 							},
 						} );
 
