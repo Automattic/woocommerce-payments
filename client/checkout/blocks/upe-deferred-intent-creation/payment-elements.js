@@ -18,6 +18,7 @@ import {
 import { useEffect, useState } from 'react';
 import {
 	getTerms,
+	stripeElementOptionsForUPE,
 	useCustomerData,
 	validateElements,
 } from 'wcpay/checkout/utils/upe';
@@ -166,33 +167,14 @@ const WCPayUPEFields = ( {
 		shouldSavePayment
 	);
 
-	const elementOptions = {
-		fields: {
-			billingDetails: {
-				name: 'never',
-				email: 'never',
-				phone: 'never',
-				address: {
-					country: 'never',
-					line1: 'never',
-					line2: 'never',
-					city: 'never',
-					state: 'never',
-					postalCode: 'never',
-				},
-			},
-		},
-		wallets: {
-			applePay: 'never',
-			googlePay: 'never',
-		},
-	};
-
 	const showTerms =
 		shouldSavePayment || getUPEConfig( 'cartContainsSubscription' )
 			? 'always'
 			: 'never';
-	elementOptions.terms = getTerms( paymentMethodsConfig, showTerms );
+	stripeElementOptionsForUPE.terms = getTerms(
+		paymentMethodsConfig,
+		showTerms
+	);
 
 	// Checks whether there are errors within a field, and saves them for later reporting.
 	const upeOnChange = ( event ) => {
@@ -215,7 +197,7 @@ const WCPayUPEFields = ( {
 				} }
 			></p>
 			<PaymentElement
-				options={ elementOptions }
+				options={ stripeElementOptionsForUPE }
 				onChange={ upeOnChange }
 				className="wcpay-payment-element"
 			/>

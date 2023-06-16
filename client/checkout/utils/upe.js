@@ -269,3 +269,32 @@ export const useCustomerData = () => {
 		setShippingAddress,
 	};
 };
+
+/**
+ * Returns the prepared set of options needed to initialize the Stripe elements for UPE in Block Checkout.
+ * The options have all the fields set to 'never' to hide them from the UPE, because all the
+ * information is already collected in the checkout form.
+ *
+ * @return {Object} The options object for the Stripe elements.
+ */
+export const stripeElementOptionsForUPE = {
+	fields: {
+		billingDetails: {
+			name: 'never',
+			email: 'never',
+			phone: 'never',
+			address: {
+				country: 'never',
+				line1: 'never',
+				line2: 'never',
+				city: 'never',
+				state: 'never',
+				postalCode: 'never',
+			},
+		},
+	},
+	wallets: {
+		applePay: 'never',
+		googlePay: 'never',
+	},
+};
