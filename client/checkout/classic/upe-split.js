@@ -19,6 +19,8 @@ import {
 	PAYMENT_METHOD_NAME_P24,
 	PAYMENT_METHOD_NAME_SEPA,
 	PAYMENT_METHOD_NAME_SOFORT,
+	PAYMENT_METHOD_NAME_AFFIRM,
+	PAYMENT_METHOD_NAME_AFTERPAY,
 } from '../constants.js';
 import { getUPEConfig } from 'utils/checkout';
 import WCPayAPI from '../api';
@@ -39,6 +41,7 @@ import {
 	getFingerprint,
 	appendFingerprintInputToForm,
 } from '../utils/fingerprint';
+import PAYMENT_METHOD_IDS from 'wcpay/payment-methods/constants';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
@@ -106,6 +109,29 @@ jQuery( function ( $ ) {
 	 */
 	const unblockUI = ( $form ) => {
 		$form.removeClass( 'processing' ).unblock();
+	};
+
+	/**
+	 * Converts form fields object into Stripe `shipping` object.
+	 *
+	 * @param {Object} fields Object mapping checkout shipping fields to values.
+	 * @return {Object} Stripe formatted `shipping` object.
+	 */
+	const getShippingDetails = ( fields ) => {
+		return {
+			name:
+				`${ fields.billing_first_name } ${ fields.billing_last_name }`.trim() ||
+				'-',
+			phone: fields.billing_phone || '-',
+			address: {
+				country: fields.billing_country || '-',
+				line1: fields.billing_address_1 || '-',
+				line2: fields.billing_address_2 || '-',
+				city: fields.billing_city || '-',
+				state: fields.billing_state || '-',
+				postal_code: fields.billing_postcode || '-',
+			},
+		};
 	};
 
 	/**
@@ -539,6 +565,12 @@ jQuery( function ( $ ) {
 					},
 				},
 			};
+			// Afterpay requires shipping details to be passed. Not needed by other payment methods.
+			if ( PAYMENT_METHOD_IDS.AFTERPAY_CLEARPAY === paymentMethodType ) {
+				upeConfig.confirmParams.shipping = getShippingDetails(
+					formFields
+				);
+			}
 			let error;
 			if ( response.payment_needed ) {
 				( { error } = await api.handlePaymentConfirmation(
@@ -645,6 +677,8 @@ jQuery( function ( $ ) {
 		PAYMENT_METHOD_NAME_P24,
 		PAYMENT_METHOD_NAME_SEPA,
 		PAYMENT_METHOD_NAME_SOFORT,
+		PAYMENT_METHOD_NAME_AFFIRM,
+		PAYMENT_METHOD_NAME_AFTERPAY,
 		paymentMethodsConfig.card !== undefined && PAYMENT_METHOD_NAME_CARD,
 	].filter( Boolean );
 	const checkoutEvents = wcpayPaymentMethods
