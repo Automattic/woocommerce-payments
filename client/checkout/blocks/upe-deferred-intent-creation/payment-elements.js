@@ -7,7 +7,7 @@ import { useFingerprint } from '../hooks';
 import { LoadableBlock } from 'wcpay/components/loadable';
 import { Elements } from '@stripe/react-stripe-js';
 import { useEffect, useState } from 'react';
-import PaymentProcessor from './payment-processor';
+import { PaymentProcessor } from './payment-processor';
 
 const PaymentElements = ( { api, ...props } ) => {
 	const stripe = api.getStripe();
