@@ -1,4 +1,9 @@
 /**
+ * Internal dependencies
+ */
+import PAYMENT_METHOD_IDS from 'wcpay/payment-methods/constants';
+
+/**
  * Handles the confirmation of card payments (3DSv2 modals/SCA challenge).
  *
  * @param {WCPayAPI} api            The API used for connection both with the server and Stripe.
@@ -22,6 +27,8 @@ export default async function confirmUPEPayment(
 	const name =
 		`${ billingData.first_name } ${ billingData.last_name }`.trim() || '-';
 
+	const selectedUPEPaymentType = api.getSelectedUPEPaymentType();
+
 	try {
 		const confirmParams = {
 			return_url: redirectUrl,
@@ -43,7 +50,10 @@ export default async function confirmUPEPayment(
 					},
 				},
 			},
-			shipping: {
+		};
+
+		if ( PAYMENT_METHOD_IDS.AFTERPAY_CLEARPAY === selectedUPEPaymentType ) {
+			confirmParams.shipping = {
 				name,
 				phone: billingData.phone || '-',
 				address: {
@@ -54,8 +64,8 @@ export default async function confirmUPEPayment(
 					line1: billingData.address_1 || '-',
 					line2: billingData.address_2 || '-',
 				},
-			},
-		};
+			};
+		}
 
 		if ( paymentNeeded ) {
 			const { error } = await api.handlePaymentConfirmation(
