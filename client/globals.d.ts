@@ -69,7 +69,6 @@ declare global {
 		zeroDecimalCurrencies: string[];
 		restUrl: string;
 		shouldUseExplicitPrice: boolean;
-		numDisputesNeedingResponse: string;
 		fraudProtection: {
 			isWelcomeTourDismissed?: boolean;
 		};
