@@ -272,29 +272,47 @@ export const useCustomerData = () => {
 
 /**
  * Returns the prepared set of options needed to initialize the Stripe elements for UPE in Block Checkout.
- * The options have all the fields set to 'never' to hide them from the UPE, because all the
- * information is already collected in the checkout form.
+ * The initial options have all the fields set to 'never' to hide them from the UPE, because all the
+ * information is already collected in the checkout form. Additionally, the options are updated with
+ * the terms text if needed.
+ *
+ * @param {boolean} shouldSavePayment Whether the payment method should be saved.
+ * @param {Object} paymentMethodsConfig The payment methods config object.
  *
  * @return {Object} The options object for the Stripe elements.
  */
-export const stripeElementOptionsForUPE = {
-	fields: {
-		billingDetails: {
-			name: 'never',
-			email: 'never',
-			phone: 'never',
-			address: {
-				country: 'never',
-				line1: 'never',
-				line2: 'never',
-				city: 'never',
-				state: 'never',
-				postalCode: 'never',
+export const getStripeElementOptions = (
+	shouldSavePayment,
+	paymentMethodsConfig
+) => {
+	const options = {
+		fields: {
+			billingDetails: {
+				name: 'never',
+				email: 'never',
+				phone: 'never',
+				address: {
+					country: 'never',
+					line1: 'never',
+					line2: 'never',
+					city: 'never',
+					state: 'never',
+					postalCode: 'never',
+				},
 			},
 		},
-	},
-	wallets: {
-		applePay: 'never',
-		googlePay: 'never',
-	},
+		wallets: {
+			applePay: 'never',
+			googlePay: 'never',
+		},
+	};
+
+	const showTerms =
+		shouldSavePayment || getUPEConfig( 'cartContainsSubscription' )
+			? 'always'
+			: 'never';
+
+	options.terms = getTerms( paymentMethodsConfig, showTerms );
+
+	return options;
 };

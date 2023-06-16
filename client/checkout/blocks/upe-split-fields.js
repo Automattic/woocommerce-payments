@@ -23,11 +23,10 @@ import './style.scss';
 import confirmUPEPayment from './confirm-upe-payment.js';
 import { getUPEConfig } from 'utils/checkout';
 import {
-	getTerms,
 	getPaymentIntentFromSession,
 	getCookieValue,
 	useCustomerData,
-	stripeElementOptionsForUPE,
+	getStripeElementOptions,
 } from '../utils/upe';
 import { decryptClientSecret } from '../utils/encryption';
 import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
@@ -302,15 +301,6 @@ const WCPayUPEFields = ( {
 		setPaymentCountry( event.value.country );
 	};
 
-	const showTerms =
-		shouldSavePayment || getUPEConfig( 'cartContainsSubscription' )
-			? 'always'
-			: 'never';
-	stripeElementOptionsForUPE.terms = getTerms(
-		paymentMethodsConfig,
-		showTerms
-	);
-
 	return (
 		<>
 			<p
@@ -320,7 +310,10 @@ const WCPayUPEFields = ( {
 				} }
 			></p>
 			<PaymentElement
-				options={ stripeElementOptionsForUPE }
+				options={ getStripeElementOptions(
+					shouldSavePayment,
+					paymentMethodsConfig
+				) }
 				onChange={ upeOnChange }
 				className="wcpay-payment-element"
 			/>

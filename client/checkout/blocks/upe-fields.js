@@ -23,7 +23,7 @@ import { __ } from '@wordpress/i18n';
 import './style.scss';
 import confirmUPEPayment from './confirm-upe-payment.js';
 import { getConfig } from 'utils/checkout';
-import { getTerms, stripeElementOptionsForUPE } from '../utils/upe';
+import { getStripeElementOptions } from '../utils/upe';
 import { decryptClientSecret } from '../utils/encryption';
 import { PAYMENT_METHOD_NAME_CARD, WC_STORE_CART } from '../constants.js';
 import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
@@ -323,20 +323,14 @@ const WCPayUPEFields = ( {
 		setPaymentCountry( event.value.country );
 	};
 
-	const showTerms =
-		shouldSavePayment || getConfig( 'cartContainsSubscription' )
-			? 'always'
-			: 'never';
-	stripeElementOptionsForUPE.terms = getTerms(
-		paymentMethodsConfig,
-		showTerms
-	);
-
 	return (
 		<>
 			{ testMode ? testCopy : '' }
 			<PaymentElement
-				options={ stripeElementOptionsForUPE }
+				options={ getStripeElementOptions(
+					shouldSavePayment,
+					paymentMethodsConfig
+				) }
 				onChange={ upeOnChange }
 				className="wcpay-payment-element"
 			/>

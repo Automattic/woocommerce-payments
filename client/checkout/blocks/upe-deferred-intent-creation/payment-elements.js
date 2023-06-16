@@ -17,8 +17,7 @@ import {
 } from '@woocommerce/blocks-registry';
 import { useEffect, useState } from 'react';
 import {
-	getTerms,
-	stripeElementOptionsForUPE,
+	getStripeElementOptions,
 	useCustomerData,
 	validateElements,
 } from 'wcpay/checkout/utils/upe';
@@ -167,15 +166,6 @@ const WCPayUPEFields = ( {
 		shouldSavePayment
 	);
 
-	const showTerms =
-		shouldSavePayment || getUPEConfig( 'cartContainsSubscription' )
-			? 'always'
-			: 'never';
-	stripeElementOptionsForUPE.terms = getTerms(
-		paymentMethodsConfig,
-		showTerms
-	);
-
 	// Checks whether there are errors within a field, and saves them for later reporting.
 	const upeOnChange = ( event ) => {
 		// Update WC Blocks gateway config based on selected UPE payment method.
@@ -197,7 +187,10 @@ const WCPayUPEFields = ( {
 				} }
 			></p>
 			<PaymentElement
-				options={ stripeElementOptionsForUPE }
+				options={ getStripeElementOptions(
+					shouldSavePayment,
+					paymentMethodsConfig
+				) }
 				onChange={ upeOnChange }
 				className="wcpay-payment-element"
 			/>
