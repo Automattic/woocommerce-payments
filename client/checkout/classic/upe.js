@@ -146,7 +146,7 @@ jQuery( function ( $ ) {
 		$( '#wcpay_selected_upe_payment_type' ).val( paymentType );
 	};
 
-	// Set the selected UPE payment type field
+	// Get the selected UPE payment type field
 	const getSelectedUPEPaymentType = () => {
 		return $( '#wcpay_selected_upe_payment_type' ).val();
 	};
