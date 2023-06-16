@@ -16,11 +16,9 @@ function bnplSiteMessaging() {
 		paymentMethodTypes: paymentMethods || [],
 		countryCode: country, // Customer's country or base country of the store.
 	};
-	const elements = stripe.elements();
-	const paymentMessageElement = elements.create(
-		'paymentMethodMessaging',
-		options
-	);
+	const paymentMessageElement = stripe
+		.elements()
+		.create( 'paymentMethodMessaging', options );
 	paymentMessageElement.mount( '#payment-method-message' );
 
 	const quantitySelector = document.querySelector( '.quantity input' );
