@@ -221,22 +221,6 @@ export function isUsingSavedPaymentMethod( paymentMethodType ) {
 }
 
 /**
- * Validates the Stripe elements by submitting them and handling any errors that occur during submission.
- * If an error occurs, the function removes loading effect from the provided jQuery form and thus unblocks it,
- * and shows an error message in the checkout.
- *
- * @param {Object} elements The Stripe elements object to be validated.
- * @return {Promise} Promise for the checkout submission.
- */
-export function validateElements( elements ) {
-	return elements.submit().then( ( result ) => {
-		if ( result.error ) {
-			throw new Error( result.error.message );
-		}
-	} );
-}
-
-/**
  *
  * Custom React hook that provides customer data and related functions for managing customer information.
  * The hook retrieves customer data from the WC_STORE_CART selector and dispatches actions to modify billing and shipping addresses.

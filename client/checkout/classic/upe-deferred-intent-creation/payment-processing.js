@@ -13,7 +13,6 @@ import {
 	getSelectedUPEGatewayPaymentMethod,
 	getTerms,
 	getUpeSettings,
-	validateElements,
 } from 'wcpay/checkout/utils/upe';
 
 const gatewayUPEComponents = {};
@@ -55,6 +54,22 @@ function blockUI( jQueryForm ) {
 			background: '#fff',
 			opacity: 0.6,
 		},
+	} );
+}
+
+/**
+ * Validates the Stripe elements by submitting them and handling any errors that occur during submission.
+ * If an error occurs, the function removes loading effect from the provided jQuery form and thus unblocks it,
+ * and shows an error message in the checkout.
+ *
+ * @param {Object} elements The Stripe elements object to be validated.
+ * @return {Promise} Promise for the checkout submission.
+ */
+export function validateElements( elements ) {
+	return elements.submit().then( ( result ) => {
+		if ( result.error ) {
+			throw new Error( result.error.message );
+		}
 	} );
 }
 
