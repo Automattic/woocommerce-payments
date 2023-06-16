@@ -26,6 +26,7 @@ import {
 	getFingerprint,
 	appendFingerprintInputToForm,
 } from '../utils/fingerprint';
+import PAYMENT_METHOD_IDS from 'wcpay/payment-methods/constants';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
@@ -143,6 +144,11 @@ jQuery( function ( $ ) {
 	// Set the selected UPE payment type field
 	const setSelectedUPEPaymentType = ( paymentType ) => {
 		$( '#wcpay_selected_upe_payment_type' ).val( paymentType );
+	};
+
+	// Set the selected UPE payment type field
+	const getSelectedUPEPaymentType = () => {
+		return $( '#wcpay_selected_upe_payment_type' ).val();
 	};
 
 	// Set the payment country field
@@ -480,7 +486,7 @@ jQuery( function ( $ ) {
 				paymentIntentId,
 				orderId,
 				savePaymentMethod,
-				$( '#wcpay_selected_upe_payment_type' ).val(),
+				getSelectedUPEPaymentType(),
 				$( '#wcpay_payment_country' ).val()
 			);
 
@@ -577,9 +583,15 @@ jQuery( function ( $ ) {
 					payment_method_data: {
 						billing_details: getBillingDetails( formFields ),
 					},
-					shipping: getShippingDetails( formFields ),
 				},
 			};
+			const paymentMethodType = getSelectedUPEPaymentType();
+			// Afterpay requires shipping details to be passed. Not needed by other payment methods.
+			if ( PAYMENT_METHOD_IDS.AFTERPAY_CLEARPAY === paymentMethodType ) {
+				upeConfig.confirmParams.shipping = getShippingDetails(
+					formFields
+				);
+			}
 			let error;
 			if ( response.payment_needed ) {
 				( { error } = await api.handlePaymentConfirmation(
