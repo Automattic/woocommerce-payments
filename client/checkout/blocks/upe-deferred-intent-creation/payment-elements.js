@@ -16,8 +16,11 @@ import {
 	// eslint-disable-next-line import/no-unresolved
 } from '@woocommerce/blocks-registry';
 import { useEffect, useState } from 'react';
-import { getTerms, validateElements } from 'wcpay/checkout/utils/upe';
-import { useCustomerData } from '../upe-split-fields';
+import {
+	getTerms,
+	useCustomerData,
+	validateElements,
+} from 'wcpay/checkout/utils/upe';
 import { __ } from '@wordpress/i18n';
 
 const WCPayUPEFields = ( {

@@ -2,7 +2,8 @@
  * Internal dependencies
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
-import { getPaymentMethodsConstants } from '../constants';
+import { WC_STORE_CART, getPaymentMethodsConstants } from '../constants';
+import { useDispatch, useSelect } from '@wordpress/data';
 
 /**
  * Generates terms parameter for UPE, with value set for reusable payment methods
@@ -234,3 +235,37 @@ export function validateElements( elements ) {
 		}
 	} );
 }
+
+/**
+ *
+ * Custom React hook that provides customer data and related functions for managing customer information.
+ * The hook retrieves customer data from the WC_STORE_CART selector and dispatches actions to modify billing and shipping addresses.
+ *
+ * @return {Object} An object containing customer data and functions for managing customer information.
+ */
+export const useCustomerData = () => {
+	const { customerData, isInitialized } = useSelect( ( select ) => {
+		const store = select( WC_STORE_CART );
+		return {
+			customerData: store.getCustomerData(),
+			isInitialized: store.hasFinishedResolution( 'getCartData' ),
+		};
+	} );
+	const {
+		setShippingAddress,
+		setBillingData,
+		setBillingAddress,
+	} = useDispatch( WC_STORE_CART );
+
+	return {
+		isInitialized,
+		billingData: customerData.billingData,
+		// Backward compatibility billingData/billingAddress
+		billingAddress: customerData.billingAddress,
+		shippingAddress: customerData.shippingAddress,
+		setBillingData,
+		// Backward compatibility setBillingData/setBillingAddress
+		setBillingAddress,
+		setShippingAddress,
+	};
+};
