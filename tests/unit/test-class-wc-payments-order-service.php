@@ -862,7 +862,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( 'Pending payment to On hold', $notes[1]->content );
-		$this->assertStringContainsString( 'Payment has been disputed as product_not_received', $notes[0]->content );
+		$this->assertStringContainsString( 'Payment has been disputed for $123.45 with reason &quot;Product not received&quot;', $notes[0]->content );
 		$this->assertStringContainsString( '/payments/disputes/details&id=dp_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
 
 		// Assert: Applying the same data multiple times does not cause duplicate actions.
