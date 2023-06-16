@@ -24,6 +24,8 @@ The `WCPay\Core\Server\Request\List_Transactions` class is used to construct the
 | `store_currency_is`        | `set_store_currency_is( string $currency )`                |     -     |    -     |       -       |
 | `type_is`                  | `set_type_is( string $type_is )`                           |     -     |    -     |       -       |
 | `type_is_not`              | `set_type_is_not( string $type_is_not )`                   |     -     |    -     |       -       |
+| `source_device_is`         | `set_source_device_is( string $source_device_is )`         |     -     |    -     |       -       |
+| `source_device_is_not`     | `set_source_device_is_not( string $source_device_is_not )` |     -     |    -     |       -       |
 
 
 ## Filter
@@ -50,5 +52,7 @@ $request->set_sort_direction( $direction );
 $request->set_store_currency_is( $currency );
 $request->set_type_is( $type_is );
 $request->set_type_is_not( $type_is_not );
+$request->set_source_device_is( $source_device_is );
+$request->set_source_device_is_not( $source_device_is_not );
 $request->send( 'wcpay_list_transactions_request', $request );
 ```

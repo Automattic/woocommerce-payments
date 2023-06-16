@@ -22,3 +22,8 @@ export const displayType = {
 	financing_payout: __( 'Loan dispersement', 'woocommerce-payments' ),
 	financing_paydown: __( 'Loan repayment', 'woocommerce-payments' ),
 };
+
+// Mapping of transaction device type string.
+export const sourceDevice = {
+	ios: __( 'iPhone', 'woocommerce-payments' ),
+};
