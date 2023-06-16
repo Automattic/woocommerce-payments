@@ -9,6 +9,7 @@
 
 namespace WCPay\Payment_Methods;
 
+use WC_Payments_Utils;
 use WP_User;
 use WC_Payments_Token_Service;
 use WC_Payment_Token_CC;
@@ -55,9 +56,16 @@ abstract class UPE_Payment_Method {
 	 * Supported presentment currencies for which charges for a payment method can be processed
 	 * Empty if all currencies are supported
 	 *
-	 * @var array
+	 * @var string[]
 	 */
 	protected $currencies;
+
+	/**
+	 * Represent payment total limitations for the payment method (per-currency).
+	 *
+	 * @var array<string,array<string,int>>
+	 */
+	protected $limits_per_currency = [];
 
 	/**
 	 * Payment method icon URL
@@ -111,9 +119,24 @@ abstract class UPE_Payment_Method {
 	 * @return bool
 	 */
 	public function is_enabled_at_checkout() {
-		if ( $this->is_subscription_item_in_cart() ) {
+		if ( $this->is_subscription_item_in_cart() || $this->is_changing_payment_method_for_subscription() ) {
 			return $this->is_reusable();
 		}
+
+		// This part ensures that when payment limits for the currency declared, those will be respected (e.g. BNPLs).
+		if ( [] !== $this->limits_per_currency ) {
+			$currency = get_woocommerce_currency();
+			// If the currency limits are not defined, we allow the PM for now (gateway has similar validation for limits).
+			// Additionally, we don't engage with limits verification in no-checkout context (cart is not available or empty).
+			if ( isset( $this->limits_per_currency[ $currency ], WC()->cart ) ) {
+				$amount = WC_Payments_Utils::prepare_amount( WC()->cart->get_total( '' ), $currency );
+				if ( $amount > 0 ) {
+					$range = $this->limits_per_currency[ $currency ];
+					return $amount >= $range['min'] && $amount <= $range['max'];
+				}
+			}
+		}
+
 		return true;
 	}
 
