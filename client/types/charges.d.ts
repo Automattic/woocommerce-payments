@@ -30,10 +30,12 @@ interface ChargeRefunds {
 export interface PaymentMethodDetails {
 	card?: any;
 	type:
-		| 'card'
-		| 'card_present'
+		| 'affirm'
+		| 'afterpay_clearpay'
 		| 'au_becs_debit'
 		| 'bancontact'
+		| 'card'
+		| 'card_present'
 		| 'eps'
 		| 'giropay'
 		| 'ideal'

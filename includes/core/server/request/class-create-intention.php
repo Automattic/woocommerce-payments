@@ -164,6 +164,19 @@ class Create_Intention extends Request {
 	}
 
 	/**
+	 * Shipping data setter.
+	 *
+	 * @param array $shipping Shipping data.
+	 */
+	public function set_shipping( array $shipping ) {
+		if ( empty( $shipping ) || ! is_array( $shipping ) ) {
+			return;
+		}
+
+		$this->set_param( 'shipping', $shipping );
+	}
+
+	/**
 	 * Formats the response from the server.
 	 *
 	 * @param  mixed $response The response from `WC_Payments_API_Client::request`.
