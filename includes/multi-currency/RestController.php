@@ -7,6 +7,7 @@
 
 namespace WCPay\MultiCurrency;
 
+use WCPay\Exceptions\Base_Exception;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
 
 defined( 'ABSPATH' ) || exit;
@@ -200,7 +201,7 @@ class RestController extends \WC_Payments_REST_Controller {
 		try {
 			WC_Payments_Multi_Currency()->update_single_currency_settings( $currency_code, $exchange_rate_type, $price_rounding, $price_charm, $manual_rate );
 			$response = WC_Payments_Multi_Currency()->get_single_currency_settings( $currency_code );
-		} catch ( InvalidCurrencyException $e ) {
+		} catch ( Base_Exception $e ) {
 			$response = new \WP_Error( $e->get_error_code(), $e->getMessage() );
 		}
 

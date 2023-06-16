@@ -16,6 +16,7 @@ use WCPay\Exceptions\API_Exception;
 use WCPay\Database_Cache;
 use WCPay\Logger;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
+use WCPay\MultiCurrency\Exceptions\InvalidCurrencyRateException;
 use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
 
 defined( 'ABSPATH' ) || exit;
@@ -507,6 +508,7 @@ class MultiCurrency {
 	 * @return void
 	 *
 	 * @throws InvalidCurrencyException
+	 * @throws InvalidCurrencyRateException
 	 */
 	public function update_single_currency_settings( string $currency_code, string $exchange_rate_type, float $price_rounding, float $price_charm, $manual_rate = null ) {
 		// Confirm the currency code is valid before trying to update the settings.
@@ -516,14 +518,20 @@ class MultiCurrency {
 			throw new InvalidCurrencyException( $message, 'wcpay_multi_currency_invalid_currency', 500 );
 		}
 
+		if ( 'manual' === $exchange_rate_type && ! is_null( $manual_rate ) ) {
+			if ( ! is_numeric( $manual_rate ) || 0 >= $manual_rate ) {
+				$message = 'Invalid manual currency rate passed to update_single_currency_settings: ' . $manual_rate;
+				Logger::error( $message );
+				throw new InvalidCurrencyRateException( $message, 'wcpay_multi_currency_invalid_currency_rate', 500 );
+			}
+			update_option( 'wcpay_multi_currency_manual_rate_' . $currency_code, $manual_rate );
+		}
+
 		$currency_code = strtolower( $currency_code );
 		update_option( 'wcpay_multi_currency_price_rounding_' . $currency_code, $price_rounding );
 		update_option( 'wcpay_multi_currency_price_charm_' . $currency_code, $price_charm );
 		if ( in_array( $exchange_rate_type, [ 'automatic', 'manual' ], true ) ) {
 			update_option( 'wcpay_multi_currency_exchange_rate_' . $currency_code, esc_attr( $exchange_rate_type ) );
-		}
-		if ( 'manual' === $exchange_rate_type && ! is_null( $manual_rate ) ) {
-			update_option( 'wcpay_multi_currency_manual_rate_' . $currency_code, $manual_rate );
 		}
 	}
 
