@@ -514,4 +514,18 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 	);
 };
 
-export default ConsumableWCPayFields;
+export const getSplitUPEFields = (
+	upeName,
+	upeMethods,
+	api,
+	testingInstructions
+) => {
+	return (
+		<ConsumableWCPayFields
+			paymentMethodId={ upeName }
+			upeMethods={ upeMethods }
+			api={ api }
+			testingInstructions={ testingInstructions }
+		/>
+	);
+};

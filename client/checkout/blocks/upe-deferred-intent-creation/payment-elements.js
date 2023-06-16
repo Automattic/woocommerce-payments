@@ -278,4 +278,18 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 	);
 };
 
-export default ConsumableWCPayFields;
+export const getDeferredIntentCreationUPEFields = (
+	upeName,
+	upeMethods,
+	api,
+	testingInstructions
+) => {
+	return (
+		<ConsumableWCPayFields
+			paymentMethodId={ upeName }
+			upeMethods={ upeMethods }
+			api={ api }
+			testingInstructions={ testingInstructions }
+		/>
+	);
+};
