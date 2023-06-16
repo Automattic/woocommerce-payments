@@ -36,21 +36,12 @@ class WC_REST_UPE_Flag_Toggle_Controller extends WP_REST_Controller {
 	private $wcpay_gateway;
 
 	/**
-	 * WC Payments Account.
-	 *
-	 * @var WC_Payments_Account
-	 */
-	private $account;
-
-	/**
 	 * WC_REST_UPE_Flag_Toggle_Controller constructor.
 	 *
 	 * @param WC_Payment_Gateway_WCPay $wcpay_gateway WC_Payment_Gateway_WCPay instance.
-	 * @param WC_Payments_Account      $account       WC_Payments_Account instance.
 	 */
-	public function __construct( WC_Payment_Gateway_WCPay $wcpay_gateway, WC_Payments_Account $account ) {
+	public function __construct( WC_Payment_Gateway_WCPay $wcpay_gateway ) {
 		$this->wcpay_gateway = $wcpay_gateway;
-		$this->account       = $account;
 	}
 
 	/**
@@ -136,7 +127,7 @@ class WC_REST_UPE_Flag_Toggle_Controller extends WP_REST_Controller {
 				wc_admin_record_tracks_event(
 					Track_Events::SPLIT_UPE_ENABLED,
 					[
-						'is_bnpl_affirm_afterpay_enabled' => $this->account->is_bnpl_affirm_afterpay_enabled(),
+						'is_bnpl_affirm_afterpay_enabled' => WC_Payments_Features::is_bnpl_affirm_afterpay_enabled(),
 					]
 				);
 			}
@@ -152,7 +143,7 @@ class WC_REST_UPE_Flag_Toggle_Controller extends WP_REST_Controller {
 				wc_admin_record_tracks_event(
 					Track_Events::UPE_DISABLED,
 					[
-						'is_bnpl_affirm_afterpay_enabled' => $this->account->is_bnpl_affirm_afterpay_enabled(),
+						'is_bnpl_affirm_afterpay_enabled' => WC_Payments_Features::is_bnpl_affirm_afterpay_enabled(),
 					]
 				);
 			}
@@ -164,7 +155,7 @@ class WC_REST_UPE_Flag_Toggle_Controller extends WP_REST_Controller {
 				wc_admin_record_tracks_event(
 					Track_Events::SPLIT_UPE_DISABLED,
 					[
-						'is_bnpl_affirm_afterpay_enabled' => $this->account->is_bnpl_affirm_afterpay_enabled(),
+						'is_bnpl_affirm_afterpay_enabled' => WC_Payments_Features::is_bnpl_affirm_afterpay_enabled(),
 					]
 				);
 			}
