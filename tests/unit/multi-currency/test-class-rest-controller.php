@@ -49,27 +49,23 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * This test is not possible due to when MC is initialized it attempts to get the available currencies based on the
+	 * This test is not possible to test correctly due to when MC is initialized it attempts to get the available currencies based on the
 	 * WCPay server connection and account currencies. If there is not a valid JP connection, it just returns the store currency.
+	 *
+	 * We get the expected currencies, then delete the enabled currencies option, then set it again.
 	 */
 	public function test_update_enabled_currencies_updates_currencies() {
-		$this->markTestSkipped( 'This test is not able to be completed unless local setups are refactored.' );
-		// Arrange: Set currencies for test.
-		$enabled_currencies = WC_Payments_Multi_Currency()->get_enabled_currencies();
-		$new_currencies     = [ 'USD', 'EUR', 'GBP' ];
-
 		// Arrange: Create expected response.
-		update_option( 'wcpay_multi_currency_enabled_currencies', $new_currencies );
 		$expected = rest_ensure_response( WC_Payments_Multi_Currency()->get_store_currencies() );
 
-		// Arrange: Reset the enabled currencies.
-		update_option( 'wcpay_multi_currency_enabled_currencies', $enabled_currencies );
+		// Arrange: Delete the enabled currencies option.
+		delete_option( 'wcpay_multi_currency_enabled_currencies' );
 
 		// Arrange: Create the new REST request.
 		$request = new WP_REST_Request( 'POST', self::ROUTE . '/update-enabled-currencies' );
 		$request->set_body_params(
 			[
-				'enabled' => $new_currencies,
+				'enabled' => [ 'USD' ],
 			]
 		);
 
@@ -78,6 +74,32 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 
 		// Assert: Confirm the response is what we expected.
 		$this->assertEquals( $expected, $response );
+	}
+
+	public function test_update_enabled_currencies_throws_exception_on_unavailable_currency() {
+		// Arrange: Set the currencies to use.
+		$valid_currencies = [ 'USD' ];
+		$error_currencies = [ 'EUR', 'GBP', 'banana' ];
+
+		// Arrange: Set expected result.
+		$error_code    = 'wcpay_multi_currency_invalid_currency';
+		$error_message = 'Invalid currency/currencies passed to set_enabled_currencies: ' . implode( ', ', $error_currencies );
+		$expected      = rest_ensure_response( new WP_Error( $error_code, $error_message ) );
+
+		// Arrange: Create the new REST request.
+		$request = new WP_REST_Request( 'POST', self::ROUTE . '/update-enabled-currencies' );
+		$request->set_body_params(
+			[
+				'enabled' => array_merge( $valid_currencies, $error_currencies ),
+			]
+		);
+
+		// Act: Attempt to update the enabled currencies.
+		$response = $this->controller->update_enabled_currencies( $request );
+
+		// Assert: Confirm the response is as expected.
+		$this->assertSame( $expected->get_error_code(), $response->get_error_code() );
+		$this->assertSame( $expected->get_error_message(), $response->get_error_message() );
 	}
 
 	public function test_get_single_currency_settings() {
@@ -103,6 +125,28 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 
 		// Assert: Confirm the response is what we expected.
 		$this->assertEquals( $expected, $response );
+	}
+
+	public function test_get_single_currency_settings_throws_exception_on_unavailable_currency() {
+		// Arrange: Set expected result.
+		$error_code    = 'wcpay_multi_currency_invalid_currency';
+		$error_message = 'Invalid currency passed to get_single_currency_settings: AAA';
+		$expected      = rest_ensure_response( new WP_Error( $error_code, $error_message ) );
+
+		// Arrange: Create the new REST request.
+		$request = new WP_REST_Request( 'GET', self::ROUTE . '/currencies/AAA' );
+		$request->set_query_params(
+			[
+				'currency_code' => 'AAA',
+			]
+		);
+
+		// Act: Attempt to update the enabled currencies.
+		$response = $this->controller->get_single_currency_settings( $request );
+
+		// Assert: Confirm the response is as expected.
+		$this->assertSame( $expected->get_error_code(), $response->get_error_code() );
+		$this->assertSame( $expected->get_error_message(), $response->get_error_message() );
 	}
 
 	/**
@@ -143,6 +187,32 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 
 		// Assert: Confirm the response is what we expected.
 		$this->assertEquals( $expected, $response );
+	}
+
+	public function test_update_single_currency_settings_throws_exception_on_unavailable_currency() {
+		// Arrange: Set expected result.
+		$error_code    = 'wcpay_multi_currency_invalid_currency';
+		$error_message = 'Invalid currency passed to update_single_currency_settings: AAA';
+		$expected      = rest_ensure_response( new WP_Error( $error_code, $error_message ) );
+
+		// Arrange: Create the new REST request.
+		$request = new WP_REST_Request( 'POST', self::ROUTE . '/currencies/AAA' );
+		$request->set_body_params(
+			[
+				'currency_code'      => 'AAA',
+				'exchange_rate_type' => 'manual',
+				'manual_rate'        => 2,
+				'price_rounding'     => 1,
+				'price_charm'        => 0,
+			]
+		);
+
+		// Act: Attempt to update the enabled currencies.
+		$response = $this->controller->update_single_currency_settings( $request );
+
+		// Assert: Confirm the response is as expected.
+		$this->assertSame( $expected->get_error_code(), $response->get_error_code() );
+		$this->assertSame( $expected->get_error_message(), $response->get_error_message() );
 	}
 
 	public function test_get_settings_gets_expected_response() {

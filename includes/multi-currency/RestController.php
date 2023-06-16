@@ -173,7 +173,14 @@ class RestController extends \WC_Payments_REST_Controller {
 	 */
 	public function get_single_currency_settings( $request ) {
 		$currency_code = $request->get_param( 'currency_code' );
-		return rest_ensure_response( WC_Payments_Multi_Currency()->get_single_currency_settings( $currency_code ) );
+
+		try {
+			$response = WC_Payments_Multi_Currency()->get_single_currency_settings( $currency_code );
+		} catch ( InvalidCurrencyException $e ) {
+			$response = new \WP_Error( $e->get_error_code(), $e->getMessage() );
+		}
+
+		return rest_ensure_response( $response );
 	}
 
 	/**
@@ -189,9 +196,15 @@ class RestController extends \WC_Payments_REST_Controller {
 		$price_rounding     = $request->get_param( 'price_rounding' );
 		$price_charm        = $request->get_param( 'price_charm' );
 		$manual_rate        = $request->get_param( 'manual_rate' ) ?? null;
-		WC_Payments_Multi_Currency()->update_single_currency_settings( $currency_code, $exchange_rate_type, $price_rounding, $price_charm, $manual_rate );
 
-		return rest_ensure_response( $this->get_single_currency_settings( $request ) );
+		try {
+			WC_Payments_Multi_Currency()->update_single_currency_settings( $currency_code, $exchange_rate_type, $price_rounding, $price_charm, $manual_rate );
+			$response = WC_Payments_Multi_Currency()->get_single_currency_settings( $currency_code );
+		} catch ( InvalidCurrencyException $e ) {
+			$response = new \WP_Error( $e->get_error_code(), $e->getMessage() );
+		}
+
+		return rest_ensure_response( $response );
 	}
 
 	/**

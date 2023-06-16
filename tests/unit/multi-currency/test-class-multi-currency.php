@@ -984,6 +984,173 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		}
 	}
 
+	public function test_get_store_currencies_returns_expected() {
+		// Arrange: Get the expected values.
+		$expected = [
+			'available' => $this->multi_currency->get_available_currencies(),
+			'enabled'   => $this->multi_currency->get_enabled_currencies(),
+			'default'   => $this->multi_currency->get_default_currency(),
+		];
+
+		// Act: Get the store's currencies.
+		$store_currencies = $this->multi_currency->get_store_currencies();
+
+		// Assert: Confirm expected equals result.
+		$this->assertSame( $expected, $store_currencies );
+	}
+
+	/**
+	 * @dataProvider get_single_currency_settings_provider
+	 */
+	public function test_get_single_currency_settings_returns_correctly( $exchange_rate_type, $manual_rate, $price_rounding, $price_charm ) {
+		// Arrange: Set the currency code and the values in the database for the currency.
+		$currency_code = 'eur';
+		if ( ! is_null( $exchange_rate_type ) ) {
+			update_option( 'wcpay_multi_currency_exchange_rate_' . $currency_code, $exchange_rate_type );
+		} else {
+			// If this option isn't set, the default is automatic.
+			$exchange_rate_type = 'automatic';
+		}
+		if ( ! is_null( $manual_rate ) ) {
+			update_option( 'wcpay_multi_currency_manual_rate_' . $currency_code, $manual_rate );
+		}
+		if ( ! is_null( $price_rounding ) ) {
+			update_option( 'wcpay_multi_currency_price_rounding_' . $currency_code, $price_rounding );
+		}
+		if ( ! is_null( $price_charm ) ) {
+			update_option( 'wcpay_multi_currency_price_charm_' . $currency_code, $price_charm );
+		}
+
+		// Arrange: Set the expected outcome.
+		$expected = [
+			'exchange_rate_type' => $exchange_rate_type,
+			'manual_rate'        => $manual_rate,
+			'price_rounding'     => $price_rounding,
+			'price_charm'        => $price_charm,
+		];
+
+		// Act: Get the currency settings.
+		$results = $this->multi_currency->get_single_currency_settings( strtoupper( $currency_code ) );
+
+		// Assert: Confirm the results are correct.
+		$this->assertSame( $expected, $results );
+	}
+
+	public function get_single_currency_settings_provider() {
+		return [
+			'manual'      => [
+				'exchange_rate_type' => 'manual',
+				'manual_rate'        => (float) 2,
+				'price_rounding'     => (float) 1,
+				'price_charm'        => (float) 0,
+			],
+			'automatic'   => [
+				'exchange_rate_type' => 'automatic',
+				'manual_rate'        => (float) 5.1,
+				'price_rounding'     => (float) 4.2,
+				'price_charm'        => (float) 3.3,
+			],
+			'null values' => [
+				'exchange_rate_type' => null,
+				'manual_rate'        => null,
+				'price_rounding'     => null,
+				'price_charm'        => null,
+			],
+		];
+	}
+
+	public function test_get_single_currency_settings_throws_exception_on_unavailable_currency() {
+		// Arrange: Set the currencies to change to.
+		$currency_code = 'banana';
+
+		// Arrange/Assert: Set expected exception and message.
+		$this->expectException( InvalidCurrencyException::class );
+		$this->expectExceptionMessage( 'Invalid currency passed to get_single_currency_settings: banana' );
+
+		// Act: Set the currencies.
+		$this->multi_currency->get_single_currency_settings( $currency_code );
+	}
+
+	/**
+	 * @dataProvider update_single_currency_settings_provider
+	 */
+	public function test_update_single_currency_settings_updates_settings( $exchange_rate_type, $manual_rate, $price_rounding, $price_charm ) {
+		// Arrange: Set the currency code.
+		$currency_code = 'eur';
+
+		// Act: Update the currency settings.
+		$this->multi_currency->update_single_currency_settings( strtoupper( $currency_code ), $exchange_rate_type, $price_rounding, $price_charm, $manual_rate );
+
+		// Arrange: Update tne expected values.
+		if ( ! in_array( $exchange_rate_type, [ 'automatic', 'manual' ], true ) ) {
+			// Value remains unchanged if it is not in the array.
+			$exchange_rate_type = false;
+		}
+		if ( is_null( $manual_rate ) || 'automatic' === $exchange_rate_type ) {
+			// Value remains unchanged if it is null or if the rate type is automatic.
+			$manual_rate = false;
+		}
+
+		// Assert: Confirm the results are correct.
+		$this->assertSame( $exchange_rate_type, get_option( 'wcpay_multi_currency_exchange_rate_' . $currency_code, false ) );
+		$this->assertSame( $manual_rate, get_option( 'wcpay_multi_currency_manual_rate_' . $currency_code, false ) );
+		$this->assertSame( $price_rounding, get_option( 'wcpay_multi_currency_price_rounding_' . $currency_code, false ) );
+		$this->assertSame( $price_charm, get_option( 'wcpay_multi_currency_price_charm_' . $currency_code, false ) );
+	}
+
+	public function update_single_currency_settings_provider() {
+		return [
+			'manual'                     => [
+				'exchange_rate_type' => 'manual',
+				'manual_rate'        => (float) 2,
+				'price_rounding'     => (float) 1,
+				'price_charm'        => (float) 0,
+			],
+			'manual null rate'           => [
+				'exchange_rate_type' => 'manual',
+				'manual_rate'        => null,
+				'price_rounding'     => (float) 1,
+				'price_charm'        => (float) 0,
+			],
+			'automatic'                  => [
+				'exchange_rate_type' => 'automatic',
+				'manual_rate'        => null,
+				'price_rounding'     => (float) 4.2,
+				'price_charm'        => (float) 3.3,
+			],
+			'automatic with manual rate' => [
+				'exchange_rate_type' => 'automatic',
+				'manual_rate'        => (float) 1.5,
+				'price_rounding'     => (float) 2.6,
+				'price_charm'        => (float) 3.7,
+			],
+			'invalid rate type'          => [
+				'exchange_rate_type' => 'invalid',
+				'manual_rate'        => null,
+				'price_rounding'     => (float) 9.2,
+				'price_charm'        => (float) 8.3,
+			],
+		];
+	}
+
+	public function test_update_single_currency_settings_throws_exception_on_unavailable_currency() {
+		// Arrange: Set the currencies to change to.
+		$currency_code = 'banana';
+
+		// Arrange/Assert: Set expected exception and message.
+		$this->expectException( InvalidCurrencyException::class );
+		$this->expectExceptionMessage( 'Invalid currency passed to update_single_currency_settings: banana' );
+
+		// Act: Set the currencies.
+		$this->multi_currency->update_single_currency_settings( $currency_code, 'manual', (float) 1, (float) 1, (float) 1 );
+
+		// Assert: Confirm the currency settings were not updated.
+		$this->assertFalse( get_option( 'wcpay_multi_currency_exchange_rate_' . $currency_code, false ) );
+		$this->assertFalse( get_option( 'wcpay_multi_currency_manual_rate_' . $currency_code, false ) );
+		$this->assertFalse( get_option( 'wcpay_multi_currency_price_rounding_' . $currency_code, false ) );
+		$this->assertFalse( get_option( 'wcpay_multi_currency_price_charm_' . $currency_code, false ) );
+	}
+
 	private function mock_currency_settings( $currency_code, $settings ) {
 		foreach ( $settings as $setting => $value ) {
 			update_option( 'wcpay_multi_currency_' . $setting . '_' . strtolower( $currency_code ), $value );

@@ -475,8 +475,17 @@ class MultiCurrency {
 	 * @param   string $currency_code The currency code to get settings for.
 	 *
 	 * @return  array The currency's settings.
+	 *
+	 * @throws InvalidCurrencyException
 	 */
 	public function get_single_currency_settings( string $currency_code ): array {
+		// Confirm the currency code is valid before trying to get the settings.
+		if ( ! array_key_exists( strtoupper( $currency_code ), $this->get_available_currencies() ) ) {
+			$message = 'Invalid currency passed to get_single_currency_settings: ' . $currency_code;
+			Logger::error( $message );
+			throw new InvalidCurrencyException( $message, 'wcpay_multi_currency_invalid_currency', 500 );
+		}
+
 		$currency_code = strtolower( $currency_code );
 		return [
 			'exchange_rate_type' => get_option( 'wcpay_multi_currency_exchange_rate_' . $currency_code, 'automatic' ),
@@ -496,18 +505,25 @@ class MultiCurrency {
 	 * @param ?float $manual_rate        The manual rate setting, or null.
 	 *
 	 * @return void
+	 *
+	 * @throws InvalidCurrencyException
 	 */
 	public function update_single_currency_settings( string $currency_code, string $exchange_rate_type, float $price_rounding, float $price_charm, $manual_rate = null ) {
+		// Confirm the currency code is valid before trying to update the settings.
+		if ( ! array_key_exists( strtoupper( $currency_code ), $this->get_available_currencies() ) ) {
+			$message = 'Invalid currency passed to update_single_currency_settings: ' . $currency_code;
+			Logger::error( $message );
+			throw new InvalidCurrencyException( $message, 'wcpay_multi_currency_invalid_currency', 500 );
+		}
+
 		$currency_code = strtolower( $currency_code );
-		if ( array_key_exists( strtoupper( $currency_code ), $this->get_available_currencies() ) ) {
-			update_option( 'wcpay_multi_currency_price_rounding_' . $currency_code, $price_rounding );
-			update_option( 'wcpay_multi_currency_price_charm_' . $currency_code, $price_charm );
-			if ( in_array( $exchange_rate_type, [ 'automatic', 'manual' ], true ) ) {
-				update_option( 'wcpay_multi_currency_exchange_rate_' . $currency_code, esc_attr( $exchange_rate_type ) );
-			}
-			if ( 'manual' === $exchange_rate_type && ! is_null( $manual_rate ) ) {
-				update_option( 'wcpay_multi_currency_manual_rate_' . $currency_code, $manual_rate );
-			}
+		update_option( 'wcpay_multi_currency_price_rounding_' . $currency_code, $price_rounding );
+		update_option( 'wcpay_multi_currency_price_charm_' . $currency_code, $price_charm );
+		if ( in_array( $exchange_rate_type, [ 'automatic', 'manual' ], true ) ) {
+			update_option( 'wcpay_multi_currency_exchange_rate_' . $currency_code, esc_attr( $exchange_rate_type ) );
+		}
+		if ( 'manual' === $exchange_rate_type && ! is_null( $manual_rate ) ) {
+			update_option( 'wcpay_multi_currency_manual_rate_' . $currency_code, $manual_rate );
 		}
 	}
 
