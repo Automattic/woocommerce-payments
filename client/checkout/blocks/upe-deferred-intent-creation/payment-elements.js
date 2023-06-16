@@ -40,6 +40,12 @@ const getBillingDetails = ( billingData ) => {
 	};
 };
 
+const getFraudPreventionToken = () => {
+	return document
+		.querySelector( '#wcpay-fraud-prevention-token' )
+		?.getAttribute( 'value' );
+};
+
 const WCPayUPEFields = ( {
 	api,
 	activePaymentMethod,
@@ -107,10 +113,6 @@ const WCPayUPEFields = ( {
 						};
 					}
 
-					const fraudPreventionToken = document
-						.querySelector( '#wcpay-fraud-prevention-token' )
-						?.getAttribute( 'value' );
-
 					await validateElements( elements );
 
 					const paymentMethodObject = await api
@@ -131,7 +133,7 @@ const WCPayUPEFields = ( {
 								payment_method: paymentMethodId,
 								'wcpay-payment-method':
 									paymentMethodObject.paymentMethod.id,
-								'wcpay-fraud-prevention-token': fraudPreventionToken,
+								'wcpay-fraud-prevention-token': getFraudPreventionToken(),
 								'wcpay-fingerprint': fingerprint,
 							},
 						},
