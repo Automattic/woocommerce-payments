@@ -565,6 +565,7 @@ jQuery( function ( $ ) {
 					},
 				},
 			};
+			// Afterpay requires shipping details to be passed. Not needed by other payment methods.
 			if ( PAYMENT_METHOD_IDS.AFTERPAY_CLEARPAY === paymentMethodType ) {
 				upeConfig.confirmParams.shipping = getShippingDetails(
 					formFields
