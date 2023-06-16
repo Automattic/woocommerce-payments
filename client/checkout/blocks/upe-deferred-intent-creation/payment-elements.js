@@ -19,6 +19,7 @@ import { useEffect, useState } from 'react';
 import { getTerms } from 'wcpay/checkout/utils/upe';
 import { useCustomerData } from '../upe-split-fields';
 import { validateElements } from 'wcpay/checkout/classic/upe-deferred-intent-creation/payment-processing';
+import { __ } from '@wordpress/i18n';
 
 const WCPayUPEFields = ( {
 	api,
@@ -37,7 +38,7 @@ const WCPayUPEFields = ( {
 } ) => {
 	const stripe = useStripe();
 	const elements = useElements();
-	// const [ isUPEComplete, setIsUPEComplete ] = useState( false );
+	const [ isUPEComplete, setIsUPEComplete ] = useState( false );
 	const [ selectedUPEPaymentType, setSelectedUPEPaymentType ] = useState(
 		''
 	);
@@ -60,15 +61,15 @@ const WCPayUPEFields = ( {
 						return;
 					}
 
-					// if ( ! isUPEComplete ) {
-					//     return {
-					//         type: 'error',
-					//         message: __(
-					//             'Your payment information is incomplete.',
-					//             'woocommerce-payments'
-					//         ),
-					//     };
-					// }
+					if ( ! isUPEComplete ) {
+						return {
+							type: 'error',
+							message: __(
+								'Your payment information is incomplete.',
+								'woocommerce-payments'
+							),
+						};
+					}
 
 					if ( errorMessage ) {
 						return {
@@ -153,6 +154,7 @@ const WCPayUPEFields = ( {
 			errorMessage,
 			onPaymentProcessing,
 			billingData,
+			isUPEComplete,
 		]
 	);
 
@@ -201,7 +203,7 @@ const WCPayUPEFields = ( {
 		gatewayConfig.supports.showSaveOption =
 			paymentMethodsConfig[ paymentType ].showSaveOption;
 
-		// setIsUPEComplete( event.complete );
+		setIsUPEComplete( event.complete );
 		setSelectedUPEPaymentType( paymentType );
 	};
 
