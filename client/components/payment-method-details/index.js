@@ -41,6 +41,8 @@ const formatDetails = ( payment ) => {
 					{ paymentMethod.iban_last4 }
 				</Fragment>
 			);
+		case 'affirm':
+		case 'afterpay_clearpay':
 		default:
 			return <Fragment />;
 	}
