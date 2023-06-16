@@ -1,11 +1,18 @@
 /** @format */
 /**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import FingerprintJS from '@fingerprintjs/fingerprintjs';
 
-export const FINGERPRINT_GENERIC_ERROR =
-	'An error was encountered when preparing the payment form. Please try again later.';
+export const FINGERPRINT_GENERIC_ERROR = __(
+	'An error was encountered when preparing the payment form. Please try again later.',
+	'woocommerce-payments'
+);
 
 export const getFingerprint = async () => {
 	const agent = await FingerprintJS.load( { monitoring: false } );
