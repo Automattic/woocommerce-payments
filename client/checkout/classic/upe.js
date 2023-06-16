@@ -265,10 +265,12 @@ jQuery( function ( $ ) {
 			} catch ( error ) {
 				unblockUI( $upeContainer );
 				showErrorCheckout( error.message );
-				const gatewayErrorMessage =
-					'<div>An error was encountered when preparing the payment form. Please try again later.</div>';
+				const gatewayErrorMessage = __(
+					'An error was encountered when preparing the payment form. Please try again later.',
+					'woocommerce-payments'
+				);
 				$( '.payment_box.payment_method_woocommerce_payments' ).html(
-					gatewayErrorMessage
+					`<div>${ gatewayErrorMessage }</div>`
 				);
 			}
 		}
