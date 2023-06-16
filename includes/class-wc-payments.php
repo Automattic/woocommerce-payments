@@ -439,6 +439,9 @@ class WC_Payments {
 		// // Load woopay save user section if feature is enabled.
 		add_action( 'woocommerce_cart_loaded_from_session', [ __CLASS__, 'init_woopay' ] );
 
+		// Load Stripe site messaging.
+		add_action( 'woocommerce_single_product_summary', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ], 30 );
+
 		// Init the email template for In Person payment receipt email. We need to do it before passing the mailer to the service.
 		add_filter( 'woocommerce_email_classes', [ __CLASS__, 'add_ipp_emails' ], 10 );
 
@@ -1630,6 +1633,19 @@ class WC_Payments {
 			include_once __DIR__ . '/woopay-user/class-woopay-save-user.php';
 
 			new WooPay_Save_User();
+		}
+	}
+
+	/**
+	 * Load stripe site messaging script.
+	 *
+	 * @return void
+	 */
+	public static function load_stripe_bnpl_site_messaging() {
+		if ( WC_Payments_Features::is_bnpl_affirm_afterpay_enabled() ) {
+			require_once __DIR__ . '/class-wc-payments-payment-method-messaging-element.php';
+			$stripe_site_messaging = new WC_Payments_Payment_Method_Messaging_Element( self::$account, self::$card_gateway );
+			echo wp_kses( $stripe_site_messaging->init(), 'post' );
 		}
 	}
 
