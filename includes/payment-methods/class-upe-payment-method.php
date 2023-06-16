@@ -131,8 +131,10 @@ abstract class UPE_Payment_Method {
 			if ( isset( $this->limits_per_currency[ $currency ], WC()->cart ) ) {
 				$amount = WC_Payments_Utils::prepare_amount( WC()->cart->get_total( '' ), $currency );
 				if ( $amount > 0 ) {
-					$range = $this->limits_per_currency[ $currency ];
-					return $amount >= $range['min'] && $amount <= $range['max'];
+					$range            = $this->limits_per_currency[ $currency ];
+					$is_valid_minimum = null === $range['min'] || $amount >= $range['min'];
+					$is_valid_maximum = null === $range['max'] || $amount <= $range['max'];
+					return $is_valid_minimum && $is_valid_maximum;
 				}
 			}
 		}
