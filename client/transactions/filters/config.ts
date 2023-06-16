@@ -6,7 +6,7 @@ import { __, _x, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { displayType } from 'transactions/strings';
+import { displayType, sourceDevice } from 'transactions/strings';
 
 interface TransactionsFilterEntryType {
 	label: string;
@@ -52,6 +52,12 @@ const loanSelectionOptions = loanDefinitions.map( ( loanDefinition ) => {
 	return { label: loanDisplayValue, value: loanDefinitionSplitted[ 0 ] };
 }, [] );
 
+const transactionSourceDeviceOptions = Object.entries( sourceDevice ).map(
+	( [ type, label ] ) => {
+		return { label, value: type };
+	}
+);
+
 export const getFilters = (
 	depositCurrencyOptions: TransactionsFilterEntryType[],
 	showDepositCurrencyFilter: boolean
@@ -72,6 +78,8 @@ export const getFilters = (
 				'date_before',
 				'date_after',
 				'date_between',
+				'source_device_is',
+				'source_device_is_not',
 			],
 			showFilters: () => showDepositCurrencyFilter,
 			filters: [
@@ -271,6 +279,52 @@ export const getAdvancedFilters = (
 					component: 'SelectControl',
 					type: 'loans',
 					options: loanSelectionOptions,
+				},
+			},
+			source_device: {
+				labels: {
+					add: __( 'Device Type', 'woocommerce-payments' ),
+					remove: __(
+						'Remove transaction device type filter',
+						'woocommerce-payments'
+					),
+					rule: __(
+						'Select a transaction device type filter match',
+						'woocommerce-payments'
+					),
+					/* translators: A sentence describing a Transaction Device Type filter. */
+					title: __(
+						'{{title}}Device type{{/title}} {{rule /}} {{filter /}}',
+						'woocommerce-payments'
+					),
+					filter: __(
+						'Select a transaction device type',
+						'woocommerce-payments'
+					),
+				},
+				rules: [
+					{
+						value: 'is',
+						/* translators: Sentence fragment, logical, "Is" refers to searching for transactions matching a chosen transaction type. */
+						label: _x(
+							'Is',
+							'Source device',
+							'woocommerce-payments'
+						),
+					},
+					{
+						value: 'is_not',
+						/* translators: Sentence fragment, logical, "Is not" refers to searching for transactions that don\'t match a chosen transaction type. */
+						label: _x(
+							'Is not',
+							'Source device',
+							'woocommerce-payments'
+						),
+					},
+				],
+				input: {
+					component: 'SelectControl',
+					options: transactionSourceDeviceOptions,
 				},
 			},
 		},
