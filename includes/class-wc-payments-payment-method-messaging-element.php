@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments
  */
 
-declare( strict_types=1 );
-
 use WCPay\Constants\Payment_Method;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -50,24 +48,19 @@ class WC_Payments_Payment_Method_Messaging_Element {
 	 */
 	public function init(): string {
 		global $product;
-		$price         = $product->get_price();
-		$currency_code = get_woocommerce_currency();
+		$price           = $product->get_price();
+		$currency_code   = get_woocommerce_currency();
+		$billing_country = WC()->countries->get_base_country();
 
 		if ( WC()->customer ) {
-			$billing_country = WC()->customer->get_billing_country();
-		}
-		if ( ! $billing_country ) {
-			$billing_country = WC()->countries->get_base_country(); // Fallback to merchant's country.
+			$billing_country = WC()->customer->get_billing_country(); // Use the customer's billing country if available.
 		}
 
 		$enabled_upe_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
 		// Filter non BNPL out of the list of payment methods.
-		$bnpl_payment_methods = array_filter(
-			$enabled_upe_payment_methods,
-			function ( $payment_method ) {
-				return in_array( $payment_method, [ Payment_Method::AFFIRM, Payment_Method::AFTERPAY ], true );
-			}
-		);
+
+		// Filter out non-BNPL payment methods.
+		$bnpl_payment_methods = array_intersect( $enabled_upe_payment_methods, [ Payment_Method::AFFIRM, Payment_Method::AFTERPAY ] );
 
 		// register the script.
 		WC_Payments::register_script_with_dependencies( 'WCPAY_PRODUCT_DETAILS', 'dist/product-details', [ 'stripe' ] );
@@ -77,7 +70,7 @@ class WC_Payments_Payment_Method_Messaging_Element {
 			'WCPAY_PRODUCT_DETAILS',
 			'wcpayStripeSiteMessaging',
 			[
-				'price'          => $price * 100,
+				'price'          => WC_Payments_Utils::prepare_amount( $price, $currency_code ),
 				'currency'       => $currency_code,
 				'country'        => $billing_country,
 				'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),

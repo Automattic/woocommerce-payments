@@ -1,6 +1,6 @@
 /**
  * Internal dependencies
  */
-import siteMessaging from './site-messaging';
+import bnplSiteMessaging from './bnpl-site-messaging';
 
-siteMessaging();
+bnplSiteMessaging();

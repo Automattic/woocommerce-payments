@@ -1,5 +1,5 @@
 // global Stripe, wcpayStripeSiteMessaging
-function siteMessaging() {
+function bnplSiteMessaging() {
 	const {
 		price,
 		currency,
@@ -11,7 +11,7 @@ function siteMessaging() {
 	// eslint-disable-next-line no-undef
 	const stripe = Stripe( publishableKey );
 	const options = {
-		amount: parseInt( price, 10 ) || 0, // In cents TODO: use quantity selector
+		amount: parseInt( price, 10 ) || 0,
 		currency: currency || 'USD',
 		paymentMethodTypes: paymentMethods || [],
 		countryCode: country, // Customer's country or base country of the store.
@@ -33,4 +33,4 @@ function siteMessaging() {
 	} );
 }
 
-export default siteMessaging;
+export default bnplSiteMessaging;

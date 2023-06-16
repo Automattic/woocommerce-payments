@@ -440,7 +440,7 @@ class WC_Payments {
 		add_action( 'woocommerce_cart_loaded_from_session', [ __CLASS__, 'init_woopay' ] );
 
 		// Load Stripe site messaging.
-		add_action( 'woocommerce_single_product_summary', [ __CLASS__, 'load_stripe_site_messaging' ], 30 );
+		add_action( 'woocommerce_single_product_summary', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ], 30 );
 
 		// Init the email template for In Person payment receipt email. We need to do it before passing the mailer to the service.
 		add_filter( 'woocommerce_email_classes', [ __CLASS__, 'add_ipp_emails' ], 10 );
@@ -1641,7 +1641,7 @@ class WC_Payments {
 	 *
 	 * @return void
 	 */
-	public static function load_stripe_site_messaging() {
+	public static function load_stripe_bnpl_site_messaging() {
 		if ( WC_Payments_Features::is_bnpl_affirm_afterpay_enabled() ) {
 			require_once __DIR__ . '/class-wc-payments-payment-method-messaging-element.php';
 			$stripe_site_messaging = new WC_Payments_Payment_Method_Messaging_Element( self::$account, self::$card_gateway );
