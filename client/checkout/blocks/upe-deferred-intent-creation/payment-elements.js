@@ -25,10 +25,7 @@ const WCPayUPEFields = ( {
 	api,
 	activePaymentMethod,
 	testingInstructions,
-	eventRegistration: {
-		onPaymentProcessing,
-		onCheckoutAfterProcessingWithSuccess,
-	},
+	eventRegistration: { onPaymentSetup, onCheckoutAfterProcessingWithSuccess },
 	emitResponse,
 	paymentMethodId,
 	upeMethods,
@@ -53,7 +50,7 @@ const WCPayUPEFields = ( {
 
 	useEffect(
 		() =>
-			onPaymentProcessing( () => {
+			onPaymentSetup( () => {
 				async function handlePaymentProcessing() {
 					if (
 						upeMethods[ paymentMethodId ] !== activePaymentMethod
@@ -152,7 +149,7 @@ const WCPayUPEFields = ( {
 			shouldSavePayment,
 			upeMethods,
 			errorMessage,
-			onPaymentProcessing,
+			onPaymentSetup,
 			billingData,
 			isUPEComplete,
 		]
