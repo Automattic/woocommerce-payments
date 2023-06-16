@@ -1114,6 +1114,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_off_session( $payment_information->is_merchant_initiated() );
 				$request->set_payment_methods( $payment_methods );
 				$request->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
+
+				// Afterpay expects the shipping address to be sent in the request. This is not required for other payment methods.
 				if ( Payment_Method::AFTERPAY === $payment_information->get_payment_method() ) {
 					$request->set_shipping( $this->get_shipping_data_from_order( $order ) );
 				}
@@ -2631,24 +2633,23 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array          The shipping data to send to Stripe.
 	 */
 	public function get_shipping_data_from_order( WC_Order $order ): array {
-		$object_to_parse = $order;
 		return [
 			'name'    => implode(
 				' ',
 				array_filter(
 					[
-						$object_to_parse->get_shipping_first_name(),
-						$object_to_parse->get_shipping_last_name(),
+						$order->get_shipping_first_name(),
+						$order->get_shipping_last_name(),
 					]
 				)
 			),
 			'address' => [
-				'line1'       => $object_to_parse->get_shipping_address_1(),
-				'line2'       => $object_to_parse->get_shipping_address_2(),
-				'postal_code' => $object_to_parse->get_shipping_postcode(),
-				'city'        => $object_to_parse->get_shipping_city(),
-				'state'       => $object_to_parse->get_shipping_state(),
-				'country'     => $object_to_parse->get_shipping_country(),
+				'line1'       => $order->get_shipping_address_1(),
+				'line2'       => $order->get_shipping_address_2(),
+				'postal_code' => $order->get_shipping_postcode(),
+				'city'        => $order->get_shipping_city(),
+				'state'       => $order->get_shipping_state(),
+				'country'     => $order->get_shipping_country(),
 			],
 		];
 	}

@@ -296,7 +296,8 @@ const WCPayUPEFields = ( {
 							paymentIntentSecret,
 							elements,
 							billingData,
-							emitResponse
+							emitResponse,
+							selectedUPEPaymentType
 						);
 					}
 
