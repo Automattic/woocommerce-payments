@@ -1114,7 +1114,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_off_session( $payment_information->is_merchant_initiated() );
 				$request->set_payment_methods( $payment_methods );
 				$request->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
-				if ( 'afterpay_clearpay' === $payment_information->get_payment_method() ) {
+				if ( Payment_Method::AFTERPAY === $payment_information->get_payment_method() ) {
 					$request->set_shipping( $this->get_shipping_data_from_order( $order ) );
 				}
 
