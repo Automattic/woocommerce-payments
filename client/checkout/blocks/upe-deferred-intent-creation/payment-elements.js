@@ -248,12 +248,7 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 
 		if ( fingerprintErrorMessage ) {
 			setErrorMessage( fingerprintErrorMessage );
-			// return;
 		}
-
-		// if ( ! fingerprint ) {
-		// return;
-		// }
 	}, [
 		api,
 		appearance,
