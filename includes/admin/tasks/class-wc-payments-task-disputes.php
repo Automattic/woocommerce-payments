@@ -50,7 +50,7 @@ class WC_Payments_Task_Disputes extends Task {
 
 		if ( count( $disputes_due_within_7d ) === 1 ) {
 			$dispute = $disputes_due_within_7d[0];
-			$amount_formatted = wc_price( $dispute[ 'amount' ], [ 'currency' => strtoupper( $dispute[ 'currency' ] ) ] );
+			$amount_formatted = html_entity_decode( strip_tags( wc_price( $dispute[ 'amount' ], [ 'currency' => strtoupper( $dispute[ 'currency' ] ) ] ) ) ); // TODO find a better way if possible to do without html_entity_decode( strip_tags( ... ) )
 			if ( count( $disputes_due_within_1d ) > 0 ) {
 				return sprintf(
 					/* translators: %s is a currency formatted amount */
@@ -77,7 +77,7 @@ class WC_Payments_Task_Disputes extends Task {
 		sort( $currencies );
 		$formatted_amounts = [];
 		foreach ( $currencies as $currency ) {
-			$formatted_amounts[] = wc_price( $currencies_map[ $currency ], [ 'currency' => strtoupper( $currency ) ] );
+			$formatted_amounts[] = html_entity_decode( strip_tags( wc_price( $currencies_map[ $currency ], [ 'currency' => strtoupper( $currency ) ] ) ) ); // TODO find a better way if possible to do without html_entity_decode( strip_tags( ... ) )
 		}
 		$dispute_total_amounts = implode( ', ', $formatted_amounts );
 
@@ -153,7 +153,7 @@ class WC_Payments_Task_Disputes extends Task {
 		sort( $currencies );
 		$formatted_amounts = [];
 		foreach ( $currencies as $currency ) {
-			$formatted_amounts[] = wc_price( $currencies_map[ $currency ], [ 'currency' => strtoupper( $currency ) ] );
+			$formatted_amounts[] = html_entity_decode( strip_tags( wc_price( $currencies_map[ $currency ], [ 'currency' => strtoupper( $currency ) ] ) ) ); // TODO find a better way if possible to do without html_entity_decode( strip_tags( ... ) )
 		}
 		$dispute_total_amounts = implode( ', ', $formatted_amounts );
 
