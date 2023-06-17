@@ -288,10 +288,16 @@ class WC_Payments_Task_Disputes extends Task {
 		return $this->database_cache->get_or_add(
 			'wcpay_active_dispute_cache', // TODO create a constant at Database_Cache
 			function() {
-				return $this->api_client->get_disputes( [
+				$response = $this->api_client->get_disputes( [
 					'pagesize' => 50,
     				'search'   => [ 'warning_needs_response', 'needs_response' ],
 				] );
+
+				// TODO figure out why this is needed. I see other get_or_add() calls no need to return the response's 'data'
+				if ( $response && $response[ 'data' ] ) {
+					return $response[ 'data' ];
+				}
+				return [];
 			},
 			// We'll consider all array values to be valid as the cache is only invalidated when it is deleted or it expires.
 			'is_array'
