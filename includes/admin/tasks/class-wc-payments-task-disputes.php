@@ -8,7 +8,6 @@
 namespace WooCommerce\Payments\Tasks;
 
 use Automattic\WooCommerce\Admin\Features\OnboardingTasks\Task;
-use WCPay\Database_Cache;
 
 defined( 'ABSPATH' ) || exit;
 
