@@ -131,7 +131,7 @@ class WC_Payments_Task_Disputes extends Task {
 			$now      = new \DateTime( 'now', $timezone );
 			$now->setTimezone( new \DateTimeZone( 'UTC' ) );
 
-			$diff = $due_by->diff( $now );
+			$diff = $now->diff( $due_by );
 
 			return sprintf(
 				/* translators: %1$s is time, eg: Jan 1, 2021. %2$s is how many days left eg: 2 days */
@@ -266,11 +266,12 @@ class WC_Payments_Task_Disputes extends Task {
 			$now      = new \DateTime( 'now', $timezone );
 			$now->setTimezone( new \DateTimeZone( 'UTC' ) );
 
-			$diff = $due_by->diff( $now );
-			if ( $due_by > $now ) {
+			// TODO do we want include disputes that are already past due?
+			if ( $now > $due_by ) {
 				continue;
 			}
 
+			$diff = $now->diff( $due_by );
 			if ( $diff->days <= $num_days ) {
 				$to_return[] = $dispute;
 			}
