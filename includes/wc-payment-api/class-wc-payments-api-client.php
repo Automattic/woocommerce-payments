@@ -527,6 +527,10 @@ class WC_Payments_API_Client {
 		return $this->request( [], self::DISPUTES_API . '/status_counts', self::GET );
 	}
 
+	public function get_disputes( array $params = [] ) {
+		return $this->request( $params, self::DISPUTES_API, self::GET );
+	}
+
 	/**
 	 * Fetch a single dispute with provided id.
 	 *

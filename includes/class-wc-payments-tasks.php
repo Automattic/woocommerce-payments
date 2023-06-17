@@ -7,6 +7,7 @@
 
 use Automattic\WooCommerce\Admin\Features\OnboardingTasks\TaskLists;
 use WooCommerce\Payments\Tasks\WC_Payments_Task_Disputes;
+use WCPay\Database_Cache;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -31,6 +32,6 @@ class WC_Payments_Tasks {
 	 */
 	public static function add_task_disputes_need_response() {
 		// 'extended' = 'Things to do next' task list on WooCommerce > Home.
-		TaskLists::add_task( 'extended', new WC_Payments_Task_Disputes() );
+		TaskLists::add_task( 'extended', new WC_Payments_Task_Disputes( \WC_Payments::create_api_client(), new Database_Cache() ) );
 	}
 }

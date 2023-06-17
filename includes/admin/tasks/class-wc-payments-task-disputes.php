@@ -19,6 +19,18 @@ defined( 'ABSPATH' ) || exit;
  */
 class WC_Payments_Task_Disputes extends Task {
 
+	private $api_client;
+	private $database_cache;
+
+	/**
+	 * WC_Payments_Task_Disputes constructor.
+	 */
+	public function __construct( $api_client, $database_cache ) {
+		$this->api_client     = $api_client;
+		$this->database_cache = $database_cache;
+		parent::__construct();
+	}
+
 	/**
 	 * Gets the task ID.
 	 *
@@ -34,10 +46,48 @@ class WC_Payments_Task_Disputes extends Task {
 	 * @return string
 	 */
 	public function get_title() {
-		$dispute_count = $this->get_disputes_awaiting_response_count();
+		$disputes_due_within_7d = $this->get_disputes_needing_response_within_days( 7 );
+		$disputes_due_within_1d = $this->get_disputes_needing_response_within_days( 1 );
 
-		// Translators: The placeholder is the number of disputes.
-		return sprintf( _n( '%d disputed payment needs your response', '%d disputed payments need your response', $dispute_count, 'woocommerce-payments' ), $dispute_count );
+		if ( count( $disputes_due_within_7d ) === 1 ) {
+			$dispute = $disputes_due_within_7d[0];
+			$amount_formatted = wc_price( $dispute[ 'amount' ], [ 'currency' => strtoupper( $dispute[ 'currency' ] ) ] );
+			if ( count( $disputes_due_within_1d ) > 0 ) {
+				return sprintf(
+					/* translators: %s is a currency formatted amount */
+					__( 'Respond to a dispute for %s – Last day', 'woocommerce-payments' ),
+					$amount_formatted
+				);
+			}
+			return sprintf(
+				/* translators: %s is a currency formatted amount */
+				__( 'Respond to a dispute for %s', 'woocommerce-payments' ),
+				$amount_formatted
+			);
+		}
+
+		$currencies_map = [];
+		foreach ( $disputes_due_within_7d as $dispute ) {
+			if ( ! isset( $currencies_map[ $dispute[ 'currency' ] ] ) ) {
+				$currencies_map[ $dispute[ 'currency' ] ] = 0;
+			}
+			$currencies_map[ $dispute[ 'currency' ] ] += $dispute[ 'amount' ];
+		}
+
+		$currencies = array_keys( $currencies_map );
+		sort( $currencies );
+		$formatted_amounts = [];
+		foreach ( $currencies as $currency ) {
+			$formatted_amounts[] = wc_price( $currencies_map[ $currency ], [ 'currency' => strtoupper( $currency ) ] );
+		}
+		$dispute_total_amounts = implode( ', ', $formatted_amounts );
+
+		return sprintf(
+			/* translators: %d is a number. %s is a currency formatted amounts (potentially multiple), eg: €10.00, $20.00 */
+			__( 'Respond to %d active disputes for a total of %s', 'woocommerce-payments' ),
+			count( $disputes_due_within_7d ),
+			$dispute_total_amounts
+		);
 	}
 
 	/**
@@ -62,7 +112,58 @@ class WC_Payments_Task_Disputes extends Task {
 	 * @return string
 	 */
 	public function get_content() {
-		return '';
+		$disputes_due_within_7d = $this->get_disputes_needing_response_within_days( 7 );
+		$disputes_due_within_1d = $this->get_disputes_needing_response_within_days( 1 );
+
+		if ( count( $disputes_due_within_7d ) === 1 ) {
+			$dispute = $disputes_due_within_7d[0];
+			if ( count( $disputes_due_within_1d ) > 0 ) {
+				return sprintf(
+					/* translators: %s is time, eg: 11:59 PM */
+					__( 'Respond today by %s', 'woocommerce-payments' ),
+					(new \DateTime( $dispute['due_by'] ))->format( 'h:mm A' ) // TODO make sure time is in merchant's store timezone
+				);
+			}
+
+			$due_by = new \DateTime( $dispute['due_by'] );
+
+			// Convert merchant's store timezone to UTC.
+			$timezone = new \DateTimeZone( wp_timezone_string() );
+			$now      = new \DateTime( 'now', $timezone );
+			$now->setTimezone( new \DateTimeZone( 'UTC' ) );
+
+			$diff = $due_by->diff( $now );
+
+			return sprintf(
+				/* translators: %1$s is time, eg: Jan 1, 2021. %2$s is how many days left eg: 2 days */
+				__( 'By %1$s – %2$s left to respond', 'woocommerce-payments' ),
+				(new \DateTime( $dispute['due_by'] ))->format( 'MMM D, YYYY' ), // TODO make sure time is in merchant's store timezone
+				_n( '%d day', '%d days', $diff->days, 'woocommerce-payments' ) // TODO make sure time is in merchant's store timezone and when it is 1 day left, it should say 1 day left, not 0 day
+			);
+		}
+
+		$currencies_map = [];
+		foreach ( $disputes_due_within_7d as $dispute ) {
+			if ( ! isset( $currencies_map[ $dispute[ 'currency' ] ] ) ) {
+				$currencies_map[ $dispute[ 'currency' ] ] = 0;
+			}
+			$currencies_map[ $dispute[ 'currency' ] ] += $dispute[ 'amount' ];
+		}
+
+		$currencies = array_keys( $currencies_map );
+		sort( $currencies );
+		$formatted_amounts = [];
+		foreach ( $currencies as $currency ) {
+			$formatted_amounts[] = wc_price( $currencies_map[ $currency ], [ 'currency' => strtoupper( $currency ) ] );
+		}
+		$dispute_total_amounts = implode( ', ', $formatted_amounts );
+
+		return sprintf(
+			/* translators: %s is a currency formatted amounts (potentially multiple), eg: €10.00, $20.00 */
+			__( 'Respond to %d active disputes for a total of %s', 'woocommerce-payments' ),
+			count( $disputes_due_within_7d ),
+			$dispute_total_amounts
+		);
 	}
 
 	/**
@@ -89,6 +190,21 @@ class WC_Payments_Task_Disputes extends Task {
 	 * @return string
 	 */
 	public function get_action_url() {
+		$disputes = $this->get_disputes_needing_response_within_days( 7 );
+		if ( count ( $disputes ) === 1 ) {
+			$dispute = $disputes[0];
+			return admin_url(
+				add_query_arg(
+					[
+						'page' => 'wc-admin',
+						'path' => '%2Fpayments%2Fdisputes%2Fdetails',
+						'id'   => $dispute[ 'dispute_id' ],
+					],
+					'admin.php'
+				)
+			);
+		}
+
 		return admin_url(
 			add_query_arg(
 				[
@@ -125,25 +241,60 @@ class WC_Payments_Task_Disputes extends Task {
 	 * @return bool
 	 */
 	public function can_view() {
-		return $this->get_disputes_awaiting_response_count() > 0;
+		return count( $this->get_disputes_needing_response_within_days( 7 ) ) > 0;
+	}
+
+	private function get_disputes_needing_response_within_days( $num_days ) {
+		$to_return = [];
+
+		$active_disputes = $this->get_disputes_needing_response();
+		if ( ! $active_disputes ) {
+			return $to_return;
+		}
+
+		foreach ( $active_disputes as $dispute ) {
+			if ( ! $dispute['due_by'] ) {
+				continue;
+			}
+
+			// TODO due_by does not carry timezone. It is possible that the server's timezone and merchant store's timezone is different. Is there a solution to get a more accurate time diff?
+			// Assume server's time is UTC.
+			$due_by = new \DateTime( $dispute['due_by'] );
+
+			// Convert merchant's store timezone to UTC.
+			$timezone = new \DateTimeZone( wp_timezone_string() );
+			$now      = new \DateTime( 'now', $timezone );
+			$now->setTimezone( new \DateTimeZone( 'UTC' ) );
+
+			$diff = $due_by->diff( $now );
+			if ( $due_by > $now ) {
+				continue;
+			}
+
+			if ( $diff->days <= $num_days ) {
+				$to_return[] = $dispute;
+			}
+		}
+
+		return $to_return;
 	}
 
 	/**
-	 * Gets the number of disputes which need a response.
+	 * Get disputes that need response.
 	 *
-	 * Because this task is initialized before WC Payments, we can only fetch from the cache (via "get()").
-	 * The dispute status cache cannot be populated via this task. If this value hasn't been cached yet, this task won't show until it is.
-	 *
-	 * @return int The number of disputes which need a response.
+	 * @return mixed|null
 	 */
-	private function get_disputes_awaiting_response_count() {
-		$disputes_status_counts = \WC_Payments::get_database_cache()->get( Database_Cache::DISPUTE_STATUS_COUNTS_KEY );
-
-		if ( empty( $disputes_status_counts ) ) {
-			return 0;
-		}
-
-		$needs_response_statuses = [ 'needs_response', 'warning_needs_response' ];
-		return (int) array_sum( array_intersect_key( $disputes_status_counts, array_flip( $needs_response_statuses ) ) );
+	private function get_disputes_needing_response() {
+		return $this->database_cache->get_or_add(
+			'wcpay_active_dispute_cache',
+			function() {
+				return $this->api_client->get_disputes( [
+					'pagesize' => 50,
+    				'search'   => [ 'warning_needs_response', 'needs_response' ],
+				] );
+			},
+			// We'll consider all array values to be valid as the cache is only invalidated when it is deleted or it expires.
+			'is_array'
+		);
 	}
 }
