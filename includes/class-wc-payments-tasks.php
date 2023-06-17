@@ -32,6 +32,7 @@ class WC_Payments_Tasks {
 	 */
 	public static function add_task_disputes_need_response() {
 		// 'extended' = 'Things to do next' task list on WooCommerce > Home.
-		TaskLists::add_task( 'extended', new WC_Payments_Task_Disputes( \WC_Payments::create_api_client(), new Database_Cache() ) );
+		// TODO decide to inject api client and database cache here or get them statically in get_disputes_needing_response().
+		TaskLists::add_task( 'extended', new WC_Payments_Task_Disputes( \WC_Payments::create_api_client(), \WC_Payments::get_database_cache() ) );
 	}
 }
