@@ -286,7 +286,7 @@ class WC_Payments_Task_Disputes extends Task {
 	 */
 	private function get_disputes_needing_response() {
 		return $this->database_cache->get_or_add(
-			'wcpay_active_dispute_cache',
+			'wcpay_active_dispute_cache', // TODO create a constant at Database_Cache
 			function() {
 				return $this->api_client->get_disputes( [
 					'pagesize' => 50,
