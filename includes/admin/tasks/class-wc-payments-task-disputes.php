@@ -244,6 +244,7 @@ class WC_Payments_Task_Disputes extends Task {
 		return count( $this->get_disputes_needing_response_within_days( 7 ) ) > 0;
 	}
 
+	// TODO function doc-block.
 	private function get_disputes_needing_response_within_days( $num_days ) {
 		$to_return = [];
 
