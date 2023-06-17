@@ -75,6 +75,8 @@ class List_Transactions extends Paginated {
 			'date_between'             => $date_between_filter,
 			'type_is'                  => $request->get_param( 'type_is' ),
 			'type_is_not'              => $request->get_param( 'type_is_not' ),
+			'source_device_is'         => $request->get_param( 'source_device_is' ),
+			'source_device_is_not'     => $request->get_param( 'source_device_is_not' ),
 			'store_currency_is'        => $request->get_param( 'store_currency_is' ),
 			'customer_currency_is'     => $request->get_param( 'customer_currency_is' ),
 			'customer_currency_is_not' => $request->get_param( 'customer_currency_is_not' ),
@@ -175,6 +177,28 @@ class List_Transactions extends Paginated {
 	 */
 	public function set_type_is_not( string $type_is_not ) {
 		$this->set_param( 'type_is_not', $type_is_not );
+	}
+
+	/**
+	 * Set Source device type is.
+	 *
+	 * @param string $source_device_is Source device type is.
+	 *
+	 * @return void
+	 */
+	public function set_source_device_is( string $source_device_is ) {
+		$this->set_param( 'source_device_is', $source_device_is );
+	}
+
+	/**
+	 * Set Source Device type is not.
+	 *
+	 * @param string $source_device_is_not Source Device type is not.
+	 *
+	 * @return void
+	 */
+	public function set_source_device_is_not( string $source_device_is_not ) {
+		$this->set_param( 'source_device_is_not', $source_device_is_not );
 	}
 
 	/**

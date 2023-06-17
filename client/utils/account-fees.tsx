@@ -341,9 +341,9 @@ export const getTransactionsPaymentMethodName = (
 		case 'eps':
 			return __( 'EPS transactions', 'woocommerce-payments' );
 		case 'giropay':
-			return __( 'GiroPay transactions', 'woocommerce-payments' );
+			return __( 'giropay transactions', 'woocommerce-payments' );
 		case 'ideal':
-			return __( 'iDeal transactions', 'woocommerce-payments' );
+			return __( 'iDEAL transactions', 'woocommerce-payments' );
 		case 'p24':
 			return __(
 				'Przelewy24 (P24) transactions',
