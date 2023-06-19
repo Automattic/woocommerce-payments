@@ -8,6 +8,7 @@
 use WCPay\MultiCurrency\Utils;
 use WCPay\Database_Cache;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
+use WCPay\MultiCurrency\Exceptions\InvalidCurrencyRateException;
 use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\MultiCurrency\Settings;
 use WCPay\MultiCurrency\SettingsOnboardCta;
@@ -1149,6 +1150,41 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->assertFalse( get_option( 'wcpay_multi_currency_manual_rate_' . $currency_code, false ) );
 		$this->assertFalse( get_option( 'wcpay_multi_currency_price_rounding_' . $currency_code, false ) );
 		$this->assertFalse( get_option( 'wcpay_multi_currency_price_charm_' . $currency_code, false ) );
+	}
+
+	/**
+	 * @dataProvider update_single_currency_settings_throws_exception_on_invalid_currency_rate_provider
+	 */
+	public function test_update_single_currency_settings_throws_exception_on_invalid_currency_rate( $manual_rate ) {
+		// Arrange: Set the currencto use.
+		$currency_code = 'usd';
+
+		// Arrange/Assert: Set expected exception and message.
+		$this->expectException( InvalidCurrencyRateException::class );
+		$this->expectExceptionMessage( 'Invalid manual currency rate passed to update_single_currency_settings: ' . $manual_rate );
+
+		// Act: Set the currencies.
+		$this->multi_currency->update_single_currency_settings( $currency_code, 'manual', (float) 1, (float) 1, $manual_rate );
+
+		// Assert: Confirm the currency settings were not updated.
+		$this->assertFalse( get_option( 'wcpay_multi_currency_exchange_rate_' . $currency_code, false ) );
+		$this->assertFalse( get_option( 'wcpay_multi_currency_manual_rate_' . $currency_code, false ) );
+		$this->assertFalse( get_option( 'wcpay_multi_currency_price_rounding_' . $currency_code, false ) );
+		$this->assertFalse( get_option( 'wcpay_multi_currency_price_charm_' . $currency_code, false ) );
+	}
+
+	public function update_single_currency_settings_throws_exception_on_invalid_currency_rate_provider() {
+		return [
+			'invalid'  => [
+				'rate' => 'invalid',
+			],
+			'zero'     => [
+				'rate' => 0,
+			],
+			'negative' => [
+				'rate' => -1,
+			],
+		];
 	}
 
 	private function mock_currency_settings( $currency_code, $settings ) {

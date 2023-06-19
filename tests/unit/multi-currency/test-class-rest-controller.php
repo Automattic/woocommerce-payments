@@ -215,6 +215,49 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 		$this->assertSame( $expected->get_error_message(), $response->get_error_message() );
 	}
 
+	/**
+	 * @dataProvider update_single_currency_settings_throws_exception_on_invalid_currency_rate_provider
+	 */
+	public function test_update_single_currency_settings_throws_exception_on_invalid_currency_rate( $manual_rate ) {
+		// Arrange: Set expected result.
+		$error_code    = 'wcpay_multi_currency_invalid_currency_rate';
+		$error_message = 'Invalid manual currency rate passed to update_single_currency_settings: ' . $manual_rate;
+		$expected      = rest_ensure_response( new WP_Error( $error_code, $error_message ) );
+
+		// Arrange: Create the new REST request.
+		$request = new WP_REST_Request( 'POST', self::ROUTE . '/currencies/USD' );
+		$request->set_body_params(
+			[
+				'currency_code'      => 'USD',
+				'exchange_rate_type' => 'manual',
+				'manual_rate'        => $manual_rate,
+				'price_rounding'     => 1,
+				'price_charm'        => 0,
+			]
+		);
+
+		// Act: Attempt to update the enabled currencies.
+		$response = $this->controller->update_single_currency_settings( $request );
+
+		// Assert: Confirm the response is as expected.
+		$this->assertSame( $expected->get_error_code(), $response->get_error_code() );
+		$this->assertSame( $expected->get_error_message(), $response->get_error_message() );
+	}
+
+	public function update_single_currency_settings_throws_exception_on_invalid_currency_rate_provider() {
+		return [
+			'invalid'  => [
+				'rate' => 'invalid',
+			],
+			'zero'     => [
+				'rate' => 0,
+			],
+			'negative' => [
+				'rate' => -1,
+			],
+		];
+	}
+
 	public function test_get_settings_gets_expected_response() {
 		// Arrange: Create expected response.
 		$expected = rest_ensure_response( WC_Payments_Multi_Currency()->get_settings() );
