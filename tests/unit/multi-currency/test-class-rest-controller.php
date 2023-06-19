@@ -104,19 +104,19 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 
 	public function test_get_single_currency_settings() {
 		// Arrange: Add the single currency settings.
-		update_option( 'wcpay_multi_currency_exchange_rate_cad', 'manual' );
-		update_option( 'wcpay_multi_currency_manual_rate_cad', 2 );
-		update_option( 'wcpay_multi_currency_price_rounding_cad', 1 );
-		update_option( 'wcpay_multi_currency_price_charm_cad', 0 );
+		update_option( 'wcpay_multi_currency_exchange_rate_usd', 'manual' );
+		update_option( 'wcpay_multi_currency_manual_rate_usd', 2 );
+		update_option( 'wcpay_multi_currency_price_rounding_usd', 1 );
+		update_option( 'wcpay_multi_currency_price_charm_usd', 0 );
 
 		// Arrange: Create expected response.
-		$expected = rest_ensure_response( WC_Payments_Multi_Currency()->get_single_currency_settings( 'CAD' ) );
+		$expected = rest_ensure_response( WC_Payments_Multi_Currency()->get_single_currency_settings( 'USD' ) );
 
 		// Arrange: Create the new REST request.
-		$request = new WP_REST_Request( 'GET', self::ROUTE . '/currencies/CAD' );
+		$request = new WP_REST_Request( 'GET', self::ROUTE . '/currencies/USD' );
 		$request->set_query_params(
 			[
-				'currency_code' => 'CAD',
+				'currency_code' => 'USD',
 			]
 		);
 

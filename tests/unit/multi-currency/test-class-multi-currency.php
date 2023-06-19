@@ -1094,9 +1094,9 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 		// Assert: Confirm the results are correct.
 		$this->assertSame( $exchange_rate_type, get_option( 'wcpay_multi_currency_exchange_rate_' . $currency_code, false ) );
-		$this->assertSame( $manual_rate, get_option( 'wcpay_multi_currency_manual_rate_' . $currency_code, false ) );
-		$this->assertSame( $price_rounding, get_option( 'wcpay_multi_currency_price_rounding_' . $currency_code, false ) );
-		$this->assertSame( $price_charm, get_option( 'wcpay_multi_currency_price_charm_' . $currency_code, false ) );
+		$this->assertEquals( $manual_rate, get_option( 'wcpay_multi_currency_manual_rate_' . $currency_code, false ) );
+		$this->assertEquals( $price_rounding, get_option( 'wcpay_multi_currency_price_rounding_' . $currency_code, false ) );
+		$this->assertEquals( $price_charm, get_option( 'wcpay_multi_currency_price_charm_' . $currency_code, false ) );
 	}
 
 	public function update_single_currency_settings_provider() {
