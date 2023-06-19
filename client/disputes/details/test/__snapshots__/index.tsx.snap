@@ -3605,7 +3605,7 @@ exports[`Dispute details screen renders correctly for subscription_canceled disp
             If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next screen.
           </p>
           <p>
-            If you can not prove the customer’s subscription was canceled, and or they did not follow your cancelation policy, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.
+            If you can not prove the customer’s subscription was canceled, and or they did not follow your cancellation policy, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.
           </p>
         </div>
         <div
@@ -4073,7 +4073,7 @@ exports[`Dispute details screen renders correctly for unrecognized dispute 1`] =
             If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next screen.
           </p>
           <p>
-            If you can not prove the customer’s subscription was canceled, and or they did not follow your cancelation policy, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.
+            If you can not prove the customer’s subscription was canceled, and or they did not follow your cancellation policy, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.
           </p>
         </div>
         <div
