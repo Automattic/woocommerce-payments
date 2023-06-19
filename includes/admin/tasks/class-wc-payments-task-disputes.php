@@ -17,12 +17,25 @@ defined( 'ABSPATH' ) || exit;
  * Note: this task is separate to the Payments → Overview disputes task, which is defined in client/overview/task-list/tasks.js.
  */
 class WC_Payments_Task_Disputes extends Task {
-
+	/**
+	 * Client for making requests to the WooCommerce Payments API
+	 *
+	 * @var WC_Payments_API_Client
+	 */
 	private $api_client;
+
+	/**
+	 * Database_Cache instance.
+	 *
+	 * @var Database_Cache
+	 */
 	private $database_cache;
 
 	/**
 	 * WC_Payments_Task_Disputes constructor.
+	 *
+	 * @param WC_Payments_API_Client $api_client Payments API client.
+	 * @param Database_Cache         $database_cache Database cache util.
 	 */
 	public function __construct( $api_client, $database_cache ) {
 		$this->api_client     = $api_client;
@@ -49,8 +62,8 @@ class WC_Payments_Task_Disputes extends Task {
 		$disputes_due_within_1d = $this->get_disputes_needing_response_within_days( 1 );
 
 		if ( count( $disputes_due_within_7d ) === 1 ) {
-			$dispute = $disputes_due_within_7d[0];
-			$amount_formatted = html_entity_decode( strip_tags( wc_price( $dispute[ 'amount' ], [ 'currency' => strtoupper( $dispute[ 'currency' ] ) ] ) ) ); // TODO find a better way if possible to do without html_entity_decode( strip_tags( ... ) )
+			$dispute          = $disputes_due_within_7d[0];
+			$amount_formatted = html_entity_decode( strip_tags( wc_price( $dispute['amount'], [ 'currency' => strtoupper( $dispute['currency'] ) ] ) ) ); // TODO find a better way if possible to do without html_entity_decode( strip_tags( ... ) )
 			if ( count( $disputes_due_within_1d ) > 0 ) {
 				return sprintf(
 					/* translators: %s is a currency formatted amount */
@@ -67,10 +80,10 @@ class WC_Payments_Task_Disputes extends Task {
 
 		$currencies_map = [];
 		foreach ( $disputes_due_within_7d as $dispute ) {
-			if ( ! isset( $currencies_map[ $dispute[ 'currency' ] ] ) ) {
-				$currencies_map[ $dispute[ 'currency' ] ] = 0;
+			if ( ! isset( $currencies_map[ $dispute['currency'] ] ) ) {
+				$currencies_map[ $dispute['currency'] ] = 0;
 			}
-			$currencies_map[ $dispute[ 'currency' ] ] += $dispute[ 'amount' ];
+			$currencies_map[ $dispute['currency'] ] += $dispute['amount'];
 		}
 
 		$currencies = array_keys( $currencies_map );
@@ -83,7 +96,7 @@ class WC_Payments_Task_Disputes extends Task {
 
 		return sprintf(
 			/* translators: %d is a number. %s is a currency formatted amounts (potentially multiple), eg: €10.00, $20.00 */
-			__( 'Respond to %d active disputes for a total of %s', 'woocommerce-payments' ),
+			__( 'Respond to %1$d active disputes for a total of %2$s', 'woocommerce-payments' ),
 			count( $disputes_due_within_7d ),
 			$dispute_total_amounts
 		);
@@ -120,7 +133,7 @@ class WC_Payments_Task_Disputes extends Task {
 				return sprintf(
 					/* translators: %s is time, eg: 11:59 PM */
 					__( 'Respond today by %s', 'woocommerce-payments' ),
-					(new \DateTime( $dispute['due_by'] ))->format( 'h:mm A' ) // TODO make sure time is in merchant's store timezone
+					( new \DateTime( $dispute['due_by'] ) )->format( 'h:mm A' ) // TODO make sure time is in merchant's store timezone
 				);
 			}
 
@@ -136,17 +149,17 @@ class WC_Payments_Task_Disputes extends Task {
 			return sprintf(
 				/* translators: %1$s is time, eg: Jan 1, 2021. %2$s is how many days left eg: 2 days */
 				__( 'By %1$s – %2$s left to respond', 'woocommerce-payments' ),
-				(new \DateTime( $dispute['due_by'] ))->format( 'MMM D, YYYY' ), // TODO make sure time is in merchant's store timezone
+				( new \DateTime( $dispute['due_by'] ) )->format( 'MMM D, YYYY' ), // TODO make sure time is in merchant's store timezone
 				_n( '%d day', '%d days', $diff->days, 'woocommerce-payments' ) // TODO make sure time is in merchant's store timezone and when it is 1 day left, it should say 1 day left, not 0 day
 			);
 		}
 
 		$currencies_map = [];
 		foreach ( $disputes_due_within_7d as $dispute ) {
-			if ( ! isset( $currencies_map[ $dispute[ 'currency' ] ] ) ) {
-				$currencies_map[ $dispute[ 'currency' ] ] = 0;
+			if ( ! isset( $currencies_map[ $dispute['currency'] ] ) ) {
+				$currencies_map[ $dispute['currency'] ] = 0;
 			}
-			$currencies_map[ $dispute[ 'currency' ] ] += $dispute[ 'amount' ];
+			$currencies_map[ $dispute['currency'] ] += $dispute['amount'];
 		}
 
 		$currencies = array_keys( $currencies_map );
@@ -159,7 +172,7 @@ class WC_Payments_Task_Disputes extends Task {
 
 		return sprintf(
 			/* translators: %s is a currency formatted amounts (potentially multiple), eg: €10.00, $20.00 */
-			__( 'Respond to %d active disputes for a total of %s', 'woocommerce-payments' ),
+			__( 'Respond to %1$d active disputes for a total of %2$s', 'woocommerce-payments' ),
 			count( $disputes_due_within_7d ),
 			$dispute_total_amounts
 		);
@@ -190,14 +203,14 @@ class WC_Payments_Task_Disputes extends Task {
 	 */
 	public function get_action_url() {
 		$disputes = $this->get_disputes_needing_response_within_days( 7 );
-		if ( count ( $disputes ) === 1 ) {
+		if ( count( $disputes ) === 1 ) {
 			$dispute = $disputes[0];
 			return admin_url(
 				add_query_arg(
 					[
 						'page' => 'wc-admin',
 						'path' => '%2Fpayments%2Fdisputes%2Fdetails',
-						'id'   => $dispute[ 'dispute_id' ],
+						'id'   => $dispute['dispute_id'],
 					],
 					'admin.php'
 				)
@@ -243,7 +256,13 @@ class WC_Payments_Task_Disputes extends Task {
 		return count( $this->get_disputes_needing_response_within_days( 7 ) ) > 0;
 	}
 
-	// TODO function doc-block.
+	/**
+	 * Get disputes needing response within the given number of days.
+	 *
+	 * @param int $num_days Number of days in the future to check for disputes needing response.
+	 *
+	 * @return array Array of disputes needing response within the given number of days.
+	 */
 	private function get_disputes_needing_response_within_days( $num_days ) {
 		$to_return = [];
 
@@ -289,44 +308,44 @@ class WC_Payments_Task_Disputes extends Task {
 		// TODO remove. For testing only.
 		$test_disputes = [
 			[
-				"wcpay_disputes_cache_id" => 23,
-				"stripe_account_id" => "acct_abc",
-				"dispute_id" => "dp_1",
-				"charge_id" => "ch_1",
-				"amount" => 1000,
-				"currency" => "usd",
-				"reason" => "product_not_received",
-				"source" => "visa",
-				"order_number" => 16,
-				"customer_name" => "customer",
-				"customer_email" => "email@email.com",
-				"customer_country" => "US",
-				"status" => "needs_response",
-				"created" => "2023-06-14 06:36:56",
-				"due_by" => "2023-06-24 00:59:59",
+				'wcpay_disputes_cache_id' => 23,
+				'stripe_account_id'       => 'acct_abc',
+				'dispute_id'              => 'dp_1',
+				'charge_id'               => 'ch_1',
+				'amount'                  => 1000,
+				'currency'                => 'usd',
+				'reason'                  => 'product_not_received',
+				'source'                  => 'visa',
+				'order_number'            => 16,
+				'customer_name'           => 'customer',
+				'customer_email'          => 'email@email.com',
+				'customer_country'        => 'US',
+				'status'                  => 'needs_response',
+				'created'                 => '2023-06-14 06:36:56',
+				'due_by'                  => '2023-06-24 00:59:59',
 			],
 			[
-				"wcpay_disputes_cache_id" => 21,
-				"stripe_account_id" => "acct_abc",
-				"dispute_id" => "dp_2",
-				"charge_id" => "ch_2",
-				"amount" => 2000,
-				"currency" => "eur",
-				"reason" => "product_not_received",
-				"source" => "visa",
-				"order_number" => 14,
-				"customer_name" => "customer",
-				"customer_email" => "email@email.com",
-				"customer_country" => "US",
-				"status" => "needs_response",
-				"created" => "2023-06-12 20:49:50",
-				"due_by" => "2023-06-22 00:59:59",
+				'wcpay_disputes_cache_id' => 21,
+				'stripe_account_id'       => 'acct_abc',
+				'dispute_id'              => 'dp_2',
+				'charge_id'               => 'ch_2',
+				'amount'                  => 2000,
+				'currency'                => 'eur',
+				'reason'                  => 'product_not_received',
+				'source'                  => 'visa',
+				'order_number'            => 14,
+				'customer_name'           => 'customer',
+				'customer_email'          => 'email@email.com',
+				'customer_country'        => 'US',
+				'status'                  => 'needs_response',
+				'created'                 => '2023-06-12 20:49:50',
+				'due_by'                  => '2023-06-22 00:59:59',
 			],
 		];
 		// TODO remove. For testing only.
 		return array_map(
 			function( $dispute ) {
-				$dispute[ 'due_by' ] = gmdate( 'Y-m-d H:i:s', strtotime( '+2 days' ) );
+				$dispute['due_by'] = gmdate( 'Y-m-d H:i:s', strtotime( '+2 days' ) );
 				return $dispute;
 			},
 			$test_disputes
@@ -335,14 +354,16 @@ class WC_Payments_Task_Disputes extends Task {
 		return $this->database_cache->get_or_add(
 			'wcpay_active_dispute_cache', // TODO create a constant at Database_Cache
 			function() {
-				$response = $this->api_client->get_disputes( [
-					'pagesize' => 50,
-    				'search'   => [ 'warning_needs_response', 'needs_response' ],
-				] );
+				$response = $this->api_client->get_disputes(
+					[
+						'pagesize' => 50,
+						'search'   => [ 'warning_needs_response', 'needs_response' ],
+					]
+				);
 
 				// TODO figure out why this is needed. I see other get_or_add() calls no need to return the response's 'data'
-				if ( $response && $response[ 'data' ] ) {
-					return $response[ 'data' ];
+				if ( $response && $response['data'] ) {
+					return $response['data'];
 				}
 				return [];
 			},
