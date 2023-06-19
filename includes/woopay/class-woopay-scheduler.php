@@ -7,6 +7,7 @@
 
 namespace WCPay\WooPay;
 
+use WC_Payments_API_Client;
 use WCPay\Logger;
 
 /**
@@ -16,11 +17,30 @@ use WCPay\Logger;
 class WooPay_Scheduler {
 
 	/**
+	 * WC_Payments_API_Client instance.
+	 *
+	 * @var WC_Payments_API_Client
+	 */
+	private $payments_api_client;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param WC_Payments_API_Client $payments_api_client The Payments API Client.
+	 * @return void
+	 */
+	public function __construct( WC_Payments_API_Client $payments_api_client ) {
+		$this->payments_api_client = $payments_api_client;
+	}
+
+	/**
 	 * Init the hooks.
 	 */
 	public function init() {
 		add_action( 'init', [ $this, 'schedule' ] );
-		add_action( 'validate_incompatible_extensions', [ $this, 'disable_woopay_if_incompatible_extension_active' ] );
+		add_action( 'validate_incompatible_extensions', [ $this, 'update_incompatible_extensions_list_and_maybe_show_warning' ] );
+		add_action( 'activated_plugin', [ $this, 'show_warning_when_incompatible_extension_is_enabled' ] );
+		add_action( 'deactivated_plugin', [ $this, 'hide_warning_when_incompatible_extension_is_disabled' ] );
 
 		register_deactivation_hook( WCPAY_PLUGIN_FILE, [ $this, 'remove_scheduler' ] );
 	}
@@ -42,27 +62,75 @@ class WooPay_Scheduler {
 	}
 
 	/**
-	 * Disables WooPay if an incompatible extension is active
+	 * Updates the list of incompatible extensions.
 	 */
-	public function disable_woopay_if_incompatible_extension_active() {
+	public function update_incompatible_extensions_list_and_maybe_show_warning() {
 		try {
 			$incompatible_extensions = $this->get_incompatible_extensions();
+			$active_plugins          = get_option( 'active_plugins' );
 
-			$active_plugins = get_option( 'active_plugins' );
-			delete_option( 'woopay_disabled_invalid_extensions' );
+			update_option( 'woopay_incompatible_extensions', $incompatible_extensions );
+			delete_option( 'woopay_invalid_extension_found' );
 
 			if ( ! empty( $active_plugins ) && is_array( $active_plugins ) ) {
-				foreach ( $active_plugins as $plugin ) {
-					$plugin = $this->format_extension_name( $plugin );
-
-					if ( in_array( $plugin, $incompatible_extensions, true ) ) {
-						update_option( 'woopay_disabled_invalid_extensions', true );
-					}
+				if ( $this->contains_incompatible_extension( $active_plugins, $incompatible_extensions ) ) {
+					update_option( 'woopay_invalid_extension_found', true );
 				}
 			}
 		} catch ( \Exception $e ) {
 			Logger::error( 'Failed to decode WooPay incompatible extensions list. ' . $e );
 		}
+	}
+
+	/**
+	 * Adds a warning to the WC Payments settings page.
+	 *
+	 * @param string $plugin The plugin being enabled.
+	 */
+	public function show_warning_when_incompatible_extension_is_enabled( $plugin ) {
+		$incompatible_extensions = get_option( 'woopay_incompatible_extensions' );
+
+		if ( $this->contains_incompatible_extension( [ $plugin ], $incompatible_extensions ) ) {
+			update_option( 'woopay_invalid_extension_found', true );
+		}
+	}
+
+	/**
+	 * Removes the warning when the last incompatible extension is removed.
+	 *
+	 * @param string $plugin_being_deactivated The plugin name.
+	 */
+	public function hide_warning_when_incompatible_extension_is_disabled( $plugin_being_deactivated ) {
+		$incompatible_extensions = get_option( 'woopay_incompatible_extensions' );
+		$active_plugins          = get_option( 'active_plugins' );
+
+		// Needs to remove the plugin being deactivated because WordPress only updates the list after this hook runs.
+		$active_plugins = array_diff( $active_plugins, [ $plugin_being_deactivated ] );
+
+		// Only deactivates the warning if there are no other incompatible extensions.
+		if ( ! $this->contains_incompatible_extension( $active_plugins, $incompatible_extensions ) ) {
+			delete_option( 'woopay_invalid_extension_found' );
+		}
+	}
+
+	/**
+	 * Checks if there is any incompatible extension in the list.
+	 *
+	 * @param mixed $active_plugins list of active plugins.
+	 * @param mixed $incompatible_extensions  list of incompatible extensions.
+	 *
+	 * @return bool
+	 */
+	private function contains_incompatible_extension( $active_plugins, $incompatible_extensions ) {
+		foreach ( $active_plugins as $plugin ) {
+			$plugin = $this->format_extension_name( $plugin );
+
+			if ( in_array( $plugin, $incompatible_extensions, true ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -83,34 +151,8 @@ class WooPay_Scheduler {
 	 * @return array
 	 */
 	public function get_incompatible_extensions() {
-		$args = [
-			'url'     => WooPay_Utilities::get_woopay_rest_url( 'extensions/incompatible' ),
-			'method'  => 'GET',
-			'timeout' => 30,
-			'headers' => [
-				'Content-Type' => 'application/json',
-			],
-		];
+		$incompatible_extensions = $this->payments_api_client->get_woopay_incompatible_extensions();
 
-		/**
-		 * Suppress psalm error from Jetpack Connection namespacing WP_Error.
-		 *
-		 * @psalm-suppress UndefinedDocblockClass
-		 */
-		$response      = \Automattic\Jetpack\Connection\Client::remote_request( $args );
-		$response_body = wp_remote_retrieve_body( $response );
-
-		// phpcs:ignore
-		/**
-		 * @psalm-suppress UndefinedDocblockClass
-		 */
-		if ( is_wp_error( $response ) || ! is_array( $response ) || ( ! empty( $response['code'] ) && ( $response['code'] >= 300 || $response['code'] < 200 ) ) ) {
-			Logger::error( 'HTTP_REQUEST_ERROR ' . var_export( $response, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
-			return;
-		}
-
-		$json = json_decode( $response_body, true );
-
-		return isset( $json['incompatible_extensions'] ) ? $json['incompatible_extensions'] : [];
+		return isset( $incompatible_extensions['incompatible_extensions'] ) ? $incompatible_extensions['incompatible_extensions'] : [];
 	}
 }

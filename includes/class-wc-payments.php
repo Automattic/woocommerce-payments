@@ -467,7 +467,7 @@ class WC_Payments {
 		self::$woopay_util                         = new WooPay_Utilities();
 		self::$woopay_tracker                      = new WooPay_Tracker( self::get_wc_payments_http() );
 
-		( new WooPay_Scheduler() )->init();
+		( new WooPay_Scheduler( self::$api_client ) )->init();
 
 		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
 
