@@ -769,7 +769,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		$gateways = WC()->payment_gateways->get_available_payment_gateways();
 		if ( isset( $gateways['woocommerce_payments'] ) ) {
-			$gateways['woocommerce_payments']->register_scripts();
+			WC_Payments::get_wc_payments_checkout()->register_scripts();
 		}
 	}
 

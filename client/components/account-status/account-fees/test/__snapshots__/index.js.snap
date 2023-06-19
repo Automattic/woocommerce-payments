@@ -345,7 +345,7 @@ exports[`AccountFees renders discounts multiple payment methods 1`] = `
   </s>
    1.4% + $0.25 per transaction
   <p>
-    GiroPay transactions
+    giropay transactions
     :
   </p>
   United States (US) dollar 
