@@ -1313,89 +1313,55 @@ class WC_Payments {
 			add_filter( 'admin_notices', 'wcpay_show_old_woocommerce_for_norway_notice' );
 		}
 
-		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.8', '<' ) && get_woocommerce_currency() === 'SEK' ) {
-			/**
-			 * Shows an alert notice for Swedish merchants on WooCommerce 7.7 and below
-			 */
-			function wcpay_show_old_woocommerce_for_sweden_notice() {
-				?>
-				<div class="notice wcpay-notice notice-error">
-					<p>
-					<?php
-					echo WC_Payments_Utils::esc_interpolated_html(
-						sprintf(
-						/* translators: %1: currently installed WC version number */
-							__( 'The WooCommerce version you have installed is not compatible with WooCommerce Payments for a Swedish business. Please update WooCommerce to version 7.8 or above (you are using %1$s). You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' ),
-							WC_VERSION
-						),
-						[
-							'a1' => '<a href="' . admin_url( 'plugins.php' ) . '">',
-						]
-					)
-					?>
-					</p>
-				</div>
-				<?php
+		/**
+		 * Shows an alert notice for Hungarian, Sweden, and Czech Republic merchants on WooCommerce 7.4 and below
+		 */
+		function wcpay_show_old_woocommerce_for_hungary_sweden_and_czech_republic() {
+			$currencies        = [ 'HUF', 'SEK', 'CZK' ];
+			$store_currency    = get_woocommerce_currency();
+			$should_show_error = in_array( $store_currency, $currencies, true );
+
+			if ( ! defined( 'WC_VERSION' ) || ! version_compare( WC_VERSION, '7.8', '<' ) || ! $should_show_error ) {
+				return;
 			}
 
-			add_filter( 'admin_notices', 'wcpay_show_old_woocommerce_for_sweden_notice' );
-		}
+			$notice = '';
 
-		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.8', '<' ) && get_woocommerce_currency() === 'HUF' ) {
-			/**
-			 * Shows an alert notice for Hungarian merchants on WooCommerce 7.7 and below
-			 */
-			function wcpay_show_old_woocommerce_for_hungary_notice() {
-				?>
-				<div class="notice wcpay-notice notice-error">
-					<p>
-					<?php
-					echo WC_Payments_Utils::esc_interpolated_html(
-						sprintf(
-						/* translators: %1: currently installed WC version number */
-							__( 'The WooCommerce version you have installed is not compatible with WooCommerce Payments for a Hungarian business. Please update WooCommerce to version 7.8 or above (you are using %1$s). You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' ),
-							WC_VERSION
-						),
-						[
-							'a1' => '<a href="' . admin_url( 'plugins.php' ) . '">',
-						]
-					)
-					?>
-					</p>
-				</div>
-				<?php
+			switch ( $store_currency ) {
+				case 'HUF':
+					/* translators: %1$s: The current WordPress version used by the store */
+					$notice = __( 'The WooCommerce version you have installed is not compatible with WooCommerce Payments for a Hungarian business. Please update WooCommerce to version 7.8 or above (you are using %1$s). You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' );
+					return;
+				case 'SEK':
+					/* translators: %1$s: The current WordPress version used by the store */
+					$notice = __( 'The WooCommerce version you have installed is not compatible with WooCommerce Payments for a Swedish business. Please update WooCommerce to version 7.8 or above (you are using %1$s). You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' );
+					return;
+				case 'CZK':
+					/* translators: %1$s: The current WordPress version used by the store */
+					$notice = __( 'The WooCommerce version you have installed is not compatible with WooCommerce Payments for a Czech Republic business. Please update WooCommerce to version 7.8 or above (you are using %1$s). You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' );
+					return;
 			}
 
-			add_filter( 'admin_notices', 'wcpay_show_old_woocommerce_for_hungary_notice' );
-		}
-
-		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.8', '<' ) && get_woocommerce_currency() === 'CZK' ) {
-			/**
-			 * Shows an alert notice for Czech Republic merchants on WooCommerce 7.7 and below
-			 */
-			function wcpay_show_old_woocommerce_for_czech_republic_notice() {
-				?>
-				<div class="notice wcpay-notice notice-error">
-					<p>
-					<?php
-					echo WC_Payments_Utils::esc_interpolated_html(
-						sprintf(
-						/* translators: %1: currently installed WC version number */
-							__( 'The WooCommerce version you have installed is not compatible with WooCommerce Payments for a Czech Republic business. Please update WooCommerce to version 7.8 or above (you are using %1$s). You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' ),
-							WC_VERSION
-						),
-						[
-							'a1' => '<a href="' . admin_url( 'plugins.php' ) . '">',
-						]
-					)
-					?>
-					</p>
-				</div>
+			?>
+			<div class="notice wcpay-notice notice-error">
+				<p>
 				<?php
-			}
-
-			add_filter( 'admin_notices', 'wcpay_show_old_woocommerce_for_czech_republic_notice' );
+				echo WC_Payments_Utils::esc_interpolated_html(
+					sprintf(
+						$notice,
+						WC_VERSION
+					),
+					[
+						'a1' => '<a href="' . admin_url( 'plugins.php' ) . '">',
+					]
+				)
+				?>
+				</p>
+			</div>
+			<?php
 		}
+
+		add_filter( 'admin_notices', 'wcpay_show_old_woocommerce_for_hungary_sweden_and_czech_republic' );
 	}
 
 	/**
