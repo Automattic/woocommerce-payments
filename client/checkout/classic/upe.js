@@ -26,6 +26,7 @@ import {
 	getFingerprint,
 	appendFingerprintInputToForm,
 } from '../utils/fingerprint';
+import PAYMENT_METHOD_IDS from 'wcpay/payment-methods/constants';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
@@ -145,9 +146,37 @@ jQuery( function ( $ ) {
 		$( '#wcpay_selected_upe_payment_type' ).val( paymentType );
 	};
 
+	// Get the selected UPE payment type field
+	const getSelectedUPEPaymentType = () => {
+		return $( '#wcpay_selected_upe_payment_type' ).val();
+	};
+
 	// Set the payment country field
 	const setPaymentCountry = ( country ) => {
 		$( '#wcpay_payment_country' ).val( country );
+	};
+
+	/**
+	 * Converts form fields object into Stripe `shipping` object.
+	 *
+	 * @param {Object} fields Object mapping checkout shippinh fields to values.
+	 * @return {Object} Stripe formatted `shpping` object.
+	 */
+	const getShippingDetails = ( fields ) => {
+		return {
+			name:
+				`${ fields.billing_first_name } ${ fields.billing_last_name }`.trim() ||
+				'-',
+			phone: fields.billing_phone || '-',
+			address: {
+				country: fields.billing_country || '-',
+				line1: fields.billing_address_1 || '-',
+				line2: fields.billing_address_2 || '-',
+				city: fields.billing_city || '-',
+				state: fields.billing_state || '-',
+				postal_code: fields.billing_postcode || '-',
+			},
+		};
 	};
 
 	/**
@@ -236,10 +265,12 @@ jQuery( function ( $ ) {
 			} catch ( error ) {
 				unblockUI( $upeContainer );
 				showErrorCheckout( error.message );
-				const gatewayErrorMessage =
-					'<div>An error was encountered when preparing the payment form. Please try again later.</div>';
+				const gatewayErrorMessage = __(
+					'An error was encountered when preparing the payment form. Please try again later.',
+					'woocommerce-payments'
+				);
 				$( '.payment_box.payment_method_woocommerce_payments' ).html(
-					gatewayErrorMessage
+					`<div>${ gatewayErrorMessage }</div>`
 				);
 			}
 		}
@@ -457,7 +488,7 @@ jQuery( function ( $ ) {
 				paymentIntentId,
 				orderId,
 				savePaymentMethod,
-				$( '#wcpay_selected_upe_payment_type' ).val(),
+				getSelectedUPEPaymentType(),
 				$( '#wcpay_payment_country' ).val()
 			);
 
@@ -560,6 +591,13 @@ jQuery( function ( $ ) {
 					},
 				},
 			};
+			const paymentMethodType = getSelectedUPEPaymentType();
+			// Afterpay requires shipping details to be passed. Not needed by other payment methods.
+			if ( PAYMENT_METHOD_IDS.AFTERPAY_CLEARPAY === paymentMethodType ) {
+				upeConfig.confirmParams.shipping = getShippingDetails(
+					formFields
+				);
+			}
 			let error;
 			if ( response.payment_needed ) {
 				( { error } = await api.handlePaymentConfirmation(
