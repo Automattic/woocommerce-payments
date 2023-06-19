@@ -94,6 +94,35 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 6.1.0-test-2 - unreleased =
+* Add - Add Affirm and Afterpay to checkout block
+* Add - Add Affirm and Afterpay to classic checkout
+* Add - Add BNPL messaging to the product details page via Stripe Payment Method Messaging Element
+* Add - Added a check to disable WooPay in case incompatible extensions are found
+* Add - Adds implementation to handle deferred intent for the UPE in My account page
+* Add - Add Tap to Pay device type filter on transactions list page
+* Add - Add usage tracking to WooPay express button location updates
+* Add - Affirm and Afterpay logo support in transactions listing and transaction details
+* Add - Ensure Affirm and Afterpay available on checkout only when the payment is in expected range.
+* Add - Improve the wording and style of the "Active Disputes" task list item on the Payments → Overview screen to better communicate the urgency of resolving these disputes.
+* Add - Links in subscription deactivation modal open in a new tab
+* Add - Show checkbox options for Affirm and Afterpay BNPL payment options
+* Fix - Add deadline and amount to clarify disputed order note
+* Fix - Allow `card_` prefix when validating payment method IDs to fix failing subscription renewals
+* Fix - Fix untranslated strings on the checkout page
+* Fix - Hide Google Pay and Apple Pay buttons when total amount is zero on item details, cart, and checkout pages.
+* Fix - Move WP hooks registration out of the core classes' constructors
+* Fix - Remove all actions on preflight check
+* Fix - Updated correct link for request classes docs
+* Update - Display the "Active Disputes" task list item on the Payments → Overview screen only if there are disputes due within seven days.
+* Update - Improve copy in Subscriptions deactivation modal
+* Update - Moved the overview task list to the welcome greeting to improve visibility of important tasks.
+* Update - Update the design for UPE settings block
+* Dev - Bump minimum required version of WooCommerce to 7.8.0
+* Dev - Comment: Add script to run QIT security tests locally.
+* Dev - Gracefully handle missing payment method constants
+* Dev - Tracking events for BNPL payment methods.
+
 = 6.0.0 - 2023-06-08 =
 * Add - Show Progressive Onboarding Express using Explat experiment
 * Fix - Add a session check to avoid fatal errors.
