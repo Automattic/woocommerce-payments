@@ -1,4 +1,9 @@
 /**
+ * Internal dependencies
+ */
+import PAYMENT_METHOD_IDS from 'wcpay/payment-methods/constants';
+
+/**
  * Handles the confirmation of card payments (3DSv2 modals/SCA challenge).
  *
  * @param {WCPayAPI} api            The API used for connection both with the server and Stripe.
@@ -8,6 +13,7 @@
  * @param {Object}   elements       Reference to the UPE elements mounted on the page.
  * @param {Object}   billingData    An object containing the customer's billing data.
  * @param {Object}   emitResponse   Various helpers for usage with observer response objects.
+ * @param {string}   selectedUPEPaymentType   The selected UPE payment type.
  * @return {Object}                An object, which contains the result from the action.
  */
 export default async function confirmUPEPayment(
@@ -17,7 +23,8 @@ export default async function confirmUPEPayment(
 	paymentIntentSecret,
 	elements,
 	billingData,
-	emitResponse
+	emitResponse,
+	selectedUPEPaymentType
 ) {
 	const name =
 		`${ billingData.first_name } ${ billingData.last_name }`.trim() || '-';
@@ -44,6 +51,22 @@ export default async function confirmUPEPayment(
 				},
 			},
 		};
+
+		// Afterpay requires shipping details to be passed. Not needed by other payment methods.
+		if ( PAYMENT_METHOD_IDS.AFTERPAY_CLEARPAY === selectedUPEPaymentType ) {
+			confirmParams.shipping = {
+				name,
+				phone: billingData.phone || '-',
+				address: {
+					country: billingData.country || '_',
+					postal_code: billingData.postcode || '-',
+					state: billingData.state || '-',
+					city: billingData.city || '-',
+					line1: billingData.address_1 || '-',
+					line2: billingData.address_2 || '-',
+				},
+			};
+		}
 
 		if ( paymentNeeded ) {
 			const { error } = await api.handlePaymentConfirmation(
