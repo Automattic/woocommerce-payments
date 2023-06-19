@@ -148,7 +148,7 @@ class WC_Payments_Task_Disputes extends Task {
 			$diff = $now->diff( $due_by );
 
 			return sprintf(
-				/* translators: %1$s is time, eg: Jan 1, 2021. %2$s is the number of days left, eg: 2 days. */
+				/* translators: %1$s is a date, eg: Jan 1, 2021. %2$s is the number of days left, eg: 2 days. */
 				__( 'By %1$s – %2$s left to respond', 'woocommerce-payments' ),
 				( new \DateTime( $dispute['due_by'] ) )->format( 'MMM D, YYYY' ), // TODO make sure time is in merchant's store timezone
 				/* translators: %d is the number of days left, e.g. 1 day. */
