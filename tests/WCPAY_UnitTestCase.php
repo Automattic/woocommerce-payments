@@ -68,7 +68,7 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 			$request
 				->expects( $this->exactly( $total_api_calls ) )
 				->method( 'format_response' )
-				->willReturn( new Response( $response ) );
+				->willReturn( $response instanceof Response ? $response : new Response( $response ) );
 		}
 
 		// An anonymous callback, which will be used once and disposed.
