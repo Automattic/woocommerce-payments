@@ -527,8 +527,15 @@ class WC_Payments_API_Client {
 		return $this->request( [], self::DISPUTES_API . '/status_counts', self::GET );
 	}
 
-	public function get_disputes( array $params = [] ) {
-		return $this->request( $params, self::DISPUTES_API, self::GET );
+	/**
+	 * Fetch disputes by provided query.
+	 *
+	 * @param array $filters Query to be used to get disputes.
+	 * @return array Disputes.
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_disputes( array $filters = [] ) {
+		return $this->request( $filters, self::DISPUTES_API, self::GET );
 	}
 
 	/**
