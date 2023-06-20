@@ -1,4 +1,4 @@
 Significance: patch
 Type: dev
 
-Added generic GET request class
+Add generic Get_Request class, and migrate current simple requests to use it
