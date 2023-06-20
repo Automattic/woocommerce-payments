@@ -137,7 +137,7 @@ class WC_Payments_Task_Disputes extends Task {
 				return sprintf(
 					/* translators: %s is time, eg: 11:59 PM */
 					__( 'Respond today by %s', 'woocommerce-payments' ),
-					$due_by->format( 'h:m A' ) // TODO make sure time is in merchant's store timezone
+					$due_by->format( 'h:i A' ) // TODO make sure time is in merchant's store timezone
 				);
 			}
 
