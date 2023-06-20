@@ -65,7 +65,8 @@ class WC_Payments_Task_Disputes extends Task {
 
 		if ( count( $disputes_due_within_7d ) === 1 ) {
 			$dispute          = $disputes_due_within_7d[0];
-			$amount_formatted = WC_Payments_Utils::format_currency( $dispute['amount'], $dispute['currency'] );
+			$amount           = WC_Payments_Utils::interpret_stripe_amount( $dispute['amount'], $dispute['currency'] );
+			$amount_formatted = WC_Payments_Utils::format_currency( $amount, $dispute['currency'] );
 			if ( count( $disputes_due_within_1d ) > 0 ) {
 				return sprintf(
 					/* translators: %s is a currency formatted amount */
@@ -92,7 +93,8 @@ class WC_Payments_Task_Disputes extends Task {
 		sort( $currencies );
 		$formatted_amounts = [];
 		foreach ( $currencies as $currency ) {
-			$formatted_amounts[] = WC_Payments_Utils::format_currency( $currencies_map[ $currency ], $currency );
+			$amount              = WC_Payments_Utils::interpret_stripe_amount( $currencies_map[ $currency ], $currency );
+			$formatted_amounts[] = WC_Payments_Utils::format_currency( $amount, $currency );
 		}
 		$dispute_total_amounts = implode( ', ', $formatted_amounts );
 
