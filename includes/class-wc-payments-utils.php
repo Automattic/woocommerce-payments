@@ -900,7 +900,7 @@ class WC_Payments_Utils {
 	public static function get_dispute_reason_description( string $reason ): string {
 		switch ( $reason ) {
 			case 'bank_cannot_process':
-				return __( 'Bank can not process', 'woocommerce-payments' );
+				return __( 'Bank cannot process', 'woocommerce-payments' );
 			case 'check_returned':
 				return __( 'Check returned', 'woocommerce-payments' );
 			case 'credit_not_processed':
@@ -912,7 +912,7 @@ class WC_Payments_Utils {
 			case 'duplicate':
 				return __( 'Duplicate', 'woocommerce-payments' );
 			case 'fraudulent':
-				return __( 'Transaction unauthorized', 'woocommerce-payments' );
+				return __( 'Fraudulent', 'woocommerce-payments' );
 			case 'incorrect_account_details':
 				return __( 'Incorrect account details', 'woocommerce-payments' );
 			case 'insufficient_funds':
@@ -922,7 +922,7 @@ class WC_Payments_Utils {
 			case 'product_unacceptable':
 				return __( 'Product unacceptable', 'woocommerce-payments' );
 			case 'subscription_canceled':
-				return __( 'Subscription cancelled', 'woocommerce-payments' );
+				return __( 'Subscription canceled', 'woocommerce-payments' );
 			case 'unrecognized':
 				return __( 'Unrecognized', 'woocommerce-payments' );
 			default:
