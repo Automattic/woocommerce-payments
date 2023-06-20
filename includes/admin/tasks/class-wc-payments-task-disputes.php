@@ -292,52 +292,6 @@ class WC_Payments_Task_Disputes extends Task {
 	 * @return mixed|null
 	 */
 	private function get_disputes_needing_response() {
-		// TODO remove. For testing only.
-		$test_disputes = [
-			[
-				'wcpay_disputes_cache_id' => 23,
-				'stripe_account_id'       => 'acct_abc',
-				'dispute_id'              => 'dp_1',
-				'charge_id'               => 'ch_1',
-				'amount'                  => 1000,
-				'currency'                => 'usd',
-				'reason'                  => 'product_not_received',
-				'source'                  => 'visa',
-				'order_number'            => 16,
-				'customer_name'           => 'customer',
-				'customer_email'          => 'email@email.com',
-				'customer_country'        => 'US',
-				'status'                  => 'needs_response',
-				'created'                 => '2023-06-14 06:36:56',
-				'due_by'                  => '2023-06-24 00:59:59',
-			],
-			[
-				'wcpay_disputes_cache_id' => 21,
-				'stripe_account_id'       => 'acct_abc',
-				'dispute_id'              => 'dp_2',
-				'charge_id'               => 'ch_2',
-				'amount'                  => 2000,
-				'currency'                => 'eur',
-				'reason'                  => 'product_not_received',
-				'source'                  => 'visa',
-				'order_number'            => 14,
-				'customer_name'           => 'customer',
-				'customer_email'          => 'email@email.com',
-				'customer_country'        => 'US',
-				'status'                  => 'needs_response',
-				'created'                 => '2023-06-12 20:49:50',
-				'due_by'                  => '2023-06-22 00:59:59',
-			],
-		];
-		// TODO remove. For testing only.
-		// return array_map(
-		// 	function( $dispute ) {
-		// 		$dispute['due_by'] = gmdate( 'Y-m-d H:i:s', strtotime( '+2 days' ) );
-		// 		return $dispute;
-		// 	},
-		// 	$test_disputes
-		// );
-
 		return $this->database_cache->get_or_add(
 			Database_Cache::ACTIVE_DISPUTES_KEY,
 			function() {
