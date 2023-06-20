@@ -160,7 +160,7 @@ class WC_Payments_Task_Disputes extends Task {
 			return sprintf(
 				/* translators: %d is the number of disputes. */
 				__(
-					'Final day to respond for %d of the disputes',
+					'Final day to respond to %d of the disputes',
 					'woocommerce-payments'
 				),
 				count( $disputes_due_within_1d )
@@ -170,7 +170,7 @@ class WC_Payments_Task_Disputes extends Task {
 		return sprintf(
 			/* translators: %d is the number of disputes. */
 			__(
-				'Last week to respond for %d of the disputes',
+				'Last week to respond to %d of the disputes',
 				'woocommerce-payments'
 			),
 			count( $disputes_due_within_7d )
