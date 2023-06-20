@@ -75,7 +75,7 @@ export const OnboardingTextField: React.FC< OnboardingTextFieldProps > = ( {
 			} }
 			onBlur={ () => validate() }
 			onKeyDown={ ( event: React.KeyboardEvent< HTMLInputElement > ) => {
-				if ( event.key === 'Enter' ) validate( data[ name ] );
+				if ( event.key === 'Enter' ) validate();
 			} }
 			error={ error() }
 			{ ...rest }
@@ -108,7 +108,7 @@ export const OnboardingPhoneNumberField: React.FC< OnboardingPhoneNumberFieldPro
 			onBlur={ () => validate() }
 			error={ error() }
 			onKeyDown={ ( event: React.KeyboardEvent< HTMLInputElement > ) => {
-				if ( event.key === 'Enter' ) validate( data[ name ] );
+				if ( event.key === 'Enter' ) validate();
 			} }
 			{ ...rest }
 		/>
