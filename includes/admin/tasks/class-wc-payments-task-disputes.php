@@ -9,6 +9,7 @@ namespace WooCommerce\Payments\Tasks;
 
 use Automattic\WooCommerce\Admin\Features\OnboardingTasks\Task;
 use WC_Payments_Utils;
+use WCPay\Database_Cache;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -334,16 +335,16 @@ class WC_Payments_Task_Disputes extends Task {
 			],
 		];
 		// TODO remove. For testing only.
-		return array_map(
-			function( $dispute ) {
-				$dispute['due_by'] = gmdate( 'Y-m-d H:i:s', strtotime( '+2 days' ) );
-				return $dispute;
-			},
-			$test_disputes
-		);
+		// return array_map(
+		// 	function( $dispute ) {
+		// 		$dispute['due_by'] = gmdate( 'Y-m-d H:i:s', strtotime( '+2 days' ) );
+		// 		return $dispute;
+		// 	},
+		// 	$test_disputes
+		// );
 
 		return $this->database_cache->get_or_add(
-			'wcpay_active_dispute_cache', // TODO create a constant at Database_Cache
+			Database_Cache::ACTIVE_DISPUTES_KEY,
 			function() {
 				$response = $this->api_client->get_disputes(
 					[
