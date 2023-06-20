@@ -30,6 +30,7 @@ import {
 
 import useIsUpeEnabled from '../settings/wcpay-upe-toggle/hook.js';
 import WcPayUpeContext from '../settings/wcpay-upe-toggle/context';
+import PAYMENT_METHOD_IDS from './constants';
 
 // Survey modal imports.
 import WcPaySurveyContextProvider from '../settings/survey-modal/provider';
@@ -80,10 +81,14 @@ const UpeSetupBanner = () => {
 	return (
 		<>
 			<CardDivider />
-			<CardBody className="payment-methods__express-checkouts">
+			<CardBody
+				className={ classNames( 'payment-methods__express-checkouts', {
+					'background-local-payment-methods': ! wcpaySettings.isBnplAffirmAfterpayEnabled,
+				} ) }
+			>
 				<h3>
 					{ __(
-						'Enable the new WooCommerce Payments checkout experience',
+						'Boost your sales by accepting additional payment methods',
 						'woocommerce-payments'
 					) }
 				</h3>
@@ -97,7 +102,7 @@ const UpeSetupBanner = () => {
 
 				<div className="payment-methods__express-checkouts-actions">
 					<span className="payment-methods__express-checkouts-get-started">
-						<Button isPrimary onClick={ handleEnableUpeClick }>
+						<Button isSecondary onClick={ handleEnableUpeClick }>
 							{ __(
 								'Enable in your store',
 								'woocommerce-payments'
@@ -121,9 +126,29 @@ const PaymentMethods = () => {
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
 
 	// We filter link payment method since this will be displayed in other section (express checkout).
-	const availableMethods = availablePaymentMethodIds
-		.filter( ( id ) => 'link' !== id )
-		.map( ( methodId ) => methodsConfiguration[ methodId ] );
+	// We further split the available methods into pay later and non-pay later methods to sort them in the required order later.
+	const availableNonPayLaterMethods = availablePaymentMethodIds.filter(
+		( id ) =>
+			PAYMENT_METHOD_IDS.LINK !== id &&
+			PAYMENT_METHOD_IDS.CARD !== id &&
+			! methodsConfiguration[ id ].allows_pay_later
+	);
+
+	const availablePayLaterMethods = availablePaymentMethodIds.filter(
+		( id ) =>
+			PAYMENT_METHOD_IDS.LINK !== id &&
+			methodsConfiguration[ id ].allows_pay_later
+	);
+
+	const orderedAvailablePaymentMethodIds = [
+		PAYMENT_METHOD_IDS.CARD,
+		...availablePayLaterMethods,
+		...availableNonPayLaterMethods,
+	];
+
+	const availableMethods = orderedAvailablePaymentMethodIds.map(
+		( methodId ) => methodsConfiguration[ methodId ]
+	);
 
 	const isCreditCardEnabled = enabledMethodIds.includes( 'card' );
 
@@ -271,9 +296,12 @@ const PaymentMethods = () => {
 												.status
 									}
 									// The card payment method is required when UPE is active, and it can't be disabled/unchecked.
-									required={ 'card' === id && isUpeEnabled }
+									required={
+										PAYMENT_METHOD_IDS.CARD === id &&
+										isUpeEnabled
+									}
 									locked={
-										'card' === id &&
+										PAYMENT_METHOD_IDS.CARD === id &&
 										isCreditCardEnabled &&
 										isUpeEnabled
 									}
