@@ -151,9 +151,9 @@ class WC_Payments_Task_Disputes extends Task {
 			return sprintf(
 				/* translators: %1$s is a date, eg: Jan 1, 2021. %2$s is the number of days left, eg: 2 days. */
 				__( 'By %1$s – %2$s left to respond', 'woocommerce-payments' ),
-				$due_by->format( 'MMM D, YYYY' ), // TODO make sure time is in merchant's store timezone
-				/* translators: %d is the number of days left, e.g. 1 day. */
-				_n( '%d day', '%d days', $diff->days, 'woocommerce-payments' ) // TODO make sure time is in merchant's store timezone and when it is 1 day left, it should say 1 day left, not 0 day
+				$due_by->format( 'M d, Y' ), // TODO make sure time is in merchant's store timezone
+				/* translators: %s is the number of days left, e.g. 1 day. */
+				sprintf( _n( '%d day', '%d days', $diff->days, 'woocommerce-payments' ), $diff->days ) // TODO make sure time is in merchant's store timezone and when it is 1 day left, it should say 1 day left, not 0 day
 			);
 		}
 
