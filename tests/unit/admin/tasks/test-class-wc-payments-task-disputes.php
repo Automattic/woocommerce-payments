@@ -56,7 +56,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 				'customer_country'        => 'US',
 				'status'                  => 'needs_response',
 				'created'                 => gmdate( 'Y-m-d H:i:s', strtotime( '-14 days' ) ),
-				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+8 days' ) ),
+				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+9 days' ) ),
 			],
 		];
 		$this->mock_cache->method( 'get_or_add' )->willReturn(
