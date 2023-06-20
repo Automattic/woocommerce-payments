@@ -70,8 +70,8 @@ class WC_REST_Payments_VAT_Controller extends WC_Payments_REST_Controller {
 	 */
 	public function validate_vat( $request ) {
     $vat_number = sanitize_text_field( $request->get_param( 'vat_number' ) );
-		$request    = Request::get( WC_Payments_API_Client::VAT_API, $vat_number );
-		return $request->send( 'wcpay_validate_vat_request' );
+		$server_request    = Request::get( WC_Payments_API_Client::VAT_API, $vat_number );
+		return $server_request->send( 'wcpay_validate_vat_request' );
 	}
 
 	/**
