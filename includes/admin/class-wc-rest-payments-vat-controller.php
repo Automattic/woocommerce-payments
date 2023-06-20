@@ -43,14 +43,17 @@ class WC_REST_Payments_VAT_Controller extends WC_Payments_REST_Controller {
 				'args'                => [
 					'vat_number' => [
 						'type'     => 'string',
+						'format'   => 'text-field',
 						'required' => false,
 					],
 					'name'       => [
 						'type'     => 'string',
+						'format'   => 'text-field',
 						'required' => true,
 					],
 					'address'    => [
 						'type'     => 'string',
+						'format'   => 'textarea-field',
 						'required' => true,
 					],
 				],
@@ -66,7 +69,7 @@ class WC_REST_Payments_VAT_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function validate_vat( $request ) {
-		$vat_number = $request->get_param( 'vat_number' );
+    $vat_number = sanitize_text_field( $request->get_param( 'vat_number' ) );
 		$request    = Request::get( WC_Payments_API_Client::VAT_API, $vat_number );
 		return $request->send( 'wcpay_validate_vat_request' );
 	}

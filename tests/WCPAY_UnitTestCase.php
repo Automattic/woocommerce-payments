@@ -6,6 +6,7 @@
  */
 
 use WCPay\Core\Server\Request;
+use WCPay\Core\Server\Response;
 
 /**
  * This stub assists IDE in recognizing PHPUnit tests.
@@ -61,8 +62,14 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 						return get_class( $request ) === get_class( $argument ) || is_subclass_of( $argument, $request_class );
 					}
 				)
-			)
-			->willReturn( $response );
+			);
+
+		if ( ! is_null( $response ) ) {
+			$request
+				->expects( $this->exactly( $total_api_calls ) )
+				->method( 'format_response' )
+				->willReturn( $response instanceof Response ? $response : new Response( $response ) );
+		}
 
 		// An anonymous callback, which will be used once and disposed.
 		$fn = function( $existing_request, $class_name ) use ( &$fn, $request ) {

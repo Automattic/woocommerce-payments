@@ -443,9 +443,50 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			add_action( 'template_redirect', [ $this, 'clear_session_processing_order_after_landing_order_received_page' ], 21 );
 
 			add_action( 'woocommerce_update_order', [ $this, 'schedule_order_tracking' ], 10, 2 );
+
+			add_filter( 'rest_request_before_callbacks', [ $this, 'remove_all_actions_on_preflight_check' ], 10, 3 );
 		}
 
 		$this->maybe_init_subscriptions_hooks();
+	}
+
+	/**
+	 * If we're in a WooPay preflight check, remove all the checkout order processed
+	 * actions to prevent reduce available resources quantity.
+	 *
+	 * @param mixed           $response The response object.
+	 * @param mixed           $handler The handler used for the response.
+	 * @param WP_REST_Request $request The request used to generate the response.
+	 *
+	 * @return mixed
+	 */
+	public function remove_all_actions_on_preflight_check( $response, $handler, $request ) {
+		$payment_data = $this->get_request_payment_data( $request );
+		if ( ! empty( $payment_data['is-woopay-preflight-check'] ) ) {
+			remove_all_actions( 'woocommerce_store_api_checkout_order_processed' );
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Gets and formats payment request data.
+	 *
+	 * @param \WP_REST_Request $request Request object.
+	 * @return array
+	 */
+	private function get_request_payment_data( \WP_REST_Request $request ) {
+		static $payment_data = [];
+		if ( ! empty( $payment_data ) ) {
+			return $payment_data;
+		}
+		if ( ! empty( $request['payment_data'] ) ) {
+			foreach ( $request['payment_data'] as $data ) {
+				$payment_data[ sanitize_key( $data['key'] ) ] = wc_clean( $data['value'] );
+			}
+		}
+
+		return $payment_data;
 	}
 
 	/**
@@ -1074,6 +1115,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_payment_methods( $payment_methods );
 				$request->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
 
+				// Afterpay expects the shipping address to be sent in the request. This is not required for other payment methods.
+				if ( Payment_Method::AFTERPAY === $payment_information->get_payment_method() ) {
+					$request->set_shipping( $this->get_shipping_data_from_order( $order ) );
+				}
+
 				// The below if-statement ensures the support for UPE payment methods.
 				if ( $this->upe_needs_redirection( $payment_methods ) ) {
 					$request->set_return_url(
@@ -1683,6 +1729,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->get_deposit_delay_days();
 			case 'deposit_status':
 				return $this->get_deposit_status();
+			case 'deposit_restrictions':
+				return $this->get_deposit_restrictions();
 			case 'deposit_completed_waiting_period':
 				return $this->get_deposit_completed_waiting_period();
 			case 'current_protection_level':
@@ -1727,12 +1775,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function update_is_woopay_enabled( $is_woopay_enabled ) {
 		$current_is_woopay_enabled = 'yes' === $this->get_option( 'platform_checkout', 'no' );
+
 		if ( $is_woopay_enabled !== $current_is_woopay_enabled ) {
 			WC_Payments::woopay_tracker()->maybe_record_admin_event(
 				$is_woopay_enabled ? 'woopay_enabled' : 'woopay_disabled',
 				[ 'test_mode' => WC_Payments::mode()->is_test() ? 1 : 0 ]
 			);
+
 			$this->update_option( 'platform_checkout', $is_woopay_enabled ? 'yes' : 'no' );
+
 			if ( ! $is_woopay_enabled ) {
 				WooPay_Order_Status_Sync::remove_webhook();
 			} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
@@ -2216,6 +2267,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Gets connected account deposit restrictions.
+	 *
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit restrictions.
+	 *
+	 * @return string deposit restrictions or default value.
+	 */
+	protected function get_deposit_restrictions( string $empty_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_deposit_restrictions();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get deposit restrictions.' . $e );
+		}
+		return $empty_value;
+	}
+
+	/**
 	 * Gets the completed deposit waiting period value.
 	 *
 	 * @param bool $empty_value Empty value to return when not connected or fails to fetch the completed deposit waiting period value.
@@ -2576,6 +2645,34 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'id'        => ! empty( $intent ) ? $intent->get_id() : null,
 			'message'   => $error_message,
 			'http_code' => $http_code,
+		];
+	}
+
+	/**
+	 * Create the shipping data array to send to Stripe when making a purchase.
+	 *
+	 * @param WC_Order $order The order that is being paid for.
+	 * @return array          The shipping data to send to Stripe.
+	 */
+	public function get_shipping_data_from_order( WC_Order $order ): array {
+		return [
+			'name'    => implode(
+				' ',
+				array_filter(
+					[
+						$order->get_shipping_first_name(),
+						$order->get_shipping_last_name(),
+					]
+				)
+			),
+			'address' => [
+				'line1'       => $order->get_shipping_address_1(),
+				'line2'       => $order->get_shipping_address_2(),
+				'postal_code' => $order->get_shipping_postcode(),
+				'city'        => $order->get_shipping_city(),
+				'state'       => $order->get_shipping_state(),
+				'country'     => $order->get_shipping_country(),
+			],
 		];
 	}
 

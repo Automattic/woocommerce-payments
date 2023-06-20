@@ -42,6 +42,7 @@ use WCPay\WC_Payments_UPE_Checkout;
 use WCPay\WooPay\Service\Checkout_Service;
 use WCPay\Core\WC_Payments_Customer_Service_API;
 use WCPay\Blocks_Data_Extractor;
+use WCPay\WooPay\WooPay_Scheduler;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -403,6 +404,7 @@ class WC_Payments {
 		include_once __DIR__ . '/constants/class-payment-intent-status.php';
 		include_once __DIR__ . '/constants/class-payment-capture-type.php';
 		include_once __DIR__ . '/constants/class-payment-method.php';
+		include_once __DIR__ . '/constants/class-track-events.php';
 		include_once __DIR__ . '/class-payment-information.php';
 		require_once __DIR__ . '/notes/class-wc-payments-remote-note-service.php';
 		include_once __DIR__ . '/class-wc-payments-action-scheduler-service.php';
@@ -424,6 +426,7 @@ class WC_Payments {
 		include_once __DIR__ . '/woopay/class-woopay-utilities.php';
 		include_once __DIR__ . '/woopay/class-woopay-order-status-sync.php';
 		include_once __DIR__ . '/woopay/class-woopay-store-api-session-handler.php';
+		include_once __DIR__ . '/woopay/class-woopay-scheduler.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-link.php';
 		include_once __DIR__ . '/core/service/class-wc-payments-customer-service-api.php';
 
@@ -437,6 +440,9 @@ class WC_Payments {
 
 		// // Load woopay save user section if feature is enabled.
 		add_action( 'woocommerce_cart_loaded_from_session', [ __CLASS__, 'init_woopay' ] );
+
+		// Load Stripe site messaging.
+		add_action( 'woocommerce_single_product_summary', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ], 30 );
 
 		// Init the email template for In Person payment receipt email. We need to do it before passing the mailer to the service.
 		add_filter( 'woocommerce_email_classes', [ __CLASS__, 'add_ipp_emails' ], 10 );
@@ -461,6 +467,8 @@ class WC_Payments {
 		self::$onboarding_service                  = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
 		self::$woopay_util                         = new WooPay_Utilities();
 		self::$woopay_tracker                      = new WooPay_Tracker( self::get_wc_payments_http() );
+
+		( new WooPay_Scheduler() )->init();
 
 		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
 
@@ -1436,9 +1444,6 @@ class WC_Payments {
 
 		$account_id = self::get_account_service()->get_stripe_account_id();
 
-		$woopay_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'https://pay.woo.com';
-		$url         = $woopay_host . '/wp-json/platform-checkout/v1/init';
-
 		$store_logo = self::get_gateway()->get_option( 'platform_checkout_store_logo' );
 
 		include_once WCPAY_ABSPATH . 'includes/compat/blocks/class-blocks-data-extractor.php';
@@ -1473,7 +1478,7 @@ class WC_Payments {
 			'user_session'    => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];
 		$args = [
-			'url'     => $url,
+			'url'     => WooPay_Utilities::get_woopay_rest_url( 'init' ),
 			'method'  => 'POST',
 			'timeout' => 30,
 			'body'    => wp_json_encode( $body ),
@@ -1630,6 +1635,19 @@ class WC_Payments {
 			include_once __DIR__ . '/woopay-user/class-woopay-save-user.php';
 
 			new WooPay_Save_User();
+		}
+	}
+
+	/**
+	 * Load stripe site messaging script.
+	 *
+	 * @return void
+	 */
+	public static function load_stripe_bnpl_site_messaging() {
+		if ( WC_Payments_Features::is_bnpl_affirm_afterpay_enabled() ) {
+			require_once __DIR__ . '/class-wc-payments-payment-method-messaging-element.php';
+			$stripe_site_messaging = new WC_Payments_Payment_Method_Messaging_Element( self::$account, self::$card_gateway );
+			echo wp_kses( $stripe_site_messaging->init(), 'post' );
 		}
 	}
 

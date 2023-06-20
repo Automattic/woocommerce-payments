@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Hide Google Pay and Apple Pay buttons when total amount is zero on item details, cart, and checkout pages.
