@@ -130,30 +130,27 @@ class WC_Payments_Task_Disputes extends Task {
 		$disputes_due_within_1d = $this->get_disputes_needing_response_within_days( 1 );
 
 		if ( count( $disputes_due_within_7d ) === 1 ) {
-			$dispute = $disputes_due_within_7d[0];
-			$due_by  = new \DateTime( $dispute['due_by'] );
+			$local_timezone    = new \DateTimeZone( wp_timezone_string() );
+			$dispute           = $disputes_due_within_7d[0];
+			$due_by_local_time = ( new \DateTime( $dispute['due_by'] ) )->setTimezone( $local_timezone );
 
 			if ( count( $disputes_due_within_1d ) > 0 ) {
 				return sprintf(
 					/* translators: %s is time, eg: 11:59 PM */
 					__( 'Respond today by %s', 'woocommerce-payments' ),
-					$due_by->format( 'h:i A' ) // TODO make sure time is in merchant's store timezone
+					$due_by_local_time->format( 'h:i A' )
 				);
 			}
 
-			// Convert merchant's store timezone to UTC.
-			$timezone = new \DateTimeZone( wp_timezone_string() );
-			$now      = new \DateTime( 'now', $timezone );
-			$now->setTimezone( new \DateTimeZone( 'UTC' ) );
-
-			$diff = $now->diff( $due_by );
+			$now  = new \DateTime( 'now', $local_timezone );
+			$diff = $now->diff( $due_by_local_time );
 
 			return sprintf(
 				/* translators: %1$s is a date, eg: Jan 1, 2021. %2$s is the number of days left, eg: 2 days. */
 				__( 'By %1$s – %2$s left to respond', 'woocommerce-payments' ),
-				$due_by->format( 'M d, Y' ), // TODO make sure time is in merchant's store timezone
+				$due_by_local_time->format( 'M d, Y' ),
 				/* translators: %s is the number of days left, e.g. 1 day. */
-				sprintf( _n( '%d day', '%d days', $diff->days, 'woocommerce-payments' ), $diff->days ) // TODO make sure time is in merchant's store timezone and when it is 1 day left, it should say 1 day left, not 0 day
+				sprintf( _n( '%d day', '%d days', $diff->days, 'woocommerce-payments' ), $diff->days ) // TODO: ensure when it is 1 day left, it should say 1 day left, not 0 day
 			);
 		}
 
@@ -268,21 +265,17 @@ class WC_Payments_Task_Disputes extends Task {
 				continue;
 			}
 
-			// TODO due_by does not carry timezone. It is possible that the server's timezone and merchant store's timezone is different. Is there a solution to get a more accurate time diff?
-			// Assume server's time is UTC.
-			$due_by = new \DateTime( $dispute['due_by'] );
-
-			// Convert merchant's store timezone to UTC.
-			$timezone = new \DateTimeZone( wp_timezone_string() );
-			$now      = new \DateTime( 'now', $timezone );
-			$now->setTimezone( new \DateTimeZone( 'UTC' ) );
+			// Server's time is UTC, convert due_by to local time.
+			$local_timezone    = new \DateTimeZone( wp_timezone_string() );
+			$now               = new \DateTime( 'now', $local_timezone );
+			$due_by_local_time = ( new \DateTime( $dispute['due_by'] ) )->setTimezone( $local_timezone );
 
 			// TODO do we want include disputes that are already past due?
-			if ( $now > $due_by ) {
+			if ( $now > $due_by_local_time ) {
 				continue;
 			}
 
-			$diff = $now->diff( $due_by );
+			$diff = $now->diff( $due_by_local_time );
 			if ( $diff->days <= $num_days ) {
 				$to_return[] = $dispute;
 			}
