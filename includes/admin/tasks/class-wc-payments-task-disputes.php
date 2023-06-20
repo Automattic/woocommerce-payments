@@ -152,7 +152,7 @@ class WC_Payments_Task_Disputes extends Task {
 				__( 'By %1$s – %2$s left to respond', 'woocommerce-payments' ),
 				$due_by_local_time->format( 'M d, Y' ),
 				/* translators: %s is the number of days left, e.g. 1 day. */
-				sprintf( _n( '%d day', '%d days', $diff->days, 'woocommerce-payments' ), $diff->days ) // TODO: ensure when it is 1 day left, it should say 1 day left, not 0 day
+				sprintf( _n( '%d day', '%d days', $diff->days, 'woocommerce-payments' ), $diff->days )
 			);
 		}
 
