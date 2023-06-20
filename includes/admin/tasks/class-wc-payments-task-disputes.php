@@ -302,11 +302,7 @@ class WC_Payments_Task_Disputes extends Task {
 					]
 				);
 
-				// TODO figure out why this is needed. I see other get_or_add() calls no need to return the response's 'data'
-				if ( $response && $response['data'] ) {
-					return $response['data'];
-				}
-				return [];
+				return $response['data'] ?? [];
 			},
 			// We'll consider all array values to be valid as the cache is only invalidated when it is deleted or it expires.
 			'is_array'
