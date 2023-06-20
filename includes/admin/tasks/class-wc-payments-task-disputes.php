@@ -82,8 +82,9 @@ class WC_Payments_Task_Disputes extends Task {
 			);
 		}
 
-		$currencies_map = [];
-		foreach ( $disputes_due_within_7d as $dispute ) {
+		$active_disputes = $this->get_disputes_needing_response();
+		$currencies_map  = [];
+		foreach ( $active_disputes as $dispute ) {
 			if ( ! isset( $currencies_map[ $dispute['currency'] ] ) ) {
 				$currencies_map[ $dispute['currency'] ] = 0;
 			}
@@ -102,7 +103,7 @@ class WC_Payments_Task_Disputes extends Task {
 		return sprintf(
 			/* translators: %d is a number. %s is a currency formatted amounts (potentially multiple), eg: €10.00, $20.00 */
 			__( 'Respond to %1$d active disputes for a total of %2$s', 'woocommerce-payments' ),
-			count( $disputes_due_within_7d ),
+			count( $active_disputes ),
 			$dispute_total_amounts
 		);
 	}
@@ -168,13 +169,14 @@ class WC_Payments_Task_Disputes extends Task {
 			);
 		}
 
+		$active_disputes = $this->get_disputes_needing_response();
 		return sprintf(
 			/* translators: %d is the number of disputes. */
 			__(
 				'Last week to respond to %d of the disputes',
 				'woocommerce-payments'
 			),
-			count( $disputes_due_within_7d )
+			count( $active_disputes )
 		);
 
 	}
