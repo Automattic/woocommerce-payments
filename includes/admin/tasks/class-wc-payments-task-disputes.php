@@ -287,9 +287,9 @@ class WC_Payments_Task_Disputes extends Task {
 	}
 
 	/**
-	 * Get disputes that need response.
+	 * Gets disputes awaiting a response. ie have a 'needs_response' or 'warning_needs_response' status.
 	 *
-	 * @return mixed|null
+	 * @return array|null Array of disputes awaiting a response. Null on failure.
 	 */
 	private function get_disputes_needing_response() {
 		return $this->database_cache->get_or_add(
