@@ -62,8 +62,9 @@ class Buyer_Fingerprinting_Service {
 	 * @return array An array of hashed data for an order.
 	 */
 	public function get_hashed_data_for_customer( $fingerprint ): array {
+		global $wp;
 		$order_items_count = WC()->cart ? intval( WC()->cart->get_cart_contents_count() ) : null;
-		$order_id          = isset( $_POST['wcpay_order_id'] ) ? intval( $_POST['wcpay_order_id'], 10 ) : 0; // phpcs:ignore WordPress.Security.NonceVerification
+		$order_id          = absint( $wp->query_vars['order-pay'] );
 		if ( ! $order_items_count && 0 < $order_id ) {
 			$order = wc_get_order( $order_id );
 			if ( $order ) {
