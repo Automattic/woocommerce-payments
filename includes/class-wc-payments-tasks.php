@@ -7,7 +7,6 @@
 
 use Automattic\WooCommerce\Admin\Features\OnboardingTasks\TaskLists;
 use WooCommerce\Payments\Tasks\WC_Payments_Task_Disputes;
-use WCPay\Database_Cache;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
