@@ -131,15 +131,15 @@ class WC_Payments_Task_Disputes extends Task {
 
 		if ( count( $disputes_due_within_7d ) === 1 ) {
 			$dispute = $disputes_due_within_7d[0];
+			$due_by  = new \DateTime( $dispute['due_by'] );
+
 			if ( count( $disputes_due_within_1d ) > 0 ) {
 				return sprintf(
 					/* translators: %s is time, eg: 11:59 PM */
 					__( 'Respond today by %s', 'woocommerce-payments' ),
-					( new \DateTime( $dispute['due_by'] ) )->format( 'h:m A' ) // TODO make sure time is in merchant's store timezone
+					$due_by->format( 'h:m A' ) // TODO make sure time is in merchant's store timezone
 				);
 			}
-
-			$due_by = new \DateTime( $dispute['due_by'] );
 
 			// Convert merchant's store timezone to UTC.
 			$timezone = new \DateTimeZone( wp_timezone_string() );
@@ -151,7 +151,7 @@ class WC_Payments_Task_Disputes extends Task {
 			return sprintf(
 				/* translators: %1$s is a date, eg: Jan 1, 2021. %2$s is the number of days left, eg: 2 days. */
 				__( 'By %1$s – %2$s left to respond', 'woocommerce-payments' ),
-				( new \DateTime( $dispute['due_by'] ) )->format( 'MMM D, YYYY' ), // TODO make sure time is in merchant's store timezone
+				$due_by->format( 'MMM D, YYYY' ), // TODO make sure time is in merchant's store timezone
 				/* translators: %d is the number of days left, e.g. 1 day. */
 				_n( '%d day', '%d days', $diff->days, 'woocommerce-payments' ) // TODO make sure time is in merchant's store timezone and when it is 1 day left, it should say 1 day left, not 0 day
 			);
