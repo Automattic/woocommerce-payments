@@ -72,27 +72,27 @@ Object.entries( enabledPaymentMethodsConfig )
 	.map( ( [ upeName, upeConfig ] ) =>
 		registerPaymentMethod( {
 			name: upeMethods[ upeName ],
-			content: getUPEConfig( 'isUPESplitEnabled' )
-				? getSplitUPEFields(
+			content: getUPEConfig( 'isUPEDeferredEnabled' )
+				? getDeferredIntentCreationUPEFields(
 						upeName,
 						upeMethods,
 						api,
 						upeConfig.testingInstructions
 				  )
-				: getDeferredIntentCreationUPEFields(
+				: getSplitUPEFields(
 						upeName,
 						upeMethods,
 						api,
 						upeConfig.testingInstructions
 				  ),
-			edit: getUPEConfig( 'isUPESplitEnabled' )
-				? getSplitUPEFields(
+			edit: getUPEConfig( 'isUPEDeferredEnabled' )
+				? getDeferredIntentCreationUPEFields(
 						upeName,
 						upeMethods,
 						api,
 						upeConfig.testingInstructions
 				  )
-				: getDeferredIntentCreationUPEFields(
+				: getSplitUPEFields(
 						upeName,
 						upeMethods,
 						api,
