@@ -136,11 +136,8 @@ class WooPay_Utilities {
 			}
 		}
 
-		$woopay_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'https://pay.woo.com';
-		$url         = $woopay_host . '/wp-json/platform-checkout/v1/user/available-countries';
-
 		$args = [
-			'url'     => $url,
+			'url'     => self::get_woopay_rest_url( 'user/available-countries' ),
 			'method'  => 'GET',
 			'timeout' => 30,
 			'headers' => [
@@ -269,7 +266,26 @@ class WooPay_Utilities {
 	}
 
 	/**
-	 * Returns true if an extension WooPay supports is installed.
+	 * Builds the WooPay rest url for a given endpoint
+	 *
+	 * @param string $endpoint the end point.
+	 * @return string the endpoint full url.
+	 */
+	public static function get_woopay_rest_url( $endpoint ) {
+		return self::get_woopay_url() . '/wp-json/platform-checkout/v1/' . $endpoint;
+	}
+
+	/**
+	 * Returns the WooPay url.
+	 *
+	 * @return string the WooPay url.
+	 */
+	public static function get_woopay_url() {
+		return defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'https://pay.woo.com';
+	}
+
+	/**
+	 * Returns true if an extension WooPay supports is installed .
 	 *
 	 * @return bool
 	 */

@@ -169,6 +169,9 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 			{ visibleTasks.map( ( task ) => (
 				<TaskItem
 					key={ task.key }
+					data-key={ task.key }
+					// Pass in optional data attributes.
+					{ ...( task.dataAttrs || {} ) }
 					title={ task.title }
 					actionLabel={ task.actionLabel }
 					completed={ task.completed }
