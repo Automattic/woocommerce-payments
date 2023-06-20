@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Add the 'wcs_recurring_shipping_package_rates_match_standard_rates' filter to enable third-parties to override whether the subscription packages match during checkout validation.

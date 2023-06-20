@@ -341,9 +341,9 @@ export const getTransactionsPaymentMethodName = (
 		case 'eps':
 			return __( 'EPS transactions', 'woocommerce-payments' );
 		case 'giropay':
-			return __( 'GiroPay transactions', 'woocommerce-payments' );
+			return __( 'giropay transactions', 'woocommerce-payments' );
 		case 'ideal':
-			return __( 'iDeal transactions', 'woocommerce-payments' );
+			return __( 'iDEAL transactions', 'woocommerce-payments' );
 		case 'p24':
 			return __(
 				'Przelewy24 (P24) transactions',
@@ -356,6 +356,10 @@ export const getTransactionsPaymentMethodName = (
 			);
 		case 'sofort':
 			return __( 'Sofort transactions', 'woocommerce-payments' );
+		case 'affirm':
+			return __( 'Affirm transactions', 'woocommerce-payments' );
+		case 'afterpay_clearpay':
+			return __( 'Afterpay transactions', 'woocommerce-payments' );
 		default:
 			return __( 'Unknown transactions', 'woocommerce-payments' );
 	}

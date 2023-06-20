@@ -7,6 +7,8 @@
  */
 
 export type PaymentMethod =
+	| 'affirm'
+	| 'afterpay_clearpay'
 	| 'au_becs_debit'
 	| 'bancontact'
 	| 'card'
@@ -16,4 +18,6 @@ export type PaymentMethod =
 	| 'ideal'
 	| 'p24'
 	| 'sepa_debit'
-	| 'sofort';
+	| 'sofort'
+	| 'affirm'
+	| 'afterpay_clearpay';
