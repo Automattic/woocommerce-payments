@@ -29,6 +29,21 @@ require_once __DIR__ . '/includes/class-wc-payments-features.php';
 require_once __DIR__ . '/includes/woopay-user/class-woopay-extension.php';
 require_once __DIR__ . '/includes/woopay/class-woopay-session.php';
 
+// Initialize dependency injection.
+$GLOBALS['wcpay_container'] = new Automattic\WooCommerce\Container();
+
+/**
+ * Returns the WooCommerce object container.
+ * Code in the `includes` directory should use the container to get instances of classes in the `src` directory.
+ *
+ * @since  4.4.0
+ * @return \Automattic\WooCommerce\Container The WooCommerce object container.
+ */
+function wcpay_get_container() {
+	return $GLOBALS['wcpay_container'];
+}
+
+
 /**
  * Plugin activation hook.
  */
