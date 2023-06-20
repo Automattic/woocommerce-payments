@@ -61,9 +61,8 @@ const PaymentProcessor = ( {
 } ) => {
 	const stripe = useStripe();
 	const elements = useElements();
-	const [ isUPEComplete, setIsUPEComplete ] = useState( false );
-	const [ selectedUPEPaymentType, setSelectedUPEPaymentType ] = useState(
-		''
+	const [ isPaymentElementComplete, setIsPaymentElementComplete ] = useState(
+		false
 	);
 
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
@@ -84,7 +83,7 @@ const PaymentProcessor = ( {
 						return;
 					}
 
-					if ( ! isUPEComplete ) {
+					if ( ! isPaymentElementComplete ) {
 						return {
 							type: 'error',
 							message: __(
@@ -104,8 +103,7 @@ const PaymentProcessor = ( {
 					if (
 						gatewayConfig.supports.showSaveOption &&
 						shouldSavePayment &&
-						! paymentMethodsConfig[ selectedUPEPaymentType ]
-							.isReusable
+						! paymentMethodsConfig[ paymentMethodId ].isReusable
 					) {
 						return {
 							type: 'error',
@@ -150,13 +148,12 @@ const PaymentProcessor = ( {
 			gatewayConfig,
 			paymentMethodId,
 			paymentMethodsConfig,
-			selectedUPEPaymentType,
 			shouldSavePayment,
 			upeMethods,
 			errorMessage,
 			onPaymentSetup,
 			billingData,
-			isUPEComplete,
+			isPaymentElementComplete,
 		]
 	);
 
@@ -169,16 +166,8 @@ const PaymentProcessor = ( {
 		shouldSavePayment
 	);
 
-	// Checks whether there are errors within a field, and saves them for later reporting.
-	const upeOnChange = ( event ) => {
-		// Update WC Blocks gateway config based on selected UPE payment method.
-		const paymentType =
-			'link' !== event.value.type ? event.value.type : 'card';
-		gatewayConfig.supports.showSaveOption =
-			paymentMethodsConfig[ paymentType ].showSaveOption;
-
-		setIsUPEComplete( event.complete );
-		setSelectedUPEPaymentType( paymentType );
+	const updatePaymentElementCompletionStatus = ( event ) => {
+		setIsPaymentElementComplete( event.complete );
 	};
 
 	return (
@@ -194,7 +183,7 @@ const PaymentProcessor = ( {
 					shouldSavePayment,
 					paymentMethodsConfig
 				) }
-				onChange={ upeOnChange }
+				onChange={ updatePaymentElementCompletionStatus }
 				className="wcpay-payment-element"
 			/>
 		</>
