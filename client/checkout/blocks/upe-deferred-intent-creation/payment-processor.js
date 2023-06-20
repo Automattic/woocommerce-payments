@@ -26,7 +26,7 @@ import { validateElements } from 'wcpay/checkout/classic/upe-deferred-intent-cre
 
 const getBillingDetails = ( billingData ) => {
 	return {
-		name: ( billingData.first_name + ' ' + billingData.last_name ).trim(),
+		name: `${ billingData.first_name } ${ billingData.last_name }`.trim(),
 		email: billingData.email,
 		phone: billingData.phone,
 		address: {
