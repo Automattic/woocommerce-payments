@@ -1166,7 +1166,7 @@ class WC_Payments_Admin {
 
 		$send_callback         = function() {
 			$request = Request::get( WC_Payments_API_Client::AUTHORIZATIONS_API . '/summary' );
-			return $request->send( 'wc_pay_get_authorizations_summary' );
+			return $request->send( 'wc_pay_get_authorizations_summary' )->to_array();
 		};
 		$authorization_summary = $this->database_cache->get_or_add(
 			$cache_key,
