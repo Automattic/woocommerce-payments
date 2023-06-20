@@ -120,11 +120,11 @@ class WC_Payments_Task_Disputes extends Task {
 	}
 
 	/**
-	 * Gets the task content.
+	 * Gets the task subtitle.
 	 *
 	 * @return string
 	 */
-	public function get_content() {
+	public function get_additional_info() {
 		$disputes_due_within_7d = $this->get_disputes_needing_response_within_days( 7 );
 		$disputes_due_within_1d = $this->get_disputes_needing_response_within_days( 1 );
 
@@ -156,46 +156,26 @@ class WC_Payments_Task_Disputes extends Task {
 			);
 		}
 
-		$currencies_map = [];
-		foreach ( $disputes_due_within_7d as $dispute ) {
-			if ( ! isset( $currencies_map[ $dispute['currency'] ] ) ) {
-				$currencies_map[ $dispute['currency'] ] = 0;
-			}
-			$currencies_map[ $dispute['currency'] ] += $dispute['amount'];
+		if ( count( $disputes_due_within_1d ) > 0 ) {
+			return sprintf(
+				/* translators: %d is the number of disputes. */
+				__(
+					'Final day to respond for %d of the disputes',
+					'woocommerce-payments'
+				),
+				count( $disputes_due_within_1d )
+			);
 		}
-
-		$currencies = array_keys( $currencies_map );
-		sort( $currencies );
-		$formatted_amounts = [];
-		foreach ( $currencies as $currency ) {
-			$formatted_amounts[] = WC_Payments_Utils::format_currency( $currencies_map[ $currency ], $currency );
-		}
-		$dispute_total_amounts = implode( ', ', $formatted_amounts );
 
 		return sprintf(
-			/* translators: %s is a currency formatted amounts (potentially multiple), eg: €10.00, $20.00 */
-			__( 'Respond to %1$d active disputes for a total of %2$s', 'woocommerce-payments' ),
-			count( $disputes_due_within_7d ),
-			$dispute_total_amounts
+			/* translators: %d is the number of disputes. */
+			__(
+				'Last week to respond for %d of the disputes',
+				'woocommerce-payments'
+			),
+			count( $disputes_due_within_7d )
 		);
-	}
 
-	/**
-	 * Get the additional info.
-	 *
-	 * @return string
-	 */
-	public function get_additional_info() {
-		return __( 'View and respond', 'woocommerce-payments' );
-	}
-
-	/**
-	 * Gets the task's action label.
-	 *
-	 * @return string
-	 */
-	public function get_action_label() {
-		return __( 'Disputes', 'woocommerce-payments' );
 	}
 
 	/**
@@ -237,6 +217,15 @@ class WC_Payments_Task_Disputes extends Task {
 	 * @return string
 	 */
 	public function get_time() {
+		return '';
+	}
+
+	/**
+	 * Gets the task content.
+	 *
+	 * @return string
+	 */
+	public function get_content() {
 		return '';
 	}
 
