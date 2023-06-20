@@ -23,6 +23,7 @@ class WooPay_Utilities {
 	const AVAILABLE_COUNTRIES_KEY            = 'woocommerce_woocommerce_payments_woopay_available_countries';
 	const AVAILABLE_COUNTRIES_LAST_CHECK_KEY = 'woocommerce_woocommerce_payments_woopay_available_countries_last_check';
 	const AVAILABLE_COUNTRIES_DEFAULT        = '["US"]';
+	const SUPPORTED_EXTENSIONS               = [ 'WC_Points_Rewards_Discount', 'WC_GC_Gift_Cards' ];
 
 	/**
 	 * Check various conditions to determine if we should enable woopay.
@@ -265,5 +266,20 @@ class WooPay_Utilities {
 	 */
 	public function is_guest_checkout_enabled(): bool {
 		return 'yes' === get_option( 'woocommerce_enable_guest_checkout', 'no' );
+	}
+
+	/**
+	 * Returns true if an extension WooPay supports is installed.
+	 *
+	 * @return bool
+	 */
+	public function has_compatible_extension_installed() {
+		foreach ( self::SUPPORTED_EXTENSIONS as $supported_extension ) {
+			if ( class_exists( $supported_extension ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

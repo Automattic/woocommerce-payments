@@ -123,27 +123,53 @@ class WooPay_Session {
 		}
 
 		$cart_token = wc_clean( wp_unslash( $_SERVER['HTTP_CART_TOKEN'] ) );
+		$user_id    = self::get_user_id_from_payload( $cart_token );
 
-		if ( $cart_token && JsonWebToken::validate( $cart_token, '@' . wp_salt() ) ) {
-			$payload = JsonWebToken::get_parts( $cart_token )->payload;
-
-			if ( empty( $payload ) ) {
-				return null;
-			}
-
-			// Store API namespace is used as the token issuer.
-			if ( ! preg_match( self::STORE_API_NAMESPACE_PATTERN, $payload->iss ) ) {
-				return null;
-			}
-
-			$session_handler = new SessionHandler();
-			$session_data    = $session_handler->get_session( $payload->user_id );
-			$customer        = maybe_unserialize( $session_data['customer'] );
-
-			return is_numeric( $customer['id'] ) ? intval( $customer['id'] ) : null;
+		if ( null === $user_id ) {
+			return null;
 		}
 
-		return null;
+		$session_handler = new SessionHandler();
+		$session_data    = $session_handler->get_session( $user_id );
+		$customer        = maybe_unserialize( $session_data['customer'] );
+
+		// Set the guest user to their actual user if the user email is verified on WooPay.
+		if ( isset( $_SERVER['HTTP_WOOPAY_VERIFIED_USER_CART_TOKEN'] ) && isset( $session_data['woopay_verified_user_id'] ) && is_numeric( $session_data['woopay_verified_user_id'] ) ) {
+			$woopay_verified_user_cart_token = wc_clean( wp_unslash( $_SERVER['HTTP_WOOPAY_VERIFIED_USER_CART_TOKEN'] ) );
+			$woopay_verified_user_id         = self::get_user_id_from_payload( $woopay_verified_user_cart_token );
+
+			if ( intval( $session_data['woopay_verified_user_id'] ) === $woopay_verified_user_id ) {
+				return $woopay_verified_user_id;
+			}
+		}
+
+		return is_numeric( $customer['id'] ) ? intval( $customer['id'] ) : null;
+	}
+
+	/**
+	 * Returns the user ID from a cart token.
+	 *
+	 * @param string $cart_token The cart token.
+	 *
+	 * @return int|null The User ID or null if there's no cart token.
+	 */
+	private static function get_user_id_from_payload( $cart_token ) {
+		if ( ! JsonWebToken::validate( $cart_token, '@' . wp_salt() ) ) {
+			return false;
+		}
+
+		$payload = JsonWebToken::get_parts( $cart_token )->payload;
+
+		if ( empty( $payload ) ) {
+			return null;
+		}
+
+			// Store API namespace is used as the token issuer.
+		if ( ! preg_match( self::STORE_API_NAMESPACE_PATTERN, $payload->iss ) ) {
+			return null;
+		}
+
+		return $payload->user_id;
 	}
 
 	/**
