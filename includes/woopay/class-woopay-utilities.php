@@ -20,10 +20,8 @@ use WC_Payments;
 class WooPay_Utilities {
 	use WC_Payments_Subscriptions_Utilities;
 
-	const AVAILABLE_COUNTRIES_KEY            = 'woocommerce_woocommerce_payments_woopay_available_countries';
-	const AVAILABLE_COUNTRIES_LAST_CHECK_KEY = 'woocommerce_woocommerce_payments_woopay_available_countries_last_check';
-	const AVAILABLE_COUNTRIES_DEFAULT        = '["US"]';
-	const SUPPORTED_EXTENSIONS               = [ 'WC_Points_Rewards_Discount', 'WC_GC_Gift_Cards' ];
+	const AVAILABLE_COUNTRIES_KEY     = 'woocommerce_woocommerce_payments_woopay_available_countries';
+	const AVAILABLE_COUNTRIES_DEFAULT = '["US"]';
 
 	/**
 	 * Check various conditions to determine if we should enable woopay.
@@ -119,65 +117,6 @@ class WooPay_Utilities {
 	}
 
 	/**
-	 * Get the list of WooPay available countries and cache it for 24 hours.
-	 *
-	 * @return array
-	 */
-	public function get_woopay_available_countries() {
-		$last_check_option = get_option( self::AVAILABLE_COUNTRIES_LAST_CHECK_KEY, false );
-		$timezone          = new \DateTimeZone( wp_timezone_string() );
-		$current_date      = new \DateTime( 'now', $timezone );
-
-		if ( false !== $last_check_option ) {
-			$last_check = new \DateTime( $last_check_option, $timezone );
-
-			if ( $current_date < $last_check->modify( '+1 day' ) ) {
-				return $this->get_persisted_available_countries();
-			}
-		}
-
-		$args = [
-			'url'     => self::get_woopay_rest_url( 'user/available-countries' ),
-			'method'  => 'GET',
-			'timeout' => 30,
-			'headers' => [
-				'Content-Type' => 'application/json',
-			],
-		];
-
-		/**
-		 * Suppress psalm error from Jetpack Connection namespacing WP_Error.
-		 *
-		 * @psalm-suppress UndefinedDocblockClass
-		 */
-		$response      = \Automattic\Jetpack\Connection\Client::remote_request( $args );
-		$response_body = wp_remote_retrieve_body( $response );
-
-		// phpcs:ignore
-		/**
-		 * @psalm-suppress UndefinedDocblockClass
-		 */
-		if ( is_wp_error( $response ) || ! is_array( $response ) || ( ! empty( $response['code'] ) && ( $response['code'] >= 300 || $response['code'] < 200 ) ) ) {
-			Logger::error( 'HTTP_REQUEST_ERROR ' . var_export( $response, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
-		} else {
-			try {
-				$json = json_decode( $response_body, true );
-
-				if ( is_array( $json ) ) {
-					update_option( self::AVAILABLE_COUNTRIES_KEY, $response_body );
-				}
-			} catch ( \Exception $e ) {
-				Logger::error( 'Failed to decode WooPay available countries. ' . $e );
-			}
-		}
-
-		$last_check = $current_date->format( 'Y-m-d H:i:s' );
-		update_option( self::AVAILABLE_COUNTRIES_LAST_CHECK_KEY, gmdate( $last_check ) );
-
-		return $this->get_persisted_available_countries();
-	}
-
-	/**
 	 * Get if WooPay is available on the user country.
 	 *
 	 * @return boolean
@@ -189,7 +128,7 @@ class WooPay_Utilities {
 
 		$location_data = WC_Geolocation::geolocate_ip();
 
-		$available_countries = $this->get_woopay_available_countries();
+		$available_countries = $this->get_persisted_available_countries();
 
 		return in_array( $location_data['country'], $available_countries, true );
 	}
@@ -282,20 +221,5 @@ class WooPay_Utilities {
 	 */
 	public static function get_woopay_url() {
 		return defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'https://pay.woo.com';
-	}
-
-	/**
-	 * Returns true if an extension WooPay supports is installed .
-	 *
-	 * @return bool
-	 */
-	public function has_compatible_extension_installed() {
-		foreach ( self::SUPPORTED_EXTENSIONS as $supported_extension ) {
-			if ( class_exists( $supported_extension ) ) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 }

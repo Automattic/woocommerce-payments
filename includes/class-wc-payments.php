@@ -1479,8 +1479,8 @@ class WC_Payments {
 			'user_session'    => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];
 
-		$has_compatible_extension_installed = self::$woopay_util->has_compatible_extension_installed();
-		if ( $has_compatible_extension_installed && ! empty( $email ) && ! is_user_logged_in() ) {
+		$has_adapted_extension_enabled = get_option( 'woopay_has_adapted_extensions', false );
+		if ( $has_adapted_extension_enabled && ! empty( $email ) && ! is_user_logged_in() ) {
 			$user = get_user_by( 'email', $email );
 
 			if ( $user ) {
