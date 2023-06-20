@@ -21,6 +21,11 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 		$this->_cache     = WC_Payments::get_database_cache();
 		$this->mock_cache = $this->createMock( WCPay\Database_Cache::class );
 		WC_Payments::set_database_cache( $this->mock_cache );
+
+		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
+			->disableOriginalConstructor()
+			->setMethods( [ 'get_disputes' ] )
+			->getMock();
 	}
 
 	public function tear_down() {
@@ -30,67 +35,205 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 		parent::tear_down();
 	}
 
-	public function test_disputes_task_returns_the_correct_content() {
-		$disputes_task = new WC_Payments_Task_Disputes();
+	public function test_disputes_task_with_single_dispute_outside_7days() {
+		$disputes_task        = new WC_Payments_Task_Disputes(
+			$this->mock_api_client,
+			$this->mock_cache
+		);
+		$mock_active_disputes = [
+			[
+				'wcpay_disputes_cache_id' => 21,
+				'stripe_account_id'       => 'acct_abc',
+				'dispute_id'              => 'dp_2',
+				'charge_id'               => 'ch_2',
+				'amount'                  => 2000,
+				'currency'                => 'eur',
+				'reason'                  => 'product_not_received',
+				'source'                  => 'visa',
+				'order_number'            => 14,
+				'customer_name'           => 'customer',
+				'customer_email'          => 'email@email.com',
+				'customer_country'        => 'US',
+				'status'                  => 'needs_response',
+				'created'                 => gmdate( 'Y-m-d H:i:s', strtotime( '-14 days' ) ),
+				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+8 days' ) ),
+			],
+		];
+		$this->mock_cache->method( 'get_or_add' )->willReturn(
+			$mock_active_disputes
+		);
 
-		$this->assertEquals( '', $disputes_task->get_content() );
-		$this->assertEquals( '', $disputes_task->get_time() );
-		$this->assertEquals( 'woocommerce_payments_disputes_task', $disputes_task->get_id() );
-		$this->assertEquals( 'http://example.org/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes&filter=awaiting_response', $disputes_task->get_action_url() );
-		$this->assertEquals( 'Disputes', $disputes_task->get_action_label() );
-		$this->assertEquals( 'View and respond', $disputes_task->get_additional_info() );
-		$this->assertEquals( false, $disputes_task->is_complete() );
-	}
-
-	public function test_disputes_task_returns_the_correct_content_with_empty_needs_response() {
-		$disputes_task = new WC_Payments_Task_Disputes();
-
-		$this->mock_cache
-			->expects( $this->exactly( 2 ) )
-			->method( 'get' )
-			->with( 'wcpay_dispute_status_counts_cache' )
-			->willReturn( [ 'needs_response' => 0 ] );
-
-		$this->assertEquals( '0 disputed payments need your response', $disputes_task->get_title() );
 		$this->assertEquals( false, $disputes_task->can_view() );
 	}
 
-	public function test_disputes_task_returns_the_correct_content_with_empty_cache() {
-		$disputes_task = new WC_Payments_Task_Disputes();
+	public function test_disputes_task_with_single_dispute_within_7days() {
+		$disputes_task        = new WC_Payments_Task_Disputes(
+			$this->mock_api_client,
+			$this->mock_cache
+		);
+		$mock_active_disputes = [
+			[
+				'wcpay_disputes_cache_id' => 21,
+				'stripe_account_id'       => 'acct_abc',
+				'dispute_id'              => 'dp_2',
+				'charge_id'               => 'ch_2',
+				'amount'                  => 2000,
+				'currency'                => 'eur',
+				'reason'                  => 'product_not_received',
+				'source'                  => 'visa',
+				'order_number'            => 14,
+				'customer_name'           => 'customer',
+				'customer_email'          => 'email@email.com',
+				'customer_country'        => 'US',
+				'status'                  => 'needs_response',
+				'created'                 => gmdate( 'Y-m-d H:i:s', strtotime( '-14 days' ) ),
+				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+6 days' ) ),
+			],
+		];
+		$this->mock_cache->method( 'get_or_add' )->willReturn(
+			$mock_active_disputes
+		);
 
-		$this->mock_cache
-			->expects( $this->exactly( 2 ) )
-			->method( 'get' )
-			->with( 'wcpay_dispute_status_counts_cache' )
-			->willReturn( [] );
+		$this->assertEquals( 'Respond to a dispute for 20,00 €', $disputes_task->get_title() );
+		// "By <date> – 6 days left to respond"
+		$this->assertMatchesRegularExpression( '/By \w{3} \d{1,2}, \d{4} – 6 days left to respond/', $disputes_task->get_additional_info() );
+		$this->assertEquals( true, $disputes_task->can_view() );
 
-		$this->assertEquals( '0 disputed payments need your response', $disputes_task->get_title() );
-		$this->assertEquals( false, $disputes_task->can_view() );
 	}
 
-	public function test_disputes_task_returns_the_correct_content_with_single_item_on_needs_response() {
-		$disputes_task = new WC_Payments_Task_Disputes();
+	public function test_disputes_task_with_single_dispute_within_24h() {
+		$disputes_task        = new WC_Payments_Task_Disputes(
+			$this->mock_api_client,
+			$this->mock_cache
+		);
+		$mock_active_disputes = [
+			[
+				'wcpay_disputes_cache_id' => 21,
+				'stripe_account_id'       => 'acct_abc',
+				'dispute_id'              => 'dp_2',
+				'charge_id'               => 'ch_2',
+				'amount'                  => 2000,
+				'currency'                => 'eur',
+				'reason'                  => 'product_not_received',
+				'source'                  => 'visa',
+				'order_number'            => 14,
+				'customer_name'           => 'customer',
+				'customer_email'          => 'email@email.com',
+				'customer_country'        => 'US',
+				'status'                  => 'needs_response',
+				'created'                 => gmdate( 'Y-m-d H:i:s', strtotime( '-14 days' ) ),
+				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+23 hours' ) ),
+			],
+		];
+		$this->mock_cache->method( 'get_or_add' )->willReturn(
+			$mock_active_disputes
+		);
 
-		$this->mock_cache
-			->expects( $this->exactly( 2 ) )
-			->method( 'get' )
-			->with( 'wcpay_dispute_status_counts_cache' )
-			->willReturn( [ 'needs_response' => 1 ] );
+		$this->assertEquals( 'Respond to a dispute for 20,00 € – Last day', $disputes_task->get_title() );
+		// "Respond today by <time> <AM|PM>"
+		$this->assertMatchesRegularExpression( '/Respond today by \d{1,2}:\d{2} (AM|PM)/', $disputes_task->get_additional_info() );
+		$this->assertEquals( true, $disputes_task->can_view() );
 
-		$this->assertEquals( '1 disputed payment needs your response', $disputes_task->get_title() );
+	}
+
+	public function test_disputes_task_with_multiple_disputes_within_7days() {
+		$disputes_task        = new WC_Payments_Task_Disputes(
+			$this->mock_api_client,
+			$this->mock_cache
+		);
+		$mock_active_disputes = [
+			[
+				'wcpay_disputes_cache_id' => 21,
+				'stripe_account_id'       => 'acct_abc',
+				'dispute_id'              => 'dp_2',
+				'charge_id'               => 'ch_2',
+				'amount'                  => 2000,
+				'currency'                => 'eur',
+				'reason'                  => 'product_not_received',
+				'source'                  => 'visa',
+				'order_number'            => 14,
+				'customer_name'           => 'customer',
+				'customer_email'          => 'email@email.com',
+				'customer_country'        => 'US',
+				'status'                  => 'needs_response',
+				'created'                 => gmdate( 'Y-m-d H:i:s', strtotime( '-14 days' ) ),
+				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+6 days' ) ),
+			],
+			[
+				'wcpay_disputes_cache_id' => 21,
+				'stripe_account_id'       => 'acct_abc',
+				'dispute_id'              => 'dp_2',
+				'charge_id'               => 'ch_2',
+				'amount'                  => 1234,
+				'currency'                => 'usd',
+				'reason'                  => 'fraudulent',
+				'source'                  => 'visa',
+				'order_number'            => 14,
+				'customer_name'           => 'customer',
+				'customer_email'          => 'email@email.com',
+				'customer_country'        => 'US',
+				'status'                  => 'warning_needs_response',
+				'created'                 => gmdate( 'Y-m-d H:i:s', strtotime( '-14 days' ) ),
+				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+3 days' ) ),
+			],
+		];
+		$this->mock_cache->method( 'get_or_add' )->willReturn(
+			$mock_active_disputes
+		);
+
+		$this->assertEquals( 'Respond to 2 active disputes for a total of 20,00 €, $12.34', $disputes_task->get_title() );
+		$this->assertEquals( 'Last week to respond to 2 of the disputes', $disputes_task->get_additional_info() );
 		$this->assertEquals( true, $disputes_task->can_view() );
 	}
 
-	public function test_disputes_task_returns_the_correct_content_with_populated_needs_response() {
-		$disputes_task = new WC_Payments_Task_Disputes();
+	public function test_disputes_task_with_multiple_disputes_within_24h() {
+		$disputes_task        = new WC_Payments_Task_Disputes(
+			$this->mock_api_client,
+			$this->mock_cache
+		);
+		$mock_active_disputes = [
+			[
+				'wcpay_disputes_cache_id' => 21,
+				'stripe_account_id'       => 'acct_abc',
+				'dispute_id'              => 'dp_2',
+				'charge_id'               => 'ch_2',
+				'amount'                  => 2000,
+				'currency'                => 'eur',
+				'reason'                  => 'product_not_received',
+				'source'                  => 'visa',
+				'order_number'            => 14,
+				'customer_name'           => 'customer',
+				'customer_email'          => 'email@email.com',
+				'customer_country'        => 'US',
+				'status'                  => 'needs_response',
+				'created'                 => gmdate( 'Y-m-d H:i:s', strtotime( '-14 days' ) ),
+				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+23 hours' ) ),
+			],
+			[
+				'wcpay_disputes_cache_id' => 21,
+				'stripe_account_id'       => 'acct_abc',
+				'dispute_id'              => 'dp_2',
+				'charge_id'               => 'ch_2',
+				'amount'                  => 1234,
+				'currency'                => 'usd',
+				'reason'                  => 'fraudulent',
+				'source'                  => 'visa',
+				'order_number'            => 14,
+				'customer_name'           => 'customer',
+				'customer_email'          => 'email@email.com',
+				'customer_country'        => 'US',
+				'status'                  => 'warning_needs_response',
+				'created'                 => gmdate( 'Y-m-d H:i:s', strtotime( '-14 days' ) ),
+				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+2 days' ) ),
+			],
+		];
+		$this->mock_cache->method( 'get_or_add' )->willReturn(
+			$mock_active_disputes
+		);
 
-		$this->mock_cache
-			->expects( $this->exactly( 2 ) )
-			->method( 'get' )
-			->with( 'wcpay_dispute_status_counts_cache' )
-			->willReturn( [ 'needs_response' => 2 ] );
-
-		$this->assertEquals( '2 disputed payments need your response', $disputes_task->get_title() );
+		$this->assertEquals( 'Respond to 2 active disputes for a total of 20,00 €, $12.34', $disputes_task->get_title() );
+		$this->assertEquals( 'Final day to respond to 1 of the disputes', $disputes_task->get_additional_info() );
 		$this->assertEquals( true, $disputes_task->can_view() );
+
 	}
 }
