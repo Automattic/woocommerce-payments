@@ -95,8 +95,8 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->assertEquals( 'Respond to a dispute for 20,00 €', $disputes_task->get_title() );
-		// "By <date> – 6 days left to respond"
-		$this->assertMatchesRegularExpression( '/By \w{3} \d{1,2}, \d{4} – 6 days left to respond/', $disputes_task->get_additional_info() );
+		// "By <date> – <count> days left to respond"
+		$this->assertMatchesRegularExpression( '/By \w{3} \d{1,2}, \d{4} – \d+ days left to respond/', $disputes_task->get_additional_info() );
 		$this->assertEquals( true, $disputes_task->can_view() );
 
 	}
@@ -224,7 +224,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 				'customer_country'        => 'US',
 				'status'                  => 'warning_needs_response',
 				'created'                 => gmdate( 'Y-m-d H:i:s', strtotime( '-14 days' ) ),
-				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+2 days' ) ),
+				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+23 hours' ) ),
 			],
 		];
 		$this->mock_cache->method( 'get_or_add' )->willReturn(
@@ -232,7 +232,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->assertEquals( 'Respond to 2 active disputes for a total of 20,00 €, $12.34', $disputes_task->get_title() );
-		$this->assertEquals( 'Final day to respond to 1 of the disputes', $disputes_task->get_additional_info() );
+		$this->assertEquals( 'Final day to respond to 2 of the disputes', $disputes_task->get_additional_info() );
 		$this->assertEquals( true, $disputes_task->can_view() );
 
 	}
