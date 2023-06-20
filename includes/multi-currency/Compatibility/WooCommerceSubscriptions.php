@@ -383,6 +383,10 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 * @return bool True if found in the cart, false if not.
 	 */
 	private function is_product_subscription_type_in_cart( $product, $type ): bool {
+		if ( ! function_exists( 'wcs_get_subscription' ) ) {
+			return false;
+		}
+
 		$subscription = false;
 
 		switch ( $type ) {
