@@ -169,14 +169,13 @@ class WC_Payments_Task_Disputes extends Task {
 			);
 		}
 
-		$active_disputes = $this->get_disputes_needing_response();
 		return sprintf(
 			/* translators: %d is the number of disputes. */
 			__(
 				'Last week to respond to %d of the disputes',
 				'woocommerce-payments'
 			),
-			count( $active_disputes )
+			count( $disputes_due_within_7d )
 		);
 
 	}
@@ -308,7 +307,8 @@ class WC_Payments_Task_Disputes extends Task {
 				return $response['data'] ?? [];
 			},
 			// We'll consider all array values to be valid as the cache is only invalidated when it is deleted or it expires.
-			'is_array'
+			'is_array',
+			true
 		);
 	}
 }
