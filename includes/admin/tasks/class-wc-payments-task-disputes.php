@@ -141,7 +141,7 @@ class WC_Payments_Task_Disputes extends Task {
 				return sprintf(
 					/* translators: %s is time, eg: 11:59 PM */
 					__( 'Respond today by %s', 'woocommerce-payments' ),
-					$due_by_local_time->format( 'h:i A' )
+					$due_by_local_time->format( 'g:i A' )
 				);
 			}
 
@@ -151,7 +151,7 @@ class WC_Payments_Task_Disputes extends Task {
 			return sprintf(
 				/* translators: %1$s is a date, eg: Jan 1, 2021. %2$s is the number of days left, eg: 2 days. */
 				__( 'By %1$s – %2$s left to respond', 'woocommerce-payments' ),
-				$due_by_local_time->format( 'M d, Y' ),
+				$due_by_local_time->format( 'M j, Y' ),
 				/* translators: %s is the number of days left, e.g. 1 day. */
 				sprintf( _n( '%d day', '%d days', $diff->days, 'woocommerce-payments' ), $diff->days )
 			);

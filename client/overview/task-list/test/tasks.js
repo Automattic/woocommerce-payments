@@ -354,7 +354,7 @@ describe( 'getTasks()', () => {
 					completed: false,
 					level: 1,
 					title: 'Respond to a dispute for $10.00 – Last day',
-					content: 'Respond today by 11:59 PM',
+					content: 'Respond today by 6:59 PM', // shown in local timezone.
 					actionLabel: 'Respond now',
 				} ),
 			] )
