@@ -13,7 +13,15 @@ import CloudDownloadIcon from 'gridicons/dist/cloud-download';
  */
 import './style.scss';
 
-const DownloadButton = ( { isDisabled, onClick } ) => (
+interface DownloadButtonProps {
+	isDisabled: boolean;
+	onClick: ( event: any ) => void;
+}
+
+const DownloadButton: React.FunctionComponent< DownloadButtonProps > = ( {
+	isDisabled,
+	onClick,
+} ) => (
 	<Button
 		className="woocommerce-table__download-button"
 		disabled={ isDisabled }

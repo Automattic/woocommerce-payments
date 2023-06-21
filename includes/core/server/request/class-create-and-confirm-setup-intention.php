@@ -79,7 +79,8 @@ class Create_And_Confirm_Setup_Intention extends Request {
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
 	public function set_payment_method( string $payment_method_id ) {
-		$this->validate_stripe_id( $payment_method_id, [ 'pm', 'src' ] );
+		// Including the 'card' prefix to support subscription renewals using legacy payment method IDs.
+		$this->validate_stripe_id( $payment_method_id, [ 'pm', 'src', 'card' ] );
 		$this->set_param( 'payment_method', $payment_method_id );
 	}
 }
