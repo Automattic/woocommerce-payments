@@ -315,8 +315,7 @@ class WC_Payments_Task_Disputes extends Task {
 				return $active_disputes;
 			},
 			// We'll consider all array values to be valid as the cache is only invalidated when it is deleted or it expires.
-			'is_array',
-			true
+			'is_array'
 		);
 	}
 }
