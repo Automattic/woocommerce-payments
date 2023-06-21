@@ -4,7 +4,7 @@
  * External dependencies
  */
 import * as React from 'react';
-import { render, waitFor, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { updateQueryString } from '@woocommerce/navigation';
 
 /**
@@ -12,12 +12,12 @@ import { updateQueryString } from '@woocommerce/navigation';
  */
 import TransactionsPage from '../';
 import {
-	useTransactions,
-	useTransactionsSummary,
-	useSettings,
-	useManualCapture,
 	useAuthorizationsSummary,
 	useFraudOutcomeTransactionsSummary,
+	useManualCapture,
+	useSettings,
+	useTransactions,
+	useTransactionsSummary,
 } from 'data/index';
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
@@ -26,7 +26,10 @@ jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 // See https://github.com/WordPress/gutenberg/issues/15031
 jest.mock( '@wordpress/data', () => ( {
 	createRegistryControl: jest.fn(),
-	dispatch: jest.fn( () => ( { setIsMatching: jest.fn() } ) ),
+	dispatch: jest.fn( () => ( {
+		setIsMatching: jest.fn(),
+		onLoad: jest.fn(),
+	} ) ),
 	registerStore: jest.fn(),
 	select: jest.fn(),
 	useDispatch: jest.fn( () => ( { createNotice: jest.fn() } ) ),
@@ -80,7 +83,6 @@ declare const global: {
 		accountStatus: {
 			status: boolean;
 		};
-		isFraudProtectionSettingsEnabled: boolean;
 	};
 };
 
@@ -128,7 +130,6 @@ describe( 'TransactionsPage', () => {
 			accountStatus: {
 				status: true,
 			},
-			isFraudProtectionSettingsEnabled: true,
 		};
 	} );
 
@@ -194,7 +195,7 @@ describe( 'TransactionsPage', () => {
 		expect( screen.queryByText( /uncaptured/i ) ).not.toBeInTheDocument();
 	} );
 
-	test( 'renders fraud outcome tabs if the feature flag is enabled', async () => {
+	test( 'renders fraud outcome tabs', async () => {
 		mockUseManualCapture.mockReturnValue( [ false ] );
 		mockUseAuthorizationsSummary.mockReturnValue( {
 			authorizationsSummary: {
@@ -205,22 +206,5 @@ describe( 'TransactionsPage', () => {
 
 		await renderTransactionsPage();
 		expect( screen.queryByText( /blocked/i ) ).toBeInTheDocument();
-		expect( screen.queryByText( /risk review/i ) ).toBeInTheDocument();
-	} );
-
-	test( 'do not render fraud outcome tabs if the feature flag is disabled', async () => {
-		global.wcpaySettings.isFraudProtectionSettingsEnabled = false;
-
-		mockUseManualCapture.mockReturnValue( [ false ] );
-		mockUseAuthorizationsSummary.mockReturnValue( {
-			authorizationsSummary: {
-				total: 0,
-			},
-			isLoading: false,
-		} );
-
-		await renderTransactionsPage();
-		expect( screen.queryByText( /blocked/i ) ).not.toBeInTheDocument();
-		expect( screen.queryByText( /risk review/i ) ).not.toBeInTheDocument();
 	} );
 } );

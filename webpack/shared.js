@@ -14,9 +14,9 @@ module.exports = {
 			'upe-blocks-checkout': './client/checkout/blocks/upe.js',
 			'upe-split-blocks-checkout':
 				'./client/checkout/blocks/upe-split.js',
-			'platform-checkout': './client/checkout/platform-checkout/index.js',
-			'platform-checkout-express-button':
-				'./client/checkout/platform-checkout/express-button/index.js',
+			woopay: './client/checkout/woopay/index.js',
+			'woopay-express-button':
+				'./client/checkout/woopay/express-button/index.js',
 			checkout: './client/checkout/classic/index.js',
 			upe_checkout: './client/checkout/classic/upe.js',
 			upe_split_checkout: './client/checkout/classic/upe-split.js',
@@ -38,6 +38,7 @@ module.exports = {
 				'./client/subscription-product-onboarding/modal.js',
 			'subscription-product-onboarding-toast':
 				'./client/subscription-product-onboarding/toast.js',
+			'product-details': './client/product-details/index.js',
 		},
 		// Override webpack public path dynamically on every entry.
 		// Required for chunks loading to work on sites with JS concatenation.
@@ -126,7 +127,7 @@ module.exports = {
 	},
 	plugins: [
 		new ProvidePlugin( {
-			process: 'process/browser',
+			process: 'process/browser.js',
 		} ),
 		new MiniCssExtractPlugin( { filename: '[name].css' } ),
 		new WooCommerceDependencyExtractionWebpackPlugin( {

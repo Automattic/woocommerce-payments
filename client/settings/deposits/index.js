@@ -23,8 +23,10 @@ import {
 	useDepositScheduleMonthlyAnchor,
 	useDepositStatus,
 	useCompletedWaitingPeriod,
+	useDepositRestrictions,
 } from '../../data';
 import './style.scss';
+import wcpayTracks from 'wcpay/tracks';
 
 const daysOfWeek = [
 	{ label: __( 'Monday', 'woocommerce-payments' ), value: 'monday' },
@@ -139,9 +141,13 @@ const CustomizeDepositSchedule = () => {
 };
 const DepositsSchedule = () => {
 	const depositStatus = useDepositStatus();
+	const depositRestrictions = useDepositRestrictions();
 	const completedWaitingPeriod = useCompletedWaitingPeriod();
 
-	if ( 'enabled' !== depositStatus ) {
+	if (
+		'enabled' !== depositStatus ||
+		'schedule_restricted' === depositRestrictions
+	) {
 		return (
 			<Notice
 				status="warning"
@@ -220,7 +226,16 @@ const Deposits = () => {
 							'Manage and update your deposit account information to receive payments and deposits.',
 							'woocommerce-payments'
 						) }{ ' ' }
-						<ExternalLink href={ accountLink }>
+						<ExternalLink
+							href={ accountLink }
+							onClick={ () =>
+								wcpayTracks.recordEvent(
+									wcpayTracks.events
+										.SETTINGS_DEPOSITS_MANAGE_IN_STRIPE_CLICK,
+									{}
+								)
+							}
+						>
 							{ __( 'Manage in Stripe', 'woocommerce-payments' ) }
 						</ExternalLink>
 					</p>

@@ -209,7 +209,7 @@ describe( 'PaymentMethods', () => {
 		).toEqual( 4 );
 	} );
 
-	test( 'express payments rendered when UPE preview feture flag is enabled', () => {
+	test( 'upe setup banner is rendered when UPE preview feature flag is enabled', () => {
 		const featureFlagContext = {
 			featureFlags: { upeSettingsPreview: true, upe: false },
 		};
@@ -228,10 +228,156 @@ describe( 'PaymentMethods', () => {
 		);
 
 		const enableWooCommercePaymentText = screen.getByText(
-			'Enable the new WooCommerce Payments checkout experience'
+			'Boost your sales by accepting additional payment methods'
 		);
 
 		expect( enableWooCommercePaymentText ).toBeInTheDocument();
+	} );
+
+	test( 'affirm afterpay pms renders correctly', () => {
+		useGetAvailablePaymentMethodIds.mockReturnValue( [
+			'card',
+			'au_becs_debit',
+			'affirm',
+			'afterpay_clearpay',
+			'bancontact',
+			'eps',
+			'giropay',
+			'ideal',
+			'p24',
+			'sepa_debit',
+			'sofort',
+		] );
+
+		global.wcpaySettings.isBnplAffirmAfterpayEnabled = true;
+
+		render(
+			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+				<PaymentMethods />
+			</WcPayUpeContextProvider>
+		);
+
+		const affirm = screen.getByRole( 'checkbox', { name: 'Affirm' } );
+		const afterpay = screen.getByRole( 'checkbox', {
+			name: 'Afterpay',
+		} );
+
+		expect( affirm ).toBeInTheDocument();
+		expect( afterpay ).toBeInTheDocument();
+	} );
+
+	test( 'affirm and afterpay appear checked when enabled', () => {
+		useGetAvailablePaymentMethodIds.mockReturnValue( [
+			'card',
+			'au_becs_debit',
+			'affirm',
+			'afterpay_clearpay',
+			'bancontact',
+			'eps',
+			'giropay',
+			'ideal',
+			'p24',
+			'sepa_debit',
+			'sofort',
+		] );
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[ 'card', 'affirm', 'afterpay_clearpay' ],
+		] );
+
+		global.wcpaySettings.isBnplAffirmAfterpayEnabled = true;
+
+		useGetPaymentMethodStatuses.mockReturnValue( {
+			card_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			affirm_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			afterpay_clearpay_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+		} );
+
+		const renderPaymentElements = () => {
+			render(
+				<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
+					<PaymentMethods />
+				</WcPayUpeContextProvider>
+			);
+		};
+
+		renderPaymentElements();
+
+		const affirm = screen.getByRole( 'checkbox', {
+			name: 'Affirm',
+		} );
+		const afterpay = screen.getByRole( 'checkbox', {
+			name: 'Afterpay',
+		} );
+
+		expect( affirm ).toBeChecked();
+		expect( afterpay ).toBeChecked();
+	} );
+
+	test( 'upe setup banner has Buy Now Pay Later methods asset for eligible merchants', () => {
+		const featureFlagContext = {
+			featureFlags: { upeSettingsPreview: true, upe: false },
+		};
+		const upeContext = {
+			isUpeEnabled: false,
+			setIsUpeEnabled: () => null,
+			status: 'resolved',
+		};
+
+		global.wcpaySettings.isBnplAffirmAfterpayEnabled = true;
+
+		render(
+			<WCPaySettingsContext.Provider value={ featureFlagContext }>
+				<WcPayUpeContext.Provider value={ upeContext }>
+					<PaymentMethods />
+				</WcPayUpeContext.Provider>
+			</WCPaySettingsContext.Provider>
+		);
+
+		const enableWooCommercePaymentText = screen.getByText(
+			'Boost your sales by accepting additional payment methods'
+		);
+
+		expect( enableWooCommercePaymentText.parentElement ).not.toHaveClass(
+			'background-local-payment-methods'
+		);
+	} );
+
+	test( 'upe setup banner has only local methods in asset for non-BNPL-eligible merchants', () => {
+		const featureFlagContext = {
+			featureFlags: { upeSettingsPreview: true, upe: false },
+		};
+		const upeContext = {
+			isUpeEnabled: false,
+			setIsUpeEnabled: () => null,
+			status: 'resolved',
+		};
+
+		global.wcpaySettings.isBnplAffirmAfterpayEnabled = false;
+
+		render(
+			<WCPaySettingsContext.Provider value={ featureFlagContext }>
+				<WcPayUpeContext.Provider value={ upeContext }>
+					<PaymentMethods />
+				</WcPayUpeContext.Provider>
+			</WCPaySettingsContext.Provider>
+		);
+
+		const enableWooCommercePaymentText = screen.getByText(
+			'Boost your sales by accepting additional payment methods'
+		);
+
+		expect( enableWooCommercePaymentText.parentElement ).toHaveClass(
+			'background-local-payment-methods'
+		);
 	} );
 
 	test.each( [
@@ -259,7 +405,7 @@ describe( 'PaymentMethods', () => {
 			);
 
 			const enableWooCommercePaymentText = screen.queryByText(
-				'Enable the new WooCommerce Payments checkout experience'
+				'Boost your sales by accepting additional payment methods'
 			);
 
 			expect( enableWooCommercePaymentText ).toBeNull();
@@ -370,7 +516,7 @@ describe( 'PaymentMethods', () => {
 		act( () => {
 			// Enabling a PM with requirements should show the activation modal
 			user.click( bancontactCheckbox );
-			jest.runAllTimers();
+			jest.runOnlyPendingTimers();
 		} );
 
 		expect(
@@ -412,7 +558,7 @@ describe( 'PaymentMethods', () => {
 		act( () => {
 			// Disabling an already active PM should show the delete modal
 			user.click( bancontactCheckbox );
-			jest.runAllTimers();
+			jest.runOnlyPendingTimers();
 		} );
 
 		expect(

@@ -125,6 +125,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 			$this->mock_session_rate_limiter,
 			$this->mock_order_service
 		);
+		$this->wcpay_gateway->init_hooks();
 
 		$this->renewal_order = WC_Helper_Order::create_order( self::USER_ID );
 
@@ -324,8 +325,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 				]
 			);
 
-		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $mock_subscription );
-		$new_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $mock_subscription );
+		$old_payment_method_title_modified = $this->wcpay_gateway->get_specific_old_payment_method_title( $old_payment_method_title, $old_payment_method, $mock_subscription );
+		$new_payment_method_title_modified = $this->wcpay_gateway->get_specific_new_payment_method_title( $new_payment_method_title, $new_payment_method, $mock_subscription );
 		$this->assertStringContainsString( $this->last4digits[1], $old_payment_method_title_modified );
 		$this->assertStringContainsString( $this->last4digits[3], $new_payment_method_title_modified );
 
@@ -336,7 +337,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 			->method( 'get_payment_tokens' )
 			->will( $this->returnValue( [ $this->token1->get_id() ] ) );
 
-		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $mock_subscription );
+		$old_payment_method_title_modified = $this->wcpay_gateway->get_specific_old_payment_method_title( $old_payment_method_title, $old_payment_method, $mock_subscription );
 		$this->assertEquals( $old_payment_method_title, $old_payment_method_title_modified );
 	}
 

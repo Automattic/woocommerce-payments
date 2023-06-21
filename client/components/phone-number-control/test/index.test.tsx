@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -12,6 +12,7 @@ import PhoneNumberControl from '../';
 
 describe( 'Phone Number Control', () => {
 	const onChange = jest.fn();
+	const onKeyDown = jest.fn();
 
 	beforeEach( () => {
 		jest.clearAllMocks();
@@ -85,16 +86,39 @@ describe( 'Phone Number Control', () => {
 		expect( input ).toHaveFocus();
 	} );
 
+	it( 'calls onKeyDown when input is focused and key is pressed', () => {
+		render(
+			<PhoneNumberControl
+				value=""
+				onChange={ onChange }
+				onKeyDown={ onKeyDown }
+			/>
+		);
+
+		const input = screen.getByRole( 'textbox' );
+		userEvent.type( input, '1234567890' );
+		fireEvent.keyDown( input, {
+			key: 'Enter',
+			code: 'Enter',
+			charCode: 13,
+		} );
+
+		// Will be called 10 times by the input, then once more by the 'Enter' keydown.
+		expect( onKeyDown ).toHaveBeenCalledTimes( 11 );
+	} );
+
 	it( 'toggles focused class as expected', () => {
 		render( <PhoneNumberControl value="" onChange={ onChange } /> );
 		const input = screen.getByRole( 'textbox' );
 		const control = input.parentElement;
 
 		userEvent.click( input );
+		fireEvent.focus( input ); // Workaround for onFocus event not firing with jsdom <16.3.0
 		expect( input ).toHaveFocus();
 		expect( control ).toHaveClass( 'focused' );
 
 		userEvent.tab();
+		fireEvent.focusOut( input ); // Workaround for onFocus event not firing with jsdom <16.3.0
 		expect( input ).not.toHaveFocus();
 		expect( control ).not.toHaveClass( 'focused' );
 	} );

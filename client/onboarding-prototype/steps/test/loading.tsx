@@ -38,7 +38,7 @@ jest.mock( 'components/stepper', () => ( {
 } ) );
 
 const checkLinkToContainNecessaryParams = ( link: string ) => {
-	expect( link ).toContain( 'prefill' );
+	expect( link ).toContain( 'self_assessment' );
 	expect( link ).toContain( 'progressive' );
 	expect( link ).toContain( 'country' );
 	expect( link ).toContain( 'mcc' );
@@ -75,7 +75,7 @@ describe( 'Loading', () => {
 		data = {
 			country: 'US',
 			business_type: 'individual',
-			mcc: 'computers_peripherals_and_software',
+			mcc: 'most_popular__software_services',
 			annual_revenue: 'less_than_250k',
 			go_live_timeframe: 'within_1month',
 		};
@@ -93,7 +93,9 @@ describe( 'Loading', () => {
 					business: {
 						country: 'US',
 						type: 'individual',
-						mcc: 'computers_peripherals_and_software',
+						mcc: 'most_popular__software_services',
+					},
+					store: {
 						annual_revenue: 'less_than_250k',
 						go_live_timeframe: 'within_1month',
 					},
@@ -110,7 +112,7 @@ describe( 'Loading', () => {
 		data = {
 			country: 'GB',
 			business_type: 'individual',
-			mcc: 'computers_peripherals_and_software',
+			mcc: 'most_popular__software_services',
 			annual_revenue: 'less_than_250k',
 			go_live_timeframe: 'within_1month',
 		};
@@ -128,7 +130,9 @@ describe( 'Loading', () => {
 					business: {
 						country: 'GB',
 						type: 'individual',
-						mcc: 'computers_peripherals_and_software',
+						mcc: 'most_popular__software_services',
+					},
+					store: {
 						annual_revenue: 'less_than_250k',
 						go_live_timeframe: 'within_1month',
 					},

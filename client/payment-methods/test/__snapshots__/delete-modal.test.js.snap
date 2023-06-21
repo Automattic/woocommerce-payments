@@ -32,123 +32,110 @@ exports[`Activation Modal matches the snapshot 1`] = `
   <div
     aria-hidden="true"
   />
-  <div>
-    <div>
-      <div>
+  <div
+    class="components-modal__screen-overlay"
+  >
+    <div
+      aria-labelledby="components-modal-header-0"
+      class="components-modal__frame wcpay-confirmation-modal"
+      role="dialog"
+      tabindex="-1"
+    >
+      <div
+        class="components-modal__content"
+        role="document"
+      >
         <div
-          tabindex="-1"
+          class="components-modal__header"
         >
-          <div>
-            <div
-              class="components-modal__screen-overlay"
+          <div
+            class="components-modal__header-heading-container"
+          >
+            <h1
+              class="components-modal__header-heading"
+              id="components-modal-header-0"
             >
-              <div
-                aria-labelledby="components-modal-header-0"
-                class="components-modal__frame wcpay-confirmation-modal"
-                role="dialog"
-                tabindex="-1"
-              >
-                <div
-                  class="components-modal__content"
-                  role="document"
-                >
-                  <div
-                    class="components-modal__header"
-                  >
-                    <div
-                      class="components-modal__header-heading-container"
-                    >
-                      <h1
-                        class="components-modal__header-heading"
-                        id="components-modal-header-0"
-                      >
-                        Remove Credit card / debit card from checkout
-                      </h1>
-                    </div>
-                    <button
-                      aria-label="Close dialog"
-                      class="components-button has-icon"
-                      type="button"
-                    >
-                      <svg
-                        aria-hidden="true"
-                        focusable="false"
-                        height="24"
-                        role="img"
-                        viewBox="0 0 24 24"
-                        width="24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M13 11.8l6.1-6.3-1-1-6.1 6.2-6.1-6.2-1 1 6.1 6.3-6.5 6.7 1 1 6.5-6.6 6.5 6.6 1-1z"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                  <div
-                    class="payment-delete-illustration__wrapper"
-                  >
-                    <div
-                      class="payment-delete-illustration__illustrations"
-                    >
-                      <img
-                        alt="Credit Card"
-                        class="payment-delete-illustration__payment-icon"
-                        src="assets/images/payment-methods/cc.svg"
-                      />
-                      <svg
-                        class="gridicon gridicons-cross-circle payment-delete-illustration__payment-cross-icon"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        width="24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <g>
-                          <path
-                            d="M19.1 4.9C15.2 1 8.8 1 4.9 4.9S1 15.2 4.9 19.1s10.2 3.9 14.1 0 4-10.3.1-14.2zm-4.3 11.3L12 13.4l-2.8 2.8-1.4-1.4 2.8-2.8-2.8-2.8 1.4-1.4 2.8 2.8 2.8-2.8 1.4 1.4-2.8 2.8 2.8 2.8-1.4 1.4z"
-                          />
-                        </g>
-                      </svg>
-                    </div>
-                  </div>
-                  <p>
-                    Are you sure you want to remove 
-                    <strong>
-                      Credit card / debit card
-                    </strong>
-                    ? Your customers will no longer be able to pay using Credit card / debit card.
-                  </p>
-                  <p>
-                    You can add it again at any time in 
-                    <a
-                      href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
-                    >
-                      WooCommerce Payments
-                    </a>
-                  </p>
-                  <hr
-                    class="wcpay-confirmation-modal__separator"
-                  />
-                  <div
-                    class="wcpay-confirmation-modal__footer"
-                  >
-                    <button
-                      class="components-button is-primary is-destructive"
-                      type="button"
-                    >
-                      Remove
-                    </button>
-                    <button
-                      class="components-button is-secondary"
-                      type="button"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+              Remove Credit card / debit card from checkout
+            </h1>
           </div>
+          <button
+            aria-label="Close dialog"
+            class="components-button has-icon"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12 13.06l3.712 3.713 1.061-1.06L13.061 12l3.712-3.712-1.06-1.06L12 10.938 8.288 7.227l-1.061 1.06L10.939 12l-3.712 3.712 1.06 1.061L12 13.061z"
+              />
+            </svg>
+          </button>
+        </div>
+        <div
+          class="payment-delete-illustration__wrapper"
+        >
+          <div
+            class="payment-delete-illustration__illustrations"
+          >
+            <img
+              alt="Credit Card"
+              class="payment-delete-illustration__payment-icon"
+              src="assets/images/payment-methods/cc.svg"
+            />
+            <svg
+              class="gridicon gridicons-cross-circle payment-delete-illustration__payment-cross-icon"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g>
+                <path
+                  d="M19.1 4.9C15.2 1 8.8 1 4.9 4.9S1 15.2 4.9 19.1s10.2 3.9 14.1 0 4-10.3.1-14.2zm-4.3 11.3L12 13.4l-2.8 2.8-1.4-1.4 2.8-2.8-2.8-2.8 1.4-1.4 2.8 2.8 2.8-2.8 1.4 1.4-2.8 2.8 2.8 2.8-1.4 1.4z"
+                />
+              </g>
+            </svg>
+          </div>
+        </div>
+        <p>
+          Are you sure you want to remove 
+          <strong>
+            Credit card / debit card
+          </strong>
+          ? Your customers will no longer be able to pay using Credit card / debit card.
+        </p>
+        <p>
+          You can add it again at any time in 
+          <a
+            href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
+          >
+            WooCommerce Payments
+          </a>
+        </p>
+        <hr
+          class="wcpay-confirmation-modal__separator"
+        />
+        <div
+          class="wcpay-confirmation-modal__footer"
+        >
+          <button
+            class="components-button is-primary is-destructive"
+            type="button"
+          >
+            Remove
+          </button>
+          <button
+            class="components-button is-secondary"
+            type="button"
+          >
+            Cancel
+          </button>
         </div>
       </div>
     </div>

@@ -35,7 +35,14 @@ const DepositsOverview = (): JSX.Element => {
 		currency
 	);
 
+	const hasNextDeposit = !! overview?.nextScheduled;
+
 	const isLoading = isLoadingOverview || isLoadingDeposits;
+
+	// This card isn't shown if there are no deposits, so we can bail early.
+	if ( ! hasNextDeposit && ! isLoading && deposits.length === 0 ) {
+		return <></>;
+	}
 
 	return (
 		<Card className="wcpay-deposits-overview">

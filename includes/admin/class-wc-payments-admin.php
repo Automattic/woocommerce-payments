@@ -115,6 +115,7 @@ class WC_Payments_Admin {
 		$this->database_cache      = $database_cache;
 
 		add_action( 'admin_notices', [ $this, 'display_not_supported_currency_notice' ], 9999 );
+		add_action( 'admin_notices', [ $this, 'display_isk_decimal_notice' ] );
 
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
@@ -187,6 +188,40 @@ class WC_Payments_Admin {
 						<?php esc_html( ' ' . get_woocommerce_currency() ); ?>
 					</b>
 					<?php esc_html_e( 'The selected currency is not available for the country set in your WooCommerce Payments account.', 'woocommerce-payments' ); ?>
+				</p>
+			</div>
+			<?php
+		}
+	}
+
+	/**
+	 * Add notice explaining that ISK cannot have decimals.
+	 */
+	public function display_isk_decimal_notice() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		if ( get_woocommerce_currency() === 'ISK' && wc_get_price_decimals() !== 0 ) {
+			$url = get_admin_url( null, 'admin.php?page=wc-settings' );
+
+			?>
+			<div id="wcpay-unsupported-currency-notice" class="notice notice-error">
+				<p>
+					<b>
+						<?php esc_html_e( 'Unsupported currency:', 'woocommerce-payments' ); ?>
+						<?php esc_html( ' ' . get_woocommerce_currency() ); ?>
+					</b>
+					<?php
+						echo wp_kses_post(
+							sprintf(
+								/* Translators: %1$s: Opening anchor tag. %2$s: Closing anchor tag.*/
+								__( 'Icelandic Króna does not accept decimals. Please update your currency number of decimals to 0 or select a different currency. %1$sVisit settings%2$s', 'woocommerce-payments' ),
+								'<a href="' . $url . '">',
+								'</a>'
+							)
+						);
+					?>
 				</p>
 			</div>
 			<?php
@@ -300,20 +335,20 @@ class WC_Payments_Admin {
 				);
 				remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding' );
 			}
-			if ( WC_Payments_Features::is_progressive_onboarding_enabled() ) {
+			if ( WC_Payments_Utils::is_in_progressive_onboarding_treatment_mode() || WC_Payments_Features::is_progressive_onboarding_enabled() ) {
 				wc_admin_register_page(
 					[
-						'id'         => 'wc-payments-onboarding-prototype',
-						'title'      => __( 'Onboarding Prototype', 'woocommerce-payments' ),
+						'id'         => 'wc-payments-onboarding-flow',
+						'title'      => __( 'Onboarding', 'woocommerce-payments' ),
 						'parent'     => 'wc-payments',
-						'path'       => '/payments/onboarding-prototype',
+						'path'       => '/payments/onboarding-flow',
 						'capability' => 'manage_woocommerce',
 						'nav_args'   => [
 							'parent' => 'wc-payments',
 						],
 					]
 				);
-				remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding-prototype' );
+				remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding-flow' );
 			}
 		}
 
@@ -702,57 +737,57 @@ class WC_Payments_Admin {
 		}
 
 		$this->wcpay_js_settings = [
-			'connectUrl'                       => WC_Payments_Account::get_connect_url(),
-			'connect'                          => [
+			'connectUrl'                  => WC_Payments_Account::get_connect_url(),
+			'connect'                     => [
 				'country'            => WC()->countries->get_base_country(),
 				'availableCountries' => WC_Payments_Utils::supported_countries(),
 				'availableStates'    => WC()->countries->get_states(),
 			],
-			'testMode'                         => $test_mode,
-			'onboardingTestMode'               => WC_Payments_Onboarding_Service::is_test_mode_enabled(),
+			'testMode'                    => $test_mode,
+			'onboardingTestMode'          => WC_Payments_Onboarding_Service::is_test_mode_enabled(),
 			// Set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
-			'onBoardingDisabled'               => WC_Payments_Account::is_on_boarding_disabled(),
-			'onboardingFieldsData'             => $this->onboarding_service->get_fields_data( get_user_locale() ),
-			'errorMessage'                     => $error_message,
-			'featureFlags'                     => $this->get_frontend_feature_flags(),
-			'isSubscriptionsActive'            => class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ),
+			'onBoardingDisabled'          => WC_Payments_Account::is_on_boarding_disabled(),
+			'onboardingFieldsData'        => $this->onboarding_service->get_fields_data( get_user_locale() ),
+			'errorMessage'                => $error_message,
+			'featureFlags'                => $this->get_frontend_feature_flags(),
+			'isSubscriptionsActive'       => class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ),
 			// Used in the settings page by the AccountFees component.
-			'zeroDecimalCurrencies'            => WC_Payments_Utils::zero_decimal_currencies(),
-			'fraudServices'                    => $this->account->get_fraud_services_config(),
-			'isJetpackConnected'               => $this->payments_api_client->is_server_connected(),
-			'isJetpackIdcActive'               => Jetpack_Identity_Crisis::has_identity_crisis(),
-			'accountStatus'                    => $account_status_data,
-			'accountFees'                      => $this->account->get_fees(),
-			'accountLoans'                     => $this->account->get_capital(),
-			'accountEmail'                     => $this->account->get_account_email(),
-			'showUpdateDetailsTask'            => $this->get_should_show_update_business_details_task( $account_status_data ),
-			'wpcomReconnectUrl'                => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
-			'additionalMethodsSetup'           => [
+			'zeroDecimalCurrencies'       => WC_Payments_Utils::zero_decimal_currencies(),
+			'fraudServices'               => $this->account->get_fraud_services_config(),
+			'isJetpackConnected'          => $this->payments_api_client->is_server_connected(),
+			'isJetpackIdcActive'          => Jetpack_Identity_Crisis::has_identity_crisis(),
+			'accountStatus'               => $account_status_data,
+			'accountFees'                 => $this->account->get_fees(),
+			'accountLoans'                => $this->account->get_capital(),
+			'accountEmail'                => $this->account->get_account_email(),
+			'showUpdateDetailsTask'       => $this->get_should_show_update_business_details_task( $account_status_data ),
+			'wpcomReconnectUrl'           => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
+			'additionalMethodsSetup'      => [
 				'isUpeEnabled' => WC_Payments_Features::is_upe_enabled(),
 				'upeType'      => WC_Payments_Features::get_enabled_upe_type(),
 			],
-			'multiCurrencySetup'               => [
+			'multiCurrencySetup'          => [
 				'isSetupCompleted' => get_option( 'wcpay_multi_currency_setup_completed' ),
 			],
-			'isMultiCurrencyEnabled'           => WC_Payments_Features::is_customer_multi_currency_enabled(),
-			'isClientEncryptionEligible'       => WC_Payments_Features::is_client_secret_encryption_eligible(),
-			'shouldUseExplicitPrice'           => WC_Payments_Explicit_Price_Formatter::should_output_explicit_price(),
-			'overviewTasksVisibility'          => [
+			'isMultiCurrencyEnabled'      => WC_Payments_Features::is_customer_multi_currency_enabled(),
+			'isClientEncryptionEligible'  => WC_Payments_Features::is_client_secret_encryption_eligible(),
+			'shouldUseExplicitPrice'      => WC_Payments_Explicit_Price_Formatter::should_output_explicit_price(),
+			'overviewTasksVisibility'     => [
 				'dismissedTodoTasks'     => get_option( 'woocommerce_dismissed_todo_tasks', [] ),
 				'deletedTodoTasks'       => get_option( 'woocommerce_deleted_todo_tasks', [] ),
 				'remindMeLaterTodoTasks' => get_option( 'woocommerce_remind_me_later_todo_tasks', [] ),
 			],
-			'currentUserEmail'                 => $current_user_email,
-			'currencyData'                     => $currency_data,
-			'restUrl'                          => get_rest_url( null, '' ), // rest url to concatenate when merchant use Plain permalinks.
-			'numDisputesNeedingResponse'       => $this->get_disputes_awaiting_response_count(),
-			'isFraudProtectionSettingsEnabled' => WC_Payments_Features::is_fraud_protection_settings_enabled(),
-			'fraudProtection'                  => [
+			'currentUserEmail'            => $current_user_email,
+			'currencyData'                => $currency_data,
+			'restUrl'                     => get_rest_url( null, '' ), // rest url to concatenate when merchant use Plain permalinks.
+			'isFRTReviewFeatureActive'    => WC_Payments_Features::is_frt_review_feature_active(),
+			'fraudProtection'             => [
 				'isWelcomeTourDismissed' => WC_Payments_Features::is_fraud_protection_welcome_tour_dismissed(),
 			],
-			'accountDefaultCurrency'           => $this->account->get_account_default_currency(),
-			'frtDiscoverBannerSettings'        => get_option( 'wcpay_frt_discover_banner_settings', '' ),
-			'storeCurrency'                    => get_option( 'woocommerce_currency' ),
+			'accountDefaultCurrency'      => $this->account->get_account_default_currency(),
+			'frtDiscoverBannerSettings'   => get_option( 'wcpay_frt_discover_banner_settings', '' ),
+			'storeCurrency'               => get_option( 'woocommerce_currency' ),
+			'isBnplAffirmAfterpayEnabled' => WC_Payments_Features::is_bnpl_affirm_afterpay_enabled(),
 		];
 
 		return $this->wcpay_js_settings;

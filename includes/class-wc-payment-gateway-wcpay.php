@@ -33,8 +33,9 @@ use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\Link_Payment_Method;
-use WCPay\Platform_Checkout\Platform_Checkout_Order_Status_Sync;
-use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
+use WCPay\WooPay\WooPay_Order_Status_Sync;
+use WCPay\WooPay\WooPay_Utilities;
+use WCPay\WooPay_Tracker;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Tracker;
 
@@ -176,11 +177,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected $payment_method_capability_key_map;
 
 	/**
-	 * Platform checkout utilities.
+	 * WooPay utilities.
 	 *
-	 * @var Platform_Checkout_Utilities
+	 * @var WooPay_Utilities
 	 */
-	protected $platform_checkout_util;
+	protected $woopay_util;
 
 	/**
 	 * WC_Payment_Gateway_WCPay constructor.
@@ -383,20 +384,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// so instead of appending '_payments' to the end of the ID, it'll be better
 		// to have a map for it instead, just in case the pattern changes.
 		$this->payment_method_capability_key_map = [
-			'sofort'        => 'sofort_payments',
-			'giropay'       => 'giropay_payments',
-			'bancontact'    => 'bancontact_payments',
-			'eps'           => 'eps_payments',
-			'ideal'         => 'ideal_payments',
-			'p24'           => 'p24_payments',
-			'card'          => 'card_payments',
-			'sepa_debit'    => 'sepa_debit_payments',
-			'au_becs_debit' => 'au_becs_debit_payments',
-			'link'          => 'link_payments',
+			'sofort'            => 'sofort_payments',
+			'giropay'           => 'giropay_payments',
+			'bancontact'        => 'bancontact_payments',
+			'eps'               => 'eps_payments',
+			'ideal'             => 'ideal_payments',
+			'p24'               => 'p24_payments',
+			'card'              => 'card_payments',
+			'sepa_debit'        => 'sepa_debit_payments',
+			'au_becs_debit'     => 'au_becs_debit_payments',
+			'link'              => 'link_payments',
+			'affirm'            => 'affirm_payments',
+			'afterpay_clearpay' => 'afterpay_clearpay_payments',
 		];
 
-		// Platform checkout utilities.
-		$this->platform_checkout_util = new Platform_Checkout_Utilities();
+		// WooPay utilities.
+		$this->woopay_util = new WooPay_Utilities();
 
 		// Load the settings.
 		$this->init_settings();
@@ -408,33 +411,82 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( $this->is_saved_cards_enabled() ) {
 			array_push( $this->supports, 'tokenization', 'add_payment_method' );
 		}
+	}
 
-		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
-		add_action( 'admin_notices', [ $this, 'display_errors' ], 9999 );
-		add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
-		add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
-		add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
+	/**
+	 * Initializes this class's WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
+		// Only add certain actions/filter if this is the main gateway (i.e. not split UPE).
+		if ( self::GATEWAY_ID === $this->id ) {
+			add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
+			add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
+			add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
 
-		add_action( 'wp_ajax_update_order_status', [ $this, 'update_order_status' ] );
-		add_action( 'wp_ajax_nopriv_update_order_status', [ $this, 'update_order_status' ] );
+			add_action( 'wp_ajax_update_order_status', [ $this, 'update_order_status' ] );
+			add_action( 'wp_ajax_nopriv_update_order_status', [ $this, 'update_order_status' ] );
 
-		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
-		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts_for_zero_order_total' ], 11 );
-		add_action( 'wp_ajax_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
-		add_action( 'wp_ajax_nopriv_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
+			add_action( 'wp_ajax_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
+			add_action( 'wp_ajax_nopriv_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
 
-		add_action( 'woocommerce_update_order', [ $this, 'schedule_order_tracking' ], 10, 2 );
+			// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
+			add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
 
-		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
-		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
+			add_action( self::UPDATE_SAVED_PAYMENT_METHOD, [ $this, 'update_saved_payment_method' ], 10, 3 );
 
-		add_action( self::UPDATE_SAVED_PAYMENT_METHOD, [ $this, 'update_saved_payment_method' ], 10, 3 );
+			// Update the email field position.
+			add_filter( 'woocommerce_billing_fields', [ $this, 'checkout_update_email_field_priority' ], 50 );
 
-		// Update the email field position.
-		add_filter( 'woocommerce_billing_fields', [ $this, 'checkout_update_email_field_priority' ], 50 );
+			// Priority 21 to run right after wc_clear_cart_after_payment.
+			add_action( 'template_redirect', [ $this, 'clear_session_processing_order_after_landing_order_received_page' ], 21 );
 
-		// Priority 21 to run right after wc_clear_cart_after_payment.
-		add_action( 'template_redirect', [ $this, 'clear_session_processing_order_after_landing_order_received_page' ], 21 );
+			add_action( 'woocommerce_update_order', [ $this, 'schedule_order_tracking' ], 10, 2 );
+
+			add_filter( 'rest_request_before_callbacks', [ $this, 'remove_all_actions_on_preflight_check' ], 10, 3 );
+		}
+
+		$this->maybe_init_subscriptions_hooks();
+	}
+
+	/**
+	 * If we're in a WooPay preflight check, remove all the checkout order processed
+	 * actions to prevent reduce available resources quantity.
+	 *
+	 * @param mixed           $response The response object.
+	 * @param mixed           $handler The handler used for the response.
+	 * @param WP_REST_Request $request The request used to generate the response.
+	 *
+	 * @return mixed
+	 */
+	public function remove_all_actions_on_preflight_check( $response, $handler, $request ) {
+		$payment_data = $this->get_request_payment_data( $request );
+		if ( ! empty( $payment_data['is-woopay-preflight-check'] ) ) {
+			remove_all_actions( 'woocommerce_store_api_checkout_order_processed' );
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Gets and formats payment request data.
+	 *
+	 * @param \WP_REST_Request $request Request object.
+	 * @return array
+	 */
+	private function get_request_payment_data( \WP_REST_Request $request ) {
+		static $payment_data = [];
+		if ( ! empty( $payment_data ) ) {
+			return $payment_data;
+		}
+		if ( ! empty( $request['payment_data'] ) ) {
+			foreach ( $request['payment_data'] as $data ) {
+				$payment_data[ sanitize_key( $data['key'] ) ] = wc_clean( $data['value'] );
+			}
+		}
+
+		return $payment_data;
 	}
 
 	/**
@@ -596,61 +648,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Registers all scripts, necessary for the gateway.
-	 */
-	public function register_scripts() {
-		// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
-		// loaded twice in the event a site has both plugins enabled. We still run the risk of different plugins
-		// loading different versions however. If Stripe release a v4 of their JavaScript, we could consider
-		// changing the ID to stripe_v4. This would allow older plugins to keep using v3 while we used any new
-		// feature in v4. Stripe have allowed loading of 2 different versions of stripe.js in the past (
-		// https://stripe.com/docs/stripe-js/elements/migrating).
-		wp_register_script(
-			'stripe',
-			'https://js.stripe.com/v3/',
-			[],
-			'3.0',
-			true
-		);
-
-		$script_dependencies = [ 'stripe', 'wc-checkout' ];
-
-		if ( $this->supports( 'tokenization' ) ) {
-			$script_dependencies[] = 'woocommerce-tokenization-form';
-		}
-		WC_Payments::register_script_with_dependencies( 'WCPAY_CHECKOUT', 'dist/checkout', $script_dependencies );
-		wp_set_script_translations( 'WCPAY_CHECKOUT', 'woocommerce-payments' );
-
-	}
-
-	/**
-	 * Registers scripts necessary for the gateway, even when cart order total is 0.
-	 * This is done so that if the cart is modified via AJAX on checkout,
-	 * the scripts are still loaded.
-	 */
-	public function register_scripts_for_zero_order_total() {
-		if (
-			isset( WC()->cart ) &&
-			! WC()->cart->is_empty() &&
-			! WC()->cart->needs_payment() &&
-			is_checkout() &&
-			! has_block( 'woocommerce/checkout' )
-		) {
-			WC_Payments::get_gateway()->tokenization_script();
-			$script_handle = 'WCPAY_CHECKOUT';
-			$js_object     = 'wcpayConfig';
-			if ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
-				$script_handle = 'wcpay-upe-checkout';
-				$js_object     = 'wcpay_upe_config';
-			} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
-				$script_handle = 'wcpay-upe-checkout';
-			}
-			wp_localize_script( $script_handle, $js_object, WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() );
-			wp_enqueue_script( $script_handle );
-		}
-	}
-
-	/**
 	 * Displays the save to account checkbox.
 	 *
 	 * @param bool $force_checked True if the checkbox must be forced to "checked" state (and invisible).
@@ -677,7 +674,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function should_use_stripe_platform_on_checkout_page() {
 		if (
-			WC_Payments_Features::is_platform_checkout_eligible() &&
+			WC_Payments_Features::is_woopay_eligible() &&
 			'yes' === $this->get_option( 'platform_checkout', 'no' ) &&
 			! ( WC_Payments_Features::is_upe_legacy_enabled() && ! WC_Payments_Features::is_upe_split_enabled() ) &&
 			( is_checkout() || has_block( 'woocommerce/checkout' ) ) &&
@@ -873,8 +870,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_information->must_save_payment_method_to_store();
 		}
 
-		if ( $this->platform_checkout_util->should_save_platform_customer() ) {
-			do_action( 'woocommerce_payments_save_user_in_platform_checkout' );
+		if ( $this->woopay_util->should_save_platform_customer() ) {
+			do_action( 'woocommerce_payments_save_user_in_woopay' );
 			$payment_information->must_save_payment_method_to_platform();
 		}
 
@@ -1085,14 +1082,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// The sanitize_user call here is deliberate: it seems the most appropriate sanitization function
 			// for a string that will only contain latin alphanumeric characters and underscores.
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
-			$platform_checkout_intent_id = sanitize_user( wp_unslash( $_POST['platform-checkout-intent'] ?? '' ), true );
+			$woopay_intent_id = sanitize_user( wp_unslash( $_POST['platform-checkout-intent'] ?? '' ), true );
 
 			// Initializing the intent variable here to ensure we don't try to use an undeclared
 			// variable later.
 			$intent = null;
-			if ( ! empty( $platform_checkout_intent_id ) ) {
+			if ( ! empty( $woopay_intent_id ) ) {
 				// If the intent is included in the request use that intent.
-				$request = Get_Intention::create( $platform_checkout_intent_id );
+				$request = Get_Intention::create( $woopay_intent_id );
 				$intent  = $request->send( 'wcpay_get_intent_request', $order );
 
 				$intent_meta_order_id_raw = $intent->get_metadata()['order_id'] ?? '';
@@ -1117,6 +1114,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_off_session( $payment_information->is_merchant_initiated() );
 				$request->set_payment_methods( $payment_methods );
 				$request->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
+
+				// Afterpay expects the shipping address to be sent in the request. This is not required for other payment methods.
+				if ( Payment_Method::AFTERPAY === $payment_information->get_payment_method() ) {
+					$request->set_shipping( $this->get_shipping_data_from_order( $order ) );
+				}
 
 				// The below if-statement ensures the support for UPE payment methods.
 				if ( $this->upe_needs_redirection( $payment_methods ) ) {
@@ -1173,11 +1175,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 		} else {
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
-			$platform_checkout_intent_id = sanitize_user( wp_unslash( $_POST['platform-checkout-intent'] ?? '' ), true );
+			$woopay_intent_id = sanitize_user( wp_unslash( $_POST['platform-checkout-intent'] ?? '' ), true );
 
-			if ( ! empty( $platform_checkout_intent_id ) ) {
+			if ( ! empty( $woopay_intent_id ) ) {
 				// If the setup intent is included in the request use that intent.
-				$intent = $this->payments_api_client->get_setup_intent( $platform_checkout_intent_id );
+				$intent = $this->payments_api_client->get_setup_intent( $woopay_intent_id );
 
 				$intent_meta_order_id_raw = ! empty( $intent['metadata'] ) ? $intent['metadata']['order_id'] ?? '' : '';
 				$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
@@ -1189,20 +1191,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					);
 				}
 			} else {
-				$save_user_in_platform_checkout = false;
+				$save_user_in_woopay = false;
 
-				if ( $this->platform_checkout_util->should_save_platform_customer() ) {
-					$save_user_in_platform_checkout = true;
-					$metadata_from_order            = apply_filters(
+				if ( $this->woopay_util->should_save_platform_customer() ) {
+					$save_user_in_woopay = true;
+					$metadata_from_order = apply_filters(
 						'wcpay_metadata_from_order',
 						[
 							'customer_email' => $order->get_billing_email(),
 						],
 						$order
 					);
-					$metadata                       = array_merge( (array) $metadata_from_order, (array) $metadata ); // prioritize metadata from mobile app.
+					$metadata            = array_merge( (array) $metadata_from_order, (array) $metadata ); // prioritize metadata from mobile app.
 
-					do_action( 'woocommerce_payments_save_user_in_platform_checkout' );
+					do_action( 'woocommerce_payments_save_user_in_woopay' );
 				}
 
 				// For $0 orders, we need to save the payment method using a setup intent.
@@ -1210,7 +1212,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_customer( $customer_id );
 				$request->set_payment_method( $payment_information->get_payment_method() );
 				$request->set_metadata( $metadata );
-				$intent = $request->send( 'wcpay_create_and_confirm_setup_intention_request', $payment_information, false, $save_user_in_platform_checkout );
+				$intent = $request->send( 'wcpay_create_and_confirm_setup_intention_request', $payment_information, false, $save_user_in_woopay );
 				$intent = $intent->to_array();
 			}
 
@@ -1725,6 +1727,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->get_deposit_delay_days();
 			case 'deposit_status':
 				return $this->get_deposit_status();
+			case 'deposit_restrictions':
+				return $this->get_deposit_restrictions();
 			case 'deposit_completed_waiting_period':
 				return $this->get_deposit_completed_waiting_period();
 			case 'current_protection_level':
@@ -1763,20 +1767,23 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Updates whether platform checkout is enabled or disabled.
+	 * Updates whether woopay is enabled or disabled.
 	 *
-	 * @param bool $is_platform_checkout_enabled Whether platform checkout should be enabled.
+	 * @param bool $is_woopay_enabled Whether woopay should be enabled.
 	 */
-	public function update_is_platform_checkout_enabled( $is_platform_checkout_enabled ) {
-		$current_is_platform_checkout_enabled = 'yes' === $this->get_option( 'platform_checkout', 'no' );
-		if ( $is_platform_checkout_enabled !== $current_is_platform_checkout_enabled ) {
-			wc_admin_record_tracks_event(
-				$is_platform_checkout_enabled ? 'platform_checkout_enabled' : 'platform_checkout_disabled',
+	public function update_is_woopay_enabled( $is_woopay_enabled ) {
+		$current_is_woopay_enabled = 'yes' === $this->get_option( 'platform_checkout', 'no' );
+
+		if ( $is_woopay_enabled !== $current_is_woopay_enabled ) {
+			WC_Payments::woopay_tracker()->maybe_record_admin_event(
+				$is_woopay_enabled ? 'woopay_enabled' : 'woopay_disabled',
 				[ 'test_mode' => WC_Payments::mode()->is_test() ? 1 : 0 ]
 			);
-			$this->update_option( 'platform_checkout', $is_platform_checkout_enabled ? 'yes' : 'no' );
-			if ( ! $is_platform_checkout_enabled ) {
-				Platform_Checkout_Order_Status_Sync::remove_webhook();
+
+			$this->update_option( 'platform_checkout', $is_woopay_enabled ? 'yes' : 'no' );
+
+			if ( ! $is_woopay_enabled ) {
+				WooPay_Order_Status_Sync::remove_webhook();
 			} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
 				update_option( WC_Payments_Features::UPE_FLAG_NAME, '0' );
 				update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '1' );
@@ -2258,6 +2265,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Gets connected account deposit restrictions.
+	 *
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit restrictions.
+	 *
+	 * @return string deposit restrictions or default value.
+	 */
+	protected function get_deposit_restrictions( string $empty_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_deposit_restrictions();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get deposit restrictions.' . $e );
+		}
+		return $empty_value;
+	}
+
+	/**
 	 * Gets the completed deposit waiting period value.
 	 *
 	 * @param bool $empty_value Empty value to return when not connected or fails to fetch the completed deposit waiting period value.
@@ -2281,11 +2306,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return  string The current fraud protection level.
 	 */
 	protected function get_current_protection_level() {
-		// If fraud and risk tools feature is not enabled, do not expose the settings.
-		if ( ! WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
-			return '';
-		}
-
 		$this->maybe_refresh_fraud_protection_settings();
 		return get_option( 'current_protection_level', 'basic' );
 	}
@@ -2297,11 +2317,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *                       If there's a fetch error, it returns "error".
 	 */
 	protected function get_advanced_fraud_protection_settings() {
-		// If fraud and risk tools feature is not enabled, do not expose the settings.
-		if ( ! WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
-			return [];
-		}
-
 		// Check if Stripe is connected.
 		if ( ! $this->is_connected() ) {
 			return [];
@@ -2628,6 +2643,34 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'id'        => ! empty( $intent ) ? $intent->get_id() : null,
 			'message'   => $error_message,
 			'http_code' => $http_code,
+		];
+	}
+
+	/**
+	 * Create the shipping data array to send to Stripe when making a purchase.
+	 *
+	 * @param WC_Order $order The order that is being paid for.
+	 * @return array          The shipping data to send to Stripe.
+	 */
+	public function get_shipping_data_from_order( WC_Order $order ): array {
+		return [
+			'name'    => implode(
+				' ',
+				array_filter(
+					[
+						$order->get_shipping_first_name(),
+						$order->get_shipping_last_name(),
+					]
+				)
+			),
+			'address' => [
+				'line1'       => $order->get_shipping_address_1(),
+				'line2'       => $order->get_shipping_address_2(),
+				'postal_code' => $order->get_shipping_postcode(),
+				'city'        => $order->get_shipping_city(),
+				'state'       => $order->get_shipping_state(),
+				'country'     => $order->get_shipping_country(),
+			],
 		];
 	}
 
@@ -3202,6 +3245,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function refresh_cached_account_data() {
 		$this->account->refresh_account_data();
+	}
+
+	/**
+	 * Updates the cached account data.
+	 *
+	 * @param string $property Property to update.
+	 * @param mixed  $data     Data to update.
+	 */
+	public function update_cached_account_data( $property, $data ) {
+		$this->account->update_account_data( $property, $data );
 	}
 
 	/**

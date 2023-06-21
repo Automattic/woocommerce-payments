@@ -38,7 +38,7 @@ declare const window: any;
 export const TransactionsPage: React.FC = () => {
 	const currentQuery = getQuery();
 	const initialTab = currentQuery.tab ?? null;
-	const { isFraudProtectionSettingsEnabled } = wcpaySettings;
+	const { isFRTReviewFeatureActive } = wcpaySettings;
 
 	const onTabSelected = ( tab: string ) => {
 		// When switching tabs, make sure to revert the query strings to default values
@@ -161,8 +161,8 @@ export const TransactionsPage: React.FC = () => {
 	].filter( ( item ) => {
 		// @todo Remove feature flag
 		if (
-			! isFraudProtectionSettingsEnabled &&
-			[ 'review-page', 'blocked-page' ].includes( item.name )
+			! isFRTReviewFeatureActive &&
+			[ 'review-page' ].includes( item.name )
 		) {
 			return false;
 		}
@@ -171,13 +171,6 @@ export const TransactionsPage: React.FC = () => {
 
 		return isAuthAndCaptureEnabled && shouldShowUncapturedTab;
 	} );
-
-	// @todo Remove feature flag
-	if (
-		! isFraudProtectionSettingsEnabled &&
-		typeof shouldShowUncapturedTab === 'undefined'
-	)
-		return tabsComponentMap[ 'transactions-page' ];
 
 	return (
 		<Page>
