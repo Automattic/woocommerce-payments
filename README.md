@@ -43,6 +43,15 @@ https://github.com/Automattic/woocommerce-payments/blob/trunk/docker/README.md
 Install the following plugins:
 
 -   WooCommerce
+-   WCPay Dev Tools (clone or download [the GitHub repo](https://github.com/Automattic/woocommerce-payments-dev-tools))
+
+### Optional local.env file
+
+If you are using a custom local development setup (as opposed to the Docker-based one), you can create a `local.env` file to provide environment variables for our development scripts.
+
+We currently support the following variables:
+
+-   `LOCAL_WCPAY_DEV_TOOLS_PLUGIN_REPO_PATH`: The path to your local WCPay Dev Tools plugin directory for auto-updates; it defaults to `docker/wordpress/wp-content/plugins/woocommerce-payments-dev-tools`.
 
 ## Test account setup
 

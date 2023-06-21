@@ -1,0 +1,291 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ConnectAccountPage should render correctly 1`] = `
+<div>
+  <div
+    class="connect-account-page woocommerce-payments-page is-narrow"
+  >
+    <div
+      class="components-surface components-card connect-account-page__onboarding css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Card"
+    >
+      <div
+        class="css-mgwsf4-View-Content em57xhy0"
+      >
+        <div
+          class="components-flex components-card__header components-card-header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardHeader"
+        >
+          <img
+            alt="logo"
+            src="assets/images/woopayments.svg"
+          />
+        </div>
+        <div
+          class="components-card__body components-card-body connect-account-page__content css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
+        >
+          <h2>
+            Accept payments and manage your business.
+          </h2>
+          <p>
+            By using Woo Payments you agree to our 
+            <a
+              href="https://wordpress.com/tos"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Terms of Service
+            </a>
+             and acknowledge that you have read our 
+            <a
+              href="https://automattic.com/privacy/"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Privacy Policy
+            </a>
+            .
+          </p>
+          <a
+            class="components-button is-primary"
+            href="/wcpay-connect-url"
+          >
+            Finish setup
+          </a>
+        </div>
+        <hr
+          aria-orientation="horizontal"
+          class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+          data-wp-c16t="true"
+          data-wp-component="CardDivider"
+          role="separator"
+        />
+        <div
+          class="components-card__body components-card-body connect-account-page__payment-methods css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
+        >
+          <p>
+            Accepted payment methods include:
+          </p>
+          <div
+            class="connect-account-page__payment-methods__icons"
+          >
+            <img
+              alt="Visa"
+              src="assets/images/cards/visa.svg"
+            />
+            <img
+              alt="MasterCard"
+              src="assets/images/cards/mastercard.svg"
+            />
+            <img
+              alt="American Express"
+              src="assets/images/cards/amex.svg"
+            />
+            <img
+              alt="Apple Pay"
+              src="assets/images/cards/apple-pay.svg"
+            />
+            <img
+              alt="Google Pay"
+              src="assets/images/cards/google-pay.svg"
+            />
+            <img
+              alt="GiroPay"
+              src="assets/images/payment-methods/giropay.svg"
+            />
+            <img
+              alt="DinersClub"
+              src="assets/images/cards/diners.svg"
+            />
+            <img
+              alt="Discover"
+              src="assets/images/cards/discover.svg"
+            />
+            <img
+              alt="UnionPay"
+              src="assets/images/cards/unionpay.svg"
+            />
+            <img
+              alt="JCB"
+              src="assets/images/cards/jcb.svg"
+            />
+            <img
+              alt="Sofort"
+              src="assets/images/payment-methods/sofort.svg"
+            />
+            <span>
+              & more.
+            </span>
+          </div>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+    </div>
+    <div
+      class="components-surface components-card connect-account-page__details css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Card"
+    >
+      <div
+        class="css-mgwsf4-View-Content em57xhy0"
+      >
+        <div
+          class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
+        >
+          <h2>
+            You’re only steps away from getting paid
+          </h2>
+          <div
+            class="wcpay-component-tip-box purple"
+          >
+            <svg
+              height="24"
+              viewBox="-4 -4 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                clip-rule="evenodd"
+                d="M8 1.33a4.67 4.67 0 0 0-2.67 8.5v1.5c0 .37.3.67.67.67h4c.37 0 .67-.3.67-.67v-1.5A4.66 4.66 0 0 0 8 1.33ZM6 14c0 .37.3.67.67.67h2.66c.37 0 .67-.3.67-.67v-.67H6V14Zm3.33-4.87.57-.4a3.33 3.33 0 1 0-3.8 0l.57.4v1.54h2.66V9.13Z"
+                fill-rule="evenodd"
+              />
+            </svg>
+            <div
+              class="wcpay-component-tip-box__content"
+            >
+              In order to receive deposits with 
+              <a
+                href="https://woocommerce.com/payments/"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                Woo Payments
+              </a>
+              , you'll need to share business details to verify who you are.
+               
+              <button
+                class="components-button is-link"
+                type="button"
+              >
+                Learn more about how to receive deposits.
+              </button>
+            </div>
+          </div>
+          <div
+            class="connect-account-page__steps"
+          >
+            <div
+              class="connect-account-page__step"
+            >
+              <span>
+                1
+              </span>
+              <h3>
+                Create and connect your account
+              </h3>
+              <p>
+                To ensure safe and secure transactions, a WordPress.com account is required.
+              </p>
+            </div>
+            <div
+              class="connect-account-page__step"
+            >
+              <span>
+                2
+              </span>
+              <h3>
+                Provide a few business details
+              </h3>
+              <p>
+                Next we’ll ask you to verify your business and payment details to enable deposits.
+              </p>
+            </div>
+            <div
+              class="connect-account-page__step"
+            >
+              <span>
+                3
+              </span>
+              <h3>
+                Setup complete!
+              </h3>
+              <p>
+                You’re ready to start using the features and benefits of Woo Payments.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ConnectAccountPage should render correctly when on-boarding disabled 1`] = `
+<div>
+  <div
+    class="connect-account-page woocommerce-payments-page is-narrow"
+  >
+    <div
+      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Card"
+    >
+      <div
+        class="css-mgwsf4-View-Content em57xhy0"
+      >
+        <div
+          class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
+        >
+          We've temporarily paused new account creation. We'll notify you when we resume!
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+    </div>
+  </div>
+</div>
+`;

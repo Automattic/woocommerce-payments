@@ -282,9 +282,7 @@ export const merchantWCP = {
 		} );
 
 		if ( ! ( await page.$( '#_wcpay_feature_upe:checked' ) ) ) {
-			await expect( page ).toClick( 'label', {
-				text: 'Enable UPE checkout (legacy)',
-			} );
+			await expect( page ).toClick( 'label[for="_wcpay_feature_upe"]' );
 		}
 
 		const isSplitUPEEnabled = await page.$(
@@ -292,9 +290,10 @@ export const merchantWCP = {
 		);
 
 		if ( isSplitUPEEnabled ) {
-			await expect( page ).toClick( 'label', {
-				text: 'Enable Split UPE checkout',
-			} );
+			// Deactivate the Split UPE checkout.
+			await expect( page ).toClick(
+				'label[for="_wcpay_feature_upe_split"]'
+			);
 		}
 
 		const isAdditionalPaymentsActive = await page.$(
@@ -302,12 +301,12 @@ export const merchantWCP = {
 		);
 
 		if ( ! isAdditionalPaymentsActive ) {
-			await expect( page ).toClick( 'label', {
-				text: 'Add UPE additional payment methods',
-			} );
+			await expect( page ).toClick(
+				'label[for="_wcpay_feature_upe_additional_payment_methods"]'
+			);
 		}
 
-		await expect( page ).toClick( 'input[type="submit"]' );
+		await expect( page ).toClick( 'input#submit' );
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
 		} );
@@ -319,9 +318,9 @@ export const merchantWCP = {
 		} );
 
 		if ( ! ( await page.$( '#_wcpay_feature_upe_split:checked' ) ) ) {
-			await expect( page ).toClick( 'label', {
-				text: 'Enable Split UPE checkout',
-			} );
+			await expect( page ).toClick(
+				'label[for="_wcpay_feature_upe_split"]'
+			);
 		}
 
 		const isAdditionalPaymentsActive = await page.$(
@@ -329,12 +328,12 @@ export const merchantWCP = {
 		);
 
 		if ( ! isAdditionalPaymentsActive ) {
-			await expect( page ).toClick( 'label', {
-				text: 'Add UPE additional payment methods',
-			} );
+			await expect( page ).toClick(
+				'label[for="_wcpay_feature_upe_additional_payment_methods"]'
+			);
 		}
 
-		await expect( page ).toClick( 'input[type="submit"]' );
+		await expect( page ).toClick( 'input#submit' );
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
 		} );
@@ -417,9 +416,7 @@ export const merchantWCP = {
 		} );
 
 		if ( await page.$( '#_wcpay_feature_upe:checked' ) ) {
-			await expect( page ).toClick( 'label', {
-				text: 'Enable UPE checkout (legacy)',
-			} );
+			await expect( page ).toClick( 'label[for="_wcpay_feature_upe"]' );
 		}
 
 		const isAdditionalPaymentsActive = await page.$(
@@ -427,12 +424,12 @@ export const merchantWCP = {
 		);
 
 		if ( isAdditionalPaymentsActive ) {
-			await expect( page ).toClick( 'label', {
-				text: 'Add UPE additional payment methods',
-			} );
+			await expect( page ).toClick(
+				'label[for="_wcpay_feature_upe_additional_payment_methods"]'
+			);
 		}
 
-		await expect( page ).toClick( 'input[type="submit"]' );
+		await expect( page ).toClick( 'input#submit' );
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
 		} );
@@ -444,9 +441,9 @@ export const merchantWCP = {
 		} );
 
 		if ( await page.$( '#_wcpay_feature_upe_split:checked' ) ) {
-			await expect( page ).toClick( 'label', {
-				text: 'Enable Split UPE checkout',
-			} );
+			await expect( page ).toClick(
+				'label[for="_wcpay_feature_upe_split"]'
+			);
 		}
 
 		const isAdditionalPaymentsActive = await page.$(
@@ -454,12 +451,12 @@ export const merchantWCP = {
 		);
 
 		if ( isAdditionalPaymentsActive ) {
-			await expect( page ).toClick( 'label', {
-				text: 'Add UPE additional payment methods',
-			} );
+			await expect( page ).toClick(
+				'label[for="_wcpay_feature_upe_additional_payment_methods"]'
+			);
 		}
 
-		await expect( page ).toClick( 'input[type="submit"]' );
+		await expect( page ).toClick( 'input#submit' );
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
 		} );
@@ -471,6 +468,16 @@ export const merchantWCP = {
 		} );
 
 		for ( const paymentMethod of paymentMethods ) {
+			// Skip fraud protection tools tour.
+			const tourKitDismissButton = await page.$(
+				`button.woocommerce-tour-kit-step-controls__close-btn`
+			);
+			if ( tourKitDismissButton ) {
+				await tourKitDismissButton.evaluate( ( button ) =>
+					button.click()
+				);
+			}
+
 			await page.$eval( paymentMethod, ( method ) => method.click() );
 			await new Promise( ( resolve ) => setTimeout( resolve, 2000 ) );
 		}
@@ -486,6 +493,15 @@ export const merchantWCP = {
 		} );
 
 		for ( const paymentMethod of paymentMethods ) {
+			// Skip fraud protection tools tour.
+			const tourKitDismissButton = await page.$(
+				`button.woocommerce-tour-kit-step-controls__close-btn`
+			);
+			if ( tourKitDismissButton ) {
+				await tourKitDismissButton.evaluate( ( button ) =>
+					button.click()
+				);
+			}
 			await page.$eval( paymentMethod, ( method ) => method.click() );
 			await expect( page ).toClick( 'button', {
 				text: 'Remove',
@@ -614,6 +630,15 @@ export const merchantWCP = {
 		await merchant.openSettings( 'checkout', 'woocommerce_payments' );
 	},
 
+	skipFraudProtectionTour: async () => {
+		const tourKitDismissButton = await page.$(
+			`button.woocommerce-tour-kit-step-controls__close-btn`
+		);
+		if ( tourKitDismissButton ) {
+			await tourKitDismissButton.evaluate( ( button ) => button.click() );
+		}
+	},
+
 	wcpSettingsSaveChanges: async () => {
 		const snackbarSettingsSaved = '.components-snackbar';
 
@@ -690,27 +715,18 @@ export const merchantWCP = {
 			waitUntil: 'networkidle0',
 		} );
 
-		if (
-			! ( await page.$( '#override_platform_checkout_eligible:checked' ) )
-		) {
-			await expect( page ).toClick( 'label', {
-				text:
-					'Override the platform_checkout_eligible flag in the account cache',
-			} );
+		if ( ! ( await page.$( '#override_woopay_eligible:checked' ) ) ) {
+			await expect( page ).toClick(
+				'label[for="override_woopay_eligible"]'
+			);
+
+			await expect( page ).toSelect(
+				'select[name="override_woopay_eligible_value"]',
+				'true'
+			);
 		}
 
-		if (
-			! ( await page.$(
-				'#override_platform_checkout_eligible_value:checked'
-			) )
-		) {
-			await expect( page ).toClick( 'label', {
-				text:
-					'Set platform_checkout_eligible flag to true, false otherwise',
-			} );
-		}
-
-		await expect( page ).toClick( 'input[type="submit"]' );
+		await expect( page ).toClick( 'input#submit' );
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
 		} );
@@ -721,23 +737,17 @@ export const merchantWCP = {
 			waitUntil: 'networkidle0',
 		} );
 
-		if ( await page.$( '#override_platform_checkout_eligible:checked' ) ) {
-			await expect( page ).toClick( 'label', {
-				text:
-					'Override the platform_checkout_eligible flag in the account cache',
-			} );
+		if ( await page.$( '#override_woopay_eligible:checked' ) ) {
+			await expect( page ).toClick(
+				'label[for="override_woopay_eligible"]'
+			);
+			await expect( page ).toSelect(
+				'select[name="override_woopay_eligible_value"]',
+				'false'
+			);
 		}
 
-		if (
-			await page.$( '#override_platform_checkout_eligible_value:checked' )
-		) {
-			await expect( page ).toClick( 'label', {
-				text:
-					'Set platform_checkout_eligible flag to true, false otherwise',
-			} );
-		}
-
-		await expect( page ).toClick( 'input[type="submit"]' );
+		await expect( page ).toClick( 'input#submit' );
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
 		} );

@@ -16,6 +16,8 @@ import SepaIcon from 'assets/images/payment-methods/sepa-debit.svg?asset';
 import P24Icon from 'assets/images/payment-methods/p24.svg?asset';
 import IdealIcon from 'assets/images/payment-methods/ideal.svg?asset';
 import BankDebitIcon from 'assets/images/payment-methods/bank-debit.svg?asset';
+import AffirmIcon from 'assets/images/payment-methods/affirm.svg?asset';
+import AfterpayIcon from 'assets/images/payment-methods/afterpay.svg?asset';
 
 const iconComponent = ( src: string, alt: string ): ReactImgFuncComponent => (
 	props
@@ -29,6 +31,7 @@ export interface PaymentMethodMapEntry {
 	currencies: string[];
 	stripe_key: string;
 	allows_manual_capture: boolean;
+	allows_pay_later: boolean;
 }
 
 const PaymentMethodInformationObject: Record<
@@ -46,6 +49,7 @@ const PaymentMethodInformationObject: Record<
 		currencies: [],
 		stripe_key: 'card_payments',
 		allows_manual_capture: true,
+		allows_pay_later: false,
 	},
 	au_becs_debit: {
 		id: 'au_becs_debit',
@@ -58,6 +62,7 @@ const PaymentMethodInformationObject: Record<
 		currencies: [ 'AUD' ],
 		stripe_key: 'au_becs_debit_payments',
 		allows_manual_capture: false,
+		allows_pay_later: false,
 	},
 	bancontact: {
 		id: 'bancontact',
@@ -70,6 +75,7 @@ const PaymentMethodInformationObject: Record<
 		currencies: [ 'EUR' ],
 		stripe_key: 'bancontact_payments',
 		allows_manual_capture: false,
+		allows_pay_later: false,
 	},
 	eps: {
 		id: 'eps',
@@ -82,6 +88,7 @@ const PaymentMethodInformationObject: Record<
 		currencies: [ 'EUR' ],
 		stripe_key: 'eps_payments',
 		allows_manual_capture: false,
+		allows_pay_later: false,
 	},
 	giropay: {
 		id: 'giropay',
@@ -94,6 +101,7 @@ const PaymentMethodInformationObject: Record<
 		currencies: [ 'EUR' ],
 		stripe_key: 'giropay_payments',
 		allows_manual_capture: false,
+		allows_pay_later: false,
 	},
 	ideal: {
 		id: 'ideal',
@@ -106,6 +114,7 @@ const PaymentMethodInformationObject: Record<
 		currencies: [ 'EUR' ],
 		stripe_key: 'ideal_payments',
 		allows_manual_capture: false,
+		allows_pay_later: false,
 	},
 	p24: {
 		id: 'p24',
@@ -118,6 +127,7 @@ const PaymentMethodInformationObject: Record<
 		currencies: [ 'EUR', 'PLN' ],
 		stripe_key: 'p24_payments',
 		allows_manual_capture: false,
+		allows_pay_later: false,
 	},
 	sepa_debit: {
 		id: 'sepa_debit',
@@ -130,6 +140,7 @@ const PaymentMethodInformationObject: Record<
 		currencies: [ 'EUR' ],
 		stripe_key: 'sepa_debit_payments',
 		allows_manual_capture: false,
+		allows_pay_later: false,
 	},
 	sofort: {
 		id: 'sofort',
@@ -142,6 +153,33 @@ const PaymentMethodInformationObject: Record<
 		currencies: [ 'EUR' ],
 		stripe_key: 'sofort_payments',
 		allows_manual_capture: false,
+		allows_pay_later: false,
+	},
+	affirm: {
+		id: 'affirm',
+		label: __( 'Affirm', 'woocommerce-payments' ),
+		description: __(
+			'Expand your business with Affirm',
+			'woocommerce-payments'
+		),
+		icon: iconComponent( AffirmIcon, 'Affirm' ),
+		currencies: [ 'USD', 'CAD' ],
+		stripe_key: 'affirm_payments',
+		allows_manual_capture: false,
+		allows_pay_later: true,
+	},
+	afterpay_clearpay: {
+		id: 'afterpay_clearpay',
+		label: __( 'Afterpay', 'woocommerce-payments' ),
+		description: __(
+			'Expand your business with Afterpay',
+			'woocommerce-payments'
+		),
+		icon: iconComponent( AfterpayIcon, 'Afterpay' ),
+		currencies: [ 'USD', 'AUD', 'CAD', 'NZD', 'GBP', 'EUR' ],
+		stripe_key: 'afterpay_clearpay_payments',
+		allows_manual_capture: false,
+		allows_pay_later: true,
 	},
 };
 

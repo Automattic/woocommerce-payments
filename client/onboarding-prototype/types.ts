@@ -24,15 +24,17 @@ export type OnboardingFields = {
 	go_live_timeframe?: string;
 };
 
-export interface EligibleResult {
+export interface POEligibleResult {
 	result: 'eligible' | 'not_eligible';
 }
 
-export interface EligibleData {
+export interface POEligibleData {
 	business: {
 		country: string;
 		type: string;
 		mcc: string;
+	};
+	store: {
 		annual_revenue: string;
 		go_live_timeframe: string;
 	};

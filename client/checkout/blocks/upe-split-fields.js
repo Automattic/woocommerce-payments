@@ -236,8 +236,10 @@ const WCPayUPEFields = ( {
 				) {
 					return {
 						type: 'error',
-						message:
+						message: __(
 							'This payment method can not be saved for future use.',
+							'woocommerce-payments'
+						),
 					};
 				}
 
@@ -296,7 +298,8 @@ const WCPayUPEFields = ( {
 							paymentIntentSecret,
 							elements,
 							billingData,
-							emitResponse
+							emitResponse,
+							selectedUPEPaymentType
 						);
 					}
 
