@@ -268,17 +268,16 @@ class WC_Payments_Task_Disputes extends Task {
 				continue;
 			}
 
-			// Server's time is UTC, convert due_by to local time.
-			$local_timezone    = new \DateTimeZone( wp_timezone_string() );
-			$now               = new \DateTime( 'now', $local_timezone );
-			$due_by_local_time = ( new \DateTime( $dispute['due_by'] ) )->setTimezone( $local_timezone );
+			// Compare UTC times.
+			$now_utc    = new \DateTime( 'now', new \DateTimeZone( 'UTC' ) );
+			$due_by_utc = new \DateTime( $dispute['due_by'], new \DateTimeZone( 'UTC' ) );
 
-			// TODO do we want include disputes that are already past due?
-			if ( $now > $due_by_local_time ) {
+			if ( $now_utc > $due_by_utc ) {
 				continue;
 			}
 
-			$diff = $now->diff( $due_by_local_time );
+			$diff = $now_utc->diff( $due_by_utc );
+			// If the dispute is due within the given number of days, add it to the list.
 			if ( $diff->days <= $num_days ) {
 				$to_return[] = $dispute;
 			}

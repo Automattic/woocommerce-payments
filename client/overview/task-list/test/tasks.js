@@ -316,7 +316,7 @@ describe( 'getTasks()', () => {
 
 	it( 'should not include the dispute resolution task if dispute due_by > 7 days', () => {
 		// Set Date.now to - 7 days to reduce urgency of disputes.
-		Date.now = jest.fn( () => new Date( '2023-01-25T08:00:00.000Z' ) );
+		Date.now = jest.fn( () => new Date( '2023-01-24T08:00:00.000Z' ) );
 		const actual = getTasks( {
 			accountStatus: {
 				status: 'restricted_soon',
@@ -444,7 +444,7 @@ describe( 'getTasks()', () => {
 					level: 1,
 					title:
 						'Respond to 3 active disputes for a total of $20.00, €10.00',
-					content: 'Last week to respond to 1 of the disputes',
+					content: 'Last week to respond to 2 of the disputes',
 					actionLabel: 'See disputes',
 				} ),
 			] )
