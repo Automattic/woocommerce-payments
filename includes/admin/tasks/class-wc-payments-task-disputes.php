@@ -91,8 +91,7 @@ class WC_Payments_Task_Disputes extends Task {
 			$currencies_map[ $dispute['currency'] ] += $dispute['amount'];
 		}
 
-		$currencies = array_keys( $currencies_map );
-		sort( $currencies );
+		$currencies        = array_keys( $currencies_map );
 		$formatted_amounts = [];
 		foreach ( $currencies as $currency ) {
 			$amount              = WC_Payments_Utils::interpret_stripe_amount( $currencies_map[ $currency ], $currency );
@@ -304,7 +303,20 @@ class WC_Payments_Task_Disputes extends Task {
 					]
 				);
 
-				return $response['data'] ?? [];
+				$active_disputes = $response['data'] ?? [];
+
+				// sort by due_by date ascending.
+				usort(
+					$active_disputes,
+					function( $a, $b ) {
+						$a_due_by = new \DateTime( $a['due_by'] );
+						$b_due_by = new \DateTime( $b['due_by'] );
+
+						return $a_due_by <=> $b_due_by;
+					}
+				);
+
+				return $active_disputes;
 			},
 			// We'll consider all array values to be valid as the cache is only invalidated when it is deleted or it expires.
 			'is_array',
