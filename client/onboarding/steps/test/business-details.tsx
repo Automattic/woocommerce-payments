@@ -14,7 +14,7 @@ import { OnboardingContextProvider } from '../../context';
 import strings from '../../strings';
 import { getBusinessTypes, getMccsFlatList } from 'onboarding/utils';
 
-jest.mock( 'onboarding-prototype/utils', () => ( {
+jest.mock( 'onboarding/utils', () => ( {
 	getBusinessTypes: jest.fn(),
 	getMccsFlatList: jest.fn(),
 } ) );
