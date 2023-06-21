@@ -50,12 +50,12 @@ class CC_Payment_Method extends UPE_Payment_Method {
 			'unknown' => __( 'unknown', 'woocommerce-payments' ),
 		];
 
-		$network = $details['network'] ?? $details['networks']['available'][0];
+		$card_network = $details['network'] ?? $details['networks']['available'][0];
 
 		$payment_method_title = sprintf(
 			// Translators: %1$s card brand, %2$s card funding (prepaid, credit, etc.).
 			__( '%1$s %2$s card', 'woocommerce-payments' ),
-			ucfirst( $network ),
+			ucfirst( $card_network ),
 			$funding_types[ $details['funding'] ]
 		);
 
