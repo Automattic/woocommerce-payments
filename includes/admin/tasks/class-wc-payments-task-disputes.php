@@ -8,8 +8,8 @@
 namespace WooCommerce\Payments\Tasks;
 
 use Automattic\WooCommerce\Admin\Features\OnboardingTasks\Task;
-use WC_Payments_Utils;
 use WCPay\Database_Cache;
+use WC_Payments_Utils;
 use WC_Payments_API_Client;
 
 defined( 'ABSPATH' ) || exit;
@@ -36,13 +36,10 @@ class WC_Payments_Task_Disputes extends Task {
 
 	/**
 	 * WC_Payments_Task_Disputes constructor.
-	 *
-	 * @param WC_Payments_API_Client $api_client Payments API client.
-	 * @param Database_Cache         $database_cache Database cache util.
 	 */
-	public function __construct( $api_client, $database_cache ) {
-		$this->api_client     = $api_client;
-		$this->database_cache = $database_cache;
+	public function __construct() {
+		$this->api_client     = \WC_Payments::create_api_client();
+		$this->database_cache = \WC_Payments::get_database_cache();
 		parent::__construct();
 	}
 

@@ -21,11 +21,6 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 		$this->_cache     = WC_Payments::get_database_cache();
 		$this->mock_cache = $this->createMock( WCPay\Database_Cache::class );
 		WC_Payments::set_database_cache( $this->mock_cache );
-
-		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
-			->disableOriginalConstructor()
-			->setMethods( [ 'get_disputes' ] )
-			->getMock();
 	}
 
 	public function tear_down() {
@@ -36,10 +31,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_disputes_task_with_single_dispute_outside_7days() {
-		$disputes_task        = new WC_Payments_Task_Disputes(
-			$this->mock_api_client,
-			$this->mock_cache
-		);
+		$disputes_task        = new WC_Payments_Task_Disputes();
 		$mock_active_disputes = [
 			[
 				'wcpay_disputes_cache_id' => 21,
@@ -67,10 +59,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_disputes_task_with_single_dispute_within_7days() {
-		$disputes_task        = new WC_Payments_Task_Disputes(
-			$this->mock_api_client,
-			$this->mock_cache
-		);
+		$disputes_task        = new WC_Payments_Task_Disputes();
 		$mock_active_disputes = [
 			[
 				'wcpay_disputes_cache_id' => 21,
@@ -102,10 +91,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_disputes_task_with_single_dispute_within_24h() {
-		$disputes_task        = new WC_Payments_Task_Disputes(
-			$this->mock_api_client,
-			$this->mock_cache
-		);
+		$disputes_task        = new WC_Payments_Task_Disputes();
 		$mock_active_disputes = [
 			[
 				'wcpay_disputes_cache_id' => 21,
@@ -137,10 +123,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_disputes_task_with_multiple_disputes_within_7days() {
-		$disputes_task        = new WC_Payments_Task_Disputes(
-			$this->mock_api_client,
-			$this->mock_cache
-		);
+		$disputes_task        = new WC_Payments_Task_Disputes();
 		$mock_active_disputes = [
 			[
 				'wcpay_disputes_cache_id' => 21,
@@ -187,10 +170,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_disputes_task_with_multiple_disputes_within_24h() {
-		$disputes_task        = new WC_Payments_Task_Disputes(
-			$this->mock_api_client,
-			$this->mock_cache
-		);
+		$disputes_task        = new WC_Payments_Task_Disputes();
 		$mock_active_disputes = [
 			[
 				'wcpay_disputes_cache_id' => 21,
