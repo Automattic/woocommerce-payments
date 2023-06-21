@@ -1175,17 +1175,23 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->event_body['type']           = 'charge.dispute.created';
 		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
-			'id'     => 'test_dispute_id',
-			'charge' => 'test_charge_id',
-			'reason' => 'test_reason',
+			'id'               => 'test_dispute_id',
+			'charge'           => 'test_charge_id',
+			'reason'           => 'test_reason',
+			'amount'           => 9900,
+			'evidence_details' => [
+				'due_by' => 'test_due_by',
+			],
 		];
+
+		$this->mock_order->method( 'get_currency' )->willReturn( 'USD' );
 
 		$this->mock_order
 			->expects( $this->once() )
 			->method( 'add_order_note' )
 			->with(
 				$this->matchesRegularExpression(
-					'/Payment has been disputed as test_reason/'
+					'/Payment has been disputed/'
 				)
 			);
 

@@ -222,6 +222,7 @@ class WC_Payments_Utils {
 			'AT' => __( 'Austria', 'woocommerce-payments' ),
 			'AU' => __( 'Australia', 'woocommerce-payments' ),
 			'BE' => __( 'Belgium', 'woocommerce-payments' ),
+			'BG' => __( 'Bulgaria', 'woocommerce-payments' ),
 			'CA' => __( 'Canada', 'woocommerce-payments' ),
 			'CH' => __( 'Switzerland', 'woocommerce-payments' ),
 			'CY' => __( 'Cyprus', 'woocommerce-payments' ),
@@ -231,6 +232,7 @@ class WC_Payments_Utils {
 			'FI' => __( 'Finland', 'woocommerce-payments' ),
 			'ES' => __( 'Spain', 'woocommerce-payments' ),
 			'FR' => __( 'France', 'woocommerce-payments' ),
+			'HR' => __( 'Croatia', 'woocommerce-payments' ),
 			'LU' => __( 'Luxembourg', 'woocommerce-payments' ),
 			'GB' => __( 'United Kingdom (UK)', 'woocommerce-payments' ),
 			'GR' => __( 'Greece', 'woocommerce-payments' ),
@@ -245,6 +247,7 @@ class WC_Payments_Utils {
 			'NZ' => __( 'New Zealand', 'woocommerce-payments' ),
 			'PL' => __( 'Poland', 'woocommerce-payments' ),
 			'PT' => __( 'Portugal', 'woocommerce-payments' ),
+			'RO' => __( 'Romania', 'woocommerce-payments' ),
 			'SI' => __( 'Slovenia', 'woocommerce-payments' ),
 			'SK' => __( 'Slovakia', 'woocommerce-payments' ),
 			'SG' => __( 'Singapore', 'woocommerce-payments' ),
@@ -693,6 +696,26 @@ class WC_Payments_Utils {
 		);
 
 		return 'treatment' === $abtest->get_variation( 'woo_wcpayments_tasklist_click_introducing_select_business_type_202203_v3' );
+	}
+
+	/**
+	 * Check to see if the current user is in progressive onboarding experiment treatment mode.
+	 *
+	 * @return bool
+	 */
+	public static function is_in_progressive_onboarding_treatment_mode(): bool {
+		if ( ! isset( $_COOKIE['tk_ai'] ) ) {
+			return false;
+		}
+
+		$abtest = new \WCPay\Experimental_Abtest(
+			sanitize_text_field( wp_unslash( $_COOKIE['tk_ai'] ) ),
+			'woocommerce',
+			'yes' === get_option( 'woocommerce_allow_tracking' )
+		);
+
+		return 'treatment' === $abtest->get_variation( 'woocommerce_payments_onboarding_progressive_express_2023_v1' )
+			|| 'treatment' === $abtest->get_variation( 'woocommerce_payments_onboarding_progressive_express_2023_v2' );
 	}
 
 	/**

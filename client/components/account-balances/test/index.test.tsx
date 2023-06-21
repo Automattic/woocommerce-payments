@@ -7,26 +7,10 @@ import { render, screen, fireEvent, within } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import AccountBalances from '../';
-import AccountBalancesHeader from '../header';
-import AccountBalancesTabPanel from '../balances-tab-panel';
-
-import { getGreeting, getCurrencyTabTitle } from '../utils';
-import { useCurrentWpUser } from '../hooks';
+import AccountBalances from '..';
+import { getCurrencyTabTitle } from '../utils';
 import { useAllDepositsOverviews, useInstantDeposit } from 'wcpay/data';
-import { documentationUrls } from '../strings';
 import { useSelectedCurrency } from 'wcpay/overview/hooks';
-
-const mockUser = {
-	id: 123,
-	first_name: 'Tester',
-	username: 'admin',
-	name: 'admin',
-	nickname: 'Tester-nickname',
-	last_name: 'Tester-lastname',
-	email: 'tester@test.com',
-	locale: 'en',
-};
 
 const mockAccount: AccountOverview.Account = {
 	default_currency: 'USD',
@@ -71,12 +55,7 @@ const mockWcPaySettings = {
 
 jest.mock( '../utils', () => ( {
 	getTimeOfDayString: jest.fn(),
-	getGreeting: jest.fn(),
 	getCurrencyTabTitle: jest.fn(),
-} ) );
-
-jest.mock( '../hooks', () => ( {
-	useCurrentWpUser: jest.fn(),
 } ) );
 
 jest.mock( 'wcpay/data', () => ( {
@@ -88,12 +67,6 @@ jest.mock( 'wcpay/overview/hooks', () => ( {
 	useSelectedCurrency: jest.fn(),
 } ) );
 
-const mockGetGreeting = getGreeting as jest.MockedFunction<
-	typeof getGreeting
->;
-const mockUseCurrentWpUser = useCurrentWpUser as jest.MockedFunction<
-	typeof useCurrentWpUser
->;
 const mockGetCurrencyTabTitle = getCurrencyTabTitle as jest.MockedFunction<
 	typeof getCurrencyTabTitle
 >;
@@ -193,47 +166,12 @@ describe( 'AccountBalances', () => {
 		global.wcpaySettings = mockWcPaySettings;
 	} );
 
-	test( 'renders', () => {
-		const expectedGreeting = 'Good afternoon, Tester 👋';
-		mockGetGreeting.mockReturnValue( expectedGreeting );
-		mockUseCurrentWpUser.mockReturnValue( {
-			user: mockUser,
-			isLoading: false,
-		} );
-		mockGetCurrencyTabTitle.mockReturnValue( 'USD Balance' );
-		mockOverviews( [ createMockOverview( 'usd', 100, 200, 0 ) ] );
-
-		const { container } = render( <AccountBalances /> );
-		expect( container ).toMatchSnapshot();
-	} );
-} );
-
-describe( 'AccountBalancesHeader', () => {
-	test( 'renders the correct greeting in the header', () => {
-		const expectedGreeting = 'Good afternoon, Tester 👋';
-		mockGetGreeting.mockReturnValue( expectedGreeting );
-		mockUseCurrentWpUser.mockReturnValue( {
-			user: mockUser,
-			isLoading: false,
-		} );
-		const { getByText } = render( <AccountBalancesHeader /> );
-		getByText( expectedGreeting );
-	} );
-} );
-
-describe( 'AccountBalancesTabPanel', () => {
-	beforeEach( () => {
-		global.wcpaySettings = mockWcPaySettings;
-	} );
-
 	test( 'renders the correct tab title and currency data', () => {
 		mockGetCurrencyTabTitle.mockReturnValue( 'USD Balance' );
 		mockOverviews( [ createMockOverview( 'usd', 10000, 20000, 0 ) ] );
 
 		// Use a query method returned by the render function: (you could also use `container` which will represent `document`)
-		const { getByText, getByLabelText } = render(
-			<AccountBalancesTabPanel />
-		);
+		const { getByText, getByLabelText } = render( <AccountBalances /> );
 
 		// Check the tab title is rendered correctly.
 		getByText( 'Available funds' );
@@ -251,9 +189,7 @@ describe( 'AccountBalancesTabPanel', () => {
 		mockGetCurrencyTabTitle.mockReturnValue( 'JPY Balance' );
 		mockOverviews( [ createMockOverview( 'jpy', 12300, 4560, 0 ) ] );
 
-		const { getByText, getByLabelText } = render(
-			<AccountBalancesTabPanel />
-		);
+		const { getByText, getByLabelText } = render( <AccountBalances /> );
 
 		// Check the tab title is rendered correctly.
 		getByText( 'Available funds' );
@@ -283,9 +219,7 @@ describe( 'AccountBalancesTabPanel', () => {
 			setSelectedCurrency: mockSetSelectedCurrency,
 		} );
 
-		const { getByLabelText, getByRole } = render(
-			<AccountBalancesTabPanel />
-		);
+		const { getByLabelText, getByRole } = render( <AccountBalances /> );
 
 		// Check the active tab is rendered correctly.
 		getByRole( 'tab', {
@@ -318,9 +252,7 @@ describe( 'AccountBalancesTabPanel', () => {
 			setSelectedCurrency: mockSetSelectedCurrency,
 		} );
 
-		const { getByLabelText, getByRole } = render(
-			<AccountBalancesTabPanel />
-		);
+		const { getByLabelText, getByRole } = render( <AccountBalances /> );
 
 		// Check the default active tab is rendered correctly.
 		getByRole( 'tab', {
@@ -348,7 +280,7 @@ describe( 'AccountBalancesTabPanel', () => {
 			createMockOverview( 'jpy', 2000, 9000, 0 ),
 		] );
 
-		const { getByLabelText } = render( <AccountBalancesTabPanel /> );
+		const { getByLabelText } = render( <AccountBalances /> );
 
 		// Get all the tab elements to check the tab titles are rendered correctly and for testing tab switching.
 		const tabTitles = screen.getAllByRole( 'tab' );
@@ -394,7 +326,7 @@ describe( 'AccountBalancesTabPanel', () => {
 
 	test( 'renders the correct tooltip text for the available balance', () => {
 		mockOverviews( [ createMockOverview( 'usd', 10000, 20000, 0 ) ] );
-		render( <AccountBalancesTabPanel /> );
+		render( <AccountBalances /> );
 
 		// Check the tooltips are rendered correctly.
 		const tooltipButton = screen.getByRole( 'button', {
@@ -406,13 +338,13 @@ describe( 'AccountBalancesTabPanel', () => {
 		} );
 		expect( within( tooltip ).getByRole( 'link' ) ).toHaveAttribute(
 			'href',
-			documentationUrls.depositSchedule
+			'https://woocommerce.com/document/woocommerce-payments/deposits/deposit-schedule'
 		);
 	} );
 
 	test( 'renders the correct tooltip text for a negative available balance', () => {
 		mockOverviews( [ createMockOverview( 'usd', 10000, -20000, 0 ) ] );
-		render( <AccountBalancesTabPanel /> );
+		render( <AccountBalances /> );
 
 		// Check the tooltips are rendered correctly.
 		const tooltipButton = screen.getByRole( 'button', {
@@ -425,14 +357,33 @@ describe( 'AccountBalancesTabPanel', () => {
 		} );
 		expect( within( tooltip ).getByRole( 'link' ) ).toHaveAttribute(
 			'href',
-			documentationUrls.negativeBalance
+			'https://woocommerce.com/document/woocommerce-payments/fees-and-debits/account-showing-negative-balance'
+		);
+	} );
+
+	test( 'renders the correct tooltip text for a negative pending balance', () => {
+		mockOverviews( [ createMockOverview( 'usd', -10000, 20000, 0 ) ] );
+		render( <AccountBalances /> );
+
+		// Check the tooltips are rendered correctly.
+		const tooltipButton = screen.getByRole( 'button', {
+			name: 'Pending funds tooltip',
+		} );
+		fireEvent.click( tooltipButton );
+		const tooltip = screen.getByRole( 'tooltip', {
+			// Regex optional group for `(opens in a new tab)`.
+			name: /Learn more( \(.*?\))? about why your account balance may be negative./,
+		} );
+		expect( within( tooltip ).getByRole( 'link' ) ).toHaveAttribute(
+			'href',
+			'https://woocommerce.com/document/woocommerce-payments/fees-and-debits/account-showing-negative-balance'
 		);
 	} );
 
 	test( 'renders the correct tooltip text for the pending balance', () => {
 		const delayDays = mockAccount.deposits_schedule.delay_days;
 		mockOverviews( [ createMockOverview( 'usd', 10000, 20000, 0 ) ] );
-		render( <AccountBalancesTabPanel /> );
+		render( <AccountBalances /> );
 
 		// Check the tooltips are rendered correctly.
 		const tooltipButton = screen.getByRole( 'button', {
@@ -447,13 +398,13 @@ describe( 'AccountBalancesTabPanel', () => {
 		} );
 		expect( within( tooltip ).getByRole( 'link' ) ).toHaveAttribute(
 			'href',
-			documentationUrls.depositSchedule
+			'https://woocommerce.com/document/woocommerce-payments/deposits/deposit-schedule'
 		);
 	} );
 
 	test( 'renders instant deposit button correctly', () => {
 		mockOverviews( [ createMockOverview( 'usd', 10000, 20000, 30000 ) ] );
-		render( <AccountBalancesTabPanel /> );
+		render( <AccountBalances /> );
 
 		screen.getByRole( 'button', {
 			name: 'Deposit available funds',
@@ -462,7 +413,7 @@ describe( 'AccountBalancesTabPanel', () => {
 
 	test( 'does not render instant deposit button when instant amount is 0', () => {
 		mockOverviews( [ createMockOverview( 'usd', 10000, 20000, 0 ) ] );
-		render( <AccountBalancesTabPanel /> );
+		render( <AccountBalances /> );
 
 		expect(
 			screen.queryByRole( 'button', { name: 'Deposit available funds' } )
@@ -473,7 +424,7 @@ describe( 'AccountBalancesTabPanel', () => {
 		const mockOverview = createMockOverview( 'usd', 10000, 20000, 0 );
 		mockOverview.instant = undefined;
 		mockOverviews( [ mockOverview ] );
-		render( <AccountBalancesTabPanel /> );
+		render( <AccountBalances /> );
 
 		expect(
 			screen.queryByRole( 'button', { name: 'Deposit available funds' } )

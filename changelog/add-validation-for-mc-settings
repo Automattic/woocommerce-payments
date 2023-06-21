@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Check that a currency is available before adding it to the current currencies. Minor admin text string updates. Minor refactoring of MultiCurrency/RestController class.

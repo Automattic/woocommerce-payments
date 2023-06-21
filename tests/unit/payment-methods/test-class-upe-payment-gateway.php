@@ -17,7 +17,7 @@ use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Core\Server\Response;
 use WCPay\Constants\Payment_Method;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
-use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
+use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\WC_Payments_UPE_Checkout;
 use WCPAY_UnitTestCase;
@@ -111,11 +111,11 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	private $mock_wcpay_account;
 
 	/**
-	 * Platform_Checkout_Utilities instance.
+	 * WooPay_Utilities instance.
 	 *
-	 * @var Platform_Checkout_Utilities
+	 * @var WooPay_Utilities
 	 */
-	private $mock_platform_checkout_utilities;
+	private $mock_woopay_utilities;
 
 	/**
 	 * Mocked value of return_url.
@@ -177,7 +177,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'get_fees' )
 			->willReturn( $payment_methods );
 
-		$this->mock_platform_checkout_utilities = $this->createMock( Platform_Checkout_Utilities::class );
+		$this->mock_woopay_utilities = $this->createMock( WooPay_Utilities::class );
 
 		// Arrange: Mock WC_Payments_Customer_Service so its methods aren't called directly.
 		$this->mock_customer_service = $this->getMockBuilder( 'WC_Payments_Customer_Service' )
@@ -275,12 +275,13 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->set_get_upe_enabled_payment_method_statuses_return_value();
 
 		// Add the UPE Checkout action.
-		new WC_Payments_UPE_Checkout(
+		$checkout = new WC_Payments_UPE_Checkout(
 			$this->mock_upe_gateway,
-			$this->mock_platform_checkout_utilities,
+			$this->mock_woopay_utilities,
 			$this->mock_wcpay_account,
 			$this->mock_customer_service
 		);
+		$checkout->init_hooks();
 
 		$this->mock_upe_gateway->payment_fields();
 
@@ -1675,6 +1676,48 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		WC_Helper_Site_Currency::$mock_site_currency = '';
 	}
 
+	public function test_payment_method_compares_correct_currency() {
+		$card_method       = $this->mock_payment_methods['card'];
+		$giropay_method    = $this->mock_payment_methods['giropay'];
+		$sofort_method     = $this->mock_payment_methods['sofort'];
+		$bancontact_method = $this->mock_payment_methods['bancontact'];
+		$eps_method        = $this->mock_payment_methods['eps'];
+		$sepa_method       = $this->mock_payment_methods['sepa_debit'];
+		$p24_method        = $this->mock_payment_methods['p24'];
+		$ideal_method      = $this->mock_payment_methods['ideal'];
+		$becs_method       = $this->mock_payment_methods['au_becs_debit'];
+
+		WC_Helper_Site_Currency::$mock_site_currency = 'EUR';
+
+		$this->assertTrue( $card_method->is_currency_valid() );
+		$this->assertTrue( $giropay_method->is_currency_valid() );
+		$this->assertTrue( $sofort_method->is_currency_valid() );
+		$this->assertTrue( $bancontact_method->is_currency_valid() );
+		$this->assertTrue( $eps_method->is_currency_valid() );
+		$this->assertTrue( $sepa_method->is_currency_valid() );
+		$this->assertTrue( $p24_method->is_currency_valid() );
+		$this->assertTrue( $ideal_method->is_currency_valid() );
+		$this->assertFalse( $becs_method->is_currency_valid() );
+
+		global $wp;
+		$order          = WC_Helper_Order::create_order();
+		$order_id       = $order->get_id();
+		$wp->query_vars = [ 'order-pay' => strval( $order_id ) ];
+		$order->set_currency( 'USD' );
+
+		$this->assertTrue( $card_method->is_currency_valid() );
+		$this->assertFalse( $giropay_method->is_currency_valid() );
+		$this->assertFalse( $sofort_method->is_currency_valid() );
+		$this->assertFalse( $bancontact_method->is_currency_valid() );
+		$this->assertFalse( $eps_method->is_currency_valid() );
+		$this->assertFalse( $sepa_method->is_currency_valid() );
+		$this->assertFalse( $p24_method->is_currency_valid() );
+		$this->assertFalse( $ideal_method->is_currency_valid() );
+		$this->assertFalse( $becs_method->is_currency_valid() );
+
+		$wp->query_vars = [];
+	}
+
 	public function test_create_token_from_setup_intent_adds_token() {
 		$mock_token           = WC_Helper_Token::create_token( 'pm_mock' );
 		$mock_setup_intent_id = 'si_mock';
@@ -1854,10 +1897,73 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	/**
 	 * @dataProvider maybe_filter_gateway_title_data_provider
 	 */
-	public function test_maybe_filter_gateway_title( $data ) {
+	public function test_maybe_filter_gateway_title_with_no_additional_feature_flags_enabled( $data ) {
 		$data           = $data[0];
 		$default_option = $this->mock_upe_gateway->get_option( 'upe_enabled_payment_method_ids' );
 		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', $data['methods'] );
+		WC_Helper_Site_Currency::$mock_site_currency = $data['currency'];
+		$this->set_get_upe_enabled_payment_method_statuses_return_value( $data['statuses'] );
+		$this->assertSame( $data['expected'], $this->mock_upe_gateway->maybe_filter_gateway_title( $data['title'], $data['id'] ) );
+		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', $default_option );
+	}
+
+	public function test_maybe_filter_gateway_title_skips_update_due_to_enabled_split_upe() {
+		update_option( '_wcpay_feature_upe_split', '1' );
+		update_option( '_wcpay_feature_upe_deferred_intent', '0' );
+
+		$data = [
+			'methods'  => [
+				'card',
+				'bancontact',
+			],
+			'statuses' => [
+				'card_payments'       => [
+					'status' => 'active',
+				],
+				'bancontact_payments' => [
+					'status' => 'active',
+				],
+			],
+			'currency' => 'EUR',
+			'title'    => 'WooCommerce Payments',
+			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
+			'expected' => 'WooCommerce Payments',
+		];
+
+		$default_option = $this->mock_upe_gateway->get_option( 'upe_enabled_payment_method_ids' );
+		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', $data['methods'] );
+
+		WC_Helper_Site_Currency::$mock_site_currency = $data['currency'];
+		$this->set_get_upe_enabled_payment_method_statuses_return_value( $data['statuses'] );
+		$this->assertSame( $data['expected'], $this->mock_upe_gateway->maybe_filter_gateway_title( $data['title'], $data['id'] ) );
+		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', $default_option );
+	}
+
+	public function test_maybe_filter_gateway_title_skips_update_due_to_enabled_upe_with_deferred_intent_creation() {
+		update_option( '_wcpay_feature_upe_split', '0' );
+		update_option( '_wcpay_feature_upe_deferred_intent', '1' );
+		$data = [
+			'methods'  => [
+				'card',
+				'bancontact',
+			],
+			'statuses' => [
+				'card_payments'       => [
+					'status' => 'active',
+				],
+				'bancontact_payments' => [
+					'status' => 'active',
+				],
+			],
+			'currency' => 'EUR',
+			'title'    => 'WooCommerce Payments',
+			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
+			'expected' => 'WooCommerce Payments',
+		];
+
+		$default_option = $this->mock_upe_gateway->get_option( 'upe_enabled_payment_method_ids' );
+		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', $data['methods'] );
+
 		WC_Helper_Site_Currency::$mock_site_currency = $data['currency'];
 		$this->set_get_upe_enabled_payment_method_statuses_return_value( $data['statuses'] );
 		$this->assertSame( $data['expected'], $this->mock_upe_gateway->maybe_filter_gateway_title( $data['title'], $data['id'] ) );
@@ -1902,7 +2008,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$upe_checkout = new WC_Payments_UPE_Checkout(
 			$mock_upe_gateway,
-			$this->mock_platform_checkout_utilities,
+			$this->mock_woopay_utilities,
 			$this->mock_wcpay_account,
 			$this->mock_customer_service
 		);
@@ -1964,7 +2070,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$upe_checkout = new WC_Payments_UPE_Checkout(
 			$mock_upe_gateway,
-			$this->mock_platform_checkout_utilities,
+			$this->mock_woopay_utilities,
 			$this->mock_wcpay_account,
 			$this->mock_customer_service
 		);

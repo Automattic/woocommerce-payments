@@ -12,18 +12,22 @@ import Chip from 'components/chip';
 import './style.scss';
 
 const StatusChip = ( props ) => {
-	const { accountStatus } = props;
+	const { accountStatus, poEnabled, poComplete } = props;
 
 	let description = __( 'Unknown', 'woocommerce-payments' );
 	let type = 'light';
 	let tooltip = '';
+	// Pending status is also shown when the account is PO enabled but not complete and in that case status is restricted.
 	if ( 'complete' === accountStatus ) {
 		description = __( 'Complete', 'woocommerce-payments' );
 		type = 'primary';
 	} else if ( 'restricted_soon' === accountStatus ) {
 		description = __( 'Restricted soon', 'woocommerce-payments' );
 		type = 'warning';
-	} else if ( 'pending_verification' === accountStatus ) {
+	} else if (
+		'pending_verification' === accountStatus ||
+		( poEnabled && ! poComplete && 'restricted' === accountStatus )
+	) {
 		description = __( 'Pending', 'woocommerce-payments' );
 		type = 'light';
 		tooltip = __(
