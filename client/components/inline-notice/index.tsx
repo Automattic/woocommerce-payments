@@ -10,7 +10,10 @@ import classNames from 'classnames';
  */
 import './style.scss';
 
-const InlineNotice = ( { className, ...restProps } ) => (
+const InlineNotice: React.FunctionComponent< Notice.Props > = ( {
+	className,
+	...restProps
+} ) => (
 	<Notice
 		className={ classNames( 'wcpay-inline-notice', className ) }
 		{ ...restProps }
