@@ -292,7 +292,11 @@ jQuery( function ( $ ) {
 			.catch( function ( error ) {
 				paymentMethodGenerated = null;
 				$form.removeClass( 'processing' ).unblock();
-				showError( error.message );
+				if ( error.responseJSON && ! error.responseJSON.success ) {
+					showError( error.responseJSON.data.error.message );
+				} else if ( error.message ) {
+					showError( error.message );
+				}
 			} );
 	};
 
