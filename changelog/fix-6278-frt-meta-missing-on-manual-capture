@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed payment intents still getting confirmed on UPE when intent update fails
