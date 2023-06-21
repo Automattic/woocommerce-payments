@@ -29,7 +29,6 @@ import CapitalPage from 'capital';
 import PreviewReceiptPage from 'card-readers/preview-receipt';
 import OverviewPage from 'overview';
 import DocumentsPage from 'documents';
-import OnboardingExperimentPage from 'onboarding-experiment';
 import OnboardingPrototype from 'onboarding-prototype';
 import FraudProtectionAdvancedSettingsPage from './settings/fraud-protection/advanced-settings';
 import { getTasks } from 'overview/task-list/tasks';
@@ -58,22 +57,8 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: OnboardingExperimentPage,
-			path: '/payments/onboarding',
-			wpOpenMenu: menuID,
-			breadcrumbs: [
-				rootLink,
-				__( 'Onboarding', 'woocommerce-payments' ),
-			],
-			navArgs: {
-				id: 'wc-payments-onboarding',
-			},
-			capability: 'manage_woocommerce',
-		} );
-
-		pages.push( {
 			container: OnboardingPrototype,
-			path: '/payments/onboarding-flow',
+			path: '/payments/onboarding-flow', // TODO: Replace for /onboarding?
 			wpOpenMenu: menuID,
 			breadcrumbs: [
 				rootLink,
