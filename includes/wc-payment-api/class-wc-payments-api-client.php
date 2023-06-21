@@ -573,8 +573,9 @@ class WC_Payments_API_Client {
 		];
 
 		$dispute = $this->request( $request, self::DISPUTES_API . '/' . $dispute_id, self::POST );
-		// Invalidate the dispute status cache.
+		// Invalidate the dispute caches.
 		\WC_Payments::get_database_cache()->delete( Database_Cache::DISPUTE_STATUS_COUNTS_KEY );
+		\WC_Payments::get_database_cache()->delete( Database_Cache::ACTIVE_DISPUTES_KEY );
 
 		if ( is_wp_error( $dispute ) ) {
 			return $dispute;
@@ -592,8 +593,9 @@ class WC_Payments_API_Client {
 	 */
 	public function close_dispute( $dispute_id ) {
 		$dispute = $this->request( [], self::DISPUTES_API . '/' . $dispute_id . '/close', self::POST );
-		// Invalidate the dispute status cache.
+		// Invalidate the dispute caches.
 		\WC_Payments::get_database_cache()->delete( Database_Cache::DISPUTE_STATUS_COUNTS_KEY );
+		\WC_Payments::get_database_cache()->delete( Database_Cache::ACTIVE_DISPUTES_KEY );
 
 		if ( is_wp_error( $dispute ) ) {
 			return $dispute;
