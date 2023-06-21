@@ -204,18 +204,18 @@ export const getDisputeResolutionTask = (
 		disputeTotalAmounts
 	);
 	disputeTask.content =
-		// Final day / Last week to respond for N of the disputes
+		// Final day / Last week to respond to N of the disputes
 		numDisputesDueWithin24h >= 1
 			? sprintf(
 					__(
-						'Final day to respond for %d of the disputes',
+						'Final day to respond to %d of the disputes',
 						'woocommerce-payments'
 					),
 					numDisputesDueWithin24h
 			  )
 			: sprintf(
 					__(
-						'Last week to respond for %d of the disputes',
+						'Last week to respond to %d of the disputes',
 						'woocommerce-payments'
 					),
 					numDisputesDueWithin7Days
