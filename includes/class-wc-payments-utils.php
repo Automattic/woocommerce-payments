@@ -553,6 +553,20 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Returns the customer facing HTTP status codes for an exception.
+	 *
+	 * @param   Exception $e  Exception to get the HTTP status code for.
+	 *
+	 * @return  int
+	 */
+	public static function get_filtered_error_status_code( Exception $e ) : int {
+		if ( $e instanceof API_Exception ) {
+			return $e->get_http_code() ?? 400;
+		}
+		return 400;
+	}
+
+	/**
 	 * Saves the minimum amount required for transactions in a given currency.
 	 *
 	 * @param string $currency The currency.
