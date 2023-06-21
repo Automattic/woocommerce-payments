@@ -1091,7 +1091,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			);
 
 			throw new Process_Payment_Exception(
-				__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
+				__( "We're not able to process this payment due to the order ID mismatch. Please try again later.", 'woocommerce-payments' ),
 				'upe_process_redirect_order_id_mismatched'
 			);
 		}
