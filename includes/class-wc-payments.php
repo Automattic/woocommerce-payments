@@ -1529,9 +1529,9 @@ class WC_Payments {
 	}
 
 	/**
-	 * Initializes the WooPay_Store_Api_Token class and returns the Cart token.
+	 * Initializes the WooPay_Store_Api_Token class and returns it.
 	 *
-	 * @return string The Cart Token.
+	 * @return WooPay_Store_Api_Token The WooPay_Store_Api_Token object.
 	 */
 	private static function init_store_api_token() {
 		$cart_route = WooPay_Store_Api_Token::init();
