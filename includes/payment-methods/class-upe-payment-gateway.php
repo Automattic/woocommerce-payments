@@ -63,6 +63,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 	const KEY_UPE_SETUP_INTENT = 'wcpay_upe_setup_intent';
 
+	const PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE = 'upe_process_redirect_order_id_mismatched';
+
 	/**
 	 * Array mapping payment method string IDs to classes
 	 *
@@ -804,7 +806,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			$is_order_id_mismatched_exception =
 				is_a( $e, Process_Payment_Exception::class )
-				&& 'upe_process_redirect_order_id_mismatched' === $e->get_error_code();
+				&& self::PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE === $e->get_error_code();
 
 			// If the order ID mismatched exception is thrown, do not mark the order as failed.
 			// Because the outcome of the payment intent is for another order, not for the order processed here.
@@ -821,7 +823,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			self::remove_upe_payment_intent_from_session();
 
 			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
-			wp_safe_redirect( wc_get_checkout_url() );
+
+			$redirect_url = wc_get_checkout_url();
+			if ( $is_order_id_mismatched_exception ) {
+				$redirect_url = add_query_arg( self::PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE, 'yes', $redirect_url );
+			}
+			wp_safe_redirect( $redirect_url );
 			exit;
 		}
 	}
@@ -1094,7 +1101,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			throw new Process_Payment_Exception(
 				__( "We're not able to process this payment due to the order ID mismatch. Please try again later.", 'woocommerce-payments' ),
-				'upe_process_redirect_order_id_mismatched'
+				self::PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE
 			);
 		}
 	}
