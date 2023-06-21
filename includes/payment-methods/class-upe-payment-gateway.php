@@ -806,6 +806,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				is_a( $e, Process_Payment_Exception::class )
 				&& 'upe_process_redirect_order_id_mismatched' === $e->get_error_code();
 
+			// If the order ID mismatched exception is thrown, do not mark the order as failed.
+			// Because the outcome of the payment intent is for another order, not for the order processed here.
 			if ( ! $is_order_id_mismatched_exception ) {
 				// Confirm our needed variables are set before using them due to there could be a server issue during the get_intent process.
 				$status    = $status ?? null;
