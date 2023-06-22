@@ -46,7 +46,12 @@ const ConnectAccountPage: React.FC = () => {
 	useEffect( () => {
 		wcpayTracks.recordEvent( wcpayTracks.events.CONNECT_ACCOUNT_VIEW, {
 			path: 'payments_connect_v2',
+			...( incentive && {
+				incentive_id: incentive.id,
+			} ),
 		} );
+		// We only want to run this once.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [] );
 
 	const handleLocationCheck = () => {
@@ -110,6 +115,9 @@ const ConnectAccountPage: React.FC = () => {
 		setSubmitted( true );
 		wcpayTracks.recordEvent( wcpayTracks.events.CONNECT_ACCOUNT_CLICKED, {
 			wpcom_connection: wcpaySettings.isJetpackConnected ? 'Yes' : 'No',
+			...( incentive && {
+				incentive_id: incentive.id,
+			} ),
 		} );
 	};
 
