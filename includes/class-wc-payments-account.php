@@ -601,7 +601,7 @@ class WC_Payments_Account {
 	 *
 	 * @param string $error_message Optional error message to show in a notice.
 	 */
-	public function redirect_to_onboarding_page( $error_message = null ) {
+	public function redirect_to_onboarding_welcome_page( $error_message = null ) {
 		if ( isset( $error_message ) ) {
 			set_transient( self::ERROR_MESSAGE_TRANSIENT, $error_message, 30 );
 		}
@@ -666,7 +666,7 @@ class WC_Payments_Account {
 		}
 
 		// Redirect if not connected.
-		$this->redirect_to_onboarding_page();
+		$this->redirect_to_onboarding_welcome_page();
 		return true;
 	}
 
@@ -796,7 +796,7 @@ class WC_Payments_Account {
 			update_option( 'wcpay_menu_badge_hidden', 'yes' );
 
 			if ( isset( $_GET['wcpay-connect-jetpack-success'] ) && ! $this->payments_api_client->is_server_connected() ) {
-				$this->redirect_to_onboarding_page(
+				$this->redirect_to_onboarding_welcome_page(
 					__( 'Connection to WordPress.com failed. Please connect to WordPress.com to start using WooCommerce Payments.', 'woocommerce-payments' )
 				);
 				return;
@@ -805,7 +805,7 @@ class WC_Payments_Account {
 			try {
 				$this->maybe_init_jetpack_connection( $wcpay_connect_param );
 			} catch ( Exception $e ) {
-				$this->redirect_to_onboarding_page(
+				$this->redirect_to_onboarding_welcome_page(
 				/* translators: error message. */
 					sprintf( __( 'There was a problem connecting this site to WordPress.com: "%s"', 'woocommerce-payments' ), $e->getMessage() )
 				);
@@ -816,7 +816,7 @@ class WC_Payments_Account {
 				$this->init_stripe_onboarding( $wcpay_connect_param );
 			} catch ( Exception $e ) {
 				Logger::error( 'Init Stripe onboarding flow failed. ' . $e );
-				$this->redirect_to_onboarding_page(
+				$this->redirect_to_onboarding_welcome_page(
 					__( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' )
 				);
 			}
@@ -1021,7 +1021,7 @@ class WC_Payments_Account {
 	 */
 	private function init_stripe_onboarding( $wcpay_connect_from ) {
 		if ( get_transient( self::ON_BOARDING_STARTED_TRANSIENT ) ) {
-			$this->redirect_to_onboarding_page(
+			$this->redirect_to_onboarding_welcome_page(
 				__( 'There was a duplicate attempt to initiate account setup. Please wait a few seconds and try again.', 'woocommerce-payments' )
 			);
 			return;
@@ -1151,7 +1151,7 @@ class WC_Payments_Account {
 	 */
 	private function finalize_connection( $state, $mode ) {
 		if ( get_transient( 'wcpay_stripe_onboarding_state' ) !== $state ) {
-			$this->redirect_to_onboarding_page(
+			$this->redirect_to_onboarding_welcome_page(
 				__( 'There was a problem processing your account data. Please try again.', 'woocommerce-payments' )
 			);
 			return;

@@ -183,7 +183,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_account
 			->expects( $this->exactly( $expected_times_redirect_called ) )
-			->method( 'redirect_to_onboarding_page' );
+			->method( 'redirect_to_onboarding_welcome_page' );
 
 		$this->payments_admin->maybe_redirect_to_onboarding();
 	}
@@ -283,7 +283,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_account
 			->expects( $this->exactly( $expected_times_redirect_called ) )
-			->method( 'redirect_to_onboarding_page' );
+			->method( 'redirect_to_onboarding_welcome_page' );
 
 		$this->payments_admin->maybe_redirect_overview_to_connect();
 
