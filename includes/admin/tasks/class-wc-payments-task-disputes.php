@@ -250,7 +250,7 @@ class WC_Payments_Task_Disputes extends Task {
 	 *
 	 * @param int $num_days Number of days in the future to check for disputes needing response.
 	 *
-	 * @return array Array of disputes needing response within the given number of days.
+	 * @return array Disputes needing response within the given number of days.
 	 */
 	private function get_disputes_needing_response_within_days( $num_days ) {
 		$to_return = [];
