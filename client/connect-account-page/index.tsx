@@ -13,6 +13,7 @@ import {
 	Notice,
 	Icon,
 } from '@wordpress/components';
+import apiFetch from '@wordpress/api-fetch';
 import { payment } from '@wordpress/icons';
 import globe from 'gridicons/dist/globe';
 import scheduled from 'gridicons/dist/scheduled';
@@ -33,6 +34,9 @@ import './style.scss';
 const ConnectAccountPage: React.FC = () => {
 	const { first_name: firstName } = wcSettings.admin.currentUserData;
 	const incentive = wcpaySettings.connectIncentive;
+	const [ errorMessage, setErrorMessage ] = useState< string >(
+		wcpaySettings.errorMessage
+	);
 	const [ isSubmitted, setSubmitted ] = useState( false );
 	const {
 		connectUrl,
@@ -75,12 +79,32 @@ const ConnectAccountPage: React.FC = () => {
 		document.body.appendChild( container );
 	};
 
-	const handleSetup = ( event: React.SyntheticEvent ) => {
+	const handleSetup = async ( event: React.SyntheticEvent ) => {
 		const isCountryAvailable = availableCountries[ country ] !== undefined;
 		if ( ! isCountryAvailable ) {
 			// Inform the merchant if country specified in business address is not yet supported, but allow to proceed.
 			event.preventDefault();
 			handleLocationCheck();
+		}
+
+		// If there is an incentive available, request promo activation before redirecting.
+		// Display an error message if the request fails.
+		if ( incentive ) {
+			event.preventDefault();
+			try {
+				const activatePromoRequest = await apiFetch< {
+					success: boolean;
+				} >( {
+					path: `/wc-analytics/admin/notes/experimental-activate-promo/${ incentive.id }`,
+					method: 'POST',
+				} );
+
+				if ( activatePromoRequest?.success ) {
+					window.location.href = connectUrl;
+				}
+			} catch ( _ ) {
+				setErrorMessage( strings.incentive.error );
+			}
 		}
 
 		setSubmitted( true );
@@ -91,13 +115,13 @@ const ConnectAccountPage: React.FC = () => {
 
 	return (
 		<Page isNarrow className="connect-account-page">
-			{ wcpaySettings.errorMessage && (
+			{ errorMessage && (
 				<Notice
 					className="wcpay-connect-error-notice"
 					status="error"
 					isDismissible={ false }
 				>
-					{ wcpaySettings.errorMessage }
+					{ errorMessage }
 				</Notice>
 			) }
 			{ wcpaySettings.onBoardingDisabled ? (

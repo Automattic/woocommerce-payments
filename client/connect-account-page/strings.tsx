@@ -241,5 +241,9 @@ export default {
 					),
 				}
 			),
+		error: __(
+			'There was an error applying the promotion. Please contact support for assistance if the problem persists',
+			'woocommerce-payments'
+		),
 	},
 };
