@@ -1646,9 +1646,21 @@ class WC_Payments {
 	 */
 	public static function load_stripe_bnpl_site_messaging() {
 		if ( WC_Payments_Features::is_bnpl_affirm_afterpay_enabled() ) {
-			require_once __DIR__ . '/class-wc-payments-payment-method-messaging-element.php';
-			$stripe_site_messaging = new WC_Payments_Payment_Method_Messaging_Element( self::$account, self::$card_gateway );
-			echo wp_kses( $stripe_site_messaging->init(), 'post' );
+			// The messaging element shall not be shown for subscription products.
+			// As we are not too deep into subscriptions API, we follow simplistic approach for now.
+			$is_subscription           = false;
+			$are_subscriptions_enabled = class_exists( 'WC_Subscriptions' ) || class_exists( 'WC_Subscriptions_Core_Plugin' );
+			if ( $are_subscriptions_enabled ) {
+					// The subscription identification shall be aligned with WC_Subscriptions_Product::is_subscription.
+					global $product;
+					$is_subscription = $product && $product->is_type( [ 'subscription', 'subscription_variation', 'variable-subscription' ] );
+			}
+
+			if ( ! $is_subscription ) {
+				require_once __DIR__ . '/class-wc-payments-payment-method-messaging-element.php';
+				$stripe_site_messaging = new WC_Payments_Payment_Method_Messaging_Element( self::$account, self::$card_gateway );
+				echo wp_kses( $stripe_site_messaging->init(), 'post' );
+			}
 		}
 	}
 
