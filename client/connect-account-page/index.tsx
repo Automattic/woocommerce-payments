@@ -84,18 +84,19 @@ const ConnectAccountPage: React.FC = () => {
 		document.body.appendChild( container );
 	};
 
-	const handleSetup = async ( event: React.SyntheticEvent ) => {
-		const isCountryAvailable = availableCountries[ country ] !== undefined;
-		if ( ! isCountryAvailable ) {
-			// Inform the merchant if country specified in business address is not yet supported, but allow to proceed.
-			event.preventDefault();
-			handleLocationCheck();
-		}
+	const handleSetup = async () => {
+		setSubmitted( true );
+
+		wcpayTracks.recordEvent( wcpayTracks.events.CONNECT_ACCOUNT_CLICKED, {
+			wpcom_connection: wcpaySettings.isJetpackConnected ? 'Yes' : 'No',
+			...( incentive && {
+				incentive_id: incentive.id,
+			} ),
+		} );
 
 		// If there is an incentive available, request promo activation before redirecting.
 		// Display an error message if the request fails.
 		if ( incentive ) {
-			event.preventDefault();
 			try {
 				const activatePromoRequest = await apiFetch< {
 					success: boolean;
@@ -103,22 +104,18 @@ const ConnectAccountPage: React.FC = () => {
 					path: `/wc-analytics/admin/notes/experimental-activate-promo/${ incentive.id }`,
 					method: 'POST',
 				} );
-
-				if ( activatePromoRequest?.success ) {
-					window.location.href = connectUrl;
-				}
+				if ( ! activatePromoRequest?.success ) throw new Error();
 			} catch ( _ ) {
 				setErrorMessage( strings.incentive.error );
 			}
 		}
 
-		setSubmitted( true );
-		wcpayTracks.recordEvent( wcpayTracks.events.CONNECT_ACCOUNT_CLICKED, {
-			wpcom_connection: wcpaySettings.isJetpackConnected ? 'Yes' : 'No',
-			...( incentive && {
-				incentive_id: incentive.id,
-			} ),
-		} );
+		// Inform the merchant if country specified in business address is not yet supported, but allow to proceed.
+		if ( ! availableCountries[ country ] ) {
+			return handleLocationCheck();
+		}
+
+		window.location.href = connectUrl;
 	};
 
 	return (
@@ -157,7 +154,6 @@ const ConnectAccountPage: React.FC = () => {
 								isBusy={ isSubmitted }
 								disabled={ isSubmitted }
 								onClick={ handleSetup }
-								href={ connectUrl }
 							>
 								{ strings.button }
 							</Button>
