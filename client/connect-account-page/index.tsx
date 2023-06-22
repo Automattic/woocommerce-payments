@@ -9,36 +9,28 @@ import {
 	Button,
 	Card,
 	CardBody,
-	CardHeader,
 	CardDivider,
 	Notice,
+	Icon,
 } from '@wordpress/components';
+import { payment } from '@wordpress/icons';
+import globe from 'gridicons/dist/globe';
+import scheduled from 'gridicons/dist/scheduled';
 
 /**
  * Internal dependencies
  */
 import wcpayTracks from 'tracks';
 import Page from 'components/page';
+import PaymentMethods from './payment-methods';
 import InfoNotice from './info-notice-modal';
 import OnboardingLocationCheckModal from './modal';
 import LogoImg from 'assets/images/woopayments.svg?asset';
 import strings from './strings';
 import './style.scss';
 
-// Payment method icons
-import AmericanExpress from 'assets/images/cards/amex.svg?asset';
-import ApplePay from 'assets/images/cards/apple-pay.svg?asset';
-import DinersClub from 'assets/images/cards/diners.svg?asset';
-import Discover from 'assets/images/cards/discover.svg?asset';
-import GiroPay from 'assets/images/payment-methods/giropay.svg?asset';
-import GooglePay from 'assets/images/cards/google-pay.svg?asset';
-import JCB from 'assets/images/cards/jcb.svg?asset';
-import MasterCard from 'assets/images/cards/mastercard.svg?asset';
-import Sofort from 'assets/images/payment-methods/sofort.svg?asset';
-import UnionPay from 'assets/images/cards/unionpay.svg?asset';
-import Visa from 'assets/images/cards/visa.svg?asset';
-
 const ConnectAccountPage: React.FC = () => {
+	const { first_name: firstName } = wcSettings.admin.currentUserData;
 	const [ isSubmitted, setSubmitted ] = useState( false );
 	const {
 		connectUrl,
@@ -112,15 +104,22 @@ const ConnectAccountPage: React.FC = () => {
 				</Card>
 			) : (
 				<>
-					<Card className="connect-account-page__onboarding">
-						<CardHeader>
+					<Card>
+						<div className="connect-account-page__heading">
 							<img src={ LogoImg } alt="logo" />
-						</CardHeader>
-						<CardBody className="connect-account-page__content">
-							<h2>{ strings.heading }</h2>
-							<p>{ strings.description }</p>
+							<h2>{ strings.heading( firstName ) }</h2>
+						</div>
+						<div className="connect-account-page__content">
+							<div className="connect-account-page__content-usp">
+								<Icon icon={ payment } />
+								{ strings.usp1 }
+								<Icon icon={ globe } />
+								{ strings.usp2 }
+								<Icon icon={ scheduled } />
+								{ strings.usp3 }
+							</div>
 							<Button
-								isPrimary
+								variant="primary"
 								isBusy={ isSubmitted }
 								disabled={ isSubmitted }
 								onClick={ handleSetup }
@@ -128,51 +127,33 @@ const ConnectAccountPage: React.FC = () => {
 							>
 								{ strings.button }
 							</Button>
-						</CardBody>
+							<p>{ strings.agreement }</p>
+						</div>
 						<CardDivider />
-						<CardBody className="connect-account-page__payment-methods">
-							<p>{ strings.acceptedPaymentMethods }</p>
-							<div className="connect-account-page__payment-methods__icons">
-								<img src={ Visa } alt="Visa" />
-								<img src={ MasterCard } alt="MasterCard" />
-								<img
-									src={ AmericanExpress }
-									alt="American Express"
-								/>
-								<img src={ ApplePay } alt="Apple Pay" />
-								<img src={ GooglePay } alt="Google Pay" />
-								<img src={ GiroPay } alt="GiroPay" />
-								<img src={ DinersClub } alt="DinersClub" />
-								<img src={ Discover } alt="Discover" />
-								<img src={ UnionPay } alt="UnionPay" />
-								<img src={ JCB } alt="JCB" />
-								<img src={ Sofort } alt="Sofort" />
-								<span>& more.</span>
-							</div>
-						</CardBody>
+						<div className="connect-account-page__payment-methods">
+							<PaymentMethods />
+						</div>
 					</Card>
 					<Card className="connect-account-page__details">
-						<CardBody>
-							<h2>{ strings.stepsHeading }</h2>
-							<InfoNotice />
-							<div className="connect-account-page__steps">
-								<div className="connect-account-page__step">
-									<span>1</span>
-									<h3>{ strings.step1.heading }</h3>
-									<p>{ strings.step1.description }</p>
-								</div>
-								<div className="connect-account-page__step">
-									<span>2</span>
-									<h3>{ strings.step2.heading }</h3>
-									<p>{ strings.step2.description }</p>
-								</div>
-								<div className="connect-account-page__step">
-									<span>3</span>
-									<h3>{ strings.step3.heading }</h3>
-									<p>{ strings.step3.description }</p>
-								</div>
+						<h2>{ strings.stepsHeading }</h2>
+						<InfoNotice />
+						<div className="connect-account-page__steps">
+							<div className="connect-account-page__step">
+								<span>1</span>
+								<h3>{ strings.step1.heading }</h3>
+								<p>{ strings.step1.description }</p>
 							</div>
-						</CardBody>
+							<div className="connect-account-page__step">
+								<span>2</span>
+								<h3>{ strings.step2.heading }</h3>
+								<p>{ strings.step2.description }</p>
+							</div>
+							<div className="connect-account-page__step">
+								<span>3</span>
+								<h3>{ strings.step3.heading }</h3>
+								<p>{ strings.step3.description }</p>
+							</div>
+						</div>
 					</Card>
 				</>
 			) }

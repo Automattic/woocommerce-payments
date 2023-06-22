@@ -1,38 +1,54 @@
 .connect-account-page {
-	a {
-		text-decoration: none;
-	}
-
 	h2 {
-		@include wp-title-medium;
-		margin-bottom: $gap-smaller;
+		@include wp-title-small;
+		color: $gray-900;
+		margin: 0;
 	}
 
-	&__onboarding {
-		.components-button {
-			margin: $gap-smaller 0 0;
-		}
+	&__heading {
+		padding: $gap-larger $gap-large 0;
 
-		.components-card__header {
-			img {
-				max-width: 100%;
-				height: 37px;
-				margin: 0 auto;
-			}
-
-			@media screen and ( min-width: $break-small ) {
-				display: none;
-			}
+		img {
+			height: 29px;
+			margin-bottom: $gap-smaller;
 		}
 	}
 
-	@media screen and ( min-width: $break-small ) {
-		div#{&}__content {
-			background: url( 'assets/images/illustrations/woopayments.svg?asset' )
-				no-repeat bottom right/293px 269px;
-			padding: $gap-largest;
-			padding-right: 340px;
-			min-height: 299px;
+	&__content {
+		padding: 0 $gap-large $gap-larger;
+
+		&-usp {
+			display: grid;
+			grid-template-columns: auto 1fr;
+			column-gap: $gap-smaller;
+			row-gap: $gap;
+			padding: $gap-large 0;
+			@include wc-others-caption;
+			color: $gray-800;
+
+			svg {
+				margin-top: 2px;
+				height: 18px;
+				fill: $studio-woocommerce-purple-60;
+
+				&:first-child {
+					height: 24px;
+					margin-top: 0;
+				}
+			}
+		}
+
+		p {
+			@include wp-small-button;
+			color: $gray-700;
+			padding-top: $gap;
+			margin: 0;
+		}
+
+		@media screen and ( min-width: $break-small ) {
+			background: url( 'assets/images/illustrations/connect-hero.png?asset' )
+				no-repeat bottom right/334px 343px;
+			padding-right: 330px;
 			display: flex;
 			flex-direction: column;
 			justify-content: flex-end;
@@ -40,34 +56,25 @@
 		}
 	}
 
-	&__content {
-		p {
-			@include wc-others-caption;
-			color: $studio-gray-60;
-		}
-	}
-
-	div#{&}__payment-methods {
-		padding: $gap $gap-largest;
-		margin-bottom: $gap-smaller;
+	&__payment-methods {
+		padding: $gap-large;
 
 		p {
-			text-align: center;
-			color: $studio-gray-40;
-			@media screen and ( min-width: $break-small ) {
-				text-align: initial;
-			}
-		}
-
-		img {
-			height: 24px;
-			border: 1px solid $gray-300;
+			@include wp-small-button;
+			color: $gray-700;
+			margin-top: 0;
 		}
 
 		&__icons {
 			display: grid;
-			grid-gap: $gap-smaller;
+			column-gap: $gap-smaller;
+			row-gap: $gap;
 			grid-template-columns: repeat( auto-fill, minmax( 39px, 1fr ) );
+
+			img {
+				height: 24px;
+				border: 1px solid $gray-300;
+			}
 
 			span {
 				@include wc-others-caption;
@@ -84,12 +91,17 @@
 	}
 
 	&__details {
-		div.components-card__body {
-			padding: $gap-large;
-		}
+		padding: $gap-larger $gap-large;
 
 		.wcpay-component-tip-box {
-			margin: $gap-small 0 $gap-small;
+			margin-top: $gap-large;
+			color: $gray-900;
+
+			a,
+			button {
+				font-weight: inherit;
+				color: $gray-900 !important;
+			}
 		}
 	}
 
@@ -97,41 +109,39 @@
 		@media screen and ( min-width: $break-small ) {
 			display: grid;
 			grid-template-columns: repeat( 3, 1fr );
-			column-gap: $gap-larger;
-			margin-left: -$gap-large;
-			margin-right: -$gap-large;
+			column-gap: 20px;
 		}
 	}
 
 	&__step {
-		padding: $gap-small 0;
-
-		@media screen and ( min-width: $break-small ) {
-			padding: $gap-large $gap-large 0 $gap-large;
-		}
+		padding-top: $gap-smaller;
+		display: grid;
+		grid-template-rows: auto 1fr auto;
 
 		span {
-			background-color: $studio-woocommerce-purple-50;
-			color: $white;
+			background-color: $studio-woocommerce-purple-0;
+			color: $studio-woocommerce-purple-60;
 			font-size: 20px;
-			border-radius: 50%;
-			min-height: 32px;
-			min-width: 32px;
+			font-weight: 800;
+			border-radius: 12px;
+			height: 40px;
+			width: 40px;
 			display: inline-block;
 			text-align: center;
-			line-height: 32px;
+			line-height: 40px;
+			margin-bottom: $gap-smaller;
 		}
 
 		h3 {
-			font-size: 12px;
-			line-height: 16px;
-			font-weight: 700;
-			color: $studio-gray-70;
+			@include wp-subtitle-small;
+			color: $gray-900;
+			margin-bottom: 0;
 		}
 
 		p {
-			@include wc-body-small;
-			color: $studio-gray-50;
+			@include wc-others-caption;
+			color: $gray-800;
+			margin-top: $gap-smallest;
 		}
 	}
 

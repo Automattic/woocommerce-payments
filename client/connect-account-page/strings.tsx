@@ -3,18 +3,35 @@
  * External dependencies
  */
 import React from 'react';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 
 export default {
 	button: __( 'Finish setup', 'woocommerce-payments' ),
-	heading: __(
-		'Accept payments and manage your business.',
+	heading: ( firstName?: string ): string =>
+		sprintf(
+			/* translators: %s: first name of the merchant, if it exists. */
+			__(
+				'Hi%s, run your business and manage your payments all in one place, with no setup costs or monthly fees.',
+				'woocommerce'
+			),
+			firstName ? ` ${ firstName }` : ''
+		),
+	usp1: __(
+		'Offer card payments,Apple Pay, Sofort, iDeal, Affirm, Afterpay, and accept in-person payments with the Woo mobile app.',
 		'woocommerce-payments'
 	),
-	description: createInterpolateElement(
+	usp2: __(
+		'Sell to international markets and accept over 135 currencies with local payment methods.',
+		'woocommerce-payments'
+	),
+	usp3: __(
+		'Earn recurring revenue and get deposits into your bank account.',
+		'woocommerce-payments'
+	),
+	agreement: createInterpolateElement(
 		__(
-			'By using Woo Payments you agree to our <a1>Terms of Service</a1> and acknowledge that you have read our <a2>Privacy Policy</a2>.',
+			'By clicking “Finish setup”, you agree to the <a1>Terms of Service</a1> and acknowledge that you have read our <a2>Privacy Policy</a2>.',
 			'woocommerce-payments'
 		),
 		{
@@ -36,14 +53,14 @@ export default {
 			),
 		}
 	),
-	acceptedPaymentMethods: __(
-		'Accepted payment methods include:',
+	paymentMethods: __(
+		'WooPayments is pre-integrated with popular payment options:',
 		'woocommerce-payments'
 	),
 	infoNotice: {
 		description: createInterpolateElement(
 			__(
-				"In order to receive deposits with <a>Woo Payments</a>, you'll need to share business details to verify who you are.",
+				"In order to receive deposits with <a>WooPayments</a>, you'll need to share business details to verify who you are.",
 				'woocommerce-payments'
 			),
 			{
