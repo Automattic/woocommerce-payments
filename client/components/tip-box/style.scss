@@ -23,6 +23,11 @@
 		background-color: $wp-blue-0;
 	}
 
+	&.gray {
+		fill: $gray-50;
+		background-color: $gray-0;
+	}
+
 	&__content {
 		align-self: center;
 	}
