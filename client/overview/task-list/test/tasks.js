@@ -107,8 +107,9 @@ describe( 'getTasks()', () => {
 	const currentTimezone = moment.tz.guess();
 
 	beforeEach( () => {
-		// set local timezone
-		moment.tz.setDefault( 'America/New_York' );
+		// set local timezone to EST (not daylight savings time)
+		// Note Etc/GMT+5 === UTC-5
+		moment.tz.setDefault( 'Etc/GMT+5' );
 		// mock Date.now that moment library uses to get current date for testing purposes
 		Date.now = jest.fn( () => new Date( '2023-02-01T08:00:00.000Z' ) );
 
