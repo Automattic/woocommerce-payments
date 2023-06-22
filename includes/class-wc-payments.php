@@ -274,6 +274,13 @@ class WC_Payments {
 	private static $customer_service_api;
 
 	/**
+	 * Instance of WC_Payments_Incentives_Service, created in init function
+	 *
+	 * @var WC_Payments_Incentives_Service
+	 */
+	private static $incentives_service;
+
+	/**
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
@@ -428,6 +435,7 @@ class WC_Payments {
 		include_once __DIR__ . '/woopay/class-woopay-scheduler.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-link.php';
 		include_once __DIR__ . '/core/service/class-wc-payments-customer-service-api.php';
+		include_once __DIR__ . '/class-wc-payments-incentives-service.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
@@ -466,6 +474,7 @@ class WC_Payments {
 		self::$onboarding_service                  = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
 		self::$woopay_util                         = new WooPay_Utilities();
 		self::$woopay_tracker                      = new WooPay_Tracker( self::get_wc_payments_http() );
+		self::$incentives_service                  = new WC_Payments_Incentives_Service( self::$database_cache );
 
 		( new WooPay_Scheduler() )->init();
 
