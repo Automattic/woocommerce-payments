@@ -85,6 +85,9 @@ declare global {
 		errorMessage: string;
 		onBoardingDisabled: boolean;
 		isBnplAffirmAfterpayEnabled: boolean;
+		connectIncentive?: {
+			id: string;
+		};
 	};
 
 	const wcTracks: any;

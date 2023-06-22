@@ -790,7 +790,7 @@ class WC_Payments_Admin {
 			'isBnplAffirmAfterpayEnabled' => WC_Payments_Features::is_bnpl_affirm_afterpay_enabled(),
 		];
 
-		return $this->wcpay_js_settings;
+		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );
 	}
 
 	/**
