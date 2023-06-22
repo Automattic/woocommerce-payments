@@ -347,6 +347,13 @@ export const useDepositStatus = () => {
 		return getDepositStatus();
 	}, [] );
 };
+export const useDepositRestrictions = () => {
+	return useSelect( ( select ) => {
+		const { getDepositRestrictions } = select( STORE_NAME );
+
+		return getDepositRestrictions();
+	}, [] );
+};
 export const useManualCapture = () => {
 	const { updateIsManualCaptureEnabled } = useDispatch( STORE_NAME );
 
