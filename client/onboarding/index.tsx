@@ -55,7 +55,7 @@ const OnboardingStepper = () => {
 	);
 };
 
-const OnboardingPrototype: React.FC = () => {
+const Onboarding: React.FC = () => {
 	useEffect( () => {
 		trackStarted();
 
@@ -63,15 +63,13 @@ const OnboardingPrototype: React.FC = () => {
 		document.body.classList.remove( 'woocommerce-admin-is-loading' );
 		document.body.classList.add( 'woocommerce-admin-full-screen' );
 		document.body.classList.add( 'is-wp-toolbar-disabled' );
-		document.body.classList.add( 'wcpay-onboarding-prototype__body' );
+		document.body.classList.add( 'wcpay-onboarding__body' );
 
 		// Remove full screen classes on unmount.
 		return () => {
 			document.body.classList.remove( 'woocommerce-admin-full-screen' );
 			document.body.classList.remove( 'is-wp-toolbar-disabled' );
-			document.body.classList.remove(
-				'wcpay-onboarding-prototype__body'
-			);
+			document.body.classList.remove( 'wcpay-onboarding__body' );
 		};
 	}, [] );
 
@@ -84,4 +82,4 @@ const OnboardingPrototype: React.FC = () => {
 	);
 };
 
-export default OnboardingPrototype;
+export default Onboarding;

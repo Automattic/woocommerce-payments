@@ -29,7 +29,7 @@ import CapitalPage from 'capital';
 import PreviewReceiptPage from 'card-readers/preview-receipt';
 import OverviewPage from 'overview';
 import DocumentsPage from 'documents';
-import OnboardingPrototype from 'onboarding';
+import Onboarding from 'onboarding';
 import FraudProtectionAdvancedSettingsPage from './settings/fraud-protection/advanced-settings';
 import { getTasks } from 'overview/task-list/tasks';
 
@@ -57,7 +57,7 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: OnboardingPrototype,
+			container: Onboarding,
 			path: '/payments/onboarding',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
