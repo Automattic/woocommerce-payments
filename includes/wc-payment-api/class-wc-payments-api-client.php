@@ -39,7 +39,7 @@ class WC_Payments_API_Client {
 	const ACCOUNTS_API                 = 'accounts';
 	const CAPABILITIES_API             = 'accounts/capabilities';
 	const WOOPAY_ACCOUNTS_API          = 'accounts/platform_checkout';
-	const WOOPAY_EXTENSIONS_API        = 'woopay/extensions';
+	const WOOPAY_COMPATIBILITY_API     = 'woopay/compatibility';
 	const APPLE_PAY_API                = 'apple_pay';
 	const CHARGES_API                  = 'charges';
 	const CONN_TOKENS_API              = 'terminal/connection_tokens';
@@ -2388,7 +2388,7 @@ class WC_Payments_API_Client {
 	public function get_woopay_incompatible_extensions() {
 		return $this->request(
 			[],
-			self::WOOPAY_EXTENSIONS_API . '/incompatible',
+			self::WOOPAY_COMPATIBILITY_API,
 			self::GET,
 			false
 		);
