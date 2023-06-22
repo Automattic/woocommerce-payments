@@ -38,7 +38,7 @@ class WC_Payments_Task_Disputes extends Task {
 	 * WC_Payments_Task_Disputes constructor.
 	 */
 	public function __construct() {
-		$this->api_client     = \WC_Payments::create_api_client();
+		$this->api_client     = \WC_Payments::get_payments_api_client();
 		$this->database_cache = \WC_Payments::get_database_cache();
 		parent::__construct();
 	}
