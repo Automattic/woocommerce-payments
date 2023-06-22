@@ -1593,7 +1593,7 @@ class WC_Payments_Account {
 			return;
 		}
 
-		$onboarding_url = admin_url( 'admin.php?page=wc-admin&path=/payments/onboarding-flow' );
+		$onboarding_url = admin_url( 'admin.php?page=wc-admin&path=/payments/onboarding' );
 
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			$this->payments_api_client->start_server_connection( $onboarding_url );

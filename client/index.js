@@ -58,14 +58,14 @@ addFilter(
 
 		pages.push( {
 			container: OnboardingPrototype,
-			path: '/payments/onboarding-flow', // TODO: Replace for /onboarding?
+			path: '/payments/onboarding',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
 				rootLink,
 				__( 'Onboarding', 'woocommerce-payments' ),
 			],
 			navArgs: {
-				id: 'wc-payments-onboarding-flow',
+				id: 'wc-payments-onboarding',
 			},
 			capability: 'manage_woocommerce',
 		} );
