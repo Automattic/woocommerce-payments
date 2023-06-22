@@ -256,7 +256,7 @@ class WC_Payments_Task_Disputes extends Task {
 		$to_return = [];
 
 		$active_disputes = $this->get_disputes_needing_response();
-		if ( ! $active_disputes ) {
+		if ( ! is_array( $active_disputes ) ) {
 			return $to_return;
 		}
 
