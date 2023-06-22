@@ -194,14 +194,14 @@ class WC_Payments_Incentives_Service {
 
 	/**
 	 * Check whether the incentive fetched from the cache is valid.
-	 * Expects an array with at least `id` key.
+	 * Expects an array with at least `id`, `description`, and `tc_url` keys.
 	 *
 	 * @param mixed $incentive The incentive returned from the cache.
 	 *
 	 * @return bool Whether the incentive is valid.
 	 */
 	public function is_valid_cached_incentive( $incentive ): bool {
-		if ( ! is_array( $incentive ) || empty( $incentive ) || ! isset( $incentive['id'] ) ) {
+		if ( ! is_array( $incentive ) || empty( $incentive ) || ! isset( $incentive['id'] ) || ! isset( $incentive['description'] ) || ! isset( $incentive['tc_url'] ) ) {
 			return false;
 		}
 

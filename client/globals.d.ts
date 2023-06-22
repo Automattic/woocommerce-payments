@@ -87,6 +87,8 @@ declare global {
 		isBnplAffirmAfterpayEnabled: boolean;
 		connectIncentive?: {
 			id: string;
+			description: string;
+			tc_url: string;
 		};
 	};
 
