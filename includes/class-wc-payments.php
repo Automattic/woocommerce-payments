@@ -1733,15 +1733,15 @@ class WC_Payments {
 			case 'HUF':
 				/* translators: %1$s: The current WordPress version used by the store */
 				$notice = __( 'The WooCommerce version you have installed is not compatible with WooCommerce Payments for a Hungarian business. Please update WooCommerce to version 7.8 or above (you are using %1$s). You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' );
-				return;
+				break;
 			case 'SEK':
 				/* translators: %1$s: The current WordPress version used by the store */
 				$notice = __( 'The WooCommerce version you have installed is not compatible with WooCommerce Payments for a Swedish business. Please update WooCommerce to version 7.8 or above (you are using %1$s). You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' );
-				return;
+				break;
 			case 'CZK':
 				/* translators: %1$s: The current WordPress version used by the store */
 				$notice = __( 'The WooCommerce version you have installed is not compatible with WooCommerce Payments for a Czech Republic business. Please update WooCommerce to version 7.8 or above (you are using %1$s). You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' );
-				return;
+				break;
 		}
 
 		?>
