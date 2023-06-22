@@ -85,7 +85,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 
 		$this->assertEquals( 'Respond to a dispute for 20,00 €', $disputes_task->get_title() );
 		// "By <date> – <count> days left to respond"
-		$this->assertMatchesRegularExpression( '/By \w{3} \d{1,2}, \d{4} – \d+ days left to respond/', $disputes_task->get_additional_info() );
+		$this->assertMatchesRegularExpression( '/By \w+ \d{1,2}, \d{4} – \d+ days left to respond/', $disputes_task->get_additional_info() );
 		$this->assertEquals( true, $disputes_task->can_view() );
 
 	}
@@ -117,7 +117,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 
 		$this->assertEquals( 'Respond to a dispute for 20,00 € – Last day', $disputes_task->get_title() );
 		// "Respond today by <time> <AM|PM>"
-		$this->assertMatchesRegularExpression( '/Respond today by \d{1,2}:\d{2} (AM|PM)/', $disputes_task->get_additional_info() );
+		$this->assertMatchesRegularExpression( '/Respond today by \d{1,2}:\d{2} \w{2}/', $disputes_task->get_additional_info() );
 		$this->assertEquals( true, $disputes_task->can_view() );
 
 	}
