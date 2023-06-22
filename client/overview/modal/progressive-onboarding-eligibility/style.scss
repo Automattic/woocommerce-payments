@@ -1,7 +1,7 @@
 .wcpay-progressive-onboarding-eligibility-modal {
 	// fix for the modal being too short on smaller screens
 	@media ( max-height: 880px ) {
-		max-height: calc( 100% - 120px ) !important;
+		max-height: 100% !important;
 	}
 	.components-modal__content {
 		box-sizing: border-box;

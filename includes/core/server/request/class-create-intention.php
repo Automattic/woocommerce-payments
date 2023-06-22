@@ -47,7 +47,8 @@ class Create_Intention extends Request {
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
 	public function set_payment_method( string $payment_method_id ) {
-		$this->validate_stripe_id( $payment_method_id, [ 'pm', 'src' ] );
+		// Including the 'card' prefix to support subscription renewals using legacy payment method IDs.
+		$this->validate_stripe_id( $payment_method_id, [ 'pm', 'src', 'card' ] );
 		$this->set_param( 'payment_method', $payment_method_id );
 	}
 
@@ -160,6 +161,19 @@ class Create_Intention extends Request {
 	 */
 	public function set_mandate( string $mandate ) {
 		$this->set_param( 'mandate', $mandate );
+	}
+
+	/**
+	 * Shipping data setter.
+	 *
+	 * @param array $shipping Shipping data.
+	 */
+	public function set_shipping( array $shipping ) {
+		if ( empty( $shipping ) || ! is_array( $shipping ) ) {
+			return;
+		}
+
+		$this->set_param( 'shipping', $shipping );
 	}
 
 	/**

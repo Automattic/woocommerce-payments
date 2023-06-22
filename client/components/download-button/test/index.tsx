@@ -7,9 +7,18 @@ import { render, fireEvent, getByRole } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import DownloadButton from '../';
+import DownloadButton from '..';
+import React from 'react';
 
 describe( 'DownloadButton', () => {
+	function renderDownloadButton(
+		isDisabled: boolean,
+		onClick: jest.Mock< any, any >
+	) {
+		return render(
+			<DownloadButton isDisabled={ isDisabled } onClick={ onClick } />
+		);
+	}
 	test( 'renders an active button', () => {
 		const onDownload = jest.fn();
 		const { container: button } = renderDownloadButton( false, onDownload );
@@ -41,10 +50,4 @@ describe( 'DownloadButton', () => {
 		expect( onDownload.mock.calls.length ).toBe( 0 );
 		expect( button ).toMatchSnapshot();
 	} );
-
-	function renderDownloadButton( isDisabled, onClick ) {
-		return render(
-			<DownloadButton isDisabled={ isDisabled } onClick={ onClick } />
-		);
-	}
 } );
