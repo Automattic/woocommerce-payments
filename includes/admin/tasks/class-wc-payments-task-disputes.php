@@ -34,13 +34,38 @@ class WC_Payments_Task_Disputes extends Task {
 	 */
 	private $database_cache;
 
+
+	/**
+	 * Disputes due within 7 days.
+	 *
+	 * @var array
+	 */
+	private $disputes_due_within_7d;
+
+	/**
+	 * Disputes due within 1 day.
+	 *
+	 * @var array
+	 */
+	private $disputes_due_within_1d;
+
 	/**
 	 * WC_Payments_Task_Disputes constructor.
 	 */
 	public function __construct() {
+
 		$this->api_client     = \WC_Payments::get_payments_api_client();
 		$this->database_cache = \WC_Payments::get_database_cache();
 		parent::__construct();
+		$this->init();
+	}
+
+	/**
+	 * Initialize the task.
+	 */
+	private function init() {
+		$this->disputes_due_within_7d = $this->get_disputes_needing_response_within_days( 7 );
+		$this->disputes_due_within_1d = $this->get_disputes_needing_response_within_days( 1 );
 	}
 
 	/**
@@ -58,14 +83,11 @@ class WC_Payments_Task_Disputes extends Task {
 	 * @return string
 	 */
 	public function get_title() {
-		$disputes_due_within_7d = $this->get_disputes_needing_response_within_days( 7 );
-		$disputes_due_within_1d = $this->get_disputes_needing_response_within_days( 1 );
-
-		if ( count( $disputes_due_within_7d ) === 1 ) {
-			$dispute          = $disputes_due_within_7d[0];
+		if ( count( $this->disputes_due_within_7d ) === 1 ) {
+			$dispute          = $this->disputes_due_within_7d[0];
 			$amount           = WC_Payments_Utils::interpret_stripe_amount( $dispute['amount'], $dispute['currency'] );
 			$amount_formatted = WC_Payments_Utils::format_currency( $amount, $dispute['currency'] );
-			if ( count( $disputes_due_within_1d ) > 0 ) {
+			if ( count( $this->disputes_due_within_1d ) > 0 ) {
 				return sprintf(
 					/* translators: %s is a currency formatted amount */
 					__( 'Respond to a dispute for %s – Last day', 'woocommerce-payments' ),
@@ -126,17 +148,14 @@ class WC_Payments_Task_Disputes extends Task {
 	 * @return string
 	 */
 	public function get_additional_info() {
-		$disputes_due_within_7d = $this->get_disputes_needing_response_within_days( 7 );
-		$disputes_due_within_1d = $this->get_disputes_needing_response_within_days( 1 );
-
-		if ( count( $disputes_due_within_7d ) === 1 ) {
+		if ( count( $this->disputes_due_within_7d ) === 1 ) {
 			$local_timezone    = new \DateTimeZone( wp_timezone_string() );
-			$dispute           = $disputes_due_within_7d[0];
+			$dispute           = $this->disputes_due_within_7d[0];
 			$due_by_local_time = ( new \DateTime( $dispute['due_by'] ) )->setTimezone( $local_timezone );
 			// Sum of Unix timestamp and timezone offset in seconds.
 			$due_by_ts = $due_by_local_time->getTimestamp() + $due_by_local_time->getOffset();
 
-			if ( count( $disputes_due_within_1d ) > 0 ) {
+			if ( count( $this->disputes_due_within_1d ) > 0 ) {
 				return sprintf(
 					/* translators: %s is time, eg: 11:59 PM */
 					__( 'Respond today by %s', 'woocommerce-payments' ),
@@ -156,14 +175,14 @@ class WC_Payments_Task_Disputes extends Task {
 			);
 		}
 
-		if ( count( $disputes_due_within_1d ) > 0 ) {
+		if ( count( $this->disputes_due_within_1d ) > 0 ) {
 			return sprintf(
 				/* translators: %d is the number of disputes. */
 				__(
 					'Final day to respond to %d of the disputes',
 					'woocommerce-payments'
 				),
-				count( $disputes_due_within_1d )
+				count( $this->disputes_due_within_1d )
 			);
 		}
 
@@ -173,7 +192,7 @@ class WC_Payments_Task_Disputes extends Task {
 				'Last week to respond to %d of the disputes',
 				'woocommerce-payments'
 			),
-			count( $disputes_due_within_7d )
+			count( $this->disputes_due_within_7d )
 		);
 
 	}
@@ -184,7 +203,7 @@ class WC_Payments_Task_Disputes extends Task {
 	 * @return string
 	 */
 	public function get_action_url() {
-		$disputes = $this->get_disputes_needing_response_within_days( 7 );
+		$disputes = $this->disputes_due_within_7d;
 		if ( count( $disputes ) === 1 ) {
 			$dispute = $disputes[0];
 			return admin_url(
@@ -244,7 +263,7 @@ class WC_Payments_Task_Disputes extends Task {
 	 * @return bool
 	 */
 	public function can_view() {
-		return count( $this->get_disputes_needing_response_within_days( 7 ) ) > 0;
+		return count( $this->disputes_due_within_7d ) > 0;
 	}
 
 	/**

@@ -59,7 +59,6 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_disputes_task_with_single_dispute_within_7days() {
-		$disputes_task        = new WC_Payments_Task_Disputes();
 		$mock_active_disputes = [
 			[
 				'wcpay_disputes_cache_id' => 21,
@@ -82,6 +81,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 		$this->mock_cache->method( 'get_or_add' )->willReturn(
 			$mock_active_disputes
 		);
+		$disputes_task = new WC_Payments_Task_Disputes();
 
 		$this->assertEquals( 'Respond to a dispute for 20,00 €', $disputes_task->get_title() );
 		// "By <date> – <count> days left to respond"
@@ -91,7 +91,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_disputes_task_with_single_dispute_within_24h() {
-		$disputes_task        = new WC_Payments_Task_Disputes();
+
 		$mock_active_disputes = [
 			[
 				'wcpay_disputes_cache_id' => 21,
@@ -114,6 +114,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 		$this->mock_cache->method( 'get_or_add' )->willReturn(
 			$mock_active_disputes
 		);
+		$disputes_task = new WC_Payments_Task_Disputes();
 
 		$this->assertEquals( 'Respond to a dispute for 20,00 € – Last day', $disputes_task->get_title() );
 		// "Respond today by <time> <AM|PM>"
@@ -123,7 +124,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_disputes_task_with_multiple_disputes_within_7days() {
-		$disputes_task        = new WC_Payments_Task_Disputes();
+
 		$mock_active_disputes = [
 			[
 				'wcpay_disputes_cache_id' => 21,
@@ -163,6 +164,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 		$this->mock_cache->method( 'get_or_add' )->willReturn(
 			$mock_active_disputes
 		);
+		$disputes_task = new WC_Payments_Task_Disputes();
 
 		$this->assertEquals( 'Respond to 2 active disputes for a total of 20,00 €, $12.34', $disputes_task->get_title() );
 		$this->assertEquals( 'Last week to respond to 2 of the disputes', $disputes_task->get_additional_info() );
@@ -170,7 +172,6 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_disputes_task_with_multiple_disputes_within_24h() {
-		$disputes_task        = new WC_Payments_Task_Disputes();
 		$mock_active_disputes = [
 			[
 				'wcpay_disputes_cache_id' => 21,
@@ -227,6 +228,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 		$this->mock_cache->method( 'get_or_add' )->willReturn(
 			$mock_active_disputes
 		);
+		$disputes_task = new WC_Payments_Task_Disputes();
 
 		$this->assertEquals( 'Respond to 3 active disputes for a total of 20,00 €, $22.34', $disputes_task->get_title() );
 		$this->assertEquals( 'Final day to respond to 2 of the disputes', $disputes_task->get_additional_info() );
