@@ -33,6 +33,7 @@ class WC_Payments_Incentives_Service {
 
 		add_action( 'wcpay_js_settings', [ $this, 'add_js_settings' ] );
 		add_action( 'admin_menu', [ $this, 'add_payments_menu_badge' ] );
+		add_filter( 'woocommerce_admin_allowed_promo_notes', [ $this, 'allowed_promo_notes' ] );
 	}
 
 	/**
@@ -65,6 +66,24 @@ class WC_Payments_Incentives_Service {
 				break;
 			}
 		}
+	}
+
+	/**
+	 * Adds allowed promo notes from eligible incentive.
+	 *
+	 * @param array $promo_notes Current allowed promo notes.
+	 * @return array Updated allowed promo notes.
+	 */
+	public function allowed_promo_notes( $promo_notes = [] ): array {
+		if ( $this->get_cached_connect_incentive() ) {
+			/**
+			 * Suppress psalm error because we already check that `id` exists in `is_valid_cached_incentive`.
+			 *
+			 * @psalm-suppress PossiblyNullArrayAccess */
+			$promo_notes[] = $this->get_cached_connect_incentive()['id'];
+		}
+
+		return $promo_notes;
 	}
 
 	/**
