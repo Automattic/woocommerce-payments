@@ -38,14 +38,14 @@ class WC_Payments_Task_Disputes extends Task {
 	/**
 	 * Disputes due within 7 days.
 	 *
-	 * @var array
+	 * @var array|null
 	 */
 	private $disputes_due_within_7d;
 
 	/**
 	 * Disputes due within 1 day.
 	 *
-	 * @var array
+	 * @var array|null
 	 */
 	private $disputes_due_within_1d;
 
