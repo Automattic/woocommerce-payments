@@ -127,7 +127,6 @@ class WC_Payments_Incentives_Service {
 		// Request incentive from WCPAY API.
 		$url = add_query_arg(
 			[
-				// @todo [ismaeldcom] – Load appropriate data.
 				// Store ISO-2 country code, e.g. `US`.
 				'country'      => WC()->countries->get_base_country(),
 				// Store locale, e.g. `en_US`.
@@ -147,8 +146,6 @@ class WC_Payments_Incentives_Service {
 				),
 				// Whether the store has at least one payment gateway enabled.
 				'has_payments' => ! empty( WC()->payment_gateways()->get_available_payment_gateways() ),
-				// Whether the store has WCPay active, connected, and a WCPay account.
-				// 'has_wcpay'    => 0,
 			],
 			'https://public-api.wordpress.com/wpcom/v2/wcpay/incentives',
 		);
