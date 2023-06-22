@@ -133,12 +133,14 @@ class WC_Payments_Task_Disputes extends Task {
 			$local_timezone    = new \DateTimeZone( wp_timezone_string() );
 			$dispute           = $disputes_due_within_7d[0];
 			$due_by_local_time = ( new \DateTime( $dispute['due_by'] ) )->setTimezone( $local_timezone );
+			// Sum of Unix timestamp and timezone offset in seconds.
+			$due_by_ts = $due_by_local_time->getTimestamp() + $due_by_local_time->getOffset();
 
 			if ( count( $disputes_due_within_1d ) > 0 ) {
 				return sprintf(
 					/* translators: %s is time, eg: 11:59 PM */
 					__( 'Respond today by %s', 'woocommerce-payments' ),
-					$due_by_local_time->format( 'g:i A' )
+					date_i18n( wc_time_format(), $due_by_ts )
 				);
 			}
 
@@ -148,7 +150,7 @@ class WC_Payments_Task_Disputes extends Task {
 			return sprintf(
 				/* translators: %1$s is a date, eg: Jan 1, 2021. %2$s is the number of days left, eg: 2 days. */
 				__( 'By %1$s – %2$s left to respond', 'woocommerce-payments' ),
-				$due_by_local_time->format( 'M j, Y' ),
+				date_i18n( wc_date_format(), $due_by_ts ),
 				/* translators: %s is the number of days left, e.g. 1 day. */
 				sprintf( _n( '%d day', '%d days', $diff->days, 'woocommerce-payments' ), $diff->days )
 			);
