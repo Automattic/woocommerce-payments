@@ -23,6 +23,7 @@ import scheduled from 'gridicons/dist/scheduled';
 import wcpayTracks from 'tracks';
 import Page from 'components/page';
 import PaymentMethods from './payment-methods';
+import Incentive from './incentive';
 import InfoNotice from './info-notice-modal';
 import OnboardingLocationCheckModal from './modal';
 import LogoImg from 'assets/images/woopayments.svg?asset';
@@ -31,6 +32,7 @@ import './style.scss';
 
 const ConnectAccountPage: React.FC = () => {
 	const { first_name: firstName } = wcSettings.admin.currentUserData;
+	const incentive = wcpaySettings.connectIncentive;
 	const [ isSubmitted, setSubmitted ] = useState( false );
 	const {
 		connectUrl,
@@ -134,6 +136,7 @@ const ConnectAccountPage: React.FC = () => {
 							<PaymentMethods />
 						</div>
 					</Card>
+					{ incentive && <Incentive { ...incentive } /> }
 					<Card className="connect-account-page__details">
 						<h2>{ strings.stepsHeading }</h2>
 						<InfoNotice />

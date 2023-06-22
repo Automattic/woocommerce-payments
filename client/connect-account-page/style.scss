@@ -1,7 +1,7 @@
 .connect-account-page {
 	h2 {
 		@include wp-title-small;
-		color: $gray-900;
+		color: $gray-90;
 		margin: 0;
 	}
 
@@ -11,6 +11,12 @@
 		img {
 			height: 29px;
 			margin-bottom: $gap-smaller;
+		}
+
+		@media screen and ( min-width: $break-small ) {
+			h2 {
+				margin-right: 7%;
+			}
 		}
 	}
 
@@ -161,6 +167,46 @@
 
 		&__footer {
 			@include modal-footer-buttons;
+		}
+	}
+
+	&__incentive {
+		background: #faf8ff;
+		border: 1px solid #ae7dd0;
+		border-radius: 2px;
+		padding: $gap-large;
+		margin-bottom: $gap-large;
+
+		&-pill {
+			display: inline-block;
+			padding: 0 $gap-small;
+			border: 1px solid #1d2327; // Gray 90
+			border-radius: 16px;
+			text-transform: uppercase;
+			font-size: 12px;
+			line-height: 22px;
+			font-weight: 600;
+			color: $gray-900;
+			margin-bottom: $gap-small;
+		}
+
+		p {
+			@include wc-others-caption;
+			color: #50575e;
+
+			&:last-child {
+				margin-bottom: 0;
+			}
+		}
+
+		@media screen and ( min-width: $break-small ) {
+			h2 {
+				margin-right: 10%;
+			}
+
+			p {
+				margin-right: 15%;
+			}
 		}
 	}
 }
