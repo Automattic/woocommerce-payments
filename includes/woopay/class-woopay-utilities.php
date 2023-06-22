@@ -16,6 +16,8 @@ use WC_Payments;
 use WCPay\WooPay\WC_Payments_Account;
 use WCPay\Blocks_Data_Extractor;
 use Jetpack_Options;
+use WC_Customer;
+use WC_Payments_Customer_Service;
 
 /**
  * WooPay
@@ -301,6 +303,14 @@ class WooPay_Utilities {
 
 		$gateway = WC_Payments::get_gateway();
 
+		$user        = wp_get_current_user();
+		$customer_id = WC_Payments::get_customer_service()->get_customer_id_by_user_id( $user->ID );
+		if ( null === $customer_id ) {
+			// create customer.
+			$customer_data = WC_Payments_Customer_Service::map_customer_data( null, new WC_Customer( $user->ID ) );
+			$customer_id   = WC_Payments::get_customer_service()->create_customer_for_user( $user, $customer_data );
+		}
+
 		return [
 			'store_name'                     => get_bloginfo( 'name' ),
 			'store_logo'                     => ! empty( $store_logo ) ? get_rest_url( null, 'wc/v3/payments/file/' . $store_logo ) : '',
@@ -319,6 +329,7 @@ class WooPay_Utilities {
 			'return_url'                     => wc_get_cart_url(),
 			'blocks_data'                    => $blocks_data_extractor->get_data(),
 			'checkout_schema_namespaces'     => $blocks_data_extractor->get_checkout_schema_namespaces(),
+			'customer_id'                    => $customer_id,
 		];
 	}
 }
