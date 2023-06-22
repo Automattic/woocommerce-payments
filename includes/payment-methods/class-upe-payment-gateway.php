@@ -1267,7 +1267,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @param array $payment_method_details Payment method details.
 	 * @return string|null Payment method type or nothing.
 	 */
-	public function get_payment_method_type_from_payment_details( $payment_method_details ) {
+	private function get_payment_method_type_from_payment_details( $payment_method_details ) {
 		return $payment_method_details['type'] ?? null;
 	}
 
