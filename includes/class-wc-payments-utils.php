@@ -929,7 +929,7 @@ class WC_Payments_Utils {
 			case 'duplicate':
 				return __( 'Duplicate', 'woocommerce-payments' );
 			case 'fraudulent':
-				return __( 'Fraudulent', 'woocommerce-payments' );
+				return __( 'Transaction unauthorized', 'woocommerce-payments' );
 			case 'incorrect_account_details':
 				return __( 'Incorrect account details', 'woocommerce-payments' );
 			case 'insufficient_funds':
