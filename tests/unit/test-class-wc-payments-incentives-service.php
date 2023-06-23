@@ -47,7 +47,6 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 
 		global $menu;
 		$menu = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
-
 	}
 
 	/**
