@@ -27,6 +27,11 @@
 	&.gray {
 		fill: $gray-50;
 		background-color: $gray-0;
+		color: $gray-900;
+
+		.components-button.is-link {
+			color: #0063a1; // Gutenberg/Blue -10%
+		}
 	}
 
 	&__content {
@@ -34,13 +39,12 @@
 	}
 
 	a {
-		text-decoration: none;
 		font-weight: 700;
 		color: $studio-woocommerce-purple-70;
 	}
 
 	.components-button.is-link {
-		text-decoration: none;
+		font-size: inherit;
 		color: $studio-woocommerce-purple-50;
 	}
 }

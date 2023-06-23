@@ -58,21 +58,9 @@ export default {
 		'woocommerce-payments'
 	),
 	infoNotice: {
-		description: createInterpolateElement(
-			__(
-				"In order to receive deposits with <a>WooPayments</a>, you'll need to share business details to verify who you are.",
-				'woocommerce-payments'
-			),
-			{
-				a: (
-					// eslint-disable-next-line jsx-a11y/anchor-has-content
-					<a
-						href="https://woocommerce.com/payments/"
-						target="_blank"
-						rel="noopener noreferrer"
-					/>
-				),
-			}
+		description: __(
+			"In order to receive deposits with WooPayments, you'll need to share business details to verify who you are.",
+			'woocommerce-payments'
 		),
 		button: __(
 			'Learn more about how to receive deposits.',
