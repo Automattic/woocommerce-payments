@@ -904,4 +904,47 @@ class WC_Payments_Utils {
 			? '\\WpOrg\\Requests\\Requests'
 			: '\\Requests';
 	}
+
+	/**
+	 * Returns a merchant-friendly description of the dispute reason.
+	 *
+	 * This mapping is duplicated in client/disputes/strings.ts and on Server.
+	 *
+	 * @param string $reason The dispute reason.
+	 *
+	 * @return string
+	 */
+	public static function get_dispute_reason_description( string $reason ): string {
+		switch ( $reason ) {
+			case 'bank_cannot_process':
+				return __( 'Bank cannot process', 'woocommerce-payments' );
+			case 'check_returned':
+				return __( 'Check returned', 'woocommerce-payments' );
+			case 'credit_not_processed':
+				return __( 'Credit not processed', 'woocommerce-payments' );
+			case 'customer_initiated':
+				return __( 'Customer initiated', 'woocommerce-payments' );
+			case 'debit_not_authorized':
+				return __( 'Debit not authorized', 'woocommerce-payments' );
+			case 'duplicate':
+				return __( 'Duplicate', 'woocommerce-payments' );
+			case 'fraudulent':
+				return __( 'Fraudulent', 'woocommerce-payments' );
+			case 'incorrect_account_details':
+				return __( 'Incorrect account details', 'woocommerce-payments' );
+			case 'insufficient_funds':
+				return __( 'Insufficient funds', 'woocommerce-payments' );
+			case 'product_not_received':
+				return __( 'Product not received', 'woocommerce-payments' );
+			case 'product_unacceptable':
+				return __( 'Product unacceptable', 'woocommerce-payments' );
+			case 'subscription_canceled':
+				return __( 'Subscription canceled', 'woocommerce-payments' );
+			case 'unrecognized':
+				return __( 'Unrecognized', 'woocommerce-payments' );
+			default:
+			case 'general':
+				return __( 'General', 'woocommerce-payments' );
+		}
+	}
 }
