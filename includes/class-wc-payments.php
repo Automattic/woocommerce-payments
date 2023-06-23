@@ -1312,6 +1312,8 @@ class WC_Payments {
 
 			add_filter( 'admin_notices', 'wcpay_show_old_woocommerce_for_norway_notice' );
 		}
+
+		add_filter( 'admin_notices', [ __CLASS__, 'wcpay_show_old_woocommerce_for_hungary_sweden_and_czech_republic' ] );
 	}
 
 	/**
@@ -1644,9 +1646,21 @@ class WC_Payments {
 	 */
 	public static function load_stripe_bnpl_site_messaging() {
 		if ( WC_Payments_Features::is_bnpl_affirm_afterpay_enabled() ) {
-			require_once __DIR__ . '/class-wc-payments-payment-method-messaging-element.php';
-			$stripe_site_messaging = new WC_Payments_Payment_Method_Messaging_Element( self::$account, self::$card_gateway );
-			echo wp_kses( $stripe_site_messaging->init(), 'post' );
+			// The messaging element shall not be shown for subscription products.
+			// As we are not too deep into subscriptions API, we follow simplistic approach for now.
+			$is_subscription           = false;
+			$are_subscriptions_enabled = class_exists( 'WC_Subscriptions' ) || class_exists( 'WC_Subscriptions_Core_Plugin' );
+			if ( $are_subscriptions_enabled ) {
+					// The subscription identification shall be aligned with WC_Subscriptions_Product::is_subscription.
+					global $product;
+					$is_subscription = $product && $product->is_type( [ 'subscription', 'subscription_variation', 'variable-subscription' ] );
+			}
+
+			if ( ! $is_subscription ) {
+				require_once __DIR__ . '/class-wc-payments-payment-method-messaging-element.php';
+				$stripe_site_messaging = new WC_Payments_Payment_Method_Messaging_Element( self::$account, self::$card_gateway );
+				echo wp_kses( $stripe_site_messaging->init(), 'post' );
+			}
 		}
 	}
 
@@ -1711,5 +1725,53 @@ class WC_Payments {
 				'url' => plugins_url( '/dist/', WCPAY_PLUGIN_FILE ),
 			]
 		);
+	}
+
+	/**
+	 * Shows an alert notice for Hungarian, Sweden, and Czech Republic merchants on WooCommerce 7.4 and below
+	 */
+	public static function wcpay_show_old_woocommerce_for_hungary_sweden_and_czech_republic() {
+		$currencies        = [ 'HUF', 'SEK', 'CZK' ];
+		$store_currency    = get_woocommerce_currency();
+		$should_show_error = in_array( $store_currency, $currencies, true );
+
+		if ( ! defined( 'WC_VERSION' ) || ! version_compare( WC_VERSION, '7.8', '<' ) || ! $should_show_error ) {
+			return;
+		}
+
+		$notice = '';
+
+		switch ( $store_currency ) {
+			case 'HUF':
+				/* translators: %1$s: The current WordPress version used by the store */
+				$notice = __( 'The WooCommerce version you have installed is not compatible with WooCommerce Payments for a Hungarian business. Please update WooCommerce to version 7.8 or above (you are using %1$s). You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' );
+				break;
+			case 'SEK':
+				/* translators: %1$s: The current WordPress version used by the store */
+				$notice = __( 'The WooCommerce version you have installed is not compatible with WooCommerce Payments for a Swedish business. Please update WooCommerce to version 7.8 or above (you are using %1$s). You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' );
+				break;
+			case 'CZK':
+				/* translators: %1$s: The current WordPress version used by the store */
+				$notice = __( 'The WooCommerce version you have installed is not compatible with WooCommerce Payments for a Czech Republic business. Please update WooCommerce to version 7.8 or above (you are using %1$s). You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' );
+				break;
+		}
+
+		?>
+		<div class="notice wcpay-notice notice-error">
+			<p>
+			<?php
+			echo WC_Payments_Utils::esc_interpolated_html(
+				sprintf(
+					$notice,
+					WC_VERSION
+				),
+				[
+					'a1' => '<a href="' . admin_url( 'plugins.php' ) . '">',
+				]
+			)
+			?>
+			</p>
+		</div>
+		<?php
 	}
 }

@@ -32,6 +32,13 @@ class Database_Cache {
 	const DISPUTE_STATUS_COUNTS_KEY = 'wcpay_dispute_status_counts_cache';
 
 	/**
+	 * Active disputes cache key.
+	 *
+	 * @var string
+	 */
+	const ACTIVE_DISPUTES_KEY = 'wcpay_active_dispute_cache';
+
+	/**
 	 * Cache key for authorization summary data like count, total amount, etc.
 	 *
 	 * @var string
