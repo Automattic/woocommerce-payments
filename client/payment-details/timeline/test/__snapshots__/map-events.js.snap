@@ -107,7 +107,7 @@ Array [
       </Link>,
     ],
     "date": 2020-04-02T02:06:14.000Z,
-    "headline": "Payment disputed as \\"Transaction unauthorized\\".",
+    "headline": "Payment disputed as Transaction unauthorized.",
     "icon": <CrossIcon
       className="is-error"
     />,
@@ -343,7 +343,7 @@ Array [
       </Link>,
     ],
     "date": 2020-04-02T02:06:14.000Z,
-    "headline": "Payment disputed as \\"Transaction unauthorized\\".",
+    "headline": "Payment disputed as Transaction unauthorized.",
     "icon": <CrossIcon
       className="is-error"
     />,
@@ -571,7 +571,7 @@ Array [
       </Link>,
     ],
     "date": 2020-04-02T02:06:14.000Z,
-    "headline": "Payment disputed as \\"Transaction unauthorized\\".",
+    "headline": "Payment disputed as Transaction unauthorized.",
     "icon": <CrossIcon
       className="is-error"
     />,

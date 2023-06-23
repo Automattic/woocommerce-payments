@@ -710,7 +710,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        Payment disputed as "Transaction unauthorized".
+                        Payment disputed as Transaction unauthorized.
                       </span>
                     </div>
                     <span
