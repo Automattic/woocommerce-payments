@@ -136,6 +136,8 @@ class WC_Payments_Onboarding_Service {
 	 * @param string|null $structure    The currently selected business structure (optional).
 	 *
 	 * @return array
+	 *
+	 * @throws API_Exception
 	 */
 	public function get_required_verification_information( string $country_code, string $type, $structure = null ): array {
 		return $this->payments_api_client->get_onboarding_required_verification_information( $country_code, $type, $structure );
@@ -182,7 +184,7 @@ class WC_Payments_Onboarding_Service {
 	public function add_admin_body_classes( string $classes = '' ): string {
 		// Onboarding needs to hide wp-admin navigation and masterbar while JS loads.
 		// This class will be removed by the onboarding component.
-		if ( isset( $_GET['path'] ) && '/payments/onboarding-prototype' === $_GET['path'] ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_GET['path'] ) && '/payments/onboarding-flow' === $_GET['path'] ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$classes .= ' woocommerce-admin-is-loading';
 		}
 

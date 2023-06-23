@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Uses correct payment method title in order confirmation emails.

@@ -7,6 +7,7 @@
 import { __ } from '@wordpress/i18n';
 
 // Mapping of dispute reason to strings.
+// This mapping is duplicated in \WC_Payments_Utils::get_dispute_reason_description() and on Server.
 export const reasons: Record<
 	string,
 	{

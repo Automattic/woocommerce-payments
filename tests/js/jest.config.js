@@ -22,6 +22,7 @@ module.exports = {
 	setupFilesAfterEnv: [
 		'<rootDir>/node_modules/@wordpress/jest-preset-default/scripts/setup-test-framework.js',
 		'<rootDir>/tests/js/jest-extensions-setup.js',
+		'expect-puppeteer',
 	],
 	preset: '@wordpress/jest-preset-default',
 	testMatch: [
@@ -41,6 +42,8 @@ module.exports = {
 		...tsjPreset.transform,
 		'^.+\\.(jpg|svg|png|gif)(\\?.*)?$': '<rootDir>/tests/js/fileMock.js',
 	},
-	transformIgnorePatterns: [ 'node_modules/(?!(@woocommerce/.+)/)' ],
+	transformIgnorePatterns: [
+		'node_modules/(?!(@woocommerce/.+)|gridicons|@automattic/components/)',
+	],
 	verbose: true,
 };

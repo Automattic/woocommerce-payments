@@ -103,36 +103,19 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$this->description     = '';
 		$this->checkout_title  = __( 'Popular payment methods', 'woocommerce-payments' );
 		$this->payment_methods = $payment_methods;
-		if ( ! is_admin() ) {
-			add_filter( 'woocommerce_gateway_title', [ $this, 'maybe_filter_gateway_title' ], 10, 2 );
-		}
 	}
 
 	/**
-	 * Registers all scripts, necessary for the gateway.
+	 * Initializes this class's WP hooks.
+	 *
+	 * @return void
 	 */
-	public function register_scripts() {
-		// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
-		// loaded twice in the event a site has both plugins enabled. We still run the risk of different plugins
-		// loading different versions however. If Stripe release a v4 of their JavaScript, we could consider
-		// changing the ID to stripe_v4. This would allow older plugins to keep using v3 while we used any new
-		// feature in v4. Stripe have allowed loading of 2 different versions of stripe.js in the past (
-		// https://stripe.com/docs/stripe-js/elements/migrating).
-		wp_register_script(
-			'stripe',
-			'https://js.stripe.com/v3/',
-			[],
-			'3.0',
-			true
-		);
-
-		$script_dependencies = [ 'stripe', 'wc-checkout', 'wp-i18n' ];
-
-		if ( $this->supports( 'tokenization' ) ) {
-			$script_dependencies[] = 'woocommerce-tokenization-form';
+	public function init_hooks() {
+		if ( ! is_admin() ) {
+			add_filter( 'woocommerce_gateway_title', [ $this, 'maybe_filter_gateway_title' ], 10, 2 );
 		}
-		WC_Payments::register_script_with_dependencies( 'wcpay-upe-checkout', 'dist/upe_checkout', $script_dependencies );
-
+		add_action( 'woocommerce_email_before_order_table', [ $this, 'set_payment_method_title_for_email' ], 10, 3 );
+		parent::init_hooks();
 	}
 
 	/**
@@ -195,7 +178,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					'error' => [
 						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
-				]
+				],
+				WC_Payments_Utils::get_filtered_error_status_code( $e ),
 			);
 		}
 	}
@@ -301,7 +285,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					'error' => [
 						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
-				]
+				],
+				WC_Payments_Utils::get_filtered_error_status_code( $e ),
 			);
 		}
 	}
@@ -404,7 +389,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					'error' => [
 						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
-				]
+				],
+				WC_Payments_Utils::get_filtered_error_status_code( $e ),
 			);
 		}
 	}
@@ -565,7 +551,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$payment_method         = $updated_payment_intent->get_payment_method_id();
 				$charge                 = $updated_payment_intent->get_charge();
 				$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
-				$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : null;
+				$payment_method_type    = $this->get_payment_method_type_from_payment_details( $payment_method_details );
 				$charge_id              = $charge ? $charge->get_id() : null;
 
 				/**
@@ -742,7 +728,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$currency               = $intent->get_currency();
 				$payment_method_id      = $intent->get_payment_method_id();
 				$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
-				$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : null;
+				$payment_method_type    = $this->get_payment_method_type_from_payment_details( $payment_method_details );
 				$error                  = $intent->get_last_payment_error();
 			} else {
 				$intent                 = $this->payments_api_client->get_setup_intent( $intent_id );
@@ -912,6 +898,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		} else {
 			$upe_enabled_payment_methods = array_intersect( $this->get_upe_enabled_payment_method_ids(), [ Payment_Method::CARD, Payment_Method::LINK ] );
 		}
+		if ( is_wc_endpoint_url( 'order-pay' ) ) {
+			$force_currency_check = true;
+		}
 
 		$enabled_payment_methods = [];
 		$active_payment_methods  = $this->get_upe_enabled_payment_method_statuses();
@@ -929,7 +918,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 				$skip_currency_check       = ! $force_currency_check && is_admin();
 				$processing_payment_method = $this->payment_methods[ $payment_method_id ];
-				if ( $processing_payment_method->is_enabled_at_checkout() && ( $skip_currency_check || $processing_payment_method->is_currency_valid() ) ) {
+				if ( $processing_payment_method->is_enabled_at_checkout() && ( $skip_currency_check || $processing_payment_method->is_currency_valid( $order_id ) ) ) {
 					$status = $active_payment_methods[ $payment_method_capability_key ]['status'] ?? null;
 					if ( 'active' === $status ) {
 						$enabled_payment_methods[] = $payment_method_id;
@@ -988,6 +977,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$available_methods[] = Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Affirm_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 
 		$available_methods = array_values(
 			apply_filters(
@@ -1031,7 +1022,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					'error' => [
 						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
-				]
+				],
+				WC_Payments_Utils::get_filtered_error_status_code( $e ),
 			);
 		}
 	}
@@ -1053,7 +1045,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return string Filtered gateway title.
 	 */
 	public function maybe_filter_gateway_title( $title, $id ) {
-		if ( ! WC_Payments_Features::is_upe_split_enabled() && self::GATEWAY_ID === $id && $this->title === $title ) {
+		if ( ! ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) && self::GATEWAY_ID === $id && $this->title === $title ) {
 			$title                   = $this->checkout_title;
 			$enabled_payment_methods = $this->get_payment_method_ids_enabled_at_checkout();
 
@@ -1066,6 +1058,18 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			}
 		}
 		return $title;
+	}
+
+	/**
+	 * Sets the payment method title on the order for emails.
+	 *
+	 * @param WC_Order $order   WC Order object.
+	 */
+	public function set_payment_method_title_for_email( $order ) {
+		$payment_method_id      = $this->order_service->get_payment_method_id_for_order( $order );
+		$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
+		$payment_method_type    = $this->get_payment_method_type_from_payment_details( $payment_method_details );
+		$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 	}
 
 	/**
@@ -1154,9 +1158,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			wp_send_json_error(
 				[
 					'error' => [
-						'message' => $e->getMessage(),
+						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
-				]
+				],
+				WC_Payments_Utils::get_filtered_error_status_code( $e ),
 			);
 		}
 	}
@@ -1224,7 +1229,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * Removes the setup intent created for UPE from WC session.
 	 */
 	public function remove_upe_setup_intent_from_session() {
-		WC()->session->__unset( self::KEY_UPE_SETUP_INTENT );
+		if ( isset( WC()->session ) ) {
+			WC()->session->__unset( self::KEY_UPE_SETUP_INTENT );
+		}
 	}
 
 	/**
@@ -1252,6 +1259,16 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 */
 	public function get_payment_method() {
 		return $this->payment_methods['card'];
+	}
+
+	/**
+	 * Return the payment method type from the payment method details.
+	 *
+	 * @param array $payment_method_details Payment method details.
+	 * @return string|null Payment method type or nothing.
+	 */
+	private function get_payment_method_type_from_payment_details( $payment_method_details ) {
+		return $payment_method_details['type'] ?? null;
 	}
 
 	/**

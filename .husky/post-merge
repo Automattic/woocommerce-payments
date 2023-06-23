@@ -1,8 +1,37 @@
-#!/bin/sh
+#!/usr/bin/env sh
 . "$(dirname "$0")/_/husky.sh"
+
+# Load local env variables if present.
+if [[ -f "$(pwd)/local.env" ]]; then
+	. "$(pwd)/local.env"
+fi
 
 # using `--no-install` just in case it's the first time a person is checking out the repo and doesn't have yarnhook installed
 npx --no-install yarnhook
 
 # make sure composer packages are installed and the autoload files are regenerated
 composer install
+
+DEV_TOOLS_PLUGIN_PATH=${LOCAL_WCPAY_DEV_TOOLS_PLUGIN_REPO_PATH:-"docker/wordpress/wp-content/plugins/woocommerce-payments-dev-tools"}
+if [ ! -d $DEV_TOOLS_PLUGIN_PATH ]; then
+	echo
+    echo "\033[33mCouldn't find the '$DEV_TOOLS_PLUGIN_PATH' directory. Skipping the auto-update for the WCPay Dev Tools plugin...\033[0m"
+else
+	if [[ "$(cd $DEV_TOOLS_PLUGIN_PATH && git rev-parse --show-toplevel 2>/dev/null)" = "$(cd $DEV_TOOLS_PLUGIN_PATH && pwd)" ]]; then
+		echo
+		echo "\033[32mDetermining if there is an update for the WCPay Dev Tools plugin...\033[0m"
+
+		DEV_TOOLS_BRANCH=$(cd $DEV_TOOLS_PLUGIN_PATH && git branch --show-current)
+		if [[ $DEV_TOOLS_BRANCH = "trunk" ]]; then
+			echo "  \033[32mThe current branch is trunk. Check if we are safe to pull from origin/trunk...\033[0m"
+			if [[ `cd $DEV_TOOLS_PLUGIN_PATH && git status --porcelain` ]]; then
+				echo "\033[33m  There are uncommitted local changes on the WCPay Dev Tools repo. Skipping any attempt to update it.\033[0m"
+			else
+				echo "  \033[32mPulling the latest changes from origin/trunk, if any...\033[0m"
+				cd $DEV_TOOLS_PLUGIN_PATH && git pull
+			fi
+		else
+			echo "\033[33m  The WCPay Dev Tools local clone is not on the trunk branch. Skipping any attempt to update it.\033[0m"
+		fi
+	fi
+fi

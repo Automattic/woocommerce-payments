@@ -139,7 +139,16 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		}
 
 		$this->supports = array_merge( $this->supports, $payment_gateway_features );
+	}
 
+	/**
+	 * Initializes this trait's WP hooks.
+	 *
+	 * The hooks are not initialized more than once or if the ID of the attached gateway is not 'woocommerce_payments'.
+	 *
+	 * @return void
+	 */
+	public function maybe_init_subscriptions_hooks() {
 		/**
 		 * The following callbacks are only attached once to avoid duplication.
 		 * The callbacks are also only intended to be attached for the WCPay core payment gateway ($this->id = 'woocommerce_payments').

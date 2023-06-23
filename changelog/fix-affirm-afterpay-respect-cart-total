@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Ensure Affirm and Afterpay available on checkout only when the payment is in expected range.

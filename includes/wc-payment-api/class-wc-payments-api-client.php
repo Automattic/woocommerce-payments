@@ -528,6 +528,17 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Fetch disputes by provided query.
+	 *
+	 * @param array $filters Query to be used to get disputes.
+	 * @return array Disputes.
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_disputes( array $filters = [] ) {
+		return $this->request( $filters, self::DISPUTES_API, self::GET );
+	}
+
+	/**
 	 * Fetch a single dispute with provided id.
 	 *
 	 * @param string $dispute_id id of requested dispute.
@@ -562,8 +573,9 @@ class WC_Payments_API_Client {
 		];
 
 		$dispute = $this->request( $request, self::DISPUTES_API . '/' . $dispute_id, self::POST );
-		// Invalidate the dispute status cache.
+		// Invalidate the dispute caches.
 		\WC_Payments::get_database_cache()->delete( Database_Cache::DISPUTE_STATUS_COUNTS_KEY );
+		\WC_Payments::get_database_cache()->delete( Database_Cache::ACTIVE_DISPUTES_KEY );
 
 		if ( is_wp_error( $dispute ) ) {
 			return $dispute;
@@ -581,8 +593,9 @@ class WC_Payments_API_Client {
 	 */
 	public function close_dispute( $dispute_id ) {
 		$dispute = $this->request( [], self::DISPUTES_API . '/' . $dispute_id . '/close', self::POST );
-		// Invalidate the dispute status cache.
+		// Invalidate the dispute caches.
 		\WC_Payments::get_database_cache()->delete( Database_Cache::DISPUTE_STATUS_COUNTS_KEY );
+		\WC_Payments::get_database_cache()->delete( Database_Cache::ACTIVE_DISPUTES_KEY );
 
 		if ( is_wp_error( $dispute ) ) {
 			return $dispute;
@@ -1671,21 +1684,27 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Get if the merchant is eligible for Progressive Onboarding.
+	 * Check if the merchant is eligible for Progressive Onboarding based on self-assessment information.
 	 *
-	 * @param array $business_info Business information.
+	 * @param array $business_info   Business information.
+	 * @param array $store_info      Store information.
+	 * @param array $woo_store_stats Optional. Stats about the WooCommerce store to given more context to the PO eligibility decision.
 	 *
 	 * @return array HTTP response on success.
 	 *
 	 * @throws API_Exception - If not connected to server or request failed.
 	 */
-	public function get_onboarding_po_eligible( $business_info ) {
+	public function get_onboarding_po_eligible( array $business_info, array $store_info, array $woo_store_stats = [] ): array {
 		return $this->request(
 			[
-				'business' => $business_info,
+				'business'        => $business_info,
+				'store'           => $store_info,
+				'woo_store_stats' => $woo_store_stats,
 			],
 			self::ONBOARDING_API . '/router/po_eligible',
-			self::POST
+			self::POST,
+			true,
+			true
 		);
 	}
 
