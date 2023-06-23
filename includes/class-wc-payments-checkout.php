@@ -181,6 +181,7 @@ class WC_Payments_Checkout {
 			'isPreview'                      => is_preview(),
 			'isUPEEnabled'                   => WC_Payments_Features::is_upe_enabled(),
 			'isUPESplitEnabled'              => WC_Payments_Features::is_upe_split_enabled(),
+			'isUPEDeferredEnabled'           => WC_Payments_Features::is_upe_deferred_intent_enabled(),
 			'isSavedCardsEnabled'            => $this->gateway->is_saved_cards_enabled(),
 			'isWooPayEnabled'                => $this->woopay_util->should_enable_woopay( $this->gateway ),
 			'isWoopayExpressCheckoutEnabled' => $this->woopay_util->is_woopay_express_checkout_enabled(),

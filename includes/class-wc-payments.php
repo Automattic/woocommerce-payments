@@ -274,6 +274,13 @@ class WC_Payments {
 	private static $customer_service_api;
 
 	/**
+	 * Instance of WC_Payments_Incentives_Service, created in init function
+	 *
+	 * @var WC_Payments_Incentives_Service
+	 */
+	private static $incentives_service;
+
+	/**
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
@@ -428,6 +435,7 @@ class WC_Payments {
 		include_once __DIR__ . '/woopay/class-woopay-scheduler.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-link.php';
 		include_once __DIR__ . '/core/service/class-wc-payments-customer-service-api.php';
+		include_once __DIR__ . '/class-wc-payments-incentives-service.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
@@ -466,6 +474,7 @@ class WC_Payments {
 		self::$onboarding_service                  = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
 		self::$woopay_util                         = new WooPay_Utilities();
 		self::$woopay_tracker                      = new WooPay_Tracker( self::get_wc_payments_http() );
+		self::$incentives_service                  = new WC_Payments_Incentives_Service( self::$database_cache );
 
 		( new WooPay_Scheduler() )->init();
 
@@ -575,7 +584,7 @@ class WC_Payments {
 		}
 
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
-			new WC_Payments_Admin( self::$api_client, self::get_gateway(), self::$account, self::$onboarding_service, self::$database_cache );
+			new WC_Payments_Admin( self::$api_client, self::get_gateway(), self::$account, self::$onboarding_service, self::$incentives_service, self::$database_cache );
 
 			new WC_Payments_Admin_Settings( self::get_gateway() );
 
@@ -1222,7 +1231,7 @@ class WC_Payments {
 	 */
 	public static function register_checkout_gateway( $payment_method_registry ) {
 		require_once __DIR__ . '/class-wc-payments-blocks-payment-method.php';
-		if ( WC_Payments_Features::is_upe_split_enabled() ) {
+		if ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 			require_once __DIR__ . '/class-wc-payments-upe-split-blocks-payment-method.php';
 			$payment_method_registry->register( new WC_Payments_UPE_Split_Blocks_Payment_Method() );
 		} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
