@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Adds support for UPE with deferred intent creation on the Blocks checkout page.

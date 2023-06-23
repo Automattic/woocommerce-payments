@@ -14,7 +14,6 @@ import {
 	// eslint-disable-next-line import/no-unresolved
 } from '@woocommerce/blocks-registry';
 import { useEffect, useState } from '@wordpress/element';
-import { useDispatch, useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -24,43 +23,16 @@ import './style.scss';
 import confirmUPEPayment from './confirm-upe-payment.js';
 import { getUPEConfig } from 'utils/checkout';
 import {
-	getTerms,
 	getPaymentIntentFromSession,
 	getCookieValue,
+	useCustomerData,
+	getStripeElementOptions,
 } from '../utils/upe';
-import { WC_STORE_CART } from '../constants.js';
 import { decryptClientSecret } from '../utils/encryption';
 import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
 import { getAppearance, getFontRulesFromPage } from '../upe-styles';
 import { useFingerprint } from './hooks';
 import { LoadableBlock } from '../../components/loadable';
-
-const useCustomerData = () => {
-	const { customerData, isInitialized } = useSelect( ( select ) => {
-		const store = select( WC_STORE_CART );
-		return {
-			customerData: store.getCustomerData(),
-			isInitialized: store.hasFinishedResolution( 'getCartData' ),
-		};
-	} );
-	const {
-		setShippingAddress,
-		setBillingData,
-		setBillingAddress,
-	} = useDispatch( WC_STORE_CART );
-
-	return {
-		isInitialized,
-		billingData: customerData.billingData,
-		// Backward compatibility billingData/billingAddress
-		billingAddress: customerData.billingAddress,
-		shippingAddress: customerData.shippingAddress,
-		setBillingData,
-		// Backward compatibility setBillingData/setBillingAddress
-		setBillingAddress,
-		setShippingAddress,
-	};
-};
 
 const WCPayUPEFields = ( {
 	api,
@@ -332,34 +304,6 @@ const WCPayUPEFields = ( {
 		setPaymentCountry( event.value.country );
 	};
 
-	const elementOptions = {
-		fields: {
-			billingDetails: {
-				name: 'never',
-				email: 'never',
-				phone: 'never',
-				address: {
-					country: 'never',
-					line1: 'never',
-					line2: 'never',
-					city: 'never',
-					state: 'never',
-					postalCode: 'never',
-				},
-			},
-		},
-		wallets: {
-			applePay: 'never',
-			googlePay: 'never',
-		},
-	};
-
-	const showTerms =
-		shouldSavePayment || getUPEConfig( 'cartContainsSubscription' )
-			? 'always'
-			: 'never';
-	elementOptions.terms = getTerms( paymentMethodsConfig, showTerms );
-
 	return (
 		<>
 			<p
@@ -369,7 +313,10 @@ const WCPayUPEFields = ( {
 				} }
 			></p>
 			<PaymentElement
-				options={ elementOptions }
+				options={ getStripeElementOptions(
+					shouldSavePayment,
+					paymentMethodsConfig
+				) }
 				onChange={ upeOnChange }
 				className="wcpay-payment-element"
 			/>
@@ -517,4 +464,18 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 	);
 };
 
-export default ConsumableWCPayFields;
+export const getSplitUPEFields = (
+	upeName,
+	upeMethods,
+	api,
+	testingInstructions
+) => {
+	return (
+		<ConsumableWCPayFields
+			paymentMethodId={ upeName }
+			upeMethods={ upeMethods }
+			api={ api }
+			testingInstructions={ testingInstructions }
+		/>
+	);
+};
