@@ -31,21 +31,8 @@ class WC_Payments_Incentives_Service {
 	public function __construct( Database_Cache $database_cache ) {
 		$this->database_cache = $database_cache;
 
-		add_action( 'wcpay_js_settings', [ $this, 'add_js_settings' ] );
 		add_action( 'admin_menu', [ $this, 'add_payments_menu_badge' ] );
 		add_filter( 'woocommerce_admin_allowed_promo_notes', [ $this, 'allowed_promo_notes' ] );
-	}
-
-	/**
-	 * Add connect incentive to JS settings.
-	 *
-	 * @param array $settings Current JS settings.
-	 * @return array Updated JS settings.
-	 */
-	public function add_js_settings( array $settings ): array {
-		$settings['connectIncentive'] = $this->get_cached_connect_incentive();
-
-		return $settings;
 	}
 
 	/**
