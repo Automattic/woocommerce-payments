@@ -56,6 +56,7 @@ const OnboardingStepper = () => {
 };
 
 const OnboardingPrototype: React.FC = () => {
+	const businessUrl = wcSettings?.homeUrl ?? '';
 	useEffect( () => {
 		trackStarted();
 
@@ -77,7 +78,7 @@ const OnboardingPrototype: React.FC = () => {
 
 	return (
 		<div className="wcpay-onboarding-prototype">
-			<OnboardingContextProvider>
+			<OnboardingContextProvider initialData={ { url: businessUrl } }>
 				<OnboardingStepper />
 			</OnboardingContextProvider>
 		</div>
