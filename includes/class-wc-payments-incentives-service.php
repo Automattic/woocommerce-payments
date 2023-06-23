@@ -153,15 +153,17 @@ class WC_Payments_Incentives_Service {
 
 		if ( 200 === wp_remote_retrieve_response_code( $response ) ) {
 			// Decode the results, falling back to an empty array.
-			$results = json_decode( wp_remote_retrieve_body( $response ), true ) ?? [];
+			$results = json_decode( wp_remote_retrieve_body( $response ), true );
 
 			// Find a `connect_page` incentive.
-			$incentive = array_filter(
-				$results,
-				function( array $incentive ) {
-					return isset( $incentive['type'] ) && 'connect_page' === $incentive['type'];
-				}
-			)[0] ?? [];
+			if ( ! empty( $results ) ) {
+				$incentive = array_filter(
+					$results,
+					function( array $incentive ) {
+						return isset( $incentive['type'] ) && 'connect_page' === $incentive['type'];
+					}
+				)[0] ?? [];
+			}
 		}
 
 		// Read TTL form the `cache-for` header, or default to 1 day.
