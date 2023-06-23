@@ -777,7 +777,7 @@ const mapEventToTimelineItems = ( event ) => {
 			if ( disputeReasons[ event.reason ] ) {
 				reasonHeadline = sprintf(
 					/* translators: %s is a monetary amount */
-					__( 'Payment disputed as %s.', 'woocommerce-payments' ),
+					__( 'Payment disputed as "%s".', 'woocommerce-payments' ),
 					disputeReasons[ event.reason ].display
 				);
 			}
