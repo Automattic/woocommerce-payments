@@ -1,8 +1,9 @@
 .wcpay-component-tip-box {
+	@include wc-others-caption;
 	display: grid;
 	grid-template-columns: 24px 1fr;
-	column-gap: $gap-small;
-	padding: $gap-small $gap;
+	column-gap: $gap-smaller;
+	padding: $gap $gap-small $gap $gap-smaller;
 	margin: $gap 0;
 
 	&:first-child {
@@ -23,18 +24,27 @@
 		background-color: $wp-blue-0;
 	}
 
+	&.gray {
+		fill: $gray-50;
+		background-color: $gray-0;
+		color: $gray-900;
+
+		.components-button.is-link {
+			color: #0063a1; // Gutenberg/Blue -10%
+		}
+	}
+
 	&__content {
 		align-self: center;
 	}
 
 	a {
-		text-decoration: none;
 		font-weight: 700;
 		color: $studio-woocommerce-purple-70;
 	}
 
 	.components-button.is-link {
-		text-decoration: none;
+		font-size: inherit;
 		color: $studio-woocommerce-purple-50;
 	}
 }

@@ -53,6 +53,11 @@ class Database_Cache {
 	const AUTHORIZATION_SUMMARY_KEY_TEST_MODE = 'wcpay_test_authorization_summary_cache';
 
 	/**
+	 * Cache key for eligible connect incentive data.
+	 */
+	const CONNECT_INCENTIVE_KEY = 'wcpay_connect_incentive';
+
+	/**
 	 * Refresh disabled flag, controlling the behaviour of the get_or_add function.
 	 *
 	 * @var bool
@@ -321,6 +326,9 @@ class Database_Cache {
 			case self::ONBOARDING_FIELDS_DATA_KEY:
 				// Cache these for a week.
 				$ttl = WEEK_IN_SECONDS;
+				break;
+			case self::CONNECT_INCENTIVE_KEY:
+				$ttl = $cache_contents['data']['ttl'] ?? HOUR_IN_SECONDS * 6;
 				break;
 			default:
 				// Default to 24h.
