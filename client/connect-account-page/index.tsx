@@ -32,7 +32,7 @@ import strings from './strings';
 import './style.scss';
 
 const ConnectAccountPage: React.FC = () => {
-	const { first_name: firstName } = wcSettings.admin.currentUserData;
+	const firstName = wcSettings.admin?.currentUserData?.first_name;
 	const incentive = wcpaySettings.connectIncentive;
 	const [ errorMessage, setErrorMessage ] = useState< string >(
 		wcpaySettings.errorMessage
