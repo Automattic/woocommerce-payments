@@ -32,6 +32,13 @@ class Database_Cache {
 	const DISPUTE_STATUS_COUNTS_KEY = 'wcpay_dispute_status_counts_cache';
 
 	/**
+	 * Active disputes cache key.
+	 *
+	 * @var string
+	 */
+	const ACTIVE_DISPUTES_KEY = 'wcpay_active_dispute_cache';
+
+	/**
 	 * Cache key for authorization summary data like count, total amount, etc.
 	 *
 	 * @var string
@@ -44,6 +51,11 @@ class Database_Cache {
 	 * @var string
 	 */
 	const AUTHORIZATION_SUMMARY_KEY_TEST_MODE = 'wcpay_test_authorization_summary_cache';
+
+	/**
+	 * Cache key for eligible connect incentive data.
+	 */
+	const CONNECT_INCENTIVE_KEY = 'wcpay_connect_incentive';
 
 	/**
 	 * Refresh disabled flag, controlling the behaviour of the get_or_add function.
@@ -314,6 +326,9 @@ class Database_Cache {
 			case self::ONBOARDING_FIELDS_DATA_KEY:
 				// Cache these for a week.
 				$ttl = WEEK_IN_SECONDS;
+				break;
+			case self::CONNECT_INCENTIVE_KEY:
+				$ttl = $cache_contents['data']['ttl'] ?? HOUR_IN_SECONDS * 6;
 				break;
 			default:
 				// Default to 24h.
