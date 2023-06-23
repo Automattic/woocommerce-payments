@@ -10,7 +10,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Database_Cache;
-use Automattic\WooCommerce\Admin\WCAdminHelper;
 
 /**
  * Class handling onboarding related business logic.
@@ -120,7 +119,7 @@ class WC_Payments_Incentives_Service {
 				// Store locale, e.g. `en_US`.
 				'locale'       => get_locale(),
 				// WooCommerce active for duration in seconds.
-				'active_for'   => WCAdminHelper::get_wcadmin_active_for_in_seconds(),
+				'active_for'   => time() - get_option( 'woocommerce_admin_install_timestamp', time() ),
 				// Whether the store has paid orders in the last 90 days.
 				'has_orders'   => ! empty(
 					wc_get_orders(
