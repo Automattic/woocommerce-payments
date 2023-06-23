@@ -414,9 +414,15 @@ export const TransactionsList = (
 				display: ! isFinancingType ? (
 					clickable(
 						<span className="payment-method-details-list-item">
-							<span
-								className={ `payment-method__brand payment-method__brand--${ txn.source }` }
-							/>
+							<HoverTooltip
+								isVisible={ false }
+								content={ txn.source }
+							>
+								<span
+									className={ `payment-method__brand payment-method__brand--${ txn.source }` }
+								/>
+							</HoverTooltip>
+
 							{ getPaymentSourceDetails( txn ) }
 						</span>
 					)
