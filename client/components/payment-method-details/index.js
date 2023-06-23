@@ -6,7 +6,6 @@
 import { Fragment } from 'react';
 import './style.scss';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
-import { HoverTooltip } from '../tooltip';
 /**
  *
  * @param {Object} payment Payment charge object
@@ -64,12 +63,9 @@ const PaymentMethodDetails = ( props ) => {
 	const details = formatDetails( payment );
 	return (
 		<span className="payment-method-details">
-			<HoverTooltip isVisible={ false } content={ brand }>
-				<span
-					className={ `payment-method__brand payment-method__brand--${ brand }` }
-					aria-label={ brand }
-				/>
-			</HoverTooltip>
+			<span
+				className={ `payment-method__brand payment-method__brand--${ brand }` }
+			/>
 			{ details }
 		</span>
 	);

@@ -14,21 +14,4 @@ enum PAYMENT_METHOD_IDS {
 	SOFORT = 'sofort',
 }
 
-enum PAYMENT_METHOD_BRANDS {
-	affirm = 'Affirm',
-	afterpay_clearpay = 'Afterpay',
-	au_becs_debit = 'AU BECS Debit',
-	bancontact = 'Bancontact',
-	card = 'Card',
-	card_present = 'Card Present',
-	eps = 'EPS',
-	giropay = 'giropay',
-	ideal = 'iDEAL',
-	link = 'Link',
-	p24 = 'P24',
-	sepa_debit = 'SEPA Debit',
-	sofort = 'SOFORT',
-}
-
 export default PAYMENT_METHOD_IDS;
-export { PAYMENT_METHOD_BRANDS };
