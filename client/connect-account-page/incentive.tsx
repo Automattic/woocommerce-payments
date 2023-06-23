@@ -7,7 +7,7 @@ import React from 'react';
  * Internal dependencies
  */
 import strings from './strings';
-import { sanitizeHTML } from './utils';
+import { sanitizeHTML } from 'utils/sanitize';
 
 const Incentive: React.FC< NonNullable<
 	typeof wcpaySettings.connectIncentive
