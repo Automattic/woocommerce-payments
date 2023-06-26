@@ -7,7 +7,7 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import HorizontalList from '../';
+import { HorizontalList } from '../';
 
 describe( 'HorizontalList', () => {
 	let horizontalList;
