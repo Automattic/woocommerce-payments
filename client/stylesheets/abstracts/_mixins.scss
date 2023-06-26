@@ -80,6 +80,7 @@
 @mixin wp-title-small {
 	font-size: 20px;
 	line-height: 28px;
+	font-weight: 400;
 }
 
 // WordPress/Label
@@ -93,4 +94,17 @@
 @mixin wp-subtitle {
 	@include wc-body-large;
 	font-weight: 600;
+}
+
+// WordPress/Subtitle Small
+@mixin wp-subtitle-small {
+	font-size: 14px;
+	line-height: 20px;
+	font-weight: 600;
+}
+
+// WordPress/Small Button
+@mixin wp-small-button {
+	font-size: 11px;
+	line-height: 16px;
 }

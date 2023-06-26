@@ -473,6 +473,10 @@ jQuery( function ( $ ) {
 			);
 
 			if ( updateResponse.data ) {
+				if ( updateResponse.data.error ) {
+					throw updateResponse.data.error;
+				}
+
 				if ( api.handleDuplicatePayments( updateResponse.data ) ) {
 					return;
 				}

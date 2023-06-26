@@ -124,6 +124,10 @@ export const getDepositStatus = ( state ) => {
 	return getSettings( state ).deposit_status || '';
 };
 
+export const getDepositRestrictions = ( state ) => {
+	return getSettings( state ).deposit_restrictions || '';
+};
+
 export const getIsManualCaptureEnabled = ( state ) => {
 	return getSettings( state ).is_manual_capture_enabled || false;
 };
