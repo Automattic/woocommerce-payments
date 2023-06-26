@@ -740,7 +740,7 @@ class WC_Payments_Subscription_Service {
 		];
 
 		if ( self::has_delayed_payment( $subscription ) ) {
-			$data['trial_end'] = max( $subscription->get_time( 'trial_end' ), $subscription->get_time( 'next_payment' ) );
+			$data['billing_cycle_anchor'] = max( $subscription->get_time( 'trial_end' ), $subscription->get_time( 'next_payment' ) );
 		}
 
 		if ( ! empty( $one_time_items ) ) {
@@ -977,6 +977,9 @@ class WC_Payments_Subscription_Service {
 				break;
 			case 'fee':
 				$metadata['type'] = $item->get_name();
+				break;
+			case 'line_item':
+				$metadata['free_trial'] = wc_bool_to_string( $item->get_meta( '_has_trial' ) );
 				break;
 		}
 
