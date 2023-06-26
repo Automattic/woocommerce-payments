@@ -11,7 +11,7 @@ import { List } from '@woocommerce/components';
  */
 import './style.scss';
 
-interface HorizontalListItem {
+export interface HorizontalListItem {
 	/**
 	 * The title for the item, displayed above the content.
 	 */
@@ -26,12 +26,10 @@ interface Props {
 	/**
 	 * The items to display in the list.
 	 */
-	items: ( false | HorizontalListItem )[];
+	items: HorizontalListItem[];
 }
 
-const HorizontalList: React.FunctionComponent< Props > = ( props ) => {
+export const HorizontalList: React.FunctionComponent< Props > = ( props ) => {
 	const { items } = props;
 	return <List className="woocommerce-list--horizontal" items={ items } />;
 };
-
-export default HorizontalList;
