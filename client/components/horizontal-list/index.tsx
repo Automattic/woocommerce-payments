@@ -12,11 +12,20 @@ import { List } from '@woocommerce/components';
 import './style.scss';
 
 interface HorizontalListItem {
+	/**
+	 * The title for the item, displayed above the content.
+	 */
 	title: string;
+	/**
+	 * The content that will be displayed in the list for this item.
+	 */
 	content: string | React.ReactNode;
 }
 
 interface Props {
+	/**
+	 * The items to display in the list.
+	 */
 	items: ( false | HorizontalListItem )[];
 }
 
