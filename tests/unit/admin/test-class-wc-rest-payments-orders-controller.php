@@ -1194,7 +1194,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 
 	public function test_create_terminal_intent_success() {
 		$order  = $this->create_mock_order();
-		$intent = new WC_Payments_API_Intention( 'pi_abcxyz', 5000, 'usd', null, null, new DateTime(), 'requires_payment_method', 'secret' );
+		$intent = new WC_Payments_API_Payment_Intention( 'pi_abcxyz', 5000, 'usd', null, null, new DateTime(), 'requires_payment_method', 'secret' );
 
 		$request = $this->mock_wcpay_request( Create_Intention::class );
 

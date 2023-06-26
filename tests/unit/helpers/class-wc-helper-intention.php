@@ -49,7 +49,7 @@ class WC_Helper_Intention {
 	 *
 	 * @param array $data Data to override defaults.
 	 *
-	 * @return WC_Payments_API_Intention
+	 * @return WC_Payments_API_Payment_Intention
 	 */
 	public static function create_intention( $data = [] ) {
 		$intent_data = wp_parse_args(
@@ -72,7 +72,7 @@ class WC_Helper_Intention {
 			]
 		);
 
-		$intention = new WC_Payments_API_Intention(
+		$intention = new WC_Payments_API_Payment_Intention(
 			$intent_data['id'],
 			$intent_data['amount'],
 			$intent_data['currency'],

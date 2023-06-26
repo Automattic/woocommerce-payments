@@ -96,7 +96,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 	/**
 	 * Payment intent to be used during tests.
 	 *
-	 * @var WC_Payments_API_Intention
+	 * @var WC_Payments_API_Payment_Intention
 	 */
 	private $payment_intent;
 

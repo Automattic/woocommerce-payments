@@ -215,7 +215,7 @@ class WC_Payments_API_Client {
 	 *
 	 * @param string $intent_id intent id.
 	 *
-	 * @return WC_Payments_API_Intention intention object.
+	 * @return WC_Payments_API_Payment_Intention intention object.
 	 */
 	public function get_intent( $intent_id ) {
 		$intent = $this->request( [], self::INTENTIONS_API . '/' . $intent_id, self::GET );
@@ -2232,7 +2232,7 @@ class WC_Payments_API_Client {
 	 *
 	 * @param array $intention_array - The intention array to de-serialize.
 	 *
-	 * @return WC_Payments_API_Intention
+	 * @return WC_Payments_API_Payment_Intention
 	 * @throws API_Exception - Unable to deserialize intention array.
 	 */
 	public function deserialize_intention_object_from_array( array $intention_array ) {
@@ -2252,7 +2252,7 @@ class WC_Payments_API_Client {
 		$charge = ! empty( $charge_array ) ? self::deserialize_charge_object_from_array( $charge_array ) : null;
 		$order  = $this->get_order_info_from_intention_object( $intention_array['id'] );
 
-		$intent = new WC_Payments_API_Intention(
+		$intent = new WC_Payments_API_Payment_Intention(
 			$intention_array['id'],
 			$intention_array['amount'],
 			$intention_array['currency'],

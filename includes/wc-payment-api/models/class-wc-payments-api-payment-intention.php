@@ -6,9 +6,9 @@
  */
 
 /**
- * An intention object used by the WooCommerce Payments API.
+ * Payment Intent object used by the WooCommerce Payments API.
  */
-class WC_Payments_API_Intention implements \JsonSerializable {
+class WC_Payments_API_Payment_Intention extends WC_Payments_API_Abstract_Intention {
 	/**
 	 * Intention ID
 	 *
