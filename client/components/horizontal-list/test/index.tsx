@@ -3,14 +3,18 @@
  * External dependencies
  */
 import { render } from '@testing-library/react';
+import React from 'react';
 
 /**
  * Internal dependencies
  */
-import { HorizontalList } from '../';
+import { HorizontalListItem, HorizontalList } from '..';
 
 describe( 'HorizontalList', () => {
-	let horizontalList;
+	function renderHorizontalList( items: HorizontalListItem[] ) {
+		return render( <HorizontalList items={ items } /> );
+	}
+	let horizontalList: HTMLElement;
 	beforeEach( () => {
 		const items = [
 			{ title: 'Item 1', content: 'Item 1 content' },
@@ -28,8 +32,4 @@ describe( 'HorizontalList', () => {
 			'List with items prop is deprecated is deprecated and will be removed in version 9.0.0. Note: See ExperimentalList / ExperimentalListItem for the new API that will replace this component in future versions.'
 		);
 	} );
-
-	function renderHorizontalList( items ) {
-		return render( <HorizontalList items={ items } /> );
-	}
 } );
