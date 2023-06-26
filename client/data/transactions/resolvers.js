@@ -3,7 +3,8 @@
 /**
  * External dependencies
  */
-import { apiFetch, dispatch } from '@wordpress/data-controls';
+import { apiFetch } from '@wordpress/data-controls';
+import { controls } from '@wordpress/data';
 import { addQueryArgs } from '@wordpress/url';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
@@ -39,6 +40,8 @@ export const formatQueryFilters = ( query ) => ( {
 	],
 	type_is: query.typeIs,
 	type_is_not: query.typeIsNot,
+	source_device_is: query.sourceDeviceIs,
+	source_device_is_not: query.sourceDeviceIsNot,
 	store_currency_is: query.storeCurrencyIs,
 	loan_id_is: query.loanIdIs,
 	deposit_id: query.depositId,
@@ -66,7 +69,7 @@ export function* getTransactions( query ) {
 		const results = yield apiFetch( { path } );
 		yield updateTransactions( query, results.data || [] );
 	} catch ( e ) {
-		yield dispatch(
+		yield controls.dispatch(
 			'core/notices',
 			'createErrorNotice',
 			__( 'Error retrieving transactions.', 'woocommerce-payments' )
@@ -133,7 +136,7 @@ export function* getFraudOutcomeTransactions( status, query ) {
 			return;
 		}
 
-		yield dispatch(
+		yield controls.dispatch(
 			'core/notices',
 			'createErrorNotice',
 			__( 'Error retrieving transactions.', 'woocommerce-payments' )
@@ -149,9 +152,6 @@ export function* getFraudOutcomeTransactions( status, query ) {
  * @param { string } query Data on which to parameterize the selection.
  */
 export function* getFraudOutcomeTransactionsSummary( status, query ) {
-	// @todo Remove feature flag
-	if ( ! wcpaySettings.isFraudProtectionSettingsEnabled ) return;
-
 	const path = addQueryArgs(
 		`${ NAMESPACE }/transactions/fraud-outcomes/summary`,
 		{
@@ -182,7 +182,7 @@ export function* getFraudOutcomeTransactionsSummary( status, query ) {
 			return;
 		}
 
-		yield dispatch(
+		yield controls.dispatch(
 			'core/notices',
 			'createErrorNotice',
 			__(

@@ -14,7 +14,7 @@ import 'wp-mediaelement';
  * Internal dependencies
  */
 import './style.scss';
-import ConnectAccountPageExperiment from 'connect-account-page-experiment';
+import ConnectAccountPage from 'connect-account-page';
 import DepositsPage from 'deposits';
 import DepositDetailsPage from 'deposits/details';
 import TransactionsPage from 'transactions';
@@ -47,7 +47,7 @@ addFilter(
 			: __( 'Connect', 'woocommerce-payments' );
 
 		pages.push( {
-			container: ConnectAccountPageExperiment,
+			container: ConnectAccountPage,
 			path: '/payments/connect',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, connectionPageTitle ],
@@ -73,14 +73,14 @@ addFilter(
 
 		pages.push( {
 			container: OnboardingPrototype,
-			path: '/payments/onboarding-prototype',
+			path: '/payments/onboarding-flow',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
 				rootLink,
-				__( 'Onboarding Prototype', 'woocommerce-payments' ),
+				__( 'Onboarding', 'woocommerce-payments' ),
 			],
 			navArgs: {
-				id: 'wc-payments-onboarding-prototype',
+				id: 'wc-payments-onboarding-flow',
 			},
 			capability: 'manage_woocommerce',
 		} );
@@ -255,7 +255,7 @@ addFilter(
 				capability: 'manage_woocommerce',
 			} );
 		}
-		if ( wcpaySettings && wcpaySettings.isFraudProtectionSettingsEnabled ) {
+		if ( wcpaySettings ) {
 			pages.push( {
 				container: FraudProtectionAdvancedSettingsPage,
 				path: '/payments/fraud-protection',

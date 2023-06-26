@@ -12,6 +12,36 @@ import { useSettings } from '../../../data';
 import { steps } from './steps';
 import wcpayTracks from 'tracks';
 
+const [ firstStep ] = steps;
+const { desktop: firstStepId } = firstStep.referenceElements;
+
+const options = {
+	effects: {
+		overlay: true,
+		autoScroll: {
+			behavior: 'smooth',
+		},
+	},
+	popperModifiers: [
+		{
+			name: 'applyArrowHide',
+			enabled: true,
+			phase: 'write',
+			fn( { state }: any ) {
+				const { arrow, reference } = state.elements;
+
+				if ( ! arrow ) return;
+
+				if ( `#${ reference.id }` === firstStepId ) {
+					arrow.setAttribute( 'data-hide', '' );
+				} else {
+					arrow.removeAttribute( 'data-hide' );
+				}
+			},
+		},
+	],
+};
+
 const FraudProtectionTour: React.FC = () => {
 	const { isWelcomeTourDismissed } = wcpaySettings.fraudProtection;
 
@@ -26,9 +56,9 @@ const FraudProtectionTour: React.FC = () => {
 	}, [ isLoading, isWelcomeTourDismissed ] );
 
 	const handleTourEnd = (
-		stepList: any,
-		currentIndex: any,
-		element: any
+		stepList: any[],
+		currentIndex: number,
+		element: string
 	) => {
 		updateOptions( {
 			wcpay_fraud_protection_welcome_tour_dismissed: true,
@@ -50,26 +80,20 @@ const FraudProtectionTour: React.FC = () => {
 		}
 	};
 
-	const options = {
-		effects: {
-			overlay: true,
-			autoScroll: {
-				behavior: 'smooth',
-			},
-		},
-	};
-
 	if ( ! showTour ) return null;
 
 	return (
-		<TourKit
-			config={ {
-				steps,
-				options,
-				placement: 'top',
-				closeHandler: handleTourEnd,
-			} }
-		/>
+		<>
+			<div id="fraud-protection-welcome-tour-first-step" />
+			<TourKit
+				config={ {
+					steps,
+					options,
+					placement: 'top',
+					closeHandler: handleTourEnd,
+				} }
+			/>
+		</>
 	);
 };
 

@@ -14,6 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Exceptions\Invalid_Price_Exception;
+use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 
@@ -530,6 +531,16 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return false;
 		}
 
+		// Cart total is 0 or is on product page and product price is 0.
+		if (
+			( ! $this->is_product() && 0.0 === (float) WC()->cart->get_total( 'edit' ) ) ||
+			( $this->is_product() && 0.0 === (float) $this->get_product()->get_price() )
+
+		) {
+			Logger::log( 'Order price is 0 ( Payment Request button disabled )' );
+			return false;
+		}
+
 		return true;
 	}
 
@@ -758,7 +769,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		$gateways = WC()->payment_gateways->get_available_payment_gateways();
 		if ( isset( $gateways['woocommerce_payments'] ) ) {
-			$gateways['woocommerce_payments']->register_scripts();
+			WC_Payments::get_wc_payments_checkout()->register_scripts();
 		}
 	}
 
@@ -769,8 +780,10 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if ( ! $this->should_show_payment_request_button() ) {
 			return;
 		}
-		?>
-		<div id="wcpay-payment-request-wrapper" style="clear:both;padding-top:1.5em;display:none;">
+		if ( WC()->session && Fraud_Prevention_Service::get_instance()->is_enabled() ) : ?>
+			<input type="hidden" name="wcpay-fraud-prevention-token" value="<?php echo esc_attr( Fraud_Prevention_Service::get_instance()->get_token() ); ?>">
+		<?php endif; ?>
+		<div class="wcpay-payment-request-wrapper" style="clear:both;padding-top:1.5em;display:none;">
 			<div id="wcpay-payment-request-button">
 				<!-- A Stripe Element will be inserted here. -->
 			</div>
@@ -1369,7 +1382,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 */
 	public function ajax_create_order() {
 		if ( WC()->cart->is_empty() ) {
-			wp_send_json_error( __( 'Empty cart', 'woocommerce-payments' ) );
+			wp_send_json_error( __( 'Empty cart', 'woocommerce-payments' ), 400 );
 		}
 
 		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {

@@ -38,7 +38,7 @@ class WC_Payments_API_Client {
 
 	const ACCOUNTS_API                 = 'accounts';
 	const CAPABILITIES_API             = 'accounts/capabilities';
-	const PLATFORM_CHECKOUT_API        = 'accounts/platform_checkout';
+	const WOOPAY_API                   = 'accounts/platform_checkout';
 	const APPLE_PAY_API                = 'apple_pay';
 	const CHARGES_API                  = 'charges';
 	const CONN_TOKENS_API              = 'terminal/connection_tokens';
@@ -528,6 +528,17 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Fetch disputes by provided query.
+	 *
+	 * @param array $filters Query to be used to get disputes.
+	 * @return array Disputes.
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_disputes( array $filters = [] ) {
+		return $this->request( $filters, self::DISPUTES_API, self::GET );
+	}
+
+	/**
 	 * Fetch a single dispute with provided id.
 	 *
 	 * @param string $dispute_id id of requested dispute.
@@ -562,8 +573,9 @@ class WC_Payments_API_Client {
 		];
 
 		$dispute = $this->request( $request, self::DISPUTES_API . '/' . $dispute_id, self::POST );
-		// Invalidate the dispute status cache.
+		// Invalidate the dispute caches.
 		\WC_Payments::get_database_cache()->delete( Database_Cache::DISPUTE_STATUS_COUNTS_KEY );
+		\WC_Payments::get_database_cache()->delete( Database_Cache::ACTIVE_DISPUTES_KEY );
 
 		if ( is_wp_error( $dispute ) ) {
 			return $dispute;
@@ -581,8 +593,9 @@ class WC_Payments_API_Client {
 	 */
 	public function close_dispute( $dispute_id ) {
 		$dispute = $this->request( [], self::DISPUTES_API . '/' . $dispute_id . '/close', self::POST );
-		// Invalidate the dispute status cache.
+		// Invalidate the dispute caches.
 		\WC_Payments::get_database_cache()->delete( Database_Cache::DISPUTE_STATUS_COUNTS_KEY );
+		\WC_Payments::get_database_cache()->delete( Database_Cache::ACTIVE_DISPUTES_KEY );
 
 		if ( is_wp_error( $dispute ) ) {
 			return $dispute;
@@ -814,24 +827,24 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Get current platform checkout eligibility
+	 * Get current woopay eligibility
 	 *
-	 * @return array An array describing platform checkout eligibility.
+	 * @return array An array describing woopay eligibility.
 	 *
 	 * @throws API_Exception - Error contacting the API.
 	 */
-	public function get_platform_checkout_eligibility() {
+	public function get_woopay_eligibility() {
 		return $this->request(
 			[
 				'test_mode' => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
 			],
-			self::PLATFORM_CHECKOUT_API,
+			self::WOOPAY_API,
 			self::GET
 		);
 	}
 
 	/**
-	 * Update platform checkout data
+	 * Update woopay data
 	 *
 	 * @param array $data Data to update.
 	 *
@@ -839,13 +852,13 @@ class WC_Payments_API_Client {
 	 *
 	 * @throws API_Exception - Error contacting the API.
 	 */
-	public function update_platform_checkout( $data ) {
+	public function update_woopay( $data ) {
 		return $this->request(
 			array_merge(
 				[ 'test_mode' => WC_Payments::mode()->is_dev() ],
 				$data
 			),
-			self::PLATFORM_CHECKOUT_API,
+			self::WOOPAY_API,
 			self::POST
 		);
 	}
@@ -907,11 +920,12 @@ class WC_Payments_API_Client {
 	 *
 	 * @param string $locale The locale to ask for from the server.
 	 *
-	 * @throws API_Exception Exception thrown on request failure.
 	 * @return array An array containing the fields data.
+	 *
+	 * @throws API_Exception Exception thrown on request failure.
 	 */
 	public function get_onboarding_fields_data( string $locale = '' ): array {
-		return $this->request(
+		$fields_data = $this->request(
 			[
 				'locale'    => $locale,
 				'test_mode' => WC_Payments::mode()->is_test(),
@@ -921,6 +935,12 @@ class WC_Payments_API_Client {
 			false,
 			true
 		);
+
+		if ( ! is_array( $fields_data ) ) {
+			return [];
+		}
+
+		return $fields_data;
 	}
 
 	/**
@@ -930,14 +950,20 @@ class WC_Payments_API_Client {
 	 *
 	 * @throws API_Exception Exception thrown on request failure.
 	 */
-	public function get_onboarding_business_types() {
-		return $this->request(
+	public function get_onboarding_business_types(): array {
+		$business_types = $this->request(
 			[],
 			self::ONBOARDING_API . '/business_types',
 			self::GET,
 			true,
 			true
 		);
+
+		if ( ! is_array( $business_types ) ) {
+			return [];
+		}
+
+		return $business_types;
 	}
 
 	/**
@@ -1658,21 +1684,27 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Get if the merchant is eligible for Progressive Onboarding.
+	 * Check if the merchant is eligible for Progressive Onboarding based on self-assessment information.
 	 *
-	 * @param array $business_info Business information.
+	 * @param array $business_info   Business information.
+	 * @param array $store_info      Store information.
+	 * @param array $woo_store_stats Optional. Stats about the WooCommerce store to given more context to the PO eligibility decision.
 	 *
 	 * @return array HTTP response on success.
 	 *
 	 * @throws API_Exception - If not connected to server or request failed.
 	 */
-	public function get_onboarding_po_eligible( $business_info ) {
+	public function get_onboarding_po_eligible( array $business_info, array $store_info, array $woo_store_stats = [] ): array {
 		return $this->request(
 			[
-				'business' => $business_info,
+				'business'        => $business_info,
+				'store'           => $store_info,
+				'woo_store_stats' => $woo_store_stats,
 			],
 			self::ONBOARDING_API . '/router/po_eligible',
-			self::POST
+			self::POST,
+			true,
+			true
 		);
 	}
 
@@ -1835,6 +1867,7 @@ class WC_Payments_API_Client {
 			$retries++;
 		}
 
+		// @todo We don't always return an array. `extract_response_body` can also return a string. We should standardize this!
 		if ( ! $raw_response ) {
 			$response_body = $this->extract_response_body( $response );
 		} else {

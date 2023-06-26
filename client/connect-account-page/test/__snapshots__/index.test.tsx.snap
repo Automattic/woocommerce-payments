@@ -1,0 +1,623 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ConnectAccountPage should render correctly 1`] = `
+<div>
+  <div
+    class="connect-account-page woocommerce-payments-page is-narrow"
+  >
+    <div
+      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Card"
+    >
+      <div
+        class="css-mgwsf4-View-Content em57xhy0"
+      >
+        <div
+          class="connect-account-page__heading"
+        >
+          <img
+            alt="logo"
+            src="assets/images/woopayments.svg"
+          />
+          <h2>
+            Hi, run your business and manage your payments all in one place, with no setup costs or monthly fees.
+          </h2>
+        </div>
+        <div
+          class="connect-account-page__content"
+        >
+          <div
+            class="connect-account-page__content-usp"
+          >
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                clip-rule="evenodd"
+                d="M5.5 9.5v-2h13v2h-13zm0 3v4h13v-4h-13zM4 7a1 1 0 011-1h14a1 1 0 011 1v10a1 1 0 01-1 1H5a1 1 0 01-1-1V7z"
+                fill-rule="evenodd"
+              />
+            </svg>
+            Offer card payments, Apple Pay, Sofort, iDeal, Affirm, Afterpay, and accept in-person payments with the Woo mobile app.
+            <svg
+              class="gridicon gridicons-globe"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g>
+                <path
+                  d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18l2-2 1-1v-2h-2v-1l-1-1H9v3l2 2v1.931C7.06 19.436 4 16.072 4 12l1 1h2v-2h2l3-3V6h-2L9 5v-.411a7.945 7.945 0 016 0V6l-1 1v2l1 1 3.13-3.13A7.983 7.983 0 0119.736 10H18l-2 2v2l1 1h2l.286.286C18.029 18.061 15.239 20 12 20z"
+                />
+              </g>
+            </svg>
+            Sell to international markets and accept over 135 currencies with local payment methods.
+            <svg
+              class="gridicon gridicons-scheduled"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g>
+                <path
+                  d="M10.498 18.001l-3.705-3.705 1.415-1.415 2.294 2.294 5.293-5.293 1.415 1.415-6.712 6.704zM21 6v13a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2h1V2h2v2h8V2h2v2h1a2 2 0 012 2zm-2 2H5v11h14V8z"
+                />
+              </g>
+            </svg>
+            Earn recurring revenue and get deposits into your bank account.
+          </div>
+          <button
+            class="components-button is-primary"
+            type="button"
+          >
+            Finish setup
+          </button>
+          <p>
+            By clicking “Finish setup”, you agree to the 
+            <a
+              href="https://wordpress.com/tos"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Terms of Service
+            </a>
+             and acknowledge that you have read our 
+            <a
+              href="https://automattic.com/privacy/"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Privacy Policy
+            </a>
+            .
+          </p>
+        </div>
+        <hr
+          aria-orientation="horizontal"
+          class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+          data-wp-c16t="true"
+          data-wp-component="CardDivider"
+          role="separator"
+        />
+        <div
+          class="connect-account-page__payment-methods"
+        >
+          <p>
+            WooPayments is pre-integrated with popular payment options:
+          </p>
+          <div
+            class="connect-account-page__payment-methods__icons"
+          >
+            <img
+              alt="Visa"
+              src="assets/images/cards/visa.svg"
+            />
+            <img
+              alt="MasterCard"
+              src="assets/images/cards/mastercard.svg"
+            />
+            <img
+              alt="American Express"
+              src="assets/images/cards/amex.svg"
+            />
+            <img
+              alt="Apple Pay"
+              src="assets/images/cards/apple-pay.svg"
+            />
+            <img
+              alt="Google Pay"
+              src="assets/images/cards/google-pay.svg"
+            />
+            <img
+              alt="GiroPay"
+              src="assets/images/payment-methods/giropay.svg"
+            />
+            <img
+              alt="DinersClub"
+              src="assets/images/cards/diners.svg"
+            />
+            <img
+              alt="Discover"
+              src="assets/images/cards/discover.svg"
+            />
+            <img
+              alt="UnionPay"
+              src="assets/images/cards/unionpay.svg"
+            />
+            <img
+              alt="JCB"
+              src="assets/images/cards/jcb.svg"
+            />
+            <img
+              alt="Sofort"
+              src="assets/images/payment-methods/sofort.svg"
+            />
+            <span>
+              & more.
+            </span>
+          </div>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+    </div>
+    <div
+      class="components-surface components-card connect-account-page__details css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Card"
+    >
+      <div
+        class="css-mgwsf4-View-Content em57xhy0"
+      >
+        <h2>
+          You’re only steps away from getting paid
+        </h2>
+        <div
+          class="wcpay-component-tip-box gray"
+        >
+          <svg
+            height="24"
+            viewBox="-4 -4 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              clip-rule="evenodd"
+              d="M8 1.33a4.67 4.67 0 0 0-2.67 8.5v1.5c0 .37.3.67.67.67h4c.37 0 .67-.3.67-.67v-1.5A4.66 4.66 0 0 0 8 1.33ZM6 14c0 .37.3.67.67.67h2.66c.37 0 .67-.3.67-.67v-.67H6V14Zm3.33-4.87.57-.4a3.33 3.33 0 1 0-3.8 0l.57.4v1.54h2.66V9.13Z"
+              fill-rule="evenodd"
+            />
+          </svg>
+          <div
+            class="wcpay-component-tip-box__content"
+          >
+            In order to receive deposits with WooPayments, you'll need to share business details to verify who you are.
+             
+            <button
+              class="components-button is-link"
+              type="button"
+            >
+              Learn more about how to receive deposits.
+            </button>
+          </div>
+        </div>
+        <div
+          class="connect-account-page__steps"
+        >
+          <div
+            class="connect-account-page__step"
+          >
+            <span>
+              1
+            </span>
+            <h3>
+              Create and connect your account
+            </h3>
+            <p>
+              To ensure safe and secure transactions, a WordPress.com account is required.
+            </p>
+          </div>
+          <div
+            class="connect-account-page__step"
+          >
+            <span>
+              2
+            </span>
+            <h3>
+              Provide a few business details
+            </h3>
+            <p>
+              Next we’ll ask you to verify your business and payment details to enable deposits.
+            </p>
+          </div>
+          <div
+            class="connect-account-page__step"
+          >
+            <span>
+              3
+            </span>
+            <h3>
+              Setup complete!
+            </h3>
+            <p>
+              You’re ready to start using the features and benefits of Woo Payments.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ConnectAccountPage should render correctly when on-boarding disabled 1`] = `
+<div>
+  <div
+    class="connect-account-page woocommerce-payments-page is-narrow"
+  >
+    <div
+      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Card"
+    >
+      <div
+        class="css-mgwsf4-View-Content em57xhy0"
+      >
+        <div
+          class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
+        >
+          We've temporarily paused new account creation. We'll notify you when we resume!
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ConnectAccountPage should render correctly with an incentive 1`] = `
+<div>
+  <div
+    class="connect-account-page woocommerce-payments-page is-narrow"
+  >
+    <div
+      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Card"
+    >
+      <div
+        class="css-mgwsf4-View-Content em57xhy0"
+      >
+        <div
+          class="connect-account-page__heading"
+        >
+          <img
+            alt="logo"
+            src="assets/images/woopayments.svg"
+          />
+          <h2>
+            Hi, run your business and manage your payments all in one place, with no setup costs or monthly fees.
+          </h2>
+        </div>
+        <div
+          class="connect-account-page__content"
+        >
+          <div
+            class="connect-account-page__content-usp"
+          >
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                clip-rule="evenodd"
+                d="M5.5 9.5v-2h13v2h-13zm0 3v4h13v-4h-13zM4 7a1 1 0 011-1h14a1 1 0 011 1v10a1 1 0 01-1 1H5a1 1 0 01-1-1V7z"
+                fill-rule="evenodd"
+              />
+            </svg>
+            Offer card payments, Apple Pay, Sofort, iDeal, Affirm, Afterpay, and accept in-person payments with the Woo mobile app.
+            <svg
+              class="gridicon gridicons-globe"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g>
+                <path
+                  d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18l2-2 1-1v-2h-2v-1l-1-1H9v3l2 2v1.931C7.06 19.436 4 16.072 4 12l1 1h2v-2h2l3-3V6h-2L9 5v-.411a7.945 7.945 0 016 0V6l-1 1v2l1 1 3.13-3.13A7.983 7.983 0 0119.736 10H18l-2 2v2l1 1h2l.286.286C18.029 18.061 15.239 20 12 20z"
+                />
+              </g>
+            </svg>
+            Sell to international markets and accept over 135 currencies with local payment methods.
+            <svg
+              class="gridicon gridicons-scheduled"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g>
+                <path
+                  d="M10.498 18.001l-3.705-3.705 1.415-1.415 2.294 2.294 5.293-5.293 1.415 1.415-6.712 6.704zM21 6v13a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2h1V2h2v2h8V2h2v2h1a2 2 0 012 2zm-2 2H5v11h14V8z"
+                />
+              </g>
+            </svg>
+            Earn recurring revenue and get deposits into your bank account.
+          </div>
+          <button
+            class="components-button is-primary"
+            type="button"
+          >
+            Finish setup
+          </button>
+          <p>
+            By clicking “Finish setup”, you agree to the 
+            <a
+              href="https://wordpress.com/tos"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Terms of Service
+            </a>
+             and acknowledge that you have read our 
+            <a
+              href="https://automattic.com/privacy/"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Privacy Policy
+            </a>
+            .
+          </p>
+        </div>
+        <hr
+          aria-orientation="horizontal"
+          class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+          data-wp-c16t="true"
+          data-wp-component="CardDivider"
+          role="separator"
+        />
+        <div
+          class="connect-account-page__payment-methods"
+        >
+          <p>
+            WooPayments is pre-integrated with popular payment options:
+          </p>
+          <div
+            class="connect-account-page__payment-methods__icons"
+          >
+            <img
+              alt="Visa"
+              src="assets/images/cards/visa.svg"
+            />
+            <img
+              alt="MasterCard"
+              src="assets/images/cards/mastercard.svg"
+            />
+            <img
+              alt="American Express"
+              src="assets/images/cards/amex.svg"
+            />
+            <img
+              alt="Apple Pay"
+              src="assets/images/cards/apple-pay.svg"
+            />
+            <img
+              alt="Google Pay"
+              src="assets/images/cards/google-pay.svg"
+            />
+            <img
+              alt="GiroPay"
+              src="assets/images/payment-methods/giropay.svg"
+            />
+            <img
+              alt="DinersClub"
+              src="assets/images/cards/diners.svg"
+            />
+            <img
+              alt="Discover"
+              src="assets/images/cards/discover.svg"
+            />
+            <img
+              alt="UnionPay"
+              src="assets/images/cards/unionpay.svg"
+            />
+            <img
+              alt="JCB"
+              src="assets/images/cards/jcb.svg"
+            />
+            <img
+              alt="Sofort"
+              src="assets/images/payment-methods/sofort.svg"
+            />
+            <span>
+              & more.
+            </span>
+          </div>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+    </div>
+    <div
+      class="connect-account-page__incentive"
+    >
+      <div
+        class="connect-account-page__incentive-pill"
+      >
+        Limited time offer
+      </div>
+      <h2>
+        incentive-description*
+      </h2>
+      <p>
+        Discount will be applied to payments processed via WooPayments upon completion of installation, setup, and connection.
+      </p>
+      <p>
+        *See 
+        <a
+          href="incentive-tc-url"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          Terms and Conditions
+        </a>
+         for details.
+      </p>
+    </div>
+    <div
+      class="components-surface components-card connect-account-page__details css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Card"
+    >
+      <div
+        class="css-mgwsf4-View-Content em57xhy0"
+      >
+        <h2>
+          You’re only steps away from getting paid
+        </h2>
+        <div
+          class="wcpay-component-tip-box gray"
+        >
+          <svg
+            height="24"
+            viewBox="-4 -4 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              clip-rule="evenodd"
+              d="M8 1.33a4.67 4.67 0 0 0-2.67 8.5v1.5c0 .37.3.67.67.67h4c.37 0 .67-.3.67-.67v-1.5A4.66 4.66 0 0 0 8 1.33ZM6 14c0 .37.3.67.67.67h2.66c.37 0 .67-.3.67-.67v-.67H6V14Zm3.33-4.87.57-.4a3.33 3.33 0 1 0-3.8 0l.57.4v1.54h2.66V9.13Z"
+              fill-rule="evenodd"
+            />
+          </svg>
+          <div
+            class="wcpay-component-tip-box__content"
+          >
+            In order to receive deposits with WooPayments, you'll need to share business details to verify who you are.
+             
+            <button
+              class="components-button is-link"
+              type="button"
+            >
+              Learn more about how to receive deposits.
+            </button>
+          </div>
+        </div>
+        <div
+          class="connect-account-page__steps"
+        >
+          <div
+            class="connect-account-page__step"
+          >
+            <span>
+              1
+            </span>
+            <h3>
+              Create and connect your account
+            </h3>
+            <p>
+              To ensure safe and secure transactions, a WordPress.com account is required.
+            </p>
+          </div>
+          <div
+            class="connect-account-page__step"
+          >
+            <span>
+              2
+            </span>
+            <h3>
+              Provide a few business details
+            </h3>
+            <p>
+              Next we’ll ask you to verify your business and payment details to enable deposits.
+            </p>
+          </div>
+          <div
+            class="connect-account-page__step"
+          >
+            <span>
+              3
+            </span>
+            <h3>
+              Setup complete!
+            </h3>
+            <p>
+              You’re ready to start using the features and benefits of Woo Payments.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+    </div>
+  </div>
+</div>
+`;

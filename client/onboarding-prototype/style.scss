@@ -64,7 +64,7 @@ body.wcpay-onboarding-prototype__body {
 			}
 
 			&__heading {
-				@include title-large;
+				@include wp-title-large;
 				color: $studio-gray-100;
 				text-align: center;
 			}
@@ -95,7 +95,10 @@ body.wcpay-onboarding-prototype__body {
 
 		.loading-step {
 			max-width: 520px;
-			margin: 50% auto 0;
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate( -50%, -50% );
 		}
 
 		.onboarding-mode__note {

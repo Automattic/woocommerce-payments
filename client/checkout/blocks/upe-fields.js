@@ -23,7 +23,7 @@ import { __ } from '@wordpress/i18n';
 import './style.scss';
 import confirmUPEPayment from './confirm-upe-payment.js';
 import { getConfig } from 'utils/checkout';
-import { getTerms } from '../utils/upe';
+import { getStripeElementOptions } from '../utils/upe';
 import { decryptClientSecret } from '../utils/encryption';
 import { PAYMENT_METHOD_NAME_CARD, WC_STORE_CART } from '../constants.js';
 import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
@@ -232,8 +232,10 @@ const WCPayUPEFields = ( {
 				) {
 					return {
 						type: 'error',
-						message:
+						message: __(
 							'This payment method can not be saved for future use.',
+							'woocommerce-payments'
+						),
 					};
 				}
 
@@ -292,7 +294,8 @@ const WCPayUPEFields = ( {
 							paymentIntentSecret,
 							elements,
 							billingData,
-							emitResponse
+							emitResponse,
+							selectedUPEPaymentType
 						);
 					}
 
@@ -323,39 +326,14 @@ const WCPayUPEFields = ( {
 		setPaymentCountry( event.value.country );
 	};
 
-	const elementOptions = {
-		fields: {
-			billingDetails: {
-				name: 'never',
-				email: 'never',
-				phone: 'never',
-				address: {
-					country: 'never',
-					line1: 'never',
-					line2: 'never',
-					city: 'never',
-					state: 'never',
-					postalCode: 'never',
-				},
-			},
-		},
-		wallets: {
-			applePay: 'never',
-			googlePay: 'never',
-		},
-	};
-
-	const showTerms =
-		shouldSavePayment || getConfig( 'cartContainsSubscription' )
-			? 'always'
-			: 'never';
-	elementOptions.terms = getTerms( paymentMethodsConfig, showTerms );
-
 	return (
 		<>
 			{ testMode ? testCopy : '' }
 			<PaymentElement
-				options={ elementOptions }
+				options={ getStripeElementOptions(
+					shouldSavePayment,
+					paymentMethodsConfig
+				) }
 				onChange={ upeOnChange }
 				className="wcpay-payment-element"
 			/>

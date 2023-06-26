@@ -34,7 +34,7 @@ jest.mock( 'wcpay/data', () => {
 	return {
 		__esModule: true,
 		...actual,
-		usePlatformCheckoutEnabledSettings: () => [ false, jest.fn() ],
+		useWooPayEnabledSettings: () => [ false, jest.fn() ],
 		usePaymentRequestEnabledSettings: () => [ true, jest.fn() ],
 	};
 } );
@@ -98,7 +98,10 @@ describe( 'PaymentRequestButtonPreview', () => {
 
 		expect(
 			await screen.findByText(
-				/To preview the Apple Pay and Google Pay buttons, ensure your device is configured/
+				/To preview the Apple Pay and Google Pay buttons, ensure your device is configured/,
+				{
+					ignore: '.a11y-speak-region',
+				}
 			)
 		).toBeInTheDocument();
 		expect(
@@ -113,7 +116,9 @@ describe( 'PaymentRequestButtonPreview', () => {
 			await screen.findByText( 'Stripe button mock' )
 		).toBeInTheDocument();
 		expect(
-			screen.queryByText( /ensure your device is configured/ )
+			screen.queryByText( /ensure your device is configured/, {
+				ignore: '.a11y-speak-region',
+			} )
 		).not.toBeInTheDocument();
 	} );
 } );

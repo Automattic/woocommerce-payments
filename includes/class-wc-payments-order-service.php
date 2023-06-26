@@ -276,16 +276,18 @@ class WC_Payments_Order_Service {
 	 *
 	 * @param WC_Order $order      Order object.
 	 * @param string   $dispute_id The ID of the dispute associated with this order.
-	 * @param string   $reason     The reason for the dispute.
+	 * @param string   $amount     The disputed amount – formatted currency value.
+	 * @param string   $reason     The reason for the dispute – human-readable text.
+	 * @param string   $due_by     The deadline for responding to the dispute - formatted date string.
 	 *
 	 * @return void
 	 */
-	public function mark_payment_dispute_created( $order, $dispute_id, $reason ) {
+	public function mark_payment_dispute_created( $order, $dispute_id, $amount, $reason, $due_by ) {
 		if ( ! is_a( $order, 'WC_Order' ) ) {
 			return;
 		}
 
-		$note = $this->generate_dispute_created_note( $dispute_id, $reason );
+		$note = $this->generate_dispute_created_note( $dispute_id, $amount, $reason, $due_by );
 		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
 		}
@@ -344,9 +346,7 @@ class WC_Payments_Order_Service {
 	 */
 	public function mark_terminal_payment_completed( $order, $intent_id, $intent_status ) {
 		$this->update_order_status( $order, Order_Status::COMPLETED, $intent_id );
-		if ( WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
-			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::TERMINAL_PAYMENT );
-		}
+		$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::TERMINAL_PAYMENT );
 		$this->complete_order_processing( $order, $intent_status );
 	}
 
@@ -880,10 +880,8 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		if ( WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
-			$fraud_meta_box_type = $this->intent_has_card_payment_type( $intent_data ) ? Fraud_Meta_Box_Type::PAYMENT_STARTED : Fraud_Meta_Box_Type::NOT_CARD;
-			$this->set_fraud_meta_box_type_for_order( $order, $fraud_meta_box_type );
-		}
+		$fraud_meta_box_type = $this->intent_has_card_payment_type( $intent_data ) ? Fraud_Meta_Box_Type::PAYMENT_STARTED : Fraud_Meta_Box_Type::NOT_CARD;
+		$this->set_fraud_meta_box_type_for_order( $order, $fraud_meta_box_type );
 
 		$order->add_order_note( $note );
 		$this->set_intention_status_for_order( $order, $intent_data['intent_status'] );
@@ -1213,22 +1211,29 @@ class WC_Payments_Order_Service {
 	 * Get content for the dispute created order note.
 	 *
 	 * @param string $dispute_id The ID of the dispute associated with this order.
-	 * @param string $reason     The reason for the dispute.
+	 * @param string $amount     The disputed amount – formatted currency value.
+	 * @param string $reason     The reason for the dispute – human-readable text.
+	 * @param string $due_by     The deadline for responding to the dispute - formatted date string.
 	 *
 	 * @return string Note content.
 	 */
-	private function generate_dispute_created_note( $dispute_id, $reason ) {
+	private function generate_dispute_created_note( $dispute_id, $amount, $reason, $due_by ) {
 		$dispute_url = $this->compose_dispute_url( $dispute_id );
+
+		// Get merchant-friendly dispute reason description.
+		$reason = WC_Payments_Utils::get_dispute_reason_description( $reason );
 
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the dispute reason */
-				__( 'Payment has been disputed as %1$s. See <a>dispute overview</a> for more details.', 'woocommerce-payments' ),
+				/* translators: %1: the disputed amount and currency; %2: the dispute reason; %3 the deadline date for responding to dispute */
+				__( 'Payment has been disputed for %1$s with reason "%2$s". <a>Response due by %3$s</a>.', 'woocommerce-payments' ),
 				[
 					'a' => '<a href="' . $dispute_url . '" target="_blank" rel="noopener noreferrer">',
 				]
 			),
-			$reason
+			$amount,
+			$reason,
+			$due_by
 		);
 	}
 

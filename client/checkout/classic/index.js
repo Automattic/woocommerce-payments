@@ -6,7 +6,7 @@
 import './style.scss';
 import { PAYMENT_METHOD_NAME_CARD } from '../constants.js';
 import { getConfig } from 'utils/checkout';
-import { handlePlatformCheckoutEmailInput } from '../platform-checkout/email-input-iframe';
+import { handleWooPayEmailInput } from '../woopay/email-input-iframe';
 import WCPayAPI from './../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { isWCPayChosen } from '../utils/upe';
@@ -292,7 +292,11 @@ jQuery( function ( $ ) {
 			.catch( function ( error ) {
 				paymentMethodGenerated = null;
 				$form.removeClass( 'processing' ).unblock();
-				showError( error.message );
+				if ( error.responseJSON && ! error.responseJSON.success ) {
+					showError( error.responseJSON.data.error.message );
+				} else if ( error.message ) {
+					showError( error.message );
+				}
 			} );
 	};
 
@@ -548,7 +552,7 @@ jQuery( function ( $ ) {
 		}
 	} );
 
-	if ( getConfig( 'isPlatformCheckoutEnabled' ) && ! isPreviewing() ) {
-		handlePlatformCheckoutEmailInput( '#billing_email', api );
+	if ( getConfig( 'isWooPayEnabled' ) && ! isPreviewing() ) {
+		handleWooPayEmailInput( '#billing_email', api );
 	}
 } );

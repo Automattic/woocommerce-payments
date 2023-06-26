@@ -33,10 +33,10 @@ Object {
         class="loadable-checkbox"
       >
         <div
-          class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+          class="components-base-control components-checkbox-control css-wdf2ti-Wrapper ej5x27r4"
         >
           <div
-            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+            class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
           >
             <span
               class="components-checkbox-control__input-container"
@@ -64,10 +64,10 @@ Object {
       class="loadable-checkbox"
     >
       <div
-        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+        class="components-base-control components-checkbox-control css-wdf2ti-Wrapper ej5x27r4"
       >
         <div
-          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+          class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
         >
           <span
             class="components-checkbox-control__input-container"
