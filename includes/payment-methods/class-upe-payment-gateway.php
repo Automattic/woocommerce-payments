@@ -572,6 +572,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					// UPE method gives us the error of the previous payment attempt, so we use that for the Rate Limiter.
 					$this->failed_transaction_rate_limiter->bump();
 				}
+			} else {
+				$setup_intent = $this->payments_api_client->get_setup_intent( $payment_intent_id );
+				$this->order_service->attach_intent_info_to_order( $order, $payment_intent_id, $setup_intent['status'], $setup_intent['payment_method'], $customer_id, null, $currency );
 			}
 		} else {
 			return $this->parent_process_payment( $order_id );

@@ -847,6 +847,38 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertMatchesRegularExpression( '/save_payment_method=no/', $result['redirect_url'] );
 	}
 
+	public function test_process_payment_attaches_setup_intent_to_order() {
+		$zero_amount_order             = WC_Helper_Order::create_order( 1, 0 );
+		$order_id                      = $zero_amount_order->get_id();
+		$intent_id                     = 'si_mock';
+		$client_secret                 = 'cs_mock';
+		$payment_method_id             = 'pm_mock';
+		$intent_status                 = Payment_Intent_Status::SUCCEEDED;
+		$_POST['wc_payment_intent_id'] = $intent_id;
+
+		$setup_intent = [
+			'id'             => $intent_id,
+			'client_secret'  => $client_secret,
+			'status'         => $intent_status,
+			'payment_method' => $payment_method_id,
+		];
+
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'get_setup_intent' )
+			->with( $intent_id )
+			->will(
+				$this->returnValue( $setup_intent )
+			);
+
+		$this->mock_upe_gateway->process_payment( $order_id );
+
+		$result_order = wc_get_order( $order_id );
+
+		$this->assertEquals( $intent_id, $result_order->get_meta( '_intent_id', true ) );
+		$this->assertEquals( $intent_status, $result_order->get_meta( '_intention_status', true ) );
+		$this->assertEquals( $payment_method_id, $result_order->get_meta( '_payment_method_id', true ) );
+	}
+
 	public function test_process_payment_passes_save_payment_method_to_store() {
 		$order                         = WC_Helper_Order::create_order();
 		$order_id                      = $order->get_id();
