@@ -117,6 +117,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		if ( ! is_admin() ) {
 			add_filter( 'woocommerce_gateway_title', [ $this, 'maybe_filter_gateway_title' ], 10, 2 );
 		}
+		add_action( 'woocommerce_email_before_order_table', [ $this, 'set_payment_method_title_for_email' ], 10, 3 );
 		parent::init_hooks();
 	}
 
@@ -553,7 +554,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$payment_method         = $updated_payment_intent->get_payment_method_id();
 				$charge                 = $updated_payment_intent->get_charge();
 				$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
-				$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : null;
+				$payment_method_type    = $this->get_payment_method_type_from_payment_details( $payment_method_details );
 				$charge_id              = $charge ? $charge->get_id() : null;
 
 				/**
@@ -731,7 +732,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$currency               = $intent->get_currency();
 				$payment_method_id      = $intent->get_payment_method_id();
 				$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
-				$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : null;
+				$payment_method_type    = $this->get_payment_method_type_from_payment_details( $payment_method_details );
 				$error                  = $intent->get_last_payment_error();
 			} else {
 				$intent                 = $this->payments_api_client->get_setup_intent( $intent_id );
@@ -1082,6 +1083,18 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
+	 * Sets the payment method title on the order for emails.
+	 *
+	 * @param WC_Order $order   WC Order object.
+	 */
+	public function set_payment_method_title_for_email( $order ) {
+		$payment_method_id      = $this->order_service->get_payment_method_id_for_order( $order );
+		$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
+		$payment_method_type    = $this->get_payment_method_type_from_payment_details( $payment_method_details );
+		$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
+	}
+
+	/**
 	 * Validate order_id received from the request vs value saved in the intent metadata.
 	 *
 	 * @param  WC_Order $order The received order to process.
@@ -1297,6 +1310,16 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 */
 	public function get_payment_method() {
 		return $this->payment_methods['card'];
+	}
+
+	/**
+	 * Return the payment method type from the payment method details.
+	 *
+	 * @param array $payment_method_details Payment method details.
+	 * @return string|null Payment method type or nothing.
+	 */
+	private function get_payment_method_type_from_payment_details( $payment_method_details ) {
+		return $payment_method_details['type'] ?? null;
 	}
 
 	/**

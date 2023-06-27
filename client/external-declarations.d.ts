@@ -1,7 +1,6 @@
 /**
- * External dependencies
+ * External dependencies declarations
  */
-import '@wordpress/date';
 
 declare module '@wordpress/date' {
 	export function dateI18n(
@@ -9,4 +8,16 @@ declare module '@wordpress/date' {
 		dateValue: import('moment').Moment | Date | string | undefined,
 		timezone?: string | boolean
 	): string;
+}
+
+declare module 'dompurify' {
+	/* eslint-disable @typescript-eslint/naming-convention */
+	export function sanitize(
+		html: string,
+		options?: {
+			ALLOWED_TAGS: string[];
+			ALLOWED_ATTR: string[];
+		}
+	): string;
+	/* eslint-enable @typescript-eslint/naming-convention */
 }
