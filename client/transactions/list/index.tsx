@@ -54,6 +54,7 @@ import { getTransactionsCSV } from '../../data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { applyThousandSeparator } from '../../utils/index.js';
 import { HoverTooltip } from 'components/tooltip';
+import { PAYMENT_METHOD_TITLES } from 'wcpay/payment-methods/constants';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -414,9 +415,17 @@ export const TransactionsList = (
 				display: ! isFinancingType ? (
 					clickable(
 						<span className="payment-method-details-list-item">
-							<span
-								className={ `payment-method__brand payment-method__brand--${ txn.source }` }
-							/>
+							<HoverTooltip
+								isVisible={ false }
+								content={ PAYMENT_METHOD_TITLES[ txn.source ] }
+							>
+								<span
+									className={ `payment-method__brand payment-method__brand--${ txn.source }` }
+									aria-label={
+										PAYMENT_METHOD_TITLES[ txn.source ]
+									}
+								/>
+							</HoverTooltip>
 							{ getPaymentSourceDetails( txn ) }
 						</span>
 					)

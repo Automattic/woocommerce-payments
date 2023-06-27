@@ -14,4 +14,35 @@ enum PAYMENT_METHOD_IDS {
 	SOFORT = 'sofort',
 }
 
+export enum PAYMENT_METHOD_TITLES {
+	ach_credit_transfer = 'ACH Credit Transfer',
+	ach_debit = 'ACH Debit',
+	acss_debit = 'ACSS Debit',
+	affirm = 'Affirm',
+	afterpay_clearpay = 'Afterpay',
+	alipay = 'Alipay',
+	amex = 'American Express',
+	au_becs_debit = 'AU BECS Debit',
+	bancontact = 'Bancontact',
+	card = 'Credit Card / Debit Card',
+	card_present = 'In-Person Card Payment',
+	diners = 'Diners Club',
+	discover = 'Discover',
+	eps = 'EPS',
+	giropay = 'giropay',
+	ideal = 'iDEAL',
+	jcb = 'JCB',
+	klarna = 'Klarna',
+	link = 'Link',
+	mastercard = 'Mastercard',
+	multibanco = 'Multibanco',
+	p24 = 'P24',
+	sepa_debit = 'SEPA Debit',
+	sofort = 'SOFORT',
+	stripe_account = 'Stripe Account',
+	unionpay = 'Union Pay',
+	visa = 'Visa',
+	wechat = 'WeChat',
+}
+
 export default PAYMENT_METHOD_IDS;
