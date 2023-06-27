@@ -17,6 +17,9 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Payment\Checkout;
+use WCPay\Payment\Service;
+
 defined( 'ABSPATH' ) || exit;
 
 define( 'WCPAY_PLUGIN_FILE', __FILE__ );
@@ -30,7 +33,9 @@ require_once __DIR__ . '/includes/woopay-user/class-woopay-extension.php';
 require_once __DIR__ . '/includes/woopay/class-woopay-session.php';
 
 // Initialize dependency injection.
-$GLOBALS['wcpay_container'] = new Automattic\WooCommerce\Container();
+$GLOBALS['wcpay_container'] = new WCPay\Container();
+$GLOBALS['wcpay_container']->add( Service::class );
+$GLOBALS['wcpay_container']->add( Checkout::class )->addArgument( Service::class );
 
 /**
  * Returns the WooCommerce object container.

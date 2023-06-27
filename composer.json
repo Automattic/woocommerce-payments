@@ -43,7 +43,9 @@
       "cweagans/composer-patches": "1.7.1",
       "automattic/jetpack-changelogger": "3.3.2",
       "spatie/phpunit-watcher": "1.23",
-      "woocommerce/qit-cli": "0.3.4"
+      "woocommerce/qit-cli": "0.3.4",
+      "league/container": "^4.2",
+        "coenjacobs/mozart": "^0.7.1"
     },
     "scripts": {
       "test": [
@@ -54,6 +56,12 @@
       ],
       "phpcbf": [
         "phpcbf -p"
+      ],
+      "post-install-cmd": [
+        "\"../vendor/bin/mozart\" compose"
+      ],
+      "post-update-cmd": [
+        "\"../vendor/bin/mozart\" compose"
       ]
     },
     "extra": {
@@ -82,11 +90,25 @@
                 "filename": "bin/class-wcpay-changelog-formatter.php"
             },
             "changes-dir": "changelog"
-        }
+      },
+      "mozart": {
+        "dep_namespace": "WCPay\\Vendor\\",
+        "dep_directory": "/vendor/wcpay/",
+        "packages": [
+          "league/container"
+        ],
+        "excluded_packages":[
+          "psr/container"
+        ],
+        "classmap_directory": "/lib2653/",
+        "classmap_prefix": "WCPay_Vendor",
+        "delete_vendor_directories": true
+      } 
     },
     "autoload": {
       "psr-4": {
         "WCPay\\MultiCurrency\\": "includes/multi-currency",
+        "WCPay\\Vendor\\": "vendor/wcpay",
         "WCPay\\": "src"
       }
     },

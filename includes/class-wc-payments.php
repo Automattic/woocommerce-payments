@@ -42,8 +42,6 @@ use WCPay\WC_Payments_UPE_Checkout;
 use WCPay\WooPay\Service\Checkout_Service;
 use WCPay\Core\WC_Payments_Customer_Service_API;
 use WCPay\Blocks_Data_Extractor;
-use WCPay\Payment\Payment;
-use WCPay\Payment\Service;
 use WCPay\WooPay\WooPay_Scheduler;
 
 /**
@@ -279,11 +277,6 @@ class WC_Payments {
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
-		$service = wcpay_get_container()->get( Service::class );
-		$payment = $service->create_payment();
-		var_dump($payment->pay());
-		exit;
-
 		define( 'WCPAY_VERSION_NUMBER', self::get_plugin_headers()['Version'] );
 
 		include_once __DIR__ . '/class-wc-payments-utils.php';
