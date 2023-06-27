@@ -211,7 +211,7 @@ exports[`Order details page should match the snapshot - Charge without payment i
                           class="wcpay-tooltip__content-wrapper"
                         >
                           <span
-                            aria-label="Credit Card / Debit Card"
+                            aria-label="Card Payment"
                             class="payment-method__brand payment-method__brand--card"
                           />
                         </div>
