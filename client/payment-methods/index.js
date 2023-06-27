@@ -150,6 +150,8 @@ const PaymentMethods = () => {
 		( methodId ) => methodsConfiguration[ methodId ]
 	);
 
+	const isCreditCardEnabled = enabledMethodIds.includes( 'card' );
+
 	const [ activationModalParams, handleActivationModalOpen ] = useState(
 		null
 	);
@@ -300,6 +302,7 @@ const PaymentMethods = () => {
 									}
 									locked={
 										PAYMENT_METHOD_IDS.CARD === id &&
+										isCreditCardEnabled &&
 										isUpeEnabled
 									}
 									Icon={ Icon }
