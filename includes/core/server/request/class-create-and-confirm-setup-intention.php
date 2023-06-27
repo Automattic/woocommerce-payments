@@ -7,6 +7,7 @@
 
 namespace WCPay\Core\Server\Request;
 
+use WC_Payments;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request;
 use WC_Payments_API_Client;
@@ -82,5 +83,15 @@ class Create_And_Confirm_Setup_Intention extends Request {
 		// Including the 'card' prefix to support subscription renewals using legacy payment method IDs.
 		$this->validate_stripe_id( $payment_method_id, [ 'pm', 'src', 'card' ] );
 		$this->set_param( 'payment_method', $payment_method_id );
+	}
+
+	/**
+	 * Formats the response from the server.
+	 *
+	 * @param  mixed $response The response from `WC_Payments_API_Client::request`.
+	 * @return mixed           Either the same response, or the correct object.
+	 */
+	public function format_response( $response ) {
+		return WC_Payments::get_payments_api_client()->deserialize_setup_intention_object_from_array( $response );
 	}
 }
