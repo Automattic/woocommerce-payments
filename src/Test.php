@@ -7,7 +7,8 @@
 
 namespace WCPay;
 
-use WCPay\Payment\Checkout;
+use WCPay\Payment\Service;
+use WCPay\Payment\State\PreparedState;
 
 /**
  * This class will be deleted.
@@ -15,10 +16,17 @@ use WCPay\Payment\Checkout;
 class Test {
 	/**
 	 * Tests things.
+	 *
+	 * @param Service $service The payment service.
 	 */
-	public function __construct() {
-		$checkout = wcpay_get_container()->get( Checkout::class );
-		var_dump( $checkout ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_dump
+	public function __construct( Service $service ) {
+		$data = [
+			'state' => PreparedState::class,
+			'var'   => 'a',
+		];
+
+		$payment = $service->create_payment( $data );
+		var_dump( $payment->get_response() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_dump
 		exit;
 	}
 }

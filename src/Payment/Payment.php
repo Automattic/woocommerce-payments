@@ -12,11 +12,44 @@ namespace WCPay\Payment;
  */
 class Payment {
 	/**
-	 * Performs a payment.
+	 * Holds the current state of the payment.
 	 *
-	 * @return int
+	 * @var State
 	 */
-	public function pay() {
-		return 2;
+	protected $state;
+
+	/**
+	 * Holds the payment working data.
+	 *
+	 * @var array
+	 */
+	protected $data;
+
+	/**
+	 * Transitions the payment to a given state.
+	 *
+	 * @param State $state The state of the payment.
+	 */
+	public function transition_to( State $state ) {
+		$this->state = $state;
+		$state->set_context( $this );
+	}
+
+	/**
+	 * Sets the data of the payment.
+	 *
+	 * @param array $data Working data.
+	 */
+	public function set_data( array $data ) {
+		$this->data = $data;
+	}
+
+	/**
+	 * Returns the response of the checkout process.
+	 *
+	 * @return array
+	 */
+	public function get_response() {
+		return $this->state->get_response();
 	}
 }

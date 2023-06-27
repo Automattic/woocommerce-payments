@@ -17,9 +17,6 @@
  * @package WooCommerce\Payments
  */
 
-use WCPay\Payment\Checkout;
-use WCPay\Payment\Service;
-
 defined( 'ABSPATH' ) || exit;
 
 define( 'WCPAY_PLUGIN_FILE', __FILE__ );
@@ -34,15 +31,13 @@ require_once __DIR__ . '/includes/woopay/class-woopay-session.php';
 
 // Initialize dependency injection.
 $GLOBALS['wcpay_container'] = new WCPay\Container();
-$GLOBALS['wcpay_container']->add( Service::class );
-$GLOBALS['wcpay_container']->add( Checkout::class )->addArgument( Service::class );
 
 /**
  * Returns the WooCommerce object container.
  * Code in the `includes` directory should use the container to get instances of classes in the `src` directory.
  *
  * @since  4.4.0
- * @return \Automattic\WooCommerce\Container The WooCommerce object container.
+ * @return \WCPay\Container The WooCommerce object container.
  */
 function wcpay_get_container() {
 	return $GLOBALS['wcpay_container'];

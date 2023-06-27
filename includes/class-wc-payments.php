@@ -42,6 +42,7 @@ use WCPay\WC_Payments_UPE_Checkout;
 use WCPay\WooPay\Service\Checkout_Service;
 use WCPay\Core\WC_Payments_Customer_Service_API;
 use WCPay\Blocks_Data_Extractor;
+use WCPay\Test;
 use WCPay\WooPay\WooPay_Scheduler;
 
 /**
@@ -603,6 +604,14 @@ class WC_Payments {
 
 		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
+
+		wcpay_get_container()->add_external_instance( WC_Payment_Gateway_WCPay::class, self::$card_gateway );
+		add_action(
+			'template_redirect',
+			function() {
+				wcpay_get_container()->get( Test::class );
+			}
+		);
 	}
 
 	/**
