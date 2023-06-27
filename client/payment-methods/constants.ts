@@ -24,7 +24,7 @@ export enum PAYMENT_METHOD_TITLES {
 	amex = 'American Express',
 	au_becs_debit = 'AU BECS Debit',
 	bancontact = 'Bancontact',
-	card = 'Credit Card / Debit Card',
+	card = 'Card Payment',
 	card_present = 'In-Person Card Payment',
 	diners = 'Diners Club',
 	discover = 'Discover',
