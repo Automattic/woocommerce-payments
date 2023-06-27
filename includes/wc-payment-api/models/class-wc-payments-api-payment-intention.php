@@ -10,13 +10,6 @@
  */
 class WC_Payments_API_Payment_Intention extends WC_Payments_API_Abstract_Intention {
 	/**
-	 * Intention ID
-	 *
-	 * @var string
-	 */
-	private $id;
-
-	/**
 	 * Charge amount
 	 *
 	 * @var int
@@ -24,56 +17,11 @@ class WC_Payments_API_Payment_Intention extends WC_Payments_API_Abstract_Intenti
 	private $amount;
 
 	/**
-	 * Time charge created
-	 *
-	 * Server-side times are presumed to be UTC, (de)serializers should take care to set/respect the timezone on the
-	 * DateTime object.
-	 *
-	 * @var DateTime
-	 */
-	private $created;
-
-	/**
-	 * The status of the intention
-	 *
-	 * @var string
-	 */
-	private $status;
-
-	/**
-	 * The client secret of the intention
-	 *
-	 * @var string
-	 */
-	private $client_secret;
-
-	/**
 	 * The currency of the intention
 	 *
 	 * @var string
 	 */
 	private $currency;
-
-	/**
-	 * ID of the customer making the payment
-	 *
-	 * @var string|null
-	 */
-	private $customer_id;
-
-	/**
-	 * ID of the payment method used.
-	 *
-	 * @var string|null
-	 */
-	private $payment_method_id;
-
-	/**
-	 * The next action needed of the intention
-	 *
-	 * @var array
-	 */
-	private $next_action;
 
 	/**
 	 * The last payment error of the intention
@@ -90,33 +38,11 @@ class WC_Payments_API_Payment_Intention extends WC_Payments_API_Abstract_Intenti
 	private $charge;
 
 	/**
-	 * Set of key-value pairs that can be useful for storing
-	 * additional information about the object in a structured format.
-	 *
-	 * @var array
-	 */
-	private $metadata;
-
-	/**
 	 * The details on the state of the payment.
 	 *
 	 * @var array
 	 */
 	private $processing;
-
-	/**
-	 * The possible payment method types for the payment.
-	 *
-	 * @var array
-	 */
-	private $payment_method_types;
-
-	/**
-	 * The order data associated with this intention.
-	 *
-	 * @var array
-	 */
-	private $order;
 
 	/**
 	 * WC_Payments_API_Intention constructor.
@@ -172,15 +98,6 @@ class WC_Payments_API_Payment_Intention extends WC_Payments_API_Abstract_Intenti
 	}
 
 	/**
-	 * Gets charge ID
-	 *
-	 * @return string
-	 */
-	public function get_id() {
-		return $this->id;
-	}
-
-	/**
 	 * Gets charge amount
 	 *
 	 * @return int
@@ -190,66 +107,12 @@ class WC_Payments_API_Payment_Intention extends WC_Payments_API_Abstract_Intenti
 	}
 
 	/**
-	 * Gets charge created time
-	 *
-	 * @return DateTime
-	 */
-	public function get_created() {
-		return $this->created;
-	}
-
-	/**
-	 * Gets intention status
-	 *
-	 * @return string
-	 */
-	public function get_status() {
-		return $this->status;
-	}
-
-	/**
-	 * Returns the client secret associated with this intention
-	 *
-	 * @return string
-	 */
-	public function get_client_secret() {
-		return $this->client_secret;
-	}
-
-	/**
 	 * Returns the currency of this intention
 	 *
 	 * @return string
 	 */
 	public function get_currency() {
 		return $this->currency;
-	}
-
-	/**
-	 * Returns the customer ID of this intention
-	 *
-	 * @return string|null
-	 */
-	public function get_customer_id() {
-		return $this->customer_id;
-	}
-
-	/**
-	 * Returns the payment method ID of this intention
-	 *
-	 * @return string|null
-	 */
-	public function get_payment_method_id() {
-		return $this->payment_method_id;
-	}
-
-	/**
-	 * Returns the next action of this intention
-	 *
-	 * @return array
-	 */
-	public function get_next_action() {
-		return $this->next_action;
 	}
 
 	/**
@@ -271,39 +134,12 @@ class WC_Payments_API_Payment_Intention extends WC_Payments_API_Abstract_Intenti
 	}
 
 	/**
-	 * Returns the metadata associated with this intention
-	 *
-	 * @return array
-	 */
-	public function get_metadata() {
-		return $this->metadata;
-	}
-
-	/**
 	 * Returns the processing state of this intention
 	 *
 	 * @return array
 	 */
 	public function get_processing() {
 		return $this->processing;
-	}
-
-	/**
-	 * Returns the payment_method_types state of this intention
-	 *
-	 * @return array
-	 */
-	public function get_payment_method_types() {
-		return $this->payment_method_types;
-	}
-
-	/**
-	 * Returns the order data associated with this intention
-	 *
-	 * @return array
-	 */
-	public function get_order() {
-		return $this->order;
 	}
 
 	/**
