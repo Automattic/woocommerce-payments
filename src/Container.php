@@ -7,11 +7,9 @@
 
 namespace WCPay;
 
-use WC_Payment_Gateway_WCPay;
 use WCPay\Internal\DependencyManagement\ExtendedContainer;
+use WCPay\Internal\DependencyManagement\ServiceProvider\PaymentsServiceProvider;
 use WCPay\Payment\Service;
-use WCPay\Payment\State\InitialState;
-use WCPay\Payment\State\PreparedState;
 
 /**
  * WCPay's DI Container.
@@ -24,7 +22,16 @@ class Container {
 	 *
 	 * @var ExtendedContainer
 	 */
-	protected $container;
+	private $container;
+
+	/**
+	 * Contains the classes of all available providers.
+	 *
+	 * @var string[]
+	 */
+	private $providers = [
+		PaymentsServiceProvider::class,
+	];
 
 	/**
 	 * Instantiates the container.
@@ -32,11 +39,16 @@ class Container {
 	public function __construct() {
 		$this->container = new ExtendedContainer();
 
-		$this->container->add( static::class, $this );
-		$this->container->add( Service::class )->addArgument( static::class );
-		$this->container->add( Test::class )->addArgument( Service::class );
-		$this->container->add( InitialState::class );
-		$this->container->add( PreparedState::class )->addArgument( WC_Payment_Gateway_WCPay::class );
+		// Add this container.
+		$this->container->addShared( static::class, $this );
+
+		// Use providers for the rest.
+		foreach ( $this->providers as $provider ) {
+			$this->container->addServiceProvider( new $provider() );
+		}
+
+		// Temporary, to be removed.
+		$this->container->addShared( Test::class )->addArgument( Service::class );
 	}
 
 	/**
