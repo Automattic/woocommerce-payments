@@ -227,6 +227,7 @@ class WC_Payments_Utils {
 			'CA' => __( 'Canada', 'woocommerce-payments' ),
 			'CH' => __( 'Switzerland', 'woocommerce-payments' ),
 			'CY' => __( 'Cyprus', 'woocommerce-payments' ),
+			'CZ' => __( 'Czech Republic', 'woocommerce-payments' ),
 			'DE' => __( 'Germany', 'woocommerce-payments' ),
 			'DK' => __( 'Denmark', 'woocommerce-payments' ),
 			'EE' => __( 'Estonia', 'woocommerce-payments' ),
@@ -238,6 +239,7 @@ class WC_Payments_Utils {
 			'GB' => __( 'United Kingdom (UK)', 'woocommerce-payments' ),
 			'GR' => __( 'Greece', 'woocommerce-payments' ),
 			'HK' => __( 'Hong Kong', 'woocommerce-payments' ),
+			'HU' => __( 'Hungary', 'woocommerce-payments' ),
 			'IE' => __( 'Ireland', 'woocommerce-payments' ),
 			'IT' => __( 'Italy', 'woocommerce-payments' ),
 			'LT' => __( 'Lithuania', 'woocommerce-payments' ),
@@ -249,6 +251,7 @@ class WC_Payments_Utils {
 			'PL' => __( 'Poland', 'woocommerce-payments' ),
 			'PT' => __( 'Portugal', 'woocommerce-payments' ),
 			'RO' => __( 'Romania', 'woocommerce-payments' ),
+			'SE' => __( 'Sweden', 'woocommerce-payments' ),
 			'SI' => __( 'Slovenia', 'woocommerce-payments' ),
 			'SK' => __( 'Slovakia', 'woocommerce-payments' ),
 			'SG' => __( 'Singapore', 'woocommerce-payments' ),
@@ -551,6 +554,20 @@ class WC_Payments_Utils {
 		}
 
 		return $error_message;
+	}
+
+	/**
+	 * Returns the customer facing HTTP status codes for an exception.
+	 *
+	 * @param   Exception $e  Exception to get the HTTP status code for.
+	 *
+	 * @return  int
+	 */
+	public static function get_filtered_error_status_code( Exception $e ) : int {
+		if ( $e instanceof API_Exception ) {
+			return $e->get_http_code() ?? 400;
+		}
+		return 400;
 	}
 
 	/**
@@ -887,5 +904,48 @@ class WC_Payments_Utils {
 		return version_compare( get_bloginfo( 'version' ), '6.2', '>=' )
 			? '\\WpOrg\\Requests\\Requests'
 			: '\\Requests';
+	}
+
+	/**
+	 * Returns a merchant-friendly description of the dispute reason.
+	 *
+	 * This mapping is duplicated in client/disputes/strings.ts and on Server.
+	 *
+	 * @param string $reason The dispute reason.
+	 *
+	 * @return string
+	 */
+	public static function get_dispute_reason_description( string $reason ): string {
+		switch ( $reason ) {
+			case 'bank_cannot_process':
+				return __( 'Bank cannot process', 'woocommerce-payments' );
+			case 'check_returned':
+				return __( 'Check returned', 'woocommerce-payments' );
+			case 'credit_not_processed':
+				return __( 'Credit not processed', 'woocommerce-payments' );
+			case 'customer_initiated':
+				return __( 'Customer initiated', 'woocommerce-payments' );
+			case 'debit_not_authorized':
+				return __( 'Debit not authorized', 'woocommerce-payments' );
+			case 'duplicate':
+				return __( 'Duplicate', 'woocommerce-payments' );
+			case 'fraudulent':
+				return __( 'Transaction unauthorized', 'woocommerce-payments' );
+			case 'incorrect_account_details':
+				return __( 'Incorrect account details', 'woocommerce-payments' );
+			case 'insufficient_funds':
+				return __( 'Insufficient funds', 'woocommerce-payments' );
+			case 'product_not_received':
+				return __( 'Product not received', 'woocommerce-payments' );
+			case 'product_unacceptable':
+				return __( 'Product unacceptable', 'woocommerce-payments' );
+			case 'subscription_canceled':
+				return __( 'Subscription canceled', 'woocommerce-payments' );
+			case 'unrecognized':
+				return __( 'Unrecognized', 'woocommerce-payments' );
+			default:
+			case 'general':
+				return __( 'General', 'woocommerce-payments' );
+		}
 	}
 }
