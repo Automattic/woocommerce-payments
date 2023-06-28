@@ -1,68 +1,11 @@
-.components-notice.wcpay-inline-notice {
+.wcpay-inline-notice {
 	// increasing the specificity of the styles to override the Gutenberg ones
 	&#{&} {
-		color: $gray-900;
-		border-left: none;
-		padding: 12px 16px;
 		margin: 0;
 		margin-bottom: $grid-unit-30;
 	}
 
-	.components-button.is-secondary:not( :disabled ) {
-		box-shadow: none;
-		transition: background-color 0.2s;
-		margin: 16px 0 0;
-	}
-
-	&,
 	&.is-info {
-		background-color: $studio-blue-0;
-
-		.components-button.is-secondary:not( :disabled ) {
-			box-shadow: none;
-			transition: background-color 0.2s;
-
-			border: 1px solid $studio-blue-40;
-			color: $studio-blue-40;
-
-			&:active,
-			&:hover {
-				background-color: darken( $studio-blue-0, 5% );
-			}
-		}
-	}
-
-	&.is-warning {
-		background-color: $studio-yellow-0;
-
-		.components-button.is-secondary:not( :disabled ) {
-			box-shadow: none;
-			transition: background-color 0.2s;
-
-			border: 1px solid $studio-yellow-40;
-			color: $studio-yellow-40;
-
-			&:active,
-			&:hover {
-				background-color: darken( $studio-yellow-0, 5% );
-			}
-		}
-	}
-
-	&.is-error {
-		background-color: $studio-red-0;
-
-		.components-button.is-secondary:not( :disabled ) {
-			box-shadow: none;
-			transition: background-color 0.2s;
-
-			border: 1px solid $studio-red-40;
-			color: $studio-red-40;
-
-			&:active,
-			&:hover {
-				background-color: darken( $studio-red-0, 5% );
-			}
-		}
+		background: #def1f7;
 	}
 }

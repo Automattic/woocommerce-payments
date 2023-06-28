@@ -11,7 +11,7 @@ import moment from 'moment';
 import { getConfig } from 'utils/order';
 import RefundConfirmationModal from './refund-confirm-modal';
 import CancelConfirmationModal from './cancel-confirm-modal';
-import InlineNotice from '../components/inline-notice';
+import BannerNotice from 'wcpay/components/banner-notice';
 import { formatExplicitCurrency } from 'utils/currency';
 import './style.scss';
 
@@ -139,7 +139,7 @@ jQuery( function ( $ ) {
 		}
 
 		const notice = (
-			<InlineNotice
+			<BannerNotice
 				status={ urgency }
 				isDismissible={ false }
 				actions={ [
@@ -161,7 +161,7 @@ jQuery( function ( $ ) {
 					</b>
 					.{ suffix }
 				</div>
-			</InlineNotice>
+			</BannerNotice>
 		);
 		ReactDOM.render( notice, container );
 	}
