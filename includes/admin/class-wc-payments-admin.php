@@ -234,7 +234,7 @@ class WC_Payments_Admin {
 		$dispute_data     = $this->order_service->get_dispute_data_for_order( $order );
 		$dispute_id       = $dispute_data['id'];
 		$stripe_amount    = $dispute_data['amount'];
-		$reason           = $dispute_data['reason'];
+		$reason           = WC_Payments_Utils::get_dispute_reason_description( $dispute_data['reason'] );
 		$currency         = $dispute_data['currency'];
 		$evidence_details = $dispute_data['evidence_details'];
 		$due_by           = $evidence_details['due_by'];
