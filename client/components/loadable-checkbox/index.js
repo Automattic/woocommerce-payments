@@ -7,7 +7,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import React, { useEffect, useState } from 'react';
 import { CheckboxControl, VisuallyHidden } from '@wordpress/components';
 import classNames from 'classnames';
-import { Icon, warning } from '@wordpress/icons';
+import { Icon } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -15,6 +15,7 @@ import { Icon, warning } from '@wordpress/icons';
 import { useManualCapture } from 'wcpay/data';
 import { HoverTooltip } from 'components/tooltip';
 import './style.scss';
+import Warning from 'components/icons/warning';
 
 const LoadableCheckboxControl = ( {
 	label,
@@ -96,7 +97,7 @@ const LoadableCheckboxControl = ( {
 					) }
 				>
 					<div className="loadable-checkbox__icon">
-						<Icon icon={ warning } fill={ '#ffc83f' } />
+						<Icon icon={ Warning } />
 						<div
 							className="loadable-checkbox__icon-warning"
 							data-testid="loadable-checkbox-icon-warning"

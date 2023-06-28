@@ -125,6 +125,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			$this->order_service,
 			$this->mock_dpps
 		);
+		$this->wcpay_gateway->init_hooks();
 	}
 
 	public static function tear_down_after_class() {
@@ -810,7 +811,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$ref->setAccessible( true );
 		$ref->setValue( null, false );
 
-		$payment_gateway->maybe_init_subscriptions();
+		$payment_gateway->init_hooks();
 
 		$this->assertTrue( has_action( 'woocommerce_admin_order_data_after_billing_address' ) );
 	}
