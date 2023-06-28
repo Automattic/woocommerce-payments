@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
+import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import { getHistory } from '@woocommerce/navigation';
 
@@ -28,12 +29,10 @@ const isDueWithin = ( dispute: CachedDispute, days: number ) => {
 	if ( dispute.due_by === '' ) {
 		return false;
 	}
-	const now = moment();
-	const dueBy = moment( dispute.due_by );
-	return (
-		dueBy.diff( now, 'hours' ) > 0 &&
-		dueBy.diff( now, 'hours' ) <= 24 * days
-	);
+	// Get current time in UTC.
+	const now = moment().utc();
+	const dueBy = moment.utc( dispute.due_by );
+	return dueBy.diff( now, 'hours' ) > 0 && dueBy.diff( now, 'days' ) <= days;
 };
 
 /**
@@ -153,15 +152,22 @@ export const getDisputeResolutionTask = (
 			numDisputesDueWithin24h >= 1
 				? sprintf(
 						__( 'Respond today by %s', 'woocommerce-payments' ),
-						// Show due_by time in local time.
-						moment( dispute.due_by ).format( 'h:mm A' ) // E.g. "11:59 PM".
+						// Show due_by time in local timezone: e.g. "11:59 PM".
+						dateI18n(
+							'g:i A',
+							moment.utc( dispute.due_by ).local().toISOString()
+						)
 				  )
 				: sprintf(
 						__(
 							'By %s – %s left to respond',
 							'woocommerce-payments'
 						),
-						moment( dispute.due_by ).format( 'MMM D, YYYY' ), // E.g. "Jan 1, 2021".
+						// Show due_by date in local timezone: e.g. "Jan 1, 2021".
+						dateI18n(
+							'M j, Y',
+							moment.utc( dispute.due_by ).local().toISOString()
+						),
 						moment( dispute.due_by ).fromNow( true ) // E.g. "2 days".
 				  );
 
@@ -204,18 +210,18 @@ export const getDisputeResolutionTask = (
 		disputeTotalAmounts
 	);
 	disputeTask.content =
-		// Final day / Last week to respond for N of the disputes
+		// Final day / Last week to respond to N of the disputes
 		numDisputesDueWithin24h >= 1
 			? sprintf(
 					__(
-						'Final day to respond for %d of the disputes',
+						'Final day to respond to %d of the disputes',
 						'woocommerce-payments'
 					),
 					numDisputesDueWithin24h
 			  )
 			: sprintf(
 					__(
-						'Last week to respond for %d of the disputes',
+						'Last week to respond to %d of the disputes',
 						'woocommerce-payments'
 					),
 					numDisputesDueWithin7Days
