@@ -313,7 +313,9 @@ describe( 'Disputes list', () => {
 				`"${ displayFirstDispute[ 1 ] }"`
 			); //status
 
-			expect( csvFirstDispute[ 4 ] ).toBe( displayFirstDispute[ 2 ] ); // reason
+			expect( csvFirstDispute[ 4 ] ).toBe(
+				`"${ displayFirstDispute[ 2 ] }"`
+			); // reason
 
 			expect( csvFirstDispute[ 6 ] ).toBe( displayFirstDispute[ 4 ] ); // order
 

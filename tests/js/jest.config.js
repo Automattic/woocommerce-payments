@@ -22,6 +22,7 @@ module.exports = {
 	setupFilesAfterEnv: [
 		'<rootDir>/node_modules/@wordpress/jest-preset-default/scripts/setup-test-framework.js',
 		'<rootDir>/tests/js/jest-extensions-setup.js',
+		'expect-puppeteer',
 	],
 	preset: '@wordpress/jest-preset-default',
 	testMatch: [

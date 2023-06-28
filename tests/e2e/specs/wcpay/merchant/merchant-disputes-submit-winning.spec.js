@@ -54,7 +54,7 @@ describe( 'Disputes > Submit winning dispute', () => {
 
 		// Verify we have a dispute for this purchase
 		await expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
-			text: 'Payment disputed as Fraudulent.',
+			text: 'Payment disputed as Transaction unauthorized.',
 		} );
 		await expect( page ).toMatchElement(
 			'div.woocommerce-timeline-item__body a',
@@ -85,7 +85,7 @@ describe( 'Disputes > Submit winning dispute', () => {
 		await expect( page ).toMatchElement(
 			'div.wcpay-dispute-details .components-card .components-card__header',
 			{
-				text: 'Dispute: Fraudulent',
+				text: 'Dispute: Transaction unauthorized',
 			}
 		);
 

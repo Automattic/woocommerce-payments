@@ -532,6 +532,8 @@ export const TransactionsList = (
 				search,
 				type_is: typeIs,
 				type_is_not: typeIsNot,
+				source_device_is: sourceDeviceIs,
+				source_device_is_not: sourceDeviceIsNot,
 				customer_currency_is: customerCurrencyIs,
 				customer_currency_is_not: customerCurrencyIsNot,
 			} = params;
@@ -543,7 +545,8 @@ export const TransactionsList = (
 				!! dateBetween ||
 				!! search ||
 				!! typeIs ||
-				!! typeIsNot;
+				!! typeIsNot ||
+				!! sourceDeviceIsNot;
 
 			const confirmThreshold = 10000;
 			const confirmMessage = sprintf(
@@ -572,6 +575,8 @@ export const TransactionsList = (
 							search,
 							typeIs,
 							typeIsNot,
+							sourceDeviceIs,
+							sourceDeviceIsNot,
 							customerCurrencyIs,
 							customerCurrencyIsNot,
 							depositId,
