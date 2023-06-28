@@ -231,7 +231,12 @@ class WC_Payments_Admin {
 	 * @param WC_Order $order The order being displayed.
 	 */
 	private function get_order_dispute_notice_js_data( $order ) {
-		$dispute_data     = $this->order_service->get_dispute_data_for_order( $order );
+		$dispute_data = $this->order_service->get_dispute_data_for_order( $order );
+
+		if ( ! $dispute_data || ! $dispute_data['evidence_details'] ) {
+			return false;
+		}
+
 		$dispute_id       = $dispute_data['id'];
 		$stripe_amount    = $dispute_data['amount'];
 		$reason           = WC_Payments_Utils::get_dispute_reason_description( $dispute_data['reason'] );
@@ -239,21 +244,14 @@ class WC_Payments_Admin {
 		$evidence_details = $dispute_data['evidence_details'];
 		$due_by           = $evidence_details['due_by'];
 
-		if ( ! $dispute_data || ! $evidence_details ) {
-			return false;
-		}
-
 		$due_by      = date_i18n( wc_date_format(), $due_by );
 		$dispute_url = $this->order_service->compose_dispute_url( $dispute_id );
 
 		return [
-			// Coming soon.
-			'daysRemaining' => 99,
-			'dueBy'         => $due_by,
-			'amount'        => $stripe_amount,
-			'reason'        => $reason,
-			'disputeUrl'    => $dispute_url,
-
+			'dueBy'      => $due_by,
+			'amount'     => $stripe_amount,
+			'reason'     => $reason,
+			'disputeUrl' => $dispute_url,
 		];
 	}
 
