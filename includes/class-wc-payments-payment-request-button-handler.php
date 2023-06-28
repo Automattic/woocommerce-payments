@@ -531,6 +531,16 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return false;
 		}
 
+		// Cart total is 0 or is on product page and product price is 0.
+		if (
+			( ! $this->is_product() && 0.0 === (float) WC()->cart->get_total( 'edit' ) ) ||
+			( $this->is_product() && 0.0 === (float) $this->get_product()->get_price() )
+
+		) {
+			Logger::log( 'Order price is 0 ( Payment Request button disabled )' );
+			return false;
+		}
+
 		return true;
 	}
 
@@ -759,7 +769,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		$gateways = WC()->payment_gateways->get_available_payment_gateways();
 		if ( isset( $gateways['woocommerce_payments'] ) ) {
-			$gateways['woocommerce_payments']->register_scripts();
+			WC_Payments::get_wc_payments_checkout()->register_scripts();
 		}
 	}
 
@@ -1372,7 +1382,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 */
 	public function ajax_create_order() {
 		if ( WC()->cart->is_empty() ) {
-			wp_send_json_error( __( 'Empty cart', 'woocommerce-payments' ) );
+			wp_send_json_error( __( 'Empty cart', 'woocommerce-payments' ), 400 );
 		}
 
 		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {

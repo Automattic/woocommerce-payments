@@ -1,10 +1,25 @@
 /** @format */
 /**
+ * External dependencies
+ */
+import React from 'react';
+
+/**
  * Internal dependencies
  */
 import './style.scss';
 
-const ProgressBar = ( { progressLabel, totalLabel, progress } ) => {
+interface ProgressBarProps {
+	progressLabel: string;
+	totalLabel: string;
+	progress: number;
+}
+
+const ProgressBar: React.FunctionComponent< ProgressBarProps > = ( {
+	progressLabel,
+	totalLabel,
+	progress,
+} ) => {
 	const useInnerLabel = 0.5 < progress;
 	return (
 		<div className="progressbar">

@@ -65,7 +65,7 @@ function blockUI( jQueryForm ) {
  * @param {Object} elements The Stripe elements object to be validated.
  * @return {Promise} Promise for the checkout submission.
  */
-function validateElements( elements ) {
+export function validateElements( elements ) {
 	return elements.submit().then( ( result ) => {
 		if ( result.error ) {
 			throw new Error( result.error.message );
@@ -88,12 +88,13 @@ function submitForm( jQueryForm ) {
  *
  * @param {Object} api The API object used to call the Stripe API's createPaymentMethod method.
  * @param {Object} elements The Stripe elements object used to create a Stripe payment method.
+ * @param {Object} jQueryForm The jQuery object for the form being submitted.
  * @return {Promise<Object>} A promise that resolves with the created Stripe payment method.
  */
-function createStripePaymentMethod( api, elements ) {
-	return api.getStripe().createPaymentMethod( {
-		elements,
-		params: {
+function createStripePaymentMethod( api, elements, jQueryForm ) {
+	let params = {};
+	if ( 'checkout' === jQueryForm.attr( 'name' ) ) {
+		params = {
 			billing_details: {
 				name: document.querySelector( '#billing_first_name' )
 					? (
@@ -115,8 +116,9 @@ function createStripePaymentMethod( api, elements ) {
 					state: document.querySelector( '#billing_state' ).value,
 				},
 			},
-		},
-	} );
+		};
+	}
+	return api.getStripe().createPaymentMethod( { elements, params: params } );
 }
 
 /**
@@ -156,6 +158,22 @@ async function createStripePaymentElement( api, paymentMethodType ) {
 }
 
 /**
+ * Appends a hidden input field with the confirmed setup intent ID to the provided form.
+ *
+ * @param {HTMLElement} form The HTML form element to which the input field will be appended.
+ * @param {Object} confirmedIntent The confirmed setup intent object containing the ID to be stored in the input field.
+ */
+function appendSetupIntentToForm( form, confirmedIntent ) {
+	const input = document.createElement( 'input' );
+	input.type = 'hidden';
+	input.id = 'wcpay-setup-intent';
+	input.name = 'wcpay-setup-intent';
+	input.value = confirmedIntent.id;
+
+	form.append( input );
+}
+
+/**
  * Mounts the existing Stripe Payment Element to the DOM element.
  * Creates the Stipe Payment Element instance if it doesn't exist and mounts it to the DOM element.
  *
@@ -172,6 +190,19 @@ export async function mountStripePaymentElement( api, domElement ) {
 		showErrorCheckout( error.message );
 		return;
 	}
+
+	/*
+	 * Trigger this event to ensure the tokenization-form.js init
+	 * is executed.
+	 *
+	 * This script handles the radio input interaction when toggling
+	 * between the user's saved card / entering new card details.
+	 *
+	 * Ref: https://github.com/woocommerce/woocommerce/blob/2429498/assets/js/frontend/tokenization-form.js#L109
+	 */
+	const event = new Event( 'wc-credit-card-form-init' );
+	document.body.dispatchEvent( event );
+
 	const paymentMethodType = domElement.dataset.paymentMethodType;
 	const upeElement =
 		gatewayUPEComponents[ paymentMethodType ].upeElement ||
@@ -180,49 +211,18 @@ export async function mountStripePaymentElement( api, domElement ) {
 }
 
 /**
- * Handles the checkout process for the provided jQuery form and Stripe payment method type. The function blocks the
- * form UI to prevent duplicate submission and validates the Stripe elements. It then creates a Stripe payment method
- * object and appends the necessary data to the form for checkout completion. Finally, it submits the form and prevents
- * the default form submission from WC Core.
+ * Creates and confirms a setup intent using the provided ID, then appends the confirmed setup intent to the given jQuery form.
  *
- * @param {Object} api The API object used to create the Stripe payment method.
- * @param {Object} jQueryForm The jQuery object for the form being submitted.
- * @param {string} paymentMethodType The type of Stripe payment method being used.
- * @return {boolean} return false to prevent the default form submission from WC Core.
+ * @param {Object} id Payment method object ID.
+ * @param {Object} $form The jQuery object for the form to which the confirmed setup intent will be appended.
+ * @param {Object} api The API object with the setupIntent method to create and confirm the setup intent.
+ *
+ * @return {Promise} A promise that resolves when the setup intent is confirmed and appended to the form.
  */
-let hasCheckoutCompleted;
-export const checkout = ( api, jQueryForm, paymentMethodType ) => {
-	if ( hasCheckoutCompleted ) {
-		hasCheckoutCompleted = false;
-		return;
-	}
-
-	blockUI( jQueryForm );
-
-	const elements = gatewayUPEComponents[ paymentMethodType ].elements;
-
-	( async () => {
-		try {
-			await validateElements( elements );
-			const paymentMethodObject = await createStripePaymentMethod(
-				api,
-				elements
-			);
-			appendFingerprintInputToForm( jQueryForm, fingerprint );
-			appendPaymentMethodIdToForm(
-				jQueryForm,
-				paymentMethodObject.paymentMethod.id
-			);
-			hasCheckoutCompleted = true;
-			submitForm( jQueryForm );
-		} catch ( err ) {
-			jQueryForm.removeClass( 'processing' ).unblock();
-			showErrorCheckout( err.message );
-		}
-	} )();
-
-	// Prevent WC Core default form submission (see woocommerce/assets/js/frontend/checkout.js) from happening.
-	return false;
+export const createAndConfirmSetupIntent = ( { id }, $form, api ) => {
+	return api.setupIntent( id ).then( function ( confirmedSetupIntent ) {
+		appendSetupIntentToForm( $form, confirmedSetupIntent );
+	} );
 };
 
 /**
@@ -244,3 +244,61 @@ export function renderTerms( event ) {
 		} );
 	}
 }
+
+/**
+ * Handles the checkout process for the provided jQuery form and Stripe payment method type. The function blocks the
+ * form UI to prevent duplicate submission and validates the Stripe elements. It then creates a Stripe payment method
+ * object and appends the necessary data to the form for checkout completion. Finally, it submits the form and prevents
+ * the default form submission from WC Core.
+ *
+ * @param {Object} api The API object used to create the Stripe payment method.
+ * @param {Object} jQueryForm The jQuery object for the form being submitted.
+ * @param {string} paymentMethodType The type of Stripe payment method being used.
+ * @return {boolean} return false to prevent the default form submission from WC Core.
+ */
+let hasCheckoutCompleted;
+export const processPayment = (
+	api,
+	jQueryForm,
+	paymentMethodType,
+	additionalActionsHandler = () => {}
+) => {
+	if ( hasCheckoutCompleted ) {
+		hasCheckoutCompleted = false;
+		return;
+	}
+
+	blockUI( jQueryForm );
+
+	const elements = gatewayUPEComponents[ paymentMethodType ].elements;
+
+	( async () => {
+		try {
+			await validateElements( elements );
+			const paymentMethodObject = await createStripePaymentMethod(
+				api,
+				elements,
+				jQueryForm
+			);
+			appendFingerprintInputToForm( jQueryForm, fingerprint );
+			appendPaymentMethodIdToForm(
+				jQueryForm,
+				paymentMethodObject.paymentMethod.id
+			);
+			await additionalActionsHandler(
+				paymentMethodObject.paymentMethod,
+				jQueryForm,
+				api
+			);
+			hasCheckoutCompleted = true;
+			submitForm( jQueryForm );
+		} catch ( err ) {
+			hasCheckoutCompleted = false;
+			jQueryForm.removeClass( 'processing' ).unblock();
+			showErrorCheckout( err.message );
+		}
+	} )();
+
+	// Prevent WC Core default form submission (see woocommerce/assets/js/frontend/checkout.js) from happening.
+	return false;
+};

@@ -8,11 +8,11 @@
  * Woo: 5278104:bf3cf30871604e15eec560c962593c1f
  * Text Domain: woocommerce-payments
  * Domain Path: /languages
- * WC requires at least: 7.5
- * WC tested up to: 7.7.0
+ * WC requires at least: 7.6
+ * WC tested up to: 7.8.0
  * Requires at least: 6.0
  * Requires PHP: 7.3
- * Version: 6.0.0
+ * Version: 6.1.0
  *
  * @package WooCommerce\Payments
  */
@@ -169,9 +169,14 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 		$is_plugin_active = function( $plugin_name ) {
 			$plugin_slug = "$plugin_name/$plugin_name.php";
 
-			// Check if specified $plugin_name is in the process of being activated via the Admin > Plugins screen.
-			if ( isset( $_GET['action'], $_GET['plugin'] ) && 'activate' === $_GET['action'] && $plugin_slug === $_GET['plugin'] ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				return true;
+			// Check if the specified $plugin_name is in the process of being activated via the Admin > Plugins screen.
+			if ( isset( $_GET['action'], $_GET['plugin'], $_GET['_wpnonce'] ) && wp_verify_nonce( wc_clean( wp_unslash( $_GET['_wpnonce'] ) ), "activate-plugin_{$plugin_slug}" ) ) {
+				$action = sanitize_text_field( wp_unslash( $_GET['action'] ) );
+				$plugin = sanitize_text_field( wp_unslash( $_GET['plugin'] ) );
+
+				if ( current_user_can( 'activate_plugin', $plugin_slug ) && 'activate' === $action && $plugin_slug === $plugin ) {
+					return true;
+				}
 			}
 
 			// Check if specified $plugin_name is in the process of being activated via the WP CLI.

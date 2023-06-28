@@ -210,11 +210,11 @@ const EnabledCurrenciesModal = ( { className } ) => {
 				</ConfirmationModal>
 			) }
 			<Button
-				isSecondary
+				variant="secondary"
 				className={ className }
 				onClick={ handleEnabledCurrenciesAddButtonClick }
 			>
-				{ __( 'Add currencies', 'woocommerce-payments' ) }
+				{ __( 'Add/remove currencies', 'woocommerce-payments' ) }
 			</Button>
 		</>
 	);
