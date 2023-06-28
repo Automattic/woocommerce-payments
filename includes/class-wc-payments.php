@@ -589,8 +589,8 @@ class WC_Payments {
 				self::get_gateway(),
 				self::$account,
 				self::$onboarding_service,
-        self::$order_service,
-        self::$incentives_service,
+				self::$order_service,
+				self::$incentives_service,
 				self::$database_cache
 			);
 

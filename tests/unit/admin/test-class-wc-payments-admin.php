@@ -79,6 +79,9 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 			->getMock();
 
 		$this->mock_order_service = $this->getMockBuilder( WC_Payments_Order_Service::class )
+			->disableOriginalConstructor()
+			->getMock();
+
 		$this->mock_incentives_service = $this->getMockBuilder( WC_Payments_Incentives_Service::class )
 			->disableOriginalConstructor()
 			->getMock();
