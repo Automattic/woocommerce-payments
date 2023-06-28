@@ -17,6 +17,7 @@ use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Method;
 use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
+use WCPay\Constants\Setup_Intent_Status;
 use WCPay\Core\Server\Request\Cancel_Intention;
 use WCPay\Core\Server\Request\Capture_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
@@ -2943,10 +2944,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 			$setup_intent = $this->payments_api_client->get_setup_intent( $setup_intent_id );
 
-			if ( Payment_Intent_Status::SUCCEEDED !== $setup_intent['status'] ) {
+			if ( Setup_Intent_Status::SUCCEEDED !== $setup_intent->get_status() ) {
 				throw new Add_Payment_Method_Exception(
 					__( 'Failed to add the provided payment method. Please try again later', 'woocommerce-payments' ),
 					'invalid_response_status'
