@@ -10,11 +10,7 @@ import classNames from 'classnames';
  */
 import './style.scss';
 
-interface InlineNoticeProps extends Notice.Props {
-	className?: string;
-}
-
-const InlineNotice: React.FC< InlineNoticeProps > = ( {
+const InlineNotice: React.FC< Notice.Props > = ( {
 	className,
 	...restProps
 } ) => (
