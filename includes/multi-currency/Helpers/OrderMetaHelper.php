@@ -162,7 +162,7 @@ class OrderMetaHelper {
 	public function maybe_add_meta_box( $post_type, $post ) {
 		// Confirm we should be working on the order, if not, exit.
 		$order = $this->confirm_actions( $post );
-		if ( ! $order ) {
+		if ( ! $order || ! function_exists( '\wc_get_page_screen_id' ) ) {
 			return;
 		}
 
@@ -217,10 +217,6 @@ class OrderMetaHelper {
 			'payment_method_title'   => [
 				'label' => __( 'Payment Method Title', 'woocommerce-payments' ),
 				'value' => $order->get_payment_method_title(),
-			],
-			'order_default_currency' => [
-				'label' => __( 'Order Default Currency', 'woocommerce-payments' ),
-				'value' => $order->get_meta( '_wcpay_multi_currency_order_default_currency' ),
 			],
 			'intent_id'              => [
 				'label' => __( 'Intent ID', 'woocommerce-payments' ),
@@ -359,13 +355,13 @@ class OrderMetaHelper {
 	/**
 	 * Confirms that we should be working on this order.
 	 *
-	 * @param int|WC_Order $order The order we're working with.
+	 * @param int|\WC_Order $order The order we're working with.
 	 *
-	 * @return bool|WC_Order Returns false or the order we're working with.
+	 * @return bool|\WC_Order|\WC_Order_Refund Returns false or the order we're working with.
 	 */
 	private function confirm_actions( $order ) {
-		// If the feature is not enabled, or if we cannot get the screen ID, exit.
-		if ( ! WC_Payments_Features::is_mc_order_meta_helper_enabled() || ! function_exists( '\wc_get_page_screen_id' ) ) {
+		// If the feature is not enabled, exit.
+		if ( ! WC_Payments_Features::is_mc_order_meta_helper_enabled() ) {
 			return false;
 		}
 
