@@ -58,7 +58,7 @@ jest.mock( '../validation', () => ( {
 	} ) ),
 } ) );
 
-describe( 'Progressive Onboarding Prototype Form', () => {
+describe( 'Onboarding Form', () => {
 	beforeEach( () => {
 		nextStep = jest.fn();
 		data = {};
