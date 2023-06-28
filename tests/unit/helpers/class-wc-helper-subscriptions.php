@@ -90,11 +90,11 @@ function wcs_order_contains_renewal() {
  */
 class WC_Subscriptions {
 	/**
-	 * Subscriptions version, defaults to 3.0.7
+	 * Subscriptions version, defaults to 4.0.0
 	 *
 	 * @var string
 	 */
-	public static $version = '3.0.7';
+	public static $version = '4.0.0';
 
 	/**
 	 * wcs_order_contains_subscription mock.
@@ -215,5 +215,9 @@ class WC_Subscriptions {
 
 	public static function wcs_order_contains_renewal( $function ) {
 		self::$wcs_order_contains_renewal = $function;
+	}
+
+	public static function is_duplicate_site() {
+		return false;
 	}
 }

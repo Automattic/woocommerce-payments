@@ -129,6 +129,10 @@ class WC_Payments_Subscriptions {
 	 * @return bool Whether the site is a duplicate URL or not.
 	 */
 	public static function is_duplicate_site() {
+		if ( class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '4.0.0', '<' ) ) {
+			return WC_Subscriptions::is_duplicate_site();
+		}
+
 		return class_exists( 'WCS_Staging' ) && WCS_Staging::is_duplicate_site();
 	}
 }
