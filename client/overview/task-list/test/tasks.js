@@ -1,6 +1,12 @@
 /** @format */
 
 /**
+ * External dependencies
+ */
+
+import moment from 'moment';
+
+/**
  * Internal dependencies
  */
 import { getTasks, taskSort } from '../tasks';
@@ -97,7 +103,13 @@ const mockActiveDisputes = [
 ];
 
 describe( 'getTasks()', () => {
+	// Get current timezone
+	const currentTimezone = moment.tz.guess();
+
 	beforeEach( () => {
+		// set local timezone to EST (not daylight savings time)
+		// Note Etc/GMT+5 === UTC-5
+		moment.tz.setDefault( 'Etc/GMT+5' );
 		// mock Date.now that moment library uses to get current date for testing purposes
 		Date.now = jest.fn( () => new Date( '2023-02-01T08:00:00.000Z' ) );
 
@@ -122,6 +134,7 @@ describe( 'getTasks()', () => {
 	afterEach( () => {
 		// roll it back
 		Date.now = () => new Date();
+		moment.tz.setDefault( currentTimezone );
 	} );
 	it( 'should include business details when flag is set', () => {
 		const actual = getTasks( {
@@ -316,7 +329,7 @@ describe( 'getTasks()', () => {
 
 	it( 'should not include the dispute resolution task if dispute due_by > 7 days', () => {
 		// Set Date.now to - 7 days to reduce urgency of disputes.
-		Date.now = jest.fn( () => new Date( '2023-01-25T08:00:00.000Z' ) );
+		Date.now = jest.fn( () => new Date( '2023-01-24T08:00:00.000Z' ) );
 		const actual = getTasks( {
 			accountStatus: {
 				status: 'restricted_soon',
@@ -354,7 +367,7 @@ describe( 'getTasks()', () => {
 					completed: false,
 					level: 1,
 					title: 'Respond to a dispute for $10.00 – Last day',
-					content: 'Respond today by 11:59 PM',
+					content: 'Respond today by 6:59 PM', // shown in local timezone.
 					actionLabel: 'Respond now',
 				} ),
 			] )
@@ -413,7 +426,7 @@ describe( 'getTasks()', () => {
 					level: 1,
 					title:
 						'Respond to 3 active disputes for a total of $20.00, €10.00',
-					content: 'Final day to respond for 1 of the disputes',
+					content: 'Final day to respond to 1 of the disputes',
 					actionLabel: 'See disputes',
 				} ),
 			] )
@@ -444,7 +457,7 @@ describe( 'getTasks()', () => {
 					level: 1,
 					title:
 						'Respond to 3 active disputes for a total of $20.00, €10.00',
-					content: 'Last week to respond for 1 of the disputes',
+					content: 'Last week to respond to 2 of the disputes',
 					actionLabel: 'See disputes',
 				} ),
 			] )

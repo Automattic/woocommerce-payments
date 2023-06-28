@@ -15,7 +15,6 @@ import {
  */
 import { getUPEConfig } from 'utils/checkout';
 import WCPayAPI from './../api';
-import WCPayUPEFields from './upe-split-fields.js';
 import { SavedTokenHandler } from './saved-token-handler';
 import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
@@ -33,6 +32,8 @@ import {
 	PAYMENT_METHOD_NAME_AFFIRM,
 	PAYMENT_METHOD_NAME_AFTERPAY,
 } from '../constants.js';
+import { getSplitUPEFields } from './upe-split-fields';
+import { getDeferredIntentCreationUPEFields } from './upe-deferred-intent-creation/payment-elements.js';
 
 const upeMethods = {
 	card: PAYMENT_METHOD_NAME_CARD,
@@ -71,22 +72,32 @@ Object.entries( enabledPaymentMethodsConfig )
 	.map( ( [ upeName, upeConfig ] ) =>
 		registerPaymentMethod( {
 			name: upeMethods[ upeName ],
-			content: (
-				<WCPayUPEFields
-					paymentMethodId={ upeName }
-					upeMethods={ upeMethods }
-					api={ api }
-					testingInstructions={ upeConfig.testingInstructions }
-				/>
-			),
-			edit: (
-				<WCPayUPEFields
-					paymentMethodId={ upeName }
-					upeMethods={ upeMethods }
-					api={ api }
-					testingInstructions={ upeConfig.testingInstructions }
-				/>
-			),
+			content: getUPEConfig( 'isUPEDeferredEnabled' )
+				? getDeferredIntentCreationUPEFields(
+						upeName,
+						upeMethods,
+						api,
+						upeConfig.testingInstructions
+				  )
+				: getSplitUPEFields(
+						upeName,
+						upeMethods,
+						api,
+						upeConfig.testingInstructions
+				  ),
+			edit: getUPEConfig( 'isUPEDeferredEnabled' )
+				? getDeferredIntentCreationUPEFields(
+						upeName,
+						upeMethods,
+						api,
+						upeConfig.testingInstructions
+				  )
+				: getSplitUPEFields(
+						upeName,
+						upeMethods,
+						api,
+						upeConfig.testingInstructions
+				  ),
 			savedTokenComponent: <SavedTokenHandler api={ api } />,
 			canMakePayment: () => !! api.getStripe(),
 			paymentMethodId: upeMethods[ upeName ],
