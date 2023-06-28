@@ -329,6 +329,19 @@ jQuery( function ( $ ) {
 		gatewayUPEComponents[ paymentMethodType ].upeElement = upeElement;
 	};
 
+	const maybeShowAffirm = () => {
+		const billingCountry = $( '#billing_country' ).val();
+		const affirmContainer = $(
+			'#payment_method_woocommerce_payments_affirm'
+		).parent();
+
+		if ( 'US' === billingCountry || 'CA' === billingCountry ) {
+			affirmContainer.show();
+		} else {
+			affirmContainer.hide();
+		}
+	};
+
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
 	// event for this. This part of the page can also reload based on changes to checkout details, so we call unmount
 	// first to ensure the card element is re-mounted correctly.
@@ -356,20 +369,8 @@ jQuery( function ( $ ) {
 				}
 
 				if ( 'affirm' === paymentMethodType ) {
-					$( '#billing_country' ).on( 'change', function () {
-						const billingCountry = $( this ).val();
-						const affirmContainer = $(
-							'#payment_method_woocommerce_payments_affirm'
-						).parent();
-						if (
-							'US' === billingCountry ||
-							'CA' === billingCountry
-						) {
-							affirmContainer.show();
-						} else {
-							affirmContainer.hide();
-						}
-					} );
+					$( document ).ready( maybeShowAffirm );
+					$( '#billing_country' ).on( 'change', maybeShowAffirm );
 				}
 			}
 		}
