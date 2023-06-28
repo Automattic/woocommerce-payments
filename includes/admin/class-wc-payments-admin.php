@@ -232,7 +232,7 @@ class WC_Payments_Admin {
 	 */
 	private function get_order_dispute_notice_js_data( $order ) {
 		$dispute_data     = $this->order_service->get_dispute_data_for_order( $order );
-		$dispute_id       = $dispute_data['dispute_id'];
+		$dispute_id       = $dispute_data['id'];
 		$stripe_amount    = $dispute_data['amount'];
 		$reason           = $dispute_data['reason'];
 		$currency         = $dispute_data['currency'];
