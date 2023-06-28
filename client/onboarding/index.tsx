@@ -55,7 +55,7 @@ const OnboardingStepper = () => {
 	);
 };
 
-const Onboarding: React.FC = () => {
+const OnboardingPage: React.FC = () => {
 	useEffect( () => {
 		trackStarted();
 
@@ -82,4 +82,4 @@ const Onboarding: React.FC = () => {
 	);
 };
 
-export default Onboarding;
+export default OnboardingPage;
