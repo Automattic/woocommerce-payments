@@ -1444,13 +1444,15 @@ class WC_Payments_Order_Service {
 	 */
 	private function get_intent_data( $intent ): array {
 		$intent_data = [];
-		if ( is_array( $intent ) ) {
+		if ( is_a( $intent, WC_Payments_API_Setup_Intention::class ) ) {
+			$payment_method_types = $intent->get_payment_method_types();
+
 			$intent_data = [
-				'intent_id'           => $intent['id'],
-				'intent_status'       => $intent['status'],
-				'charge_id'           => $intent['charge_id'] ?? '',
-				'fraud_outcome'       => $intent['fraud_outcome'] ?? '',
-				'payment_method_type' => $intent['payment_method_type'] ?? '',
+				'intent_id'           => $intent->get_id(),
+				'intent_status'       => $intent->get_status(),
+				'charge_id'           => '',
+				'fraud_outcome'       => $intent->get_metadata()['fraud_outcome'] ?? '',
+				'payment_method_type' => 1 === count( $payment_method_types ) ? $payment_method_types[0] : '',
 			];
 		} elseif ( is_object( $intent ) ) {
 			$charge               = $intent->get_charge();

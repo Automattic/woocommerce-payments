@@ -6,6 +6,8 @@
  */
 
 use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Setup_Intent_Status;
+
 /**
  * Class WC_Helper_Intention.
  *
@@ -86,6 +88,46 @@ class WC_Helper_Intention {
 			$intent_data['last_payment_error'],
 			$intent_data['metadata'],
 			$intent_data['processing'],
+			$intent_data['payment_method_types']
+		);
+
+		return $intention;
+	}
+
+	/**
+	 * Create a setup intent.
+	 *
+	 * @param array $data Data to override defaults.
+	 *
+	 * @return WC_Payments_API_Setup_Intention
+	 */
+	public static function create_setup_intention( $data = [] ): WC_Payments_API_Setup_Intention {
+		$intent_data = wp_parse_args(
+			$data,
+			[
+				'id'                   => 'seti_mock',
+				'customer_id'          => 'cus_mock',
+				'payment_method_id'    => 'pm_mock',
+				'status'               => Setup_Intent_Status::SUCCEEDED,
+				'client_secret'        => 'cs_mock',
+				'created'              => new DateTime( '2022-05-20 19:05:38' ),
+				'next_action'          => [],
+				'last_setup_error'     => [],
+				'metadata'             => [],
+				'payment_method_types' => [ 'card' ],
+			]
+		);
+
+		$intention = new WC_Payments_API_Setup_Intention(
+			$intent_data['id'],
+			$intent_data['customer_id'],
+			$intent_data['payment_method_id'],
+			$intent_data['created'],
+			$intent_data['status'],
+			$intent_data['client_secret'],
+			$intent_data['next_action'],
+			$intent_data['last_setup_error'],
+			$intent_data['metadata'],
 			$intent_data['payment_method_types']
 		);
 

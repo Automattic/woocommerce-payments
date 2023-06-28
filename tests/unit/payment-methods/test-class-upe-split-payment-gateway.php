@@ -717,10 +717,12 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn(
-				[
-					'id'            => 'seti_mock',
-					'client_secret' => 'client_secret_mock',
-				]
+				WC_Helper_Intention::create_setup_intention(
+					[
+						'id'            => 'seti_mock',
+						'client_secret' => 'client_secret_mock',
+					]
+				)
 			);
 
 		$this->set_cart_contains_subscription_items( false );
@@ -753,10 +755,12 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn(
-				[
-					'id'            => 'seti_mock',
-					'client_secret' => 'client_secret_mock',
-				]
+				WC_Helper_Intention::create_setup_intention(
+					[
+						'id'            => 'seti_mock',
+						'client_secret' => 'client_secret_mock',
+					]
+				)
 			);
 
 		$this->set_cart_contains_subscription_items( false );
@@ -1315,18 +1319,20 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order->set_total( 0 );
 		$order->save();
 
-		$setup_intent = [
-			'id'                     => 'pi_mock',
-			'client_secret'          => $client_secret,
-			'status'                 => $intent_status,
-			'payment_method'         => $payment_method_id,
-			'payment_method_options' => [
-				'card' => [
-					'request_three_d_secure' => 'automatic',
+		$setup_intent = WC_Helper_Intention::create_setup_intention(
+			[
+				'id'                     => 'pi_mock',
+				'client_secret'          => $client_secret,
+				'status'                 => $intent_status,
+				'payment_method'         => $payment_method_id,
+				'payment_method_options' => [
+					'card' => [
+						'request_three_d_secure' => 'automatic',
+					],
 				],
-			],
-			'last_setup_error'       => [],
-		];
+				'last_setup_error'       => [],
+			]
+		);
 
 		$mock_upe_gateway->expects( $this->once() )
 			->method( 'manage_customer_details_for_order' )
@@ -1713,10 +1719,12 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'get_setup_intent' )
 			->with( $mock_setup_intent_id )
 			->willReturn(
-				[
-					'id'             => $mock_setup_intent_id,
-					'payment_method' => 'pm_mock',
-				]
+				WC_Helper_Intention::create_setup_intention(
+					[
+						'id'             => $mock_setup_intent_id,
+						'payment_method' => 'pm_mock',
+					]
+				)
 			);
 
 		$this->mock_token_service
