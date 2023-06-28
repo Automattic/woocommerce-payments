@@ -88,7 +88,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		parent::set_up();
 
 		/** @var WC_Payments_API_Client|MockObject $mock_api_client */
-		$mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
+		$this->mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
 			->disableOriginalConstructor()
 			->getMock();
 
@@ -114,7 +114,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_database_cache = $this->createMock( Database_Cache::class );
 
-		$this->webhook_processing_service = new WC_Payments_Webhook_Processing_Service( $mock_api_client, $this->mock_db_wrapper, $mock_wcpay_account, $this->mock_remote_note_service, $this->order_service, $this->mock_receipt_service, $this->mock_wcpay_gateway, $this->mock_customer_service, $this->mock_database_cache );
+		$this->webhook_processing_service = new WC_Payments_Webhook_Processing_Service( $this->mock_api_client, $this->mock_db_wrapper, $mock_wcpay_account, $this->mock_remote_note_service, $this->order_service, $this->mock_receipt_service, $this->mock_wcpay_gateway, $this->mock_customer_service, $this->mock_database_cache );
 
 		// Build the event body data.
 		$event_object = [];
@@ -625,6 +625,19 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'metadata' => [],
 		];
 
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'deserialize_intention_object_from_array' )
+			->with( $this->event_body['data']['object'] )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'status'               => $intent_status,
+						'payment_method_types' => [ 'card' ],
+					]
+				)
+			);
+
 		$this->mock_order
 			->expects( $this->exactly( 5 ) )
 			->method( 'update_meta_data' )
@@ -706,6 +719,19 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'status'   => $intent_status = Payment_Intent_Status::SUCCEEDED,
 			'metadata' => [ 'order_id' => 'id_1323' ], // Using order_id inside of the intent metadata to find the order.
 		];
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'deserialize_intention_object_from_array' )
+			->with( $this->event_body['data']['object'] )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'status'               => $intent_status,
+						'payment_method_types' => [ 'card' ],
+					]
+				)
+			);
 
 		$this->mock_order
 			->expects( $this->exactly( 5 ) )
@@ -793,6 +819,19 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'metadata' => [],
 		];
 
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'deserialize_intention_object_from_array' )
+			->with( $this->event_body['data']['object'] )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'status'               => $intent_status,
+						'payment_method_types' => [ 'card' ],
+					]
+				)
+			);
+
 		$this->mock_order
 			->expects( $this->exactly( 4 ) )
 			->method( 'update_meta_data' )
@@ -861,13 +900,13 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 					[
 						'id'                     => 'py_123123123123123',
 						'payment_method_details' => [
-							'type' => 'card_present',
+							'type' => $payment_method_type = 'card_present',
 						],
 					],
 				],
 			],
 			'currency' => 'eur',
-			'status'   => Payment_Intent_Status::SUCCEEDED,
+			'status'   => $intent_status    = Payment_Intent_Status::SUCCEEDED,
 			'metadata' => [],
 		];
 
@@ -879,6 +918,19 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				'email'   => 'some@example.com',
 			],
 		];
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'deserialize_intention_object_from_array' )
+			->with( $this->event_body['data']['object'] )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'status'               => $intent_status,
+						'payment_method_types' => [ $payment_method_type ],
+					]
+				)
+			);
 
 		$this->mock_order
 			->expects( $this->exactly( 2 ) )
@@ -966,6 +1018,19 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'status'   => $intent_status = Payment_Intent_Status::SUCCEEDED,
 			'metadata' => [],
 		];
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'deserialize_intention_object_from_array' )
+			->with( $this->event_body['data']['object'] )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'status'               => $intent_status,
+						'payment_method_types' => [ 'card' ],
+					]
+				)
+			);
 
 		$this->mock_order
 			->expects( $this->exactly( 6 ) )

@@ -482,6 +482,12 @@ class WC_Payments_Webhook_Processing_Service {
 		// Save the order after updating the meta data values.
 		$order->save();
 
+		// This is an incoming request from WCPay server rather than an outgoing request to WCPay server.
+		// However, the shape of the payment intent object are the same.
+		// Using this extraction method will reduce the code duplication.
+		$payment_intent = $this->api_client->deserialize_intention_object_from_array( $event_object );
+		$this->order_service->update_order_status_from_intent( $order, $payment_intent );
+
 		$payment_method = $charges_data[0]['payment_method_details']['type'] ?? null;
 		$intent_data    = [
 			'id'                  => $intent_id,
