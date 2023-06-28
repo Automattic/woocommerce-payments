@@ -184,7 +184,7 @@ class WC_Payments_Onboarding_Service {
 	public function add_admin_body_classes( string $classes = '' ): string {
 		// Onboarding needs to hide wp-admin navigation and masterbar while JS loads.
 		// This class will be removed by the onboarding component.
-		if ( isset( $_GET['path'] ) && '/payments/onboarding-flow' === $_GET['path'] ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_GET['path'] ) && '/payments/onboarding' === $_GET['path'] ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$classes .= ' woocommerce-admin-is-loading';
 		}
 
