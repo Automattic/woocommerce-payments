@@ -354,6 +354,23 @@ jQuery( function ( $ ) {
 				} else {
 					mountUPEElement( paymentMethodType, upeDOMElement );
 				}
+
+				if ( 'affirm' === paymentMethodType ) {
+					$( '#billing_country' ).on( 'change', function () {
+						const billingCountry = $( this ).val();
+						const affirmContainer = $(
+							'#payment_method_woocommerce_payments_affirm'
+						).parent();
+						if (
+							'US' === billingCountry ||
+							'CA' === billingCountry
+						) {
+							affirmContainer.show();
+						} else {
+							affirmContainer.hide();
+						}
+					} );
+				}
 			}
 		}
 	} );
