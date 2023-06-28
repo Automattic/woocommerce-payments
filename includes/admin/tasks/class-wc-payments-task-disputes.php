@@ -106,7 +106,7 @@ class WC_Payments_Task_Disputes extends Task {
 			return '';
 		}
 
-		$currencies_map  = [];
+		$currencies_map = [];
 		foreach ( $active_disputes as $dispute ) {
 			if ( ! isset( $currencies_map[ $dispute['currency'] ] ) ) {
 				$currencies_map[ $dispute['currency'] ] = 0;
