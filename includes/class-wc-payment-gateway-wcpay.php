@@ -429,9 +429,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// Update the email field position.
 			add_filter( 'woocommerce_billing_fields', [ $this, 'checkout_update_email_field_priority' ], 50 );
 
-			// Priority 21 to run right after wc_clear_cart_after_payment.
-			add_action( 'template_redirect', [ $this, 'clear_session_processing_order_after_landing_order_received_page' ], 21 );
-
 			add_action( 'woocommerce_update_order', [ $this, 'schedule_order_tracking' ], 10, 2 );
 
 			add_filter( 'rest_request_before_callbacks', [ $this, 'remove_all_actions_on_preflight_check' ], 10, 3 );
