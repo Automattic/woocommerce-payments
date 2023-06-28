@@ -158,8 +158,7 @@ class WC_Payments_Checkout {
 	 */
 	public function get_payment_fields_js_config() {
 
-		// Needed to init the hooks.
-		WC_Checkout::instance();
+		$wc_checkout = WC_Checkout::instance();
 
 		$js_config = [
 			'publishableKey'                 => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
@@ -186,7 +185,7 @@ class WC_Payments_Checkout {
 			'isWooPayEnabled'                => $this->woopay_util->should_enable_woopay( $this->gateway ),
 			'isWoopayExpressCheckoutEnabled' => $this->woopay_util->is_woopay_express_checkout_enabled(),
 			'isClientEncryptionEnabled'      => WC_Payments_Features::is_client_secret_encryption_enabled(),
-			'woopayHost'                     => WooPay_Utilities::get_woopay_url(),
+			'woopayHost'                     => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'https://pay.woo.com',
 			'platformTrackerNonce'           => wp_create_nonce( 'platform_tracks_nonce' ),
 			'accountIdForIntentConfirmation' => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
 			'wcpayVersionNumber'             => WCPAY_VERSION_NUMBER,

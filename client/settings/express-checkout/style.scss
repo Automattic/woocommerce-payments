@@ -5,36 +5,17 @@
 
 	.express-checkouts-list {
 		.express-checkout {
+			display: flex;
 			margin: 0;
 			padding: 16px 24px 14px 24px;
 			background: #fff;
+			flex-wrap: wrap;
+			justify-content: flex-start;
+			align-items: center;
 
 			@include breakpoint( '>660px' ) {
 				padding: 24px 24px 24px 24px;
-			}
-
-			&__row {
-				display: flex;
-				flex-wrap: wrap;
-				justify-content: flex-start;
-				align-items: center;
-
-				@include breakpoint( '>660px' ) {
-					flex-wrap: nowrap;
-				}
-
-				&-warning {
-					background: #fef8ee;
-					padding: 12px 20px;
-					width: 100%;
-					color: #1e1e1e;
-					box-sizing: border-box;
-					margin-top: 16px;
-
-					p {
-						margin: 0 0 0 16px;
-					}
-				}
+				flex-wrap: nowrap;
 			}
 
 			&__description {

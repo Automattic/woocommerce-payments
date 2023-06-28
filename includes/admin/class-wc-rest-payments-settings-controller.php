@@ -386,7 +386,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'is_saved_cards_enabled'              => $this->wcpay_gateway->is_saved_cards_enabled(),
 				'is_card_present_eligible'            => $this->wcpay_gateway->is_card_present_eligible(),
 				'is_woopay_enabled'                   => 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),
-				'show_woopay_incompatibility_notice'  => get_option( 'woopay_disabled_invalid_extensions', false ),
 				'woopay_custom_message'               => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),
 				'woopay_store_logo'                   => $this->wcpay_gateway->get_option( 'platform_checkout_store_logo' ),
 				'woopay_enabled_locations'            => $this->wcpay_gateway->get_option( 'platform_checkout_button_locations', [] ),
