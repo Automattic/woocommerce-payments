@@ -781,16 +781,18 @@ export const merchantWCP = {
 	},
 
 	openLatestBlockedOrder: async () => {
-		const latestBlockedOrderLinkSelector =
-			'.woocommerce-table__table tbody > tr:nth-child(2) > th > a';
+		const latestBlockedOrderSelector =
+			'.woocommerce-table__table tbody > tr:nth-child(2) > th';
 
 		await merchantWCP.openTransactions();
 
 		await expect( page ).toClick(
 			'.components-tab-panel__tabs-item.blocked-list'
 		);
-		await page.waitForSelector( latestBlockedOrderLinkSelector );
-		await expect( page ).toClick( latestBlockedOrderLinkSelector );
+		await page.waitForSelector(
+			`${ latestBlockedOrderSelector }:last-child > .chip`
+		);
+		await expect( page ).toClick( `${ latestBlockedOrderSelector } > a` );
 	},
 
 	checkTransactionStatus: async ( expectedStatus ) => {
