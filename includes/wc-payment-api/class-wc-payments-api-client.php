@@ -38,7 +38,8 @@ class WC_Payments_API_Client {
 
 	const ACCOUNTS_API                 = 'accounts';
 	const CAPABILITIES_API             = 'accounts/capabilities';
-	const WOOPAY_API                   = 'accounts/platform_checkout';
+	const WOOPAY_ACCOUNTS_API          = 'accounts/platform_checkout';
+	const WOOPAY_COMPATIBILITY_API     = 'woopay/compatibility';
 	const APPLE_PAY_API                = 'apple_pay';
 	const CHARGES_API                  = 'charges';
 	const CONN_TOKENS_API              = 'terminal/connection_tokens';
@@ -528,6 +529,17 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Fetch disputes by provided query.
+	 *
+	 * @param array $filters Query to be used to get disputes.
+	 * @return array Disputes.
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_disputes( array $filters = [] ) {
+		return $this->request( $filters, self::DISPUTES_API, self::GET );
+	}
+
+	/**
 	 * Fetch a single dispute with provided id.
 	 *
 	 * @param string $dispute_id id of requested dispute.
@@ -562,8 +574,9 @@ class WC_Payments_API_Client {
 		];
 
 		$dispute = $this->request( $request, self::DISPUTES_API . '/' . $dispute_id, self::POST );
-		// Invalidate the dispute status cache.
+		// Invalidate the dispute caches.
 		\WC_Payments::get_database_cache()->delete( Database_Cache::DISPUTE_STATUS_COUNTS_KEY );
+		\WC_Payments::get_database_cache()->delete( Database_Cache::ACTIVE_DISPUTES_KEY );
 
 		if ( is_wp_error( $dispute ) ) {
 			return $dispute;
@@ -581,8 +594,9 @@ class WC_Payments_API_Client {
 	 */
 	public function close_dispute( $dispute_id ) {
 		$dispute = $this->request( [], self::DISPUTES_API . '/' . $dispute_id . '/close', self::POST );
-		// Invalidate the dispute status cache.
+		// Invalidate the dispute caches.
 		\WC_Payments::get_database_cache()->delete( Database_Cache::DISPUTE_STATUS_COUNTS_KEY );
+		\WC_Payments::get_database_cache()->delete( Database_Cache::ACTIVE_DISPUTES_KEY );
 
 		if ( is_wp_error( $dispute ) ) {
 			return $dispute;
@@ -825,7 +839,7 @@ class WC_Payments_API_Client {
 			[
 				'test_mode' => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
 			],
-			self::WOOPAY_API,
+			self::WOOPAY_ACCOUNTS_API,
 			self::GET
 		);
 	}
@@ -845,7 +859,7 @@ class WC_Payments_API_Client {
 				[ 'test_mode' => WC_Payments::mode()->is_dev() ],
 				$data
 			),
-			self::WOOPAY_API,
+			self::WOOPAY_ACCOUNTS_API,
 			self::POST
 		);
 	}
@@ -1671,21 +1685,27 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Get if the merchant is eligible for Progressive Onboarding.
+	 * Check if the merchant is eligible for Progressive Onboarding based on self-assessment information.
 	 *
-	 * @param array $business_info Business information.
+	 * @param array $business_info   Business information.
+	 * @param array $store_info      Store information.
+	 * @param array $woo_store_stats Optional. Stats about the WooCommerce store to given more context to the PO eligibility decision.
 	 *
 	 * @return array HTTP response on success.
 	 *
 	 * @throws API_Exception - If not connected to server or request failed.
 	 */
-	public function get_onboarding_po_eligible( $business_info ) {
+	public function get_onboarding_po_eligible( array $business_info, array $store_info, array $woo_store_stats = [] ): array {
 		return $this->request(
 			[
-				'business' => $business_info,
+				'business'        => $business_info,
+				'store'           => $store_info,
+				'woo_store_stats' => $woo_store_stats,
 			],
 			self::ONBOARDING_API . '/router/po_eligible',
-			self::POST
+			self::POST,
+			true,
+			true
 		);
 	}
 
@@ -2370,5 +2390,20 @@ class WC_Payments_API_Client {
 	 */
 	public function get_authorization( string $payment_intent_id ) {
 		return $this->request( [], self::AUTHORIZATIONS_API . '/' . $payment_intent_id, self::GET );
+	}
+
+	/**
+	 * Gets the list of extensions that are incompatible with WooPay.
+	 *
+	 * @return array of extensions.
+	 * @throws API_Exception When request fails.
+	 */
+	public function get_woopay_incompatible_extensions() {
+		return $this->request(
+			[],
+			self::WOOPAY_COMPATIBILITY_API,
+			self::GET,
+			false
+		);
 	}
 }

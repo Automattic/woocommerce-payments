@@ -7,8 +7,13 @@ import {
 	isWCPayChosen,
 	getPaymentIntentFromSession,
 	generateCheckoutEventNames,
+	getUpeSettings,
+	getStripeElementOptions,
 } from '../upe';
 import { getPaymentMethodsConstants } from '../../constants';
+import { getUPEConfig } from 'wcpay/utils/checkout';
+
+jest.mock( 'wcpay/utils/checkout' );
 
 jest.mock( '../../constants', () => {
 	return {
@@ -165,6 +170,96 @@ describe( 'UPE checkout utils', () => {
 		} );
 	} );
 
+	describe( 'getUPESettings', () => {
+		afterEach( () => {
+			const checkboxElement = document.getElementById(
+				'wc-woocommerce_payments-new-payment-method'
+			);
+			if ( checkboxElement ) {
+				checkboxElement.remove();
+			}
+		} );
+
+		it( 'should not provide terms when cart does not contain subscriptions and the saving checkbox is unchecked', () => {
+			getUPEConfig.mockImplementation( ( argument ) => {
+				if ( 'paymentMethodsConfig' === argument ) {
+					return {
+						card: {
+							label: 'Card',
+							isReusable: true,
+						},
+					};
+				}
+
+				if ( 'cartContainsSubscription' === argument ) {
+					return false;
+				}
+			} );
+
+			createCheckboxElementWhich( false );
+
+			const upeSettings = getUpeSettings();
+
+			expect( upeSettings.terms.card ).toEqual( 'never' );
+		} );
+
+		it( 'should provide terms when cart does not contain subscriptions but the saving checkbox is checked', () => {
+			getUPEConfig.mockImplementation( ( argument ) => {
+				if ( 'paymentMethodsConfig' === argument ) {
+					return {
+						card: {
+							label: 'Card',
+							isReusable: true,
+						},
+					};
+				}
+
+				if ( 'cartContainsSubscription' === argument ) {
+					return false;
+				}
+			} );
+
+			createCheckboxElementWhich( true );
+
+			const upeSettings = getUpeSettings();
+
+			// console.log(result);
+			expect( upeSettings.terms.card ).toEqual( 'always' );
+		} );
+
+		it( 'should provide terms when cart contains subscriptions but the saving checkbox is unchecked', () => {
+			getUPEConfig.mockImplementation( ( argument ) => {
+				if ( 'paymentMethodsConfig' === argument ) {
+					return {
+						card: {
+							label: 'Card',
+							isReusable: true,
+						},
+					};
+				}
+
+				if ( 'cartContainsSubscription' === argument ) {
+					return true;
+				}
+			} );
+
+			createCheckboxElementWhich( false );
+			const upeSettings = getUpeSettings();
+
+			expect( upeSettings.terms.card ).toEqual( 'always' );
+		} );
+
+		function createCheckboxElementWhich( isChecked ) {
+			// Create the checkbox element
+			const checkboxElement = document.createElement( 'input' );
+			checkboxElement.type = 'checkbox';
+			checkboxElement.checked = isChecked;
+			checkboxElement.id = 'wc-woocommerce_payments-new-payment-method';
+
+			document.body.appendChild( checkboxElement );
+		}
+	} );
+
 	describe( 'generateCheckoutEventNames', () => {
 		it( 'should return empty string when there are no payment methods', () => {
 			getPaymentMethodsConstants.mockImplementation( () => [] );
@@ -185,6 +280,144 @@ describe( 'UPE checkout utils', () => {
 			expect( result ).toEqual(
 				'checkout_place_order_woocommerce_payments_bancontact checkout_place_order_woocommerce_payments_eps'
 			);
+		} );
+	} );
+} );
+
+describe( 'getStripeElementOptions', () => {
+	test( 'should return options with "always" terms for cart containing subscription', () => {
+		const shouldSavePayment = false;
+		getUPEConfig.mockImplementation( ( argument ) => {
+			if ( 'cartContainsSubscription' === argument ) {
+				return true;
+			}
+		} );
+		const paymentMethodsConfig = {
+			card: {
+				isReusable: true,
+			},
+			bancontact: {
+				isReusable: true,
+			},
+			eps: {
+				isReusable: true,
+			},
+			giropay: {
+				isReusable: false,
+			},
+		};
+
+		const options = getStripeElementOptions(
+			shouldSavePayment,
+			paymentMethodsConfig
+		);
+
+		expect( options ).toEqual( {
+			fields: {
+				billingDetails: {
+					address: {
+						city: 'never',
+						country: 'never',
+						line1: 'never',
+						line2: 'never',
+						postalCode: 'never',
+						state: 'never',
+					},
+					email: 'never',
+					name: 'never',
+					phone: 'never',
+				},
+			},
+			terms: { bancontact: 'always', card: 'always', eps: 'always' },
+			wallets: { applePay: 'never', googlePay: 'never' },
+		} );
+	} );
+
+	test( 'should return options with "always" terms when checkbox to save payment method is checked', () => {
+		const shouldSavePayment = true;
+		getUPEConfig.mockImplementation( ( argument ) => {
+			if ( 'cartContainsSubscription' === argument ) {
+				return false;
+			}
+		} );
+		const paymentMethodsConfig = {
+			card: {
+				isReusable: true,
+			},
+			bancontact: {
+				isReusable: true,
+			},
+			eps: {
+				isReusable: true,
+			},
+			giropay: {
+				isReusable: false,
+			},
+		};
+
+		const options = getStripeElementOptions(
+			shouldSavePayment,
+			paymentMethodsConfig
+		);
+
+		expect( options ).toEqual( {
+			fields: {
+				billingDetails: {
+					address: {
+						city: 'never',
+						country: 'never',
+						line1: 'never',
+						line2: 'never',
+						postalCode: 'never',
+						state: 'never',
+					},
+					email: 'never',
+					name: 'never',
+					phone: 'never',
+				},
+			},
+			terms: { bancontact: 'always', card: 'always', eps: 'always' },
+			wallets: { applePay: 'never', googlePay: 'never' },
+		} );
+	} );
+
+	test( 'should return options with "never" for terms when shouldSavePayment is false and no subscription in cart', () => {
+		const shouldSavePayment = false;
+		const paymentMethodsConfig = {
+			card: {
+				isReusable: true,
+			},
+		};
+
+		getUPEConfig.mockImplementation( ( argument ) => {
+			if ( 'cartContainsSubscription' === argument ) {
+				return false;
+			}
+		} );
+
+		const options = getStripeElementOptions(
+			shouldSavePayment,
+			paymentMethodsConfig
+		);
+
+		expect( options ).toEqual( {
+			fields: {
+				billingDetails: {
+					address: {
+						city: 'never',
+						country: 'never',
+						line1: 'never',
+						line2: 'never',
+						postalCode: 'never',
+						state: 'never',
+					},
+					email: 'never',
+					name: 'never',
+					phone: 'never',
+				},
+			},
+			terms: { card: 'never' },
+			wallets: { applePay: 'never', googlePay: 'never' },
 		} );
 	} );
 } );

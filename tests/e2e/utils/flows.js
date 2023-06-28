@@ -483,10 +483,12 @@ export const merchantWCP = {
 		for ( const paymentMethod of paymentMethods ) {
 			// Skip fraud protection tools tour.
 			const tourKitDismissButton = await page.$(
-				`.woocommerce-tour-kit-step-controls button`
+				`button.woocommerce-tour-kit-step-controls__close-btn`
 			);
 			if ( tourKitDismissButton ) {
-				await tourKitDismissButton.click();
+				await tourKitDismissButton.evaluate( ( button ) =>
+					button.click()
+				);
 			}
 
 			await page.$eval( paymentMethod, ( method ) => method.click() );
@@ -506,10 +508,12 @@ export const merchantWCP = {
 		for ( const paymentMethod of paymentMethods ) {
 			// Skip fraud protection tools tour.
 			const tourKitDismissButton = await page.$(
-				`.woocommerce-tour-kit-step-controls button`
+				`button.woocommerce-tour-kit-step-controls__close-btn`
 			);
 			if ( tourKitDismissButton ) {
-				await tourKitDismissButton.click();
+				await tourKitDismissButton.evaluate( ( button ) =>
+					button.click()
+				);
 			}
 			await page.$eval( paymentMethod, ( method ) => method.click() );
 			await expect( page ).toClick( 'button', {
@@ -641,10 +645,10 @@ export const merchantWCP = {
 
 	skipFraudProtectionTour: async () => {
 		const tourKitDismissButton = await page.$(
-			`.woocommerce-tour-kit-step-controls button`
+			`button.woocommerce-tour-kit-step-controls__close-btn`
 		);
 		if ( tourKitDismissButton ) {
-			await tourKitDismissButton.click();
+			await tourKitDismissButton.evaluate( ( button ) => button.click() );
 		}
 	},
 

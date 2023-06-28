@@ -6,6 +6,7 @@
  */
 
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
+use WCPay\Constants\Track_Events;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -385,6 +386,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'is_saved_cards_enabled'              => $this->wcpay_gateway->is_saved_cards_enabled(),
 				'is_card_present_eligible'            => $this->wcpay_gateway->is_card_present_eligible(),
 				'is_woopay_enabled'                   => 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),
+				'show_woopay_incompatibility_notice'  => get_option( 'woopay_invalid_extension_found', false ),
 				'woopay_custom_message'               => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),
 				'woopay_store_logo'                   => $this->wcpay_gateway->get_option( 'platform_checkout_store_logo' ),
 				'woopay_enabled_locations'            => $this->wcpay_gateway->get_option( 'platform_checkout_button_locations', [] ),
@@ -393,6 +395,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'deposit_schedule_weekly_anchor'      => $this->wcpay_gateway->get_option( 'deposit_schedule_weekly_anchor' ),
 				'deposit_delay_days'                  => $this->wcpay_gateway->get_option( 'deposit_delay_days' ),
 				'deposit_status'                      => $this->wcpay_gateway->get_option( 'deposit_status' ),
+				'deposit_restrictions'                => $this->wcpay_gateway->get_option( 'deposit_restrictions' ),
 				'deposit_completed_waiting_period'    => $this->wcpay_gateway->get_option( 'deposit_completed_waiting_period' ),
 				'current_protection_level'            => $this->wcpay_gateway->get_option( 'current_protection_level' ),
 				'advanced_fraud_protection_settings'  => $this->wcpay_gateway->get_option( 'advanced_fraud_protection_settings' ),
@@ -470,6 +473,30 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				}
 			)
 		);
+
+		if ( function_exists( 'wc_admin_record_tracks_event' ) ) {
+			$active_payment_methods   = $this->wcpay_gateway->get_upe_enabled_payment_method_ids();
+			$disabled_payment_methods = array_diff( $active_payment_methods, $payment_method_ids_to_enable );
+			$enabled_payment_methods  = array_diff( $payment_method_ids_to_enable, $active_payment_methods );
+
+			foreach ( $disabled_payment_methods as $disabled_payment_method ) {
+				wc_admin_record_tracks_event(
+					Track_Events::PAYMENT_METHOD_DISABLED,
+					[
+						'payment_method_id' => $disabled_payment_method,
+					]
+				);
+			}
+
+			foreach ( $enabled_payment_methods as $enabled_payment_method ) {
+				wc_admin_record_tracks_event(
+					Track_Events::PAYMENT_METHOD_ENABLED,
+					[
+						'payment_method_id' => $enabled_payment_method,
+					]
+				);
+			}
+		}
 
 		$this->wcpay_gateway->update_option( 'upe_enabled_payment_method_ids', $payment_method_ids_to_enable );
 		if ( $payment_method_ids_to_enable ) {
@@ -746,6 +773,9 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		}
 
 		$woopay_enabled_locations = $request->get_param( 'woopay_enabled_locations' );
+
+		$all_locations = $this->wcpay_gateway->form_fields['payment_request_button_locations']['options'];
+		WC_Payments::woopay_tracker()->woopay_locations_updated( $all_locations, $woopay_enabled_locations );
 
 		$this->wcpay_gateway->update_option( 'platform_checkout_button_locations', $woopay_enabled_locations );
 	}

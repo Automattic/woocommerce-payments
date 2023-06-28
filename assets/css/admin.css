@@ -130,6 +130,16 @@
 	background-size: contain;
 }
 
+.payment-method__brand--afterpay_clearpay {
+	background: no-repeat url( '../images/payment-methods/afterpay-icon.svg' );
+	background-size: contain;
+}
+
+.payment-method__brand--affirm {
+	background: no-repeat url( '../images/payment-methods/affirm-icon.svg' );
+	background-size: contain;
+}
+
 .wc_gateways tr[data-gateway_id='woocommerce_payments'] .payment-method__icon {
 	border: 1px solid #ddd;
 	border-radius: 2px;

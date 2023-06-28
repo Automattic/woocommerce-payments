@@ -417,7 +417,7 @@ exports[`Disputes list renders correctly 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
                       tabindex="-1"
                     >
-                      Fraudulent
+                      Transaction unauthorized
                     </a>
                   </td>
                   <td
@@ -756,13 +756,13 @@ exports[`Disputes list renders correctly 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />

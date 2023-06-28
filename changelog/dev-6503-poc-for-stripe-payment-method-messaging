@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Add BNPL messaging to the product details page via Stripe Payment Method Messaging Element

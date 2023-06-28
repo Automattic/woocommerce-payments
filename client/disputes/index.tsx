@@ -37,7 +37,7 @@ import DownloadButton from 'components/download-button';
 import disputeStatusMapping from 'components/dispute-status-chip/mappings';
 import { DisputesTableHeader } from 'wcpay/types/disputes';
 import { getDisputesCSV } from 'wcpay/data/disputes/resolvers';
-import { applyThousandSeparator } from '../utils/index.js';
+import { applyThousandSeparator } from 'wcpay/utils';
 
 import './style.scss';
 
@@ -185,7 +185,7 @@ export const DisputesList = (): JSX.Element => {
 				),
 			},
 			reason: {
-				value: dispute.reason,
+				value: reasonDisplay,
 				display: clickable( reasonDisplay ),
 			},
 			source: {
@@ -386,7 +386,7 @@ export const DisputesList = (): JSX.Element => {
 
 	let summary;
 	const isDisputesSummaryDataLoaded =
-		disputesSummary.count !== undefined && false === isSummaryLoading;
+		disputesSummary.count !== undefined && ! isSummaryLoading;
 	if ( isDisputesSummaryDataLoaded ) {
 		summary = [
 			{

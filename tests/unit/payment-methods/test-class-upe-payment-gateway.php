@@ -207,6 +207,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			Sepa_Payment_Method::class,
 			Becs_Payment_Method::class,
 			Link_Payment_Method::class,
+			Affirm_Payment_Method::class,
+			Afterpay_Payment_Method::class,
 		];
 
 		$this->mock_rate_limiter = $this->createMock( Session_Rate_Limiter::class );
@@ -275,12 +277,13 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->set_get_upe_enabled_payment_method_statuses_return_value();
 
 		// Add the UPE Checkout action.
-		new WC_Payments_UPE_Checkout(
+		$checkout = new WC_Payments_UPE_Checkout(
 			$this->mock_upe_gateway,
 			$this->mock_woopay_utilities,
 			$this->mock_wcpay_account,
 			$this->mock_customer_service
 		);
+		$checkout->init_hooks();
 
 		$this->mock_upe_gateway->payment_fields();
 
@@ -1541,6 +1544,12 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$mock_becs_details       = [
 			'type' => 'au_becs_debit',
 		];
+		$mock_affirm_details     = [
+			'type' => 'affirm',
+		];
+		$mock_afterpay_details   = [
+			'type' => 'afterpay_clearpay',
+		];
 
 		$this->set_cart_contains_subscription_items( false );
 		$card_method       = $this->mock_payment_methods['card'];
@@ -1552,6 +1561,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$sepa_method       = $this->mock_payment_methods['sepa_debit'];
 		$ideal_method      = $this->mock_payment_methods['ideal'];
 		$becs_method       = $this->mock_payment_methods['au_becs_debit'];
+		$affirm_method     = $this->mock_payment_methods['affirm'];
+		$afterpay_method   = $this->mock_payment_methods['afterpay_clearpay'];
 
 		$this->assertEquals( 'card', $card_method->get_id() );
 		$this->assertEquals( 'Credit card / debit card', $card_method->get_title() );
@@ -1608,6 +1619,18 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'BECS Direct Debit', $becs_method->get_title( $mock_becs_details ) );
 		$this->assertTrue( $becs_method->is_enabled_at_checkout() );
 		$this->assertFalse( $becs_method->is_reusable() );
+
+		$this->assertSame( 'affirm', $affirm_method->get_id() );
+		$this->assertSame( 'Affirm', $affirm_method->get_title() );
+		$this->assertSame( 'Affirm', $affirm_method->get_title( $mock_affirm_details ) );
+		$this->assertTrue( $affirm_method->is_enabled_at_checkout() );
+		$this->assertFalse( $affirm_method->is_reusable() );
+
+		$this->assertSame( 'afterpay_clearpay', $afterpay_method->get_id() );
+		$this->assertSame( 'Afterpay', $afterpay_method->get_title() );
+		$this->assertSame( 'Afterpay', $afterpay_method->get_title( $mock_afterpay_details ) );
+		$this->assertTrue( $afterpay_method->is_enabled_at_checkout() );
+		$this->assertFalse( $afterpay_method->is_reusable() );
 	}
 
 	public function test_only_reusabled_payment_methods_enabled_with_subscription_item_present() {
@@ -1622,6 +1645,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$p24_method        = $this->mock_payment_methods['p24'];
 		$ideal_method      = $this->mock_payment_methods['ideal'];
 		$becs_method       = $this->mock_payment_methods['au_becs_debit'];
+		$affirm_method     = $this->mock_payment_methods['affirm'];
+		$afterpay_method   = $this->mock_payment_methods['afterpay_clearpay'];
 
 		$this->assertTrue( $card_method->is_enabled_at_checkout() );
 		$this->assertFalse( $giropay_method->is_enabled_at_checkout() );
@@ -1632,6 +1657,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $p24_method->is_enabled_at_checkout() );
 		$this->assertFalse( $ideal_method->is_enabled_at_checkout() );
 		$this->assertFalse( $becs_method->is_enabled_at_checkout() );
+		$this->assertFalse( $affirm_method->is_enabled_at_checkout() );
+		$this->assertFalse( $afterpay_method->is_enabled_at_checkout() );
 	}
 
 	public function test_only_valid_payment_methods_returned_for_currency() {
@@ -1644,6 +1671,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$p24_method        = $this->mock_payment_methods['p24'];
 		$ideal_method      = $this->mock_payment_methods['ideal'];
 		$becs_method       = $this->mock_payment_methods['au_becs_debit'];
+		$affirm_method     = $this->mock_payment_methods['affirm'];
+		$afterpay_method   = $this->mock_payment_methods['afterpay_clearpay'];
 
 		WC_Helper_Site_Currency::$mock_site_currency = 'EUR';
 
@@ -1656,6 +1685,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $p24_method->is_currency_valid() );
 		$this->assertTrue( $ideal_method->is_currency_valid() );
 		$this->assertFalse( $becs_method->is_currency_valid() );
+		$this->assertFalse( $affirm_method->is_currency_valid() );
+		$this->assertTrue( $afterpay_method->is_currency_valid() );
 
 		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
 
@@ -1668,6 +1699,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $p24_method->is_currency_valid() );
 		$this->assertFalse( $ideal_method->is_currency_valid() );
 		$this->assertFalse( $becs_method->is_currency_valid() );
+		$this->assertTrue( $affirm_method->is_currency_valid() );
+		$this->assertTrue( $afterpay_method->is_currency_valid() );
 
 		WC_Helper_Site_Currency::$mock_site_currency = 'AUD';
 		$this->assertTrue( $becs_method->is_currency_valid() );
@@ -1685,6 +1718,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$p24_method        = $this->mock_payment_methods['p24'];
 		$ideal_method      = $this->mock_payment_methods['ideal'];
 		$becs_method       = $this->mock_payment_methods['au_becs_debit'];
+		$affirm_method     = $this->mock_payment_methods['affirm'];
+		$afterpay_method   = $this->mock_payment_methods['afterpay_clearpay'];
 
 		WC_Helper_Site_Currency::$mock_site_currency = 'EUR';
 
@@ -1713,6 +1748,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $p24_method->is_currency_valid() );
 		$this->assertFalse( $ideal_method->is_currency_valid() );
 		$this->assertFalse( $becs_method->is_currency_valid() );
+		$this->assertTrue( $affirm_method->is_currency_valid() );
+		$this->assertTrue( $afterpay_method->is_currency_valid() );
 
 		$wp->query_vars = [];
 	}

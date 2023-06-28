@@ -51,7 +51,7 @@ describe( 'PaymentMethod', () => {
 
 		act( () => {
 			user.click( screen.getByLabelText( 'Foo' ) );
-			jest.runAllTimers();
+			jest.runOnlyPendingTimers();
 			// Since we are using a variable instead of a state, we need to re-render the component on each variable change.
 			component.rerender( getComponent() );
 		} );
@@ -61,7 +61,7 @@ describe( 'PaymentMethod', () => {
 
 		act( () => {
 			user.click( screen.getByLabelText( 'Foo' ) );
-			jest.runAllTimers();
+			jest.runOnlyPendingTimers();
 			component.rerender( getComponent() );
 		} );
 
@@ -108,7 +108,7 @@ describe( 'PaymentMethod', () => {
 		jest.useFakeTimers();
 		act( () => {
 			user.click( screen.getByLabelText( 'Locked' ) );
-			jest.runAllTimers();
+			jest.runOnlyPendingTimers();
 			// Since we are using a variable instead of a state, we need to re-render the component on each variable change.
 			component.rerender( getLockedComponent() );
 		} );
@@ -117,7 +117,7 @@ describe( 'PaymentMethod', () => {
 
 		act( () => {
 			user.click( screen.getByLabelText( 'Locked' ) );
-			jest.runAllTimers();
+			jest.runOnlyPendingTimers();
 			component.rerender( getLockedComponent() );
 		} );
 

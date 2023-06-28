@@ -38,6 +38,7 @@ module.exports = {
 				'./client/subscription-product-onboarding/modal.js',
 			'subscription-product-onboarding-toast':
 				'./client/subscription-product-onboarding/toast.js',
+			'product-details': './client/product-details/index.js',
 		},
 		// Override webpack public path dynamically on every entry.
 		// Required for chunks loading to work on sites with JS concatenation.
@@ -126,7 +127,7 @@ module.exports = {
 	},
 	plugins: [
 		new ProvidePlugin( {
-			process: 'process/browser',
+			process: 'process/browser.js',
 		} ),
 		new MiniCssExtractPlugin( { filename: '[name].css' } ),
 		new WooCommerceDependencyExtractionWebpackPlugin( {

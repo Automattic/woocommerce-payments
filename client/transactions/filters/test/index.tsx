@@ -208,4 +208,37 @@ describe( 'Transactions filters', () => {
 			expect( getQuery().customer_currency_is_not ).toEqual( 'eur' );
 		} );
 	} );
+
+	describe( 'when filtering by source device', () => {
+		let ruleSelector: HTMLElement;
+
+		beforeEach( () => {
+			addAdvancedFilter( 'Device Type' );
+			ruleSelector = screen.getByRole( 'combobox', {
+				name: /transaction device type filter/i,
+			} );
+		} );
+
+		test( 'should render all types', () => {
+			const typeSelect = screen.getByRole( 'combobox', {
+				name: /transaction device type$/i,
+			} ) as HTMLSelectElement;
+			expect( typeSelect.options ).toMatchSnapshot();
+		} );
+
+		test( 'should filter by is', () => {
+			user.selectOptions( ruleSelector, 'is' );
+
+			// need to include $ in name, otherwise "Select a transaction type filter" is also matched.
+			user.selectOptions(
+				screen.getByRole( 'combobox', {
+					name: /transaction device type$/i,
+				} ),
+				'ios'
+			);
+			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+
+			expect( getQuery().source_device_is ).toEqual( 'ios' );
+		} );
+	} );
 } );
