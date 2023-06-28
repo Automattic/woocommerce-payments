@@ -10,7 +10,7 @@ import { Icon, store, widget, tool } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import { trackEligibilityModalClosed } from 'onboarding-prototype/tracking';
+import { trackEligibilityModalClosed } from 'onboarding/tracking';
 import HeaderImg from 'assets/images/illustrations/po-eligibility.svg';
 import './style.scss';
 

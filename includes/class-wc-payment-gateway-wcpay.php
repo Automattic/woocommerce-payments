@@ -3327,10 +3327,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string Connection URL.
 	 */
 	public function get_connection_url() {
-		if ( WC_Payments_Utils::is_in_onboarding_treatment_mode() ) {
-			// Configure step button will show `Set up` instead of `Connect`.
-			return '';
-		}
 		$account_data = $this->account->get_cached_account_data();
 
 		// The onboarding is finished if account_id is set. `Set up` will be shown instead of `Connect`.
