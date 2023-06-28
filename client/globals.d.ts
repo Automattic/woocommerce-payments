@@ -69,7 +69,6 @@ declare global {
 		zeroDecimalCurrencies: string[];
 		restUrl: string;
 		shouldUseExplicitPrice: boolean;
-		numDisputesNeedingResponse: string;
 		fraudProtection: {
 			isWelcomeTourDismissed?: boolean;
 		};
@@ -86,6 +85,11 @@ declare global {
 		errorMessage: string;
 		onBoardingDisabled: boolean;
 		isBnplAffirmAfterpayEnabled: boolean;
+		connectIncentive?: {
+			id: string;
+			description: string;
+			tc_url: string;
+		};
 	};
 
 	const wcTracks: any;

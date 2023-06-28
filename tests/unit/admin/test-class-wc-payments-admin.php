@@ -38,6 +38,13 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	private $mock_order_service;
 
 	/**
+	 * Mock Incentives Service.
+	 *
+	 * @var WC_Payments_Incentives_Service|MockObject;
+	 */
+	private $mock_incentives_service;
+
+	/**
 	 * Mock database cache.
 	 *
 	 * @var Database_Cache|MockObject;
@@ -72,6 +79,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 			->getMock();
 
 		$this->mock_order_service = $this->getMockBuilder( WC_Payments_Order_Service::class )
+		$this->mock_incentives_service = $this->getMockBuilder( WC_Payments_Incentives_Service::class )
 			->disableOriginalConstructor()
 			->getMock();
 
@@ -93,6 +101,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 			$this->mock_account,
 			$this->mock_onboarding_service,
 			$this->mock_order_service,
+			$this->mock_incentives_service,
 			$this->mock_database_cache
 		);
 	}

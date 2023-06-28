@@ -75,6 +75,13 @@ class WC_Payments_Admin {
 	private $order_service;
 
 	/**
+	 * WC_Payments_Incentives_Service instance to get information for incentives.
+	 *
+	 * @var WC_Payments_Incentives_Service
+	 */
+	private $incentives_service;
+
+	/**
 	 * WCPay admin child pages.
 	 *
 	 * @var array
@@ -107,6 +114,7 @@ class WC_Payments_Admin {
 	 * @param WC_Payments_Account            $account             Account instance.
 	 * @param WC_Payments_Onboarding_Service $onboarding_service  Onboarding service instance.
 	 * @param WC_Payments_Order_Service      $order_service       Order service instance.
+	 * @param WC_Payments_Incentives_Service $incentives_service  Incentives service instance.
 	 * @param Database_Cache                 $database_cache      Database Cache instance.
 	 */
 	public function __construct(
@@ -115,6 +123,7 @@ class WC_Payments_Admin {
 		WC_Payments_Account $account,
 		WC_Payments_Onboarding_Service $onboarding_service,
 		WC_Payments_Order_Service $order_service,
+		WC_Payments_Incentives_Service $incentives_service,
 		Database_Cache $database_cache
 	) {
 		$this->payments_api_client = $payments_api_client;
@@ -122,6 +131,7 @@ class WC_Payments_Admin {
 		$this->account             = $account;
 		$this->onboarding_service  = $onboarding_service;
 		$this->order_service       = $order_service;
+		$this->incentives_service  = $incentives_service;
 		$this->database_cache      = $database_cache;
 
 		add_action( 'admin_notices', [ $this, 'display_not_supported_currency_notice' ], 9999 );
@@ -839,7 +849,6 @@ class WC_Payments_Admin {
 			'currentUserEmail'            => $current_user_email,
 			'currencyData'                => $currency_data,
 			'restUrl'                     => get_rest_url( null, '' ), // rest url to concatenate when merchant use Plain permalinks.
-			'numDisputesNeedingResponse'  => $this->get_disputes_awaiting_response_count(),
 			'isFRTReviewFeatureActive'    => WC_Payments_Features::is_frt_review_feature_active(),
 			'fraudProtection'             => [
 				'isWelcomeTourDismissed' => WC_Payments_Features::is_fraud_protection_welcome_tour_dismissed(),
@@ -848,9 +857,10 @@ class WC_Payments_Admin {
 			'frtDiscoverBannerSettings'   => get_option( 'wcpay_frt_discover_banner_settings', '' ),
 			'storeCurrency'               => get_option( 'woocommerce_currency' ),
 			'isBnplAffirmAfterpayEnabled' => WC_Payments_Features::is_bnpl_affirm_afterpay_enabled(),
+			'connectIncentive'            => $this->incentives_service->get_cached_connect_incentive(),
 		];
 
-		return $this->wcpay_js_settings;
+		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );
 	}
 
 	/**

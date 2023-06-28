@@ -80,6 +80,7 @@ class WC_Payments_Account {
 
 		// Add server links handler.
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_server_link' ] );
+		add_action( 'admin_init', [ $this, 'maybe_activate_woopay' ] );
 	}
 
 	/**
@@ -391,6 +392,16 @@ class WC_Payments_Account {
 	public function get_deposit_status(): string {
 		$account = $this->get_cached_account_data();
 		return $account['deposits']['status'] ?? '';
+	}
+
+	/**
+	 * Gets the deposit restrictions
+	 *
+	 * @return string  e.g. not_blocked, blocked, schedule locked.
+	 */
+	public function get_deposit_restrictions(): string {
+		$account = $this->get_cached_account_data();
+		return $account['deposits']['restrictions'] ?? '';
 	}
 
 	/**
@@ -1129,10 +1140,25 @@ class WC_Payments_Account {
 			exit;
 		}
 
+		set_transient( 'woopay_enabled_by_default', $onboarding_data['woopay_enabled_by_default'], DAY_IN_SECONDS );
 		set_transient( 'wcpay_stripe_onboarding_state', $onboarding_data['state'], DAY_IN_SECONDS );
 
 		wp_safe_redirect( $onboarding_data['url'] );
 		exit;
+	}
+
+	/**
+	 * Activates WooPay when visiting the KYC success page and woopay_enabled_by_default transient is set to true.
+	 */
+	public function maybe_activate_woopay() {
+		if ( ! isset( $_GET['wcpay-connection-success'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return;
+		}
+
+		if ( get_transient( 'woopay_enabled_by_default' ) ) {
+			WC_Payments::get_gateway()->update_is_woopay_enabled( true );
+			delete_transient( 'woopay_enabled_by_default' );
+		}
 	}
 
 	/**

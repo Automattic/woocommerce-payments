@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Deposit schedule changes are disabled when an account has restrictions on it.

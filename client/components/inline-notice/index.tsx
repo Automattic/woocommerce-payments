@@ -10,7 +10,7 @@ import classNames from 'classnames';
  */
 import './style.scss';
 
-const InlineNotice: React.FC< Notice.Props > = ( {
+const InlineNotice: React.FunctionComponent< Notice.Props > = ( {
 	className,
 	...restProps
 } ) => (
