@@ -7,6 +7,7 @@
 
 namespace WCPay\Payment_Methods;
 
+use WC_Payments_API_Setup_Intention;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Constants\Payment_Method;
@@ -413,11 +414,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$request = Create_Setup_Intention::create();
 		$request->set_customer( $customer_id );
 		$request->set_payment_method_types( array_values( $displayed_payment_methods ) );
+		/** @var WC_Payments_API_Setup_Intention $setup_intent */  // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 		$setup_intent = $request->send( 'wcpay_create_setup_intention_request' );
 
 		return [
-			'id'            => $setup_intent['id'],
-			'client_secret' => $setup_intent['client_secret'],
+			'id'            => $setup_intent->get_id(),
+			'client_secret' => $setup_intent->get_client_secret(),
 		];
 	}
 
@@ -732,16 +734,16 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$error                  = $intent->get_last_payment_error();
 			} else {
 				$intent                 = $this->payments_api_client->get_setup_intent( $intent_id );
-				$client_secret          = $intent['client_secret'];
-				$status                 = $intent['status'];
+				$client_secret          = $intent->get_client_secret();
+				$status                 = $intent->get_status();
 				$charge_id              = '';
 				$charge                 = null;
 				$currency               = $order->get_currency();
-				$payment_method_id      = $intent['payment_method'];
+				$payment_method_id      = $intent->get_payment_method_id();
 				$payment_method_details = false;
-				$payment_method_options = array_keys( $intent['payment_method_options'] );
-				$payment_method_type    = $payment_method_options ? $payment_method_options[0] : null;
-				$error                  = $intent['last_setup_error'];
+				$payment_method_types   = $intent->get_payment_method_types();
+				$payment_method_type    = $payment_method_types ? $payment_method_types[0] : null;
+				$error                  = $intent->get_last_setup_error();
 			}
 
 			if ( ! empty( $error ) ) {
@@ -850,7 +852,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	public function create_token_from_setup_intent( $setup_intent_id, $user ) {
 		try {
 			$setup_intent      = $this->payments_api_client->get_setup_intent( $setup_intent_id );
-			$payment_method_id = $setup_intent['payment_method'];
+			$payment_method_id = $setup_intent->get_payment_method_id();
 			// TODO: When adding SEPA and Sofort, we will need a new API call to get the payment method and from there get the type.
 			// Leaving 'card' as a hardcoded value for now to avoid the extra API call.
 			$payment_method = $this->payment_methods['card'];

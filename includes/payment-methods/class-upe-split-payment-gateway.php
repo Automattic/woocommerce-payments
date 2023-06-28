@@ -344,7 +344,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	public function create_token_from_setup_intent( $setup_intent_id, $user ) {
 		try {
 			$setup_intent      = $this->payments_api_client->get_setup_intent( $setup_intent_id );
-			$payment_method_id = $setup_intent['payment_method'];
+			$payment_method_id = $setup_intent->get_payment_method_id();
 			// TODO: When adding SEPA and Sofort, we will need a new API call to get the payment method and from there get the type.
 			// Leaving 'card' as a hardcoded value for now to avoid the extra API call.
 			// $payment_method = $this->payment_methods['card'];// Maybe this should be enforced.
