@@ -20,6 +20,16 @@ HTMLOptionsCollection [
 ]
 `;
 
+exports[`Transactions filters when filtering by source device should render all types 1`] = `
+HTMLOptionsCollection [
+  <option
+    value="ios"
+  >
+    iPhone
+  </option>,
+]
+`;
+
 exports[`Transactions filters when filtering by type should render all types 1`] = `
 HTMLOptionsCollection [
   <option

@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Fraudulent disputes will now show as Transaction unauthorized

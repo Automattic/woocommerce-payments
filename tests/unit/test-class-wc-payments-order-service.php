@@ -866,7 +866,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Check that dispute order note was added with relevant info and link to dispute detail.
 		$this->assertStringContainsString( 'Payment has been disputed', $notes[0]->content );
 		$this->assertStringContainsString( $amount, $notes[0]->content );
-		$this->assertStringContainsString( $reason, $notes[0]->content );
+		$this->assertStringContainsString( 'Product not received', $notes[0]->content );
 		$this->assertStringContainsString( $deadline, $notes[0]->content );
 		$this->assertStringContainsString( '/payments/disputes/details&id=dp_123" target="_blank" rel="noopener noreferrer">Response due by', $notes[0]->content );
 

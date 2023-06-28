@@ -9,6 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Constants\Fraud_Meta_Box_Type;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Constants\Payment_Initiated_By;
@@ -16,7 +17,6 @@ use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Method;
 use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
-use WCPay\Core\Mode;
 use WCPay\Core\Server\Request\Cancel_Intention;
 use WCPay\Core\Server\Request\Capture_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
@@ -35,7 +35,6 @@ use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\WooPay\WooPay_Order_Status_Sync;
 use WCPay\WooPay\WooPay_Utilities;
-use WCPay\WooPay_Tracker;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Tracker;
 
@@ -676,7 +675,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if (
 			WC_Payments_Features::is_woopay_eligible() &&
 			'yes' === $this->get_option( 'platform_checkout', 'no' ) &&
-			! ( WC_Payments_Features::is_upe_legacy_enabled() && ! WC_Payments_Features::is_upe_split_enabled() ) &&
+			! ( WC_Payments_Features::is_upe_legacy_enabled() && ! WC_Payments_Features::is_upe_split_enabled() && ! WC_Payments_Features::is_upe_deferred_intent_enabled() ) &&
 			( is_checkout() || has_block( 'woocommerce/checkout' ) ) &&
 			! is_wc_endpoint_url( 'order-pay' ) &&
 			WC()->cart instanceof WC_Cart &&
@@ -798,17 +797,23 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				$error_details = esc_html( rtrim( $e->getMessage(), '.' ) );
 
-				if ( $e instanceof API_Exception && 'card_error' === $e->get_error_type() && 'incorrect_zip' === $e->get_error_code() ) {
-					/* translators: %1: the failed payment amount, %2: error message  */
-					$error_message = __(
-						'A payment of %1$s <strong>failed</strong>. %2$s',
-						'woocommerce-payments'
-					);
+				if ( $e instanceof API_Exception && 'card_error' === $e->get_error_type() ) {
+					// If the payment failed with a 'card_error' API exception, initialize the fraud meta box
+					// type with ALLOW, because fraud checks are passed, and the payment returned a "card error".
+					$this->order_service->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::ALLOW );
 
-					$error_details = __(
-						'We couldn’t verify the postal code in the billing address. If the issue persists, suggest the customer to reach out to the card issuing bank.',
-						'woocommerce-payments'
-					);
+					if ( 'incorrect_zip' === $e->get_error_code() ) {
+						/* translators: %1: the failed payment amount, %2: error message  */
+						$error_message = __(
+							'A payment of %1$s <strong>failed</strong>. %2$s',
+							'woocommerce-payments'
+						);
+
+						$error_details = __(
+							'We couldn’t verify the postal code in the billing address. If the issue persists, suggest the customer to reach out to the card issuing bank.',
+							'woocommerce-payments'
+						);
+					}
 				}
 
 				$note = sprintf(
@@ -1114,6 +1119,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_off_session( $payment_information->is_merchant_initiated() );
 				$request->set_payment_methods( $payment_methods );
 				$request->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
+
+				// Afterpay expects the shipping address to be sent in the request. This is not required for other payment methods.
+				if ( Payment_Method::AFTERPAY === $payment_information->get_payment_method() ) {
+					$request->set_shipping( $this->get_shipping_data_from_order( $order ) );
+				}
 
 				// The below if-statement ensures the support for UPE payment methods.
 				if ( $this->upe_needs_redirection( $payment_methods ) ) {
@@ -1722,6 +1732,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->get_deposit_delay_days();
 			case 'deposit_status':
 				return $this->get_deposit_status();
+			case 'deposit_restrictions':
+				return $this->get_deposit_restrictions();
 			case 'deposit_completed_waiting_period':
 				return $this->get_deposit_completed_waiting_period();
 			case 'current_protection_level':
@@ -2258,6 +2270,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Gets connected account deposit restrictions.
+	 *
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit restrictions.
+	 *
+	 * @return string deposit restrictions or default value.
+	 */
+	protected function get_deposit_restrictions( string $empty_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_deposit_restrictions();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get deposit restrictions.' . $e );
+		}
+		return $empty_value;
+	}
+
+	/**
 	 * Gets the completed deposit waiting period value.
 	 *
 	 * @param bool $empty_value Empty value to return when not connected or fails to fetch the completed deposit waiting period value.
@@ -2618,6 +2648,34 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'id'        => ! empty( $intent ) ? $intent->get_id() : null,
 			'message'   => $error_message,
 			'http_code' => $http_code,
+		];
+	}
+
+	/**
+	 * Create the shipping data array to send to Stripe when making a purchase.
+	 *
+	 * @param WC_Order $order The order that is being paid for.
+	 * @return array          The shipping data to send to Stripe.
+	 */
+	public function get_shipping_data_from_order( WC_Order $order ): array {
+		return [
+			'name'    => implode(
+				' ',
+				array_filter(
+					[
+						$order->get_shipping_first_name(),
+						$order->get_shipping_last_name(),
+					]
+				)
+			),
+			'address' => [
+				'line1'       => $order->get_shipping_address_1(),
+				'line2'       => $order->get_shipping_address_2(),
+				'postal_code' => $order->get_shipping_postcode(),
+				'city'        => $order->get_shipping_city(),
+				'state'       => $order->get_shipping_state(),
+				'country'     => $order->get_shipping_country(),
+			],
 		];
 	}
 
@@ -3064,7 +3122,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					'error' => [
 						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
-				]
+				],
+				WC_Payments_Utils::get_filtered_error_status_code( $e ),
 			);
 		}
 	}
@@ -3266,10 +3325,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string Connection URL.
 	 */
 	public function get_connection_url() {
-		if ( WC_Payments_Utils::is_in_onboarding_treatment_mode() ) {
-			// Configure step button will show `Set up` instead of `Connect`.
-			return '';
-		}
 		$account_data = $this->account->get_cached_account_data();
 
 		// The onboarding is finished if account_id is set. `Set up` will be shown instead of `Connect`.
