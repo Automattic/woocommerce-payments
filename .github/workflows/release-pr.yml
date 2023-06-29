@@ -129,7 +129,7 @@ jobs:
             echo "RELEASE_PR_ID=$PR_ID" >> $GITHUB_OUTPUT
           fi
 
-      - name: Add comment to PR
+      - name: "Add comment to PR"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_PR_ID: ${{ steps.create-pr-to-trunk.outputs.RELEASE_PR_ID }}
