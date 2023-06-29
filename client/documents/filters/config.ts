@@ -58,10 +58,13 @@ const wooCommerceVersion = parseFloat( wooCommerceVersionString ); // This will 
 export const advancedFilters = {
 	/** translators: A sentence describing filters for Documents. */
 	title:
-		wooCommerceVersion > 7.8
-			? __( 'Documents match <select /> filters', 'woocommerce-payments' )
-			: __(
+		wooCommerceVersion < 7.8
+			? __(
 					'Documents match {{select /}} filters',
+					'woocommerce-payments'
+			  )
+			: __(
+					'Documents match <select /> filters',
 					'woocommerce-payments'
 			  ),
 	filters: {
@@ -78,13 +81,13 @@ export const advancedFilters = {
 				),
 				/* translators: A sentence describing a Document date filter. */
 				title:
-					wooCommerceVersion > 7.8
+					wooCommerceVersion < 7.8
 						? __(
-								'<title>Date</title> <rule /> <filter />',
+								'{{title}}Date{{/title}} {{rule /}} {{filter /}}',
 								'woocommerce-payments'
 						  )
 						: __(
-								'{{title}}Date{{/title}} {{rule /}} {{filter /}}',
+								'<title>Date</title> <rule /> <filter />',
 								'woocommerce-payments'
 						  ),
 				filter: __( 'Select a document date', 'woocommerce-payments' ),
@@ -120,13 +123,13 @@ export const advancedFilters = {
 				),
 				/* translators: A sentence describing a Document type filter. */
 				title:
-					wooCommerceVersion > 7.8
+					wooCommerceVersion < 7.8
 						? __(
-								'<title>Type</title> <rule /> <filter />',
+								'{{title}}Type{{/title}} {{rule /}} {{filter /}}',
 								'woocommerce-payments'
 						  )
 						: __(
-								'{{title}}Type{{/title}} {{rule /}} {{filter /}}',
+								'<title>Type</title> <rule /> <filter />',
 								'woocommerce-payments'
 						  ),
 				filter: __( 'Select a document type', 'woocommerce-payments' ),
