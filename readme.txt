@@ -4,7 +4,7 @@ Tags: payment gateway, payment, apple pay, credit card, google pay
 Requires at least: 6.0
 Tested up to: 6.2
 Requires PHP: 7.3
-Stable tag: 6.1.0
+Stable tag: 9.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,6 +93,14 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 9.0.0 - 2023-07-05 =
+* Add - Added flag to allow us to remotely set if WooPay should be enabled or not for new merchants.
+* Fix - Fix a fatal error on sites using WC Subscriptions versions below 4.0.0
+* Fix - Fixed typo in businessInfo strings in strings.tsx file
+* Update - Refactoring and cleanup of code
+* Dev - Affirm&Afterpay: add new test cases to ensure the method availability on checkout
+* Dev - Affirm&Afterpay: refactor subscription products detection by using existing subs API
 
 = 6.1.0 - 2023-06-28 =
 * Add - Add additional validation in VAT controller.
