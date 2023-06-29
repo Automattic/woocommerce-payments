@@ -2242,6 +2242,12 @@ class WC_Payments_API_Client {
 		$created = new DateTime();
 		$created->setTimestamp( $intention_array['created'] );
 
+		// Metadata can be an empty stdClass object, so we need to check array type too.
+		// See https://github.com/Automattic/woocommerce-payments/pull/419/commits/c2c8438c3ed7be6d604435e059209fb87fb6d0c4.
+		$raw_metadata         = $intention_array['metadata'];
+		$metadata             = is_array( $raw_metadata ) && ! empty( $raw_metadata )
+			? $raw_metadata
+			: [];
 		$charge_array         = 0 < $intention_array['charges']['total_count'] ? end( $intention_array['charges']['data'] ) : null;
 		$next_action          = ! empty( $intention_array['next_action'] ) ? $intention_array['next_action'] : [];
 		$last_payment_error   = ! empty( $intention_array['last_payment_error'] ) ? $intention_array['last_payment_error'] : [];
@@ -2286,9 +2292,14 @@ class WC_Payments_API_Client {
 		$created = new DateTime();
 		$created->setTimestamp( $intention_array['created'] );
 
+		// Metadata can be an empty stdClass object, so we need to check array type too.
+		// See https://github.com/Automattic/woocommerce-payments/pull/419/commits/c2c8438c3ed7be6d604435e059209fb87fb6d0c4.
+		$raw_metadata         = $intention_array['metadata'];
+		$metadata             = is_array( $raw_metadata ) && ! empty( $raw_metadata )
+			? $raw_metadata
+			: [];
 		$next_action          = ! empty( $intention_array['next_action'] ) ? $intention_array['next_action'] : [];
 		$last_setup_error     = ! empty( $intention_array['last_setup_error'] ) ? $intention_array['last_setup_error'] : [];
-		$metadata             = ! empty( $intention_array['metadata'] ) ? $intention_array['metadata'] : [];
 		$customer             = $intention_array['customer'] ?? null;
 		$payment_method       = $intention_array['payment_method'] ?? $intention_array['source'] ?? null;
 		$payment_method_types = $intention_array['payment_method_types'] ?? [];
