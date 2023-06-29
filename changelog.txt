@@ -1,5 +1,7 @@
 *** WooCommerce Payments Changelog ***
 
+= 6.1.1 - 2023-06-29 =
+
 = 6.1.0 - 2023-06-28 =
 * Add - Add additional validation in VAT controller.
 * Add - Add Affirm and Afterpay to checkout block.
