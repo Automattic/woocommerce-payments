@@ -100,12 +100,12 @@ const wooCommerceVersion = parseFloat( wooCommerceVersionString ); // This will 
 export const advancedFilters = {
 	/** translators: A sentence describing filters for Disputes. */
 	title:
-		wooCommerceVersion > 7.8
-			? __( 'Disputes match <select /> filters', 'woocommerce-payments' )
-			: __(
+		wooCommerceVersion < 7.8
+			? __(
 					'Disputes match {{select /}} filters',
 					'woocommerce-payments'
-			  ),
+			  )
+			: __( 'Disputes match <select /> filters', 'woocommerce-payments' ),
 	filters: {
 		date: {
 			labels: {

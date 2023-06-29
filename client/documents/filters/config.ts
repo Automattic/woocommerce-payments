@@ -123,13 +123,13 @@ export const advancedFilters = {
 				),
 				/* translators: A sentence describing a Document type filter. */
 				title:
-					wooCommerceVersion > 7.8
+					wooCommerceVersion < 7.8
 						? __(
-								'<title>Type</title> <rule /> <filter />',
+								'{{title}}Type{{/title}} {{rule /}} {{filter /}}',
 								'woocommerce-payments'
 						  )
 						: __(
-								'{{title}}Type{{/title}} {{rule /}} {{filter /}}',
+								'<title>Type</title> <rule /> <filter />',
 								'woocommerce-payments'
 						  ),
 				filter: __( 'Select a document type', 'woocommerce-payments' ),
