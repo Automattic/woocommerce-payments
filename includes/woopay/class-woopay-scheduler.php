@@ -154,7 +154,7 @@ class WooPay_Scheduler {
 		}
 
 		if ( ! $this->contains_extensions_in_list( $active_plugins, $adapted_extensions ) ) {
-			delete_option( self::ADAPTED_EXTENSIONS_LIST_OPTION_NAME );
+			delete_option( self::HAS_ADAPTED_EXTENSIONS_OPTION_NAME );
 		}
 	}
 
