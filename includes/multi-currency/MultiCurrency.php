@@ -15,6 +15,8 @@ use WC_Payments_Localization_Service;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Database_Cache;
 use WCPay\Logger;
+use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
+use WCPay\MultiCurrency\Exceptions\InvalidCurrencyRateException;
 use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
 
 defined( 'ABSPATH' ) || exit;
@@ -456,6 +458,84 @@ class MultiCurrency {
 	}
 
 	/**
+	 * Returns the store's current available, enabled, and default currencies.
+	 *
+	 * @return array
+	 */
+	public function get_store_currencies(): array {
+		return [
+			'available' => $this->get_available_currencies(),
+			'enabled'   => $this->get_enabled_currencies(),
+			'default'   => $this->get_default_currency(),
+		];
+	}
+
+	/**
+	 * Gets the currency settings for a single currency.
+	 *
+	 * @param   string $currency_code The currency code to get settings for.
+	 *
+	 * @return  array The currency's settings.
+	 *
+	 * @throws InvalidCurrencyException
+	 */
+	public function get_single_currency_settings( string $currency_code ): array {
+		// Confirm the currency code is valid before trying to get the settings.
+		if ( ! array_key_exists( strtoupper( $currency_code ), $this->get_available_currencies() ) ) {
+			$message = 'Invalid currency passed to get_single_currency_settings: ' . $currency_code;
+			Logger::error( $message );
+			throw new InvalidCurrencyException( $message, 'wcpay_multi_currency_invalid_currency', 500 );
+		}
+
+		$currency_code = strtolower( $currency_code );
+		return [
+			'exchange_rate_type' => get_option( 'wcpay_multi_currency_exchange_rate_' . $currency_code, 'automatic' ),
+			'manual_rate'        => get_option( 'wcpay_multi_currency_manual_rate_' . $currency_code, null ),
+			'price_rounding'     => get_option( 'wcpay_multi_currency_price_rounding_' . $currency_code, null ),
+			'price_charm'        => get_option( 'wcpay_multi_currency_price_charm_' . $currency_code, null ),
+		];
+	}
+
+	/**
+	 * Updates the currency settings for a single currency.
+	 *
+	 * @param string $currency_code      The single currency code to be updated.
+	 * @param string $exchange_rate_type The exchange rate type setting.
+	 * @param float  $price_rounding     The price rounding setting.
+	 * @param float  $price_charm        The price charm setting.
+	 * @param ?float $manual_rate        The manual rate setting, or null.
+	 *
+	 * @return void
+	 *
+	 * @throws InvalidCurrencyException
+	 * @throws InvalidCurrencyRateException
+	 */
+	public function update_single_currency_settings( string $currency_code, string $exchange_rate_type, float $price_rounding, float $price_charm, $manual_rate = null ) {
+		// Confirm the currency code is valid before trying to update the settings.
+		if ( ! array_key_exists( strtoupper( $currency_code ), $this->get_available_currencies() ) ) {
+			$message = 'Invalid currency passed to update_single_currency_settings: ' . $currency_code;
+			Logger::error( $message );
+			throw new InvalidCurrencyException( $message, 'wcpay_multi_currency_invalid_currency', 500 );
+		}
+
+		if ( 'manual' === $exchange_rate_type && ! is_null( $manual_rate ) ) {
+			if ( ! is_numeric( $manual_rate ) || 0 >= $manual_rate ) {
+				$message = 'Invalid manual currency rate passed to update_single_currency_settings: ' . $manual_rate;
+				Logger::error( $message );
+				throw new InvalidCurrencyRateException( $message, 'wcpay_multi_currency_invalid_currency_rate', 500 );
+			}
+			update_option( 'wcpay_multi_currency_manual_rate_' . $currency_code, $manual_rate );
+		}
+
+		$currency_code = strtolower( $currency_code );
+		update_option( 'wcpay_multi_currency_price_rounding_' . $currency_code, $price_rounding );
+		update_option( 'wcpay_multi_currency_price_charm_' . $currency_code, $price_charm );
+		if ( in_array( $exchange_rate_type, [ 'automatic', 'manual' ], true ) ) {
+			update_option( 'wcpay_multi_currency_exchange_rate_' . $currency_code, esc_attr( $exchange_rate_type ) );
+		}
+	}
+
+	/**
 	 * Sets up the available currencies, which are alphabetical by name.
 	 *
 	 * @return void
@@ -588,22 +668,37 @@ class MultiCurrency {
 	 * @param string[] $currencies Array of currency codes to be enabled.
 	 *
 	 * @return void
+	 *
+	 * @throws InvalidCurrencyException
 	 */
 	public function set_enabled_currencies( $currencies = [] ) {
-		if ( 0 < count( $currencies ) ) {
-			// Get the currencies that were removed before they are updated.
-			$removed_currencies = array_diff( array_keys( $this->get_enabled_currencies() ), $currencies );
+		// If curriencies is not an array, or if there are no currencies, just exit.
+		if ( ! is_array( $currencies ) || 0 === count( $currencies ) ) {
+			return;
+		}
 
-			// Update the enabled currencies and reinitialize.
-			update_option( $this->id . '_enabled_currencies', $currencies );
-			$this->initialize_enabled_currencies();
+		// Confirm the currencies submitted are available/valid currencies.
+		$invalid_currencies = array_diff( $currencies, array_keys( $this->get_available_currencies() ) );
+		if ( 0 < count( $invalid_currencies ) ) {
+			$message = 'Invalid currency/currencies passed to set_enabled_currencies: ' . implode( ', ', $invalid_currencies );
+			Logger::error( $message );
+			throw new InvalidCurrencyException( $message, 'wcpay_multi_currency_invalid_currency', 500 );
+		}
 
-			Logger::debug(
-				'Enabled currencies updated: '
-				. var_export( $currencies, true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
-			);
+		// Get the currencies that were removed before they are updated.
+		$removed_currencies = array_diff( array_keys( $this->get_enabled_currencies() ), $currencies );
 
-			// Now remove the removed currencies settings.
+		// Update the enabled currencies and reinitialize.
+		update_option( $this->id . '_enabled_currencies', $currencies );
+		$this->initialize_enabled_currencies();
+
+		Logger::debug(
+			'Enabled currencies updated: '
+			. var_export( $currencies, true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+		);
+
+		// Now remove the removed currencies settings.
+		if ( 0 < count( $removed_currencies ) ) {
 			$this->remove_currencies_settings( $removed_currencies );
 		}
 	}

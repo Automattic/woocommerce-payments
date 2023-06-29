@@ -23,6 +23,7 @@ import {
 	useDepositScheduleMonthlyAnchor,
 	useDepositStatus,
 	useCompletedWaitingPeriod,
+	useDepositRestrictions,
 } from '../../data';
 import './style.scss';
 import wcpayTracks from 'wcpay/tracks';
@@ -140,9 +141,13 @@ const CustomizeDepositSchedule = () => {
 };
 const DepositsSchedule = () => {
 	const depositStatus = useDepositStatus();
+	const depositRestrictions = useDepositRestrictions();
 	const completedWaitingPeriod = useCompletedWaitingPeriod();
 
-	if ( 'enabled' !== depositStatus ) {
+	if (
+		'enabled' !== depositStatus ||
+		'schedule_restricted' === depositRestrictions
+	) {
 		return (
 			<Notice
 				status="warning"
