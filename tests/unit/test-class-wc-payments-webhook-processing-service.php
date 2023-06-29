@@ -627,7 +627,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_api_client
 			->expects( $this->once() )
-			->method( 'deserialize_intention_object_from_array' )
+			->method( 'deserialize_payment_intention_object_from_array' )
 			->with( $this->event_body['data']['object'] )
 			->willReturn(
 				WC_Helper_Intention::create_intention(
@@ -722,7 +722,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_api_client
 			->expects( $this->once() )
-			->method( 'deserialize_intention_object_from_array' )
+			->method( 'deserialize_payment_intention_object_from_array' )
 			->with( $this->event_body['data']['object'] )
 			->willReturn(
 				WC_Helper_Intention::create_intention(
@@ -821,7 +821,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_api_client
 			->expects( $this->once() )
-			->method( 'deserialize_intention_object_from_array' )
+			->method( 'deserialize_payment_intention_object_from_array' )
 			->with( $this->event_body['data']['object'] )
 			->willReturn(
 				WC_Helper_Intention::create_intention(
@@ -921,7 +921,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_api_client
 			->expects( $this->once() )
-			->method( 'deserialize_intention_object_from_array' )
+			->method( 'deserialize_payment_intention_object_from_array' )
 			->with( $this->event_body['data']['object'] )
 			->willReturn(
 				WC_Helper_Intention::create_intention(
@@ -1021,7 +1021,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_api_client
 			->expects( $this->once() )
-			->method( 'deserialize_intention_object_from_array' )
+			->method( 'deserialize_payment_intention_object_from_array' )
 			->with( $this->event_body['data']['object'] )
 			->willReturn(
 				WC_Helper_Intention::create_intention(
