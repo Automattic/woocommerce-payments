@@ -1,5 +1,13 @@
 *** WooCommerce Payments Changelog ***
 
+= 6.2.0 - 2023-07-05 =
+* Add - Added flag to allow us to remotely set if WooPay should be enabled or not for new merchants.
+* Fix - Fix a fatal error on sites using WC Subscriptions versions below 4.0.0
+* Fix - Fixed typo in businessInfo strings in strings.tsx file
+* Update - Refactoring and cleanup of code
+* Dev - Affirm&Afterpay: add new test cases to ensure the method availability on checkout
+* Dev - Affirm&Afterpay: refactor subscription products detection by using existing subs API
+
 = 6.1.0 - 2023-06-28 =
 * Add - Add additional validation in VAT controller.
 * Add - Add Affirm and Afterpay to checkout block.
