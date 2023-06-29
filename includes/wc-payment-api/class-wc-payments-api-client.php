@@ -2245,7 +2245,6 @@ class WC_Payments_API_Client {
 		$charge_array         = 0 < $intention_array['charges']['total_count'] ? end( $intention_array['charges']['data'] ) : null;
 		$next_action          = ! empty( $intention_array['next_action'] ) ? $intention_array['next_action'] : [];
 		$last_payment_error   = ! empty( $intention_array['last_payment_error'] ) ? $intention_array['last_payment_error'] : [];
-		$metadata             = ! empty( $intention_array['metadata'] ) ? $intention_array['metadata'] : [];
 		$customer             = $intention_array['customer'] ?? $charge_array['customer'] ?? null;
 		$payment_method       = $intention_array['payment_method'] ?? $intention_array['source'] ?? null;
 		$processing           = $intention_array[ Payment_Intent_Status::PROCESSING ] ?? [];
