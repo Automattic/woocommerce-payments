@@ -13,6 +13,11 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
  */
 import { TransactionsFilters } from '../';
 
+jest.mock( '@woocommerce/settings', () => ( {
+	...jest.requireActual( '@woocommerce/settings' ),
+	getSetting: jest.fn( ( key ) => ( key === 'wcVersion' ? 7.7 : '' ) ),
+} ) );
+
 function addAdvancedFilter( filter: string ) {
 	user.click( screen.getByRole( 'button', { name: /Add a Filter/i } ) );
 	user.click( screen.getByRole( 'button', { name: filter } ) );
