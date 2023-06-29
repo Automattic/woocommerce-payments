@@ -61,6 +61,7 @@ class WC_Payments_API_Payment_Intention extends WC_Payments_API_Abstract_Intenti
 	 * @param array                  $metadata             - An array containing additional metadata of associated charge or order.
 	 * @param array                  $processing           - An array containing details of the processing state of the payment.
 	 * @param array                  $payment_method_types - An array containing the possible payment methods for the intent.
+	 * @param array                  $payment_method_options - An array containing the payment method options for the intent.
 	 * @param array                  $order                - An array containing the order data associated with this intention.
 	 */
 	public function __construct(
@@ -78,23 +79,25 @@ class WC_Payments_API_Payment_Intention extends WC_Payments_API_Abstract_Intenti
 		$metadata = [],
 		$processing = [],
 		$payment_method_types = [],
+		$payment_method_options = [],
 		$order = []
 	) {
-		$this->id                   = $id;
-		$this->amount               = $amount;
-		$this->created              = $created;
-		$this->status               = $status;
-		$this->client_secret        = $client_secret;
-		$this->currency             = strtoupper( $currency );
-		$this->next_action          = $next_action;
-		$this->last_payment_error   = $last_payment_error;
-		$this->customer_id          = $customer_id;
-		$this->payment_method_id    = $payment_method_id;
-		$this->charge               = $charge;
-		$this->metadata             = $metadata;
-		$this->processing           = $processing;
-		$this->payment_method_types = $payment_method_types;
-		$this->order                = $order;
+		$this->id                     = $id;
+		$this->amount                 = $amount;
+		$this->created                = $created;
+		$this->status                 = $status;
+		$this->client_secret          = $client_secret;
+		$this->currency               = strtoupper( $currency );
+		$this->next_action            = $next_action;
+		$this->last_payment_error     = $last_payment_error;
+		$this->customer_id            = $customer_id;
+		$this->payment_method_id      = $payment_method_id;
+		$this->charge                 = $charge;
+		$this->metadata               = $metadata;
+		$this->processing             = $processing;
+		$this->payment_method_types   = $payment_method_types;
+		$this->payment_method_options = $payment_method_options;
+		$this->order                  = $order;
 	}
 
 	/**

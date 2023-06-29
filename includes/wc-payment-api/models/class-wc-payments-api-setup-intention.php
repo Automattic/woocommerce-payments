@@ -29,6 +29,7 @@ class WC_Payments_API_Setup_Intention extends WC_Payments_API_Abstract_Intention
 	 * @param array       $last_setup_error     - An array containing details of any errors.
 	 * @param array       $metadata             - An array containing additional metadata of associated charge or order.
 	 * @param array       $payment_method_types - An array containing the possible payment methods for the intent.
+	 * @param array       $payment_method_options - An array containing the payment method options for the intent.
 	 * @param array       $order                - An array containing the order data associated with this intention.
 	 */
 	public function __construct(
@@ -42,19 +43,21 @@ class WC_Payments_API_Setup_Intention extends WC_Payments_API_Abstract_Intention
 		array $last_setup_error = [],
 		array $metadata = [],
 		array $payment_method_types = [],
+		array $payment_method_options = [],
 		array $order = []
 	) {
-		$this->id                   = $id;
-		$this->created              = $created;
-		$this->status               = $status;
-		$this->client_secret        = $client_secret;
-		$this->next_action          = $next_action;
-		$this->last_setup_error     = $last_setup_error;
-		$this->customer_id          = $customer_id;
-		$this->payment_method_id    = $payment_method_id;
-		$this->metadata             = $metadata;
-		$this->payment_method_types = $payment_method_types;
-		$this->order                = $order;
+		$this->id                     = $id;
+		$this->created                = $created;
+		$this->status                 = $status;
+		$this->client_secret          = $client_secret;
+		$this->next_action            = $next_action;
+		$this->last_setup_error       = $last_setup_error;
+		$this->customer_id            = $customer_id;
+		$this->payment_method_id      = $payment_method_id;
+		$this->metadata               = $metadata;
+		$this->payment_method_types   = $payment_method_types;
+		$this->payment_method_options = $payment_method_options;
+		$this->order                  = $order;
 	}
 
 	/**

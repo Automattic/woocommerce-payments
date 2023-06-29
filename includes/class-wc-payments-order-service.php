@@ -1443,14 +1443,13 @@ class WC_Payments_Order_Service {
 	 * @return array The data we need to continue processing.
 	 */
 	private function get_intent_data( $intent ): array {
-		$payment_method_types = $intent->get_payment_method_types();
 
 		$intent_data = [
 			'intent_id'           => $intent->get_id(),
 			'intent_status'       => $intent->get_status(),
 			'charge_id'           => '',
 			'fraud_outcome'       => $intent->get_metadata()['fraud_outcome'] ?? '',
-			'payment_method_type' => 1 === count( $payment_method_types ) ? $payment_method_types[0] : '',
+			'payment_method_type' => $intent->get_payment_method_type(),
 		];
 
 		if ( is_a( $intent, WC_Payments_API_Payment_Intention::class ) ) {

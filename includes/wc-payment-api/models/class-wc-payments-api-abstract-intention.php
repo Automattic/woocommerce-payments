@@ -84,6 +84,13 @@ abstract class WC_Payments_API_Abstract_Intention implements \JsonSerializable {
 	protected $order;
 
 	/**
+	 * The payment method options for the payment.
+	 *
+	 * @var array
+	 */
+	protected $payment_method_options;
+
+	/**
 	 * Gets charge ID
 	 *
 	 * @return string
@@ -171,6 +178,25 @@ abstract class WC_Payments_API_Abstract_Intention implements \JsonSerializable {
 	 */
 	public function get_order() {
 		return $this->order;
+	}
+
+	/**
+	 * Returns the payment method options associated with this intention
+	 *
+	 * @return array
+	 */
+	public function get_payment_method_options() {
+		return $this->payment_method_options;
+	}
+
+	/**
+	 * Return the payment method type used in the intent that is derived from property `payment_method_options`.
+	 *
+	 * @return string|null
+	 */
+	public function get_payment_method_type() {
+		$keys = count( $this->payment_method_options ) > 0 ? array_keys( $this->payment_method_options ) : null;
+		return $keys ? $keys[0] : null;
 	}
 
 	/**

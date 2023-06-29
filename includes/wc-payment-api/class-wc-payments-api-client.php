@@ -2244,17 +2244,18 @@ class WC_Payments_API_Client {
 
 		// Metadata can be an empty stdClass object, so we need to check array type too.
 		// See https://github.com/Automattic/woocommerce-payments/pull/419/commits/c2c8438c3ed7be6d604435e059209fb87fb6d0c4.
-		$raw_metadata         = $intention_array['metadata'];
-		$metadata             = is_array( $raw_metadata ) && ! empty( $raw_metadata )
+		$raw_metadata           = $intention_array['metadata'];
+		$metadata               = is_array( $raw_metadata ) && ! empty( $raw_metadata )
 			? $raw_metadata
 			: [];
-		$charge_array         = 0 < $intention_array['charges']['total_count'] ? end( $intention_array['charges']['data'] ) : null;
-		$next_action          = ! empty( $intention_array['next_action'] ) ? $intention_array['next_action'] : [];
-		$last_payment_error   = ! empty( $intention_array['last_payment_error'] ) ? $intention_array['last_payment_error'] : [];
-		$customer             = $intention_array['customer'] ?? $charge_array['customer'] ?? null;
-		$payment_method       = $intention_array['payment_method'] ?? $intention_array['source'] ?? null;
-		$processing           = $intention_array[ Payment_Intent_Status::PROCESSING ] ?? [];
-		$payment_method_types = $intention_array['payment_method_types'] ?? [];
+		$charge_array           = 0 < $intention_array['charges']['total_count'] ? end( $intention_array['charges']['data'] ) : null;
+		$next_action            = ! empty( $intention_array['next_action'] ) ? $intention_array['next_action'] : [];
+		$last_payment_error     = ! empty( $intention_array['last_payment_error'] ) ? $intention_array['last_payment_error'] : [];
+		$customer               = $intention_array['customer'] ?? $charge_array['customer'] ?? null;
+		$payment_method         = $intention_array['payment_method'] ?? $intention_array['source'] ?? null;
+		$processing             = $intention_array[ Payment_Intent_Status::PROCESSING ] ?? [];
+		$payment_method_types   = $intention_array['payment_method_types'] ?? [];
+		$payment_method_options = $intention_array['payment_method_options'] ?? [];
 
 		$charge = ! empty( $charge_array ) ? self::deserialize_charge_object_from_array( $charge_array ) : null;
 		$order  = $this->get_order_info_from_intention_object( $intention_array['id'] );
@@ -2274,6 +2275,7 @@ class WC_Payments_API_Client {
 			$metadata,
 			$processing,
 			$payment_method_types,
+			$payment_method_options,
 			$order
 		);
 
@@ -2294,15 +2296,16 @@ class WC_Payments_API_Client {
 
 		// Metadata can be an empty stdClass object, so we need to check array type too.
 		// See https://github.com/Automattic/woocommerce-payments/pull/419/commits/c2c8438c3ed7be6d604435e059209fb87fb6d0c4.
-		$raw_metadata         = $intention_array['metadata'];
-		$metadata             = is_array( $raw_metadata ) && ! empty( $raw_metadata )
+		$raw_metadata           = $intention_array['metadata'];
+		$metadata               = is_array( $raw_metadata ) && ! empty( $raw_metadata )
 			? $raw_metadata
 			: [];
-		$next_action          = ! empty( $intention_array['next_action'] ) ? $intention_array['next_action'] : [];
-		$last_setup_error     = ! empty( $intention_array['last_setup_error'] ) ? $intention_array['last_setup_error'] : [];
-		$customer             = $intention_array['customer'] ?? null;
-		$payment_method       = $intention_array['payment_method'] ?? $intention_array['source'] ?? null;
-		$payment_method_types = $intention_array['payment_method_types'] ?? [];
+		$next_action            = ! empty( $intention_array['next_action'] ) ? $intention_array['next_action'] : [];
+		$last_setup_error       = ! empty( $intention_array['last_setup_error'] ) ? $intention_array['last_setup_error'] : [];
+		$customer               = $intention_array['customer'] ?? null;
+		$payment_method         = $intention_array['payment_method'] ?? $intention_array['source'] ?? null;
+		$payment_method_types   = $intention_array['payment_method_types'] ?? [];
+		$payment_method_options = $intention_array['payment_method_options'] ?? [];
 
 		$order = $this->get_order_info_from_intention_object( $intention_array['id'] );
 
@@ -2317,6 +2320,7 @@ class WC_Payments_API_Client {
 			$last_setup_error,
 			$metadata,
 			$payment_method_types,
+			$payment_method_options,
 			$order
 		);
 

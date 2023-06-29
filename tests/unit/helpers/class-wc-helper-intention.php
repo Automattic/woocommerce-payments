@@ -57,20 +57,21 @@ class WC_Helper_Intention {
 		$intent_data = wp_parse_args(
 			$data,
 			[
-				'id'                   => 'pi_mock',
-				'amount'               => 5000,
-				'currency'             => 'usd',
-				'customer_id'          => 'cus_mock',
-				'payment_method_id'    => 'pm_mock',
-				'status'               => Payment_Intent_Status::SUCCEEDED,
-				'client_secret'        => 'cs_mock',
-				'charge'               => [],
-				'created'              => new DateTime( '2022-05-20 19:05:38' ),
-				'next_action'          => [],
-				'last_payment_error'   => [],
-				'metadata'             => [],
-				'processing'           => [],
-				'payment_method_types' => [],
+				'id'                     => 'pi_mock',
+				'amount'                 => 5000,
+				'currency'               => 'usd',
+				'customer_id'            => 'cus_mock',
+				'payment_method_id'      => 'pm_mock',
+				'status'                 => Payment_Intent_Status::SUCCEEDED,
+				'client_secret'          => 'cs_mock',
+				'charge'                 => [],
+				'created'                => new DateTime( '2022-05-20 19:05:38' ),
+				'next_action'            => [],
+				'last_payment_error'     => [],
+				'metadata'               => [],
+				'processing'             => [],
+				'payment_method_types'   => [],
+				'payment_method_options' => [],
 			]
 		);
 
@@ -88,7 +89,8 @@ class WC_Helper_Intention {
 			$intent_data['last_payment_error'],
 			$intent_data['metadata'],
 			$intent_data['processing'],
-			$intent_data['payment_method_types']
+			$intent_data['payment_method_types'],
+			$intent_data['payment_method_options']
 		);
 
 		return $intention;
@@ -105,16 +107,21 @@ class WC_Helper_Intention {
 		$intent_data = wp_parse_args(
 			$data,
 			[
-				'id'                   => 'seti_mock',
-				'customer_id'          => 'cus_mock',
-				'payment_method_id'    => 'pm_mock',
-				'status'               => Setup_Intent_Status::SUCCEEDED,
-				'client_secret'        => 'cs_mock',
-				'created'              => new DateTime( '2022-05-20 19:05:38' ),
-				'next_action'          => [],
-				'last_setup_error'     => [],
-				'metadata'             => [],
-				'payment_method_types' => [ 'card' ],
+				'id'                     => 'seti_mock',
+				'customer_id'            => 'cus_mock',
+				'payment_method_id'      => 'pm_mock',
+				'status'                 => Setup_Intent_Status::SUCCEEDED,
+				'client_secret'          => 'cs_mock',
+				'created'                => new DateTime( '2022-05-20 19:05:38' ),
+				'next_action'            => [],
+				'last_setup_error'       => [],
+				'metadata'               => [],
+				'payment_method_types'   => [],
+				'payment_method_options' => [
+					'card' => [
+						'request_three_d_secure' => 'automatic',
+					],
+				],
 			]
 		);
 
@@ -128,7 +135,8 @@ class WC_Helper_Intention {
 			$intent_data['next_action'],
 			$intent_data['last_setup_error'],
 			$intent_data['metadata'],
-			$intent_data['payment_method_types']
+			$intent_data['payment_method_types'],
+			$intent_data['payment_method_options']
 		);
 
 		return $intention;

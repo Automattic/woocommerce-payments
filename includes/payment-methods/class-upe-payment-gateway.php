@@ -741,8 +741,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$currency               = $order->get_currency();
 				$payment_method_id      = $intent->get_payment_method_id();
 				$payment_method_details = false;
-				$payment_method_types   = $intent->get_payment_method_types();
-				$payment_method_type    = $payment_method_types ? $payment_method_types[0] : null;
+				$payment_method_type    = $intent->get_payment_method_type();
 				$error                  = $intent->get_last_setup_error();
 			}
 

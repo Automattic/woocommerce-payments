@@ -1338,8 +1338,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 		} else {
 			$payment_method_details = false;
-			$payment_method_types   = $intent->get_payment_method_types();
-			$payment_method_type    = $payment_method_types ? $payment_method_types[0] : null;
+			$payment_method_type    = $intent->get_payment_method_type();
 		}
 
 		if ( empty( $_POST['payment_request_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification

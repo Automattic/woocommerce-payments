@@ -632,8 +632,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
-						'status'               => $intent_status,
-						'payment_method_types' => [ 'card' ],
+						'status'                 => $intent_status,
+						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 					]
 				)
 			);
@@ -727,8 +727,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
-						'status'               => $intent_status,
-						'payment_method_types' => [ 'card' ],
+						'status'                 => $intent_status,
+						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 					]
 				)
 			);
@@ -826,8 +826,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
-						'status'               => $intent_status,
-						'payment_method_types' => [ 'card' ],
+						'status' => $intent_status,
 					]
 				)
 			);
@@ -900,7 +899,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 					[
 						'id'                     => 'py_123123123123123',
 						'payment_method_details' => [
-							'type' => $payment_method_type = 'card_present',
+							'type' => 'card_present',
 						],
 					],
 				],
@@ -926,8 +925,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
-						'status'               => $intent_status,
-						'payment_method_types' => [ $payment_method_type ],
+						'status' => $intent_status,
 					]
 				)
 			);
@@ -1026,8 +1024,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
-						'status'               => $intent_status,
-						'payment_method_types' => [ 'card' ],
+						'status'                 => $intent_status,
+						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 					]
 				)
 			);
