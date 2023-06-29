@@ -12,6 +12,12 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
  */
 import { DepositsFilters } from '../';
 
+// TODO: this is a bit of a hack as we're mocking an old version of WC, we should relook at this.
+jest.mock( '@woocommerce/settings', () => ( {
+	...jest.requireActual( '@woocommerce/settings' ),
+	getSetting: jest.fn( ( key ) => ( 'wcVersion' === key ? 7.7 : '' ) ),
+} ) );
+
 describe( 'Deposits filters', () => {
 	beforeEach( () => {
 		// the query string is preserved across tests, so we need to reset it
@@ -180,12 +186,6 @@ describe( 'Deposits filters', () => {
 			expect( getQuery().status_is ).toEqual( 'estimated' );
 		} );
 	} );
-
-	// TODO: this is a bit of a hack as we're mocking an old version of WC, we should relook at this.
-	jest.mock( '@woocommerce/settings', () => ( {
-		...jest.requireActual( '@woocommerce/settings' ),
-		getSetting: jest.fn( ( key ) => ( 'wcVersion' === key ? 7.7 : '' ) ),
-	} ) );
 
 	function addAdvancedFilter( filter ) {
 		user.click( screen.getByRole( 'button', { name: /Add a Filter/i } ) );
