@@ -35,6 +35,11 @@ on:
         required: false
         default: "next wednesday"
         type: string
+      skip-build-zip:
+        type: boolean
+        required: false
+        default: true
+        description: "Skip building the zip file"
       skip-smoke-tests:
         type: boolean
         required: false
@@ -136,6 +141,7 @@ jobs:
   build-zip-and-run-smoke-tests:
     name: "Build zip & Run smoke tests"
     needs: prepare-release
+    if: ${{ ! inputs.skip-build-zip }}
     uses: ./.github/workflows/build-zip-and-run-smoke-tests.yml
     with:
       skip-smoke-tests: ${{ inputs.skip-smoke-tests }}
