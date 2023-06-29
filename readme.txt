@@ -95,7 +95,7 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 6.1.1 - 2023-06-29 =
-
+* Fix - Fix syntax for advanced filters in WC 7.8 and over
 
 = 6.1.0 - 2023-06-28 =
 * Add - Add additional validation in VAT controller.
