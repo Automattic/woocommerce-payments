@@ -135,7 +135,7 @@ export const advancedFilters = {
 				),
 				/* translators: A sentence describing a deposit status filter. See screen shot for context: https://d.pr/i/NcGpwL */
 				title:
-					7.8 >= wooCommerceVersion
+					7.8 > wooCommerceVersion
 						? __(
 								'{{title}}Status{{/title}} {{rule /}} {{filter /}}',
 								'woocommerce-payments'
