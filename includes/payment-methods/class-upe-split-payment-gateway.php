@@ -198,7 +198,8 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 					'error' => [
 						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
-				]
+				],
+				WC_Payments_Utils::get_filtered_error_status_code( $e ),
 			);
 		}
 	}
@@ -255,7 +256,8 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 					'error' => [
 						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
-				]
+				],
+				WC_Payments_Utils::get_filtered_error_status_code( $e ),
 			);
 		}
 	}
@@ -301,7 +303,8 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 					'error' => [
 						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
-				]
+				],
+				WC_Payments_Utils::get_filtered_error_status_code( $e ),
 			);
 		}
 	}

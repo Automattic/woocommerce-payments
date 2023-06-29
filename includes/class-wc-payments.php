@@ -274,6 +274,13 @@ class WC_Payments {
 	private static $customer_service_api;
 
 	/**
+	 * Instance of WC_Payments_Incentives_Service, created in init function
+	 *
+	 * @var WC_Payments_Incentives_Service
+	 */
+	private static $incentives_service;
+
+	/**
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
@@ -428,6 +435,7 @@ class WC_Payments {
 		include_once __DIR__ . '/woopay/class-woopay-scheduler.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-link.php';
 		include_once __DIR__ . '/core/service/class-wc-payments-customer-service-api.php';
+		include_once __DIR__ . '/class-wc-payments-incentives-service.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
@@ -466,8 +474,9 @@ class WC_Payments {
 		self::$onboarding_service                  = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
 		self::$woopay_util                         = new WooPay_Utilities();
 		self::$woopay_tracker                      = new WooPay_Tracker( self::get_wc_payments_http() );
+		self::$incentives_service                  = new WC_Payments_Incentives_Service( self::$database_cache );
 
-		( new WooPay_Scheduler() )->init();
+		( new WooPay_Scheduler( self::$api_client ) )->init();
 
 		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
 
@@ -575,7 +584,7 @@ class WC_Payments {
 		}
 
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
-			new WC_Payments_Admin( self::$api_client, self::get_gateway(), self::$account, self::$onboarding_service, self::$database_cache );
+			new WC_Payments_Admin( self::$api_client, self::get_gateway(), self::$account, self::$onboarding_service, self::$incentives_service, self::$database_cache );
 
 			new WC_Payments_Admin_Settings( self::get_gateway() );
 
@@ -1222,7 +1231,7 @@ class WC_Payments {
 	 */
 	public static function register_checkout_gateway( $payment_method_registry ) {
 		require_once __DIR__ . '/class-wc-payments-blocks-payment-method.php';
-		if ( WC_Payments_Features::is_upe_split_enabled() ) {
+		if ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 			require_once __DIR__ . '/class-wc-payments-upe-split-blocks-payment-method.php';
 			$payment_method_registry->register( new WC_Payments_UPE_Split_Blocks_Payment_Method() );
 		} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
@@ -1312,6 +1321,8 @@ class WC_Payments {
 
 			add_filter( 'admin_notices', 'wcpay_show_old_woocommerce_for_norway_notice' );
 		}
+
+		add_filter( 'admin_notices', [ __CLASS__, 'wcpay_show_old_woocommerce_for_hungary_sweden_and_czech_republic' ] );
 	}
 
 	/**
@@ -1479,7 +1490,7 @@ class WC_Payments {
 			'user_session'    => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];
 
-		$has_adapted_extension_enabled = get_option( 'woopay_has_adapted_extensions', false );
+		$has_adapted_extension_enabled = get_option( WooPay_Scheduler::HAS_ADAPTED_EXTENSIONS_OPTION_NAME, false );
 		if ( $has_adapted_extension_enabled && ! empty( $email ) && ! is_user_logged_in() ) {
 			$user = get_user_by( 'email', $email );
 
@@ -1529,9 +1540,9 @@ class WC_Payments {
 	}
 
 	/**
-	 * Initializes the WooPay_Store_Api_Token class and returns the Cart token.
+	 * Initializes the WooPay_Store_Api_Token class and returns it.
 	 *
-	 * @return string The Cart Token.
+	 * @return WooPay_Store_Api_Token The WooPay_Store_Api_Token object.
 	 */
 	private static function init_store_api_token() {
 		$cart_route = WooPay_Store_Api_Token::init();
@@ -1658,9 +1669,20 @@ class WC_Payments {
 	 */
 	public static function load_stripe_bnpl_site_messaging() {
 		if ( WC_Payments_Features::is_bnpl_affirm_afterpay_enabled() ) {
-			require_once __DIR__ . '/class-wc-payments-payment-method-messaging-element.php';
-			$stripe_site_messaging = new WC_Payments_Payment_Method_Messaging_Element( self::$account, self::$card_gateway );
-			echo wp_kses( $stripe_site_messaging->init(), 'post' );
+			// The messaging element shall not be shown for subscription products.
+			// As we are not too deep into subscriptions API, we follow simplistic approach for now.
+			$is_subscription           = false;
+			$are_subscriptions_enabled = class_exists( 'WC_Subscriptions' ) || class_exists( 'WC_Subscriptions_Core_Plugin' );
+			if ( $are_subscriptions_enabled ) {
+					global $product;
+					$is_subscription = $product && WC_Subscriptions_Product::is_subscription( $product );
+			}
+
+			if ( ! $is_subscription ) {
+				require_once __DIR__ . '/class-wc-payments-payment-method-messaging-element.php';
+				$stripe_site_messaging = new WC_Payments_Payment_Method_Messaging_Element( self::$account, self::$card_gateway );
+				echo wp_kses( $stripe_site_messaging->init(), 'post' );
+			}
 		}
 	}
 
@@ -1725,5 +1747,53 @@ class WC_Payments {
 				'url' => plugins_url( '/dist/', WCPAY_PLUGIN_FILE ),
 			]
 		);
+	}
+
+	/**
+	 * Shows an alert notice for Hungarian, Sweden, and Czech Republic merchants on WooCommerce 7.4 and below
+	 */
+	public static function wcpay_show_old_woocommerce_for_hungary_sweden_and_czech_republic() {
+		$currencies        = [ 'HUF', 'SEK', 'CZK' ];
+		$store_currency    = get_woocommerce_currency();
+		$should_show_error = in_array( $store_currency, $currencies, true );
+
+		if ( ! defined( 'WC_VERSION' ) || ! version_compare( WC_VERSION, '7.8', '<' ) || ! $should_show_error ) {
+			return;
+		}
+
+		$notice = '';
+
+		switch ( $store_currency ) {
+			case 'HUF':
+				/* translators: %1$s: The current WordPress version used by the store */
+				$notice = __( 'The WooCommerce version you have installed is not compatible with WooCommerce Payments for a Hungarian business. Please update WooCommerce to version 7.8 or above (you are using %1$s). You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' );
+				break;
+			case 'SEK':
+				/* translators: %1$s: The current WordPress version used by the store */
+				$notice = __( 'The WooCommerce version you have installed is not compatible with WooCommerce Payments for a Swedish business. Please update WooCommerce to version 7.8 or above (you are using %1$s). You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' );
+				break;
+			case 'CZK':
+				/* translators: %1$s: The current WordPress version used by the store */
+				$notice = __( 'The WooCommerce version you have installed is not compatible with WooCommerce Payments for a Czech Republic business. Please update WooCommerce to version 7.8 or above (you are using %1$s). You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' );
+				break;
+		}
+
+		?>
+		<div class="notice wcpay-notice notice-error">
+			<p>
+			<?php
+			echo WC_Payments_Utils::esc_interpolated_html(
+				sprintf(
+					$notice,
+					WC_VERSION
+				),
+				[
+					'a1' => '<a href="' . admin_url( 'plugins.php' ) . '">',
+				]
+			)
+			?>
+			</p>
+		</div>
+		<?php
 	}
 }

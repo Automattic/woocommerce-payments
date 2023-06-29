@@ -20,8 +20,8 @@ use WC_Payments;
 class WooPay_Utilities {
 	use WC_Payments_Subscriptions_Utilities;
 
-	const AVAILABLE_COUNTRIES_KEY     = 'woocommerce_woocommerce_payments_woopay_available_countries';
-	const AVAILABLE_COUNTRIES_DEFAULT = '["US"]';
+	const AVAILABLE_COUNTRIES_OPTION_NAME = 'woocommerce_woocommerce_payments_woopay_available_countries';
+	const AVAILABLE_COUNTRIES_DEFAULT     = '["US"]';
 
 	/**
 	 * Check various conditions to determine if we should enable woopay.
@@ -107,7 +107,7 @@ class WooPay_Utilities {
 	 * @return array
 	 */
 	public function get_persisted_available_countries() {
-		$available_countries = json_decode( get_option( self::AVAILABLE_COUNTRIES_KEY, self::AVAILABLE_COUNTRIES_DEFAULT ), true );
+		$available_countries = json_decode( get_option( self::AVAILABLE_COUNTRIES_OPTION_NAME, self::AVAILABLE_COUNTRIES_DEFAULT ), true );
 
 		if ( ! is_array( $available_countries ) ) {
 			return json_decode( self::AVAILABLE_COUNTRIES_DEFAULT );
