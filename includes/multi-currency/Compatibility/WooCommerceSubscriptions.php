@@ -354,11 +354,29 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 * @return int|bool The ID of the subscription being switched, or false if it cannot be found.
 	 */
 	private function get_subscription_switch_id_from_superglobal() {
-		if ( isset( $_GET['_wcsnonce'] ) && wp_verify_nonce( sanitize_key( $_GET['_wcsnonce'] ), 'wcs_switch_request' ) ) {
-			if ( isset( $_GET['switch-subscription'] ) ) {
-				return (int) $_GET['switch-subscription'];
-			}
+		// Return false if there's no nonce, or if it fails.
+		if ( ! isset( $_GET['_wcsnonce'] ) || ! wp_verify_nonce( sanitize_key( $_GET['_wcsnonce'] ), 'wcs_switch_request' ) ) {
+			return false;
 		}
+
+		// Return false if the param isn't set, or if it isn't numeric.
+		if ( ! isset( $_GET['switch-subscription'] ) || ! is_numeric( $_GET['switch-subscription'] ) ) {
+			return false;
+		}
+
+		// Get the switch ID from the param.
+		$switch_id = (int) sanitize_key( $_GET['switch-subscription'] );
+
+		// Get the sub, preventing an infinite loop with running_override_selected_currency_filters.
+		$this->running_override_selected_currency_filters = true;
+		$switch_subscription                              = $this->get_subscription( $switch_id );
+		$this->running_override_selected_currency_filters = false;
+
+		// Confirm the sub user matches current user, and return the sub ID.
+		if ( $switch_subscription && $switch_subscription->get_customer_id() === get_current_user_id() ) {
+			return $switch_subscription->get_id();
+		}
+
 		return false;
 	}
 
