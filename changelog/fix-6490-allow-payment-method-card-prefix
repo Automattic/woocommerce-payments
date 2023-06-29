@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Allow `card_` prefix when validating payment method IDs to fix failing subscription renewals
