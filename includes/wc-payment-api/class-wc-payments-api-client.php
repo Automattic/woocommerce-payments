@@ -221,7 +221,7 @@ class WC_Payments_API_Client {
 	public function get_intent( $intent_id ) {
 		$intent = $this->request( [], self::INTENTIONS_API . '/' . $intent_id, self::GET );
 
-		return $this->deserialize_intention_object_from_array( $intent );
+		return $this->deserialize_payment_intention_object_from_array( $intent );
 	}
 
 	/**
@@ -2237,7 +2237,7 @@ class WC_Payments_API_Client {
 	 * @return WC_Payments_API_Payment_Intention
 	 * @throws API_Exception - Unable to deserialize intention array.
 	 */
-	public function deserialize_intention_object_from_array( array $intention_array ) {
+	public function deserialize_payment_intention_object_from_array( array $intention_array ) {
 		// TODO: Throw an exception if the response array doesn't contain mandatory properties.
 		$created = new DateTime();
 		$created->setTimestamp( $intention_array['created'] );
