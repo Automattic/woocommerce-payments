@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __, _x } from '@wordpress/i18n';
+import { getSetting } from '@woocommerce/settings';
 
 /**
  * Internal dependencies
@@ -91,10 +92,20 @@ export const filters: [ DisputesFilterType, DisputesFilterType ] = [
 	},
 ];
 
+// TODO: Remove this and all the checks once we drop support of WooCommerce 7.7 and below.
+const wooCommerceVersionString = getSetting( 'wcVersion' );
+const wooCommerceVersion = parseFloat( wooCommerceVersionString ); // This will parse 7.7.1 to 7.7, but it's fine for this purpose
+
 /*eslint-disable max-len*/
 export const advancedFilters = {
 	/** translators: A sentence describing filters for Disputes. */
-	title: __( 'Disputes match {{select /}} filters', 'woocommerce-payments' ),
+	title:
+		wooCommerceVersion > 7.8
+			? __( 'Disputes match <select /> filters', 'woocommerce-payments' )
+			: __(
+					'Disputes match {{select /}} filters',
+					'woocommerce-payments'
+			  ),
 	filters: {
 		date: {
 			labels: {
@@ -108,10 +119,16 @@ export const advancedFilters = {
 					'woocommerce-payments'
 				),
 				/* translators: A sentence describing a Dispute date filter. */
-				title: __(
-					'{{title}}Date{{/title}} {{rule /}} {{filter /}}',
-					'woocommerce-payments'
-				),
+				title:
+					wooCommerceVersion > 7.8
+						? __(
+								'<title>Date</title> <rule /> <filter />',
+								'woocommerce-payments'
+						  )
+						: __(
+								'{{title}}Date{{/title}} {{rule /}} {{filter /}}',
+								'woocommerce-payments'
+						  ),
 				filter: __( 'Select a dispute date', 'woocommerce-payments' ),
 			},
 			rules: [
@@ -144,10 +161,16 @@ export const advancedFilters = {
 					'woocommerce-payments'
 				),
 				/* translators: A sentence describing a Dispute status filter. */
-				title: __(
-					'{{title}}Status{{/title}} {{rule /}} {{filter /}}',
-					'woocommerce-payments'
-				),
+				title:
+					wooCommerceVersion > 7.8
+						? __(
+								'<title>Status</title> <rule /> <filter />',
+								'woocommerce-payments'
+						  )
+						: __(
+								'{{title}}Status{{/title}} {{rule /}} {{filter /}}',
+								'woocommerce-payments'
+						  ),
 				filter: __( 'Select a dispute status', 'woocommerce-payments' ),
 			},
 			rules: [
