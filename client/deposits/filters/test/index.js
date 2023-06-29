@@ -181,6 +181,12 @@ describe( 'Deposits filters', () => {
 		} );
 	} );
 
+	// TODO: this is a bit of a hack as we're mocking an old version of WC, we should relook at this.
+	jest.mock( '@woocommerce/settings', () => ( {
+		...jest.requireActual( '@woocommerce/settings' ),
+		getSetting: jest.fn( ( key ) => ( 'wcVersion' === key ? 7.7 : '' ) ),
+	} ) );
+
 	function addAdvancedFilter( filter ) {
 		user.click( screen.getByRole( 'button', { name: /Add a Filter/i } ) );
 		user.click( screen.getByRole( 'button', { name: filter } ) );
