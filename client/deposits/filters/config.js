@@ -93,13 +93,13 @@ export const advancedFilters = {
 				),
 				/* translators: A sentence describing a deposit date filter. See screen shot for context: https://d.pr/i/NcGpwL */
 				title:
-					7.8 < wooCommerceVersion
+					7.8 > wooCommerceVersion
 						? __(
-								'<title>Date</title> <rule /> <filter />',
+								'{{title}}Date{{/title}} {{rule /}} {{filter /}}',
 								'woocommerce-payments'
 						  )
 						: __(
-								'{{title}}Date{{/title}} {{rule /}} {{filter /}}',
+								'<title>Date</title> <rule /> <filter />',
 								'woocommerce-payments'
 						  ),
 				filter: __( 'Select a deposit date', 'woocommerce-payments' ),
@@ -135,13 +135,13 @@ export const advancedFilters = {
 				),
 				/* translators: A sentence describing a deposit status filter. See screen shot for context: https://d.pr/i/NcGpwL */
 				title:
-					7.8 < wooCommerceVersion
+					7.8 > wooCommerceVersion
 						? __(
-								'<title>Status</title> <rule /> <filter />',
+								'{{title}}Status{{/title}} {{rule /}} {{filter /}}',
 								'woocommerce-payments'
 						  )
 						: __(
-								'{{title}}Status{{/title}} {{rule /}} {{filter /}}',
+								'<title>Status</title> <rule /> <filter />',
 								'woocommerce-payments'
 						  ),
 				filter: __( 'Select a deposit status', 'woocommerce-payments' ),

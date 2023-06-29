@@ -120,13 +120,13 @@ export const advancedFilters = {
 				),
 				/* translators: A sentence describing a Dispute date filter. */
 				title:
-					wooCommerceVersion > 7.8
+					wooCommerceVersion < 7.8
 						? __(
-								'<title>Date</title> <rule /> <filter />',
+								'{{title}}Date{{/title}} {{rule /}} {{filter /}}',
 								'woocommerce-payments'
 						  )
 						: __(
-								'{{title}}Date{{/title}} {{rule /}} {{filter /}}',
+								'<title>Date</title> <rule /> <filter />',
 								'woocommerce-payments'
 						  ),
 				filter: __( 'Select a dispute date', 'woocommerce-payments' ),
@@ -162,13 +162,13 @@ export const advancedFilters = {
 				),
 				/* translators: A sentence describing a Dispute status filter. */
 				title:
-					wooCommerceVersion > 7.8
+					wooCommerceVersion < 7.8
 						? __(
-								'<title>Status</title> <rule /> <filter />',
+								'{{title}}Status{{/title}} {{rule /}} {{filter /}}',
 								'woocommerce-payments'
 						  )
 						: __(
-								'{{title}}Status{{/title}} {{rule /}} {{filter /}}',
+								'<title>Status</title> <rule /> <filter />',
 								'woocommerce-payments'
 						  ),
 				filter: __( 'Select a dispute status', 'woocommerce-payments' ),
