@@ -2122,7 +2122,7 @@ class WC_Payments_API_Client {
 	private function add_order_info_to_object( $order, $object ) {
 		// Add order information to the `$transaction`.
 		// If the order couldn't be retrieved, return an empty order.
-		$object['order'] = null;
+		$object['order'] = [];
 
 		if ( $order ) {
 			$object['order'] = $this->build_order_info( $order );
