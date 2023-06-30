@@ -50,7 +50,7 @@ class WC_Payments_Payment_Method_Messaging_Element {
 		global $product;
 		$price           = $product->get_price();
 		$currency_code   = get_woocommerce_currency();
-		$base_country    = WC()->countries->get_base_country();
+		$store_country   = WC()->countries->get_base_country();
 		$billing_country = WC()->customer->get_billing_country();
 
 		$enabled_upe_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
@@ -67,7 +67,7 @@ class WC_Payments_Payment_Method_Messaging_Element {
 			[
 				'price'          => WC_Payments_Utils::prepare_amount( $price, $currency_code ),
 				'currency'       => $currency_code,
-				'country'        => empty( $billing_country ) ? $base_country : $billing_country,
+				'country'        => empty( $billing_country ) ? $store_country : $billing_country,
 				'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
 				'paymentMethods' => array_values( $bnpl_payment_methods ),
 			]
