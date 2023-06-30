@@ -1,5 +1,56 @@
 *** WooCommerce Payments Changelog ***
 
+= 6.1.1 - 2023-06-29 =
+* Fix - Fix syntax for advanced filters in WC 7.8 and over
+
+= 6.1.0 - 2023-06-28 =
+* Add - Add additional validation in VAT controller.
+* Add - Add Affirm and Afterpay to checkout block.
+* Add - Add Affirm and Afterpay to classic checkout.
+* Add - Add BNPL messaging to the product details page via Stripe Payment Method Messaging Element.
+* Add - Added a check to disable WooPay in case incompatible extensions are found.
+* Add - Adds implementation to handle deferred intent for the UPE in My account page.
+* Add - Adds support for UPE with deferred intent creation on the Blocks checkout page.
+* Add - Add Tap to Pay device type filter on transactions list page.
+* Add - Add usage tracking to WooPay express button location updates.
+* Add - Affirm and Afterpay logo support in transactions listing and transaction details.
+* Add - Connect page incentive for eligible merchants.
+* Add - Deposit schedule changes are disabled when an account has restrictions on it.
+* Add - Ensure Affirm and Afterpay available on checkout only when the payment is in expected range.
+* Add - Improve the wording and style of the "Active Disputes" task list item on the Payments → Overview screen to better communicate the urgency of resolving these disputes.
+* Add - Links in subscription deactivation modal open in a new tab.
+* Add - Show checkbox options for Affirm and Afterpay BNPL payment options.
+* Add - Update Affirm & Afterpay logos with border and icon images.
+* Add - Check for invalid extensions when one is activated or deactivated.
+* Fix - Add deadline and amount to clarify disputed order note.
+* Fix - Affirm&Afterpay: do not show messaging element for subscription products.
+* Fix - Allow `card_` prefix when validating payment method IDs to fix failing subscription renewals.
+* Fix - Check that a currency is available before adding it to the current currencies. Minor admin text string updates. Minor refactoring of MultiCurrency/RestController class.
+* Fix - Corrected bug where checkbox could not be enabled when credit card was disabled.
+* Fix - Fixed payment intents still getting confirmed on UPE when intent update fails.
+* Fix - Fix untranslated strings on the checkout page.
+* Fix - Fraudulent disputes will now show as Transaction unauthorized.
+* Fix - Hide Google Pay and Apple Pay buttons when total amount is zero on item details, cart, and checkout pages.
+* Fix - Improved user experience on onboarding form when validating fields if Enter key is pressed.
+* Fix - Improve the logic which determines if a user is activating the WC Subscriptions plugin when determining the need to load built-in subscriptions functionality.
+* Fix - Move WP hooks registration out of the core classes' constructors.
+* Fix - Remove all actions on preflight check.
+* Fix - Show descriptive dispute reasons in order notes.
+* Fix - Updated correct link for request classes docs.
+* Fix - Uses correct payment method title in order confirmation emails.
+* Update - Display the "Active Disputes" task list item on the Payments → Overview screen only if there are disputes due within seven days.
+* Update - Improve copy in Subscriptions deactivation modal.
+* Update - Improve the wording of the "Active Disputes" task list item on the WooCommerce → Home screen to better communicate the urgency of resolving these disputes.
+* Update - Moved the overview task list to the welcome greeting to improve visibility of important tasks.
+* Update - Update the design for UPE settings block.
+* Dev - Add support for Czech Republic, Hungary, and Sweden.
+* Dev - Bump minimum required version of WooCommerce to 7.8.0.
+* Dev - Comment: Add script to run QIT security tests locally.
+* Dev - Gracefully handle missing payment method constants.
+* Dev - minor refactor from js to tsx.
+* Dev - minor tsx refactor.
+* Dev - Tracking events for BNPL payment methods.
+
 = 6.0.0 - 2023-06-08 =
 * Add - Show Progressive Onboarding Express using Explat experiment
 * Fix - Add a session check to avoid fatal errors.
