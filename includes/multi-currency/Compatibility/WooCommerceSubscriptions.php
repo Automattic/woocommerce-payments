@@ -8,6 +8,7 @@
 namespace WCPay\MultiCurrency\Compatibility;
 
 use WC_Payments_Features;
+use WCPay\Logger;
 use WCPay\MultiCurrency\MultiCurrency;
 
 /**
@@ -375,6 +376,8 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 		// Confirm the sub user matches current user, and return the sub ID.
 		if ( $switch_subscription && $switch_subscription->get_customer_id() === get_current_user_id() ) {
 			return $switch_subscription->get_id();
+		} else {
+			Logger::notice( 'User (' . get_current_user_id() . ') attempted to switch a subscription (' . $switch_subscription->get_id() . ') not assigned to them.' );
 		}
 
 		return false;
