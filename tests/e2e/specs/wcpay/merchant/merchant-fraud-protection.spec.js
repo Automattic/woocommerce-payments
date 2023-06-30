@@ -1,12 +1,7 @@
 /**
  * External dependencies
  */
-const {
-	merchant,
-	shopper,
-	addShippingZoneAndMethod,
-	withRestApi,
-} = require( '@woocommerce/e2e-utils' );
+const { merchant, shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
 
 /**
  * Internal dependencies
@@ -14,6 +9,8 @@ const {
 import config from 'config';
 import { merchantWCP, shopperWCP } from '../../../utils';
 import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
+
+const baseUrl = config.get( 'url' );
 
 describe( 'Fraud protection', () => {
 	describe( 'Rules', () => {
@@ -27,6 +24,45 @@ describe( 'Fraud protection', () => {
 
 		beforeAll( async () => {
 			await merchant.login();
+
+			// Add shipping zone method
+			await page.waitFor( 1000 );
+			await page.goto(
+				`${ baseUrl }wp-admin/admin.php?page=wc-settings&tab=shipping&zone_id=0`,
+				{
+					waitUntil: 'networkidle0',
+				}
+			);
+
+			const freeShippingExists = await page.$$eval(
+				'.wc-shipping-zone-method-type',
+				( elements ) =>
+					elements.some( ( el ) =>
+						el.textContent.includes( 'Free shipping' )
+					)
+			);
+
+			if ( ! freeShippingExists ) {
+				await page.waitFor( 1000 );
+				await expect( page ).toClick(
+					'button.wc-shipping-zone-add-method',
+					{
+						text: 'Add shipping method',
+					}
+				);
+				await page.waitForSelector(
+					'.wc-shipping-zone-method-selector'
+				);
+				await expect( page ).toSelect(
+					'select[name="add_method_id"]',
+					'free_shipping'
+				);
+				await expect( page ).toClick( 'button#btn-ok' );
+				await uiUnblocked();
+			}
+
+			// Clear the cart at the end so it's ready for another test
+			await shopperWCP.emptyCart();
 		} );
 
 		afterEach( async () => {
@@ -34,14 +70,11 @@ describe( 'Fraud protection', () => {
 			await shopperWCP.emptyCart();
 		} );
 
-		it( 'Address Mismatch', async () => {
-			await addShippingZoneAndMethod(
-				'Free Shipping',
-				'country:BR',
-				' ',
-				'free_shipping'
-			);
+		afterAll( async () => {
+			await merchant.logout();
+		} );
 
+		it( 'Address Mismatch', async () => {
 			await merchantWCP.disableAllFraudProtectionRules();
 			await merchantWCP.toggleFraudProtectionRule( 'address-mismatch' );
 
@@ -54,8 +87,6 @@ describe( 'Fraud protection', () => {
 			await fillCardDetails( page, config.get( 'cards.basic' ) );
 			await expect( page ).toClick( '#place_order' );
 			await shopperWCP.validateCheckoutError();
-
-			await withRestApi.deleteAllShippingZones( false );
 
 			await merchantWCP.openLatestBlockedOrder();
 			await merchantWCP.checkTransactionStatus( 'Payment blocked' );
@@ -74,14 +105,12 @@ describe( 'Fraud protection', () => {
 						'#fraud-protection-purchase-price-maximum': '',
 					}
 				);
-
 				await setupProductCheckout(
 					config.get( 'addresses.customer.billing' )
 				);
 				await fillCardDetails( page, config.get( 'cards.basic' ) );
 				await expect( page ).toClick( '#place_order' );
 				await shopperWCP.validateCheckoutError();
-
 				await merchantWCP.openLatestBlockedOrder();
 				await merchantWCP.checkTransactionStatus( 'Payment blocked' );
 				await merchantWCP.checkFraudOutcomeEntry(
