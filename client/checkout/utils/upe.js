@@ -301,12 +301,15 @@ export const getStripeElementOptions = (
 	return options;
 };
 
-export const maybeToggleAffirm = () => {
+export const maybeTogglePaymentMethod = (
+	paymentMethodType,
+	supportedCountries
+) => {
 	const billingCountry = document.querySelector( '#billing_country' ).value;
 	const affirmContainer = document.querySelector(
-		'#payment_method_woocommerce_payments_affirm'
+		'#payment_method_woocommerce_payments_' + paymentMethodType
 	).parentElement;
-	if ( 'US' === billingCountry || 'CA' === billingCountry ) {
+	if ( supportedCountries.includes( billingCountry ) ) {
 		affirmContainer.style.display = 'block';
 	} else {
 		affirmContainer.style.display = 'none';

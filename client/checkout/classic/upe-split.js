@@ -32,7 +32,7 @@ import {
 	getSelectedUPEGatewayPaymentMethod,
 	getUpeSettings,
 	isUsingSavedPaymentMethod,
-	maybeToggleAffirm,
+	maybeTogglePaymentMethod,
 } from '../utils/upe';
 import { decryptClientSecret } from '../utils/encryption';
 import enableStripeLinkPaymentMethod from '../stripe-link';
@@ -356,9 +356,19 @@ jQuery( function ( $ ) {
 					mountUPEElement( paymentMethodType, upeDOMElement );
 				}
 
-				if ( 'affirm' === paymentMethodType ) {
-					maybeToggleAffirm();
-					$( '#billing_country' ).on( 'change', maybeToggleAffirm );
+				if (
+					paymentMethodsConfig[ paymentMethodType ].countries.length
+				) {
+					maybeTogglePaymentMethod(
+						paymentMethodType,
+						paymentMethodsConfig[ paymentMethodType ].countries
+					);
+					$( '#billing_country' ).on( 'change', function () {
+						maybeTogglePaymentMethod(
+							paymentMethodType,
+							paymentMethodsConfig[ paymentMethodType ].countries
+						);
+					} );
 				}
 			}
 		}
