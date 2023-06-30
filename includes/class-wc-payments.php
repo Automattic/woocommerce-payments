@@ -1491,13 +1491,34 @@ class WC_Payments {
 		];
 
 		$has_adapted_extension_enabled = get_option( WooPay_Scheduler::HAS_ADAPTED_EXTENSIONS_OPTION_NAME, false );
-		if ( $has_adapted_extension_enabled && ! empty( $email ) && ! is_user_logged_in() ) {
-			$user = get_user_by( 'email', $email );
 
-			if ( $user ) {
-				WC()->session->set( 'woopay_verified_user_id', $user->ID );
+		if ( $has_adapted_extension_enabled ) {
+			if ( is_user_logged_in() ) {
+				$user = wp_get_current_user();
+			} elseif ( ! empty( $email ) ) {
+				$user = get_user_by( 'email', $email );
 
-				$body['verified_user_store_api_token'] = $store_api_token->get_store_api_token_for_user_id( $user->ID );
+				if ( $user ) {
+					WC()->session->set( 'woopay_verified_user_id', $user->ID );
+
+					$body['verified_user_store_api_token'] = $store_api_token->get_store_api_token_for_user_id( $user->ID );
+				}
+			}
+
+			$adapted_extensions = get_option( WooPay_Scheduler::ADAPTED_EXTENSIONS_LIST_OPTION_NAME, [] );
+
+			if ( in_array( 'woocommerce-points-and-rewards', $adapted_extensions, true ) && class_exists( 'WC_Points_Rewards_Manager' ) && ! empty( $user ) ) {
+				$body['extension_settings'] = [];
+
+				$minimum_discount = (float) get_option( 'wc_points_rewards_cart_min_discount', '' );
+				$labels           = explode( ':', get_option( 'wc_points_rewards_points_label', ':' ) );
+
+				$body['extension_settings']['points-and-rewards'] = [
+					'points_available'           => WC_Points_Rewards_Manager::get_users_points( $user->ID ),
+					'minimum_points_amount'      => WC_Points_Rewards_Manager::calculate_points_for_discount( $minimum_discount ),
+					'partial_redemption_enabled' => 'yes' === get_option( 'wc_points_rewards_partial_redemption_enabled' ),
+					'points_label_plural'        => $labels[1],
+				];
 			}
 		}
 

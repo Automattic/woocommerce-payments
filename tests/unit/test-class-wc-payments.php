@@ -353,12 +353,5 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 			->will( $this->returnValue( $customer_id ) );
 
 		WC_Payments::set_customer_service( $mock_customer_service );
-
-		add_filter(
-			'active_plugins',
-			function ( $args ) {
-				return array_merge( $args, [ 'woocommerce-points-and-rewards/woocommerce-points-and-rewards.php' ] );
-			}
-		);
 	}
 }

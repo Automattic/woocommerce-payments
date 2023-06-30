@@ -34,6 +34,7 @@ class WooPay_Session {
 		'@^\/wc\/store(\/v[\d]+)?\/cart\/select-shipping-rate$@',
 		'@^\/wc\/store(\/v[\d]+)?\/cart\/update-customer$@',
 		'@^\/wc\/store(\/v[\d]+)?\/cart\/update-item$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/extensions$@',
 		'@^\/wc\/store(\/v[\d]+)?\/checkout$@',
 	];
 
