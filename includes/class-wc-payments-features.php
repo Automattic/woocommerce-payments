@@ -196,6 +196,29 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the merchant has chosen Subscription product types during onboarding
+	 * WooCommerce and is elible for WCPay Subscriptions, if so, enables the feature flag.
+	 *
+	 * @since 6.2.0
+	 *
+	 * @param array $onboarding_data Onboarding data.
+	 * @param array $updated         Updated onboarding settings.
+	 *
+	 * @return void
+	 */
+	public static function maybe_enable_wcpay_subscriptions_after_onboarding( $onboarding_data, $updated ) {
+		if ( empty( $updated['product_types'] ) || ! is_array( $updated['product_types'] ) || ! in_array( 'subscriptions', $updated['product_types'], true ) ) {
+			return;
+		}
+
+		if ( ! self::is_wcpay_subscriptions_eligible() ) {
+			return;
+		}
+
+		update_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '1' );
+	}
+
+	/**
 	 * Checks whether woopay is enabled.
 	 *
 	 * @return bool
