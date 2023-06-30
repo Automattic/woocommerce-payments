@@ -7,6 +7,8 @@
 
 /**
  * An abstract object representing payment and setup intents used by the WooCommerce Payments API.
+ *
+ * Only add shared getters and properties in this class. Otherwise, add them inherited classes.
  */
 abstract class WC_Payments_API_Abstract_Intention implements \JsonSerializable {
 	/**

@@ -7,6 +7,9 @@
 
 /**
  * Payment Intent object used by the WooCommerce Payments API.
+ *
+ * Only add getters and properties existing in payment intent object https://stripe.com/docs/api/payment_intents/object.
+ * Otherwise, add them in the (abstract) parent class.
  */
 class WC_Payments_API_Payment_Intention extends WC_Payments_API_Abstract_Intention {
 	/**
