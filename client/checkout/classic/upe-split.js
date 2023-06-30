@@ -32,6 +32,7 @@ import {
 	getSelectedUPEGatewayPaymentMethod,
 	getUpeSettings,
 	isUsingSavedPaymentMethod,
+	maybeToggleAffirm,
 } from '../utils/upe';
 import { decryptClientSecret } from '../utils/encryption';
 import enableStripeLinkPaymentMethod from '../stripe-link';
@@ -328,18 +329,6 @@ jQuery( function ( $ ) {
 		} );
 		gatewayUPEComponents[ paymentMethodType ].upeElement = upeElement;
 	};
-
-	function maybeToggleAffirm() {
-		const billingCountry = $( '#billing_country' ).val();
-		const affirmContainer = $(
-			'#payment_method_woocommerce_payments_affirm'
-		).parent();
-		if ( 'US' === billingCountry || 'CA' === billingCountry ) {
-			affirmContainer.show();
-		} else {
-			affirmContainer.hide();
-		}
-	}
 
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
 	// event for this. This part of the page can also reload based on changes to checkout details, so we call unmount

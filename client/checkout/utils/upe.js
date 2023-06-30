@@ -300,3 +300,15 @@ export const getStripeElementOptions = (
 
 	return options;
 };
+
+export const maybeToggleAffirm = () => {
+	const billingCountry = document.querySelector( '#billing_country' ).value;
+	const affirmContainer = document.querySelector(
+		'#payment_method_woocommerce_payments_affirm'
+	).parentElement;
+	if ( 'US' === billingCountry || 'CA' === billingCountry ) {
+		affirmContainer.style.display = 'block';
+	} else {
+		affirmContainer.style.display = 'none';
+	}
+};
