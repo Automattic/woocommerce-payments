@@ -183,15 +183,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_wcpay_subscriptions_enabled() {
-		$enabled = get_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, null );
-
-		// Enable the feature by default for stores that are eligible.
-		if ( null === $enabled && function_exists( 'wc_get_base_location' ) && self::is_wcpay_subscriptions_eligible() ) {
-			$enabled = '1';
-			update_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, $enabled );
-		}
-
-		return apply_filters( 'wcpay_is_wcpay_subscriptions_enabled', '1' === $enabled );
+		return apply_filters( 'wcpay_is_wcpay_subscriptions_enabled', '1' === get_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '0' ) );
 	}
 
 	/**
