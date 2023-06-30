@@ -1516,11 +1516,15 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
-			->willReturn( new Response( [ 'id' => 'pm_mock' ] ) );
+			->willReturn(
+				WC_Helper_Intention::create_setup_intention(
+					[ 'id' => 'seti_mock_123' ]
+				)
+			);
 
 		$result = $this->wcpay_gateway->create_and_confirm_setup_intent();
 
-		$this->assertEquals( 'pm_mock', $result['id'] );
+		$this->assertSame( 'seti_mock_123', $result->get_id() );
 	}
 
 	public function test_create_and_confirm_setup_intent_no_customer() {
@@ -1539,11 +1543,15 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class );
 		$request->expects( $this->once() )
 			->method( 'format_response' )
-			->willReturn( new Response( [ 'id' => 'pm_mock' ] ) );
+			->willReturn(
+				WC_Helper_Intention::create_setup_intention(
+					[ 'id' => 'seti_mock_123' ]
+				)
+			);
 
 		$result = $this->wcpay_gateway->create_and_confirm_setup_intent();
 
-		$this->assertEquals( 'pm_mock', $result['id'] );
+		$this->assertSame( 'seti_mock_123', $result->get_id() );
 	}
 
 	public function test_add_payment_method_no_intent() {

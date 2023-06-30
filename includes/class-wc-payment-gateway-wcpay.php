@@ -3064,7 +3064,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Create a setup intent when adding cards using the my account page.
 	 *
-	 * @return mixed|\WCPay\Core\Server\Response
+	 * @return WC_Payments_API_Setup_Intention
+	 *
 	 * @throws API_Exception
 	 * @throws \WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception
 	 * @throws \WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception
@@ -3108,14 +3109,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			$setup_intent = $this->create_and_confirm_setup_intent();
-			$setup_intent = $setup_intent->to_array(); // No longer working with a server response object.
+			$setup_intent        = $this->create_and_confirm_setup_intent();
+			$setup_intent_output = [
+				'id'            => $setup_intent->get_id(),
+				'status'        => $setup_intent->get_status(),
+				'client_secret' => WC_Payments_Utils::encrypt_client_secret(
+					$this->account->get_stripe_account_id(),
+					$setup_intent->get_client_secret()
+				),
+			];
 
-			if ( $setup_intent['client_secret'] ) {
-				$setup_intent['client_secret'] = WC_Payments_Utils::encrypt_client_secret( $this->account->get_stripe_account_id(), $setup_intent['client_secret'] );
-			}
-
-			wp_send_json_success( $setup_intent, 200 );
+			wp_send_json_success( $setup_intent_output, 200 );
 		} catch ( Exception $e ) {
 			// Send back error so it can be displayed to the customer.
 			wp_send_json_error(
