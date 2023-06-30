@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Improve the logic which determines if a user is activating the WC Subscriptions plugin when determining the need to load built-in subscriptions functionality.

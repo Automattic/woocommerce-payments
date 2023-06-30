@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { MccsDisplayTreeItem, Country } from 'onboarding-prototype/types';
+import { MccsDisplayTreeItem, Country } from 'onboarding/types';
 
 declare global {
 	const wcpaySettings: {

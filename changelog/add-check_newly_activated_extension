@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Check for invalid extensions when one is activated or deactivated.
