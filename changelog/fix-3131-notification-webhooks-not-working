@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Allow webhoks without livemode to be received.
