@@ -194,9 +194,16 @@ class WC_Payments_Product_Service {
 	 *
 	 * @since 3.2.0
 	 *
-	 * @param int $product_id The ID of the product to handle.
+	 * @param int $post_id The ID of the post to handle. Might be a product.
 	 */
-	public function maybe_schedule_product_create_or_update( int $product_id ) {
+	public function maybe_schedule_product_create_or_update( int $post_id ) {
+		// Free operation: The post is either cached already, or will be cached.
+		if ( 'product' !== get_post_type( $post_id ) ) {
+			return;
+		}
+
+		// Now we're sure this is a product.
+		$product_id = $post_id;
 
 		// Skip products which have already been scheduled or aren't subscriptions.
 		$product = wc_get_product( $product_id );
@@ -441,12 +448,20 @@ class WC_Payments_Product_Service {
 	/**
 	 * Prevents the subscription interval to be greater than 1 for yearly subscriptions.
 	 *
-	 * @param int $product_id Post ID of the product.
+	 * @param int $post_id ID of the post that's being saved. Might not be a product.
 	 */
-	public function limit_subscription_product_intervals( $product_id ) {
+	public function limit_subscription_product_intervals( $post_id ) {
 		if ( $this->is_subscriptions_plugin_active() ) {
 			return;
 		}
+
+		// Free operation: The post is either cached already, or will be cached.
+		if ( 'product' !== get_post_type( $post_id ) ) {
+			return;
+		}
+
+		// Now we're sure this is the ID of a product.
+		$product_id = $post_id;
 
 		// Skip products that aren't subscriptions.
 		$product = wc_get_product( $product_id );
