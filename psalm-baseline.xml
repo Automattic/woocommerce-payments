@@ -31,6 +31,11 @@
       <code>WC_Subscriptions_Product</code>
     </UndefinedClass>
   </file>
+  <file src="includes/class-wc-payments.php">
+    <UndefinedClass occurrences="1">
+      <code>WC_Subscriptions_Product</code>
+    </UndefinedClass>
+  </file>
   <file src="includes/multi-currency/Compatibility/WooCommerceProductAddOns.php">
     <UndefinedClass occurrences="2">
       <code>\WC_Product_Addons_Helper</code>
