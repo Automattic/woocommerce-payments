@@ -326,15 +326,19 @@ class OrderMetaHelper {
 		];
 
 		$not_found = __( 'Not found', 'woocommerce-payments' );
-		$not_found = '<span style="color:red;">' . $not_found . '</span>';
 
 		// Iterate through our display items to display all available information in a table.
 		echo "<table>\n";
 		foreach ( $display_items as $label => $items ) {
 			echo '<tr><td colspan="2" style="font-weight:bold; font-size:14px; padding:5px; background-color: #f2f2f2;">' . esc_html( $label ) . "</td></tr>\n";
 			foreach ( $items as $item ) {
-				$value = ! empty( $item['value'] ) ? $item['value'] : $not_found;
-				echo '<tr><td style="padding: 5px;">' . esc_html( $item['label'] ) . ': </td><td style="padding: 5px;">' . esc_html( $value ) . "</td></tr>\n";
+				echo '<tr><td style="padding: 5px;">' . esc_html( $item['label'] ) . ': </td><td style="padding: 5px;">';
+				if ( ! empty( $item['value'] ) ) {
+					echo esc_html( $item['value'] );
+				} else {
+					echo '<span style="color:red;">' . esc_html( $not_found ) . '</span>';
+				}
+				echo "</td></tr>\n";
 			}
 		}
 		echo "</table>\n";
