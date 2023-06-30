@@ -404,7 +404,7 @@ describe( 'getTasks()', () => {
 		);
 	} );
 
-	it( 'should include the dispute resolution task with multiple disputes and 1 urgent dispute', () => {
+	it( 'should include the dispute resolution task with multiple disputes from multiple currencies and 1 urgent dispute', () => {
 		const actual = getTasks( {
 			accountStatus: {
 				status: 'restricted_soon',
@@ -425,6 +425,34 @@ describe( 'getTasks()', () => {
 					completed: false,
 					level: 1,
 					title: 'Respond to 3 active disputes',
+					content: 'Final day to respond to 1 of the disputes',
+					actionLabel: 'See disputes',
+				} ),
+			] )
+		);
+	} );
+
+	it( 'should include the dispute resolution task with multiple disputes from a single currency', () => {
+		const actual = getTasks( {
+			accountStatus: {
+				status: 'restricted_soon',
+				currentDeadline: 1620857083,
+				pastDue: false,
+				accountLink: 'http://example.com',
+				progressiveOnboarding: {
+					isEnabled: false,
+				},
+			},
+			activeDisputes: mockActiveDisputes.slice( 0, 2 ),
+		} );
+
+		expect( actual ).toEqual(
+			expect.arrayContaining( [
+				expect.objectContaining( {
+					key: 'dispute-resolution-task-dp_1-dp_2',
+					completed: false,
+					level: 1,
+					title: 'Respond to 2 active disputes for a total of $20.00',
 					content: 'Final day to respond to 1 of the disputes',
 					actionLabel: 'See disputes',
 				} ),
