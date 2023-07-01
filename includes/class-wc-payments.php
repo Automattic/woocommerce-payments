@@ -1507,8 +1507,9 @@ class WC_Payments {
 
 			$adapted_extensions = get_option( WooPay_Scheduler::ADAPTED_EXTENSIONS_LIST_OPTION_NAME, [] );
 
+			$body['extension_settings'] = [];
+
 			if ( in_array( 'woocommerce-points-and-rewards', $adapted_extensions, true ) && class_exists( 'WC_Points_Rewards_Manager' ) && ! empty( $user ) ) {
-				$body['extension_settings'] = [];
 
 				$minimum_discount = (float) get_option( 'wc_points_rewards_cart_min_discount', '' );
 				$labels           = explode( ':', get_option( 'wc_points_rewards_points_label', ':' ) );
@@ -1518,6 +1519,12 @@ class WC_Payments {
 					'minimum_points_amount'      => WC_Points_Rewards_Manager::calculate_points_for_discount( $minimum_discount ),
 					'partial_redemption_enabled' => 'yes' === get_option( 'wc_points_rewards_partial_redemption_enabled' ),
 					'points_label_plural'        => $labels[1],
+				];
+			}
+
+			if ( in_array( 'woocommerce-gift-cards', $adapted_extensions, true ) && ! empty( $user ) ) {
+				$body['extension_settings']['woocommerce-gift-cards'] = [
+					'account_orders_link' => add_query_arg( [ 'wc_gc_show_pending_orders' => 'yes' ], wc_get_account_endpoint_url( 'orders' ) ),
 				];
 			}
 		}
