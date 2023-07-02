@@ -49,23 +49,19 @@ abstract class Paginated extends Request {
 	 */
 	public static function from_rest_request( $request ) {
 		$wcpay_request = static::create();
-		$wcpay_request->set_page( (int) $request->get_param( 'page' ) );
-		$wcpay_request->set_page_size( (int) ( $request->get_param( 'pagesize' ) ?? 25 ) );
-		$sort = $request->get_param( 'sort' );
-		if ( null !== $sort ) {
-			$wcpay_request->set_sort_by( (string) $sort );
-		}
-		$direction = $request->get_param( 'direction' );
-		if ( null !== $direction ) {
-			$wcpay_request->set_sort_direction( (string) $direction );
-		}
+		// We have to check does the default param exist in parent class and if it doesn't we apply ones from this class.
+		$wcpay_request->set_page( (int) ( $request->get_param( 'page' ) ?? static::DEFAULT_PARAMS['page'] ?? self::DEFAULT_PARAMS['page'] ) );
+		$wcpay_request->set_page_size( (int) ( $request->get_param( 'pagesize' ) ?? static::DEFAULT_PARAMS['pagesize'] ?? self::DEFAULT_PARAMS['pagesize'] ) );
+		$wcpay_request->set_sort_by( (string) ( $request->get_param( 'sort' ) ?? static::DEFAULT_PARAMS['sort'] ?? self::DEFAULT_PARAMS['sort'] ) );
+		$wcpay_request->set_sort_direction( (string) ( $request->get_param( 'direction' ) ?? static::DEFAULT_PARAMS['direction'] ?? self::DEFAULT_PARAMS['direction'] ) );
+
 		return $wcpay_request;
 	}
 
 	/**
 	 * Set filters.
 	 *
-	 * @param array $filters Filterd to set.
+	 * @param array $filters Filters to set.
 	 *
 	 * @return void
 	 */
@@ -128,4 +124,5 @@ abstract class Paginated extends Request {
 	public function set_sort_direction( string $direction ) {
 		$this->set_param( 'direction', $direction );
 	}
+
 }

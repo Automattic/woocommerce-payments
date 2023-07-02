@@ -83,8 +83,13 @@ class List_Transactions extends Paginated {
 			'loan_id_is'               => $request->get_param( 'loan_id_is' ),
 			'search'                   => (array) $request->get_param( 'search' ),
 			'deposit_id'               => $request->get_param( 'deposit_id' ),
+			'order_id_is'              => $request->get_param( 'order_id_is' ),
+			'deposit_id_is'            => $request->get_param( 'deposit_id_is' ),
+			'payment_method_id_is'     => $request->get_param( 'payment_method_id_is' ),
+			'transaction_id_is'        => $request->get_param( 'transaction_id_is' ),
 		];
 		$wcpay_request->set_filters( $filters );
+
 		return $wcpay_request;
 	}
 
@@ -209,13 +214,13 @@ class List_Transactions extends Paginated {
 	 * @return Response
 	 */
 	public function format_response( $response ) {
-		$wcpay_db               = new WC_Payments_DB();
-		$charge_ids             = array_column( $response['data'], 'charge_id' );
-		$orders_with_charge_ids = count( $charge_ids ) ? $wcpay_db->orders_with_charge_id_from_charge_ids( $charge_ids ) : [];
 
 		// Add order information to each transaction available.
 		// TODO: Throw exception when `$response` or `$transaction` don't have the fields expected?
 		if ( isset( $response['data'] ) ) {
+			$wcpay_db               = new WC_Payments_DB();
+			$charge_ids             = array_column( $response['data'], 'charge_id' );
+			$orders_with_charge_ids = count( $charge_ids ) ? $wcpay_db->orders_with_charge_id_from_charge_ids( $charge_ids ) : [];
 			foreach ( $response['data'] as &$transaction ) {
 				foreach ( $orders_with_charge_ids as $order_with_charge_id ) {
 					if ( $order_with_charge_id['charge_id'] === $transaction['charge_id'] && ! empty( $transaction['charge_id'] ) ) {
@@ -236,7 +241,7 @@ class List_Transactions extends Paginated {
 	 * Formats the incoming transaction date as per the blog's timezone.
 	 *
 	 * @param string|null $transaction_date Transaction date to format.
-	 * @param string|null $user_timezone         User's timezone passed from client.
+	 * @param string|null $user_timezone User's timezone passed from client.
 	 *
 	 * @return string|null The formatted transaction date as per timezone.
 	 */
