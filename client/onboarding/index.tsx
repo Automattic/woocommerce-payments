@@ -2,7 +2,6 @@
  * External dependencies
  */
 import React, { useEffect } from 'react';
-import { isURL } from '@wordpress/url';
 
 /**
  * Internal dependencies

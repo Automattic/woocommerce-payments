@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { createContext, useContext, useState } from 'react';
-import { initial, isNil, omitBy } from 'lodash';
+import { isNil, omitBy } from 'lodash';
 
 /**
  * Internal dependencies
