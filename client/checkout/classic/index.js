@@ -48,7 +48,7 @@ jQuery( function ( $ ) {
 	// Customer information for Pay for Order and Save Payment method.
 	/* global wcpayCustomerData */
 	const preparedCustomerData =
-		'undefined' !== typeof wcpayCustomerData ? wcpayCustomerData : {};
+		typeof wcpayCustomerData !== 'undefined' ? wcpayCustomerData : {};
 
 	// Create a card element.
 	const cardElement = elements.create( 'card', {
@@ -413,7 +413,7 @@ jQuery( function ( $ ) {
 		);
 
 		// Boolean `true` means that there is nothing to confirm.
-		if ( true === confirmation ) {
+		if ( confirmation === true ) {
 			return;
 		}
 
@@ -515,10 +515,9 @@ jQuery( function ( $ ) {
 	// Handle the add payment method form for WooCommerce Payments.
 	$( 'form#add_payment_method' ).on( 'submit', function () {
 		if (
-			'woocommerce_payments' !==
 			$(
 				"#add_payment_method input:checked[name='payment_method']"
-			).val()
+			).val() !== 'woocommerce_payments'
 		) {
 			return;
 		}

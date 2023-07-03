@@ -143,11 +143,11 @@ export default class WCPayAPI {
 			 */
 			prepareValue( name, value ) {
 				// Fall back to the value in `preparedCustomerData`.
-				if ( 'undefined' === typeof value || 0 === value.length ) {
+				if ( typeof value === 'undefined' || value.length === 0 ) {
 					value = preparedCustomerData[ name ]; // `undefined` if not set.
 				}
 
-				if ( 'undefined' !== typeof value && 0 < value.length ) {
+				if ( typeof value !== 'undefined' && value.length > 0 ) {
 					return value;
 				}
 			}
@@ -160,7 +160,7 @@ export default class WCPayAPI {
 			 */
 			setBillingDetail( name, value ) {
 				const preparedValue = this.prepareValue( name, value );
-				if ( 'undefined' !== typeof preparedValue ) {
+				if ( typeof preparedValue !== 'undefined' ) {
 					this.args.billing_details[ name ] = preparedValue;
 				}
 			}
@@ -173,7 +173,7 @@ export default class WCPayAPI {
 			 */
 			setAddressDetail( name, value ) {
 				const preparedValue = this.prepareValue( name, value );
-				if ( 'undefined' !== typeof preparedValue ) {
+				if ( typeof preparedValue !== 'undefined' ) {
 					this.args.billing_details.address[ name ] = preparedValue;
 				}
 			}
@@ -214,13 +214,13 @@ export default class WCPayAPI {
 			return true;
 		}
 
-		const isSetupIntent = 'si' === partials[ 1 ];
+		const isSetupIntent = partials[ 1 ] === 'si';
 		let orderId = partials[ 2 ];
 		const clientSecret = partials[ 3 ];
 		const nonce = partials[ 4 ];
 
 		const orderPayIndex = redirectUrl.indexOf( 'order-pay' );
-		const isOrderPage = -1 < orderPayIndex;
+		const isOrderPage = orderPayIndex > -1;
 
 		// If we're on the Pay for Order page, get the order ID
 		// directly from the URL instead of relying on the hash.
@@ -314,7 +314,7 @@ export default class WCPayAPI {
 
 				return verificationCall.then( ( response ) => {
 					const result =
-						'string' === typeof response
+						typeof response === 'string'
 							? JSON.parse( response )
 							: response;
 
@@ -369,7 +369,7 @@ export default class WCPayAPI {
 				throw response.data.error;
 			}
 
-			if ( 'succeeded' === response.data.status ) {
+			if ( response.data.status === 'succeeded' ) {
 				// No need for further authentication.
 				return response.data;
 			}
@@ -465,7 +465,7 @@ export default class WCPayAPI {
 			'wcpay-fingerprint': fingerprint,
 		} )
 			.then( ( response ) => {
-				if ( 'failure' === response.result ) {
+				if ( response.result === 'failure' ) {
 					throw new Error( response.messages );
 				}
 				return response;
@@ -502,14 +502,14 @@ export default class WCPayAPI {
 		if (
 			paymentIntentSecret &&
 			confirmPaymentResult.error &&
-			'lock_timeout' === confirmPaymentResult.error.code
+			confirmPaymentResult.error.code === 'lock_timeout'
 		) {
 			const paymentIntentResult = await stripe.retrievePaymentIntent(
 				decryptClientSecret( paymentIntentSecret )
 			);
 			if (
 				! paymentIntentResult.error &&
-				'succeeded' === paymentIntentResult.paymentIntent.status
+				paymentIntentResult.paymentIntent.status === 'succeeded'
 			) {
 				window.location.href = confirmParams.redirect_url;
 				return paymentIntentResult; //To prevent returning an error during the redirection.
@@ -567,7 +567,7 @@ export default class WCPayAPI {
 			}
 		)
 			.then( ( response ) => {
-				if ( 'failure' === response.result ) {
+				if ( response.result === 'failure' ) {
 					throw new Error( response.messages );
 				}
 				return response;

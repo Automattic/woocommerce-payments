@@ -41,8 +41,8 @@ jQuery( function ( $ ) {
 		const canRefund = getConfig( 'canRefund' );
 		const refundAmount = getConfig( 'refundAmount' );
 		if (
-			'wc-refunded' === this.value &&
-			'wc-refunded' !== originalStatus
+			this.value === 'wc-refunded' &&
+			originalStatus !== 'wc-refunded'
 		) {
 			renderRefundConfirmationModal(
 				originalStatus,
@@ -50,10 +50,10 @@ jQuery( function ( $ ) {
 				refundAmount
 			);
 		} else if (
-			'wc-cancelled' === this.value &&
-			'wc-cancelled' !== originalStatus
+			this.value === 'wc-cancelled' &&
+			originalStatus !== 'wc-cancelled'
 		) {
-			if ( ! canRefund || 0 >= refundAmount ) {
+			if ( ! canRefund || refundAmount <= 0 ) {
 				return;
 			}
 			renderModal(
@@ -75,7 +75,7 @@ jQuery( function ( $ ) {
 			);
 			return;
 		}
-		if ( 0 >= refundAmount ) {
+		if ( refundAmount <= 0 ) {
 			dispatch( 'core/notices' ).createErrorNotice(
 				__( 'Invalid Refund Amount', 'woocommerce-payments' )
 			);

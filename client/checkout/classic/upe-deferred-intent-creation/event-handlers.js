@@ -50,7 +50,7 @@ jQuery( function ( $ ) {
 	document.addEventListener( 'change', function ( event ) {
 		if (
 			event.target &&
-			'wc-woocommerce_payments-new-payment-method' === event.target.id
+			event.target.id === 'wc-woocommerce_payments-new-payment-method'
 		) {
 			renderTerms( event );
 		}

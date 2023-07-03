@@ -16,10 +16,10 @@ import { numberFormat } from '@woocommerce/number';
  * @return {boolean} True if in test mode, false otherwise. Fallback value if test mode value can't be found.
  */
 export const isInTestMode = ( fallback = false ) => {
-	if ( 'undefined' === typeof wcpaySettings ) {
+	if ( typeof wcpaySettings === 'undefined' ) {
 		return fallback;
 	}
-	return '1' === wcpaySettings.testMode || fallback;
+	return wcpaySettings.testMode === '1' || fallback;
 };
 
 export const getAdminUrl = ( args ) => addQueryArgs( 'admin.php', args );
@@ -131,7 +131,7 @@ export const applyThousandSeparator = ( trxCount ) => {
 
 	if ( [ 'fr', 'pl' ].some( ( lang ) => siteLang.startsWith( lang ) ) ) {
 		siteNumberOptions.thousandSeparator = ' ';
-	} else if ( 'de-CH' === siteLang ) {
+	} else if ( siteLang === 'de-CH' ) {
 		siteNumberOptions.thousandSeparator = "'";
 	} else if (
 		[ 'de', 'nl', 'it', 'es', 'pt' ].some( ( lang ) =>

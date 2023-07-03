@@ -24,7 +24,7 @@ const DeleteButton = ( { code, label, symbol, onClick, className } ) => {
 	const isModalNeededToConfirm =
 		currencyDependentPaymentMethods &&
 		currencyDependentPaymentMethods[ code ] &&
-		0 < Object.keys( currencyDependentPaymentMethods[ code ] ).length;
+		Object.keys( currencyDependentPaymentMethods[ code ] ).length > 0;
 
 	const dependentPaymentMethods = isModalNeededToConfirm
 		? Object.keys( currencyDependentPaymentMethods[ code ] )

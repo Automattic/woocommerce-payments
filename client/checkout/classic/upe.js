@@ -191,7 +191,7 @@ jQuery( function ( $ ) {
 				`${ fields.billing_first_name } ${ fields.billing_last_name }`.trim() ||
 				'-',
 			email:
-				'string' === typeof fields.billing_email
+				typeof fields.billing_email === 'string'
 					? fields.billing_email.trim()
 					: '-',
 			phone: fields.billing_phone || '-',
@@ -636,7 +636,7 @@ jQuery( function ( $ ) {
 		);
 
 		// Boolean `true` means that there is nothing to confirm.
-		if ( true === confirmation ) {
+		if ( confirmation === true ) {
 			return;
 		}
 
@@ -747,10 +747,9 @@ jQuery( function ( $ ) {
 	// Handle the add payment method form for WooCommerce Payments.
 	$( 'form#add_payment_method' ).on( 'submit', function () {
 		if (
-			'woocommerce_payments' !==
 			$(
 				"#add_payment_method input:checked[name='payment_method']"
-			).val()
+			).val() !== 'woocommerce_payments'
 		) {
 			return;
 		}
@@ -812,10 +811,9 @@ jQuery( function ( $ ) {
  */
 export function isUsingSavedPaymentMethod() {
 	return (
-		null !==
-			document.querySelector(
-				'#wc-woocommerce_payments-payment-token-new'
-			) &&
+		document.querySelector(
+			'#wc-woocommerce_payments-payment-token-new'
+		) !== null &&
 		! document.querySelector( '#wc-woocommerce_payments-payment-token-new' )
 			.checked
 	);

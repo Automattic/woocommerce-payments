@@ -56,7 +56,7 @@ const AccountFees = ( props ) => {
 	let haveDiscounts = false;
 	const activeDiscounts = Object.entries( accountFees ).map(
 		( [ key, value ] ) => {
-			if ( 0 === value.fee.discount.length ) {
+			if ( value.fee.discount.length === 0 ) {
 				return null;
 			}
 			haveDiscounts = true;

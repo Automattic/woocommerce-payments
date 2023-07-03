@@ -21,7 +21,7 @@ jest.mock( 'wcpay/checkout/utils/upe' );
 jest.mock( 'wcpay/utils/checkout', () => {
 	return {
 		getUPEConfig: jest.fn( ( argument ) => {
-			if ( 'paymentMethodsConfig' === argument ) {
+			if ( argument === 'paymentMethodsConfig' ) {
 				return {
 					card: {
 						label: 'Card',
@@ -38,7 +38,7 @@ jest.mock( 'wcpay/utils/checkout', () => {
 				};
 			}
 
-			if ( 'currency' === argument ) {
+			if ( argument === 'currency' ) {
 				return 'eur';
 			}
 		} ),
@@ -151,11 +151,11 @@ describe( 'Stripe Payment Element mounting', () => {
 			return 'fingerprint';
 		} );
 		getUPEConfig.mockImplementation( ( argument ) => {
-			if ( 'currency' === argument ) {
+			if ( argument === 'currency' ) {
 				return 'eur';
 			}
 
-			if ( 'upeAppearance' === argument ) {
+			if ( argument === 'upeAppearance' ) {
 				return {
 					backgroundColor: '#fff',
 				};
@@ -215,11 +215,11 @@ describe( 'Stripe Payment Element mounting', () => {
 			},
 		};
 		getUPEConfig.mockImplementation( ( argument ) => {
-			if ( 'currency' === argument ) {
+			if ( argument === 'currency' ) {
 				return 'eur';
 			}
 
-			if ( 'isUPEEnabled' === argument ) {
+			if ( argument === 'isUPEEnabled' ) {
 				return true;
 			}
 		} );

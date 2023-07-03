@@ -146,7 +146,7 @@ jQuery( function ( $ ) {
 				`${ fields.billing_first_name } ${ fields.billing_last_name }`.trim() ||
 				'-',
 			email:
-				'string' === typeof fields.billing_email
+				typeof fields.billing_email === 'string'
 					? fields.billing_email.trim()
 					: '-',
 			phone: fields.billing_phone || '-',
@@ -320,7 +320,7 @@ jQuery( function ( $ ) {
 		unblockUI( $upeContainer );
 		upeElement.on( 'change', ( event ) => {
 			const selectedUPEPaymentType =
-				'link' !== event.value.type ? event.value.type : 'card';
+				event.value.type !== 'link' ? event.value.type : 'card';
 			gatewayUPEComponents[ selectedUPEPaymentType ].country =
 				event.value.country;
 			gatewayUPEComponents[ selectedUPEPaymentType ].isUPEComplete =
@@ -615,7 +615,7 @@ jQuery( function ( $ ) {
 		);
 
 		// Boolean `true` means that there is nothing to confirm.
-		if ( true === confirmation ) {
+		if ( confirmation === true ) {
 			return;
 		}
 
@@ -708,11 +708,10 @@ jQuery( function ( $ ) {
 	$( 'form#add_payment_method' ).on( 'submit', function () {
 		// Skip adding legacy cards as UPE payment methods.
 		if (
-			'woocommerce_payments' ===
-				$(
-					"#add_payment_method input:checked[name='payment_method']"
-				).val() &&
-			'0' === isUPESplitEnabled
+			$(
+				"#add_payment_method input:checked[name='payment_method']"
+			).val() === 'woocommerce_payments' &&
+			isUPESplitEnabled === '0'
 		) {
 			return;
 		}
@@ -732,7 +731,7 @@ jQuery( function ( $ ) {
 		const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
 		if (
 			! isUsingSavedPaymentMethod( paymentMethodType ) &&
-			null !== paymentMethodType
+			paymentMethodType !== null
 		) {
 			if ( isChangingPayment ) {
 				handleUPEAddPayment( $( '#order_review' ) );

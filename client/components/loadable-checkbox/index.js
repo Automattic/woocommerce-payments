@@ -33,7 +33,7 @@ const LoadableCheckboxControl = ( {
 
 	const handleOnChange = ( status ) => {
 		const timeout = status ? delayMsOnCheck : delayMsOnUncheck;
-		if ( 0 < timeout ) {
+		if ( timeout > 0 ) {
 			setLoading( true );
 			setTimeout( () => {
 				onChange( status );

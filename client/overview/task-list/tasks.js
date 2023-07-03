@@ -76,8 +76,8 @@ export const getTasks = ( {
 		progressiveOnboarding,
 	} = accountStatus;
 	const isPoEnabled = progressiveOnboarding?.isEnabled;
-	const accountRestrictedSoon = 'restricted_soon' === status;
-	const accountDetailsPastDue = 'restricted' === status && pastDue;
+	const accountRestrictedSoon = status === 'restricted_soon';
+	const accountDetailsPastDue = status === 'restricted' && pastDue;
 	const errorMessages = getErrorMessagesFromRequirements( requirements );
 	let accountDetailsTaskDescription,
 		errorMessageDescription,
@@ -86,10 +86,10 @@ export const getTasks = ( {
 	const isDisputeTaskVisible =
 		!! activeDisputes &&
 		// Only show the dispute task if there are disputes due within 7 days.
-		0 < getDisputesDueWithinDays( activeDisputes, 7 ).length;
+		getDisputesDueWithinDays( activeDisputes, 7 ).length > 0;
 
-	const hasMultipleErrors = 1 < errorMessages.length;
-	const hasSingleError = 1 === errorMessages.length;
+	const hasMultipleErrors = errorMessages.length > 1;
+	const hasSingleError = errorMessages.length === 1;
 
 	if ( accountRestrictedSoon && currentDeadline ) {
 		accountDetailsUpdateByDescription = sprintf(
@@ -137,9 +137,9 @@ export const getTasks = ( {
 					'woocommerce-payments'
 				),
 				content: accountDetailsTaskDescription,
-				completed: 'complete' === status,
+				completed: status === 'complete',
 				onClick:
-					'complete' === status
+					status === 'complete'
 						? undefined
 						: () => {
 								if ( hasMultipleErrors ) {
