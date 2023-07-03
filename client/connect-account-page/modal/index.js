@@ -44,12 +44,12 @@ const OnboardingLocationCheckModal = ( {
 		onDeclined();
 	};
 
-	const title = __( 'WooCommerce Payments', 'woocommerce-payments' );
+	const title = __( 'WooPayments', 'woocommerce-payments' );
 
 	const message = interpolateComponents( {
 		mixedString: __(
-			"It appears you're attempting to set up WooCommerce Payments from an unsupported country. " +
-				'In order to complete the set up of WooCommerce Payments, your store is required to have a business ' +
+			"It appears you're attempting to set up WooPayments from an unsupported country. " +
+				'In order to complete the set up of WooPayments, your store is required to have a business ' +
 				'entity in one of the following countries: {{list /}} ' +
 				'{{link}}Learn more{{/link}} about setting up business entities in foreign countries.',
 			'woocommerce-payments'

@@ -8,7 +8,7 @@ export default {
 	button: __( 'Finish setup', 'woocommerce-payments' ),
 
 	heading: __(
-		'Update WooCommerce Payments business details',
+		'Update WooPayments business details',
 		'woocommerce-payments'
 	),
 

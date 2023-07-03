@@ -11,7 +11,7 @@ use WC_Payment_Gateway_WCPay;
 use Exception;
 
 /**
- * Controls the working mode of WooCommerce Payments.
+ * Controls the working mode of WooPayments.
  */
 class Mode {
 	/**
@@ -63,7 +63,7 @@ class Mode {
 	}
 
 	/**
-	 * Initializes the working mode of WooCommerce Payments.
+	 * Initializes the working mode of WooPayments.
 	 *
 	 * @throws Exception In case the class has not been initialized yet.
 	 */
@@ -75,7 +75,7 @@ class Mode {
 
 		// We need the gateway settings in order to determine test mode.
 		if ( ! isset( $this->gateway ) || empty( $this->gateway->settings ) ) {
-			throw new Exception( 'WooCommerce Payments\' working mode is not initialized yet. Wait for the `init` action.' );
+			throw new Exception( 'WooPayments\' working mode is not initialized yet. Wait for the `init` action.' );
 		}
 
 		$dev_mode = (

@@ -95,7 +95,7 @@ const SurveyModalBody = ( { options, surveyQuestion } ) => {
 
 			<p className="survey-bottom-disclaimer">
 				{ __(
-					'Feedback will be sent anonymously to the WooCommerce Payments development team.',
+					'Feedback will be sent anonymously to the WooPayments development team.',
 					'woocommerce-payments'
 				) }
 			</p>

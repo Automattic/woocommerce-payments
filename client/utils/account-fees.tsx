@@ -171,7 +171,7 @@ export const formatMethodFeesTooltip = (
 						)
 							? interpolateComponents( {
 									mixedString: __(
-										'{{linkToStripePage /}} about WooCommerce Payments Fees in your country',
+										'{{linkToStripePage /}} about WooPayments Fees in your country',
 										'woocommerce-payments'
 									),
 									components: {
@@ -194,7 +194,7 @@ export const formatMethodFeesTooltip = (
 							  } )
 							: interpolateComponents( {
 									mixedString: __(
-										'{{linkToStripePage /}} about WooCommerce Payments Fees',
+										'{{linkToStripePage /}} about WooPayments Fees',
 										'woocommerce-payments'
 									),
 									components: {

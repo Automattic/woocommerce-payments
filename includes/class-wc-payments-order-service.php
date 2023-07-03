@@ -945,7 +945,7 @@ class WC_Payments_Order_Service {
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-				__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+				__( 'A payment of %1$s was <strong>successfully charged</strong> using WooPayments (<a>%2$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
@@ -971,7 +971,7 @@ class WC_Payments_Order_Service {
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-				__( 'A payment of %1$s <strong>failed</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+				__( 'A payment of %1$s <strong>failed</strong> using WooPayments (<a>%2$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
@@ -1002,7 +1002,7 @@ class WC_Payments_Order_Service {
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-				__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+				__( 'A payment of %1$s was <strong>authorized</strong> using WooPayments (<a>%2$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
@@ -1027,7 +1027,7 @@ class WC_Payments_Order_Service {
 		$note = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-				__( 'A payment of %1$s was <strong>started</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+				__( 'A payment of %1$s was <strong>started</strong> using WooPayments (<code>%2$s</code>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'code'   => '<code>',
@@ -1054,7 +1054,7 @@ class WC_Payments_Order_Service {
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-				__( 'A payment of %1$s was <strong>successfully captured</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+				__( 'A payment of %1$s was <strong>successfully captured</strong> using WooPayments (<a>%2$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
@@ -1081,7 +1081,7 @@ class WC_Payments_Order_Service {
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-				__( 'A capture of %1$s <strong>failed</strong> to complete using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+				__( 'A capture of %1$s <strong>failed</strong> to complete using WooPayments (<a>%2$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',

@@ -21,10 +21,7 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 
 	return (
 		<ConfirmationModal
-			title={ __(
-				'Disable WooCommerce Payments',
-				'woocommerce-payments'
-			) }
+			title={ __( 'Disable WooPayments', 'woocommerce-payments' ) }
 			onRequestClose={ onClose }
 			actions={
 				<>
@@ -45,7 +42,7 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 			<p>
 				{ interpolateComponents( {
 					mixedString: __(
-						'WooCommerce Payments is currently powering multiple popular payment methods on your store. ' +
+						'WooPayments is currently powering multiple popular payment methods on your store. ' +
 							'Without it, they will no longer be available to your customers ' +
 							'which may {{strong}}influence conversions and sales on your store.{{/strong}}',
 						'woocommerce-payments'
@@ -58,7 +55,7 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 			<p>
 				{ interpolateComponents( {
 					mixedString: __(
-						'You can enable WooCommerce Payments again at any time in {{settingsLink}}settings{{/settingsLink}}.',
+						'You can enable WooPayments again at any time in {{settingsLink}}settings{{/settingsLink}}.',
 						'woocommerce-payments'
 					),
 					components: {
@@ -72,7 +69,7 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 			<p>
 				<strong>
 					{ __(
-						'Payment methods that need WooCommerce Payments:',
+						'Payment methods that need WooPayments:',
 						'woocommerce-payments'
 					) }
 				</strong>
@@ -88,7 +85,7 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 				{ interpolateComponents( {
 					mixedString: __(
 						'{{strong}}Need help?{{/strong}} ' +
-							'Learn more about {{wooCommercePaymentsLink}}WooCommerce Payments{{/wooCommercePaymentsLink}} or ' +
+							'Learn more about {{wooCommercePaymentsLink}}WooPayments{{/wooCommercePaymentsLink}} or ' +
 							'{{contactSupportLink}}contact WooCommerce Support{{/contactSupportLink}}.',
 						'woocommerce-payments'
 					),

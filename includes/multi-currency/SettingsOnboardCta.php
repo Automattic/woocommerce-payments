@@ -54,7 +54,7 @@ class SettingsOnboardCta extends \WC_Settings_Page {
 		?>
 			<div>
 				<p>
-					<?php esc_html_e( 'To add new currencies to your store, please finish setting up WooCommerce Payments.', 'woocommerce-payments' ); ?>
+					<?php esc_html_e( 'To add new currencies to your store, please finish setting up WooPayments.', 'woocommerce-payments' ); ?>
 				</p>
 				<a href="<?php echo esc_url( $href ); ?>" id="wcpay_enabled_currencies_onboarding_cta" type="button" class="button-primary">
 					<?php esc_html_e( 'Get started', 'woocommerce-payments' ); ?>

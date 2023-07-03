@@ -26,7 +26,7 @@ const SubscriptionProductOnboardingToast = () => {
 
 		createInfoNotice(
 			__(
-				'Thank you for setting up WooCommerce Payments! We’ve published your first subscription product.',
+				'Thank you for setting up WooPayments! We’ve published your first subscription product.',
 				'woocommerce-payments'
 			)
 		);

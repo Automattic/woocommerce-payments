@@ -88,7 +88,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 
 		if ( 'card' !== $this->stripe_id ) {
 			$this->id           = self::GATEWAY_ID . '_' . $this->stripe_id;
-			$this->method_title = "WooCommerce Payments ($this->title)";
+			$this->method_title = "WooPayments ($this->title)";
 		}
 	}
 

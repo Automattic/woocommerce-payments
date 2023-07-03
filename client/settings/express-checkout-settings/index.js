@@ -141,7 +141,7 @@ const ExpressCheckoutSettings = ( { methodId } ) => {
 		<SettingsLayout>
 			<h2 className="express-checkout-settings__breadcrumbs">
 				<a href={ getPaymentSettingsUrl() }>
-					{ __( 'WooCommerce Payments', 'woocommerce-payments' ) }
+					{ __( 'WooPayments', 'woocommerce-payments' ) }
 				</a>{ ' ' }
 				&gt; <span>{ title }</span>
 			</h2>

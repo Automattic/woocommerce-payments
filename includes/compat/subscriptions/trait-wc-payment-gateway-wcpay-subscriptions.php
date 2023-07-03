@@ -20,7 +20,7 @@ use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Intent_Status;
 
 /**
- * Gateway class for WooCommerce Payments, with added compatibility with WooCommerce Subscriptions.
+ * Gateway class for WooPayments, with added compatibility with WooCommerce Subscriptions.
  */
 trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 

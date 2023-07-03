@@ -49,7 +49,7 @@ class WC_Payments_Admin_Settings {
 			<div id="wcpay-test-mode-notice" class="notice notice-warning">
 				<p>
 					<b><?php esc_html_e( 'Test mode active: ', 'woocommerce-payments' ); ?></b>
-					<?php esc_html_e( "All transactions are simulated. Customers can't make real purchases through WooCommerce Payments.", 'woocommerce-payments' ); ?>
+					<?php esc_html_e( "All transactions are simulated. Customers can't make real purchases through WooPayments.", 'woocommerce-payments' ); ?>
 				</p>
 			</div>
 			<?php
@@ -72,7 +72,7 @@ class WC_Payments_Admin_Settings {
 	}
 
 	/**
-	 * Whether the current page is the WooCommerce Payments settings page.
+	 * Whether the current page is the WooPayments settings page.
 	 *
 	 * @return bool
 	 */

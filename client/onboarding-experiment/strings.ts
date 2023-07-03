@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 export default {
 	button: __( 'Finish setup', 'woocommerce-payments' ),
 
-	heading: __( 'WooCommerce Payments', 'woocommerce-payments' ),
+	heading: __( 'WooPayments', 'woocommerce-payments' ),
 
 	learnMore: __( 'Learn more', 'woocommerce-payments' ),
 

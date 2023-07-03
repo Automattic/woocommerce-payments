@@ -176,7 +176,7 @@ ${
 		: ''
 }
 
-### WooCommerce Payments ###
+### WooPayments ###
 
 Connected to WPCOM: ${
 		'NOACCOUNT' === wcPayData.status ||

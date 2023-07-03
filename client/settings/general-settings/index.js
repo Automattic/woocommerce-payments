@@ -23,12 +23,9 @@ const GeneralSettings = () => {
 				<CheckboxControl
 					checked={ isWCPayEnabled }
 					onChange={ setIsWCPayEnabled }
-					label={ __(
-						'Enable WooCommerce Payments',
-						'woocommerce-payments'
-					) }
+					label={ __( 'Enable WooPayments', 'woocommerce-payments' ) }
 					help={ __(
-						'When enabled, payment methods powered by WooCommerce Payments will appear on checkout.',
+						'When enabled, payment methods powered by WooPayments will appear on checkout.',
 						'woocommerce-payments'
 					) }
 				/>

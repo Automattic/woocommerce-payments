@@ -110,7 +110,7 @@ Object.entries( enabledPaymentMethodsConfig )
 					</span>
 				</>
 			),
-			ariaLabel: __( 'WooCommerce Payments', 'woocommerce-payments' ),
+			ariaLabel: __( 'WooPayments', 'woocommerce-payments' ),
 			supports: {
 				showSavedCards: getUPEConfig( 'isSavedCardsEnabled' ) ?? false,
 				showSaveOption: upeConfig.showSaveOption ?? false,

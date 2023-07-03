@@ -25,17 +25,14 @@ const showTosNotice = ( settingsUrl ) => {
 		}
 	};
 
-	createInfoNotice(
-		__( 'Disabled WooCommerce Payments', 'woocommerce-payments' ),
-		{
-			actions: [
-				{
-					label: __( 'Undo', 'woocommerce-payments' ),
-					onClick: enableGateway,
-				},
-			],
-		}
-	);
+	createInfoNotice( __( 'Disabled WooPayments', 'woocommerce-payments' ), {
+		actions: [
+			{
+				label: __( 'Undo', 'woocommerce-payments' ),
+				onClick: enableGateway,
+			},
+		],
+	} );
 };
 
 export default showTosNotice;

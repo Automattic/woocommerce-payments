@@ -968,7 +968,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		// Assert: the behaviors of check_against_session_processing_order.
 		$notes = wc_get_order_notes( [ 'order_id' => $session_order->get_id() ] );
 		$this->assertStringContainsString(
-			'WooCommerce Payments: detected and deleted order ID ' . $current_order_id,
+			'WooPayments: detected and deleted order ID ' . $current_order_id,
 			$notes[0]->content
 		);
 		$this->assertSame( Order_Status::TRASH, wc_get_order( $current_order_id )->get_status() );
@@ -1925,9 +1925,9 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				],
 			],
 			'currency' => 'EUR',
-			'title'    => 'WooCommerce Payments',
+			'title'    => 'WooPayments',
 			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
-			'expected' => 'WooCommerce Payments',
+			'expected' => 'WooPayments',
 		];
 
 		$default_option = $this->mock_upe_gateway->get_option( 'upe_enabled_payment_method_ids' );
@@ -1956,9 +1956,9 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				],
 			],
 			'currency' => 'EUR',
-			'title'    => 'WooCommerce Payments',
+			'title'    => 'WooPayments',
 			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
-			'expected' => 'WooCommerce Payments',
+			'expected' => 'WooPayments',
 		];
 
 		$default_option = $this->mock_upe_gateway->get_option( 'upe_enabled_payment_method_ids' );
@@ -2097,7 +2097,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function maybe_filter_gateway_title_data_provider() {
-		$method_title   = 'WooCommerce Payments';
+		$method_title   = 'WooPayments';
 		$checkout_title = 'Popular payment methods';
 		$card_title     = 'Credit card / debit card';
 

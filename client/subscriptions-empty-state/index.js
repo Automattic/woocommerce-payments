@@ -36,7 +36,7 @@ const Description = () => (
 			  )
 			: __(
 					'Track recurring revenue and manage active subscriptions directly from your store’s ' +
-						'dashboard — powered by WooCommerce Payments.',
+						'dashboard — powered by WooPayments.',
 					'woocommerce-payments'
 			  ) }
 	</p>

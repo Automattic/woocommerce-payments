@@ -55,14 +55,14 @@ class WC_Payments_Admin_Sections_Overwrite {
 	}
 
 	/**
-	 * Adds an "all payment methods" and a "woocommerce payments" section to the gateways settings page
+	 * Adds an "all payment methods" and a "woopayments" section to the gateways settings page
 	 *
 	 * @param array $sections the sections for the payment gateways tab.
 	 *
 	 * @return array
 	 */
 	public function add_checkout_sections( array $sections ): array {
-		$sections['woocommerce_payments'] = __( 'WooCommerce Payments', 'woocommerce-payments' );
+		$sections['woocommerce_payments'] = __( 'WooPayments', 'woocommerce-payments' );
 
 		// unsetting and setting again, so it appears last in the array.
 		unset( $sections[''] );

@@ -21,7 +21,7 @@
 						<?php
 							printf(
 								// translators: $1 $2 $3 placeholders are opening and closing HTML link tags, linking to documentation. $4 $5 placeholders are opening and closing strong HTML tags.
-								esc_html__( 'Your store has active subscriptions using the built-in WooCommerce Payments functionality. Due to the %1$soff-site billing engine%3$s these subscriptions use, %4$sthey will continue to renew even after you deactivate WooCommerce Payments%5$s. %2$sLearn more%3$s.', 'woocommerce-payments' ),
+								esc_html__( 'Your store has active subscriptions using the built-in WooPayments functionality. Due to the %1$soff-site billing engine%3$s these subscriptions use, %4$sthey will continue to renew even after you deactivate WooPayments%5$s. %2$sLearn more%3$s.', 'woocommerce-payments' ),
 								'<a href="https://woocommerce.com/document/payments/subscriptions/comparison/#billing-engine">',
 								'<a href="https://woocommerce.com/document/woocommerce-payments/built-in-subscriptions/deactivate/#existing-subscriptions">',
 								'</a>',
@@ -34,18 +34,18 @@
 						<?php
 							printf(
 								// translators: $1 $2 placeholders are opening and closing HTML link tags, linking to documentation.
-								esc_html__( 'If you do not want these subscriptions to continue to be billed, you should %1$scancel all subscriptions%2$s prior to deactivating WooCommerce Payments. ', 'woocommerce-payments' ),
+								esc_html__( 'If you do not want these subscriptions to continue to be billed, you should %1$scancel all subscriptions%2$s prior to deactivating WooPayments. ', 'woocommerce-payments' ),
 								'<a href="https://woocommerce.com/document/subscriptions/store-manager-guide/#cancel-or-suspend-subscription">',
 								'</a>'
 							);
 							?>
 					</p>
-					<strong><?php esc_html_e( 'Are you sure you want to deactivate WooCommerce Payments?', 'woocommerce-payments' ); ?></strong>
+					<strong><?php esc_html_e( 'Are you sure you want to deactivate WooPayments?', 'woocommerce-payments' ); ?></strong>
 				</article>
 				<footer>
 					<div class="inner">
 						<button class="modal-close button button-secondary button-large"><?php esc_html_e( 'Cancel', 'woocommerce-payments' ); ?></button>
-						<button id="wcpay-plugin-deactivate-modal-submit" class="button button-primary button-large"><?php esc_html_e( 'Yes, deactivate WooCommerce Payments', 'woocommerce-payments' ); ?></button>
+						<button id="wcpay-plugin-deactivate-modal-submit" class="button button-primary button-large"><?php esc_html_e( 'Yes, deactivate WooPayments', 'woocommerce-payments' ); ?></button>
 					</div>
 				</footer>
 			</section>

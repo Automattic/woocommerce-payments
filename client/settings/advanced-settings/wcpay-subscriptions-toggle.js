@@ -35,12 +35,12 @@ const WCPaySubscriptionsToggle = () => {
 		( isWCPaySubscriptionsEligible || isWCPaySubscriptionsEnabled ) ? (
 		<CheckboxControl
 			label={ __(
-				'Enable Subscriptions with WooCommerce Payments',
+				'Enable Subscriptions with WooPayments',
 				'woocommerce-payments'
 			) }
 			help={ interpolateComponents( {
 				mixedString: __(
-					'Sell subscription products and services with WooCommerce Payments. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+					'Sell subscription products and services with WooPayments. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 					'woocommerce-payments'
 				),
 				components: {

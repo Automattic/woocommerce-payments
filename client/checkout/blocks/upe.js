@@ -48,7 +48,7 @@ registerPaymentMethod( {
 	canMakePayment: () => !! api.getStripe(),
 	paymentMethodId: PAYMENT_METHOD_NAME_CARD,
 	label: getCustomGatewayTitle( getConfig( 'paymentMethodsConfig' ) ),
-	ariaLabel: __( 'WooCommerce Payments', 'woocommerce-payments' ),
+	ariaLabel: __( 'WooPayments', 'woocommerce-payments' ),
 	supports: {
 		showSavedCards: getConfig( 'isSavedCardsEnabled' ) ?? false,
 		showSaveOption:

@@ -99,7 +99,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		WC_Payments_Order_Service $order_service
 	) {
 		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $failed_transaction_rate_limiter, $order_service );
-		$this->title           = __( 'WooCommerce Payments', 'woocommerce-payments' );
+		$this->title           = __( 'WooPayments', 'woocommerce-payments' );
 		$this->description     = '';
 		$this->checkout_title  = __( 'Popular payment methods', 'woocommerce-payments' );
 		$this->payment_methods = $payment_methods;

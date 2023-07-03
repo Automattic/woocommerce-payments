@@ -29,13 +29,10 @@ const TosLink = ( props ) => (
 );
 
 const TosModalUI = ( { onAccept, onDecline, isBusy, hasError } ) => {
-	const title = __(
-		'WooCommerce Payments: Terms of Service',
-		'woocommerce-payments'
-	);
+	const title = __( 'WooPayments: Terms of Service', 'woocommerce-payments' );
 	const message = interpolateComponents( {
 		mixedString: __(
-			'To continue using WooCommerce Payments, please review and agree to our {{link}}Terms of Service{{/link}}.' +
+			'To continue using WooPayments, please review and agree to our {{link}}Terms of Service{{/link}}.' +
 				' By clicking “Accept” you agree to the Terms of Service.',
 			'woocommerce-payments'
 		),
@@ -82,11 +79,11 @@ const TosModalUI = ( { onAccept, onDecline, isBusy, hasError } ) => {
 };
 
 const DisableModalUI = ( { onDisable, onCancel, isBusy, hasError } ) => {
-	const title = __( 'Disable WooCommerce Payments', 'woocommerce-payments' );
+	const title = __( 'Disable WooPayments', 'woocommerce-payments' );
 	const message = interpolateComponents( {
 		mixedString: __(
 			'By declining our {{link}}Terms of Service{{/link}},' +
-				' you’ll no longer be able to capture credit card payments using WooCommerce Payments.' +
+				' you’ll no longer be able to capture credit card payments using WooPayments.' +
 				' Your previous transaction and deposit data will still be available.',
 			'woocommerce-payments'
 		),

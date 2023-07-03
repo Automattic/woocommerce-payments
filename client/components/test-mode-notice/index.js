@@ -11,44 +11,41 @@ import { isInTestMode, getPaymentSettingsUrl } from 'utils';
 
 // The topics (i.e. pages) that have test mode notices.
 export const topics = {
-	overview: __(
-		'WooCommerce Payments is in test mode.',
-		'woocommerce-payments'
-	),
+	overview: __( 'WooPayments is in test mode.', 'woocommerce-payments' ),
 	transactions: __(
-		'Viewing test transactions. To view live transactions, disable test mode in WooCommerce Payments settings.',
+		'Viewing test transactions. To view live transactions, disable test mode in WooPayments settings.',
 		'woocommerce-payments'
 	),
 	paymentDetails: __( 'Test payment:', 'woocommerce-payments' ),
 	deposits: __(
-		'Viewing test deposits. To view live deposits, disable test mode in WooCommerce Payments settings.',
+		'Viewing test deposits. To view live deposits, disable test mode in WooPayments settings.',
 		'woocommerce-payments'
 	),
 	depositDetails: __( 'Test deposit:', 'woocommerce-payments' ),
 	disputes: __(
-		'Viewing test disputes. To view live disputes, disable test mode in WooCommerce Payments settings.',
+		'Viewing test disputes. To view live disputes, disable test mode in WooPayments settings.',
 		'woocommerce-payments'
 	),
 	disputeDetails: __( 'Test dispute:', 'woocommerce-payments' ),
 	documents: __(
-		'Viewing test documents. To view live documents, disable test mode in WooCommerce Payments settings.',
+		'Viewing test documents. To view live documents, disable test mode in WooPayments settings.',
 		'woocommerce-payments'
 	),
 	documentDetails: __( 'Test document:', 'woocommerce-payments' ),
 	loans: __(
-		'Viewing test loans. To view live loans, disable test mode in WooCommerce Payments settings.',
+		'Viewing test loans. To view live loans, disable test mode in WooPayments settings.',
 		'woocommerce-payments'
 	),
 	authorizations: __(
-		'Viewing test authorizations. To view live authorizations, disable test mode in WooCommerce Payments settings.',
+		'Viewing test authorizations. To view live authorizations, disable test mode in WooPayments settings.',
 		'woocommerce-payments'
 	),
 	riskReviewTransactions: __(
-		'Viewing test on review transactions. To view live on review transactions, disable test mode in WooCommerce Payments settings.',
+		'Viewing test on review transactions. To view live on review transactions, disable test mode in WooPayments settings.',
 		'woocommerce-payments'
 	),
 	blockedTransactions: __(
-		'Viewing test blocked transactions. To view live blocked transactions, disable test mode in WooCommerce Payments settings.',
+		'Viewing test blocked transactions. To view live blocked transactions, disable test mode in WooPayments settings.',
 		'woocommerce-payments'
 	),
 };
@@ -72,10 +69,7 @@ const detailsTopics = [
 export const getPaymentsSettingsUrlComponent = () => {
 	return (
 		<a href={ getPaymentSettingsUrl() }>
-			{ __(
-				'View WooCommerce Payments settings',
-				'woocommerce-payments'
-			) }
+			{ __( 'View WooPayments settings', 'woocommerce-payments' ) }
 		</a>
 	);
 };
@@ -89,8 +83,8 @@ export const getPaymentsSettingsUrlComponent = () => {
  */
 export const getTopicDetails = ( topic ) => {
 	return _n(
-		'WooCommerce Payments was in test mode when this order was placed.',
-		'WooCommerce Payments was in test mode when these orders were placed.',
+		'WooPayments was in test mode when this order was placed.',
+		'WooPayments was in test mode when these orders were placed.',
 		topics.depositDetails === topic ? 2 : 1,
 		'woocommerce-payments'
 	);

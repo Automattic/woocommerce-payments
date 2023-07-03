@@ -21,7 +21,7 @@ const ReadersListDescription = () => (
 		<p>
 			{ __(
 				'Card readers are marked as active if they’ve processed one or more transactions durring the current billing cycle. ' +
-					'To connect or disconnect card readers, use the WooCommerce Payments mobile application.',
+					'To connect or disconnect card readers, use the WooPayments mobile application.',
 				'woocommerce-payments'
 			) }
 		</p>

@@ -117,11 +117,11 @@ class Order_Fraud_And_Risk_Meta_Box {
 				if ( ! empty( $payment_method_title ) && 'Popular payment methods' !== $payment_method_title ) {
 					$description = sprintf(
 						/* translators: %s - Payment method title */
-						__( 'Risk filtering is only available for orders processed using credit cards with WooCommerce Payments. This order was processed with %s.', 'woocommerce-payments' ),
+						__( 'Risk filtering is only available for orders processed using credit cards with WooPayments. This order was processed with %s.', 'woocommerce-payments' ),
 						$payment_method_title
 					);
 				} else {
-					$description = __( 'Risk filtering is only available for orders processed using credit cards with WooCommerce Payments.', 'woocommerce-payments' );
+					$description = __( 'Risk filtering is only available for orders processed using credit cards with WooPayments.', 'woocommerce-payments' );
 				}
 
 				$callout     = __( 'Learn more', 'woocommerce-payments' );
@@ -174,7 +174,7 @@ class Order_Fraud_And_Risk_Meta_Box {
 				break;
 
 			default:
-				$description = __( 'Risk filtering through WooCommerce Payments was not found on this order, it may have been created while filtering was not enabled.', 'woocommerce-payments' );
+				$description = __( 'Risk filtering through WooPayments was not found on this order, it may have been created while filtering was not enabled.', 'woocommerce-payments' );
 				echo '<p>' . esc_html( $description ) . '</p>';
 				break;
 		}

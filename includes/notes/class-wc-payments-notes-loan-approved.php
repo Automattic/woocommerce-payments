@@ -48,7 +48,7 @@ class WC_Payments_Notes_Loan_Approved {
 			sprintf(
 				// Translators: %1: total amount lent to the merchant formatted in the account currency.
 				__(
-					'Congratulations! Your capital loan has been approved and %1$s was deposited in to the bank account linked to WooCommerce Payments. You\'ll automatically repay the loan, plus a flat fee, through a fixed percentage of each WooCommerce Payments transaction.',
+					'Congratulations! Your capital loan has been approved and %1$s was deposited in to the bank account linked to WooPayments. You\'ll automatically repay the loan, plus a flat fee, through a fixed percentage of each WooPayments transaction.',
 					'woocommerce-payments'
 				),
 				WC_Payments_Explicit_Price_Formatter::get_explicit_price(

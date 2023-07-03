@@ -73,7 +73,7 @@ const SubscriptionProductOnboardingModalContent = ( {
 			</p>
 			<p>
 				{ __(
-					'Verify your business details with WooCommerce Payments to accept recurring payments for this subscription product.',
+					'Verify your business details with WooPayments to accept recurring payments for this subscription product.',
 					'woocommerce-payments'
 				) }
 			</p>

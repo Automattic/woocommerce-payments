@@ -133,7 +133,7 @@ export const getTasks = ( {
 				key: 'update-business-details',
 				level: 1,
 				title: __(
-					'Update WooCommerce Payments business details',
+					'Update WooPayments business details',
 					'woocommerce-payments'
 				),
 				content: accountDetailsTaskDescription,
@@ -166,12 +166,9 @@ export const getTasks = ( {
 			wpcomReconnectUrl && {
 				key: 'reconnect-wpcom-user',
 				level: 1,
-				title: __(
-					'Reconnect WooCommerce Payments',
-					'woocommerce-payments'
-				),
+				title: __( 'Reconnect WooPayments', 'woocommerce-payments' ),
 				additionalInfo: __(
-					'WooCommerce Payments is missing a connected WordPress.com account. ' +
+					'WooPayments is missing a connected WordPress.com account. ' +
 						'Some functionality will be limited without a connected account.',
 					'woocommerce-payments'
 				),

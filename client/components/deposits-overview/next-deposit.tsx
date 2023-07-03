@@ -95,7 +95,7 @@ const NegativeBalanceDepositsPausedNotice = () => (
 	>
 		{ interpolateComponents( {
 			mixedString: __(
-				'Deposits may be interrupted while your WooCommerce Payments balance remains negative. {{whyLink}}Why?{{/whyLink}}',
+				'Deposits may be interrupted while your WooPayments balance remains negative. {{whyLink}}Why?{{/whyLink}}',
 				'woocommerce-payments'
 			),
 			components: {
