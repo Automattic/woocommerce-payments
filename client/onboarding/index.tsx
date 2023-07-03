@@ -2,6 +2,7 @@
  * External dependencies
  */
 import React, { useEffect } from 'react';
+import { isURL } from '@wordpress/url';
 
 /**
  * Internal dependencies
@@ -56,7 +57,10 @@ const OnboardingStepper = () => {
 };
 
 const OnboardingPage: React.FC = () => {
-	const businessUrl = wcSettings?.homeUrl ?? '';
+	const isLocalhost = location.hostname === 'localhost';
+	const businessUrl = isLocalhost
+		? 'https://wcpay.test'
+		: wcSettings?.homeUrl ?? '';
 
 	useEffect( () => {
 		trackStarted();
