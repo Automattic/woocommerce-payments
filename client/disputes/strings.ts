@@ -309,7 +309,7 @@ export const reasons: Record<
 		],
 		required: [
 			__(
-				'Get your customer to withdraw the dispute by helping them identify the payment. Otherwise challenge the dispute with appropriate evidence that proves the purchase was legitimate. ',
+				'Get your customer to withdraw the dispute by helping them identify the payment. Otherwise, challenge the dispute with appropriate evidence that proves the purchase was legitimate. ',
 				'woocommerce-payments'
 			),
 		],
