@@ -101,8 +101,10 @@ Object.entries( enabledPaymentMethodsConfig )
 			savedTokenComponent: <SavedTokenHandler api={ api } />,
 			canMakePayment: ( cartData ) => {
 				if (
-					'affirm' === upeName &&
-					! [ 'US', 'CA' ].includes( cartData.billingAddress.country )
+					upeConfig.countries.length &&
+					! upeConfig.countries.includes(
+						cartData.billingAddress.country
+					)
 				) {
 					return false;
 				}
