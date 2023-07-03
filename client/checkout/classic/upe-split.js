@@ -330,6 +330,19 @@ jQuery( function ( $ ) {
 		gatewayUPEComponents[ paymentMethodType ].upeElement = upeElement;
 	};
 
+	function restrictPaymentMethodToLocation( paymentMethodType ) {
+		maybeTogglePaymentMethod(
+			paymentMethodType,
+			paymentMethodsConfig[ paymentMethodType ].countries
+		);
+		$( '#billing_country' ).on( 'change', function () {
+			maybeTogglePaymentMethod(
+				paymentMethodType,
+				paymentMethodsConfig[ paymentMethodType ].countries
+			);
+		} );
+	}
+
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
 	// event for this. This part of the page can also reload based on changes to checkout details, so we call unmount
 	// first to ensure the card element is re-mounted correctly.
@@ -359,16 +372,7 @@ jQuery( function ( $ ) {
 				if (
 					paymentMethodsConfig[ paymentMethodType ].countries.length
 				) {
-					maybeTogglePaymentMethod(
-						paymentMethodType,
-						paymentMethodsConfig[ paymentMethodType ].countries
-					);
-					$( '#billing_country' ).on( 'change', function () {
-						maybeTogglePaymentMethod(
-							paymentMethodType,
-							paymentMethodsConfig[ paymentMethodType ].countries
-						);
-					} );
+					restrictPaymentMethodToLocation( paymentMethodType );
 				}
 			}
 		}
