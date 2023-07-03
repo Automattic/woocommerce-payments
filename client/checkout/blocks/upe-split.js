@@ -69,7 +69,7 @@ const api = new WCPayAPI(
 );
 Object.entries( enabledPaymentMethodsConfig )
 	.filter( ( [ upeName ] ) => 'link' !== upeName )
-	.map( ( [ upeName, upeConfig ] ) =>
+	.forEach( ( [ upeName, upeConfig ] ) => {
 		registerPaymentMethod( {
 			name: upeMethods[ upeName ],
 			content: getUPEConfig( 'isUPEDeferredEnabled' )
@@ -99,7 +99,15 @@ Object.entries( enabledPaymentMethodsConfig )
 						upeConfig.testingInstructions
 				  ),
 			savedTokenComponent: <SavedTokenHandler api={ api } />,
-			canMakePayment: () => !! api.getStripe(),
+			canMakePayment: ( cartData ) => {
+				if (
+					'affirm' === upeName &&
+					! [ 'US', 'CA' ].includes( cartData.billingAddress.country )
+				) {
+					return false;
+				}
+				return !! api.getStripe();
+			},
 			paymentMethodId: upeMethods[ upeName ],
 			// see .wc-block-checkout__payment-method styles in blocks/style.scss
 			label: (
@@ -116,8 +124,8 @@ Object.entries( enabledPaymentMethodsConfig )
 				showSaveOption: upeConfig.showSaveOption ?? false,
 				features: getUPEConfig( 'features' ),
 			},
-		} )
-	);
+		} );
+	} );
 
 registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
 window.addEventListener( 'load', () => {
