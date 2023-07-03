@@ -1,5 +1,16 @@
 *** WooCommerce Payments Changelog ***
 
+= 6.2.0-test-1 - 2023-xx-xx =
+* Add - Added flag to allow us to remotely set if WooPay should be enabled or not for new merchants.
+* Add - Check for invalid extensions when one is activated or deactivated.
+* Fix - Fix a fatal error on sites using WC Subscriptions versions below 4.0.0
+* Fix - Fixed typo in businessInfo strings in strings.tsx file
+* Fix - Wrap list of payment method logos on next line
+* Update - Refactoring and cleanup of code
+* Update - WC Payments inbuilt subscriptions functionality is no longer enabled by default for eligible US based stores.
+* Dev - Affirm&Afterpay: add new test cases to ensure the method availability on checkout
+* Dev - Affirm&Afterpay: refactor subscription products detection by using existing subs API
+
 = 6.1.1 - 2023-06-29 =
 * Fix - Fix syntax for advanced filters in WC 7.8 and over
 
