@@ -68,6 +68,7 @@ const PaymentMethodDetails = ( props ) => {
 			<HoverTooltip
 				isVisible={ false }
 				content={ PAYMENT_METHOD_TITLES[ brand ] }
+				className="payment-method-details__brand-tooltip"
 			>
 				<span
 					className={ `payment-method__brand payment-method__brand--${ brand }` }
