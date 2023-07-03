@@ -35,6 +35,8 @@ require_once __DIR__ . '/includes/woopay/class-woopay-session.php';
 function wcpay_activated() {
 	// Do not take any action if activated in a REST request (via wc-admin).
 	if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+		// When WooCommerce Payments is installed and activated from the WooCommerce onboarding wizard, check if the site is eligible for subscriptions.
+		update_option( 'wcpay_check_subscriptions_eligibility_after_onboarding', true );
 		return;
 	}
 
