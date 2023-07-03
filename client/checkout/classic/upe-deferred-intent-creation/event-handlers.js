@@ -19,6 +19,8 @@ import enqueueFraudScripts from 'fraud-scripts';
 import { showAuthenticationModalIfRequired } from './3ds-flow-handling';
 import WCPayAPI from 'wcpay/checkout/api';
 import apiRequest from '../../utils/request';
+import { handleWooPayEmailInput } from 'wcpay/checkout/woopay/email-input-iframe';
+import { isPreviewing } from 'wcpay/checkout/preview';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
@@ -81,6 +83,10 @@ jQuery( function ( $ ) {
 	$( 'form#order_review' ).on( 'submit', function () {
 		return processPaymentIfNotUsingSavedMethod( $( 'form#order_review' ) );
 	} );
+
+	if ( getUPEConfig( 'isWooPayEnabled' ) && ! isPreviewing() ) {
+		handleWooPayEmailInput( '#billing_email', api );
+	}
 
 	function processPaymentIfNotUsingSavedMethod( $form ) {
 		const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
