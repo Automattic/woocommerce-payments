@@ -25,6 +25,7 @@ env:
   E2E_RESULT_FILEPATH:   'tests/e2e/results.json'
   WC_MIN_SUPPORTED_VERSION: '7.6.0'
   NODE_ENV: 'test'
+  FORCE_E2E_DEPS_SETUP: true
 
 jobs:
   generate-matrix:
