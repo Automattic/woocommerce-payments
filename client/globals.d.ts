@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { MccsDisplayTreeItem, Country } from 'onboarding-prototype/types';
+import { MccsDisplayTreeItem, Country } from 'onboarding/types';
 
 declare global {
 	const wcpaySettings: {
@@ -85,6 +85,11 @@ declare global {
 		errorMessage: string;
 		onBoardingDisabled: boolean;
 		isBnplAffirmAfterpayEnabled: boolean;
+		connectIncentive?: {
+			id: string;
+			description: string;
+			tc_url: string;
+		};
 	};
 
 	const wcTracks: any;

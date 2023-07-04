@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: The changes that lead to a fatal on checkout were unreleased and so no changelog is necessary.
+
+

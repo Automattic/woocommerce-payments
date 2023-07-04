@@ -213,6 +213,10 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @throws Invalid_Webhook_Data_Exception Event mode does not match the gateway mode.
 	 */
 	private function is_webhook_mode_mismatch( array $event_body ): bool {
+		if ( ! $this->has_webhook_property( $event_body, 'livemode' ) ) {
+			return false;
+		}
+
 		$is_gateway_live_mode = WC_Payments::mode()->is_live();
 		$is_event_live_mode   = $this->read_webhook_property( $event_body, 'livemode' );
 
@@ -551,8 +555,9 @@ class WC_Payments_Webhook_Processing_Service {
 
 		$this->order_service->mark_payment_dispute_created( $order, $dispute_id, $amount, $reason, $due_by );
 
-		// Clear the dispute statuses cache to trigger a fetch of new data.
+		// Clear dispute caches to trigger a fetch of new data.
 		$this->database_cache->delete( DATABASE_CACHE::DISPUTE_STATUS_COUNTS_KEY );
+		$this->database_cache->delete( DATABASE_CACHE::ACTIVE_DISPUTES_KEY );
 	}
 
 	/**
@@ -583,8 +588,9 @@ class WC_Payments_Webhook_Processing_Service {
 
 		$this->order_service->mark_payment_dispute_closed( $order, $dispute_id, $status );
 
-		// Clear the dispute statuses cache to trigger a fetch of new data.
+		// Clear dispute caches to trigger a fetch of new data.
 		$this->database_cache->delete( DATABASE_CACHE::DISPUTE_STATUS_COUNTS_KEY );
+		$this->database_cache->delete( DATABASE_CACHE::ACTIVE_DISPUTES_KEY );
 	}
 
 	/**
@@ -639,8 +645,9 @@ class WC_Payments_Webhook_Processing_Service {
 
 		$order->add_order_note( $note );
 
-		// Clear the dispute statuses cache to trigger a fetch of new data.
+		// Clear dispute caches to trigger a fetch of new data.
 		$this->database_cache->delete( DATABASE_CACHE::DISPUTE_STATUS_COUNTS_KEY );
+		$this->database_cache->delete( DATABASE_CACHE::ACTIVE_DISPUTES_KEY );
 	}
 
 	/**
@@ -684,6 +691,18 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 		return $array[ $key ];
+	}
+
+	/**
+	 * Safely check whether a webhook contains a property.
+	 *
+	 * @param array  $array Array to read from.
+	 * @param string $key   ID to fetch on.
+	 *
+	 * @return bool
+	 */
+	private function has_webhook_property( $array, $key ) {
+		return isset( $array[ $key ] );
 	}
 
 	/**
