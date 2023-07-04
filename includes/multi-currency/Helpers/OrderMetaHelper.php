@@ -106,7 +106,7 @@ class OrderMetaHelper {
 	public function maybe_update_exchange_rate( $order_id ) {
 		// Verify nonce.
 		$nonce_value = ! empty( $_POST['wcpay_multi_currency_exchange_rate_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['wcpay_multi_currency_exchange_rate_nonce'] ) ) : false;
-		if ( false === $nonce_value || ! wp_verify_nonce( $nonce_value, 'wcpay_multi_currency_exchange_rate_nonce_' . $order_id ) ) {
+		if ( false === $nonce_value || ! wp_verify_nonce( $nonce_value, 'wcpay_multi_currency_exchange_rate_nonce_' . $order_id ) || ! current_user_can( 'manage_woocommerce' ) ) {
 			return;
 		}
 
@@ -187,7 +187,7 @@ class OrderMetaHelper {
 		}
 
 		// Start getting all of the items we need.
-		$order_currency = $order->get_currency();
+		$order_currency = strtoupper( $order->get_currency() );
 		$intent_id      = $order->get_meta( '_intent_id' );
 		$payment_method = $order->get_payment_method();
 		$is_wcpay       = false !== strpos( $payment_method, 'woocommerce_payments' );
@@ -196,7 +196,7 @@ class OrderMetaHelper {
 		$store_items = [
 			'store_currency' => [
 				'label' => __( 'Store Currency', 'woocommerce-payments' ),
-				'value' => get_woocommerce_currency(),
+				'value' => strtoupper( get_woocommerce_currency() ),
 			],
 		];
 
@@ -208,7 +208,7 @@ class OrderMetaHelper {
 			],
 			'order_default_currency' => [
 				'label' => __( 'Order Default Currency', 'woocommerce-payments' ),
-				'value' => $order->get_meta( '_wcpay_multi_currency_order_default_currency' ),
+				'value' => strtoupper( $order->get_meta( '_wcpay_multi_currency_order_default_currency' ) ),
 			],
 			'payment_method'         => [
 				'label' => __( 'Payment Method ID', 'woocommerce-payments' ),
@@ -224,7 +224,7 @@ class OrderMetaHelper {
 			],
 			'intent_currency'        => [
 				'label' => __( 'Intent Currency', 'woocommerce-payments' ),
-				'value' => $order->get_meta( '_wcpay_intent_currency' ),
+				'value' => strtoupper( $order->get_meta( '_wcpay_intent_currency' ) ),
 			],
 			'mc_exchange_rate'       => [
 				'label' => __( 'Multi-Currency Exchange Rate', 'woocommerce-payments' ),
