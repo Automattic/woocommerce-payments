@@ -165,7 +165,7 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 					<span>
 						<NoticeOutlineIcon
 							style={ {
-								color: '#BD8600',
+								color: '#F0B849',
 								fill: 'currentColor',
 								marginBottom: '-5px',
 								marginRight: '16px',

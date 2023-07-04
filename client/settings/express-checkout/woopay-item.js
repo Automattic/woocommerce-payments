@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Icon } from '@wordpress/icons';
 import { CheckboxControl, VisuallyHidden } from '@wordpress/components';
 import WooIcon from 'assets/images/payment-methods/woo.svg?asset';
 import interpolateComponents from '@automattic/interpolate-components';
@@ -19,7 +18,7 @@ import {
 	useWooPayShowIncompatibilityNotice,
 } from 'wcpay/data';
 import WCPaySettingsContext from '../wcpay-settings-context';
-import Warning from 'components/icons/warning';
+import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import WooPayIncompatibilityNotice from '../settings-warnings/incompatibility-notice';
 
 const WooPayExpressCheckoutItem = () => {
@@ -52,7 +51,15 @@ const WooPayExpressCheckoutItem = () => {
 									) }
 								>
 									<div className="loadable-checkbox__icon">
-										<Icon icon={ Warning } />
+										<NoticeOutlineIcon
+											style={ {
+												color: '#F0B849',
+												fill: 'currentColor',
+												marginBottom: '-5px',
+												marginRight: '16px',
+											} }
+											size={ 20 }
+										/>
 										<div
 											className="loadable-checkbox__icon-warning"
 											data-testid="loadable-checkbox-icon-warning"
