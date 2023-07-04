@@ -100,15 +100,11 @@ Object.entries( enabledPaymentMethodsConfig )
 				  ),
 			savedTokenComponent: <SavedTokenHandler api={ api } />,
 			canMakePayment: ( cartData ) => {
-				if (
-					upeConfig.countries.length &&
-					! upeConfig.countries.includes(
-						cartData.billingAddress.country
-					)
-				) {
-					return false;
-				}
-				return !! api.getStripe();
+				const billingCountry = cartData.billingAddress.country;
+				const isAvailableInTheCountry =
+					! upeConfig.countries.length ||
+					upeConfig.countries.includes( billingCountry );
+				return isAvailableInTheCountry && !! api.getStripe();
 			},
 			paymentMethodId: upeMethods[ upeName ],
 			// see .wc-block-checkout__payment-method styles in blocks/style.scss
