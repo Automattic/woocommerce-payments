@@ -1,6 +1,5 @@
-/* global jQuery */
 // global Stripe, wcpayStripeSiteMessaging
-function bnplSiteMessaging() {
+export const initializeBnplSiteMessaging = () => {
 	const {
 		price,
 		currency,
@@ -22,25 +21,5 @@ function bnplSiteMessaging() {
 		.create( 'paymentMethodMessaging', options );
 	paymentMessageElement.mount( '#payment-method-message' );
 
-	const quantitySelector = document.querySelector( '.quantity input' );
-	quantitySelector.addEventListener( 'change', ( event ) => {
-		const newQuantity = event.target.value;
-		paymentMessageElement.update( {
-			amount: parseInt( price, 10 ) * newQuantity,
-		} );
-	} );
-
-	jQuery( function ( $ ) {
-		$( '.single_variation_wrap' ).on( 'show_variation', function (
-			event,
-			variation
-		) {
-			console.log( variation.display_price );
-			paymentMessageElement.update( {
-				amount: parseInt( variation.display_price, 10 ),
-			} );
-		} );
-	} );
-}
-
-export default bnplSiteMessaging;
+	return paymentMessageElement;
+};
