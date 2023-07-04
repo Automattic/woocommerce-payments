@@ -13,42 +13,32 @@ import { BannerBody, NewPill, BannerActions } from './components';
 import './style.scss';
 import wcpayTracks from 'tracks';
 
-interface BannerSettings {
-	dontShowAgain: boolean;
-}
-
 const FRTDiscoverabilityBanner: React.FC = () => {
-	const { frtDiscoverBannerSettings } = wcpaySettings;
+	const { frtDiscoverBannerDismissed } = wcpaySettings;
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
-	const [ settings, setSettings ] = useState< BannerSettings >( () => {
+	const [ setting, setSetting ] = useState< boolean >( () => {
 		try {
-			return JSON.parse( frtDiscoverBannerSettings );
+			return frtDiscoverBannerDismissed;
 		} catch ( e ) {
-			return { dontShowAgain: false };
+			return false;
 		}
 	} );
 
-	const showBanner = ! settings.dontShowAgain;
+	const showBanner = ! setting;
 
 	const setDontShowAgain = () => {
-		setSettings( () => {
-			return {
-				dontShowAgain: true,
-			};
-		} );
+		setSetting( true );
 	};
 
 	useEffect( () => {
 		wcpayTracks.recordEvent( 'wcpay_fraud_protection_banner_rendered', {} );
 
-		const stringifiedSettings = JSON.stringify( settings );
-
 		updateOptions( {
-			wcpay_frt_discover_banner_settings: stringifiedSettings,
+			wcpay_frt_discover_banner_dismissed: setting,
 		} );
 
-		wcpaySettings.frtDiscoverBannerSettings = stringifiedSettings;
-	}, [ frtDiscoverBannerSettings, settings, updateOptions ] );
+		wcpaySettings.frtDiscoverBannerDismissed = setting;
+	}, [ frtDiscoverBannerDismissed, setting, updateOptions ] );
 
 	const handleDontShowAgainOnClick = () => {
 		setDontShowAgain();
