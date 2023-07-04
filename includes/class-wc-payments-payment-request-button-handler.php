@@ -790,8 +790,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$product      = $this->get_product();
 		$is_supported = true;
 
-		if ( ! is_object( $product )
-			|| ! is_null( $product )
+		if ( is_null( $product )
+			|| ! is_object( $product )
 			|| ! in_array( $product->get_type(), $this->supported_product_types(), true )
 			|| ( class_exists( 'WC_Subscriptions_Product' ) && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0 )
 			|| ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) )
