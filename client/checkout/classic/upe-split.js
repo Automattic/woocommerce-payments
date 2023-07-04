@@ -32,7 +32,6 @@ import {
 	getSelectedUPEGatewayPaymentMethod,
 	getUpeSettings,
 	isUsingSavedPaymentMethod,
-	maybeTogglePaymentMethod,
 } from '../utils/upe';
 import { decryptClientSecret } from '../utils/encryption';
 import enableStripeLinkPaymentMethod from '../stripe-link';
@@ -330,13 +329,29 @@ jQuery( function ( $ ) {
 		gatewayUPEComponents[ paymentMethodType ].upeElement = upeElement;
 	};
 
+	function togglePaymentMethodForCountry(
+		paymentMethodType,
+		supportedCountries
+	) {
+		const billingCountry = document.querySelector( '#billing_country' )
+			.value;
+		const affirmContainer = document.querySelector(
+			'#payment_method_woocommerce_payments_' + paymentMethodType
+		).parentElement;
+		if ( supportedCountries.includes( billingCountry ) ) {
+			affirmContainer.style.display = 'block';
+		} else {
+			affirmContainer.style.display = 'none';
+		}
+	}
+
 	function restrictPaymentMethodToLocation( paymentMethodType ) {
-		maybeTogglePaymentMethod(
+		togglePaymentMethodForCountry(
 			paymentMethodType,
 			paymentMethodsConfig[ paymentMethodType ].countries
 		);
 		$( '#billing_country' ).on( 'change', function () {
-			maybeTogglePaymentMethod(
+			togglePaymentMethodForCountry(
 				paymentMethodType,
 				paymentMethodsConfig[ paymentMethodType ].countries
 			);
