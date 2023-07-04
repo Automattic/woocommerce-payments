@@ -1508,17 +1508,20 @@ class WC_Payments {
 			$adapted_extensions = get_option( WooPay_Scheduler::ADAPTED_EXTENSIONS_LIST_OPTION_NAME, [] );
 
 			if ( in_array( 'woocommerce-points-and-rewards', $adapted_extensions, true ) && class_exists( 'WC_Points_Rewards_Manager' ) && ! empty( $user ) ) {
-				$body['extension_settings'] = [];
+				$available_points = WC_Points_Rewards_Manager::get_users_points( $user->ID );
 
-				$minimum_discount = (float) get_option( 'wc_points_rewards_cart_min_discount', '' );
-				$labels           = explode( ':', get_option( 'wc_points_rewards_points_label', ':' ) );
+				// Only enable if the available points is greater than 0.
+				if ( $available_points > 0 ) {
+					$minimum_discount = (float) get_option( 'wc_points_rewards_cart_min_discount', '' );
+					$labels           = explode( ':', get_option( 'wc_points_rewards_points_label', ':' ) );
 
-				$body['extension_settings']['points-and-rewards'] = [
-					'points_available'           => WC_Points_Rewards_Manager::get_users_points( $user->ID ),
-					'minimum_points_amount'      => WC_Points_Rewards_Manager::calculate_points_for_discount( $minimum_discount ),
-					'partial_redemption_enabled' => 'yes' === get_option( 'wc_points_rewards_partial_redemption_enabled' ),
-					'points_label_plural'        => $labels[1],
-				];
+					$body['extension_settings']['points-and-rewards'] = [
+						'points_available'           => WC_Points_Rewards_Manager::get_users_points( $user->ID ),
+						'minimum_points_amount'      => WC_Points_Rewards_Manager::calculate_points_for_discount( $minimum_discount ),
+						'partial_redemption_enabled' => 'yes' === get_option( 'wc_points_rewards_partial_redemption_enabled' ),
+						'points_label_plural'        => $labels[1],
+					];
+				}
 			}
 		}
 
