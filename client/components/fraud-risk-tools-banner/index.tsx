@@ -17,7 +17,11 @@ const FRTDiscoverabilityBanner: React.FC = () => {
 	const { frtDiscoverBannerDismissed } = wcpaySettings;
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
 	const [ setting, setSetting ] = useState< boolean >( () => {
-		return frtDiscoverBannerDismissed;
+		try {
+			return frtDiscoverBannerDismissed;
+		} catch ( e ) {
+			return false;
+		}
 	} );
 
 	const showBanner = ! setting;
