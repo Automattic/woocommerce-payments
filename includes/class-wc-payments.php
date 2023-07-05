@@ -476,7 +476,7 @@ class WC_Payments {
 		self::$woopay_tracker                      = new WooPay_Tracker( self::get_wc_payments_http() );
 		self::$incentives_service                  = new WC_Payments_Incentives_Service( self::$database_cache );
 
-		( new WooPay_Scheduler() )->init();
+		( new WooPay_Scheduler( self::$api_client ) )->init();
 
 		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
 
@@ -1661,9 +1661,8 @@ class WC_Payments {
 			$is_subscription           = false;
 			$are_subscriptions_enabled = class_exists( 'WC_Subscriptions' ) || class_exists( 'WC_Subscriptions_Core_Plugin' );
 			if ( $are_subscriptions_enabled ) {
-					// The subscription identification shall be aligned with WC_Subscriptions_Product::is_subscription.
 					global $product;
-					$is_subscription = $product && $product->is_type( [ 'subscription', 'subscription_variation', 'variable-subscription' ] );
+					$is_subscription = $product && WC_Subscriptions_Product::is_subscription( $product );
 			}
 
 			if ( ! $is_subscription ) {

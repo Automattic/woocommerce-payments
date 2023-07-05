@@ -73,9 +73,9 @@ class WC_Payments_Notes_Additional_Payment_Methods_Test extends WCPAY_UnitTestCa
 	}
 
 	public function test_maybe_enable_feature_flag_redirects_to_onboarding_when_account_not_connected() {
-		$account_mock = $this->getMockBuilder( \WC_Payments_Account::class )->disableOriginalConstructor()->setMethods( [ 'is_stripe_connected', 'redirect_to_onboarding_page' ] )->getMock();
+		$account_mock = $this->getMockBuilder( \WC_Payments_Account::class )->disableOriginalConstructor()->setMethods( [ 'is_stripe_connected', 'redirect_to_onboarding_welcome_page' ] )->getMock();
 		$account_mock->expects( $this->atLeastOnce() )->method( 'is_stripe_connected' )->will( $this->returnValue( false ) );
-		$account_mock->expects( $this->once() )->method( 'redirect_to_onboarding_page' );
+		$account_mock->expects( $this->once() )->method( 'redirect_to_onboarding_welcome_page' );
 		WC_Payments_Notes_Additional_Payment_Methods::set_account( $account_mock );
 		$_GET['page']   = 'wc-settings';
 		$_GET['action'] = 'enable-upe';

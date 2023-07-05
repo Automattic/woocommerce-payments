@@ -38,7 +38,8 @@ class WC_Payments_API_Client {
 
 	const ACCOUNTS_API                 = 'accounts';
 	const CAPABILITIES_API             = 'accounts/capabilities';
-	const WOOPAY_API                   = 'accounts/platform_checkout';
+	const WOOPAY_ACCOUNTS_API          = 'accounts/platform_checkout';
+	const WOOPAY_COMPATIBILITY_API     = 'woopay/compatibility';
 	const APPLE_PAY_API                = 'apple_pay';
 	const CHARGES_API                  = 'charges';
 	const CONN_TOKENS_API              = 'terminal/connection_tokens';
@@ -838,7 +839,7 @@ class WC_Payments_API_Client {
 			[
 				'test_mode' => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
 			],
-			self::WOOPAY_API,
+			self::WOOPAY_ACCOUNTS_API,
 			self::GET
 		);
 	}
@@ -858,7 +859,7 @@ class WC_Payments_API_Client {
 				[ 'test_mode' => WC_Payments::mode()->is_dev() ],
 				$data
 			),
-			self::WOOPAY_API,
+			self::WOOPAY_ACCOUNTS_API,
 			self::POST
 		);
 	}
@@ -2390,5 +2391,20 @@ class WC_Payments_API_Client {
 	 */
 	public function get_authorization( string $payment_intent_id ) {
 		return $this->request( [], self::AUTHORIZATIONS_API . '/' . $payment_intent_id, self::GET );
+	}
+
+	/**
+	 * Gets the list of extensions that are incompatible with WooPay.
+	 *
+	 * @return array of extensions.
+	 * @throws API_Exception When request fails.
+	 */
+	public function get_woopay_incompatible_extensions() {
+		return $this->request(
+			[],
+			self::WOOPAY_COMPATIBILITY_API,
+			self::GET,
+			false
+		);
 	}
 }
