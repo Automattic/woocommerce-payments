@@ -168,15 +168,6 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether Account Overview page is enabled
-	 *
-	 * @return bool
-	 */
-	public static function is_account_overview_task_list_enabled() {
-		return '1' === get_option( '_wcpay_feature_account_overview_task_list', '1' );
-	}
-
-	/**
 	 * Checks whether WCPay Subscriptions is enabled.
 	 *
 	 * @return bool
@@ -289,7 +280,6 @@ class WC_Payments_Features {
 				'upeDeferred'             => self::is_upe_deferred_intent_enabled(),
 				'upeSettingsPreview'      => self::is_upe_settings_preview_enabled(),
 				'multiCurrency'           => self::is_customer_multi_currency_enabled(),
-				'accountOverviewTaskList' => self::is_account_overview_task_list_enabled(),
 				'woopay'                  => self::is_woopay_eligible(),
 				'documents'               => self::is_documents_section_enabled(),
 				'clientSecretEncryption'  => self::is_client_secret_encryption_enabled(),
