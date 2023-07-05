@@ -101,8 +101,9 @@ Object.entries( enabledPaymentMethodsConfig )
 			savedTokenComponent: <SavedTokenHandler api={ api } />,
 			canMakePayment: ( cartData ) => {
 				const billingCountry = cartData.billingAddress.country;
+				const isRestrictedInAnyCountry = !! upeConfig.countries.length;
 				const isAvailableInTheCountry =
-					! upeConfig.countries.length ||
+					! isRestrictedInAnyCountry ||
 					upeConfig.countries.includes( billingCountry );
 				return isAvailableInTheCountry && !! api.getStripe();
 			},

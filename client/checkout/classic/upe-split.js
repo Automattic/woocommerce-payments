@@ -384,9 +384,10 @@ jQuery( function ( $ ) {
 					mountUPEElement( paymentMethodType, upeDOMElement );
 				}
 
-				if (
-					paymentMethodsConfig[ paymentMethodType ].countries.length
-				) {
+				const isRestrictedInAnyCountry = !! paymentMethodsConfig[
+					paymentMethodType
+				].countries.length;
+				if ( isRestrictedInAnyCountry ) {
 					restrictPaymentMethodToLocation( paymentMethodType );
 				}
 			}
