@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Gracefully handle missing payment method constants

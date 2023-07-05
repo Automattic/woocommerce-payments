@@ -13,6 +13,12 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
  */
 import { DocumentsFilters } from '../';
 
+// TODO: this is a bit of a hack as we're mocking an old version of WC, we should relook at this.
+jest.mock( '@woocommerce/settings', () => ( {
+	...jest.requireActual( '@woocommerce/settings' ),
+	getSetting: jest.fn( ( key ) => ( key === 'wcVersion' ? 7.7 : '' ) ),
+} ) );
+
 function addAdvancedFilter( filter: string ) {
 	user.click( screen.getByRole( 'button', { name: /Add a Filter/i } ) );
 	user.click( screen.getByRole( 'button', { name: filter } ) );

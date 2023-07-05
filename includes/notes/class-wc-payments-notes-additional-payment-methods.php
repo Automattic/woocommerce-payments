@@ -106,7 +106,7 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 		if ( self::$account instanceof WC_Payments_Account ) {
 			if ( false === self::$account->is_stripe_connected() ) {
 				// account is not connected, redirecting to connection page.
-				self::$account->redirect_to_onboarding_page( __( 'We detected a temporary issue with your account. Please try and connect your Stripe account.', 'woocommerce-payments' ) );
+				self::$account->redirect_to_onboarding_welcome_page( __( 'We detected a temporary issue with your account. Please try and connect your Stripe account.', 'woocommerce-payments' ) );
 
 				return;
 			}
