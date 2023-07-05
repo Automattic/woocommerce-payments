@@ -167,7 +167,7 @@ export default {
 					'Country where your business is based',
 					'woocommerce-payments '
 				),
-				__( 'Type of businesss', 'woocommerce-payments ' ),
+				__( 'Type of business', 'woocommerce-payments ' ),
 				__( 'Industry', 'woocommerce-payments ' ),
 				__( 'Company address', 'woocommerce-payments ' ),
 				__( 'Company phone number', 'woocommerce-payments ' ),

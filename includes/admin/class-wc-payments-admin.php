@@ -330,7 +330,7 @@ class WC_Payments_Admin {
 		}
 
 		if ( ! $should_render_full_menu ) {
-			if ( WC_Payments_Utils::is_in_onboarding_treatment_mode() ) {
+			if ( WC_Payments_Utils::is_in_progressive_onboarding_treatment_mode() || WC_Payments_Features::is_progressive_onboarding_enabled() ) {
 				wc_admin_register_page(
 					[
 						'id'         => 'wc-payments-onboarding',
@@ -344,21 +344,6 @@ class WC_Payments_Admin {
 					]
 				);
 				remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding' );
-			}
-			if ( WC_Payments_Utils::is_in_progressive_onboarding_treatment_mode() || WC_Payments_Features::is_progressive_onboarding_enabled() ) {
-				wc_admin_register_page(
-					[
-						'id'         => 'wc-payments-onboarding-flow',
-						'title'      => __( 'Onboarding', 'woocommerce-payments' ),
-						'parent'     => 'wc-payments',
-						'path'       => '/payments/onboarding-flow',
-						'capability' => 'manage_woocommerce',
-						'nav_args'   => [
-							'parent' => 'wc-payments',
-						],
-					]
-				);
-				remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding-flow' );
 			}
 		}
 
@@ -586,7 +571,7 @@ class WC_Payments_Admin {
 	public function enqueue_payments_scripts() {
 		global $current_tab, $current_section;
 
-		// Enqueue the admin settings assets on any WCPau settings page.
+		// Enqueue the admin settings assets on any WCPay settings page.
 		// We also need to enqueue and localize on the multi-currency tab.
 		if ( WC_Payments_Utils::is_payments_settings_page() || 'wcpay_multi_currency' === $current_tab ) {
 			// Localize before actually enqueuing to avoid unnecessary settings generation.
@@ -990,7 +975,7 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		$this->account->redirect_to_onboarding_page();
+		$this->account->redirect_to_onboarding_welcome_page();
 	}
 
 	/**
@@ -1032,7 +1017,7 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		$this->account->redirect_to_onboarding_page();
+		$this->account->redirect_to_onboarding_welcome_page();
 	}
 
 	/**
