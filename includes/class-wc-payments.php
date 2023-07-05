@@ -1507,15 +1507,22 @@ class WC_Payments {
 
 			$adapted_extensions = get_option( WooPay_Scheduler::ADAPTED_EXTENSIONS_LIST_OPTION_NAME, [] );
 
+			$body['adapted_extensions'] = [
+				'ask_email_verification' => null,
+				'extension_settings'     => [],
+			];
+
 			if ( in_array( 'woocommerce-points-and-rewards', $adapted_extensions, true ) && class_exists( 'WC_Points_Rewards_Manager' ) && ! empty( $user ) ) {
 				$available_points = WC_Points_Rewards_Manager::get_users_points( $user->ID );
 
 				// Only enable if the available points is greater than 0.
 				if ( $available_points > 0 ) {
+					$body['adapted_extensions']['ask_email_verification'] = 'points-and-rewards';
+
 					$minimum_discount = (float) get_option( 'wc_points_rewards_cart_min_discount', '' );
 					$labels           = explode( ':', get_option( 'wc_points_rewards_points_label', ':' ) );
 
-					$body['extension_settings']['points-and-rewards'] = [
+					$body['adapted_extensions']['extension_settings']['points-and-rewards'] = [
 						'points_available'           => WC_Points_Rewards_Manager::get_users_points( $user->ID ),
 						'minimum_points_amount'      => WC_Points_Rewards_Manager::calculate_points_for_discount( $minimum_discount ),
 						'partial_redemption_enabled' => 'yes' === get_option( 'wc_points_rewards_partial_redemption_enabled' ),
