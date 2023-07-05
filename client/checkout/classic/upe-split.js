@@ -346,16 +346,22 @@ jQuery( function ( $ ) {
 	}
 
 	function restrictPaymentMethodToLocation( paymentMethodType ) {
-		togglePaymentMethodForCountry(
-			paymentMethodType,
-			paymentMethodsConfig[ paymentMethodType ].countries
-		);
-		$( '#billing_country' ).on( 'change', function () {
+		const isRestrictedInAnyCountry = !! paymentMethodsConfig[
+			paymentMethodType
+		].countries.length;
+
+		if ( isRestrictedInAnyCountry ) {
 			togglePaymentMethodForCountry(
 				paymentMethodType,
 				paymentMethodsConfig[ paymentMethodType ].countries
 			);
-		} );
+			$( '#billing_country' ).on( 'change', function () {
+				togglePaymentMethodForCountry(
+					paymentMethodType,
+					paymentMethodsConfig[ paymentMethodType ].countries
+				);
+			} );
+		}
 	}
 
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
@@ -384,12 +390,7 @@ jQuery( function ( $ ) {
 					mountUPEElement( paymentMethodType, upeDOMElement );
 				}
 
-				const isRestrictedInAnyCountry = !! paymentMethodsConfig[
-					paymentMethodType
-				].countries.length;
-				if ( isRestrictedInAnyCountry ) {
-					restrictPaymentMethodToLocation( paymentMethodType );
-				}
+				restrictPaymentMethodToLocation( paymentMethodType );
 			}
 		}
 	} );
