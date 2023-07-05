@@ -31,11 +31,7 @@ const FRTDiscoverabilityBanner: React.FC = () => {
 	const showBanner = ! settings.dontShowAgain;
 
 	const setDontShowAgain = () => {
-		setSettings( () => {
-			return {
-				dontShowAgain: true,
-			};
-		} );
+		setSettings( { dontShowAgain: true } );
 	};
 
 	useEffect( () => {
