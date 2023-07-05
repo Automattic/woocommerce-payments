@@ -32,13 +32,12 @@ class WCPay_Changelog_Formatter extends Parser implements FormatterPlugin {
 	 */
 	private $date_format = 'Y-m-d';
 
-	// todo gh-6549 figure out if to change for WooPayments here.
 	/**
 	 * Title for the changelog.
 	 *
 	 * @var string
 	 */
-	private $title = '*** WooCommerce Payments Changelog ***';
+	private $title = '*** WooPayments Changelog ***';
 
 	/**
 	 * Separator used in headings and change entries.
