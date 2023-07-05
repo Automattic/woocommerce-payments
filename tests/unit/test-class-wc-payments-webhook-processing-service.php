@@ -12,6 +12,7 @@ use WCPay\Database_Cache;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
+use WCPay\Logger;
 
 // Need to use WC_Mock_Data_Store.
 require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
@@ -1338,5 +1339,33 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * @dataProvider provider_mode_mismatch_detection
+	 */
+	public function test_mode_mismatch_detection( $livemode, $expectation ) {
+		$note = [ 'abc1234' ];
+
+		$this->event_body['type'] = 'wcpay.notification';
+		$this->event_body['id']   = 'evt_XYZ';
+		$this->event_body['data'] = $note;
+		if ( ! is_null( $livemode ) ) {
+			$this->event_body['livemode'] = $livemode;
+		}
+
+		$this->mock_remote_note_service->expects( $expectation )
+			->method( 'put_note' )
+			->with( $note );
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	public function provider_mode_mismatch_detection() {
+		return [
+			'Live mode webhook is processed.' => [ true, $this->once() ],
+			'Test mode is not processed.'     => [ false, $this->never() ],
+			'No mode proceeds'                => [ null, $this->once() ],
+		];
 	}
 }
