@@ -9,12 +9,13 @@ import interpolateComponents from '@automattic/interpolate-components';
  */
 import { Notice } from '@wordpress/components';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
+import './style.scss';
 
 const WooPayIncompatibilityNotice = () => (
 	<Notice
 		status="warning"
 		isDismissible={ false }
-		className="express-checkout__notice"
+		className="express-checkout__notice express-checkout__incompatibility-warning"
 	>
 		<span>
 			<NoticeOutlineIcon
@@ -22,16 +23,19 @@ const WooPayIncompatibilityNotice = () => (
 					color: '#F0B849',
 					fill: 'currentColor',
 					marginBottom: '-5px',
-					marginRight: '16px',
+					marginRight: '10px',
 				} }
 				size={ 20 }
 			/>
+		</span>
+		<span>
+			{ __(
+				'One or more of your extensions are incompatible with WooPay.'
+			) }
+			<br />
 			{ interpolateComponents( {
 				mixedString: __(
-					/* eslint-disable-next-line max-len */
-					'One or more of your extensions are incompatible with WooPay.' +
-						' ' +
-						'{{learnMoreLink}}Learn More{{/learnMoreLink}}',
+					'{{learnMoreLink}}Learn More{{/learnMoreLink}}',
 					'woocommerce-payments'
 				),
 				components: {
