@@ -11,13 +11,10 @@ import { useDispatch } from '@wordpress/data';
  */
 import { BannerBody, NewPill, BannerActions } from './components';
 import './style.scss';
-import { TIME } from '../../constants';
 import wcpayTracks from 'tracks';
 
 interface BannerSettings {
-	remindMeAt: number;
 	dontShowAgain: boolean;
-	remindMeCount: number;
 }
 
 const FRTDiscoverabilityBanner: React.FC = () => {
@@ -27,32 +24,14 @@ const FRTDiscoverabilityBanner: React.FC = () => {
 		try {
 			return JSON.parse( frtDiscoverBannerSettings );
 		} catch ( e ) {
-			return { remindMeCount: 0, remindMeAt: null, dontShowAgain: false };
+			return { dontShowAgain: false };
 		}
 	} );
 
-	const showBanner =
-		! settings.dontShowAgain &&
-		( null === settings.remindMeAt || Date.now() > settings.remindMeAt );
-
-	const setReminder = () => {
-		const nowTimestamp = Date.now();
-		setSettings( ( prevSettings ) => {
-			return {
-				...prevSettings,
-				remindMeCount: prevSettings.remindMeCount + 1,
-				remindMeAt: nowTimestamp + 3 * TIME.DAY_IN_MS,
-			};
-		} );
-	};
+	const showBanner = ! settings.dontShowAgain;
 
 	const setDontShowAgain = () => {
-		setSettings( ( prevSettings ) => {
-			return {
-				...prevSettings,
-				dontShowAgain: true,
-			};
-		} );
+		setSettings( { dontShowAgain: true } );
 	};
 
 	useEffect( () => {
@@ -66,14 +45,6 @@ const FRTDiscoverabilityBanner: React.FC = () => {
 
 		wcpaySettings.frtDiscoverBannerSettings = stringifiedSettings;
 	}, [ frtDiscoverBannerSettings, settings, updateOptions ] );
-
-	const handleRemindOnClick = () => {
-		wcpayTracks.recordEvent(
-			'wcpay_fraud_protection_banner_remind_later_button_clicked',
-			{}
-		);
-		setReminder();
-	};
 
 	const handleDontShowAgainOnClick = () => {
 		setDontShowAgain();
@@ -95,8 +66,6 @@ const FRTDiscoverabilityBanner: React.FC = () => {
 				</h3>
 				<BannerBody />
 				<BannerActions
-					remindMeCount={ settings.remindMeCount }
-					handleRemindOnClick={ handleRemindOnClick }
 					handleDontShowAgainOnClick={ handleDontShowAgainOnClick }
 				/>
 			</div>
