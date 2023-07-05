@@ -73,4 +73,14 @@ class Get_Request extends Request {
 	public function set_id( $id ) {
 		$this->id = $id;
 	}
+
+	/**
+	 * Format response to array to prevent calling to_array() every time.
+	 *
+	 * @param  mixed $response The response from `WC_Payments_API_Client::request`.
+	 * @return mixed           Either the same response, or the correct object.
+	 */
+	public function format_response( $response ) {
+		return $response;
+	}
 }

@@ -2839,7 +2839,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// For $0 orders, fetch the Setup Intent instead.
 				$setup_intent_request = Request::get( WC_Payments_API_Client::SETUP_INTENTS_API, $intent_id );
 
-				$intent    = $setup_intent_request->send( 'wcpay_get_setup_intent_request' )->to_array();
+				$intent    = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
 				$status    = $intent['status'];
 				$charge_id = '';
 			}

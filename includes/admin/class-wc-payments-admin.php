@@ -1137,7 +1137,7 @@ class WC_Payments_Admin {
 	private function get_disputes_awaiting_response_count() {
 		$send_callback = function() {
 			$request = Request::get( WC_Payments_API_Client::DISPUTES_API . '/status_counts' );
-			return $request->send( 'wcpay_get_dispute_status_counts' )->to_array();
+			return $request->send( 'wcpay_get_dispute_status_counts' );
 		};
 
 		$disputes_status_counts = $this->database_cache->get_or_add(
@@ -1166,7 +1166,7 @@ class WC_Payments_Admin {
 
 		$send_callback         = function() {
 			$request = Request::get( WC_Payments_API_Client::AUTHORIZATIONS_API . '/summary' );
-			return $request->send( 'wc_pay_get_authorizations_summary' )->to_array();
+			return $request->send( 'wc_pay_get_authorizations_summary' );
 		};
 		$authorization_summary = $this->database_cache->get_or_add(
 			$cache_key,
