@@ -105,7 +105,11 @@ describe( 'Overview page', () => {
 				accountOverviewTaskList: true,
 			},
 			accountLoans: {},
-			frtDiscoverBannerDismissed: false,
+			frtDiscoverBannerSettings: JSON.stringify( {
+				remindMeCount: 0,
+				remindMeAt: null,
+				dontShowAgain: false,
+			} ),
 		};
 		getQuery.mockReturnValue( {} );
 		getTasks.mockReturnValue( [] );
@@ -262,7 +266,9 @@ describe( 'Overview page', () => {
 	it( 'dismisses the FRTDiscoverabilityBanner when dismiss button is clicked', async () => {
 		global.wcpaySettings = {
 			...global.wcpaySettings,
-			frtDiscoverBannerDismissed: false,
+			frtDiscoverBannerSettings: JSON.stringify( {
+				dontShowAgain: false,
+			} ),
 		};
 
 		render( <OverviewPage /> );

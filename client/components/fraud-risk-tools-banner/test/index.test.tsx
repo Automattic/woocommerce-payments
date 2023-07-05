@@ -11,7 +11,7 @@ import FRTDiscoverabilityBanner from '..';
 
 declare const global: {
 	wcpaySettings: {
-		frtDiscoverBannerDismissed: boolean;
+		frtDiscoverBannerSettings: string;
 	};
 };
 
@@ -31,7 +31,7 @@ jest.mock( '@wordpress/data', () => ( {
 describe( 'FRTDiscoverabilityBanner', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
-			frtDiscoverBannerDismissed: false,
+			frtDiscoverBannerSettings: '',
 		};
 	} );
 
@@ -43,7 +43,9 @@ describe( 'FRTDiscoverabilityBanner', () => {
 
 	it( 'does not render when dontShowAgain is true', () => {
 		global.wcpaySettings = {
-			frtDiscoverBannerDismissed: true,
+			frtDiscoverBannerSettings: JSON.stringify( {
+				dontShowAgain: true,
+			} ),
 		};
 
 		const { container: frtBanner } = render( <FRTDiscoverabilityBanner /> );

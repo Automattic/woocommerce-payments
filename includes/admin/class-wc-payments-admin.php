@@ -780,7 +780,7 @@ class WC_Payments_Admin {
 				'isWelcomeTourDismissed' => WC_Payments_Features::is_fraud_protection_welcome_tour_dismissed(),
 			],
 			'accountDefaultCurrency'      => $this->account->get_account_default_currency(),
-			'frtDiscoverBannerDismissed'  => get_option( 'wcpay_frt_discover_banner_dismissed', '' ),
+			'frtDiscoverBannerSettings'   => get_option( 'wcpay_frt_discover_banner_settings', '' ),
 			'storeCurrency'               => get_option( 'woocommerce_currency' ),
 			'isBnplAffirmAfterpayEnabled' => WC_Payments_Features::is_bnpl_affirm_afterpay_enabled(),
 			'connectIncentive'            => $this->incentives_service->get_cached_connect_incentive(),

@@ -74,7 +74,7 @@ declare global {
 		};
 		accountDefaultCurrency: string;
 		isFRTReviewFeatureActive: boolean;
-		frtDiscoverBannerDismissed: boolean;
+		frtDiscoverBannerSettings: string;
 		onboardingTestMode: boolean;
 		onboardingFieldsData?: {
 			business_types: Country[];
