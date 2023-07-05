@@ -886,7 +886,6 @@ class WC_Payments {
 			$api_client_class = WC_Payments_API_Client::class;
 		}
 
-		// todo gh-6549 figure out if it makes sense to change API version.
 		return new $api_client_class(
 			'WooCommerce Payments/' . WCPAY_VERSION_NUMBER,
 			$http_class,

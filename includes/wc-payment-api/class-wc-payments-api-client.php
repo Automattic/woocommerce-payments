@@ -1772,7 +1772,6 @@ class WC_Payments_API_Client {
 			$headers['Idempotency-Key'] = $this->uuid();
 			$body                       = wp_json_encode( $params );
 			if ( ! $body ) {
-				// todo gh-6549 figure out if it makes sense to change to WooPayments here and across the repo.
 				throw new API_Exception(
 					__( 'Unable to encode body for request to WooCommerce Payments API.', 'woocommerce-payments' ),
 					'wcpay_client_unable_to_encode_json',
