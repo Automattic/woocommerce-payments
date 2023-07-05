@@ -95,7 +95,6 @@ abstract class Paginated extends Request {
 		$this->set_param( 'page', $page );
 	}
 
-
 	/**
 	 * Set page size.
 	 *

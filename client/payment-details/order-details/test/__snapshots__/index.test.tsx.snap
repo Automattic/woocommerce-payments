@@ -203,9 +203,19 @@ exports[`Order details page should match the snapshot - Charge without payment i
                     <span
                       class="payment-method-details"
                     >
-                      <span
-                        class="payment-method__brand payment-method__brand--card"
-                      />
+                      <button
+                        class="wcpay-tooltip__content-wrapper"
+                        type="button"
+                      >
+                        <div
+                          class="wcpay-tooltip__content-wrapper"
+                        >
+                          <span
+                            aria-label="Card Payment"
+                            class="payment-method__brand payment-method__brand--card"
+                          />
+                        </div>
+                      </button>
                        •••• 
                     </span>
                   </span>
