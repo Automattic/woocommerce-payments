@@ -121,6 +121,7 @@ const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 		isSortable: true,
 		defaultSort: true,
 		defaultOrder: 'desc',
+		visible: false,
 	},
 	{
 		key: 'dueBy',
@@ -338,21 +339,24 @@ export const DisputesList = (): JSX.Element => {
 
 			const csvRows = rows.map( ( row ) => {
 				return [
-					...row.slice( 0, 3 ),
+					...row.slice( 0, 3 ), // Amount, Currency, Status.
 					{
+						// Reason.
 						...row[ 3 ],
 						value:
 							disputeStatusMapping[ row[ 3 ].value ?? '' ]
 								.message,
 					},
 					{
+						// Source.
 						...row[ 4 ],
 						value: formatStringValue(
 							( row[ 4 ].value ?? '' ).toString()
 						),
 					},
-					...row.slice( 5, 10 ),
+					...row.slice( 5, 10 ), // Order #, Customer, Email, Country.
 					{
+						// Disputed On.
 						...row[ 10 ],
 						value: dateI18n(
 							'Y-m-d',
@@ -360,6 +364,7 @@ export const DisputesList = (): JSX.Element => {
 						),
 					},
 					{
+						// Respond By.
 						...row[ 11 ],
 						value: dateI18n(
 							'Y-m-d / g:iA',
