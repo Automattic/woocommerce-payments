@@ -335,13 +335,13 @@ jQuery( function ( $ ) {
 	) {
 		const billingCountry = document.querySelector( '#billing_country' )
 			.value;
-		const affirmContainer = document.querySelector(
+		const upeContainer = document.querySelector(
 			'#payment_method_woocommerce_payments_' + paymentMethodType
 		).parentElement;
 		if ( supportedCountries.includes( billingCountry ) ) {
-			affirmContainer.style.display = 'block';
+			upeContainer.style.display = 'block';
 		} else {
-			affirmContainer.style.display = 'none';
+			upeContainer.style.display = 'none';
 		}
 	}
 
