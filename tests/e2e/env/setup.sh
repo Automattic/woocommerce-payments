@@ -29,13 +29,14 @@ WP_ADMIN_EMAIL=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.admin.email')
 SITE_TITLE="WooCommerce Payments E2E site"
 SITE_URL=$WP_URL
 
-# Clear dependencies before install begins
-sudo rm -rf tests/e2e/deps
+if [[ $FORCE_E2E_DEPS_SETUP ]]; then
+	sudo rm -rf tests/e2e/deps
+fi
 
 # Setup WCPay local server instance.
 # Only if E2E_USE_LOCAL_SERVER is present & equals to true.
 if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
-	if [[ $FORCE_E2E_DEPS_SETUP || ! -d "$SERVER_PATH" ]]; then
+	if [[ ! -d "$SERVER_PATH" ]]; then
 		step "Fetching server (branch ${WCP_SERVER_BRANCH-trunk})"
 
 		if [[ -z $WCP_SERVER_REPO ]]; then
@@ -91,7 +92,7 @@ fi
 
 cd "$cwd"
 
-if [[ $FORCE_E2E_DEPS_SETUP || ! -d "$DEV_TOOLS_PATH" ]]; then
+if [[ ! -d "$DEV_TOOLS_PATH" ]]; then
 	step "Fetching dev tools"
 	if [[ -z $WCP_DEV_TOOLS_REPO ]]; then
 		echo "WCP_DEV_TOOLS_REPO env variable is not defined"
