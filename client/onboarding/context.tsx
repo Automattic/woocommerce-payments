@@ -9,8 +9,8 @@ import { isNil, omitBy } from 'lodash';
  */
 import { OnboardingFields, TempData } from './types';
 
-const useContextValue = () => {
-	const [ data, setData ] = useState( {} as OnboardingFields );
+const useContextValue = ( initialState = {} as OnboardingFields ) => {
+	const [ data, setData ] = useState( initialState );
 	const [ errors, setErrors ] = useState( {} as OnboardingFields );
 	const [ touched, setTouched ] = useState( {} as OnboardingFields );
 	const [ temp, setTemp ] = useState( {} as TempData );
@@ -35,9 +35,11 @@ type ContextValue = ReturnType< typeof useContextValue >;
 
 const OnboardingContext = createContext< ContextValue | null >( null );
 
-export const OnboardingContextProvider: React.FC = ( { children } ) => {
+export const OnboardingContextProvider: React.FC< {
+	initialData?: OnboardingFields;
+} > = ( { children, initialData } ) => {
 	return (
-		<OnboardingContext.Provider value={ useContextValue() }>
+		<OnboardingContext.Provider value={ useContextValue( initialData ) }>
 			{ children }
 		</OnboardingContext.Provider>
 	);
