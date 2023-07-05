@@ -1,4 +1,6 @@
 /* global jQuery */
+// global wcpayStripeSiteMessaging
+
 /**
  * Internal dependencies
  */
@@ -21,9 +23,16 @@ jQuery( function ( $ ) {
 		variation
 	) {
 		const quantity = $( '.quantity input' ).val();
-		window.wcpayStripeSiteMessaging.price = variation.display_price * 100;
+		// The multiplier is fetched within wcpayStripeSiteMessaging global variable, to handle any presence of zero decimal currencies.
+		const { multiplier } = window.wcpayStripeSiteMessaging;
+
+		window.wcpayStripeSiteMessaging.price =
+			variation.display_price * multiplier;
 		bnplPaymentMessageElement.update( {
-			amount: parseInt( variation.display_price * quantity * 100, 10 ),
+			amount: parseInt(
+				variation.display_price * quantity * multiplier,
+				10
+			),
 		} );
 	} );
 

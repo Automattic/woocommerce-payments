@@ -70,6 +70,8 @@ class WC_Payments_Payment_Method_Messaging_Element {
 			[
 				'price'          => WC_Payments_Utils::prepare_amount( $price, $currency_code ),
 				'currency'       => $currency_code,
+				// Passing the multiplier to help handle zero decimal currencies for BNPL Payment Method messaging display on variable products.
+				'multiplier'     => WC_Payments_Utils::is_zero_decimal_currency( strtolower( $currency_code ) ) ? 1 : 100,
 				'country'        => $billing_country,
 				'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
 				'paymentMethods' => array_values( $bnpl_payment_methods ),
