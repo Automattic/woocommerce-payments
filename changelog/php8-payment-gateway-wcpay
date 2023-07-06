@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Make the class-wc-payment-gateway-wcpay.php file compatible with PHP 8.1
