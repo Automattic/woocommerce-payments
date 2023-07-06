@@ -8,6 +8,7 @@ import wcpayTracks from 'tracks';
 import { dateI18n } from '@wordpress/date';
 import { _n, __, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
+import { Button } from '@wordpress/components';
 import { TableCard, Link } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
 import {
@@ -130,6 +131,14 @@ const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 		isLeftAligned: true,
 		isSortable: true,
 	},
+	{
+		key: 'action',
+		label: __( 'Action', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Action', 'woocommerce-payments' ),
+		required: true,
+		isLeftAligned: true,
+		visible: true,
+	},
 ];
 
 export const DisputesList = (): JSX.Element => {
@@ -161,6 +170,9 @@ export const DisputesList = (): JSX.Element => {
 		const reasonDisplay = reasonMapping
 			? reasonMapping.display
 			: formatStringValue( dispute.reason );
+		const needsResponse =
+			'needs_response' === dispute.status ||
+			'warning_needs_response' === dispute.status;
 
 		const data: {
 			[ key: string ]: {
@@ -240,6 +252,23 @@ export const DisputesList = (): JSX.Element => {
 				display: clickable( dispute.customer_country ),
 			},
 			details: { value: dispute.dispute_id, display: detailsLink },
+			action: {
+				value: '',
+				display: needsResponse ? (
+					<Button
+						variant={ 'secondary' }
+						href={ getDetailsURL( dispute.dispute_id, 'disputes' ) }
+					>
+						{ __( 'Respond', 'woocommerce-payments' ) }
+					</Button>
+				) : (
+					<Link
+						href={ getDetailsURL( dispute.dispute_id, 'disputes' ) }
+					>
+						{ __( 'See details', 'woocommerce-payments' ) }
+					</Link>
+				),
+			},
 		};
 		return headers.map(
 			( { key } ) => data[ key ] || { value: undefined, display: null }
@@ -333,7 +362,7 @@ export const DisputesList = (): JSX.Element => {
 					...headers[ 0 ],
 					label: __( 'Dispute Id', 'woocommerce-payments' ),
 				},
-				...headers.slice( 1 ),
+				...headers.slice( 1, -1 ), // Remove details (position 0)  and action (last position) column headers.
 			];
 
 			const csvRows = rows.map( ( row ) => {
