@@ -167,7 +167,11 @@ export const getTasks = ( {
 			wpcomReconnectUrl && {
 				key: 'reconnect-wpcom-user',
 				level: 1,
-				title: __( 'Reconnect WooPayments', 'woocommerce-payments' ),
+				title: sprintf(
+					/* translators: %s - WooPayments */
+					__( 'Reconnect %s', 'woocommerce-payments' ),
+					'WooPayments'
+				),
 				additionalInfo: sprintf(
 					/* translators: %s - WooPayments */
 					__(

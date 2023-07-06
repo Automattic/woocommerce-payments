@@ -33,7 +33,7 @@ const NeedHelpBarSection = () => {
 							{ sprintf(
 								/* translators: %s: WooPayments */
 								__( '%s docs', 'woocommerce-payments' ),
-								'WooCommerce Payments'
+								'WooPayments'
 							) }
 						</ExternalLink>
 					),
