@@ -148,7 +148,6 @@ describe( 'getTasks()', () => {
 				},
 			},
 			showUpdateDetailsTask: true,
-			isAccountOverviewTasksEnabled: true,
 		} );
 
 		expect( actual ).toEqual(
@@ -173,7 +172,6 @@ describe( 'getTasks()', () => {
 				},
 			},
 			showUpdateDetailsTask: false,
-			isAccountOverviewTasksEnabled: true,
 		} );
 
 		expect( actual ).toEqual(
@@ -197,7 +195,6 @@ describe( 'getTasks()', () => {
 				},
 			},
 			showUpdateDetailsTask: true,
-			isAccountOverviewTasksEnabled: true,
 		} );
 
 		expect( actual ).toEqual(
@@ -219,7 +216,6 @@ describe( 'getTasks()', () => {
 				},
 			},
 			wpcomReconnectUrl: 'http://example.com',
-			isAccountOverviewTasksEnabled: true,
 		} );
 
 		expect( actual ).toEqual(
@@ -241,7 +237,6 @@ describe( 'getTasks()', () => {
 				},
 			},
 			wpcomReconnectUrl: null,
-			isAccountOverviewTasksEnabled: true,
 		} );
 
 		expect( actual ).toEqual(
@@ -255,7 +250,6 @@ describe( 'getTasks()', () => {
 
 	it( 'returns the expected keys when the account overview flag is enabled', () => {
 		const tasks = getTasks( {
-			isAccountOverviewTasksEnabled: true,
 			showUpdateDetailsTask: true,
 			wpcomReconnectUrl: 'http://example.com',
 			accountStatus: {
@@ -275,7 +269,6 @@ describe( 'getTasks()', () => {
 
 	it( 'returns the expected keys when the account is not onboarded', () => {
 		const tasks = getTasks( {
-			isAccountOverviewTasksEnabled: true,
 			showUpdateDetailsTask: true,
 			wpcomReconnectUrl: 'http://example.com',
 			accountStatus: {
@@ -541,7 +534,6 @@ describe( 'taskSort()', () => {
 					isEnabled: false,
 				},
 			},
-			isAccountOverviewTasksEnabled: true,
 			activeDisputes: mockActiveDisputes,
 		} );
 		unsortedTasks.unshift( {
@@ -588,7 +580,6 @@ describe( 'taskSort()', () => {
 					isEnabled: true,
 				},
 			},
-			isAccountOverviewTasksEnabled: true,
 		} );
 		unsortedTasks.unshift( {
 			key: 'test-element',

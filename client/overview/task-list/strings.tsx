@@ -291,7 +291,7 @@ export default {
 				'Please add your bank details to keep selling',
 				'woocommerce-payments'
 			),
-			description: ( dueDate: string ): React.ReactElement => {
+			description: ( dueDate: string ): React.ReactElement | string => {
 				return createInterpolateElement(
 					sprintf(
 						__(
@@ -312,15 +312,17 @@ export default {
 				'Payments paused! Verify your bank details to reactivate.',
 				'woocommerce-payments'
 			),
-			description: createInterpolateElement(
-				__(
-					'You have reached the <strong>30-day limit</strong> for early selling access. In order to reactivate payments, please verify your bank details.',
-					'woocommerce-payments'
-				),
-				{
-					strong: <strong />,
-				}
-			),
+			description: (): React.ReactElement | string => {
+				return createInterpolateElement(
+					__(
+						'You have reached the <strong>30-day limit</strong> for early selling access. In order to reactivate payments, please verify your bank details.',
+						'woocommerce-payments'
+					),
+					{
+						strong: <strong />,
+					}
+				);
+			},
 			action_label: __( 'Verify bank details', 'woocommerce-payments' ),
 		},
 		after_payment: {
@@ -328,7 +330,7 @@ export default {
 				'Verify your bank account to start receiving deposits',
 				'woocommerce-payments'
 			),
-			description: ( dueDate: string ): React.ReactElement => {
+			description: ( dueDate: string ): React.ReactElement | string => {
 				return createInterpolateElement(
 					sprintf(
 						__(
@@ -352,7 +354,7 @@ export default {
 				'Verify your bank account to start receiving deposits',
 				'woocommerce-payments'
 			),
-			description: ( dueDate: string ): React.ReactElement => {
+			description: ( dueDate: string ): React.ReactElement | string => {
 				return createInterpolateElement(
 					sprintf(
 						__(
@@ -373,7 +375,7 @@ export default {
 		},
 		near_threshold: {
 			title: __( 'Verify your bank details', 'woocommerce-payments' ),
-			description: ( dueDate: string ): React.ReactElement => {
+			description: ( dueDate: string ): React.ReactElement | string => {
 				return createInterpolateElement(
 					sprintf(
 						__(
@@ -394,7 +396,7 @@ export default {
 				'Payments paused! Verify your bank details to reactivate.',
 				'woocommerce-payments'
 			),
-			description: ( dueDate: string ): React.ReactElement => {
+			description: ( dueDate: string ): React.ReactElement | string => {
 				return createInterpolateElement(
 					sprintf(
 						__(

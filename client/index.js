@@ -283,14 +283,12 @@ addFilter(
 			accountStatus,
 			showUpdateDetailsTask,
 			wpcomReconnectUrl,
-			featureFlags: { accountOverviewTaskList },
 		} = wcpaySettings;
 
 		const wcPayTasks = getTasks( {
 			accountStatus,
 			showUpdateDetailsTask,
 			wpcomReconnectUrl,
-			isAccountOverviewTasksEnabled: Boolean( accountOverviewTaskList ),
 		} );
 
 		return [ ...tasks, ...wcPayTasks ];

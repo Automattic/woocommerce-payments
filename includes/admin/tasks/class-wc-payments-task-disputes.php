@@ -64,7 +64,7 @@ class WC_Payments_Task_Disputes extends Task {
 	 * Initialize the task.
 	 */
 	private function init() {
-		$this->disputes_due_within_7d = $this->get_disputes_needing_response_within_days( 7 );
+		$this->disputes_due_within_7d = $this->get_disputes_needing_response_within_days( 30 );
 		$this->disputes_due_within_1d = $this->get_disputes_needing_response_within_days( 1 );
 	}
 

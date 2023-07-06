@@ -57,7 +57,6 @@ const OverviewPage = () => {
 		overviewTasksVisibility,
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
-		featureFlags: { accountOverviewTaskList },
 	} = wcpaySettings;
 
 	const { isLoading: settingsIsLoading, settings } = useSettings();
@@ -71,7 +70,6 @@ const OverviewPage = () => {
 		accountStatus,
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
-		isAccountOverviewTasksEnabled: Boolean( accountOverviewTaskList ),
 		activeDisputes,
 	} );
 	const tasks =
@@ -91,8 +89,7 @@ const OverviewPage = () => {
 		showConnectionSuccess &&
 		accountStatus.progressiveOnboarding.isEnabled &&
 		! accountStatus.progressiveOnboarding.isComplete;
-	const showTaskList =
-		!! accountOverviewTaskList && ! accountRejected && 0 < tasks.length;
+	const showTaskList = ! accountRejected && 0 < tasks.length;
 
 	const activeAccountFees = Object.entries( wcpaySettings.accountFees )
 		.map( ( [ key, value ] ) => {

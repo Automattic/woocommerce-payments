@@ -9,7 +9,7 @@ import { getHistory } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import type { TaskItemProps } from './types';
+import type { TaskItemProps } from '../types';
 import type { CachedDispute } from 'wcpay/types/disputes';
 import { formatCurrency } from 'wcpay/utils/currency';
 import { getAdminUrl } from 'wcpay/utils';

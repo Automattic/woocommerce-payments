@@ -3,7 +3,7 @@
 /**
  * Internal dependencies
  */
-import { getVerifyBankAccountTask } from '../po-tasks';
+import { getVerifyBankAccountTask } from '../tasks/po-task';
 
 describe( 'getVerifyBankAccountTask()', () => {
 	beforeEach( () => {
