@@ -291,7 +291,7 @@ export default {
 				'Please add your bank details to keep selling',
 				'woocommerce-payments'
 			),
-			description: ( dueDate: string ): React.ReactElement | string => {
+			description: ( dueDate: string ): React.ReactElement => {
 				return createInterpolateElement(
 					sprintf(
 						__(
@@ -312,7 +312,7 @@ export default {
 				'Payments paused! Verify your bank details to reactivate.',
 				'woocommerce-payments'
 			),
-			description: (): React.ReactElement | string => {
+			description: (): React.ReactElement => {
 				return createInterpolateElement(
 					__(
 						'You have reached the <strong>30-day limit</strong> for early selling access. In order to reactivate payments, please verify your bank details.',
@@ -330,7 +330,7 @@ export default {
 				'Verify your bank account to start receiving deposits',
 				'woocommerce-payments'
 			),
-			description: ( dueDate: string ): React.ReactElement | string => {
+			description: ( dueDate: string ): React.ReactElement => {
 				return createInterpolateElement(
 					sprintf(
 						__(
@@ -354,7 +354,7 @@ export default {
 				'Verify your bank account to start receiving deposits',
 				'woocommerce-payments'
 			),
-			description: ( dueDate: string ): React.ReactElement | string => {
+			description: ( dueDate: string ): React.ReactElement => {
 				return createInterpolateElement(
 					sprintf(
 						__(
@@ -396,7 +396,7 @@ export default {
 				'Payments paused! Verify your bank details to reactivate.',
 				'woocommerce-payments'
 			),
-			description: ( dueDate: string ): React.ReactElement | string => {
+			description: ( dueDate: string ): React.ReactElement => {
 				return createInterpolateElement(
 					sprintf(
 						__(
