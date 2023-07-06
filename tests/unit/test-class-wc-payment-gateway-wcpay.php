@@ -80,13 +80,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private $mock_wcpay_account;
 
 	/**
-	 * WooPay_Utilities instance
-	 *
-	 * @var WooPay_Utilities
-	 */
-	private $woopay_utilities;
-
-	/**
 	 * Session_Rate_Limiter instance.
 	 *
 	 * @var Session_Rate_Limiter|PHPUnit_Framework_MockObject_MockObject
@@ -99,6 +92,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	 * @var WC_Payments_Order_Service
 	 */
 	private $order_service;
+
+	/**
+	 * WooPay_Utilities instance.
+	 *
+	 * @var WooPay_Utilities
+	 */
+	private $woopay_utilities;
 
 	/**
 	 * WC_Payments_Checkout instance.
