@@ -1397,6 +1397,36 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->controller->get_terminal_intent_payment_method( $request );
 	}
 
+	public function test_capture_terminal_payment_completed_order_new_intent() {
+		$order = $this->create_mock_order();
+		$order->update_status( Order_Status::COMPLETED );
+
+		$request = $this->mock_wcpay_request( Get_Intention::class, 0, $this->mock_intent_id );
+
+		$this->mock_gateway
+			->expects( $this->never() )
+			->method( 'capture_charge' );
+
+		$this->order_service
+			->expects( $this->never() )
+			->method( 'attach_intent_info_to_order' );
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => 'pi_newintent',
+			]
+		);
+
+		$response = $this->controller->capture_terminal_payment( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertSame( 409, $data['status'] );
+	}
+
 	/**
 	 * @dataProvider provider_get_terminal_intent_capture_method
 	 */
