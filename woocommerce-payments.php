@@ -308,7 +308,11 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 			__( '%s Safe Mode', 'woocommerce-payments' ),
 			'WooPayments'
 		),
-		'dynamicSiteUrlText'        => __( "<strong>Notice:</strong> It appears that your 'wp-config.php' file might be using dynamic site URL values. Dynamic site URLs could cause WooPayments to enter Safe Mode. <dynamicSiteUrlSupportLink>Learn how to set a static site URL.</dynamicSiteUrlSupportLink>", 'woocommerce-payments' ),
+		'dynamicSiteUrlText'        => sprintf(
+			/* translators: %s: WooPayments. */
+			__( "<strong>Notice:</strong> It appears that your 'wp-config.php' file might be using dynamic site URL values. Dynamic site URLs could cause %s to enter Safe Mode. <dynamicSiteUrlSupportLink>Learn how to set a static site URL.</dynamicSiteUrlSupportLink>", 'woocommerce-payments' ),
+			'WooPayments'
+		),
 		'dynamicSiteUrlSupportLink' => 'https://woocommerce.com/document/payments/faq/safe-mode/#dynamic-site-urls',
 	];
 

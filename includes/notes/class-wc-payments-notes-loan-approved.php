@@ -46,9 +46,9 @@ class WC_Payments_Notes_Loan_Approved {
 		$note->set_title( __( 'Your capital loan has been approved!', 'woocommerce-payments' ) );
 		$note->set_content(
 			sprintf(
-				/* Translators: %1: total amount lent to the merchant formatted in the account currency, %2: WooPayments, %3: WooPayments */
+				/* Translators: %1: total amount lent to the merchant formatted in the account currency, %2: WooPayments */
 				__(
-					'Congratulations! Your capital loan has been approved and %1$s was deposited in to the bank account linked to %2$s. You\'ll automatically repay the loan, plus a flat fee, through a fixed percentage of each %3$s transaction.',
+					'Congratulations! Your capital loan has been approved and %1$s was deposited in to the bank account linked to %2$s. You\'ll automatically repay the loan, plus a flat fee, through a fixed percentage of each %2$s transaction.',
 					'woocommerce-payments'
 				),
 				WC_Payments_Explicit_Price_Formatter::get_explicit_price(
@@ -58,7 +58,6 @@ class WC_Payments_Notes_Loan_Approved {
 					),
 					$dummy_order
 				),
-				'WooPayments',
 				'WooPayments'
 			)
 		);
