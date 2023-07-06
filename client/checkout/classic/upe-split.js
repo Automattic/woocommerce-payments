@@ -329,6 +329,41 @@ jQuery( function ( $ ) {
 		gatewayUPEComponents[ paymentMethodType ].upeElement = upeElement;
 	};
 
+	function togglePaymentMethodForCountry(
+		paymentMethodType,
+		supportedCountries
+	) {
+		const billingCountry = document.querySelector( '#billing_country' )
+			.value;
+		const upeContainer = document.querySelector(
+			'#payment_method_woocommerce_payments_' + paymentMethodType
+		).parentElement;
+		if ( supportedCountries.includes( billingCountry ) ) {
+			upeContainer.style.display = 'block';
+		} else {
+			upeContainer.style.display = 'none';
+		}
+	}
+
+	function restrictPaymentMethodToLocation( paymentMethodType ) {
+		const isRestrictedInAnyCountry = !! paymentMethodsConfig[
+			paymentMethodType
+		].countries.length;
+
+		if ( isRestrictedInAnyCountry ) {
+			togglePaymentMethodForCountry(
+				paymentMethodType,
+				paymentMethodsConfig[ paymentMethodType ].countries
+			);
+			$( '#billing_country' ).on( 'change', function () {
+				togglePaymentMethodForCountry(
+					paymentMethodType,
+					paymentMethodsConfig[ paymentMethodType ].countries
+				);
+			} );
+		}
+	}
+
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
 	// event for this. This part of the page can also reload based on changes to checkout details, so we call unmount
 	// first to ensure the card element is re-mounted correctly.
@@ -354,6 +389,8 @@ jQuery( function ( $ ) {
 				} else {
 					mountUPEElement( paymentMethodType, upeDOMElement );
 				}
+
+				restrictPaymentMethodToLocation( paymentMethodType );
 			}
 		}
 	} );

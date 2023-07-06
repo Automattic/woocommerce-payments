@@ -14,6 +14,7 @@ use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Update_Intention;
+use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Session_Rate_Limiter;
@@ -83,6 +84,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	private $mock_wcpay_account;
 
 	/**
+	 * Mock Duplicate_Payment_Prevention_Service
+	 *
+	 * @var Duplicate_Payment_Prevention_Service|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_dpps;
+
+	/**
 	 * Mocked value of return_url.
 	 * The value is used in the set up and tests, so it's set as a private
 	 * variable for easy reference.
@@ -133,6 +141,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_order_service = $this->createMock( WC_Payments_Order_Service::class );
 
+		$this->mock_dpps = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+
 		// Arrange: Mock WC_Payment_Gateway_WCPay so that some of its methods can be
 		// mocked, and their return values can be used for testing.
 		$this->mock_wcpay_gateway = $this->getMockBuilder( 'WC_Payment_Gateway_WCPay' )
@@ -145,6 +155,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 					$this->mock_action_scheduler_service,
 					$this->mock_rate_limiter,
 					$this->mock_order_service,
+					$this->mock_dpps,
 				]
 			)
 			->setMethods(
@@ -1160,24 +1171,22 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// Act: process a successful payment.
 		$this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
 	}
-	public function test_process_payment_check_session_order_redirect_to_previous_order() {
-		$same_cart_hash = 'FAKE_SAME_CART_HASH';
 
-		// Arrange the order saved in the session.
-		$session_order = WC_Helper_Order::create_order();
-		$session_order->set_cart_hash( $same_cart_hash );
-		$session_order->set_status( Order_Status::COMPLETED );
-		$session_order->save();
-		WC()->session->set(
-			WC_Payment_Gateway_WCPay::SESSION_KEY_PROCESSING_ORDER,
-			$session_order->get_id()
-		);
+	public function test_process_payment_check_session_order_redirect_to_previous_order() {
+		// Mock response from the session order check.
+		$response = [
+			'mock_param' => 1,
+		];
 
 		// Arrange the order is being processed.
-		$current_order = WC_Helper_Order::create_order();
-		$current_order->set_cart_hash( $same_cart_hash );
-		$current_order->save();
+		$current_order    = WC_Helper_Order::create_order();
 		$current_order_id = $current_order->get_id();
+
+		// Arrange the DPPS to return the response.
+		$this->mock_dpps->expects( $this->once() )
+			->method( 'check_against_session_processing_order' )
+			->with( wc_get_order( $current_order_id ) )
+			->willReturn( $response );
 
 		// Assert: no call to the server to confirm the payment.
 		$this->mock_wcpay_request( Create_And_Confirm_Intention::class, 0 );
@@ -1186,30 +1195,10 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$result = $this->mock_wcpay_gateway->process_payment( $current_order_id );
 
 		// Assert: the result of check_against_session_processing_order.
-		$this->assertSame( 'yes', $result['wcpay_upe_paid_for_previous_order'] );
-		$this->assertSame( 'success', $result['result'] );
-		$this->assertStringContainsString( $this->mock_wcpay_gateway->get_return_url( $session_order ), $result['redirect'] );
-
-		// Assert: the behaviors of check_against_session_processing_order.
-		$notes = wc_get_order_notes( [ 'order_id' => $session_order->get_id() ] );
-		$this->assertStringContainsString(
-			'WooPayments: detected and deleted order ID ' . $current_order_id,
-			$notes[0]->content
-		);
-		$this->assertSame( Order_Status::TRASH, wc_get_order( $current_order_id )->get_status() );
-		$this->assertSame(
-			null,
-			WC()->session->get( WC_Payment_Gateway_WCPay::SESSION_KEY_PROCESSING_ORDER )
-		);
+		$this->assertSame( $response, $result );
 	}
 
 	public function test_process_payment_check_session_with_failed_intent_then_order_id_saved_to_session() {
-		// Arrange the order saved in the session.
-		WC()->session->set(
-			WC_Payment_Gateway_WCPay::SESSION_KEY_PROCESSING_ORDER,
-			null
-		);
-
 		// Arrange the order is being processed.
 		$current_order    = WC_Helper_Order::create_order();
 		$current_order_id = $current_order->get_id();
@@ -1223,44 +1212,36 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->method( 'format_response' )
 			->willReturn( $intent );
 
+		$this->mock_dpps->expects( $this->once() )
+			->method( 'check_against_session_processing_order' )
+			->with( wc_get_order( $current_order_id ) )
+			->willReturn( null );
+
+		$this->mock_dpps->expects( $this->once() )
+			->method( 'maybe_update_session_processing_order' )
+			->with( $current_order_id );
+
 		// Act: process the order but redirect to the previous/session paid order.
 		$this->mock_wcpay_gateway->process_payment( $current_order_id );
-
-		// Assert: maybe_update_session_processing_order takes action and its value is kept.
-		$this->assertSame(
-			$current_order_id,
-			WC()->session->get( WC_Payment_Gateway_WCPay::SESSION_KEY_PROCESSING_ORDER )
-		);
-
-		// Destroy the session value after running test.
-		WC()->session->set(
-			WC_Payment_Gateway_WCPay::SESSION_KEY_PROCESSING_ORDER,
-			null
-		);
 	}
 
-	/**
-	 * @dataProvider provider_process_payment_check_session_and_continue_processing
-	 */
-	public function test_process_payment_check_session_and_continue_processing( string $session_order_cart_hash, string $session_order_status, string $current_order_cart_hash ) {
-		// Arrange the order saved in the session.
-		$session_order = WC_Helper_Order::create_order();
-		$session_order->set_cart_hash( $session_order_cart_hash );
-		$session_order->set_status( $session_order_status );
-		$session_order->save();
-		WC()->session->set(
-			WC_Payment_Gateway_WCPay::SESSION_KEY_PROCESSING_ORDER,
-			$session_order->get_id()
-		);
-
+	public function test_process_payment_check_session_and_continue_processing() {
 		// Arrange the order is being processed.
-		$current_order = WC_Helper_Order::create_order();
-		$current_order->set_cart_hash( $current_order_cart_hash );
-		$current_order->save();
+		$current_order    = WC_Helper_Order::create_order();
 		$current_order_id = $current_order->get_id();
 
 		// Arrange a successful intention.
 		$intent = WC_Helper_Intention::create_intention();
+
+		// Arrange null returns from the DPPS.
+		$this->mock_dpps->expects( $this->once() )
+			->method( 'check_against_session_processing_order' )
+			->with( wc_get_order( $current_order_id ) )
+			->willReturn( null );
+
+		$this->mock_dpps->expects( $this->once() )
+			->method( 'remove_session_processing_order' )
+			->with( $current_order_id );
 
 		// Assert: the payment process continues.
 		$this->mock_wcpay_request( Create_And_Confirm_Intention::class )
@@ -1270,88 +1251,20 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		// Act.
 		$this->mock_wcpay_gateway->process_payment( $current_order_id );
-
-		// Assert: no order ID is saved in the session.
-		$this->assertSame(
-			null,
-			WC()->session->get( WC_Payment_Gateway_WCPay::SESSION_KEY_PROCESSING_ORDER )
-		);
-	}
-
-	public function provider_process_payment_check_session_and_continue_processing() {
-		return [
-			'Different cart hash with session order status completed'   => [ 'SESSION_ORDER_HASH', Order_Status::COMPLETED, 'CURRENT_ORDER_HASH' ],
-			'Different cart hash  with session order status processing' => [ 'SESSION_ORDER_HASH', Order_Status::PROCESSING, 'CURRENT_ORDER_HASH' ],
-			'Same cart hash with session order status pending'          => [ 'SAME_CART_HASH', Order_Status::PENDING, 'SAME_CART_HASH' ],
-			'Same cart hash with session order status cancelled'        => [ 'SAME_CART_HASH', Order_Status::CANCELLED, 'SAME_CART_HASH' ],
-		];
-	}
-
-	/**
-	 * @dataProvider provider_check_payment_intent_attached_to_order_succeeded_with_invalid_intent_id_continue_process_payment
-	 * @param ?string $invalid_intent_id An invalid payment intent ID. If no intent id is set, this can be null.
-	 */
-	public function test_check_payment_intent_attached_to_order_succeeded_with_invalid_intent_id_continue_process_payment( $invalid_intent_id ) {
-		// Arrange order.
-		$order = WC_Helper_Order::create_order();
-		$order->update_meta_data( '_intent_id', $invalid_intent_id );
-		$order->save();
-
-		$order_id = $order->get_id();
-
-		// Assert: get_intent is not called.
-		$this->mock_wcpay_request( Get_Intention::class, 0 );
-
-		// Assert: the payment process continues.
-		$this->mock_wcpay_request( Create_And_Confirm_Intention::class )
-			->expects( $this->once() )
-			->method( 'format_response' )
-			->willReturn( WC_Helper_Intention::create_intention() );
-
-		// Act: process the order.
-		$this->mock_wcpay_gateway->process_payment( $order_id );
-	}
-
-	public function provider_check_payment_intent_attached_to_order_succeeded_with_invalid_intent_id_continue_process_payment(): array {
-		return [
-			'No intent_id is attached'   => [ null ],
-			'A setup intent is attached' => [ 'seti_possible_for_a_subscription_id' ],
-		];
 	}
 
 	/**
 	 * The attached PaymentIntent has invalid info (status or order_id) with the order, so payment_process continues.
-	 *
-	 * @dataProvider provider_check_payment_intent_attached_to_order_succeeded_with_invalid_data_continue_process_payment
-	 * @param  string  $attached_intent_id Attached intent ID to the order.
-	 * @param  string  $attached_intent_status Attached intent status.
-	 * @param  bool  $same_order_id True when the intent meta order_id is exactly the current processing order_id. False otherwise.
 	 */
-	public function test_check_payment_intent_attached_to_order_succeeded_with_invalid_data_continue_process_payment(
-		string $attached_intent_id,
-		string $attached_intent_status,
-		bool $same_order_id
-	) {
+	public function test_check_payment_intent_attached_to_order_succeeded_with_invalid_data_continue_process_payment() {
 		// Arrange order.
-		$order = WC_Helper_Order::create_order();
-		$order->update_meta_data( '_intent_id', $attached_intent_id );
-		$order->save();
-
+		$order    = WC_Helper_Order::create_order();
 		$order_id = $order->get_id();
 
-		// Arrange mock get_intent.
-		$meta_order_id   = $same_order_id ? $order_id : $order_id - 1;
-		$attached_intent = WC_Helper_Intention::create_intention(
-			[
-				'id'       => $attached_intent_id,
-				'status'   => $attached_intent_status,
-				'metadata' => [ 'order_id' => $meta_order_id ],
-			]
-		);
-		$this->mock_wcpay_request( Get_Intention::class, 1, $attached_intent_id )
-			->expects( $this->once() )
-			->method( 'format_response' )
-			->willReturn( $attached_intent );
+		$this->mock_dpps->expects( $this->once() )
+			->method( 'check_payment_intent_attached_to_order_succeeded' )
+			->with( wc_get_order( $order_id ) )
+			->willReturn( null );
 
 		// Assert: the payment process continues.
 		$this->mock_wcpay_request( Create_And_Confirm_Intention::class )
@@ -1363,39 +1276,18 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->mock_wcpay_gateway->process_payment( $order_id );
 	}
 
-	public function provider_check_payment_intent_attached_to_order_succeeded_with_invalid_data_continue_process_payment(): array {
-		return [
-			'Attached PaymentIntent with non-success status - same order_id' => [ 'pi_attached_intent_id', 'requires_action', true ],
-			'Attached PaymentIntent - non-success status - different order_id' => [ 'pi_attached_intent_id', 'requires_action', false ],
-			'Attached PaymentIntent - success status - different order_id' => [ 'pi_attached_intent_id', 'succeeded', false ],
-		];
-	}
-
-	/**
-	 * @dataProvider provider_check_payment_intent_attached_to_order_succeeded_return_redirection
-	 */
-	public function test_check_payment_intent_attached_to_order_succeeded_return_redirection( string $intent_successful_status ) {
-		$attached_intent_id = 'pi_attached_intent_id';
+	public function test_check_payment_intent_attached_to_order_succeeded_return_redirection() {
+		$response = [ 'dummy_redirect' => 1 ];
 
 		// Arrange order.
-		$order = WC_Helper_Order::create_order();
-		$order->update_meta_data( '_intent_id', $attached_intent_id );
-		$order->save();
+		$order    = WC_Helper_Order::create_order();
 		$order_id = $order->get_id();
 
-		// Arrange mock get_intention.
-		$attached_intent = WC_Helper_Intention::create_intention(
-			[
-				'id'       => $attached_intent_id,
-				'status'   => $intent_successful_status,
-				'metadata' => [ 'order_id' => $order_id ],
-			]
-		);
-
-		$this->mock_wcpay_request( Get_Intention::class, 1, $attached_intent_id )
-			->expects( $this->once() )
-			->method( 'format_response' )
-			->willReturn( $attached_intent );
+		// Arrange: The service will return a response.
+		$this->mock_dpps->expects( $this->once() )
+			->method( 'check_payment_intent_attached_to_order_succeeded' )
+			->with( wc_get_order( $order_id ) )
+			->willReturn( $response );
 
 		// Assert: no more call to the server to create and confirm a new intention.
 		$this->mock_wcpay_request( Create_And_Confirm_Intention::class, 0 );
@@ -1404,18 +1296,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$result = $this->mock_wcpay_gateway->process_payment( $order_id );
 
 		// Assert: the result of check_intent_attached_to_order_succeeded.
-		$this->assertSame( 'yes', $result['wcpay_upe_previous_successful_intent'] );
-		$this->assertSame( 'success', $result['result'] );
-		$this->assertStringContainsString( $this->mock_wcpay_gateway->get_return_url( $order ), $result['redirect'] );
-	}
-
-	public function provider_check_payment_intent_attached_to_order_succeeded_return_redirection(): array {
-		$ret = [];
-		foreach ( WC_Payment_Gateway_WCPay::SUCCESSFUL_INTENT_STATUS as $status ) {
-			$ret[ 'Intent status ' . $status ] = [ $status ];
-		}
-
-		return $ret;
+		$this->assertSame( $response, $result );
 	}
 
 	public function test_save_payment_method_to_platform_for_classic_checkout() {
