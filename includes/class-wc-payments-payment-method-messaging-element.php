@@ -51,14 +51,13 @@ class WC_Payments_Payment_Method_Messaging_Element {
 		$billing_country    = WC()->countries->get_base_country();
 		$currency_code      = get_woocommerce_currency();
 		$base_product_price = WC_Payments_Utils::prepare_amount( $product->get_price(), $currency_code );
-		$all_variation_ids  = $product->get_children();
 
-		$variations_price_list = [ 'base_product' => $base_product_price ];
+		$product_prices = [ 'base_product' => $base_product_price ];
 
-		foreach ( $all_variation_ids as $variation_id ) {
+		foreach ( $product->get_children() as $variation_id ) {
 			$variation = wc_get_product( $variation_id );
 			if ( $variation ) {
-				$variations_price_list[ $variation_id ] = WC_Payments_Utils::prepare_amount( $variation->get_price(), get_woocommerce_currency() );
+				$product_prices[ $variation_id ] = WC_Payments_Utils::prepare_amount( $variation->get_price(), get_woocommerce_currency() );
 			}
 		}
 
@@ -78,12 +77,12 @@ class WC_Payments_Payment_Method_Messaging_Element {
 			'WCPAY_PRODUCT_DETAILS',
 			'wcpayStripeSiteMessaging',
 			[
-				'price'               => $base_product_price,
-				'currency'            => $currency_code,
-				'variationsPriceList' => $variations_price_list,
-				'country'             => $billing_country,
-				'publishableKey'      => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
-				'paymentMethods'      => array_values( $bnpl_payment_methods ),
+				'price'          => $base_product_price,
+				'currency'       => $currency_code,
+				'productPrices'  => $product_prices,
+				'country'        => $billing_country,
+				'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
+				'paymentMethods' => array_values( $bnpl_payment_methods ),
 			]
 		);
 
