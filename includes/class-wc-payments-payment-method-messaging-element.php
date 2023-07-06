@@ -82,7 +82,6 @@ class WC_Payments_Payment_Method_Messaging_Element {
 				'price'          => $base_product_price,
 				'currency'       => $currency_code,
 				'productPrices'  => $product_prices,
-				'country'        => $billing_country,
 				'country'        => empty( $billing_country ) ? $store_country : $billing_country,
 				'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
 				'paymentMethods' => array_values( $bnpl_payment_methods ),
