@@ -11,7 +11,7 @@ import {
 } from '@wordpress/element';
 import { registerPlugin } from '@wordpress/plugins';
 import { removeQueryArgs } from '@wordpress/url';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import wcpayTracks from '../tracks';
 
 import './style.scss';
@@ -72,9 +72,13 @@ const SubscriptionProductOnboardingModalContent = ( {
 				) }
 			</p>
 			<p>
-				{ __(
-					'Verify your business details with WooPayments to accept recurring payments for this subscription product.',
-					'woocommerce-payments'
+				{ sprintf(
+					/* translators: %s: WooPayments */
+					__(
+						'Verify your business details with %s to accept recurring payments for this subscription product.',
+						'woocommerce-payments'
+					),
+					'WooPayments'
 				) }
 			</p>
 			<p className="wcpay-subscription-product-modal__tos">

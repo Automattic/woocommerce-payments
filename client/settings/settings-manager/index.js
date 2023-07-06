@@ -62,9 +62,13 @@ const GeneralSettingsDescription = () => (
 	<>
 		<h2>{ __( 'General', 'woocommerce-payments' ) }</h2>
 		<p>
-			{ __(
-				'Enable or disable WooPayments on your store and turn on test mode to simulate transactions.',
-				'woocommerce-payments'
+			{ sprintf(
+				/* translators: %s: WooPayments */
+				__(
+					'Enable or disable %s on your store and turn on test mode to simulate transactions.',
+					'woocommerce-payments'
+				),
+				'WooPayments'
 			) }
 		</p>
 	</>

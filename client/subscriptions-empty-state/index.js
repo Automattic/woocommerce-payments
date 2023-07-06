@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import {
 	createInterpolateElement,
 	render,
@@ -34,10 +34,14 @@ const Description = () => (
 						'subscription product to turn one-time purchases into a steady income.',
 					'woocommerce-payments'
 			  )
-			: __(
-					'Track recurring revenue and manage active subscriptions directly from your store’s ' +
-						'dashboard — powered by WooPayments.',
-					'woocommerce-payments'
+			: sprintf(
+					/* translators: %s: WooPayments */
+					__(
+						'Track recurring revenue and manage active subscriptions directly from your store’s ' +
+							'dashboard — powered by %s.',
+						'woocommerce-payments'
+					),
+					'WooPayments'
 			  ) }
 	</p>
 );

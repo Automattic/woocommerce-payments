@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { CheckboxControl, ExternalLink } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { useEffect, useRef } from '@wordpress/element';
 
 /**
@@ -34,14 +34,19 @@ const WCPaySubscriptionsToggle = () => {
 	return ! isSubscriptionsPluginActive &&
 		( isWCPaySubscriptionsEligible || isWCPaySubscriptionsEnabled ) ? (
 		<CheckboxControl
-			label={ __(
-				'Enable Subscriptions with WooPayments',
-				'woocommerce-payments'
+			label={ sprintf(
+				/* translators: %s: WooPayments */
+				__( 'Enable Subscriptions with %s', 'woocommerce-payments' ),
+				'WooPayments'
 			) }
 			help={ interpolateComponents( {
-				mixedString: __(
-					'Sell subscription products and services with WooPayments. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-					'woocommerce-payments'
+				mixedString: sprintf(
+					/* translators: %s: WooPayments */
+					__(
+						'Sell subscription products and services with %s. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+						'woocommerce-payments'
+					),
+					'WooPayments'
 				),
 				components: {
 					learnMoreLink: (

@@ -71,7 +71,7 @@ const ConfirmPaymentMethodDeleteModal: React.FunctionComponent< {
 					components: {
 						wooCommercePaymentsLink: (
 							<a href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments">
-								{ __( 'WooPayments', 'woocommerce-payments' ) }
+								{ 'WooPayments' }
 							</a>
 						),
 					},

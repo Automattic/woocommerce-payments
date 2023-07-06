@@ -5,7 +5,7 @@
  */
 // import '@wordpress/notices';
 import { dispatch } from '@wordpress/data';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -25,14 +25,21 @@ const showTosNotice = ( settingsUrl ) => {
 		}
 	};
 
-	createInfoNotice( __( 'Disabled WooPayments', 'woocommerce-payments' ), {
-		actions: [
-			{
-				label: __( 'Undo', 'woocommerce-payments' ),
-				onClick: enableGateway,
-			},
-		],
-	} );
+	createInfoNotice(
+		sprintf(
+			/* translators: %s: WooPayments */
+			__( 'Disabled %s', 'woocommerce-payments' ),
+			'WooPayments'
+		),
+		{
+			actions: [
+				{
+					label: __( 'Undo', 'woocommerce-payments' ),
+					onClick: enableGateway,
+				},
+			],
+		}
+	);
 };
 
 export default showTosNotice;

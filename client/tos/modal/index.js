@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import interpolateComponents from '@automattic/interpolate-components';
 import { Button, Notice, Modal } from '@wordpress/components';
@@ -29,12 +29,20 @@ const TosLink = ( props ) => (
 );
 
 const TosModalUI = ( { onAccept, onDecline, isBusy, hasError } ) => {
-	const title = __( 'WooPayments: Terms of Service', 'woocommerce-payments' );
+	const title = sprintf(
+		/* translators: %s: WooPayments */
+		__( '%s: Terms of Service', 'woocommerce-payments' ),
+		'WooPayments'
+	);
 	const message = interpolateComponents( {
-		mixedString: __(
-			'To continue using WooPayments, please review and agree to our {{link}}Terms of Service{{/link}}.' +
-				' By clicking “Accept” you agree to the Terms of Service.',
-			'woocommerce-payments'
+		mixedString: sprintf(
+			/* translators: %s: WooPayments */
+			__(
+				'To continue using %s, please review and agree to our {{link}}Terms of Service{{/link}}.' +
+					' By clicking “Accept” you agree to the Terms of Service.',
+				'woocommerce-payments'
+			),
+			'WooPayments'
 		),
 		components: { link: <TosLink /> },
 	} );
@@ -79,13 +87,21 @@ const TosModalUI = ( { onAccept, onDecline, isBusy, hasError } ) => {
 };
 
 const DisableModalUI = ( { onDisable, onCancel, isBusy, hasError } ) => {
-	const title = __( 'Disable WooPayments', 'woocommerce-payments' );
+	const title = sprintf(
+		/* translators: %s: WooPayments */
+		__( 'Disable %s', 'woocommerce-payments' ),
+		'WooPayments'
+	);
 	const message = interpolateComponents( {
-		mixedString: __(
-			'By declining our {{link}}Terms of Service{{/link}},' +
-				' you’ll no longer be able to capture credit card payments using WooPayments.' +
-				' Your previous transaction and deposit data will still be available.',
-			'woocommerce-payments'
+		mixedString: sprintf(
+			/* translators: %s: WooPayments */
+			__(
+				'By declining our {{link}}Terms of Service{{/link}},' +
+					' you’ll no longer be able to capture credit card payments using %s.' +
+					' Your previous transaction and deposit data will still be available.',
+				'woocommerce-payments'
+			),
+			'WooPayments'
 		),
 		components: { link: <TosLink /> },
 	} );

@@ -1,8 +1,6 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
-
 // Handled as an external dependency: see '/webpack.config.js:83'
 import {
 	registerPaymentMethod,
@@ -110,7 +108,7 @@ Object.entries( enabledPaymentMethodsConfig )
 					</span>
 				</>
 			),
-			ariaLabel: __( 'WooPayments', 'woocommerce-payments' ),
+			ariaLabel: 'WooPayments',
 			supports: {
 				showSavedCards: getUPEConfig( 'isSavedCardsEnabled' ) ?? false,
 				showSaveOption: upeConfig.showSaveOption ?? false,

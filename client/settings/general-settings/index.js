@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { Card, CheckboxControl } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 
@@ -23,10 +23,18 @@ const GeneralSettings = () => {
 				<CheckboxControl
 					checked={ isWCPayEnabled }
 					onChange={ setIsWCPayEnabled }
-					label={ __( 'Enable WooPayments', 'woocommerce-payments' ) }
-					help={ __(
-						'When enabled, payment methods powered by WooPayments will appear on checkout.',
-						'woocommerce-payments'
+					label={ sprintf(
+						/* translators: %s: WooPayments */
+						__( 'Enable %s', 'woocommerce-payments' ),
+						'WooPayments'
+					) }
+					help={ sprintf(
+						/* translators: %s: WooPayments */
+						__(
+							'When enabled, payment methods powered by %s will appear on checkout.',
+							'woocommerce-payments'
+						),
+						'WooPayments'
 					) }
 				/>
 				<h4>{ __( 'Test mode', 'woocommerce-payments' ) }</h4>

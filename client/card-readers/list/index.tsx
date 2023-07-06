@@ -3,7 +3,7 @@
  * External dependencies
  */
 import React from 'react';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { Card, CardBody, CardDivider } from '@wordpress/components';
 
 /**
@@ -19,10 +19,14 @@ const ReadersListDescription = () => (
 	<>
 		<h2>{ __( 'Connected card readers', 'woocommerce-payments' ) }</h2>
 		<p>
-			{ __(
-				'Card readers are marked as active if they’ve processed one or more transactions durring the current billing cycle. ' +
-					'To connect or disconnect card readers, use the WooPayments mobile application.',
-				'woocommerce-payments'
+			{ sprintf(
+				/* translators: %s: WooPayments */
+				__(
+					'Card readers are marked as active if they’ve processed one or more transactions during the current billing cycle. ' +
+						'To connect or disconnect card readers, use the %s mobile application.',
+					'woocommerce-payments'
+				),
+				'WooPayments'
 			) }
 		</p>
 	</>
