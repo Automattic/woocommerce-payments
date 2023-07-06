@@ -1531,8 +1531,14 @@ class WC_Payments {
 				}
 			}
 
-			if ( in_array( 'woocommerce-gift-cards', $adapted_extensions, true ) && ! empty( $user ) ) {
-				$body['extension_settings']['woocommerce-gift-cards'] = [
+			if ( in_array( 'woocommerce-gift-cards', $adapted_extensions, true ) && function_exists( 'WC_GC' ) && ! empty( $user ) ) {
+				$account_gift_cards = WC_GC()->cart->get_account_gift_cards();
+
+				if ( count( $account_gift_cards ) > 0 ) {
+					$body['adapted_extensions']['ask_email_verification'] = 'woocommerce-gift-cards';
+				}
+
+				$body['adapted_extensions']['extension_settings']['woocommerce-gift-cards'] = [
 					'account_orders_link' => add_query_arg( [ 'wc_gc_show_pending_orders' => 'yes' ], wc_get_account_endpoint_url( 'orders' ) ),
 				];
 			}
