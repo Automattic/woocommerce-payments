@@ -375,7 +375,7 @@ export default {
 		},
 		near_threshold: {
 			title: __( 'Verify your bank details', 'woocommerce-payments' ),
-			description: ( dueDate: string ): React.ReactElement | string => {
+			description: ( dueDate: string ): React.ReactElement => {
 				return createInterpolateElement(
 					sprintf(
 						__(
