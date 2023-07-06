@@ -18,14 +18,14 @@ jQuery( function ( $ ) {
 	} );
 
 	// Handle BNPL payment message changes for product variation.
+	const quantity = $( '.quantity input' ).val();
+	const { variationsPriceList } = window.wcpayStripeSiteMessaging;
+
 	$( '.single_variation_wrap' ).on( 'show_variation', function (
 		event,
 		variation
 	) {
-		const { variationsPriceList } = window.wcpayStripeSiteMessaging;
 		const variationPrice = variationsPriceList[ variation.variation_id ];
-		const quantity = $( '.quantity input' ).val();
-
 		window.wcpayStripeSiteMessaging.price = variationPrice;
 		bnplPaymentMessageElement.update( {
 			amount: parseInt( variationPrice, 10 ) * quantity,
@@ -34,7 +34,7 @@ jQuery( function ( $ ) {
 
 	$( '.reset_variations' ).on( 'click', function () {
 		bnplPaymentMessageElement.update( {
-			amount: 0,
+			amount: variationsPriceList.base_product * quantity,
 		} );
 	} );
 } );
