@@ -48,9 +48,22 @@ class WC_Payments_Payment_Method_Messaging_Element {
 	 */
 	public function init(): string {
 		global $product;
-		$price           = $product->get_price();
-		$currency_code   = get_woocommerce_currency();
-		$billing_country = WC()->countries->get_base_country();
+		$price             = $product->get_price();
+		$currency_code     = get_woocommerce_currency();
+		$billing_country   = WC()->countries->get_base_country();
+		$all_variation_ids = $product->get_children();
+
+		$variations_price_list = array_reduce(
+			$all_variation_ids,
+			function( $variation_prices, $variation_id ) {
+				$variation = wc_get_product( $variation_id );
+				if ( $variation ) {
+					$variation_prices[ $variation_id ] = WC_Payments_Utils::prepare_amount( $variation->get_price(), get_woocommerce_currency() );
+				}
+				return $variation_prices;
+			},
+			[]
+		);
 
 		if ( WC()->customer ) {
 			$billing_country = WC()->customer->get_billing_country(); // Use the customer's billing country if available.
@@ -68,13 +81,12 @@ class WC_Payments_Payment_Method_Messaging_Element {
 			'WCPAY_PRODUCT_DETAILS',
 			'wcpayStripeSiteMessaging',
 			[
-				'price'          => WC_Payments_Utils::prepare_amount( $price, $currency_code ),
-				'currency'       => $currency_code,
-				// Passing the multiplier to help handle zero decimal currencies for BNPL Payment Method messaging display on variable products.
-				'multiplier'     => WC_Payments_Utils::is_zero_decimal_currency( strtolower( $currency_code ) ) ? 1 : 100,
-				'country'        => $billing_country,
-				'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
-				'paymentMethods' => array_values( $bnpl_payment_methods ),
+				'price'               => WC_Payments_Utils::prepare_amount( $price, $currency_code ),
+				'currency'            => $currency_code,
+				'variationsPriceList' => $variations_price_list,
+				'country'             => $billing_country,
+				'publishableKey'      => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
+				'paymentMethods'      => array_values( $bnpl_payment_methods ),
 			]
 		);
 

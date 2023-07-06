@@ -22,17 +22,13 @@ jQuery( function ( $ ) {
 		event,
 		variation
 	) {
+		const { variationsPriceList } = window.wcpayStripeSiteMessaging;
+		const variationPrice = variationsPriceList[ variation.variation_id ];
 		const quantity = $( '.quantity input' ).val();
-		// The multiplier is fetched within wcpayStripeSiteMessaging global variable, to handle any presence of zero decimal currencies.
-		const { multiplier } = window.wcpayStripeSiteMessaging;
 
-		window.wcpayStripeSiteMessaging.price =
-			variation.display_price * multiplier;
+		window.wcpayStripeSiteMessaging.price = variationPrice;
 		bnplPaymentMessageElement.update( {
-			amount: parseInt(
-				variation.display_price * quantity * multiplier,
-				10
-			),
+			amount: parseInt( variationPrice, 10 ) * quantity,
 		} );
 	} );
 
