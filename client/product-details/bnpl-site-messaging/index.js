@@ -1,8 +1,9 @@
 // global Stripe, wcpayStripeSiteMessaging
 export const initializeBnplSiteMessaging = () => {
 	const {
-		price,
+		productId,
 		currency,
+		productPrices,
 		country,
 		publishableKey,
 		paymentMethods,
@@ -11,7 +12,7 @@ export const initializeBnplSiteMessaging = () => {
 	// eslint-disable-next-line no-undef
 	const stripe = Stripe( publishableKey );
 	const options = {
-		amount: parseInt( price, 10 ) || 0,
+		amount: parseInt( productPrices[ productId ], 10 ) || 0,
 		currency: currency || 'USD',
 		paymentMethodTypes: paymentMethods || [],
 		countryCode: country, // Customer's country or base country of the store.

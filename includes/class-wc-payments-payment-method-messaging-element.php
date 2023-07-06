@@ -48,23 +48,17 @@ class WC_Payments_Payment_Method_Messaging_Element {
 	 */
 	public function init(): string {
 		global $product;
-
 		$currency_code      = get_woocommerce_currency();
 		$store_country      = WC()->countries->get_base_country();
 		$billing_country    = WC()->customer->get_billing_country();
 		$base_product_price = WC_Payments_Utils::prepare_amount( $product->get_price(), $currency_code );
 
-		$product_prices = [ 'base_product' => $base_product_price ];
-
+		$product_prices = [ 'base_product' => WC_Payments_Utils::prepare_amount( $product->get_price(), $currency_code ) ];
 		foreach ( $product->get_children() as $variation_id ) {
 			$variation = wc_get_product( $variation_id );
 			if ( $variation ) {
 				$product_prices[ $variation_id ] = WC_Payments_Utils::prepare_amount( $variation->get_price(), get_woocommerce_currency() );
 			}
-		}
-
-		if ( WC()->customer ) {
-			$billing_country = WC()->customer->get_billing_country(); // Use the customer's billing country if available.
 		}
 
 		$enabled_upe_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
@@ -79,7 +73,7 @@ class WC_Payments_Payment_Method_Messaging_Element {
 			'WCPAY_PRODUCT_DETAILS',
 			'wcpayStripeSiteMessaging',
 			[
-				'price'          => $base_product_price,
+				'productId'      => 'base_product',
 				'currency'       => $currency_code,
 				'productPrices'  => $product_prices,
 				'country'        => empty( $billing_country ) ? $store_country : $billing_country,
