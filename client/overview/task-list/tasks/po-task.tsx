@@ -40,7 +40,7 @@ export const getVerifyBankAccountTask = (): any => {
 	}
 
 	let title,
-		level = 1,
+		level = 3, // 3 is the default level for tasks.
 		description,
 		actionLabelText,
 		verifyDetailsDueDate;
@@ -51,7 +51,7 @@ export const getVerifyBankAccountTask = (): any => {
 			.format( 'MMMM D, YYYY' );
 		const daysFromAccountCreation = moment().diff( createdDate, 'days' );
 
-		// when account is created less than 14 days ago, we also show a notice but it's just info
+		// When account is created less than 14 days ago, we also show a notice but it's just info.
 		if ( 14 > daysFromAccountCreation ) {
 			title = strings.po_tasks.after_payment.title;
 			level = 3;
@@ -89,7 +89,7 @@ export const getVerifyBankAccountTask = (): any => {
 		);
 		actionLabelText = strings.po_tasks.after_payment.action_label;
 
-		// balance is rising
+		// Balance is rising.
 		if ( tpvLimit * 0.2 <= tpvInUsd || 7 <= daysFromFirstPayment ) {
 			title = strings.po_tasks.balance_rising.title;
 			level = 2;
@@ -98,7 +98,7 @@ export const getVerifyBankAccountTask = (): any => {
 			);
 			actionLabelText = strings.po_tasks.balance_rising.action_label;
 		}
-		// near threshold
+		// Near threshold.
 		if ( tpvLimit * 0.6 <= tpvInUsd || 21 <= daysFromFirstPayment ) {
 			title = strings.po_tasks.near_threshold.title;
 			level = 1;
@@ -107,7 +107,7 @@ export const getVerifyBankAccountTask = (): any => {
 			);
 			actionLabelText = strings.po_tasks.near_threshold.action_label;
 		}
-		// threshold reached
+		// Threshold reached.
 		if ( tpvLimit <= tpvInUsd || 30 <= daysFromFirstPayment ) {
 			title = strings.po_tasks.threshold_reached.title;
 			level = 1;
