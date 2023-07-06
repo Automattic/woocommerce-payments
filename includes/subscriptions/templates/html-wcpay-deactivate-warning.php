@@ -20,8 +20,9 @@
 					<p>
 						<?php
 							printf(
-								// translators: $1 $2 $3 placeholders are opening and closing HTML link tags, linking to documentation. $4 $5 placeholders are opening and closing strong HTML tags.
-								esc_html__( 'Your store has active subscriptions using the built-in WooPayments functionality. Due to the %1$soff-site billing engine%3$s these subscriptions use, %4$sthey will continue to renew even after you deactivate WooPayments%5$s. %2$sLearn more%3$s.', 'woocommerce-payments' ),
+								// translators: $1 is WooPayments, $2 $3 $4 placeholders are opening and closing HTML link tags, linking to documentation. $5 $6 placeholders are opening and closing strong HTML tags.
+								esc_html__( 'Your store has active subscriptions using the built-in %1$s functionality. Due to the %2$soff-site billing engine%4$s these subscriptions use, %5$sthey will continue to renew even after you deactivate %1$s%6$s. %3$sLearn more%4$s.', 'woocommerce-payments' ),
+								'WooPayments',
 								'<a href="https://woocommerce.com/document/payments/subscriptions/comparison/#billing-engine">',
 								'<a href="https://woocommerce.com/document/woocommerce-payments/built-in-subscriptions/deactivate/#existing-subscriptions">',
 								'</a>',
@@ -33,14 +34,23 @@
 					</p>
 						<?php
 							printf(
-								// translators: $1 $2 placeholders are opening and closing HTML link tags, linking to documentation.
-								esc_html__( 'If you do not want these subscriptions to continue to be billed, you should %1$scancel all subscriptions%2$s prior to deactivating WooPayments. ', 'woocommerce-payments' ),
+								// translators: $1 $2 placeholders are opening and closing HTML link tags, linking to documentation. $3 is WooPayments.
+								esc_html__( 'If you do not want these subscriptions to continue to be billed, you should %1$scancel all subscriptions%2$s prior to deactivating %3$s. ', 'woocommerce-payments' ),
 								'<a href="https://woocommerce.com/document/subscriptions/store-manager-guide/#cancel-or-suspend-subscription">',
-								'</a>'
+								'</a>',
+								'WooPayments'
 							);
 							?>
 					</p>
-					<strong><?php esc_html_e( 'Are you sure you want to deactivate WooPayments?', 'woocommerce-payments' ); ?></strong>
+					<strong>
+						<?php
+							echo sprintf(
+								/* translators: %s: WooPayments. */
+								esc_html__( 'Are you sure you want to deactivate %s?', 'woocommerce-payments' ),
+								'WooPayments'
+							);
+							?>
+					</strong>
 				</article>
 				<footer>
 					<div class="inner">

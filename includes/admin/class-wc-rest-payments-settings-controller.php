@@ -64,7 +64,11 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
 					'is_wcpay_enabled'                  => [
-						'description'       => __( 'If WooPayments should be enabled.', 'woocommerce-payments' ),
+						'description'       => sprintf(
+							/* translators: %s: WooPayments */
+							__( 'If %s should be enabled.', 'woocommerce-payments' ),
+							'WooPayments'
+						),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
@@ -78,32 +82,56 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'validate_callback' => 'rest_validate_request_arg',
 					],
 					'is_manual_capture_enabled'         => [
-						'description'       => __( 'If WooPayments manual capture of charges should be enabled.', 'woocommerce-payments' ),
+						'description'       => sprintf(
+						/* translators: %s: WooPayments */
+							__( 'If %s manual capture of charges should be enabled.', 'woocommerce-payments' ),
+							'WooPayments'
+						),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
 					'is_saved_cards_enabled'            => [
-						'description'       => __( 'If WooPayments "Saved cards" should be enabled.', 'woocommerce-payments' ),
+						'description'       => sprintf(
+							/* translators: %s: WooPayments */
+							__( 'If %s "Saved cards" should be enabled.', 'woocommerce-payments' ),
+							'WooPayments'
+						),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
 					'is_test_mode_enabled'              => [
-						'description'       => __( 'WooPayments test mode setting.', 'woocommerce-payments' ),
+						'description'       => sprintf(
+							/* translators: %s: WooPayments */
+							__( '%s test mode setting.', 'woocommerce-payments' ),
+							'WooPayments'
+						),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
 					'is_multi_currency_enabled'         => [
-						'description'       => __( 'WooPayments Multi-Currency feature flag setting.', 'woocommerce-payments' ),
+						'description'       => sprintf(
+							/* translators: %s: WooPayments */
+							__( '%s Multi-Currency feature flag setting.', 'woocommerce-payments' ),
+							'WooPayments'
+						),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
 					'is_wcpay_subscription_enabled'     => [
-						'description'       => __( 'WooPayments Subscriptions feature flag setting.', 'woocommerce-payments' ),
+						'description'       => sprintf(
+							/* translators: %s: WooPayments */
+							__( '%s Subscriptions feature flag setting.', 'woocommerce-payments' ),
+							'WooPayments'
+						),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
 					'account_statement_descriptor'      => [
-						'description'       => __( 'WooPayments bank account descriptor to be displayed in customers\' bank accounts.', 'woocommerce-payments' ),
+						'description'       => sprintf(
+							/* translators: %s: WooPayments */
+							__( '%s bank account descriptor to be displayed in customers\' bank accounts.', 'woocommerce-payments' ),
+							'WooPayments'
+						),
 						'type'              => 'string',
 						'validate_callback' => [ $this, 'validate_statement_descriptor' ],
 					],
@@ -159,7 +187,11 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'type'        => [ 'integer', 'null' ],
 					],
 					'is_payment_request_enabled'        => [
-						'description'       => __( 'If WooPayments express checkouts should be enabled.', 'woocommerce-payments' ),
+						'description'       => sprintf(
+							/* translators: %s: WooPayments */
+							__( 'If %s express checkouts should be enabled.', 'woocommerce-payments' ),
+							'WooPayments'
+						),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],

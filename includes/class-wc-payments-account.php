@@ -798,7 +798,11 @@ class WC_Payments_Account {
 
 			if ( isset( $_GET['wcpay-connect-jetpack-success'] ) && ! $this->payments_api_client->is_server_connected() ) {
 				$this->redirect_to_onboarding_welcome_page(
-					__( 'Connection to WordPress.com failed. Please connect to WordPress.com to start using WooPayments.', 'woocommerce-payments' )
+					sprintf(
+						/* translators: %s: WooPayments */
+						__( 'Connection to WordPress.com failed. Please connect to WordPress.com to start using %s.', 'woocommerce-payments' ),
+						'WooPayments'
+					)
 				);
 				return;
 			}

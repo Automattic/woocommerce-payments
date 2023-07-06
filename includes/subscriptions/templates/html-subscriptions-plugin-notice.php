@@ -20,10 +20,11 @@
 					<p>
 						<?php
 							printf(
-								// Translators: placeholders are opening and closing strong HTML tags.
-								esc_html__( 'By deactivating the %1$sWooCommerce Subscriptions%2$s plugin, your store will switch to using the subscriptions functionality %1$sbuilt into WooPayments%2$s. %1$s%3$sLearn more.%4$s%2$s', 'woocommerce-payments' ),
+								// Translators: placeholders are opening and closing strong HTML tags. Third one adds WooPayments.
+								esc_html__( 'By deactivating the %1$sWooCommerce Subscriptions%2$s plugin, your store will switch to using the subscriptions functionality %1$sbuilt into %3$s%2$s. %1$s%4$sLearn more.%5$s%2$s', 'woocommerce-payments' ),
 								'<strong>',
 								'</strong>',
+								'WooPayments',
 								'<a href="https://woocommerce.com/document/subscriptions/renewal-process/#section-4" target="_blank" rel="noopener noreferrer">',
 								'</a>'
 							);

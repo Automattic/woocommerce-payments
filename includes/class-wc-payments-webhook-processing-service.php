@@ -275,8 +275,8 @@ class WC_Payments_Webhook_Processing_Service {
 
 		$note = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-			/* translators: %1: the refund amount, %2: ID of the refund */
-				__( 'A refund of %1$s was <strong>unsuccessful</strong> using WooPayments (<code>%2$s</code>).', 'woocommerce-payments' ),
+			/* translators: %1: the refund amount, %2: WooPayments, %3: ID of the refund */
+				__( 'A refund of %1$s was <strong>unsuccessful</strong> using %2$s (<code>%3$s</code>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'code'   => '<code>',
@@ -286,6 +286,7 @@ class WC_Payments_Webhook_Processing_Service {
 				wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount, $currency ), [ 'currency' => strtoupper( $currency ) ] ),
 				$order
 			),
+			'WooPayments',
 			$refund_id
 		);
 

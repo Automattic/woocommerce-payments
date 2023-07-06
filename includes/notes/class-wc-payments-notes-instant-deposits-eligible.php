@@ -27,10 +27,20 @@ class WC_Payments_Notes_Instant_Deposits_Eligible {
 	public static function get_note() {
 		$note = new Note();
 
-		$note->set_title( __( 'You’re now eligible to receive Instant Deposits with WooPayments', 'woocommerce-payments' ) );
+		$note->set_title(
+			sprintf(
+				/* translators: %s: WooPayments */
+				__( 'You’re now eligible to receive Instant Deposits with %s', 'woocommerce-payments' ),
+				'WooPayments'
+			)
+		);
 		$note->set_content(
 			WC_Payments_Utils::esc_interpolated_html(
-				__( "Get immediate access to your funds when you need them – including nights, weekends, and holidays. With WooPayments' <a>Instant Deposits feature</a>, you're able to transfer your earnings to a debit card within minutes.", 'woocommerce-payments' ),
+				sprintf(
+					/* translators: %s: WooPayments */
+					__( "Get immediate access to your funds when you need them – including nights, weekends, and holidays. With %s' <a>Instant Deposits feature</a>, you're able to transfer your earnings to a debit card within minutes.", 'woocommerce-payments' ),
+					'WooPayments'
+				),
 				[ 'a' => '<a href="https://woocommerce.com/document/payments/instant-deposits/">' ]
 			)
 		);

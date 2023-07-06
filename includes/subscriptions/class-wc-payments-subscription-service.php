@@ -679,7 +679,11 @@ class WC_Payments_Subscription_Service {
 			return;
 		}
 
-		echo '<p><strong>' . esc_html__( 'WooPayments Subscription ID', 'woocommerce-payments' ) . ':</strong> ' . esc_html( $wcpay_subscription_id ) . '</p>';
+		echo '<p><strong>' . sprintf(
+			/* translators: %s: WooPayments */
+			esc_html__( '%s Subscription ID', 'woocommerce-payments' ),
+			'WooPayments'
+		) . ':</strong> ' . esc_html( $wcpay_subscription_id ) . '</p>';
 	}
 
 	/**

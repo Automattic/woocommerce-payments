@@ -62,7 +62,7 @@ class WC_Payments_Admin_Sections_Overwrite {
 	 * @return array
 	 */
 	public function add_checkout_sections( array $sections ): array {
-		$sections['woocommerce_payments'] = __( 'WooPayments', 'woocommerce-payments' );
+		$sections['woocommerce_payments'] = 'WooPayments';
 
 		// unsetting and setting again, so it appears last in the array.
 		unset( $sections[''] );

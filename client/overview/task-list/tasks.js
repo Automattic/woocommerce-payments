@@ -133,7 +133,7 @@ export const getTasks = ( {
 				key: 'update-business-details',
 				level: 1,
 				title: sprintf(
-					/* translators: %s - WooPayments */
+					/* translators: %s: WooPayments */
 					__( 'Update %s business details', 'woocommerce-payments' ),
 					'WooPayments'
 				),
@@ -168,12 +168,12 @@ export const getTasks = ( {
 				key: 'reconnect-wpcom-user',
 				level: 1,
 				title: sprintf(
-					/* translators: %s - WooPayments */
+					/* translators: %s: WooPayments */
 					__( 'Reconnect %s', 'woocommerce-payments' ),
 					'WooPayments'
 				),
 				additionalInfo: sprintf(
-					/* translators: %s - WooPayments */
+					/* translators: %s: WooPayments */
 					__(
 						'%s is missing a connected WordPress.com account. ' +
 							'Some functionality will be limited without a connected account.',
