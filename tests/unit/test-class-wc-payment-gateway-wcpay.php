@@ -80,6 +80,14 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private $mock_wcpay_account;
 
 	/**
+	 * WooPay_Utilities instance
+	 *
+	 * @var WooPay_Utilities|PHPUnit_Framework_MockObject_MockObject
+	 *
+	 */
+	private $mock_woopay_utilities;
+
+	/**
 	 * Session_Rate_Limiter instance.
 	 *
 	 * @var Session_Rate_Limiter|PHPUnit_Framework_MockObject_MockObject
@@ -92,13 +100,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	 * @var WC_Payments_Order_Service
 	 */
 	private $order_service;
-
-	/**
-	 * WooPay_Utilities instance.
-	 *
-	 * @var WooPay_Utilities
-	 */
-	private $woopay_utilities;
 
 	/**
 	 * WC_Payments_Checkout instance.
@@ -178,11 +179,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->mock_dpps
 		);
 
-		$this->woopay_utilities = new WooPay_Utilities();
+		$this->mock_woopay_utilities = $this->createMock( WooPay_Utilities::class );
 
 		$this->payments_checkout = new WC_Payments_Checkout(
 			$this->wcpay_gateway,
-			$this->woopay_utilities,
+			$this->mock_woopay_utilities,
 			$this->mock_wcpay_account,
 			$this->mock_customer_service
 		);
@@ -2141,26 +2142,18 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_woopay_enabled_returns_true() {
-		$mock_woopay_utilities = $this->createMock( WooPay_Utilities::class );
-		$mock_woopay_utilities
+		$this->mock_woopay_utilities
 			->method( 'should_enable_woopay_on_cart_or_checkout' )
 			->willReturn( true );
-		$mock_woopay_utilities
+		$this->mock_woopay_utilities
 			->method( 'should_enable_woopay' )
 			->willReturn( true );
 
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
 
-		$payments_checkout = new WC_Payments_Checkout(
-			$this->wcpay_gateway,
-			$mock_woopay_utilities,
-			$this->mock_wcpay_account,
-			$this->mock_customer_service
-		);
-
-		$this->assertTrue( $this->woopay_utilities->should_enable_woopay( $this->wcpay_gateway ) );
-		$this->assertTrue( $payments_checkout->get_payment_fields_js_config()['isWooPayEnabled'] );
+		$this->assertTrue( $this->mock_woopay_utilities->should_enable_woopay( $this->wcpay_gateway ) );
+		$this->assertTrue( $this->payments_checkout->get_payment_fields_js_config()['isWooPayEnabled'] );
 	}
 
 	public function test_should_use_stripe_platform_on_checkout_page_not_woopay_eligible() {
@@ -2185,7 +2178,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$payments_checkout = new WC_Payments_Checkout(
 			$mock_wcpay_gateway,
-			$this->woopay_utilities,
+			$this->mock_woopay_utilities,
 			$this->mock_wcpay_account,
 			$this->mock_customer_service
 		);
@@ -2330,7 +2323,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->payments_checkout = new WC_Payments_Checkout(
 			$this->wcpay_gateway,
-			$this->woopay_utilities,
+			$this->mock_woopay_utilities,
 			$this->mock_wcpay_account,
 			$this->mock_customer_service
 		);
