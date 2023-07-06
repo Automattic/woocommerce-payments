@@ -14,6 +14,7 @@ import {
 	getTerms,
 	getUpeSettings,
 } from 'wcpay/checkout/utils/upe';
+import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
 
 const gatewayUPEComponents = {};
 let fingerprint = null;
@@ -173,6 +174,49 @@ function appendSetupIntentToForm( form, confirmedIntent ) {
 	form.append( input );
 }
 
+function maybeEnableStripeLink( api, paymentMethodType ) {
+	if ( 'card' === paymentMethodType && 'link' in gatewayUPEComponents ) {
+		enableStripeLinkPaymentMethod( {
+			api: api,
+			elements: gatewayUPEComponents[ paymentMethodType ].elements,
+			emailId: 'billing_email',
+			complete_billing: () => {
+				return true;
+			},
+			complete_shipping: () => {
+				return (
+					document.getElementById(
+						'ship-to-different-address-checkbox'
+					) &&
+					document.getElementById(
+						'ship-to-different-address-checkbox'
+					).checked
+				);
+			},
+			shipping_fields: {
+				line1: 'shipping_address_1',
+				line2: 'shipping_address_2',
+				city: 'shipping_city',
+				state: 'shipping_state',
+				postal_code: 'shipping_postcode',
+				country: 'shipping_country',
+				first_name: 'shipping_first_name',
+				last_name: 'shipping_last_name',
+			},
+			billing_fields: {
+				line1: 'billing_address_1',
+				line2: 'billing_address_2',
+				city: 'billing_city',
+				state: 'billing_state',
+				postal_code: 'billing_postcode',
+				country: 'billing_country',
+				first_name: 'billing_first_name',
+				last_name: 'billing_last_name',
+			},
+		} );
+	}
+}
+
 /**
  * Mounts the existing Stripe Payment Element to the DOM element.
  * Creates the Stipe Payment Element instance if it doesn't exist and mounts it to the DOM element.
@@ -207,6 +251,7 @@ export async function mountStripePaymentElement( api, domElement ) {
 	const upeElement =
 		gatewayUPEComponents[ paymentMethodType ].upeElement ||
 		( await createStripePaymentElement( api, paymentMethodType ) );
+	maybeEnableStripeLink( api, paymentMethodType );
 	upeElement.mount( domElement );
 }
 

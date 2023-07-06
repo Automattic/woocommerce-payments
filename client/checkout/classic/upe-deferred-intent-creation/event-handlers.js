@@ -28,6 +28,10 @@ jQuery( function ( $ ) {
 			accountId: getUPEConfig( 'accountId' ),
 			forceNetworkSavedCards: getUPEConfig( 'forceNetworkSavedCards' ),
 			locale: getUPEConfig( 'locale' ),
+			isUPEEnabled: getUPEConfig( 'isUPEEnabled' ),
+			isStripeLinkEnabled:
+				getUPEConfig( 'paymentMethodsConfig' ).link !== undefined &&
+				getUPEConfig( 'paymentMethodsConfig' ).card !== undefined,
 		},
 		apiRequest
 	);
