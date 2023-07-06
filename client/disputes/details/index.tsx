@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useEffect } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { Card, CardBody, CardFooter, CardHeader } from '@wordpress/components';
 
@@ -49,6 +49,18 @@ const DisputeDetails = ( {
 
 	const mapping = reasons[ disputeObject.reason ] || {};
 	const testModeNotice = <TestModeNotice topic={ topics.disputeDetails } />;
+
+	// Hack to make "Payments > Disputes" the active selected menu item.
+	useEffect( () => {
+		const disputesMenuItem = document.querySelector(
+			`#toplevel_page_wc-admin-path--payments-overview a[href^="admin.php?page=wc-admin&path=${ encodeURIComponent(
+				'/payments/disputes'
+			) }"]`
+		);
+		if ( disputesMenuItem ) {
+			disputesMenuItem.parentElement?.classList.add( 'current' );
+		}
+	}, [] );
 
 	if ( ! isLoading && ! disputeIsAvailable ) {
 		return (
