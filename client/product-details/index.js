@@ -18,6 +18,7 @@ jQuery( function ( $ ) {
 			amount:
 				parseInt( productVariations.base_product.amount, 10 ) *
 				quantity,
+			currency: productVariations.base_product.currency,
 		} );
 	};
 
@@ -26,6 +27,7 @@ jQuery( function ( $ ) {
 		const price = productVariations[ productId ].amount;
 		bnplPaymentMessageElement.update( {
 			amount: parseInt( price, 10 ) * newQuantity,
+			currency: productVariations[ productId ].currency,
 		} );
 	} );
 
@@ -41,6 +43,7 @@ jQuery( function ( $ ) {
 			productId = variation.variation_id;
 			bnplPaymentMessageElement.update( {
 				amount: parseInt( variationPrice, 10 ) * quantity,
+				currency: productVariations[ variation.variation_id ].currency,
 			} );
 		} );
 
@@ -48,7 +51,7 @@ jQuery( function ( $ ) {
 		$( '.variations' ).on( 'change', function ( event ) {
 			if ( '' === event.target.value ) resetBnplPaymentMessage();
 		} );
-	}
 
-	$( '.reset_variations' ).on( 'click', resetBnplPaymentMessage );
+		$( '.reset_variations' ).on( 'click', resetBnplPaymentMessage );
+	}
 } );

@@ -48,14 +48,13 @@ class WC_Payments_Payment_Method_Messaging_Element {
 	 */
 	public function init(): string {
 		global $product;
-		$currency_code      = get_woocommerce_currency();
-		$store_country      = WC()->countries->get_base_country();
-		$billing_country    = WC()->customer->get_billing_country();
-		$base_product_price = WC_Payments_Utils::prepare_amount( $product->get_price(), $currency_code );
+		$currency_code   = get_woocommerce_currency();
+		$store_country   = WC()->countries->get_base_country();
+		$billing_country = WC()->customer->get_billing_country();
 
 		$product_variations = [
 			'base_product' => [
-				'amount'   => $base_product_price,
+				'amount'   => WC_Payments_Utils::prepare_amount( $product->get_price(), $currency_code ),
 				'currency' => $currency_code,
 			],
 		];
