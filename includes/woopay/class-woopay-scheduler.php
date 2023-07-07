@@ -19,7 +19,7 @@ class WooPay_Scheduler {
 
 	const INVALID_EXTENSIONS_FOUND_OPTION_NAME     = 'woopay_invalid_extension_found';
 	const INCOMPATIBLE_EXTENSIONS_LIST_OPTION_NAME = 'woopay_incompatible_extensions';
-	const HAS_ADAPTED_EXTENSIONS_OPTION_NAME       = 'woopay_has_adapted_extensions';
+	const ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME   = 'woopay_enabled_adapted_extensions';
 	const ADAPTED_EXTENSIONS_LIST_OPTION_NAME      = 'woopay_adapted_extensions';
 
 	/**
@@ -83,21 +83,42 @@ class WooPay_Scheduler {
 			delete_option( self::INVALID_EXTENSIONS_FOUND_OPTION_NAME );
 
 			update_option( self::ADAPTED_EXTENSIONS_LIST_OPTION_NAME, $adapted_extensions );
-			delete_option( self::HAS_ADAPTED_EXTENSIONS_OPTION_NAME );
+			delete_option( self::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME );
 
 			if ( ! empty( $active_plugins ) && is_array( $active_plugins ) ) {
 				if ( $this->contains_extensions_in_list( $active_plugins, $incompatible_extensions ) ) {
 					update_option( self::INVALID_EXTENSIONS_FOUND_OPTION_NAME, true );
 				}
-
-				if ( $this->contains_extensions_in_list( $active_plugins, $adapted_extensions ) ) {
-					update_option( self::HAS_ADAPTED_EXTENSIONS_OPTION_NAME, true );
-				}
 			}
 
+			$this->update_enabled_adapted_extensions( $adapted_extensions, $active_plugins );
 			$this->update_available_countries( $available_countries );
 		} catch ( \Exception $e ) {
 			Logger::error( 'Failed to decode WooPay incompatible extensions list. ' . $e );
+		}
+	}
+
+	/**
+	 * Update the enable adapted extensions list.
+	 *
+	 * @param array $adapted_extensions The adapted extensions list.
+	 * @param array $active_plugins     The active plugins.
+	 */
+	public function update_enabled_adapted_extensions( $adapted_extensions, $active_plugins ) {
+		try {
+			$enabled_adapted_extensions = [];
+
+			foreach ( $active_plugins as $plugin ) {
+				$formatted_plugin_name = $this->format_extension_name( $plugin );
+
+				if ( in_array( $formatted_plugin_name, $adapted_extensions, true ) ) {
+					$enabled_adapted_extensions[] = $formatted_plugin_name;
+				}
+			}
+
+			update_option( self::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, $enabled_adapted_extensions );
+		} catch ( \Exception $e ) {
+			Logger::error( 'Failed to decode WooPay available countries. ' . $e );
 		}
 	}
 
@@ -125,14 +146,13 @@ class WooPay_Scheduler {
 		$incompatible_extensions = get_option( self::INCOMPATIBLE_EXTENSIONS_LIST_OPTION_NAME, [] );
 		$adapted_extensions      = get_option( self::ADAPTED_EXTENSIONS_LIST_OPTION_NAME, [] );
 		$plugin                  = $this->format_extension_name( $plugin );
+		$active_plugins          = get_option( 'active_plugins', [] );
 
 		if ( $this->contains_extensions_in_list( [ $plugin ], $incompatible_extensions ) ) {
 			update_option( self::INVALID_EXTENSIONS_FOUND_OPTION_NAME, true );
 		}
 
-		if ( $this->contains_extensions_in_list( [ $plugin ], $adapted_extensions ) ) {
-			update_option( self::HAS_ADAPTED_EXTENSIONS_OPTION_NAME, true );
-		}
+		$this->update_enabled_adapted_extensions( $adapted_extensions, $active_plugins );
 	}
 
 	/**
@@ -153,9 +173,7 @@ class WooPay_Scheduler {
 			delete_option( self::INVALID_EXTENSIONS_FOUND_OPTION_NAME );
 		}
 
-		if ( ! $this->contains_extensions_in_list( $active_plugins, $adapted_extensions ) ) {
-			delete_option( self::HAS_ADAPTED_EXTENSIONS_OPTION_NAME );
-		}
+		$this->update_enabled_adapted_extensions( $adapted_extensions, $active_plugins );
 	}
 
 	/**

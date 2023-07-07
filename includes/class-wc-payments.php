@@ -42,6 +42,7 @@ use WCPay\WC_Payments_UPE_Checkout;
 use WCPay\WooPay\Service\Checkout_Service;
 use WCPay\Core\WC_Payments_Customer_Service_API;
 use WCPay\Blocks_Data_Extractor;
+use WCPay\WooPay\WooPay_Adapted_Extensions;
 use WCPay\WooPay\WooPay_Scheduler;
 
 /**
@@ -433,6 +434,7 @@ class WC_Payments {
 		include_once __DIR__ . '/woopay/class-woopay-order-status-sync.php';
 		include_once __DIR__ . '/woopay/class-woopay-store-api-session-handler.php';
 		include_once __DIR__ . '/woopay/class-woopay-scheduler.php';
+		include_once __DIR__ . '/woopay/class-woopay-adapted-extensions.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-link.php';
 		include_once __DIR__ . '/core/service/class-wc-payments-customer-service-api.php';
 		include_once __DIR__ . '/class-wc-payments-incentives-service.php';
@@ -1490,58 +1492,27 @@ class WC_Payments {
 			'user_session'    => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];
 
-		$has_adapted_extension_enabled = get_option( WooPay_Scheduler::HAS_ADAPTED_EXTENSIONS_OPTION_NAME, false );
+		$enabled_adapted_extensions = get_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, [] );
 
-		if ( $has_adapted_extension_enabled ) {
-			if ( is_user_logged_in() ) {
-				$user = wp_get_current_user();
-			} elseif ( ! empty( $email ) ) {
-				$user = get_user_by( 'email', $email );
+		if ( count( $enabled_adapted_extensions ) > 0 ) {
+			$user = wp_get_current_user();
+			// WooPay will only ask to verify email if it's a guest user or doesn't match logged in user.
+			$email_and_merchant_login_match = $email === $user->user_email;
 
-				if ( $user ) {
+			if ( ! empty( $email ) && ! $email_and_merchant_login_match ) {
+				// If the user is guest and has a merchant account, load data from there.
+				$user_by_email = get_user_by( 'email', $email );
+
+				if ( $user_by_email ) {
+					$user = $user_by_email;
+
 					WC()->session->set( 'woopay_verified_user_id', $user->ID );
 
 					$body['verified_user_store_api_token'] = $store_api_token->get_store_api_token_for_user_id( $user->ID );
 				}
 			}
 
-			$adapted_extensions = get_option( WooPay_Scheduler::ADAPTED_EXTENSIONS_LIST_OPTION_NAME, [] );
-
-			$body['adapted_extensions'] = [
-				'ask_email_verification' => null,
-				'extension_settings'     => [],
-			];
-
-			if ( in_array( 'woocommerce-points-and-rewards', $adapted_extensions, true ) && class_exists( 'WC_Points_Rewards_Manager' ) && ! empty( $user ) ) {
-				$available_points = WC_Points_Rewards_Manager::get_users_points( $user->ID );
-
-				// Only enable if the available points is greater than 0.
-				if ( $available_points > 0 ) {
-					$body['adapted_extensions']['ask_email_verification'] = 'points-and-rewards';
-
-					$minimum_discount = (float) get_option( 'wc_points_rewards_cart_min_discount', '' );
-					$labels           = explode( ':', get_option( 'wc_points_rewards_points_label', ':' ) );
-
-					$body['adapted_extensions']['extension_settings']['points-and-rewards'] = [
-						'points_available'           => WC_Points_Rewards_Manager::get_users_points( $user->ID ),
-						'minimum_points_amount'      => WC_Points_Rewards_Manager::calculate_points_for_discount( $minimum_discount ),
-						'partial_redemption_enabled' => 'yes' === get_option( 'wc_points_rewards_partial_redemption_enabled' ),
-						'points_label_plural'        => $labels[1],
-					];
-				}
-			}
-
-			if ( in_array( 'woocommerce-gift-cards', $adapted_extensions, true ) && function_exists( 'WC_GC' ) && ! empty( $user ) ) {
-				$account_gift_cards = WC_GC()->cart->get_account_gift_cards();
-
-				if ( count( $account_gift_cards ) > 0 ) {
-					$body['adapted_extensions']['ask_email_verification'] = 'woocommerce-gift-cards';
-				}
-
-				$body['adapted_extensions']['extension_settings']['woocommerce-gift-cards'] = [
-					'account_orders_link' => add_query_arg( [ 'wc_gc_show_pending_orders' => 'yes' ], wc_get_account_endpoint_url( 'orders' ) ),
-				];
-			}
+			$body['adapted_extensions'] = WooPay_Adapted_Extensions::get_adapted_extensions_data( $user, $email_and_merchant_login_match );
 		}
 
 		$args = [
