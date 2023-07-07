@@ -260,10 +260,10 @@ class WC_Payments_Dependency_Service {
 			case self::WOOADMIN_NOT_FOUND:
 				$error_message = WC_Payments_Utils::esc_interpolated_html(
 					sprintf(
-						/* translators: %1$s: WooCommerce Admin, %2$s: WooPayments */
-						__( '%1$s requires %2$s to be enabled. Please remove the <code>woocommerce_admin_disabled</code> filter to use %2$s.', 'woocommerce-payments' ),
-						'WooCommerce Admin',
-						'WooPayments'
+						/* translators: %1$s: WooPayments, %2$s: WooCommerce Admin */
+						__( '%1$s requires %2$s to be enabled. Please remove the <code>woocommerce_admin_disabled</code> filter to use %1$s.', 'woocommerce-payments' ),
+						'WooPayments',
+						'WooCommerce Admin'
 					),
 					[ 'code' => '<code>' ]
 				);
