@@ -58,7 +58,6 @@ class WC_Payments_Payment_Method_Messaging_Element {
 				'currency' => $currency_code,
 			],
 		];
-
 		foreach ( $product->get_children() as $variation_id ) {
 			$variation = wc_get_product( $variation_id );
 			if ( $variation ) {
