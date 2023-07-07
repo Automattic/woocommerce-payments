@@ -2,6 +2,13 @@
 	.woocommerce-table__header.is-center-aligned {
 		text-align: center;
 	}
+	.due-soon {
+		color: $alert-red;
+		font-weight: 700;
+		.gridicons-notice-outline {
+			fill: $alert-red;
+		}
+	}
 
 	.woocommerce-pagination {
 		align-items: flex-end;

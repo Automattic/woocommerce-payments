@@ -18,6 +18,7 @@ import {
 import classNames from 'classnames';
 import apiFetch from '@wordpress/api-fetch';
 import { useDispatch } from '@wordpress/data';
+import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 
 /**
  * Internal dependencies.
@@ -35,7 +36,7 @@ import { formatExplicitCurrency } from 'utils/currency';
 import DisputesFilters from './filters';
 import DownloadButton from 'components/download-button';
 import disputeStatusMapping from 'components/dispute-status-chip/mappings';
-import { DisputesTableHeader } from 'wcpay/types/disputes';
+import { CachedDispute, DisputesTableHeader } from 'wcpay/types/disputes';
 import { getDisputesCSV } from 'wcpay/data/disputes/resolvers';
 import { applyThousandSeparator } from 'wcpay/utils';
 
@@ -124,13 +125,48 @@ const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 	},
 	{
 		key: 'dueBy',
-		label: __( 'Respond by', 'woocommerce-payments' ),
-		screenReaderLabel: __( 'Respond by', 'woocommerce-payments' ),
+		label: __( 'Response by', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Response by', 'woocommerce-payments' ),
 		required: true,
 		isLeftAligned: true,
 		isSortable: true,
 	},
 ];
+
+/**
+ * Returns true if the dispute is due within the specified number of days.
+ * Returns false if the dispute is not due within the specified number of days
+ * or if the due_by value is an empty string.
+ *
+ * @param {CachedDispute} dispute - The dispute to check.
+ *
+ * @return {boolean} True if the dispute is due within the specified number of days.
+ */
+const dueSoon = ( dispute: CachedDispute ) => {
+	if ( dispute.due_by === '' ) {
+		return '';
+	}
+	// Get current time in UTC.
+	const now = moment().utc();
+	const dueBy = moment.utc( dispute.due_by );
+	if ( dueBy.diff( now, 'hours' ) > 0 && dueBy.diff( now, 'hours' ) <= 72 ) {
+		return (
+			<span className={ 'due-soon' }>
+				{ _n(
+					'1 day left',
+					'%d days left',
+					dueBy.diff( now, 'days' ),
+					'woocommerce-payments'
+				) }
+				<NoticeOutlineIcon />
+			</span>
+		);
+	}
+	return dateI18n(
+		'M j, Y / g:iA',
+		moment.utc( dispute.due_by ).local().toISOString()
+	);
+};
 
 export const DisputesList = (): JSX.Element => {
 	const [ isDownloading, setIsDownloading ] = useState( false );
@@ -209,12 +245,7 @@ export const DisputesList = (): JSX.Element => {
 			},
 			dueBy: {
 				value: dispute.due_by,
-				display: clickable(
-					dateI18n(
-						'M j, Y / g:iA',
-						moment.utc( dispute.due_by ).local().toISOString()
-					)
-				),
+				display: clickable( dueSoon( dispute ) ),
 			},
 			order: {
 				value: dispute.order_number ?? '',
