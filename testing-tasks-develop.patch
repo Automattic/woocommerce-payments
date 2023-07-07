@@ -1,0 +1,90 @@
+diff --git a/client/overview/task-list/tasks.js b/client/overview/task-list/tasks.js
+index 3a68fbd0a..b42daee69 100644
+--- a/client/overview/task-list/tasks.js
++++ b/client/overview/task-list/tasks.js
+@@ -127,41 +127,39 @@ export const getTasks = ( {
+ 	}
+ 
+ 	return [
+-		isAccountOverviewTasksEnabled &&
+-			showUpdateDetailsTask &&
+-			! isPoEnabled && {
+-				key: 'update-business-details',
+-				level: 1,
+-				title: __(
+-					'Update WooCommerce Payments business details',
+-					'woocommerce-payments'
+-				),
+-				content: accountDetailsTaskDescription,
+-				completed: 'complete' === status,
+-				onClick:
+-					'complete' === status
+-						? undefined
+-						: () => {
+-								if ( hasMultipleErrors ) {
+-									renderModal(
+-										errorMessages,
+-										status,
+-										accountLink,
+-										currentDeadline
+-									);
+-								} else {
+-									window.open( accountLink, '_blank' );
+-								}
+-						  },
+-				actionLabel: hasMultipleErrors
+-					? __( 'More details', 'woocommerce-payments' )
+-					: __( 'Update', 'woocommerce-payments' ),
+-				visible: true,
+-				type: 'extension',
+-				expandable: true,
+-				expanded: true,
+-				showActionButton: true,
+-			},
++		isAccountOverviewTasksEnabled && {
++			key: 'update-business-details',
++			level: 1,
++			title: __(
++				'Update WooCommerce Payments business details',
++				'woocommerce-payments'
++			),
++			content: accountDetailsTaskDescription,
++			completed: 'complete' === status,
++			onClick:
++				'complete' === status
++					? undefined
++					: () => {
++							if ( hasMultipleErrors ) {
++								renderModal(
++									errorMessages,
++									status,
++									accountLink,
++									currentDeadline
++								);
++							} else {
++								window.open( accountLink, '_blank' );
++							}
++					  },
++			actionLabel: hasMultipleErrors
++				? __( 'More details', 'woocommerce-payments' )
++				: __( 'Update', 'woocommerce-payments' ),
++			visible: true,
++			type: 'extension',
++			expandable: true,
++			expanded: true,
++			showActionButton: true,
++		},
+ 		isAccountOverviewTasksEnabled &&
+ 			wpcomReconnectUrl && {
+ 				key: 'reconnect-wpcom-user',
+@@ -184,8 +182,8 @@ export const getTasks = ( {
+ 				expanded: true,
+ 				showActionButton: true,
+ 			},
+-		isDisputeTaskVisible && getDisputeResolutionTask( activeDisputes ),
+-		isPoEnabled && getVerifyBankAccountTask(),
++		getDisputeResolutionTask( activeDisputes ),
++		getVerifyBankAccountTask(),
+ 	].filter( Boolean );
+ };
+ 
