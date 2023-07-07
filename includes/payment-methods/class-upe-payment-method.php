@@ -10,6 +10,7 @@
 namespace WCPay\Payment_Methods;
 
 use WC_Payments_Utils;
+use WCPay\MultiCurrency\MultiCurrency;
 use WP_User;
 use WC_Payments_Token_Service;
 use WC_Payment_Token_CC;
@@ -59,6 +60,14 @@ abstract class UPE_Payment_Method {
 	 * @var string[]
 	 */
 	protected $currencies;
+
+	/**
+	 * Should payment method be restricted to only domestic payments.
+	 * E.g. only to Stripe's connected account currency.
+	 *
+	 * @var boolean
+	 */
+	protected $accept_only_domestic_currency = false;
 
 	/**
 	 * Represent payment total limitations for the payment method (per-currency).
@@ -167,7 +176,16 @@ abstract class UPE_Payment_Method {
 	 * @return bool
 	 */
 	public function is_currency_valid( $order_id = null ) {
-		return empty( $this->currencies ) || in_array( $this->get_currency( $order_id ), $this->currencies, true );
+		$current_store_currency = $this->get_currency( $order_id );
+
+		if ( $this->accept_only_domestic_currency ) {
+			$default_currency = \WC_Payments::get_account_service()->get_account_default_currency();
+			if ( strtolower( $current_store_currency ) !== $default_currency ) {
+				return false;
+			}
+		}
+
+		return empty( $this->currencies ) || in_array( $current_store_currency, $this->currencies, true );
 	}
 
 	/**
