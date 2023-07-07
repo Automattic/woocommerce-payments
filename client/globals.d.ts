@@ -72,6 +72,9 @@ declare global {
 		fraudProtection: {
 			isWelcomeTourDismissed?: boolean;
 		};
+		progressiveOnboarding: {
+			isProgressiveOnboardingFlowEnabled: boolean;
+		};
 		accountDefaultCurrency: string;
 		isFRTReviewFeatureActive: boolean;
 		frtDiscoverBannerSettings: string;

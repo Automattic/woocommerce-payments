@@ -330,7 +330,7 @@ class WC_Payments_Admin {
 		}
 
 		if ( ! $should_render_full_menu ) {
-			if ( WC_Payments_Utils::is_in_progressive_onboarding_treatment_mode() || WC_Payments_Features::is_progressive_onboarding_enabled() ) {
+			if ( WC_Payments_Utils::should_use_progressive_onboarding_flow() ) {
 				wc_admin_register_page(
 					[
 						'id'         => 'wc-payments-onboarding',
@@ -778,6 +778,9 @@ class WC_Payments_Admin {
 			'isFRTReviewFeatureActive'    => WC_Payments_Features::is_frt_review_feature_active(),
 			'fraudProtection'             => [
 				'isWelcomeTourDismissed' => WC_Payments_Features::is_fraud_protection_welcome_tour_dismissed(),
+			],
+			'progressiveOnboarding'       => [
+				'isProgressiveOnboardingFlowEnabled' => WC_Payments_Utils::should_use_progressive_onboarding_flow(),
 			],
 			'accountDefaultCurrency'      => $this->account->get_account_default_currency(),
 			'frtDiscoverBannerSettings'   => get_option( 'wcpay_frt_discover_banner_settings', '' ),
