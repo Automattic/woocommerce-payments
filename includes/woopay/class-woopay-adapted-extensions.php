@@ -13,6 +13,7 @@ namespace WCPay\WooPay;
 class WooPay_Adapted_Extensions {
 	const POINTS_AND_REWARDS_PLUGIN = 'woocommerce-points-and-rewards';
 	const POINTS_AND_REWARDS_API    = 'points-and-rewards';
+	const GIFT_CARDS                = 'woocommerce-gift-cards';
 
 	/**
 	 * Get WooPay adapted extensions settings and extra data needed on WooPay.
@@ -56,6 +57,24 @@ class WooPay_Adapted_Extensions {
 			}
 
 			$extension_settings[ self::POINTS_AND_REWARDS_API ] = $points_and_rewards_script_data;
+		}
+
+		// Gift Cards.
+		if ( in_array( self::GIFT_CARDS, $enabled_adapted_extensions, true ) &&
+			function_exists( 'WC_GC' ) &&
+			class_exists( 'WC_GC_Checkout_Blocks_Integration' ) &&
+			method_exists( 'WC_GC_Checkout_Blocks_Integration', 'get_script_data' )
+		) {
+			$gift_cards_integration = new \WC_GC_Checkout_Blocks_Integration();
+			$gift_cards_script_data = $gift_cards_integration->get_script_data();
+
+			$account_gift_cards = WC_GC()->cart->get_account_gift_cards();
+
+			if ( ! $email_and_merchant_login_match && count( $account_gift_cards ) > 0 ) {
+				$ask_email_verification = self::GIFT_CARDS;
+			}
+
+			$extension_settings[ self::GIFT_CARDS ] = $gift_cards_script_data;
 		}
 
 		return [
