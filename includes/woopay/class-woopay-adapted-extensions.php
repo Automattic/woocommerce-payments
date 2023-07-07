@@ -11,7 +11,8 @@ namespace WCPay\WooPay;
  * WooPay
  */
 class WooPay_Adapted_Extensions {
-	const POINTS_AND_REWARDS = 'woocommerce-points-and-rewards';
+	const POINTS_AND_REWARDS_PLUGIN = 'woocommerce-points-and-rewards';
+	const POINTS_AND_REWARDS_API    = 'points-and-rewards';
 
 	/**
 	 * Get WooPay adapted extensions settings and extra data needed on WooPay.
@@ -25,7 +26,7 @@ class WooPay_Adapted_Extensions {
 		$extension_settings         = [];
 
 		// Points and Rewards.
-		if ( in_array( self::POINTS_AND_REWARDS, $enabled_adapted_extensions, true ) &&
+		if ( in_array( self::POINTS_AND_REWARDS_PLUGIN, $enabled_adapted_extensions, true ) &&
 			class_exists( 'WC_Points_Rewards_Manager' ) &&
 			class_exists( 'WC_Points_Rewards_Integration' ) &&
 			method_exists( 'WC_Points_Rewards_Manager', 'get_users_points' ) &&
@@ -34,7 +35,6 @@ class WooPay_Adapted_Extensions {
 		) {
 			$points_and_rewards_integration = new \WC_Points_Rewards_Integration();
 			$points_and_rewards_script_data = $points_and_rewards_integration->get_script_data();
-			$points_and_rewards_name        = $points_and_rewards_integration->get_name();
 
 			list( $points, $monetary_value ) = explode( ':', get_option( 'wc_points_rewards_redeem_points_ratio', '' ) );
 
@@ -51,12 +51,12 @@ class WooPay_Adapted_Extensions {
 				$available_points_for_user = \WC_Points_Rewards_Manager::get_users_points( $user->ID );
 
 				if ( $available_points_for_user > 0 && $available_points_for_user > $points_and_rewards_script_data['minimum_points_amount'] ) {
-					$ask_email_verification                             = $points_and_rewards_name;
+					$ask_email_verification                             = self::POINTS_AND_REWARDS_API;
 					$points_and_rewards_script_data['points_available'] = $available_points_for_user;
 				}
 			}
 
-			$extension_settings[ $points_and_rewards_name ] = $points_and_rewards_script_data;
+			$extension_settings[ self::POINTS_AND_REWARDS_API ] = $points_and_rewards_script_data;
 		}
 
 		return [
