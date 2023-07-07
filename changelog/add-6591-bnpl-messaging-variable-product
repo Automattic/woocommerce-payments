@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Make Affirm and Afterpay Stripe messaging show up correctly for variable products, especially when we change variations.
