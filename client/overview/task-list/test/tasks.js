@@ -114,6 +114,15 @@ describe( 'getTasks()', () => {
 		Date.now = jest.fn( () => new Date( '2023-02-01T08:00:00.000Z' ) );
 
 		global.wcpaySettings = {
+			accountStatus: {
+				status: 'restricted_soon',
+				currentDeadline: 1620857083,
+				pastDue: false,
+				accountLink: 'http://example.com',
+				progressiveOnboarding: {
+					isEnabled: false,
+				},
+			},
 			zeroDecimalCurrencies: [],
 			connect: {
 				country: 'US',
@@ -138,15 +147,6 @@ describe( 'getTasks()', () => {
 	} );
 	it( 'should include business details when flag is set', () => {
 		const actual = getTasks( {
-			accountStatus: {
-				status: 'restricted_soon',
-				currentDeadline: 1620857083,
-				pastDue: false,
-				accountLink: 'http://example.com',
-				progressiveOnboarding: {
-					isEnabled: false,
-				},
-			},
 			showUpdateDetailsTask: true,
 		} );
 
@@ -161,16 +161,10 @@ describe( 'getTasks()', () => {
 	} );
 
 	it( 'should omit business details when flag is not set', () => {
+		global.wcpaySettings.accountStatus.status = 'restricted';
+		global.wcpaySettings.accountStatus.pastDue = true;
+
 		const actual = getTasks( {
-			accountStatus: {
-				status: 'restricted',
-				currentDeadline: 1620857083,
-				pastDue: true,
-				accountLink: 'http://example.com',
-				progressiveOnboarding: {
-					isEnabled: false,
-				},
-			},
 			showUpdateDetailsTask: false,
 		} );
 
@@ -184,16 +178,10 @@ describe( 'getTasks()', () => {
 	} );
 
 	it( 'handles when account is complete', () => {
+		global.wcpaySettings.accountStatus.status = 'complete';
+		global.wcpaySettings.accountStatus.currentDeadline = 0;
+
 		const actual = getTasks( {
-			accountStatus: {
-				status: 'complete',
-				currentDeadline: 0,
-				pastDue: false,
-				accountLink: 'http://example.com',
-				progressiveOnboarding: {
-					isEnabled: false,
-				},
-			},
 			showUpdateDetailsTask: true,
 		} );
 
@@ -208,13 +196,9 @@ describe( 'getTasks()', () => {
 	} );
 
 	it( 'adds WPCOM user reconnect task when the url is specified', () => {
+		global.wcpaySettings.accountStatus.status = 'complete';
+
 		const actual = getTasks( {
-			accountStatus: {
-				status: 'complete',
-				progressiveOnboarding: {
-					isEnabled: false,
-				},
-			},
 			wpcomReconnectUrl: 'http://example.com',
 		} );
 
@@ -229,13 +213,9 @@ describe( 'getTasks()', () => {
 	} );
 
 	it( 'should omit the WPCOM user reconnect task when the url is not specified', () => {
+		global.wcpaySettings.accountStatus.status = 'complete';
+
 		const actual = getTasks( {
-			accountStatus: {
-				status: 'complete',
-				progressiveOnboarding: {
-					isEnabled: false,
-				},
-			},
 			wpcomReconnectUrl: null,
 		} );
 
@@ -248,15 +228,10 @@ describe( 'getTasks()', () => {
 		);
 	} );
 
-	it( 'returns the expected keys when the account overview flag is enabled', () => {
+	it( 'returns the expected keys when account is not complete and needs reconnection', () => {
 		const tasks = getTasks( {
 			showUpdateDetailsTask: true,
 			wpcomReconnectUrl: 'http://example.com',
-			accountStatus: {
-				progressiveOnboarding: {
-					isEnabled: false,
-				},
-			},
 		} );
 
 		expect( tasks ).toEqual(
@@ -268,12 +243,13 @@ describe( 'getTasks()', () => {
 	} );
 
 	it( 'returns the expected keys when the account is not onboarded', () => {
+		global.wcSettings.accountStatus = {
+			error: true,
+		};
+
 		const tasks = getTasks( {
 			showUpdateDetailsTask: true,
 			wpcomReconnectUrl: 'http://example.com',
-			accountStatus: {
-				error: true,
-			},
 		} );
 
 		expect( tasks ).toEqual(
@@ -283,37 +259,9 @@ describe( 'getTasks()', () => {
 		);
 	} );
 
-	it( 'returns the expected keys when the account overview flag is disabled', () => {
-		const tasks = getTasks( {
-			showUpdateDetailsTask: true,
-			wpcomReconnectUrl: 'http://example.com',
-			accountStatus: {
-				progressiveOnboarding: {
-					isEnabled: false,
-				},
-			},
-		} );
-
-		expect( tasks ).toEqual(
-			expect.not.arrayContaining( [
-				expect.objectContaining( { key: 'update-business-details' } ),
-				expect.objectContaining( { key: 'reconnect-wpcom-user' } ),
-			] )
-		);
-	} );
-
 	it( 'should not include the dispute resolution task if no active disputes', () => {
 		const activeDisputes = [];
 		const actual = getTasks( {
-			accountStatus: {
-				status: 'restricted_soon',
-				currentDeadline: 1620857083,
-				pastDue: false,
-				accountLink: 'http://example.com',
-				progressiveOnboarding: {
-					isEnabled: false,
-				},
-			},
 			activeDisputes,
 		} );
 
@@ -324,15 +272,6 @@ describe( 'getTasks()', () => {
 		// Set Date.now to - 7 days to reduce urgency of disputes.
 		Date.now = jest.fn( () => new Date( '2023-01-24T08:00:00.000Z' ) );
 		const actual = getTasks( {
-			accountStatus: {
-				status: 'restricted_soon',
-				currentDeadline: 1620857083,
-				pastDue: false,
-				accountLink: 'http://example.com',
-				progressiveOnboarding: {
-					isEnabled: false,
-				},
-			},
 			activeDisputes: mockActiveDisputes,
 		} );
 
@@ -341,15 +280,6 @@ describe( 'getTasks()', () => {
 
 	it( 'should include the dispute resolution task with 1 urgent dispute', () => {
 		const actual = getTasks( {
-			accountStatus: {
-				status: 'restricted_soon',
-				currentDeadline: 1620857083,
-				pastDue: false,
-				accountLink: 'http://example.com',
-				progressiveOnboarding: {
-					isEnabled: false,
-				},
-			},
 			activeDisputes: [ mockActiveDisputes[ 0 ] ],
 		} );
 
@@ -371,15 +301,6 @@ describe( 'getTasks()', () => {
 		// Set Date.now to - 5 days to reduce urgency of dispute.
 		Date.now = jest.fn( () => new Date( '2023-01-27T08:00:00.000Z' ) );
 		const actual = getTasks( {
-			accountStatus: {
-				status: 'restricted_soon',
-				currentDeadline: 1620857083,
-				pastDue: false,
-				accountLink: 'http://example.com',
-				progressiveOnboarding: {
-					isEnabled: false,
-				},
-			},
 			activeDisputes: [ mockActiveDisputes[ 0 ] ],
 		} );
 
@@ -399,15 +320,6 @@ describe( 'getTasks()', () => {
 
 	it( 'should include the dispute resolution task with multiple disputes and 1 urgent dispute', () => {
 		const actual = getTasks( {
-			accountStatus: {
-				status: 'restricted_soon',
-				currentDeadline: 1620857083,
-				pastDue: false,
-				accountLink: 'http://example.com',
-				progressiveOnboarding: {
-					isEnabled: false,
-				},
-			},
 			activeDisputes: mockActiveDisputes,
 		} );
 
@@ -430,15 +342,6 @@ describe( 'getTasks()', () => {
 		// Set Date.now to - 5 days to reduce urgency of disputes.
 		Date.now = jest.fn( () => new Date( '2023-01-27T08:00:00.000Z' ) );
 		const actual = getTasks( {
-			accountStatus: {
-				status: 'restricted_soon',
-				currentDeadline: 1620857083,
-				pastDue: false,
-				accountLink: 'http://example.com',
-				progressiveOnboarding: {
-					isEnabled: false,
-				},
-			},
 			activeDisputes: mockActiveDisputes,
 		} );
 
@@ -470,17 +373,7 @@ describe( 'getTasks()', () => {
 				created: '2022-01-31',
 			},
 		};
-		const actual = getTasks( {
-			accountStatus: {
-				status: 'restricted_soon',
-				currentDeadline: 1620857083,
-				pastDue: false,
-				accountLink: 'http://example.com',
-				progressiveOnboarding: {
-					isEnabled: true,
-				},
-			},
-		} );
+		const actual = getTasks( {} );
 
 		expect( actual ).toEqual(
 			expect.arrayContaining( [
@@ -502,6 +395,15 @@ describe( 'taskSort()', () => {
 		Date.now = jest.fn( () => new Date( '2023-02-01T12:33:37.000Z' ) );
 
 		global.wcpaySettings = {
+			accountStatus: {
+				status: 'restricted_soon',
+				currentDeadline: 1620857083,
+				pastDue: false,
+				accountLink: 'http://example.com',
+				progressiveOnboarding: {
+					isEnabled: false,
+				},
+			},
 			zeroDecimalCurrencies: [],
 			connect: {
 				country: 'US',
@@ -525,15 +427,6 @@ describe( 'taskSort()', () => {
 	} );
 	it( 'should sort the tasks without po', () => {
 		const unsortedTasks = getTasks( {
-			accountStatus: {
-				status: 'restricted_soon',
-				currentDeadline: 1620857083,
-				pastDue: false,
-				accountLink: 'http://example.com',
-				progressiveOnboarding: {
-					isEnabled: false,
-				},
-			},
 			activeDisputes: mockActiveDisputes,
 		} );
 		unsortedTasks.unshift( {
@@ -557,6 +450,7 @@ describe( 'taskSort()', () => {
 			} )
 		);
 	} );
+
 	it( 'should sort the tasks with po', () => {
 		global.wcpaySettings = {
 			accountStatus: {
@@ -570,17 +464,7 @@ describe( 'taskSort()', () => {
 				created: '2022-01-31',
 			},
 		};
-		const unsortedTasks = getTasks( {
-			accountStatus: {
-				status: 'restricted_soon',
-				currentDeadline: 1620857083,
-				pastDue: false,
-				accountLink: 'http://example.com',
-				progressiveOnboarding: {
-					isEnabled: true,
-				},
-			},
-		} );
+		const unsortedTasks = getTasks( {} );
 		unsortedTasks.unshift( {
 			key: 'test-element',
 			completed: true,

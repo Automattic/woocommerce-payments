@@ -3,16 +3,34 @@
 /**
  * Internal dependencies
  */
-import { getVerifyBankAccountTask } from '../tasks/po-task';
+import { getVerifyBankAccountTask } from '../po-task';
+
+// Type definitions allowing us to mock the global wcpaySettings object.
+declare const global: {
+	wcpaySettings: {
+		accountStatus: {
+			status: string;
+			progressiveOnboarding: {
+				isEnabled: boolean;
+				isComplete: boolean;
+				tpv: number;
+				firstTransactionDate?: string | null;
+			};
+			created?: string;
+		};
+	};
+};
 
 describe( 'getVerifyBankAccountTask()', () => {
 	beforeEach( () => {
 		// mock Date.now that moment library uses to get current date for testing purposes
-		Date.now = jest.fn( () => new Date( '2023-02-01T12:33:37.000Z' ) );
+		Date.now = jest.fn( () =>
+			new Date( '2023-02-01T12:33:37.000Z' ).getTime()
+		);
 	} );
 	afterEach( () => {
 		// roll it back
-		Date.now = () => new Date();
+		Date.now = () => new Date().getTime();
 	} );
 	it( 'should return null when po is not enabled', () => {
 		global.wcpaySettings = {
@@ -77,14 +95,14 @@ describe( 'getVerifyBankAccountTask()', () => {
 		expect( getVerifyBankAccountTask() ).toEqual(
 			expect.objectContaining( {
 				key: 'verify-bank-details-po',
-				level: 2,
 				title: 'Please add your bank details to keep selling',
+				level: 2,
 				completed: false,
-				actionLabel: 'Set up deposits',
-				visible: true,
-				expandable: true,
 				expanded: true,
+				isDismissable: false,
+				actionLabel: 'Set up deposits',
 				showActionButton: true,
+				visible: true,
 				time: '2 minutes',
 			} )
 		);
@@ -106,15 +124,15 @@ describe( 'getVerifyBankAccountTask()', () => {
 		expect( getVerifyBankAccountTask() ).toEqual(
 			expect.objectContaining( {
 				key: 'verify-bank-details-po',
-				level: 1,
 				title:
 					'Payments paused! Verify your bank details to reactivate.',
+				level: 1,
 				completed: false,
+				expanded: true,
+				isDismissable: false,
+				showActionButton: true,
 				actionLabel: 'Verify bank details',
 				visible: true,
-				expandable: true,
-				expanded: true,
-				showActionButton: true,
 				time: '2 minutes',
 			} )
 		);
@@ -136,14 +154,13 @@ describe( 'getVerifyBankAccountTask()', () => {
 		expect( getVerifyBankAccountTask() ).toEqual(
 			expect.objectContaining( {
 				key: 'verify-bank-details-po',
-				level: 3,
 				title: 'Verify your bank account to start receiving deposits',
+				level: 3,
 				completed: false,
-				actionLabel: 'Start receiving deposits',
-				visible: true,
-				expandable: true,
 				expanded: true,
 				showActionButton: true,
+				actionLabel: 'Start receiving deposits',
+				visible: true,
 				time: '2 minutes',
 			} )
 		);
@@ -165,14 +182,14 @@ describe( 'getVerifyBankAccountTask()', () => {
 		expect( getVerifyBankAccountTask() ).toEqual(
 			expect.objectContaining( {
 				key: 'verify-bank-details-po',
-				level: 2,
 				title: 'Verify your bank account to start receiving deposits',
+				level: 2,
 				completed: false,
-				actionLabel: 'Start receiving deposits',
 				visible: true,
-				expandable: true,
 				expanded: true,
+				isDismissable: false,
 				showActionButton: true,
+				actionLabel: 'Start receiving deposits',
 				time: '2 minutes',
 			} )
 		);
@@ -194,14 +211,14 @@ describe( 'getVerifyBankAccountTask()', () => {
 		expect( getVerifyBankAccountTask() ).toEqual(
 			expect.objectContaining( {
 				key: 'verify-bank-details-po',
-				level: 2,
 				title: 'Verify your bank account to start receiving deposits',
+				level: 2,
 				completed: false,
-				actionLabel: 'Start receiving deposits',
-				visible: true,
-				expandable: true,
 				expanded: true,
+				isDismissable: false,
+				actionLabel: 'Start receiving deposits',
 				showActionButton: true,
+				visible: true,
 				time: '2 minutes',
 			} )
 		);
@@ -223,14 +240,14 @@ describe( 'getVerifyBankAccountTask()', () => {
 		expect( getVerifyBankAccountTask() ).toEqual(
 			expect.objectContaining( {
 				key: 'verify-bank-details-po',
-				level: 1,
 				title: 'Verify your bank details',
+				level: 1,
 				completed: false,
+				expanded: true,
+				isDismissable: false,
+				showActionButton: true,
 				actionLabel: 'Set up deposits',
 				visible: true,
-				expandable: true,
-				expanded: true,
-				showActionButton: true,
 				time: '2 minutes',
 			} )
 		);
@@ -252,14 +269,14 @@ describe( 'getVerifyBankAccountTask()', () => {
 		expect( getVerifyBankAccountTask() ).toEqual(
 			expect.objectContaining( {
 				key: 'verify-bank-details-po',
-				level: 1,
 				title: 'Verify your bank details',
+				level: 1,
 				completed: false,
+				expanded: true,
+				isDismissable: false,
+				showActionButton: true,
 				actionLabel: 'Set up deposits',
 				visible: true,
-				expandable: true,
-				expanded: true,
-				showActionButton: true,
 				time: '2 minutes',
 			} )
 		);
@@ -281,15 +298,15 @@ describe( 'getVerifyBankAccountTask()', () => {
 		expect( getVerifyBankAccountTask() ).toEqual(
 			expect.objectContaining( {
 				key: 'verify-bank-details-po',
-				level: 1,
 				title:
 					'Payments paused! Verify your bank details to reactivate.',
+				level: 1,
 				completed: false,
+				expanded: true,
+				isDismissable: false,
+				showActionButton: true,
 				actionLabel: 'Verify bank details',
 				visible: true,
-				expandable: true,
-				expanded: true,
-				showActionButton: true,
 				time: '2 minutes',
 			} )
 		);
@@ -311,15 +328,15 @@ describe( 'getVerifyBankAccountTask()', () => {
 		expect( getVerifyBankAccountTask() ).toEqual(
 			expect.objectContaining( {
 				key: 'verify-bank-details-po',
-				level: 1,
 				title:
 					'Payments paused! Verify your bank details to reactivate.',
+				level: 1,
 				completed: false,
+				expanded: true,
+				isDismissable: false,
+				showActionButton: true,
 				actionLabel: 'Verify bank details',
 				visible: true,
-				expandable: true,
-				expanded: true,
-				showActionButton: true,
 				time: '2 minutes',
 			} )
 		);
