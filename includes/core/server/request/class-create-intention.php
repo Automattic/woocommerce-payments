@@ -164,6 +164,17 @@ class Create_Intention extends Request {
 	}
 
 	/**
+	 * Mandate data setter.
+	 *
+	 * @param array $mandate_data Array containing details about mandate to create.
+	 *
+	 * @return void
+	 */
+	public function set_mandate_data( array $mandate_data ) {
+		$this->set_param( 'mandate_data', $mandate_data );
+	}
+
+	/**
 	 * Shipping data setter.
 	 *
 	 * @param array $shipping Shipping data.

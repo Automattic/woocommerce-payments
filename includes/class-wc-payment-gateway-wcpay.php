@@ -1118,6 +1118,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
 
 				// Afterpay expects the shipping address to be sent in the request. This is not required for other payment methods.
+				// TODO: Check if this ever works...
 				if ( Payment_Method::AFTERPAY === $payment_information->get_payment_method() ) {
 					$request->set_shipping( $this->get_shipping_data_from_order( $order ) );
 				}
@@ -1149,6 +1150,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$mandate = $this->get_mandate_param_for_renewal_order( $order );
 					if ( $mandate ) {
 						$request->set_mandate( $mandate );
+					}
+				}
+
+				// For Stripe Link with deferred intent UPE, we must create mandate to acknowledge that terms have been shown to customer.
+				if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+					if ( Payment_Method::CARD === $this->get_selected_stripe_payment_type_id() && in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true ) ) {
+						$mandate_data = [
+							'customer_acceptance' => [
+								'type'   => 'online',
+								'online' => [
+									'ip_address' => WC_Geolocation::get_ip_address(),
+									'user_agent' => 'WooCommerce Payments/' . WCPAY_VERSION_NUMBER . '; ' . get_bloginfo( 'url' ),
+								],
+							],
+						];
+						$request->set_mandate_data( $mandate_data );
 					}
 				}
 
