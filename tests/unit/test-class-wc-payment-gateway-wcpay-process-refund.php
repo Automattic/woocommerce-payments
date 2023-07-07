@@ -11,6 +11,7 @@ use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Core\Server\Request\List_Charge_Refunds;
 use WCPay\Core\Server\Request\Refund_Charge;
 use WCPay\Core\Server\Response;
+use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Session_Rate_Limiter;
 
@@ -87,6 +88,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$this->mock_action_scheduler_service = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
 		$this->mock_rate_limiter             = $this->createMock( Session_Rate_Limiter::class );
 		$this->mock_order_service            = $this->createMock( WC_Payments_Order_Service::class );
+		$mock_dpps                           = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 
 		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
@@ -95,7 +97,8 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 			$this->mock_token_service,
 			$this->mock_action_scheduler_service,
 			$this->mock_rate_limiter,
-			$this->mock_order_service
+			$this->mock_order_service,
+			$mock_dpps
 		);
 	}
 
