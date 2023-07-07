@@ -11,6 +11,16 @@ jQuery( function ( $ ) {
 	const { productVariations } = window.wcpayStripeSiteMessaging;
 	let { productId } = window.wcpayStripeSiteMessaging;
 
+	const resetBnplPaymentMessage = () => {
+		const quantity = $( '.quantity input' ).val();
+		productId = 'base_product';
+		bnplPaymentMessageElement.update( {
+			amount:
+				parseInt( productVariations.base_product.amount, 10 ) *
+				quantity,
+		} );
+	};
+
 	$( '.quantity input' ).on( 'change', function ( event ) {
 		const newQuantity = event.target.value;
 		const price = productVariations[ productId ].amount;
@@ -33,15 +43,12 @@ jQuery( function ( $ ) {
 				amount: parseInt( variationPrice, 10 ) * quantity,
 			} );
 		} );
+
+		// If variation is changed back to default, reset BNPL messaging.
+		$( '.variations' ).on( 'change', function ( event ) {
+			if ( '' === event.target.value ) resetBnplPaymentMessage();
+		} );
 	}
 
-	$( '.reset_variations' ).on( 'click', function () {
-		const quantity = $( '.quantity input' ).val();
-		productId = 'base_product';
-		bnplPaymentMessageElement.update( {
-			amount:
-				parseInt( productVariations.base_product.amount, 10 ) *
-				quantity,
-		} );
-	} );
+	$( '.reset_variations' ).on( 'click', resetBnplPaymentMessage );
 } );
