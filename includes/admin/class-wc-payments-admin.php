@@ -780,7 +780,7 @@ class WC_Payments_Admin {
 				'isWelcomeTourDismissed' => WC_Payments_Features::is_fraud_protection_welcome_tour_dismissed(),
 			],
 			'progressiveOnboarding'       => [
-				'isProgressiveOnboardingFlowEnabled' => WC_Payments_Utils::should_use_progressive_onboarding_flow(),
+				'isNewFlowEnabled' => WC_Payments_Utils::should_use_progressive_onboarding_flow(),
 			],
 			'accountDefaultCurrency'      => $this->account->get_account_default_currency(),
 			'frtDiscoverBannerSettings'   => get_option( 'wcpay_frt_discover_banner_settings', '' ),

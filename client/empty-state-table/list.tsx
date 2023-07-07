@@ -41,6 +41,8 @@ export const EmptyStateList = ( {
 		wcpayTracks.recordEvent( wcpayTracks.events.CONNECT_ACCOUNT_CLICKED, {
 			// eslint-disable-next-line camelcase
 			wpcom_connection: wcpaySettings.isJetpackConnected ? 'Yes' : 'No',
+			is_new_onboarding_flow:
+				wcpaySettings.progressiveOnboarding.isNewFlowEnabled,
 		} );
 	};
 

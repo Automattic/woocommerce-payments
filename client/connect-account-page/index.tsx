@@ -89,6 +89,8 @@ const ConnectAccountPage: React.FC = () => {
 
 		wcpayTracks.recordEvent( wcpayTracks.events.CONNECT_ACCOUNT_CLICKED, {
 			wpcom_connection: wcpaySettings.isJetpackConnected ? 'Yes' : 'No',
+			is_new_onboarding_flow:
+				wcpaySettings.progressiveOnboarding.isNewFlowEnabled,
 			...( incentive && {
 				incentive_id: incentive.id,
 			} ),

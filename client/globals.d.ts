@@ -73,7 +73,7 @@ declare global {
 			isWelcomeTourDismissed?: boolean;
 		};
 		progressiveOnboarding: {
-			isProgressiveOnboardingFlowEnabled: boolean;
+			isNewFlowEnabled: boolean;
 		};
 		accountDefaultCurrency: string;
 		isFRTReviewFeatureActive: boolean;
