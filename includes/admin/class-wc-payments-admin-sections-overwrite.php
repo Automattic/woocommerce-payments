@@ -38,7 +38,7 @@ class WC_Payments_Admin_Sections_Overwrite {
 	 */
 	public function add_checkout_sections( array $default_sections ): array {
 		$sections_to_render['woocommerce_payments'] = __( 'WooCommerce Payments', 'woocommerce-payments' );
-		$sections_to_render[''] = __( 'All payment methods', 'woocommerce-payments' );
+		$sections_to_render['']                     = __( 'All payment methods', 'woocommerce-payments' );
 
 		return $sections_to_render;
 	}
