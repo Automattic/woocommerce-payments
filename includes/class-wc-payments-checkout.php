@@ -183,7 +183,7 @@ class WC_Payments_Checkout {
 			'isUPESplitEnabled'              => WC_Payments_Features::is_upe_split_enabled(),
 			'isUPEDeferredEnabled'           => WC_Payments_Features::is_upe_deferred_intent_enabled(),
 			'isSavedCardsEnabled'            => $this->gateway->is_saved_cards_enabled(),
-			'isWooPayEnabled'                => $this->woopay_util->should_enable_woopay( $this->gateway ),
+			'isWooPayEnabled'                => $this->woopay_util->should_enable_woopay( $this->gateway ) && $this->woopay_util->should_enable_woopay_on_cart_or_checkout(),
 			'isWoopayExpressCheckoutEnabled' => $this->woopay_util->is_woopay_express_checkout_enabled(),
 			'isClientEncryptionEnabled'      => WC_Payments_Features::is_client_secret_encryption_enabled(),
 			'woopayHost'                     => WooPay_Utilities::get_woopay_url(),

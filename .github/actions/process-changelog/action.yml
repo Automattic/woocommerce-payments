@@ -39,15 +39,13 @@ runs:
         if [ "$(ls -A changelog | wc -l)" -eq 1 ] && [[ "$FINAL_RELEASE_VERSION" == "$CURRENT_RELEASE_VERSION" ]]; then
           echo "ACTION_TYPE=amend-version" >> $GITHUB_OUTPUT
           echo "CURRENT_VERSION=$CURRENT_RELEASE_VERSION" >> $GITHUB_OUTPUT
-        else
-          echo "ACTION_TYPE=$ACTION_TYPE" >> $GITHUB_OUTPUT
         fi
 
     - name: "Process changelog for changelog.txt"
       id: process_changelog
       shell: bash
       env:
-        ACTION_TYPE: ${{ steps.verify_action_type.outputs.ACTION_TYPE }}
+        ACTION_TYPE: ${{ steps.verify_action_type.outputs.ACTION_TYPE || inputs.action-type }}
         CURRENT_VERSION: ${{ steps.verify_action_type.outputs.CURRENT_VERSION }}
         RELEASE_VERSION: ${{ inputs.release-version }}
         RELEASE_DATE: ${{ inputs.release-date }}
@@ -81,7 +79,7 @@ runs:
     - name: "Process changelog for readme.txt"
       shell: bash
       env:
-        ACTION_TYPE: ${{ steps.verify_action_type.outputs.ACTION_TYPE }}
+        ACTION_TYPE: ${{ steps.verify_action_type.outputs.ACTION_TYPE || inputs.action-type }}
         CURRENT_VERSION: ${{ steps.verify_action_type.outputs.CURRENT_VERSION }}
         RELEASE_VERSION: ${{ inputs.release-version }}
         RELEASE_DATE: ${{ inputs.release-date }}
