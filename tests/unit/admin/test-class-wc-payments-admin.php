@@ -280,7 +280,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 				'position'   => '55.7', // After WooCommerce & Product menu items.
 				'icon'       => '',
 				'nav_args'   => [
-					'title'        => __( 'WooPayments', 'woocommerce-payments' ),
+					'title'        => 'WooPayments',
 					'is_category'  => false,
 					'menuId'       => 'plugins',
 					'is_top_level' => true,

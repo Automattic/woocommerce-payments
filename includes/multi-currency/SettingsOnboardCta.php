@@ -55,7 +55,7 @@ class SettingsOnboardCta extends \WC_Settings_Page {
 			<div>
 				<p>
 					<?php
-						echo sprintf(
+						printf(
 							/* translators: %s: WooPayments */
 							esc_html__( 'To add new currencies to your store, please finish setting up %s.', 'woocommerce-payments' ),
 							'WooPayments'

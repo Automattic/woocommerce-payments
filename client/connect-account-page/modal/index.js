@@ -48,15 +48,14 @@ const OnboardingLocationCheckModal = ( {
 
 	const message = interpolateComponents( {
 		mixedString: sprintf(
-			/* translators: %1$s: WooPayments, %2$s: WooPayments */
+			/* translators: %1$s: WooPayments */
 			__(
-				"It appears you're attempting to set up %s from an unsupported country. " +
-					'In order to complete the set up of %s, your store is required to have a business ' +
+				"It appears you're attempting to set up %1$s from an unsupported country. " +
+					'In order to complete the set up of %1$s, your store is required to have a business ' +
 					'entity in one of the following countries: {{list /}} ' +
 					'{{link}}Learn more{{/link}} about setting up business entities in foreign countries.',
 				'woocommerce-payments'
 			),
-			'WooPayments',
 			'WooPayments'
 		),
 		components: {

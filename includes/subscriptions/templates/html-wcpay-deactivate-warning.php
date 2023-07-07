@@ -21,7 +21,7 @@
 						<?php
 							printf(
 							// translators: $1 $2 $3 placeholders are opening and closing HTML link tags, linking to documentation. $4 $5 placeholders are opening and closing strong HTML tags. $6 is WooPayments.
-								esc_html__( 'Your store has active subscriptions using the built-in %6$s functionality. Due to the %1$soff-site billing engine%3$s these subscriptions use, %4$sthey will continue to renew even after you deactivate WooCommerce Payments%5$s. %2$sLearn more%3$s.', 'woocommerce-payments' ),
+								esc_html__( 'Your store has active subscriptions using the built-in %6$s functionality. Due to the %1$soff-site billing engine%3$s these subscriptions use, %4$sthey will continue to renew even after you deactivate %6$s%5$s. %2$sLearn more%3$s.', 'woocommerce-payments' ),
 								'<a href="https://woocommerce.com/document/payments/subscriptions/comparison/#billing-engine">',
 								'<a href="https://woocommerce.com/document/woocommerce-payments/built-in-subscriptions/deactivate/#existing-subscriptions">',
 								'</a>',
@@ -55,7 +55,12 @@
 				<footer>
 					<div class="inner">
 						<button class="modal-close button button-secondary button-large"><?php esc_html_e( 'Cancel', 'woocommerce-payments' ); ?></button>
-						<button id="wcpay-plugin-deactivate-modal-submit" class="button button-primary button-large"><?php esc_html_e( 'Yes, deactivate WooPayments', 'woocommerce-payments' ); ?></button>
+						<button id="wcpay-plugin-deactivate-modal-submit" class="button button-primary button-large">
+							<?php
+							/* translators: %s: WooPayments */
+							printf( esc_html__( 'Yes, deactivate %s', 'woocommerce-payments' ), 'WooPayments' );
+							?>
+						</button>
 					</div>
 				</footer>
 			</section>

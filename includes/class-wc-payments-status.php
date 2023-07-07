@@ -73,9 +73,7 @@ class WC_Payments_Status {
 				<thead>
 					<tr>
 						<th colspan="3" data-export-label="WooCommerce Payments">
-							<h2>
-								WooPayments
-							</h2>
+							<h2>WooPayments</h2>
 						</th>
 					</tr>
 				</thead>

@@ -359,7 +359,7 @@ class WC_Payments_Apple_Pay_Registration {
 			<p>
 				<strong><?php echo esc_html( 'Apple Pay:' ); ?></strong>
 				<?php
-					echo sprintf(
+					printf(
 						/* translators: %s: WooPayments */
 						esc_html__( 'Express checkouts are enabled. To use Apple Pay, please use a live %s account.', 'woocommerce-payments' ),
 						'WooPayments'
