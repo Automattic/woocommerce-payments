@@ -133,12 +133,16 @@ function createStripePaymentMethod( api, elements, jQueryForm ) {
  */
 async function createStripePaymentElement( api, paymentMethodType ) {
 	const amount = Number( getUPEConfig( 'cartTotal' ) );
+	const paymentMethodTypes = [ paymentMethodType ];
+	if ( 'card' === paymentMethodType && 'link' in gatewayUPEComponents ) {
+		paymentMethodTypes.push( 'link' );
+	}
 	const options = {
 		mode: 1 > amount ? 'setup' : 'payment',
 		currency: getUPEConfig( 'currency' ).toLowerCase(),
 		amount: amount,
 		paymentMethodCreation: 'manual',
-		paymentMethodTypes: [ paymentMethodType ],
+		paymentMethodTypes: paymentMethodTypes,
 		appearance: initializeAppearance( api ),
 	};
 
