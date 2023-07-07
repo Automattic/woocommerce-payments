@@ -1320,8 +1320,9 @@ class WC_Payments {
 					<?php
 					echo WC_Payments_Utils::esc_interpolated_html(
 						sprintf(
-							/* translators: %s: WooPayments, a1: documentation URL */
-							__( 'The WooCommerce version you have installed is not compatible with %s for a Norwegian business. Please update WooCommerce to version 7.5 or above. You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' ),
+							/* translators: %1$s: WooCommerce, %2$s: WooPayments, a1: documentation URL */
+							__( 'The %1$s version you have installed is not compatible with %2$s for a Norwegian business. Please update %1$s to version 7.5 or above. You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' ),
+							'WooCommerce',
 							'WooPayments'
 						),
 						[
@@ -1766,16 +1767,16 @@ class WC_Payments {
 
 		switch ( $store_currency ) {
 			case 'HUF':
-				/* translators: %1$s: WooPayments, %2$s: The current WordPress version used by the store */
-				$notice = __( 'The WooCommerce version you have installed is not compatible with %1$s for a Hungarian business. Please update WooCommerce to version 7.8 or above (you are using %2$s). You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' );
+				/* translators: %1$s: WooCommerce , %2$s: WooPayments, %3$s: The current WooCommerce version used by the store */
+				$notice = __( 'The %1$s version you have installed is not compatible with %2$s for a Hungarian business. Please update %1$s to version 7.8 or above (you are using %3$s). You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' );
 				break;
 			case 'SEK':
-				/* translators: %1$s: WooPayments, %2$s: The current WordPress version used by the store */
-				$notice = __( 'The WooCommerce version you have installed is not compatible with %1$s for a Swedish business. Please update WooCommerce to version 7.8 or above (you are using %2$s). You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' );
+				/* translators: %1$s: WooCommerce , %2$s: WooPayments, %3$s: The current WooCommerce version used by the store */
+				$notice = __( 'The %1$s version you have installed is not compatible with %2$s for a Swedish business. Please update %1$s to version 7.8 or above (you are using %3$s). You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' );
 				break;
 			case 'CZK':
-				/* translators: %1$s: WooPayments, %2$s: The current WordPress version used by the store */
-				$notice = __( 'The WooCommerce version you have installed is not compatible with %1$s for a Czech Republic business. Please update WooCommerce to version 7.8 or above (you are using %2$s). You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' );
+				/* translators: %1$s: WooCommerce , %2$s: WooPayments, %3$s: The current WooCommerce version used by the store */
+				$notice = __( 'The %1$s version you have installed is not compatible with %2$s for a Czech Republic business. Please update %1$s to version 7.8 or above (you are using %3$s). You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' );
 				break;
 		}
 
@@ -1786,6 +1787,7 @@ class WC_Payments {
 			echo WC_Payments_Utils::esc_interpolated_html(
 				sprintf(
 					$notice,
+					'WooCommerce',
 					'WooPayments',
 					WC_VERSION
 				),
