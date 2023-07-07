@@ -30,8 +30,7 @@ class WooPay_Adapted_Extensions {
 			class_exists( 'WC_Points_Rewards_Manager' ) &&
 			class_exists( 'WC_Points_Rewards_Integration' ) &&
 			method_exists( 'WC_Points_Rewards_Manager', 'get_users_points' ) &&
-			method_exists( 'WC_Points_Rewards_Integration', 'get_script_data' ) &&
-			method_exists( 'WC_Points_Rewards_Integration', 'get_name' )
+			method_exists( 'WC_Points_Rewards_Integration', 'get_script_data' )
 		) {
 			$points_and_rewards_integration = new \WC_Points_Rewards_Integration();
 			$points_and_rewards_script_data = $points_and_rewards_integration->get_script_data();
