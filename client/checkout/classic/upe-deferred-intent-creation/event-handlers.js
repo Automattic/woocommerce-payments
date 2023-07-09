@@ -30,6 +30,8 @@ jQuery( function ( $ ) {
 			accountId: getUPEConfig( 'accountId' ),
 			forceNetworkSavedCards: getUPEConfig( 'forceNetworkSavedCards' ),
 			locale: getUPEConfig( 'locale' ),
+			isUPEEnabled: getUPEConfig( 'isUPEEnabled' ),
+			isUPEDeferredEnabled: getUPEConfig( 'isUPEDeferredEnabled' ),
 		},
 		apiRequest
 	);

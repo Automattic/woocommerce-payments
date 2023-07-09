@@ -242,11 +242,13 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 			}
 
 			$payment_method                 = $this->gateway->wc_payments_get_payment_method_by_id( $payment_method_id );
+			$gateway_for_payment_method     = WC_Payments::get_payment_gateway_by_id( $payment_method_id );
 			$settings[ $payment_method_id ] = [
-				'isReusable'     => $payment_method->is_reusable(),
-				'title'          => $payment_method->get_title(),
-				'icon'           => $payment_method->get_icon(),
-				'showSaveOption' => $this->should_upe_payment_method_show_save_option( $payment_method ),
+				'isReusable'             => $payment_method->is_reusable(),
+				'title'                  => $payment_method->get_title(),
+				'icon'                   => $payment_method->get_icon(),
+				'showSaveOption'         => $this->should_upe_payment_method_show_save_option( $payment_method ),
+				'forceNetworkSavedCards' => $gateway_for_payment_method->should_use_stripe_platform_on_checkout_page(),
 			];
 
 			if ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {

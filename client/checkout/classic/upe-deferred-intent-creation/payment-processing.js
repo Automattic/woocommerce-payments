@@ -89,9 +89,15 @@ function submitForm( jQueryForm ) {
  * @param {Object} api The API object used to call the Stripe API's createPaymentMethod method.
  * @param {Object} elements The Stripe elements object used to create a Stripe payment method.
  * @param {Object} jQueryForm The jQuery object for the form being submitted.
+ * @param {string} paymentMethodType The type of Stripe payment method to create.
  * @return {Promise<Object>} A promise that resolves with the created Stripe payment method.
  */
-function createStripePaymentMethod( api, elements, jQueryForm ) {
+function createStripePaymentMethod(
+	api,
+	elements,
+	jQueryForm,
+	paymentMethodType
+) {
 	let params = {};
 	if ( 'checkout' === jQueryForm.attr( 'name' ) ) {
 		params = {
@@ -118,7 +124,13 @@ function createStripePaymentMethod( api, elements, jQueryForm ) {
 			},
 		};
 	}
-	return api.getStripe().createPaymentMethod( { elements, params: params } );
+
+	return api
+		.getStripeForUPE(
+			getUPEConfig( 'paymentMethodsConfig' )[ paymentMethodType ]
+				.forceNetworkSavedCards
+		)
+		.createPaymentMethod( { elements, params: params } );
 }
 
 /**
@@ -141,7 +153,12 @@ async function createStripePaymentElement( api, paymentMethodType ) {
 		appearance: initializeAppearance( api ),
 	};
 
-	const elements = api.getStripe().elements( options );
+	const elements = api
+		.getStripeForUPE(
+			getUPEConfig( 'paymentMethodsConfig' )[ paymentMethodType ]
+				.forceNetworkSavedCards
+		)
+		.elements( options );
 	const createdStripePaymentElement = elements.create( 'payment', {
 		...getUpeSettings(),
 		wallets: {
@@ -278,7 +295,8 @@ export const processPayment = (
 			const paymentMethodObject = await createStripePaymentMethod(
 				api,
 				elements,
-				jQueryForm
+				jQueryForm,
+				paymentMethodType
 			);
 			appendFingerprintInputToForm( jQueryForm, fingerprint );
 			appendPaymentMethodIdToForm(

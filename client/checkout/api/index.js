@@ -41,6 +41,11 @@ export default class WCPayAPI {
 		return new Stripe( publishableKey, options );
 	}
 
+	getStripeForUPE( forceNetworkSavedCards ) {
+		this.options.forceNetworkSavedCards = forceNetworkSavedCards;
+		return this.getStripe();
+	}
+
 	/**
 	 * Generates a new instance of Stripe.
 	 *
@@ -54,13 +59,14 @@ export default class WCPayAPI {
 			forceNetworkSavedCards,
 			locale,
 			isUPEEnabled,
+			isUPEDeferredEnabled,
 			isStripeLinkEnabled,
 		} = this.options;
 
 		if (
 			forceNetworkSavedCards &&
 			! forceAccountRequest &&
-			! isUPEEnabled
+			! ( isUPEEnabled && ! isUPEDeferredEnabled )
 		) {
 			if ( ! this.stripePlatform ) {
 				this.stripePlatform = this.createStripe(
