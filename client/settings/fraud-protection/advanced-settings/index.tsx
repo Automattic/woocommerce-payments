@@ -188,14 +188,14 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 	// Hack to make "WooCommerce > Settings" the active selected menu item.
 	useEffect( () => {
 		const wcSettingsMenuItem = document.querySelector(
-			'#toplevel_page_woocommerce a[href="admin.php?page=wc-settings"]'
+			'#toplevel_page_wc-admin-path--payments-overview a[href$="section=woocommerce_payments"]'
 		);
 		if ( wcSettingsMenuItem ) {
 			wcSettingsMenuItem.setAttribute( 'aria-current', 'page' );
 			wcSettingsMenuItem.classList.add( 'current' );
 			wcSettingsMenuItem.parentElement?.classList.add( 'current' );
 		}
-	}, [] );
+	}, [ isLoading ] );
 
 	// Intersection observer callback for tracking card viewed events.
 	const observerCallback = ( entries: IntersectionObserverEntry[] ) => {
