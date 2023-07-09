@@ -63,6 +63,7 @@ const api = new WCPayAPI(
 		locale: getUPEConfig( 'locale' ),
 		isUPEEnabled: getUPEConfig( 'isUPEEnabled' ),
 		isUPESplitEnabled: getUPEConfig( 'isUPESplitEnabled' ),
+		isUPEDeferredEnabled: getUPEConfig( 'isUPEDeferredEnabled' ),
 		isStripeLinkEnabled,
 	},
 	request
@@ -99,7 +100,11 @@ Object.entries( enabledPaymentMethodsConfig )
 						upeConfig.testingInstructions
 				  ),
 			savedTokenComponent: <SavedTokenHandler api={ api } />,
-			canMakePayment: () => !! api.getStripe(),
+			canMakePayment: () =>
+				!! api.getStripeForUPE(
+					getUPEConfig( 'paymentMethodsConfig' )[ upeName ]
+						.forceNetworkSavedCards
+				),
 			paymentMethodId: upeMethods[ upeName ],
 			// see .wc-block-checkout__payment-method styles in blocks/style.scss
 			label: (
