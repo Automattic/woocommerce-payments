@@ -248,6 +248,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 				'title'                  => $payment_method->get_title(),
 				'icon'                   => $payment_method->get_icon(),
 				'showSaveOption'         => $this->should_upe_payment_method_show_save_option( $payment_method ),
+				'countries'              => $payment_method->get_countries(),
 				'forceNetworkSavedCards' => $gateway_for_payment_method->should_use_stripe_platform_on_checkout_page(),
 			];
 

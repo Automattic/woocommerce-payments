@@ -10,6 +10,7 @@ use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
 use WCPay\Core\Server\Response;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Session_Rate_Limiter;
 
 /**
@@ -135,6 +136,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 
 		$this->order_service = new WC_Payments_Order_Service( $this->mock_api_client );
 
+		$mock_dpps = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+
 		$this->mock_wcpay_gateway = $this->getMockBuilder( '\WC_Payment_Gateway_WCPay' )
 			->setConstructorArgs(
 				[
@@ -145,6 +148,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 					$this->mock_action_scheduler_service,
 					$this->mock_rate_limiter,
 					$this->order_service,
+					$mock_dpps,
 				]
 			)
 			->setMethods(
