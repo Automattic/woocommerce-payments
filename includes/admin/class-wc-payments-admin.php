@@ -239,19 +239,18 @@ class WC_Payments_Admin {
 
 		$dispute_id       = $dispute_data['id'];
 		$stripe_amount    = $dispute_data['amount'];
-		$reason           = WC_Payments_Utils::get_dispute_reason_description( $dispute_data['reason'] );
-		$currency         = $dispute_data['currency'];
+		$reason           = $dispute_data['reason'];
 		$evidence_details = $dispute_data['evidence_details'];
 		$due_by           = $evidence_details['due_by'];
 
-		$due_by      = date_i18n( wc_date_format(), $due_by );
 		$dispute_url = $this->order_service->compose_dispute_url( $dispute_id );
 
 		return [
-			'dueBy'      => $due_by,
-			'amount'     => $stripe_amount,
-			'reason'     => $reason,
-			'disputeUrl' => $dispute_url,
+			'id'     => $dispute_id,
+			'dueBy'  => $due_by,
+			'amount' => $stripe_amount,
+			'reason' => $reason,
+			'url'    => $dispute_url,
 		];
 	}
 

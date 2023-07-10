@@ -1,6 +1,7 @@
 /* global jQuery */
 
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
+import { dateI18n } from '@wordpress/date';
 import ReactDOM from 'react-dom';
 import { dispatch } from '@wordpress/data';
 import moment from 'moment';
@@ -13,6 +14,7 @@ import RefundConfirmationModal from './refund-confirm-modal';
 import CancelConfirmationModal from './cancel-confirm-modal';
 import BannerNotice from 'wcpay/components/banner-notice';
 import { formatExplicitCurrency } from 'utils/currency';
+import { reasons } from 'wcpay/disputes/strings';
 import './style.scss';
 
 jQuery( function ( $ ) {
@@ -116,26 +118,29 @@ jQuery( function ( $ ) {
 		);
 
 		const now = moment();
-		const countdownDays = moment( disputeData.dueBy ).diff(
-			now,
-			'days',
-			true
-		);
+		const dueBy = moment( disputeData.dueBy );
+		const countdownDays = dueBy.diff( now, 'days', true );
 
-		const amount = formatExplicitCurrency(
+		const amountFormatted = formatExplicitCurrency(
 			disputeData.amount,
 			disputeData.currency
 		);
 
-		let urgency = 'info';
+		let urgency = 'warning';
 		let buttonLabel = __( 'Respond now', 'woocommerce-payments' );
-		let suffix = '';
-		if ( 7 > countdownDays ) {
-			urgency = 'warning';
-		} else if ( 1 > countdownDays ) {
+		let suffix = sprintf(
+			// Translators: %d is the number of days left to respond to the dispute.
+			__( '(%d days left)', 'woocommerce-payments' ),
+			countdownDays
+		);
+		// If the dispute is due within 72 hours, we want to highlight it as urgent/red.
+		if ( 3 > countdownDays ) {
+			urgency = 'error';
+		}
+		if ( 1 > countdownDays ) {
 			urgency = 'error';
 			buttonLabel = __( 'Respond today', 'woocommerce-payments' );
-			suffix = '(Last day today)';
+			suffix = __( '(Last day today)', 'woocommerce-payments' );
 		}
 
 		const notice = (
@@ -146,21 +151,29 @@ jQuery( function ( $ ) {
 					{
 						label: buttonLabel,
 						variant: 'secondary',
-						onClick: () =>
-							( window.location = disputeData.disputeUrl ),
+						onClick: () => {
+							// Handle tracks event here.
+							// wcpayTracks.recordEvent( wcpayTracks.events.xxx, {
+							// 	due_by_days: countdownDays,
+							// } );
+							window.location = disputeData.url;
+						},
 					},
 				] }
 			>
-				<div>
-					This order has a chargeback dispute of { amount } labeled as
-					&quot;
-					{ disputeData.reason }&quot;.{ ' ' }
-					<b>
-						Please respond to this dispute before{ ' ' }
-						{ disputeData.dueBy }
-					</b>
-					.{ suffix }
-				</div>
+				<strong>
+					{ sprintf(
+						// Translators: %1$s is the formatted dispute amount, %2$s is the dispute reason, %3$s is the due date.
+						__(
+							'Please resolve the dispute on this order for %1$s labeled "%2$s" by %3$s.',
+							'woocommerce-payments'
+						),
+						amountFormatted,
+						reasons[ disputeData.reason ].display,
+						dateI18n( 'M j, Y', dueBy.local().toISOString() )
+					) }{ ' ' }
+					{ suffix }
+				</strong>
 			</BannerNotice>
 		);
 		ReactDOM.render( notice, container );
