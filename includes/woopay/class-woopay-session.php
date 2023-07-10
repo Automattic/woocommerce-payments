@@ -156,7 +156,7 @@ class WooPay_Session {
 	 */
 	private static function get_payload_from_cart_token( $cart_token ) {
 		if ( ! JsonWebToken::validate( $cart_token, '@' . wp_salt() ) ) {
-			return false;
+			return null;
 		}
 
 		$payload = JsonWebToken::get_parts( $cart_token )->payload;
