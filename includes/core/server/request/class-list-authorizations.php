@@ -33,7 +33,7 @@ class List_Authorizations extends Paginated {
 	 */
 	public static function from_rest_request( $request ) {
 		$wcpay_request       = parent::from_rest_request( $request );
-		$date_between_filter = $request->get_param( 'date_between' );
+		$date_between_filter = $request->get_param( 'created_between' );
 		$user_timezone       = $request->get_param( 'user_timezone' );
 
 		if ( ! is_null( $date_between_filter ) ) {
@@ -47,9 +47,9 @@ class List_Authorizations extends Paginated {
 
 		$filters = [
 			'match'                   => $request->get_param( 'match' ),
-			'date_before'             => self::format_transaction_date_with_timestamp( $request->get_param( 'date_before' ), $user_timezone ),
-			'date_after'              => self::format_transaction_date_with_timestamp( $request->get_param( 'date_after' ), $user_timezone ),
-			'date_between'            => $date_between_filter,
+			'created_before'          => self::format_transaction_date_with_timestamp( $request->get_param( 'created_before' ), $user_timezone ),
+			'created_after'           => self::format_transaction_date_with_timestamp( $request->get_param( 'created_after' ), $user_timezone ),
+			'created_between'         => $date_between_filter,
 			'outcome_type_is'         => $request->get_param( 'outcome_type_is' ),
 			'outcome_type_is_not'     => $request->get_param( 'outcome_type_is_not' ),
 			'status_is'               => $request->get_param( 'status_is' ),
@@ -60,7 +60,7 @@ class List_Authorizations extends Paginated {
 			'order_id_is'             => $request->get_param( 'order_id_is' ),
 			'payment_method_id_is'    => $request->get_param( 'payment_method_id_is' ),
 			'transaction_id_is'       => $request->get_param( 'transaction_id_is' ),
-			'authorization_id_is'     => $request->get_param( 'authorization_id_is' ),
+			'charge_id_is'            => $request->get_param( 'charge_id_is' ),
 			'include_capturable_only' => $request->get_param( 'include_capturable_only' ),
 		];
 		$wcpay_request->set_filters( $filters );
@@ -77,5 +77,16 @@ class List_Authorizations extends Paginated {
 	 */
 	public function set_include_capturable_only( $include_capturable ) {
 		$this->set_param( 'include_capturable_only', (bool) $include_capturable );
+	}
+
+	/**
+	 * Set charge_id filter param.
+	 *
+	 * @param string $charge_id Charge id.
+
+	 * @return void
+	 */
+	public function set_charge_id_is( $charge_id ) {
+		$this->set_param( 'charge_id_is', $charge_id );
 	}
 }

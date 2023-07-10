@@ -93,7 +93,7 @@ class WC_REST_Payments_Reports_Transactions_Controller extends WC_Payments_REST_
 		}
 		$transaction = $transactions['data'][0] ?? null;
 		if ( ! $transaction ) {
-			rest_ensure_response( $transactions );
+			return rest_ensure_response( [] );
 		}
 		$response = $this->prepare_item_for_response( $transaction, $request );
 		return rest_ensure_response( $this->prepare_response_for_collection( $response ) );

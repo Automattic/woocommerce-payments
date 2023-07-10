@@ -39,7 +39,7 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<authorization_id>\w+)',
+			'/' . $this->rest_base . '/(?P<charge_id>\w+)',
 			[
 				[
 					'methods'             => WP_REST_Server::READABLE,
@@ -80,22 +80,19 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_authorization( $request ) {
-		$authorization_id = $request->get_param( 'authorization_id' );
-		$wcpay_request    = List_Authorizations::create();
-		$wcpay_request->set_filters(
-			[
-				'authorization_id_is' => $authorization_id,
-				'sort'                => 'date',
-				// There is a issue with class defaults, so we can quickly fix it fow now with this param.
-			]
-		);
+		$charge_id     = $request->get_param( 'charge_id' );
+		$wcpay_request = List_Authorizations::create();
+		$wcpay_request->set_charge_id_is( $charge_id );
+		$wcpay_request->set_include_capturable_only( false );
+		$wcpay_request->set_page_size( 1 );
+
 		$authorizations = $wcpay_request->handle_rest_request( 'wcpay_list_authorizations_request' );
 		if ( is_wp_error( $authorizations ) ) {
 			return $authorizations;
 		}
 		$authorization = $authorizations['data'][0] ?? null;
 		if ( ! $authorization ) {
-			rest_ensure_response( $authorizations );
+			return rest_ensure_response( [] );
 		}
 		$response = $this->prepare_item_for_response( $authorization, $request );
 
@@ -114,7 +111,7 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 
 		$prepared_item = [];
 
-		$prepared_item['authorization_id'] = $item['charge_id'];
+		$prepared_item['charge_id']        = $item['charge_id'];
 		$prepared_item['transaction_id']   = $item['transaction_id'];
 		$prepared_item['channel']          = $item['channel'];
 		$prepared_item['timestamp']        = $item['created'];
@@ -152,7 +149,7 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 	 */
 	public function get_collection_params() {
 		return [
-			'authorization_id_is'     => [
+			'charge_id_is'            => [
 				'description' => __( 'Filter authorizations based on their unique authorization ID.', 'woocommerce-payments' ),
 				'type'        => 'string',
 				'required'    => false,
@@ -177,19 +174,19 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 				'type'        => 'string',
 				'required'    => false,
 			],
-			'date_before'             => [
+			'created_before'          => [
 				'description' => __( 'Filter authorizations before this date.', 'woocommerce-payments' ),
 				'type'        => 'string',
 				'format'      => 'date-time',
 				'required'    => false,
 			],
-			'date_after'              => [
+			'created_after'           => [
 				'description' => __( 'Filter authorizations after this date.', 'woocommerce-payments' ),
 				'type'        => 'string',
 				'format'      => 'date-time',
 				'required'    => false,
 			],
-			'date_between'            => [
+			'created_between'         => [
 				'description' => __( 'Filter authorizations between these dates.', 'woocommerce-payments' ),
 				'type'        => 'array',
 			],
@@ -259,8 +256,8 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 					'format'      => 'date-time',
 					'context'     => [ 'view' ],
 				],
-				'authorization_id' => [
-					'description' => __( 'A unique identifier for each authorization based on its authorization type.', 'woocommerce-payments' ),
+				'charge_id'        => [
+					'description' => __( 'A unique identifier for each charge.', 'woocommerce-payments' ),
 					'type'        => 'string',
 					'context'     => [ 'view' ],
 				],
