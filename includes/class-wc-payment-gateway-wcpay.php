@@ -855,7 +855,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	protected function prepare_payment_information( $order ) {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$payment_information = Payment_Information::from_payment_request( $_POST, $order, Payment_Type::SINGLE(), Payment_Initiated_By::CUSTOMER(), $this->get_capture_type(), $this->get_payment_methods_from_request()[0] );
+		$payment_information = Payment_Information::from_payment_request( $_POST, $order, Payment_Type::SINGLE(), Payment_Initiated_By::CUSTOMER(), $this->get_capture_type(), $this->get_payment_method_to_use_for_intent() );
 		$payment_information = $this->maybe_prepare_subscription_payment_information( $payment_information, $order->get_id() );
 
 		if ( ! empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-payment-method' ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -1327,6 +1327,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'result'   => 'success',
 			'redirect' => $this->get_return_url( $order ),
 		];
+	}
+
+	/**
+	 * Get the payment method chosen by the customer for the payment processing.
+	 * This payment method is needed in case of the deferred intent creation flow only, because this is the only time when the current gateway might process payments other than of the card type.
+	 * Payment method is only one in case of the deferred intent creation flow, hence the first element of the array is returned.
+	 *
+	 * @return string|null Payment method to use for the intent.
+	 */
+	private function get_payment_method_to_use_for_intent() {
+		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+			return $this->get_payment_methods_from_request()[0];
+		}
 	}
 
 	/**
