@@ -1,8 +1,4 @@
 /* Overrides for dispute BannerNotice used in order edit screen. */
-/* Disabling linter for WC core selector "order_data" (underscore). */
-/* stylelint-disable selector-id-pattern */
-#order_data
-/* stylelint-enable selector-id-pattern */
-.wcpay-banner-notice {
+#wcpay-order-payment-details-container .wcpay-banner-notice {
 	margin: 24px 0 6px 0;
 }

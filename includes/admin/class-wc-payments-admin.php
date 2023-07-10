@@ -221,7 +221,7 @@ class WC_Payments_Admin {
 	 */
 	public function render_order_edit_payment_details_container() {
 		?>
-		<div id="wcpay-order-payment-details-container" class=""></div>
+		<div id="wcpay-order-payment-details-container"></div>
 		<?php
 	}
 
