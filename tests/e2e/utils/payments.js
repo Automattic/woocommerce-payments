@@ -214,12 +214,10 @@ export async function confirmCardAuthentication(
  * `[ [ "Hoodie", 2 ], [ "Belt", 3 ] ]`.
  *
  * Default value is 1 piece of `config.get( 'products.simple.name' )`.
- * @param {any} shippingDetails Values to be entered into the 'Shipping details' form in the Checkout page
  */
 export async function setupProductCheckout(
 	billingDetails,
-	lineItems = [ [ config.get( 'products.simple.name' ), 1 ] ],
-	shippingDetails = null
+	lineItems = [ [ config.get( 'products.simple.name' ), 1 ] ]
 ) {
 	const cartItemsCounter = '.cart-contents .count';
 
@@ -245,27 +243,14 @@ export async function setupProductCheckout(
 		}
 	}
 
-	await setupCheckout( billingDetails, shippingDetails );
+	await setupCheckout( billingDetails );
 }
 
 // Set up checkout
-export async function setupCheckout( billingDetails, shippingDetails ) {
+export async function setupCheckout( billingDetails ) {
 	await shopper.goToCheckout();
 	await uiUnblocked();
 	await shopper.fillBillingDetails( billingDetails );
-
-	if ( shippingDetails ) {
-		await page.waitFor( 1000 );
-		// Select checkbox to ship to a different address
-		await page.evaluate( () => {
-			document
-				.querySelector( '#ship-to-different-address-checkbox' )
-				.click();
-		} );
-		await uiUnblocked();
-		await shopper.fillShippingDetails( shippingDetails );
-	}
-
 	// Woo core blocks and refreshes the UI after 1s after each key press in a text field or immediately after a select
 	// field changes. Need to wait to make sure that all key presses were processed by that mechanism.
 	await page.waitFor( 1000 );
