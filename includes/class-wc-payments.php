@@ -700,37 +700,7 @@ class WC_Payments {
 	 * @return array The list of payment gateways that will be available, including WooCommerce Payments' Gateway class.
 	 */
 	public static function register_gateway( $gateways ) {
-		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
-			$payment_methods = self::$card_gateway->get_payment_method_ids_enabled_at_checkout();
-
-			$key = array_search( 'link', $payment_methods, true );
-
-			self::$registered_card_gateway = self::$card_gateway;
-
-			$gateways[]       = self::$registered_card_gateway;
-			$all_upe_gateways = [];
-			$reusable_methods = [];
-			foreach ( $payment_methods as $payment_method_id ) {
-				if ( 'card' === $payment_method_id || 'link' === $payment_method_id ) {
-					continue;
-				}
-				$upe_gateway        = self::get_payment_gateway_by_id( $payment_method_id );
-				$upe_payment_method = self::get_payment_method_by_id( $payment_method_id );
-
-				if ( $upe_payment_method->is_reusable() ) {
-					$reusable_methods[] = $upe_gateway;
-				}
-
-				$all_upe_gateways[] = $upe_gateway;
-
-			}
-
-			if ( is_add_payment_method_page() ) {
-				return array_merge( $gateways, $reusable_methods );
-			}
-
-			return array_merge( $gateways, $all_upe_gateways );
-		} elseif ( WC_Payments_Features::is_upe_split_enabled() ) {
+		if ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 
 			$payment_methods = self::$card_gateway->get_payment_method_ids_enabled_at_checkout();
 
@@ -742,7 +712,7 @@ class WC_Payments {
 				self::get_gateway()->update_option( 'upe_enabled_payment_method_ids', $payment_methods );
 			}
 
-			if ( WC_Payments_Features::is_woopay_enabled() ) {
+			if ( ! WC_Payments_Features::is_upe_deferred_intent_enabled() && WC_Payments_Features::is_woopay_enabled() ) {
 				self::$registered_card_gateway = self::$legacy_card_gateway;
 			} else {
 				self::$registered_card_gateway = self::$card_gateway;
