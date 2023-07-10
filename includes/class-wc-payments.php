@@ -42,6 +42,7 @@ use WCPay\WC_Payments_UPE_Checkout;
 use WCPay\WooPay\Service\Checkout_Service;
 use WCPay\Core\WC_Payments_Customer_Service_API;
 use WCPay\Blocks_Data_Extractor;
+use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\WooPay\WooPay_Scheduler;
 
 /**
@@ -274,7 +275,14 @@ class WC_Payments {
 	private static $customer_service_api;
 
 	/**
-	 * Instance of WC_Payments_Incentives_Service, created in init function
+	 * Duplicate payment prevention service.
+	 *
+	 * @var Duplicate_Payment_Prevention_Service
+	 */
+	private static $duplicate_payment_prevention_service;
+
+	/**
+	 * Instance of WC_Payments_Incentives_Service, created in init function.
 	 *
 	 * @var WC_Payments_Incentives_Service
 	 */
@@ -435,6 +443,7 @@ class WC_Payments {
 		include_once __DIR__ . '/woopay/class-woopay-scheduler.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-link.php';
 		include_once __DIR__ . '/core/service/class-wc-payments-customer-service-api.php';
+		include_once __DIR__ . '/class-duplicate-payment-prevention-service.php';
 		include_once __DIR__ . '/class-wc-payments-incentives-service.php';
 
 		// Load customer multi-currency if feature is enabled.
@@ -460,25 +469,26 @@ class WC_Payments {
 		// Load woopay tracking.
 		include_once WCPAY_ABSPATH . 'includes/class-woopay-tracker.php';
 
-		self::$order_service                       = new WC_Payments_Order_Service( self::$api_client );
-		self::$action_scheduler_service            = new WC_Payments_Action_Scheduler_Service( self::$api_client, self::$order_service );
-		self::$account                             = new WC_Payments_Account( self::$api_client, self::$database_cache, self::$action_scheduler_service );
-		self::$customer_service                    = new WC_Payments_Customer_Service( self::$api_client, self::$account, self::$database_cache );
-		self::$token_service                       = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
-		self::$remote_note_service                 = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
-		self::$fraud_service                       = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
-		self::$in_person_payments_receipts_service = new WC_Payments_In_Person_Payments_Receipts_Service();
-		self::$localization_service                = new WC_Payments_Localization_Service();
-		self::$failed_transaction_rate_limiter     = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
-		self::$order_success_page                  = new WC_Payments_Order_Success_Page();
-		self::$onboarding_service                  = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
-		self::$woopay_util                         = new WooPay_Utilities();
-		self::$woopay_tracker                      = new WooPay_Tracker( self::get_wc_payments_http() );
-		self::$incentives_service                  = new WC_Payments_Incentives_Service( self::$database_cache );
+		self::$order_service                        = new WC_Payments_Order_Service( self::$api_client );
+		self::$action_scheduler_service             = new WC_Payments_Action_Scheduler_Service( self::$api_client, self::$order_service );
+		self::$account                              = new WC_Payments_Account( self::$api_client, self::$database_cache, self::$action_scheduler_service );
+		self::$customer_service                     = new WC_Payments_Customer_Service( self::$api_client, self::$account, self::$database_cache );
+		self::$token_service                        = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
+		self::$remote_note_service                  = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
+		self::$fraud_service                        = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
+		self::$in_person_payments_receipts_service  = new WC_Payments_In_Person_Payments_Receipts_Service();
+		self::$localization_service                 = new WC_Payments_Localization_Service();
+		self::$failed_transaction_rate_limiter      = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
+		self::$order_success_page                   = new WC_Payments_Order_Success_Page();
+		self::$onboarding_service                   = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
+		self::$woopay_util                          = new WooPay_Utilities();
+		self::$woopay_tracker                       = new WooPay_Tracker( self::get_wc_payments_http() );
+		self::$incentives_service                   = new WC_Payments_Incentives_Service( self::$database_cache );
+		self::$duplicate_payment_prevention_service = new Duplicate_Payment_Prevention_Service();
 
 		( new WooPay_Scheduler( self::$api_client ) )->init();
 
-		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
+		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service, self::$duplicate_payment_prevention_service );
 
 		$payment_method_classes = [
 			CC_Payment_Method::class,
@@ -503,7 +513,7 @@ class WC_Payments {
 			foreach ( $payment_methods as $payment_method ) {
 				self::$upe_payment_method_map[ $payment_method->get_id() ] = $payment_method;
 
-				$split_gateway = new UPE_Split_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service );
+				$split_gateway = new UPE_Split_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service, self::$duplicate_payment_prevention_service );
 
 				// Card gateway hooks are registered once below.
 				if ( 'card' !== $payment_method->get_id() ) {
@@ -526,7 +536,7 @@ class WC_Payments {
 				$payment_methods[ $payment_method->get_id() ] = $payment_method;
 			}
 
-			self::$card_gateway         = new UPE_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service );
+			self::$card_gateway         = new UPE_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service, self::$duplicate_payment_prevention_service );
 			self::$wc_payments_checkout = new WC_Payments_UPE_Checkout( self::get_gateway(), self::$woopay_util, self::$account, self::$customer_service );
 		} else {
 			self::$card_gateway         = self::$legacy_card_gateway;
@@ -612,6 +622,8 @@ class WC_Payments {
 
 		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
+
+		self::$duplicate_payment_prevention_service->init( self::$card_gateway, self::$order_service );
 	}
 
 	/**
@@ -1456,7 +1468,7 @@ class WC_Payments {
 
 		$store_logo = self::get_gateway()->get_option( 'platform_checkout_store_logo' );
 
-		$store_api_token = self::init_store_api_token();
+		$store_api_token = WooPay_Store_Api_Token::init();
 
 		include_once WCPAY_ABSPATH . 'includes/compat/blocks/class-blocks-data-extractor.php';
 		$blocks_data_extractor = new Blocks_Data_Extractor();
@@ -1494,6 +1506,9 @@ class WC_Payments {
 		if ( $has_adapted_extension_enabled && ! empty( $email ) && ! is_user_logged_in() ) {
 			$user = get_user_by( 'email', $email );
 
+			// Some extensions need the user to be authenticated to get user data,
+			// we use this token when the user email is verified on WooPay to get this data
+			// without store authentication when both email matches.
 			if ( $user ) {
 				WC()->session->set( 'woopay_verified_user_id', $user->ID );
 
@@ -1537,17 +1552,6 @@ class WC_Payments {
 
 		Logger::log( $response_body_json );
 		wp_send_json( json_decode( $response_body_json ) );
-	}
-
-	/**
-	 * Initializes the WooPay_Store_Api_Token class and returns it.
-	 *
-	 * @return WooPay_Store_Api_Token The WooPay_Store_Api_Token object.
-	 */
-	private static function init_store_api_token() {
-		$cart_route = WooPay_Store_Api_Token::init();
-
-		return $cart_route;
 	}
 
 	/**
