@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix fatal errors when get_product method returns null

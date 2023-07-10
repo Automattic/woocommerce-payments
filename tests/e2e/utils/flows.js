@@ -271,6 +271,19 @@ export const shopperWCP = {
 		} );
 		await shopper.addToCart();
 	},
+
+	validateCheckoutError: async () => {
+		const errorMessage =
+			"Error: There's a problem with this payment. Please try again or use a different payment method.";
+
+		await page.waitForSelector( '.woocommerce-error' );
+		await expect(
+			page
+		).toMatchElement(
+			'div.woocommerce-NoticeGroup > ul.woocommerce-error > li',
+			{ text: errorMessage }
+		);
+	},
 };
 
 // The generic flows will be moved to their own package soon (more details in p7bje6-2gV-p2), so we're
@@ -750,6 +763,108 @@ export const merchantWCP = {
 		await expect( page ).toClick( 'input#submit' );
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
+		} );
+	},
+
+	openAdvancedFraudProtectionSettings: async () => {
+		const advancedLevelRadioSelector =
+			'#fraud-protection-level-select_advanced-level';
+		const advancedLevelConfigureLinkSelector =
+			'.fraud-protection__advanced-level-container > a';
+
+		await expect( page ).toClick( advancedLevelRadioSelector );
+		await expect( page ).toClick( advancedLevelConfigureLinkSelector );
+
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
+	openLatestBlockedOrder: async () => {
+		await merchantWCP.openTransactions();
+
+		await expect( page ).toClick(
+			'.components-tab-panel__tabs-item.blocked-list'
+		);
+		await uiLoaded();
+		await page.waitFor( 1000 );
+		await expect( page ).toClick(
+			'.woocommerce-table__table tbody > tr:nth-child(2) > th > a'
+		);
+	},
+
+	checkTransactionStatus: async ( expectedStatus ) => {
+		const statusChipSelector = '.payment-details-summary .chip';
+
+		await page.waitForSelector( '.payment-details-summary' );
+		await page.waitForSelector( statusChipSelector );
+
+		await expect( page ).toMatchElement( statusChipSelector, {
+			text: expectedStatus,
+		} );
+	},
+
+	checkFraudOutcomeEntry: async ( expectedOutcome ) => {
+		await page.waitForSelector( '.woocommerce-timeline' );
+
+		await expect( page ).toMatchElement( '.fraud-outcome-ruleset-item', {
+			text: expectedOutcome,
+		} );
+	},
+
+	disableAllFraudProtectionRules: async () => {
+		await merchantWCP.openWCPSettings();
+		await merchantWCP.skipFraudProtectionTour();
+		await merchantWCP.openAdvancedFraudProtectionSettings();
+
+		const rulesToToggle = [
+			'international-ip-address-card',
+			'ip-address-mismatch',
+			'address-mismatch-card',
+			'purchase-price-threshold-card',
+			'order-items-threshold-card',
+		];
+
+		for ( const rule of rulesToToggle ) {
+			const ruleSelector = `#${ rule } .is-checked .components-form-toggle__input`;
+
+			const ruleToggle = await page.$( ruleSelector );
+
+			if ( ruleToggle ) {
+				await page.$eval( ruleSelector, ( method ) => method.click() );
+			}
+		}
+	},
+
+	toggleFraudProtectionRule: async ( ruleName, settings = null ) => {
+		await page.$eval(
+			`#${ ruleName }-card .components-form-toggle__input`,
+			( method ) => method.click()
+		);
+
+		if ( settings ) {
+			for ( const [ selector, value ] of Object.entries( settings ) ) {
+				const settingInput = await page.waitForSelector( selector );
+
+				await settingInput.click( { clickCount: 3 } );
+				await page.keyboard.press( 'Backspace' );
+
+				if ( '' !== value ) {
+					await page.keyboard.type( value );
+				}
+
+				await page.waitFor( 500 );
+			}
+		}
+
+		await expect( page ).toClick(
+			'.fraud-protection-advanced-settings__footer button'
+		);
+
+		await page.waitForSelector( '.components-snackbar' );
+		await expect( page ).toMatchElement( '.components-snackbar', {
+			text: 'Settings saved',
+			timeout: 60000,
 		} );
 	},
 };
