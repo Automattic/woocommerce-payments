@@ -1813,9 +1813,9 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				],
 			],
 			'currency' => 'EUR',
-			'title'    => 'WooCommerce Payments',
+			'title'    => 'WooPayments',
 			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
-			'expected' => 'WooCommerce Payments',
+			'expected' => 'WooPayments',
 		];
 
 		$default_option = $this->mock_upe_gateway->get_option( 'upe_enabled_payment_method_ids' );
@@ -1844,9 +1844,9 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				],
 			],
 			'currency' => 'EUR',
-			'title'    => 'WooCommerce Payments',
+			'title'    => 'WooPayments',
 			'id'       => UPE_Payment_Gateway::GATEWAY_ID,
-			'expected' => 'WooCommerce Payments',
+			'expected' => 'WooPayments',
 		];
 
 		$default_option = $this->mock_upe_gateway->get_option( 'upe_enabled_payment_method_ids' );
@@ -1987,7 +1987,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function maybe_filter_gateway_title_data_provider() {
-		$method_title   = 'WooCommerce Payments';
+		$method_title   = 'WooPayments';
 		$checkout_title = 'Popular payment methods';
 		$card_title     = 'Credit card / debit card';
 
