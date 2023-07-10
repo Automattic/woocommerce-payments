@@ -15,6 +15,7 @@ import CancelConfirmationModal from './cancel-confirm-modal';
 import BannerNotice from 'wcpay/components/banner-notice';
 import { formatExplicitCurrency } from 'utils/currency';
 import { reasons } from 'wcpay/disputes/strings';
+import wcpayTracks from 'tracks';
 import './style.scss';
 
 jQuery( function ( $ ) {
@@ -162,10 +163,13 @@ jQuery( function ( $ ) {
 						label: buttonLabel,
 						variant: 'secondary',
 						onClick: () => {
-							// Handle tracks event here.
-							// wcpayTracks.recordEvent( wcpayTracks.events.xxx, {
-							// 	due_by_days: countdownDays,
-							// } );
+							wcpayTracks.recordEvent(
+								wcpayTracks.events
+									.ORDER_DISPUTE_NOTICE_BUTTON_CLICK,
+								{
+									due_by_days: parseInt( countdownDays, 10 ),
+								}
+							);
 							window.location = disputeData.url;
 						},
 					},
