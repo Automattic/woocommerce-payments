@@ -117,6 +117,11 @@ jQuery( function ( $ ) {
 			'#wcpay-order-payment-details-container'
 		);
 
+		// If the container doesn't exist (WC < 7.9), return.
+		if ( ! container ) {
+			return;
+		}
+
 		const now = moment();
 		const dueBy = moment.unix( disputeData.dueBy );
 		const countdownDays = dueBy.diff( now, 'days', true );
