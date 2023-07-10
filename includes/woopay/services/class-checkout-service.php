@@ -71,12 +71,12 @@ class Checkout_Service {
 			return false;
 		}
 
-		$gateway_for_payment_method = \WC_Payments::get_payment_gateway_by_id( $payment_method_type );
+		$should_use_stripe_platform = WC_Payments_Features::is_upe_deferred_intent_enabled() ? \WC_Payments::get_payment_gateway_by_id( $payment_method_type )->should_use_stripe_platform_on_checkout_page() : $this->should_use_stripe_platform_on_checkout_page();
 
 		// Make sure the payment method being charged was created in the platform.
 		if (
 			! $is_using_saved_payment_method &&
-			$gateway_for_payment_method->should_use_stripe_platform_on_checkout_page()
+			$should_use_stripe_platform
 		) {
 			// This payment method was created under the platform account.
 			return true;
