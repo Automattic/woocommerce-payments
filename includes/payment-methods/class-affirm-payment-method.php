@@ -39,6 +39,7 @@ class Affirm_Payment_Method extends UPE_Payment_Method {
 				'max' => 3000000,
 			], // Represents USD 50 - 30,000 USD.
 		];
+		$this->countries           = [ 'US', 'CA' ];
 	}
 
 	/**
