@@ -199,9 +199,19 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
                   <span
                     class="payment-method-details"
                   >
-                    <span
-                      class="payment-method__brand payment-method__brand--visa"
-                    />
+                    <button
+                      class="wcpay-tooltip__content-wrapper"
+                      type="button"
+                    >
+                      <div
+                        class="wcpay-tooltip__content-wrapper"
+                      >
+                        <span
+                          aria-label="Visa"
+                          class="payment-method__brand payment-method__brand--visa"
+                        />
+                      </div>
+                    </button>
                      •••• 
                     4242
                   </span>
@@ -506,9 +516,19 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
                   <span
                     class="payment-method-details"
                   >
-                    <span
-                      class="payment-method__brand payment-method__brand--visa"
-                    />
+                    <button
+                      class="wcpay-tooltip__content-wrapper"
+                      type="button"
+                    >
+                      <div
+                        class="wcpay-tooltip__content-wrapper"
+                      >
+                        <span
+                          aria-label="Visa"
+                          class="payment-method__brand payment-method__brand--visa"
+                        />
+                      </div>
+                    </button>
                      •••• 
                     4242
                   </span>
@@ -788,9 +808,19 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
                   <span
                     class="payment-method-details"
                   >
-                    <span
-                      class="payment-method__brand payment-method__brand--visa"
-                    />
+                    <button
+                      class="wcpay-tooltip__content-wrapper"
+                      type="button"
+                    >
+                      <div
+                        class="wcpay-tooltip__content-wrapper"
+                      >
+                        <span
+                          aria-label="Visa"
+                          class="payment-method__brand payment-method__brand--visa"
+                        />
+                      </div>
+                    </button>
                      •••• 
                     4242
                   </span>
@@ -1065,9 +1095,19 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
                   <span
                     class="payment-method-details"
                   >
-                    <span
-                      class="payment-method__brand payment-method__brand--visa"
-                    />
+                    <button
+                      class="wcpay-tooltip__content-wrapper"
+                      type="button"
+                    >
+                      <div
+                        class="wcpay-tooltip__content-wrapper"
+                      >
+                        <span
+                          aria-label="Visa"
+                          class="payment-method__brand payment-method__brand--visa"
+                        />
+                      </div>
+                    </button>
                      •••• 
                     4242
                   </span>
@@ -1318,9 +1358,19 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
                   <span
                     class="payment-method-details"
                   >
-                    <span
-                      class="payment-method__brand payment-method__brand--visa"
-                    />
+                    <button
+                      class="wcpay-tooltip__content-wrapper"
+                      type="button"
+                    >
+                      <div
+                        class="wcpay-tooltip__content-wrapper"
+                      >
+                        <span
+                          aria-label="Visa"
+                          class="payment-method__brand payment-method__brand--visa"
+                        />
+                      </div>
+                    </button>
                      •••• 
                     4242
                   </span>
@@ -1804,9 +1854,19 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
                   <span
                     class="payment-method-details"
                   >
-                    <span
-                      class="payment-method__brand payment-method__brand--visa"
-                    />
+                    <button
+                      class="wcpay-tooltip__content-wrapper"
+                      type="button"
+                    >
+                      <div
+                        class="wcpay-tooltip__content-wrapper"
+                      >
+                        <span
+                          aria-label="Visa"
+                          class="payment-method__brand payment-method__brand--visa"
+                        />
+                      </div>
+                    </button>
                      •••• 
                     4242
                   </span>
@@ -2054,9 +2114,19 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] 
                   <span
                     class="payment-method-details"
                   >
-                    <span
-                      class="payment-method__brand payment-method__brand--visa"
-                    />
+                    <button
+                      class="wcpay-tooltip__content-wrapper"
+                      type="button"
+                    >
+                      <div
+                        class="wcpay-tooltip__content-wrapper"
+                      >
+                        <span
+                          aria-label="Visa"
+                          class="payment-method__brand payment-method__brand--visa"
+                        />
+                      </div>
+                    </button>
                      •••• 
                     4242
                   </span>
@@ -2307,9 +2377,19 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
                   <span
                     class="payment-method-details"
                   >
-                    <span
-                      class="payment-method__brand payment-method__brand--visa"
-                    />
+                    <button
+                      class="wcpay-tooltip__content-wrapper"
+                      type="button"
+                    >
+                      <div
+                        class="wcpay-tooltip__content-wrapper"
+                      >
+                        <span
+                          aria-label="Visa"
+                          class="payment-method__brand payment-method__brand--visa"
+                        />
+                      </div>
+                    </button>
                      •••• 
                     4242
                   </span>
