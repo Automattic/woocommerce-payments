@@ -244,7 +244,7 @@ addFilter(
 			pages.push( {
 				container: FraudProtectionAdvancedSettingsPage,
 				path: '/payments/fraud-protection',
-				wpOpenMenu: 'toplevel_page_woocommerce',
+				wpOpenMenu: menuID,
 				breadcrumbs: [
 					__( 'WooCommerce Payments', 'woocommerce-payments' ),
 				],
