@@ -1,8 +1,8 @@
-/* Overrides for dispute InlineNotice used in order edit screen. */
+/* Overrides for dispute BannerNotice used in order edit screen. */
 /* Disabling linter for WC core selector "order_data" (underscore). */
 /* stylelint-disable selector-id-pattern */
 #order_data
 /* stylelint-enable selector-id-pattern */
-.wcpay-inline-notice p {
-	color: $gray-900;
+.wcpay-banner-notice {
+	margin: 24px 0 6px 0;
 }
