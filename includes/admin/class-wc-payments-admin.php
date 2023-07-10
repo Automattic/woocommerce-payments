@@ -233,26 +233,32 @@ class WC_Payments_Admin {
 	private function get_order_dispute_notice_js_data( $order ) {
 		$dispute_data = $this->order_service->get_dispute_data_for_order( $order );
 
+		if ( ! $dispute_data || ! $dispute_data['evidence_details'] ) {
+			return false;
+		}
+
 		// Return false if there is no dispute evidence details or the dispute is not awaiting a response.
 		$needs_response_statuses = [ 'needs_response', 'warning_needs_response' ];
-		if ( ! $dispute_data || ! $dispute_data['evidence_details'] || ! in_array( $dispute_data['status'], $needs_response_statuses, true ) ) {
+		if ( ! in_array( $dispute_data['status'], $needs_response_statuses, true ) ) {
 			return false;
 		}
 
 		$dispute_id       = $dispute_data['id'];
 		$stripe_amount    = $dispute_data['amount'];
 		$reason           = $dispute_data['reason'];
+		$currency         = $dispute_data['currency'];
 		$evidence_details = $dispute_data['evidence_details'];
 		$due_by           = $evidence_details['due_by'];
 
 		$dispute_url = $this->order_service->compose_dispute_url( $dispute_id );
 
 		return [
-			'id'     => $dispute_id,
-			'dueBy'  => $due_by,
-			'amount' => $stripe_amount,
-			'reason' => $reason,
-			'url'    => $dispute_url,
+			'id'       => $dispute_id,
+			'dueBy'    => $due_by,
+			'currency' => $currency,
+			'amount'   => $stripe_amount,
+			'reason'   => $reason,
+			'url'      => $dispute_url,
 		];
 	}
 
