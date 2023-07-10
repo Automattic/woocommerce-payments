@@ -224,7 +224,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 	public function test_ajax_init_woopay_has_not_verified_user_token_if_email_exists_and_is_logged_off_with_no_adapted_extensions() {
 		$user = self::factory()->user->create_and_get();
 
-		delete_option( WooPay_Scheduler::HAS_ADAPTED_EXTENSIONS_OPTION_NAME );
+		delete_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME );
 
 		$this->mock_verified_user_store_api_token();
 
@@ -258,7 +258,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 	public function test_ajax_init_woopay_has_verified_user_token_if_email_exists_and_is_logged_off_with_adapted_extensions() {
 		$user = self::factory()->user->create_and_get();
 
-		update_option( WooPay_Scheduler::HAS_ADAPTED_EXTENSIONS_OPTION_NAME, true );
+		update_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, [ 'woocommerce-points-and-rewards' ] );
 
 		$this->mock_verified_user_store_api_token();
 
@@ -291,7 +291,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 
 		remove_filter( 'pre_http_request', $pre_http_request_cb, 10, 3 );
 
-		delete_option( WooPay_Scheduler::HAS_ADAPTED_EXTENSIONS_OPTION_NAME, true );
+		delete_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME );
 	}
 
 	/**

@@ -210,13 +210,13 @@ class WooPay_Scheduler_Test extends WP_UnitTestCase {
 
 		delete_option( WooPay_Scheduler::ADAPTED_EXTENSIONS_LIST_OPTION_NAME );
 		delete_option( WooPay_Utilities::AVAILABLE_COUNTRIES_OPTION_NAME );
-		delete_option( WooPay_Scheduler::HAS_ADAPTED_EXTENSIONS_OPTION_NAME );
+		delete_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME );
 
 		$this->scheduler->update_compatibility_and_maybe_show_incompatibility_warning();
 
 		$this->assertEquals( get_option( WooPay_Scheduler::ADAPTED_EXTENSIONS_LIST_OPTION_NAME ), $adapted_extensions );
 		$this->assertEquals( get_option( WooPay_Utilities::AVAILABLE_COUNTRIES_OPTION_NAME ), '["US","BR"]' );
-		$this->assertTrue( get_option( WooPay_Scheduler::HAS_ADAPTED_EXTENSIONS_OPTION_NAME, null ) );
+		$this->assertEquals( get_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, [] ), [ 'test-extension' ] );
 	}
 
 	/**

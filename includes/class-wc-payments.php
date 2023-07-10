@@ -1502,8 +1502,8 @@ class WC_Payments {
 			'user_session'    => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];
 
-		$has_adapted_extension_enabled = get_option( WooPay_Scheduler::HAS_ADAPTED_EXTENSIONS_OPTION_NAME, false );
-		if ( $has_adapted_extension_enabled && ! empty( $email ) && ! is_user_logged_in() ) {
+		$enabled_adapted_extensions = get_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, [] );
+		if ( count( $enabled_adapted_extensions ) > 0 && ! empty( $email ) && ! is_user_logged_in() ) {
 			$user = get_user_by( 'email', $email );
 
 			// Some extensions need the user to be authenticated to get user data,
