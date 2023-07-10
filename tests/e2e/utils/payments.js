@@ -136,10 +136,10 @@ export async function fillCardDetailsPayForOrder( page, card ) {
 export async function fillCardDetailsWCB( page, card ) {
 	await page.waitForSelector( '.__PrivateStripeElement' );
 	const frameHandle = await page.waitForSelector(
-		'#payment-method iframe[name^="__privateStripeFrame"]'
+		'#payment-method .wcpay-card-mounted iframe[name^="__privateStripeFrame"]'
 	);
 	const stripeFrame = await frameHandle.contentFrame();
-	const inputs = await stripeFrame.$$( '.p-Input-input.Input' );
+	const inputs = await stripeFrame.$$( '.InputElement.Input' );
 
 	const [ cardNumberInput, cardDateInput, cardCvcInput ] = inputs;
 	await cardNumberInput.type( card.number, { delay: 20 } );
@@ -152,10 +152,10 @@ export async function fillCardDetailsWCB( page, card ) {
 // Clear WC Checkout Card Details
 export async function clearWCBCardDetails() {
 	const frameHandle = await page.waitForSelector(
-		'#payment-method iframe[name^="__privateStripeFrame"]'
+		'#payment-method .wcpay-card-mounted iframe[name^="__privateStripeFrame"]'
 	);
 	const stripeFrame = await frameHandle.contentFrame();
-	const inputs = await stripeFrame.$$( '.p-Input-input.Input' );
+	const inputs = await stripeFrame.$$( '.InputElement.Input' );
 	const [ cardNumberInput, cardDateInput, cardCvcInput ] = inputs;
 
 	await page.waitFor( 1000 );
