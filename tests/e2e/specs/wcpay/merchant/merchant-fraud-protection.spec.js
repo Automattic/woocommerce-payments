@@ -71,6 +71,31 @@ describe( 'Fraud protection', () => {
 		} );
 
 		afterAll( async () => {
+			// Remove shipping zone method
+			await page.waitFor( 1000 );
+			await page.goto(
+				`${ baseUrl }wp-admin/admin.php?page=wc-settings&tab=shipping&zone_id=0`,
+				{
+					waitUntil: 'networkidle0',
+				}
+			);
+
+			const freeShippingExists = await page.$$eval(
+				'.wc-shipping-zone-method-type',
+				( elements ) =>
+					elements.some( ( el ) =>
+						el.textContent.includes( 'Free shipping' )
+					)
+			);
+
+			if ( freeShippingExists ) {
+				await expect( page ).toClick(
+					'.wc-shipping-zone-method-delete'
+				);
+				await expect( page ).toClick( 'button#btn-ok' );
+				await uiUnblocked();
+			}
+
 			await merchant.logout();
 		} );
 
