@@ -964,14 +964,15 @@ class WC_Payments_Order_Service {
 
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-				__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+				/* translators: %1: the successfully charged amount, %2: WooPayments, %3: transaction ID of the payment */
+				__( 'A payment of %1$s was <strong>successfully charged</strong> using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$formatted_amount,
+			'WooPayments',
 			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
 		);
 	}
@@ -990,14 +991,15 @@ class WC_Payments_Order_Service {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-				__( 'A payment of %1$s <strong>failed</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+				/* translators: %1: the authorized amount, %2: WooPayments, %3: transaction ID of the payment */
+				__( 'A payment of %1$s <strong>failed</strong> using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$formatted_amount,
+			'WooPayments',
 			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
 		);
 
@@ -1021,14 +1023,15 @@ class WC_Payments_Order_Service {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-				__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+				/* translators: %1: the authorized amount, %2: WooPayments, %3: transaction ID of the payment */
+				__( 'A payment of %1$s was <strong>authorized</strong> using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$this->get_order_amount( $order ),
+			'WooPayments',
 			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
 		);
 
@@ -1046,14 +1049,15 @@ class WC_Payments_Order_Service {
 	private function generate_payment_started_note( $order, $intent_id ): string {
 		$note = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-				__( 'A payment of %1$s was <strong>started</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+				/* translators: %1: the authorized amount, %2: WooPayments, %3: intent ID of the payment */
+				__( 'A payment of %1$s was <strong>started</strong> using %2$s (<code>%3$s</code>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'code'   => '<code>',
 				]
 			),
 			$this->get_order_amount( $order ),
+			'WooPayments',
 			$intent_id
 		);
 
@@ -1073,14 +1077,15 @@ class WC_Payments_Order_Service {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-				__( 'A payment of %1$s was <strong>successfully captured</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+				/* translators: %1: the successfully charged amount, %2: WooPayments, %3: transaction ID of the payment */
+				__( 'A payment of %1$s was <strong>successfully captured</strong> using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$this->get_order_amount( $order ),
+			'WooPayments',
 			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
 		);
 		return $note;
@@ -1100,14 +1105,15 @@ class WC_Payments_Order_Service {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-				__( 'A capture of %1$s <strong>failed</strong> to complete using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+				/* translators: %1: the authorized amount, %2: WooPayments, %3: transaction ID of the payment */
+				__( 'A capture of %1$s <strong>failed</strong> to complete using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$this->get_order_amount( $order ),
+			'WooPayments',
 			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
 		);
 
