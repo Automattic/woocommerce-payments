@@ -263,11 +263,12 @@ export const DisputesList = (): JSX.Element => {
 						{ __( 'Respond', 'woocommerce-payments' ) }
 					</Button>
 				) : (
-					<Link
+					<Button
+						variant={ 'tertiary' }
 						href={ getDetailsURL( dispute.dispute_id, 'disputes' ) }
 					>
 						{ __( 'See details', 'woocommerce-payments' ) }
-					</Link>
+					</Button>
 				),
 			},
 		};
