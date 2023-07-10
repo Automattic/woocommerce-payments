@@ -1,5 +1,29 @@
 *** WooCommerce Payments Changelog ***
 
+= 6.2.0-test-2 - 2023-xx-xx =
+* Add - Added flag to allow us to remotely set if WooPay should be enabled or not for new merchants.
+* Add - Add tooltip and ARIA labels to payment method logos in transaction list
+* Add - Check for invalid extensions when one is activated or deactivated.
+* Add - Make Affirm and Afterpay Stripe messaging show up correctly for variable products, especially when we change variations.
+* Add - Prefill the store URL on the new Onboarding Form.
+* Fix - Add array_filter callback method
+* Fix - Allow webhooks without livemode to be received.
+* Fix - Fix a fatal error on sites using WC Subscriptions versions below 4.0.0
+* Fix - Fix Country informed as empty for logged-out user in the BNPL site messaging configuration.
+* Fix - Fixed typo in businessInfo strings in strings.tsx file
+* Fix - Fix fatal errors when get_product method returns null
+* Fix - Restore removed condition after naming convention.
+* Fix - Wrap list of payment method logos on next line
+* Update - Refactoring and cleanup of code
+* Update - Remove the Remind Me Later option from the Fraud and Risk Tools discoverability banner.
+* Update - Remove WooCommerce Payments from taking over the WC core settings page
+* Update - WC Payments inbuilt subscriptions functionality is no longer enabled by default for eligible US based stores.
+* Dev - Add E2E tests for Fraud & Risk tools.
+* Dev - Add tool to allow merchants to fix Multi-Currency exchange rates in orders.
+* Dev - Affirm&Afterpay: add new test cases to ensure the method availability on checkout
+* Dev - Affirm&Afterpay: refactor subscription products detection by using existing subs API
+* Dev - Extracting functionality for preventing duplicate payments into a service.
+
 = 6.1.1 - 2023-06-29 =
 * Fix - Fix syntax for advanced filters in WC 7.8 and over
 
