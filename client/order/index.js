@@ -118,7 +118,7 @@ jQuery( function ( $ ) {
 		);
 
 		const now = moment();
-		const dueBy = moment( disputeData.dueBy );
+		const dueBy = moment.unix( disputeData.dueBy );
 		const countdownDays = dueBy.diff( now, 'days', true );
 
 		const amountFormatted = formatExplicitCurrency(
