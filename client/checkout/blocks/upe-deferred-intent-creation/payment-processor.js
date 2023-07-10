@@ -115,11 +115,7 @@ const PaymentProcessor = ( {
 					await validateElements( elements );
 
 					const paymentMethodObject = await api
-						.getStripeForUPE(
-							getUPEConfig( 'paymentMethodsConfig' )[
-								paymentMethodId
-							].forceNetworkSavedCards
-						)
+						.getStripeForUPE( paymentMethodId )
 						.createPaymentMethod( {
 							elements,
 							params: {

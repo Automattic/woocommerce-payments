@@ -3,7 +3,7 @@
 /**
  * Internal dependencies
  */
-import { getConfig } from 'utils/checkout';
+import { getConfig, getUPEConfig } from 'utils/checkout';
 import {
 	getPaymentRequestData,
 	getPaymentRequestAjaxURL,
@@ -41,8 +41,10 @@ export default class WCPayAPI {
 		return new Stripe( publishableKey, options );
 	}
 
-	getStripeForUPE( forceNetworkSavedCards ) {
-		this.options.forceNetworkSavedCards = forceNetworkSavedCards;
+	getStripeForUPE( paymentMethodType ) {
+		this.options.forceNetworkSavedCards = getUPEConfig(
+			'paymentMethodsConfig'
+		)[ paymentMethodType ].forceNetworkSavedCards;
 		return this.getStripe();
 	}
 

@@ -10,10 +10,7 @@ import { useEffect, useState } from 'react';
 import PaymentProcessor from './payment-processor';
 
 const PaymentElements = ( { api, ...props } ) => {
-	const stripe = api.getStripeForUPE(
-		getUPEConfig( 'paymentMethodsConfig' )[ props.paymentMethodId ]
-			.forceNetworkSavedCards
-	);
+	const stripe = api.getStripeForUPE( props.paymentMethodId );
 	const [ errorMessage, setErrorMessage ] = useState( null );
 	const [ appearance, setAppearance ] = useState(
 		getUPEConfig( 'wcBlocksUPEAppearance' )

@@ -107,11 +107,7 @@ Object.entries( enabledPaymentMethodsConfig )
 					! isRestrictedInAnyCountry ||
 					upeConfig.countries.includes( billingCountry );
 				return (
-					isAvailableInTheCountry &&
-					!! api.getStripeForUPE(
-						getUPEConfig( 'paymentMethodsConfig' )[ upeName ]
-							.forceNetworkSavedCards
-					)
+					isAvailableInTheCountry && !! api.getStripeForUPE( upeName )
 				);
 			},
 			paymentMethodId: upeMethods[ upeName ],

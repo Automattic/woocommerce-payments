@@ -126,10 +126,7 @@ function createStripePaymentMethod(
 	}
 
 	return api
-		.getStripeForUPE(
-			getUPEConfig( 'paymentMethodsConfig' )[ paymentMethodType ]
-				.forceNetworkSavedCards
-		)
+		.getStripeForUPE( paymentMethodType )
 		.createPaymentMethod( { elements, params: params } );
 }
 
@@ -154,10 +151,7 @@ async function createStripePaymentElement( api, paymentMethodType ) {
 	};
 
 	const elements = api
-		.getStripeForUPE(
-			getUPEConfig( 'paymentMethodsConfig' )[ paymentMethodType ]
-				.forceNetworkSavedCards
-		)
+		.getStripeForUPE( paymentMethodType )
 		.elements( options );
 	const createdStripePaymentElement = elements.create( 'payment', {
 		...getUpeSettings(),
