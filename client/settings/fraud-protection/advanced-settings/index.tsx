@@ -185,7 +185,7 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 		}
 	};
 
-	// Hack to make "WooCommerce > Settings" the active selected menu item.
+	// Hack to make "Payments > Settings" the active selected menu item.
 	useEffect( () => {
 		const wcSettingsMenuItem = document.querySelector(
 			'#toplevel_page_wc-admin-path--payments-overview a[href$="section=woocommerce_payments"]'
