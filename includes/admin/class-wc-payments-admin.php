@@ -233,7 +233,9 @@ class WC_Payments_Admin {
 	private function get_order_dispute_notice_js_data( $order ) {
 		$dispute_data = $this->order_service->get_dispute_data_for_order( $order );
 
-		if ( ! $dispute_data || ! $dispute_data['evidence_details'] ) {
+		// Return false if there is no dispute evidence details or the dispute is not awaiting a response.
+		$needs_response_statuses = [ 'needs_response', 'warning_needs_response' ];
+		if ( ! $dispute_data || ! $dispute_data['evidence_details'] || ! in_array( $dispute_data['status'], $needs_response_statuses, true ) ) {
 			return false;
 		}
 
