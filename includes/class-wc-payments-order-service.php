@@ -527,9 +527,6 @@ class WC_Payments_Order_Service {
 	 * @return array|null The dispute data, or null if no dispute found.
 	 *
 	 * @throws Order_Not_Found_Exception
-	 * @throws Extend_Request_Exception
-	 * @throws Immutable_Parameter_Exception
-	 * @throws Invalid_Request_Parameter_Exception
 	 */
 	public function get_dispute_data_for_order( $order ) {
 		$charge_id = $this->get_charge_id_for_order( $order );
