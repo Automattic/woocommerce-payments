@@ -121,6 +121,11 @@ jQuery( function ( $ ) {
 		const dueBy = moment.unix( disputeData.dueBy );
 		const countdownDays = dueBy.diff( now, 'days', true );
 
+		// If the dispute is due in the past, we don't want to show the notice.
+		if ( now.isAfter( dueBy ) ) {
+			return;
+		}
+
 		const amountFormatted = formatExplicitCurrency(
 			disputeData.amount,
 			disputeData.currency
