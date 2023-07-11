@@ -417,7 +417,7 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Checks if the currently displayed page is the WooCommerce Payments
+	 * Checks if the currently displayed page is the WooPayments
 	 * settings page or a payment method settings page.
 	 *
 	 * @return bool
