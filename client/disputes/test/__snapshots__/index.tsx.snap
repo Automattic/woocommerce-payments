@@ -377,7 +377,7 @@ exports[`Disputes list renders correctly 1`] = `
                       tabindex="-1"
                     >
                       <span
-                        class="chip chip-primary is-compact"
+                        class="chip chip-alert is-compact"
                       >
                         Needs response
                       </span>
@@ -498,7 +498,7 @@ exports[`Disputes list renders correctly 1`] = `
                       tabindex="-1"
                     >
                       <span
-                        class="chip chip-light is-compact"
+                        class="chip chip-primary is-compact"
                       >
                         Under review
                       </span>
@@ -616,7 +616,7 @@ exports[`Disputes list renders correctly 1`] = `
                       tabindex="-1"
                     >
                       <span
-                        class="chip chip-primary is-compact"
+                        class="chip chip-alert is-compact"
                       >
                         Needs response
                       </span>
