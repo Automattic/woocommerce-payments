@@ -67,7 +67,6 @@ const OverviewPage = () => {
 	} );
 
 	const tasksUnsorted = getTasks( {
-		accountStatus,
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
 		activeDisputes,
