@@ -16,30 +16,11 @@ class WC_Payments_Order_Success_Page {
 	 * Constructor.
 	 */
 	public function __construct() {
-		add_filter( 'woocommerce_thankyou_order_received_text', [ $this, 'show_woopay_thankyou_notice' ], 10, 2 );
 		add_filter( 'woocommerce_order_get_payment_method_title', [ $this, 'show_woopay_payment_method_name' ], 10, 2 );
 		add_filter( 'woocommerce_thankyou_order_received_text', [ $this, 'add_notice_previous_paid_order' ], 11 );
 		add_filter( 'woocommerce_thankyou_order_received_text', [ $this, 'add_notice_previous_successful_intent' ], 11 );
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
 	}
-
-
-	/**
-	 * Return the WooPay thank you notice when the order was created via WooPay
-	 *
-	 * @param string        $text  the default thank you text.
-	 * @param WC_Order|null $order the order being shown.
-	 *
-	 * @return string
-	 */
-	public function show_woopay_thankyou_notice( $text, $order ) {
-		if ( ! $order || ! $order->get_meta( 'is_woopay' ) ) {
-			return $text;
-		}
-
-		return '<div class="thankyou-notice-woopay">' . __( 'Thank you! We’ve received your order.', 'woocommerce-payments' ) . '</div>';
-	}
-
 
 	/**
 	 * Add the WooPay logo and the last 4 digits of the card used to the payment method name
