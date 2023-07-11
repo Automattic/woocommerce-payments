@@ -12,7 +12,7 @@ import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
 
 describe( 'Fraud protection', () => {
 	describe( 'Rules', () => {
-		beforeEach( async () => {
+		beforeAll( async () => {
 			await merchant.login();
 			await shopperWCP.emptyCart();
 		} );
