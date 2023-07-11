@@ -144,7 +144,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( $expected_note_1, $notes[1]->content );
-		$this->assertStringContainsString( 'successfully charged</strong> using WooCommerce Payments', $notes[0]->content );
+		$this->assertStringContainsString( 'successfully charged</strong> using WooPayments', $notes[0]->content );
 		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
@@ -234,7 +234,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( 'On hold to Processing', $notes[1]->content );
-		$this->assertStringContainsString( 'successfully captured</strong> using WooCommerce Payments', $notes[0]->content );
+		$this->assertStringContainsString( 'successfully captured</strong> using WooPayments', $notes[0]->content );
 		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
@@ -303,7 +303,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( 'Pending payment to On hold', $notes[1]->content );
-		$this->assertStringContainsString( 'authorized</strong> using WooCommerce Payments', $notes[0]->content );
+		$this->assertStringContainsString( 'authorized</strong> using WooPayments', $notes[0]->content );
 		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
@@ -449,7 +449,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertStringContainsString( 'started</strong> using WooCommerce Payments', $notes[0]->content );
+		$this->assertStringContainsString( 'started</strong> using WooPayments', $notes[0]->content );
 		$this->assertStringContainsString( 'Payments (<code>pi_mock</code>)', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
@@ -543,7 +543,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertStringContainsString( 'started</strong> using WooCommerce Payments', $notes[0]->content );
+		$this->assertStringContainsString( 'started</strong> using WooPayments', $notes[0]->content );
 		$this->assertStringContainsString( 'Payments (<code>pi_mock</code>)', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
@@ -579,7 +579,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( 'Pending payment to Failed', $notes[1]->content );
-		$this->assertStringContainsString( 'failed</strong> using WooCommerce Payments', $notes[0]->content );
+		$this->assertStringContainsString( 'failed</strong> using WooPayments', $notes[0]->content );
 		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
 		$this->assertStringContainsString( 'This is the test failed message.', $notes[0]->content );
 
@@ -641,7 +641,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertStringContainsString( 'failed</strong> to complete using WooCommerce Payments', $notes[0]->content );
+		$this->assertStringContainsString( 'failed</strong> to complete using WooPayments', $notes[0]->content );
 		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
@@ -682,7 +682,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertStringContainsString( 'failed</strong> to complete using WooCommerce Payments', $notes[0]->content );
+		$this->assertStringContainsString( 'failed</strong> to complete using WooPayments', $notes[0]->content );
 		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.

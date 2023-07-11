@@ -52,15 +52,12 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		wp_set_current_user( 0 );
 	}
 
-	public function test_get_user_id_from_cart_token_with_verified_user_store_api_token_without_id_in_session() {
-		$verified_user = self::factory()->user->create_and_get();
-
+	public function test_get_user_id_from_cart_token_with_verified_user_email_address_header_without_email_in_session() {
 		$woopay_store_api_token = WooPay_Store_Api_Token::init();
 		$guest_cart_token       = $woopay_store_api_token->get_cart_token();
-		$verified_user_token    = $woopay_store_api_token->get_store_api_token_for_user_id( $verified_user->ID );
 
 		$_SERVER['HTTP_CART_TOKEN']                      = $guest_cart_token;
-		$_SERVER['HTTP_WOOPAY_VERIFIED_USER_CART_TOKEN'] = $verified_user_token;
+		$_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] = 'test@example.com';
 
 		$this->setup_session( 0 );
 
@@ -72,15 +69,14 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		$woopay_store_api_token = WooPay_Store_Api_Token::init();
 		$guest_cart_token       = $woopay_store_api_token->get_cart_token();
-		$verified_user_token    = $woopay_store_api_token->get_store_api_token_for_user_id( $verified_user->ID );
 
 		$_SERVER['HTTP_CART_TOKEN']                      = $guest_cart_token;
-		$_SERVER['HTTP_WOOPAY_VERIFIED_USER_CART_TOKEN'] = $verified_user_token;
+		$_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] = $verified_user->user_email;
 
 		$this->setup_session(
 			0,
 			[
-				'woopay_verified_user_id' => $verified_user->ID,
+				'woopay_email' => $verified_user->user_email,
 			]
 		);
 

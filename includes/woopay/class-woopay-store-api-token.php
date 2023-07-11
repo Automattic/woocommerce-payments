@@ -8,7 +8,6 @@
 namespace WCPay\Platform_Checkout;
 
 use Automattic\WooCommerce\StoreApi\Routes\V1\AbstractCartRoute;
-use Automattic\WooCommerce\StoreApi\Utilities\JsonWebToken;
 
 if ( class_exists( AbstractCartRoute::class ) ) {
 	/**
@@ -57,26 +56,6 @@ if ( class_exists( AbstractCartRoute::class ) ) {
 		 */
 		public function get_cart_token() {
 			return parent::get_cart_token();
-		}
-
-		//phpcs:disable Generic.CodeAnalysis.UselessOverridingMethod
-		/**
-		 * This function is used to create a custom cart token for verified WooPay users.
-		 *
-		 * @param string $id The user ID.
-		 *
-		 * @return string The cart token.
-		 * @psalm-suppress UndefinedMethod
-		 */
-		public function get_store_api_token_for_user_id( $id ) {
-			return JsonWebToken::create(
-				[
-					'user_id' => $id,
-					'exp'     => parent::get_cart_token_expiration(),
-					'iss'     => $this->namespace,
-				],
-				parent::get_cart_token_secret()
-			);
 		}
 	}
 }

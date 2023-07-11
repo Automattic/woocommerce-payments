@@ -115,7 +115,7 @@ exports[`Activation Modal matches the snapshot 1`] = `
           <a
             href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
           >
-            WooCommerce Payments
+            WooPayments
           </a>
         </p>
         <hr

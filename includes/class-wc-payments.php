@@ -47,7 +47,7 @@ use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\WooPay\WooPay_Scheduler;
 
 /**
- * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
+ * Main class for the WooPayments extension. Its responsibility is to initialize the extension.
  */
 class WC_Payments {
 	/**
@@ -666,7 +666,7 @@ class WC_Payments {
 	public static function display_admin_notice( $message, $classes ) {
 		?>
 		<div class="notice wcpay-notice <?php echo esc_attr( $classes ); ?>">
-			<p><b><?php echo esc_html( __( 'WooCommerce Payments', 'woocommerce-payments' ) ); ?></b></p>
+			<p><b>WooPayments</b></p>
 			<p><?php echo $message; // PHPCS:Ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></p>
 		</div>
 		<?php
@@ -696,10 +696,10 @@ class WC_Payments {
 	}
 
 	/**
-	 * Adds the WooCommerce Payments' gateway class to the list of installed payment gateways.
+	 * Adds the WooPayments' gateway class to the list of installed payment gateways.
 	 *
 	 * @param array $gateways Existing list of gateway classes that will be available for the merchant to configure.
-	 * @return array The list of payment gateways that will be available, including WooCommerce Payments' Gateway class.
+	 * @return array The list of payment gateways that will be available, including WooPayments' Gateway class.
 	 */
 	public static function register_gateway( $gateways ) {
 		if ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
@@ -775,7 +775,7 @@ class WC_Payments {
 
 	/**
 	 * By default, new payment gateways are put at the bottom of the list on the admin "Payments" settings screen.
-	 * For visibility, we want WooCommerce Payments to be at the top of the list.
+	 * For visibility, we want WooPayments to be at the top of the list.
 	 *
 	 * @param array $ordering Existing ordering of the payment gateways.
 	 *
@@ -784,7 +784,7 @@ class WC_Payments {
 	public static function set_gateway_top_of_list( $ordering ) {
 		$ordering = (array) $ordering;
 		$id       = self::get_gateway()->id;
-		// Only tweak the ordering if the list hasn't been reordered with WooCommerce Payments in it already.
+		// Only tweak the ordering if the list hasn't been reordered with WooPayments in it already.
 		if ( ! isset( $ordering[ $id ] ) || ! is_numeric( $ordering[ $id ] ) ) {
 			$ordering[ $id ] = empty( $ordering ) ? 0 : ( min( $ordering ) - 1 );
 		}
@@ -839,7 +839,7 @@ class WC_Payments {
 
 	/**
 	 * By default, new payment gateways are put at the bottom of the list on the admin "Payments" settings screen.
-	 * For visibility, we want WooCommerce Payments to be at the top of the list.
+	 * For visibility, we want WooPayments to be at the top of the list.
 	 * NOTE: this can be removed after WC version 5.6, when the api supports the use of source.
 	 * https://github.com/woocommerce/woocommerce-admin/pull/6979
 	 *
@@ -1321,8 +1321,12 @@ class WC_Payments {
 					<p>
 					<?php
 					echo WC_Payments_Utils::esc_interpolated_html(
-						/* translators: %s: documentation URL */
-						__( 'The WooCommerce version you have installed is not compatible with WooCommerce Payments for a Norwegian business. Please update WooCommerce to version 7.5 or above. You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' ),
+						sprintf(
+							/* translators: %1$s: WooCommerce, %2$s: WooPayments, a1: documentation URL */
+							__( 'The %1$s version you have installed is not compatible with %2$s for a Norwegian business. Please update %1$s to version 7.5 or above. You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' ),
+							'WooCommerce',
+							'WooPayments'
+						),
 						[
 							'a1' => '<a href="' . admin_url( 'plugins.php' ) . '">',
 						]
@@ -1470,8 +1474,6 @@ class WC_Payments {
 
 		$store_logo = self::get_gateway()->get_option( 'platform_checkout_store_logo' );
 
-		$store_api_token = WooPay_Store_Api_Token::init();
-
 		include_once WCPAY_ABSPATH . 'includes/compat/blocks/class-blocks-data-extractor.php';
 		$blocks_data_extractor = new Blocks_Data_Extractor();
 
@@ -1480,7 +1482,7 @@ class WC_Payments {
 			'user_id'         => $user->ID,
 			'customer_id'     => $customer_id,
 			'session_nonce'   => wp_create_nonce( 'wc_store_api' ),
-			'store_api_token' => $store_api_token->get_cart_token(),
+			'store_api_token' => self::init_store_api_token(),
 			'email'           => $email,
 			'store_data'      => [
 				'store_name'                     => get_bloginfo( 'name' ),
@@ -1515,12 +1517,15 @@ class WC_Payments {
 				// If the user is guest and has a merchant account, load data from there.
 				$user_by_email = get_user_by( 'email', $email );
 
+				// Some extensions need the user to be authenticated to get user data,
+				// we compare this email to the one WooPay sends if it's verified there
+				// to get this data without store authentication when both email matches.
 				if ( $user_by_email ) {
 					$user = $user_by_email;
 
-					WC()->session->set( 'woopay_verified_user_id', $user->ID );
+					WC()->session->set( 'woopay_email', $email );
 
-					$body['verified_user_store_api_token'] = $store_api_token->get_store_api_token_for_user_id( $user->ID );
+					$body['user_has_merchant_site_account'] = true;
 				}
 			}
 
@@ -1563,6 +1568,17 @@ class WC_Payments {
 
 		Logger::log( $response_body_json );
 		wp_send_json( json_decode( $response_body_json ) );
+	}
+
+	/**
+	 * Initializes the WooPay_Store_Api_Token class and returns the Cart token.
+	 *
+	 * @return string The Cart Token.
+	 */
+	private static function init_store_api_token() {
+		$cart_route = WooPay_Store_Api_Token::init();
+
+		return $cart_route->get_cart_token();
 	}
 
 	/**
@@ -1780,16 +1796,16 @@ class WC_Payments {
 
 		switch ( $store_currency ) {
 			case 'HUF':
-				/* translators: %1$s: The current WordPress version used by the store */
-				$notice = __( 'The WooCommerce version you have installed is not compatible with WooCommerce Payments for a Hungarian business. Please update WooCommerce to version 7.8 or above (you are using %1$s). You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' );
+				/* translators: %1$s: WooCommerce , %2$s: WooPayments, %3$s: The current WooCommerce version used by the store */
+				$notice = __( 'The %1$s version you have installed is not compatible with %2$s for a Hungarian business. Please update %1$s to version 7.8 or above (you are using %3$s). You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' );
 				break;
 			case 'SEK':
-				/* translators: %1$s: The current WordPress version used by the store */
-				$notice = __( 'The WooCommerce version you have installed is not compatible with WooCommerce Payments for a Swedish business. Please update WooCommerce to version 7.8 or above (you are using %1$s). You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' );
+				/* translators: %1$s: WooCommerce , %2$s: WooPayments, %3$s: The current WooCommerce version used by the store */
+				$notice = __( 'The %1$s version you have installed is not compatible with %2$s for a Swedish business. Please update %1$s to version 7.8 or above (you are using %3$s). You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' );
 				break;
 			case 'CZK':
-				/* translators: %1$s: The current WordPress version used by the store */
-				$notice = __( 'The WooCommerce version you have installed is not compatible with WooCommerce Payments for a Czech Republic business. Please update WooCommerce to version 7.8 or above (you are using %1$s). You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' );
+				/* translators: %1$s: WooCommerce , %2$s: WooPayments, %3$s: The current WooCommerce version used by the store */
+				$notice = __( 'The %1$s version you have installed is not compatible with %2$s for a Czech Republic business. Please update %1$s to version 7.8 or above (you are using %3$s). You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' );
 				break;
 		}
 
@@ -1800,6 +1816,8 @@ class WC_Payments {
 			echo WC_Payments_Utils::esc_interpolated_html(
 				sprintf(
 					$notice,
+					'WooCommerce',
+					'WooPayments',
 					WC_VERSION
 				),
 				[

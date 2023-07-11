@@ -124,54 +124,41 @@ class WooPay_Session {
 		}
 
 		$cart_token = wc_clean( wp_unslash( $_SERVER['HTTP_CART_TOKEN'] ) );
-		$user_id    = self::get_payload_from_cart_token( $cart_token )->user_id;
 
-		if ( null === $user_id ) {
-			return null;
-		}
+		if ( $cart_token && JsonWebToken::validate( $cart_token, '@' . wp_salt() ) ) {
+			$payload = JsonWebToken::get_parts( $cart_token )->payload;
 
-		$session_handler = new SessionHandler();
-		$session_data    = $session_handler->get_session( $user_id );
-		$customer        = maybe_unserialize( $session_data['customer'] );
+			if ( empty( $payload ) ) {
+				return null;
+			}
 
-		// Set the guest user to their actual user if the user email is verified on WooPay.
-		if ( isset( $_SERVER['HTTP_WOOPAY_VERIFIED_USER_CART_TOKEN'] ) && isset( $session_data['woopay_verified_user_id'] ) && is_numeric( $session_data['woopay_verified_user_id'] ) ) {
-			$woopay_verified_user_cart_token = wc_clean( wp_unslash( $_SERVER['HTTP_WOOPAY_VERIFIED_USER_CART_TOKEN'] ) );
-			$woopay_verified_user_payload    = self::get_payload_from_cart_token( $woopay_verified_user_cart_token );
-			$woopay_verified_user_id         = $woopay_verified_user_payload->user_id;
+			// Store API namespace is used as the token issuer.
+			if ( ! preg_match( self::STORE_API_NAMESPACE_PATTERN, $payload->iss ) ) {
+				return null;
+			}
 
-			if ( $woopay_verified_user_payload->exp > time() && intval( $session_data['woopay_verified_user_id'] ) === $woopay_verified_user_id ) {
-				return $woopay_verified_user_id;
+			$session_handler = new SessionHandler();
+			$session_data    = $session_handler->get_session( $payload->user_id );
+			$customer        = maybe_unserialize( $session_data['customer'] );
+
+			// If the token is already authenticated, return the customer ID.
+			if ( is_numeric( $customer['id'] ) && intval( $customer['id'] ) > 0 ) {
+				return intval( $customer['id'] );
+			}
+
+			// If the email is verified on WooPay and matches session email,
+			// return the user to get extension data without authentication.
+			if ( ! empty( $_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] ) && ! empty( $session_data['woopay_email'] ) ) {
+				$woopay_verified_email_address = wc_clean( wp_unslash( $_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] ) );
+				$user                          = get_user_by( 'email', $woopay_verified_email_address );
+
+				if ( $woopay_verified_email_address === $session_data['woopay_email'] && $user ) {
+					return $user->ID;
+				}
 			}
 		}
 
-		return is_numeric( $customer['id'] ) ? intval( $customer['id'] ) : null;
-	}
-
-	/**
-	 * Returns the payload from a cart token.
-	 *
-	 * @param string $cart_token The cart token.
-	 *
-	 * @return object|null The User ID or null if there's no cart token.
-	 */
-	private static function get_payload_from_cart_token( $cart_token ) {
-		if ( ! JsonWebToken::validate( $cart_token, '@' . wp_salt() ) ) {
-			return null;
-		}
-
-		$payload = JsonWebToken::get_parts( $cart_token )->payload;
-
-		if ( empty( $payload ) ) {
-			return null;
-		}
-
-		// Store API namespace is used as the token issuer.
-		if ( ! preg_match( self::STORE_API_NAMESPACE_PATTERN, $payload->iss ) ) {
-			return null;
-		}
-
-		return $payload;
+		return null;
 	}
 
 	/**
