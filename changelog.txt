@@ -1,4 +1,4 @@
-*** WooCommerce Payments Changelog ***
+*** WooPayments Changelog ***
 
 = 6.2.0-test-2 - 2023-xx-xx =
 * Add - Added flag to allow us to remotely set if WooPay should be enabled or not for new merchants.

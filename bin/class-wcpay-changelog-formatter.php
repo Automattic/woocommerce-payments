@@ -37,7 +37,7 @@ class WCPay_Changelog_Formatter extends Parser implements FormatterPlugin {
 	 *
 	 * @var string
 	 */
-	private $title = '*** WooCommerce Payments Changelog ***';
+	private $title = '*** WooPayments Changelog ***';
 
 	/**
 	 * Separator used in headings and change entries.
