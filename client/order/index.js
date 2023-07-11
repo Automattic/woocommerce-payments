@@ -1,6 +1,6 @@
 /* global jQuery */
 
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import ReactDOM from 'react-dom';
 import { dispatch } from '@wordpress/data';
@@ -125,7 +125,7 @@ jQuery( function ( $ ) {
 
 		const now = moment();
 		const dueBy = moment.unix( disputeData.dueBy );
-		const countdownDays = dueBy.diff( now, 'days', true );
+		const countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
 
 		// If the dispute is due in the past, we don't want to show the notice.
 		if ( now.isAfter( dueBy ) ) {
@@ -142,7 +142,7 @@ jQuery( function ( $ ) {
 		let title = sprintf(
 			// Translators: %1$s is the formatted dispute amount, %2$s is the dispute reason, %3$s is the due date.
 			__(
-				'This order has a chargeback dispute of %1$s labeled as "%2$s". Please respond to this dispute before %3$s',
+				'This order has a chargeback dispute of %1$s labeled as "%2$s". Please respond to this dispute before %3$s.',
 				'woocommerce-payments'
 			),
 			amountFormatted,
@@ -165,7 +165,12 @@ jQuery( function ( $ ) {
 			);
 			suffix = sprintf(
 				// Translators: %d is the number of days left to respond to the dispute.
-				__( '(%d days left)', 'woocommerce-payments' ),
+				_n(
+					'(%s day left)',
+					'(%s days left)',
+					countdownDays,
+					'woocommerce-payments'
+				),
 				countdownDays
 			);
 		}
