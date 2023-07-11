@@ -208,7 +208,7 @@ class WC_Payments_Subscriptions_Migrator {
 	private function maybe_cancel_wcpay_subscription( $wcpay_subscription ) {
 		// Valid statuses to cancel subscription at Stripe: active, past_due, trialing, paused.
 		if ( in_array( $wcpay_subscription['status'], $this->active_statuses, true ) ) {
-			$this->log( sprintf( '---- Subscription at Stripe has "%s" status. Canceling the subscription.', $wcpay_subscription['status'] ) );
+			$this->log( sprintf( '---- Subscription at Stripe has "%s" status. Canceling the subscription.', $this->get_wcpay_subscription_status( $wcpay_subscription ) ) );
 
 			try {
 				// Cancel the subscription in stripe.
@@ -221,8 +221,32 @@ class WC_Payments_Subscriptions_Migrator {
 			$this->log( '---- Subscription successfully canceled at stripe.' );
 		} else {
 			// Statuses that don't need to be canceled: incomplete, incomplete_expired, canceled, unpaid.
-			$this->log( sprintf( '---- Subscription has "%s" status. Skipping canceling the subscription at stripe.', $wcpay_subscription['status'] ) );
+			$this->log( sprintf( '---- Subscription has "%s" status. Skipping canceling the subscription at stripe.', $this->get_wcpay_subscription_status( $wcpay_subscription ) ) );
 		}
+	}
+
+	/**
+	 * Returns the subscription status from the WCPay subscription data for logging purposes.
+	 *
+	 * When a subscription is on-hold, we don't change the status of the subscription at Stripe, instead, we set
+	 * the subscription as active and set the `pause_collection` behavior to `void` so that the subscription is not charged.
+	 *
+	 * The purpose of this function is factor in the `paused_collection` value when determining the subscription status at Stripe.
+	 *
+	 * @param array $wcpay_subscription The subscription data from Stripe.
+	 *
+	 * @return string
+	 */
+	private function get_wcpay_subscription_status( $wcpay_subscription ) {
+		if ( empty( $wcpay_subscription['status'] ) ) {
+			return 'unknown';
+		}
+
+		if ( 'active' === $wcpay_subscription['status'] && ! empty( $wcpay_subscription['pause_collection']['behavior'] ) && 'void' === $wcpay_subscription['pause_collection']['behavior'] ) {
+			return 'paused';
+		}
+
+		return $wcpay_subscription['status'];
 	}
 
 	/**
