@@ -22,7 +22,7 @@ import {
 import isValueTruthy from 'utils/is-value-truthy';
 import PaymentStatusChip from 'components/payment-status-chip';
 import PaymentMethodDetails from 'components/payment-method-details';
-import { HorizontalList } from 'components/horizontal-list';
+import { HorizontalList, HorizontalListItem } from 'components/horizontal-list';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import riskMappings from 'components/risk-level/strings';
 import OrderLink from 'components/order-link';
@@ -82,7 +82,7 @@ const composePaymentSummaryItems = ( {
 }: {
 	charge: Charge;
 	metadata: Record< string, any >;
-} ) =>
+} ): HorizontalListItem[] =>
 	[
 		{
 			title: __( 'Date', 'woocommerce-payments' ),
