@@ -36,6 +36,8 @@ fi
 # Setup WCPay local server instance.
 # Only if E2E_USE_LOCAL_SERVER is present & equals to true.
 if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
+	echo "Using local server."
+
 	if [[ ! -d "$SERVER_PATH" ]]; then
 		step "Fetching server (branch ${WCP_SERVER_BRANCH-trunk})"
 
@@ -88,6 +90,8 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 		docker exec "$SERVER_CONTAINER" \
 		sh -c 'echo "#zend_extension=xdebug" > /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && echo "Xdebug disabled."'
 	fi
+else
+	echo "Using production server."
 fi
 
 cd "$cwd"
@@ -174,7 +178,7 @@ echo "Updating permalink structure"
 cli wp rewrite structure '/%postname%/'
 
 echo "Installing and activating WordPress Importer..."
-cli wp plugin install wordpress-importer --activate
+cli wp plugin install wordpress-importer --activate --force
 
 # Install WooCommerce
 if [[ -n "$E2E_WC_VERSION" && $E2E_WC_VERSION != 'latest' ]]; then
@@ -184,17 +188,17 @@ if [[ -n "$E2E_WC_VERSION" && $E2E_WC_VERSION != 'latest' ]]; then
 	fi
 
 	echo "Installing and activating specified WooCommerce version..."
-	cli wp plugin install woocommerce --version="$E2E_WC_VERSION" --activate
+	cli wp plugin install woocommerce --version="$E2E_WC_VERSION" --activate --force
 else
 	echo "Installing and activating latest WooCommerce version..."
-	cli wp plugin install woocommerce --activate
+	cli wp plugin install woocommerce --activate --force
 fi
 
 echo "Installing basic auth plugin for interfacing with the API"
 cli wp plugin install https://github.com/WP-API/Basic-Auth/archive/master.zip --activate --force
 
 echo "Installing and activating Storefront theme..."
-cli wp theme install storefront --activate
+cli wp theme install storefront --activate --force
 
 echo "Adding basic WooCommerce settings..."
 cli wp option set woocommerce_store_address "60 29th Street"
@@ -229,7 +233,7 @@ if [[ "$WCPAY_USE_BUILD_ARTIFACT" = true ]]; then
     cd "$WCPAY_ARTIFACT_DIRECTORY" && zip -r "$cwd"/woocommerce-payments-build.zip . && cd "$cwd"
 
 	echo "Installing & activating the WooCommerce Payments plugin using the zip file created..."
-	cli wp plugin install wp-content/plugins/woocommerce-payments/woocommerce-payments-build.zip --activate
+	cli wp plugin install wp-content/plugins/woocommerce-payments/woocommerce-payments-build.zip --activate --force
 else
 	echo "Activating the WooCommerce Payments plugin..."
 	cli wp plugin activate woocommerce-payments
@@ -298,14 +302,14 @@ fi
 
 if [[ ! ${SKIP_WC_ACTION_SCHEDULER_TESTS} ]]; then
 	echo "Install and activate the latest release of Action Scheduler"
-	cli wp plugin install action-scheduler --activate
+	cli wp plugin install action-scheduler --activate --force
 else
 	echo "Skipping install of Action Scheduler"
 fi
 
 if [[ ! ${SKIP_WC_BLOCKS_TESTS} ]]; then
 	echo "Install and activate the latest release of WooCommerce Blocks"
-	cli wp plugin install woo-gutenberg-products-block --activate
+	cli wp plugin install woo-gutenberg-products-block --activate --force
 else
 	echo "Skipping install of WooCommerce Blocks"
 fi
