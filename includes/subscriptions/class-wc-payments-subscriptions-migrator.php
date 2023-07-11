@@ -68,6 +68,20 @@ class WC_Payments_Subscriptions_Migrator {
 
 		$subscription->save();
 
+		/**
+		 * There's a scenario where a WCPay subscription is active but has no pending renewal scheduled action.
+		 * Once migrated, this results in an active subscription that will remain active forever, without processing a renewal order.
+		 *
+		 * To ensure that all migrated subscriptions have a pending scheduled action, we need to reschedule the next payment date by
+		 * updating the date on the subscription.
+		 */
+		if ( $subscription->has_status( 'active' ) && $subscription->get_time( 'next_payment' ) > time() ) {
+			$new_next_payment = gmdate( 'Y-m-d H:i:s', $subscription->get_time( 'next_payment' ) + 1 );
+			$subscription->update_dates( [ 'next_payment' => $new_next_payment ] );
+
+			$this->log( sprintf( '---- Next payment date updated to %s to ensure active subscription has a pending scheduled payment.', $new_next_payment ) );
+		}
+
 		$this->log( '---- SUCCESS: Subscription migrated.' );
 	}
 
