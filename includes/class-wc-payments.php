@@ -1472,8 +1472,6 @@ class WC_Payments {
 
 		$store_logo = self::get_gateway()->get_option( 'platform_checkout_store_logo' );
 
-		$store_api_token = WooPay_Store_Api_Token::init();
-
 		include_once WCPAY_ABSPATH . 'includes/compat/blocks/class-blocks-data-extractor.php';
 		$blocks_data_extractor = new Blocks_Data_Extractor();
 
@@ -1482,7 +1480,7 @@ class WC_Payments {
 			'user_id'         => $user->ID,
 			'customer_id'     => $customer_id,
 			'session_nonce'   => wp_create_nonce( 'wc_store_api' ),
-			'store_api_token' => $store_api_token->get_cart_token(),
+			'store_api_token' => self::init_store_api_token(),
 			'email'           => $email,
 			'store_data'      => [
 				'store_name'                     => get_bloginfo( 'name' ),
@@ -1511,12 +1509,12 @@ class WC_Payments {
 			$user = get_user_by( 'email', $email );
 
 			// Some extensions need the user to be authenticated to get user data,
-			// we use this token when the user email is verified on WooPay to get this data
-			// without store authentication when both email matches.
+			// we compare this email to the one WooPay sends if it's verified there
+			// to get this data without store authentication when both email matches.
 			if ( $user ) {
-				WC()->session->set( 'woopay_verified_user_id', $user->ID );
+				WC()->session->set( 'woopay_email', $email );
 
-				$body['verified_user_store_api_token'] = $store_api_token->get_store_api_token_for_user_id( $user->ID );
+				$body['user_has_merchant_site_account'] = true;
 			}
 		}
 
@@ -1556,6 +1554,17 @@ class WC_Payments {
 
 		Logger::log( $response_body_json );
 		wp_send_json( json_decode( $response_body_json ) );
+	}
+
+	/**
+	 * Initializes the WooPay_Store_Api_Token class and returns the Cart token.
+	 *
+	 * @return string The Cart Token.
+	 */
+	private static function init_store_api_token() {
+		$cart_route = WooPay_Store_Api_Token::init();
+
+		return $cart_route->get_cart_token();
 	}
 
 	/**
