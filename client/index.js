@@ -42,7 +42,7 @@ addFilter(
 		const isNavigationEnabled =
 			window.wcAdminFeatures && window.wcAdminFeatures.navigation;
 		const connectionPageTitle = isNavigationEnabled
-			? __( 'WooCommerce Payments', 'woocommerce-payments' )
+			? 'WooPayments'
 			: __( 'Connect', 'woocommerce-payments' );
 
 		pages.push( {
@@ -244,10 +244,8 @@ addFilter(
 			pages.push( {
 				container: FraudProtectionAdvancedSettingsPage,
 				path: '/payments/fraud-protection',
-				wpOpenMenu: 'toplevel_page_woocommerce',
-				breadcrumbs: [
-					__( 'WooCommerce Payments', 'woocommerce-payments' ),
-				],
+				wpOpenMenu: menuID,
+				breadcrumbs: [ 'WooPayments' ],
 				capability: 'manage_woocommerce',
 			} );
 		}
