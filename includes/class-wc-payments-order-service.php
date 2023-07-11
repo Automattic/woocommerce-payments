@@ -522,7 +522,7 @@ class WC_Payments_Order_Service {
 	/**
 	 * Get any dispute data for specified order.
 	 *
-	 * @param  mixed $order The order Id or order object.
+	 * @param mixed $order The order Id or order object.
 	 *
 	 * @return array|null The dispute data, or null if no dispute found.
 	 *
