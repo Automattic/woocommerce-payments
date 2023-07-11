@@ -71,6 +71,7 @@ describe( 'Fraud protection', () => {
 		} );
 
 		afterAll( async () => {
+			await merchantWCP.disableAllFraudProtectionRules();
 			await merchant.logout();
 		} );
 
