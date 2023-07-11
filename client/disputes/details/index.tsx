@@ -36,10 +36,8 @@ const DisputeDetails = ( {
 	const needsResponse = disputeAwaitingResponseStatuses.includes(
 		disputeObject.status
 	);
-	const isUrgent =
-		disputeObject.evidence_details?.due_by &&
-		needsResponse &&
-		isDisputeUrgent( disputeObject.evidence_details.due_by );
+	const dueBy = disputeObject.evidence_details?.due_by;
+	const isUrgent = needsResponse && dueBy ? isDisputeUrgent( dueBy ) : false;
 
 	const actions = disputeIsAvailable && (
 		<Actions
