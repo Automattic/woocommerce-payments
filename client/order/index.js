@@ -139,15 +139,42 @@ jQuery( function ( $ ) {
 
 		let urgency = 'warning';
 		let buttonLabel = __( 'Respond now', 'woocommerce-payments' );
-		let suffix = sprintf(
-			// Translators: %d is the number of days left to respond to the dispute.
-			__( '(%d days left)', 'woocommerce-payments' ),
-			countdownDays
+		let title = sprintf(
+			// Translators: %1$s is the formatted dispute amount, %2$s is the dispute reason, %3$s is the due date.
+			__(
+				'This order has a chargeback dispute of %1$s labeled as "%2$s". Please respond to this dispute before %3$s',
+				'woocommerce-payments'
+			),
+			amountFormatted,
+			reasons[ disputeData.reason ].display,
+			dateI18n( 'M j, Y', dueBy.local().toISOString() )
 		);
+		let suffix = '';
+
+		// If the dispute is due within 7 days, use different wording.
+		if ( 7 > countdownDays ) {
+			title = sprintf(
+				// Translators: %1$s is the formatted dispute amount, %2$s is the dispute reason, %3$s is the due date.
+				__(
+					'Please resolve the dispute on this order for %1$s labeled "%2$s" by %3$s.',
+					'woocommerce-payments'
+				),
+				amountFormatted,
+				reasons[ disputeData.reason ].display,
+				dateI18n( 'M j, Y', dueBy.local().toISOString() )
+			);
+			suffix = sprintf(
+				// Translators: %d is the number of days left to respond to the dispute.
+				__( '(%d days left)', 'woocommerce-payments' ),
+				countdownDays
+			);
+		}
+
 		// If the dispute is due within 72 hours, we want to highlight it as urgent/red.
 		if ( 3 > countdownDays ) {
 			urgency = 'error';
 		}
+
 		if ( 1 > countdownDays ) {
 			urgency = 'error';
 			buttonLabel = __( 'Respond today', 'woocommerce-payments' );
@@ -176,17 +203,7 @@ jQuery( function ( $ ) {
 				] }
 			>
 				<strong>
-					{ sprintf(
-						// Translators: %1$s is the formatted dispute amount, %2$s is the dispute reason, %3$s is the due date.
-						__(
-							'Please resolve the dispute on this order for %1$s labeled "%2$s" by %3$s.',
-							'woocommerce-payments'
-						),
-						amountFormatted,
-						reasons[ disputeData.reason ].display,
-						dateI18n( 'M j, Y', dueBy.local().toISOString() )
-					) }{ ' ' }
-					{ suffix }
+					{ title } { suffix }
 				</strong>
 			</BannerNotice>
 		);
