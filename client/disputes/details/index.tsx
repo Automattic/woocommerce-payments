@@ -22,6 +22,8 @@ import Loadable, { LoadableBlock } from 'components/loadable';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import '../style.scss';
 import { Dispute } from 'wcpay/types/disputes';
+import { disputeAwaitingResponseStatuses } from '../filters/config';
+import { isDisputeUrgent } from '../utils';
 
 const DisputeDetails = ( {
 	query: { id: disputeId },
@@ -31,14 +33,18 @@ const DisputeDetails = ( {
 	const { dispute, isLoading, doAccept } = useDispute( disputeId );
 	const disputeObject = dispute || ( {} as Dispute );
 	const disputeIsAvailable = ! isLoading && dispute && disputeObject.id;
+	const needsResponse = disputeAwaitingResponseStatuses.includes(
+		disputeObject.status
+	);
+	const isUrgent =
+		disputeObject.evidence_details?.due_by &&
+		needsResponse &&
+		isDisputeUrgent( disputeObject.evidence_details.due_by );
 
 	const actions = disputeIsAvailable && (
 		<Actions
 			id={ disputeObject.id }
-			needsResponse={
-				'needs_response' === disputeObject.status ||
-				'warning_needs_response' === disputeObject.status
-			}
+			needsResponse={ needsResponse }
 			isSubmitted={
 				disputeObject.evidence_details &&
 				0 < ( disputeObject.evidence_details.submission_count ?? 0 )
@@ -73,6 +79,7 @@ const DisputeDetails = ( {
 							{ __( 'Dispute overview', 'woocommerce-payments' ) }
 							<DisputeStatusChip
 								status={ disputeObject.status }
+								isUrgent={ isUrgent }
 							/>
 						</LoadableBlock>
 					</CardHeader>

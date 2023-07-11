@@ -30,7 +30,9 @@ describe( 'DisputeStatusChip', () => {
 	} );
 
 	function renderDisputeStatus( status ) {
-		const { container } = render( <DisputeStatusChip status={ status } /> );
+		const { container } = render(
+			<DisputeStatusChip status={ status } isUrgent={ false } />
+		);
 		return container;
 	}
 } );
