@@ -19,9 +19,10 @@ import {
 	getChargeChannel,
 	isOnHoldByFraudTools,
 } from 'utils/charge';
+import isValueTruthy from 'utils/is-value-truthy';
 import PaymentStatusChip from 'components/payment-status-chip';
 import PaymentMethodDetails from 'components/payment-method-details';
-import { HorizontalListItem, HorizontalList } from 'components/horizontal-list';
+import { HorizontalList } from 'components/horizontal-list';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import riskMappings from 'components/risk-level/strings';
 import OrderLink from 'components/order-link';
@@ -137,7 +138,7 @@ const composePaymentSummaryItems = ( {
 				? riskMappings[ charge.outcome.risk_level ]
 				: '–',
 		},
-	].filter( Boolean ) as HorizontalListItem[];
+	].filter( isValueTruthy );
 
 const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	charge = {} as Charge,
