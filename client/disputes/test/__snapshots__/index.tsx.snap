@@ -563,7 +563,7 @@ exports[`Disputes list renders correctly 1`] = `
                     class="woocommerce-table__item is-numeric"
                   >
                     <a
-                      data-link-type="wc-admin"
+                      class="components-button is-tertiary"
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
                     >
                       See details
