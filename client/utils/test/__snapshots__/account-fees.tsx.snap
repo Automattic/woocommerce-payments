@@ -50,7 +50,7 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays base 
         >
           Learn more
         </a>
-         about WooCommerce Payments Fees in your country
+         about WooPayments Fees in your country
       </span>
     </div>
   </div>
@@ -107,7 +107,7 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays base 
         >
           Learn more
         </a>
-         about WooCommerce Payments Fees in your country
+         about WooPayments Fees in your country
       </span>
     </div>
   </div>
@@ -164,7 +164,7 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays custo
         >
           Learn more
         </a>
-         about WooCommerce Payments Fees in your country
+         about WooPayments Fees in your country
       </span>
     </div>
   </div>
