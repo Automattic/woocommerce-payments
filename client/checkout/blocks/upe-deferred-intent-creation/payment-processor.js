@@ -20,9 +20,16 @@ import { usePaymentCompleteHandler } from '../hooks';
 import {
 	getStripeElementOptions,
 	useCustomerData,
+	blocksShowLinkButtonHandler,
+	getBlocksEmailValue,
 } from 'wcpay/checkout/utils/upe';
+import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { validateElements } from 'wcpay/checkout/classic/upe-deferred-intent-creation/payment-processing';
+import {
+	BLOCKS_SHIPPING_ADDRESS_FIELDS,
+	BLOCKS_BILLING_ADDRESS_FIELDS,
+} from '../../constants';
 
 const getBillingDetails = ( billingData ) => {
 	return {
@@ -71,7 +78,69 @@ const PaymentProcessor = ( {
 		? testingInstructions
 		: '';
 	const gatewayConfig = getPaymentMethods()[ upeMethods[ paymentMethodId ] ];
-	const billingData = useCustomerData().billingAddress;
+	const customerData = useCustomerData();
+	const billingData = customerData.billingAddress;
+
+	useEffect( () => {
+		if (
+			paymentMethodsConfig.link !== undefined &&
+			paymentMethodsConfig.card !== undefined
+		) {
+			enableStripeLinkPaymentMethod( {
+				api: api,
+				elements: elements,
+				emailId: 'email',
+				fill_field_method: ( address, nodeId, key ) => {
+					const setAddress =
+						BLOCKS_SHIPPING_ADDRESS_FIELDS[ key ] === nodeId
+							? customerData.setShippingAddress
+							: customerData.setBillingData ||
+							  customerData.setBillingAddress;
+					const customerAddress =
+						BLOCKS_SHIPPING_ADDRESS_FIELDS[ key ] === nodeId
+							? customerData.shippingAddress
+							: customerData.billingData ||
+							  customerData.billingAddress;
+
+					if ( 'line1' === key ) {
+						customerAddress.address_1 = address.address[ key ];
+					} else if ( 'line2' === key ) {
+						customerAddress.address_2 = address.address[ key ];
+					} else if ( 'postal_code' === key ) {
+						customerAddress.postcode = address.address[ key ];
+					} else {
+						customerAddress[ key ] = address.address[ key ];
+					}
+
+					setAddress( customerAddress );
+
+					if ( customerData.billingData ) {
+						customerData.billingData.email = getBlocksEmailValue();
+						customerData.setBillingData( customerData.billingData );
+					} else {
+						customerData.billingAddress.email = getBlocksEmailValue();
+						customerData.setBillingAddress(
+							customerData.billingAddress
+						);
+					}
+				},
+				show_button: blocksShowLinkButtonHandler,
+				complete_shipping: () => {
+					return (
+						null !== document.getElementById( 'shipping-address_1' )
+					);
+				},
+				shipping_fields: BLOCKS_SHIPPING_ADDRESS_FIELDS,
+				billing_fields: BLOCKS_BILLING_ADDRESS_FIELDS,
+				complete_billing: () => {
+					return (
+						null !== document.getElementById( 'billing-address_1' )
+					);
+				},
+			} );
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [ elements ] );
 
 	useEffect(
 		() =>

@@ -33,7 +33,7 @@ import {
 	PAYMENT_METHOD_NAME_AFTERPAY,
 } from '../constants.js';
 import { getSplitUPEFields } from './upe-split-fields';
-import { getDeferredIntentCreationUPEFields } from './upe-deferred-intent-creation/payment-elements.js';
+import { getDeferredIntentCreationUPEFields } from './upe-deferred-intent-creation/payment-elements';
 
 const upeMethods = {
 	card: PAYMENT_METHOD_NAME_CARD,

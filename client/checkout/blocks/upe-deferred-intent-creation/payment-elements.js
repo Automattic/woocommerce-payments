@@ -19,6 +19,14 @@ const PaymentElements = ( { api, ...props } ) => {
 	const amount = Number( getUPEConfig( 'cartTotal' ) );
 	const currency = getUPEConfig( 'currency' ).toLowerCase();
 
+	const isStripeLinkEnabled =
+		getUPEConfig( 'paymentMethodsConfig' ).link !== undefined &&
+		getUPEConfig( 'paymentMethodsConfig' ).card !== undefined;
+	const paymentMethodTypes = [ props.paymentMethodId ];
+	if ( 'card' === props.paymentMethodId && isStripeLinkEnabled ) {
+		paymentMethodTypes.push( 'link' );
+	}
+
 	useEffect( () => {
 		async function generateUPEAppearance() {
 			// Generate UPE input styles.
@@ -51,7 +59,7 @@ const PaymentElements = ( { api, ...props } ) => {
 					amount: amount,
 					currency: currency,
 					paymentMethodCreation: 'manual',
-					paymentMethodTypes: [ props.paymentMethodId ],
+					paymentMethodTypes: paymentMethodTypes,
 					appearance: appearance,
 				} }
 			>

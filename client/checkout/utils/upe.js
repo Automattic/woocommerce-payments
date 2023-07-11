@@ -1,3 +1,4 @@
+/* global jQuery */
 /**
  * Internal dependencies
  */
@@ -299,4 +300,36 @@ export const getStripeElementOptions = (
 	options.terms = getTerms( paymentMethodsConfig, showTerms );
 
 	return options;
+};
+
+/**
+ * Returns the value of the email input on the blocks checkout page.
+ *
+ * @return {string} The value of email input.
+ */
+export const getBlocksEmailValue = () => {
+	return document.getElementById( 'email' ).value;
+};
+
+/**
+ * Function to initialise Stripe Link button on email input field.
+ *
+ * @param {Object} linkAutofill Stripe Link Autofill instance.
+ */
+export const blocksShowLinkButtonHandler = ( linkAutofill ) => {
+	jQuery( '#email' )
+		.parent()
+		.append( '<button class="wcpay-stripelink-modal-trigger"></button>' );
+	if ( '' !== jQuery( '#email' ).val() ) {
+		jQuery( '.wcpay-stripelink-modal-trigger' ).show();
+	}
+
+	//Handle StripeLink button click.
+	jQuery( '.wcpay-stripelink-modal-trigger' ).on( 'click', ( event ) => {
+		event.preventDefault();
+		// Trigger modal.
+		linkAutofill.launch( {
+			email: jQuery( '#email' ).val(),
+		} );
+	} );
 };

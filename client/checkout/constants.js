@@ -32,3 +32,24 @@ export function getPaymentMethodsConstants() {
 		PAYMENT_METHOD_NAME_CARD,
 	];
 }
+
+export const BLOCKS_SHIPPING_ADDRESS_FIELDS = {
+	line1: 'shipping-address_1',
+	line2: 'shipping-address_2',
+	city: 'shipping-city',
+	state: 'components-form-token-input-1',
+	postal_code: 'shipping-postcode',
+	country: 'components-form-token-input-0',
+	first_name: 'shipping-first_name',
+	last_name: 'shipping-last_name',
+};
+export const BLOCKS_BILLING_ADDRESS_FIELDS = {
+	line1: 'billing-address_1',
+	line2: 'billing-address_2',
+	city: 'billing-city',
+	state: 'components-form-token-input-3',
+	postal_code: 'billing-postcode',
+	country: 'components-form-token-input-2',
+	first_name: 'billing-first_name',
+	last_name: 'billing-last_name',
+};
