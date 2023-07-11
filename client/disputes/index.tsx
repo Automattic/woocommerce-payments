@@ -264,6 +264,9 @@ export const DisputesList = (): JSX.Element => {
 						) => {
 							// Use client-side routing to avoid page refresh.
 							e.preventDefault();
+							wcpayTracks.recordEvent(
+								wcpayTracks.events.DISPUTES_ROW_ACTION_CLICK
+							);
 							const history = getHistory();
 							history.push(
 								getDetailsURL( dispute.dispute_id, 'disputes' )
