@@ -102,9 +102,10 @@ export const getUpdateBusinessDetailsTask = (
 	return {
 		key: 'update-business-details',
 		level: 1,
-		title: __(
-			'Update WooCommerce Payments business details',
-			'woocommerce-payments'
+		title: sprintf(
+			/* translators: %s: WooPayments */
+			__( 'Update %s business details', 'woocommerce-payments' ),
+			'WooPayments'
 		),
 		content: accountDetailsTaskDescription,
 		completed: 'complete' === status,

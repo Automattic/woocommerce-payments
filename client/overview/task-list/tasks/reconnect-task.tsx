@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -19,11 +19,18 @@ export const getReconnectWpcomTask = (
 		key: 'reconnect-wpcom-user',
 		level: 1,
 		content: '',
-		title: __( 'Reconnect WooCommerce Payments', 'woocommerce-payments' ),
-		additionalInfo: __(
-			'WooCommerce Payments is missing a connected WordPress.com account. ' +
-				'Some functionality will be limited without a connected account.',
-			'woocommerce-payments'
+		title: sprintf(
+			/* translators: %s: WooPayments */
+			__( 'Reconnect %s', 'woocommerce-payments' ),
+			'WooPayments'
+		),
+		additionalInfo: sprintf(
+			/* translators: %s: WooPayments */
+			__(
+				'%s is missing a connected WordPress.com account. Some functionality will be limited without a connected account.',
+				'woocommerce-payments'
+			),
+			'WooPayments'
 		),
 		completed: false,
 		onClick: () => {
