@@ -2,12 +2,23 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { render } from '@testing-library/react';
 
 /**
  * Internal dependencies
  */
 import Chip from '../';
+
+function renderChip(
+	type: string | undefined,
+	message: string,
+	tooltip?: string
+) {
+	return render(
+		<Chip type={ type } message={ message } tooltip={ tooltip } />
+	);
+}
 
 describe( 'Chip', () => {
 	test( 'renders an alert chip', () => {
@@ -48,10 +59,4 @@ describe( 'Chip', () => {
 		const { container: chip } = renderChip( 'invalidtype', 'Message' );
 		expect( chip ).toMatchSnapshot();
 	} );
-
-	function renderChip( type, message, tooltip ) {
-		return render(
-			<Chip type={ type } message={ message } tooltip={ tooltip } />
-		);
-	}
 } );
