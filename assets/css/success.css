@@ -19,6 +19,7 @@
 .wc-payment-gateway-method-name-woopay-wrapper {
 	display: flex;
 	align-items: center;
+	flex-wrap: wrap;
 }
 
 .wc-payment-gateway-method-name-woopay-wrapper img {
