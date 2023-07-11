@@ -1,13 +1,23 @@
 /** @format **/
 
 /**
+ * External dependencies
+ */
+import React from 'react';
+
+/**
  * Internal dependencies
  */
+import { DisputeStatus } from 'wcpay/types/disputes';
 import Chip from '../chip';
 import displayStatus from './mappings';
 import { formatStringValue } from 'utils';
 
-const DisputeStatusChip = ( { status, isUrgent } ) => {
+interface Props {
+	status: DisputeStatus;
+	isUrgent?: boolean;
+}
+const DisputeStatusChip: React.FC< Props > = ( { status, isUrgent } ) => {
 	const mapping = displayStatus[ status ] || {};
 	const message = mapping.message || formatStringValue( status );
 	let type = mapping.type || 'light';
