@@ -71,7 +71,7 @@ const Breadcrumb = () => (
 				section: 'woocommerce_payments',
 			} ) }
 		>
-			{ __( 'WooCommerce Payments', 'woocommerce-payments' ) }
+			{ 'WooPayments' }
 		</Link>
 		&nbsp;&gt;&nbsp;
 		{ __( 'Advanced fraud protection', 'woocommerce-payments' ) }
