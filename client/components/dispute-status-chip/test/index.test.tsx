@@ -2,6 +2,7 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { render } from '@testing-library/react';
 
 /**
@@ -10,6 +11,13 @@ import { render } from '@testing-library/react';
 import DisputeStatusChip from '../';
 
 describe( 'DisputeStatusChip', () => {
+	function renderDisputeStatus( status: string ) {
+		const { container } = render(
+			<DisputeStatusChip status={ status } isUrgent={ false } />
+		);
+		return container;
+	}
+
 	test( 'renders default appearance if status is unrecognized', () => {
 		expect( renderDisputeStatus( 'mock_status' ) ).toMatchSnapshot();
 	} );
@@ -28,11 +36,4 @@ describe( 'DisputeStatusChip', () => {
 	test.each( statuses )( 'renders %s status', ( status ) => {
 		expect( renderDisputeStatus( status ) ).toMatchSnapshot();
 	} );
-
-	function renderDisputeStatus( status ) {
-		const { container } = render(
-			<DisputeStatusChip status={ status } isUrgent={ false } />
-		);
-		return container;
-	}
 } );

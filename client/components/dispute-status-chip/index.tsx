@@ -14,7 +14,7 @@ import displayStatus from './mappings';
 import { formatStringValue } from 'utils';
 
 interface Props {
-	status: DisputeStatus;
+	status: DisputeStatus | string;
 	isUrgent?: boolean;
 }
 const DisputeStatusChip: React.FC< Props > = ( { status, isUrgent } ) => {
