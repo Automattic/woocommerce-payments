@@ -2,14 +2,15 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 export default {
 	button: __( 'Finish setup', 'woocommerce-payments' ),
 
-	heading: __(
-		'Update WooCommerce Payments business details',
-		'woocommerce-payments'
+	heading: sprintf(
+		/* translators: %s: WooPayments */
+		__( 'Update %s business details', 'woocommerce-payments' ),
+		'WooPayments'
 	),
 
 	restrictedDescription: __(
