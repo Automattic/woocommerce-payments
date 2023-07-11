@@ -72,6 +72,7 @@ describe( 'Fraud protection', () => {
 
 		afterAll( async () => {
 			await merchantWCP.disableAllFraudProtectionRules();
+			await merchantWCP.saveAdvancedFraudProtectionSettings();
 
 			// Remove shipping zone method
 			await page.waitFor( 1000 );
@@ -104,6 +105,7 @@ describe( 'Fraud protection', () => {
 		it( 'Address Mismatch', async () => {
 			await merchantWCP.disableAllFraudProtectionRules();
 			await merchantWCP.toggleFraudProtectionRule( 'address-mismatch' );
+			await merchantWCP.saveAdvancedFraudProtectionSettings();
 
 			await setupProductCheckout(
 				config.get( 'addresses.customer.billing' ),
@@ -132,6 +134,8 @@ describe( 'Fraud protection', () => {
 						'#fraud-protection-purchase-price-maximum': '',
 					}
 				);
+				await merchantWCP.saveAdvancedFraudProtectionSettings();
+
 				await setupProductCheckout(
 					config.get( 'addresses.customer.billing' )
 				);
@@ -154,6 +158,7 @@ describe( 'Fraud protection', () => {
 						'#fraud-protection-purchase-price-maximum': '5',
 					}
 				);
+				await merchantWCP.saveAdvancedFraudProtectionSettings();
 
 				await setupProductCheckout(
 					config.get( 'addresses.customer.billing' ),
@@ -179,6 +184,7 @@ describe( 'Fraud protection', () => {
 						'#fraud-protection-purchase-price-maximum': '50',
 					}
 				);
+				await merchantWCP.saveAdvancedFraudProtectionSettings();
 
 				await setupProductCheckout(
 					config.get( 'addresses.customer.billing' )
@@ -199,6 +205,7 @@ describe( 'Fraud protection', () => {
 						'#fraud-protection-order-items-maximum': '',
 					}
 				);
+				await merchantWCP.saveAdvancedFraudProtectionSettings();
 
 				await setupProductCheckout(
 					config.get( 'addresses.customer.billing' )
@@ -223,6 +230,7 @@ describe( 'Fraud protection', () => {
 						'#fraud-protection-order-items-maximum': '3',
 					}
 				);
+				await merchantWCP.saveAdvancedFraudProtectionSettings();
 
 				await setupProductCheckout(
 					config.get( 'addresses.customer.billing' ),
@@ -248,6 +256,7 @@ describe( 'Fraud protection', () => {
 						'#fraud-protection-order-items-maximum': '10',
 					}
 				);
+				await merchantWCP.saveAdvancedFraudProtectionSettings();
 
 				await setupProductCheckout(
 					config.get( 'addresses.customer.billing' ),

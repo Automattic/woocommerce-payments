@@ -836,6 +836,19 @@ export const merchantWCP = {
 		}
 	},
 
+	saveAdvancedFraudProtectionSettings: async () => {
+		await page.waitFor( 500 );
+		await expect( page ).toClick(
+			'.fraud-protection-advanced-settings__footer button'
+		);
+
+		await page.waitForSelector( '.components-snackbar' );
+		await expect( page ).toMatchElement( '.components-snackbar', {
+			text: 'Settings saved',
+			timeout: 60000,
+		} );
+	},
+
 	toggleFraudProtectionRule: async ( ruleName, settings = null ) => {
 		await page.$eval(
 			`#${ ruleName }-card .components-form-toggle__input`,
@@ -856,15 +869,5 @@ export const merchantWCP = {
 				await page.waitFor( 500 );
 			}
 		}
-
-		await expect( page ).toClick(
-			'.fraud-protection-advanced-settings__footer button'
-		);
-
-		await page.waitForSelector( '.components-snackbar' );
-		await expect( page ).toMatchElement( '.components-snackbar', {
-			text: 'Settings saved',
-			timeout: 60000,
-		} );
 	},
 };
