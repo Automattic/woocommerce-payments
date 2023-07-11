@@ -10,7 +10,7 @@ import { _n, __, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
 import { Button } from '@wordpress/components';
 import { TableCard, Link } from '@woocommerce/components';
-import { onQueryChange, getQuery } from '@woocommerce/navigation';
+import { onQueryChange, getQuery, getHistory } from '@woocommerce/navigation';
 import {
 	downloadCSVFile,
 	generateCSVDataFromTable,
@@ -255,19 +255,24 @@ export const DisputesList = (): JSX.Element => {
 			details: { value: dispute.dispute_id, display: detailsLink },
 			action: {
 				value: '',
-				display: needsResponse ? (
+				display: (
 					<Button
-						variant={ 'secondary' }
+						variant={ needsResponse ? 'secondary' : 'tertiary' }
 						href={ getDetailsURL( dispute.dispute_id, 'disputes' ) }
+						onClick={ (
+							e: React.MouseEvent< HTMLAnchorElement >
+						) => {
+							// Use client-side routing to avoid page refresh.
+							e.preventDefault();
+							const history = getHistory();
+							history.push(
+								getDetailsURL( dispute.dispute_id, 'disputes' )
+							);
+						} }
 					>
-						{ __( 'Respond', 'woocommerce-payments' ) }
-					</Button>
-				) : (
-					<Button
-						variant={ 'tertiary' }
-						href={ getDetailsURL( dispute.dispute_id, 'disputes' ) }
-					>
-						{ __( 'See details', 'woocommerce-payments' ) }
+						{ needsResponse
+							? __( 'Respond', 'woocommerce-payments' )
+							: __( 'See details', 'woocommerce-payments' ) }
 					</Button>
 				),
 			},
