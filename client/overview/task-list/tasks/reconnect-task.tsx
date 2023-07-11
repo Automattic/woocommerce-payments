@@ -33,9 +33,7 @@ export const getReconnectWpcomTask = (
 			'WooPayments'
 		),
 		completed: false,
-		onClick: () => {
-			// Only handle clicks on the action button.
-		},
+		onClick: handleClick,
 		action: handleClick,
 		actionLabel: __( 'Reconnect', 'woocommerce-payments' ),
 		expandable: true,

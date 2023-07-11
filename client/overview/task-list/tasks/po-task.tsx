@@ -128,9 +128,7 @@ export const getVerifyBankAccountTask = (): any => {
 		isDismissable: false,
 		showActionButton: true,
 		action: handleClick,
-		onClick: () => {
-			// Only handle clicks on the action button.
-		},
+		onClick: handleClick,
 		actionLabel: actionLabelText,
 		visible: true,
 		time: '2 minutes',
