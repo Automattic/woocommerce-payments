@@ -2,6 +2,9 @@
 	.woocommerce-table__header.is-center-aligned {
 		text-align: center;
 	}
+	.woocommerce-table__item a.components-button {
+		display: inline-flex;
+	}
 
 	.woocommerce-pagination {
 		align-items: flex-end;
