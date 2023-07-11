@@ -71,8 +71,10 @@ describe( 'Fraud protection', () => {
 		} );
 
 		afterAll( async () => {
-			await merchantWCP.disableAllFraudProtectionRules();
-			await merchantWCP.saveAdvancedFraudProtectionSettings();
+			await merchantWCP.openWCPSettings();
+			await merchantWCP.skipFraudProtectionTour();
+			await expect( page ).toClick( '#fraud-protection__basic-level' );
+			await merchantWCP.wcpSettingsSaveChanges();
 
 			// Remove shipping zone method
 			await page.waitFor( 1000 );
