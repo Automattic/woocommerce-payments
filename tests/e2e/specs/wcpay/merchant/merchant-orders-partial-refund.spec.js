@@ -122,7 +122,7 @@ describe.skip( 'Partial refund tests', function () {
 				// Fill up the rest of the form and complete the refund flow
 				await expect( page ).toFill( '#refund_reason', refundReason );
 				await expect( page ).toMatchElement( '.do-api-refund', {
-					text: `Refund $${ refundTotalString } via WooCommerce Payments`,
+					text: `Refund $${ refundTotalString } via WooPayments`,
 				} );
 				const refundDialog = await expect( page ).toDisplayDialog(
 					async () => {
