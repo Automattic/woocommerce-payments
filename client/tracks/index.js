@@ -62,6 +62,7 @@ const events = {
 	CONNECT_ACCOUNT_KYC_MODAL_OPENED: 'wcpay_connect_account_kyc_modal_opened',
 	DEPOSITS_ROW_CLICK: 'wcpay_deposits_row_click',
 	DEPOSITS_DOWNLOAD_CSV_CLICK: 'wcpay_deposits_download',
+	DISPUTES_ROW_ACTION_CLICK: 'wcpay_disputes_row_action_click',
 	ORDER_DISPUTE_NOTICE_BUTTON_CLICK:
 		'wcpay_order_dispute_notice_action_click',
 	OVERVIEW_BALANCES_CURRENCY_CLICK:
