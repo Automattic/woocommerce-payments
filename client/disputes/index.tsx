@@ -34,6 +34,7 @@ import { reasons } from './strings';
 import { formatStringValue } from 'utils';
 import { formatExplicitCurrency } from 'utils/currency';
 import DisputesFilters from './filters';
+import { disputeAwaitingResponseStatuses } from './filters/config';
 import DownloadButton from 'components/download-button';
 import disputeStatusMapping from 'components/dispute-status-chip/mappings';
 import { DisputesTableHeader } from 'wcpay/types/disputes';
@@ -171,10 +172,9 @@ export const DisputesList = (): JSX.Element => {
 		const reasonDisplay = reasonMapping
 			? reasonMapping.display
 			: formatStringValue( dispute.reason );
-		const needsResponse =
-			'needs_response' === dispute.status ||
-			'warning_needs_response' === dispute.status;
-
+		const needsResponse = disputeAwaitingResponseStatuses.includes(
+			dispute.status
+		);
 		const data: {
 			[ key: string ]: {
 				value: number | string;
