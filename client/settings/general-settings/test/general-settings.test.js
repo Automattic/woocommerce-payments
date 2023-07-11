@@ -26,7 +26,7 @@ describe( 'GeneralSettings', () => {
 		render( <GeneralSettings /> );
 
 		expect(
-			screen.queryByText( 'Enable WooCommerce Payments' )
+			screen.queryByText( 'Enable WooPayments' )
 		).toBeInTheDocument();
 		expect( screen.queryByText( 'Enable test mode' ) ).toBeInTheDocument();
 	} );
@@ -39,7 +39,7 @@ describe( 'GeneralSettings', () => {
 			render( <GeneralSettings /> );
 
 			const enableWCPayCheckbox = screen.getByLabelText(
-				'Enable WooCommerce Payments'
+				'Enable WooPayments'
 			);
 
 			let expectation = expect( enableWCPayCheckbox );
@@ -62,7 +62,7 @@ describe( 'GeneralSettings', () => {
 			render( <GeneralSettings /> );
 
 			const enableWCPayCheckbox = screen.getByLabelText(
-				'Enable WooCommerce Payments'
+				'Enable WooPayments'
 			);
 
 			fireEvent.click( enableWCPayCheckbox );

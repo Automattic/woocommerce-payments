@@ -20,7 +20,7 @@ use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Intent_Status;
 
 /**
- * Gateway class for WooCommerce Payments, with added compatibility with WooCommerce Subscriptions.
+ * Gateway class for WooPayments, with added compatibility with WooCommerce Subscriptions.
  */
 trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
@@ -156,7 +156,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		 * If new payment method IDs (eg 'sepa_debit') are added to this condition in the future, care should be taken to ensure duplication,
 		 * including double renewal charging, isn't introduced.
 		 */
-		if ( self::$has_attached_integration_hooks || 'woocommerce_payments' !== $this->id ) {
+		if ( self::$has_attached_integration_hooks || 'woocommerce_payments' !== $this->id || ! $this->is_subscriptions_enabled() ) {
 			return;
 		}
 

@@ -313,7 +313,9 @@ describe( 'Disputes list', () => {
 				`"${ displayFirstDispute[ 1 ] }"`
 			); //status
 
-			expect( csvFirstDispute[ 4 ] ).toBe( displayFirstDispute[ 2 ] ); // reason
+			expect( csvFirstDispute[ 4 ] ).toBe(
+				`"${ displayFirstDispute[ 2 ] }"`
+			); // reason
 
 			expect( csvFirstDispute[ 6 ] ).toBe( displayFirstDispute[ 4 ] ); // order
 
@@ -321,12 +323,8 @@ describe( 'Disputes list', () => {
 				`"${ displayFirstDispute[ 5 ] }"`
 			); // customer
 
-			expect( formatDate( csvFirstDispute[ 10 ], 'Y-m-d' ) ).toBe(
-				formatDate( displayFirstDispute[ 6 ], 'Y-m-d' )
-			); // date disputed on
-
 			expect( formatDate( csvFirstDispute[ 11 ], 'Y-m-d / g:iA' ) ).toBe(
-				formatDate( displayFirstDispute[ 7 ], 'Y-m-d / g:iA' )
+				formatDate( displayFirstDispute[ 6 ], 'Y-m-d / g:iA' )
 			); // date respond by
 		} );
 	} );

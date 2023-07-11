@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class for loading WooCommerce Payments Subscription empty state screen.
+ * Class for loading WooPayments Subscription empty state screen.
  */
 class WC_Payments_Subscriptions_Empty_State_Manager {
 

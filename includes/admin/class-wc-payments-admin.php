@@ -68,6 +68,13 @@ class WC_Payments_Admin {
 	private $onboarding_service;
 
 	/**
+	 * WC_Payments_Incentives_Service instance to get information for incentives.
+	 *
+	 * @var WC_Payments_Incentives_Service
+	 */
+	private $incentives_service;
+
+	/**
 	 * WCPay admin child pages.
 	 *
 	 * @var array
@@ -99,6 +106,7 @@ class WC_Payments_Admin {
 	 * @param WC_Payment_Gateway_WCPay       $gateway             WCPay Gateway instance to get information regarding WooCommerce Payments setup.
 	 * @param WC_Payments_Account            $account             Account instance.
 	 * @param WC_Payments_Onboarding_Service $onboarding_service  Onboarding service instance.
+	 * @param WC_Payments_Incentives_Service $incentives_service  Incentives service instance.
 	 * @param Database_Cache                 $database_cache      Database Cache instance.
 	 */
 	public function __construct(
@@ -106,12 +114,14 @@ class WC_Payments_Admin {
 		WC_Payment_Gateway_WCPay $gateway,
 		WC_Payments_Account $account,
 		WC_Payments_Onboarding_Service $onboarding_service,
+		WC_Payments_Incentives_Service $incentives_service,
 		Database_Cache $database_cache
 	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->wcpay_gateway       = $gateway;
 		$this->account             = $account;
 		$this->onboarding_service  = $onboarding_service;
+		$this->incentives_service  = $incentives_service;
 		$this->database_cache      = $database_cache;
 
 		add_action( 'admin_notices', [ $this, 'display_not_supported_currency_notice' ], 9999 );
@@ -187,7 +197,13 @@ class WC_Payments_Admin {
 						<?php esc_html_e( 'Unsupported currency:', 'woocommerce-payments' ); ?>
 						<?php esc_html( ' ' . get_woocommerce_currency() ); ?>
 					</b>
-					<?php esc_html_e( 'The selected currency is not available for the country set in your WooCommerce Payments account.', 'woocommerce-payments' ); ?>
+					<?php
+						echo sprintf(
+							/* translators: %s: WooPayments*/
+							esc_html__( 'The selected currency is not available for the country set in your %s account.', 'woocommerce-payments' ),
+							'WooPayments'
+						);
+					?>
 				</p>
 			</div>
 			<?php
@@ -241,7 +257,7 @@ class WC_Payments_Admin {
 				'path'       => '/payments/deposits',
 				'position'   => '55.7', // After WooCommerce & Product menu items.
 				'nav_args'   => [
-					'title'        => __( 'WooCommerce Payments', 'woocommerce-payments' ),
+					'title'        => 'WooPayments',
 					'is_category'  => true,
 					'menuId'       => 'plugins',
 					'is_top_level' => true,
@@ -305,7 +321,7 @@ class WC_Payments_Admin {
 				'position'   => '55.7', // After WooCommerce & Product menu items.
 				'icon'       => $menu_icon,
 				'nav_args'   => [
-					'title'        => __( 'WooCommerce Payments', 'woocommerce-payments' ),
+					'title'        => 'WooPayments',
 					'is_category'  => $should_render_full_menu,
 					'menuId'       => 'plugins',
 					'is_top_level' => true,
@@ -320,7 +336,7 @@ class WC_Payments_Admin {
 		}
 
 		if ( ! $should_render_full_menu ) {
-			if ( WC_Payments_Utils::is_in_onboarding_treatment_mode() ) {
+			if ( WC_Payments_Utils::is_in_progressive_onboarding_treatment_mode() || WC_Payments_Features::is_progressive_onboarding_enabled() ) {
 				wc_admin_register_page(
 					[
 						'id'         => 'wc-payments-onboarding',
@@ -334,21 +350,6 @@ class WC_Payments_Admin {
 					]
 				);
 				remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding' );
-			}
-			if ( WC_Payments_Utils::is_in_progressive_onboarding_treatment_mode() || WC_Payments_Features::is_progressive_onboarding_enabled() ) {
-				wc_admin_register_page(
-					[
-						'id'         => 'wc-payments-onboarding-flow',
-						'title'      => __( 'Onboarding', 'woocommerce-payments' ),
-						'parent'     => 'wc-payments',
-						'path'       => '/payments/onboarding-flow',
-						'capability' => 'manage_woocommerce',
-						'nav_args'   => [
-							'parent' => 'wc-payments',
-						],
-					]
-				);
-				remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding-flow' );
 			}
 		}
 
@@ -407,7 +408,7 @@ class WC_Payments_Admin {
 					'id'        => 'woocommerce-settings-payments-woocommerce-payments',
 					'parent'    => 'woocommerce-settings-payments',
 					'screen_id' => 'woocommerce_page_wc-settings-checkout-woocommerce_payments',
-					'title'     => __( 'WooCommerce Payments', 'woocommerce-payments' ),
+					'title'     => 'WooPayments',
 					'nav_args'  => [
 						'parent' => 'wc-payments',
 						'title'  => __( 'Settings', 'woocommerce-payments' ),
@@ -576,7 +577,7 @@ class WC_Payments_Admin {
 	public function enqueue_payments_scripts() {
 		global $current_tab, $current_section;
 
-		// Enqueue the admin settings assets on any WCPau settings page.
+		// Enqueue the admin settings assets on any WCPay settings page.
 		// We also need to enqueue and localize on the multi-currency tab.
 		if ( WC_Payments_Utils::is_payments_settings_page() || 'wcpay_multi_currency' === $current_tab ) {
 			// Localize before actually enqueuing to avoid unnecessary settings generation.
@@ -788,9 +789,10 @@ class WC_Payments_Admin {
 			'frtDiscoverBannerSettings'   => get_option( 'wcpay_frt_discover_banner_settings', '' ),
 			'storeCurrency'               => get_option( 'woocommerce_currency' ),
 			'isBnplAffirmAfterpayEnabled' => WC_Payments_Features::is_bnpl_affirm_afterpay_enabled(),
+			'connectIncentive'            => $this->incentives_service->get_cached_connect_incentive(),
 		];
 
-		return $this->wcpay_js_settings;
+		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );
 	}
 
 	/**
@@ -979,7 +981,7 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		$this->account->redirect_to_onboarding_page();
+		$this->account->redirect_to_onboarding_welcome_page();
 	}
 
 	/**
@@ -1021,7 +1023,7 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		$this->account->redirect_to_onboarding_page();
+		$this->account->redirect_to_onboarding_welcome_page();
 	}
 
 	/**
@@ -1062,7 +1064,16 @@ class WC_Payments_Admin {
 		?>
 		<tr>
 			<td class="label wcpay-transaction-fee">
-				<?php echo wc_help_tip( __( 'This represents the fee WooCommerce Payments collects for the transaction.', 'woocommerce-payments' ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+				<?php
+					// phpcs:ignore WordPress.Security.EscapeOutput
+					echo wc_help_tip(
+						sprintf(
+							/* translators: %s: WooPayments */
+							__( 'This represents the fee %s collects for the transaction.', 'woocommerce-payments' ),
+							'WooPayments'
+						)
+					);
+				?>
 				<?php esc_html_e( 'Transaction Fee:', 'woocommerce-payments' ); ?>
 			</td>
 			<td width="1%"></td>
