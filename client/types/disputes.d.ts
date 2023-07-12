@@ -129,7 +129,8 @@ export interface DisputesTableHeader extends TableCardColumn {
 		| 'customerEmail'
 		| 'customerCountry'
 		| 'created'
-		| 'dueBy';
+		| 'dueBy'
+		| 'action';
 	cellClassName?: string;
 	visible?: boolean;
 }

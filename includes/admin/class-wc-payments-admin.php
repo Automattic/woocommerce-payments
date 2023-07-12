@@ -197,7 +197,13 @@ class WC_Payments_Admin {
 						<?php esc_html_e( 'Unsupported currency:', 'woocommerce-payments' ); ?>
 						<?php esc_html( ' ' . get_woocommerce_currency() ); ?>
 					</b>
-					<?php esc_html_e( 'The selected currency is not available for the country set in your WooCommerce Payments account.', 'woocommerce-payments' ); ?>
+					<?php
+						echo sprintf(
+							/* translators: %s: WooPayments*/
+							esc_html__( 'The selected currency is not available for the country set in your %s account.', 'woocommerce-payments' ),
+							'WooPayments'
+						);
+					?>
 				</p>
 			</div>
 			<?php
@@ -251,7 +257,7 @@ class WC_Payments_Admin {
 				'path'       => '/payments/deposits',
 				'position'   => '55.7', // After WooCommerce & Product menu items.
 				'nav_args'   => [
-					'title'        => __( 'WooCommerce Payments', 'woocommerce-payments' ),
+					'title'        => 'WooPayments',
 					'is_category'  => true,
 					'menuId'       => 'plugins',
 					'is_top_level' => true,
@@ -315,7 +321,7 @@ class WC_Payments_Admin {
 				'position'   => '55.7', // After WooCommerce & Product menu items.
 				'icon'       => $menu_icon,
 				'nav_args'   => [
-					'title'        => __( 'WooCommerce Payments', 'woocommerce-payments' ),
+					'title'        => 'WooPayments',
 					'is_category'  => $should_render_full_menu,
 					'menuId'       => 'plugins',
 					'is_top_level' => true,
@@ -402,7 +408,7 @@ class WC_Payments_Admin {
 					'id'        => 'woocommerce-settings-payments-woocommerce-payments',
 					'parent'    => 'woocommerce-settings-payments',
 					'screen_id' => 'woocommerce_page_wc-settings-checkout-woocommerce_payments',
-					'title'     => __( 'WooCommerce Payments', 'woocommerce-payments' ),
+					'title'     => 'WooPayments',
 					'nav_args'  => [
 						'parent' => 'wc-payments',
 						'title'  => __( 'Settings', 'woocommerce-payments' ),
@@ -571,7 +577,7 @@ class WC_Payments_Admin {
 	public function enqueue_payments_scripts() {
 		global $current_tab, $current_section;
 
-		// Enqueue the admin settings assets on any WCPau settings page.
+		// Enqueue the admin settings assets on any WCPay settings page.
 		// We also need to enqueue and localize on the multi-currency tab.
 		if ( WC_Payments_Utils::is_payments_settings_page() || 'wcpay_multi_currency' === $current_tab ) {
 			// Localize before actually enqueuing to avoid unnecessary settings generation.
@@ -1058,7 +1064,16 @@ class WC_Payments_Admin {
 		?>
 		<tr>
 			<td class="label wcpay-transaction-fee">
-				<?php echo wc_help_tip( __( 'This represents the fee WooCommerce Payments collects for the transaction.', 'woocommerce-payments' ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+				<?php
+					// phpcs:ignore WordPress.Security.EscapeOutput
+					echo wc_help_tip(
+						sprintf(
+							/* translators: %s: WooPayments */
+							__( 'This represents the fee %s collects for the transaction.', 'woocommerce-payments' ),
+							'WooPayments'
+						)
+					);
+				?>
 				<?php esc_html_e( 'Transaction Fee:', 'woocommerce-payments' ); ?>
 			</td>
 			<td width="1%"></td>
