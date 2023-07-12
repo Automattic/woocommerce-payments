@@ -15,15 +15,18 @@ import CancelConfirmationModal from './cancel-confirm-modal';
 import BannerNotice from 'wcpay/components/banner-notice';
 import { formatExplicitCurrency } from 'utils/currency';
 import { reasons } from 'wcpay/disputes/strings';
+import { getDetailsURL } from 'wcpay/components/details-link';
+import { disputeAwaitingResponseStatuses } from 'wcpay/disputes/filters/config';
+import { useCharge } from 'wcpay/data';
 import wcpayTracks from 'tracks';
 import './style.scss';
 
 jQuery( function ( $ ) {
 	const disableManualRefunds = getConfig( 'disableManualRefunds' ) ?? false;
 	const manualRefundsTip = getConfig( 'manualRefundsTip' ) ?? '';
-	const disputeNoticeData = getConfig( 'disputeNoticeData' );
+	const chargeId = getConfig( 'chargeId' );
 
-	maybeShowDisputeNotice( disputeNoticeData );
+	maybeShowDisputeNotice();
 
 	$( '#woocommerce-order-items' ).on(
 		'click',
@@ -109,109 +112,123 @@ jQuery( function ( $ ) {
 		ReactDOM.render( modalToRender, container );
 	}
 
-	function maybeShowDisputeNotice( disputeData ) {
-		if ( ! disputeData ) {
-			return;
-		}
-
+	function maybeShowDisputeNotice() {
 		const container = document.querySelector(
 			'#wcpay-order-payment-details-container'
 		);
 
-		// If the container doesn't exist (WC < 7.9), return.
-		if ( ! container ) {
+		// If the container doesn't exist (WC < 7.9), or the charge ID isn't present, don't render the notice.
+		if ( ! container || ! chargeId ) {
 			return;
 		}
 
-		const now = moment();
-		const dueBy = moment.unix( disputeData.dueBy );
-		const countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
+		ReactDOM.render( <DisputeNotice chargeId={ chargeId } />, container );
+	}
+} );
 
-		// If the dispute is due in the past, we don't want to show the notice.
-		if ( now.isAfter( dueBy ) ) {
-			return;
-		}
+const DisputeNotice = ( { chargeId } ) => {
+	const { data: charge } = useCharge( chargeId );
 
-		const amountFormatted = formatExplicitCurrency(
-			disputeData.amount,
-			disputeData.currency
-		);
+	if (
+		! charge?.dispute ||
+		! charge?.dispute?.evidence_details?.due_by ||
+		// Only show the notice if the dispute is awaiting a response.
+		! disputeAwaitingResponseStatuses.includes( charge?.dispute?.status )
+	) {
+		return null;
+	}
 
-		let urgency = 'warning';
-		let buttonLabel = __( 'Respond now', 'woocommerce-payments' );
-		let title = sprintf(
+	const { dispute } = charge;
+
+	const now = moment();
+	const dueBy = moment.unix( dispute.evidence_details?.due_by );
+	const countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
+
+	// If the dispute is due in the past, we don't want to show the notice.
+	if ( now.isAfter( dueBy ) ) {
+		return;
+	}
+
+	const amountFormatted = formatExplicitCurrency(
+		dispute.amount,
+		dispute.currency
+	);
+
+	let urgency = 'warning';
+	let buttonLabel = __( 'Respond now', 'woocommerce-payments' );
+	let title = sprintf(
+		// Translators: %1$s is the formatted dispute amount, %2$s is the dispute reason, %3$s is the due date.
+		__(
+			'This order has a chargeback dispute of %1$s labeled as "%2$s". Please respond to this dispute before %3$s.',
+			'woocommerce-payments'
+		),
+		amountFormatted,
+		reasons[ dispute.reason ].display,
+		dateI18n( 'M j, Y', dueBy.local().toISOString() )
+	);
+	let suffix = '';
+
+	// If the dispute is due within 7 days, use different wording.
+	if ( 7 > countdownDays ) {
+		title = sprintf(
 			// Translators: %1$s is the formatted dispute amount, %2$s is the dispute reason, %3$s is the due date.
 			__(
-				'This order has a chargeback dispute of %1$s labeled as "%2$s". Please respond to this dispute before %3$s.',
+				'Please resolve the dispute on this order for %1$s labeled "%2$s" by %3$s.',
 				'woocommerce-payments'
 			),
 			amountFormatted,
-			reasons[ disputeData.reason ].display,
+			reasons[ dispute.reason ].display,
 			dateI18n( 'M j, Y', dueBy.local().toISOString() )
 		);
-		let suffix = '';
-
-		// If the dispute is due within 7 days, use different wording.
-		if ( 7 > countdownDays ) {
-			title = sprintf(
-				// Translators: %1$s is the formatted dispute amount, %2$s is the dispute reason, %3$s is the due date.
-				__(
-					'Please resolve the dispute on this order for %1$s labeled "%2$s" by %3$s.',
-					'woocommerce-payments'
-				),
-				amountFormatted,
-				reasons[ disputeData.reason ].display,
-				dateI18n( 'M j, Y', dueBy.local().toISOString() )
-			);
-			suffix = sprintf(
-				// Translators: %s is the number of days left to respond to the dispute.
-				_n(
-					'(%s day left)',
-					'(%s days left)',
-					countdownDays,
-					'woocommerce-payments'
-				),
-				countdownDays
-			);
-		}
-
-		// If the dispute is due within 72 hours, we want to highlight it as urgent/red.
-		if ( 3 > countdownDays ) {
-			urgency = 'error';
-		}
-
-		if ( 1 > countdownDays ) {
-			urgency = 'error';
-			buttonLabel = __( 'Respond today', 'woocommerce-payments' );
-			suffix = __( '(Last day today)', 'woocommerce-payments' );
-		}
-
-		const notice = (
-			<BannerNotice
-				status={ urgency }
-				isDismissible={ false }
-				actions={ [
-					{
-						label: buttonLabel,
-						variant: 'secondary',
-						onClick: () => {
-							wcpayTracks.recordEvent(
-								wcpayTracks.events
-									.ORDER_DISPUTE_NOTICE_BUTTON_CLICK,
-								{
-									due_by_days: parseInt( countdownDays, 10 ),
-								}
-							);
-							window.location = disputeData.url;
-						},
-					},
-				] }
-			>
-				<strong>
-					{ title } { suffix }
-				</strong>
-			</BannerNotice>
+		suffix = sprintf(
+			// Translators: %s is the number of days left to respond to the dispute.
+			_n(
+				'(%s day left)',
+				'(%s days left)',
+				countdownDays,
+				'woocommerce-payments'
+			),
+			countdownDays
 		);
-		ReactDOM.render( notice, container );
 	}
-} );
+
+	// If the dispute is due within 72 hours, we want to highlight it as urgent/red.
+	if ( 3 > countdownDays ) {
+		urgency = 'error';
+	}
+
+	if ( 1 > countdownDays ) {
+		urgency = 'error';
+		buttonLabel = __( 'Respond today', 'woocommerce-payments' );
+		suffix = __( '(Last day today)', 'woocommerce-payments' );
+	}
+	return (
+		<BannerNotice
+			status={ urgency }
+			isDismissible={ false }
+			actions={ [
+				{
+					label: buttonLabel,
+					variant: 'secondary',
+					onClick: () => {
+						wcpayTracks.recordEvent(
+							wcpayTracks.events
+								.ORDER_DISPUTE_NOTICE_BUTTON_CLICK,
+							{
+								due_by_days: parseInt( countdownDays, 10 ),
+							}
+						);
+						window.location = getDetailsURL(
+							dispute.id,
+							'disputes'
+						);
+					},
+				},
+			] }
+		>
+			<strong>
+				{ title } { suffix }
+			</strong>
+		</BannerNotice>
+	);
+};

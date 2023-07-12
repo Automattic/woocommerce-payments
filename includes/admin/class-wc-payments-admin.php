@@ -232,43 +232,6 @@ class WC_Payments_Admin {
 	}
 
 	/**
-	 * Generate dispute data for this order for JavaScript client.
-	 *
-	 * @param WC_Order $order The order being displayed.
-	 */
-	private function get_order_dispute_notice_js_data( $order ) {
-		$dispute_data = $this->order_service->get_dispute_data_for_order( $order );
-
-		if ( ! $dispute_data || ! $dispute_data['evidence_details'] ) {
-			return false;
-		}
-
-		// Return false if there is no dispute evidence details or the dispute is not awaiting a response.
-		$needs_response_statuses = [ 'needs_response', 'warning_needs_response' ];
-		if ( ! in_array( $dispute_data['status'], $needs_response_statuses, true ) ) {
-			return false;
-		}
-
-		$dispute_id       = $dispute_data['id'];
-		$stripe_amount    = $dispute_data['amount'];
-		$reason           = $dispute_data['reason'];
-		$currency         = $dispute_data['currency'];
-		$evidence_details = $dispute_data['evidence_details'];
-		$due_by           = $evidence_details['due_by'];
-
-		$dispute_url = $this->order_service->compose_dispute_url( $dispute_id );
-
-		return [
-			'id'       => $dispute_id,
-			'dueBy'    => $due_by,
-			'currency' => $currency,
-			'amount'   => $stripe_amount,
-			'reason'   => $reason,
-			'url'      => $dispute_url,
-		];
-	}
-
-	/**
 	 * Add notice explaining that ISK cannot have decimals.
 	 */
 	public function display_isk_decimal_notice() {
@@ -730,7 +693,7 @@ class WC_Payments_Admin {
 						'formattedRefundAmount' => wp_strip_all_tags( wc_price( $refund_amount, [ 'currency' => $order->get_currency() ] ) ),
 						'refundedAmount'        => $order->get_total_refunded(),
 						'canRefund'             => $this->wcpay_gateway->can_refund_order( $order ),
-						'disputeNoticeData'     => $this->get_order_dispute_notice_js_data( $order ),
+						'chargeId'              => $this->order_service->get_charge_id_for_order( $order ),
 					]
 				);
 				wp_localize_script(
