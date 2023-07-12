@@ -23,7 +23,6 @@ import { TestModeNotice, topics } from 'components/test-mode-notice';
 import '../style.scss';
 import { Dispute } from 'wcpay/types/disputes';
 import { disputeAwaitingResponseStatuses } from '../filters/config';
-import { isDisputeUrgent } from '../utils';
 
 const DisputeDetails = ( {
 	query: { id: disputeId },
@@ -36,8 +35,6 @@ const DisputeDetails = ( {
 	const needsResponse = disputeAwaitingResponseStatuses.includes(
 		disputeObject.status
 	);
-	const dueBy = disputeObject.evidence_details?.due_by;
-	const isUrgent = needsResponse && dueBy ? isDisputeUrgent( dueBy ) : false;
 
 	const actions = disputeIsAvailable && (
 		<Actions
@@ -77,7 +74,7 @@ const DisputeDetails = ( {
 							{ __( 'Dispute overview', 'woocommerce-payments' ) }
 							<DisputeStatusChip
 								status={ disputeObject.status }
-								isUrgent={ isUrgent }
+								dueBy={ disputeObject.evidence_details?.due_by }
 							/>
 						</LoadableBlock>
 					</CardHeader>

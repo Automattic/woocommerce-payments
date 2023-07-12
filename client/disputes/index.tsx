@@ -40,7 +40,6 @@ import disputeStatusMapping from 'components/dispute-status-chip/mappings';
 import { DisputesTableHeader } from 'wcpay/types/disputes';
 import { getDisputesCSV } from 'wcpay/data/disputes/resolvers';
 import { applyThousandSeparator } from 'wcpay/utils';
-import { isDisputeUrgent } from './utils';
 
 import './style.scss';
 
@@ -176,7 +175,6 @@ export const DisputesList = (): JSX.Element => {
 		const needsResponse = disputeAwaitingResponseStatuses.includes(
 			dispute.status
 		);
-		const isUrgent = needsResponse && isDisputeUrgent( dispute.due_by );
 		const data: {
 			[ key: string ]: {
 				value: number | string;
@@ -198,7 +196,7 @@ export const DisputesList = (): JSX.Element => {
 				display: clickable(
 					<DisputeStatusChip
 						status={ dispute.status }
-						isUrgent={ isUrgent }
+						dueBy={ dispute.due_by }
 					/>
 				),
 			},

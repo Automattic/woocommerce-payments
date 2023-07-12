@@ -11,9 +11,9 @@ import { render } from '@testing-library/react';
 import DisputeStatusChip from '../';
 
 describe( 'DisputeStatusChip', () => {
-	function renderDisputeStatus( status: string ) {
+	function renderDisputeStatus( status: string, dueBy = undefined ) {
 		const { container } = render(
-			<DisputeStatusChip status={ status } isUrgent={ false } />
+			<DisputeStatusChip status={ status } dueBy={ dueBy } />
 		);
 		return container;
 	}

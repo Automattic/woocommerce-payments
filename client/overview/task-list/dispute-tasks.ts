@@ -13,27 +13,8 @@ import type { TaskItemProps } from './types';
 import type { CachedDispute } from 'wcpay/types/disputes';
 import { formatCurrency } from 'wcpay/utils/currency';
 import { getAdminUrl } from 'wcpay/utils';
+import { isDueWithin } from 'wcpay/disputes/utils';
 import wcpayTracks from 'wcpay/tracks';
-
-/**
- * Returns true if the dispute is due within the specified number of days.
- * Returns false if the dispute is not due within the specified number of days
- * or if the due_by value is an empty string.
- *
- * @param {CachedDispute} dispute - The dispute to check.
- * @param {number} days - The number of days to check. Defaults to 1.
- *
- * @return {boolean} True if the dispute is due within the specified number of days.
- */
-const isDueWithin = ( dispute: CachedDispute, days: number ) => {
-	if ( dispute.due_by === '' ) {
-		return false;
-	}
-	// Get current time in UTC.
-	const now = moment().utc();
-	const dueBy = moment.utc( dispute.due_by );
-	return dueBy.diff( now, 'hours' ) > 0 && dueBy.diff( now, 'days' ) <= days;
-};
 
 /**
  * Returns an array of disputes that are due within the specified number of days.
@@ -47,7 +28,9 @@ export const getDisputesDueWithinDays = (
 	activeDisputes: CachedDispute[],
 	days: number
 ): CachedDispute[] =>
-	activeDisputes.filter( ( dispute ) => isDueWithin( dispute, days ) );
+	activeDisputes.filter( ( dispute ) =>
+		isDueWithin( { dueBy: dispute.due_by, days } )
+	);
 
 export const getDisputeResolutionTask = (
 	/**

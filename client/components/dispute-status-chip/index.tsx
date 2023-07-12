@@ -8,23 +8,33 @@ import React from 'react';
 /**
  * Internal dependencies
  */
-import { DisputeStatus } from 'wcpay/types/disputes';
+import {
+	CachedDispute,
+	DisputeStatus,
+	EvidenceDetails,
+} from 'wcpay/types/disputes';
 import Chip from '../chip';
 import displayStatus from './mappings';
 import { formatStringValue } from 'utils';
+import { isDueWithin } from 'wcpay/disputes/utils';
+import { disputeAwaitingResponseStatuses } from 'wcpay/disputes/filters/config';
 
 interface Props {
 	status: DisputeStatus | string;
-	isUrgent?: boolean;
+	dueBy?: CachedDispute[ 'due_by' ] | EvidenceDetails[ 'due_by' ];
 }
-const DisputeStatusChip: React.FC< Props > = ( { status, isUrgent } ) => {
+const DisputeStatusChip: React.FC< Props > = ( { status, dueBy } ) => {
 	const mapping = displayStatus[ status ] || {};
 	const message = mapping.message || formatStringValue( status );
+	const needsResponse = disputeAwaitingResponseStatuses.includes( status );
+	const isUrgent =
+		needsResponse && dueBy ? isDueWithin( { dueBy, days: 3 } ) : false;
+
 	let type = mapping.type || 'light';
-	// If urgent, show as red.
 	if ( isUrgent ) {
 		type = 'alert';
 	}
+
 	return <Chip message={ message } type={ type } isCompact />;
 };
 
