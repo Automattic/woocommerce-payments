@@ -411,6 +411,7 @@ const SingleCurrencySettings = () => {
 													isLink
 													onClick={ () => {
 														open(
+															/* eslint-disable-next-line max-len */
 															'https://woocommerce.com/document/woocommerce-payments/currencies/multi-currency-setup/#price-rounding',
 															'_blank'
 														);
@@ -475,6 +476,7 @@ const SingleCurrencySettings = () => {
 													isLink
 													onClick={ () => {
 														open(
+															/* eslint-disable-next-line max-len */
 															'https://woocommerce.com/document/woocommerce-payments/currencies/multi-currency-setup/#charm-pricing',
 															'_blank'
 														);
