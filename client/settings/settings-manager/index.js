@@ -83,8 +83,8 @@ const TransactionsDescription = () => (
 				'woocommerce-payments'
 			) }
 		</p>
-		<ExternalLink href="https://woocommerce.com/document/payments/faq/">
-			{ __( 'View frequently asked questions', 'woocommerce-payments' ) }
+		<ExternalLink href="https://woocommerce.com/document/woocommerce-payments/">
+			{ __( 'View our documentation', 'woocommerce-payments' ) }
 		</ExternalLink>
 	</>
 );
@@ -104,7 +104,7 @@ const DepositsDescription = () => {
 					depositDelayDays
 				) }
 			</p>
-			<ExternalLink href="https://woocommerce.com/document/payments/faq/deposit-schedule/#section-2">
+			<ExternalLink href="https://woocommerce.com/document/woocommerce-payments/deposits/deposit-schedule/">
 				{ __(
 					'Learn more about pending schedules',
 					'woocommerce-payments'

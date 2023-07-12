@@ -63,7 +63,7 @@ const GeneralSettings = () => {
 								<a
 									target="_blank"
 									rel="noreferrer"
-									href="https://woocommerce.com/document/payments/testing/#test-cards"
+									href="https://woocommerce.com/document/woocommerce-payments/testing-and-troubleshooting/testing/#test-cards"
 								/>
 							),
 							learnMoreLink: (
@@ -71,7 +71,7 @@ const GeneralSettings = () => {
 								<a
 									target="_blank"
 									rel="noreferrer"
-									href="https://woocommerce.com/document/payments/testing/"
+									href="https://woocommerce.com/document/woocommerce-payments/testing-and-troubleshooting/testing/"
 								/>
 							),
 						},
