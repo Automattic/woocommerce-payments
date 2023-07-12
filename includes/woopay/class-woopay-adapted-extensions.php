@@ -68,9 +68,9 @@ class WooPay_Adapted_Extensions {
 			$gift_cards_integration = new \WC_GC_Checkout_Blocks_Integration();
 			$gift_cards_script_data = $gift_cards_integration->get_script_data();
 
-			$account_gift_cards = WC_GC()->cart->get_account_gift_cards();
+			$gift_cards_balance = WC_GC()->account->get_balance( $user->ID );
 
-			if ( ! $email_and_merchant_login_match && count( $account_gift_cards ) > 0 ) {
+			if ( ! $email_and_merchant_login_match && $gift_cards_balance > 0 ) {
 				$ask_email_verification = self::GIFT_CARDS;
 			}
 
