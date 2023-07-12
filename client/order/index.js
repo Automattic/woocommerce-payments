@@ -164,7 +164,7 @@ jQuery( function ( $ ) {
 				dateI18n( 'M j, Y', dueBy.local().toISOString() )
 			);
 			suffix = sprintf(
-				// Translators: %d is the number of days left to respond to the dispute.
+				// Translators: %s is the number of days left to respond to the dispute.
 				_n(
 					'(%s day left)',
 					'(%s days left)',
