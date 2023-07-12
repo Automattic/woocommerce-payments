@@ -70,16 +70,18 @@ export const getTasks = ( {
 		0 < getDisputesDueWithinDays( activeDisputes, 7 ).length;
 
 	return [
-		getUpdateBusinessDetailsTask(
-			errorMessages,
-			status ?? '',
-			accountLink,
-			Number( currentDeadline ) ?? null,
-			pastDue ?? false
-		),
+		showUpdateDetailsTask &&
+			! isPoEnabled &&
+			getUpdateBusinessDetailsTask(
+				errorMessages,
+				status ?? '',
+				accountLink,
+				Number( currentDeadline ) ?? null,
+				pastDue ?? false
+			),
 		wpcomReconnectUrl && getReconnectWpcomTask( wpcomReconnectUrl ),
-		getDisputeResolutionTask( activeDisputes ),
-		getVerifyBankAccountTask(),
+		isDisputeTaskVisible && getDisputeResolutionTask( activeDisputes ),
+		isPoEnabled && getVerifyBankAccountTask(),
 	].filter( Boolean );
 };
 
