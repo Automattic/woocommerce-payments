@@ -32,7 +32,10 @@ const isDueWithin = ( dispute: CachedDispute, days: number ) => {
 	// Get current time in UTC.
 	const now = moment().utc();
 	const dueBy = moment.utc( dispute.due_by );
-	return dueBy.diff( now, 'hours' ) > 0 && dueBy.diff( now, 'days' ) <= days;
+	return (
+		dueBy.diff( now, 'hours', true ) > 0 &&
+		dueBy.diff( now, 'days', true ) <= days
+	);
 };
 
 /**
