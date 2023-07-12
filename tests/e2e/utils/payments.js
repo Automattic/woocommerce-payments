@@ -214,7 +214,6 @@ export async function confirmCardAuthentication(
  * `[ [ "Hoodie", 2 ], [ "Belt", 3 ] ]`.
  *
  * Default value is 1 piece of `config.get( 'products.simple.name' )`.
- * @param {any} shippingDetails Values to be entered into the 'Shipping details' form in the Checkout page
  */
 export async function setupProductCheckout(
 	billingDetails,
