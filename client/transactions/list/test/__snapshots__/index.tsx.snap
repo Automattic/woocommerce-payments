@@ -579,9 +579,19 @@ exports[`Transactions list renders correctly when can filter by several currenci
                       <span
                         class="payment-method-details-list-item"
                       >
-                        <span
-                          class="payment-method__brand payment-method__brand--visa"
-                        />
+                        <button
+                          class="wcpay-tooltip__content-wrapper"
+                          type="button"
+                        >
+                          <div
+                            class="wcpay-tooltip__content-wrapper"
+                          >
+                            <span
+                              aria-label="Visa"
+                              class="payment-method__brand payment-method__brand--visa"
+                            />
+                          </div>
+                        </button>
                          •••• 
                          
                         1234
@@ -721,9 +731,19 @@ exports[`Transactions list renders correctly when can filter by several currenci
                       <span
                         class="payment-method-details-list-item"
                       >
-                        <span
-                          class="payment-method__brand payment-method__brand--mastercard"
-                        />
+                        <button
+                          class="wcpay-tooltip__content-wrapper"
+                          type="button"
+                        >
+                          <div
+                            class="wcpay-tooltip__content-wrapper"
+                          >
+                            <span
+                              aria-label="Mastercard"
+                              class="payment-method__brand payment-method__brand--mastercard"
+                            />
+                          </div>
+                        </button>
                          •••• 
                          
                         1234
@@ -861,9 +881,19 @@ exports[`Transactions list renders correctly when can filter by several currenci
                       <span
                         class="payment-method-details-list-item"
                       >
-                        <span
-                          class="payment-method__brand payment-method__brand--visa"
-                        />
+                        <button
+                          class="wcpay-tooltip__content-wrapper"
+                          type="button"
+                        >
+                          <div
+                            class="wcpay-tooltip__content-wrapper"
+                          >
+                            <span
+                              aria-label="Visa"
+                              class="payment-method__brand payment-method__brand--visa"
+                            />
+                          </div>
+                        </button>
                          •••• 
                          
                         1234
@@ -1482,9 +1512,19 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                       <span
                         class="payment-method-details-list-item"
                       >
-                        <span
-                          class="payment-method__brand payment-method__brand--visa"
-                        />
+                        <button
+                          class="wcpay-tooltip__content-wrapper"
+                          type="button"
+                        >
+                          <div
+                            class="wcpay-tooltip__content-wrapper"
+                          >
+                            <span
+                              aria-label="Visa"
+                              class="payment-method__brand payment-method__brand--visa"
+                            />
+                          </div>
+                        </button>
                          •••• 
                          
                         1234
@@ -1624,9 +1664,19 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                       <span
                         class="payment-method-details-list-item"
                       >
-                        <span
-                          class="payment-method__brand payment-method__brand--mastercard"
-                        />
+                        <button
+                          class="wcpay-tooltip__content-wrapper"
+                          type="button"
+                        >
+                          <div
+                            class="wcpay-tooltip__content-wrapper"
+                          >
+                            <span
+                              aria-label="Mastercard"
+                              class="payment-method__brand payment-method__brand--mastercard"
+                            />
+                          </div>
+                        </button>
                          •••• 
                          
                         1234
@@ -1764,9 +1814,19 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                       <span
                         class="payment-method-details-list-item"
                       >
-                        <span
-                          class="payment-method__brand payment-method__brand--visa"
-                        />
+                        <button
+                          class="wcpay-tooltip__content-wrapper"
+                          type="button"
+                        >
+                          <div
+                            class="wcpay-tooltip__content-wrapper"
+                          >
+                            <span
+                              aria-label="Visa"
+                              class="payment-method__brand payment-method__brand--visa"
+                            />
+                          </div>
+                        </button>
                          •••• 
                          
                         1234
@@ -2389,9 +2449,19 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                       <span
                         class="payment-method-details-list-item"
                       >
-                        <span
-                          class="payment-method__brand payment-method__brand--mastercard"
-                        />
+                        <button
+                          class="wcpay-tooltip__content-wrapper"
+                          type="button"
+                        >
+                          <div
+                            class="wcpay-tooltip__content-wrapper"
+                          >
+                            <span
+                              aria-label="Mastercard"
+                              class="payment-method__brand payment-method__brand--mastercard"
+                            />
+                          </div>
+                        </button>
                          •••• 
                          
                         1234
@@ -3075,9 +3145,19 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                       <span
                         class="payment-method-details-list-item"
                       >
-                        <span
-                          class="payment-method__brand payment-method__brand--visa"
-                        />
+                        <button
+                          class="wcpay-tooltip__content-wrapper"
+                          type="button"
+                        >
+                          <div
+                            class="wcpay-tooltip__content-wrapper"
+                          >
+                            <span
+                              aria-label="Visa"
+                              class="payment-method__brand payment-method__brand--visa"
+                            />
+                          </div>
+                        </button>
                          •••• 
                          
                         1234
@@ -3220,9 +3300,19 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                       <span
                         class="payment-method-details-list-item"
                       >
-                        <span
-                          class="payment-method__brand payment-method__brand--mastercard"
-                        />
+                        <button
+                          class="wcpay-tooltip__content-wrapper"
+                          type="button"
+                        >
+                          <div
+                            class="wcpay-tooltip__content-wrapper"
+                          >
+                            <span
+                              aria-label="Mastercard"
+                              class="payment-method__brand payment-method__brand--mastercard"
+                            />
+                          </div>
+                        </button>
                          •••• 
                          
                         1234
@@ -3363,9 +3453,19 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                       <span
                         class="payment-method-details-list-item"
                       >
-                        <span
-                          class="payment-method__brand payment-method__brand--visa"
-                        />
+                        <button
+                          class="wcpay-tooltip__content-wrapper"
+                          type="button"
+                        >
+                          <div
+                            class="wcpay-tooltip__content-wrapper"
+                          >
+                            <span
+                              aria-label="Visa"
+                              class="payment-method__brand payment-method__brand--visa"
+                            />
+                          </div>
+                        </button>
                          •••• 
                          
                         1234
@@ -4026,9 +4126,19 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                       <span
                         class="payment-method-details-list-item"
                       >
-                        <span
-                          class="payment-method__brand payment-method__brand--visa"
-                        />
+                        <button
+                          class="wcpay-tooltip__content-wrapper"
+                          type="button"
+                        >
+                          <div
+                            class="wcpay-tooltip__content-wrapper"
+                          >
+                            <span
+                              aria-label="Visa"
+                              class="payment-method__brand payment-method__brand--visa"
+                            />
+                          </div>
+                        </button>
                          •••• 
                          
                         1234
@@ -4168,9 +4278,19 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                       <span
                         class="payment-method-details-list-item"
                       >
-                        <span
-                          class="payment-method__brand payment-method__brand--mastercard"
-                        />
+                        <button
+                          class="wcpay-tooltip__content-wrapper"
+                          type="button"
+                        >
+                          <div
+                            class="wcpay-tooltip__content-wrapper"
+                          >
+                            <span
+                              aria-label="Mastercard"
+                              class="payment-method__brand payment-method__brand--mastercard"
+                            />
+                          </div>
+                        </button>
                          •••• 
                          
                         1234
@@ -4308,9 +4428,19 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                       <span
                         class="payment-method-details-list-item"
                       >
-                        <span
-                          class="payment-method__brand payment-method__brand--visa"
-                        />
+                        <button
+                          class="wcpay-tooltip__content-wrapper"
+                          type="button"
+                        >
+                          <div
+                            class="wcpay-tooltip__content-wrapper"
+                          >
+                            <span
+                              aria-label="Visa"
+                              class="payment-method__brand payment-method__brand--visa"
+                            />
+                          </div>
+                        </button>
                          •••• 
                          
                         1234
@@ -4971,9 +5101,19 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                       <span
                         class="payment-method-details-list-item"
                       >
-                        <span
-                          class="payment-method__brand payment-method__brand--visa"
-                        />
+                        <button
+                          class="wcpay-tooltip__content-wrapper"
+                          type="button"
+                        >
+                          <div
+                            class="wcpay-tooltip__content-wrapper"
+                          >
+                            <span
+                              aria-label="Visa"
+                              class="payment-method__brand payment-method__brand--visa"
+                            />
+                          </div>
+                        </button>
                          •••• 
                          
                         1234
@@ -5113,9 +5253,19 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                       <span
                         class="payment-method-details-list-item"
                       >
-                        <span
-                          class="payment-method__brand payment-method__brand--mastercard"
-                        />
+                        <button
+                          class="wcpay-tooltip__content-wrapper"
+                          type="button"
+                        >
+                          <div
+                            class="wcpay-tooltip__content-wrapper"
+                          >
+                            <span
+                              aria-label="Mastercard"
+                              class="payment-method__brand payment-method__brand--mastercard"
+                            />
+                          </div>
+                        </button>
                          •••• 
                          
                         1234
@@ -5253,9 +5403,19 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                       <span
                         class="payment-method-details-list-item"
                       >
-                        <span
-                          class="payment-method__brand payment-method__brand--visa"
-                        />
+                        <button
+                          class="wcpay-tooltip__content-wrapper"
+                          type="button"
+                        >
+                          <div
+                            class="wcpay-tooltip__content-wrapper"
+                          >
+                            <span
+                              aria-label="Visa"
+                              class="payment-method__brand payment-method__brand--visa"
+                            />
+                          </div>
+                        </button>
                          •••• 
                          
                         1234

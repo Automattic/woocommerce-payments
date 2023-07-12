@@ -38,6 +38,7 @@ use WC_Payments_Token_Service;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Utils;
 use WC_Payments_Features;
+use WCPay\Duplicate_Payment_Prevention_Service;
 use WP_User;
 
 
@@ -79,14 +80,15 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * UPE Constructor same parameters as WC_Payment_Gateway_WCPay constructor.
 	 *
-	 * @param WC_Payments_API_Client               $payments_api_client             - WooCommerce Payments API client.
-	 * @param WC_Payments_Account                  $account                         - Account class instance.
-	 * @param WC_Payments_Customer_Service         $customer_service                - Customer class instance.
-	 * @param WC_Payments_Token_Service            $token_service                   - Token class instance.
-	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service        - Action Scheduler service instance.
-	 * @param array                                $payment_methods                 - Array of UPE payment methods.
-	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter - Session Rate Limiter instance.
-	 * @param WC_Payments_Order_Service            $order_service                   - Order class instance.
+	 * @param WC_Payments_API_Client               $payments_api_client                  - WooCommerce Payments API client.
+	 * @param WC_Payments_Account                  $account                              - Account class instance.
+	 * @param WC_Payments_Customer_Service         $customer_service                     - Customer class instance.
+	 * @param WC_Payments_Token_Service            $token_service                        - Token class instance.
+	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service             - Action Scheduler service instance.
+	 * @param array                                $payment_methods                      - Array of UPE payment methods.
+	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter      - Session Rate Limiter instance.
+	 * @param WC_Payments_Order_Service            $order_service                        - Order class instance.
+	 * @param Duplicate_Payment_Prevention_Service $duplicate_payment_prevention_service - Service for preventing duplicate payments.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
@@ -96,43 +98,27 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		WC_Payments_Action_Scheduler_Service $action_scheduler_service,
 		array $payment_methods,
 		Session_Rate_Limiter $failed_transaction_rate_limiter,
-		WC_Payments_Order_Service $order_service
+		WC_Payments_Order_Service $order_service,
+		Duplicate_Payment_Prevention_Service $duplicate_payment_prevention_service
 	) {
-		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $failed_transaction_rate_limiter, $order_service );
-		$this->title           = __( 'WooCommerce Payments', 'woocommerce-payments' );
+		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $failed_transaction_rate_limiter, $order_service, $duplicate_payment_prevention_service );
+		$this->title           = 'WooPayments';
 		$this->description     = '';
 		$this->checkout_title  = __( 'Popular payment methods', 'woocommerce-payments' );
 		$this->payment_methods = $payment_methods;
-		if ( ! is_admin() ) {
-			add_filter( 'woocommerce_gateway_title', [ $this, 'maybe_filter_gateway_title' ], 10, 2 );
-		}
 	}
 
 	/**
-	 * Registers all scripts, necessary for the gateway.
+	 * Initializes this class's WP hooks.
+	 *
+	 * @return void
 	 */
-	public function register_scripts() {
-		// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
-		// loaded twice in the event a site has both plugins enabled. We still run the risk of different plugins
-		// loading different versions however. If Stripe release a v4 of their JavaScript, we could consider
-		// changing the ID to stripe_v4. This would allow older plugins to keep using v3 while we used any new
-		// feature in v4. Stripe have allowed loading of 2 different versions of stripe.js in the past (
-		// https://stripe.com/docs/stripe-js/elements/migrating).
-		wp_register_script(
-			'stripe',
-			'https://js.stripe.com/v3/',
-			[],
-			'3.0',
-			true
-		);
-
-		$script_dependencies = [ 'stripe', 'wc-checkout', 'wp-i18n' ];
-
-		if ( $this->supports( 'tokenization' ) ) {
-			$script_dependencies[] = 'woocommerce-tokenization-form';
+	public function init_hooks() {
+		if ( ! is_admin() ) {
+			add_filter( 'woocommerce_gateway_title', [ $this, 'maybe_filter_gateway_title' ], 10, 2 );
 		}
-		WC_Payments::register_script_with_dependencies( 'wcpay-upe-checkout', 'dist/upe_checkout', $script_dependencies );
-
+		add_action( 'woocommerce_email_before_order_table', [ $this, 'set_payment_method_title_for_email' ], 10, 3 );
+		parent::init_hooks();
 	}
 
 	/**
@@ -195,7 +181,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					'error' => [
 						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
-				]
+				],
+				WC_Payments_Utils::get_filtered_error_status_code( $e ),
 			);
 		}
 	}
@@ -218,13 +205,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			return;
 		}
 
-		$check_session_order = $this->check_against_session_processing_order( $order );
+		$check_session_order = $this->duplicate_payment_prevention_service->check_against_session_processing_order( $order );
 		if ( is_array( $check_session_order ) ) {
 			return $check_session_order;
 		}
-		$this->maybe_update_session_processing_order( $order_id );
+		$this->duplicate_payment_prevention_service->maybe_update_session_processing_order( $order_id );
 
-		$check_existing_intention = $this->check_payment_intent_attached_to_order_succeeded( $order );
+		$check_existing_intention = $this->duplicate_payment_prevention_service->check_payment_intent_attached_to_order_succeeded( $order );
 		if ( is_array( $check_existing_intention ) ) {
 			return $check_existing_intention;
 		}
@@ -301,7 +288,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					'error' => [
 						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
-				]
+				],
+				WC_Payments_Utils::get_filtered_error_status_code( $e ),
 			);
 		}
 	}
@@ -404,7 +392,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					'error' => [
 						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
-				]
+				],
+				WC_Payments_Utils::get_filtered_error_status_code( $e ),
 			);
 		}
 	}
@@ -512,13 +501,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $exception ) );
 				}
 
-				$check_session_order = $this->check_against_session_processing_order( $order );
+				$check_session_order = $this->duplicate_payment_prevention_service->check_against_session_processing_order( $order );
 				if ( is_array( $check_session_order ) ) {
 					return $check_session_order;
 				}
-				$this->maybe_update_session_processing_order( $order_id );
+				$this->duplicate_payment_prevention_service->maybe_update_session_processing_order( $order_id );
 
-				$check_existing_intention = $this->check_payment_intent_attached_to_order_succeeded( $order );
+				$check_existing_intention = $this->duplicate_payment_prevention_service->check_payment_intent_attached_to_order_succeeded( $order );
 				if ( is_array( $check_existing_intention ) ) {
 					return $check_existing_intention;
 				}
@@ -565,7 +554,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$payment_method         = $updated_payment_intent->get_payment_method_id();
 				$charge                 = $updated_payment_intent->get_charge();
 				$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
-				$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : null;
+				$payment_method_type    = $this->get_payment_method_type_from_payment_details( $payment_method_details );
 				$charge_id              = $charge ? $charge->get_id() : null;
 
 				/**
@@ -577,7 +566,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$this->attach_exchange_info_to_order( $order, $charge_id );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 				if ( Payment_Intent_Status::SUCCEEDED === $intent_status ) {
-					$this->remove_session_processing_order( $order->get_id() );
+					$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 				}
 				$this->order_service->update_order_status_from_intent( $order, $updated_payment_intent );
 
@@ -742,7 +731,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$currency               = $intent->get_currency();
 				$payment_method_id      = $intent->get_payment_method_id();
 				$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
-				$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : null;
+				$payment_method_type    = $this->get_payment_method_type_from_payment_details( $payment_method_details );
 				$error                  = $intent->get_last_payment_error();
 			} else {
 				$intent                 = $this->payments_api_client->get_setup_intent( $intent_id );
@@ -783,7 +772,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$this->order_service->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method_id, $customer_id, $charge_id, $currency );
 				$this->attach_exchange_info_to_order( $order, $charge_id );
 				if ( Payment_Intent_Status::SUCCEEDED === $status ) {
-					$this->remove_session_processing_order( $order->get_id() );
+					$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 				}
 				$this->order_service->update_order_status_from_intent( $order, $intent );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
@@ -991,6 +980,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$available_methods[] = Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Affirm_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 
 		$available_methods = array_values(
 			apply_filters(
@@ -1034,7 +1025,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					'error' => [
 						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
-				]
+				],
+				WC_Payments_Utils::get_filtered_error_status_code( $e ),
 			);
 		}
 	}
@@ -1069,6 +1061,18 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			}
 		}
 		return $title;
+	}
+
+	/**
+	 * Sets the payment method title on the order for emails.
+	 *
+	 * @param WC_Order $order   WC Order object.
+	 */
+	public function set_payment_method_title_for_email( $order ) {
+		$payment_method_id      = $this->order_service->get_payment_method_id_for_order( $order );
+		$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
+		$payment_method_type    = $this->get_payment_method_type_from_payment_details( $payment_method_details );
+		$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 	}
 
 	/**
@@ -1157,9 +1161,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			wp_send_json_error(
 				[
 					'error' => [
-						'message' => $e->getMessage(),
+						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
-				]
+				],
+				WC_Payments_Utils::get_filtered_error_status_code( $e ),
 			);
 		}
 	}
@@ -1257,6 +1262,16 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 */
 	public function get_payment_method() {
 		return $this->payment_methods['card'];
+	}
+
+	/**
+	 * Return the payment method type from the payment method details.
+	 *
+	 * @param array $payment_method_details Payment method details.
+	 * @return string|null Payment method type or nothing.
+	 */
+	private function get_payment_method_type_from_payment_details( $payment_method_details ) {
+		return $payment_method_details['type'] ?? null;
 	}
 
 	/**

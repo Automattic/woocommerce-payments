@@ -337,4 +337,25 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		);
 	}
 
+	/**
+	 * Record a Tracks event that the WooPay express button locations has been updated.
+	 *
+	 * @param array $all_locations All pages where WooPay express button can be enabled.
+	 * @param array $platform_checkout_enabled_locations pages where WooPay express button is enabled.
+	 *
+	 * @return void
+	 */
+	public function woopay_locations_updated( $all_locations, $platform_checkout_enabled_locations ) {
+		$props = [];
+		foreach ( array_keys( $all_locations ) as $location ) {
+			$key = $location . '_enabled';
+			if ( in_array( $location, $platform_checkout_enabled_locations, true ) ) {
+				$props[ $key ] = true;
+			} else {
+				$props[ $key ] = false;
+			}
+		}
+
+		$this->maybe_record_admin_event( 'woopay_express_button_locations_updated', $props );
+	}
 }

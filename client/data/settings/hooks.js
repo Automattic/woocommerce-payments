@@ -347,6 +347,13 @@ export const useDepositStatus = () => {
 		return getDepositStatus();
 	}, [] );
 };
+export const useDepositRestrictions = () => {
+	return useSelect( ( select ) => {
+		const { getDepositRestrictions } = select( STORE_NAME );
+
+		return getDepositRestrictions();
+	}, [] );
+};
 export const useManualCapture = () => {
 	const { updateIsManualCaptureEnabled } = useDispatch( STORE_NAME );
 
@@ -552,5 +559,13 @@ export const useAdvancedFraudProtectionSettings = () => {
 			getAdvancedFraudProtectionSettings(),
 			updateAdvancedFraudProtectionSettings,
 		];
+	} );
+};
+
+export const useWooPayShowIncompatibilityNotice = () => {
+	return useSelect( ( select ) => {
+		const { getShowWooPayIncompatibilityNotice } = select( STORE_NAME );
+
+		return getShowWooPayIncompatibilityNotice();
 	} );
 };

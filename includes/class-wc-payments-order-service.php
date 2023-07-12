@@ -276,16 +276,18 @@ class WC_Payments_Order_Service {
 	 *
 	 * @param WC_Order $order      Order object.
 	 * @param string   $dispute_id The ID of the dispute associated with this order.
-	 * @param string   $reason     The reason for the dispute.
+	 * @param string   $amount     The disputed amount – formatted currency value.
+	 * @param string   $reason     The reason for the dispute – human-readable text.
+	 * @param string   $due_by     The deadline for responding to the dispute - formatted date string.
 	 *
 	 * @return void
 	 */
-	public function mark_payment_dispute_created( $order, $dispute_id, $reason ) {
+	public function mark_payment_dispute_created( $order, $dispute_id, $amount, $reason, $due_by ) {
 		if ( ! is_a( $order, 'WC_Order' ) ) {
 			return;
 		}
 
-		$note = $this->generate_dispute_created_note( $dispute_id, $reason );
+		$note = $this->generate_dispute_created_note( $dispute_id, $amount, $reason, $due_by );
 		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
 		}
@@ -942,14 +944,15 @@ class WC_Payments_Order_Service {
 
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-				__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+				/* translators: %1: the successfully charged amount, %2: WooPayments, %3: transaction ID of the payment */
+				__( 'A payment of %1$s was <strong>successfully charged</strong> using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$formatted_amount,
+			'WooPayments',
 			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
 		);
 	}
@@ -968,14 +971,15 @@ class WC_Payments_Order_Service {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-				__( 'A payment of %1$s <strong>failed</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+				/* translators: %1: the authorized amount, %2: WooPayments, %3: transaction ID of the payment */
+				__( 'A payment of %1$s <strong>failed</strong> using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$formatted_amount,
+			'WooPayments',
 			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
 		);
 
@@ -999,14 +1003,15 @@ class WC_Payments_Order_Service {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-				__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+				/* translators: %1: the authorized amount, %2: WooPayments, %3: transaction ID of the payment */
+				__( 'A payment of %1$s was <strong>authorized</strong> using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$this->get_order_amount( $order ),
+			'WooPayments',
 			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
 		);
 
@@ -1024,14 +1029,15 @@ class WC_Payments_Order_Service {
 	private function generate_payment_started_note( $order, $intent_id ): string {
 		$note = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-				__( 'A payment of %1$s was <strong>started</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+				/* translators: %1: the authorized amount, %2: WooPayments, %3: intent ID of the payment */
+				__( 'A payment of %1$s was <strong>started</strong> using %2$s (<code>%3$s</code>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'code'   => '<code>',
 				]
 			),
 			$this->get_order_amount( $order ),
+			'WooPayments',
 			$intent_id
 		);
 
@@ -1051,14 +1057,15 @@ class WC_Payments_Order_Service {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-				__( 'A payment of %1$s was <strong>successfully captured</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+				/* translators: %1: the successfully charged amount, %2: WooPayments, %3: transaction ID of the payment */
+				__( 'A payment of %1$s was <strong>successfully captured</strong> using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$this->get_order_amount( $order ),
+			'WooPayments',
 			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
 		);
 		return $note;
@@ -1078,14 +1085,15 @@ class WC_Payments_Order_Service {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-				__( 'A capture of %1$s <strong>failed</strong> to complete using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+				/* translators: %1: the authorized amount, %2: WooPayments, %3: transaction ID of the payment */
+				__( 'A capture of %1$s <strong>failed</strong> to complete using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$this->get_order_amount( $order ),
+			'WooPayments',
 			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
 		);
 
@@ -1209,22 +1217,29 @@ class WC_Payments_Order_Service {
 	 * Get content for the dispute created order note.
 	 *
 	 * @param string $dispute_id The ID of the dispute associated with this order.
-	 * @param string $reason     The reason for the dispute.
+	 * @param string $amount     The disputed amount – formatted currency value.
+	 * @param string $reason     The reason for the dispute – human-readable text.
+	 * @param string $due_by     The deadline for responding to the dispute - formatted date string.
 	 *
 	 * @return string Note content.
 	 */
-	private function generate_dispute_created_note( $dispute_id, $reason ) {
+	private function generate_dispute_created_note( $dispute_id, $amount, $reason, $due_by ) {
 		$dispute_url = $this->compose_dispute_url( $dispute_id );
+
+		// Get merchant-friendly dispute reason description.
+		$reason = WC_Payments_Utils::get_dispute_reason_description( $reason );
 
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the dispute reason */
-				__( 'Payment has been disputed as %1$s. See <a>dispute overview</a> for more details.', 'woocommerce-payments' ),
+				/* translators: %1: the disputed amount and currency; %2: the dispute reason; %3 the deadline date for responding to dispute */
+				__( 'Payment has been disputed for %1$s with reason "%2$s". <a>Response due by %3$s</a>.', 'woocommerce-payments' ),
 				[
 					'a' => '<a href="' . $dispute_url . '" target="_blank" rel="noopener noreferrer">',
 				]
 			),
-			$reason
+			$amount,
+			$reason,
+			$due_by
 		);
 	}
 

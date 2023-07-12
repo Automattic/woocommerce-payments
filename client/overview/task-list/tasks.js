@@ -5,7 +5,7 @@
  */
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { __, _n, sprintf } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 
@@ -13,10 +13,12 @@ import moment from 'moment';
  * Internal dependencies.
  */
 import strings from './strings';
-import wcpayTracks from 'tracks';
-import { getAdminUrl } from 'wcpay/utils';
 import UpdateBusinessDetailsModal from '../modal/update-business-details';
 import { getVerifyBankAccountTask } from './po-tasks';
+import {
+	getDisputeResolutionTask,
+	getDisputesDueWithinDays,
+} from './dispute-tasks';
 
 const renderModal = ( errorMessages, status, accountLink, currentDeadline ) => {
 	let container = document.querySelector(
@@ -63,7 +65,7 @@ export const getTasks = ( {
 	showUpdateDetailsTask,
 	wpcomReconnectUrl,
 	isAccountOverviewTasksEnabled,
-	numDisputesNeedingResponse = 0,
+	activeDisputes,
 } ) => {
 	const {
 		status,
@@ -81,7 +83,11 @@ export const getTasks = ( {
 		errorMessageDescription,
 		accountDetailsUpdateByDescription;
 
-	const isDisputeTaskVisible = 0 < numDisputesNeedingResponse;
+	const isDisputeTaskVisible =
+		!! activeDisputes &&
+		// Only show the dispute task if there are disputes due within 7 days.
+		0 < getDisputesDueWithinDays( activeDisputes, 7 ).length;
+
 	const hasMultipleErrors = 1 < errorMessages.length;
 	const hasSingleError = 1 === errorMessages.length;
 
@@ -126,9 +132,10 @@ export const getTasks = ( {
 			! isPoEnabled && {
 				key: 'update-business-details',
 				level: 1,
-				title: __(
-					'Update WooCommerce Payments business details',
-					'woocommerce-payments'
+				title: sprintf(
+					/* translators: %s: WooPayments */
+					__( 'Update %s business details', 'woocommerce-payments' ),
+					'WooPayments'
 				),
 				content: accountDetailsTaskDescription,
 				completed: 'complete' === status,
@@ -160,14 +167,19 @@ export const getTasks = ( {
 			wpcomReconnectUrl && {
 				key: 'reconnect-wpcom-user',
 				level: 1,
-				title: __(
-					'Reconnect WooCommerce Payments',
-					'woocommerce-payments'
+				title: sprintf(
+					/* translators: %s: WooPayments */
+					__( 'Reconnect %s', 'woocommerce-payments' ),
+					'WooPayments'
 				),
-				additionalInfo: __(
-					'WooCommerce Payments is missing a connected WordPress.com account. ' +
-						'Some functionality will be limited without a connected account.',
-					'woocommerce-payments'
+				additionalInfo: sprintf(
+					/* translators: %s: WooPayments */
+					__(
+						'%s is missing a connected WordPress.com account. ' +
+							'Some functionality will be limited without a connected account.',
+						'woocommerce-payments'
+					),
+					'WooPayments'
 				),
 				completed: false,
 				onClick: () => {
@@ -178,34 +190,7 @@ export const getTasks = ( {
 				expanded: true,
 				showActionButton: true,
 			},
-		isDisputeTaskVisible && {
-			key: 'dispute-resolution-task',
-			level: 3,
-			title: sprintf(
-				_n(
-					'1 disputed payment needs your response',
-					'%s disputed payments need your response',
-					numDisputesNeedingResponse,
-					'woocommerce-payments'
-				),
-				numDisputesNeedingResponse
-			),
-			additionalInfo: __( 'View and respond', 'woocommerce-payments' ),
-			completed: false,
-			isDeletable: true,
-			isDismissable: true,
-			allowSnooze: true,
-			onClick: () => {
-				wcpayTracks.recordEvent( 'wcpay_overview_task', {
-					task: 'dispute-resolution-task',
-				} );
-				window.location.href = getAdminUrl( {
-					page: 'wc-admin',
-					path: '/payments/disputes',
-					filter: 'awaiting_response',
-				} );
-			},
-		},
+		isDisputeTaskVisible && getDisputeResolutionTask( activeDisputes ),
 		isPoEnabled && getVerifyBankAccountTask(),
 	].filter( Boolean );
 };

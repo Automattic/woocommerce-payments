@@ -20,6 +20,7 @@ class WC_Payments_Features {
 	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME = '_wcpay_feature_woopay_express_checkout';
 	const AUTH_AND_CAPTURE_FLAG_NAME        = '_wcpay_feature_auth_and_capture';
 	const PROGRESSIVE_ONBOARDING_FLAG_NAME  = '_wcpay_feature_progressive_onboarding';
+	const MC_ORDER_META_HELPER_FLAG_NAME    = '_wcpay_feature_mc_order_meta_helper';
 
 	/**
 	 * Checks whether any UPE gateway is enabled.
@@ -182,15 +183,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_wcpay_subscriptions_enabled() {
-		$enabled = get_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, null );
-
-		// Enable the feature by default for stores that are eligible.
-		if ( null === $enabled && function_exists( 'wc_get_base_location' ) && self::is_wcpay_subscriptions_eligible() ) {
-			$enabled = '1';
-			update_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, $enabled );
-		}
-
-		return apply_filters( 'wcpay_is_wcpay_subscriptions_enabled', '1' === $enabled );
+		return apply_filters( 'wcpay_is_wcpay_subscriptions_enabled', '1' === get_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '0' ) );
 	}
 
 	/**
@@ -277,6 +270,23 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the BNPL Affirm Afterpay is enabled.
+	 */
+	public static function is_bnpl_affirm_afterpay_enabled(): bool {
+		$account = WC_Payments::get_account_service()->get_cached_account_data();
+		return ! isset( $account['is_bnpl_affirm_afterpay_enabled'] ) || true === $account['is_bnpl_affirm_afterpay_enabled'];
+	}
+
+	/**
+	 * Checks whether Multi-Currency Order Meta Helper is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_mc_order_meta_helper_enabled(): bool {
+		return '1' === get_option( self::MC_ORDER_META_HELPER_FLAG_NAME, '0' );
+	}
+
+	/**
 	 * Returns feature flags as an array suitable for display on the front-end.
 	 *
 	 * @return bool[]
@@ -296,6 +306,7 @@ class WC_Payments_Features {
 				'woopayExpressCheckout'   => self::is_woopay_express_checkout_enabled(),
 				'isAuthAndCaptureEnabled' => self::is_auth_and_capture_enabled(),
 				'progressiveOnboarding'   => self::is_progressive_onboarding_enabled(),
+				'mcOrderMetaHelper'       => self::is_mc_order_meta_helper_enabled(),
 			]
 		);
 	}

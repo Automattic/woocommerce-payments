@@ -55,6 +55,9 @@ jest.mock( 'wcpay/data', () => ( {
 	useSettings: jest.fn().mockReturnValue( {
 		settings: { enabled_payment_method_ids: [ 'foo', 'bar' ] },
 	} ),
+	useDisputes: jest
+		.fn()
+		.mockReturnValue( { disputes: [], isLoading: false } ),
 	useDeposits: jest
 		.fn()
 		.mockReturnValue( { deposits: [], isLoading: false } ),
@@ -260,28 +263,10 @@ describe( 'Overview page', () => {
 		).toBeVisible();
 	} );
 
-	it( 'dismisses the FRTDiscoverabilityBanner when remind me later button is clicked', async () => {
-		render( <OverviewPage /> );
-
-		const bannerHeader = screen.getByText(
-			'Enhanced fraud protection for your store'
-		);
-
-		expect( bannerHeader ).toBeInTheDocument();
-
-		userEvent.click( screen.getByText( 'Remind me later' ) );
-
-		await waitFor( () => {
-			expect( bannerHeader ).not.toBeInTheDocument();
-		} );
-	} );
-
 	it( 'dismisses the FRTDiscoverabilityBanner when dismiss button is clicked', async () => {
 		global.wcpaySettings = {
 			...global.wcpaySettings,
 			frtDiscoverBannerSettings: JSON.stringify( {
-				remindMeCount: 3,
-				remindMeAt: null,
 				dontShowAgain: false,
 			} ),
 		};

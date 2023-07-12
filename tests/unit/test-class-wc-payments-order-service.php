@@ -144,7 +144,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( $expected_note_1, $notes[1]->content );
-		$this->assertStringContainsString( 'successfully charged</strong> using WooCommerce Payments', $notes[0]->content );
+		$this->assertStringContainsString( 'successfully charged</strong> using WooPayments', $notes[0]->content );
 		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
@@ -234,7 +234,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( 'On hold to Processing', $notes[1]->content );
-		$this->assertStringContainsString( 'successfully captured</strong> using WooCommerce Payments', $notes[0]->content );
+		$this->assertStringContainsString( 'successfully captured</strong> using WooPayments', $notes[0]->content );
 		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
@@ -303,7 +303,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( 'Pending payment to On hold', $notes[1]->content );
-		$this->assertStringContainsString( 'authorized</strong> using WooCommerce Payments', $notes[0]->content );
+		$this->assertStringContainsString( 'authorized</strong> using WooPayments', $notes[0]->content );
 		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
@@ -449,7 +449,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertStringContainsString( 'started</strong> using WooCommerce Payments', $notes[0]->content );
+		$this->assertStringContainsString( 'started</strong> using WooPayments', $notes[0]->content );
 		$this->assertStringContainsString( 'Payments (<code>pi_mock</code>)', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
@@ -543,7 +543,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertStringContainsString( 'started</strong> using WooCommerce Payments', $notes[0]->content );
+		$this->assertStringContainsString( 'started</strong> using WooPayments', $notes[0]->content );
 		$this->assertStringContainsString( 'Payments (<code>pi_mock</code>)', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
@@ -579,7 +579,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( 'Pending payment to Failed', $notes[1]->content );
-		$this->assertStringContainsString( 'failed</strong> using WooCommerce Payments', $notes[0]->content );
+		$this->assertStringContainsString( 'failed</strong> using WooPayments', $notes[0]->content );
 		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
 		$this->assertStringContainsString( 'This is the test failed message.', $notes[0]->content );
 
@@ -641,7 +641,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertStringContainsString( 'failed</strong> to complete using WooCommerce Payments', $notes[0]->content );
+		$this->assertStringContainsString( 'failed</strong> to complete using WooPayments', $notes[0]->content );
 		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
@@ -682,7 +682,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertStringContainsString( 'failed</strong> to complete using WooCommerce Payments', $notes[0]->content );
+		$this->assertStringContainsString( 'failed</strong> to complete using WooPayments', $notes[0]->content );
 		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
@@ -850,23 +850,31 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	public function test_mark_payment_dispute_created() {
 		// Arrange: Set the dispute_id and reason, and the order status.
 		$dispute_id   = 'dp_123';
+		$amount       = '$123.45';
 		$reason       = 'product_not_received';
+		$deadline     = 'June 7, 2023';
 		$order_status = Order_Status::ON_HOLD;
 
 		// Act: Attempt to mark payment dispute created.
-		$this->order_service->mark_payment_dispute_created( $this->order, $dispute_id, $reason );
+		$this->order_service->mark_payment_dispute_created( $this->order, $dispute_id, $amount, $reason, $deadline );
 
 		// Assert: Check that the order status was updated to on-hold status.
 		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
 
-		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+
+		// Assert: Check that dispute order note was added with relevant info and link to dispute detail.
+		$this->assertStringContainsString( 'Payment has been disputed', $notes[0]->content );
+		$this->assertStringContainsString( $amount, $notes[0]->content );
+		$this->assertStringContainsString( 'Product not received', $notes[0]->content );
+		$this->assertStringContainsString( $deadline, $notes[0]->content );
+		$this->assertStringContainsString( '/payments/disputes/details&id=dp_123" target="_blank" rel="noopener noreferrer">Response due by', $notes[0]->content );
+
+		// Assert: Check that order status change note was added.
 		$this->assertStringContainsString( 'Pending payment to On hold', $notes[1]->content );
-		$this->assertStringContainsString( 'Payment has been disputed as product_not_received', $notes[0]->content );
-		$this->assertStringContainsString( '/payments/disputes/details&id=dp_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
 
 		// Assert: Applying the same data multiple times does not cause duplicate actions.
-		$this->order_service->mark_payment_dispute_created( $this->order, $dispute_id, $reason );
+		$this->order_service->mark_payment_dispute_created( $this->order, $dispute_id, $amount, $reason, $deadline );
 		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertCount( 2, $notes_2 );
 	}
@@ -876,13 +884,16 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_dispute_created_exits_if_order_invalid() {
 		// Arrange: Set the dispute_id and reason, and the order status.
-		$dispute_id     = 'dp_123';
-		$reason         = 'product_not_received';
+		$dispute_id = 'dp_123';
+		$amount     = '$123.45';
+		$reason     = 'product_not_received';
+		$deadline   = 'June 7, 2023';
+
 		$order_status   = $this->order->get_status();
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Act: Attempt to mark payment dispute created.
-		$this->order_service->mark_payment_dispute_created( 'fake_order', $dispute_id, $reason );
+		$this->order_service->mark_payment_dispute_created( 'fake_order', $dispute_id, $amount, $reason, $deadline );
 
 		// Assert: Check that the order status was not updated.
 		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );

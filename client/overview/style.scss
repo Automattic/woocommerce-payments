@@ -9,16 +9,27 @@
 }
 
 // Adapted from woocommerce-admin:client/homescreen/style.scss
-.components-card.woocommerce-task-card {
-	.components-card__body {
-		padding: 0;
+.wcpay-task-list.woocommerce-experimental-list {
+	position: relative;
+
+	.woocommerce-experimental-list__item {
+		position: relative;
 	}
 
-	.wcpay-task-list.woocommerce-experimental-list {
-		position: relative;
+	.woocommerce-task-list__item[data-key^='dispute-resolution-task'] {
+		// Hide the dispute resolution task tooltip / popover as it is irrelevant.
+		.components-popover {
+			display: none;
+		}
 
-		.woocommerce-experimental-list__item {
-			position: initial;
+		// Style non-urgent dispute tasks as yellow, keeping the level-1 exclamation icon.
+		&:not( [data-urgent='true'] ) {
+			.gridicons-notice-outline {
+				fill: #f0b849;
+			}
+			&::before {
+				background-color: #f0b849;
+			}
 		}
 	}
 }

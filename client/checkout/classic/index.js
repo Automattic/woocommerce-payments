@@ -292,7 +292,11 @@ jQuery( function ( $ ) {
 			.catch( function ( error ) {
 				paymentMethodGenerated = null;
 				$form.removeClass( 'processing' ).unblock();
-				showError( error.message );
+				if ( error.responseJSON && ! error.responseJSON.success ) {
+					showError( error.responseJSON.data.error.message );
+				} else if ( error.message ) {
+					showError( error.message );
+				}
 			} );
 	};
 
@@ -474,7 +478,7 @@ jQuery( function ( $ ) {
 		);
 	}
 
-	// Handle the checkout form when WooCommerce Payments is chosen.
+	// Handle the checkout form when WooPayments is chosen.
 	const wcpayPaymentMethods = [ PAYMENT_METHOD_NAME_CARD ];
 	const checkoutEvents = wcpayPaymentMethods
 		.map( ( method ) => `checkout_place_order_${ method }` )
@@ -492,7 +496,7 @@ jQuery( function ( $ ) {
 		}
 	} );
 
-	// Handle the Pay for Order form if WooCommerce Payments is chosen.
+	// Handle the Pay for Order form if WooPayments is chosen.
 	$( '#order_review' ).on( 'submit', () => {
 		if (
 			isUsingSavedPaymentMethod() ||
@@ -508,7 +512,7 @@ jQuery( function ( $ ) {
 		);
 	} );
 
-	// Handle the add payment method form for WooCommerce Payments.
+	// Handle the add payment method form for WooPayments.
 	$( 'form#add_payment_method' ).on( 'submit', function () {
 		if (
 			'woocommerce_payments' !==

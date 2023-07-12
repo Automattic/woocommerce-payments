@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { useContext, useEffect } from 'react';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { dispatch } from '@wordpress/data';
 import { Button, ExternalLink } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
@@ -30,9 +30,10 @@ const NeedHelpBarSection = () => {
 					docsLink: (
 						// eslint-disable-next-line max-len
 						<ExternalLink href="https://woocommerce.com/document/payments/additional-payment-methods/#introduction">
-							{ __(
-								'WooCommerce Payments docs',
-								'woocommerce-payments'
+							{ sprintf(
+								/* translators: %s: WooPayments */
+								__( '%s docs', 'woocommerce-payments' ),
+								'WooPayments'
 							) }
 						</ExternalLink>
 					),

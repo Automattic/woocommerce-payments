@@ -3,18 +3,35 @@
  * External dependencies
  */
 import React from 'react';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 
 export default {
 	button: __( 'Finish setup', 'woocommerce-payments' ),
-	heading: __(
-		'Accept payments and manage your business.',
+	heading: ( firstName?: string ): string =>
+		sprintf(
+			/* translators: %s: first name of the merchant, if it exists. */
+			__(
+				'Hi%s, run your business and manage your payments all in one place, with no setup costs or monthly fees.',
+				'woocommerce'
+			),
+			firstName ? ` ${ firstName }` : ''
+		),
+	usp1: __(
+		'Offer card payments, Apple Pay, Sofort, iDeal, Affirm, Afterpay, and accept in-person payments with the Woo mobile app.',
 		'woocommerce-payments'
 	),
-	description: createInterpolateElement(
+	usp2: __(
+		'Sell to international markets and accept over 135 currencies with local payment methods.',
+		'woocommerce-payments'
+	),
+	usp3: __(
+		'Earn recurring revenue and get deposits into your bank account.',
+		'woocommerce-payments'
+	),
+	agreement: createInterpolateElement(
 		__(
-			'By using Woo Payments you agree to our <a1>Terms of Service</a1> and acknowledge that you have read our <a2>Privacy Policy</a2>.',
+			'By clicking “Finish setup”, you agree to the <a1>Terms of Service</a1> and acknowledge that you have read our <a2>Privacy Policy</a2>.',
 			'woocommerce-payments'
 		),
 		{
@@ -36,26 +53,14 @@ export default {
 			),
 		}
 	),
-	acceptedPaymentMethods: __(
-		'Accepted payment methods include:',
+	paymentMethods: __(
+		'WooPayments is pre-integrated with popular payment options:',
 		'woocommerce-payments'
 	),
 	infoNotice: {
-		description: createInterpolateElement(
-			__(
-				"In order to receive deposits with <a>Woo Payments</a>, you'll need to share business details to verify who you are.",
-				'woocommerce-payments'
-			),
-			{
-				a: (
-					// eslint-disable-next-line jsx-a11y/anchor-has-content
-					<a
-						href="https://woocommerce.com/payments/"
-						target="_blank"
-						rel="noopener noreferrer"
-					/>
-				),
-			}
+		description: __(
+			"In order to receive deposits with WooPayments, you'll need to share business details to verify who you are.",
+			'woocommerce-payments'
 		),
 		button: __(
 			'Learn more about how to receive deposits.',
@@ -162,7 +167,7 @@ export default {
 					'Country where your business is based',
 					'woocommerce-payments '
 				),
-				__( 'Type of businesss', 'woocommerce-payments ' ),
+				__( 'Type of business', 'woocommerce-payments ' ),
 				__( 'Industry', 'woocommerce-payments ' ),
 				__( 'Company address', 'woocommerce-payments ' ),
 				__( 'Company phone number', 'woocommerce-payments ' ),
@@ -201,4 +206,32 @@ export default {
 		"We've temporarily paused new account creation. We'll notify you when we resume!",
 		'woocommerce-payments'
 	),
+	incentive: {
+		limitedTimeOffer: __( 'Limited time offer', 'woocommerce-payments' ),
+		details: __(
+			'Discount will be applied to payments processed via WooPayments upon completion of installation, setup, and connection.',
+			'woocommerce-payments'
+		),
+		termsAndConditions: ( url: string ): JSX.Element =>
+			createInterpolateElement(
+				__(
+					'*See <a>Terms and Conditions</a> for details.',
+					'woocommerce-payments'
+				),
+				{
+					a: (
+						// eslint-disable-next-line jsx-a11y/anchor-has-content
+						<a
+							href={ url }
+							target="_blank"
+							rel="noopener noreferrer"
+						/>
+					),
+				}
+			),
+		error: __(
+			'There was an error applying the promotion. Please contact support for assistance if the problem persists',
+			'woocommerce-payments'
+		),
+	},
 };
