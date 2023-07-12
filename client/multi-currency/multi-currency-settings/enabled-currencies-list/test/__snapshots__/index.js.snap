@@ -12,7 +12,7 @@ exports[`Multi-Currency enabled currencies list Enabled currencies list renders 
         Enabled currencies
       </h2>
       <p>
-        Accept payments in multiple currencies. Prices are converted based on exchange rates and rounding rules.
+        Accept payments in multiple currencies. Prices are converted based on exchange rates and rounding rules. 
         <a
           href="https://woocommerce.com/document/woocommerce-payments/currencies/multi-currency-setup/"
           rel="noreferrer"
@@ -363,7 +363,7 @@ exports[`Multi-Currency enabled currencies list Remove currency modal renders co
       </div>
     </div>
     <p>
-      Are you sure you want to remove
+      Are you sure you want to remove 
       <strong>
         Euro (EUR €)
       </strong>
