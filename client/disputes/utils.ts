@@ -10,11 +10,11 @@ import moment from 'moment';
 import { CachedDispute, EvidenceDetails } from 'wcpay/types/disputes';
 
 /**
- * Returns if a dispute is urgent or not.
+ * Calculate if a dispute is urgent.
  *
  * @param {string} dueBy The due by date of the dispute. See CachedDispute['due_by'].
  *
- * @return {boolean} True if the dispute is urgent, false otherwise.
+ * @return {boolean} True if the dispute is urgent, false otherwise or if the due by date is invalid.
  */
 export const isDisputeUrgent = (
 	dueBy: CachedDispute[ 'due_by' ] | EvidenceDetails[ 'due_by' ]
