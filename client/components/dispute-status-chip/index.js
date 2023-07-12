@@ -1,29 +1,15 @@
 /** @format **/
 
 /**
- * External dependencies
- */
-import React from 'react';
-
-/**
  * Internal dependencies
  */
-import {
-	CachedDispute,
-	DisputeStatus,
-	EvidenceDetails,
-} from 'wcpay/types/disputes';
 import Chip from '../chip';
 import displayStatus from './mappings';
 import { formatStringValue } from 'utils';
 import { isDueWithin } from 'wcpay/disputes/utils';
 import { disputeAwaitingResponseStatuses } from 'wcpay/disputes/filters/config';
 
-interface Props {
-	status: DisputeStatus | string;
-	dueBy?: CachedDispute[ 'due_by' ] | EvidenceDetails[ 'due_by' ];
-}
-const DisputeStatusChip: React.FC< Props > = ( { status, dueBy } ) => {
+const DisputeStatusChip = ( { status, dueBy } ) => {
 	const mapping = displayStatus[ status ] || {};
 	const message = mapping.message || formatStringValue( status );
 	const needsResponse = disputeAwaitingResponseStatuses.includes( status );
