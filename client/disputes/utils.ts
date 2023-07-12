@@ -7,10 +7,10 @@ import moment from 'moment';
 /**
  * Internal dependencies
  */
-import { CachedDispute, EvidenceDetails } from 'wcpay/types/disputes';
+import type { CachedDispute, EvidenceDetails } from 'wcpay/types/disputes';
 
 interface IsDueWithinProps {
-	dueBy: CachedDispute[ 'due_by' ] | EvidenceDetails[ 'due_by' ] | undefined;
+	dueBy?: CachedDispute[ 'due_by' ] | EvidenceDetails[ 'due_by' ];
 	days: number;
 }
 /**
@@ -18,8 +18,9 @@ interface IsDueWithinProps {
  * Returns false if the dispute due_by date is not within the specified number of days
  * or if the due_by value is not a valid date.
  *
- * @param {IsDueWithinProps} dispute - An object containing the dispute due_by date, either in unix timestamp (number) or ISO format (string).
- * @param {number} days - The number of days to check.
+ * @param {IsDueWithinProps} props - An object containing function arguments.
+ * @param {number} props.dueBy - The dispute due_by date. Accepts a unix timestamp {@link EvidenceDetails} or a date string {@link CachedDispute}.
+ * @param {number} props.days - The number of days to check.
  *
  * @return {boolean} True if the dispute is due within the specified number of days.
  */
