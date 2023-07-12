@@ -68,7 +68,7 @@ class Checkout_Service {
 			return false;
 		}
 
-		$should_use_stripe_platform = WC_Payments_Features::is_upe_deferred_intent_enabled() ? \WC_Payments::get_payment_gateway_by_id( $payment_information->get_payment_method_stripe_id() )->should_use_stripe_platform_on_checkout_page() : $this->should_use_stripe_platform_on_checkout_page();
+		$should_use_stripe_platform = WC_Payments_Features::is_upe_deferred_intent_enabled() ? \WC_Payments::get_payment_gateway_by_id( $payment_information->get_payment_method_stripe_id() )->should_use_stripe_platform_on_checkout_page() : \WC_Payments::get_gateway()->should_use_stripe_platform_on_checkout_page();
 
 		// Make sure the payment method being charged was created in the platform.
 		if (
@@ -76,27 +76,6 @@ class Checkout_Service {
 			$should_use_stripe_platform
 		) {
 			// This payment method was created under the platform account.
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * Whether we should use the platform account to initialize Stripe on the checkout page.
-	 *
-	 * @return bool
-	 */
-	public function should_use_stripe_platform_on_checkout_page() {
-		if (
-			WC_Payments_Features::is_woopay_eligible()
-			&& 'yes' === \WC_Payments::get_gateway()->get_option( 'platform_checkout', 'no' )
-			&& ! ( WC_Payments_Features::is_upe_legacy_enabled() && ! WC_Payments_Features::is_upe_split_enabled() )
-			&& ( is_checkout() || has_block( 'woocommerce/checkout' ) )
-			&& ! is_wc_endpoint_url( 'order-pay' )
-			&& ! WC()->cart->is_empty()
-			&& WC()->cart->needs_payment()
-		) {
 			return true;
 		}
 

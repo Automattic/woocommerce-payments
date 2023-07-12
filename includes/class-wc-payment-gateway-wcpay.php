@@ -670,7 +670,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if (
 			WC_Payments_Features::is_woopay_eligible() &&
 			'yes' === $this->get_option( 'platform_checkout', 'no' ) &&
-			! ( WC_Payments_Features::is_upe_legacy_enabled() && ! WC_Payments_Features::is_upe_split_enabled() ) &&
+			! $this->is_upe_incompatible_with_woopay() &&
 			( is_checkout() || has_block( 'woocommerce/checkout' ) ) &&
 			! is_wc_endpoint_url( 'order-pay' ) &&
 			WC()->cart instanceof WC_Cart &&
@@ -681,6 +681,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return false;
+	}
+
+	/**
+	 * The legacy UPE is incompatible with WooPay, whereas split UPE and deferred intent UPE are compatible.
+	 * This method checks if there's incompatibility between WooPay and currently enabled UPE settings, applying the rule above.
+	 *
+	 * $return bool - true if UPE is incompatible with WooPay, false otherwise.
+	 */
+	private function is_upe_incompatible_with_woopay() {
+		return WC_Payments_Features::is_upe_legacy_enabled() && ! ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() );
 	}
 
 	/**
