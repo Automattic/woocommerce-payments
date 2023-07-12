@@ -44,17 +44,3 @@ export const isDueWithin = ( { dueBy, days }: IsDueWithinProps ): boolean => {
 	const isPastDue = now.isAfter( dueByMoment );
 	return isWithinDays && ! isPastDue;
 };
-
-interface isDisputeAwaitingResponseProps {
-	status: CachedDispute[ 'status' ];
-}
-/**
- * Checks a dispute status and returns true if a dispute is awaiting a response from the merchant.
- *
- * @param {isDisputeAwaitingResponseProps} props - An object containing the dispute status.
- * @return {boolean} True if the dispute status matches one of the awaiting response statuses.
- */
-export const isDisputeAwaitingResponse = ( {
-	status,
-}: isDisputeAwaitingResponseProps ): boolean =>
-	[ 'needs_response', 'warning_needs_response' ].includes( status );
