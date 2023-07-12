@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { ReactNode, useState } from 'react';
+import React, { useState } from 'react';
 import wcpayTracks from 'tracks';
 import { dateI18n } from '@wordpress/date';
 import { _n, __, sprintf } from '@wordpress/i18n';
