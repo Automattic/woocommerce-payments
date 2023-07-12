@@ -8,7 +8,6 @@
 use WCPay\Constants\Fraud_Meta_Box_Type;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Intent_Status;
-use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Fraud_Prevention\Models\Rule;
 use WCPay\Logger;
@@ -517,28 +516,6 @@ class WC_Payments_Order_Service {
 	public function get_charge_id_for_order( $order ) : string {
 		$order = $this->get_order( $order );
 		return $order->get_meta( self::CHARGE_ID_META_KEY, true );
-	}
-
-	/**
-	 * Get any dispute data for specified order.
-	 *
-	 * @param mixed $order The order Id or order object.
-	 *
-	 * @return array|null The dispute data, or null if no dispute found.
-	 *
-	 * @throws Order_Not_Found_Exception
-	 * @throws WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception
-	 * @throws WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception
-	 * @throws WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception
-	 */
-	public function get_dispute_data_for_order( $order ) {
-		$charge_id = $this->get_charge_id_for_order( $order );
-
-		// Get charge data from WCPay Server.
-		$request     = Get_Charge::create( $charge_id );
-		$charge_data = $request->send( 'wcpay_get_charge_request', $charge_id );
-
-		return $charge_data['dispute'] ?? null;
 	}
 
 	/**
