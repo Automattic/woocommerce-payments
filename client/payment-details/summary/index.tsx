@@ -70,7 +70,7 @@ const getTapToPayChannel = ( platform: string ) => {
 	}
 
 	if ( platform === 'android' ) {
-		__( 'Tap to Pay on Android', 'woocommerce-payments' );
+		return __( 'Tap to Pay on Android', 'woocommerce-payments' );
 	}
 
 	return __( 'Tap to Pay', 'woocommerce-payments' );
