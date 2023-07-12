@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React, { ReactNode, useState } from 'react';
 import wcpayTracks from 'tracks';
 import { dateI18n } from '@wordpress/date';
 import { _n, __, sprintf } from '@wordpress/i18n';
@@ -145,31 +145,36 @@ const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 ];
 
 /**
- * Returns true if the dispute is due within the specified number of days.
- * Returns false if the dispute is not due within the specified number of days
- * or if the due_by value is an empty string.
+ * Returns a smart date if dispute's due date is withint 72 hours.
+ * Otherwise, returns a date string.
  *
- * @param {CachedDispute} dispute - The dispute to check.
+ * @param {CachedDispute} dispute The dispute to check.
  *
- * @return {boolean} True if the dispute is due within the specified number of days.
+ * @return {ReactNode | string} If dispute is due within 72 hours, return the element that display smart date. Otherwise, a date string.
  */
-const dueSoon = ( dispute: CachedDispute ) => {
+const smartDueDate = ( dispute: CachedDispute ) => {
 	if ( dispute.due_by === '' ) {
 		return '';
 	}
 	// Get current time in UTC.
 	const now = moment().utc();
 	const dueBy = moment.utc( dispute.due_by );
-	if ( dueBy.diff( now, 'hours' ) > 0 && dueBy.diff( now, 'hours' ) <= 72 ) {
+	const diffHours = dueBy.diff( now, 'hours', false );
+	const diffDays = dueBy.diff( now, 'days', false );
+	if ( diffHours > 0 && diffHours <= 72 ) {
 		return (
 			<span className={ 'due-soon' }>
-				{ _n(
-					'1 day left',
-					'%d days left',
-					dueBy.diff( now, 'days' ),
-					'woocommerce-payments'
+				{ sprintf(
+					// Translators: %s is the number of days left to respond to the dispute.
+					_n(
+						'%s day left',
+						'%s days left',
+						diffDays,
+						'woocommerce-payments'
+					),
+					diffDays
 				) }
-				<NoticeOutlineIcon />
+				<NoticeOutlineIcon className={ 'due-soon-icon' } />
 			</span>
 		);
 	}
@@ -258,7 +263,7 @@ export const DisputesList = (): JSX.Element => {
 			},
 			dueBy: {
 				value: dispute.due_by,
-				display: clickable( dueSoon( dispute ) ),
+				display: clickable( smartDueDate( dispute ) ),
 			},
 			order: {
 				value: dispute.order_number ?? '',
