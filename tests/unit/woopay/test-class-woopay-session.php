@@ -75,24 +75,24 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		$this->setup_session(
 			0,
-			[
-				'woopay_email' => $verified_user->user_email,
-			]
+			$verified_user->user_email,
 		);
 
 		$this->assertEquals( WooPay_Session::get_user_id_from_cart_token(), $verified_user->ID );
 	}
 
-	private function setup_session( $customer_id, $extra = [] ) {
+	private function setup_session( $customer_id, $customer_email = null ) {
 		$session_handler = new SessionHandler();
 
 		$session_handler->init();
 		$session_handler->set( 'cart', 'fake cart' );
-		$session_handler->set( 'customer', [ 'id' => $customer_id ] );
-
-		foreach ( $extra as $key => $value ) {
-			$session_handler->set( $key, $value );
-		}
+		$session_handler->set(
+			'customer',
+			[
+				'id'    => $customer_id,
+				'email' => $customer_email,
+			]
+		);
 
 		$session_handler->save_data();
 	}

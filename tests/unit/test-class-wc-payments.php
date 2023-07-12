@@ -154,14 +154,13 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		ob_get_clean();
 	}
 
-	public function test_ajax_init_woopay_has_not_session_woopay_email_if_email_does_not_exists() {
+	public function test_ajax_init_woopay_has_not_user_has_merchant_site_account_prop_if_email_does_not_exists() {
 		$this->mock_verified_user_store_api_token();
 
 		$pre_http_request_cb = function ( $preempt, $parsed_args, $url ) {
 			$body = json_decode( $parsed_args['body'], true );
 
 			$this->assertArrayNotHasKey( 'user_has_merchant_site_account', $body );
-			$this->assertEmpty( WC()->session->get( 'woopay_email' ) );
 
 			return [ 'body' => wp_json_encode( [] ) ];
 		};
@@ -184,7 +183,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		remove_filter( 'pre_http_request', $pre_http_request_cb, 10, 3 );
 	}
 
-	public function test_ajax_init_woopay_has_not_session_woopay_email_if_is_logged_in() {
+	public function test_ajax_init_woopay_has_not_user_has_merchant_site_account_prop_if_is_logged_in() {
 		$user = self::factory()->user->create_and_get();
 
 		$this->mock_verified_user_store_api_token();
@@ -195,7 +194,6 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 			$body = json_decode( $parsed_args['body'], true );
 
 			$this->assertArrayNotHasKey( 'user_has_merchant_site_account', $body );
-			$this->assertEmpty( WC()->session->get( 'woopay_email' ) );
 
 			return [ 'body' => wp_json_encode( [] ) ];
 		};
@@ -220,7 +218,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		remove_filter( 'pre_http_request', $pre_http_request_cb, 10, 3 );
 	}
 
-	public function test_ajax_init_woopay_has_session_woopay_email_if_email_exists_and_is_logged_off() {
+	public function test_ajax_init_woopay_has_user_has_merchant_site_account_prop_if_email_exists_and_is_logged_off() {
 		$user = self::factory()->user->create_and_get();
 
 		$this->mock_verified_user_store_api_token();
@@ -229,7 +227,6 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 			$body = json_decode( $parsed_args['body'], true );
 
 			$this->assertArrayHasKey( 'user_has_merchant_site_account', $body );
-			$this->assertEquals( WC()->session->get( 'woopay_email' ), $user->user_email );
 
 			return [ 'body' => wp_json_encode( [] ) ];
 		};
