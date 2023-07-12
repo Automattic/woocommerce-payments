@@ -125,6 +125,7 @@ export const getVerifyBankAccountTask = (): any => {
 		level: level,
 		completed: false,
 		expanded: true,
+		expandable: true,
 		isDismissable: false,
 		showActionButton: true,
 		action: handleClick,

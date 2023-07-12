@@ -111,6 +111,7 @@ export const getDisputeResolutionTask = (
 		level: 1,
 		completed: false,
 		expanded: true,
+		expandable: true,
 		isDismissable: false,
 		showActionButton: true,
 		actionLabel: __( 'Respond now', 'woocommerce-payments' ),
