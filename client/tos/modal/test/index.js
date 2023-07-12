@@ -35,8 +35,8 @@ const getModalContainer = () => {
 	return modalContainer;
 };
 
-const TOS_MODAL_HEADING = 'WooCommerce Payments: Terms of Service';
-const DISABLE_PLUGIN_MODAL_HEADING = 'Disable WooCommerce Payments';
+const TOS_MODAL_HEADING = 'WooPayments: Terms of Service';
+const DISABLE_PLUGIN_MODAL_HEADING = 'Disable WooPayments';
 
 const renderModal = () => {
 	const { getByRole, ...rest } = render( <TosModal /> );

@@ -39,7 +39,7 @@ class WC_Payments_Admin_Sections_Overwrite_Test extends WCPAY_UnitTestCase {
 		];
 
 		$expected_sections = [
-			'woocommerce_payments' => 'WooCommerce Payments',
+			'woocommerce_payments' => 'WooPayments',
 			''                     => 'All payment methods',
 		];
 

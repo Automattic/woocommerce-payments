@@ -560,7 +560,7 @@ describe( 'Paused Deposit notice Renders', () => {
 			<NextDepositDetails isLoading={ false } overview={ overview } />
 		);
 		getByText(
-			'Deposits may be interrupted while your WooCommerce Payments balance remains negative. Why?'
+			'Deposits may be interrupted while your WooPayments balance remains negative. Why?'
 		);
 	} );
 	test( 'When available balance is positive', () => {
@@ -584,7 +584,7 @@ describe( 'Paused Deposit notice Renders', () => {
 		);
 		expect(
 			queryByText(
-				'Deposits may be interrupted while your WooCommerce Payments balance remains negative. Why?'
+				'Deposits may be interrupted while your WooPayments balance remains negative. Why?'
 			)
 		).toBeFalsy();
 	} );

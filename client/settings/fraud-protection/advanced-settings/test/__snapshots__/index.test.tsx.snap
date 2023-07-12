@@ -61,7 +61,7 @@ Object {
                 data-link-type="wp-admin"
                 href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
               >
-                WooCommerce Payments
+                WooPayments
               </a>
                &gt; 
               Advanced fraud protection
@@ -1059,7 +1059,7 @@ Object {
               data-link-type="wp-admin"
               href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
             >
-              WooCommerce Payments
+              WooPayments
             </a>
              &gt; 
             Advanced fraud protection
@@ -2140,7 +2140,7 @@ Object {
                 data-link-type="wp-admin"
                 href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
               >
-                WooCommerce Payments
+                WooPayments
               </a>
                &gt; 
               Advanced fraud protection
@@ -2995,7 +2995,7 @@ Object {
               data-link-type="wp-admin"
               href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
             >
-              WooCommerce Payments
+              WooPayments
             </a>
              &gt; 
             Advanced fraud protection
@@ -3913,7 +3913,7 @@ Object {
               data-link-type="wp-admin"
               href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
             >
-              WooCommerce Payments
+              WooPayments
             </a>
              &gt; 
             Advanced fraud protection
@@ -4731,7 +4731,7 @@ Object {
             data-link-type="wp-admin"
             href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
           >
-            WooCommerce Payments
+            WooPayments
           </a>
            &gt; 
           Advanced fraud protection
@@ -5649,7 +5649,7 @@ Object {
                 data-link-type="wp-admin"
                 href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
               >
-                WooCommerce Payments
+                WooPayments
               </a>
                &gt; 
               Advanced fraud protection
@@ -6567,7 +6567,7 @@ Object {
               data-link-type="wp-admin"
               href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
             >
-              WooCommerce Payments
+              WooPayments
             </a>
              &gt; 
             Advanced fraud protection
