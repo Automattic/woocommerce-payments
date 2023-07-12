@@ -1504,17 +1504,22 @@ class WC_Payments {
 			'user_session'    => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];
 
-		$has_adapted_extension_installed = self::$woopay_util->has_adapted_extension_installed();
-		if ( $has_adapted_extension_installed && ! empty( $email ) && ! is_user_logged_in() ) {
-			$user = get_user_by( 'email', $email );
+		if ( ! empty( $email ) ) {
+			// Save email in session to skip TYP verify email and check if
+			// WooPay verified email matches.
+			WC()->customer->set_billing_email( $email );
+			WC()->customer->save();
 
-			// Some extensions need the user to be authenticated to get user data,
-			// we compare this email to the one WooPay sends if it's verified there
-			// to get this data without store authentication when both email matches.
-			if ( $user ) {
-				WC()->session->set( 'woopay_email', $email );
+			$has_adapted_extension_installed = self::$woopay_util->has_adapted_extension_installed();
+			if ( $has_adapted_extension_installed && ! is_user_logged_in() ) {
+				$user = get_user_by( 'email', $email );
 
-				$body['user_has_merchant_site_account'] = true;
+				// Some extensions need the user to be authenticated to get user data,
+				// we compare this email to the one WooPay sends if it's verified there
+				// to get this data without store authentication when both email matches.
+				if ( $user ) {
+					$body['user_has_merchant_site_account'] = true;
+				}
 			}
 		}
 

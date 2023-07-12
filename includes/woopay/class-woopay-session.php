@@ -147,11 +147,11 @@ class WooPay_Session {
 
 			// If the email is verified on WooPay and matches session email,
 			// return the user to get extension data without authentication.
-			if ( ! empty( $_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] ) && ! empty( $session_data['woopay_email'] ) ) {
+			if ( ! empty( $_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] ) && ! empty( $customer['email'] ) ) {
 				$woopay_verified_email_address = wc_clean( wp_unslash( $_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] ) );
 				$user                          = get_user_by( 'email', $woopay_verified_email_address );
 
-				if ( $woopay_verified_email_address === $session_data['woopay_email'] && $user ) {
+				if ( $woopay_verified_email_address === $customer['email'] && $user ) {
 					return $user->ID;
 				}
 			}
