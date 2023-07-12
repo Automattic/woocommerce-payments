@@ -127,8 +127,8 @@ const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 	},
 	{
 		key: 'dueBy',
-		label: __( 'Response by', 'woocommerce-payments' ),
-		screenReaderLabel: __( 'Response by', 'woocommerce-payments' ),
+		label: __( 'Response date', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Response date', 'woocommerce-payments' ),
 		required: true,
 		isLeftAligned: true,
 		isSortable: true,
@@ -433,7 +433,7 @@ export const DisputesList = (): JSX.Element => {
 						),
 					},
 					{
-						// Respond By.
+						// Response date.
 						...row[ 11 ],
 						value: dateI18n(
 							'Y-m-d / g:iA',
