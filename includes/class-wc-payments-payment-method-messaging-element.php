@@ -48,12 +48,24 @@ class WC_Payments_Payment_Method_Messaging_Element {
 	 */
 	public function init(): string {
 		global $product;
-		$price           = $product->get_price();
 		$currency_code   = get_woocommerce_currency();
-		$billing_country = WC()->countries->get_base_country();
+		$store_country   = WC()->countries->get_base_country();
+		$billing_country = WC()->customer->get_billing_country();
 
-		if ( WC()->customer ) {
-			$billing_country = WC()->customer->get_billing_country(); // Use the customer's billing country if available.
+		$product_variations = [
+			'base_product' => [
+				'amount'   => WC_Payments_Utils::prepare_amount( $product->get_price(), $currency_code ),
+				'currency' => $currency_code,
+			],
+		];
+		foreach ( $product->get_children() as $variation_id ) {
+			$variation = wc_get_product( $variation_id );
+			if ( $variation ) {
+				$product_variations[ $variation_id ] = [
+					'amount'   => WC_Payments_Utils::prepare_amount( $variation->get_price(), $currency_code ),
+					'currency' => $currency_code,
+				];
+			}
 		}
 
 		$enabled_upe_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
@@ -68,11 +80,11 @@ class WC_Payments_Payment_Method_Messaging_Element {
 			'WCPAY_PRODUCT_DETAILS',
 			'wcpayStripeSiteMessaging',
 			[
-				'price'          => WC_Payments_Utils::prepare_amount( $price, $currency_code ),
-				'currency'       => $currency_code,
-				'country'        => $billing_country,
-				'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
-				'paymentMethods' => array_values( $bnpl_payment_methods ),
+				'productId'         => 'base_product',
+				'productVariations' => $product_variations,
+				'country'           => empty( $billing_country ) ? $store_country : $billing_country,
+				'publishableKey'    => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
+				'paymentMethods'    => array_values( $bnpl_payment_methods ),
 			]
 		);
 

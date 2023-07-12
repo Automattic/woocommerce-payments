@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 export default {
 	steps: {
@@ -30,9 +30,13 @@ export default {
 					'I’m building a store for someone else and would like to test payments',
 					'woocommerce-payments'
 				),
-				note: __(
-					'This option will set up WooCommerce Payments in development mode. You can use our test data to set up. When you’re ready to launch your store, switching to live payments is easy.',
-					'woocommerce-payments'
+				note: sprintf(
+					/* translators: %s: WooPayments */
+					__(
+						'This option will set up %s in development mode. You can use our test data to set up. When you’re ready to launch your store, switching to live payments is easy.',
+						'woocommerce-payments'
+					),
+					'WooPayments'
 				),
 			},
 		},
