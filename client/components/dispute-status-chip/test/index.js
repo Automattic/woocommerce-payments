@@ -29,8 +29,10 @@ describe( 'DisputeStatusChip', () => {
 		expect( renderDisputeStatus( status ) ).toMatchSnapshot();
 	} );
 
-	function renderDisputeStatus( status ) {
-		const { container } = render( <DisputeStatusChip status={ status } /> );
+	function renderDisputeStatus( status, dueBy = undefined ) {
+		const { container } = render(
+			<DisputeStatusChip status={ status } dueBy={ dueBy } />
+		);
 		return container;
 	}
 } );

@@ -1,4 +1,4 @@
-*** WooCommerce Payments Changelog ***
+*** WooPayments Changelog ***
 
 = 6.1.1 - 2023-06-29 =
 * Fix - Fix syntax for advanced filters in WC 7.8 and over
