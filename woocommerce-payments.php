@@ -174,7 +174,7 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 				$action = sanitize_text_field( wp_unslash( $_GET['action'] ) );
 				$plugin = sanitize_text_field( wp_unslash( $_GET['plugin'] ) );
 
-				if ( current_user_can( 'activate_plugin', $plugin_slug ) && 'activate' === $action && $plugin_slug === $plugin ) {
+				if ( current_user_can( 'activate_plugin', $plugin_slug ) && in_array( $action, [ 'activate', 'activate-plugin' ], true ) && $plugin_slug === $plugin ) {
 					return true;
 				}
 			}
