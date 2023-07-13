@@ -727,7 +727,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$request = Get_Intention::create( $intent_id );
 				/** @var WC_Payments_API_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 				$intent                 = $request->send( 'wcpay_get_intent_request', $order );
-				$intent_metadata        = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
 				$client_secret          = $intent->get_client_secret();
 				$status                 = $intent->get_status();
 				$charge                 = $intent->get_charge();
@@ -737,11 +736,14 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
 				$payment_method_type    = $this->get_payment_method_type_from_payment_details( $payment_method_details );
 				$error                  = $intent->get_last_payment_error();
+
+				// This check applies to payment intents only due to two reasons:
+				// (1) metadata is missed for setup intents. See https://github.com/Automattic/woocommerce-payments/issues/6575.
+				// (2) most issues so far affect only payment intents.
+				$intent_metadata = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
+				$this->validate_order_id_received_vs_intent_meta_order_id( $order, $intent_metadata );
 			} else {
 				$intent                 = $this->payments_api_client->get_setup_intent( $intent_id );
-				$intent_metadata        = ( isset( $intent['metadata'] ) && is_array( $intent['metadata'] ) )
-					? $intent['metadata']
-					: [];
 				$client_secret          = $intent['client_secret'];
 				$status                 = $intent['status'];
 				$charge_id              = '';
@@ -753,8 +755,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$payment_method_type    = $payment_method_options ? $payment_method_options[0] : null;
 				$error                  = $intent['last_setup_error'];
 			}
-
-			$this->validate_order_id_received_vs_intent_meta_order_id( $order, $intent_metadata );
 
 			if ( ! empty( $error ) ) {
 				Logger::log( 'Error when processing payment: ' . $error['message'] );
@@ -1099,6 +1099,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 	/**
 	 * Validate order_id received from the request vs value saved in the intent metadata.
+	 * Throw an exception if they're not matched.
 	 *
 	 * @param  WC_Order $order The received order to process.
 	 * @param  array    $intent_metadata The metadata of attached intent to the order.
