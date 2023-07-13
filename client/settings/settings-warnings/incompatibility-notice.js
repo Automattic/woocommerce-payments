@@ -30,7 +30,8 @@ const WooPayIncompatibilityNotice = () => (
 		</span>
 		<span>
 			{ __(
-				'One or more of your extensions are incompatible with WooPay.'
+				'One or more of your extensions are incompatible with WooPay.',
+				'woocommerce-payments'
 			) }
 			<br />
 			{ interpolateComponents( {
