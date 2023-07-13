@@ -39,6 +39,7 @@ use WC_Payments_Token_Service;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Utils;
 use WC_Payments_Features;
+use WCPay\Duplicate_Payment_Prevention_Service;
 use WP_User;
 
 
@@ -82,14 +83,15 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * UPE Constructor same parameters as WC_Payment_Gateway_WCPay constructor.
 	 *
-	 * @param WC_Payments_API_Client               $payments_api_client             - WooCommerce Payments API client.
-	 * @param WC_Payments_Account                  $account                         - Account class instance.
-	 * @param WC_Payments_Customer_Service         $customer_service                - Customer class instance.
-	 * @param WC_Payments_Token_Service            $token_service                   - Token class instance.
-	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service        - Action Scheduler service instance.
-	 * @param array                                $payment_methods                 - Array of UPE payment methods.
-	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter - Session Rate Limiter instance.
-	 * @param WC_Payments_Order_Service            $order_service                   - Order class instance.
+	 * @param WC_Payments_API_Client               $payments_api_client                  - WooCommerce Payments API client.
+	 * @param WC_Payments_Account                  $account                              - Account class instance.
+	 * @param WC_Payments_Customer_Service         $customer_service                     - Customer class instance.
+	 * @param WC_Payments_Token_Service            $token_service                        - Token class instance.
+	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service             - Action Scheduler service instance.
+	 * @param array                                $payment_methods                      - Array of UPE payment methods.
+	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter      - Session Rate Limiter instance.
+	 * @param WC_Payments_Order_Service            $order_service                        - Order class instance.
+	 * @param Duplicate_Payment_Prevention_Service $duplicate_payment_prevention_service - Service for preventing duplicate payments.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
@@ -99,10 +101,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		WC_Payments_Action_Scheduler_Service $action_scheduler_service,
 		array $payment_methods,
 		Session_Rate_Limiter $failed_transaction_rate_limiter,
-		WC_Payments_Order_Service $order_service
+		WC_Payments_Order_Service $order_service,
+		Duplicate_Payment_Prevention_Service $duplicate_payment_prevention_service
 	) {
-		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $failed_transaction_rate_limiter, $order_service );
-		$this->title           = __( 'WooCommerce Payments', 'woocommerce-payments' );
+		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $failed_transaction_rate_limiter, $order_service, $duplicate_payment_prevention_service );
+		$this->title           = 'WooPayments';
 		$this->description     = '';
 		$this->checkout_title  = __( 'Popular payment methods', 'woocommerce-payments' );
 		$this->payment_methods = $payment_methods;
@@ -205,13 +208,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			return;
 		}
 
-		$check_session_order = $this->check_against_session_processing_order( $order );
+		$check_session_order = $this->duplicate_payment_prevention_service->check_against_session_processing_order( $order );
 		if ( is_array( $check_session_order ) ) {
 			return $check_session_order;
 		}
-		$this->maybe_update_session_processing_order( $order_id );
+		$this->duplicate_payment_prevention_service->maybe_update_session_processing_order( $order_id );
 
-		$check_existing_intention = $this->check_payment_intent_attached_to_order_succeeded( $order );
+		$check_existing_intention = $this->duplicate_payment_prevention_service->check_payment_intent_attached_to_order_succeeded( $order );
 		if ( is_array( $check_existing_intention ) ) {
 			return $check_existing_intention;
 		}
@@ -501,13 +504,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $exception ) );
 				}
 
-				$check_session_order = $this->check_against_session_processing_order( $order );
+				$check_session_order = $this->duplicate_payment_prevention_service->check_against_session_processing_order( $order );
 				if ( is_array( $check_session_order ) ) {
 					return $check_session_order;
 				}
-				$this->maybe_update_session_processing_order( $order_id );
+				$this->duplicate_payment_prevention_service->maybe_update_session_processing_order( $order_id );
 
-				$check_existing_intention = $this->check_payment_intent_attached_to_order_succeeded( $order );
+				$check_existing_intention = $this->duplicate_payment_prevention_service->check_payment_intent_attached_to_order_succeeded( $order );
 				if ( is_array( $check_existing_intention ) ) {
 					return $check_existing_intention;
 				}
@@ -566,7 +569,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$this->attach_exchange_info_to_order( $order, $charge_id );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 				if ( Payment_Intent_Status::SUCCEEDED === $intent_status ) {
-					$this->remove_session_processing_order( $order->get_id() );
+					$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 				}
 				$this->order_service->update_order_status_from_intent( $order, $updated_payment_intent );
 
@@ -778,7 +781,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$this->order_service->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method_id, $customer_id, $charge_id, $currency );
 				$this->attach_exchange_info_to_order( $order, $charge_id );
 				if ( Payment_Intent_Status::SUCCEEDED === $status ) {
-					$this->remove_session_processing_order( $order->get_id() );
+					$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 				}
 				$this->order_service->update_order_status_from_intent( $order, $intent );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );

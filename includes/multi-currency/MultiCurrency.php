@@ -17,6 +17,7 @@ use WCPay\Database_Cache;
 use WCPay\Logger;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyRateException;
+use WCPay\MultiCurrency\Helpers\OrderMetaHelper;
 use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
 
 defined( 'ABSPATH' ) || exit;
@@ -178,6 +179,13 @@ class MultiCurrency {
 	protected $simulation_params = [];
 
 	/**
+	 * Instance of OrderMetaHelper.
+	 *
+	 * @var OrderMetaHelper
+	 */
+	private $order_meta_helper;
+
+	/**
 	 * Main MultiCurrency Instance.
 	 *
 	 * Ensures only one instance of MultiCurrency is loaded or can be loaded.
@@ -266,6 +274,7 @@ class MultiCurrency {
 		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service, $this->utils, $this->compatibility );
 		$this->backend_currencies  = new BackendCurrencies( $this, $this->localization_service );
 		$this->tracking            = new Tracking( $this );
+		$this->order_meta_helper   = new OrderMetaHelper( $this->payments_api_client );
 
 		add_action( 'woocommerce_order_refunded', [ $this, 'add_order_meta_on_refund' ], 50, 2 );
 

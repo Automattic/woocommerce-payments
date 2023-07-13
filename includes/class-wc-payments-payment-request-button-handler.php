@@ -472,7 +472,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'google_pay' => 'Google Pay',
 		];
 
-		$suffix = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooCommerce Payments' );
+		$suffix = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooPayments' );
 		if ( ! empty( $suffix ) ) {
 			$suffix = " ($suffix)";
 		}
@@ -696,7 +696,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			}
 		}
 
-		return false;
+		return null;
 	}
 
 	/**
@@ -800,32 +800,17 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$product      = $this->get_product();
 		$is_supported = true;
 
-		if ( ! is_object( $product ) || ! in_array( $product->get_type(), $this->supported_product_types(), true ) ) {
+		if ( is_null( $product )
+			|| ! is_object( $product )
+			|| ! in_array( $product->get_type(), $this->supported_product_types(), true )
+			|| ( class_exists( 'WC_Subscriptions_Product' ) && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0 ) // Trial subscriptions with shipping are not supported.
+			|| ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) // Pre Orders charge upon release not supported.
+			|| ( class_exists( 'WC_Composite_Products' ) && $product->is_type( 'composite' ) ) // Composite products are not supported on the product page.
+			|| ( class_exists( 'WC_Mix_and_Match' ) && $product->is_type( 'mix-and-match' ) ) // Mix and match products are not supported on the product page.
+		) {
 			$is_supported = false;
-		}
-
-		// Trial subscriptions with shipping are not supported.
-		if ( class_exists( 'WC_Subscriptions_Product' ) && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0 ) {
-			$is_supported = false;
-		}
-
-		// Pre Orders charge upon release not supported.
-		if ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) {
-			$is_supported = false;
-		}
-
-		// Composite products are not supported on the product page.
-		if ( class_exists( 'WC_Composite_Products' ) && $product->is_type( 'composite' ) ) {
-			$is_supported = false;
-		}
-
-		// Mix and match products are not supported on the product page.
-		if ( class_exists( 'WC_Mix_and_Match' ) && $product->is_type( 'mix-and-match' ) ) {
-			$is_supported = false;
-		}
-
-		// File upload addon not supported.
-		if ( class_exists( 'WC_Product_Addons_Helper' ) ) {
+		} elseif ( class_exists( 'WC_Product_Addons_Helper' ) ) {
+			// File upload addon not supported.
 			$product_addons = WC_Product_Addons_Helper::get_product_addons( $product->get_id() );
 			foreach ( $product_addons as $addon ) {
 				if ( 'file_upload' === $addon['type'] ) {
