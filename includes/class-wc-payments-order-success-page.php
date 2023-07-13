@@ -16,10 +16,26 @@ class WC_Payments_Order_Success_Page {
 	 * Constructor.
 	 */
 	public function __construct() {
-		add_filter( 'woocommerce_order_get_payment_method_title', [ $this, 'show_woopay_payment_method_name' ], 10, 2 );
+		add_action( 'woocommerce_before_thankyou', [ $this, 'register_payment_method_override' ] );
+		add_action( 'woocommerce_order_details_before_order_table', [ $this, 'unregister_payment_method_override' ] );
 		add_filter( 'woocommerce_thankyou_order_received_text', [ $this, 'add_notice_previous_paid_order' ], 11 );
 		add_filter( 'woocommerce_thankyou_order_received_text', [ $this, 'add_notice_previous_successful_intent' ], 11 );
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+	}
+
+	/**
+	 * Register the hook to override the payment method name on the order received page.
+	 */
+	public function register_payment_method_override() {
+		// Override the payment method title on the order received page.
+		add_filter( 'woocommerce_order_get_payment_method_title', [ $this, 'show_woopay_payment_method_name' ], 10, 2 );
+	}
+
+	/**
+	 * Remove the hook to override the payment method name on the order received page before the order summary.
+	 */
+	public function unregister_payment_method_override() {
+		remove_filter( 'woocommerce_order_get_payment_method_title', [ $this, 'show_woopay_payment_method_name' ], 10 );
 	}
 
 	/**
@@ -48,8 +64,7 @@ class WC_Payments_Order_Success_Page {
 			<img alt="WooPay" src="<?php echo esc_url_raw( plugins_url( 'assets/images/woopay.svg', WCPAY_PLUGIN_FILE ) ); ?>">
 			<?php
 			if ( $order->get_meta( 'last4' ) ) {
-				echo esc_html_e( 'Card ending in', 'woocommerce-payments' ) . ' ';
-				echo esc_html( $order->get_meta( 'last4' ) );
+				echo sprintf( '%s %s', esc_html_e( 'Card ending in', 'woocommerce-payments' ), esc_html( $order->get_meta( 'last4' ) ) );
 			}
 			?>
 		</div>
