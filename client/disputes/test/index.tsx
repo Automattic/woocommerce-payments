@@ -269,7 +269,7 @@ describe( 'Disputes list', () => {
 				'Email',
 				'Country',
 				'"Disputed on"',
-				'"Respond by"',
+				'"Response date"',
 			];
 
 			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
