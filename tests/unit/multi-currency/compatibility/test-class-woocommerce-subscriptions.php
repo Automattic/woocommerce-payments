@@ -36,6 +36,27 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 	private $woocommerce_subscriptions;
 
 	/**
+	 * Mock meta data.
+	 *
+	 * @var \WC_Meta_Data|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_meta_data;
+
+	/**
+	 * Mock product.
+	 *
+	 * @var \WC_Product|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_product;
+
+	/**
+	 * Mock coupon.
+	 *
+	 * @var \WC_Coupon|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_coupon;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -97,10 +118,27 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 
 	// Test should not convert the product price due to all checks return true.
 	public function test_get_subscription_product_price_does_not_convert_price() {
+		// Arrange: Create a subscription to be used.
+		$mock_subscription = new WC_Subscription();
+		$mock_subscription->set_has_product( true );
+
+		// Arrange: Mock wcs_get_subscription to return our mock subscription.
+		WC_Subscriptions::set_wcs_get_subscription(
+			function ( $id ) use ( $mock_subscription ) {
+				return $mock_subscription;
+			}
+		);
+
+		// Arrange: Set our mock return values.
 		$this->mock_utils->method( 'is_call_in_backtrace' )->willReturn( true );
-		$this->mock_wcs_cart_contains_renewal( 42, 43 );
+		$this->mock_wcs_cart_contains_renewal( 42, 43, 44 );
 		$this->mock_wcs_cart_contains_resubscribe( 42 );
-		$this->assertSame( 10.0, $this->woocommerce_subscriptions->get_subscription_product_price( 10.0, $this->mock_product ) );
+
+		// Act: Attempt to convert the subscription price.
+		$result = $this->woocommerce_subscriptions->get_subscription_product_price( 10.0, $this->mock_product );
+
+		// Assert: Confirm the result value is not converted.
+		$this->assertSame( 10.0, $result );
 	}
 
 	// Test should convert product price due to all checks return false.
@@ -128,20 +166,54 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 
 	// Test should convert product price due to the backtrace check returns false after the cart contains renewal check returns true.
 	public function test_get_subscription_product_price_converts_price_if_only_renewal_in_cart() {
+		// Arrange: Create a subscription to be used.
+		$mock_subscription = new WC_Subscription();
+		$mock_subscription->set_has_product( true );
+
+		// Arrange: Mock wcs_get_subscription to return our mock subscription.
+		WC_Subscriptions::set_wcs_get_subscription(
+			function ( $id ) use ( $mock_subscription ) {
+				return $mock_subscription;
+			}
+		);
+
+		// Arrange: Set our mock return values.
 		$this->mock_utils->method( 'is_call_in_backtrace' )->willReturn( false );
-		$this->mock_wcs_cart_contains_renewal( 42, 43 );
+		$this->mock_wcs_cart_contains_renewal( 42, 43, 44 );
 		$this->mock_wcs_cart_contains_resubscribe( false );
 		$this->mock_multi_currency->method( 'get_price' )->with( 10.0, 'product' )->willReturn( 25.0 );
-		$this->assertSame( 25.0, $this->woocommerce_subscriptions->get_subscription_product_price( 10.0, $this->mock_product ) );
+
+		// Act: Attempt to convert the subscription price.
+		$result = $this->woocommerce_subscriptions->get_subscription_product_price( 10.0, $this->mock_product );
+
+		// Assert: Confirm the result value is converted.
+		$this->assertSame( 25.0, $result );
 	}
 
 	// Test should convert product price due to the backtrace check returns false after the cart contains resubscribe check returns true.
 	public function test_get_subscription_product_price_converts_price_if_only_resubscribe_in_cart() {
+		// Arrange: Create a subscription to be used.
+		$mock_subscription = new WC_Subscription();
+		$mock_subscription->set_has_product( true );
+
+		// Arrange: Mock wcs_get_subscription to return our mock subscription.
+		WC_Subscriptions::set_wcs_get_subscription(
+			function ( $id ) use ( $mock_subscription ) {
+				return $mock_subscription;
+			}
+		);
+
+		// Arrange: Set our mock return values.
 		$this->mock_utils->method( 'is_call_in_backtrace' )->willReturn( false );
 		$this->mock_wcs_cart_contains_renewal( false );
 		$this->mock_wcs_cart_contains_resubscribe( 42 );
 		$this->mock_multi_currency->method( 'get_price' )->with( 10.0, 'product' )->willReturn( 25.0 );
-		$this->assertSame( 25.0, $this->woocommerce_subscriptions->get_subscription_product_price( 10.0, $this->mock_product ) );
+
+		// Act: Attempt to convert the subscription price.
+		$result = $this->woocommerce_subscriptions->get_subscription_product_price( 10.0, $this->mock_product );
+
+		// Assert: Confirm the result value is converted.
+		$this->assertSame( 25.0, $result );
 	}
 
 	// Does not convert price due to first backtrace check returns true.
@@ -436,6 +508,20 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 	}
 
 	public function test_should_convert_product_price_return_false_when_renewal_in_cart() {
+		// Arrange: Create a subscription to be used.
+		$mock_subscription = new WC_Subscription();
+		$mock_subscription->set_has_product( true );
+
+		// Arrange: Mock wcs_get_subscription to return our mock subscription.
+		WC_Subscriptions::set_wcs_get_subscription(
+			function ( $id ) use ( $mock_subscription ) {
+				return $mock_subscription;
+			}
+		);
+
+		// Arrange: Set our mock return values.
+		$this->mock_wcs_cart_contains_renewal( 42, 43, 44 );
+		$this->mock_wcs_cart_contains_resubscribe( false );
 		$this->mock_utils
 			->method( 'is_call_in_backtrace' )
 			->with(
@@ -447,12 +533,29 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 				]
 			)
 			->willReturn( true );
-		$this->mock_wcs_cart_contains_renewal( 42, 43 );
-		$this->mock_wcs_cart_contains_resubscribe( false );
-		$this->assertFalse( $this->woocommerce_subscriptions->should_convert_product_price( true, $this->mock_product ) );
+
+		// Act: Attempt to convert the subscription price.
+		$result = $this->woocommerce_subscriptions->should_convert_product_price( true, $this->mock_product );
+
+		// Assert: Confirm the result value is false.
+		$this->assertFalse( $result );
 	}
 
 	public function test_should_convert_product_price_return_false_when_resubscribe_in_cart() {
+		// Arrange: Create a subscription to be used.
+		$mock_subscription = new WC_Subscription();
+		$mock_subscription->set_has_product( true );
+
+		// Arrange: Mock wcs_get_subscription to return our mock subscription.
+		WC_Subscriptions::set_wcs_get_subscription(
+			function ( $id ) use ( $mock_subscription ) {
+				return $mock_subscription;
+			}
+		);
+
+		// Arrange: Set our mock return values.
+		$this->mock_wcs_cart_contains_renewal( false );
+		$this->mock_wcs_cart_contains_resubscribe( 42 );
 		$this->mock_utils
 			->method( 'is_call_in_backtrace' )
 			->with(
@@ -464,16 +567,36 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 				]
 			)
 			->willReturn( true );
-		$this->mock_wcs_cart_contains_renewal( false );
-		$this->mock_wcs_cart_contains_resubscribe( 42 );
-		$this->assertFalse( $this->woocommerce_subscriptions->should_convert_product_price( true, $this->mock_product ) );
+
+		// Act: Attempt to convert the subscription price.
+		$result = $this->woocommerce_subscriptions->should_convert_product_price( true, $this->mock_product );
+
+		// Assert: Confirm the result value is false.
+		$this->assertFalse( $result );
 	}
 
 	public function test_should_convert_product_price_return_true_when_backtrace_does_not_match() {
-		$this->mock_utils->method( 'is_call_in_backtrace' )->willReturn( false );
-		$this->mock_wcs_cart_contains_renewal( 42, 43 );
+		// Arrange: Create a subscription to be used.
+		$mock_subscription = new WC_Subscription();
+		$mock_subscription->set_has_product( true );
+
+		// Arrange: Mock wcs_get_subscription to return our mock subscription.
+		WC_Subscriptions::set_wcs_get_subscription(
+			function ( $id ) use ( $mock_subscription ) {
+				return $mock_subscription;
+			}
+		);
+
+		// Arrange: Set our mock return values.
+		$this->mock_wcs_cart_contains_renewal( 42, 43, 44 );
 		$this->mock_wcs_cart_contains_resubscribe( 42 );
-		$this->assertTrue( $this->woocommerce_subscriptions->should_convert_product_price( true, $this->mock_product ) );
+		$this->mock_utils->method( 'is_call_in_backtrace' )->willReturn( false );
+
+		// Act: Attempt to convert the subscription price.
+		$result = $this->woocommerce_subscriptions->should_convert_product_price( true, $this->mock_product );
+
+		// Assert: Confirm the result value is true.
+		$this->assertTrue( $result );
 	}
 
 	public function test_should_convert_product_price_return_true_with_no_subscription_actions_in_cart() {
@@ -708,14 +831,15 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 
 	// Simulate (mock) a renewal in the cart.
 	// Pass 0 / no args to unmock.
-	private function mock_wcs_cart_contains_renewal( $product_id = 0, $renewal_order_id = 0 ) {
+	private function mock_wcs_cart_contains_renewal( $product_id = 0, $renewal_order_id = 0, $subscription_id = 0 ) {
 		WC_Subscriptions::wcs_cart_contains_renewal(
-			function () use ( $product_id, $renewal_order_id ) {
+			function () use ( $product_id, $renewal_order_id, $subscription_id ) {
 				if ( $product_id && $renewal_order_id ) {
 					return [
 						'product_id'           => $product_id,
 						'subscription_renewal' => [
 							'renewal_order_id' => $renewal_order_id,
+							'subscription_id'  => $subscription_id,
 						],
 					];
 				}

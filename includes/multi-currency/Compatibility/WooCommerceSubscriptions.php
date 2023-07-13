@@ -85,7 +85,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 
 			// There should only ever be one item, so use that item.
 			$item                   = array_shift( $switch_cart_items );
-			$item_id                = isset( $item['variation_id'] ) ? $item['variation_id'] : $item['product_id'];
+			$item_id                = ! empty( $item['variation_id'] ) ? $item['variation_id'] : $item['product_id'];
 			$switch_cart_item       = $this->switch_cart_item;
 			$this->switch_cart_item = $item['key'];
 
@@ -404,23 +404,32 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 * @return bool True if found in the cart, false if not.
 	 */
 	private function is_product_subscription_type_in_cart( $product, $type ): bool {
+		if ( ! function_exists( 'wcs_get_subscription' ) ) {
+			return false;
+		}
+
 		$subscription = false;
 
 		switch ( $type ) {
 			case 'renewal':
-				$subscription = $this->cart_contains_renewal();
+				$subscription_item = $this->cart_contains_renewal();
+
+				if ( $subscription_item ) {
+					$subscription = wcs_get_subscription( $subscription_item['subscription_renewal']['subscription_id'] );
+				}
 				break;
 
 			case 'resubscribe':
-				$subscription = $this->cart_contains_resubscribe();
+				$subscription_item = $this->cart_contains_resubscribe();
+
+				if ( $subscription_item ) {
+					$subscription = wcs_get_subscription( $subscription_item['subscription_resubscribe']['subscription_id'] );
+				}
 				break;
 		}
 
-		if ( $subscription && $product ) {
-			if ( ( isset( $subscription['variation_id'] ) && $subscription['variation_id'] === $product->get_id() )
-				|| $subscription['product_id'] === $product->get_id() ) {
-				return true;
-			}
+		if ( $subscription && $product && $subscription->has_product( $product->get_id() ) ) {
+			return true;
 		}
 
 		return false;
