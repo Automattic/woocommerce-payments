@@ -483,7 +483,7 @@ describe( 'getTasks()', () => {
 					completed: false,
 					level: 1,
 					title: 'Respond to 3 active disputes',
-					content: 'Last week to respond to 2 of the disputes',
+					content: 'Last week to respond to 1 of the disputes',
 					actionLabel: 'See disputes',
 				} ),
 			] )
