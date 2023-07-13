@@ -299,19 +299,19 @@ exports[`Disputes list renders correctly 1`] = `
                       <span
                         aria-hidden="true"
                       >
-                        Respond by
+                        Response date
                       </span>
                       <span
                         class="screen-reader-text"
                       >
-                        Respond by
+                        Response date
                       </span>
                     </button>
                     <span
                       class="screen-reader-text"
                       id="header-0-7"
                     >
-                      Sort by Respond by in descending order
+                      Sort by Response date in descending order
                     </span>
                   </th>
                   <th
