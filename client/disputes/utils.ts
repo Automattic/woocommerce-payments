@@ -10,7 +10,7 @@ import moment from 'moment';
 import type { CachedDispute, EvidenceDetails } from 'wcpay/types/disputes';
 
 interface IsDueWithinProps {
-	dueBy?: CachedDispute[ 'due_by' ] | EvidenceDetails[ 'due_by' ];
+	dueBy: CachedDispute[ 'due_by' ] | EvidenceDetails[ 'due_by' ];
 	days: number;
 }
 /**
