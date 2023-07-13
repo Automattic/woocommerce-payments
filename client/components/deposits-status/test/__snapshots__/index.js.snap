@@ -20,7 +20,7 @@ exports[`DepositsStatus renders blocked status 1`] = `
     </svg>
     Temporarily suspended (
     <a
-      href="https://woocommerce.com/document/payments/faq/deposits-suspended/"
+      href="https://woocommerce.com/document/woocommerce-payments/deposits/why-deposits-suspended/"
       rel="noopener noreferrer"
       target="_blank"
     >
@@ -51,7 +51,7 @@ exports[`DepositsStatus renders blocked status 2`] = `
     </svg>
     Temporarily suspended (
     <a
-      href="https://woocommerce.com/document/payments/faq/deposits-suspended/"
+      href="https://woocommerce.com/document/woocommerce-payments/deposits/why-deposits-suspended/"
       rel="noopener noreferrer"
       target="_blank"
     >

@@ -75,6 +75,14 @@ abstract class UPE_Payment_Method {
 	protected $icon_url;
 
 	/**
+	 * Supported customer locations for which charges for a payment method can be processed
+	 * Empty if all customer locations are supported
+	 *
+	 * @var string[]
+	 */
+	protected $countries = [];
+
+	/**
 	 * Create instance of payment method
 	 *
 	 * @param WC_Payments_Token_Service $token_service Instance of WC_Payments_Token_Service.
@@ -188,6 +196,15 @@ abstract class UPE_Payment_Method {
 	 */
 	public function get_icon() {
 		return isset( $this->icon_url ) ? $this->icon_url : '';
+	}
+
+	/**
+	 * Returns payment method supported countries
+	 *
+	 * @return array
+	 */
+	public function get_countries() {
+		return $this->countries;
 	}
 
 	/**
