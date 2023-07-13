@@ -15,7 +15,7 @@ exports[`Connect Account Page – Info Notice Modal renders correctly when opene
         class="components-modal__header-heading"
         id="components-modal-header-0"
       >
-        Verifying your information with Woo Payments
+        Verifying your information with WooPayments
       </h1>
     </div>
     <button
@@ -43,7 +43,7 @@ exports[`Connect Account Page – Info Notice Modal renders correctly when opene
        
     </h4>
     <p>
-      As you continue the process of signing up for Woo Payments, we'll ask for information about your business, including the business owner's date of birth and tax ID number. We know you may wonder why we ask for this information, and how it will be used. The “Know Your Customer” process, explained below, helps us provide a safe, ethical environment for all financial transactions.
+      As you continue the process of signing up for WooPayments, we'll ask for information about your business, including the business owner's date of birth and tax ID number. We know you may wonder why we ask for this information, and how it will be used. The “Know Your Customer” process, explained below, helps us provide a safe, ethical environment for all financial transactions.
     </p>
     <h4>
       What is “Know Your Customer”?
@@ -67,14 +67,14 @@ exports[`Connect Account Page – Info Notice Modal renders correctly when opene
        
     </h4>
     <p>
-      If you're setting up Woo Payments for someone else, it's best to have that person complete the account creation process. As you can see above, we ask for very specific information about the business owner - and you might not have all the details at hand. It's not always possible to change account information once it's been saved, especially if the site accepts live transactions before the correct account information is entered.
+      If you're setting up WooPayments for someone else, it's best to have that person complete the account creation process. As you can see above, we ask for very specific information about the business owner - and you might not have all the details at hand. It's not always possible to change account information once it's been saved, especially if the site accepts live transactions before the correct account information is entered.
     </p>
     <h4>
       Is my data safe with WooCommerce?
        
     </h4>
     <p>
-      We take every step required to safeguard your personal data. Woo Payments is built in partnership with Stripe to store your data in a safe and secure manner.
+      We take every step required to safeguard your personal data. WooPayments is built in partnership with Stripe to store your data in a safe and secure manner.
     </p>
     <h4>
       How quickly will you confirm my identity and allow me to process payments?
