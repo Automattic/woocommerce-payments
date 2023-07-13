@@ -194,7 +194,10 @@ export const DisputesList = (): JSX.Element => {
 			status: {
 				value: dispute.status,
 				display: clickable(
-					<DisputeStatusChip status={ dispute.status } />
+					<DisputeStatusChip
+						status={ dispute.status }
+						dueBy={ dispute.due_by }
+					/>
 				),
 			},
 			reason: {

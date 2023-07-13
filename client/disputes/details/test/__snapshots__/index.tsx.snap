@@ -20,7 +20,7 @@ exports[`Dispute details screen renders correctly for bank_cannot_process disput
         >
           Dispute overview
           <span
-            class="chip chip-primary is-compact"
+            class="chip chip-warning is-compact"
           >
             Needs response
           </span>
@@ -458,7 +458,7 @@ exports[`Dispute details screen renders correctly for check_returned dispute 1`]
         >
           Dispute overview
           <span
-            class="chip chip-primary is-compact"
+            class="chip chip-warning is-compact"
           >
             Needs response
           </span>
@@ -677,7 +677,7 @@ exports[`Dispute details screen renders correctly for credit_not_processed dispu
         >
           Dispute overview
           <span
-            class="chip chip-primary is-compact"
+            class="chip chip-warning is-compact"
           >
             Needs response
           </span>
@@ -923,7 +923,7 @@ exports[`Dispute details screen renders correctly for customer_initiated dispute
         >
           Dispute overview
           <span
-            class="chip chip-primary is-compact"
+            class="chip chip-warning is-compact"
           >
             Needs response
           </span>
@@ -1142,7 +1142,7 @@ exports[`Dispute details screen renders correctly for debit_not_authorized dispu
         >
           Dispute overview
           <span
-            class="chip chip-primary is-compact"
+            class="chip chip-warning is-compact"
           >
             Needs response
           </span>
@@ -1361,7 +1361,7 @@ exports[`Dispute details screen renders correctly for duplicate dispute 1`] = `
         >
           Dispute overview
           <span
-            class="chip chip-primary is-compact"
+            class="chip chip-warning is-compact"
           >
             Needs response
           </span>
@@ -1613,7 +1613,7 @@ exports[`Dispute details screen renders correctly for fraudulent dispute 1`] = `
         >
           Dispute overview
           <span
-            class="chip chip-primary is-compact"
+            class="chip chip-warning is-compact"
           >
             Needs response
           </span>
@@ -1862,7 +1862,7 @@ exports[`Dispute details screen renders correctly for general dispute 1`] = `
         >
           Dispute overview
           <span
-            class="chip chip-primary is-compact"
+            class="chip chip-warning is-compact"
           >
             Needs response
           </span>
@@ -2088,7 +2088,7 @@ exports[`Dispute details screen renders correctly for incorrect_account_details 
         >
           Dispute overview
           <span
-            class="chip chip-primary is-compact"
+            class="chip chip-warning is-compact"
           >
             Needs response
           </span>
@@ -2307,7 +2307,7 @@ exports[`Dispute details screen renders correctly for insufficient_funds dispute
         >
           Dispute overview
           <span
-            class="chip chip-primary is-compact"
+            class="chip chip-warning is-compact"
           >
             Needs response
           </span>
@@ -2745,7 +2745,7 @@ exports[`Dispute details screen renders correctly for needs_response dispute sta
         >
           Dispute overview
           <span
-            class="chip chip-primary is-compact"
+            class="chip chip-warning is-compact"
           >
             Needs response
           </span>
@@ -2994,7 +2994,7 @@ exports[`Dispute details screen renders correctly for product_not_received dispu
         >
           Dispute overview
           <span
-            class="chip chip-primary is-compact"
+            class="chip chip-warning is-compact"
           >
             Needs response
           </span>
@@ -3240,7 +3240,7 @@ exports[`Dispute details screen renders correctly for product_unacceptable dispu
         >
           Dispute overview
           <span
-            class="chip chip-primary is-compact"
+            class="chip chip-warning is-compact"
           >
             Needs response
           </span>
@@ -3495,7 +3495,7 @@ exports[`Dispute details screen renders correctly for subscription_canceled disp
         >
           Dispute overview
           <span
-            class="chip chip-primary is-compact"
+            class="chip chip-warning is-compact"
           >
             Needs response
           </span>
@@ -3744,7 +3744,7 @@ exports[`Dispute details screen renders correctly for under_review dispute statu
         >
           Dispute overview
           <span
-            class="chip chip-light is-compact"
+            class="chip chip-primary is-compact"
           >
             Under review
           </span>
@@ -3963,7 +3963,7 @@ exports[`Dispute details screen renders correctly for unrecognized dispute 1`] =
         >
           Dispute overview
           <span
-            class="chip chip-primary is-compact"
+            class="chip chip-warning is-compact"
           >
             Needs response
           </span>
@@ -4428,7 +4428,7 @@ exports[`Dispute details screen renders correctly for warning_needs_response dis
         >
           Dispute overview
           <span
-            class="chip chip-primary is-compact"
+            class="chip chip-warning is-compact"
           >
             Inquiry: Needs response
           </span>
@@ -4677,7 +4677,7 @@ exports[`Dispute details screen renders correctly for warning_under_review dispu
         >
           Dispute overview
           <span
-            class="chip chip-light is-compact"
+            class="chip chip-primary is-compact"
           >
             Inquiry: Under review
           </span>
@@ -4896,7 +4896,7 @@ exports[`Dispute details screen renders correctly for won dispute status 1`] = `
         >
           Dispute overview
           <span
-            class="chip chip-light is-compact"
+            class="chip chip-success is-compact"
           >
             Won
           </span>
