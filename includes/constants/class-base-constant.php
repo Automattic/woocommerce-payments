@@ -107,9 +107,9 @@ abstract class Base_Constant implements \JsonSerializable {
 	/**
 	 * Specify the value which should be serialized to JSON.
 	 *
-	 * @return mixed
+	 * @return string
 	 */
-	public function jsonSerialize(): mixed {
+	public function jsonSerialize(): string {
 		return $this->__toString();
 	}
 }
