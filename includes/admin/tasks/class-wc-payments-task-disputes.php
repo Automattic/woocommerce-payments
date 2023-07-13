@@ -106,27 +106,36 @@ class WC_Payments_Task_Disputes extends Task {
 			return '';
 		}
 
-		$currencies_map = [];
-		foreach ( $active_disputes as $dispute ) {
-			if ( ! isset( $currencies_map[ $dispute['currency'] ] ) ) {
-				$currencies_map[ $dispute['currency'] ] = 0;
-			}
-			$currencies_map[ $dispute['currency'] ] += $dispute['amount'];
+		$dispute_currencies = array_unique( array_column( $active_disputes, 'currency' ) );
+
+		// If multiple currencies, use simple task title without total amounts.
+		if ( count( $dispute_currencies ) > 1 ) {
+			return sprintf(
+				// translators: %d is a number greater than 1.
+				__( 'Respond to %d active disputes', 'woocommerce-payments' ),
+				count( $active_disputes )
+			);
 		}
 
-		$currencies        = array_keys( $currencies_map );
-		$formatted_amounts = [];
-		foreach ( $currencies as $currency ) {
-			$amount              = WC_Payments_Utils::interpret_stripe_amount( $currencies_map[ $currency ], $currency );
-			$formatted_amounts[] = WC_Payments_Utils::format_currency( $amount, $currency );
-		}
-		$dispute_total_amounts = implode( ', ', $formatted_amounts );
+		// If single currency, calculate total amount and include in task title.
+		$dispute_total = array_reduce(
+			$active_disputes,
+			function ( $total, $dispute ) {
+				return $total + ( $dispute['amount'] ?? 0 );
+			},
+			0
+		);
+
+		$dispute_total_formatted = WC_Payments_Utils::format_currency(
+			WC_Payments_Utils::interpret_stripe_amount( $dispute_total, $dispute_currencies[0] ),
+			$dispute_currencies[0]
+		);
 
 		return sprintf(
-			/* translators: %d is a number. %s is a currency formatted amounts (potentially multiple), eg: €10.00, $20.00 */
+			/* translators: %d is a number greater than 1. %s is a formatted amount, eg: $10.00 */
 			__( 'Respond to %1$d active disputes for a total of %2$s', 'woocommerce-payments' ),
 			count( $active_disputes ),
-			$dispute_total_amounts
+			$dispute_total_formatted
 		);
 	}
 

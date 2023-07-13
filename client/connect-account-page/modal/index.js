@@ -7,7 +7,7 @@ import interpolateComponents from '@automattic/interpolate-components';
  * Internal dependencies
  */
 import { Button, Modal } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { Link, List } from '@woocommerce/components';
 import { useState } from '@wordpress/element';
 import './style.scss';
@@ -44,15 +44,19 @@ const OnboardingLocationCheckModal = ( {
 		onDeclined();
 	};
 
-	const title = __( 'WooCommerce Payments', 'woocommerce-payments' );
+	const title = 'WooPayments';
 
 	const message = interpolateComponents( {
-		mixedString: __(
-			"It appears you're attempting to set up WooCommerce Payments from an unsupported country. " +
-				'In order to complete the set up of WooCommerce Payments, your store is required to have a business ' +
-				'entity in one of the following countries: {{list /}} ' +
-				'{{link}}Learn more{{/link}} about setting up business entities in foreign countries.',
-			'woocommerce-payments'
+		mixedString: sprintf(
+			/* translators: %1$s: WooPayments */
+			__(
+				"It appears you're attempting to set up %1$s from an unsupported country. " +
+					'In order to complete the set up of %1$s, your store is required to have a business ' +
+					'entity in one of the following countries: {{list /}} ' +
+					'{{link}}Learn more{{/link}} about setting up business entities in foreign countries.',
+				'woocommerce-payments'
+			),
+			'WooPayments'
 		),
 		components: {
 			link: <LearnMoreLink />,

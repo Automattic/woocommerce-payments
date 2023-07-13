@@ -132,9 +132,10 @@ export const getTasks = ( {
 			! isPoEnabled && {
 				key: 'update-business-details',
 				level: 1,
-				title: __(
-					'Update WooCommerce Payments business details',
-					'woocommerce-payments'
+				title: sprintf(
+					/* translators: %s: WooPayments */
+					__( 'Update %s business details', 'woocommerce-payments' ),
+					'WooPayments'
 				),
 				content: accountDetailsTaskDescription,
 				completed: 'complete' === status,
@@ -166,14 +167,19 @@ export const getTasks = ( {
 			wpcomReconnectUrl && {
 				key: 'reconnect-wpcom-user',
 				level: 1,
-				title: __(
-					'Reconnect WooCommerce Payments',
-					'woocommerce-payments'
+				title: sprintf(
+					/* translators: %s: WooPayments */
+					__( 'Reconnect %s', 'woocommerce-payments' ),
+					'WooPayments'
 				),
-				additionalInfo: __(
-					'WooCommerce Payments is missing a connected WordPress.com account. ' +
-						'Some functionality will be limited without a connected account.',
-					'woocommerce-payments'
+				additionalInfo: sprintf(
+					/* translators: %s: WooPayments */
+					__(
+						'%s is missing a connected WordPress.com account. ' +
+							'Some functionality will be limited without a connected account.',
+						'woocommerce-payments'
+					),
+					'WooPayments'
 				),
 				completed: false,
 				onClick: () => {
