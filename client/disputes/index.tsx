@@ -163,7 +163,7 @@ const smartDueDate = ( dispute: CachedDispute ) => {
 	const diffDays = dueBy.diff( now, 'days', false );
 	if ( diffHours > 0 && diffHours <= 72 ) {
 		return (
-			<span className={ 'due-soon' }>
+			<span className="due-soon">
 				{ diffHours <= 24
 					? __( 'Last day today', 'woocommerce-payments' )
 					: sprintf(
@@ -176,7 +176,7 @@ const smartDueDate = ( dispute: CachedDispute ) => {
 							),
 							diffDays
 					  ) }
-				<NoticeOutlineIcon className={ 'due-soon-icon' } />
+				<NoticeOutlineIcon className="due-soon-icon" />
 			</span>
 		);
 	}
