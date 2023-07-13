@@ -1,4 +1,4 @@
 Significance: minor
 Type: fix
 
-Resolved issue where payment type metadata was not being included in payment requests.
+Resolved an issue that caused the payment type metadata to not be included in payment requests.
