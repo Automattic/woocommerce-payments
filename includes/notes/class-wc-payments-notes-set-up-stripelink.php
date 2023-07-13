@@ -27,7 +27,7 @@ class WC_Payments_Notes_Set_Up_StripeLink {
 	/**
 	 * CTA button link
 	 */
-	const NOTE_DOCUMENTATION_URL = 'https://woocommerce.com/document/payments/woocommerce-payments-stripe-link/';
+	const NOTE_DOCUMENTATION_URL = 'https://woocommerce.com/document/woocommerce-payments/payment-methods/link-by-stripe/';
 
 	/**
 	 * The account service instance.

@@ -183,6 +183,15 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_wcpay_subscriptions_enabled() {
+		// After completing the WooCommerce onboarding, check if the merchant has chosen Subscription product types and enable the feature flag.
+		if ( (bool) get_option( 'wcpay_check_subscriptions_eligibility_after_onboarding', false ) ) {
+			if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.9.0', '<' ) ) {
+				self::maybe_enable_wcpay_subscriptions_after_onboarding( [], get_option( 'woocommerce_onboarding_profile', [] ) );
+			}
+
+			delete_option( 'wcpay_check_subscriptions_eligibility_after_onboarding' );
+		}
+
 		return apply_filters( 'wcpay_is_wcpay_subscriptions_enabled', '1' === get_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '0' ) );
 	}
 
@@ -192,8 +201,35 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_wcpay_subscriptions_eligible() {
+		if ( ! function_exists( 'wc_get_base_location' ) ) {
+			return false;
+		}
+
 		$store_base_location = wc_get_base_location();
 		return ! empty( $store_base_location['country'] ) && 'US' === $store_base_location['country'];
+	}
+
+	/**
+	 * Checks whether the merchant has chosen Subscription product types during onboarding
+	 * WooCommerce and is elible for WCPay Subscriptions, if so, enables the feature flag.
+	 *
+	 * @since 6.2.0
+	 *
+	 * @param array $onboarding_data Onboarding data.
+	 * @param array $updated         Updated onboarding settings.
+	 *
+	 * @return void
+	 */
+	public static function maybe_enable_wcpay_subscriptions_after_onboarding( $onboarding_data, $updated ) {
+		if ( empty( $updated['product_types'] ) || ! is_array( $updated['product_types'] ) || ! in_array( 'subscriptions', $updated['product_types'], true ) ) {
+			return;
+		}
+
+		if ( ! self::is_wcpay_subscriptions_eligible() ) {
+			return;
+		}
+
+		update_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '1' );
 	}
 
 	/**
