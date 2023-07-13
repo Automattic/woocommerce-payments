@@ -8,8 +8,9 @@ import wcpayTracks from 'tracks';
 import { dateI18n } from '@wordpress/date';
 import { _n, __, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
+import { Button } from '@wordpress/components';
 import { TableCard, Link } from '@woocommerce/components';
-import { onQueryChange, getQuery } from '@woocommerce/navigation';
+import { onQueryChange, getQuery, getHistory } from '@woocommerce/navigation';
 import {
 	downloadCSVFile,
 	generateCSVDataFromTable,
@@ -18,6 +19,7 @@ import {
 import classNames from 'classnames';
 import apiFetch from '@wordpress/api-fetch';
 import { useDispatch } from '@wordpress/data';
+import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 
 /**
  * Internal dependencies.
@@ -33,9 +35,10 @@ import { reasons } from './strings';
 import { formatStringValue } from 'utils';
 import { formatExplicitCurrency } from 'utils/currency';
 import DisputesFilters from './filters';
+import { disputeAwaitingResponseStatuses } from './filters/config';
 import DownloadButton from 'components/download-button';
 import disputeStatusMapping from 'components/dispute-status-chip/mappings';
-import { DisputesTableHeader } from 'wcpay/types/disputes';
+import { CachedDispute, DisputesTableHeader } from 'wcpay/types/disputes';
 import { getDisputesCSV } from 'wcpay/data/disputes/resolvers';
 import { applyThousandSeparator } from 'wcpay/utils';
 
@@ -124,13 +127,64 @@ const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 	},
 	{
 		key: 'dueBy',
-		label: __( 'Respond by', 'woocommerce-payments' ),
-		screenReaderLabel: __( 'Respond by', 'woocommerce-payments' ),
+		label: __( 'Response date', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Response date', 'woocommerce-payments' ),
 		required: true,
 		isLeftAligned: true,
 		isSortable: true,
 	},
+	{
+		key: 'action',
+		label: __( 'Action', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Action', 'woocommerce-payments' ),
+		isLeftAligned: false,
+		isNumeric: true,
+		required: true,
+		visible: true,
+	},
 ];
+
+/**
+ * Returns a smart date if dispute's due date is within 72 hours.
+ * Otherwise, returns a date string.
+ *
+ * @param {CachedDispute} dispute The dispute to check.
+ *
+ * @return {JSX.Element | string} If dispute is due within 72 hours, return the element that display smart date. Otherwise, a date string.
+ */
+const smartDueDate = ( dispute: CachedDispute ) => {
+	if ( dispute.due_by === '' ) {
+		return '';
+	}
+	// Get current time in UTC.
+	const now = moment().utc();
+	const dueBy = moment.utc( dispute.due_by );
+	const diffHours = dueBy.diff( now, 'hours', false );
+	const diffDays = dueBy.diff( now, 'days', false );
+	if ( diffHours > 0 && diffHours <= 72 ) {
+		return (
+			<span className="due-soon">
+				{ diffHours <= 24
+					? __( 'Last day today', 'woocommerce-payments' )
+					: sprintf(
+							// Translators: %s is the number of days left to respond to the dispute.
+							_n(
+								'%s day left',
+								'%s days left',
+								diffDays,
+								'woocommerce-payments'
+							),
+							diffDays
+					  ) }
+				<NoticeOutlineIcon className="due-soon-icon" />
+			</span>
+		);
+	}
+	return dateI18n(
+		'M j, Y / g:iA',
+		moment.utc( dispute.due_by ).local().toISOString()
+	);
+};
 
 export const DisputesList = (): JSX.Element => {
 	const [ isDownloading, setIsDownloading ] = useState( false );
@@ -161,7 +215,9 @@ export const DisputesList = (): JSX.Element => {
 		const reasonDisplay = reasonMapping
 			? reasonMapping.display
 			: formatStringValue( dispute.reason );
-
+		const needsResponse = disputeAwaitingResponseStatuses.includes(
+			dispute.status
+		);
 		const data: {
 			[ key: string ]: {
 				value: number | string;
@@ -181,7 +237,10 @@ export const DisputesList = (): JSX.Element => {
 			status: {
 				value: dispute.status,
 				display: clickable(
-					<DisputeStatusChip status={ dispute.status } />
+					<DisputeStatusChip
+						status={ dispute.status }
+						dueBy={ dispute.due_by }
+					/>
 				),
 			},
 			reason: {
@@ -209,12 +268,7 @@ export const DisputesList = (): JSX.Element => {
 			},
 			dueBy: {
 				value: dispute.due_by,
-				display: clickable(
-					dateI18n(
-						'M j, Y / g:iA',
-						moment.utc( dispute.due_by ).local().toISOString()
-					)
-				),
+				display: clickable( smartDueDate( dispute ) ),
 			},
 			order: {
 				value: dispute.order_number ?? '',
@@ -240,6 +294,32 @@ export const DisputesList = (): JSX.Element => {
 				display: clickable( dispute.customer_country ),
 			},
 			details: { value: dispute.dispute_id, display: detailsLink },
+			action: {
+				value: '',
+				display: (
+					<Button
+						variant={ needsResponse ? 'secondary' : 'tertiary' }
+						href={ getDetailsURL( dispute.dispute_id, 'disputes' ) }
+						onClick={ (
+							e: React.MouseEvent< HTMLAnchorElement >
+						) => {
+							// Use client-side routing to avoid page refresh.
+							e.preventDefault();
+							wcpayTracks.recordEvent(
+								wcpayTracks.events.DISPUTES_ROW_ACTION_CLICK
+							);
+							const history = getHistory();
+							history.push(
+								getDetailsURL( dispute.dispute_id, 'disputes' )
+							);
+						} }
+					>
+						{ needsResponse
+							? __( 'Respond', 'woocommerce-payments' )
+							: __( 'See details', 'woocommerce-payments' ) }
+					</Button>
+				),
+			},
 		};
 		return headers.map(
 			( { key } ) => data[ key ] || { value: undefined, display: null }
@@ -333,7 +413,7 @@ export const DisputesList = (): JSX.Element => {
 					...headers[ 0 ],
 					label: __( 'Dispute Id', 'woocommerce-payments' ),
 				},
-				...headers.slice( 1 ),
+				...headers.slice( 1, -1 ), // Remove details (position 0)  and action (last position) column headers.
 			];
 
 			const csvRows = rows.map( ( row ) => {
@@ -363,7 +443,7 @@ export const DisputesList = (): JSX.Element => {
 						),
 					},
 					{
-						// Respond By.
+						// Response date.
 						...row[ 11 ],
 						value: dateI18n(
 							'Y-m-d / g:iA',
