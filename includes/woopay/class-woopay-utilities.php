@@ -13,6 +13,11 @@ use WooPay_Extension;
 use WCPay\Logger;
 use WC_Geolocation;
 use WC_Payments;
+use WCPay\WooPay\WC_Payments_Account;
+use WCPay\Blocks_Data_Extractor;
+use Jetpack_Options;
+use WC_Customer;
+use WC_Payments_Customer_Service;
 
 /**
  * WooPay
@@ -281,5 +286,50 @@ class WooPay_Utilities {
 	 */
 	public static function get_woopay_url() {
 		return defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'https://pay.woo.com';
+	}
+
+	/**
+	 * Returns true if guest checkout is enabled, false otherwise.
+	 *
+	 * @param WC_Payments_Account $account_service The account service.
+	 *
+	 * @return array  The store data.
+	 */
+	public function get_store_data( $account_service ) {
+		$account_id = $account_service->get_stripe_account_id();
+
+		include_once WCPAY_ABSPATH . 'includes/compat/blocks/class-blocks-data-extractor.php';
+		$blocks_data_extractor = new Blocks_Data_Extractor();
+
+		$gateway = WC_Payments::get_gateway();
+
+		$user        = wp_get_current_user();
+		$customer_id = WC_Payments::get_customer_service()->get_customer_id_by_user_id( $user->ID );
+		if ( null === $customer_id ) {
+			// create customer.
+			$customer_data = WC_Payments_Customer_Service::map_customer_data( null, new WC_Customer( $user->ID ) );
+			$customer_id   = WC_Payments::get_customer_service()->create_customer_for_user( $user, $customer_data );
+		}
+
+		return [
+			'store_name'                     => get_bloginfo( 'name' ),
+			'store_logo'                     => ! empty( $store_logo ) ? get_rest_url( null, 'wc/v3/payments/file/' . $store_logo ) : '',
+			'custom_message'                 => $gateway->get_option( 'platform_checkout_custom_message' ),
+			'blog_id'                        => Jetpack_Options::get_option( 'id' ),
+			'blog_url'                       => get_site_url(),
+			'blog_checkout_url'              => wc_get_checkout_url(),
+			'blog_shop_url'                  => get_permalink( wc_get_page_id( 'shop' ) ),
+			'store_api_url'                  => WC_Payments::get_store_api_url(),
+			'account_id'                     => $account_id,
+			'test_mode'                      => WC_Payments::mode()->is_test(),
+			'capture_method'                 => empty( $gateway->get_option( 'manual_capture' ) ) || 'no' === $gateway->get_option( 'manual_capture' ) ? 'automatic' : 'manual',
+			'is_subscriptions_plugin_active' => $gateway->is_subscriptions_plugin_active(),
+			'woocommerce_tax_display_cart'   => get_option( 'woocommerce_tax_display_cart' ),
+			'ship_to_billing_address_only'   => wc_ship_to_billing_address_only(),
+			'return_url'                     => wc_get_cart_url(),
+			'blocks_data'                    => $blocks_data_extractor->get_data(),
+			'checkout_schema_namespaces'     => $blocks_data_extractor->get_checkout_schema_namespaces(),
+			'customer_id'                    => $customer_id,
+		];
 	}
 }
