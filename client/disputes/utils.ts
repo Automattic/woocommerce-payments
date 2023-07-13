@@ -41,7 +41,7 @@ export const isDueWithin = ( { dueBy, days }: IsDueWithinProps ): boolean => {
 	}
 
 	const now = moment().utc();
-	const isWithinDays = dueByMoment.diff( now, 'days', true ) < days;
+	const isWithinDays = dueByMoment.diff( now, 'days', true ) <= days;
 	const isPastDue = now.isAfter( dueByMoment );
 	return isWithinDays && ! isPastDue;
 };
