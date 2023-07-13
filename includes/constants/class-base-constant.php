@@ -109,7 +109,8 @@ abstract class Base_Constant implements \JsonSerializable {
 	 *
 	 * @return string
 	 */
-	public function jsonSerialize(): string {
+	#[\ReturnTypeWillChange]
+	public function jsonSerialize() {
 		return $this->__toString();
 	}
 }
