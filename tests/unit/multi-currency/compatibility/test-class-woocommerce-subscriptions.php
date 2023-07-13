@@ -321,6 +321,10 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 		$mock_subscription->set_currency( 'JPY' );
 		$mock_subscription->save();
 
+		// Get the current user, then update the current user to the user for the order/sub.
+		$current_user_id = get_current_user_id();
+		wp_set_current_user( $mock_subscription->get_customer_id() );
+
 		// Mock wcs_get_subscription to return our mock subscription.
 		WC_Subscriptions::set_wcs_get_subscription(
 			function ( $id ) use ( $mock_subscription ) {
@@ -333,6 +337,43 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 		$_GET['_wcsnonce']           = wp_create_nonce( 'wcs_switch_request' );
 
 		$this->assertSame( 'JPY', $this->woocommerce_subscriptions->override_selected_currency( false ) );
+
+		// Reset the current user.
+		wp_set_current_user( $current_user_id );
+	}
+
+	// Return false if the current user doesn't match the user of the switching subscription.
+	public function test_override_selected_currency_return_false_for_switch_request_when_no_user_match() {
+		// Reset/clear any previous mocked state.
+		$this->mock_wcs_cart_contains_renewal( false );
+		$this->mock_wcs_cart_contains_resubscribe( false );
+		$this->mock_wcs_get_order_type_cart_items( false );
+
+		// Set up an order with a non-default currency.
+		// Note we're using a WC_Order as a stand-in for a true WC_Subscription.
+		$mock_subscription = WC_Helper_Order::create_order();
+		$mock_subscription->set_currency( 'JPY' );
+		$mock_subscription->save();
+
+		// Get the current user, then update the current user to a random user.
+		$current_user_id = get_current_user_id();
+		wp_set_current_user( 42 );
+
+		// Mock wcs_get_subscription to return our mock subscription.
+		WC_Subscriptions::set_wcs_get_subscription(
+			function ( $id ) use ( $mock_subscription ) {
+				return $mock_subscription;
+			}
+		);
+
+		// Blatantly hack mock request params for the test.
+		$_GET['switch-subscription'] = $mock_subscription->get_id();
+		$_GET['_wcsnonce']           = wp_create_nonce( 'wcs_switch_request' );
+
+		$this->assertFalse( $this->woocommerce_subscriptions->override_selected_currency( false ) );
+
+		// Reset the current user.
+		wp_set_current_user( $current_user_id );
 	}
 
 	// Returns code due to cart contains a subscription switch.
@@ -595,11 +636,66 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 
 	// Should return true if switch found in GET, like on product page.
 	public function test_should_hide_widgets_return_true_when_starting_subscrition_switch() {
+		// Reset/clear any previous mocked state.
 		$this->mock_wcs_cart_contains_renewal( false );
-		$_GET['switch-subscription'] = 42;
-		$_GET['_wcsnonce']           = wp_create_nonce( 'wcs_switch_request' );
 		$this->mock_wcs_get_order_type_cart_items( false );
+
+		// Set up an order to use for the test.
+		// Note we're using a WC_Order as a stand-in for a true WC_Subscription.
+		$mock_subscription = WC_Helper_Order::create_order();
+		$mock_subscription->save();
+
+		// Get the current user, then update the current user to the user for the order/sub.
+		$current_user_id = get_current_user_id();
+		wp_set_current_user( $mock_subscription->get_customer_id() );
+
+		// Mock wcs_get_subscription to return our mock subscription.
+		WC_Subscriptions::set_wcs_get_subscription(
+			function ( $id ) use ( $mock_subscription ) {
+				return $mock_subscription;
+			}
+		);
+
+		// Blatantly hack mock request params for the test.
+		$_GET['switch-subscription'] = $mock_subscription->get_id();
+		$_GET['_wcsnonce']           = wp_create_nonce( 'wcs_switch_request' );
+
 		$this->assertTrue( $this->woocommerce_subscriptions->should_hide_widgets( false ) );
+
+		// Reset the current user.
+		wp_set_current_user( $current_user_id );
+	}
+
+	// Should return false since users will not match.
+	public function test_should_hide_widgets_return_false_when_starting_subscrition_switch_and_no_user_match() {
+		// Reset/clear any previous mocked state.
+		$this->mock_wcs_cart_contains_renewal( false );
+		$this->mock_wcs_get_order_type_cart_items( false );
+
+		// Set up an order to use for the test.
+		// Note we're using a WC_Order as a stand-in for a true WC_Subscription.
+		$mock_subscription = WC_Helper_Order::create_order();
+		$mock_subscription->save();
+
+		// Get the current user, then update the current user to a random ID.
+		$current_user_id = get_current_user_id();
+		wp_set_current_user( 42 );
+
+		// Mock wcs_get_subscription to return our mock subscription.
+		WC_Subscriptions::set_wcs_get_subscription(
+			function ( $id ) use ( $mock_subscription ) {
+				return $mock_subscription;
+			}
+		);
+
+		// Blatantly hack mock request params for the test.
+		$_GET['switch-subscription'] = $mock_subscription->get_id();
+		$_GET['_wcsnonce']           = wp_create_nonce( 'wcs_switch_request' );
+
+		$this->assertFalse( $this->woocommerce_subscriptions->should_hide_widgets( false ) );
+
+		// Reset the current user.
+		wp_set_current_user( $current_user_id );
 	}
 
 	// Should return true if switch found in cart.
