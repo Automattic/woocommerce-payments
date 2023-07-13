@@ -214,7 +214,8 @@ export default {
 		description: sprintf(
 			/* translators: %s: WooPayments */
 			__(
-				'You’re ready to start using the features and benefits of %s.'
+				'You’re ready to start using the features and benefits of %s.',
+				'woocommerce-payments'
 			),
 			'WooPayments'
 		),
