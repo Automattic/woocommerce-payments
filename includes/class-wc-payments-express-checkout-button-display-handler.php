@@ -70,26 +70,9 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 *
 	 * @return void
 	 */
-	public function display_express_checkout_separator_if_necessary() {
-		$should_show_woopay          = $this->platform_checkout_button_handler->should_show_woopay_button();
-		$should_show_payment_request = $this->payment_request_button_handler->should_show_payment_request_button();
-		$should_hide                 = $should_show_payment_request && ! $should_show_woopay;
-		if ( $should_show_woopay || $should_show_payment_request ) {
-			?>
-			<p id="wcpay-payment-request-button-separator" style="margin-top:1.5em;text-align:center;<?php echo $should_hide ? 'display:none;' : ''; ?>">&mdash; <?php esc_html_e( 'OR', 'woocommerce-payments' ); ?> &mdash;</p>
-			<?php
-		}
-	}
-
-	/**
-	 * Display express checkout separator only when express buttons are displayed.
-	 *
-	 * @return void
-	 */
 	public function display_express_checkout_buttons() {
 		$this->platform_checkout_button_handler->display_woopay_button_html();
 		$this->payment_request_button_handler->display_payment_request_button_html();
-		$this->display_express_checkout_separator_if_necessary();
 	}
 
 	/**

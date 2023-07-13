@@ -439,9 +439,7 @@ jQuery( ( $ ) => {
 		},
 
 		getElements: () => {
-			return $(
-				'.wcpay-payment-request-wrapper,#wcpay-payment-request-button-separator'
-			);
+			return $( '.wcpay-payment-request-wrapper' );
 		},
 
 		hide: () => {
