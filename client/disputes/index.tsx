@@ -8,8 +8,9 @@ import wcpayTracks from 'tracks';
 import { dateI18n } from '@wordpress/date';
 import { _n, __, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
+import { Button } from '@wordpress/components';
 import { TableCard, Link } from '@woocommerce/components';
-import { onQueryChange, getQuery } from '@woocommerce/navigation';
+import { onQueryChange, getQuery, getHistory } from '@woocommerce/navigation';
 import {
 	downloadCSVFile,
 	generateCSVDataFromTable,
@@ -33,6 +34,7 @@ import { reasons } from './strings';
 import { formatStringValue } from 'utils';
 import { formatExplicitCurrency } from 'utils/currency';
 import DisputesFilters from './filters';
+import { disputeAwaitingResponseStatuses } from './filters/config';
 import DownloadButton from 'components/download-button';
 import disputeStatusMapping from 'components/dispute-status-chip/mappings';
 import { DisputesTableHeader } from 'wcpay/types/disputes';
@@ -116,11 +118,11 @@ const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 		key: 'created',
 		label: __( 'Disputed on', 'woocommerce-payments' ),
 		screenReaderLabel: __( 'Disputed on', 'woocommerce-payments' ),
-		required: true,
 		isLeftAligned: true,
 		isSortable: true,
 		defaultSort: true,
 		defaultOrder: 'desc',
+		visible: false,
 	},
 	{
 		key: 'dueBy',
@@ -129,6 +131,15 @@ const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 		required: true,
 		isLeftAligned: true,
 		isSortable: true,
+	},
+	{
+		key: 'action',
+		label: __( 'Action', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Action', 'woocommerce-payments' ),
+		isLeftAligned: false,
+		isNumeric: true,
+		required: true,
+		visible: true,
 	},
 ];
 
@@ -161,7 +172,9 @@ export const DisputesList = (): JSX.Element => {
 		const reasonDisplay = reasonMapping
 			? reasonMapping.display
 			: formatStringValue( dispute.reason );
-
+		const needsResponse = disputeAwaitingResponseStatuses.includes(
+			dispute.status
+		);
 		const data: {
 			[ key: string ]: {
 				value: number | string;
@@ -240,6 +253,32 @@ export const DisputesList = (): JSX.Element => {
 				display: clickable( dispute.customer_country ),
 			},
 			details: { value: dispute.dispute_id, display: detailsLink },
+			action: {
+				value: '',
+				display: (
+					<Button
+						variant={ needsResponse ? 'secondary' : 'tertiary' }
+						href={ getDetailsURL( dispute.dispute_id, 'disputes' ) }
+						onClick={ (
+							e: React.MouseEvent< HTMLAnchorElement >
+						) => {
+							// Use client-side routing to avoid page refresh.
+							e.preventDefault();
+							wcpayTracks.recordEvent(
+								wcpayTracks.events.DISPUTES_ROW_ACTION_CLICK
+							);
+							const history = getHistory();
+							history.push(
+								getDetailsURL( dispute.dispute_id, 'disputes' )
+							);
+						} }
+					>
+						{ needsResponse
+							? __( 'Respond', 'woocommerce-payments' )
+							: __( 'See details', 'woocommerce-payments' ) }
+					</Button>
+				),
+			},
 		};
 		return headers.map(
 			( { key } ) => data[ key ] || { value: undefined, display: null }
@@ -333,26 +372,29 @@ export const DisputesList = (): JSX.Element => {
 					...headers[ 0 ],
 					label: __( 'Dispute Id', 'woocommerce-payments' ),
 				},
-				...headers.slice( 1 ),
+				...headers.slice( 1, -1 ), // Remove details (position 0)  and action (last position) column headers.
 			];
 
 			const csvRows = rows.map( ( row ) => {
 				return [
-					...row.slice( 0, 3 ),
+					...row.slice( 0, 3 ), // Amount, Currency, Status.
 					{
+						// Reason.
 						...row[ 3 ],
 						value:
 							disputeStatusMapping[ row[ 3 ].value ?? '' ]
 								.message,
 					},
 					{
+						// Source.
 						...row[ 4 ],
 						value: formatStringValue(
 							( row[ 4 ].value ?? '' ).toString()
 						),
 					},
-					...row.slice( 5, 10 ),
+					...row.slice( 5, 10 ), // Order #, Customer, Email, Country.
 					{
+						// Disputed On.
 						...row[ 10 ],
 						value: dateI18n(
 							'Y-m-d',
@@ -360,6 +402,7 @@ export const DisputesList = (): JSX.Element => {
 						),
 					},
 					{
+						// Respond By.
 						...row[ 11 ],
 						value: dateI18n(
 							'Y-m-d / g:iA',

@@ -20,6 +20,7 @@ class WC_Payments_Features {
 	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME = '_wcpay_feature_woopay_express_checkout';
 	const AUTH_AND_CAPTURE_FLAG_NAME        = '_wcpay_feature_auth_and_capture';
 	const PROGRESSIVE_ONBOARDING_FLAG_NAME  = '_wcpay_feature_progressive_onboarding';
+	const MC_ORDER_META_HELPER_FLAG_NAME    = '_wcpay_feature_mc_order_meta_helper';
 
 	/**
 	 * Checks whether any UPE gateway is enabled.
@@ -182,6 +183,15 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_wcpay_subscriptions_enabled() {
+		// After completing the WooCommerce onboarding, check if the merchant has chosen Subscription product types and enable the feature flag.
+		if ( (bool) get_option( 'wcpay_check_subscriptions_eligibility_after_onboarding', false ) ) {
+			if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.9.0', '<' ) ) {
+				self::maybe_enable_wcpay_subscriptions_after_onboarding( [], get_option( 'woocommerce_onboarding_profile', [] ) );
+			}
+
+			delete_option( 'wcpay_check_subscriptions_eligibility_after_onboarding' );
+		}
+
 		return apply_filters( 'wcpay_is_wcpay_subscriptions_enabled', '1' === get_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '0' ) );
 	}
 
@@ -191,8 +201,35 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_wcpay_subscriptions_eligible() {
+		if ( ! function_exists( 'wc_get_base_location' ) ) {
+			return false;
+		}
+
 		$store_base_location = wc_get_base_location();
 		return ! empty( $store_base_location['country'] ) && 'US' === $store_base_location['country'];
+	}
+
+	/**
+	 * Checks whether the merchant has chosen Subscription product types during onboarding
+	 * WooCommerce and is elible for WCPay Subscriptions, if so, enables the feature flag.
+	 *
+	 * @since 6.2.0
+	 *
+	 * @param array $onboarding_data Onboarding data.
+	 * @param array $updated         Updated onboarding settings.
+	 *
+	 * @return void
+	 */
+	public static function maybe_enable_wcpay_subscriptions_after_onboarding( $onboarding_data, $updated ) {
+		if ( empty( $updated['product_types'] ) || ! is_array( $updated['product_types'] ) || ! in_array( 'subscriptions', $updated['product_types'], true ) ) {
+			return;
+		}
+
+		if ( ! self::is_wcpay_subscriptions_eligible() ) {
+			return;
+		}
+
+		update_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '1' );
 	}
 
 	/**
@@ -277,6 +314,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether Multi-Currency Order Meta Helper is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_mc_order_meta_helper_enabled(): bool {
+		return '1' === get_option( self::MC_ORDER_META_HELPER_FLAG_NAME, '0' );
+	}
+
+	/**
 	 * Returns feature flags as an array suitable for display on the front-end.
 	 *
 	 * @return bool[]
@@ -296,6 +342,7 @@ class WC_Payments_Features {
 				'woopayExpressCheckout'   => self::is_woopay_express_checkout_enabled(),
 				'isAuthAndCaptureEnabled' => self::is_auth_and_capture_enabled(),
 				'progressiveOnboarding'   => self::is_progressive_onboarding_enabled(),
+				'mcOrderMetaHelper'       => self::is_mc_order_meta_helper_enabled(),
 			]
 		);
 	}
