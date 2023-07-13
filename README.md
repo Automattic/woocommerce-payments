@@ -14,7 +14,7 @@ We adopt the L-2 version support policy for WordPress core strictly, and a loose
 
 ### Install dependencies & build
 
--   `npm install` 
+-   `npm install`
 -   `composer install`
 -   `npm run build:client`, or if you're developing the client you can have it auto-update when changes are made: `npm start`
 
@@ -55,7 +55,7 @@ We currently support the following variables:
 
 ## Test account setup
 
-For setting up a test account follow [these instructions](https://woocommerce.com/document/payments/testing/dev-mode/).
+For setting up a test account follow [these instructions](https://woocommerce.com/document/woocommerce-payments/testing-and-troubleshooting/dev-mode/).
 
 You will need a externally accessible URL to set up the plugin. You can use ngrok for this.
 
