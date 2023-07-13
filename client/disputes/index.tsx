@@ -145,12 +145,12 @@ const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 ];
 
 /**
- * Returns a smart date if dispute's due date is withint 72 hours.
+ * Returns a smart date if dispute's due date is within 72 hours.
  * Otherwise, returns a date string.
  *
  * @param {CachedDispute} dispute The dispute to check.
  *
- * @return {ReactNode | string} If dispute is due within 72 hours, return the element that display smart date. Otherwise, a date string.
+ * @return {JSX.Element | string} If dispute is due within 72 hours, return the element that display smart date. Otherwise, a date string.
  */
 const smartDueDate = ( dispute: CachedDispute ) => {
 	if ( dispute.due_by === '' ) {
