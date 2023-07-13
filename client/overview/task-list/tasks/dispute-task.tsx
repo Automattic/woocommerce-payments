@@ -32,7 +32,10 @@ const isDueWithin = ( dispute: CachedDispute, days: number ) => {
 	// Get current time in UTC.
 	const now = moment().utc();
 	const dueBy = moment.utc( dispute.due_by );
-	return dueBy.diff( now, 'hours' ) > 0 && dueBy.diff( now, 'days' ) <= days;
+	return (
+		dueBy.diff( now, 'hours', true ) > 0 &&
+		dueBy.diff( now, 'days', true ) <= days
+	);
 };
 
 /**
@@ -98,6 +101,11 @@ export const getDisputeResolutionTask = (
 		1
 	).length;
 
+	const numDisputesDueWithin72h = getDisputesDueWithinDays(
+		activeDisputes,
+		3
+	).length;
+
 	// Create a unique key for each combination of dispute IDs
 	// to ensure the task is rendered if a previous task was dismissed.
 	const disputeTaskKey = `dispute-resolution-task-${ activeDisputes
@@ -120,7 +128,7 @@ export const getDisputeResolutionTask = (
 			// Only handle clicks on the action button.
 		},
 		dataAttrs: {
-			'data-urgent': !! ( numDisputesDueWithin24h >= 1 ),
+			'data-urgent': !! ( numDisputesDueWithin72h >= 1 ),
 		},
 	};
 

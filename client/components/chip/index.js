@@ -6,7 +6,7 @@
 import './style.scss';
 import { HoverTooltip } from 'wcpay/components/tooltip';
 
-const types = [ 'primary', 'light', 'warning', 'alert' ];
+const types = [ 'primary', 'success', 'light', 'warning', 'alert' ];
 
 const Chip = ( props ) => {
 	const { message, type, isCompact, className, tooltip } = props;
