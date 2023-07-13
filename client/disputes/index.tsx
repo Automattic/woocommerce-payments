@@ -164,16 +164,18 @@ const smartDueDate = ( dispute: CachedDispute ) => {
 	if ( diffHours > 0 && diffHours <= 72 ) {
 		return (
 			<span className={ 'due-soon' }>
-				{ sprintf(
-					// Translators: %s is the number of days left to respond to the dispute.
-					_n(
-						'%s day left',
-						'%s days left',
-						diffDays,
-						'woocommerce-payments'
-					),
-					diffDays
-				) }
+				{ diffHours <= 24
+					? __( 'Last day today', 'woocommerce-payments' )
+					: sprintf(
+							// Translators: %s is the number of days left to respond to the dispute.
+							_n(
+								'%s day left',
+								'%s days left',
+								diffDays,
+								'woocommerce-payments'
+							),
+							diffDays
+					  ) }
 				<NoticeOutlineIcon className={ 'due-soon-icon' } />
 			</span>
 		);
