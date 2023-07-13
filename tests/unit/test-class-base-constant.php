@@ -17,6 +17,7 @@ class Base_Constant_Test extends WCPAY_UnitTestCase {
 		$this->assertInstanceOf( Payment_Method::class, $class );
 		$this->assertSame( $class->get_value(), 'BASC' );
 		$this->assertSame( (string) $class, 'bacs_debit' );
+		$this->assertSame( wp_json_encode( $class ), 'bacs_debit' );
 	}
 	public function test_base_constant_equals_function_will_return_true_if_classes_are_same_type_and_value() {
 		$class_a = Payment_Method::BASC();
