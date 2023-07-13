@@ -411,8 +411,8 @@ const SingleCurrencySettings = () => {
 													isLink
 													onClick={ () => {
 														open(
-															'http://woocommerce.com/document/payments/' +
-																'currencies/multi-currency-setup/#price-rounding',
+															/* eslint-disable-next-line max-len */
+															'https://woocommerce.com/document/woocommerce-payments/currencies/multi-currency-setup/#price-rounding',
 															'_blank'
 														);
 													} }
@@ -476,8 +476,8 @@ const SingleCurrencySettings = () => {
 													isLink
 													onClick={ () => {
 														open(
-															'http://woocommerce.com/document/payments/' +
-																'currencies/multi-currency-setup/#price-charm',
+															/* eslint-disable-next-line max-len */
+															'https://woocommerce.com/document/woocommerce-payments/currencies/multi-currency-setup/#charm-pricing',
 															'_blank'
 														);
 													} }
