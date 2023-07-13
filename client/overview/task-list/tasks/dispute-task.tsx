@@ -176,40 +176,43 @@ export const getDisputeResolutionTask = (
 	}
 
 	// Multiple disputes.
-	// Calculate the count and total amount per currency.
-	const disputeTotalPerCurrency = activeDisputes.reduce(
-		( totalPerCurrency, dispute ) => {
-			const { currency, amount } = dispute;
-			const total = totalPerCurrency[ currency ] || 0;
-
-			return {
-				...totalPerCurrency,
-				[ currency ]: total + amount,
-			};
+	const disputeCurrencies = activeDisputes.reduce(
+		( currencies, dispute ) => {
+			const { currency } = dispute;
+			return currencies.includes( currency )
+				? currencies
+				: [ ...currencies, currency ];
 		},
-		{} as Record< string, number >
+		[] as string[]
 	);
 
-	// Generate a formatted total amount for each currency: "€10.00, $20.00".
-	const disputeTotalAmounts: string = Object.entries(
-		disputeTotalPerCurrency
-	)
-		.map( ( [ currency, amount ] ) => formatCurrency( amount, currency ) )
-		.join( ', ' );
+	if ( disputeCurrencies.length > 1 ) {
+		// If multiple currencies, use simple title without total amounts.
+		disputeTask.title = sprintf(
+			__( 'Respond to %d active disputes', 'woocommerce-payments' ),
+			activeDisputeCount
+		);
+	} else {
+		// If single currency, show total amount.
+		const disputeTotal = activeDisputes.reduce(
+			( total, dispute ) => total + dispute.amount,
+			0
+		);
+		disputeTask.title = sprintf(
+			__(
+				'Respond to %d active disputes for a total of %s',
+				'woocommerce-payments'
+			),
+			activeDisputeCount,
+			formatCurrency( disputeTotal, disputeCurrencies[ 0 ] )
+		);
+	}
 
 	const numDisputesDueWithin7Days = getDisputesDueWithinDays(
 		activeDisputes,
 		7
 	).length;
 
-	disputeTask.title = sprintf(
-		__(
-			'Respond to %d active disputes for a total of %s',
-			'woocommerce-payments'
-		),
-		activeDisputeCount,
-		disputeTotalAmounts
-	);
 	disputeTask.content =
 		// Final day / Last week to respond to N of the disputes
 		numDisputesDueWithin24h >= 1
