@@ -64,7 +64,8 @@ class WC_Payments_Order_Success_Page {
 			<img alt="WooPay" src="<?php echo esc_url_raw( plugins_url( 'assets/images/woopay.svg', WCPAY_PLUGIN_FILE ) ); ?>">
 			<?php
 			if ( $order->get_meta( 'last4' ) ) {
-				echo sprintf( '%s %s', esc_html_e( 'Card ending in', 'woocommerce-payments' ), esc_html( $order->get_meta( 'last4' ) ) );
+				echo esc_html_e( 'Card ending in', 'woocommerce-payments' ) . ' ';
+				echo esc_html( $order->get_meta( 'last4' ) );
 			}
 			?>
 		</div>
