@@ -172,25 +172,25 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 
 			// Check if the specified $plugin_name is in the process of being activated via the Admin > Plugins screen.
 			if ( isset( $_REQUEST['action'], $_REQUEST['_wpnonce'] ) && current_user_can( 'activate_plugin', $plugin_slug ) ) {
-				$action              = sanitize_text_field( wp_unslash( $_REQUEST['action'] ) );
-				$plugin_be_activated = '';
+				$action            = sanitize_text_field( wp_unslash( $_REQUEST['action'] ) );
+				$activating_plugin = '';
 
 				switch ( $action ) {
 					case 'activate':
 					case 'activate-plugin':
 						if ( isset( $_REQUEST['plugin'] ) && wp_verify_nonce( wc_clean( wp_unslash( $_REQUEST['_wpnonce'] ) ), "activate-plugin_{$plugin_slug}" ) ) {
-							$plugin_be_activated = sanitize_text_field( wp_unslash( $_REQUEST['plugin'] ) );
+							$activating_plugin = sanitize_text_field( wp_unslash( $_REQUEST['plugin'] ) );
 						}
 						break;
 					case 'activate-selected':
-						// When multiple plugins are being activated at once, the $_REQUEST['checked'] is an array of plugin slugs. Check if the specified $plugin_name is in that array.
+						// When multiple plugins are being activated at once the $_REQUEST['checked'] is an array of plugin slugs. Check if the specified $plugin_name is in that array.
 						if ( isset( $_REQUEST['checked'] ) && is_array( $_REQUEST['checked'] ) && in_array( $plugin_slug, $_REQUEST['checked'], true ) && wp_verify_nonce( wc_clean( wp_unslash( $_REQUEST['_wpnonce'] ) ), 'bulk-plugins' ) ) {
-							$plugin_be_activated = $plugin_slug;
+							$activating_plugin = $plugin_slug;
 						}
 						break;
 				}
 
-				if ( ! empty( $plugin_be_activated ) && $plugin_slug === $plugin_be_activated ) {
+				if ( ! empty( $activating_plugin ) && $plugin_slug === $activating_plugin ) {
 					return true;
 				}
 			}
