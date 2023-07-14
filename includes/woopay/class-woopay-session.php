@@ -216,12 +216,12 @@ class WooPay_Session {
 	/**
 	 * Get the WooPay verified email address from the header.
 	 *
-	 * @return string The WooPay verified email address if it's set.
+	 * @return string|null The WooPay verified email address if it's set.
 	 */
 	private static function get_woopay_verified_email_address() {
 		$has_woopay_verified_email_address = isset( $_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] );
 
-		return $has_woopay_verified_email_address ? wc_clean( wp_unslash( $_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] ) ) : null;
+		return $has_woopay_verified_email_address ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] ) ) : null;
 	}
 
 	/**
