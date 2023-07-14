@@ -251,6 +251,7 @@ export async function setupCheckout( billingDetails ) {
 	await shopper.goToCheckout();
 	await uiUnblocked();
 	await shopper.fillBillingDetails( billingDetails );
+
 	// Woo core blocks and refreshes the UI after 1s after each key press in a text field or immediately after a select
 	// field changes. Need to wait to make sure that all key presses were processed by that mechanism.
 	await page.waitFor( 1000 );

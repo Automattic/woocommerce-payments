@@ -23,13 +23,13 @@ describe( 'OnboardingContext', () => {
 			} = useOnboardingContext();
 			const handleClick = () => {
 				setData( {
-					firstName: 'First',
+					url: 'URL',
 				} );
 				setErrors( {
-					firstName: 'Required',
+					url: 'Required',
 				} );
 				setTouched( {
-					firstName: true,
+					url: true,
 				} );
 			};
 			return (
@@ -42,26 +42,28 @@ describe( 'OnboardingContext', () => {
 			);
 		};
 
+		const initialData = { url: 'Initial' };
+
 		render(
-			<OnboardingContextProvider>
+			<OnboardingContextProvider initialData={ initialData }>
 				<TestComponent />
 			</OnboardingContextProvider>
 		);
 
-		expect( screen.getByText( 'data: {}' ) ).toBeInTheDocument();
+		expect(
+			screen.getByText( 'data: {"url":"Initial"}' )
+		).toBeInTheDocument();
 		expect( screen.getByText( 'errors: {}' ) ).toBeInTheDocument();
 		expect( screen.getByText( 'touched: {}' ) ).toBeInTheDocument();
 
 		user.click( screen.getByText( 'Update Data' ) );
 
+		expect( screen.getByText( 'data: {"url":"URL"}' ) ).toBeInTheDocument();
 		expect(
-			screen.getByText( 'data: {"firstName":"First"}' )
+			screen.getByText( 'errors: {"url":"Required"}' )
 		).toBeInTheDocument();
 		expect(
-			screen.getByText( 'errors: {"firstName":"Required"}' )
-		).toBeInTheDocument();
-		expect(
-			screen.getByText( 'touched: {"firstName":true}' )
+			screen.getByText( 'touched: {"url":true}' )
 		).toBeInTheDocument();
 	} );
 

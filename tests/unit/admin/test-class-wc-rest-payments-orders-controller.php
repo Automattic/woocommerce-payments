@@ -597,7 +597,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 	public function test_capture_authorization_succeeded_intent_throws_error() {
 		$order = $this->create_mock_order();
 		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
-		$order->set_payment_method_title( 'WooCommerce Payments' );
+		$order->set_payment_method_title( 'WooPayments' );
 		$order->save();
 
 		$mock_intent = WC_Helper_Intention::create_intention(
@@ -644,7 +644,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 	public function test_capture_authorization_intent_non_capturable() {
 		$order = $this->create_mock_order();
 		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
-		$order->set_payment_method_title( 'WooCommerce Payments' );
+		$order->set_payment_method_title( 'WooPayments' );
 		$order->save();
 
 		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD ] );

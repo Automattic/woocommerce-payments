@@ -212,8 +212,8 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * List of countries enabled for Stripe platform account. See also
-	 * https://woocommerce.com/document/payments/countries/ for the most actual status.
+	 * List of countries enabled for Stripe platform account. See also this URL:
+	 * https://woocommerce.com/document/woocommerce-payments/compatibility/countries/#supported-countries
 	 *
 	 * @return string[]
 	 */
@@ -417,7 +417,7 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Checks if the currently displayed page is the WooCommerce Payments
+	 * Checks if the currently displayed page is the WooPayments
 	 * settings page or a payment method settings page.
 	 *
 	 * @return bool
