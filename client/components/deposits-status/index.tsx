@@ -61,7 +61,7 @@ const DepositsStatus: React.FC< Props > = ( {
 		icon = <GridiconNotice size={ iconSize } />;
 	} else if ( showSuspendedNotice ) {
 		const learnMoreHref =
-			'https://woocommerce.com/document/payments/faq/deposits-suspended/';
+			'https://woocommerce.com/document/woocommerce-payments/deposits/why-deposits-suspended/';
 		description = createInterpolateElement(
 			/* translators: <a> - suspended accounts FAQ URL */
 			__(

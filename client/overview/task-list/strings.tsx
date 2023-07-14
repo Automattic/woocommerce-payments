@@ -312,15 +312,17 @@ export default {
 				'Payments paused! Verify your bank details to reactivate.',
 				'woocommerce-payments'
 			),
-			description: createInterpolateElement(
-				__(
-					'You have reached the <strong>30-day limit</strong> for early selling access. In order to reactivate payments, please verify your bank details.',
-					'woocommerce-payments'
-				),
-				{
-					strong: <strong />,
-				}
-			),
+			description: (): React.ReactElement => {
+				return createInterpolateElement(
+					__(
+						'You have reached the <strong>30-day limit</strong> for early selling access. In order to reactivate payments, please verify your bank details.',
+						'woocommerce-payments'
+					),
+					{
+						strong: <strong />,
+					}
+				);
+			},
 			action_label: __( 'Verify bank details', 'woocommerce-payments' ),
 		},
 		after_payment: {
