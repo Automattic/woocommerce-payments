@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Base constant class to hold common logic for all constants.
  */
-abstract class Base_Constant implements \JsonSerializable, \Stringable {
+abstract class Base_Constant implements \JsonSerializable {
 
 	/**
 	 * Enum value
