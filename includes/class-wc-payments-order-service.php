@@ -1460,7 +1460,7 @@ class WC_Payments_Order_Service {
 			'payment_method_type' => $intent->get_payment_method_type(),
 		];
 
-		if ( is_a( $intent, WC_Payments_API_Payment_Intention::class ) ) {
+		if ( $intent instanceof WC_Payments_API_Payment_Intention ) {
 			$charge                   = $intent->get_charge();
 			$intent_data['charge_id'] = $charge ? $charge->get_id() : null;
 		}
