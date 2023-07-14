@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Added logic to check if the recurring cart array is present before displaying the recurring totals section in the cart.
