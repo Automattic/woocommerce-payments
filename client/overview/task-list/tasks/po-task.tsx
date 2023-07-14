@@ -9,10 +9,11 @@ import { addQueryArgs } from '@wordpress/url';
 /**
  * Internal dependencies.
  */
-import strings from './strings';
+import strings from '../strings';
 
-const ProgressiveOnboardingKYCTPVLimit = 5000;
+const tpvLimit = 5000;
 
+// TODO: We can update this to return TaskItem component, but currently there are some type inconsistencies to work out.
 export const getVerifyBankAccountTask = (): any => {
 	const {
 		status,
@@ -24,6 +25,13 @@ export const getVerifyBankAccountTask = (): any => {
 		},
 		created: createdDate,
 	} = wcpaySettings.accountStatus;
+
+	const handleClick = () => {
+		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
+			collect_payout_requirements: true,
+		} );
+	};
+
 	if ( ! poEnabled || poComplete || ! createdDate ) {
 		return null;
 	}
@@ -31,7 +39,11 @@ export const getVerifyBankAccountTask = (): any => {
 		return null;
 	}
 
-	let title, level, description, actionLabelText, verifyDetailsDueDate;
+	let title,
+		level = 3, // 3 is the default level for tasks.
+		description,
+		actionLabelText,
+		verifyDetailsDueDate;
 
 	if ( ! firstPaymentDate ) {
 		verifyDetailsDueDate = moment( createdDate )
@@ -39,7 +51,7 @@ export const getVerifyBankAccountTask = (): any => {
 			.format( 'MMMM D, YYYY' );
 		const daysFromAccountCreation = moment().diff( createdDate, 'days' );
 
-		// when account is created less than 14 days ago, we also show a notice but it's just info
+		// When account is created less than 14 days ago, we also show a notice but it's just info.
 		if ( 14 > daysFromAccountCreation ) {
 			title = strings.po_tasks.after_payment.title;
 			level = 3;
@@ -77,11 +89,8 @@ export const getVerifyBankAccountTask = (): any => {
 		);
 		actionLabelText = strings.po_tasks.after_payment.action_label;
 
-		// balance is rising
-		if (
-			ProgressiveOnboardingKYCTPVLimit * 0.2 <= tpvInUsd ||
-			7 <= daysFromFirstPayment
-		) {
+		// Balance is rising.
+		if ( tpvLimit * 0.2 <= tpvInUsd || 7 <= daysFromFirstPayment ) {
 			title = strings.po_tasks.balance_rising.title;
 			level = 2;
 			description = strings.po_tasks.balance_rising.description(
@@ -89,11 +98,8 @@ export const getVerifyBankAccountTask = (): any => {
 			);
 			actionLabelText = strings.po_tasks.balance_rising.action_label;
 		}
-		// near threshold
-		if (
-			ProgressiveOnboardingKYCTPVLimit * 0.6 <= tpvInUsd ||
-			21 <= daysFromFirstPayment
-		) {
+		// Near threshold.
+		if ( tpvLimit * 0.6 <= tpvInUsd || 21 <= daysFromFirstPayment ) {
 			title = strings.po_tasks.near_threshold.title;
 			level = 1;
 			description = strings.po_tasks.near_threshold.description(
@@ -101,11 +107,8 @@ export const getVerifyBankAccountTask = (): any => {
 			);
 			actionLabelText = strings.po_tasks.near_threshold.action_label;
 		}
-		// threshold reached
-		if (
-			ProgressiveOnboardingKYCTPVLimit <= tpvInUsd ||
-			30 <= daysFromFirstPayment
-		) {
+		// Threshold reached.
+		if ( tpvLimit <= tpvInUsd || 30 <= daysFromFirstPayment ) {
 			title = strings.po_tasks.threshold_reached.title;
 			level = 1;
 			description = strings.po_tasks.threshold_reached.description(
@@ -117,20 +120,18 @@ export const getVerifyBankAccountTask = (): any => {
 
 	return {
 		key: 'verify-bank-details-po',
-		level: level,
 		title: title,
 		content: description,
+		level: level,
 		completed: false,
-		onClick: () => {
-			window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
-				collect_payout_requirements: true,
-			} );
-		},
+		expanded: true,
+		expandable: true,
+		isDismissable: false,
+		showActionButton: true,
+		action: handleClick,
+		onClick: handleClick,
 		actionLabel: actionLabelText,
 		visible: true,
-		expandable: true,
-		expanded: true,
-		showActionButton: true,
 		time: '2 minutes',
 	};
 };
