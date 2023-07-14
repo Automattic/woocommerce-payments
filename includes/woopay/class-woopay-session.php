@@ -130,14 +130,13 @@ class WooPay_Session {
 			return intval( $customer['id'] );
 		}
 
-		$woopay_verified_email_address   = self::get_woopay_verified_email_address();
-		$woopay_util                     = new WooPay_Utilities();
-		$has_adapted_extension_installed = $woopay_util->has_adapted_extension_installed();
+		$woopay_verified_email_address = self::get_woopay_verified_email_address();
+		$enabled_adapted_extensions    = get_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, [] );
 
 		// If the email is verified on WooPay, matches session email (set during the redirection),
 		// and the store has an adapted extension installed,
 		// return the user to get extension data without authentication.
-		if ( $has_adapted_extension_installed && null !== $woopay_verified_email_address && ! empty( $customer['email'] ) ) {
+		if ( count( $enabled_adapted_extensions ) > 0 && null !== $woopay_verified_email_address && ! empty( $customer['email'] ) ) {
 			$user = get_user_by( 'email', $woopay_verified_email_address );
 
 			if ( $woopay_verified_email_address === $customer['email'] && $user ) {
@@ -155,10 +154,9 @@ class WooPay_Session {
 	 * @param \WC_Order $order The order being updated.
 	 */
 	public static function remove_order_customer_id_on_requests_with_verified_email( $order ) {
-		$woopay_util                     = new WooPay_Utilities();
-		$has_adapted_extension_installed = $woopay_util->has_adapted_extension_installed();
+		$enabled_adapted_extensions = get_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, [] );
 
-		if ( ! $has_adapted_extension_installed ) {
+		if ( count( $enabled_adapted_extensions ) === 0 ) {
 			return;
 		}
 
