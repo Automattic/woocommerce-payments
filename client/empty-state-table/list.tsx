@@ -36,7 +36,7 @@ export const EmptyStateList = ( {
 }: EmptyStateListProps ): JSX.Element => {
 	const [ isSubmitted, setSubmitted ] = useState( false );
 	const isNewFlowEnabled =
-		wcpaySettings.progressiveOnboarding?.isNewFlowEnabled ?? false;
+		wcpaySettings.progressiveOnboarding?.isNewFlowEnabled;
 
 	const handleSetup = (): void => {
 		setSubmitted( true );

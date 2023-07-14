@@ -35,7 +35,7 @@ const ConnectAccountPage: React.FC = () => {
 	const firstName = wcSettings.admin?.currentUserData?.first_name;
 	const incentive = wcpaySettings.connectIncentive;
 	const isNewFlowEnabled =
-		wcpaySettings.progressiveOnboarding?.isNewFlowEnabled ?? false;
+		wcpaySettings.progressiveOnboarding?.isNewFlowEnabled;
 
 	const [ errorMessage, setErrorMessage ] = useState< string >(
 		wcpaySettings.errorMessage
