@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Base constant class to hold common logic for all constants.
  */
-abstract class Base_Constant {
+abstract class Base_Constant implements \JsonSerializable {
 
 	/**
 	 * Enum value
@@ -102,5 +102,15 @@ abstract class Base_Constant {
 	 */
 	public function __toString() {
 		return constant( \get_class( $this ) . '::' . $this->get_value() );
+	}
+
+	/**
+	 * Specify the value which should be serialized to JSON.
+	 *
+	 * @return mixed|string
+	 */
+	#[\ReturnTypeWillChange]
+	public function jsonSerialize() {
+		return $this->__toString();
 	}
 }
