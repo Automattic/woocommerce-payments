@@ -1450,7 +1450,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @return array The data we need to continue processing.
 	 */
-	private function get_intent_data( $intent ): array {
+	private function get_intent_data( WC_Payments_API_Abstract_Intention $intent ): array {
 
 		$intent_data = [
 			'intent_id'           => $intent->get_id(),
