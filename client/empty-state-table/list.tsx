@@ -35,14 +35,15 @@ export const EmptyStateList = ( {
 	listBanner: ListBanner,
 }: EmptyStateListProps ): JSX.Element => {
 	const [ isSubmitted, setSubmitted ] = useState( false );
+	const isNewFlowEnabled =
+		wcpaySettings.progressiveOnboarding?.isNewFlowEnabled ?? false;
 
 	const handleSetup = (): void => {
 		setSubmitted( true );
 		wcpayTracks.recordEvent( wcpayTracks.events.CONNECT_ACCOUNT_CLICKED, {
 			// eslint-disable-next-line camelcase
 			wpcom_connection: wcpaySettings.isJetpackConnected ? 'Yes' : 'No',
-			is_new_onboarding_flow:
-				wcpaySettings.progressiveOnboarding.isNewFlowEnabled,
+			is_new_onboarding_flow: isNewFlowEnabled,
 		} );
 	};
 

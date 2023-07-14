@@ -72,7 +72,7 @@ declare global {
 		fraudProtection: {
 			isWelcomeTourDismissed?: boolean;
 		};
-		progressiveOnboarding: {
+		progressiveOnboarding?: {
 			isNewFlowEnabled: boolean;
 		};
 		accountDefaultCurrency: string;

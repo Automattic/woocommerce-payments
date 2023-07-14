@@ -34,6 +34,9 @@ import './style.scss';
 const ConnectAccountPage: React.FC = () => {
 	const firstName = wcSettings.admin?.currentUserData?.first_name;
 	const incentive = wcpaySettings.connectIncentive;
+	const isNewFlowEnabled =
+		wcpaySettings.progressiveOnboarding?.isNewFlowEnabled ?? false;
+
 	const [ errorMessage, setErrorMessage ] = useState< string >(
 		wcpaySettings.errorMessage
 	);
@@ -89,8 +92,7 @@ const ConnectAccountPage: React.FC = () => {
 
 		wcpayTracks.recordEvent( wcpayTracks.events.CONNECT_ACCOUNT_CLICKED, {
 			wpcom_connection: wcpaySettings.isJetpackConnected ? 'Yes' : 'No',
-			is_new_onboarding_flow:
-				wcpaySettings.progressiveOnboarding.isNewFlowEnabled,
+			is_new_onboarding_flow: isNewFlowEnabled,
 			...( incentive && {
 				incentive_id: incentive.id,
 			} ),
