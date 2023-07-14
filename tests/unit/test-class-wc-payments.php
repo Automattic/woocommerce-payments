@@ -124,6 +124,14 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 
 		$customer_id = 'cus_123456789';
 
+		$pre_http_dispatch = function ( $result, $server, $request ) {
+			if ( in_array( $request->get_route(), [ '/wc/store/v1/checkout', '/wc/store/v1/cart' ], true ) ) {
+				return [ 'body' => wp_json_encode( [] ) ];
+			}
+
+			return $result;
+		};
+
 		$pre_http_request_cb = function ( $preempt, $parsed_args, $url ) use ( $customer_id ) {
 			$body = json_decode( $parsed_args['body'] );
 			$this->assertEquals( $customer_id, $body->customer_id );
@@ -134,6 +142,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 			return function ( $message, $title, $args ) {};
 		};
 
+		add_filter( 'rest_pre_dispatch', $pre_http_dispatch, 10, 3 );
 		add_filter( 'pre_http_request', $pre_http_request_cb, 10, 3 );
 		add_filter( 'wp_die_ajax_handler', $wp_die_ajax_handler_cb );
 

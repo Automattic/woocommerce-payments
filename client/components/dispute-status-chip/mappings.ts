@@ -12,11 +12,11 @@ const status: {
 	};
 } = {
 	warning_needs_response: {
-		type: 'primary',
+		type: 'warning',
 		message: __( 'Inquiry: Needs response', 'woocommerce-payments' ),
 	},
 	warning_under_review: {
-		type: 'light',
+		type: 'primary',
 		message: __( 'Inquiry: Under review', 'woocommerce-payments' ),
 	},
 	warning_closed: {
@@ -24,11 +24,11 @@ const status: {
 		message: __( 'Inquiry: Closed', 'woocommerce-payments' ),
 	},
 	needs_response: {
-		type: 'primary',
+		type: 'warning',
 		message: __( 'Needs response', 'woocommerce-payments' ),
 	},
 	under_review: {
-		type: 'light',
+		type: 'primary',
 		message: __( 'Under review', 'woocommerce-payments' ),
 	},
 	charge_refunded: {
@@ -36,7 +36,7 @@ const status: {
 		message: __( 'Charge refunded', 'woocommerce-payments' ),
 	},
 	won: {
-		type: 'light',
+		type: 'success',
 		message: __( 'Won', 'woocommerce-payments' ),
 	},
 	lost: {
