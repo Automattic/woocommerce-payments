@@ -1531,18 +1531,6 @@ class WC_Payments {
 			// WooPay verified email matches.
 			WC()->customer->set_billing_email( $email );
 			WC()->customer->save();
-
-			$has_adapted_extension_installed = self::$woopay_util->has_adapted_extension_installed();
-			if ( $has_adapted_extension_installed && ! is_user_logged_in() ) {
-				$user = get_user_by( 'email', $email );
-
-				// Some extensions need the user to be authenticated to get user data,
-				// we compare this email to the one WooPay sends if it's verified there
-				// to get this data without store authentication when both email matches.
-				if ( $user ) {
-					$body['user_has_merchant_site_account'] = true;
-				}
-			}
 		}
 
 		$args = [
