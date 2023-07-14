@@ -1353,7 +1353,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return string|null Payment method to use for the intent.
 	 */
-	private function get_payment_method_to_use_for_intent() {
+	public function get_payment_method_to_use_for_intent() {
 		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 			return $this->get_payment_methods_from_request()[0];
 		}
