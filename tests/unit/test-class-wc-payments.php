@@ -122,15 +122,9 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		// Necessary in order to prevent die from being called.
 		define( 'DOING_AJAX', true );
 
+		$this->mock_ajax_init_woopay_call();
+
 		$customer_id = 'cus_123456789';
-
-		$pre_http_dispatch = function ( $result, $server, $request ) {
-			if ( in_array( $request->get_route(), [ '/wc/store/v1/checkout', '/wc/store/v1/cart' ], true ) ) {
-				return [ 'body' => wp_json_encode( [] ) ];
-			}
-
-			return $result;
-		};
 
 		$pre_http_request_cb = function ( $preempt, $parsed_args, $url ) use ( $customer_id ) {
 			$body = json_decode( $parsed_args['body'] );
@@ -138,25 +132,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 			return [ 'body' => wp_json_encode( [] ) ];
 		};
 
-		$wp_die_ajax_handler_cb = function () {
-			return function ( $message, $title, $args ) {};
-		};
-
-		add_filter( 'rest_pre_dispatch', $pre_http_dispatch, 10, 3 );
 		add_filter( 'pre_http_request', $pre_http_request_cb, 10, 3 );
-		add_filter( 'wp_die_ajax_handler', $wp_die_ajax_handler_cb );
-
-		$mock_customer_service = $this->getMockBuilder( 'WC_Payments_Customer_Service' )
-			->disableOriginalConstructor()
-			->getMock();
-		$mock_customer_service
-			->expects( $this->once() )
-			->method( 'create_customer_for_user' )
-			->with( $this->anything(), $this->anything() )
-			->will( $this->returnValue( $customer_id ) );
-
-		WC_Payments::set_customer_service( $mock_customer_service );
-		$this->set_woopay_feature_flag_enabled( true );
 
 		ob_start();
 		WC_Payments::ajax_init_woopay();
@@ -164,7 +140,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_ajax_init_woopay_has_not_user_has_merchant_site_account_prop_if_email_does_not_exists() {
-		$this->mock_verified_user_store_api_token();
+		$this->mock_ajax_init_woopay_call();
 
 		$pre_http_request_cb = function ( $preempt, $parsed_args, $url ) {
 			$body = json_decode( $parsed_args['body'], true );
@@ -174,14 +150,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 			return [ 'body' => wp_json_encode( [] ) ];
 		};
 
-		$wp_die_ajax_handler_cb = function () {
-			return function ( $message, $title, $args ) {};
-		};
-
 		add_filter( 'pre_http_request', $pre_http_request_cb, 10, 3 );
-		add_filter( 'wp_die_ajax_handler', $wp_die_ajax_handler_cb );
-
-		$this->set_woopay_feature_flag_enabled( true );
 
 		$_POST['email'] = 'user@example.com';
 
@@ -193,9 +162,9 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_ajax_init_woopay_has_not_user_has_merchant_site_account_prop_if_is_logged_in() {
-		$user = self::factory()->user->create_and_get();
+		$this->mock_ajax_init_woopay_call();
 
-		$this->mock_verified_user_store_api_token();
+		$user = self::factory()->user->create_and_get();
 
 		wp_set_current_user( $user->ID );
 
@@ -207,14 +176,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 			return [ 'body' => wp_json_encode( [] ) ];
 		};
 
-		$wp_die_ajax_handler_cb = function () {
-			return function ( $message, $title, $args ) {};
-		};
-
 		add_filter( 'pre_http_request', $pre_http_request_cb, 10, 3 );
-		add_filter( 'wp_die_ajax_handler', $wp_die_ajax_handler_cb );
-
-		$this->set_woopay_feature_flag_enabled( true );
 
 		$_POST['email'] = $user->user_email;
 
@@ -228,9 +190,9 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_ajax_init_woopay_has_user_has_merchant_site_account_prop_if_email_exists_and_is_logged_off() {
-		$user = self::factory()->user->create_and_get();
+		$this->mock_ajax_init_woopay_call();
 
-		$this->mock_verified_user_store_api_token();
+		$user = self::factory()->user->create_and_get();
 
 		$pre_http_request_cb = function ( $preempt, $parsed_args, $url ) use ( $user ) {
 			$body = json_decode( $parsed_args['body'], true );
@@ -240,14 +202,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 			return [ 'body' => wp_json_encode( [] ) ];
 		};
 
-		$wp_die_ajax_handler_cb = function () {
-			return function ( $message, $title, $args ) {};
-		};
-
 		add_filter( 'pre_http_request', $pre_http_request_cb, 10, 3 );
-		add_filter( 'wp_die_ajax_handler', $wp_die_ajax_handler_cb );
-
-		$this->set_woopay_feature_flag_enabled( true );
 
 		$_POST['email'] = $user->user_email;
 
@@ -293,18 +248,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		apply_filters( 'rest_request_before_callbacks', [], [], new WP_REST_Request() );
 	}
 
-	private function mock_verified_user_store_api_token() {
-		// Mocks the jetpack token.
-		$jetpack_token = function ( $value, $name ) {
-			if ( 'blog_token' === $name ) {
-				return 'moked.token';
-			}
-
-			return $value;
-		};
-
-		add_filter( 'jetpack_options', $jetpack_token, 10, 2 );
-
+	private function mock_ajax_init_woopay_call() {
 		$customer_id = 'cus_123456789';
 
 		$mock_customer_service = $this->getMockBuilder( 'WC_Payments_Customer_Service' )
@@ -324,5 +268,22 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 				return array_merge( $args, [ 'woocommerce-points-and-rewards/woocommerce-points-and-rewards.php' ] );
 			}
 		);
+
+		$pre_http_dispatch = function ( $result, $server, $request ) {
+			if ( in_array( $request->get_route(), [ '/wc/store/v1/checkout', '/wc/store/v1/cart' ], true ) ) {
+				return [ 'body' => wp_json_encode( [] ) ];
+			}
+
+			return $result;
+		};
+
+		$wp_die_ajax_handler_cb = function () {
+			return function ( $message, $title, $args ) {};
+		};
+
+		add_filter( 'rest_pre_dispatch', $pre_http_dispatch, 10, 3 );
+		add_filter( 'wp_die_ajax_handler', $wp_die_ajax_handler_cb );
+
+		$this->set_woopay_feature_flag_enabled( true );
 	}
 }
