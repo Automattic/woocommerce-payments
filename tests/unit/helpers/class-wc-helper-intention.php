@@ -6,7 +6,6 @@
  */
 
 use WCPay\Constants\Payment_Intent_Status;
-use WCPay\Constants\Setup_Intent_Status;
 
 /**
  * Class WC_Helper_Intention.
@@ -110,7 +109,7 @@ class WC_Helper_Intention {
 				'id'                     => 'seti_mock',
 				'customer_id'            => 'cus_mock',
 				'payment_method_id'      => 'pm_mock',
-				'status'                 => Setup_Intent_Status::SUCCEEDED,
+				'status'                 => Payment_Intent_Status::SUCCEEDED,
 				'client_secret'          => 'cs_mock',
 				'created'                => new DateTime( '2022-05-20 19:05:38' ),
 				'next_action'            => [],

@@ -6,7 +6,6 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
-use WCPay\Constants\Setup_Intent_Status;
 use WCPay\Core\Server\Request\Cancel_Intention;
 use WCPay\Core\Server\Request\Capture_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
@@ -1584,7 +1583,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_setup_intention(
 					[
-						'status'         => Setup_Intent_Status::SUCCEEDED,
+						'status'         => Payment_Intent_Status::SUCCEEDED,
 						'payment_method' => 'pm_mock',
 					]
 				)
@@ -1633,7 +1632,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'get_setup_intent' )
 			->with( 'sti_mock' )
-			->willReturn( WC_Helper_Intention::create_setup_intention( [ 'status' => Setup_Intent_Status::CANCELED ] ) );
+			->willReturn( WC_Helper_Intention::create_setup_intention( [ 'status' => Payment_Intent_Status::CANCELED ] ) );
 
 		$this->mock_token_service
 			->expects( $this->never() )
