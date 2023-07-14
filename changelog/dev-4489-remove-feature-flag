@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Removed an old flag for a feature which is now enabled for old users. Some refactoring of the task lists code (no impact on functionality).
