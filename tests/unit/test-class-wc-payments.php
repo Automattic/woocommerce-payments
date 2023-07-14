@@ -125,7 +125,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 
 		$pre_http_dispatch = function ( $result, $server, $request ) {
 			if ( in_array( $request->get_route(), [ '/wc/store/v1/checkout', '/wc/store/v1/cart' ], true ) ) {
-				return [ 'body' => wp_json_encode( [] ) ];
+				return new WP_REST_Response( [ 'body' => wp_json_encode( [] ) ], 200 );
 			}
 
 			return $result;
