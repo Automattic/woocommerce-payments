@@ -126,9 +126,10 @@ export default {
 			),
 		},
 		isMyDataSafe: {
-			heading: __(
-				'Is my data safe with WooCommerce?',
-				'woocommerce-payments'
+			heading: sprintf(
+				/* translators: %s: WooPayments */
+				__( 'Is my data safe with %s?', 'woocommerce-payments' ),
+				'WooPayments'
 			),
 			description: sprintf(
 				/* translators: %s: WooPayments */

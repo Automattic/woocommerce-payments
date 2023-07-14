@@ -70,7 +70,7 @@ exports[`Connect Account Page – Info Notice Modal renders correctly when opene
       If you're setting up WooPayments for someone else, it's best to have that person complete the account creation process. As you can see above, we ask for very specific information about the business owner - and you might not have all the details at hand. It's not always possible to change account information once it's been saved, especially if the site accepts live transactions before the correct account information is entered.
     </p>
     <h4>
-      Is my data safe with WooCommerce?
+      Is my data safe with WooPayments?
        
     </h4>
     <p>
