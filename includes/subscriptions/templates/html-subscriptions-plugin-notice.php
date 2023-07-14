@@ -20,12 +20,14 @@
 					<p>
 						<?php
 							printf(
-								// Translators: placeholders are opening and closing strong HTML tags.
-								esc_html__( 'By deactivating the %1$sWooCommerce Subscriptions%2$s plugin, your store will switch to using the subscriptions functionality %1$sbuilt into WooCommerce Payments%2$s. %1$s%3$sLearn more.%4$s%2$s', 'woocommerce-payments' ),
+								// Translators: placeholders are opening and closing strong HTML tags. %5$s: WooPayments, %6$s: WooCommerce Subscriptions.
+								esc_html__( 'By deactivating the %1$s%6$s%2$s plugin, your store will switch to using the subscriptions functionality %1$sbuilt into %5$s%2$s. %1$s%3$sLearn more.%4$s%2$s', 'woocommerce-payments' ),
 								'<strong>',
 								'</strong>',
 								'<a href="https://woocommerce.com/document/subscriptions/renewal-process/#section-4" target="_blank" rel="noopener noreferrer">',
-								'</a>'
+								'</a>',
+								'WooPayments',
+								'WooCommerce Subscriptions'
 							);
 							?>
 						</br>
@@ -36,7 +38,7 @@
 								esc_html__( 'Existing subscribers will need to pay for their next renewal manually, after which automatic payments will resume. You will also no longer have access to the %1$s%3$sadvanced features%4$s%2$s of WooCommerce Subscriptions.', 'woocommerce-payments' ),
 								'<strong>',
 								'</strong>',
-								'<a href="https://woocommerce.com/document/payments/subscriptions-basics/comparison/" target="_blank" rel="noopener noreferrer">',
+								'<a href="https://woocommerce.com/document/woocommerce-payments/built-in-subscriptions/comparison/" target="_blank" rel="noopener noreferrer">',
 								'</a>'
 							);
 							?>

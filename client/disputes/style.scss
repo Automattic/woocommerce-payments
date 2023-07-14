@@ -2,6 +2,19 @@
 	.woocommerce-table__header.is-center-aligned {
 		text-align: center;
 	}
+	.woocommerce-table__item a.components-button {
+		display: inline-flex;
+	}
+	.due-soon {
+		display: flex;
+		align-items: center;
+		color: $alert-red;
+		font-weight: 700;
+		.due-soon-icon {
+			fill: $alert-red;
+			margin-left: 5px;
+		}
+	}
 
 	.woocommerce-pagination {
 		align-items: flex-end;

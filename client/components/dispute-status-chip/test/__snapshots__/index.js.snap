@@ -33,7 +33,7 @@ exports[`DisputeStatusChip renders lost status 1`] = `
 exports[`DisputeStatusChip renders needs_response status 1`] = `
 <div>
   <span
-    class="chip chip-primary is-compact"
+    class="chip chip-warning is-compact"
   >
     Needs response
   </span>
@@ -43,7 +43,7 @@ exports[`DisputeStatusChip renders needs_response status 1`] = `
 exports[`DisputeStatusChip renders under_review status 1`] = `
 <div>
   <span
-    class="chip chip-light is-compact"
+    class="chip chip-primary is-compact"
   >
     Under review
   </span>
@@ -63,7 +63,7 @@ exports[`DisputeStatusChip renders warning_closed status 1`] = `
 exports[`DisputeStatusChip renders warning_needs_response status 1`] = `
 <div>
   <span
-    class="chip chip-primary is-compact"
+    class="chip chip-warning is-compact"
   >
     Inquiry: Needs response
   </span>
@@ -73,7 +73,7 @@ exports[`DisputeStatusChip renders warning_needs_response status 1`] = `
 exports[`DisputeStatusChip renders warning_under_review status 1`] = `
 <div>
   <span
-    class="chip chip-light is-compact"
+    class="chip chip-primary is-compact"
   >
     Inquiry: Under review
   </span>
@@ -83,7 +83,7 @@ exports[`DisputeStatusChip renders warning_under_review status 1`] = `
 exports[`DisputeStatusChip renders won status 1`] = `
 <div>
   <span
-    class="chip chip-light is-compact"
+    class="chip chip-success is-compact"
   >
     Won
   </span>
