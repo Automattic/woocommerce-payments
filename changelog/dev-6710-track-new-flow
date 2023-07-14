@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Adding a tracking property to record whether user went through the new onboarding UX or not.

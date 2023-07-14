@@ -299,19 +299,35 @@ exports[`Disputes list renders correctly 1`] = `
                       <span
                         aria-hidden="true"
                       >
-                        Respond by
+                        Response date
                       </span>
                       <span
                         class="screen-reader-text"
                       >
-                        Respond by
+                        Response date
                       </span>
                     </button>
                     <span
                       class="screen-reader-text"
                       id="header-0-7"
                     >
-                      Sort by Respond by in descending order
+                      Sort by Response date in descending order
+                    </span>
+                  </th>
+                  <th
+                    class="woocommerce-table__header is-numeric"
+                    role="columnheader"
+                    scope="col"
+                  >
+                    <span
+                      aria-hidden="true"
+                    >
+                      Action
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Action
                     </span>
                   </th>
                 </tr>
@@ -361,7 +377,7 @@ exports[`Disputes list renders correctly 1`] = `
                       tabindex="-1"
                     >
                       <span
-                        class="chip chip-primary is-compact"
+                        class="chip chip-warning is-compact"
                       >
                         Needs response
                       </span>
@@ -425,6 +441,16 @@ exports[`Disputes list renders correctly 1`] = `
                       Nov 7, 2019 / 9:46PM
                     </a>
                   </td>
+                  <td
+                    class="woocommerce-table__item is-numeric"
+                  >
+                    <a
+                      class="components-button is-secondary"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+                    >
+                      Respond
+                    </a>
+                  </td>
                 </tr>
                 <tr>
                   <th
@@ -472,7 +498,7 @@ exports[`Disputes list renders correctly 1`] = `
                       tabindex="-1"
                     >
                       <span
-                        class="chip chip-light is-compact"
+                        class="chip chip-primary is-compact"
                       >
                         Under review
                       </span>
@@ -533,6 +559,16 @@ exports[`Disputes list renders correctly 1`] = `
                       Nov 6, 2019 / 6:00PM
                     </a>
                   </td>
+                  <td
+                    class="woocommerce-table__item is-numeric"
+                  >
+                    <a
+                      class="components-button is-tertiary"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                    >
+                      See details
+                    </a>
+                  </td>
                 </tr>
                 <tr>
                   <th
@@ -580,7 +616,7 @@ exports[`Disputes list renders correctly 1`] = `
                       tabindex="-1"
                     >
                       <span
-                        class="chip chip-primary is-compact"
+                        class="chip chip-warning is-compact"
                       >
                         Needs response
                       </span>
@@ -644,6 +680,16 @@ exports[`Disputes list renders correctly 1`] = `
                       tabindex="-1"
                     >
                       Nov 7, 2019 / 9:46PM
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-numeric"
+                  >
+                    <a
+                      class="components-button is-secondary"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_rstyuoi"
+                    >
+                      Respond
                     </a>
                   </td>
                 </tr>

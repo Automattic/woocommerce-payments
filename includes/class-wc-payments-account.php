@@ -597,7 +597,7 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Utility function to immediately redirect to the main "Welcome to WooCommerce Payments" onboarding page.
+	 * Utility function to immediately redirect to the main "Welcome to WooPayments" onboarding page.
 	 * Note that this function immediately ends the execution.
 	 *
 	 * @param string $error_message Optional error message to show in a notice.
@@ -798,7 +798,11 @@ class WC_Payments_Account {
 
 			if ( isset( $_GET['wcpay-connect-jetpack-success'] ) && ! $this->payments_api_client->is_server_connected() ) {
 				$this->redirect_to_onboarding_welcome_page(
-					__( 'Connection to WordPress.com failed. Please connect to WordPress.com to start using WooCommerce Payments.', 'woocommerce-payments' )
+					sprintf(
+						/* translators: %s: WooPayments */
+						__( 'Connection to WordPress.com failed. Please connect to WordPress.com to start using %s.', 'woocommerce-payments' ),
+						'WooPayments'
+					)
 				);
 				return;
 			}
@@ -1605,7 +1609,7 @@ class WC_Payments_Account {
 	 * @return void
 	 */
 	private function redirect_to_onboarding_flow_page() {
-		if ( ! WC_Payments_Utils::is_in_progressive_onboarding_treatment_mode() && ! WC_Payments_Features::is_progressive_onboarding_enabled() ) {
+		if ( ! WC_Payments_Utils::should_use_progressive_onboarding_flow() ) {
 			return;
 		}
 

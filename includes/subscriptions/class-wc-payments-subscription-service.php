@@ -366,7 +366,7 @@ class WC_Payments_Subscription_Service {
 	 */
 	public function create_subscription( WC_Subscription $subscription ) {
 		/*
-		 * Bail early if the subscription payment method is not WooCommerce Payments.
+		 * Bail early if the subscription payment method is not WooPayments.
 		 * WCPay Subscriptions are not created in the following scenarios:
 		 *
 		 * - A different payment gateway was used to purchase the subscription (e.g. PayPal).
@@ -429,7 +429,7 @@ class WC_Payments_Subscription_Service {
 	 * @return void
 	 */
 	public function maybe_create_subscription_from_update_payment_method( WC_Subscription $subscription, string $new_payment_method ) {
-		// Not changing the subscription payment method to WooCommerce Payments, bail.
+		// Not changing the subscription payment method to WooPayments, bail.
 		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $new_payment_method ) {
 			return;
 		}
@@ -679,7 +679,11 @@ class WC_Payments_Subscription_Service {
 			return;
 		}
 
-		echo '<p><strong>' . esc_html__( 'WooCommerce Payments Subscription ID', 'woocommerce-payments' ) . ':</strong> ' . esc_html( $wcpay_subscription_id ) . '</p>';
+		echo '<p><strong>' . sprintf(
+			/* translators: %s: WooPayments */
+			esc_html__( '%s Subscription ID', 'woocommerce-payments' ),
+			'WooPayments'
+		) . ':</strong> ' . esc_html( $wcpay_subscription_id ) . '</p>';
 	}
 
 	/**
