@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-Add ClickTooltip and HoverTooltip components to improve mobile UX when tooltip content is interactive.

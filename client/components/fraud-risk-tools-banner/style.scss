@@ -1,15 +1,16 @@
 .discoverability-card {
 	padding: 24px;
-	background: linear-gradient( 180deg, #f7edf7 0%, #fff 100% );
+	background-color: #fff;
 
 	@media ( min-width: 600px ) {
-		background: url( '../../../assets/images/upe_preview_illustration.svg' )
-				no-repeat right,
-			linear-gradient( 180deg, #f7edf7 0%, #fff 100% );
-		padding-right: 228px;
+		background: #fff
+			url( '../../../assets/images/fraud-protection/discoverability-banner@2x.png' )
+			no-repeat center right;
+		background-size: 215px 236px;
+		padding-right: 236px;
 	}
 
-	&__new-feature-pill {
+	&__new-feature-pill.wcpay-pill {
 		color: #3c2861;
 		border: 1px solid #3c2861;
 		font-size: 12px;

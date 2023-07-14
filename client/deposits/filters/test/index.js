@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 
@@ -11,6 +11,12 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { DepositsFilters } from '../';
+
+// TODO: this is a bit of a hack as we're mocking an old version of WC, we should relook at this.
+jest.mock( '@woocommerce/settings', () => ( {
+	...jest.requireActual( '@woocommerce/settings' ),
+	getSetting: jest.fn( ( key ) => ( 'wcVersion' === key ? 7.7 : '' ) ),
+} ) );
 
 describe( 'Deposits filters', () => {
 	beforeEach( () => {
@@ -25,6 +31,13 @@ describe( 'Deposits filters', () => {
 			screen.getByRole( 'button', { name: /Advanced filters/i } )
 		);
 		rerender( <DepositsFilters /> );
+	} );
+
+	// Waiting for the microtask queue to be flushed to prevent "TypeError: Cannot read properties of null (reading 'documentElement')"
+	// See https://github.com/floating-ui/floating-ui/issues/1908 and https://floating-ui.com/docs/react#testing
+	afterEach( async () => {
+		// eslint-disable-next-line @typescript-eslint/no-empty-function
+		await act( async () => {} );
 	} );
 
 	describe( 'when filtering by date', () => {

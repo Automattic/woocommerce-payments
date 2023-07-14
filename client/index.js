@@ -14,7 +14,7 @@ import 'wp-mediaelement';
  * Internal dependencies
  */
 import './style.scss';
-import ConnectAccountPageExperiment from 'connect-account-page-experiment';
+import ConnectAccountPage from 'connect-account-page';
 import DepositsPage from 'deposits';
 import DepositDetailsPage from 'deposits/details';
 import TransactionsPage from 'transactions';
@@ -29,8 +29,7 @@ import CapitalPage from 'capital';
 import PreviewReceiptPage from 'card-readers/preview-receipt';
 import OverviewPage from 'overview';
 import DocumentsPage from 'documents';
-import OnboardingExperimentPage from 'onboarding-experiment';
-import OnboardingPrototype from 'onboarding-prototype';
+import OnboardingPage from 'onboarding';
 import FraudProtectionAdvancedSettingsPage from './settings/fraud-protection/advanced-settings';
 import { getTasks } from 'overview/task-list/tasks';
 
@@ -43,11 +42,11 @@ addFilter(
 		const isNavigationEnabled =
 			window.wcAdminFeatures && window.wcAdminFeatures.navigation;
 		const connectionPageTitle = isNavigationEnabled
-			? __( 'WooCommerce Payments', 'woocommerce-payments' )
+			? 'WooPayments'
 			: __( 'Connect', 'woocommerce-payments' );
 
 		pages.push( {
-			container: ConnectAccountPageExperiment,
+			container: ConnectAccountPage,
 			path: '/payments/connect',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, connectionPageTitle ],
@@ -58,7 +57,7 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: OnboardingExperimentPage,
+			container: OnboardingPage,
 			path: '/payments/onboarding',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -67,20 +66,6 @@ addFilter(
 			],
 			navArgs: {
 				id: 'wc-payments-onboarding',
-			},
-			capability: 'manage_woocommerce',
-		} );
-
-		pages.push( {
-			container: OnboardingPrototype,
-			path: '/payments/onboarding-prototype',
-			wpOpenMenu: menuID,
-			breadcrumbs: [
-				rootLink,
-				__( 'Onboarding Prototype', 'woocommerce-payments' ),
-			],
-			navArgs: {
-				id: 'wc-payments-onboarding-prototype',
 			},
 			capability: 'manage_woocommerce',
 		} );
@@ -255,14 +240,12 @@ addFilter(
 				capability: 'manage_woocommerce',
 			} );
 		}
-		if ( wcpaySettings && wcpaySettings.isFraudProtectionSettingsEnabled ) {
+		if ( wcpaySettings ) {
 			pages.push( {
 				container: FraudProtectionAdvancedSettingsPage,
 				path: '/payments/fraud-protection',
-				wpOpenMenu: 'toplevel_page_woocommerce',
-				breadcrumbs: [
-					__( 'WooCommerce Payments', 'woocommerce-payments' ),
-				],
+				wpOpenMenu: menuID,
+				breadcrumbs: [ 'WooPayments' ],
 				capability: 'manage_woocommerce',
 			} );
 		}
@@ -294,18 +277,11 @@ addFilter(
 	'woocommerce_admin_onboarding_task_list',
 	'woocommerce-payments',
 	( tasks ) => {
-		const {
-			accountStatus,
-			showUpdateDetailsTask,
-			wpcomReconnectUrl,
-			featureFlags: { accountOverviewTaskList },
-		} = wcpaySettings;
+		const { showUpdateDetailsTask, wpcomReconnectUrl } = wcpaySettings;
 
 		const wcPayTasks = getTasks( {
-			accountStatus,
 			showUpdateDetailsTask,
 			wpcomReconnectUrl,
-			isAccountOverviewTasksEnabled: Boolean( accountOverviewTaskList ),
 		} );
 
 		return [ ...tasks, ...wcPayTasks ];

@@ -62,9 +62,13 @@ const GeneralSettingsDescription = () => (
 	<>
 		<h2>{ __( 'General', 'woocommerce-payments' ) }</h2>
 		<p>
-			{ __(
-				'Enable or disable WooCommerce Payments on your store and turn on test mode to simulate transactions.',
-				'woocommerce-payments'
+			{ sprintf(
+				/* translators: %s: WooPayments */
+				__(
+					'Enable or disable %s on your store and turn on test mode to simulate transactions.',
+					'woocommerce-payments'
+				),
+				'WooPayments'
 			) }
 		</p>
 	</>
@@ -79,8 +83,8 @@ const TransactionsDescription = () => (
 				'woocommerce-payments'
 			) }
 		</p>
-		<ExternalLink href="https://woocommerce.com/document/payments/faq/">
-			{ __( 'View frequently asked questions', 'woocommerce-payments' ) }
+		<ExternalLink href="https://woocommerce.com/document/woocommerce-payments/">
+			{ __( 'View our documentation', 'woocommerce-payments' ) }
 		</ExternalLink>
 	</>
 );
@@ -100,7 +104,7 @@ const DepositsDescription = () => {
 					depositDelayDays
 				) }
 			</p>
-			<ExternalLink href="https://woocommerce.com/document/payments/faq/deposit-schedule/#section-2">
+			<ExternalLink href="https://woocommerce.com/document/woocommerce-payments/deposits/deposit-schedule/">
 				{ __(
 					'Learn more about pending schedules',
 					'woocommerce-payments'
@@ -113,9 +117,7 @@ const DepositsDescription = () => {
 const FraudProtectionDescription = () => {
 	return (
 		<>
-			<h2 id="fp-settings">
-				{ __( 'Fraud protection', 'woocommerce-payments' ) }
-			</h2>
+			<h2>{ __( 'Fraud protection', 'woocommerce-payments' ) }</h2>
 			<p>
 				{ __(
 					'Help avoid chargebacks by setting your security and fraud protection risk level.',
@@ -148,17 +150,38 @@ const SettingsManager = () => {
 
 	useLayoutEffect( () => {
 		const { anchor } = getQuery();
+		const { hash } = window.location;
+		const scrollTo = anchor || hash;
 
-		if ( ! isLoading && anchor ) {
-			document
-				.querySelector( decodeURIComponent( anchor ) )
-				?.scrollIntoView( { behavior: 'smooth' } );
+		if ( ! isLoading && scrollTo ) {
+			const element = document.querySelector( scrollTo );
+
+			if ( ! element ) {
+				return;
+			}
+
+			const headerElement = document.querySelector(
+				'.woocommerce-layout__header'
+			);
+			const headerSize = headerElement ? headerElement.clientHeight : 60;
+			const headerOffset = headerSize + 50; // header size + margin
+			const elementPosition = element.getBoundingClientRect().top;
+			const offsetPosition =
+				elementPosition + window.pageYOffset - headerOffset;
+
+			window.scrollTo( {
+				top: offsetPosition,
+				behavior: 'smooth',
+			} );
 		}
 	}, [ isLoading ] );
 
 	return (
 		<SettingsLayout>
-			<SettingsSection description={ GeneralSettingsDescription }>
+			<SettingsSection
+				description={ GeneralSettingsDescription }
+				id="general"
+			>
 				<LoadableSettingsSection numLines={ 20 }>
 					<ErrorBoundary>
 						<GeneralSettings />
@@ -166,7 +189,10 @@ const SettingsManager = () => {
 				</LoadableSettingsSection>
 			</SettingsSection>
 			{ isUPESettingsPreviewEnabled && (
-				<SettingsSection description={ PaymentMethodsDescription }>
+				<SettingsSection
+					description={ PaymentMethodsDescription }
+					id="payment-methods"
+				>
 					<LoadableSettingsSection numLines={ 60 }>
 						<ErrorBoundary>
 							<WcPayUpeContextProvider
@@ -179,14 +205,20 @@ const SettingsManager = () => {
 					</LoadableSettingsSection>
 				</SettingsSection>
 			) }
-			<SettingsSection description={ ExpressCheckoutDescription }>
+			<SettingsSection
+				id="express-checkouts"
+				description={ ExpressCheckoutDescription }
+			>
 				<LoadableSettingsSection numLines={ 20 }>
 					<ErrorBoundary>
 						<ExpressCheckout />
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			<SettingsSection description={ TransactionsDescription }>
+			<SettingsSection
+				description={ TransactionsDescription }
+				id="transactions"
+			>
 				<LoadableSettingsSection numLines={ 20 }>
 					<ErrorBoundary>
 						<WcPayUpeContextProvider
@@ -201,7 +233,7 @@ const SettingsManager = () => {
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			<SettingsSection description={ DepositsDescription }>
+			<SettingsSection description={ DepositsDescription } id="deposits">
 				<div id={ 'deposit-schedule' }>
 					<LoadableSettingsSection numLines={ 20 }>
 						<ErrorBoundary>
@@ -210,15 +242,16 @@ const SettingsManager = () => {
 					</LoadableSettingsSection>
 				</div>
 			</SettingsSection>
-			{ wcpaySettings.isFraudProtectionSettingsEnabled && (
-				<SettingsSection description={ FraudProtectionDescription }>
-					<LoadableSettingsSection numLines={ 20 }>
-						<ErrorBoundary>
-							<FraudProtection />
-						</ErrorBoundary>
-					</LoadableSettingsSection>
-				</SettingsSection>
-			) }
+			<SettingsSection
+				description={ FraudProtectionDescription }
+				id="fp-settings"
+			>
+				<LoadableSettingsSection numLines={ 20 }>
+					<ErrorBoundary>
+						<FraudProtection />
+					</ErrorBoundary>
+				</LoadableSettingsSection>
+			</SettingsSection>
 			<AdvancedSettings />
 			<SaveSettingsSection disabled={ ! isTransactionInputsValid } />
 		</SettingsLayout>

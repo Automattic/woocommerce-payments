@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Refactor the `Tooltip` component to use TypeScript

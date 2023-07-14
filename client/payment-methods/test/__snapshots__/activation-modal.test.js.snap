@@ -32,124 +32,112 @@ exports[`Activation Modal matches the snapshot 1`] = `
   <div
     aria-hidden="true"
   />
-  <div>
-    <div>
-      <div>
+  <div
+    class="components-modal__screen-overlay"
+  >
+    <div
+      aria-labelledby="components-modal-header-0"
+      class="components-modal__frame wcpay-confirmation-modal wcpay-payment-method-confirmation-modal"
+      role="dialog"
+      tabindex="-1"
+    >
+      <div
+        class="components-modal__content"
+        role="document"
+      >
         <div
-          tabindex="-1"
+          class="components-modal__header"
         >
-          <div>
-            <div
-              class="components-modal__screen-overlay"
+          <div
+            class="components-modal__header-heading-container"
+          >
+            <h1
+              class="components-modal__header-heading"
+              id="components-modal-header-0"
             >
-              <div
-                aria-labelledby="components-modal-header-0"
-                class="components-modal__frame wcpay-confirmation-modal wcpay-payment-method-confirmation-modal"
-                role="dialog"
-                tabindex="-1"
-              >
-                <div
-                  class="components-modal__content"
-                  role="document"
-                >
-                  <div
-                    class="components-modal__header"
-                  >
-                    <div
-                      class="components-modal__header-heading-container"
-                    >
-                      <h1
-                        class="components-modal__header-heading"
-                        id="components-modal-header-0"
-                      >
-                        One more step to enable Credit card / debit card
-                      </h1>
-                    </div>
-                    <button
-                      aria-label="Close dialog"
-                      class="components-button has-icon"
-                      type="button"
-                    >
-                      <svg
-                        aria-hidden="true"
-                        focusable="false"
-                        role="img"
-                        size="24"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M13 11.8l6.1-6.3-1-1-6.1 6.2-6.1-6.2-1 1 6.1 6.3-6.5 6.7 1 1 6.5-6.6 6.5 6.6 1-1z"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                  <div
-                    class="payment-confirm-illustration__wrapper"
-                  >
-                    <div
-                      class="payment-confirm-illustration__illustrations"
-                    >
-                      <img
-                        alt="Credit Card"
-                        class="payment-confirm-illustration__payment-icon"
-                        src="assets/images/payment-methods/cc.svg"
-                      />
-                      <svg
-                        class="gridicon gridicons-help payment-confirm-illustration__payment-question-mark-icon"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        width="24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <g>
-                          <path
-                            d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 16h-2v-2h2v2zm0-4.14V15h-2v-2c0-.552.448-1 1-1 1.103 0 2-.897 2-2s-.897-2-2-2-2 .897-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 1.862-1.278 3.413-3 3.86z"
-                          />
-                        </g>
-                      </svg>
-                    </div>
-                  </div>
-                  <p>
-                    You need to provide more information to enable Credit card / debit card on your checkout:
-                  </p>
-                  <ul
-                    class="payment-method-requirements-list"
-                  >
-                    <li>
-                      Business Number
-                    </li>
-                  </ul>
-                  <p>
-                    If you choose to continue, our payment partner Stripe will send an e-mail to 
-                    <b>
-                      admin@example.com
-                    </b>
-                     to collect the required information
-                  </p>
-                  <hr
-                    class="wcpay-confirmation-modal__separator"
-                  />
-                  <div
-                    class="wcpay-confirmation-modal__footer"
-                  >
-                    <button
-                      class="components-button is-secondary"
-                      type="button"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      class="components-button is-primary"
-                      type="button"
-                    >
-                      Continue
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+              One more step to enable Credit card / debit card
+            </h1>
           </div>
+          <button
+            aria-label="Close dialog"
+            class="components-button has-icon"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12 13.06l3.712 3.713 1.061-1.06L13.061 12l3.712-3.712-1.06-1.06L12 10.938 8.288 7.227l-1.061 1.06L10.939 12l-3.712 3.712 1.06 1.061L12 13.061z"
+              />
+            </svg>
+          </button>
+        </div>
+        <div
+          class="payment-confirm-illustration__wrapper"
+        >
+          <div
+            class="payment-confirm-illustration__illustrations"
+          >
+            <img
+              alt="Credit Card"
+              class="payment-confirm-illustration__payment-icon"
+              src="assets/images/payment-methods/cc.svg"
+            />
+            <svg
+              class="gridicon gridicons-help payment-confirm-illustration__payment-question-mark-icon"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g>
+                <path
+                  d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 16h-2v-2h2v2zm0-4.141V15h-2v-2a1 1 0 011-1c1.103 0 2-.897 2-2s-.897-2-2-2-2 .897-2 2H8a4 4 0 018 0 3.991 3.991 0 01-3 3.859z"
+                />
+              </g>
+            </svg>
+          </div>
+        </div>
+        <p>
+          You need to provide more information to enable Credit card / debit card on your checkout:
+        </p>
+        <ul
+          class="payment-method-requirements-list"
+        >
+          <li>
+            Business Number
+          </li>
+        </ul>
+        <p>
+          If you choose to continue, our payment partner Stripe will send an e-mail to 
+          <b>
+            admin@example.com
+          </b>
+           to collect the required information
+        </p>
+        <hr
+          class="wcpay-confirmation-modal__separator"
+        />
+        <div
+          class="wcpay-confirmation-modal__footer"
+        >
+          <button
+            class="components-button is-secondary"
+            type="button"
+          >
+            Cancel
+          </button>
+          <button
+            class="components-button is-primary"
+            type="button"
+          >
+            Continue
+          </button>
         </div>
       </div>
     </div>

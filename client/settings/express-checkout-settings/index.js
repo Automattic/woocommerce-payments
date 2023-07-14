@@ -12,7 +12,7 @@ import './index.scss';
 import SettingsSection from '../settings-section';
 import { getPaymentSettingsUrl } from '../../utils';
 import PaymentRequestSettings from './payment-request-settings';
-import PlatformCheckoutSettings from './platform-checkout-settings';
+import WooPaySettings from './woopay-settings';
 import SettingsLayout from '../settings-layout';
 import LoadableSettingsSection from '../loadable-settings-section';
 import SaveSettingsSection from '../save-settings-section';
@@ -22,7 +22,7 @@ import ApplePay from 'assets/images/cards/apple-pay.svg?asset';
 import GooglePay from 'assets/images/cards/google-pay.svg?asset';
 
 const methods = {
-	platform_checkout: {
+	woopay: {
 		title: 'WooPay',
 		sections: [
 			{
@@ -66,7 +66,7 @@ const methods = {
 				),
 			},
 		],
-		controls: ( props ) => <PlatformCheckoutSettings { ...props } />,
+		controls: ( props ) => <WooPaySettings { ...props } />,
 	},
 	payment_request: {
 		title: 'Apple Pay / Google Pay',
@@ -140,10 +140,8 @@ const ExpressCheckoutSettings = ( { methodId } ) => {
 	return (
 		<SettingsLayout>
 			<h2 className="express-checkout-settings__breadcrumbs">
-				<a href={ getPaymentSettingsUrl() }>
-					{ __( 'WooCommerce Payments', 'woocommerce-payments' ) }
-				</a>{ ' ' }
-				&gt; <span>{ title }</span>
+				<a href={ getPaymentSettingsUrl() }>{ 'WooPayments' }</a> &gt;{ ' ' }
+				<span>{ title }</span>
 			</h2>
 
 			{ sections.map( ( { section, description } ) => (

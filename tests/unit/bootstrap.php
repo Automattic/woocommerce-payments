@@ -35,7 +35,7 @@ function _manually_load_plugin() {
 	// needs to still make sure that all dependencies exist for it to successfully run.
 	define( 'WCPAY_TEST_ENV', true );
 
-	// Load the WooCommerce plugin so we can use its classes in our WooCommerce Payments plugin.
+	// Load the WooCommerce plugin so we can use its classes in our WooPayments plugin.
 	require_once WP_PLUGIN_DIR . '/woocommerce/woocommerce.php';
 
 	// Set a default currency to be used for the multi-currency tests because the default
@@ -86,7 +86,7 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/notes/class-wc-payments-notes-additional-payment-methods.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-reader-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-files-controller.php';
-	require_once $_plugin_dir . 'includes/class-platform-checkout-tracker.php';
+	require_once $_plugin_dir . 'includes/class-woopay-tracker.php';
 }
 
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );

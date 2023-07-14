@@ -24,5 +24,9 @@ export const fundLabelStrings = {
 	pending: __( 'Pending funds', 'woocommerce-payments' ),
 };
 
-/** translators: %s is the currency code, e.g. USD. */
-export const currencyBalanceString = __( '%s Balance', 'woocommerce-payments' );
+export const documentationUrls = {
+	depositSchedule:
+		'https://woocommerce.com/document/woocommerce-payments/deposits/deposit-schedule',
+	negativeBalance:
+		'https://woocommerce.com/document/woocommerce-payments/fees-and-debits/account-showing-negative-balance',
+};

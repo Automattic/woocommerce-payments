@@ -15,9 +15,9 @@ import { useDisputes, useDisputesSummary } from 'data/index';
 import { formatDate, getUnformattedAmount } from 'wcpay/utils/test-utils';
 import React from 'react';
 import {
+	CachedDispute,
 	DisputeReason,
 	DisputeStatus,
-	CachedDispute,
 } from 'wcpay/types/disputes';
 
 jest.mock( '@woocommerce/csv-export', () => {
@@ -35,7 +35,10 @@ jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 // See https://github.com/WordPress/gutenberg/issues/15031
 jest.mock( '@wordpress/data', () => ( {
 	createRegistryControl: jest.fn(),
-	dispatch: jest.fn( () => ( { setIsMatching: jest.fn() } ) ),
+	dispatch: jest.fn( () => ( {
+		setIsMatching: jest.fn(),
+		onLoad: jest.fn(),
+	} ) ),
 	registerStore: jest.fn(),
 	select: jest.fn(),
 	useDispatch: jest.fn( () => ( { createNotice: jest.fn() } ) ),
@@ -266,7 +269,7 @@ describe( 'Disputes list', () => {
 				'Email',
 				'Country',
 				'"Disputed on"',
-				'"Respond by"',
+				'"Response date"',
 			];
 
 			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
@@ -310,7 +313,9 @@ describe( 'Disputes list', () => {
 				`"${ displayFirstDispute[ 1 ] }"`
 			); //status
 
-			expect( csvFirstDispute[ 4 ] ).toBe( displayFirstDispute[ 2 ] ); // reason
+			expect( csvFirstDispute[ 4 ] ).toBe(
+				`"${ displayFirstDispute[ 2 ] }"`
+			); // reason
 
 			expect( csvFirstDispute[ 6 ] ).toBe( displayFirstDispute[ 4 ] ); // order
 
@@ -318,12 +323,8 @@ describe( 'Disputes list', () => {
 				`"${ displayFirstDispute[ 5 ] }"`
 			); // customer
 
-			expect( formatDate( csvFirstDispute[ 10 ], 'Y-m-d' ) ).toBe(
-				formatDate( displayFirstDispute[ 6 ], 'Y-m-d' )
-			); // date disputed on
-
 			expect( formatDate( csvFirstDispute[ 11 ], 'Y-m-d / g:iA' ) ).toBe(
-				formatDate( displayFirstDispute[ 7 ], 'Y-m-d / g:iA' )
+				formatDate( displayFirstDispute[ 6 ], 'Y-m-d / g:iA' )
 			); // date respond by
 		} );
 	} );

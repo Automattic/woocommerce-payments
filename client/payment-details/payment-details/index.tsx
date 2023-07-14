@@ -17,7 +17,6 @@ import PaymentDetailsPaymentMethod from '../payment-method';
 import { ApiError } from '../../types/errors';
 import { Charge } from '../../types/charges';
 import { PaymentIntent } from '../../types/payment-intents';
-import { FraudOutcome } from '../../types/fraud-outcome';
 
 interface PaymentDetailsProps {
 	id: string;
@@ -25,7 +24,6 @@ interface PaymentDetailsProps {
 	error?: ApiError;
 	charge?: Charge;
 	metadata?: Record< string, any >;
-	fraudOutcome?: FraudOutcome;
 	showTimeline?: boolean;
 	paymentIntent?: PaymentIntent;
 }
@@ -36,7 +34,6 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 	charge = {} as Charge,
 	metadata = {},
 	isLoading,
-	fraudOutcome,
 	showTimeline = true,
 	paymentIntent,
 } ) => {
@@ -68,7 +65,6 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 					charge={ charge }
 					metadata={ metadata }
 					isLoading={ isLoading }
-					fraudOutcome={ fraudOutcome }
 					paymentIntent={ paymentIntent }
 				/>
 			</ErrorBoundary>

@@ -17,11 +17,12 @@ use WCPay\Core\Server\Response;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Payment_Information;
-use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
+use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\WC_Payments_Checkout;
 
@@ -93,17 +94,23 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private $order_service;
 
 	/**
-	 * Platform_Checkout_Utilities instance.
+	 * WooPay_Utilities instance.
 	 *
-	 * @var Platform_Checkout_Utilities
+	 * @var WooPay_Utilities
 	 */
-	private $platform_checkout_utilities;
+	private $woopay_utilities;
 
 	/**
 	 * WC_Payments_Checkout instance.
 	 * @var WC_Payments_Checkout
 	 */
 	private $payments_checkout;
+
+	/**
+	 * Duplicate_Payment_Prevention_Service instance.
+	 * @var Duplicate_Payment_Prevention_Service
+	 */
+	private $mock_dpps;
 
 	/**
 	 * @var string
@@ -134,8 +141,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					'create_and_confirm_setup_intent',
 					'get_setup_intent',
 					'get_payment_method',
-					'refund_charge',
-					'list_refunds',
 					'get_timeline',
 				]
 			)
@@ -160,6 +165,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service = new WC_Payments_Order_Service( $this->mock_api_client );
 
+		$this->mock_dpps = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+
 		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
 			$this->mock_wcpay_account,
@@ -167,14 +174,15 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->mock_token_service,
 			$this->mock_action_scheduler_service,
 			$this->mock_rate_limiter,
-			$this->order_service
+			$this->order_service,
+			$this->mock_dpps
 		);
 
-		$this->platform_checkout_utilities = new Platform_Checkout_Utilities();
+		$this->woopay_utilities = new WooPay_Utilities();
 
 		$this->payments_checkout = new WC_Payments_Checkout(
 			$this->wcpay_gateway,
-			$this->platform_checkout_utilities,
+			$this->woopay_utilities,
 			$this->mock_wcpay_account,
 			$this->mock_customer_service
 		);
@@ -1270,8 +1278,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$result
 		);
 		$this->assertStringContainsString( 'expired', $note->content );
-		$this->assertEquals( Payment_Intent_Status::CANCELED, $order->get_meta( '_intention_status', true ) );
-		$this->assertEquals( Order_Status::CANCELLED, $order->get_status() );
+		$this->assertSame( Payment_Intent_Status::CANCELED, $order->get_meta( '_intention_status', true ) );
+		$this->assertSame( Order_Status::FAILED, $order->get_status() );
 	}
 
 	public function test_capture_charge_metadata() {
@@ -2132,18 +2140,24 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
-	public function test_is_platform_checkout_enabled_returns_true() {
+	public function test_is_woopay_enabled_returns_true() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
-		$this->assertTrue( $this->payments_checkout->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
+		wp_set_current_user( 1 );
+		add_filter( 'woocommerce_is_checkout', '__return_true' );
+
+		$this->assertTrue( $this->woopay_utilities->should_enable_woopay( $this->wcpay_gateway ) );
+		$this->assertTrue( $this->payments_checkout->get_payment_fields_js_config()['isWooPayEnabled'] );
+
+		remove_filter( 'woocommerce_is_checkout', '__return_true' );
 	}
 
-	public function test_should_use_stripe_platform_on_checkout_page_not_platform_checkout_eligible() {
+	public function test_should_use_stripe_platform_on_checkout_page_not_woopay_eligible() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => false ] );
 		$this->assertFalse( $this->wcpay_gateway->should_use_stripe_platform_on_checkout_page() );
 	}
 
-	public function test_should_use_stripe_platform_on_checkout_page_not_platform_checkout() {
+	public function test_should_use_stripe_platform_on_checkout_page_not_woopay() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'no' );
 
@@ -2160,7 +2174,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$payments_checkout = new WC_Payments_Checkout(
 			$mock_wcpay_gateway,
-			$this->platform_checkout_utilities,
+			$this->woopay_utilities,
 			$this->mock_wcpay_account,
 			$this->mock_customer_service
 		);
@@ -2168,14 +2182,14 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $payments_checkout->get_payment_fields_js_config()['forceNetworkSavedCards'] );
 	}
 
-	public function test_is_platform_checkout_enabled_returns_false_if_ineligible() {
+	public function test_is_woopay_enabled_returns_false_if_ineligible() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => false ] );
-		$this->assertFalse( $this->payments_checkout->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
+		$this->assertFalse( $this->payments_checkout->get_payment_fields_js_config()['isWooPayEnabled'] );
 	}
 
-	public function test_is_platform_checkout_enabled_returns_false_if_ineligible_and_enabled() {
+	public function test_is_woopay_enabled_returns_false_if_ineligible_and_enabled() {
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
-		$this->assertFalse( $this->payments_checkout->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
+		$this->assertFalse( $this->payments_checkout->get_payment_fields_js_config()['isWooPayEnabled'] );
 	}
 
 	public function test_return_icon_url() {
@@ -2184,7 +2198,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( 'assets/images/payment-methods/cc.svg', $returned_icon );
 	}
 
-	public function is_platform_checkout_falsy_value_provider() {
+	public function is_woopay_falsy_value_provider() {
 		return [
 			[ '0' ],
 			[ 0 ],
@@ -2245,6 +2259,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					$this->mock_action_scheduler_service,
 					$this->mock_rate_limiter,
 					$this->order_service,
+					$this->mock_dpps,
 				]
 			)
 			->setMethods( $methods )
@@ -2304,9 +2319,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->payments_checkout = new WC_Payments_Checkout(
 			$this->wcpay_gateway,
-			$this->platform_checkout_utilities,
+			$this->woopay_utilities,
 			$this->mock_wcpay_account,
 			$this->mock_customer_service
 		);
+
+		$this->payments_checkout->init_hooks();
 	}
 }

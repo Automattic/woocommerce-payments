@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Affirm&Afterpay: refactor subscription products detection by using existing subs API

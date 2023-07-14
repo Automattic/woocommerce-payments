@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Add check to prevent fraud & risk tools interacting with multi-currency if it is not enabled.

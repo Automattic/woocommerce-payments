@@ -6,7 +6,9 @@
  */
 
 use Automattic\Jetpack\Identity_Crisis as Jetpack_Identity_Crisis;
+use Automattic\WooCommerce\Admin\PageController;
 use WCPay\Database_Cache;
+use WCPay\Logger;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -59,6 +61,27 @@ class WC_Payments_Admin {
 	private $account;
 
 	/**
+	 * WC_Payments_Onboarding_Service instance to get information for onboarding.
+	 *
+	 * @var WC_Payments_Onboarding_Service
+	 */
+	private $onboarding_service;
+
+	/**
+	 * Instance of Order Service for accessing order data.
+	 *
+	 * @var WC_Payments_Order_Service
+	 */
+	private $order_service;
+
+	/**
+	 * WC_Payments_Incentives_Service instance to get information for incentives.
+	 *
+	 * @var WC_Payments_Incentives_Service
+	 */
+	private $incentives_service;
+
+	/**
 	 * WCPay admin child pages.
 	 *
 	 * @var array
@@ -73,30 +96,55 @@ class WC_Payments_Admin {
 	private $database_cache;
 
 	/**
+	 * The internal cache for WCPay settings passed to JS through script localization.
+	 *
+	 * This data should only be generated once per request, hence the internal cache.
+	 *
+	 * @see self::get_js_settings()
+	 *
+	 * @var ?array
+	 */
+	private $wcpay_js_settings = null;
+
+	/**
 	 * Hook in admin menu items.
 	 *
-	 * @param WC_Payments_API_Client   $payments_api_client WooCommerce Payments API client.
-	 * @param WC_Payment_Gateway_WCPay $gateway             WCPay Gateway instance to get information regarding WooCommerce Payments setup.
-	 * @param WC_Payments_Account      $account             Account instance.
-	 * @param Database_Cache           $database_cache      Database Cache instance.
+	 * @param WC_Payments_API_Client         $payments_api_client WooCommerce Payments API client.
+	 * @param WC_Payment_Gateway_WCPay       $gateway             WCPay Gateway instance to get information regarding WooCommerce Payments setup.
+	 * @param WC_Payments_Account            $account             Account instance.
+	 * @param WC_Payments_Onboarding_Service $onboarding_service  Onboarding service instance.
+	 * @param WC_Payments_Order_Service      $order_service       Order service instance.
+	 * @param WC_Payments_Incentives_Service $incentives_service  Incentives service instance.
+	 * @param Database_Cache                 $database_cache      Database Cache instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
 		WC_Payment_Gateway_WCPay $gateway,
 		WC_Payments_Account $account,
+		WC_Payments_Onboarding_Service $onboarding_service,
+		WC_Payments_Order_Service $order_service,
+		WC_Payments_Incentives_Service $incentives_service,
 		Database_Cache $database_cache
 	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->wcpay_gateway       = $gateway;
 		$this->account             = $account;
+		$this->onboarding_service  = $onboarding_service;
+		$this->order_service       = $order_service;
+		$this->incentives_service  = $incentives_service;
 		$this->database_cache      = $database_cache;
 
 		add_action( 'admin_notices', [ $this, 'display_not_supported_currency_notice' ], 9999 );
+		add_action( 'admin_notices', [ $this, 'display_isk_decimal_notice' ] );
+
+		add_action( 'woocommerce_admin_order_data_after_payment_info', [ $this, 'render_order_edit_payment_details_container' ] );
 
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'maybe_redirect_overview_to_connect' ], 1 ); // Run this late (after `admin_init`) but before any scripts are actually enqueued.
+		add_action( 'admin_enqueue_scripts', [ $this, 'register_payments_scripts' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ], 12 );
 		add_action( 'woocommerce_admin_field_payment_gateways', [ $this, 'payment_gateways_container' ] );
 		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'show_woopay_payment_method_name_admin' ] );
 		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'display_wcpay_transaction_fee' ] );
@@ -161,7 +209,56 @@ class WC_Payments_Admin {
 						<?php esc_html_e( 'Unsupported currency:', 'woocommerce-payments' ); ?>
 						<?php esc_html( ' ' . get_woocommerce_currency() ); ?>
 					</b>
-					<?php esc_html_e( 'The selected currency is not available for the country set in your WooCommerce Payments account.', 'woocommerce-payments' ); ?>
+					<?php
+						echo sprintf(
+							/* translators: %s: WooPayments*/
+							esc_html__( 'The selected currency is not available for the country set in your %s account.', 'woocommerce-payments' ),
+							'WooPayments'
+						);
+					?>
+				</p>
+			</div>
+			<?php
+		}
+	}
+
+	/**
+	 * Render a container for adding notices to order details screen payment box.
+	 */
+	public function render_order_edit_payment_details_container() {
+		?>
+		<div id="wcpay-order-payment-details-container"></div>
+		<?php
+	}
+
+	/**
+	 * Add notice explaining that ISK cannot have decimals.
+	 */
+	public function display_isk_decimal_notice() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		if ( get_woocommerce_currency() === 'ISK' && wc_get_price_decimals() !== 0 ) {
+			$url = get_admin_url( null, 'admin.php?page=wc-settings' );
+
+			?>
+			<div id="wcpay-unsupported-currency-notice" class="notice notice-error">
+				<p>
+					<b>
+						<?php esc_html_e( 'Unsupported currency:', 'woocommerce-payments' ); ?>
+						<?php esc_html( ' ' . get_woocommerce_currency() ); ?>
+					</b>
+					<?php
+						echo wp_kses_post(
+							sprintf(
+								/* Translators: %1$s: Opening anchor tag. %2$s: Closing anchor tag.*/
+								__( 'Icelandic Króna does not accept decimals. Please update your currency number of decimals to 0 or select a different currency. %1$sVisit settings%2$s', 'woocommerce-payments' ),
+								'<a href="' . $url . '">',
+								'</a>'
+							)
+						);
+					?>
 				</p>
 			</div>
 			<?php
@@ -181,7 +278,7 @@ class WC_Payments_Admin {
 				'path'       => '/payments/deposits',
 				'position'   => '55.7', // After WooCommerce & Product menu items.
 				'nav_args'   => [
-					'title'        => __( 'WooCommerce Payments', 'woocommerce-payments' ),
+					'title'        => 'WooPayments',
 					'is_category'  => true,
 					'menuId'       => 'plugins',
 					'is_top_level' => true,
@@ -245,7 +342,7 @@ class WC_Payments_Admin {
 				'position'   => '55.7', // After WooCommerce & Product menu items.
 				'icon'       => $menu_icon,
 				'nav_args'   => [
-					'title'        => __( 'WooCommerce Payments', 'woocommerce-payments' ),
+					'title'        => 'WooPayments',
 					'is_category'  => $should_render_full_menu,
 					'menuId'       => 'plugins',
 					'is_top_level' => true,
@@ -260,7 +357,7 @@ class WC_Payments_Admin {
 		}
 
 		if ( ! $should_render_full_menu ) {
-			if ( WC_Payments_Utils::is_in_onboarding_treatment_mode() ) {
+			if ( WC_Payments_Utils::should_use_progressive_onboarding_flow() ) {
 				wc_admin_register_page(
 					[
 						'id'         => 'wc-payments-onboarding',
@@ -274,21 +371,6 @@ class WC_Payments_Admin {
 					]
 				);
 				remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding' );
-			}
-			if ( WC_Payments_Features::is_progressive_onboarding_enabled() ) {
-				wc_admin_register_page(
-					[
-						'id'         => 'wc-payments-onboarding-prototype',
-						'title'      => __( 'Onboarding Prototype', 'woocommerce-payments' ),
-						'parent'     => 'wc-payments',
-						'path'       => '/payments/onboarding-prototype',
-						'capability' => 'manage_woocommerce',
-						'nav_args'   => [
-							'parent' => 'wc-payments',
-						],
-					]
-				);
-				remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding-prototype' );
 			}
 		}
 
@@ -347,7 +429,7 @@ class WC_Payments_Admin {
 					'id'        => 'woocommerce-settings-payments-woocommerce-payments',
 					'parent'    => 'woocommerce-settings-payments',
 					'screen_id' => 'woocommerce_page_wc-settings-checkout-woocommerce_payments',
-					'title'     => __( 'WooCommerce Payments', 'woocommerce-payments' ),
+					'title'     => 'WooPayments',
 					'nav_args'  => [
 						'parent' => 'wc-payments',
 						'title'  => __( 'Settings', 'woocommerce-payments' ),
@@ -445,104 +527,9 @@ class WC_Payments_Admin {
 	 * Register the CSS and JS scripts
 	 */
 	public function register_payments_scripts() {
+		// TODO: Add check to see if user can manage_woocommerce and exit early if they cannot.
+
 		WC_Payments::register_script_with_dependencies( 'WCPAY_DASH_APP', 'dist/index' );
-
-		// Has on-boarding been disabled? Set the flag for use in the front-end so messages and notices can be altered
-		// as appropriate.
-		$on_boarding_disabled = WC_Payments_Account::is_on_boarding_disabled();
-
-		$error_message = get_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
-		delete_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
-
-		/**
-		 * This is a work around to pass the current user's email address to WCPay's settings until we do not need to rely
-		 * on backwards compatibility and can use `getCurrentUser` from `@wordpress/core-data`.
-		 */
-		$current_user       = wp_get_current_user();
-		$current_user_email = $current_user && $current_user->user_email ? $current_user->user_email : get_option( 'admin_email' );
-
-		if ( version_compare( WC_VERSION, '6.0', '<' ) ) {
-			$path = WCPAY_ABSPATH . 'i18n/locale-info.php';
-		} else {
-			$path = WC()->plugin_path() . '/i18n/locale-info.php';
-		}
-
-		$locale_info = include $path;
-		// Get symbols for those currencies without a short one.
-		$symbols       = get_woocommerce_currency_symbols();
-		$currency_data = [];
-
-		foreach ( $locale_info as $key => $value ) {
-			$currency_code         = $value['currency_code'] ?? '';
-			$currency_data[ $key ] = [
-				'code'              => $currency_code,
-				'symbol'            => $value['short_symbol'] ?? $symbols[ $currency_code ] ?? '',
-				'symbolPosition'    => $value['currency_pos'] ?? '',
-				'thousandSeparator' => $value['thousand_sep'] ?? '',
-				'decimalSeparator'  => $value['decimal_sep'] ?? '',
-				'precision'         => $value['num_decimals'],
-			];
-		}
-
-		$account_status_data = $this->account->get_account_status_data();
-
-		$wcpay_settings = [
-			'connectUrl'                       => WC_Payments_Account::get_connect_url(),
-			'connect'                          => [
-				'country'            => WC()->countries->get_base_country(),
-				'availableCountries' => WC_Payments_Utils::supported_countries(),
-				'availableStates'    => WC()->countries->get_states(),
-			],
-			'testMode'                         => WC_Payments::mode()->is_test(),
-			// set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
-			'onBoardingDisabled'               => WC_Payments_Account::is_on_boarding_disabled(),
-			'errorMessage'                     => $error_message,
-			'featureFlags'                     => $this->get_frontend_feature_flags(),
-			'isSubscriptionsActive'            => class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ),
-			// used in the settings page by the AccountFees component.
-			'zeroDecimalCurrencies'            => WC_Payments_Utils::zero_decimal_currencies(),
-			'fraudServices'                    => $this->account->get_fraud_services_config(),
-			'isJetpackConnected'               => $this->payments_api_client->is_server_connected(),
-			'isJetpackIdcActive'               => Jetpack_Identity_Crisis::has_identity_crisis(),
-			'accountStatus'                    => $account_status_data,
-			'accountFees'                      => $this->account->get_fees(),
-			'accountLoans'                     => $this->account->get_capital(),
-			'accountEmail'                     => $this->account->get_account_email(),
-			'showUpdateDetailsTask'            => $this->get_should_show_update_business_details_task( $account_status_data ),
-			'wpcomReconnectUrl'                => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
-			'additionalMethodsSetup'           => [
-				'isUpeEnabled' => WC_Payments_Features::is_upe_enabled(),
-				'upeType'      => WC_Payments_Features::get_enabled_upe_type(),
-			],
-			'multiCurrencySetup'               => [
-				'isSetupCompleted' => get_option( 'wcpay_multi_currency_setup_completed' ),
-			],
-			'isMultiCurrencyEnabled'           => WC_Payments_Features::is_customer_multi_currency_enabled(),
-			'isClientEncryptionEligible'       => WC_Payments_Features::is_client_secret_encryption_eligible(),
-			'shouldUseExplicitPrice'           => WC_Payments_Explicit_Price_Formatter::should_output_explicit_price(),
-			'overviewTasksVisibility'          => [
-				'dismissedTodoTasks'     => get_option( 'woocommerce_dismissed_todo_tasks', [] ),
-				'deletedTodoTasks'       => get_option( 'woocommerce_deleted_todo_tasks', [] ),
-				'remindMeLaterTodoTasks' => get_option( 'woocommerce_remind_me_later_todo_tasks', [] ),
-			],
-			'currentUserEmail'                 => $current_user_email,
-			'currencyData'                     => $currency_data,
-			'restUrl'                          => get_rest_url( null, '' ), // rest url to concatenate when merchant use Plain permalinks.
-			'numDisputesNeedingResponse'       => $this->get_disputes_awaiting_response_count(),
-			'isFraudProtectionSettingsEnabled' => WC_Payments_Features::is_fraud_protection_settings_enabled(),
-			'fraudProtection'                  => [
-				'isWelcomeTourDismissed' => WC_Payments_Features::is_fraud_protection_welcome_tour_dismissed(),
-			],
-			'accountDefaultCurrency'           => $this->account->get_account_default_currency(),
-			'frtDiscoverBannerSettings'        => get_option( 'wcpay_frt_discover_banner_settings', '' ),
-			'storeCurrency'                    => get_option( 'woocommerce_currency' ),
-		];
-
-		wp_localize_script(
-			'WCPAY_DASH_APP',
-			'wcpaySettings',
-			$wcpay_settings
-		);
 
 		wp_set_script_translations( 'WCPAY_DASH_APP', 'woocommerce-payments' );
 
@@ -586,11 +573,6 @@ class WC_Payments_Admin {
 			]
 		);
 
-		wp_localize_script(
-			'WCPAY_ADMIN_SETTINGS',
-			'wcpaySettings',
-			$wcpay_settings
-		);
 		wp_set_script_translations( 'WCPAY_ADMIN_SETTINGS', 'woocommerce-payments' );
 
 		wp_register_style(
@@ -616,25 +598,40 @@ class WC_Payments_Admin {
 	public function enqueue_payments_scripts() {
 		global $current_tab, $current_section;
 
-		// TODO: Add check to see if user can manage_woocommerce and exit early if they cannot.
-		$this->register_payments_scripts();
+		// Enqueue the admin settings assets on any WCPay settings page.
+		// We also need to enqueue and localize on the multi-currency tab.
+		if ( WC_Payments_Utils::is_payments_settings_page() || 'wcpay_multi_currency' === $current_tab ) {
+			// Localize before actually enqueuing to avoid unnecessary settings generation.
+			// Most importantly, the destructive error transient handling.
+			wp_localize_script(
+				'WCPAY_ADMIN_SETTINGS',
+				'wcpaySettings',
+				$this->get_js_settings()
+			);
 
-		if ( WC_Payments_Utils::is_payments_settings_page() ) {
 			// Output the settings JS and CSS only on the settings page.
 			wp_enqueue_script( 'WCPAY_ADMIN_SETTINGS' );
 			wp_enqueue_style( 'WCPAY_ADMIN_SETTINGS' );
 		}
 
 		// TODO: Try to enqueue the JS and CSS bundles lazily (will require changes on WC-Admin).
-		if ( wc_admin_is_registered_page() ) {
+		$current_screen = get_current_screen() ? get_current_screen()->base : null;
+		if ( wc_admin_is_registered_page() || 'widgets' === $current_screen ) {
+			// Localize before actually enqueuing to avoid unnecessary settings generation.
+			// Most importantly, the destructive error transient handling.
+			wp_localize_script(
+				'WCPAY_DASH_APP',
+				'wcpaySettings',
+				$this->get_js_settings()
+			);
+
 			wp_enqueue_script( 'WCPAY_DASH_APP' );
 			wp_enqueue_style( 'WCPAY_DASH_APP' );
 		}
 
 		// TODO: Update conditions when ToS script is enqueued.
 		$tos_agreement_declined = (
-			$current_tab
-			&& 'checkout' === $current_tab
+			'checkout' === $current_tab
 			&& isset( $_GET['tos-disabled'] ) // phpcs:ignore WordPress.Security.NonceVerification
 		);
 
@@ -645,7 +642,7 @@ class WC_Payments_Admin {
 
 				// Or a WC Admin page?
 				// Note: Merchants can navigate from analytics to payments w/o reload,
-				// which is why this is neccessary.
+				// which is why this is necessary.
 				wc_admin_is_registered_page()
 			)
 		);
@@ -696,14 +693,136 @@ class WC_Payments_Admin {
 						'formattedRefundAmount' => wp_strip_all_tags( wc_price( $refund_amount, [ 'currency' => $order->get_currency() ] ) ),
 						'refundedAmount'        => $order->get_total_refunded(),
 						'canRefund'             => $this->wcpay_gateway->can_refund_order( $order ),
+						'chargeId'              => $this->order_service->get_charge_id_for_order( $order ),
 					]
+				);
+				wp_localize_script(
+					'WCPAY_ADMIN_ORDER_ACTIONS',
+					'wcpaySettings',
+					$this->get_js_settings()
 				);
 
 				wp_enqueue_script( 'WCPAY_ADMIN_ORDER_ACTIONS' );
 				wp_enqueue_style( 'WCPAY_ADMIN_ORDER_ACTIONS' );
 			}
 		}
+	}
 
+	/**
+	 * Get the WCPay settings to be sent to JS.
+	 *
+	 * It used an internal cache to make sure it only generates the settings once per request.
+	 * This is needed in order to avoid performance issues and simplify error transients handling.
+	 *
+	 * @return array
+	 */
+	private function get_js_settings(): array {
+		// Return the internally cached data if it is already initialized.
+		if ( ! is_null( $this->wcpay_js_settings ) ) {
+			return $this->wcpay_js_settings;
+		}
+
+		$error_message = get_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
+		delete_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
+
+		/**
+		 * This is a workaround to pass the current user's email address to WCPay's settings until we do not need to rely
+		 * on backwards compatibility and can use `getCurrentUser` from `@wordpress/core-data`.
+		 */
+		$current_user       = wp_get_current_user();
+		$current_user_email = $current_user && $current_user->user_email ? $current_user->user_email : get_option( 'admin_email' );
+
+		if ( version_compare( WC_VERSION, '6.0', '<' ) ) {
+			$path = WCPAY_ABSPATH . 'i18n/locale-info.php';
+		} else {
+			$path = WC()->plugin_path() . '/i18n/locale-info.php';
+		}
+
+		$locale_info = include $path;
+		// Get symbols for those currencies without a short one.
+		$symbols       = get_woocommerce_currency_symbols();
+		$currency_data = [];
+
+		foreach ( $locale_info as $key => $value ) {
+			$currency_code         = $value['currency_code'] ?? '';
+			$currency_data[ $key ] = [
+				'code'              => $currency_code,
+				'symbol'            => $value['short_symbol'] ?? $symbols[ $currency_code ] ?? '',
+				'symbolPosition'    => $value['currency_pos'] ?? '',
+				'thousandSeparator' => $value['thousand_sep'] ?? '',
+				'decimalSeparator'  => $value['decimal_sep'] ?? '',
+				'precision'         => $value['num_decimals'],
+			];
+		}
+
+		$account_status_data = $this->account->get_account_status_data();
+
+		$test_mode = false;
+		try {
+			$test_mode = WC_Payments::mode()->is_test();
+		} catch ( Exception $e ) {
+			Logger::log( sprintf( 'WCPay JS settings: Could not determine if WCPay should be in test mode! Message: %s', $e->getMessage() ), 'warning' );
+		}
+
+		$this->wcpay_js_settings = [
+			'connectUrl'                  => WC_Payments_Account::get_connect_url(),
+			'connect'                     => [
+				'country'            => WC()->countries->get_base_country(),
+				'availableCountries' => WC_Payments_Utils::supported_countries(),
+				'availableStates'    => WC()->countries->get_states(),
+			],
+			'testMode'                    => $test_mode,
+			'onboardingTestMode'          => WC_Payments_Onboarding_Service::is_test_mode_enabled(),
+			// Set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
+			'onBoardingDisabled'          => WC_Payments_Account::is_on_boarding_disabled(),
+			'onboardingFieldsData'        => $this->onboarding_service->get_fields_data( get_user_locale() ),
+			'errorMessage'                => $error_message,
+			'featureFlags'                => $this->get_frontend_feature_flags(),
+			'isSubscriptionsActive'       => class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ),
+			// Used in the settings page by the AccountFees component.
+			'zeroDecimalCurrencies'       => WC_Payments_Utils::zero_decimal_currencies(),
+			'fraudServices'               => $this->account->get_fraud_services_config(),
+			'isJetpackConnected'          => $this->payments_api_client->is_server_connected(),
+			'isJetpackIdcActive'          => Jetpack_Identity_Crisis::has_identity_crisis(),
+			'accountStatus'               => $account_status_data,
+			'accountFees'                 => $this->account->get_fees(),
+			'accountLoans'                => $this->account->get_capital(),
+			'accountEmail'                => $this->account->get_account_email(),
+			'showUpdateDetailsTask'       => $this->get_should_show_update_business_details_task( $account_status_data ),
+			'wpcomReconnectUrl'           => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
+			'additionalMethodsSetup'      => [
+				'isUpeEnabled' => WC_Payments_Features::is_upe_enabled(),
+				'upeType'      => WC_Payments_Features::get_enabled_upe_type(),
+			],
+			'multiCurrencySetup'          => [
+				'isSetupCompleted' => get_option( 'wcpay_multi_currency_setup_completed' ),
+			],
+			'isMultiCurrencyEnabled'      => WC_Payments_Features::is_customer_multi_currency_enabled(),
+			'isClientEncryptionEligible'  => WC_Payments_Features::is_client_secret_encryption_eligible(),
+			'shouldUseExplicitPrice'      => WC_Payments_Explicit_Price_Formatter::should_output_explicit_price(),
+			'overviewTasksVisibility'     => [
+				'dismissedTodoTasks'     => get_option( 'woocommerce_dismissed_todo_tasks', [] ),
+				'deletedTodoTasks'       => get_option( 'woocommerce_deleted_todo_tasks', [] ),
+				'remindMeLaterTodoTasks' => get_option( 'woocommerce_remind_me_later_todo_tasks', [] ),
+			],
+			'currentUserEmail'            => $current_user_email,
+			'currencyData'                => $currency_data,
+			'restUrl'                     => get_rest_url( null, '' ), // rest url to concatenate when merchant use Plain permalinks.
+			'isFRTReviewFeatureActive'    => WC_Payments_Features::is_frt_review_feature_active(),
+			'fraudProtection'             => [
+				'isWelcomeTourDismissed' => WC_Payments_Features::is_fraud_protection_welcome_tour_dismissed(),
+			],
+			'progressiveOnboarding'       => [
+				'isNewFlowEnabled' => WC_Payments_Utils::should_use_progressive_onboarding_flow(),
+			],
+			'accountDefaultCurrency'      => $this->account->get_account_default_currency(),
+			'frtDiscoverBannerSettings'   => get_option( 'wcpay_frt_discover_banner_settings', '' ),
+			'storeCurrency'               => get_option( 'woocommerce_currency' ),
+			'isBnplAffirmAfterpayEnabled' => WC_Payments_Features::is_bnpl_affirm_afterpay_enabled(),
+			'connectIncentive'            => $this->incentives_service->get_cached_connect_incentive(),
+		];
+
+		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );
 	}
 
 	/**
@@ -711,7 +830,7 @@ class WC_Payments_Admin {
 	 *
 	 * @return array An associative array containing the flags as booleans.
 	 */
-	private function get_frontend_feature_flags() {
+	private function get_frontend_feature_flags(): array {
 		return array_merge(
 			[
 				'paymentTimeline' => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.4.0', '>=' ),
@@ -892,7 +1011,49 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		$this->account->redirect_to_onboarding_page();
+		$this->account->redirect_to_onboarding_welcome_page();
+	}
+
+	/**
+	 * Avoid WC Admin /payments/overview error page when the current account associated Stripe account is not valid.
+	 *
+	 * The errored page happens because we don't register a /payments/overview WC admin page when the Stripe account
+	 * is not valid and register only a /payments/connect top level menu page.
+	 *
+	 * Places around our plugin redirect merchants to the overview page by default (or using it for the Stripe KYC
+	 * return URL) leading to poor UX.
+	 * This is a safety net to prevent that from happening.
+	 *
+	 * @see self::add_payments_menu()
+	 */
+	public function maybe_redirect_overview_to_connect() {
+		if ( wp_doing_ajax() ) {
+			return;
+		}
+
+		// If the current page is registered, let it pass.
+		if ( wc_admin_is_registered_page() ) {
+			return;
+		}
+
+		$url_params = wp_unslash( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification
+		if ( empty( $url_params['page'] ) || 'wc-admin' !== $url_params['page']
+			|| empty( $url_params['path'] ) || '/payments/overview' !== $url_params['path'] ) {
+			return;
+		}
+
+		/**
+		 * Determine the path of the top level menu page since that can change between payments/connect and payments/overview.
+		 *
+		 * @see self::add_payments_menu()
+		 */
+		$top_level_page_path = PageController::get_instance()->get_path_from_id( 'wc-payments' );
+		// If the top level page path is not the payments/connect one, bail.
+		if ( 'wc-admin&path=/payments/connect' !== $top_level_page_path ) {
+			return;
+		}
+
+		$this->account->redirect_to_onboarding_welcome_page();
 	}
 
 	/**
@@ -933,7 +1094,16 @@ class WC_Payments_Admin {
 		?>
 		<tr>
 			<td class="label wcpay-transaction-fee">
-				<?php echo wc_help_tip( __( 'This represents the fee WooCommerce Payments collects for the transaction.', 'woocommerce-payments' ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+				<?php
+					// phpcs:ignore WordPress.Security.EscapeOutput
+					echo wc_help_tip(
+						sprintf(
+							/* translators: %s: WooPayments */
+							__( 'This represents the fee %s collects for the transaction.', 'woocommerce-payments' ),
+							'WooPayments'
+						)
+					);
+				?>
 				<?php esc_html_e( 'Transaction Fee:', 'woocommerce-payments' ); ?>
 			</td>
 			<td width="1%"></td>

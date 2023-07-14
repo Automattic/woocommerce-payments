@@ -1,6 +1,10 @@
 .payment-methods {
 	position: relative;
 
+	.wcpay-card-body:not( .payment-methods__express-checkouts ) {
+		padding: 0;
+	}
+
 	&__header {
 		justify-content: space-between;
 
@@ -27,17 +31,35 @@
 				margin-right: 4px;
 			}
 		}
+
+		.wcpay-pill {
+			padding: 2px $gap-smaller;
+		}
 	}
 
 	&__express-checkouts {
-		background: url( 'assets/images/upe_preview_illustration.svg?asset' )
+		background: url( 'assets/images/payment-methods/all_local_payments.svg?asset' )
 			no-repeat right;
-		background-color: #f7edf7;
+		&.background-local-payment-methods {
+			background: url( 'assets/images/payment-methods/local_payments.svg?asset' )
+				no-repeat right;
+			@media ( max-width: 1024px ) {
+				h3,
+				p {
+					padding-right: 0;
+				}
+				background-image: none;
+			}
+		}
 		background-size: auto;
+		margin-right: 10px;
 
-		h3,
-		p {
+		h3 {
+			font-size: 14px;
 			padding-right: 215px;
+		}
+		p {
+			padding-right: 230px;
 		}
 
 		&-get-started {

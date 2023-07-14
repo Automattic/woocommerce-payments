@@ -3,7 +3,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render, within, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -13,6 +13,14 @@ import PaymentMethodsCheckboxes from '..';
 import PaymentMethodsCheckbox from '../payment-method-checkbox';
 import { upeCapabilityStatuses } from '../../../additional-methods-setup/constants';
 import { act } from 'react-dom/test-utils';
+
+jest.mock( '@woocommerce/components', () => {
+	return {
+		Pill: ( { className, children } ) => (
+			<span className={ className }>{ children }</span>
+		),
+	};
+} );
 
 describe( 'PaymentMethodsCheckboxes', () => {
 	it( 'triggers the onChange when clicking the checkbox', () => {
@@ -68,7 +76,7 @@ describe( 'PaymentMethodsCheckboxes', () => {
 			userEvent.click( p24.getByRole( 'checkbox' ) );
 			userEvent.click( sepa.getByRole( 'checkbox' ) );
 			userEvent.click( sofort.getByRole( 'checkbox' ) );
-			jest.runAllTimers();
+			jest.runOnlyPendingTimers();
 		} );
 
 		expect( handleChange ).toHaveBeenCalledTimes( upeMethods.length );
@@ -107,7 +115,7 @@ describe( 'PaymentMethodsCheckboxes', () => {
 		jest.useFakeTimers();
 		act( () => {
 			userEvent.click( sofortCheckbox );
-			jest.runAllTimers();
+			jest.runOnlyPendingTimers();
 		} );
 		expect( handleChange ).toHaveBeenCalledTimes( 1 );
 		expect( handleChange ).toHaveBeenNthCalledWith( 1, 'sofort', true );
@@ -200,7 +208,7 @@ describe( 'PaymentMethodsCheckboxes', () => {
 
 	it( 'doesnt show the disabled notice pill on payment methods with active and unrequested statuses', () => {
 		const handleChange = () => {};
-		const page = render(
+		render(
 			<PaymentMethodsCheckboxes>
 				<PaymentMethodsCheckbox
 					key={ 'sofort' }
@@ -219,8 +227,9 @@ describe( 'PaymentMethodsCheckboxes', () => {
 			</PaymentMethodsCheckboxes>
 		);
 
-		expect( page.container ).not.toContainHTML(
-			'<span class="wcpay-pill payment-status-inactive">Contact WooCommerce Support</span>'
-		);
+		// Test that the Contact support pill content isn't shown
+		expect(
+			screen.queryByText( 'Contact WooCommerce Support' )
+		).not.toBeInTheDocument();
 	} );
 } );

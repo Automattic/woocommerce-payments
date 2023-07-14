@@ -11,16 +11,10 @@ import React from 'react';
  * Internal dependencies
  */
 import PaymentOrderDetails from '..';
-import { chargeMock } from '../../../data/payment-intents/test/hooks';
-import { STORE_NAME } from '../../../data/constants';
-import {
-	useAuthorization,
-	useChargeFromOrder,
-	useLatestFraudOutcome,
-	useTimeline,
-} from '../../../data';
-import { ApiError } from '../../../types/errors';
-import { latestFraudOutcomeMock } from '../../../data/fraud-outcomes/test/hooks';
+import { chargeMock } from 'wcpay/data/payment-intents/test/hooks';
+import { STORE_NAME } from 'wcpay/data/constants';
+import { useAuthorization, useChargeFromOrder, useTimeline } from 'wcpay/data';
+import { ApiError } from 'wcpay/types/errors';
 
 declare const global: {
 	wcSettings: { countries: Record< string, string > };
@@ -72,6 +66,7 @@ const chargeFromOrderMock = {
 		customer_url:
 			'admin.php?page=wc-admin&path=/customers&filter=single_customer&customers=55',
 		subscriptions: [],
+		fraud_meta_box_type: 'succeeded',
 	},
 	paid: false,
 	paydown: null,
@@ -88,7 +83,6 @@ const chargeFromOrderMock = {
 
 jest.mock( 'data/index', () => ( {
 	useChargeFromOrder: jest.fn(),
-	useLatestFraudOutcome: jest.fn(),
 	useAuthorization: jest.fn(),
 	useTimeline: jest.fn(),
 } ) );
@@ -97,7 +91,10 @@ jest.mock( 'data/index', () => ( {
 // See https://github.com/WordPress/gutenberg/issues/15031
 jest.mock( '@wordpress/data', () => ( {
 	createRegistryControl: jest.fn(),
-	dispatch: jest.fn( () => ( { setIsMatching: jest.fn() } ) ),
+	dispatch: jest.fn( () => ( {
+		setIsMatching: jest.fn(),
+		onLoad: jest.fn(),
+	} ) ),
 	registerStore: jest.fn(),
 	select: jest.fn(),
 	combineReducers: jest.fn(),
@@ -106,10 +103,6 @@ jest.mock( '@wordpress/data', () => ( {
 	withSelect: jest.fn( () => jest.fn() ),
 	useSelect: jest.fn(),
 } ) );
-
-const mockUseLatestFraudOutcome = useLatestFraudOutcome as jest.MockedFunction<
-	typeof useLatestFraudOutcome
->;
 
 const mockUseChargeFromOrder = useChargeFromOrder as jest.MockedFunction<
 	typeof useChargeFromOrder
@@ -176,12 +169,6 @@ describe( 'Order details page', () => {
 	} );
 
 	it( 'should match the snapshot - Charge without payment intent', () => {
-		mockUseLatestFraudOutcome.mockReturnValue( {
-			data: latestFraudOutcomeMock,
-			error: undefined,
-			isLoading: false,
-		} );
-
 		mockUseChargeFromOrder.mockReturnValue( {
 			data: chargeFromOrderMock,
 			error: {} as ApiError,
@@ -199,15 +186,15 @@ describe( 'Order details page', () => {
 		expect( window.location.href ).toEqual( 'http://example.com' );
 
 		expect( container ).toMatchSnapshot();
+
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+		// @ts-ignore
+		expect( console ).toHaveWarnedWith(
+			'List with items prop is deprecated is deprecated and will be removed in version 9.0.0. Note: See ExperimentalList / ExperimentalListItem for the new API that will replace this component in future versions.'
+		);
 	} );
 
 	it( 'should match the snapshot - Charge with payment intent', () => {
-		mockUseLatestFraudOutcome.mockReturnValue( {
-			data: latestFraudOutcomeMock,
-			error: undefined,
-			isLoading: false,
-		} );
-
 		mockUseChargeFromOrder.mockReturnValue( {
 			data: chargeMock,
 			error: {} as ApiError,

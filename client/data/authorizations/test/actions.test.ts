@@ -3,7 +3,8 @@
 /**
  * External dependencies
  */
-import { apiFetch, dispatch } from '@wordpress/data-controls';
+import { apiFetch } from '@wordpress/data-controls';
+import { controls } from '@wordpress/data';
 import { Authorization } from 'wcpay/types/authorizations';
 
 /**
@@ -30,7 +31,7 @@ describe( 'Authorizations actions', () => {
 			);
 
 			expect( generator.next().value ).toEqual(
-				dispatch(
+				controls.dispatch(
 					'wc/payments',
 					'startResolution',
 					'getAuthorization',
@@ -39,7 +40,11 @@ describe( 'Authorizations actions', () => {
 			);
 
 			expect( generator.next().value ).toEqual(
-				dispatch( 'wc/payments', 'setIsRequestingAuthorization', true )
+				controls.dispatch(
+					'wc/payments',
+					'setIsRequestingAuthorization',
+					true
+				)
 			);
 
 			expect( generator.next().value ).toEqual(
@@ -65,7 +70,7 @@ describe( 'Authorizations actions', () => {
 			);
 
 			expect( generator.next().value ).toEqual(
-				dispatch(
+				controls.dispatch(
 					'wc/payments',
 					'invalidateResolutionForStoreSelector',
 					'getAuthorizations'
@@ -73,7 +78,7 @@ describe( 'Authorizations actions', () => {
 			);
 
 			expect( generator.next().value ).toEqual(
-				dispatch(
+				controls.dispatch(
 					'wc/payments',
 					'invalidateResolutionForStoreSelector',
 					'getAuthorizationsSummary'
@@ -81,7 +86,7 @@ describe( 'Authorizations actions', () => {
 			);
 
 			expect( generator.next().value ).toEqual(
-				dispatch(
+				controls.dispatch(
 					'wc/payments',
 					'invalidateResolutionForStoreSelector',
 					'getFraudOutcomeTransactions'
@@ -89,7 +94,7 @@ describe( 'Authorizations actions', () => {
 			);
 
 			expect( generator.next().value ).toEqual(
-				dispatch(
+				controls.dispatch(
 					'wc/payments',
 					'invalidateResolutionForStoreSelector',
 					'getFraudOutcomeTransactionsSummary'
@@ -97,7 +102,7 @@ describe( 'Authorizations actions', () => {
 			);
 
 			expect( generator.next().value ).toEqual(
-				dispatch(
+				controls.dispatch(
 					'wc/payments',
 					'invalidateResolutionForStoreSelector',
 					'getTimeline'
@@ -105,7 +110,7 @@ describe( 'Authorizations actions', () => {
 			);
 
 			expect( generator.next().value ).toEqual(
-				dispatch(
+				controls.dispatch(
 					'wc/payments',
 					'invalidateResolutionForStoreSelector',
 					'getPaymentIntent'
@@ -113,7 +118,7 @@ describe( 'Authorizations actions', () => {
 			);
 
 			expect( generator.next().value ).toEqual(
-				dispatch(
+				controls.dispatch(
 					'core/notices',
 					'createSuccessNotice',
 					'Payment for order #254 captured successfully.'
@@ -121,7 +126,7 @@ describe( 'Authorizations actions', () => {
 			);
 
 			expect( generator.next().value ).toEqual(
-				dispatch(
+				controls.dispatch(
 					'wc/payments',
 					'finishResolution',
 					'getAuthorization',
@@ -130,7 +135,11 @@ describe( 'Authorizations actions', () => {
 			);
 
 			expect( generator.next().value ).toEqual(
-				dispatch( 'wc/payments', 'setIsRequestingAuthorization', false )
+				controls.dispatch(
+					'wc/payments',
+					'setIsRequestingAuthorization',
+					false
+				)
 			);
 
 			expect( generator.next().done ).toStrictEqual( true );
@@ -141,7 +150,7 @@ describe( 'Authorizations actions', () => {
 			generator.next();
 
 			expect( generator.throw( { code: 'error' } ).value ).toEqual(
-				dispatch(
+				controls.dispatch(
 					'core/notices',
 					'createErrorNotice',
 					'There has been an error capturing the payment for order #42. Please try again later.'
@@ -163,7 +172,7 @@ describe( 'Authorizations actions', () => {
 			);
 
 			expect( generator.next().value ).toEqual(
-				dispatch(
+				controls.dispatch(
 					'wc/payments',
 					'startResolution',
 					'getAuthorization',
@@ -172,7 +181,11 @@ describe( 'Authorizations actions', () => {
 			);
 
 			expect( generator.next().value ).toEqual(
-				dispatch( 'wc/payments', 'setIsRequestingAuthorization', true )
+				controls.dispatch(
+					'wc/payments',
+					'setIsRequestingAuthorization',
+					true
+				)
 			);
 
 			expect( generator.next().value ).toEqual(
@@ -198,7 +211,7 @@ describe( 'Authorizations actions', () => {
 			);
 
 			expect( generator.next().value ).toEqual(
-				dispatch(
+				controls.dispatch(
 					'wc/payments',
 					'invalidateResolutionForStoreSelector',
 					'getAuthorizations'
@@ -206,7 +219,7 @@ describe( 'Authorizations actions', () => {
 			);
 
 			expect( generator.next().value ).toEqual(
-				dispatch(
+				controls.dispatch(
 					'wc/payments',
 					'invalidateResolutionForStoreSelector',
 					'getAuthorizationsSummary'
@@ -214,7 +227,7 @@ describe( 'Authorizations actions', () => {
 			);
 
 			expect( generator.next().value ).toEqual(
-				dispatch(
+				controls.dispatch(
 					'wc/payments',
 					'invalidateResolutionForStoreSelector',
 					'getFraudOutcomeTransactions'
@@ -222,7 +235,7 @@ describe( 'Authorizations actions', () => {
 			);
 
 			expect( generator.next().value ).toEqual(
-				dispatch(
+				controls.dispatch(
 					'wc/payments',
 					'invalidateResolutionForStoreSelector',
 					'getFraudOutcomeTransactionsSummary'
@@ -230,7 +243,7 @@ describe( 'Authorizations actions', () => {
 			);
 
 			expect( generator.next().value ).toEqual(
-				dispatch(
+				controls.dispatch(
 					'wc/payments',
 					'invalidateResolutionForStoreSelector',
 					'getTimeline'
@@ -238,7 +251,7 @@ describe( 'Authorizations actions', () => {
 			);
 
 			expect( generator.next().value ).toEqual(
-				dispatch(
+				controls.dispatch(
 					'wc/payments',
 					'invalidateResolutionForStoreSelector',
 					'getPaymentIntent'
@@ -246,7 +259,7 @@ describe( 'Authorizations actions', () => {
 			);
 
 			expect( generator.next().value ).toEqual(
-				dispatch(
+				controls.dispatch(
 					'core/notices',
 					'createSuccessNotice',
 					'Payment for order #254 canceled successfully.'
@@ -254,7 +267,7 @@ describe( 'Authorizations actions', () => {
 			);
 
 			expect( generator.next().value ).toEqual(
-				dispatch(
+				controls.dispatch(
 					'wc/payments',
 					'finishResolution',
 					'getAuthorization',
@@ -263,7 +276,11 @@ describe( 'Authorizations actions', () => {
 			);
 
 			expect( generator.next().value ).toEqual(
-				dispatch( 'wc/payments', 'setIsRequestingAuthorization', false )
+				controls.dispatch(
+					'wc/payments',
+					'setIsRequestingAuthorization',
+					false
+				)
 			);
 
 			expect( generator.next().done ).toStrictEqual( true );
@@ -274,7 +291,7 @@ describe( 'Authorizations actions', () => {
 			generator.next();
 
 			expect( generator.throw( { code: 'error' } ).value ).toEqual(
-				dispatch(
+				controls.dispatch(
 					'core/notices',
 					'createErrorNotice',
 					'There has been an error canceling the payment for order #42. Please try again later.'

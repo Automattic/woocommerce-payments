@@ -114,6 +114,13 @@ class WC_Subscription extends WC_Mock_WC_Data {
 	public $billing_interval = 1;
 
 	/**
+	 * If the subscription has a certain product in it.
+	 *
+	 * @var bool
+	 */
+	public $has_product = false;
+
+	/**
 	 * A helper function for handling function calls not yet implimented on this helper.
 	 *
 	 * Attempts to get the value by checking if it has been set as an object property.
@@ -241,5 +248,13 @@ class WC_Subscription extends WC_Mock_WC_Data {
 
 	public function update_status( $status ) {
 		$this->status = $status;
+	}
+
+	public function set_has_product( bool $has_product ) {
+		$this->has_product = $has_product;
+	}
+
+	public function has_product() {
+		return $this->has_product;
 	}
 }

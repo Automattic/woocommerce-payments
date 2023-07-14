@@ -11,7 +11,6 @@ import { __ } from '@wordpress/i18n';
  */
 import { Dispute } from 'types/disputes';
 import { Charge, ChargeAmounts } from 'types/charges';
-import { FraudOutcome } from '../../types/fraud-outcome';
 import { PaymentIntent } from '../../types/payment-intents';
 
 const failedOutcomeTypes = [ 'issuer_declined', 'invalid' ];
@@ -54,40 +53,53 @@ export const isChargePartiallyRefunded = (
 	charge: Charge = <Charge>{}
 ): boolean => isChargeRefunded( charge ) && ! isChargeFullyRefunded( charge );
 
+const getFraudMetaBoxType = (
+	charge?: Charge,
+	paymentIntent?: PaymentIntent
+): string =>
+	charge?.order?.fraud_meta_box_type ||
+	paymentIntent?.order?.fraud_meta_box_type ||
+	'';
+
 export const isOnHoldByFraudTools = (
-	fraudOutcome?: FraudOutcome,
+	charge?: Charge,
 	paymentIntent?: PaymentIntent
 ): boolean => {
+	const fraudMetaBoxType = getFraudMetaBoxType( charge, paymentIntent );
+
+	if ( ! fraudMetaBoxType ) {
+		return false;
+	}
+
 	return (
-		wcpaySettings.isFraudProtectionSettingsEnabled &&
 		paymentIntent?.status === 'requires_capture' &&
-		fraudOutcome?.status === 'review'
+		'review' === fraudMetaBoxType
 	);
 };
 
 export const isBlockedByFraudTools = (
 	charge?: Charge,
-	fraudOutcome?: FraudOutcome,
 	paymentIntent?: PaymentIntent
 ): boolean => {
-	return (
-		wcpaySettings.isFraudProtectionSettingsEnabled &&
-		( paymentIntent?.status === 'canceled' || ! charge?.payment_intent ) &&
-		!! fraudOutcome
-	);
+	const fraudMetaBoxType = getFraudMetaBoxType( charge, paymentIntent );
+
+	if ( ! fraudMetaBoxType ) {
+		return false;
+	}
+
+	return [ 'block', 'review_blocked' ].includes( fraudMetaBoxType );
 };
 
 /* TODO: implement authorization and SCA charge statuses */
 export const getChargeStatus = (
 	charge: Charge = <Charge>{},
-	fraudOutcome?: FraudOutcome,
 	paymentIntent?: PaymentIntent
 ): string => {
-	if ( isOnHoldByFraudTools( fraudOutcome, paymentIntent ) ) {
+	if ( isOnHoldByFraudTools( charge, paymentIntent ) ) {
 		return 'fraud_outcome_review';
 	}
 
-	if ( isBlockedByFraudTools( charge, fraudOutcome, paymentIntent ) ) {
+	if ( isBlockedByFraudTools( charge, paymentIntent ) ) {
 		return 'fraud_outcome_block';
 	}
 

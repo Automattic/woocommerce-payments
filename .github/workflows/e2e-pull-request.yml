@@ -34,6 +34,7 @@ env:
   WCPAY_USE_BUILD_ARTIFACT: ${{ inputs.wcpay-use-build-artifact }}
   WCPAY_ARTIFACT_DIRECTORY: 'zipfile'
   NODE_ENV: 'test'
+  FORCE_E2E_DEPS_SETUP: true
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

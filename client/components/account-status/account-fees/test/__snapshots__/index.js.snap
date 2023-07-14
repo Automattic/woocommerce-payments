@@ -345,7 +345,7 @@ exports[`AccountFees renders discounts multiple payment methods 1`] = `
   </s>
    1.4% + $0.25 per transaction
   <p>
-    GiroPay transactions
+    giropay transactions
     :
   </p>
   United States (US) dollar 
@@ -415,9 +415,9 @@ exports[`AccountFees renders non-USD base fee 1`] = `
   Euro 
   (EUR) 
   <s>
-    2.9% + 0,25 € per transaction
+    2.9% + 0,25 € per transaction
   </s>
-   2.9% + 0,30 € per transaction
+   2.9% + 0,30 € per transaction
   <p>
     <a
       href="https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/"

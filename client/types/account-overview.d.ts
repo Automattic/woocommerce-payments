@@ -7,6 +7,7 @@ declare namespace AccountOverview {
 			delay_days: number;
 			interval: string;
 			weekly_anchor: string;
+			monthly_anchor: number;
 		};
 	}
 

@@ -38,7 +38,8 @@ class WC_Payments_API_Client {
 
 	const ACCOUNTS_API                 = 'accounts';
 	const CAPABILITIES_API             = 'accounts/capabilities';
-	const PLATFORM_CHECKOUT_API        = 'accounts/platform_checkout';
+	const WOOPAY_ACCOUNTS_API          = 'accounts/platform_checkout';
+	const WOOPAY_COMPATIBILITY_API     = 'woopay/compatibility';
 	const APPLE_PAY_API                = 'apple_pay';
 	const CHARGES_API                  = 'charges';
 	const CONN_TOKENS_API              = 'terminal/connection_tokens';
@@ -72,7 +73,6 @@ class WC_Payments_API_Client {
 	const AUTHORIZATIONS_API           = 'authorizations';
 	const FRAUD_OUTCOMES_API           = 'fraud_outcomes';
 	const FRAUD_RULESET_API            = 'fraud_ruleset';
-	const FRAUD_OUTCOME_API            = 'fraud_outcomes';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -209,40 +209,6 @@ class WC_Payments_API_Client {
 	 */
 	public function start_server_connection( $redirect ) {
 		$this->http_client->start_connection( $redirect );
-	}
-
-	/**
-	 * Refund a charge
-	 *
-	 * @param string $charge_id - The charge to refund.
-	 * @param int    $amount    - Amount to charge.
-	 *
-	 * @return array
-	 * @throws API_Exception - Exception thrown on refund creation failure.
-	 */
-	public function refund_charge( $charge_id, $amount = null ) {
-		$request           = [];
-		$request['charge'] = $charge_id;
-		$request['amount'] = $amount;
-
-		return $this->request( $request, self::REFUNDS_API, self::POST );
-	}
-
-	/**
-	 * List refunds
-	 *
-	 * @param string $charge_id - The charge to retrieve the list of refunds for.
-	 *
-	 * @return array
-	 * @throws API_Exception - Exception thrown on request failure.
-	 */
-	public function list_refunds( $charge_id ) {
-		$request = [
-			'limit'  => 100,
-			'charge' => $charge_id,
-		];
-
-		return $this->request( $request, self::REFUNDS_API, self::GET );
 	}
 
 	/**
@@ -506,7 +472,7 @@ class WC_Payments_API_Client {
 			return $transaction;
 		}
 
-		return $this->add_order_info_to_object( $transaction['charge_id'], $transaction );
+		return $this->add_order_info_to_charge_object( $transaction['charge_id'], $transaction );
 	}
 
 	/**
@@ -563,6 +529,17 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Fetch disputes by provided query.
+	 *
+	 * @param array $filters Query to be used to get disputes.
+	 * @return array Disputes.
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_disputes( array $filters = [] ) {
+		return $this->request( $filters, self::DISPUTES_API, self::GET );
+	}
+
+	/**
 	 * Fetch a single dispute with provided id.
 	 *
 	 * @param string $dispute_id id of requested dispute.
@@ -576,7 +553,7 @@ class WC_Payments_API_Client {
 		}
 
 		$charge_id = is_array( $dispute['charge'] ) ? $dispute['charge']['id'] : $dispute['charge'];
-		return $this->add_order_info_to_object( $charge_id, $dispute );
+		return $this->add_order_info_to_charge_object( $charge_id, $dispute );
 	}
 
 	/**
@@ -597,15 +574,16 @@ class WC_Payments_API_Client {
 		];
 
 		$dispute = $this->request( $request, self::DISPUTES_API . '/' . $dispute_id, self::POST );
-		// Invalidate the dispute status cache.
+		// Invalidate the dispute caches.
 		\WC_Payments::get_database_cache()->delete( Database_Cache::DISPUTE_STATUS_COUNTS_KEY );
+		\WC_Payments::get_database_cache()->delete( Database_Cache::ACTIVE_DISPUTES_KEY );
 
 		if ( is_wp_error( $dispute ) ) {
 			return $dispute;
 		}
 
 		$charge_id = is_array( $dispute['charge'] ) ? $dispute['charge']['id'] : $dispute['charge'];
-		return $this->add_order_info_to_object( $charge_id, $dispute );
+		return $this->add_order_info_to_charge_object( $charge_id, $dispute );
 	}
 
 	/**
@@ -616,15 +594,16 @@ class WC_Payments_API_Client {
 	 */
 	public function close_dispute( $dispute_id ) {
 		$dispute = $this->request( [], self::DISPUTES_API . '/' . $dispute_id . '/close', self::POST );
-		// Invalidate the dispute status cache.
+		// Invalidate the dispute caches.
 		\WC_Payments::get_database_cache()->delete( Database_Cache::DISPUTE_STATUS_COUNTS_KEY );
+		\WC_Payments::get_database_cache()->delete( Database_Cache::ACTIVE_DISPUTES_KEY );
 
 		if ( is_wp_error( $dispute ) ) {
 			return $dispute;
 		}
 
 		$charge_id = is_array( $dispute['charge'] ) ? $dispute['charge']['id'] : $dispute['charge'];
-		return $this->add_order_info_to_object( $charge_id, $dispute );
+		return $this->add_order_info_to_charge_object( $charge_id, $dispute );
 	}
 
 	/**
@@ -794,7 +773,7 @@ class WC_Payments_API_Client {
 				return $timeline;
 			}
 
-			$manual_entry_meta = $order->get_meta( 'fraud_outcome_manual_entry', true );
+			$manual_entry_meta = $order->get_meta( '_wcpay_fraud_outcome_manual_entry', true );
 
 			if ( ! empty( $manual_entry_meta ) ) {
 				$timeline['data'][] = $manual_entry_meta;
@@ -849,41 +828,24 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Get current account data
+	 * Get current woopay eligibility
 	 *
-	 * @return array An array describing an account object.
+	 * @return array An array describing woopay eligibility.
 	 *
 	 * @throws API_Exception - Error contacting the API.
 	 */
-	public function get_account_data() {
+	public function get_woopay_eligibility() {
 		return $this->request(
 			[
 				'test_mode' => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
 			],
-			self::ACCOUNTS_API,
+			self::WOOPAY_ACCOUNTS_API,
 			self::GET
 		);
 	}
 
 	/**
-	 * Get current platform checkout eligibility
-	 *
-	 * @return array An array describing platform checkout eligibility.
-	 *
-	 * @throws API_Exception - Error contacting the API.
-	 */
-	public function get_platform_checkout_eligibility() {
-		return $this->request(
-			[
-				'test_mode' => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
-			],
-			self::PLATFORM_CHECKOUT_API,
-			self::GET
-		);
-	}
-
-	/**
-	 * Update platform checkout data
+	 * Update woopay data
 	 *
 	 * @param array $data Data to update.
 	 *
@@ -891,31 +853,14 @@ class WC_Payments_API_Client {
 	 *
 	 * @throws API_Exception - Error contacting the API.
 	 */
-	public function update_platform_checkout( $data ) {
+	public function update_woopay( $data ) {
 		return $this->request(
 			array_merge(
 				[ 'test_mode' => WC_Payments::mode()->is_dev() ],
 				$data
 			),
-			self::PLATFORM_CHECKOUT_API,
+			self::WOOPAY_ACCOUNTS_API,
 			self::POST
-		);
-	}
-
-	/**
-	 * Update Stripe account data
-	 *
-	 * @param array $account_settings Settings to update.
-	 *
-	 * @return array Updated account data.
-	 */
-	public function update_account( $account_settings ) {
-		return $this->request(
-			$account_settings,
-			self::ACCOUNTS_API,
-			self::POST,
-			true,
-			true
 		);
 	}
 
@@ -972,20 +917,54 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Get the fields data to be used by the onboarding flow.
+	 *
+	 * @param string $locale The locale to ask for from the server.
+	 *
+	 * @return array An array containing the fields data.
+	 *
+	 * @throws API_Exception Exception thrown on request failure.
+	 */
+	public function get_onboarding_fields_data( string $locale = '' ): array {
+		$fields_data = $this->request(
+			[
+				'locale'    => $locale,
+				'test_mode' => WC_Payments::mode()->is_test(),
+			],
+			self::ONBOARDING_API . '/fields_data',
+			self::GET,
+			false,
+			true
+		);
+
+		if ( ! is_array( $fields_data ) ) {
+			return [];
+		}
+
+		return $fields_data;
+	}
+
+	/**
 	 * Get the business types, needed for our KYC onboarding flow.
 	 *
 	 * @return array An array containing the business types.
 	 *
 	 * @throws API_Exception Exception thrown on request failure.
 	 */
-	public function get_onboarding_business_types() {
-		return $this->request(
+	public function get_onboarding_business_types(): array {
+		$business_types = $this->request(
 			[],
 			self::ONBOARDING_API . '/business_types',
 			self::GET,
 			true,
 			true
 		);
+
+		if ( ! is_array( $business_types ) ) {
+			return [];
+		}
+
+		return $business_types;
 	}
 
 	/**
@@ -1013,51 +992,6 @@ class WC_Payments_API_Client {
 			$params,
 			self::ONBOARDING_API . '/required_verification_information',
 			self::GET,
-			true,
-			true
-		);
-	}
-
-	/**
-	 * Get one-time dashboard login url
-	 *
-	 * @param string $redirect_url - URL to navigate back to from the dashboard.
-	 *
-	 * @return array An array containing the url field
-	 */
-	public function get_login_data( $redirect_url ) {
-		return $this->request(
-			[
-				'redirect_url' => $redirect_url,
-				'test_mode'    => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
-			],
-			self::ACCOUNTS_API . '/login_links',
-			self::POST,
-			true,
-			true
-		);
-	}
-
-	/**
-	 * Get a one-time capital link.
-	 *
-	 * @param string $type        The type of link to be requested.
-	 * @param string $return_url  URL to navigate back to from the dashboard.
-	 * @param string $refresh_url URL to navigate to if the link expired, has been previously-visited, or is otherwise invalid.
-	 *
-	 * @return array Account link object with create, expires_at, and url fields.
-	 *
-	 * @throws API_Exception When something goes wrong with the request, or there aren't valid loan offers for the merchant.
-	 */
-	public function get_capital_link( $type, $return_url, $refresh_url ) {
-		return $this->request(
-			[
-				'type'        => $type,
-				'return_url'  => $return_url,
-				'refresh_url' => $refresh_url,
-			],
-			self::ACCOUNTS_API . '/capital_links',
-			self::POST,
 			true,
 			true
 		);
@@ -1387,29 +1321,6 @@ class WC_Payments_API_Client {
 			[],
 			self::PAYMENT_METHODS_API . '/' . $payment_method_id . '/detach',
 			self::POST
-		);
-	}
-
-	/**
-	 * Records a new Terms of Service agreement.
-	 *
-	 * @param string $source     A string, which describes where the merchant agreed to the terms.
-	 * @param string $user_name  The user_login of the current user.
-	 *
-	 * @return array An array, containing a `success` flag.
-	 *
-	 * @throws API_Exception If an error occurs.
-	 */
-	public function add_tos_agreement( $source, $user_name ) {
-		return $this->request(
-			[
-				'source'    => $source,
-				'user_name' => $user_name,
-			],
-			self::ACCOUNTS_API . '/tos_agreements',
-			self::POST,
-			true,
-			true
 		);
 	}
 
@@ -1762,7 +1673,7 @@ class WC_Payments_API_Client {
 	public function get_latest_fraud_outcome( $id ) {
 		$response = $this->request(
 			[],
-			self::FRAUD_OUTCOME_API . '/order_id/' . $id,
+			self::FRAUD_OUTCOMES_API . '/order_id/' . $id,
 			self::GET
 		);
 
@@ -1774,21 +1685,27 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Get if the merchant is eligible for Progressive Onboarding.
+	 * Check if the merchant is eligible for Progressive Onboarding based on self-assessment information.
 	 *
-	 * @param array $business_info Business information.
+	 * @param array $business_info   Business information.
+	 * @param array $store_info      Store information.
+	 * @param array $woo_store_stats Optional. Stats about the WooCommerce store to given more context to the PO eligibility decision.
 	 *
 	 * @return array HTTP response on success.
 	 *
 	 * @throws API_Exception - If not connected to server or request failed.
 	 */
-	public function get_onboarding_po_eligible( $business_info ) {
+	public function get_onboarding_po_eligible( array $business_info, array $store_info, array $woo_store_stats = [] ): array {
 		return $this->request(
 			[
-				'business' => $business_info,
+				'business'        => $business_info,
+				'store'           => $store_info,
+				'woo_store_stats' => $woo_store_stats,
 			],
 			self::ONBOARDING_API . '/router/po_eligible',
-			self::POST
+			self::POST,
+			true,
+			true
 		);
 	}
 
@@ -1951,6 +1868,7 @@ class WC_Payments_API_Client {
 			$retries++;
 		}
 
+		// @todo We don't always return an array. `extract_response_body` can also return a string. We should standardize this!
 		if ( ! $raw_response ) {
 			$response_body = $this->extract_response_body( $response );
 		} else {
@@ -2130,7 +2048,7 @@ class WC_Payments_API_Client {
 	 * @return array
 	 */
 	public function add_additional_info_to_charge( array $charge ) : array {
-		$charge = $this->add_order_info_to_object( $charge['id'], $charge );
+		$charge = $this->add_order_info_to_charge_object( $charge['id'], $charge );
 		$charge = $this->add_formatted_address_to_charge_object( $charge );
 
 		return $charge;
@@ -2164,18 +2082,47 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Adds additional info to intention object.
+	 *
+	 * @param string $intention_id Intention ID.
+	 *
+	 * @return array
+	 */
+	private function get_order_info_from_intention_object( $intention_id ) {
+		$order  = $this->wcpay_db->order_from_intent_id( $intention_id );
+		$object = $this->add_order_info_to_object( $order, [] );
+
+		return $object['order'];
+	}
+
+	/**
+	 * Adds order information to the charge object.
+	 *
+	 * @param string $charge_id Charge ID.
+	 * @param array  $object    Object to add order information.
+	 *
+	 * @return array
+	 */
+	private function add_order_info_to_charge_object( $charge_id, $object ) {
+		$order  = $this->wcpay_db->order_from_charge_id( $charge_id );
+		$object = $this->add_order_info_to_object( $order, $object );
+
+		return $object;
+	}
+
+	/**
 	 * Returns a transaction with order information when it exists.
 	 *
-	 * @param  string $charge_id related charge id.
-	 * @param  array  $object object to add order information.
-	 * @return array  new object with order information.
+	 * @param  bool|\WC_Order|\WC_Order_Refund $order  Order object.
+	 * @param  array                           $object Object to add order information.
+	 *
+	 * @return array new object with order information.
 	 */
-	private function add_order_info_to_object( $charge_id, $object ) {
-		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
-
+	private function add_order_info_to_object( $order, $object ) {
 		// Add order information to the `$transaction`.
 		// If the order couldn't be retrieved, return an empty order.
 		$object['order'] = null;
+
 		if ( $order ) {
 			$object['order'] = $this->build_order_info( $order );
 		}
@@ -2191,9 +2138,10 @@ class WC_Payments_API_Client {
 	 */
 	public function build_order_info( WC_Order $order ): array {
 		$order_info = [
-			'number'       => $order->get_order_number(),
-			'url'          => $order->get_edit_order_url(),
-			'customer_url' => $this->get_customer_url( $order ),
+			'number'              => $order->get_order_number(),
+			'url'                 => $order->get_edit_order_url(),
+			'customer_url'        => $this->get_customer_url( $order ),
+			'fraud_meta_box_type' => $order->get_meta( '_wcpay_fraud_meta_box_type' ),
 		];
 
 		if ( function_exists( 'wcs_get_subscriptions_for_order' ) ) {
@@ -2303,6 +2251,7 @@ class WC_Payments_API_Client {
 		$payment_method_types = $intention_array['payment_method_types'] ?? [];
 
 		$charge = ! empty( $charge_array ) ? self::deserialize_charge_object_from_array( $charge_array ) : null;
+		$order  = $this->get_order_info_from_intention_object( $intention_array['id'] );
 
 		$intent = new WC_Payments_API_Intention(
 			$intention_array['id'],
@@ -2318,7 +2267,8 @@ class WC_Payments_API_Client {
 			$last_payment_error,
 			$metadata,
 			$processing,
-			$payment_method_types
+			$payment_method_types,
+			$order
 		);
 
 		return $intent;
@@ -2440,5 +2390,20 @@ class WC_Payments_API_Client {
 	 */
 	public function get_authorization( string $payment_intent_id ) {
 		return $this->request( [], self::AUTHORIZATIONS_API . '/' . $payment_intent_id, self::GET );
+	}
+
+	/**
+	 * Gets the list of extensions that are incompatible with WooPay.
+	 *
+	 * @return array of extensions.
+	 * @throws API_Exception When request fails.
+	 */
+	public function get_woopay_incompatible_extensions() {
+		return $this->request(
+			[],
+			self::WOOPAY_COMPATIBILITY_API,
+			self::GET,
+			false
+		);
 	}
 }

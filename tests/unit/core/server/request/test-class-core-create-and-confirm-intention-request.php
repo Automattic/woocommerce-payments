@@ -124,11 +124,12 @@ class Create_And_Confirm_Intention_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_create_intent_request_will_be_created() {
-		$amount   = 1;
-		$currency = 'usd';
-		$pm       = 'pm_1';
-		$cs       = 'cus_1';
-		$cvc      = 'cvc';
+		$amount     = 1;
+		$currency   = 'usd';
+		$pm         = 'pm_1';
+		$cs         = 'cus_1';
+		$cvc        = 'cvc';
+		$return_url = 'localhost/order-received/';
 
 		$request = new Create_And_Confirm_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$request->set_amount( $amount );
@@ -142,6 +143,7 @@ class Create_And_Confirm_Intention_Test extends WCPAY_UnitTestCase {
 		$request->set_off_session();
 		$request->set_payment_methods( [ 'pm' => '1' ] );
 		$request->set_cvc_confirmation( $cvc );
+		$request->set_return_url( $return_url );
 		$this->assertInstanceOf( Create_And_Confirm_Intention::class, $request );
 		$params = $request->get_params();
 
@@ -157,23 +159,34 @@ class Create_And_Confirm_Intention_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 1, $params['metadata']['order_number'] );
 		$this->assertArrayHasKey( 'level3', $params );
 		$this->assertSame( 'true', $params['off_session'] );
-		$this->assertArrayHasKey( 'payment_methods_types', $params );
+		$this->assertArrayHasKey( 'payment_method_types', $params );
 		$this->assertSame( $cvc, $params['cvc_confirmation'] );
+		$this->assertSame( $return_url, $params['return_url'] );
 		$this->assertSame( 'POST', $request->get_method() );
 		$this->assertSame( WC_Payments_API_Client::INTENTIONS_API, $request->get_api() );
 	}
 
-	public function test_woopay_create_intent_request_will_be_created() {
-		$amount   = 1;
-		$currency = 'usd';
-		$pm       = 'pm_1';
-		$cs       = 'cus_1';
-		$cvc      = 'cvc';
-		$request  = new WooPay_Create_And_Confirm_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
+	public function create_intent_request_provider() {
+		return [
+			[ 'pm_1', 'cus_1' ],
+			[ 'src_2', 'cus_3' ],
+			[ 'card_1', 'cus_1' ],
+		];
+	}
+
+	/**
+	 *   * @dataProvider create_intent_request_provider
+	 */
+	public function test_woopay_create_intent_request_will_be_created( $payment_method, $customer_id ) {
+		$amount     = 1;
+		$currency   = 'usd';
+		$cvc        = 'cvc';
+		$return_url = 'localhost/order-received/';
+		$request    = new WooPay_Create_And_Confirm_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$request->set_amount( 1 );
 		$request->set_currency_code( 'usd' );
-		$request->set_payment_method( 'pm_1' );
-		$request->set_customer( 'cus_1' );
+		$request->set_payment_method( $payment_method );
+		$request->set_customer( $customer_id );
 		$request->set_capture_method( true );
 		$request->setup_future_usage();
 		$request->set_metadata( [ 'order_number' => 1 ] );
@@ -181,6 +194,7 @@ class Create_And_Confirm_Intention_Test extends WCPAY_UnitTestCase {
 		$request->set_off_session();
 		$request->set_payment_methods( [ 'pm' => '1' ] );
 		$request->set_cvc_confirmation( 'cvc' );
+		$request->set_return_url( $return_url );
 		$request->set_is_platform_payment_method();
 		$request->set_has_woopay_subscription();
 		$params = $request->get_params();
@@ -188,8 +202,8 @@ class Create_And_Confirm_Intention_Test extends WCPAY_UnitTestCase {
 		$this->assertIsArray( $params );
 		$this->assertSame( $amount, $params['amount'] );
 		$this->assertSame( $currency, $params['currency'] );
-		$this->assertSame( $pm, $params['payment_method'] );
-		$this->assertSame( $cs, $params['customer'] );
+		$this->assertSame( $payment_method, $params['payment_method'] );
+		$this->assertSame( $customer_id, $params['customer'] );
 		$this->assertSame( 'manual', $params['capture_method'] );
 		$this->assertSame( 'off_session', $params['setup_future_usage'] );
 		$this->assertArrayHasKey( 'description', $params );
@@ -199,8 +213,9 @@ class Create_And_Confirm_Intention_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'true', $params['off_session'] );
 		$this->assertSame( 'true', $params['is_platform_payment_method'] );
 		$this->assertSame( 'true', $params['woopay_has_subscription'] );
-		$this->assertArrayHasKey( 'payment_methods_types', $params );
+		$this->assertArrayHasKey( 'payment_method_types', $params );
 		$this->assertSame( $cvc, $params['cvc_confirmation'] );
+		$this->assertSame( $return_url, $params['return_url'] );
 		$this->assertSame( 'POST', $request->get_method() );
 		$this->assertSame( WC_Payments_API_Client::INTENTIONS_API, $request->get_api() );
 	}

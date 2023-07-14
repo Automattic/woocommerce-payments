@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-Adds fraud and risk tools banner to WCPay overview page. All fraud and risk tools, including this banner, are currently behind a feature flag.

@@ -3,7 +3,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 8px;
-		padding: 16px 24px;
+		padding-bottom: 16px;
 
 		&__title {
 			font-weight: 600;
@@ -13,30 +13,59 @@
 		}
 
 		&__description {
-			font-size: 13px;
-			line-height: 16px;
-			color: $gray-700;
+			& > &__text {
+				line-height: 16px;
+				color: $gray-700;
+			}
 		}
 	}
-	&__table {
-		color: $gray-900;
-		align-items: center;
+	.wcpay-banner-notice.components-notice {
+		margin: 0;
+	}
 
+	// Apply a margin bottom to all except the last notice
+	// in the notices container and to the business delay
+	// notice if it's the last child of the Deposit history table.
+	&__notices__container
+		> .wcpay-banner-notice.components-notice:not( :last-child ),
+	.wcpay-deposits-overview__business-day-delay-notice:last-child {
+		margin-bottom: 16px;
+	}
+
+	// If the notices container is the last element before the footer (no deposit history), apply a margin to the footer, to float the notices on.
+	.wcpay-deposits-overview__notices__container:not( :empty )
+		+ .wcpay-deposits-overview__footer {
+		margin-top: 16px;
+	}
+
+	// Override extraneous CardBody vertical padding -
+	// we use multiple stacked CardBody components
+	// so table CardDivider is full width.
+	.components-card__body.wcpay-deposits-overview__table__container,
+	.components-card__body.wcpay-deposits-overview__notices__container {
+		padding-bottom: 0;
+		padding-top: 0;
+	}
+
+	// Override display:block on the first FlexItem with the date and icon
+	.wcpay-deposits-overview__table__cell:first-child {
+		display: flex;
+	}
+
+	&__table {
 		&__row {
 			&__header {
-				box-shadow: inset 0 -1px 0 #ddd;
 				font-weight: 600;
+
 				div {
-					padding: 8px 24px;
+					padding: 8px 0;
 				}
 			}
 		}
-
 		&__cell {
-			display: flex;
 			font-size: 13px;
 			align-items: center;
-			padding: 16px 24px;
+			padding: 16px 0;
 
 			svg {
 				fill: $gray-900;

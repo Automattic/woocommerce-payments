@@ -57,14 +57,19 @@ const AccountStatusError = () => {
 
 const AccountStatusDetails = ( props ) => {
 	const { accountStatus, accountFees } = props;
-
 	const cardTitle = (
 		<>
 			<FlexItem className={ 'account-details' }>
 				{ __( 'Account details', 'woocommerce-payments' ) }
 			</FlexItem>
 			<FlexBlock className={ 'account-status' }>
-				<StatusChip accountStatus={ accountStatus.status } />
+				<StatusChip
+					accountStatus={ accountStatus.status }
+					poEnabled={ accountStatus.progressiveOnboarding.isEnabled }
+					poComplete={
+						accountStatus.progressiveOnboarding.isComplete
+					}
+				/>
 			</FlexBlock>
 			<FlexItem className={ 'edit-details' }>
 				<Button isLink href={ accountStatus.accountLink }>
@@ -81,6 +86,7 @@ const AccountStatusDetails = ( props ) => {
 			>
 				<PaymentsStatus
 					paymentsEnabled={ accountStatus.paymentsEnabled }
+					accountStatus={ accountStatus.status }
 				/>
 			</AccountStatusItem>
 			<AccountStatusItem
@@ -89,6 +95,11 @@ const AccountStatusDetails = ( props ) => {
 				<DepositsStatus
 					status={ accountStatus.deposits?.status }
 					interval={ accountStatus.deposits?.interval }
+					accountStatus={ accountStatus.status }
+					poEnabled={ accountStatus.progressiveOnboarding.isEnabled }
+					poComplete={
+						accountStatus.progressiveOnboarding.isComplete
+					}
 				/>
 			</AccountStatusItem>
 			{ 0 < accountFees.length && (
