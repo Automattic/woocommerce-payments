@@ -1487,14 +1487,20 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/compat/blocks/class-blocks-data-extractor.php';
 		$blocks_data_extractor = new Blocks_Data_Extractor();
 
+		// This uses the same logic as the Checkout block in hydrate_from_api to get the cart and checkout data.
+		$cart_data = rest_preload_api_request( [], '/wc/store/v1/cart' )['/wc/store/v1/cart']['body'];
+		add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+		$checkout_data = rest_preload_api_request( [], '/wc/store/v1/checkout' )['/wc/store/v1/checkout']['body'];
+		remove_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+
 		$body = [
-			'wcpay_version'   => WCPAY_VERSION_NUMBER,
-			'user_id'         => $user->ID,
-			'customer_id'     => $customer_id,
-			'session_nonce'   => wp_create_nonce( 'wc_store_api' ),
-			'store_api_token' => self::init_store_api_token(),
-			'email'           => $email,
-			'store_data'      => [
+			'wcpay_version'      => WCPAY_VERSION_NUMBER,
+			'user_id'            => $user->ID,
+			'customer_id'        => $customer_id,
+			'session_nonce'      => wp_create_nonce( 'wc_store_api' ),
+			'store_api_token'    => self::init_store_api_token(),
+			'email'              => $email,
+			'store_data'         => [
 				'store_name'                     => get_bloginfo( 'name' ),
 				'store_logo'                     => ! empty( $store_logo ) ? get_rest_url( null, 'wc/v3/payments/file/' . $store_logo ) : '',
 				'custom_message'                 => self::get_gateway()->get_option( 'platform_checkout_custom_message' ),
@@ -1513,7 +1519,11 @@ class WC_Payments {
 				'blocks_data'                    => $blocks_data_extractor->get_data(),
 				'checkout_schema_namespaces'     => $blocks_data_extractor->get_checkout_schema_namespaces(),
 			],
-			'user_session'    => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
+			'user_session'       => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
+			'preloaded_requests' => [
+				'cart'     => $cart_data,
+				'checkout' => $checkout_data,
+			],
 		];
 		$args = [
 			'url'     => WooPay_Utilities::get_woopay_rest_url( 'init' ),

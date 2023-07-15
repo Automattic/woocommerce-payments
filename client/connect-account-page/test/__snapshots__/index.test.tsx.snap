@@ -257,7 +257,7 @@ exports[`ConnectAccountPage should render correctly 1`] = `
               Setup complete!
             </h3>
             <p>
-              You’re ready to start using the features and benefits of Woo Payments.
+              You’re ready to start using the features and benefits of WooPayments.
             </p>
           </div>
         </div>
@@ -600,7 +600,7 @@ exports[`ConnectAccountPage should render correctly with an incentive 1`] = `
               Setup complete!
             </h3>
             <p>
-              You’re ready to start using the features and benefits of Woo Payments.
+              You’re ready to start using the features and benefits of WooPayments.
             </p>
           </div>
         </div>

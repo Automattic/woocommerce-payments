@@ -277,18 +277,11 @@ addFilter(
 	'woocommerce_admin_onboarding_task_list',
 	'woocommerce-payments',
 	( tasks ) => {
-		const {
-			accountStatus,
-			showUpdateDetailsTask,
-			wpcomReconnectUrl,
-			featureFlags: { accountOverviewTaskList },
-		} = wcpaySettings;
+		const { showUpdateDetailsTask, wpcomReconnectUrl } = wcpaySettings;
 
 		const wcPayTasks = getTasks( {
-			accountStatus,
 			showUpdateDetailsTask,
 			wpcomReconnectUrl,
-			isAccountOverviewTasksEnabled: Boolean( accountOverviewTaskList ),
 		} );
 
 		return [ ...tasks, ...wcPayTasks ];

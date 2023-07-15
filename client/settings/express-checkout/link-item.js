@@ -153,7 +153,7 @@ const LinkExpressCheckoutItem = () => {
 												target="_blank"
 												rel="noreferrer"
 												/* eslint-disable-next-line max-len */
-												href="https://woocommerce.com/document/payments/woocommerce-payments-stripe-link/"
+												href="https://woocommerce.com/document/woocommerce-payments/payment-methods/link-by-stripe/"
 											/>
 										),
 									},
