@@ -41,6 +41,13 @@ class WooPay_Adapted_Extensions_Test extends WCPAY_UnitTestCase {
 			}
 		);
 
+		add_action(
+			'woocommerce_blocks_checkout_block_registration',
+			function( $integration_registry ) {
+				$integration_registry->register( new WC_GC_Checkout_Blocks_Integration() );
+			}
+		);
+
 		update_option( 'wc_points_rewards_redeem_points_ratio', '100:1' );
 
 		$this->test_user                 = self::factory()->user->create_and_get();
@@ -102,5 +109,33 @@ class WooPay_Adapted_Extensions_Test extends WCPAY_UnitTestCase {
 		$this->test_user->ID = 0;
 
 		$this->assertEquals( $this->woopay_adapted_extensions->get_points_and_rewards_data( $this->test_user ), $expected );
+	}
+
+	public function test_get_gift_cards_data() {
+		wp_set_current_user( $this->test_user->ID );
+
+		$expected = [
+			'account_orders_link' => add_query_arg( [ 'wc_gc_show_pending_orders' => 'yes' ], wc_get_account_endpoint_url( 'orders' ) ),
+		];
+
+		$this->assertEquals( $this->woopay_adapted_extensions->get_gift_cards_data( $this->test_user ), $expected );
+	}
+
+	public function test_get_gift_cards_data_while_logged_out() {
+		$expected = [
+			'account_orders_link' => add_query_arg( [ 'wc_gc_show_pending_orders' => 'yes' ], wc_get_account_endpoint_url( 'orders' ) ),
+			'should_verify_email' => true,
+		];
+
+		$this->assertEquals( $this->woopay_adapted_extensions->get_gift_cards_data( $this->test_user ), $expected );
+	}
+
+	public function test_get_gift_cards_data_while_logged_out_with_zero_balance() {
+		$expected            = [
+			'account_orders_link' => add_query_arg( [ 'wc_gc_show_pending_orders' => 'yes' ], wc_get_account_endpoint_url( 'orders' ) ),
+		];
+		$this->test_user->ID = 0;
+
+		$this->assertEquals( $this->woopay_adapted_extensions->get_gift_cards_data( $this->test_user ), $expected );
 	}
 }

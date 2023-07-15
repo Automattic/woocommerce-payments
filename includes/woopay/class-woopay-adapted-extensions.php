@@ -112,13 +112,15 @@ class WooPay_Adapted_Extensions {
 	 */
 	public function get_gift_cards_data( $user ) {
 		if (
-			! empty( $this->registered_integrations[ self::POINTS_AND_REWARDS_API ] ) &&
-			! function_exists( 'WC_GC' )
+			empty( $this->registered_integrations[ self::GIFT_CARDS_BLOCKS ] ) ||
+			! function_exists( 'WC_GC' ) ||
+			! property_exists( WC_GC(), 'account' ) ||
+			! method_exists( WC_GC()->account, 'get_balance' )
 		) {
 			return null;
 		}
 
-		$gift_cards_script_data = $this->registered_integrations[ self::POINTS_AND_REWARDS_API ]->get_script_data();
+		$gift_cards_script_data = $this->registered_integrations[ self::GIFT_CARDS_BLOCKS ]->get_script_data();
 
 		if ( ! is_user_logged_in() ) {
 			$gift_cards_balance = WC_GC()->account->get_balance( $user->ID );
