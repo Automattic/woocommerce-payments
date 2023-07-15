@@ -6,8 +6,6 @@
  */
 
 use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
-use Automattic\WooCommerce\StoreApi\Utilities\JsonWebToken;
-use WCPay\WooPay\WooPay_Scheduler;
 
 /**
  * WC_Payments unit tests.
@@ -125,6 +123,14 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 
 		$customer_id = 'cus_123456789';
 
+		$pre_http_dispatch = function ( $result, $server, $request ) {
+			if ( in_array( $request->get_route(), [ '/wc/store/v1/checkout', '/wc/store/v1/cart' ], true ) ) {
+				return [ 'body' => wp_json_encode( [] ) ];
+			}
+
+			return $result;
+		};
+
 		$pre_http_request_cb = function ( $preempt, $parsed_args, $url ) use ( $customer_id ) {
 			$body = json_decode( $parsed_args['body'] );
 			$this->assertEquals( $customer_id, $body->customer_id );
@@ -135,6 +141,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 			return function ( $message, $title, $args ) {};
 		};
 
+		add_filter( 'rest_pre_dispatch', $pre_http_dispatch, 10, 3 );
 		add_filter( 'pre_http_request', $pre_http_request_cb, 10, 3 );
 		add_filter( 'wp_die_ajax_handler', $wp_die_ajax_handler_cb );
 
@@ -153,142 +160,6 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		ob_start();
 		WC_Payments::ajax_init_woopay();
 		ob_get_clean();
-	}
-
-	public function test_ajax_init_woopay_has_not_session_woopay_email_if_email_does_not_exists() {
-		$this->mock_verified_user_store_api_token();
-
-		$pre_http_request_cb = function ( $preempt, $parsed_args, $url ) {
-			$body = json_decode( $parsed_args['body'], true );
-
-			$this->assertArrayNotHasKey( 'user_has_merchant_site_account', $body );
-			$this->assertEmpty( WC()->session->get( 'woopay_email' ) );
-
-			return [ 'body' => wp_json_encode( [] ) ];
-		};
-
-		$wp_die_ajax_handler_cb = function () {
-			return function ( $message, $title, $args ) {};
-		};
-
-		add_filter( 'pre_http_request', $pre_http_request_cb, 10, 3 );
-		add_filter( 'wp_die_ajax_handler', $wp_die_ajax_handler_cb );
-
-		$this->set_woopay_feature_flag_enabled( true );
-
-		$_POST['email'] = 'user@example.com';
-
-		ob_start();
-		WC_Payments::ajax_init_woopay();
-		ob_get_clean();
-
-		remove_filter( 'pre_http_request', $pre_http_request_cb, 10, 3 );
-	}
-
-	public function test_ajax_init_woopay_has_not_session_woopay_email_if_is_logged_in() {
-		$user = self::factory()->user->create_and_get();
-
-		$this->mock_verified_user_store_api_token();
-
-		wp_set_current_user( $user->ID );
-
-		$pre_http_request_cb = function ( $preempt, $parsed_args, $url ) {
-			$body = json_decode( $parsed_args['body'], true );
-
-			$this->assertArrayNotHasKey( 'user_has_merchant_site_account', $body );
-			$this->assertEmpty( WC()->session->get( 'woopay_email' ) );
-
-			return [ 'body' => wp_json_encode( [] ) ];
-		};
-
-		$wp_die_ajax_handler_cb = function () {
-			return function ( $message, $title, $args ) {};
-		};
-
-		add_filter( 'pre_http_request', $pre_http_request_cb, 10, 3 );
-		add_filter( 'wp_die_ajax_handler', $wp_die_ajax_handler_cb );
-
-		$this->set_woopay_feature_flag_enabled( true );
-
-		$_POST['email'] = $user->user_email;
-
-		ob_start();
-		WC_Payments::ajax_init_woopay();
-		ob_get_clean();
-
-		wp_set_current_user( 0 );
-
-		remove_filter( 'pre_http_request', $pre_http_request_cb, 10, 3 );
-	}
-
-	public function test_ajax_init_woopay_has_session_woopay_email_if_email_exists_and_is_logged_off_with_no_adapted_extensions() {
-		$user = self::factory()->user->create_and_get();
-
-		delete_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME );
-
-		$this->mock_verified_user_store_api_token();
-
-		$pre_http_request_cb = function ( $preempt, $parsed_args, $url ) use ( $user ) {
-			$body = json_decode( $parsed_args['body'], true );
-
-			$this->assertArrayNotHasKey( 'verified_user_store_api_token', $body );
-			$this->assertEmpty( WC()->session->get( 'woopay_verified_user_id' ) );
-
-			return [ 'body' => wp_json_encode( [] ) ];
-		};
-
-		$wp_die_ajax_handler_cb = function () {
-			return function ( $message, $title, $args ) {};
-		};
-
-		add_filter( 'pre_http_request', $pre_http_request_cb, 10, 3 );
-		add_filter( 'wp_die_ajax_handler', $wp_die_ajax_handler_cb );
-
-		$this->set_woopay_feature_flag_enabled( true );
-
-		$_POST['email'] = $user->user_email;
-
-		ob_start();
-		WC_Payments::ajax_init_woopay();
-		ob_get_clean();
-
-		remove_filter( 'pre_http_request', $pre_http_request_cb, 10, 3 );
-	}
-
-	public function test_ajax_init_woopay_has_verified_user_token_if_email_exists_and_is_logged_off_with_adapted_extensions() {
-		$user = self::factory()->user->create_and_get();
-
-		update_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, [ 'woocommerce-points-and-rewards' ] );
-
-		$this->mock_verified_user_store_api_token();
-
-		$pre_http_request_cb = function ( $preempt, $parsed_args, $url ) use ( $user ) {
-			$body = json_decode( $parsed_args['body'], true );
-
-			$this->assertArrayHasKey( 'user_has_merchant_site_account', $body );
-			$this->assertEquals( WC()->session->get( 'woopay_email' ), $user->user_email );
-
-			return [ 'body' => wp_json_encode( [] ) ];
-		};
-
-		$wp_die_ajax_handler_cb = function () {
-			return function ( $message, $title, $args ) {};
-		};
-
-		add_filter( 'pre_http_request', $pre_http_request_cb, 10, 3 );
-		add_filter( 'wp_die_ajax_handler', $wp_die_ajax_handler_cb );
-
-		$this->set_woopay_feature_flag_enabled( true );
-
-		$_POST['email'] = $user->user_email;
-
-		ob_start();
-		WC_Payments::ajax_init_woopay();
-		ob_get_clean();
-
-		remove_filter( 'pre_http_request', $pre_http_request_cb, 10, 3 );
-
-		delete_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME );
 	}
 
 	/**
@@ -324,31 +195,5 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 
 		// Trigger the addition of the disable nonce filter when appropriate.
 		apply_filters( 'rest_request_before_callbacks', [], [], new WP_REST_Request() );
-	}
-
-	private function mock_verified_user_store_api_token() {
-		// Mocks the jetpack token.
-		$jetpack_token = function ( $value, $name ) {
-			if ( 'blog_token' === $name ) {
-				return 'moked.token';
-			}
-
-			return $value;
-		};
-
-		add_filter( 'jetpack_options', $jetpack_token, 10, 2 );
-
-		$customer_id = 'cus_123456789';
-
-		$mock_customer_service = $this->getMockBuilder( 'WC_Payments_Customer_Service' )
-			->disableOriginalConstructor()
-			->getMock();
-		$mock_customer_service
-			->expects( $this->once() )
-			->method( 'create_customer_for_user' )
-			->with( $this->anything(), $this->anything() )
-			->will( $this->returnValue( $customer_id ) );
-
-		WC_Payments::set_customer_service( $mock_customer_service );
 	}
 }

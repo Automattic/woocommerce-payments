@@ -33,8 +33,9 @@ require_once __DIR__ . '/includes/woopay/class-woopay-session.php';
  * Plugin activation hook.
  */
 function wcpay_activated() {
-	// Do not take any action if activated in a REST request (via wc-admin).
+	// When WooCommerce Payments is installed and activated from the WooCommerce onboarding wizard (via wc-admin REST request), check if the site is eligible for subscriptions.
 	if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+		update_option( 'wcpay_check_subscriptions_eligibility_after_onboarding', true );
 		return;
 	}
 
@@ -302,7 +303,7 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 			__( 'We’ve detected that you have duplicate sites connected to %s. When Safe Mode is active, payments will not be interrupted. However, some features may not be available until you’ve resolved this issue below. Safe Mode is most frequently activated when you’re transferring your site from one domain to another, or creating a staging site for testing. A site adminstrator can resolve this issue. <safeModeLink>Learn more</safeModeLink>', 'woocommerce-payments' ),
 			'WooPayments'
 		),
-		'supportURL'                => 'https://woocommerce.com/document/payments/faq/safe-mode/',
+		'supportURL'                => 'https://woocommerce.com/document/woocommerce-payments/testing-and-troubleshooting/safe-mode/',
 		'adminBarSafeModeLabel'     => sprintf(
 			/* translators: %s: WooPayments. */
 			__( '%s Safe Mode', 'woocommerce-payments' ),
@@ -313,7 +314,7 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 			__( "<strong>Notice:</strong> It appears that your 'wp-config.php' file might be using dynamic site URL values. Dynamic site URLs could cause %s to enter Safe Mode. <dynamicSiteUrlSupportLink>Learn how to set a static site URL.</dynamicSiteUrlSupportLink>", 'woocommerce-payments' ),
 			'WooPayments'
 		),
-		'dynamicSiteUrlSupportLink' => 'https://woocommerce.com/document/payments/faq/safe-mode/#dynamic-site-urls',
+		'dynamicSiteUrlSupportLink' => 'https://woocommerce.com/document/woocommerce-payments/testing-and-troubleshooting/safe-mode/#dynamic-site-urls',
 	];
 
 	$urls = Automattic\Jetpack\Identity_Crisis::get_mismatched_urls();

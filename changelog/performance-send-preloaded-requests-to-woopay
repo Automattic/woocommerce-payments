@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Sending preloaded_requests to WooPay to avoid waiting for external requests
