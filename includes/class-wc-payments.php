@@ -1534,7 +1534,7 @@ class WC_Payments {
 			WC()->customer->set_billing_email( $email );
 			WC()->customer->save();
 
-			$body['adapted_extensions'] = WooPay_Adapted_Extensions::get_adapted_extensions_data( $email );
+			$body['adapted_extensions'] = ( new WooPay_Adapted_Extensions() )->get_adapted_extensions_data( $email );
 		}
 
 		$args = [
