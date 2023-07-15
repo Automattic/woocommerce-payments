@@ -68,7 +68,7 @@ class WooPay_Adapted_Extensions {
 	 */
 	public function get_points_and_rewards_data( $user ) {
 		if (
-			! empty( $this->registered_integrations[ self::POINTS_AND_REWARDS_API ] ) &&
+			empty( $this->registered_integrations[ self::POINTS_AND_REWARDS_API ] ) ||
 			! class_exists( 'WC_Points_Rewards_Manager' ) ||
 			! method_exists( 'WC_Points_Rewards_Manager', 'get_users_points' )
 		) {
