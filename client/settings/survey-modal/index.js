@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { useContext, useEffect } from 'react';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { dispatch } from '@wordpress/data';
 import { Button, RadioControl, TextareaControl } from '@wordpress/components';
 
@@ -94,9 +94,13 @@ const SurveyModalBody = ( { options, surveyQuestion } ) => {
 			) }
 
 			<p className="survey-bottom-disclaimer">
-				{ __(
-					'Feedback will be sent anonymously to the WooCommerce Payments development team.',
-					'woocommerce-payments'
+				{ sprintf(
+					/* translators: %s: WooPayments */
+					__(
+						'Feedback will be sent anonymously to the %s development team.',
+						'woocommerce-payments'
+					),
+					'WooPayments'
 				) }
 			</p>
 		</>

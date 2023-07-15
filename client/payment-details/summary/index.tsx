@@ -19,9 +19,10 @@ import {
 	getChargeChannel,
 	isOnHoldByFraudTools,
 } from 'utils/charge';
+import isValueTruthy from 'utils/is-value-truthy';
 import PaymentStatusChip from 'components/payment-status-chip';
 import PaymentMethodDetails from 'components/payment-method-details';
-import HorizontalList from 'components/horizontal-list';
+import { HorizontalList, HorizontalListItem } from 'components/horizontal-list';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import riskMappings from 'components/risk-level/strings';
 import OrderLink from 'components/order-link';
@@ -69,7 +70,7 @@ const getTapToPayChannel = ( platform: string ) => {
 	}
 
 	if ( platform === 'android' ) {
-		__( 'Tap to Pay on Android', 'woocommerce-payments' );
+		return __( 'Tap to Pay on Android', 'woocommerce-payments' );
 	}
 
 	return __( 'Tap to Pay', 'woocommerce-payments' );
@@ -81,7 +82,7 @@ const composePaymentSummaryItems = ( {
 }: {
 	charge: Charge;
 	metadata: Record< string, any >;
-} ) =>
+} ): HorizontalListItem[] =>
 	[
 		{
 			title: __( 'Date', 'woocommerce-payments' ),
@@ -137,7 +138,7 @@ const composePaymentSummaryItems = ( {
 				? riskMappings[ charge.outcome.risk_level ]
 				: '–',
 		},
-	].filter( Boolean );
+	].filter( isValueTruthy );
 
 const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	charge = {} as Charge,

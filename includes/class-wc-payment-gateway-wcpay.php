@@ -41,7 +41,7 @@ use WCPay\Session_Rate_Limiter;
 use WCPay\Tracker;
 
 /**
- * Gateway class for WooCommerce Payments
+ * Gateway class for WooPayments
  */
 class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
@@ -205,13 +205,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->id                 = static::GATEWAY_ID;
 		$this->icon               = plugins_url( 'assets/images/payment-methods/cc.svg', WCPAY_PLUGIN_FILE );
 		$this->has_fields         = true;
-		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
+		$this->method_title       = 'WooPayments';
 		$this->method_description = WC_Payments_Utils::esc_interpolated_html(
-			/* translators: tosLink: Link to terms of service page, privacyLink: Link to privacy policy page */
-			__(
-				'WooCommerce Payments gives your store flexibility to accept credit cards, debit cards, and Apple Pay. Enable popular local payment methods and other digital wallets like Google Pay to give customers even more choice.<br/><br/>
-			By using WooCommerce Payments you agree to be bound by our <tosLink>Terms of Service</tosLink>  and acknowledge that you have read our <privacyLink>Privacy Policy</privacyLink>',
-				'woocommerce-payments'
+			sprintf(
+				/* translators: %1$s: WooPayments, tosLink: Link to terms of service page, privacyLink: Link to privacy policy page */
+				__(
+					'%1$s gives your store flexibility to accept credit cards, debit cards, and Apple Pay. Enable popular local payment methods and other digital wallets like Google Pay to give customers even more choice.<br/><br/>
+			By using %1$s you agree to be bound by our <tosLink>Terms of Service</tosLink>  and acknowledge that you have read our <privacyLink>Privacy Policy</privacyLink>',
+					'woocommerce-payments'
+				),
+				'WooPayments'
 			),
 			[
 				'br'          => '<br/>',
@@ -230,7 +233,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->form_fields = [
 			'enabled'                          => [
 				'title'       => __( 'Enable/disable', 'woocommerce-payments' ),
-				'label'       => __( 'Enable WooCommerce Payments', 'woocommerce-payments' ),
+				'label'       => sprintf(
+					/* translators: %s: WooPayments */
+					__( 'Enable %s', 'woocommerce-payments' ),
+					'WooPayments'
+				),
 				'type'        => 'checkbox',
 				'description' => '',
 				'default'     => 'no',
@@ -609,7 +616,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Admin Panel Options.
 	 */
 	public function admin_options() {
-		// Add notices to the WooCommerce Payments settings page.
+		// Add notices to the WooPayments settings page.
 		do_action( 'woocommerce_woocommerce_payments_admin_notices' );
 
 		$this->output_payments_settings_screen();
@@ -664,7 +671,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if (
 			WC_Payments_Features::is_woopay_eligible() &&
 			'yes' === $this->get_option( 'platform_checkout', 'no' ) &&
-			! ( WC_Payments_Features::is_upe_legacy_enabled() && ! WC_Payments_Features::is_upe_split_enabled() ) &&
+			! $this->is_upe_incompatible_with_woopay() &&
 			( is_checkout() || has_block( 'woocommerce/checkout' ) ) &&
 			! is_wc_endpoint_url( 'order-pay' ) &&
 			WC()->cart instanceof WC_Cart &&
@@ -675,6 +682,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return false;
+	}
+
+	/**
+	 * The legacy UPE is incompatible with WooPay, whereas split UPE and deferred intent UPE are compatible.
+	 * This method checks if there's incompatibility between WooPay and currently enabled UPE settings, applying the rule above.
+	 *
+	 * $return bool - true if UPE is incompatible with WooPay, false otherwise.
+	 */
+	private function is_upe_incompatible_with_woopay() {
+		return WC_Payments_Features::is_upe_legacy_enabled() && ! ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() );
 	}
 
 	/**
@@ -864,7 +881,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	protected function prepare_payment_information( $order ) {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$payment_information = Payment_Information::from_payment_request( $_POST, $order, Payment_Type::SINGLE(), Payment_Initiated_By::CUSTOMER(), $this->get_capture_type() );
+		$payment_information = Payment_Information::from_payment_request( $_POST, $order, Payment_Type::SINGLE(), Payment_Initiated_By::CUSTOMER(), $this->get_capture_type(), $this->get_payment_method_to_use_for_intent() );
 		$payment_information = $this->maybe_prepare_subscription_payment_information( $payment_information, $order->get_id() );
 
 		if ( ! empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-payment-method' ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -1071,21 +1088,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
 			}
 
-			$upe_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
-
-			if ( ! empty( $upe_payment_method ) && 'woocommerce_payments' !== $upe_payment_method ) {
-				$payment_methods = [ str_replace( 'woocommerce_payments_', '', $upe_payment_method ) ];
-				if ( WC_Payments_Features::is_upe_deferred_intent_enabled() &&
-					in_array( Payment_Method::CARD, $payment_methods, true ) &&
-					in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true ) ) {
-					$payment_methods[] = Payment_Method::LINK;
-				}
-			} elseif ( WC_Payments_Features::is_upe_split_enabled() ) {
-				$payment_methods = [ 'card' ];
-			} else {
-				$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
-			}
-
+			$payment_methods = $this->get_payment_methods_from_request();
 			// The sanitize_user call here is deliberate: it seems the most appropriate sanitization function
 			// for a string that will only contain latin alphanumeric characters and underscores.
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -1372,6 +1375,43 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Get the payment method chosen by the customer for the payment processing.
+	 * This payment method is needed in case of the deferred intent creation flow only, because this is the only time when the current gateway might process payments other than of the card type.
+	 * Payment method is only one in case of the deferred intent creation flow, hence the first element of the array is returned.
+	 *
+	 * @return string|null Payment method to use for the intent.
+	 */
+	public function get_payment_method_to_use_for_intent() {
+		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+			return $this->get_payment_methods_from_request()[0];
+		}
+	}
+
+	/**
+	 * Get the payment methods used in the request.
+	 *
+	 * @return array List of payment methods.
+	 */
+	private function get_payment_methods_from_request() {
+		$upe_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+
+		if ( ! empty( $upe_payment_method ) && 'woocommerce_payments' !== $upe_payment_method ) {
+			$payment_methods = [ str_replace( 'woocommerce_payments_', '', $upe_payment_method ) ];
+			if ( WC_Payments_Features::is_upe_deferred_intent_enabled() &&
+				in_array( Payment_Method::CARD, $payment_methods, true ) &&
+				in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true ) ) {
+				$payment_methods[] = Payment_Method::LINK;
+			}
+		} elseif ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+			$payment_methods = [ 'card' ];
+		} else {
+			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
+		}
+
+		return $payment_methods;
+	}
+
+	/**
 	 * By default this function does not do anything. But it can be overriden by child classes.
 	 * It is used to set a formatted readable payment method title for order,
 	 * using payment method details from accompanying charge.
@@ -1595,25 +1635,27 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( empty( $reason ) ) {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the successfully charged amount, %2: refund id */
-					__( 'A refund of %1$s was successfully processed using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+					/* translators: %1: the successfully charged amount, %2: WooPayments, %3: refund id */
+					__( 'A refund of %1$s was successfully processed using %2$s (<code>%3$s</code>).', 'woocommerce-payments' ),
 					[
 						'code' => '<code>',
 					]
 				),
 				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
+				'WooPayments',
 				$refund['id']
 			);
 		} else {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the successfully charged amount, %2: refund id, %3: reason */
-					__( 'A refund of %1$s was successfully processed using WooCommerce Payments. Reason: %2$s. (<code>%3$s</code>)', 'woocommerce-payments' ),
+					/* translators: %1: the successfully charged amount, %2: WooPayments, %3: reason, %4: refund id */
+					__( 'A refund of %1$s was successfully processed using %2$s. Reason: %3$s. (<code>%4$s</code>)', 'woocommerce-payments' ),
 					[
 						'code' => '<code>',
 					]
 				),
 				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
+				'WooPayments',
 				$reason,
 				$refund['id']
 			);
@@ -2791,7 +2833,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
 			if ( ! isset( $_POST['wcpay-setup-intent'] ) ) {
 				throw new Add_Payment_Method_Exception(
-					__( 'A WooCommerce Payments payment method was not provided', 'woocommerce-payments' ),
+					sprintf(
+						/* translators: %s: WooPayments */
+						__( 'A %s payment method was not provided', 'woocommerce-payments' ),
+						'WooPayments'
+					),
 					'payment_method_intent_not_provided'
 				);
 			}
@@ -3321,7 +3367,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Whether the current page is the WooCommerce Payments settings page.
+	 * Whether the current page is the WooPayments settings page.
 	 *
 	 * @deprecated 5.0.0
 	 *
