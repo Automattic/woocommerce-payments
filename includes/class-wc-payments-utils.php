@@ -697,6 +697,19 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Helper function to check whether the user is either in the PO experiment, or has manually enabled PO via the dev tools.
+	 *
+	 * @return boolean
+	 */
+	public static function should_use_progressive_onboarding_flow(): bool {
+		if ( self::is_in_progressive_onboarding_treatment_mode() || WC_Payments_Features::is_progressive_onboarding_enabled() ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Check to see if the current user is in progressive onboarding experiment treatment mode.
 	 *
 	 * @return bool

@@ -22,28 +22,35 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$this->payments_order_success_page = new WC_Payments_Order_Success_Page();
 	}
 
-	public function test_show_woopay_thankyou_notice_empty_order() {
-		$result = $this->payments_order_success_page->show_woopay_thankyou_notice( 'Thank you', null );
+	public function test_show_woopay_payment_method_name_empty_order() {
+		$method_name = 'Credit card';
+		$result      = $this->payments_order_success_page->show_woopay_payment_method_name( $method_name, null );
 
-		$this->assertSame( 'Thank you', $result );
+		$this->assertSame( $method_name, $result );
 	}
 
-	public function test_show_woopay_thankyou_notice_order_without_woopay_meta() {
+	public function test_show_woopay_payment_method_name_without_woopay_meta() {
 		$order = WC_Helper_Order::create_order();
 		$order->save();
 
-		$result = $this->payments_order_success_page->show_woopay_thankyou_notice( 'Thank you', $order );
+		$method_name = 'Credit card';
+		$result      = $this->payments_order_success_page->show_woopay_payment_method_name( $method_name, $order );
 
-		$this->assertSame( 'Thank you', $result );
+		$this->assertSame( $method_name, $result );
 	}
 
-	public function test_show_woopay_thankyou_notice_order_with_woopay_meta() {
+	public function test_show_woopay_payment_method_name_order_with_woopay_meta() {
 		$order = WC_Helper_Order::create_order();
 		$order->add_meta_data( 'is_woopay', true );
+		$order->add_meta_data( 'last4', '1234' );
 		$order->save();
 
-		$result = $this->payments_order_success_page->show_woopay_thankyou_notice( 'Thank you', $order );
+		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
+		$result = $this->payments_order_success_page->show_woopay_payment_method_name( 'Credit card', $order );
+		remove_filter( 'woocommerce_is_order_received_page', '__return_true' );
 
-		$this->assertSame( '<div class="thankyou-notice-woopay">Thank you! We’ve received your order.</div>', $result );
+		$this->assertStringContainsString( 'wc-payment-gateway-method-name-woopay-wrapper', $result );
+		$this->assertStringContainsString( 'img alt="WooPay"', $result );
+		$this->assertStringContainsString( sprintf( 'Card ending in %s', $order->get_meta( 'last4' ) ), $result );
 	}
 }
