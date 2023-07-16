@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Remove duplicated payment method on thank you page when using WooPay.
