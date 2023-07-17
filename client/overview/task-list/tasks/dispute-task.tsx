@@ -9,7 +9,7 @@ import { getHistory } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import type { TaskItemProps } from './types';
+import type { TaskItemProps } from '../types';
 import type { CachedDispute } from 'wcpay/types/disputes';
 import { formatCurrency } from 'wcpay/utils/currency';
 import { getAdminUrl } from 'wcpay/utils';
@@ -119,6 +119,7 @@ export const getDisputeResolutionTask = (
 		level: 1,
 		completed: false,
 		expanded: true,
+		expandable: true,
 		isDismissable: false,
 		showActionButton: true,
 		actionLabel: __( 'Respond now', 'woocommerce-payments' ),

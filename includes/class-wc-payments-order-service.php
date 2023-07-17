@@ -216,7 +216,9 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Updates an order to cancelled status, while adding a note with a link to the transaction.
+	 * Update an order to failed status, and add note with a link to the transaction.
+	 *
+	 * Context - when a Payment Intent expires. Changing the status to failed will enable the buyer to re-attempt payment.
 	 *
 	 * @param WC_Order $order         Order object.
 	 * @param string   $intent_id     The ID of the intent associated with this order.
@@ -240,7 +242,7 @@ class WC_Payments_Order_Service {
 			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::REVIEW_EXPIRED );
 		}
 
-		$this->update_order_status( $order, Order_Status::CANCELLED );
+		$this->update_order_status( $order, Order_Status::FAILED );
 		$order->add_order_note( $note );
 		$this->complete_order_processing( $order, $intent_status );
 	}
