@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Icon } from '@wordpress/icons';
 import { CheckboxControl, VisuallyHidden } from '@wordpress/components';
 import WooIcon from 'assets/images/payment-methods/woo.svg?asset';
 import interpolateComponents from '@automattic/interpolate-components';
@@ -19,7 +18,8 @@ import {
 	useWooPayShowIncompatibilityNotice,
 } from 'wcpay/data';
 import WCPaySettingsContext from '../wcpay-settings-context';
-import Warning from 'components/icons/warning';
+import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
+import WooPayIncompatibilityNotice from '../settings-warnings/incompatibility-notice';
 
 const WooPayExpressCheckoutItem = () => {
 	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
@@ -51,7 +51,15 @@ const WooPayExpressCheckoutItem = () => {
 									) }
 								>
 									<div className="loadable-checkbox__icon">
-										<Icon icon={ Warning } />
+										<NoticeOutlineIcon
+											style={ {
+												color: '#F0B849',
+												fill: 'currentColor',
+												marginBottom: '-5px',
+												marginRight: '16px',
+											} }
+											size={ 20 }
+										/>
 										<div
 											className="loadable-checkbox__icon-warning"
 											data-testid="loadable-checkbox-icon-warning"
@@ -144,30 +152,7 @@ const WooPayExpressCheckoutItem = () => {
 						</div>
 					</div>
 					{ showIncompatibilityNotice && (
-						<div className="express-checkout__row express-checkout__row-warning">
-							<Icon icon={ Warning } />
-							<p>
-								{ interpolateComponents( {
-									mixedString: __(
-										/* eslint-disable-next-line max-len */
-										'One or more of your extensions are incompatible with WooPay.' +
-											' ' +
-											'{{learnMoreLink}}Learn More{{/learnMoreLink}}',
-										'woocommerce-payments'
-									),
-									components: {
-										learnMoreLink: (
-											// eslint-disable-next-line jsx-a11y/anchor-has-content
-											<a
-												target="_blank"
-												rel="noreferrer"
-												href="https://woocommerce.com/document/woopay-merchant-documentation/#compatibility"
-											/>
-										),
-									},
-								} ) }
-							</p>
-						</div>
+						<WooPayIncompatibilityNotice />
 					) }
 				</li>
 			) }
