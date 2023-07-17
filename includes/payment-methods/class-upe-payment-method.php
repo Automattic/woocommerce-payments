@@ -64,10 +64,11 @@ abstract class UPE_Payment_Method {
 	/**
 	 * Should payment method be restricted to only domestic payments.
 	 * E.g. only to Stripe's connected account currency.
+	 * gs
 	 *
 	 * @var boolean
 	 */
-	protected $accept_only_domestic_currency = false;
+	protected $accept_only_domestic_payment = false;
 
 	/**
 	 * Represent payment total limitations for the payment method (per-currency).
@@ -178,9 +179,9 @@ abstract class UPE_Payment_Method {
 	public function is_currency_valid( $order_id = null ) {
 		$current_store_currency = $this->get_currency( $order_id );
 
-		if ( $this->accept_only_domestic_currency ) {
-			$default_currency = \WC_Payments::get_account_service()->get_account_default_currency();
-			if ( strtolower( $current_store_currency ) !== $default_currency ) {
+		if ( $this->accept_only_domestic_payment ) {
+			$default_merchant_currency = \WC_Payments::get_account_service()->get_account_default_currency();
+			if ( strtolower( $current_store_currency ) !== $default_merchant_currency ) {
 				return false;
 			}
 		}
