@@ -68,18 +68,23 @@ export default {
 		),
 	},
 	infoModal: {
-		title: __(
-			'Verifying your information with Woo Payments',
-			'woocommerce-payments'
+		title: sprintf(
+			/* translators: %s: WooPayments */
+			__( 'Verifying your information with %s', 'woocommerce-payments' ),
+			'WooPayments'
 		),
 		whyWeAsk: {
 			heading: __(
 				'Why we ask for personal financial information',
 				'woocommerce-payments'
 			),
-			description: __(
-				"As you continue the process of signing up for Woo Payments, we'll ask for information about your business, including the business owner's date of birth and tax ID number. We know you may wonder why we ask for this information, and how it will be used. The “Know Your Customer” process, explained below, helps us provide a safe, ethical environment for all financial transactions.",
-				'woocommerce-payments'
+			description: sprintf(
+				/* translators: %s: WooPayments */
+				__(
+					"As you continue the process of signing up for %s, we'll ask for information about your business, including the business owner's date of birth and tax ID number. We know you may wonder why we ask for this information, and how it will be used. The “Know Your Customer” process, explained below, helps us provide a safe, ethical environment for all financial transactions.",
+					'woocommerce-payments'
+				),
+				'WooPayments'
 			),
 		},
 		whatIsKyc: {
@@ -111,19 +116,28 @@ export default {
 				'What else should I keep in mind while completing this process?',
 				'woocommerce-payments'
 			),
-			description: __(
-				"If you're setting up Woo Payments for someone else, it's best to have that person complete the account creation process. As you can see above, we ask for very specific information about the business owner - and you might not have all the details at hand. It's not always possible to change account information once it's been saved, especially if the site accepts live transactions before the correct account information is entered.",
-				'woocommerce-payments'
+			description: sprintf(
+				/* translators: %s: WooPayments */
+				__(
+					"If you're setting up %s for someone else, it's best to have that person complete the account creation process. As you can see above, we ask for very specific information about the business owner - and you might not have all the details at hand. It's not always possible to change account information once it's been saved, especially if the site accepts live transactions before the correct account information is entered.",
+					'woocommerce-payments'
+				),
+				'WooPayments'
 			),
 		},
 		isMyDataSafe: {
-			heading: __(
-				'Is my data safe with WooCommerce?',
-				'woocommerce-payments'
+			heading: sprintf(
+				/* translators: %s: WooPayments */
+				__( 'Is my data safe with %s?', 'woocommerce-payments' ),
+				'WooPayments'
 			),
-			description: __(
-				'We take every step required to safeguard your personal data. Woo Payments is built in partnership with Stripe to store your data in a safe and secure manner.',
-				'woocommerce-payments'
+			description: sprintf(
+				/* translators: %s: WooPayments */
+				__(
+					'We take every step required to safeguard your personal data. %s is built in partnership with Stripe to store your data in a safe and secure manner.',
+					'woocommerce-payments'
+				),
+				'WooPayments'
 			),
 		},
 		howQuickly: {
@@ -198,8 +212,13 @@ export default {
 	},
 	step3: {
 		heading: __( 'Setup complete!', 'woocommerce-payments' ),
-		description: __(
-			'You’re ready to start using the features and benefits of Woo Payments.'
+		description: sprintf(
+			/* translators: %s: WooPayments */
+			__(
+				'You’re ready to start using the features and benefits of %s.',
+				'woocommerce-payments'
+			),
+			'WooPayments'
 		),
 	},
 	onboardingDisabled: __(
