@@ -155,6 +155,12 @@ class WooPay_Session {
 	 * @param \WC_Order $order The order being updated.
 	 */
 	public static function remove_order_customer_id_on_requests_with_verified_email( $order ) {
+		$woopay_verified_email_address = self::get_woopay_verified_email_address();
+
+		if ( null === $woopay_verified_email_address ) {
+			return;
+		}
+
 		$woopay_util                     = new WooPay_Utilities();
 		$has_adapted_extension_installed = $woopay_util->has_adapted_extension_installed();
 
@@ -170,8 +176,7 @@ class WooPay_Session {
 
 		// Guest users user_id on the cart token payload looks like "t_hash" and the order
 		// customer id is 0, logged in users is the real user id in both cases.
-		$user_is_logged_in             = $payload->user_id === $order->get_customer_id();
-		$woopay_verified_email_address = self::get_woopay_verified_email_address();
+		$user_is_logged_in = $payload->user_id === $order->get_customer_id();
 
 		if ( ! $user_is_logged_in && $woopay_verified_email_address === $order->get_billing_email() ) {
 			$order->set_customer_id( 0 );
