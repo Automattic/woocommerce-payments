@@ -54,8 +54,8 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 		$is_payment_request_enabled = 'yes' === $this->gateway->get_option( 'payment_request' );
 
 		if ( $is_woopay_enabled || $is_payment_request_enabled ) {
-			add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_express_checkout_buttons' ], 1 );
-			add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_express_checkout_buttons' ], 1 );
+			add_action( 'woocommerce_after_add_to_cart_button', [ $this, 'display_express_checkout_buttons' ], 1 );
+			add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_express_checkout_buttons' ], 21 );
 			add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_express_checkout_buttons' ], 1 );
 
 			if ( $is_payment_request_enabled ) {
@@ -71,8 +71,14 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 * @return void
 	 */
 	public function display_express_checkout_buttons() {
-		$this->platform_checkout_button_handler->display_woopay_button_html();
-		$this->payment_request_button_handler->display_payment_request_button_html();
+		?>
+		<div class='wcpay-payment-request-wrapper' >
+		<?php
+			$this->platform_checkout_button_handler->display_woopay_button_html();
+			$this->payment_request_button_handler->display_payment_request_button_html();
+		?>
+		</div >
+		<?php
 	}
 
 	/**

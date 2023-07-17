@@ -1,0 +1,13 @@
+.single_add_to_cart_button.button {
+	margin-top: 1.5em;
+	width: 100%;
+}
+
+.wcpay-payment-request-wrapper {
+	margin-top: 1.5em;
+}
+
+.woocommerce-checkout .wcpay-payment-request-wrapper,
+.wcpay-payment-request-wrapper > div:not( :last-child ) {
+	margin-bottom: 1.5em;
+}

@@ -146,6 +146,12 @@ class WC_Payments_WooPay_Button_Handler {
 		}
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_WOOPAY_EXPRESS_BUTTON', 'dist/woopay-express-button' );
+		wp_enqueue_style(
+			'WCPAY_WOOPAY_EXPRESS_BUTTON',
+			plugins_url( 'dist/woopay-express-button.css', WCPAY_PLUGIN_FILE ),
+			[],
+			'1.0'
+		);
 
 		$wcpay_config = rawurlencode( wp_json_encode( WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() ) );
 
@@ -568,11 +574,9 @@ class WC_Payments_WooPay_Button_Handler {
 		}
 
 		?>
-		<div class="wcpay-payment-request-wrapper" style="clear:both;padding-top:1.5em;">
-			<div id="wcpay-woopay-button" data-product_page=<?php echo esc_attr( $this->is_product() ); ?>>
+		<div id="wcpay-woopay-button" data-product_page=<?php echo esc_attr( $this->is_product() ); ?>>
 				<?php // The WooPay express checkout button React component will go here. ?>
 			</div>
-		</div>
 		<?php
 	}
 
