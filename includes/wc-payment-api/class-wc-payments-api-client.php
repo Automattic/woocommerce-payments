@@ -225,6 +225,23 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Create a payment intent.
+	 *
+	 * @param array $request data about the intent.
+	 *
+	 * @return array Data of the created intent.
+	 *
+	 * @throws API_Exception Error creating intent.
+	 */
+	public function create_intent( $request ) {
+		return $this->request(
+			$request->get_params(),
+			self::INTENTIONS_API,
+			self::POST
+		);
+	}
+
+	/**
 	 * Fetch a setup intent details.
 	 *
 	 * @param string $setup_intent_id ID of the setup intent.

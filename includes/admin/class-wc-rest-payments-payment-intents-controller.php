@@ -34,6 +34,15 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base,
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'post_payment_intent' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
 	}
 
 	/**
@@ -46,4 +55,14 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 
 		return $this->forward_request( 'get_intent', [ $payment_intent_id ] );
 	}
+
+	/**
+	 * Create a payment intent.
+	 *
+	 * @param WP_REST_Request $request data about the request.
+	 */
+	public function post_payment_intent( $request ) {
+		return $this->forward_request( 'create_intent', [ $request ] );
+	}
+
 }
