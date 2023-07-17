@@ -94,7 +94,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 6.2.0 - 2023-07-19 =
+= 6.2.0-test-3 - unreleased =
 * Add - Add Android option in Device type advanced filter
 * Add - Add dispute notice to the WooCommerce order screen to highlight disputes awaiting a response.
 * Add - Added flag to allow us to remotely set if WooPay should be enabled or not for new merchants.
