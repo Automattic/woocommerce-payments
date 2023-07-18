@@ -68,7 +68,14 @@ class WC_Payments_Invoice_Service {
 		$this->payments_api_client = $payments_api_client;
 		$this->product_service     = $product_service;
 		$this->order_service       = $order_service;
+	}
 
+	/**
+	 * Initializes this class's WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		/**
 		 * When a store is in staging mode we don't want any order status chagnes to fire off corrisponding invoice requests to the server.
 		 *

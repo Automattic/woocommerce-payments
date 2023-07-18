@@ -36,7 +36,14 @@ class WooPay_Order_Status_Sync {
 	public function __construct( WC_Payments_API_Client $payments_api_client ) {
 
 		$this->payments_api_client = $payments_api_client;
+	}
 
+	/**
+	 * Initializes this class's WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		add_filter( 'woocommerce_webhook_topic_hooks', [ __CLASS__, 'add_topics' ], 20, 2 );
 		add_filter( 'woocommerce_webhook_payload', [ __CLASS__, 'create_payload' ], 10, 4 );
 		add_filter( 'woocommerce_valid_webhook_resources', [ __CLASS__, 'add_resource' ], 10, 1 );

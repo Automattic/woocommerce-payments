@@ -26,7 +26,14 @@ class WooPay_Save_User {
 	 */
 	public function __construct() {
 		$this->woopay_util = new WooPay_Utilities();
+	}
 
+	/**
+	 * Initializes this class's WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_checkout_page_scripts' ] );
 		add_filter( 'wcpay_metadata_from_order', [ $this, 'maybe_add_userdata_to_metadata' ], 10, 2 );
 		add_action( 'woocommerce_payment_complete', [ $this, 'maybe_clear_session_key' ], 10, 2 );

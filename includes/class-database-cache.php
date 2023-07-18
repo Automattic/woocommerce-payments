@@ -69,7 +69,14 @@ class Database_Cache {
 	 */
 	public function __construct() {
 		$this->refresh_disabled = false;
+	}
 
+	/**
+	 * Initializes this class's WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		add_action( 'action_scheduler_before_execute', [ $this, 'disable_refresh' ] );
 	}
 

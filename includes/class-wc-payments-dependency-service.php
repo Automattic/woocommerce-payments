@@ -25,10 +25,11 @@ class WC_Payments_Dependency_Service {
 	const DEV_ASSETS_NOT_BUILT  = 'dev_assets_not_built';
 
 	/**
-	 * Constructor.
+	 * Initializes this class's WP hooks.
+	 *
+	 * @return void
 	 */
-	public function __construct() {
-
+	public function init_hooks() {
 		add_filter( 'admin_notices', [ $this, 'display_admin_notices' ] );
 	}
 

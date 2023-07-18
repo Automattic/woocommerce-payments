@@ -299,10 +299,12 @@ class WC_Payments {
 
 		include_once __DIR__ . '/class-database-cache.php';
 		self::$database_cache = new Database_Cache();
+		self::$database_cache->init_hooks();
 
 		include_once __DIR__ . '/class-wc-payments-dependency-service.php';
 
 		self::$dependency_service = new WC_Payments_Dependency_Service();
+		self::$dependency_service->init_hooks();
 
 		if ( false === self::$dependency_service->has_valid_dependencies() ) {
 			return;
@@ -963,6 +965,7 @@ class WC_Payments {
 
 		if ( ! $http_class instanceof WC_Payments_Http_Interface ) {
 			$http_class = new WC_Payments_Http( new Automattic\Jetpack\Connection\Manager( 'woocommerce-payments' ) );
+			$http_class->init_hooks();
 		}
 
 		return $http_class;
@@ -1471,7 +1474,8 @@ class WC_Payments {
 				add_action( 'admin_init', [ $draft_orders, 'install' ] );
 			}
 
-			new WooPay_Order_Status_Sync( self::$api_client );
+			$woopay_order_status_sync = new WooPay_Order_Status_Sync( self::$api_client );
+			$woopay_order_status_sync->init_hooks();
 		}
 	}
 
@@ -1482,9 +1486,11 @@ class WC_Payments {
 	 */
 	public static function maybe_display_express_checkout_buttons() {
 		if ( WC_Payments_Features::are_payments_enabled() ) {
-			$payment_request_button_handler          = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway() );
-			$woopay_button_handler                   = new WC_Payments_WooPay_Button_Handler( self::$account, self::get_gateway(), self::$woopay_util );
+			$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway() );
+			$woopay_button_handler          = new WC_Payments_WooPay_Button_Handler( self::$account, self::get_gateway(), self::$woopay_util );
+
 			$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $payment_request_button_handler, $woopay_button_handler );
+			$express_checkout_button_display_handler->init_hooks();
 		}
 	}
 
@@ -1723,7 +1729,8 @@ class WC_Payments {
 
 			include_once __DIR__ . '/woopay-user/class-woopay-save-user.php';
 
-			new WooPay_Save_User();
+			$woopay_save_user = new WooPay_Save_User();
+			$woopay_save_user->init_hooks();
 		}
 	}
 
