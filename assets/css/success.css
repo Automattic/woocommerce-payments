@@ -1,36 +1,11 @@
-.woocommerce-order .thankyou-notice-woopay {
-	background: #239328;
-	color: #fff;
-	padding: 12px;
-	padding-left: 66px;
-	border-radius: 2px;
-	border-left: 10px solid #156b14;
-	position: relative;
-}
-
-.woocommerce-order .thankyou-notice-woopay::before {
-	content: url( '../images/check-circle.svg' );
-	position: absolute;
-	left: 32px;
-	width: 24px;
-	top: 13px;
-}
-
 .wc-payment-gateway-method-name-woopay-wrapper {
 	display: flex;
 	align-items: center;
+	flex-wrap: wrap;
+	line-height: 1;
 }
 
 .wc-payment-gateway-method-name-woopay-wrapper img {
-	margin-top: 6px;
-	margin-right: 9px;
-}
-
-.woocommerce-order-overview.woocommerce-thankyou-order-details.order_details.woopay {
-	margin-top: -4.324325903em;
-}
-.woocommerce-order-overview.woocommerce-thankyou-order-details.order_details.woopay
-	.woocommerce-order-overview__payment-method.method {
-	border-top: 1px dotted #e3e3e3;
-	padding-top: 1em;
+	margin-right: 0.5rem;
+	padding-top: 4px;
 }

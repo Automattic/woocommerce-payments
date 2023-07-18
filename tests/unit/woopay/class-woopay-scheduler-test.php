@@ -169,9 +169,9 @@ class WooPay_Scheduler_Test extends WP_UnitTestCase {
 			'test-extension-2',
 		];
 
-		$found = $this->scheduler->contains_extensions_in_list( $active_plugins_mock, $incompatible_extensions );
+		$extensions_in_list = $this->scheduler->get_extensions_in_list( $active_plugins_mock, $incompatible_extensions );
 
-		$this->assertTrue( $found );
+		$this->assertEquals( $extensions_in_list, [ 'test-extension-3' ] );
 	}
 
 	/**
@@ -185,8 +185,8 @@ class WooPay_Scheduler_Test extends WP_UnitTestCase {
 
 		$incompatible_extensions = [ 'test-extension-2' ];
 
-		$found = $this->scheduler->contains_extensions_in_list( $active_plugins_mock, $incompatible_extensions );
-		$this->assertFalse( $found );
+		$extensions_in_list = $this->scheduler->get_extensions_in_list( $active_plugins_mock, $incompatible_extensions );
+		$this->assertEquals( $extensions_in_list, [] );
 	}
 
 	/**

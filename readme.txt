@@ -1,4 +1,4 @@
-=== WooCommerce Payments - Fully Integrated Solution Built and Supported by Woo ===
+=== WooPayments - Fully Integrated Solution Built and Supported by Woo ===
 Contributors: woocommerce, automattic
 Tags: payment gateway, payment, apple pay, credit card, google pay
 Requires at least: 6.0
@@ -8,7 +8,7 @@ Stable tag: 6.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Securely accept credit and debit cards on your site. Manage transactions without leaving your WordPress dashboard. Only with WooCommerce Payments.
+Securely accept credit and debit cards on your site. Manage transactions without leaving your WordPress dashboard. Only with WooPayments.
 
 == Description ==
 
@@ -28,11 +28,11 @@ Features previously only available on your payment provider’s website are now 
 
 **Pay as you go**
 
-WooCommerce Payments is **free to install**, with **no setup fees or monthly fees**. Pay-as-you-go fees start at 2.9% + $0.30 per transaction for U.S.-issued cards. [Read more about transaction fees](https://woocommerce.com/document/woocommerce-payments/fees-and-debits/fees/).
+WooPayments is **free to install**, with **no setup fees or monthly fees**. Pay-as-you-go fees start at 2.9% + $0.30 per transaction for U.S.-issued cards. [Read more about transaction fees](https://woocommerce.com/document/woocommerce-payments/fees-and-debits/fees/).
 
 **Supported by the WooCommerce team**
 
-Our global support team is available to answer questions you may have about WooCommerce Payments installation, setup, or use. For assistance, [open a ticket on WooCommerce.com](https://woocommerce.com/my-account/create-a-ticket/?select=5278104).
+Our global support team is available to answer questions you may have about WooPayments installation, setup, or use. For assistance, [open a ticket on WooCommerce.com](https://woocommerce.com/my-account/create-a-ticket/?select=5278104).
 
 == Getting Started ==
 
@@ -44,33 +44,33 @@ Our global support team is available to answer questions you may have about WooC
 
 = Try it now =
 
-To try WooCommerce Payments on your store, simply [install it](https://wordpress.org/plugins/woocommerce-payments/#installation) and follow the prompts. Please see our [Startup Guide](https://woocommerce.com/document/woocommerce-payments/startup-guide/) for a full walkthrough of the process.
+To try WooPayments on your store, simply [install it](https://wordpress.org/plugins/woocommerce-payments/#installation) and follow the prompts. Please see our [Startup Guide](https://woocommerce.com/document/woocommerce-payments/startup-guide/) for a full walkthrough of the process.
 
-WooCommerce Payments has experimental support for the Checkout block from [WooCommerce Blocks](https://wordpress.org/plugins/woo-gutenberg-products-block/). Please check the [FAQ section](#faq) for more information.
+WooPayments has experimental support for the Checkout block from [WooCommerce Blocks](https://wordpress.org/plugins/woo-gutenberg-products-block/). Please check the [FAQ section](#faq) for more information.
 
 == Installation ==
 
-Install and activate the WooCommerce and WooCommerce Payments plugins, if you haven't already done so, then go to "Payments" in the WordPress admin menu and follow the instructions there.
+Install and activate the WooCommerce and WooPayments plugins, if you haven't already done so, then go to "Payments" in the WordPress admin menu and follow the instructions there.
 
 == Frequently Asked Questions ==
 
 = What countries and currencies are supported? =
 
-If you are an individual or business based in [one of these countries](https://woocommerce.com/document/woocommerce-payments/compatibility/countries/#supported-countries), you can sign-up with WooCommerce Payments. After completing sign up, you can accept payments from customers anywhere in the world.
+If you are an individual or business based in [one of these countries](https://woocommerce.com/document/woocommerce-payments/compatibility/countries/#supported-countries), you can sign-up with WooPayments. After completing sign up, you can accept payments from customers anywhere in the world.
 
-We are actively planning to expand into additional countries based on your interest. Let us know where you would like to [see WooCommerce Payments launch next](https://woocommerce.com/payments/#request-invite).
+We are actively planning to expand into additional countries based on your interest. Let us know where you would like to [see WooPayments launch next](https://woocommerce.com/payments/#request-invite).
 
 = Why is a WordPress.com account and connection required? =
 
-WooCommerce Payments uses the WordPress.com connection to authenticate each request, connecting your store with our payments partner.
+WooPayments uses the WordPress.com connection to authenticate each request, connecting your store with our payments partner.
 
 = How do I set up a store for a client? =
 
-If you are a developer or agency setting up a site for a client, please see [this page](https://woocommerce.com/document/woocommerce-payments/account-management/developer-or-agency-setup/) of our documentation for some tips on how to install WooCommerce Payments on client sites.
+If you are a developer or agency setting up a site for a client, please see [this page](https://woocommerce.com/document/woocommerce-payments/account-management/developer-or-agency-setup/) of our documentation for some tips on how to install WooPayments on client sites.
 
-= How is WooCommerce Payments related to Stripe? =
+= How is WooPayments related to Stripe? =
 
-WooCommerce Payments is built in partnership with Stripe [Stripe](https://stripe.com/). When you sign up for WooCommerce Payments, your personal and business information is verified with Stripe and stored in an account connected to the WooCommerce Payments service. This account is then used in the background for managing your business account information and activity via WooCommerce Payments. [Learn more](https://woocommerce.com/document/woocommerce-payments/account-management/partnership-with-stripe/).
+WooPayments is built in partnership with Stripe [Stripe](https://stripe.com/). When you sign up for WooPayments, your personal and business information is verified with Stripe and stored in an account connected to the WooPayments service. This account is then used in the background for managing your business account information and activity via WooPayments. [Learn more](https://woocommerce.com/document/woocommerce-payments/account-management/partnership-with-stripe/).
 
 = Are there Terms of Service and data usage policies? =
 
@@ -78,7 +78,7 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 = How does the Checkout block work? =
 
-You need the [WooCommerce Blocks](https://wordpress.org/plugins/woo-gutenberg-products-block/) plugin to be installed and active to use the Checkout block. Once you add the block to a page, WooCommerce Payments will automatically appear as an option.
+You need the [WooCommerce Blocks](https://wordpress.org/plugins/woo-gutenberg-products-block/) plugin to be installed and active to use the Checkout block. Once you add the block to a page, WooPayments will automatically appear as an option.
 
 Please note that our support for the checkout block is still experimental and the following features of the gateway will probably not work:
 

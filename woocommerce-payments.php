@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: WooPayments
+ * Plugin Name: WooCommerce Payments
  * Plugin URI: https://woocommerce.com/payments/
  * Description: Accept payments via credit card. Manage transactions within WordPress.
  * Author: Automattic
@@ -171,11 +171,26 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 			$plugin_slug = "$plugin_name/$plugin_name.php";
 
 			// Check if the specified $plugin_name is in the process of being activated via the Admin > Plugins screen.
-			if ( isset( $_GET['action'], $_GET['plugin'], $_GET['_wpnonce'] ) && wp_verify_nonce( wc_clean( wp_unslash( $_GET['_wpnonce'] ) ), "activate-plugin_{$plugin_slug}" ) ) {
-				$action = sanitize_text_field( wp_unslash( $_GET['action'] ) );
-				$plugin = sanitize_text_field( wp_unslash( $_GET['plugin'] ) );
+			if ( isset( $_REQUEST['action'], $_REQUEST['_wpnonce'] ) && current_user_can( 'activate_plugin', $plugin_slug ) ) {
+				$action            = sanitize_text_field( wp_unslash( $_REQUEST['action'] ) );
+				$activating_plugin = '';
 
-				if ( current_user_can( 'activate_plugin', $plugin_slug ) && 'activate' === $action && $plugin_slug === $plugin ) {
+				switch ( $action ) {
+					case 'activate':
+					case 'activate-plugin':
+						if ( isset( $_REQUEST['plugin'] ) && wp_verify_nonce( wc_clean( wp_unslash( $_REQUEST['_wpnonce'] ) ), "activate-plugin_{$plugin_slug}" ) ) {
+							$activating_plugin = sanitize_text_field( wp_unslash( $_REQUEST['plugin'] ) );
+						}
+						break;
+					case 'activate-selected':
+						// When multiple plugins are being activated at once the $_REQUEST['checked'] is an array of plugin slugs. Check if the specified $plugin_name is in that array.
+						if ( isset( $_REQUEST['checked'] ) && is_array( $_REQUEST['checked'] ) && in_array( $plugin_slug, $_REQUEST['checked'], true ) && wp_verify_nonce( wc_clean( wp_unslash( $_REQUEST['_wpnonce'] ) ), 'bulk-plugins' ) ) {
+							$activating_plugin = $plugin_slug;
+						}
+						break;
+				}
+
+				if ( ! empty( $activating_plugin ) && $plugin_slug === $activating_plugin ) {
 					return true;
 				}
 			}

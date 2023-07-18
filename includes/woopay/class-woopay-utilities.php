@@ -222,4 +222,19 @@ class WooPay_Utilities {
 	public static function get_woopay_url() {
 		return defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'https://pay.woo.com';
 	}
+
+	/**
+	 * Returns true if an extension WooPay supports is installed .
+	 *
+	 * @return bool
+	 */
+	public function has_adapted_extension_installed() {
+		foreach ( self::ADAPTED_EXTENSIONS as $supported_extension ) {
+			if ( in_array( $supported_extension, apply_filters( 'active_plugins', get_option( 'active_plugins' ) ), true ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 }
