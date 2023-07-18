@@ -122,12 +122,24 @@ export default {
 	},
 	errors: {
 		generic: __( 'Please provide a response', 'woocommerce-payments' ),
+		'individual.first_name': __(
+			'Please provide a first name',
+			'woocommerce-payments'
+		),
+		'individual.last_name': __(
+			'Please provide a last name',
+			'woocommerce-payments'
+		),
 		email: __( 'Please provide a valid email', 'woocommerce-payments' ),
 		phone: __(
 			'Please provide a valid phone number',
 			'woocommerce-payments'
 		),
 		url: __( 'Please provide a valid website', 'woocommerce-payments' ),
+		business_name: __(
+			'Please provide a business name',
+			'woocommerce-payments'
+		),
 	},
 	placeholders: {
 		country: __(
