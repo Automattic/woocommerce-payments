@@ -28,6 +28,7 @@ jest.mock( '../../../data', () => ( {
 	useWooPayLocations: jest
 		.fn()
 		.mockReturnValue( [ [ true, true, true ], jest.fn() ] ),
+	useWooPayShowIncompatibilityNotice: jest.fn().mockReturnValue( false ),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
@@ -65,7 +66,7 @@ describe( 'ExpressCheckoutSettings', () => {
 	test( 'renders banner at the top', () => {
 		render( <ExpressCheckoutSettings methodId="payment_request" /> );
 
-		const banner = screen.queryByAltText( 'WooCommerce Payments logo' );
+		const banner = screen.queryByAltText( 'WooPayments logo' );
 		expect( banner ).toBeInTheDocument();
 	} );
 
@@ -82,7 +83,7 @@ describe( 'ExpressCheckoutSettings', () => {
 		render( <ExpressCheckoutSettings methodId="payment_request" /> );
 
 		const linkToPayments = screen.getByRole( 'link', {
-			name: 'WooCommerce Payments',
+			name: 'WooPayments',
 		} );
 		const breadcrumbs = linkToPayments.closest( 'h2' );
 
@@ -124,7 +125,7 @@ describe( 'ExpressCheckoutSettings', () => {
 		render( <ExpressCheckoutSettings methodId="woopay" /> );
 
 		const linkToPayments = screen.getByRole( 'link', {
-			name: 'WooCommerce Payments',
+			name: 'WooPayments',
 		} );
 		const breadcrumbs = linkToPayments.closest( 'h2' );
 

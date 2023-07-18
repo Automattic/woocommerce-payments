@@ -80,6 +80,7 @@ class WC_Payments_Account {
 
 		// Add server links handler.
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_server_link' ] );
+		add_action( 'admin_init', [ $this, 'maybe_activate_woopay' ] );
 	}
 
 	/**
@@ -394,6 +395,16 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Gets the deposit restrictions
+	 *
+	 * @return string  e.g. not_blocked, blocked, schedule locked.
+	 */
+	public function get_deposit_restrictions(): string {
+		$account = $this->get_cached_account_data();
+		return $account['deposits']['restrictions'] ?? '';
+	}
+
+	/**
 	 * Gets whether the account has completed the deposit waiting period.
 	 *
 	 * @return bool
@@ -586,12 +597,12 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Utility function to immediately redirect to the main "Welcome to WooCommerce Payments" onboarding page.
+	 * Utility function to immediately redirect to the main "Welcome to WooPayments" onboarding page.
 	 * Note that this function immediately ends the execution.
 	 *
 	 * @param string $error_message Optional error message to show in a notice.
 	 */
-	public function redirect_to_onboarding_page( $error_message = null ) {
+	public function redirect_to_onboarding_welcome_page( $error_message = null ) {
 		if ( isset( $error_message ) ) {
 			set_transient( self::ERROR_MESSAGE_TRANSIENT, $error_message, 30 );
 		}
@@ -652,12 +663,11 @@ class WC_Payments_Account {
 		// Redirect directly to onboarding page if come from WC Admin task and are in treatment mode.
 		$http_referer = sanitize_text_field( wp_unslash( $_SERVER['HTTP_REFERER'] ?? '' ) );
 		if ( 0 < strpos( $http_referer, 'task=payments' ) ) {
-			$this->maybe_redirect_to_treatment_onboarding_page();
 			$this->redirect_to_onboarding_flow_page();
 		}
 
 		// Redirect if not connected.
-		$this->redirect_to_onboarding_page();
+		$this->redirect_to_onboarding_welcome_page();
 		return true;
 	}
 
@@ -774,7 +784,6 @@ class WC_Payments_Account {
 			$from_wc_admin_task       = 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_param;
 			$from_wc_pay_connect_page = false !== strpos( wp_get_referer(), 'path=%2Fpayments%2Fconnect' );
 			if ( ( $from_wc_admin_task || $from_wc_pay_connect_page ) ) {
-				$this->maybe_redirect_to_treatment_onboarding_page();
 				$this->redirect_to_onboarding_flow_page();
 			}
 
@@ -788,8 +797,12 @@ class WC_Payments_Account {
 			update_option( 'wcpay_menu_badge_hidden', 'yes' );
 
 			if ( isset( $_GET['wcpay-connect-jetpack-success'] ) && ! $this->payments_api_client->is_server_connected() ) {
-				$this->redirect_to_onboarding_page(
-					__( 'Connection to WordPress.com failed. Please connect to WordPress.com to start using WooCommerce Payments.', 'woocommerce-payments' )
+				$this->redirect_to_onboarding_welcome_page(
+					sprintf(
+						/* translators: %s: WooPayments */
+						__( 'Connection to WordPress.com failed. Please connect to WordPress.com to start using %s.', 'woocommerce-payments' ),
+						'WooPayments'
+					)
 				);
 				return;
 			}
@@ -797,7 +810,7 @@ class WC_Payments_Account {
 			try {
 				$this->maybe_init_jetpack_connection( $wcpay_connect_param );
 			} catch ( Exception $e ) {
-				$this->redirect_to_onboarding_page(
+				$this->redirect_to_onboarding_welcome_page(
 				/* translators: error message. */
 					sprintf( __( 'There was a problem connecting this site to WordPress.com: "%s"', 'woocommerce-payments' ), $e->getMessage() )
 				);
@@ -808,7 +821,7 @@ class WC_Payments_Account {
 				$this->init_stripe_onboarding( $wcpay_connect_param );
 			} catch ( Exception $e ) {
 				Logger::error( 'Init Stripe onboarding flow failed. ' . $e );
-				$this->redirect_to_onboarding_page(
+				$this->redirect_to_onboarding_welcome_page(
 					__( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' )
 				);
 			}
@@ -1013,7 +1026,7 @@ class WC_Payments_Account {
 	 */
 	private function init_stripe_onboarding( $wcpay_connect_from ) {
 		if ( get_transient( self::ON_BOARDING_STARTED_TRANSIENT ) ) {
-			$this->redirect_to_onboarding_page(
+			$this->redirect_to_onboarding_welcome_page(
 				__( 'There was a duplicate attempt to initiate account setup. Please wait a few seconds and try again.', 'woocommerce-payments' )
 			);
 			return;
@@ -1129,10 +1142,25 @@ class WC_Payments_Account {
 			exit;
 		}
 
+		set_transient( 'woopay_enabled_by_default', $onboarding_data['woopay_enabled_by_default'], DAY_IN_SECONDS );
 		set_transient( 'wcpay_stripe_onboarding_state', $onboarding_data['state'], DAY_IN_SECONDS );
 
 		wp_safe_redirect( $onboarding_data['url'] );
 		exit;
+	}
+
+	/**
+	 * Activates WooPay when visiting the KYC success page and woopay_enabled_by_default transient is set to true.
+	 */
+	public function maybe_activate_woopay() {
+		if ( ! isset( $_GET['wcpay-connection-success'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return;
+		}
+
+		if ( get_transient( 'woopay_enabled_by_default' ) ) {
+			WC_Payments::get_gateway()->update_is_woopay_enabled( true );
+			delete_transient( 'woopay_enabled_by_default' );
+		}
 	}
 
 	/**
@@ -1143,7 +1171,7 @@ class WC_Payments_Account {
 	 */
 	private function finalize_connection( $state, $mode ) {
 		if ( get_transient( 'wcpay_stripe_onboarding_state' ) !== $state ) {
-			$this->redirect_to_onboarding_page(
+			$this->redirect_to_onboarding_welcome_page(
 				__( 'There was a problem processing your account data. Please try again.', 'woocommerce-payments' )
 			);
 			return;
@@ -1575,36 +1603,17 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Checks if the user is in onboarding treatment before doing the redirection.
-	 * Also checks if the server is connect and try to connect it otherwise.
-	 *
-	 * @return void
-	 */
-	private function maybe_redirect_to_treatment_onboarding_page() {
-		if ( WC_Payments_Utils::is_in_onboarding_treatment_mode() ) {
-			$onboarding_url = admin_url( 'admin.php?page=wc-admin&path=/payments/onboarding' );
-
-			if ( ! $this->payments_api_client->is_server_connected() ) {
-					$this->payments_api_client->start_server_connection( $onboarding_url );
-			} else {
-				$this->redirect_to( $onboarding_url );
-
-			}
-		}
-	}
-
-	/**
 	 * Redirects to the onboarding flow page if the Progressive Onboarding feature flag is enabled or in the experiment treatment mode.
 	 * Also checks if the server is connect and try to connect it otherwise.
 	 *
 	 * @return void
 	 */
 	private function redirect_to_onboarding_flow_page() {
-		if ( ! WC_Payments_Utils::is_in_progressive_onboarding_treatment_mode() && ! WC_Payments_Features::is_progressive_onboarding_enabled() ) {
+		if ( ! WC_Payments_Utils::should_use_progressive_onboarding_flow() ) {
 			return;
 		}
 
-		$onboarding_url = admin_url( 'admin.php?page=wc-admin&path=/payments/onboarding-flow' );
+		$onboarding_url = admin_url( 'admin.php?page=wc-admin&path=/payments/onboarding' );
 
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			$this->payments_api_client->start_server_connection( $onboarding_url );

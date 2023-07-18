@@ -31,6 +31,7 @@ use WCPay\Core\Server\Request\Create_Intention;
 use WCPay\Core\Server\Request\Create_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Update_Intention;
+use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\WC_Payments_Checkout;
 
 require_once dirname( __FILE__ ) . '/../helpers/class-wc-helper-site-currency.php';
@@ -124,6 +125,13 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	 * @var WooPay_Utilities
 	 */
 	private $mock_woopay_utilities;
+
+	/**
+	 * Duplicate Payments Prevention Service.
+	 *
+	 * @var Duplicate_Payment_Prevention_Service
+	 */
+	private $mock_dpps;
 
 	/**
 	 * Mocked value of return_url.
@@ -236,6 +244,8 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->mock_rate_limiter = $this->createMock( Session_Rate_Limiter::class );
 		$this->order_service     = new WC_Payments_Order_Service( $this->mock_api_client );
 
+		$this->mock_dpps = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+
 		// Arrange: Define a $_POST array which includes the payment method,
 		// so that get_payment_method_from_request() does not throw error.
 		$_POST = [
@@ -261,6 +271,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 						$this->mock_payment_methods,
 						$this->mock_rate_limiter,
 						$this->order_service,
+						$this->mock_dpps,
 					]
 				)
 				->setMethods(
@@ -914,58 +925,33 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$_POST['wc_payment_intent_id'] = 'pi_mock';
 		$mock_upe_gateway              = $this->mock_payment_gateways[ Payment_Method::SEPA ];
 
-		$same_cart_hash = 'FAKE_SAME_CART_HASH';
-
-		// Arrange the order saved in the session.
-		$session_order = WC_Helper_Order::create_order();
-		$session_order->set_cart_hash( $same_cart_hash );
-		$session_order->set_status( Order_Status::COMPLETED );
-		$session_order->save();
-		WC()->session->set(
-			WC_Payment_Gateway_WCPay::SESSION_KEY_PROCESSING_ORDER,
-			$session_order->get_id()
-		);
+		$response = [
+			'dummy_result' => 'xyz',
+		];
 
 		// Arrange the order is being processed.
-		$current_order = WC_Helper_Order::create_order();
-		$current_order->set_cart_hash( $same_cart_hash );
-		$current_order->save();
-		$current_order_id = $current_order->get_id();
+		$order    = WC_Helper_Order::create_order();
+		$order_id = $order->get_id();
+
+		// Arrange the DPPs to return a redirect.
+		$this->mock_dpps->expects( $this->once() )
+			->method( 'check_against_session_processing_order' )
+			->with( wc_get_order( $order ) )
+			->willReturn( $response );
 
 		// Act: process the order but redirect to the previous/session paid order.
-		$result = $mock_upe_gateway->process_payment( $current_order_id );
+		$result = $mock_upe_gateway->process_payment( $order_id );
 
 		// Assert: the result of check_against_session_processing_order.
-		$this->assertSame( 'yes', $result['wcpay_upe_paid_for_previous_order'] );
-		$this->assertSame( 'success', $result['result'] );
-		$this->assertStringContainsString( $mock_upe_gateway->get_return_url( $session_order ), $result['redirect'] );
-
-		// Assert: the behaviors of check_against_session_processing_order.
-		$notes = wc_get_order_notes( [ 'order_id' => $session_order->get_id() ] );
-		$this->assertStringContainsString(
-			'WooCommerce Payments: detected and deleted order ID ' . $current_order_id,
-			$notes[0]->content
-		);
-		$this->assertSame( Order_Status::TRASH, wc_get_order( $current_order_id )->get_status() );
-		$this->assertSame(
-			null,
-			WC()->session->get( WC_Payment_Gateway_WCPay::SESSION_KEY_PROCESSING_ORDER )
-		);
+		$this->assertSame( $response, $result );
 	}
 
 	public function test_upe_process_payment_check_session_with_failed_intent_then_order_id_saved_to_session() {
 		$_POST['wc_payment_intent_id'] = 'pi_mock';
-		$mock_upe_gateway              = $this->mock_payment_gateways[ Payment_Method::SEPA ];
-
-		// Arrange the order saved in the session.
-		WC()->session->set(
-			WC_Payment_Gateway_WCPay::SESSION_KEY_PROCESSING_ORDER,
-			null
-		);
 
 		// Arrange the order is being processed.
-		$current_order    = WC_Helper_Order::create_order();
-		$current_order_id = $current_order->get_id();
+		$order    = WC_Helper_Order::create_order();
+		$order_id = $order->get_id();
 
 		// Arrange a failed intention.
 		$intent = WC_Helper_Intention::create_intention( [ 'status' => 'failed' ] );
@@ -976,44 +962,22 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'format_response' )
 			->willReturn( $intent );
 
+		// Make sure the DPPS will store the order.
+		$this->mock_dpps->expects( $this->once() )
+			->method( 'maybe_update_session_processing_order' )
+			->with( $order_id );
+
 		// Act: process the order but redirect to the previous/session paid order.
-		$mock_upe_gateway->process_payment( $current_order_id );
-
-		// Assert: maybe_update_session_processing_order takes action and its value is kept.
-		$this->assertSame(
-			$current_order_id,
-			WC()->session->get( WC_Payment_Gateway_WCPay::SESSION_KEY_PROCESSING_ORDER )
-		);
-
-		// Destroy the session value after running test.
-		WC()->session->set(
-			WC_Payment_Gateway_WCPay::SESSION_KEY_PROCESSING_ORDER,
-			null
-		);
+		$this->mock_payment_gateways[ Payment_Method::SEPA ]->process_payment( $order_id );
 	}
 
-	/**
-	 * @dataProvider provider_process_payment_check_session_and_continue_processing
-	 */
-	public function test_upe_process_payment_check_session_and_continue_processing( string $session_order_cart_hash, string $session_order_status, string $current_order_cart_hash ) {
+	public function test_upe_process_payment_check_session_and_continue_processing() {
 		$_POST['wc_payment_intent_id'] = 'pi_mock';
 		$mock_upe_gateway              = $this->mock_payment_gateways[ Payment_Method::SEPA ];
 
-		// Arrange the order saved in the session.
-		$session_order = WC_Helper_Order::create_order();
-		$session_order->set_cart_hash( $session_order_cart_hash );
-		$session_order->set_status( $session_order_status );
-		$session_order->save();
-		WC()->session->set(
-			WC_Payment_Gateway_WCPay::SESSION_KEY_PROCESSING_ORDER,
-			$session_order->get_id()
-		);
-
 		// Arrange the order is being processed.
-		$current_order = WC_Helper_Order::create_order();
-		$current_order->set_cart_hash( $current_order_cart_hash );
-		$current_order->save();
-		$current_order_id = $current_order->get_id();
+		$order    = WC_Helper_Order::create_order();
+		$order_id = $order->get_id();
 
 		// Arrange a successful intention.
 		$intent = WC_Helper_Intention::create_intention();
@@ -1023,47 +987,33 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'get_payment_method_ids_enabled_at_checkout' )
 			->willReturn( [] );
 
+		// Arrange the DPPs not to return anything.
+		$this->mock_dpps->expects( $this->once() )
+			->method( 'check_against_session_processing_order' )
+			->with( wc_get_order( $order ) )
+			->willReturn( null );
+
 		$this->mock_wcpay_request( Update_Intention::class, 1, $intent->get_id() )
 			->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $intent );
 
 		// Act.
-		$mock_upe_gateway->process_payment( $current_order_id );
-
-		// Assert: no order ID is saved in the session.
-		$this->assertSame(
-			null,
-			WC()->session->get( WC_Payment_Gateway_WCPay::SESSION_KEY_PROCESSING_ORDER )
-		);
+		$mock_upe_gateway->process_payment( $order_id );
 	}
 
-	public function provider_process_payment_check_session_and_continue_processing() {
-		return [
-			'Different cart hash with session order status completed'   => [ 'SESSION_ORDER_HASH', Order_Status::COMPLETED, 'CURRENT_ORDER_HASH' ],
-			'Different cart hash  with session order status processing' => [ 'SESSION_ORDER_HASH', Order_Status::PROCESSING, 'CURRENT_ORDER_HASH' ],
-			'Same cart hash with session order status pending'          => [ 'SAME_CART_HASH', Order_Status::PENDING, 'SAME_CART_HASH' ],
-			'Same cart hash with session order status cancelled'         => [ 'SAME_CART_HASH', Order_Status::CANCELLED, 'SAME_CART_HASH' ],
-		];
-	}
-
-	/**
-	 * @dataProvider provider_check_payment_intent_attached_to_order_succeeded_with_invalid_intent_id_continue_process_payment
-	 * @param ?string $invalid_intent_id An invalid payment intent ID. If no intent id is set, this can be null.
-	 */
-	public function test_upe_check_payment_intent_attached_to_order_succeeded_with_invalid_intent_id_continue_process_payment( $invalid_intent_id ) {
+	public function test_upe_check_payment_intent_attached_to_order_succeeded_with_invalid_intent_id_continue_process_payment() {
 		$_POST['wc_payment_intent_id'] = 'pi_mock';
-		$mock_upe_gateway              = $this->mock_payment_gateways[ Payment_Method::SEPA ];
 
 		// Arrange order.
-		$order = WC_Helper_Order::create_order();
-		$order->update_meta_data( '_intent_id', $invalid_intent_id );
-		$order->save();
-
+		$order    = WC_Helper_Order::create_order();
 		$order_id = $order->get_id();
 
-		// Assert: get_intent is not called.
-		$this->mock_wcpay_request( Get_Intention::class, 0, 1 );
+		// Arrange the DPPS not to return a redirect.
+		$this->mock_dpps->expects( $this->once() )
+			->method( 'check_payment_intent_attached_to_order_succeeded' )
+			->with( wc_get_order( $order ) )
+			->willReturn( null );
 
 		// Assert: the payment process continues.
 		$intent = WC_Helper_Intention::create_intention();
@@ -1073,119 +1023,34 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->willReturn( $intent );
 
 		// Act: process the order.
-		$mock_upe_gateway->process_payment( $order_id );
+		$this->mock_payment_gateways[ Payment_Method::SEPA ]->process_payment( $order_id );
 	}
 
-	public function provider_check_payment_intent_attached_to_order_succeeded_with_invalid_intent_id_continue_process_payment(): array {
-		return [
-			'No intent_id is attached'   => [ null ],
-			'A setup intent is attached' => [ 'seti_possible_for_a_subscription_id' ],
-		];
-	}
-
-	/**
-	 * The attached PaymentIntent has invalid info (status or order_id) with the order, so payment_process continues.
-	 *
-	 * @dataProvider provider_check_payment_intent_attached_to_order_succeeded_with_invalid_data_continue_process_payment
-	 * @param  string  $attached_intent_id Attached intent ID to the order.
-	 * @param  string  $attached_intent_status Attached intent status.
-	 * @param  bool  $same_order_id True when the intent meta order_id is exactly the current processing order_id. False otherwise.
-	 */
-	public function test_upe_check_payment_intent_attached_to_order_succeeded_with_invalid_data_continue_process_payment(
-		string $attached_intent_id,
-		string $attached_intent_status,
-		bool $same_order_id
-	) {
+	public function test_upe_check_payment_intent_attached_to_order_succeeded_return_redirection() {
 		$_POST['wc_payment_intent_id'] = 'pi_mock';
-		$mock_upe_gateway              = $this->mock_payment_gateways[ Payment_Method::SEPA ];
-		// Arrange order.
-		$order = WC_Helper_Order::create_order();
-		$order->update_meta_data( '_intent_id', $attached_intent_id );
-		$order->save();
 
-		$order_id = $order->get_id();
-
-		// Arrange mock get_intent.
-		$meta_order_id   = $same_order_id ? $order_id : $order_id - 1;
-		$attached_intent = WC_Helper_Intention::create_intention(
-			[
-				'id'       => $attached_intent_id,
-				'status'   => $attached_intent_status,
-				'metadata' => [ 'order_id' => $meta_order_id ],
-			]
-		);
-		$this->mock_wcpay_request( Get_Intention::class, 1, $attached_intent_id )
-			->expects( $this->once() )
-			->method( 'format_response' )
-			->willReturn( $attached_intent );
-
-		// Assert: the payment process continues.
-		$intent = WC_Helper_Intention::create_intention();
-		$this->mock_wcpay_request( Update_Intention::class, 1, $intent->get_id() )
-			->expects( $this->once() )
-			->method( 'format_response' )
-			->willReturn( $intent );
-
-		// Act: process the order.
-		$mock_upe_gateway->process_payment( $order_id );
-	}
-
-	public function provider_check_payment_intent_attached_to_order_succeeded_with_invalid_data_continue_process_payment(): array {
-		return [
-			'Attached PaymentIntent with non-success status - same order_id' => [ 'pi_attached_intent_id', 'requires_action', true ],
-			'Attached PaymentIntent - non-success status - different order_id' => [ 'pi_attached_intent_id', 'requires_action', false ],
-			'Attached PaymentIntent - success status - different order_id' => [ 'pi_attached_intent_id', 'succeeded', false ],
+		$response = [
+			'dummy_result' => 'xyz',
 		];
-	}
-
-	/**
-	 * @dataProvider provider_check_payment_intent_attached_to_order_succeeded_return_redirection
-	 */
-	public function test_upe_check_payment_intent_attached_to_order_succeeded_return_redirection( string $intent_successful_status ) {
-		$_POST['wc_payment_intent_id'] = 'pi_mock';
-		$attached_intent_id            = 'pi_attached_intent_id';
-		$mock_upe_gateway              = $this->mock_payment_gateways[ Payment_Method::SEPA ];
 
 		// Arrange order.
-		$order = WC_Helper_Order::create_order();
-		$order->update_meta_data( '_intent_id', $attached_intent_id );
-		$order->save();
+		$order    = WC_Helper_Order::create_order();
 		$order_id = $order->get_id();
 
-		// Arrange mock get_intention.
-		$attached_intent = WC_Helper_Intention::create_intention(
-			[
-				'id'       => $attached_intent_id,
-				'status'   => $intent_successful_status,
-				'metadata' => [ 'order_id' => $order_id ],
-			]
-		);
-
-		$this->mock_wcpay_request( Get_Intention::class, 1, $attached_intent_id )
-			->expects( $this->once() )
-			->method( 'format_response' )
-			->willReturn( $attached_intent );
+		// Arrange the DPPS to return a redirect based on a redirect.
+		$this->mock_dpps->expects( $this->once() )
+			->method( 'check_payment_intent_attached_to_order_succeeded' )
+			->with( wc_get_order( $order ) )
+			->willReturn( $response );
 
 		// Assert: no more call to the server to update the intention.
-		$intent = WC_Helper_Intention::create_intention();
 		$this->mock_wcpay_request( Update_Intention::class, 0 );
 
 		// Act: process the order but redirect to the order.
-		$result = $mock_upe_gateway->process_payment( $order_id );
+		$result = $this->mock_payment_gateways[ Payment_Method::SEPA ]->process_payment( $order_id );
 
 		// Assert: the result of check_intent_attached_to_order_succeeded.
-		$this->assertSame( 'yes', $result['wcpay_upe_previous_successful_intent'] );
-		$this->assertSame( 'success', $result['result'] );
-		$this->assertStringContainsString( $mock_upe_gateway->get_return_url( $order ), $result['redirect'] );
-	}
-
-	public function provider_check_payment_intent_attached_to_order_succeeded_return_redirection(): array {
-		$ret = [];
-		foreach ( WC_Payment_Gateway_WCPay::SUCCESSFUL_INTENT_STATUS as $status ) {
-			$ret[ 'Intent status ' . $status ] = [ $status ];
-		}
-
-		return $ret;
+		$this->assertSame( $response, $result );
 	}
 
 	public function test_process_redirect_payment_intent_processing() {
@@ -1870,12 +1735,14 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 						$this->mock_payment_methods,
 						$this->mock_rate_limiter,
 						$this->order_service,
+						$this->mock_dpps,
 					]
 				)
 				->setMethods(
 					[
 						'get_payment_method_ids_enabled_at_checkout',
 						'wc_payments_get_payment_method_by_id',
+						'wc_payments_get_payment_gateway_by_id',
 						'is_saved_cards_enabled',
 						'is_subscription_item_in_cart',
 					]
@@ -1889,6 +1756,11 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				->method( 'wc_payments_get_payment_method_by_id' )
 				->with( $payment_method )
 				->willReturn( $this->mock_payment_methods[ $payment_method ] );
+
+			$mock_upe_gateway
+				->method( 'wc_payments_get_payment_gateway_by_id' )
+				->with( $payment_method )
+				->willReturn( $this->mock_payment_gateways[ $payment_method ] );
 
 			$upe_checkout = new WC_Payments_UPE_Checkout(
 				$mock_upe_gateway,
@@ -1914,12 +1786,14 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_payment_methods,
 					$this->mock_rate_limiter,
 					$this->order_service,
+					$this->mock_dpps,
 				]
 			)
 			->setMethods(
 				[
 					'get_payment_method_ids_enabled_at_checkout',
 					'wc_payments_get_payment_method_by_id',
+					'wc_payments_get_payment_gateway_by_id',
 					'is_saved_cards_enabled',
 					'is_subscription_item_in_cart',
 				]
@@ -1948,6 +1822,11 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->with( Payment_Method::SEPA )
 			->willReturn( $this->mock_payment_methods[ Payment_Method::SEPA ] );
 
+		$mock_upe_gateway
+			->method( 'wc_payments_get_payment_gateway_by_id' )
+			->with( Payment_Method::SEPA )
+			->willReturn( $this->mock_payment_gateways[ Payment_Method::SEPA ] );
+
 		$upe_checkout = new WC_Payments_UPE_Checkout(
 			$mock_upe_gateway,
 			$this->mock_woopay_utilities,
@@ -1971,12 +1850,14 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_payment_methods,
 					$this->mock_rate_limiter,
 					$this->order_service,
+					$this->mock_dpps,
 				]
 			)
 			->setMethods(
 				[
 					'get_payment_method_ids_enabled_at_checkout',
 					'wc_payments_get_payment_method_by_id',
+					'wc_payments_get_payment_gateway_by_id',
 					'is_saved_cards_enabled',
 					'is_subscription_item_in_cart',
 				]
@@ -2005,6 +1886,11 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->with( Payment_Method::SEPA )
 			->willReturn( $this->mock_payment_methods[ Payment_Method::SEPA ] );
 
+		$mock_upe_gateway
+			->method( 'wc_payments_get_payment_gateway_by_id' )
+			->with( Payment_Method::SEPA )
+			->willReturn( $this->mock_payment_gateways[ Payment_Method::SEPA ] );
+
 		$upe_checkout = new WC_Payments_UPE_Checkout(
 			$mock_upe_gateway,
 			$this->mock_woopay_utilities,
@@ -2028,12 +1914,14 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_payment_methods,
 					$this->mock_rate_limiter,
 					$this->order_service,
+					$this->mock_dpps,
 				]
 			)
 			->setMethods(
 				[
 					'get_payment_method_ids_enabled_at_checkout',
 					'wc_payments_get_payment_method_by_id',
+					'wc_payments_get_payment_gateway_by_id',
 					'is_saved_cards_enabled',
 					'is_subscription_item_in_cart',
 				]
@@ -2047,6 +1935,11 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'wc_payments_get_payment_method_by_id' )
 			->with( Payment_Method::SEPA )
 			->willReturn( $this->mock_payment_methods[ Payment_Method::SEPA ] );
+
+		$mock_upe_gateway
+			->method( 'wc_payments_get_payment_gateway_by_id' )
+			->with( Payment_Method::SEPA )
+			->willReturn( $this->mock_payment_gateways[ Payment_Method::SEPA ] );
 
 		// saved cards enabled.
 		$mock_upe_gateway
@@ -2085,6 +1978,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_payment_methods,
 					$this->mock_rate_limiter,
 					$this->order_service,
+					$this->mock_dpps,
 				]
 			)
 			->setMethods(
@@ -2138,6 +2032,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_payment_methods,
 					$this->mock_rate_limiter,
 					$this->order_service,
+					$this->mock_dpps,
 				]
 			)
 			->setMethods(
@@ -2145,6 +2040,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					'get_upe_enabled_payment_method_statuses',
 					'get_upe_enabled_payment_method_ids',
 					'wc_payments_get_payment_method_by_id',
+					'wc_payments_get_payment_gateway_by_id',
 				]
 			)
 			->getMock();
@@ -2181,6 +2077,18 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				]
 			);
 
+		$mock_upe_gateway
+			->method( 'wc_payments_get_payment_gateway_by_id' )
+			->willReturnCallback(
+				function ( $payment_method ) {
+					if ( Payment_Method::CARD === $payment_method ) {
+						return $this->mock_payment_gateways[ Payment_Method::CARD ];
+					} elseif ( Payment_Method::LINK === $payment_method ) {
+						return $this->mock_payment_gateways[ Payment_Method::LINK ];
+					}
+				}
+			);
+
 		$upe_checkout = new WC_Payments_UPE_Checkout(
 			$mock_upe_gateway,
 			$this->mock_woopay_utilities,
@@ -2192,22 +2100,26 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			$upe_checkout->get_payment_fields_js_config()['paymentMethodsConfig'],
 			[
 				'card' => [
-					'isReusable'           => true,
-					'title'                => 'Credit card / debit card',
-					'icon'                 => null,
-					'showSaveOption'       => true,
-					'upePaymentIntentData' => null,
-					'upeSetupIntentData'   => null,
-					'testingInstructions'  => '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC. Other payment methods may redirect to a Stripe test page to authorize payment. More test card numbers are listed <a href="https://woocommerce.com/document/payments/testing/#test-cards" target="_blank">here</a>.',
+					'isReusable'             => true,
+					'title'                  => 'Credit card / debit card',
+					'icon'                   => null,
+					'showSaveOption'         => true,
+					'countries'              => [],
+					'upePaymentIntentData'   => null,
+					'upeSetupIntentData'     => null,
+					'testingInstructions'    => '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC. Other payment methods may redirect to a Stripe test page to authorize payment. More test card numbers are listed <a href="https://woocommerce.com/document/woocommerce-payments/testing-and-troubleshooting/testing/#test-cards" target="_blank">here</a>.',
+					'forceNetworkSavedCards' => false,
 				],
 				'link' => [
-					'isReusable'           => true,
-					'title'                => 'Link',
-					'icon'                 => $this->icon_url,
-					'showSaveOption'       => true,
-					'upePaymentIntentData' => null,
-					'upeSetupIntentData'   => null,
-					'testingInstructions'  => '',
+					'isReusable'             => true,
+					'title'                  => 'Link',
+					'icon'                   => $this->icon_url,
+					'showSaveOption'         => true,
+					'countries'              => [],
+					'upePaymentIntentData'   => null,
+					'upeSetupIntentData'     => null,
+					'testingInstructions'    => '',
+					'forceNetworkSavedCards' => false,
 				],
 			]
 		);
@@ -2230,6 +2142,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_payment_methods,
 					$this->mock_rate_limiter,
 					$this->order_service,
+					$this->mock_dpps,
 				]
 			)
 			->setMethods( [ 'wc_payments_get_payment_method_map' ] )

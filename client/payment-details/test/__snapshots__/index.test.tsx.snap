@@ -638,9 +638,19 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
                     <span
                       class="payment-method-details"
                     >
-                      <span
-                        class="payment-method__brand payment-method__brand--visa"
-                      />
+                      <button
+                        class="wcpay-tooltip__content-wrapper"
+                        type="button"
+                      >
+                        <div
+                          class="wcpay-tooltip__content-wrapper"
+                        >
+                          <span
+                            aria-label="Visa"
+                            class="payment-method__brand payment-method__brand--visa"
+                          />
+                        </div>
+                      </button>
                        •••• 
                       4242
                     </span>

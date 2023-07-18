@@ -18,9 +18,9 @@ import { PaymentMethod } from 'wcpay/types/payment-methods';
 import { createInterpolateElement } from '@wordpress/element';
 
 const countryFeeStripeDocsBaseLink =
-	'https://woocommerce.com/document/payments/faq/fees/#';
+	'https://woocommerce.com/document/woocommerce-payments/fees-and-debits/fees/#';
 const countryFeeStripeDocsBaseLinkNoCountry =
-	'https://woocommerce.com/document/payments/faq/fees';
+	'https://woocommerce.com/document/woocommerce-payments/fees-and-debits/fees/';
 const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 	AU: 'australia',
 	AT: 'austria',
@@ -28,6 +28,7 @@ const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 	BG: 'bulgaria',
 	CA: 'canada',
 	CY: 'cyprus',
+	CZ: 'czech-republic',
 	FR: 'france',
 	LU: 'luxembourg',
 	DE: 'germany',
@@ -37,6 +38,7 @@ const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 	GR: 'greece',
 	HK: 'hong-kong',
 	HR: 'croatia',
+	HU: 'hungary',
 	IE: 'ireland',
 	IT: 'italy',
 	LT: 'lithuania',
@@ -50,6 +52,7 @@ const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 	SG: 'singapore',
 	SI: 'slovenia',
 	SK: 'slovakia',
+	SW: 'sweden',
 	ES: 'spain',
 	CH: 'switzerland',
 	UK: 'united-kingdom',
@@ -167,9 +170,13 @@ export const formatMethodFeesTooltip = (
 							wcpaySettings.connect.country
 						)
 							? interpolateComponents( {
-									mixedString: __(
-										'{{linkToStripePage /}} about WooCommerce Payments Fees in your country',
-										'woocommerce-payments'
+									mixedString: sprintf(
+										/* translators: %s: WooPayments */
+										__(
+											'{{linkToStripePage /}} about %s Fees in your country',
+											'woocommerce-payments'
+										),
+										'WooPayments'
 									),
 									components: {
 										linkToStripePage: (
@@ -190,9 +197,13 @@ export const formatMethodFeesTooltip = (
 									},
 							  } )
 							: interpolateComponents( {
-									mixedString: __(
-										'{{linkToStripePage /}} about WooCommerce Payments Fees',
-										'woocommerce-payments'
+									mixedString: sprintf(
+										/* translators: %s: WooPayments */
+										__(
+											'{{linkToStripePage /}} about %s Fees',
+											'woocommerce-payments'
+										),
+										'WooPayments'
 									),
 									components: {
 										linkToStripePage: (

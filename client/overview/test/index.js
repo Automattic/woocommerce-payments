@@ -263,28 +263,10 @@ describe( 'Overview page', () => {
 		).toBeVisible();
 	} );
 
-	it( 'dismisses the FRTDiscoverabilityBanner when remind me later button is clicked', async () => {
-		render( <OverviewPage /> );
-
-		const bannerHeader = screen.getByText(
-			'Enhanced fraud protection for your store'
-		);
-
-		expect( bannerHeader ).toBeInTheDocument();
-
-		userEvent.click( screen.getByText( 'Remind me later' ) );
-
-		await waitFor( () => {
-			expect( bannerHeader ).not.toBeInTheDocument();
-		} );
-	} );
-
 	it( 'dismisses the FRTDiscoverabilityBanner when dismiss button is clicked', async () => {
 		global.wcpaySettings = {
 			...global.wcpaySettings,
 			frtDiscoverBannerSettings: JSON.stringify( {
-				remindMeCount: 3,
-				remindMeAt: null,
 				dontShowAgain: false,
 			} ),
 		};

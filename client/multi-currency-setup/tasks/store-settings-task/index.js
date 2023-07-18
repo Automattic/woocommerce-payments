@@ -123,7 +123,7 @@ const StoreSettingsTask = () => {
 									}
 									data-testid={ 'enable_storefront_switcher' }
 									label={ __(
-										'Add a currency switcher to the cart widget',
+										'Add a currency switcher to the Storefront theme on breadcrumb section.',
 										'woocommerce-payments'
 									) }
 								/>

@@ -23,6 +23,7 @@ class WooPay_Utilities {
 	const AVAILABLE_COUNTRIES_KEY            = 'woocommerce_woocommerce_payments_woopay_available_countries';
 	const AVAILABLE_COUNTRIES_LAST_CHECK_KEY = 'woocommerce_woocommerce_payments_woopay_available_countries_last_check';
 	const AVAILABLE_COUNTRIES_DEFAULT        = '["US"]';
+	const ADAPTED_EXTENSIONS                 = [ 'woocommerce-points-and-rewards/woocommerce-points-and-rewards.php', 'woocommerce-gift-cards/woocommerce-gift-cards.php' ];
 
 	/**
 	 * Check various conditions to determine if we should enable woopay.
@@ -281,5 +282,20 @@ class WooPay_Utilities {
 	 */
 	public static function get_woopay_url() {
 		return defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'https://pay.woo.com';
+	}
+
+	/**
+	 * Returns true if an extension WooPay supports is installed .
+	 *
+	 * @return bool
+	 */
+	public function has_adapted_extension_installed() {
+		foreach ( self::ADAPTED_EXTENSIONS as $supported_extension ) {
+			if ( in_array( $supported_extension, apply_filters( 'active_plugins', get_option( 'active_plugins' ) ), true ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

@@ -18,6 +18,7 @@ import {
 	usePaymentRequestButtonSize,
 	usePaymentRequestButtonTheme,
 	useWooPayLocations,
+	useWooPayShowIncompatibilityNotice,
 } from '../../../data';
 
 jest.mock( '../../../data', () => ( {
@@ -28,6 +29,7 @@ jest.mock( '../../../data', () => ( {
 	usePaymentRequestButtonSize: jest.fn(),
 	usePaymentRequestButtonTheme: jest.fn(),
 	useWooPayLocations: jest.fn(),
+	useWooPayShowIncompatibilityNotice: jest.fn().mockReturnValue( false ),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
@@ -149,5 +151,29 @@ describe( 'WooPaySettings', () => {
 		expect( updateWooPayCustomMessageHandler ).toHaveBeenLastCalledWith(
 			'test'
 		);
+	} );
+
+	it( 'triggers the hooks when the enable setting is being interacted with', () => {
+		useWooPayShowIncompatibilityNotice.mockReturnValue( true );
+
+		render( <WooPaySettings section="enable" /> );
+
+		expect(
+			screen.queryByText(
+				'One or more of your extensions are incompatible with WooPay.'
+			)
+		).toBeInTheDocument();
+	} );
+
+	it( 'triggers the hooks when the enable setting is being interacted with', () => {
+		useWooPayShowIncompatibilityNotice.mockReturnValue( false );
+
+		render( <WooPaySettings section="enable" /> );
+
+		expect(
+			screen.queryByText(
+				'One or more of your extensions are incompatible with WooPay.'
+			)
+		).not.toBeInTheDocument();
 	} );
 } );

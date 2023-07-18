@@ -199,7 +199,7 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_add_admin_body_classes_when_onboarding() {
-		$_GET['path'] = '/payments/onboarding-flow';
+		$_GET['path'] = '/payments/onboarding';
 
 		$this->assertEquals( ' woocommerce-admin-is-loading', $this->onboarding_service->add_admin_body_classes() );
 	}
