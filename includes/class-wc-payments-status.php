@@ -36,7 +36,14 @@ class WC_Payments_Status {
 	public function __construct( $http, $account ) {
 		$this->http    = $http;
 		$this->account = $account;
+	}
 
+	/**
+	 * Initializes this class's WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		add_action( 'woocommerce_system_status_report', [ $this, 'render_status_report_section' ] );
 		add_filter( 'woocommerce_debug_tools', [ $this, 'debug_tools' ] );
 	}

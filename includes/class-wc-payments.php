@@ -622,7 +622,7 @@ class WC_Payments {
 		}
 
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
-			new WC_Payments_Admin(
+			$wcpay_admin = new WC_Payments_Admin(
 				self::$api_client,
 				self::get_gateway(),
 				self::$account,
@@ -631,18 +631,23 @@ class WC_Payments {
 				self::$incentives_service,
 				self::$database_cache
 			);
+			$wcpay_admin->init_hooks();
 
-			new WC_Payments_Admin_Settings( self::get_gateway() );
+			$admin_settings = new WC_Payments_Admin_Settings( self::get_gateway() );
+			$admin_settings->init_hooks();
 
 			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
 			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
 
 			include_once __DIR__ . '/admin/class-wc-payments-admin-sections-overwrite.php';
-			new WC_Payments_Admin_Sections_Overwrite( self::get_account_service() );
+			$admin_sections_overwrite = new WC_Payments_Admin_Sections_Overwrite( self::get_account_service() );
+			$admin_sections_overwrite->init_hooks();
 
-			new WC_Payments_Status( self::get_wc_payments_http(), self::get_account_service() );
+			$wcpay_status = new WC_Payments_Status( self::get_wc_payments_http(), self::get_account_service() );
+			$wcpay_status->init_hooks();
 
-			new WCPay\Fraud_Prevention\Order_Fraud_And_Risk_Meta_Box( self::$order_service );
+			$order_fraud_meta_box = new WCPay\Fraud_Prevention\Order_Fraud_And_Risk_Meta_Box( self::$order_service );
+			$order_fraud_meta_box->init_hooks();
 		}
 
 		// Load WCPay Subscriptions.
