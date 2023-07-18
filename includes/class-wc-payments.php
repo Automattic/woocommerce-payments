@@ -1525,6 +1525,14 @@ class WC_Payments {
 				'checkout' => $checkout_data,
 			],
 		];
+
+		if ( ! empty( $email ) ) {
+			// Save email in session to skip TYP verify email and check if
+			// WooPay verified email matches.
+			WC()->customer->set_billing_email( $email );
+			WC()->customer->save();
+		}
+
 		$args = [
 			'url'     => WooPay_Utilities::get_woopay_rest_url( 'init' ),
 			'method'  => 'POST',
