@@ -687,13 +687,15 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 		$customer_id = $this->customer_service->get_customer_id_by_user_id( 1 );
 
 		$expected_card_cache_key = Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_card';
+		$expected_link_cache_key = Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_link';
 		$expected_sepa_cache_key = Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_sepa_debit';
 
 		$this->mock_db_cache
-			->expects( $this->exactly( 2 ) )
+			->expects( $this->exactly( 3 ) )
 			->method( 'delete' )
 			->withConsecutive(
 				[ $expected_card_cache_key ],
+				[ $expected_link_cache_key ],
 				[ $expected_sepa_cache_key ]
 			);
 		$this->customer_service->clear_cached_payment_methods_for_user( 1 );

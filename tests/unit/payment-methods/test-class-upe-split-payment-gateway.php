@@ -284,7 +284,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 						'get_payment_method_ids_enabled_at_checkout',
 						'wc_payments_get_payment_gateway_by_id',
 						'get_selected_payment_method',
-						'remove_upe_payment_intent_from_session',
 					]
 				)
 				->getMock();
@@ -1089,9 +1088,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->set_cart_contains_subscription_items( false );
 
 		$mock_upe_gateway->process_redirect_payment( $order_id, $intent_id, $save_payment_method );
-
-		$mock_upe_gateway->expects( $this->any() )
-			->method( 'remove_upe_payment_intent_from_session' );
 
 		$result_order = wc_get_order( $order_id );
 		$note         = wc_get_order_notes(
@@ -2028,7 +2024,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_customer_service,
 					$this->mock_token_service,
 					$this->mock_action_scheduler_service,
-					$this->mock_payment_methods[ Payment_Method::LINK ],
+					$this->mock_payment_methods[ Payment_Method::CARD ],
 					$this->mock_payment_methods,
 					$this->mock_rate_limiter,
 					$this->order_service,
@@ -2107,7 +2103,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					'countries'              => [],
 					'upePaymentIntentData'   => null,
 					'upeSetupIntentData'     => null,
-					'testingInstructions'    => '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC. Other payment methods may redirect to a Stripe test page to authorize payment. More test card numbers are listed <a href="https://woocommerce.com/document/payments/testing/#test-cards" target="_blank">here</a>.',
+					'testingInstructions'    => '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC. Other payment methods may redirect to a Stripe test page to authorize payment. More test card numbers are listed <a href="https://woocommerce.com/document/woocommerce-payments/testing-and-troubleshooting/testing/#test-cards" target="_blank">here</a>.',
 					'forceNetworkSavedCards' => false,
 				],
 				'link' => [
