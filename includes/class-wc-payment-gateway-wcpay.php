@@ -1126,7 +1126,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
 
 				// Afterpay expects the shipping address to be sent in the request. This is not required for other payment methods.
-				// TODO: Check if this ever works...
 				if ( Payment_Method::AFTERPAY === $payment_information->get_payment_method() ) {
 					$request->set_shipping( $this->get_shipping_data_from_order( $order ) );
 				}
