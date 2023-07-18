@@ -630,7 +630,7 @@ abstract class Request {
 	 * @throws Invalid_Request_Parameter_Exception An exception if the format is not matched.
 	 * @return void
 	 */
-	protected function validate_is_larger_then( float $value_to_validate, float $value_to_compare ) {
+	protected function validate_is_larger_than( float $value_to_validate, float $value_to_compare ) {
 		if ( $value_to_validate > $value_to_compare ) {
 			return;
 		}
