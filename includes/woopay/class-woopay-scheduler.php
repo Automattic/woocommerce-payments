@@ -86,12 +86,12 @@ class WooPay_Scheduler {
 			delete_option( self::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME );
 
 			if ( ! empty( $active_plugins ) && is_array( $active_plugins ) ) {
-				if ( $this->contains_extensions_in_list( $active_plugins, $incompatible_extensions ) ) {
+				if ( count( $this->get_extensions_in_list( $active_plugins, $incompatible_extensions ) ) > 0 ) {
 					update_option( self::INVALID_EXTENSIONS_FOUND_OPTION_NAME, true );
 				}
 			}
 
-			$this->update_enabled_adapted_extensions( $adapted_extensions, $active_plugins );
+			$this->update_enabled_adapted_extensions( $active_plugins, $adapted_extensions );
 			$this->update_available_countries( $available_countries );
 		} catch ( \Exception $e ) {
 			Logger::error( 'Failed to decode WooPay incompatible extensions list. ' . $e );
@@ -101,25 +101,13 @@ class WooPay_Scheduler {
 	/**
 	 * Update the enable adapted extensions list.
 	 *
-	 * @param array $adapted_extensions The adapted extensions list.
 	 * @param array $active_plugins     The active plugins.
+	 * @param array $adapted_extensions The adapted extensions list.
 	 */
-	public function update_enabled_adapted_extensions( $adapted_extensions, $active_plugins ) {
-		try {
-			$enabled_adapted_extensions = [];
+	public function update_enabled_adapted_extensions( $active_plugins, $adapted_extensions ) {
+		$enabled_adapted_extensions = $this->get_extensions_in_list( $active_plugins, $adapted_extensions );
 
-			foreach ( $active_plugins as $plugin ) {
-				$formatted_plugin_name = $this->format_extension_name( $plugin );
-
-				if ( in_array( $formatted_plugin_name, $adapted_extensions, true ) ) {
-					$enabled_adapted_extensions[] = $formatted_plugin_name;
-				}
-			}
-
-			update_option( self::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, $enabled_adapted_extensions );
-		} catch ( \Exception $e ) {
-			Logger::error( 'Failed to decode WooPay available countries. ' . $e );
-		}
+		update_option( self::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, $enabled_adapted_extensions );
 	}
 
 	/**
@@ -148,11 +136,11 @@ class WooPay_Scheduler {
 		$plugin                  = $this->format_extension_name( $plugin );
 		$active_plugins          = get_option( 'active_plugins', [] );
 
-		if ( $this->contains_extensions_in_list( [ $plugin ], $incompatible_extensions ) ) {
+		if ( count( $this->get_extensions_in_list( [ $plugin ], $incompatible_extensions ) ) > 0 ) {
 			update_option( self::INVALID_EXTENSIONS_FOUND_OPTION_NAME, true );
 		}
 
-		$this->update_enabled_adapted_extensions( $adapted_extensions, $active_plugins );
+		$this->update_enabled_adapted_extensions( $active_plugins, $adapted_extensions );
 	}
 
 	/**
@@ -169,31 +157,33 @@ class WooPay_Scheduler {
 		$active_plugins = array_diff( $active_plugins, [ $plugin_being_deactivated ] );
 
 		// Only deactivates the warning if there are no other incompatible extensions.
-		if ( ! $this->contains_extensions_in_list( $active_plugins, $incompatible_extensions ) ) {
+		if ( count( $this->get_extensions_in_list( $active_plugins, $incompatible_extensions ) ) === 0 ) {
 			delete_option( self::INVALID_EXTENSIONS_FOUND_OPTION_NAME );
 		}
 
-		$this->update_enabled_adapted_extensions( $adapted_extensions, $active_plugins );
+		$this->update_enabled_adapted_extensions( $active_plugins, $adapted_extensions );
 	}
 
 	/**
-	 * Checks if there is any incompatible extension in the list.
+	 * Get the list of extensions in a list.
 	 *
 	 * @param mixed $active_plugins list of active plugins.
-	 * @param mixed $extensions  list of incompatible extensions.
+	 * @param mixed $extensions  list of extensions to find in active plugins.
 	 *
-	 * @return bool
+	 * @return array
 	 */
-	public function contains_extensions_in_list( $active_plugins, $extensions ) {
+	public function get_extensions_in_list( $active_plugins, $extensions ) {
+		$plugins_in_list = [];
+
 		foreach ( $active_plugins as $plugin ) {
 			$plugin = $this->format_extension_name( $plugin );
 
 			if ( in_array( $plugin, $extensions, true ) ) {
-				return true;
+				$plugins_in_list[] = $plugin;
 			}
 		}
 
-		return false;
+		return $plugins_in_list;
 	}
 
 	/**
