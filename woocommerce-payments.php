@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: WooPayments
+ * Plugin Name: WooCommerce Payments
  * Plugin URI: https://woocommerce.com/payments/
  * Description: Accept payments via credit card. Manage transactions within WordPress.
  * Author: Automattic
