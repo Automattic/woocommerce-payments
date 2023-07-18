@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix issue where subscription signup fees are not converted correctly with Multi-Currency.

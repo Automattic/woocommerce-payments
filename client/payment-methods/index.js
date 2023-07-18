@@ -109,7 +109,7 @@ const UpeSetupBanner = () => {
 							) }
 						</Button>
 					</span>
-					<ExternalLink href="https://woocommerce.com/document/payments/additional-payment-methods/">
+					<ExternalLink href="https://woocommerce.com/document/woocommerce-payments/payment-methods/additional-payment-methods/">
 						{ __( 'Learn more', 'woocommerce-payments' ) }
 					</ExternalLink>
 				</div>
@@ -149,6 +149,8 @@ const PaymentMethods = () => {
 	const availableMethods = orderedAvailablePaymentMethodIds.map(
 		( methodId ) => methodsConfiguration[ methodId ]
 	);
+
+	const isCreditCardEnabled = enabledMethodIds.includes( 'card' );
 
 	const [ activationModalParams, handleActivationModalOpen ] = useState(
 		null
@@ -300,6 +302,7 @@ const PaymentMethods = () => {
 									}
 									locked={
 										PAYMENT_METHOD_IDS.CARD === id &&
+										isCreditCardEnabled &&
 										isUpeEnabled
 									}
 									Icon={ Icon }

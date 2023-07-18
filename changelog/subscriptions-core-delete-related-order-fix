@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+When HPOS is enabled, permanently deleting a subscription related order wasn't updating the related orders cache properly.

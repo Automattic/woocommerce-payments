@@ -24,6 +24,7 @@ use WC_Payments_Token_Service;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Utils;
 use WC_Payments_Features;
+use WCPay\Duplicate_Payment_Prevention_Service;
 use WP_User;
 
 
@@ -49,15 +50,16 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	/**
 	 * UPE Constructor same parameters as WC_Payment_Gateway_WCPay constructor.
 	 *
-	 * @param WC_Payments_API_Client               $payments_api_client             - WooCommerce Payments API client.
-	 * @param WC_Payments_Account                  $account                         - Account class instance.
-	 * @param WC_Payments_Customer_Service         $customer_service                - Customer class instance.
-	 * @param WC_Payments_Token_Service            $token_service                   - Token class instance.
-	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service        - Action Scheduler service instance.
-	 * @param UPE_Payment_Method                   $payment_method                  - Specific UPE_Payment_Method instance for gateway.
-	 * @param array                                $payment_methods                 - Array of payment methods to supply to parent.
-	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter - Session Rate Limiter instance.
-	 * @param WC_Payments_Order_Service            $order_service                   - Order class instance.
+	 * @param WC_Payments_API_Client               $payments_api_client                  - WooCommerce Payments API client.
+	 * @param WC_Payments_Account                  $account                              - Account class instance.
+	 * @param WC_Payments_Customer_Service         $customer_service                     - Customer class instance.
+	 * @param WC_Payments_Token_Service            $token_service                        - Token class instance.
+	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service             - Action Scheduler service instance.
+	 * @param UPE_Payment_Method                   $payment_method                       - Specific UPE_Payment_Method instance for gateway.
+	 * @param array                                $payment_methods                      - Array of payment methods to supply to parent.
+	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter      - Session Rate Limiter instance.
+	 * @param WC_Payments_Order_Service            $order_service                        - Order class instance.
+	 * @param Duplicate_Payment_Prevention_Service $duplicate_payment_prevention_service - Service for preventing duplicate payments.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
@@ -68,9 +70,10 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 		UPE_Payment_Method $payment_method,
 		array $payment_methods,
 		Session_Rate_Limiter $failed_transaction_rate_limiter,
-		WC_Payments_Order_Service $order_service
+		WC_Payments_Order_Service $order_service,
+		Duplicate_Payment_Prevention_Service $duplicate_payment_prevention_service
 	) {
-		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $payment_methods, $failed_transaction_rate_limiter, $order_service );
+		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $payment_methods, $failed_transaction_rate_limiter, $order_service, $duplicate_payment_prevention_service );
 		$this->method_description = __( 'Payments made simple, with no monthly fees - designed exclusively for WooCommerce stores. Accept credit cards, debit cards, and other popular payment methods.', 'woocommerce-payments' );
 		$this->description        = '';
 		$this->stripe_id          = $payment_method->get_id();
@@ -80,7 +83,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 
 		if ( 'card' !== $this->stripe_id ) {
 			$this->id           = self::GATEWAY_ID . '_' . $this->stripe_id;
-			$this->method_title = "WooCommerce Payments ($this->title)";
+			$this->method_title = "WooPayments ($this->title)";
 		}
 	}
 
@@ -190,7 +193,8 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 					'error' => [
 						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
-				]
+				],
+				WC_Payments_Utils::get_filtered_error_status_code( $e ),
 			);
 		}
 	}
@@ -247,7 +251,8 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 					'error' => [
 						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
-				]
+				],
+				WC_Payments_Utils::get_filtered_error_status_code( $e ),
 			);
 		}
 	}
@@ -293,7 +298,8 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 					'error' => [
 						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
-				]
+				],
+				WC_Payments_Utils::get_filtered_error_status_code( $e ),
 			);
 		}
 	}

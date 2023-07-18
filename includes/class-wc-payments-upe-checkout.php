@@ -247,9 +247,11 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 				'title'          => $payment_method->get_title(),
 				'icon'           => $payment_method->get_icon(),
 				'showSaveOption' => $this->should_upe_payment_method_show_save_option( $payment_method ),
+				'countries'      => $payment_method->get_countries(),
 			];
 
 			if ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+				$gateway_for_payment_method                             = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
 				$settings[ $payment_method_id ]['upePaymentIntentData'] = $this->gateway->get_payment_intent_data_from_session( $payment_method_id );
 				$settings[ $payment_method_id ]['upeSetupIntentData']   = $this->gateway->get_setup_intent_data_from_session( $payment_method_id );
 				$settings[ $payment_method_id ]['testingInstructions']  = WC_Payments_Utils::esc_interpolated_html(
@@ -257,9 +259,10 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 					$payment_method->get_testing_instructions(),
 					[
 						'strong' => '<strong>',
-						'a'      => '<a href="https://woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
+						'a'      => '<a href="https://woocommerce.com/document/woocommerce-payments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
 					]
 				);
+				$settings[ $payment_method_id ]['forceNetworkSavedCards'] = $gateway_for_payment_method->should_use_stripe_platform_on_checkout_page();
 			}
 		}
 
@@ -331,7 +334,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 							$testing_instructions,
 							[
 								'strong' => '<strong>',
-								'a'      => '<a href="https://woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
+								'a'      => '<a href="https://woocommerce.com/document/woocommerce-payments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
 							]
 						);
 					}
