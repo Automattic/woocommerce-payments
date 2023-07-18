@@ -71,6 +71,7 @@ class WC_Payments_Account_Server_Links_Test extends WCPAY_UnitTestCase {
 			->setMethods( [ 'redirect_to' ] )
 			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service ] )
 			->getMock();
+		$this->wcpay_account->init_hooks();
 	}
 
 	public function tear_down() {

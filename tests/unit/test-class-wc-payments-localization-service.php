@@ -23,6 +23,7 @@ class WC_Payments_Localization_Service_Test extends WCPAY_UnitTestCase {
 		parent::set_up();
 
 		$this->localization_service = new WC_Payments_Localization_Service();
+		$this->localization_service->load_locale_data();
 	}
 
 	public function tear_down() {

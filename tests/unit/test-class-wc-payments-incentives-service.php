@@ -34,6 +34,7 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_database_cache = $this->createMock( Database_Cache::class );
 		$this->incentives_service  = new WC_Payments_Incentives_Service( $this->mock_database_cache );
+		$this->incentives_service->init_hooks();
 
 		global $menu;
 		// phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited

@@ -75,7 +75,14 @@ class WC_Payments_Customer_Service {
 		$this->payments_api_client = $payments_api_client;
 		$this->account             = $account;
 		$this->database_cache      = $database_cache;
+	}
 
+	/**
+	 * Initializes this class's WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		/*
 		 * Adds the WooCommerce Payments customer ID found in the user session
 		 * to the WordPress user as metadata.

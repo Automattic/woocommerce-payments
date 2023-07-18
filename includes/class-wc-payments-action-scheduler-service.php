@@ -40,8 +40,6 @@ class WC_Payments_Action_Scheduler_Service {
 	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->order_service       = $order_service;
-
-		$this->add_action_scheduler_hooks();
 	}
 
 	/**
@@ -49,7 +47,7 @@ class WC_Payments_Action_Scheduler_Service {
 	 *
 	 * @return void
 	 */
-	public function add_action_scheduler_hooks() {
+	public function init_hooks() {
 		add_action( 'wcpay_track_new_order', [ $this, 'track_new_order_action' ] );
 		add_action( 'wcpay_track_update_order', [ $this, 'track_update_order_action' ] );
 		add_action( WC_Payments_Order_Service::ADD_FEE_BREAKDOWN_TO_ORDER_NOTES, [ $this->order_service, 'add_fee_breakdown_to_order_notes' ], 10, 3 );

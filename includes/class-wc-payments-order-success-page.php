@@ -11,11 +11,12 @@ use WCPay\Duplicate_Payment_Prevention_Service;
  * Class handling order success page.
  */
 class WC_Payments_Order_Success_Page {
-
 	/**
-	 * Constructor.
+	 * Initializes this class's WP hooks.
+	 *
+	 * @return void
 	 */
-	public function __construct() {
+	public function init_hooks() {
 		add_action( 'woocommerce_before_thankyou', [ $this, 'register_payment_method_override' ] );
 		add_action( 'woocommerce_order_details_before_order_table', [ $this, 'unregister_payment_method_override' ] );
 		add_filter( 'woocommerce_thankyou_order_received_text', [ $this, 'add_notice_previous_paid_order' ], 11 );

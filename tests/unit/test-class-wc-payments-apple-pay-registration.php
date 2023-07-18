@@ -64,6 +64,7 @@ class WC_Payments_Apple_Pay_Registration_Test extends WCPAY_UnitTestCase {
 			->getMock();
 
 		$this->wc_apple_pay_registration = new WC_Payments_Apple_Pay_Registration( $this->mock_api_client, $this->mock_account, $mock_gateway );
+		$this->wc_apple_pay_registration->init_hooks();
 
 		$this->file_name             = 'apple-developer-merchantid-domain-association';
 		$this->initial_file_contents = file_get_contents( WCPAY_ABSPATH . '/' . $this->file_name ); // @codingStandardsIgnoreLine

@@ -50,7 +50,14 @@ class WC_Payments_Fraud_Service {
 		$this->payments_api_client = $payments_api_client;
 		$this->customer_service    = $customer_service;
 		$this->account             = $account;
+	}
 
+	/**
+	 * Initializes this class' WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		add_filter( 'wcpay_prepare_fraud_config', [ $this, 'prepare_fraud_config' ], 10, 2 );
 		add_action( 'init', [ $this, 'link_session_if_user_just_logged_in' ] );
 		add_action( 'admin_print_footer_scripts', [ $this, 'add_sift_js_tracker' ] );

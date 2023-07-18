@@ -29,13 +29,6 @@ class WC_Payments_Localization_Service {
 	protected $locale_info = [];
 
 	/**
-	 * Constructor.
-	 */
-	public function __construct() {
-		$this->load_locale_data();
-	}
-
-	/**
 	 * Retrieves the currency's format from mapped data.
 	 *
 	 * @param string $currency_code The currency code.
@@ -100,7 +93,7 @@ class WC_Payments_Localization_Service {
 	 *
 	 * @return void
 	 */
-	private function load_locale_data() {
+	public function load_locale_data() {
 		$transient_currency_format_data = get_transient( self::WCPAY_CURRENCY_FORMAT_TRANSIENT );
 		$transient_locale_info_data     = get_transient( self::WCPAY_LOCALE_INFO_TRANSIENT );
 
