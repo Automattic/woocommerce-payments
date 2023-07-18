@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Fix Husky post-merge script to conform to `sh` syntax

@@ -724,7 +724,7 @@ class WC_Payments {
 				self::get_gateway()->update_option( 'upe_enabled_payment_method_ids', $payment_methods );
 			}
 
-			if ( WC_Payments_Features::is_woopay_enabled() ) {
+			if ( ! WC_Payments_Features::is_upe_deferred_intent_enabled() && WC_Payments_Features::is_woopay_enabled() ) {
 				self::$registered_card_gateway = self::$legacy_card_gateway;
 			} else {
 				self::$registered_card_gateway = self::$card_gateway;
@@ -1527,6 +1527,14 @@ class WC_Payments {
 				'checkout' => $checkout_data,
 			],
 		];
+
+		if ( ! empty( $email ) ) {
+			// Save email in session to skip TYP verify email and check if
+			// WooPay verified email matches.
+			WC()->customer->set_billing_email( $email );
+			WC()->customer->save();
+		}
+
 		$args = [
 			'url'     => WooPay_Utilities::get_woopay_rest_url( 'init' ),
 			'method'  => 'POST',

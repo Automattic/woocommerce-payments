@@ -67,7 +67,7 @@ const getGreeting = ( name?: string, date: Date = new Date() ): string => {
 };
 
 /**
- * Renders a welcome card header with a greeting and the Woo Payments logo.
+ * Renders a welcome card header with a greeting and the WooPayments logo.
  *
  * @return {JSX.Element} Rendered element with the account balances card header.
  */
@@ -89,7 +89,7 @@ const Welcome: React.FC = () => {
 					<img
 						className="wcpay-welcome__flex__logo"
 						src={ wooPaymentsLogo }
-						alt="Woo Payments logo"
+						alt="WooPayments logo"
 						width={ 107 }
 					/>
 				</FlexItem>
