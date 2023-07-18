@@ -120,6 +120,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Resolved an issue that caused the payment type metadata to not be included in payment requests.
 * Fix - Resolved errors that occurred when activating the WC Subscriptions plugin via bulk action on the WP plugins screen or updating the plugin via the WooCommerce Extensions screen.
 * Fix - Restore removed condition after naming convention.
+* Fix - Reverting change to the plugin name because of compatibility with iOS app.
 * Fix - When HPOS is enabled, permanently deleting a subscription related order wasn't updating the related orders cache properly.
 * Fix - Wrap list of payment method logos on next line
 * Update - Add incentive cache invalidation based on store context hash.
