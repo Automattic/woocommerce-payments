@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Refactor the way hooks are initialized for non-admin classes
