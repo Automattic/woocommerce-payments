@@ -198,7 +198,7 @@ const PaymentProcessor = ( {
 						type: 'success',
 						meta: {
 							paymentMethodData: {
-								payment_method: paymentMethodId,
+								payment_method: upeMethods[ paymentMethodId ],
 								'wcpay-payment-method':
 									paymentMethodObject.paymentMethod.id,
 								'wcpay-fraud-prevention-token': getFraudPreventionToken(),

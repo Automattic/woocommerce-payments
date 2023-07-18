@@ -83,4 +83,34 @@ class Create_And_Confirm_Setup_Intention extends Request {
 		$this->validate_stripe_id( $payment_method_id, [ 'pm', 'src', 'card' ] );
 		$this->set_param( 'payment_method', $payment_method_id );
 	}
+
+	/**
+	 * Mandate data setter.
+	 *
+	 * @param array $mandate_data Array containing details about mandate to create.
+	 *
+	 * @return void
+	 */
+	public function set_mandate_data( array $mandate_data ) {
+		$this->set_param( 'mandate_data', $mandate_data );
+	}
+
+
+	/**
+	 * Payment methods setter.
+	 *
+	 * @param  array $payment_methods               An array of payment methods that might be used for the payment.
+	 * @throws Invalid_Request_Parameter_Exception  When there are no payment methods provided.
+	 */
+	public function set_payment_methods( array $payment_methods ) {
+		// Hard to validate without hardcoding a list here.
+		if ( empty( $payment_methods ) ) {
+			throw new Invalid_Request_Parameter_Exception(
+				__( 'Intentions require at least one payment method', 'woocommerce-payments' ),
+				'wcpay_core_invalid_request_parameter_missing_payment_method_types'
+			);
+		}
+
+		$this->set_param( 'payment_method_types', $payment_methods );
+	}
 }

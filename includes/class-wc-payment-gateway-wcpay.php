@@ -1167,16 +1167,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					Payment_Method::CARD === $this->get_selected_stripe_payment_type_id() &&
 					in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true )
 					) {
-					$mandate_data = [
-						'customer_acceptance' => [
-							'type'   => 'online',
-							'online' => [
-								'ip_address' => WC_Geolocation::get_ip_address(),
-								'user_agent' => 'WooCommerce Payments/' . WCPAY_VERSION_NUMBER . '; ' . get_bloginfo( 'url' ),
-							],
-						],
-					];
-					$request->set_mandate_data( $mandate_data );
+					$request->set_mandate_data( $this->get_mandate_data() );
 				}
 
 				$intent = $request->send( 'wcpay_create_and_confirm_intent_request', $payment_information );
@@ -1241,6 +1232,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_customer( $customer_id );
 				$request->set_payment_method( $payment_information->get_payment_method() );
 				$request->set_metadata( $metadata );
+
+				if (
+					WC_Payments_Features::is_upe_deferred_intent_enabled() &&
+					Payment_Method::CARD === $this->get_selected_stripe_payment_type_id() &&
+					in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true )
+					) {
+					$request->set_payment_methods( $this->get_payment_methods_from_request() );
+					$request->set_mandate_data( $this->get_mandate_data() );
+				}
+
 				$intent = $request->send( 'wcpay_create_and_confirm_setup_intention_request', $payment_information, false, $save_user_in_woopay );
 				$intent = $intent->to_array();
 			}
@@ -1397,18 +1398,35 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		if ( ! empty( $upe_payment_method ) && 'woocommerce_payments' !== $upe_payment_method ) {
 			$payment_methods = [ str_replace( 'woocommerce_payments_', '', $upe_payment_method ) ];
+		} elseif ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+			$payment_methods = [ 'card' ];
 			if ( WC_Payments_Features::is_upe_deferred_intent_enabled() &&
 				in_array( Payment_Method::CARD, $payment_methods, true ) &&
 				in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true ) ) {
 				$payment_methods[] = Payment_Method::LINK;
 			}
-		} elseif ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
-			$payment_methods = [ 'card' ];
 		} else {
 			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
 		}
 
 		return $payment_methods;
+	}
+
+	/**
+	 * Get values for Stripe mandate_data parameter
+	 *
+	 * @return array mandate_data values to use in request.
+	 */
+	private function get_mandate_data() {
+		return [
+			'customer_acceptance' => [
+				'type'   => 'online',
+				'online' => [
+					'ip_address' => WC_Geolocation::get_ip_address(),
+					'user_agent' => 'WooCommerce Payments/' . WCPAY_VERSION_NUMBER . '; ' . get_bloginfo( 'url' ),
+				],
+			],
+		];
 	}
 
 	/**
