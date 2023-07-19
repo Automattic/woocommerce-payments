@@ -175,7 +175,7 @@ class WC_Payments_Subscriptions_Migrator {
 		}
 
 		try {
-			// Fetch the subscription from stripe.
+			// Fetch the subscription from Stripe.
 			$wcpay_subscription = WC_Payments::get_payments_api_client()->get_subscription( $wcpay_subscription_id );
 		} catch ( API_Exception $e ) {
 			$this->log( sprintf( 'Error migrating subscription #%d (%s). Failed to fetch subscription from Stripe. %s', $subscription->get_id(), $wcpay_subscription_id, $e->getMessage() ) );
