@@ -211,7 +211,7 @@ class WC_Payments_Subscriptions_Migrator {
 			$this->log( sprintf( '---- Subscription at Stripe has "%s" status. Canceling the subscription.', $this->get_wcpay_subscription_status( $wcpay_subscription ) ) );
 
 			try {
-				// Cancel the subscription in stripe.
+				// Cancel the subscription in Stripe.
 				$wcpay_subscription = WC_Payments::get_payments_api_client()->cancel_subscription( $wcpay_subscription['id'] );
 			} catch ( API_Exception $e ) {
 				$this->log( sprintf( '---- ERROR: Failed to cancel the subscription at Stripe. %s', $e->getMessage() ) );
