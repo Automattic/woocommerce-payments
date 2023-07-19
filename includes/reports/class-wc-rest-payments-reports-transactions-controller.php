@@ -126,9 +126,9 @@ class WC_REST_Payments_Reports_Transactions_Controller extends WC_Payments_REST_
 		$prepared_item['deposit_currency']     = $item['currency'];
 		$prepared_item['fees']                 = $item['fees'];
 		$prepared_item['customer']             = [
-			'name'             => $item['customer_name'],
-			'email'            => $item['customer_email'],
-			'customer_country' => $item['customer_country'],
+			'name'    => $item['customer_name'],
+			'email'   => $item['customer_email'],
+			'country' => $item['customer_country'],
 		];
 		$prepared_item['net_amount']           = $item['net'];
 		$prepared_item['order_id']             = $item['order_id'];
@@ -342,17 +342,17 @@ class WC_REST_Payments_Reports_Transactions_Controller extends WC_Payments_REST_
 					'type'        => 'object',
 					'context'     => [ 'view' ],
 					'properties'  => [
-						'number'       => [
+						'name'    => [
 							'name'    => __( 'Customer name.', 'woocommerce-payments' ),
 							'type'    => 'string',
 							'context' => [ 'view' ],
 						],
-						'email'        => [
+						'email'   => [
 							'description' => __( 'Customer email.', 'woocommerce-payments' ),
 							'type'        => 'string',
 							'context'     => [ 'view' ],
 						],
-						'customer_url' => [
+						'country' => [
 							'description' => __( 'Customer country.', 'woocommerce-payments' ),
 							'type'        => 'string',
 							'context'     => [ 'view' ],
@@ -394,6 +394,5 @@ class WC_REST_Payments_Reports_Transactions_Controller extends WC_Payments_REST_
 
 		return $this->add_additional_fields_schema( $schema );
 	}
-
 
 }

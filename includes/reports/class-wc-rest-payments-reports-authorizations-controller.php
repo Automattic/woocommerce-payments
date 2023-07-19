@@ -57,9 +57,8 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_authorizations( $request ) {
-		$wcpay_request = List_Authorizations::from_rest_request( $request );
+		$wcpay_request = List_Authorizations::from_reports_rest_request( $request );
 
-		$wcpay_request->set_include_capturable_only( (bool) $request->get_param( 'include_capturable_only' ) ); // By default, we want to include all authorizations.
 		$authorizations = $wcpay_request->handle_rest_request( 'wcpay_list_authorizations_request' );
 		if ( is_wp_error( $authorizations ) ) {
 			return $authorizations;
@@ -111,29 +110,40 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 
 		$prepared_item = [];
 
-		$prepared_item['charge_id']        = $item['charge_id'];
-		$prepared_item['transaction_id']   = $item['transaction_id'];
-		$prepared_item['channel']          = $item['channel'];
-		$prepared_item['timestamp']        = $item['created'];
-		$prepared_item['order_id']         = $item['order_id'];
-		$prepared_item['payment_method']   = [
+		$type          = 'captured'; // Default type.
+		$is_captured   = 0 === $item['is_captured'];
+		$record_date   = new \DateTime( $item['created'] );
+		$current_date  = new \DateTime();
+		$date_interval = $current_date->diff( $record_date );
+		if ( $is_captured && 'failed' === $item['status'] ) {
+			$type = 'failed'; // In case when authorization failed because it is blocked or issuer declined transaction.
+		} elseif ( $is_captured && 1 === $item['refunded'] ) {
+			$type = 'cancelled'; // When payment is authorized, but canceled before capture.
+		} elseif ( 'authorized' === $item['outcome_type'] && $is_captured && $date_interval->days > 7 ) {
+			$type = 'expired'; // If the diff is older than 7 days, we mark it as expired.
+		} elseif ( 'authorized' === $item['outcome_type'] && $is_captured && $date_interval->days <= 7 ) {
+			$type = 'uncaptured'; // If the diff is within 7 days, we mark it as uncaptured.
+		}
+		$prepared_item['date']                 = $item['created'];
+		$prepared_item['transaction_id']       = $item['transaction_id'];
+		$prepared_item['payment_intent_id']    = $item['payment_intent_id'];
+		$prepared_item['channel']              = $item['channel'];
+		$prepared_item['payment_method']       = [
 			'type' => $item['source'],
-			'id'   => $item['payment_method_id'] ?? null,
+			'id'   => $item['payment_method_id'],
 		];
-		$prepared_item['customer_name']    = $item['customer_name'];
-		$prepared_item['customer_email']   = $item['customer_email'];
-		$prepared_item['customer_country'] = $item['customer_country'];
-		$prepared_item['amount']           = $item['amount'];
-		$prepared_item['amount_captured']  = $item['amount_captured'];
-		$prepared_item['amount_refunded']  = $item['amount_refunded'];
-		$prepared_item['is_captured']      = $item['is_captured'];
-		$prepared_item['refunded']         = $item['refunded'];
-		$prepared_item['net']              = $item['net'];
-		$prepared_item['fees']             = $item['fees'];
-		$prepared_item['currency']         = $item['currency'];
-		$prepared_item['risk_level']       = $item['risk_level'];
-		$prepared_item['outcome_type']     = $item['outcome_type'];
-		$prepared_item['status']           = $item['status'];
+		$prepared_item['type']                 = $type;
+		$prepared_item['transaction_currency'] = $item['currency'];
+		$prepared_item['amount']               = $item['amount'];
+		$prepared_item['fees']                 = $item['fees'];
+		$prepared_item['customer']             = [
+			'name'    => $item['customer_name'],
+			'email'   => $item['customer_email'],
+			'country' => $item['customer_country'],
+		];
+		$prepared_item['net_amount']           = $item['net'];
+		$prepared_item['order_id']             = $item['order_id'];
+		$prepared_item['risk_level']           = $item['risk_level'];
 
 		$context       = $request['context'] ?? 'view';
 		$prepared_item = $this->add_additional_fields_to_object( $prepared_item, $request );
@@ -149,91 +159,103 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 	 */
 	public function get_collection_params() {
 		return [
-			'charge_id_is'            => [
-				'description' => __( 'Filter authorizations based on their unique authorization ID.', 'woocommerce-payments' ),
-				'type'        => 'string',
-				'required'    => false,
-			],
-			'order_id_is'             => [
-				'description' => __( 'Filter authorizations based on the associated order ID.', 'woocommerce-payments' ),
-				'type'        => 'integer',
-				'required'    => false,
-			],
-			'transaction_id_is'       => [
-				'description' => __( 'Filter authorizations based on the associated transaction ID.', 'woocommerce-payments' ),
-				'type'        => 'string',
-				'required'    => false,
-			],
-			'payment_method_id_is'    => [
-				'description' => __( 'Filter authorizations based on the payment method used.', 'woocommerce-payments' ),
-				'type'        => 'string',
-				'required'    => false,
-			],
-			'match'                   => [
-				'description' => __( 'Match filter for the authorizations.', 'woocommerce-payments' ),
-				'type'        => 'string',
-				'required'    => false,
-			],
-			'created_before'          => [
+			'date_before'       => [
 				'description' => __( 'Filter authorizations before this date.', 'woocommerce-payments' ),
 				'type'        => 'string',
 				'format'      => 'date-time',
 				'required'    => false,
 			],
-			'created_after'           => [
+			'date_after'        => [
 				'description' => __( 'Filter authorizations after this date.', 'woocommerce-payments' ),
 				'type'        => 'string',
 				'format'      => 'date-time',
 				'required'    => false,
 			],
-			'created_between'         => [
+			'date_between'      => [
 				'description' => __( 'Filter authorizations between these dates.', 'woocommerce-payments' ),
 				'type'        => 'array',
 			],
-			'outcome_type_is'         => [
-				'description' => __( 'Filter authorizations where outcome type is a specific value.', 'woocommerce-payments' ),
+			'order_id'          => [
+				'description'       => __( 'Filter authorizations based on the associated order ID.', 'woocommerce-payments' ),
+				'type'              => 'integer',
+				'required'          => false,
+				'sanitize_callback' => 'absint',
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'email'             => [
+				'description'       => __( 'Filter authorizations based on the customer email.', 'woocommerce-payments' ),
+				'type'              => 'string',
+				'required'          => false,
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'payment_method_id' => [
+				'description'       => __( 'Filter authorizations based on the payment method used.', 'woocommerce-payments' ),
+				'type'              => 'string',
+				'required'          => false,
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'type'              => [
+				'description'       => __( 'Filter authorizations where type is a specific value.', 'woocommerce-payments' ),
+				'type'              => 'string',
+				'required'          => false,
+				'validate_callback' => 'rest_validate_request_arg',
+				'enum'              => [ 'failed', 'cancelled', 'expired', 'uncaptured' ],
+			],
+			'transaction_id'    => [
+				'description'       => __( 'Filter authorizations based on their unique transaction ID.', 'woocommerce-payments' ),
+				'type'              => 'string',
+				'required'          => false,
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'payment_intent_id' => [
+				'description'       => __( 'Filter authorizations based on their unique payment intent ID.', 'woocommerce-payments' ),
+				'type'              => 'string',
+				'required'          => false,
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'match'             => [
+				'description' => __( 'Match filter for the authorizations.', 'woocommerce-payments' ),
 				'type'        => 'string',
 				'required'    => false,
 			],
-			'outcome_type_is_not'     => [
-				'description' => __( 'Filter authorizations where outcome type is not a specific value.', 'woocommerce-payments' ),
+			'search'            => [
+				'description'       => __( 'Search parameter for the authorizations.', 'woocommerce-payments' ),
+				'type'              => 'array',
+				'required'          => false,
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'user_timezone'     => [
+				'description' => __( 'Include timezone into date filtering.', 'woocommerce-payments' ),
 				'type'        => 'string',
 				'required'    => false,
 			],
-			'currency_is'             => [
-				'description' => __( 'Filter authorizations based on currency.', 'woocommerce-payments' ),
-				'type'        => 'string',
-				'required'    => false,
-			],
-			'currency_is_not'         => [
-				'description' => __( 'Filter authorizations not based on a specific currency.', 'woocommerce-payments' ),
-				'type'        => 'string',
-				'required'    => false,
-			],
-			'status_is'               => [
-				'description' => __( 'Filter authorizations based on status.', 'woocommerce-payments' ),
-				'type'        => 'string',
-				'required'    => false,
-			],
-			'status_is_not'           => [
-				'description' => __( 'Filter authorizations not based on a specific status.', 'woocommerce-payments' ),
-				'type'        => 'string',
-				'required'    => false,
-			],
-			'search'                  => [
-				'description' => __( 'Search parameter for the authorizations.', 'woocommerce-payments' ),
-				'type'        => 'array',
-				'required'    => false,
-			],
-			'sort'                    => [
+			'orderby'           => [
 				'description' => __( 'Sort authorizations based on the passed field.', 'woocommerce-payments' ),
 				'type'        => 'string',
 				'required'    => false,
+				'default'     => 'created',
 			],
-			'include_capturable_only' => [
-				'description' => __( 'Only include authorizations that are already captured (older than 7 days, refunded and already captured by payment provider),', 'woocommerce-payments' ),
-				'type'        => 'boolean',
+			'order'             => [
+				'description' => __( 'Order authorizations based on the passed field.', 'woocommerce-payments' ),
+				'type'        => 'string',
 				'required'    => false,
+				'default'     => 'desc',
+				'enum'        => [ 'asc', 'desc' ],
+			],
+			'page'              => [
+				'description' => __( 'Page number.', 'woocommerce-payments' ),
+				'type'        => 'integer',
+				'required'    => false,
+				'default'     => 1,
+				'minimum'     => 1,
+			],
+			'per_page'          => [
+				'description' => __( 'Page size.', 'woocommerce-payments' ),
+				'type'        => 'integer',
+				'required'    => false,
+				'default'     => 25,
+				'minimum'     => 1,
+				'maximum'     => 100,
 			],
 		];
 	}
@@ -247,31 +269,31 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 	public function get_item_schema() {
 		$schema = [
 			'$schema'    => 'http://json-schema.org/draft-04/schema#',
-			'title'      => 'authorization',
+			'title'      => 'transaction',
 			'type'       => 'object',
 			'properties' => [
-				'timestamp'        => [
-					'description' => __( 'The date and time when the authorization was created.', 'woocommerce-payments' ),
+				'date'                 => [
+					'description' => __( 'The date and time when the transaction was created.', 'woocommerce-payments' ),
 					'type'        => 'string',
 					'format'      => 'date-time',
 					'context'     => [ 'view' ],
 				],
-				'charge_id'        => [
-					'description' => __( 'A unique identifier for each charge.', 'woocommerce-payments' ),
+				'transaction_id'       => [
+					'description' => __( 'A unique identifier for each transaction based on its transaction type.', 'woocommerce-payments' ),
 					'type'        => 'string',
 					'context'     => [ 'view' ],
 				],
-				'transaction_id'   => [
-					'description' => __( 'Associated transaction id for specific authorization', 'woocommerce-payments' ),
+				'payment_intent_id'    => [
+					'description' => __( 'A unique payment intent identifier for each transaction.', 'woocommerce-payments' ),
 					'type'        => 'string',
 					'context'     => [ 'view' ],
 				],
-				'channel'          => [
-					'description' => __( 'Indicates whether the authorization was made online or offline.', 'woocommerce-payments' ),
+				'channel'              => [
+					'description' => __( 'Indicates whether the transaction was made online or offline.', 'woocommerce-payments' ),
 					'type'        => 'string',
 					'context'     => [ 'view' ],
 				],
-				'payment_method'   => [
+				'payment_method'       => [
 					'description' => __( 'Specifies whether the payment method used was a card (Visa, Mastercard, etc.) or an Alternative Payment Method (APM) or Local Payment Method (LPM) (iDEAL, Apple Pay, Google Pay, etc.).', 'woocommerce-payments' ),
 					'type'        => 'object',
 					'context'     => [ 'view' ],
@@ -282,85 +304,67 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 							'context'     => [ 'view' ],
 						],
 						'id'   => [
-							'description' => __( 'The payment method ID used to create the authorization type.', 'woocommerce-payments' ),
+							'description' => __( 'The payment method ID used to create the transaction type.', 'woocommerce-payments' ),
 							'type'        => 'string',
 							'context'     => [ 'view' ],
 						],
 					],
 				],
-				'outcome_type'     => [
-					'description' => __( 'The outcome type of the authorization.', 'woocommerce-payments' ),
+				'type'                 => [
+					'description' => __( 'The type of the transaction.', 'woocommerce-payments' ),
 					'type'        => 'string',
 					'context'     => [ 'view' ],
 				],
-				'status'           => [
-					'description' => __( 'The status of the authorization.', 'woocommerce-payments' ),
+				'transaction_currency' => [
+					'description' => __( 'The currency of the transaction.', 'woocommerce-payments' ),
 					'type'        => 'string',
 					'context'     => [ 'view' ],
 				],
-				'currency'         => [
-					'description' => __( 'The currency of the authorization.', 'woocommerce-payments' ),
-					'type'        => 'string',
-					'context'     => [ 'view' ],
-				],
-				'amount'           => [
-					'description' => __( 'The amount of the authorization.', 'woocommerce-payments' ),
+				'amount'               => [
+					'description' => __( 'The amount of the transaction.', 'woocommerce-payments' ),
 					'type'        => 'number',
 					'context'     => [ 'view' ],
 				],
-				'amount_captured'  => [
-					'description' => __( 'The captured amount.', 'woocommerce-payments' ),
+				'fees'                 => [
+					'description' => __( 'Transaction fees.', 'woocommerce-payments' ),
 					'type'        => 'number',
 					'context'     => [ 'view' ],
 				],
-				'amount_refunded'  => [
-					'description' => __( 'The refunded amount.', 'woocommerce-payments' ),
-					'type'        => 'number',
+				'customer'             => [
+					'description' => __( 'Customer details.', 'woocommerce-payments' ),
+					'type'        => 'object',
 					'context'     => [ 'view' ],
+					'properties'  => [
+						'name'    => [
+							'name'    => __( 'Customer name.', 'woocommerce-payments' ),
+							'type'    => 'string',
+							'context' => [ 'view' ],
+						],
+						'email'   => [
+							'description' => __( 'Customer email.', 'woocommerce-payments' ),
+							'type'        => 'string',
+							'context'     => [ 'view' ],
+						],
+						'country' => [
+							'description' => __( 'Customer country.', 'woocommerce-payments' ),
+							'type'        => 'string',
+							'context'     => [ 'view' ],
+						],
+					],
 				],
-				'is_captured'      => [
-					'description' => __( 'Determinate is authorization captured.', 'woocommerce-payments' ),
-					'type'        => 'number',
-					'context'     => [ 'view' ],
-				],
-				'refunded'         => [
-					'description' => __( 'Determinate is authorization refunded.', 'woocommerce-payments' ),
-					'type'        => 'number',
-					'context'     => [ 'view' ],
-				],
-				'fees'             => [
-					'description' => __( 'authorization fees.', 'woocommerce-payments' ),
-					'type'        => 'number',
-					'context'     => [ 'view' ],
-				],
-				'net'              => [
+				'net_amount'           => [
 					'description' => __( 'Net amount.', 'woocommerce-payments' ),
 					'type'        => 'number',
 					'context'     => [ 'view' ],
 				],
-				'risk_level'       => [
+				'order_id'             => [
+					'description' => __( 'The identifier of the WooCommerce order associated with this transaction.', 'woocommerce-payments' ),
+					'type'        => 'number',
+					'context'     => [ 'view' ],
+				],
+				'risk_level'           => [
 					'description' => __( 'Fraud risk level.', 'woocommerce-payments' ),
 					'type'        => 'number',
-					'context'     => [ 'view' ],
-				],
-				'order_id'         => [
-					'description' => __( 'The identifier of the WooCommerce order associated with this authorization.', 'woocommerce-payments' ),
-					'type'        => 'number',
-					'context'     => [ 'view' ],
-				],
-				'customer_name'    => [
-					'description' => __( 'The customer\'s name.', 'woocommerce-payments' ),
-					'type'        => 'string',
-					'context'     => [ 'view' ],
-				],
-				'customer_email'   => [
-					'description' => __( 'The customer\'s email.', 'woocommerce-payments' ),
-					'type'        => 'string',
-					'context'     => [ 'view' ],
-				],
-				'customer_country' => [
-					'description' => __( 'The country of the customer\'s address', 'woocommerce-payments' ),
-					'type'        => 'string',
 					'context'     => [ 'view' ],
 				],
 			],
@@ -368,6 +372,5 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 
 		return $this->add_additional_fields_schema( $schema );
 	}
-
 
 }

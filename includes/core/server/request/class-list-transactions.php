@@ -124,8 +124,6 @@ class List_Transactions extends Paginated {
 			'type_is'              => $request->get_param( 'type' ),
 			'transaction_id_is'    => $request->get_param( 'transaction_id' ),
 			'payment_intent_id_is' => $request->get_param( 'payment_intent_id' ),
-			'store_currency_is'    => $request->get_param( 'store_currency_is' ),
-			'customer_currency_is' => $request->get_param( 'customer_currency_is' ),
 			'search'               => (array) $request->get_param( 'search' ),
 		];
 		$wcpay_request->set_filters( $filters );
