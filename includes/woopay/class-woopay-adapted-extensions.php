@@ -51,7 +51,10 @@ class WooPay_Adapted_Extensions {
 			// If the user is guest and has a merchant account, load data from there to know if need
 			// to verify their email on WooPay.
 			$user_by_email = get_user_by( 'email', $email );
-			$user          = $user_by_email ?? $user;
+
+			if ( false !== $user_by_email ) {
+				$user = $user_by_email;
+			}
 		}
 
 		// Points and Rewards.
