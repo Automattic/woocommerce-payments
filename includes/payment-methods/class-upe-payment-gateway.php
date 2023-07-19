@@ -208,7 +208,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
 			$payment_type               = $this->is_payment_recurring( $order_id ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
 
-			$this->payments_api_client->update_intention(
+			$updated_payment_intent = $this->payments_api_client->update_intention(
 				$payment_intent_id,
 				WC_Payments_Utils::prepare_amount( $amount, $currency ),
 				strtolower( $currency ),
@@ -219,6 +219,17 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$selected_upe_payment_type,
 				$payment_country
 			);
+
+			// Attach the intent and exchange info to the order before doing the redirect,
+			// so that when processing redirect, the up-to-date intent information is available.
+			$intent_id      = $updated_payment_intent->get_id();
+			$intent_status  = $updated_payment_intent->get_status();
+			$payment_method = $updated_payment_intent->get_payment_method_id();
+			$charge         = $updated_payment_intent->get_charge();
+			$charge_id      = $charge ? $charge->get_id() : null;
+
+			$this->attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency );
+			$this->attach_exchange_info_to_order( $order, $charge_id );
 		}
 
 		return [
@@ -497,7 +508,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				esc_url_raw(
 					add_query_arg(
 						[
-							'order_id'            => $order_id,
 							'wc_payment_method'   => self::GATEWAY_ID,
 							'_wpnonce'            => wp_create_nonce( 'wcpay_process_redirect_order_nonce' ),
 							'save_payment_method' => $save_payment_method ? 'yes' : 'no',
@@ -551,45 +561,59 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		}
 
 		if ( ! empty( $_GET['payment_intent_client_secret'] ) ) {
-			$intent_id = isset( $_GET['payment_intent'] ) ? wc_clean( wp_unslash( $_GET['payment_intent'] ) ) : '';
+			$intent_id_from_request = isset( $_GET['payment_intent'] ) ? wc_clean( wp_unslash( $_GET['payment_intent'] ) ) : '';
 		} elseif ( ! empty( $_GET['setup_intent_client_secret'] ) ) {
-			$intent_id = isset( $_GET['setup_intent'] ) ? wc_clean( wp_unslash( $_GET['setup_intent'] ) ) : '';
+			$intent_id_from_request = isset( $_GET['setup_intent'] ) ? wc_clean( wp_unslash( $_GET['setup_intent'] ) ) : '';
 		} else {
 			return;
 		}
 
-		$order_id            = isset( $_GET['order_id'] ) ? wc_clean( wp_unslash( $_GET['order_id'] ) ) : '';
-		$save_payment_method = isset( $_GET['save_payment_method'] ) ? 'yes' === wc_clean( wp_unslash( $_GET['save_payment_method'] ) ) : false;
+		$order_id               = absint( get_query_var( 'order-received' ) );
+		$order_key_from_request = isset( $_GET['key'] ) ? wc_clean( wp_unslash( $_GET['key'] ) ) : '';
+		$save_payment_method    = isset( $_GET['save_payment_method'] ) ? 'yes' === wc_clean( wp_unslash( $_GET['save_payment_method'] ) ) : false;
 
-		if ( empty( $intent_id ) || empty( $order_id ) ) {
+		if ( empty( $intent_id_from_request ) || empty( $order_id ) || empty( $order_key_from_request ) ) {
 			return;
 		}
 
-		$this->process_redirect_payment( $order_id, $intent_id, $save_payment_method );
+		$order = wc_get_order( $order_id );
+
+		if ( ! is_a( $order, 'WC_Order' ) ) {
+			// the ID of non-existing order was passed in.
+			return;
+		}
+
+		if ( $order->get_order_key() !== $order_key_from_request ) {
+			// Valid return url should have matching order key.
+			return;
+		}
+
+		// Perform additional checks for non-zero-amount. For zero-amount orders, we can't compare intents because they are not attached to the order at this stage.
+		// Once https://github.com/Automattic/woocommerce-payments/issues/6575 is closed, this check can be applied for zero-amount orders as well.
+		if ( $order->get_total() > 0 && ! $this->is_proper_intent_used_with_order( $order, $intent_id_from_request ) ) {
+			return;
+		}
+
+		$this->process_redirect_payment( $order, $intent_id_from_request, $save_payment_method );
 	}
 
 	/**
 	 * Processes redirect payments.
 	 *
-	 * @param int|string $order_id The order ID being processed.
-	 * @param string     $intent_id The Stripe setup/payment intent ID for the order payment.
-	 * @param bool       $save_payment_method Boolean representing whether payment method for order should be saved.
+	 * @param WC_Order $order The order being processed.
+	 * @param string   $intent_id The Stripe setup/payment intent ID for the order payment.
+	 * @param bool     $save_payment_method Boolean representing whether payment method for order should be saved.
 	 *
 	 * @throws Process_Payment_Exception When the payment intent has an error.
 	 */
-	public function process_redirect_payment( $order_id, $intent_id, $save_payment_method ) {
+	public function process_redirect_payment( $order, $intent_id, $save_payment_method ) {
 		try {
-			$order = wc_get_order( $order_id );
-
-			if ( ! is_object( $order ) ) {
-				return;
-			}
-
+			$order_id = $order->get_id();
 			if ( $order->has_status( [ 'processing', 'completed', 'on-hold' ] ) ) {
 				return;
 			}
 
-			Logger::log( "Begin processing UPE redirect payment for order $order_id for the amount of {$order->get_total()}" );
+			Logger::log( "Begin processing UPE redirect payment for order {$order_id} for the amount of {$order->get_total()}" );
 
 			// Get user/customer for order.
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
@@ -689,6 +713,30 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
+	 * Verifies that the proper intent is used to process the order.
+	 *
+	 * @param WC_Order $order The order object based on the order_id received from the request.
+	 * @param string   $intent_id_from_request The intent ID received from the request.
+	 *
+	 * @return bool True if the proper intent is used to process the order, false otherwise.
+	 */
+	public function is_proper_intent_used_with_order( $order, $intent_id_from_request ) {
+		$intent_id_attached_to_order = $this->order_service->get_intent_id_for_order( $order );
+		if ( ! hash_equals( $intent_id_attached_to_order, $intent_id_from_request ) ) {
+			Logger::error(
+				sprintf(
+					'Intent ID mismatch. Received in request: %1$s. Attached to order: %2$s. Order ID: %3$d',
+					$intent_id_from_request,
+					$intent_id_attached_to_order,
+					$order->get_id()
+				)
+			);
+			return false;
+		}
+		return true;
+	}
+
+	/**
 	 * Generates the configuration values, needed for UPE payment fields.
 	 *
 	 * @return array
@@ -742,7 +790,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$payment_fields['orderReturnURL'] = esc_url_raw(
 					add_query_arg(
 						[
-							'order_id'          => $order_id,
 							'wc_payment_method' => self::GATEWAY_ID,
 							'_wpnonce'          => wp_create_nonce( 'wcpay_process_redirect_order_nonce' ),
 						],
