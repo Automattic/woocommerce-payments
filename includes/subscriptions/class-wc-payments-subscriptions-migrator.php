@@ -33,7 +33,7 @@ class WC_Payments_Subscriptions_Migrator {
 	 * Migration process:
 	 * 1. Validate the request to migrate subscription
 	 * 2. Fetches the subscription from Stripe
-	 * 3. Cancels the subscription at stripe if it is active
+	 * 3. Cancels the subscription at Stripe if it is active
 	 * 4. Update the subscription meta to indicate that it has been migrated
 	 * 5. Add an order note on the subscription
 	 *
