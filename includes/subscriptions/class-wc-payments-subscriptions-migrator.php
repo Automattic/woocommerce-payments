@@ -218,7 +218,7 @@ class WC_Payments_Subscriptions_Migrator {
 				return;
 			}
 
-			$this->log( '---- Subscription successfully canceled at stripe.' );
+			$this->log( '---- Subscription successfully canceled at Stripe.' );
 		} else {
 			// Statuses that don't need to be canceled: incomplete, incomplete_expired, canceled, unpaid.
 			$this->log( sprintf( '---- Subscription has "%s" status. Skipping canceling the subscription at stripe.', $this->get_wcpay_subscription_status( $wcpay_subscription ) ) );
