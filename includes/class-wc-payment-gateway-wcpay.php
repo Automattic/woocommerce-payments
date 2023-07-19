@@ -1850,6 +1850,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return $empty_value;
 	}
 
+
+	/**
+	 * Gets account default currency.
+	 *
+	 * @return string Currency code.
+	 */
+	public function get_account_default_currency(): string {
+		return $this->account->get_account_default_currency();
+	}
+
 	/**
 	 * Gets connected account business name.
 	 *

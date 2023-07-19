@@ -172,16 +172,16 @@ abstract class UPE_Payment_Method {
 	 * Returns boolean dependent on whether payment method will accept charges
 	 * with chosen currency
 	 *
-	 * @param int $order_id Optional order ID, if order currency should take precedence.
+	 * @param string   $account_default_currency Default account currency.
+	 * @param int|null $order_id                 Optional order ID, if order currency should take precedence.
 	 *
 	 * @return bool
 	 */
-	public function is_currency_valid( $order_id = null ) {
+	public function is_currency_valid( string $account_default_currency, $order_id = null ) {
 		$current_store_currency = $this->get_currency( $order_id );
 
 		if ( $this->accept_only_domestic_payment ) {
-			$default_merchant_currency = \WC_Payments::get_account_service()->get_account_default_currency();
-			if ( strtolower( $current_store_currency ) !== $default_merchant_currency ) {
+			if ( strtolower( $current_store_currency ) !== $account_default_currency ) {
 				return false;
 			}
 		}
