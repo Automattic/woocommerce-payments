@@ -161,10 +161,10 @@ describe( 'Disputes > Submit winning dispute', () => {
 
 		// Confirm dispute status is Won.
 		await page.waitForSelector(
-			'div.wcpay-dispute-details .header-dispute-overview span.chip-light'
+			'div.wcpay-dispute-details .header-dispute-overview span.chip'
 		);
 		await expect( page ).toMatchElement(
-			'div.wcpay-dispute-details .header-dispute-overview span.chip-light',
+			'div.wcpay-dispute-details .header-dispute-overview span.chip',
 			{
 				text: 'Won',
 			}
