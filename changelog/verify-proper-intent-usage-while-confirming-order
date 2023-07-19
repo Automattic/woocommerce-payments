@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Improve request handling for processing order redirects which secures from confirming an order from different shopper.

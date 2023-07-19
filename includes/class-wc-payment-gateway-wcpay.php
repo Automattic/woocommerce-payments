@@ -1124,7 +1124,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							esc_url_raw(
 								add_query_arg(
 									[
-										'order_id' => $order_id,
 										'wc_payment_method' => self::GATEWAY_ID,
 										'_wpnonce' => wp_create_nonce( 'wcpay_process_redirect_order_nonce' ),
 									],
