@@ -140,6 +140,15 @@ export default {
 			'Please provide a business name',
 			'woocommerce-payments'
 		),
+		country: __( 'Please provide a country', 'woocommerce-payments' ),
+		business_type: __(
+			'Please provide a business type',
+			'woocommerce-payments'
+		),
+		mcc: __(
+			'Please provide a type of goods or services',
+			'woocommerce-payments'
+		),
 	},
 	placeholders: {
 		country: __(
