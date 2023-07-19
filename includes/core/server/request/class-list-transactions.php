@@ -224,6 +224,17 @@ class List_Transactions extends Paginated {
 	}
 
 	/**
+	 * Set payment intent id is.
+	 *
+	 * @param string $payment_intent_id Payment intent id.
+	 *
+	 * @return void
+	 */
+	public function set_payment_intent_id_is( string $payment_intent_id ) {
+		$this->set_param( 'payment_intent_id_is', $payment_intent_id );
+	}
+
+	/**
 	 * Set Source device type is.
 	 *
 	 * @param string $source_device_is Source device type is.

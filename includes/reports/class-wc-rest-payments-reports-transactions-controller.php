@@ -80,13 +80,11 @@ class WC_REST_Payments_Reports_Transactions_Controller extends WC_Payments_REST_
 	 */
 	public function get_transaction( $request ) {
 		$wcpay_request = List_Transactions::create();
-		$wcpay_request->set_filters(
-			[
-				'payment_intent_id_is' => $request->get_param( 'id' ),
-				'pagesize'             => 1, // Limit to only one record.
-				'sort'                 => 'date', // Set default sort since it is required.
-			]
-		);
+
+		$wcpay_request->set_payment_intent_id_is( $request->get_param( 'id' ) );
+		$wcpay_request->set_sort_by( 'date' ); // Default sort.
+		$wcpay_request->set_page_size( 1 ); // Set page size to limit to only one record.
+
 		$transactions = $wcpay_request->handle_rest_request( 'wcpay_list_transactions_request' );
 		if ( is_wp_error( $transactions ) ) {
 			return $transactions;
