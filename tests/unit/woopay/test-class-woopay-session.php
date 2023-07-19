@@ -8,6 +8,7 @@
 use WCPay\WooPay\WooPay_Session;
 use WCPay\Platform_Checkout\WooPay_Store_Api_Token;
 use WCPay\Platform_Checkout\SessionHandler;
+use WCPay\WooPay\WooPay_Scheduler;
 
 /**
  * WooPay_Session unit tests.
@@ -172,11 +173,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	private function setup_adapted_extensions() {
-		add_filter(
-			'active_plugins',
-			function ( $args ) {
-				return array_merge( $args, [ 'woocommerce-points-and-rewards/woocommerce-points-and-rewards.php' ] );
-			}
-		);
+		update_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, [ 'woocommerce-points-and-rewards' ] );
 	}
 }
