@@ -39,7 +39,7 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<charge_id>\w+)',
+			'/' . $this->rest_base . '/(?P<id>\w+)',
 			[
 				[
 					'methods'             => WP_REST_Server::READABLE,
@@ -79,11 +79,11 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_authorization( $request ) {
-		$charge_id     = $request->get_param( 'charge_id' );
 		$wcpay_request = List_Authorizations::create();
-		$wcpay_request->set_charge_id_is( $charge_id );
-		$wcpay_request->set_include_capturable_only( false );
-		$wcpay_request->set_page_size( 1 );
+		$wcpay_request->set_payment_intent_id_is( $request->get_param( 'id' ) );
+		$wcpay_request->set_type_id( '' ); // With empty type we will skip default(legacy) behavior where we load authorizations that are only capturable.
+		$wcpay_request->set_sort_by( 'created' ); // Default sort.
+		$wcpay_request->set_page_size( 1 ); // Set page size to limit to only one record.
 
 		$authorizations = $wcpay_request->handle_rest_request( 'wcpay_list_authorizations_request' );
 		if ( is_wp_error( $authorizations ) ) {

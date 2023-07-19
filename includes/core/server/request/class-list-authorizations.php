@@ -69,4 +69,26 @@ class List_Authorizations extends Paginated {
 		return $wcpay_request;
 	}
 
+	/**
+	 * Set payment intent id is.
+	 *
+	 * @param string $payment_intent_id Payment intent id.
+	 *
+	 * @return void
+	 */
+	public function set_payment_intent_id_is( string $payment_intent_id ) {
+		$this->set_param( 'payment_intent_id_is', $payment_intent_id );
+	}
+
+	/**
+	 * Set type is.
+	 *
+	 * @param string $type_id Type id.
+	 *
+	 * @return void
+	 */
+	public function set_type_id( string $type_id ) {
+		$this->set_param( 'type_is', $type_id );
+	}
+
 }
