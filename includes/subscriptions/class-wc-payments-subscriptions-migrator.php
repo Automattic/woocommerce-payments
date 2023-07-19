@@ -64,7 +64,7 @@ class WC_Payments_Subscriptions_Migrator {
 		$subscription->update_meta_data( '_migrated_wcpay_subscription_id', $wcpay_subscription['id'] );
 		$subscription->delete_meta_data( WC_Payments_Subscription_Service::SUBSCRIPTION_ID_META_KEY );
 
-		$subscription->add_order_note( 'This subscription has been successfully migrated to a tokenized subscription.' );
+		$subscription->add_order_note( __( 'This subscription has been successfully migrated to a WooPayments tokenized subscription.', 'woocommerce-payments' ) );
 
 		$subscription->save();
 
