@@ -6,6 +6,7 @@
  */
 
 use WCPay\Exceptions\API_Exception;
+use WCPay\Core\Server\Request\Create_Intention;
 
 defined( 'ABSPATH' ) || exit;
 
