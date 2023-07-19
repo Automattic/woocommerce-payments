@@ -62,7 +62,24 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 	 * @param WP_REST_Request $request data about the request.
 	 */
 	public function post_payment_intent( $request ) {
-		return $this->forward_request( 'create_intent', [ $request ] );
+		$metadata = $request->get_param( 'metadata' );
+		$order_id = $metadata['order_number'];
+		$order    = wc_get_order( $order_id );
+
+		$wcpay_server_request = Create_Intention::create();
+		$currency             = strtolower( $order->get_currency() );
+		$amount               = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
+		$wcpay_server_request->set_currency_code( $currency );
+		$wcpay_server_request->set_amount( $amount );
+		$wcpay_server_request->set_metadata( $metadata );
+		$wcpay_server_request->set_customer( $request->get_param( 'customer' ) );
+		$wcpay_server_request->set_level3( $request->get_param( 'level3' ) );
+		// TODO: remove hardcoding.
+		$wcpay_server_request->set_payment_method_types( [ 'card' ] );
+		$wcpay_server_request->set_capture_method( 'automatic' );
+
+		$intent = $wcpay_server_request->send( 'wcpay_create_intent_request', $order );
+		return rest_ensure_response( $intent );
 	}
 
 }

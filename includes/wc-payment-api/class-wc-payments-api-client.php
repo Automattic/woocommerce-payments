@@ -225,23 +225,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Create a payment intent.
-	 *
-	 * @param array $request data about the intent.
-	 *
-	 * @return array Data of the created intent.
-	 *
-	 * @throws API_Exception Error creating intent.
-	 */
-	public function create_intent( $request ) {
-		return $this->request(
-			$request->get_params(),
-			self::INTENTIONS_API,
-			self::POST
-		);
-	}
-
-	/**
 	 * Fetch a setup intent details.
 	 *
 	 * @param string $setup_intent_id ID of the setup intent.
@@ -2410,12 +2393,12 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Gets the list of extensions that are incompatible with WooPay.
+	 * Gets the WooPay compatibility list.
 	 *
-	 * @return array of extensions.
+	 * @return array of incompatible extensions, adapted extensions and available countries.
 	 * @throws API_Exception When request fails.
 	 */
-	public function get_woopay_incompatible_extensions() {
+	public function get_woopay_compatibility() {
 		return $this->request(
 			[],
 			self::WOOPAY_COMPATIBILITY_API,
