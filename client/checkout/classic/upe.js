@@ -159,15 +159,32 @@ jQuery( function ( $ ) {
 	/**
 	 * Converts form fields object into Stripe `shipping` object.
 	 *
-	 * @param {Object} fields Object mapping checkout shippinh fields to values.
-	 * @return {Object} Stripe formatted `shpping` object.
+	 * @param {Object} fields Object mapping checkout shipping fields to values.
+	 * @return {Object} Stripe formatted `shipping` object.
 	 */
 	const getShippingDetails = ( fields ) => {
+		if (
+			$( '#ship-to-different-address-checkbox' ) &&
+			$( '#ship-to-different-address-checkbox' ).is( ':checked' )
+		) {
+			return {
+				name:
+					`${ fields.shipping_first_name } ${ fields.shipping_last_name }`.trim() ||
+					'-',
+				address: {
+					country: fields.shipping_country || '-',
+					line1: fields.shipping_address_1 || '-',
+					line2: fields.shipping_address_2 || '-',
+					city: fields.shipping_city || '-',
+					state: fields.shipping_state || '-',
+					postal_code: fields.shipping_postcode || '-',
+				},
+			};
+		}
 		return {
 			name:
 				`${ fields.billing_first_name } ${ fields.billing_last_name }`.trim() ||
 				'-',
-			phone: fields.billing_phone || '-',
 			address: {
 				country: fields.billing_country || '-',
 				line1: fields.billing_address_1 || '-',
