@@ -81,13 +81,54 @@ class List_Transactions extends Paginated {
 			'loan_id_is'               => $request->get_param( 'loan_id_is' ),
 			'search'                   => (array) $request->get_param( 'search' ),
 			'deposit_id'               => $request->get_param( 'deposit_id' ),
-			'order_id_is'              => $request->get_param( 'order_id_is' ),
-			'deposit_id_is'            => $request->get_param( 'deposit_id_is' ),
-			'payment_method_id_is'     => $request->get_param( 'payment_method_id_is' ),
-			'transaction_id_is'        => $request->get_param( 'transaction_id_is' ),
 		];
 		$wcpay_request->set_filters( $filters );
+		return $wcpay_request;
+	}
 
+	/**
+	 * Used to prepare request data from reports api request.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 *
+	 * @return static
+	 */
+	public static function from_reports_rest_request( $request ) {
+		$wcpay_request = static::create();
+		$wcpay_request->set_page( $request->get_param( 'page' ) );
+		$wcpay_request->set_page_size( $request->get_param( 'per_page' ) );
+		$wcpay_request->set_sort_by( $request->get_param( 'orderby' ) );
+		$wcpay_request->set_sort_direction( $request->get_param( 'order' ) );
+
+		$date_between_filter = $request->get_param( 'date_between' );
+		$user_timezone       = $request->get_param( 'user_timezone' );
+
+		if ( ! is_null( $date_between_filter ) ) {
+			$date_between_filter = array_map(
+				function ( $transaction_date ) use ( $user_timezone ) {
+					return Paginated::format_transaction_date_with_timestamp( $transaction_date, $user_timezone );
+				},
+				$date_between_filter
+			);
+		}
+
+		$filters = [
+			'match'                => $request->get_param( 'match' ),
+			'date_before'          => self::format_transaction_date_with_timestamp( $request->get_param( 'date_before' ), $user_timezone ),
+			'date_after'           => self::format_transaction_date_with_timestamp( $request->get_param( 'date_after' ), $user_timezone ),
+			'date_between'         => $date_between_filter,
+			'order_id_is'          => $request->get_param( 'order_id' ),
+			'deposit_id'           => $request->get_param( 'deposit_id' ),
+			'customer_email_is'    => $request->get_param( 'deposit_id' ),
+			'payment_method_id_is' => $request->get_param( 'payment_method_id' ),
+			'type_is'              => $request->get_param( 'type' ),
+			'transaction_id_is'    => $request->get_param( 'transaction_id' ),
+			'payment_intent_id_is' => $request->get_param( 'payment_intent_id' ),
+			'store_currency_is'    => $request->get_param( 'store_currency_is' ),
+			'customer_currency_is' => $request->get_param( 'customer_currency_is' ),
+			'search'               => (array) $request->get_param( 'search' ),
+		];
+		$wcpay_request->set_filters( $filters );
 		return $wcpay_request;
 	}
 
