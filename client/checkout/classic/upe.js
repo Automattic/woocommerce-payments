@@ -163,6 +163,7 @@ jQuery( function ( $ ) {
 	 * @return {Object} Stripe formatted `shipping` object.
 	 */
 	const getShippingDetails = ( fields ) => {
+		// Shipping address is needed by Afterpay. If available, use shipping address, else fallback to billing address.
 		if (
 			$( '#ship-to-different-address-checkbox' ) &&
 			$( '#ship-to-different-address-checkbox' ).is( ':checked' )
