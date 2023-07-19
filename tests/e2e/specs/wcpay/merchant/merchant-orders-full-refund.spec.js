@@ -59,7 +59,7 @@ describe( 'Order > Full refund', () => {
 			visible: true,
 		} );
 
-		// Verify Refund via WooCommerce Payments button is displayed
+		// Verify Refund via WooPayments button is displayed
 		await page.waitForSelector( 'button.do-api-refund' );
 
 		// Initiate a refund
@@ -67,7 +67,7 @@ describe( 'Order > Full refund', () => {
 		await expect( page ).toFill( '#refund_reason', 'No longer wanted' );
 
 		await expect( page ).toMatchElement( '.do-api-refund', {
-			text: `Refund ${ orderAmount } via WooCommerce Payments`,
+			text: `Refund ${ orderAmount } via WooPayments`,
 		} );
 		await takeScreenshot( 'merchant-orders-full-refund_refunding' );
 
@@ -95,7 +95,7 @@ describe( 'Order > Full refund', () => {
 
 			// Verify system note was added
 			expect( page ).toMatchElement( '.system-note', {
-				text: `A refund of ${ orderAmount } was successfully processed using WooCommerce Payments. Reason: No longer wanted`,
+				text: `A refund of ${ orderAmount } was successfully processed using WooPayments. Reason: No longer wanted`,
 			} ),
 		] );
 		await takeScreenshot( 'merchant-orders-full-refund_refunded' );

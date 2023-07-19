@@ -247,6 +247,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 				'title'          => $payment_method->get_title(),
 				'icon'           => $payment_method->get_icon(),
 				'showSaveOption' => $this->should_upe_payment_method_show_save_option( $payment_method ),
+				'countries'      => $payment_method->get_countries(),
 			];
 
 			if ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
@@ -257,7 +258,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 					$payment_method->get_testing_instructions(),
 					[
 						'strong' => '<strong>',
-						'a'      => '<a href="https://woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
+						'a'      => '<a href="https://woocommerce.com/document/woocommerce-payments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
 					]
 				);
 			}
@@ -331,7 +332,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 							$testing_instructions,
 							[
 								'strong' => '<strong>',
-								'a'      => '<a href="https://woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
+								'a'      => '<a href="https://woocommerce.com/document/woocommerce-payments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
 							]
 						);
 					}

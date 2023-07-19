@@ -33,7 +33,7 @@ class WC_Payments_Notes_Set_Up_Refund_Policy {
 		$note = new Note();
 
 		$note->set_title( __( 'Set up refund policy', 'woocommerce-payments' ) );
-		$note->set_content( __( 'Protect your merchant account from fraudulent disputes by defining the policy and making it accessible to customers.', 'woocommerce-payments' ) );
+		$note->set_content( __( 'Protect your merchant account from unauthorized transaction disputes by defining the policy and making it accessible to customers.', 'woocommerce-payments' ) );
 		$note->set_content_data( (object) [] );
 		$note->set_type( Note::E_WC_ADMIN_NOTE_INFORMATIONAL );
 		$note->set_name( self::NOTE_NAME );

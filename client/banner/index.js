@@ -30,7 +30,11 @@ const Banner = ( { style } ) => {
 	return (
 		<Card size="large" className={ className }>
 			<CardBody>
-				<WCPayLogo width={ logoWidth } height={ logoHeight } />
+				<WCPayLogo
+					width={ logoWidth }
+					height={ logoHeight }
+					className="woocommerce-payments-banner-logo"
+				/>
 				{ showPill && (
 					<div className="woocommerce-payments-banner-pill">
 						<div>

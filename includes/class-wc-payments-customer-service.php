@@ -445,7 +445,7 @@ class WC_Payments_Customer_Service {
 	}
 
 	/**
-	 * Adds the WooComerce Payments customer ID found in the user session
+	 * Adds the WooCommerce Payments customer ID found in the user session
 	 * to the WordPress user as metadata.
 	 *
 	 * @param int $user_id The WordPress user ID.
@@ -459,7 +459,7 @@ class WC_Payments_Customer_Service {
 			return;
 		}
 
-		// Retrieve the WooComerce Payments customer ID from the user session.
+		// Retrieve the WooCommerce Payments customer ID from the user session.
 		$customer_id = WC()->session ? WC()->session->get( self::CUSTOMER_ID_SESSION_KEY ) : null;
 
 		if ( ! $customer_id ) {
