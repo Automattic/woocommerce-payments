@@ -46,7 +46,7 @@ class WooPay_Session {
 	public static function init() {
 		add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_woopay' ], 20 );
 		add_filter( 'rest_request_before_callbacks', [ __CLASS__, 'add_woopay_store_api_session_handler' ], 10, 3 );
-		add_action( 'woocommerce_store_api_checkout_update_order_meta', [ __CLASS__, 'remove_order_customer_id_on_requests_with_verified_email' ] );
+		add_action( 'woocommerce_order_payment_status_changed', [ __CLASS__, 'remove_order_customer_id_on_requests_with_verified_email' ] );
 	}
 
 	/**
@@ -152,14 +152,16 @@ class WooPay_Session {
 	 * Prevent set order customer ID on requests with
 	 * email verified to skip the login screen on the TYP.
 	 *
-	 * @param \WC_Order $order The order being updated.
+	 * @param \WC_Order $order_id The order ID being updated.
 	 */
-	public static function remove_order_customer_id_on_requests_with_verified_email( $order ) {
+	public static function remove_order_customer_id_on_requests_with_verified_email( $order_id ) {
 		$woopay_verified_email_address = self::get_woopay_verified_email_address();
 
 		if ( null === $woopay_verified_email_address ) {
 			return;
 		}
+
+		$order = wc_get_order( $order_id );
 
 		$enabled_adapted_extensions = get_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, [] );
 
