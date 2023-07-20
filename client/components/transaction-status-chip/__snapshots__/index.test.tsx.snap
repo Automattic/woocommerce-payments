@@ -3,7 +3,7 @@
 exports[`Transaction status chip should render the allow chip correctly 1`] = `
 <div>
   <span
-    class="chip chip-primary is-compact chip--transaction"
+    class="chip chip-primary chip--transaction"
   >
     Succeeded
   </span>
@@ -13,7 +13,7 @@ exports[`Transaction status chip should render the allow chip correctly 1`] = `
 exports[`Transaction status chip should render the block chip correctly 1`] = `
 <div>
   <span
-    class="chip chip-alert is-compact chip--transaction"
+    class="chip chip-alert chip--transaction"
   >
     Payment blocked
   </span>
@@ -23,7 +23,7 @@ exports[`Transaction status chip should render the block chip correctly 1`] = `
 exports[`Transaction status chip should render the review chip correctly 1`] = `
 <div>
   <span
-    class="chip chip-warning is-compact chip--transaction"
+    class="chip chip-warning chip--transaction"
   >
     Needs review
   </span>
@@ -33,7 +33,7 @@ exports[`Transaction status chip should render the review chip correctly 1`] = `
 exports[`Transaction status chip should render the unknown chip correctly 1`] = `
 <div>
   <span
-    class="chip chip-light is-compact chip--transaction"
+    class="chip chip-light chip--transaction"
   >
     Unknown
   </span>
