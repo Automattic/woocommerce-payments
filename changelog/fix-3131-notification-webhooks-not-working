@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Allow webhooks without livemode to be received.

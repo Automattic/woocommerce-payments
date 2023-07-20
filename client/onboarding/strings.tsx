@@ -8,7 +8,7 @@ export default {
 	steps: {
 		mode: {
 			heading: __(
-				'Let’s get your store ready to accept payments.',
+				'Let’s get your store ready to accept payments',
 				'woocommerce-payments'
 			),
 			subheading: __(
@@ -46,7 +46,7 @@ export default {
 				'woocommerce-payments'
 			),
 			subheading: __(
-				'The information below should reflect that of the business owner or a significant shareholder.',
+				'The information below should reflect that of the business owner or an authorized team member.',
 				'woocommerce-payments'
 			),
 			notice: __(
