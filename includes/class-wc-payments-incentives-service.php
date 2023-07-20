@@ -62,13 +62,17 @@ class WC_Payments_Incentives_Service {
 	 * @return array Updated allowed promo notes.
 	 */
 	public function allowed_promo_notes( $promo_notes = [] ): array {
-		if ( $this->get_cached_connect_incentive() ) {
-			/**
-			 * Suppress psalm error because we already check that `id` exists in `is_valid_cached_incentive`.
-			 *
-			 * @psalm-suppress PossiblyNullArrayAccess */
-			$promo_notes[] = $this->get_cached_connect_incentive()['id'];
+		$incentive = $this->get_cached_connect_incentive();
+		// Return early if there is no eligible incentive.
+		if ( empty( $incentive['id'] ) ) {
+			return $promo_notes;
 		}
+
+		/**
+		 * Suppress psalm error because we already check that `id` exists in `is_valid_cached_incentive`.
+		 *
+		 * @psalm-suppress PossiblyNullArrayAccess */
+		$promo_notes[] = $incentive['id'];
 
 		return $promo_notes;
 	}
@@ -91,50 +95,43 @@ class WC_Payments_Incentives_Service {
 			return null;
 		}
 
-		$incentive = $this->database_cache->get_or_add(
-			Database_Cache::CONNECT_INCENTIVE_KEY,
-			[ $this, 'fetch_connect_incentive' ],
-			'is_array',
-			$force_refresh,
-		);
+		// Fingerprint the store context through a hash of certain entries.
+		$store_context_hash = $this->generate_context_hash( $this->get_store_context() );
 
-		if ( ! $this->is_valid_cached_incentive( $incentive ) ) {
+		// First, get the cache contents, if any.
+		$incentive_data = $this->database_cache->get( Database_Cache::CONNECT_INCENTIVE_KEY );
+		// Check if we need to force-refresh the cache contents.
+		if ( empty( $incentive_data['context_hash'] ) || ! is_string( $incentive_data['context_hash'] )
+			|| ! hash_equals( $store_context_hash, $incentive_data['context_hash'] ) ) {
+
+			// No cache, the hash is missing, or it doesn't match. Force refresh.
+			$incentive_data = $this->database_cache->get_or_add(
+				Database_Cache::CONNECT_INCENTIVE_KEY,
+				[ $this, 'fetch_connect_incentive_details' ],
+				'is_array',
+				true
+			);
+		}
+
+		if ( ! $this->is_valid_cached_incentive( $incentive_data ) ) {
 			return null;
 		}
 
-		return $incentive;
+		return $incentive_data['incentive'];
 	}
 
 	/**
-	 * Fetches eligible connect incentive from the server.
+	 * Fetches eligible connect incentive details from the server.
 	 *
 	 * @return array|null Array of eligible incentive data or null.
 	 */
-	public function fetch_connect_incentive(): ?array {
+	public function fetch_connect_incentive_details(): ?array {
+		$store_context = $this->get_store_context();
+
 		// Request incentive from WCPAY API.
 		$url = add_query_arg(
-			[
-				// Store ISO-2 country code, e.g. `US`.
-				'country'      => WC()->countries->get_base_country(),
-				// Store locale, e.g. `en_US`.
-				'locale'       => get_locale(),
-				// WooCommerce active for duration in seconds.
-				'active_for'   => time() - get_option( 'woocommerce_admin_install_timestamp', time() ),
-				// Whether the store has paid orders in the last 90 days.
-				'has_orders'   => ! empty(
-					wc_get_orders(
-						[
-							'status'       => [ 'wc-completed', 'wc-processing' ],
-							'date_created' => '>=' . strtotime( '-90 days' ),
-							'return'       => 'ids',
-							'limit'        => 1,
-						]
-					)
-				),
-				// Whether the store has at least one payment gateway enabled.
-				'has_payments' => ! empty( WC()->payment_gateways()->get_available_payment_gateways() ),
-			],
-			'https://public-api.wordpress.com/wpcom/v2/wcpay/incentives',
+			$store_context,
+			'https://public-api.wordpress.com/wpcom/v2/wcpay/incentives'
 		);
 
 		$response = wp_remote_get(
@@ -169,29 +166,138 @@ class WC_Payments_Incentives_Service {
 		// Read TTL form the `cache-for` header, or default to 1 day.
 		$cache_for = wp_remote_retrieve_header( $response, 'cache-for' );
 
+		$incentive_data = [
+			'incentive' => $incentive,
+		];
+		// Set the Time-To-Live for the incentive data.
 		if ( '' !== $cache_for ) {
-			$incentive['ttl'] = (int) $cache_for;
+			$incentive_data['ttl'] = (int) $cache_for;
 		} else {
-			$incentive['ttl'] = DAY_IN_SECONDS;
+			$incentive_data['ttl'] = DAY_IN_SECONDS;
 		}
 
-		return $incentive;
+		// Attach the context hash to the incentive data.
+		$incentive_data['context_hash'] = $this->generate_context_hash( $store_context );
+
+		return $incentive_data;
 	}
 
 	/**
-	 * Check whether the incentive fetched from the cache is valid.
-	 * Expects an array with at least `id`, `description`, and `tc_url` keys.
+	 * Check whether the incentive data fetched from the cache are valid.
+	 * Expects an array with an `incentive` entry that is an array with at least `id`, `description`, and `tc_url` keys.
 	 *
-	 * @param mixed $incentive The incentive returned from the cache.
+	 * @param mixed $incentive_data The incentive data returned from the cache.
 	 *
-	 * @return bool Whether the incentive is valid.
+	 * @return bool Whether the incentive data is valid.
 	 */
-	public function is_valid_cached_incentive( $incentive ): bool {
-		if ( ! is_array( $incentive ) || empty( $incentive ) || ! isset( $incentive['id'] ) || ! isset( $incentive['description'] ) || ! isset( $incentive['tc_url'] ) ) {
+	public function is_valid_cached_incentive( $incentive_data ): bool {
+		if ( ! is_array( $incentive_data )
+			|| empty( $incentive_data['incentive'] )
+			|| ! is_array( $incentive_data['incentive'] )
+			|| ! isset( $incentive_data['incentive']['id'] )
+			|| ! isset( $incentive_data['incentive']['description'] )
+			|| ! isset( $incentive_data['incentive']['tc_url'] ) ) {
+
 			return false;
 		}
 
 		return true;
 	}
 
+	/**
+	 * Check if the WooPayments payment gateway is active and set up,
+	 * or there are orders processed with it, at some moment.
+	 *
+	 * @return boolean
+	 */
+	private function has_wcpay(): bool {
+		// We consider the store to have WooPayments if there is meaningful account data in the WooPayments account cache.
+		// This implies that WooPayments is or was active at some point and that it was connected.
+		if ( $this->has_wcpay_account_data() ) {
+			return true;
+		}
+
+		// If there is at least one order processed with WooPayments, we consider the store to have WooPayments.
+		if ( ! empty(
+			wc_get_orders(
+				[
+					'payment_method' => 'woocommerce_payments',
+					'return'         => 'ids',
+					'limit'          => 1,
+				]
+			)
+		) ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Check if there is meaningful data in the WooPayments account cache.
+	 *
+	 * @return boolean
+	 */
+	private function has_wcpay_account_data(): bool {
+		$account_data = $this->database_cache->get( Database_Cache::ACCOUNT_KEY );
+		if ( ! empty( $account_data['account_id'] ) ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Get the store context to be used in determining eligibility.
+	 *
+	 * @return array The store context.
+	 */
+	private function get_store_context(): array {
+		return [
+			// Store ISO-2 country code, e.g. `US`.
+			'country'      => WC()->countries->get_base_country(),
+			// Store locale, e.g. `en_US`.
+			'locale'       => get_locale(),
+			// WooCommerce active for duration in seconds.
+			'active_for'   => time() - get_option( 'woocommerce_admin_install_timestamp', time() ),
+			// Whether the store has paid orders in the last 90 days.
+			'has_orders'   => ! empty(
+				wc_get_orders(
+					[
+						'status'       => [ 'wc-completed', 'wc-processing' ],
+						'date_created' => '>=' . strtotime( '-90 days' ),
+						'return'       => 'ids',
+						'limit'        => 1,
+					]
+				)
+			),
+			// Whether the store has at least one payment gateway enabled.
+			'has_payments' => ! empty( WC()->payment_gateways()->get_available_payment_gateways() ),
+			'has_wcpay'    => $this->has_wcpay(),
+		];
+	}
+
+	/**
+	 * Generate a hash from the store context data.
+	 *
+	 * @param array $context The store context data.
+	 *
+	 * @return string The context hash.
+	 */
+	private function generate_context_hash( array $context ): string {
+		// Include only certain entries in the context hash.
+		// We need only discrete, user-interaction dependent data.
+		// Entries like `active_for` have no place in the hash generation since they change automatically.
+		return md5(
+			wp_json_encode(
+				[
+					'country'      => $context['country'] ?? '',
+					'locale'       => $context['locale'] ?? '',
+					'has_orders'   => $context['has_orders'] ?? false,
+					'has_payments' => $context['has_payments'] ?? false,
+					'has_wcpay'    => $context['has_wcpay'] ?? false,
+				]
+			)
+		);
+	}
 }

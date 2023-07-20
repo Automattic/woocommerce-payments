@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Reverting change to the plugin name because of compatibility with iOS app.
