@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-Confirm subscription being switched is owned by customer before trying to possibly use its currency to prevent error.

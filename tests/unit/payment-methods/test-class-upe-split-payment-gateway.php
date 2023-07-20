@@ -1061,6 +1061,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$save_payment_method = false;
 		$user                = wp_get_current_user();
 		$intent_status       = Payment_Intent_Status::PROCESSING;
+		$intent_metadata     = [ 'order_id' => (string) $order_id ];
 		$charge_id           = 'ch_mock';
 		$customer_id         = 'cus_mock';
 		$intent_id           = 'pi_mock';
@@ -1068,7 +1069,12 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$card_method = $this->mock_payment_methods['card'];
 
-		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => $intent_status ] );
+		$payment_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'   => $intent_status,
+				'metadata' => $intent_metadata,
+			]
+		);
 
 		$mock_upe_gateway->expects( $this->once() )
 			->method( 'manage_customer_details_for_order' )
@@ -1115,6 +1121,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$save_payment_method = false;
 		$user                = wp_get_current_user();
 		$intent_status       = Payment_Intent_Status::SUCCEEDED;
+		$intent_metadata     = [ 'order_id' => (string) $order_id ];
 		$charge_id           = 'ch_mock';
 		$customer_id         = 'cus_mock';
 		$intent_id           = 'pi_mock';
@@ -1122,7 +1129,12 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$card_method = $this->mock_payment_methods['card'];
 
-		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => $intent_status ] );
+		$payment_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'   => $intent_status,
+				'metadata' => $intent_metadata,
+			]
+		);
 
 		$mock_upe_gateway->expects( $this->once() )
 			->method( 'manage_customer_details_for_order' )
@@ -1162,6 +1174,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$save_payment_method = true;
 		$user                = wp_get_current_user();
 		$intent_status       = Payment_Intent_Status::SUCCEEDED;
+		$intent_metadata     = [ 'order_id' => (string) $order_id ];
 		$client_secret       = 'cs_mock';
 		$customer_id         = 'cus_mock';
 		$intent_id           = 'si_mock';
@@ -1180,6 +1193,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			'id'                     => 'pi_mock',
 			'client_secret'          => $client_secret,
 			'status'                 => $intent_status,
+			'metadata'               => $intent_metadata,
 			'payment_method'         => $payment_method_id,
 			'payment_method_options' => [
 				'card' => [
@@ -1235,6 +1249,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$save_payment_method = true;
 		$user                = wp_get_current_user();
 		$intent_status       = Payment_Intent_Status::PROCESSING;
+		$intent_metadata     = [ 'order_id' => (string) $order_id ];
 		$charge_id           = 'ch_mock';
 		$customer_id         = 'cus_mock';
 		$intent_id           = 'pi_mock';
@@ -1243,7 +1258,12 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$card_method = $this->mock_payment_methods['card'];
 
-		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => $intent_status ] );
+		$payment_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'   => $intent_status,
+				'metadata' => $intent_metadata,
+			]
+		);
 
 		$mock_upe_gateway->expects( $this->once() )
 			->method( 'manage_customer_details_for_order' )

@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-Improve disputes list page by hiding the "Disputed on" column by default, add an "Action" column with clear call to action button, highlight urgent disputes' due dates, and color code disputes' statuses.

@@ -7,6 +7,7 @@
 
 namespace WCPay\Payment_Methods;
 
+use WC_Payments_API_Intention;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Constants\Payment_Method;
@@ -62,6 +63,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	const KEY_UPE_PAYMENT_INTENT = 'wcpay_upe_payment_intent';
 
 	const KEY_UPE_SETUP_INTENT = 'wcpay_upe_setup_intent';
+
+	const PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE = 'upe_process_redirect_order_id_mismatched';
 
 	/**
 	 * Array mapping payment method string IDs to classes
@@ -722,7 +725,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			// Get payment intent to confirm status.
 			if ( $payment_needed ) {
 				$request = Get_Intention::create( $intent_id );
-
+				/** @var WC_Payments_API_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 				$intent                 = $request->send( 'wcpay_get_intent_request', $order );
 				$client_secret          = $intent->get_client_secret();
 				$status                 = $intent->get_status();
@@ -733,6 +736,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
 				$payment_method_type    = $this->get_payment_method_type_from_payment_details( $payment_method_details );
 				$error                  = $intent->get_last_payment_error();
+
+				// This check applies to payment intents only due to two reasons:
+				// (1) metadata is missed for setup intents. See https://github.com/Automattic/woocommerce-payments/issues/6575.
+				// (2) most issues so far affect only payment intents.
+				$intent_metadata = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
+				$this->validate_order_id_received_vs_intent_meta_order_id( $order, $intent_metadata );
 			} else {
 				$intent                 = $this->payments_api_client->get_setup_intent( $intent_id );
 				$client_secret          = $intent['client_secret'];
@@ -802,18 +811,31 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		} catch ( Exception $e ) {
 			Logger::log( 'Error: ' . $e->getMessage() );
 
-			// Confirm our needed variables are set before using them due to there could be a server issue during the get_intent process.
-			$status    = $status ?? null;
-			$charge_id = $charge_id ?? null;
+			$is_order_id_mismatched_exception =
+				is_a( $e, Process_Payment_Exception::class )
+				&& self::PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE === $e->get_error_code();
 
-			/* translators: localized exception message */
-			$message = sprintf( __( 'UPE payment failed: %s', 'woocommerce-payments' ), $e->getMessage() );
-			$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id, $message );
+			// If the order ID mismatched exception is thrown, do not mark the order as failed.
+			// Because the outcome of the payment intent is for another order, not for the order processed here.
+			if ( ! $is_order_id_mismatched_exception ) {
+				// Confirm our needed variables are set before using them due to there could be a server issue during the get_intent process.
+				$status    = $status ?? null;
+				$charge_id = $charge_id ?? null;
+
+				/* translators: localized exception message */
+				$message = sprintf( __( 'UPE payment failed: %s', 'woocommerce-payments' ), $e->getMessage() );
+				$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id, $message );
+			}
 
 			static::remove_upe_payment_intent_from_session();
 
 			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
-			wp_safe_redirect( wc_get_checkout_url() );
+
+			$redirect_url = wc_get_checkout_url();
+			if ( $is_order_id_mismatched_exception ) {
+				$redirect_url = add_query_arg( self::PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE, 'yes', $redirect_url );
+			}
+			wp_safe_redirect( $redirect_url );
 			exit;
 		}
 	}
@@ -1073,6 +1095,36 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
 		$payment_method_type    = $this->get_payment_method_type_from_payment_details( $payment_method_details );
 		$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
+	}
+
+	/**
+	 * Validate order_id received from the request vs value saved in the intent metadata.
+	 * Throw an exception if they're not matched.
+	 *
+	 * @param  WC_Order $order The received order to process.
+	 * @param  array    $intent_metadata The metadata of attached intent to the order.
+	 *
+	 * @return void
+	 * @throws Process_Payment_Exception
+	 */
+	private function validate_order_id_received_vs_intent_meta_order_id( WC_Order $order, array $intent_metadata ): void {
+		$intent_meta_order_id_raw = $intent_metadata['order_id'] ?? '';
+		$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
+
+		if ( $order->get_id() !== $intent_meta_order_id ) {
+			Logger::error(
+				sprintf(
+					'UPE Process Redirect Payment - Order ID mismatched. Received: %1$d. Intent Metadata Value: %2$d',
+					$order->get_id(),
+					$intent_meta_order_id
+				)
+			);
+
+			throw new Process_Payment_Exception(
+				__( "We're not able to process this payment due to the order ID mismatch. Please try again later.", 'woocommerce-payments' ),
+				self::PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE
+			);
+		}
 	}
 
 	/**
