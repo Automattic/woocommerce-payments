@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Adding more descriptive error messages in gradual signup

@@ -24,6 +24,7 @@ use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
 use WCPay\Core\Server\Request\Create_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
+use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Request\List_Charge_Refunds;
 use WCPay\Core\Server\Request\Refund_Charge;
 use WCPay\Core\Server\Request\Update_Intention;
@@ -1181,7 +1182,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			if ( ! empty( $woopay_intent_id ) ) {
 				// If the setup intent is included in the request use that intent.
-				$intent = $this->payments_api_client->get_setup_intent( $woopay_intent_id );
+				// TODO checks setup_intent_request
+				$setup_intent_request = Request::get( WC_Payments_API_Client::SETUP_INTENTS_API, $woopay_intent_id );
+
+				$intent = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
 
 				$intent_metadata          = $intent->get_metadata();
 				$intent_meta_order_id_raw = $intent_metadata['order_id'] ?? '';
@@ -2715,8 +2719,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$this->order_service->attach_transaction_fee_to_order( $order, $charge );
 			} else {
 				// For $0 orders, fetch the Setup Intent instead.
+				// TODO check setup_intent_request
 				$intent    = $this->payments_api_client->get_setup_intent( $intent_id );
 				$status    = $intent->get_status();
+				$setup_intent_request = Request::get( WC_Payments_API_Client::SETUP_INTENTS_API, $intent_id );
+
+				$intent    = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
+				$status    = $intent['status'];
 				$charge_id = '';
 			}
 
@@ -2821,7 +2830,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			$setup_intent = $this->payments_api_client->get_setup_intent( $setup_intent_id );
+			// TODO check setup_intent_request
+			$setup_intent_request = Request::get( WC_Payments_API_Client::SETUP_INTENTS_API, $setup_intent_id );
+
+			// TODO comment for type hint
+			$setup_intent = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
 
 			if ( Payment_Intent_Status::SUCCEEDED !== $setup_intent->get_status() ) {
 				throw new Add_Payment_Method_Exception(
