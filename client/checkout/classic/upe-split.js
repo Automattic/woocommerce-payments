@@ -118,11 +118,29 @@ jQuery( function ( $ ) {
 	 * @return {Object} Stripe formatted `shipping` object.
 	 */
 	const getShippingDetails = ( fields ) => {
+		// Shipping address is needed by Afterpay. If available, use shipping address, else fallback to billing address.
+		if (
+			$( '#ship-to-different-address-checkbox' ) &&
+			$( '#ship-to-different-address-checkbox' ).is( ':checked' )
+		) {
+			return {
+				name:
+					`${ fields.shipping_first_name } ${ fields.shipping_last_name }`.trim() ||
+					'-',
+				address: {
+					country: fields.shipping_country || '-',
+					line1: fields.shipping_address_1 || '-',
+					line2: fields.shipping_address_2 || '-',
+					city: fields.shipping_city || '-',
+					state: fields.shipping_state || '-',
+					postal_code: fields.shipping_postcode || '-',
+				},
+			};
+		}
 		return {
 			name:
 				`${ fields.billing_first_name } ${ fields.billing_last_name }`.trim() ||
 				'-',
-			phone: fields.billing_phone || '-',
 			address: {
 				country: fields.billing_country || '-',
 				line1: fields.billing_address_1 || '-',
