@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix incorrect channel value in transaction description screen for Tap to Pay for Android transactions

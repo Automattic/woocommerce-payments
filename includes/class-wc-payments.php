@@ -365,6 +365,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/class-woopay-create-and-confirm-setup-intention.php';
 		include_once __DIR__ . '/core/server/request/class-refund-charge.php';
 		include_once __DIR__ . '/core/server/request/class-list-charge-refunds.php';
+		include_once __DIR__ . '/core/server/request/class-get-request.php';
 
 		include_once __DIR__ . '/woopay/services/class-checkout-service.php';
 
