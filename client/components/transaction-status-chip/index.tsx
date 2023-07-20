@@ -29,7 +29,6 @@ const TransactionStatusChip: React.FC< TransactionStatusChipProps > = ( {
 		<Chip
 			message={ message }
 			type={ type }
-			isCompact
 			{ ...props }
 			className="chip--transaction"
 		/>

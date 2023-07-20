@@ -21,7 +21,7 @@ const DisputeStatusChip = ( { status, dueBy } ) => {
 		type = 'alert';
 	}
 
-	return <Chip message={ message } type={ type } isCompact />;
+	return <Chip message={ message } type={ type } />;
 };
 
 export default DisputeStatusChip;

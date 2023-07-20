@@ -45,14 +45,7 @@ const StatusChip = ( props ) => {
 		type = 'light';
 	}
 
-	return (
-		<Chip
-			message={ description }
-			type={ type }
-			isCompact
-			tooltip={ tooltip }
-		/>
-	);
+	return <Chip message={ description } type={ type } tooltip={ tooltip } />;
 };
 
 export default StatusChip;
