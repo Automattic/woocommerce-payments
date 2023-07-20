@@ -13,7 +13,7 @@ import displayStatus from './mappings';
 import { formatStringValue } from 'utils';
 import { isDueWithin } from 'wcpay/disputes/utils';
 import { disputeAwaitingResponseStatuses } from 'wcpay/disputes/filters/config';
-import {
+import type {
 	CachedDispute,
 	DisputeStatus,
 	EvidenceDetails,
