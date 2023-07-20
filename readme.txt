@@ -4,7 +4,7 @@ Tags: payment gateway, payment, apple pay, credit card, google pay
 Requires at least: 6.0
 Tested up to: 6.2
 Requires PHP: 7.3
-Stable tag: 6.1.1
+Stable tag: 6.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,6 +93,60 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 6.2.0 - 2023-07-19 =
+* Add - Add Android option in Device type advanced filter
+* Add - Add dispute notice to the WooCommerce order screen to highlight disputes awaiting a response.
+* Add - Added flag to allow us to remotely set if WooPay should be enabled or not for new merchants.
+* Add - Add tooltip and ARIA labels to payment method logos in transaction list
+* Add - Check for invalid extensions when one is activated or deactivated.
+* Add - Make Affirm and Afterpay Stripe messaging show up correctly for variable products, especially when we change variations.
+* Add - Prefill the store URL on the new Onboarding Form.
+* Add - Sending preloaded_requests to WooPay to avoid waiting for external requests
+* Fix - Add array_filter callback method
+* Fix - Added logic to check if the recurring cart array is present before displaying the recurring totals section in the cart.
+* Fix - Allow webhooks without livemode to be received.
+* Fix - Ensure when a customer changes the shipping method on cart and checkout that the recurring totals correctly reflect the chosen method.
+* Fix - Fix a fatal error on sites using WC Subscriptions versions below 4.0.0
+* Fix - Fix Country informed as empty for logged-out user in the BNPL site messaging configuration.
+* Fix - Fixed typo in businessInfo strings in strings.tsx file
+* Fix - Fix fatal errors when get_product method returns null
+* Fix - Fix incorrect channel value in transaction description screen for Tap to Pay for Android transactions
+* Fix - Fix issue where subscription signup fees are not converted correctly with Multi-Currency.
+* Fix - Fix outdated documentation links.
+* Fix - Fix Save my info section style when Payment options is not numbered.
+* Fix - Remove duplicated payment method on thank you page when using WooPay.
+* Fix - Resolve an issue that prevented the "Used for variations" checkbox from being enabled on the variable subscription product edit screen on WC version v7.9.0.
+* Fix - Resolved an issue that caused the payment type metadata to not be included in payment requests.
+* Fix - Resolved errors that occurred when activating the WC Subscriptions plugin via bulk action on the WP plugins screen or updating the plugin via the WooCommerce Extensions screen.
+* Fix - Restore removed condition after naming convention.
+* Fix - Reverting change to the plugin name because of compatibility with iOS app.
+* Fix - When HPOS is enabled, permanently deleting a subscription related order wasn't updating the related orders cache properly.
+* Fix - Wrap list of payment method logos on next line
+* Update - Add incentive cache invalidation based on store context hash.
+* Update - Another chunk of branding rollout: update wordpress.org assets
+* Update - Check WCPay Subscriptions eligibility after store completes WooCommerce onboarding wizard.
+* Update - Confirm subscription being switched is owned by customer before trying to possibly use its currency to prevent error.
+* Update - Highlight the active dispute task if disputes are due within 72 hours.
+* Update - Improve disputes list page by hiding the "Disputed on" column by default, add an "Action" column with clear call to action button, highlight urgent disputes' due dates, and color code disputes' statuses.
+* Update - Mark an expired uncaptured order as 'Failed" instead of 'Canceled'
+* Update - Refactoring and cleanup of code
+* Update - Remove the Remind Me Later option from the Fraud and Risk Tools discoverability banner.
+* Update - Remove WooCommerce Payments from taking over the WC core settings page
+* Update - Simplify the active dispute task title when disputes are for multiple currencies to improve readability.
+* Update - Update WooCommerce Payments to WooPayments across the plugin
+* Update - WC Payments inbuilt subscriptions functionality is no longer enabled by default for eligible US based stores.
+* Dev - Add E2E tests for Fraud & Risk tools.
+* Dev - Adding a tracking property to record whether user went through the new onboarding UX or not.
+* Dev - Add tool to allow merchants to fix Multi-Currency exchange rates in orders.
+* Dev - Affirm&Afterpay: add new test cases to ensure the method availability on checkout
+* Dev - Affirm&Afterpay: refactor subscription products detection by using existing subs API
+* Dev - Extracting functionality for preventing duplicate payments into a service.
+* Dev - Fix tests by ensuring the rest_pre_dispatch filter returns a WP_REST_Response
+* Dev - Migrate `HorizontalList` component to TS
+* Dev - Removed an old flag for a feature which is now enabled for old users. Some refactoring of the task lists code (no impact on functionality).
+* Dev - Remove FRT E2E tests.
+* Dev - Update subscriptions-core to 6.0.0.
 
 = 6.1.1 - 2023-06-29 =
 * Fix - Fix syntax for advanced filters in WC 7.8 and over

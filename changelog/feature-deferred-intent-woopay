@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Ensure WooPay compatibility with the split UPE that has deferred intent creation implementation.

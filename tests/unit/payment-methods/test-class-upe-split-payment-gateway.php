@@ -11,6 +11,7 @@ use Exception;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Core\Server\Request\Get_Request;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
@@ -196,7 +197,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					'create_setup_intention',
 					'update_intention',
 					'get_intent',
-					'get_setup_intent',
 					'get_payment_method',
 					'is_server_connected',
 					'get_charge',
@@ -1062,6 +1062,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$save_payment_method = false;
 		$user                = wp_get_current_user();
 		$intent_status       = Payment_Intent_Status::PROCESSING;
+		$intent_metadata     = [ 'order_id' => (string) $order_id ];
 		$charge_id           = 'ch_mock';
 		$customer_id         = 'cus_mock';
 		$intent_id           = 'pi_mock';
@@ -1069,7 +1070,12 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$card_method = $this->mock_payment_methods['card'];
 
-		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => $intent_status ] );
+		$payment_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'   => $intent_status,
+				'metadata' => $intent_metadata,
+			]
+		);
 
 		$mock_upe_gateway->expects( $this->once() )
 			->method( 'manage_customer_details_for_order' )
@@ -1119,6 +1125,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$save_payment_method = false;
 		$user                = wp_get_current_user();
 		$intent_status       = Payment_Intent_Status::SUCCEEDED;
+		$intent_metadata     = [ 'order_id' => (string) $order_id ];
 		$charge_id           = 'ch_mock';
 		$customer_id         = 'cus_mock';
 		$intent_id           = 'pi_mock';
@@ -1126,7 +1133,12 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$card_method = $this->mock_payment_methods['card'];
 
-		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => $intent_status ] );
+		$payment_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'   => $intent_status,
+				'metadata' => $intent_metadata,
+			]
+		);
 
 		$mock_upe_gateway->expects( $this->once() )
 			->method( 'manage_customer_details_for_order' )
@@ -1166,6 +1178,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$save_payment_method = true;
 		$user                = wp_get_current_user();
 		$intent_status       = Payment_Intent_Status::SUCCEEDED;
+		$intent_metadata     = [ 'order_id' => (string) $order_id ];
 		$client_secret       = 'cs_mock';
 		$customer_id         = 'cus_mock';
 		$intent_id           = 'si_mock';
@@ -1184,6 +1197,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			'id'                     => 'pi_mock',
 			'client_secret'          => $client_secret,
 			'status'                 => $intent_status,
+			'metadata'               => $intent_metadata,
 			'payment_method'         => $payment_method_id,
 			'payment_method_options' => [
 				'card' => [
@@ -1199,12 +1213,11 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				$this->returnValue( [ $user, $customer_id ] )
 			);
 
-		$this->mock_api_client->expects( $this->once() )
-			->method( 'get_setup_intent' )
-			->with( $intent_id )
-			->will(
-				$this->returnValue( $setup_intent )
-			);
+		$request = $this->mock_wcpay_request( Get_Request::class, 1, $intent_id );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $setup_intent );
 
 		$this->mock_token_service->expects( $this->once() )
 			->method( 'add_payment_method_to_user' )
@@ -1239,6 +1252,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$save_payment_method = true;
 		$user                = wp_get_current_user();
 		$intent_status       = Payment_Intent_Status::PROCESSING;
+		$intent_metadata     = [ 'order_id' => (string) $order_id ];
 		$charge_id           = 'ch_mock';
 		$customer_id         = 'cus_mock';
 		$intent_id           = 'pi_mock';
@@ -1247,7 +1261,12 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$card_method = $this->mock_payment_methods['card'];
 
-		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => $intent_status ] );
+		$payment_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'   => $intent_status,
+				'metadata' => $intent_metadata,
+			]
+		);
 
 		$mock_upe_gateway->expects( $this->once() )
 			->method( 'manage_customer_details_for_order' )
@@ -1574,16 +1593,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$mock_setup_intent_id = 'si_mock';
 		$mock_user            = wp_get_current_user();
 
-		$this->mock_api_client
-			->method( 'get_setup_intent' )
-			->with( $mock_setup_intent_id )
-			->willReturn(
-				[
-					'id'             => $mock_setup_intent_id,
-					'payment_method' => 'pm_mock',
-				]
-			);
-
 		$this->mock_token_service
 			->method( 'add_payment_method_to_user' )
 			->with( 'pm_mock', $mock_user )
@@ -1592,6 +1601,16 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			);
 
 		foreach ( $this->mock_payment_gateways as $mock_upe_gateway ) {
+			$request = $this->mock_wcpay_request( Get_Request::class, 1, $mock_setup_intent_id );
+
+			$request->expects( $this->once() )
+				->method( 'format_response' )
+				->willReturn(
+					[
+						'id'             => $mock_setup_intent_id,
+						'payment_method' => 'pm_mock',
+					]
+				);
 			$this->assertEquals( $mock_token, $mock_upe_gateway->create_token_from_setup_intent( $mock_setup_intent_id, $mock_user ) );
 		}
 	}
@@ -1742,6 +1761,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					[
 						'get_payment_method_ids_enabled_at_checkout',
 						'wc_payments_get_payment_method_by_id',
+						'wc_payments_get_payment_gateway_by_id',
 						'is_saved_cards_enabled',
 						'is_subscription_item_in_cart',
 					]
@@ -1755,6 +1775,11 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				->method( 'wc_payments_get_payment_method_by_id' )
 				->with( $payment_method )
 				->willReturn( $this->mock_payment_methods[ $payment_method ] );
+
+			$mock_upe_gateway
+				->method( 'wc_payments_get_payment_gateway_by_id' )
+				->with( $payment_method )
+				->willReturn( $this->mock_payment_gateways[ $payment_method ] );
 
 			$upe_checkout = new WC_Payments_UPE_Checkout(
 				$mock_upe_gateway,
@@ -1787,6 +1812,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				[
 					'get_payment_method_ids_enabled_at_checkout',
 					'wc_payments_get_payment_method_by_id',
+					'wc_payments_get_payment_gateway_by_id',
 					'is_saved_cards_enabled',
 					'is_subscription_item_in_cart',
 				]
@@ -1814,6 +1840,11 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'wc_payments_get_payment_method_by_id' )
 			->with( Payment_Method::SEPA )
 			->willReturn( $this->mock_payment_methods[ Payment_Method::SEPA ] );
+
+		$mock_upe_gateway
+			->method( 'wc_payments_get_payment_gateway_by_id' )
+			->with( Payment_Method::SEPA )
+			->willReturn( $this->mock_payment_gateways[ Payment_Method::SEPA ] );
 
 		$upe_checkout = new WC_Payments_UPE_Checkout(
 			$mock_upe_gateway,
@@ -1845,6 +1876,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				[
 					'get_payment_method_ids_enabled_at_checkout',
 					'wc_payments_get_payment_method_by_id',
+					'wc_payments_get_payment_gateway_by_id',
 					'is_saved_cards_enabled',
 					'is_subscription_item_in_cart',
 				]
@@ -1872,6 +1904,11 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'wc_payments_get_payment_method_by_id' )
 			->with( Payment_Method::SEPA )
 			->willReturn( $this->mock_payment_methods[ Payment_Method::SEPA ] );
+
+		$mock_upe_gateway
+			->method( 'wc_payments_get_payment_gateway_by_id' )
+			->with( Payment_Method::SEPA )
+			->willReturn( $this->mock_payment_gateways[ Payment_Method::SEPA ] );
 
 		$upe_checkout = new WC_Payments_UPE_Checkout(
 			$mock_upe_gateway,
@@ -1903,6 +1940,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				[
 					'get_payment_method_ids_enabled_at_checkout',
 					'wc_payments_get_payment_method_by_id',
+					'wc_payments_get_payment_gateway_by_id',
 					'is_saved_cards_enabled',
 					'is_subscription_item_in_cart',
 				]
@@ -1916,6 +1954,11 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'wc_payments_get_payment_method_by_id' )
 			->with( Payment_Method::SEPA )
 			->willReturn( $this->mock_payment_methods[ Payment_Method::SEPA ] );
+
+		$mock_upe_gateway
+			->method( 'wc_payments_get_payment_gateway_by_id' )
+			->with( Payment_Method::SEPA )
+			->willReturn( $this->mock_payment_gateways[ Payment_Method::SEPA ] );
 
 		// saved cards enabled.
 		$mock_upe_gateway
@@ -2016,6 +2059,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					'get_upe_enabled_payment_method_statuses',
 					'get_upe_enabled_payment_method_ids',
 					'wc_payments_get_payment_method_by_id',
+					'wc_payments_get_payment_gateway_by_id',
 				]
 			)
 			->getMock();
@@ -2052,6 +2096,18 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				]
 			);
 
+		$mock_upe_gateway
+			->method( 'wc_payments_get_payment_gateway_by_id' )
+			->willReturnCallback(
+				function ( $payment_method ) {
+					if ( Payment_Method::CARD === $payment_method ) {
+						return $this->mock_payment_gateways[ Payment_Method::CARD ];
+					} elseif ( Payment_Method::LINK === $payment_method ) {
+						return $this->mock_payment_gateways[ Payment_Method::LINK ];
+					}
+				}
+			);
+
 		$upe_checkout = new WC_Payments_UPE_Checkout(
 			$mock_upe_gateway,
 			$this->mock_woopay_utilities,
@@ -2063,24 +2119,26 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			$upe_checkout->get_payment_fields_js_config()['paymentMethodsConfig'],
 			[
 				'card' => [
-					'isReusable'           => true,
-					'title'                => 'Credit card / debit card',
-					'icon'                 => null,
-					'showSaveOption'       => true,
-					'countries'            => [],
-					'upePaymentIntentData' => null,
-					'upeSetupIntentData'   => null,
-					'testingInstructions'  => '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC. Other payment methods may redirect to a Stripe test page to authorize payment. More test card numbers are listed <a href="https://woocommerce.com/document/woocommerce-payments/testing-and-troubleshooting/testing/#test-cards" target="_blank">here</a>.',
+					'isReusable'             => true,
+					'title'                  => 'Credit card / debit card',
+					'icon'                   => null,
+					'showSaveOption'         => true,
+					'countries'              => [],
+					'upePaymentIntentData'   => null,
+					'upeSetupIntentData'     => null,
+					'testingInstructions'    => '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC. Other payment methods may redirect to a Stripe test page to authorize payment. More test card numbers are listed <a href="https://woocommerce.com/document/woocommerce-payments/testing-and-troubleshooting/testing/#test-cards" target="_blank">here</a>.',
+					'forceNetworkSavedCards' => false,
 				],
 				'link' => [
-					'isReusable'           => true,
-					'title'                => 'Link',
-					'icon'                 => $this->icon_url,
-					'showSaveOption'       => true,
-					'countries'            => [],
-					'upePaymentIntentData' => null,
-					'upeSetupIntentData'   => null,
-					'testingInstructions'  => '',
+					'isReusable'             => true,
+					'title'                  => 'Link',
+					'icon'                   => $this->icon_url,
+					'showSaveOption'         => true,
+					'countries'              => [],
+					'upePaymentIntentData'   => null,
+					'upeSetupIntentData'     => null,
+					'testingInstructions'    => '',
+					'forceNetworkSavedCards' => false,
 				],
 			]
 		);

@@ -8,24 +8,16 @@
 namespace WCPay\Payment_Methods;
 
 use Exception;
-use WCPay\Constants\Order_Status;
-use WCPay\Constants\Payment_Method;
-use WCPay\Constants\Payment_Type;
-use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Core\Server\Request;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
-use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Logger;
-use WCPay\Payment_Information;
 use WCPay\Session_Rate_Limiter;
-use WC_Order;
 use WC_Payments;
 use WC_Payments_Account;
 use WC_Payments_Action_Scheduler_Service;
 use WC_Payments_API_Client;
 use WC_Payments_Customer_Service;
-use WC_Payments_Explicit_Price_Formatter;
-use WC_Payment_Gateway_WCPay;
 use WC_Payments_Order_Service;
 use WC_Payment_Token_CC;
 use WC_Payments_Token_Service;
@@ -152,7 +144,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 * Set formatted readable payment method title for order,
 	 * using payment method details from accompanying charge.
 	 *
-	 * @param WC_Order   $order WC Order being processed.
+	 * @param \WC_Order  $order WC Order being processed.
 	 * @param string     $payment_method_type Stripe payment method key.
 	 * @param array|bool $payment_method_details Array of payment method details from charge or false.
 	 */
@@ -346,7 +338,9 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 */
 	public function create_token_from_setup_intent( $setup_intent_id, $user ) {
 		try {
-			$setup_intent      = $this->payments_api_client->get_setup_intent( $setup_intent_id );
+			$setup_intent_request = Request::get( WC_Payments_API_Client::SETUP_INTENTS_API, $setup_intent_id );
+			$setup_intent         = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
+
 			$payment_method_id = $setup_intent['payment_method'];
 			// TODO: When adding SEPA and Sofort, we will need a new API call to get the payment method and from there get the type.
 			// Leaving 'card' as a hardcoded value for now to avoid the extra API call.
