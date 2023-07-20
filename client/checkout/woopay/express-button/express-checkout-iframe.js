@@ -86,6 +86,15 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		// Set the initial value.
 		iframeHeaderValue = true;
 
+		// TODO send session info here
+		iframe.contentWindow.postMessage(
+			{
+				action: 'setSessionData',
+				value: window.sessionDataWooPay,
+			},
+			getConfig( 'woopayHost' )
+		);
+
 		getWindowSize();
 		window.addEventListener( 'resize', getWindowSize );
 
@@ -214,6 +223,14 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		switch ( e.data.action ) {
 			case 'otp_email_submitted':
 				userEmail = e.data.userEmail;
+				break;
+			case 'redirect_to_platform_checkout_skip_session_init':
+				wcpayTracks.recordUserEvent(
+					wcpayTracks.events.WOOPAY_OTP_COMPLETE
+				);
+				if ( e.data.redirectUrl ) {
+					window.location = e.data.redirectUrl;
+				}
 				break;
 			case 'redirect_to_platform_checkout':
 			case 'redirect_to_woopay':
