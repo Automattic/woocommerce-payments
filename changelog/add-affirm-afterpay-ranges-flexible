@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Allows nulls in min/max payment ranges definitions for UPE payment methods
