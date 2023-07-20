@@ -131,7 +131,6 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 				$payment_fields['orderReturnURL'] = esc_url_raw(
 					add_query_arg(
 						[
-							'order_id'          => $order_id,
 							'wc_payment_method' => UPE_Payment_Gateway::GATEWAY_ID,
 							'_wpnonce'          => wp_create_nonce( 'wcpay_process_redirect_order_nonce' ),
 						],
