@@ -20,7 +20,7 @@ import { __, sprintf } from '@wordpress/i18n';
  */
 import Loadable from 'components/loadable';
 import { getNextDeposit } from './utils';
-import DepositStatusPill from 'components/deposit-status-pill';
+import DepositStatusChip from 'components/deposit-status-chip';
 import { getDepositDate } from 'deposits/utils';
 import { useAllDepositsOverviews, useDepositIncludesLoan } from 'wcpay/data';
 import BannerNotice from 'wcpay/components/banner-notice';
@@ -201,7 +201,7 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 							isLoading={ isLoading }
 							placeholder="Estimated"
 							children={
-								<DepositStatusPill
+								<DepositStatusChip
 									status={ nextDeposit.status }
 								/>
 							}

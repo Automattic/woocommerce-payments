@@ -33,7 +33,7 @@ import DepositsFilters from '../filters';
 import DownloadButton from 'components/download-button';
 import { getDepositsCSV } from 'wcpay/data/deposits/resolvers';
 import { applyThousandSeparator } from '../../utils/index.js';
-import DepositStatusPill from 'components/deposit-status-pill';
+import DepositStatusChip from 'components/deposit-status-chip';
 
 import './style.scss';
 import { parseInt } from 'lodash';
@@ -151,7 +151,7 @@ export const DepositsList = (): JSX.Element => {
 			status: {
 				value: displayStatus[ deposit.status ],
 				display: clickable(
-					<DepositStatusPill status={ deposit.status } />
+					<DepositStatusChip status={ deposit.status } />
 				),
 			},
 			bankAccount: {

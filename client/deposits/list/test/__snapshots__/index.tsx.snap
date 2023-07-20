@@ -22,34 +22,6 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
           <span
             class="woocommerce-filters-label"
           >
-            Deposit currency
-            :
-          </span>
-          <div
-            class="components-dropdown"
-            tabindex="-1"
-          >
-            <button
-              aria-expanded="false"
-              class="components-button woocommerce-dropdown-button"
-              type="button"
-            >
-              <div
-                class="woocommerce-dropdown-button__labels"
-              >
-                <span>
-                  All
-                </span>
-              </div>
-            </button>
-          </div>
-        </div>
-        <div
-          class="woocommerce-filters-filter"
-        >
-          <span
-            class="woocommerce-filters-label"
-          >
             Show
             :
           </span>
@@ -158,14 +130,14 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
         >
           <div
             aria-hidden="false"
-            aria-labelledby="caption-1"
+            aria-labelledby="caption-0"
             class="woocommerce-table__table"
             role="group"
           >
             <table>
               <caption
                 class="woocommerce-table__caption screen-reader-text"
-                id="caption-1"
+                id="caption-0"
               >
                 Deposit history
               </caption>
@@ -187,7 +159,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                     scope="col"
                   >
                     <button
-                      aria-describedby="header-1-1"
+                      aria-describedby="header-0-1"
                       class="components-button"
                       type="button"
                     >
@@ -216,7 +188,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                     </button>
                     <span
                       class="screen-reader-text"
-                      id="header-1-1"
+                      id="header-0-1"
                     >
                       Sort by Date in ascending order
                     </span>
@@ -244,7 +216,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                     scope="col"
                   >
                     <button
-                      aria-describedby="header-1-3"
+                      aria-describedby="header-0-3"
                       class="components-button"
                       type="button"
                     >
@@ -273,7 +245,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                     </button>
                     <span
                       class="screen-reader-text"
-                      id="header-1-3"
+                      id="header-0-3"
                     >
                       Sort by Amount in descending order
                     </span>
@@ -379,9 +351,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                       tabindex="-1"
                     >
                       <span
-                        class="components-truncate components-text woocommerce-pill wcpay-pill__success css-1g4vivm-View-Text-sx-Base em57xhy0"
-                        data-wp-c16t="true"
-                        data-wp-component="Text"
+                        class="chip chip-success"
                       >
                         Paid
                       </span>
@@ -468,9 +438,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                       tabindex="-1"
                     >
                       <span
-                        class="components-truncate components-text woocommerce-pill wcpay-pill__alert css-1g4vivm-View-Text-sx-Base em57xhy0"
-                        data-wp-c16t="true"
-                        data-wp-component="Text"
+                        class="chip chip-warning"
                       >
                         Pending
                       </span>
@@ -929,9 +897,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                       tabindex="-1"
                     >
                       <span
-                        class="components-truncate components-text woocommerce-pill wcpay-pill__success css-1g4vivm-View-Text-sx-Base em57xhy0"
-                        data-wp-c16t="true"
-                        data-wp-component="Text"
+                        class="chip chip-success"
                       >
                         Paid
                       </span>
@@ -1018,9 +984,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                       tabindex="-1"
                     >
                       <span
-                        class="components-truncate components-text woocommerce-pill wcpay-pill__alert css-1g4vivm-View-Text-sx-Base em57xhy0"
-                        data-wp-c16t="true"
-                        data-wp-component="Text"
+                        class="chip chip-warning"
                       >
                         Pending
                       </span>
