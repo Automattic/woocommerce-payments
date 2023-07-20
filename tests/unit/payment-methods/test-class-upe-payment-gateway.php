@@ -17,6 +17,7 @@ use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Core\Server\Response;
 use WCPay\Constants\Payment_Method;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Exceptions\Process_Payment_Exception;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\WC_Payments_UPE_Checkout;
@@ -1067,12 +1068,18 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$save_payment_method = false;
 		$user                = wp_get_current_user();
 		$intent_status       = Payment_Intent_Status::PROCESSING;
+		$intent_metadata     = [ 'order_id' => (string) $order_id ];
 		$charge_id           = 'ch_mock';
 		$customer_id         = 'cus_mock';
 		$intent_id           = 'pi_mock';
 		$payment_method_id   = 'pm_mock';
 
-		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => $intent_status ] );
+		$payment_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'   => $intent_status,
+				'metadata' => $intent_metadata,
+			]
+		);
 
 		$this->mock_upe_gateway->expects( $this->once() )
 			->method( 'manage_customer_details_for_order' )
@@ -1113,12 +1120,18 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$save_payment_method = false;
 		$user                = wp_get_current_user();
 		$intent_status       = Payment_Intent_Status::SUCCEEDED;
+		$intent_metadata     = [ 'order_id' => (string) $order_id ];
 		$charge_id           = 'ch_mock';
 		$customer_id         = 'cus_mock';
 		$intent_id           = 'pi_mock';
 		$payment_method_id   = 'pm_mock';
 
-		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => $intent_status ] );
+		$payment_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'   => $intent_status,
+				'metadata' => $intent_metadata,
+			]
+		);
 
 		$this->mock_upe_gateway->expects( $this->once() )
 			->method( 'manage_customer_details_for_order' )
@@ -1146,6 +1159,32 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( Order_Status::PROCESSING, $result_order->get_status() );
 	}
 
+	public function test_validate_order_id_received_vs_intent_meta_order_id_throw_exception() {
+		$order           = WC_Helper_Order::create_order();
+		$intent_metadata = [ 'order_id' => (string) ( $order->get_id() + 100 ) ];
+
+		$this->expectException( Process_Payment_Exception::class );
+		$this->expectExceptionMessage( "We're not able to process this payment due to the order ID mismatch. Please try again later." );
+
+		\PHPUnit_Utils::call_method(
+			$this->mock_upe_gateway,
+			'validate_order_id_received_vs_intent_meta_order_id',
+			[ $order, $intent_metadata ]
+		);
+	}
+
+	public function test_validate_order_id_received_vs_intent_meta_order_id_returning_void() {
+		$order           = WC_Helper_Order::create_order();
+		$intent_metadata = [ 'order_id' => (string) ( $order->get_id() ) ];
+
+		$res = \PHPUnit_Utils::call_method(
+			$this->mock_upe_gateway,
+			'validate_order_id_received_vs_intent_meta_order_id',
+			[ $order, $intent_metadata ]
+		);
+
+		$this->assertSame( null, $res );
+	}
 	public function test_process_redirect_setup_intent_succeded() {
 		$order               = WC_Helper_Order::create_order();
 		$order_id            = $order->get_id();
@@ -1216,13 +1255,19 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$save_payment_method = true;
 		$user                = wp_get_current_user();
 		$intent_status       = Payment_Intent_Status::PROCESSING;
+		$intent_metadata     = [ 'order_id' => (string) $order_id ];
 		$charge_id           = 'ch_mock';
 		$customer_id         = 'cus_mock';
 		$intent_id           = 'pi_mock';
 		$payment_method_id   = 'pm_mock';
 		$token               = WC_Helper_Token::create_token( $payment_method_id );
 
-		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => $intent_status ] );
+		$payment_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'   => $intent_status,
+				'metadata' => $intent_metadata,
+			]
+		);
 
 		$this->mock_upe_gateway->expects( $this->once() )
 			->method( 'manage_customer_details_for_order' )

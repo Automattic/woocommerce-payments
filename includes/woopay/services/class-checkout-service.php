@@ -31,7 +31,7 @@ class Checkout_Service {
 		$request = WooPay_Create_And_Confirm_Intention::extend( $base_request );
 		$request->set_has_woopay_subscription( '1' === $payment_information->get_order()->get_meta( '_woopay_has_subscription' ) );
 		$request->set_save_payment_method_to_platform( $payment_information->should_save_payment_method_to_platform() );
-		$request->set_is_platform_payment_method( $this->is_platform_payment_method( $payment_information->is_using_saved_payment_method() ) );
+		$request->set_is_platform_payment_method( $this->is_platform_payment_method( $payment_information ) );
 		return $request;
 	}
 
@@ -50,50 +50,32 @@ class Checkout_Service {
 		$request = WooPay_Create_And_Confirm_Setup_Intention::extend( $base_request );
 		$request->set_save_in_platform_account( $save_in_platform_account );
 		$request->set_save_payment_method_to_platform( $save_payment_method_to_platform );
-		$request->set_is_platform_payment_method( $this->is_platform_payment_method( $payment_information->is_using_saved_payment_method() ) );
+		$request->set_is_platform_payment_method( $this->is_platform_payment_method( $payment_information ) );
 		return $request;
 	}
 
 	/**
 	 * Determine if current payment method is a platform payment method.
 	 *
-	 * @param boolean $is_using_saved_payment_method If it is using saved payment method.
+	 * @param Payment_Information $payment_information Payment information object used to determine if a saved payment method is being used as well as helps to determine
+	 * if stripe platform account should be used or not.
 	 *
 	 * @return boolean True if it is a platform payment method.
 	 */
-	public function is_platform_payment_method( bool $is_using_saved_payment_method ) {
+	public function is_platform_payment_method( Payment_Information $payment_information ) {
 		// Return false for express checkout method.
 		if ( isset( $_POST['payment_request_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return false;
 		}
 
+		$should_use_stripe_platform = WC_Payments_Features::is_upe_deferred_intent_enabled() ? \WC_Payments::get_payment_gateway_by_id( $payment_information->get_payment_method_stripe_id() )->should_use_stripe_platform_on_checkout_page() : \WC_Payments::get_gateway()->should_use_stripe_platform_on_checkout_page();
+
 		// Make sure the payment method being charged was created in the platform.
 		if (
-			! $is_using_saved_payment_method &&
-			$this->should_use_stripe_platform_on_checkout_page()
+			! $payment_information->is_using_saved_payment_method() &&
+			$should_use_stripe_platform
 		) {
 			// This payment method was created under the platform account.
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * Whether we should use the platform account to initialize Stripe on the checkout page.
-	 *
-	 * @return bool
-	 */
-	public function should_use_stripe_platform_on_checkout_page() {
-		if (
-			WC_Payments_Features::is_woopay_eligible()
-			&& 'yes' === \WC_Payments::get_gateway()->get_option( 'platform_checkout', 'no' )
-			&& ! ( WC_Payments_Features::is_upe_legacy_enabled() && ! WC_Payments_Features::is_upe_split_enabled() )
-			&& ( is_checkout() || has_block( 'woocommerce/checkout' ) )
-			&& ! is_wc_endpoint_url( 'order-pay' )
-			&& ! WC()->cart->is_empty()
-			&& WC()->cart->needs_payment()
-		) {
 			return true;
 		}
 
