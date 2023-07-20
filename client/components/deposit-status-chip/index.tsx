@@ -8,26 +8,25 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { displayStatus } from 'deposits/strings';
-import Pill from 'components/pill';
+import Chip from 'components/chip';
 
 const mappings: {
-	[ key: string ]: 'primary' | 'success' | 'alert' | 'danger' | 'light';
+	[ key: string ]: 'primary' | 'success' | 'light' | 'warning' | 'alert';
 } = {
 	estimated: 'light',
-	pending: 'alert',
+	pending: 'warning',
 	in_transit: 'success',
 	paid: 'success',
-	failed: 'danger',
-	canceled: 'danger',
+	failed: 'alert',
+	canceled: 'alert',
 };
 
 /**
- * Renders a deposits status pill.
- * Based off of the Pill component found components/pill.
+ * Renders a deposits status chip.
  *
- * @return {JSX.Element} Deposit status pill.
+ * @return {JSX.Element} Deposit status chip.
  */
-const DepositStatusPill: React.FC< {
+const DepositStatusChip: React.FC< {
 	status: string;
 } > = ( { status } ): JSX.Element => {
 	const label = displayStatus[ status as keyof typeof displayStatus ]
@@ -36,7 +35,7 @@ const DepositStatusPill: React.FC< {
 
 	const type = status && mappings[ status ] ? mappings[ status ] : 'light';
 
-	return <Pill type={ type }>{ label }</Pill>;
+	return <Chip type={ type } message={ label } />;
 };
 
-export default DepositStatusPill;
+export default DepositStatusChip;
