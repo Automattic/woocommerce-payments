@@ -115,9 +115,11 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		$order = \WC_Helper_Order::create_order( $verified_user->ID );
 		$order->set_billing_email( $verified_user->user_email );
-		WooPay_Session::remove_order_customer_id_on_requests_with_verified_email( $order );
+		$order->save();
+		WooPay_Session::remove_order_customer_id_on_requests_with_verified_email( $order->get_Id() );
 
-		$this->assertEquals( $order->get_customer_id(), $verified_user->ID );
+		$updated_order = wc_get_order( $order->get_id() );
+		$this->assertEquals( $updated_order->get_customer_id(), $verified_user->ID );
 	}
 
 	public function test_remove_order_customer_id_on_requests_with_verified_email_with_verified_user_store_api_token_with_non_matching_order_billing_email() {
@@ -133,9 +135,11 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		$order = \WC_Helper_Order::create_order( $verified_user->ID );
 		$order->set_billing_email( 'test@example.com' );
-		WooPay_Session::remove_order_customer_id_on_requests_with_verified_email( $order );
+		$order->save();
+		WooPay_Session::remove_order_customer_id_on_requests_with_verified_email( $order->get_id() );
 
-		$this->assertEquals( $order->get_customer_id(), $verified_user->ID );
+		$updated_order = wc_get_order( $order->get_id() );
+		$this->assertEquals( $updated_order->get_customer_id(), $verified_user->ID );
 	}
 
 	public function test_remove_order_customer_id_on_requests_with_verified_email_with_verified_user_store_api_token() {
@@ -151,9 +155,11 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		$order = \WC_Helper_Order::create_order( $verified_user->ID );
 		$order->set_billing_email( $verified_user->user_email );
-		WooPay_Session::remove_order_customer_id_on_requests_with_verified_email( $order );
+		$order->save();
+		WooPay_Session::remove_order_customer_id_on_requests_with_verified_email( $order->get_id() );
 
-		$this->assertEquals( $order->get_customer_id(), 0 );
+		$updated_order = wc_get_order( $order->get_id() );
+		$this->assertEquals( $updated_order->get_customer_id(), 0 );
 	}
 
 	private function setup_session( $customer_id, $customer_email = null ) {
