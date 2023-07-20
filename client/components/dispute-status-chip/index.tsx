@@ -28,7 +28,8 @@ const DisputeStatusChip: React.FC< Props > = ( { status, dueBy } ) => {
 	const message = mapping.message || formatStringValue( status );
 
 	const needsResponse = disputeAwaitingResponseStatuses.includes( status );
-	const isUrgent = needsResponse && isDueWithin( { dueBy, days: 3 } );
+	const isUrgent =
+		needsResponse && dueBy && isDueWithin( { dueBy, days: 3 } );
 
 	let type = mapping.type || 'light';
 	if ( isUrgent ) {
