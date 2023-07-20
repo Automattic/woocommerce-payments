@@ -1184,7 +1184,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$intent = $this->payments_api_client->get_setup_intent( $woopay_intent_id );
 
 				$intent_metadata          = $intent->get_metadata();
-				$intent_meta_order_id_raw = ! empty( $intent_metadata ) ? $intent_metadata['order_id'] ?? '' : '';
+				$intent_meta_order_id_raw = $intent_metadata['order_id'] ?? '';
 				$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
 
 				if ( $intent_meta_order_id !== $order_id ) {

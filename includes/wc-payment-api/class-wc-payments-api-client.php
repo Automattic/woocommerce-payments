@@ -2249,8 +2249,8 @@ class WC_Payments_API_Client {
 			? $raw_metadata
 			: [];
 		$charge_array           = 0 < $intention_array['charges']['total_count'] ? end( $intention_array['charges']['data'] ) : null;
-		$next_action            = ! empty( $intention_array['next_action'] ) ? $intention_array['next_action'] : [];
-		$last_payment_error     = ! empty( $intention_array['last_payment_error'] ) ? $intention_array['last_payment_error'] : [];
+		$next_action            = $intention_array['next_action'] ?? [];
+		$last_payment_error     = $intention_array['last_payment_error'] ?? [];
 		$customer               = $intention_array['customer'] ?? $charge_array['customer'] ?? null;
 		$payment_method         = $intention_array['payment_method'] ?? $intention_array['source'] ?? null;
 		$processing             = $intention_array[ Payment_Intent_Status::PROCESSING ] ?? [];
@@ -2300,8 +2300,8 @@ class WC_Payments_API_Client {
 		$metadata               = is_array( $raw_metadata ) && ! empty( $raw_metadata )
 			? $raw_metadata
 			: [];
-		$next_action            = ! empty( $intention_array['next_action'] ) ? $intention_array['next_action'] : [];
-		$last_setup_error       = ! empty( $intention_array['last_setup_error'] ) ? $intention_array['last_setup_error'] : [];
+		$next_action            = $intention_array['next_action'] ?? [];
+		$last_setup_error       = $intention_array['last_setup_error'] ?? [];
 		$customer               = $intention_array['customer'] ?? null;
 		$payment_method         = $intention_array['payment_method'] ?? $intention_array['source'] ?? null;
 		$payment_method_types   = $intention_array['payment_method_types'] ?? [];
