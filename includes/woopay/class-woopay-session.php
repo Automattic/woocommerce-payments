@@ -9,11 +9,17 @@ namespace WCPay\WooPay;
 
 use Automattic\Jetpack\Connection\Rest_Authentication;
 use Automattic\WooCommerce\StoreApi\Utilities\JsonWebToken;
+use Jetpack_Options;
+use WCPay\Blocks_Data_Extractor;
 use WCPay\Logger;
-use WC_Payments;
-use WC_Payments_Features;
 use WCPay\Platform_Checkout\SessionHandler;
+use WCPay\WooPay\WooPay_Scheduler;
+use WC_Customer;
+use WC_Payments;
+use WC_Payments_Customer_Service;
+use WC_Payments_Features;
 use WP_REST_Request;
+use WCPay\Platform_Checkout\WooPay_Store_Api_Token;
 
 /**
  * Class responsible for handling woopay sessions.
@@ -46,6 +52,20 @@ class WooPay_Session {
 		add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_woopay' ], 20 );
 		add_filter( 'rest_request_before_callbacks', [ __CLASS__, 'add_woopay_store_api_session_handler' ], 10, 3 );
 		add_action( 'woocommerce_store_api_checkout_update_order_meta', [ __CLASS__, 'remove_order_customer_id_on_requests_with_verified_email' ] );
+
+		add_action( 'wp_footer', [ __CLASS__, 'init_woopay_session_data' ] );
+	}
+
+	/**
+	 * Initializes the session data for WooPay to be combined with the /verify request.
+	 *
+	 * @return void
+	 */
+	public static function init_woopay_session_data() {
+
+		$session_data = self::get_init_session_request();
+
+		wp_localize_script( 'WCPAY_CHECKOUT', 'sessionDataWooPay', $session_data );
 	}
 
 	/**
@@ -217,6 +237,69 @@ class WooPay_Session {
 	}
 
 	/**
+	 * Summary of get_init_session_request
+	 *
+	 * @return array
+	 */
+	public static function get_init_session_request() {
+		$user        = wp_get_current_user();
+		$customer_id = WC_Payments::get_customer_service()->get_customer_id_by_user_id( $user->ID );
+		if ( null === $customer_id ) {
+			// create customer.
+			$customer_data = WC_Payments_Customer_Service::map_customer_data( null, new WC_Customer( $user->ID ) );
+			$customer_id   = WC_Payments::get_customer_service()->create_customer_for_user( $user, $customer_data );
+		}
+
+		$account_id = WC_Payments::get_account_service()->get_stripe_account_id();
+
+		$store_logo = WC_Payments::get_gateway()->get_option( 'platform_checkout_store_logo' );
+
+		include_once WCPAY_ABSPATH . 'includes/compat/blocks/class-blocks-data-extractor.php';
+		$blocks_data_extractor = new Blocks_Data_Extractor();
+
+		// This uses the same logic as the Checkout block in hydrate_from_api to get the cart and checkout data.
+		$cart_data = rest_preload_api_request( [], '/wc/store/v1/cart' )['/wc/store/v1/cart']['body'];
+		add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+		$checkout_data = rest_preload_api_request( [], '/wc/store/v1/checkout' )['/wc/store/v1/checkout']['body'];
+		remove_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+
+		$request = [
+			'wcpay_version'      => WCPAY_VERSION_NUMBER,
+			'user_id'            => $user->ID,
+			'customer_id'        => $customer_id,
+			'session_nonce'      => wp_create_nonce( 'wc_store_api' ),
+			'store_api_token'    => self::init_store_api_token(),
+			'email'              => '',
+			'store_data'         => [
+				'store_name'                     => get_bloginfo( 'name' ),
+				'store_logo'                     => ! empty( $store_logo ) ? get_rest_url( null, 'wc/v3/payments/file/' . $store_logo ) : '',
+				'custom_message'                 => WC_Payments::get_gateway()->get_option( 'platform_checkout_custom_message' ),
+				'blog_id'                        => Jetpack_Options::get_option( 'id' ),
+				'blog_url'                       => get_site_url(),
+				'blog_checkout_url'              => wc_get_checkout_url(),
+				'blog_shop_url'                  => get_permalink( wc_get_page_id( 'shop' ) ),
+				'store_api_url'                  => WC_Payments::get_store_api_url(),
+				'account_id'                     => $account_id,
+				'test_mode'                      => WC_Payments::mode()->is_test(),
+				'capture_method'                 => empty( WC_Payments::get_gateway()->get_option( 'manual_capture' ) ) || 'no' === WC_Payments::get_gateway()->get_option( 'manual_capture' ) ? 'automatic' : 'manual',
+				'is_subscriptions_plugin_active' => WC_Payments::get_gateway()->is_subscriptions_plugin_active(),
+				'woocommerce_tax_display_cart'   => get_option( 'woocommerce_tax_display_cart' ),
+				'ship_to_billing_address_only'   => wc_ship_to_billing_address_only(),
+				'return_url'                     => wc_get_cart_url(),
+				'blocks_data'                    => $blocks_data_extractor->get_data(),
+				'checkout_schema_namespaces'     => $blocks_data_extractor->get_checkout_schema_namespaces(),
+			],
+			'user_session'       => null,
+			'preloaded_requests' => [
+				'cart'     => $cart_data,
+				'checkout' => $checkout_data,
+			],
+		];
+
+		return $request;
+	}
+
+	/**
 	 * Get the WooPay verified email address from the header.
 	 *
 	 * @return string|null The WooPay verified email address if it's set.
@@ -278,4 +361,16 @@ class WooPay_Session {
 	private static function is_woopay_enabled(): bool {
 		return WC_Payments_Features::is_woopay_eligible() && 'yes' === WC_Payments::get_gateway()->get_option( 'platform_checkout', 'no' );
 	}
+
+	/**
+	 * Initializes the WooPay_Store_Api_Token class and returns the Cart token.
+	 *
+	 * @return string The Cart Token.
+	 */
+	private static function init_store_api_token() {
+		$cart_route = WooPay_Store_Api_Token::init();
+
+		return $cart_route->get_cart_token();
+	}
+
 }
