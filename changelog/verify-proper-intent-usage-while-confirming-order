@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Enhance query parameters validation in redirected requests.
