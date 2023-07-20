@@ -47,7 +47,7 @@ class List_Charge_Refunds extends Request {
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
 	public function set_limit( int $limit ) {
-		$this->validate_is_larger_then( $limit, 0 );
+		$this->validate_is_larger_than( $limit, 0 );
 		$this->set_param( 'limit', $limit );
 	}
 
