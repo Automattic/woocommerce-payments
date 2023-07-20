@@ -35,7 +35,7 @@ const SetupRealPayments: React.FC = () => {
 			<Card className="wcpay-setup-real-payments">
 				<CardHeader>
 					{ __(
-						'Ready to setup real payments on your store?',
+						'Ready to set up real payments on your store?',
 						'woocommerce-payments'
 					) }
 				</CardHeader>
