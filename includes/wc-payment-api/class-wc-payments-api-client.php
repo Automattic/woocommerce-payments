@@ -2446,12 +2446,12 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Gets the list of extensions that are incompatible with WooPay.
+	 * Gets the WooPay compatibility list.
 	 *
-	 * @return array of extensions.
+	 * @return array of incompatible extensions, adapted extensions and available countries.
 	 * @throws API_Exception When request fails.
 	 */
-	public function get_woopay_incompatible_extensions() {
+	public function get_woopay_compatibility() {
 		return $this->request(
 			[],
 			self::WOOPAY_COMPATIBILITY_API,

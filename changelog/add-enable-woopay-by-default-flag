@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-Added flag to allow us to remotely set if WooPay should be enabled or not for new merchants.
