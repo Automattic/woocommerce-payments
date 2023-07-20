@@ -24,31 +24,31 @@ describe( 'isDueWithin', () => {
 	} );
 
 	test( 'returns false if dueBy is not within the specified number of days', () => {
-		// 1 day
+		// Over 1 day
 		expect(
 			isDueWithin( {
-				dueBy: mockUnixTime + hourInSeconds * 24,
+				dueBy: mockUnixTime + hourInSeconds * 24.01,
 				days: 1,
 			} )
 		).toBe( false );
 		expect(
-			isDueWithin( { dueBy: '2021-01-02T01:00:00.000Z', days: 1 } )
+			isDueWithin( { dueBy: '2021-01-02T00:00:01.000Z', days: 1 } )
 		).toBe( false );
 
-		// 7 days
+		// Over 7 days
 		expect(
 			isDueWithin( {
-				dueBy: mockUnixTime + hourInSeconds * 168,
+				dueBy: mockUnixTime + hourInSeconds * 168.05,
 				days: 7,
 			} )
 		).toBe( false );
 		expect(
-			isDueWithin( { dueBy: '2021-01-08T00:00:00.000Z', days: 7 } )
+			isDueWithin( { dueBy: '2021-01-08T00:00:01.000Z', days: 7 } )
 		).toBe( false );
 	} );
 
-	test( 'returns true if dueBy is within the specified number of days', () => {
-		// 1 day
+	test( 'returns true if dueBy is within or equal to the specified number of days', () => {
+		// Within 1 day
 		expect(
 			isDueWithin( {
 				dueBy: mockUnixTime + hourInSeconds * 23.95,
@@ -59,15 +59,26 @@ describe( 'isDueWithin', () => {
 			isDueWithin( { dueBy: '2021-01-01T23:59:00.000Z', days: 1 } )
 		).toBe( true );
 
-		// 7 days
+		// Exactly 1 day
 		expect(
 			isDueWithin( {
-				dueBy: mockUnixTime + hourInSeconds * 167.95,
+				dueBy: mockUnixTime + hourInSeconds * 24,
+				days: 1,
+			} )
+		).toBe( true );
+		expect(
+			isDueWithin( { dueBy: '2021-01-02T00:00:00.000Z', days: 1 } )
+		).toBe( true );
+
+		// Exactly 7 days
+		expect(
+			isDueWithin( {
+				dueBy: mockUnixTime + hourInSeconds * 168,
 				days: 7,
 			} )
 		).toBe( true );
 		expect(
-			isDueWithin( { dueBy: '2021-01-07T23:59:00.000Z', days: 7 } )
+			isDueWithin( { dueBy: '2021-01-08T00:00:00.000Z', days: 7 } )
 		).toBe( true );
 	} );
 

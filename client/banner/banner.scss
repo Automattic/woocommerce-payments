@@ -21,6 +21,10 @@
 		}
 	}
 
+	.woocommerce-payments-banner-logo {
+		margin-left: -$gap-large;
+	}
+
 	.woocommerce-payments-banner-pill {
 		/* adapted from https://github.com/woocommerce/woocommerce-admin/blob/main/packages/components/src/pill/style.scss */
 		font-size: 12px;

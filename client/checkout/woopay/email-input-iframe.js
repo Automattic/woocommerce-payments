@@ -457,7 +457,10 @@ export const handleWooPayEmailInput = async (
 			case 'auto_redirect_to_platform_checkout':
 			case 'auto_redirect_to_woopay':
 				hasCheckedLoginSession = true;
-				api.initWooPay( '', e.data.platformCheckoutUserSession )
+				api.initWooPay(
+					e.data.userEmail,
+					e.data.platformCheckoutUserSession
+				)
 					.then( ( response ) => {
 						if ( 'success' === response.result ) {
 							loginSessionIframeWrapper.classList.add(

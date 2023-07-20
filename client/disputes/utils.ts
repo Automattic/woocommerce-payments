@@ -10,7 +10,7 @@ import moment from 'moment';
 import type { CachedDispute, EvidenceDetails } from 'wcpay/types/disputes';
 
 interface IsDueWithinProps {
-	dueBy?: CachedDispute[ 'due_by' ] | EvidenceDetails[ 'due_by' ];
+	dueBy: CachedDispute[ 'due_by' ] | EvidenceDetails[ 'due_by' ];
 	days: number;
 }
 /**
@@ -41,7 +41,7 @@ export const isDueWithin = ( { dueBy, days }: IsDueWithinProps ): boolean => {
 	}
 
 	const now = moment().utc();
-	const isWithinDays = dueByMoment.diff( now, 'days', true ) < days;
+	const isWithinDays = dueByMoment.diff( now, 'days', true ) <= days;
 	const isPastDue = now.isAfter( dueByMoment );
 	return isWithinDays && ! isPastDue;
 };
