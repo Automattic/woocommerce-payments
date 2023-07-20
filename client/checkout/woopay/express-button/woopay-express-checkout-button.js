@@ -31,10 +31,11 @@ export const WoopayExpressCheckoutButton = ( {
 			: '';
 	const ThemedWooPayIcon = 'dark' === theme ? WoopayIcon : WoopayIconLight;
 
-	const { addToCart, isAddToCartDisabled } = useExpressCheckoutProductHandler(
-		api,
-		isProductPage
-	);
+	const {
+		addToCart,
+		getProductData,
+		isAddToCartDisabled,
+	} = useExpressCheckoutProductHandler( api, isProductPage );
 
 	useEffect( () => {
 		if ( ! isPreview ) {
@@ -62,7 +63,13 @@ export const WoopayExpressCheckoutButton = ( {
 		);
 
 		if ( isProductPage ) {
-			addToCart()
+			const productData = getProductData();
+
+			if ( ! productData ) {
+				return;
+			}
+
+			addToCart( productData )
 				.then( () => {
 					expressCheckoutIframe( api, context, emailSelector );
 				} )

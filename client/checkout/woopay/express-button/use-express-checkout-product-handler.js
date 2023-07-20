@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { useEffect, useState } from 'react';
+import validator from 'validator';
 
 const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 	const [ isAddToCartDisabled, setIsAddToCartDisabled ] = useState( false );
@@ -24,7 +25,43 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 		return attributes;
 	};
 
-	const addToCart = () => {
+	const validateGiftCardFields = ( data ) => {
+		if ( data.hasOwnProperty( 'wc_gc_giftcard_to_multiple' ) ) {
+			if ( ! data.wc_gc_giftcard_to_multiple ) {
+				alert( 'Please fill out all required fields' );
+				return false;
+			}
+
+			if (
+				! data.wc_gc_giftcard_to_multiple
+					.split( ',' )
+					.every( ( email ) => validator.isEmail( email.trim() ) )
+			) {
+				alert( 'Please type only valid emails' );
+				return false;
+			}
+		}
+
+		const emailFields = [ 'wc_gc_giftcard_to', 'wc_gc_giftcard_from' ];
+
+		for ( const emailField of emailFields ) {
+			if ( data.hasOwnProperty( emailField ) ) {
+				if ( ! data[ emailField ] ) {
+					alert( 'Please fill out all required fields' );
+					return false;
+				}
+
+				if ( ! validator.isEmail( data[ emailField ] ) ) {
+					alert( 'Please type only valid emails' );
+					return false;
+				}
+			}
+		}
+
+		return true;
+	};
+
+	const getProductData = () => {
 		let productId = document.querySelector( '.single_add_to_cart_button' )
 			.value;
 
@@ -49,9 +86,13 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 			const formData = new FormData( addOnForm );
 
 			formData.forEach( ( value, name ) => {
-				if ( /^addon-/.test( name ) ) {
+				if (
+					/^addon-/.test( name ) ||
+					/^wc_gc_giftcard_/.test( name )
+				) {
 					if ( /\[\]$/.test( name ) ) {
 						const fieldName = name.substring( 0, name.length - 2 );
+
 						if ( data[ fieldName ] ) {
 							data[ fieldName ].push( value );
 						} else {
@@ -62,8 +103,16 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 					}
 				}
 			} );
+
+			if ( ! validateGiftCardFields( data ) ) {
+				return false;
+			}
 		}
 
+		return data;
+	};
+
+	const addToCart = ( data ) => {
 		return api.expressCheckoutAddToCart( data );
 	};
 
@@ -105,6 +154,7 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 
 	return {
 		addToCart: addToCart,
+		getProductData: getProductData,
 		isAddToCartDisabled: isAddToCartDisabled,
 	};
 };
