@@ -131,6 +131,19 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		$this->assertTrue( $data_registry->exists( 'customerCurrencies' ) );
 	}
 
+	public function test_has_multi_currency_orders() {
+
+		// Use reflection to make the private method has_multi_currency_orders accessible.
+		$method = new ReflectionMethod( Analytics::class, 'has_multi_currency_orders' );
+		$method->setAccessible( true );
+
+		// Now, you can call the has_multi_currency_orders method using the ReflectionMethod object.
+		$result = $method->invoke( $this->analytics );
+
+		$this->assertTrue( $result );
+
+	}
+
 	public function test_register_customer_currencies_for_empty_customer_currencies() {
 		$this->mock_multi_currency->expects( $this->once() )
 			->method( 'get_all_customer_currencies' )

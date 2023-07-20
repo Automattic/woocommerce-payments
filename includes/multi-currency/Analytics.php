@@ -508,22 +508,28 @@ class Analytics {
 	private function has_multi_currency_orders() {
 		global $wpdb;
 
-		// Using full SQL instad of variables to keep WPCS happy.
+		// Using full SQL instead of variables to keep WPCS happy.
 		if ( $this->is_cot_enabled() ) {
 			$result = $wpdb->get_var(
-				"SELECT COUNT(order_id)
-				FROM {$wpdb->prefix}wc_orders_meta
-				WHERE meta_key = '_wcpay_multi_currency_order_exchange_rate'"
+				"SELECT EXISTS(
+					SELECT 1
+					FROM {$wpdb->prefix}wc_orders_meta
+					WHERE meta_key = '_wcpay_multi_currency_order_exchange_rate'
+					LIMIT 1)
+				AS count;"
 			);
 		} else {
 			$result = $wpdb->get_var(
-				"SELECT COUNT(post_id)
-				FROM {$wpdb->postmeta}
-				WHERE meta_key = '_wcpay_multi_currency_order_exchange_rate'"
+				"SELECT EXISTS(
+					SELECT 1
+					FROM {$wpdb->postmeta}
+					WHERE meta_key = '_wcpay_multi_currency_order_exchange_rate'
+					LIMIT 1)
+				AS count;"
 			);
 		}
 
-		return intval( $result ) > 0;
+		return intval( $result ) === 1;
 	}
 
 	/**
