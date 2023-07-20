@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Enhanced Analytics SQL, added unit test for has_multi_currency_orders(). Improved code quality and test coverage.
