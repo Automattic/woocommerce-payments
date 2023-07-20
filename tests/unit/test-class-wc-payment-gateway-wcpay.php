@@ -2172,6 +2172,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'should_use_stripe_platform_on_checkout_page' )
 			->willReturn( true );
 
+		WC_Payments::set_registered_card_gateway( $mock_wcpay_gateway );
+
 		$payments_checkout = new WC_Payments_Checkout(
 			$mock_wcpay_gateway,
 			$this->woopay_utilities,
@@ -2180,6 +2182,26 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->assertTrue( $payments_checkout->get_payment_fields_js_config()['forceNetworkSavedCards'] );
+	}
+
+	public function test_force_network_saved_cards_is_returned_as_false_if_should_not_use_stripe_platform() {
+		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'should_use_stripe_platform_on_checkout_page' ] );
+
+		$mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'should_use_stripe_platform_on_checkout_page' )
+			->willReturn( false );
+
+		WC_Payments::set_registered_card_gateway( $mock_wcpay_gateway );
+
+		$payments_checkout = new WC_Payments_Checkout(
+			$mock_wcpay_gateway,
+			$this->woopay_utilities,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service
+		);
+
+		$this->assertFalse( $payments_checkout->get_payment_fields_js_config()['forceNetworkSavedCards'] );
 	}
 
 	public function test_is_woopay_enabled_returns_false_if_ineligible() {
