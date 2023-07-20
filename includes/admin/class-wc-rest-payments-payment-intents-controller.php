@@ -1,12 +1,12 @@
 <?php
 /**
- * Class WC_REST_Payments_Charges_Controller
+ * Class WC_REST_Payments_Payment_Intents_Controller
  *
  * @package WooCommerce\Payments\Admin
  */
 
-use WCPay\Exceptions\API_Exception;
 use WCPay\Core\Server\Request\Create_Intention;
+use WCPay\Logger;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -63,23 +63,28 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 	 * @param WP_REST_Request $request data about the request.
 	 */
 	public function post_payment_intent( $request ) {
-		$metadata = $request->get_param( 'metadata' );
-		$order_id = $metadata['order_number'];
-		$order    = wc_get_order( $order_id );
+		try {
+			$metadata = $request->get_param( 'metadata' );
+			$order_id = $metadata['order_number'];
+			$order    = wc_get_order( $order_id );
 
-		$wcpay_server_request = Create_Intention::create();
-		$currency             = strtolower( $order->get_currency() );
-		$amount               = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
-		$wcpay_server_request->set_currency_code( $currency );
-		$wcpay_server_request->set_amount( $amount );
-		$wcpay_server_request->set_metadata( $metadata );
-		$wcpay_server_request->set_customer( $request->get_param( 'customer' ) );
-		$wcpay_server_request->set_level3( $request->get_param( 'level3' ) );
-		$wcpay_server_request->set_payment_method_types( $request->get_param( 'payment_method_types' ) );
-		$wcpay_server_request->set_capture_method( WC_Payments::get_gateway()->get_option( 'manual_capture' ) && ( 'yes' === WC_Payments::get_gateway()->get_option( 'manual_capture' ) ) );
+			$wcpay_server_request = Create_Intention::create();
+			$currency             = strtolower( $order->get_currency() );
+			$amount               = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
+			$wcpay_server_request->set_currency_code( $currency );
+			$wcpay_server_request->set_amount( $amount );
+			$wcpay_server_request->set_metadata( $metadata );
+			$wcpay_server_request->set_customer( $request->get_param( 'customer' ) );
+			$wcpay_server_request->set_level3( $request->get_param( 'level3' ) );
+			$wcpay_server_request->set_payment_method_types( $request->get_param( 'payment_method_types' ) );
+			$wcpay_server_request->set_capture_method( WC_Payments::get_gateway()->get_option( 'manual_capture' ) && ( 'yes' === WC_Payments::get_gateway()->get_option( 'manual_capture' ) ) );
 
-		$intent = $wcpay_server_request->send( 'wcpay_create_intent_request', $order );
-		return rest_ensure_response( $intent );
+			$intent = $wcpay_server_request->send( 'wcpay_create_intent_request', $order );
+			return rest_ensure_response( $intent );
+		} catch ( \Throwable $e ) {
+			Logger::error( 'Failed to create an intention via REST API: ' . $e );
+			return new WP_Error( 'wcpay_server_error', $e->getMessage(), [ 'status' => 500 ] );
+		}
 	}
 
 }
