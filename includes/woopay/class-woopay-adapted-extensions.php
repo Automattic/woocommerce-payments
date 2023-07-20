@@ -111,7 +111,7 @@ class WooPay_Adapted_Extensions {
 	/**
 	 * Get Gift Cards settings for WooPay.
 	 *
-	 * @param WP_User $user The user the data will be loaded.
+	 * @param \WP_User $user The user the data will be loaded.
 	 */
 	public function get_gift_cards_data( $user ) {
 		if (
