@@ -12,9 +12,8 @@ use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
-use WCPay\Core\Server\Request\Get_Request;
+use WCPay\Core\Server\Request\Get_Setup_Intention;
 use WCPay\Core\Server\Request\Update_Intention;
-use WCPay\Core\Server\Response;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Intent_Status;
@@ -1525,11 +1524,15 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
-			->willReturn( new Response( [ 'id' => 'pm_mock' ] ) );
+			->willReturn(
+				WC_Helper_Intention::create_setup_intention(
+					[ 'id' => 'seti_mock_123' ]
+				)
+			);
 
 		$result = $this->wcpay_gateway->create_and_confirm_setup_intent();
 
-		$this->assertEquals( 'pm_mock', $result['id'] );
+		$this->assertSame( 'seti_mock_123', $result->get_id() );
 	}
 
 	public function test_create_and_confirm_setup_intent_no_customer() {
@@ -1548,11 +1551,15 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class );
 		$request->expects( $this->once() )
 			->method( 'format_response' )
-			->willReturn( new Response( [ 'id' => 'pm_mock' ] ) );
+			->willReturn(
+				WC_Helper_Intention::create_setup_intention(
+					[ 'id' => 'seti_mock_123' ]
+				)
+			);
 
 		$result = $this->wcpay_gateway->create_and_confirm_setup_intent();
 
-		$this->assertEquals( 'pm_mock', $result['id'] );
+		$this->assertSame( 'seti_mock_123', $result->get_id() );
 	}
 
 	public function test_add_payment_method_no_intent() {
@@ -1568,15 +1575,17 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'get_customer_id_by_user_id' )
 			->will( $this->returnValue( 'cus_12345' ) );
 
-		$request = $this->mock_wcpay_request( Get_Request::class, 1, 'sti_mock' );
+		$request = $this->mock_wcpay_request( Get_Setup_Intention::class, 1, 'sti_mock' );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn(
-				[
-					'status'         => Payment_Intent_Status::SUCCEEDED,
-					'payment_method' => 'pm_mock',
-				]
+				WC_Helper_Intention::create_setup_intention(
+					[
+						'status'         => Payment_Intent_Status::SUCCEEDED,
+						'payment_method' => 'pm_mock',
+					]
+				)
 			);
 
 		$this->mock_token_service
@@ -1597,7 +1606,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'get_customer_id_by_user_id' )
 			->will( $this->returnValue( null ) );
 
-		$this->mock_wcpay_request( Get_Request::class, 0 );
+		$this->mock_wcpay_request( Get_Setup_Intention::class, 0 );
 
 		$this->mock_token_service
 			->expects( $this->never() )
@@ -1616,11 +1625,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'get_customer_id_by_user_id' )
 			->will( $this->returnValue( 'cus_12345' ) );
 
-		$request = $this->mock_wcpay_request( Get_Request::class, 1, 'sti_mock' );
-
+		$request = $this->mock_wcpay_request( Get_Setup_Intention::class, 1, 'sti_mock' );
 		$request->expects( $this->once() )
 			->method( 'format_response' )
-			->willReturn( [ 'status' => Payment_Intent_Status::CANCELED ] );
+			->willReturn( WC_Helper_Intention::create_setup_intention( [ 'status' => Payment_Intent_Status::CANCELED ] ) );
 
 		$this->mock_token_service
 			->expects( $this->never() )
