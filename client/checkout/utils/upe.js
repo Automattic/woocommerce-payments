@@ -303,6 +303,19 @@ export const getStripeElementOptions = (
 };
 
 /**
+ * Check whether Stripe Link is enabled.
+ *
+ * @param {Object} paymentMethodsConfig Checkout payment methods configuration settings object.
+ * @return {boolean} True, if enabled; false otherwise.
+ */
+export const isLinkEnabled = ( paymentMethodsConfig ) => {
+	return (
+		paymentMethodsConfig.link !== undefined &&
+		paymentMethodsConfig.card !== undefined
+	);
+};
+
+/**
  * Returns the value of the email input on the blocks checkout page.
  *
  * @return {string} The value of email input.

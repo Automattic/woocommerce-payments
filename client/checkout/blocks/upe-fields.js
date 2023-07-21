@@ -22,7 +22,11 @@ import { __ } from '@wordpress/i18n';
 import './style.scss';
 import confirmUPEPayment from './confirm-upe-payment.js';
 import { getConfig } from 'utils/checkout';
-import { getStripeElementOptions, useCustomerData } from '../utils/upe';
+import {
+	getStripeElementOptions,
+	useCustomerData,
+	isLinkEnabled,
+} from '../utils/upe';
 import { decryptClientSecret } from '../utils/encryption';
 import { PAYMENT_METHOD_NAME_CARD } from '../constants.js';
 import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
@@ -70,10 +74,7 @@ const WCPayUPEFields = ( {
 	const customerData = useCustomerData();
 
 	useEffect( () => {
-		if (
-			paymentMethodsConfig.link !== undefined &&
-			paymentMethodsConfig.card !== undefined
-		) {
+		if ( isLinkEnabled( paymentMethodsConfig ) ) {
 			enableStripeLinkPaymentMethod( {
 				api: api,
 				elements: elements,

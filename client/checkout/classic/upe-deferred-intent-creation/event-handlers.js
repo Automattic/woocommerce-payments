@@ -7,6 +7,7 @@ import { getUPEConfig } from 'wcpay/utils/checkout';
 import {
 	generateCheckoutEventNames,
 	getSelectedUPEGatewayPaymentMethod,
+	isLinkEnabled,
 	isUsingSavedPaymentMethod,
 } from '../../utils/upe';
 import {
@@ -31,9 +32,9 @@ jQuery( function ( $ ) {
 			forceNetworkSavedCards: getUPEConfig( 'forceNetworkSavedCards' ),
 			locale: getUPEConfig( 'locale' ),
 			isUPEEnabled: getUPEConfig( 'isUPEEnabled' ),
-			isStripeLinkEnabled:
-				getUPEConfig( 'paymentMethodsConfig' ).link !== undefined &&
-				getUPEConfig( 'paymentMethodsConfig' ).card !== undefined,
+			isStripeLinkEnabled: isLinkEnabled(
+				getUPEConfig( 'paymentMethodsConfig' )
+			),
 			isUPEDeferredEnabled: getUPEConfig( 'isUPEDeferredEnabled' ),
 		},
 		apiRequest

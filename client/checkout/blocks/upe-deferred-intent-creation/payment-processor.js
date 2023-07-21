@@ -22,6 +22,7 @@ import {
 	useCustomerData,
 	blocksShowLinkButtonHandler,
 	getBlocksEmailValue,
+	isLinkEnabled,
 } from 'wcpay/checkout/utils/upe';
 import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
 import { getUPEConfig } from 'wcpay/utils/checkout';
@@ -82,10 +83,7 @@ const PaymentProcessor = ( {
 	const billingData = customerData.billingAddress;
 
 	useEffect( () => {
-		if (
-			paymentMethodsConfig.link !== undefined &&
-			paymentMethodsConfig.card !== undefined
-		) {
+		if ( isLinkEnabled( paymentMethodsConfig ) ) {
 			enableStripeLinkPaymentMethod( {
 				api: api,
 				elements: elements,

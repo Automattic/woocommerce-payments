@@ -12,6 +12,7 @@ import {
  * Internal dependencies
  */
 import { getUPEConfig } from 'utils/checkout';
+import { isLinkEnabled } from '../utils/upe';
 import WCPayAPI from './../api';
 import { SavedTokenHandler } from './saved-token-handler';
 import request from '../utils/request';
@@ -48,9 +49,7 @@ const upeMethods = {
 };
 
 const enabledPaymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
-const isStripeLinkEnabled =
-	enabledPaymentMethodsConfig.link !== undefined &&
-	enabledPaymentMethodsConfig.card !== undefined;
+const isStripeLinkEnabled = isLinkEnabled( enabledPaymentMethodsConfig );
 
 // Create an API object, which will be used throughout the checkout.
 const api = new WCPayAPI(

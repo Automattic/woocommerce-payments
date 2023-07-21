@@ -17,7 +17,12 @@ import { getConfig, getCustomGatewayTitle } from 'utils/checkout';
 import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
-import { getTerms, getCookieValue, isWCPayChosen } from '../utils/upe';
+import {
+	getTerms,
+	getCookieValue,
+	isWCPayChosen,
+	isLinkEnabled,
+} from '../utils/upe';
 import { decryptClientSecret } from '../utils/encryption';
 import enableStripeLinkPaymentMethod from '../stripe-link';
 import apiRequest from '../utils/request';
@@ -42,9 +47,7 @@ jQuery( function ( $ ) {
 	const enabledBillingFields = getConfig( 'enabledBillingFields' );
 	const upePaymentIntentData = getConfig( 'upePaymentIntentData' );
 	const upeSetupIntentData = getConfig( 'upeSetupIntentData' );
-	const isStripeLinkEnabled =
-		paymentMethodsConfig.link !== undefined &&
-		paymentMethodsConfig.card !== undefined;
+	const isStripeLinkEnabled = isLinkEnabled( paymentMethodsConfig );
 
 	if ( ! publishableKey ) {
 		// If no configuration is present, probably this is not the checkout page.

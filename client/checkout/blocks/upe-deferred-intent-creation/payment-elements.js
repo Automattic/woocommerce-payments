@@ -8,6 +8,7 @@ import { LoadableBlock } from 'wcpay/components/loadable';
 import { Elements } from '@stripe/react-stripe-js';
 import { useEffect, useState } from 'react';
 import PaymentProcessor from './payment-processor';
+import { isLinkEnabled } from 'wcpay/checkout/utils/upe';
 
 const PaymentElements = ( { api, ...props } ) => {
 	const stripe = api.getStripeForUPE( props.paymentMethodId );
@@ -19,9 +20,9 @@ const PaymentElements = ( { api, ...props } ) => {
 	const amount = Number( getUPEConfig( 'cartTotal' ) );
 	const currency = getUPEConfig( 'currency' ).toLowerCase();
 
-	const isStripeLinkEnabled =
-		getUPEConfig( 'paymentMethodsConfig' ).link !== undefined &&
-		getUPEConfig( 'paymentMethodsConfig' ).card !== undefined;
+	const isStripeLinkEnabled = isLinkEnabled(
+		getUPEConfig( 'paymentMethodsConfig' )
+	);
 	const paymentMethodTypes = [ props.paymentMethodId ];
 	if ( 'card' === props.paymentMethodId && isStripeLinkEnabled ) {
 		paymentMethodTypes.push( 'link' );
