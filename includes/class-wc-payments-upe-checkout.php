@@ -97,6 +97,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts_for_zero_order_total' ], 11 );
+		add_action( 'woocommerce_email_before_order_table', [ $this->gateway, 'set_payment_method_title_for_email' ], 10, 3 );
 	}
 
 	/**
