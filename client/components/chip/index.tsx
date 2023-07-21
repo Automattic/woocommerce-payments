@@ -1,22 +1,31 @@
 /** @format **/
 
 /**
+ * External dependencies
+ */
+import React from 'react';
+
+/**
  * Internal dependencies
  */
 import './style.scss';
 import { HoverTooltip } from 'wcpay/components/tooltip';
 
-const types = [ 'primary', 'success', 'light', 'warning', 'alert' ];
+export type ChipType = 'primary' | 'success' | 'light' | 'warning' | 'alert';
 
-const Chip = ( props ) => {
-	const { message, type, isCompact, className, tooltip } = props;
-
-	const classNames = [
-		'chip',
-		`chip-${ types.find( ( t ) => t === type ) || 'primary' }`,
-		isCompact ? 'is-compact' : '',
-		className ?? '',
-	];
+interface Props {
+	message: string;
+	type?: ChipType;
+	className?: string;
+	tooltip?: string;
+}
+const Chip: React.FC< Props > = ( {
+	message,
+	type = 'primary',
+	className,
+	tooltip,
+} ) => {
+	const classNames = [ 'chip', `chip-${ type }`, className ?? '' ];
 
 	if ( tooltip ) {
 		return (
