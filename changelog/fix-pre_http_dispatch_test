@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Fix tests by ensuring the rest_pre_dispatch filter returns a WP_REST_Response

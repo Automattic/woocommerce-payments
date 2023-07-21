@@ -364,6 +364,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/class-woopay-create-and-confirm-setup-intention.php';
 		include_once __DIR__ . '/core/server/request/class-refund-charge.php';
 		include_once __DIR__ . '/core/server/request/class-list-charge-refunds.php';
+		include_once __DIR__ . '/core/server/request/class-get-request.php';
 
 		include_once __DIR__ . '/woopay/services/class-checkout-service.php';
 
@@ -767,6 +768,15 @@ class WC_Payments {
 	 */
 	public static function get_registered_card_gateway() {
 		return self::$registered_card_gateway;
+	}
+
+	/**
+	 * Sets registered card gateway instance.
+	 *
+	 * @param WC_Payment_Gateway_WCPay|UPE_Payment_Gateway|UPE_Split_Payment_Gateway $gateway Gateway instance.
+	 */
+	public static function set_registered_card_gateway( $gateway ) {
+		self::$registered_card_gateway = $gateway;
 	}
 
 	/**
