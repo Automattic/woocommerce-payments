@@ -13,9 +13,8 @@ use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Core\Server\Request\Create_Intention;
 use WCPay\Core\Server\Request\Create_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Intention;
-use WCPay\Core\Server\Request\Get_Request;
+use WCPay\Core\Server\Request\Get_Setup_Intention;
 use WCPay\Core\Server\Request\Update_Intention;
-use WCPay\Core\Server\Response;
 use WCPay\Constants\Payment_Method;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
@@ -1224,12 +1223,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				$this->returnValue( [ $user, $customer_id ] )
 			);
 
-		// TODO - check intent_setup
-		$this->mock_api_client->expects( $this->once() )
-			->method( 'get_setup_intent' )
-			->with( $intent_id )
-			->willReturn( $setup_intent );
-		$request = $this->mock_wcpay_request( Get_Request::class, 1, $intent_id );
+		$request = $this->mock_wcpay_request( Get_Setup_Intention::class, 1, $intent_id );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -1662,8 +1656,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$mock_setup_intent_id = 'si_mock';
 		$mock_user            = wp_get_current_user();
 
-		// TODO this can be failed
-		$request = $this->mock_wcpay_request( Get_Request::class, 1, $mock_setup_intent_id );
+		$request = $this->mock_wcpay_request( Get_Setup_Intention::class, 1, $mock_setup_intent_id );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
