@@ -7,7 +7,7 @@
 
 namespace WCPay\Core\Server\Request;
 
-use WC_Payments_Http_Interface;
+use WC_Payments_API_Setup_Intention;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request;
 use WC_Payments_API_Client;
@@ -17,25 +17,15 @@ use WC_Payments_API_Client;
  */
 class Get_Setup_Intention extends Request {
 	/**
-	 * Setup intent id.
+	 * Sets the intent ID, which will be used in the request URL.
 	 *
-	 * @var string $setup_intent_id
-	 */
-	private $setup_intent_id;
-
-	/**
-	 * Class constructor.
-	 *
-	 * @param WC_Payments_API_Client     $api_client Api client.
-	 * @param WC_Payments_Http_Interface $http_interface Http interface.
-	 * @param string                     $setup_intent_id Setup intent id.
+	 * @param string $setup_intent_id Sets the setup intent ID, which will be used in the request URL.
 	 *
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
-	public function __construct( WC_Payments_API_Client $api_client, WC_Payments_Http_Interface $http_interface, string $setup_intent_id ) {
+	protected function set_id( string $setup_intent_id ) {
 		$this->validate_stripe_id( $setup_intent_id );
-		parent::__construct( $api_client, $http_interface );
-		$this->setup_intent_id = $setup_intent_id;
+		$this->id = $setup_intent_id;
 	}
 
 	/**
@@ -45,7 +35,7 @@ class Get_Setup_Intention extends Request {
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
 	public function get_api(): string {
-		return WC_Payments_API_Client::SETUP_INTENTS_API . '/' . $this->setup_intent_id;
+		return WC_Payments_API_Client::SETUP_INTENTS_API . '/' . $this->id;
 	}
 
 	/**
@@ -59,7 +49,7 @@ class Get_Setup_Intention extends Request {
 	 * Formats the response from the server.
 	 *
 	 * @param  mixed $response The response from `WC_Payments_API_Client::request`.
-	 * @return mixed           Either the same response, or the correct object.
+	 * @return WC_Payments_API_Setup_Intention Either the same response, or the correct object.
 	 */
 	public function format_response( $response ) {
 		return $this->api_client->deserialize_setup_intention_object_from_array( $response );
