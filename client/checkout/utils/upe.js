@@ -316,6 +316,23 @@ export const isLinkEnabled = ( paymentMethodsConfig ) => {
 };
 
 /**
+ * Get array of payment method types to use with intent.
+ *
+ * @param {string} paymentMethodType Payment method type Stripe ID.
+ * @return {Array} Array of payment method types to use with intent.
+ */
+export const getPaymentMethodTypes = ( paymentMethodType ) => {
+	const paymentMethodTypes = [ paymentMethodType ];
+	if (
+		'card' === paymentMethodType &&
+		isLinkEnabled( getUPEConfig( 'paymentMethodsConfig' ) )
+	) {
+		paymentMethodTypes.push( 'link' );
+	}
+	return paymentMethodTypes;
+};
+
+/**
  * Returns the value of the email input on the blocks checkout page.
  *
  * @return {string} The value of email input.

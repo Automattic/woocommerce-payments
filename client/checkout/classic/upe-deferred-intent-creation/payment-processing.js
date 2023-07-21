@@ -10,9 +10,11 @@ import {
 } from 'wcpay/checkout/utils/fingerprint';
 import {
 	appendPaymentMethodIdToForm,
+	getPaymentMethodTypes,
 	getSelectedUPEGatewayPaymentMethod,
 	getTerms,
 	getUpeSettings,
+	isLinkEnabled,
 } from 'wcpay/checkout/utils/upe';
 import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
 import {
@@ -146,10 +148,7 @@ function createStripePaymentMethod(
  */
 async function createStripePaymentElement( api, paymentMethodType ) {
 	const amount = Number( getUPEConfig( 'cartTotal' ) );
-	const paymentMethodTypes = [ paymentMethodType ];
-	if ( 'card' === paymentMethodType && 'link' in gatewayUPEComponents ) {
-		paymentMethodTypes.push( 'link' );
-	}
+	const paymentMethodTypes = getPaymentMethodTypes( paymentMethodType );
 	const options = {
 		mode: 1 > amount ? 'setup' : 'payment',
 		currency: getUPEConfig( 'currency' ).toLowerCase(),
@@ -193,11 +192,16 @@ function appendSetupIntentToForm( form, confirmedIntent ) {
 	form.append( input );
 }
 
-function maybeEnableStripeLink( api, paymentMethodType ) {
-	if ( 'card' === paymentMethodType && 'link' in gatewayUPEComponents ) {
+/**
+ * If Link is enabled, add event listeners and handlers.
+ *
+ * @param {Object} api WCPayAPI instance.
+ */
+export function maybeEnableStripeLink( api ) {
+	if ( isLinkEnabled( getUPEConfig( 'paymentMethodsConfig' ) ) ) {
 		enableStripeLinkPaymentMethod( {
 			api: api,
-			elements: gatewayUPEComponents[ paymentMethodType ].elements,
+			elements: gatewayUPEComponents.card.elements,
 			emailId: 'billing_email',
 			complete_billing: () => {
 				return true;
@@ -252,7 +256,6 @@ export async function mountStripePaymentElement( api, domElement ) {
 	const upeElement =
 		gatewayUPEComponents[ paymentMethodType ].upeElement ||
 		( await createStripePaymentElement( api, paymentMethodType ) );
-	maybeEnableStripeLink( api, paymentMethodType );
 	upeElement.mount( domElement );
 }
 

@@ -15,6 +15,7 @@ import {
 	mountStripePaymentElement,
 	renderTerms,
 	createAndConfirmSetupIntent,
+	maybeEnableStripeLink,
 } from './payment-processing';
 import enqueueFraudScripts from 'fraud-scripts';
 import { showAuthenticationModalIfRequired } from './3ds-flow-handling';
@@ -111,6 +112,7 @@ jQuery( function ( $ ) {
 				.forEach( ( domElement ) =>
 					mountStripePaymentElement( api, domElement )
 				);
+			maybeEnableStripeLink( api );
 		}
 	}
 } );
