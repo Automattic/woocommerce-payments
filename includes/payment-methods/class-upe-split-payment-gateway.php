@@ -8,7 +8,9 @@
 namespace WCPay\Payment_Methods;
 
 use Exception;
+use WC_Payments_API_Setup_Intention;
 use WCPay\Core\Server\Request;
+use WCPay\Core\Server\Request\Get_Setup_Intention;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
 use WCPay\Logger;
@@ -338,13 +340,11 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 */
 	public function create_token_from_setup_intent( $setup_intent_id, $user ) {
 		try {
-			// TODO double check
-			$setup_intent      = $this->payments_api_client->get_setup_intent( $setup_intent_id );
-			$payment_method_id = $setup_intent->get_payment_method_id();
-			$setup_intent_request = Request::get( WC_Payments_API_Client::SETUP_INTENTS_API, $setup_intent_id );
-			$setup_intent         = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
+			$setup_intent_request = Get_Setup_Intention::create( $setup_intent_id );
+			/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+			$setup_intent = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
 
-			$payment_method_id = $setup_intent['payment_method'];
+			$payment_method_id = $setup_intent->get_payment_method_id();
 			// TODO: When adding SEPA and Sofort, we will need a new API call to get the payment method and from there get the type.
 			// Leaving 'card' as a hardcoded value for now to avoid the extra API call.
 			// $payment_method = $this->payment_methods['card'];// Maybe this should be enforced.

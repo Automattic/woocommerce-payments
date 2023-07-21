@@ -18,6 +18,7 @@ use WCPay\Core\Server\Request\Create_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request;
+use WCPay\Core\Server\Request\Get_Setup_Intention;
 use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
@@ -728,7 +729,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			// Get payment intent to confirm status.
 			if ( $payment_needed ) {
 				$request = Get_Intention::create( $intent_id );
-				/** @var \WC_Payments_API_Payment_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+				/** @var WC_Payments_API_Payment_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 				$intent                 = $request->send( 'wcpay_get_intent_request', $order );
 				$client_secret          = $intent->get_client_secret();
 				$status                 = $intent->get_status();
@@ -746,16 +747,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$intent_metadata = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
 				$this->validate_order_id_received_vs_intent_meta_order_id( $order, $intent_metadata );
 			} else {
-				// TODO double check?
-				$intent                 = $this->payments_api_client->get_setup_intent( $intent_id );
+				$request = Get_Setup_Intention::create( $intent_id );
+				/** @var WC_Payments_API_Setup_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+				$intent                 = $request->send( 'wcpay_get_setup_intent_request' );
 				$client_secret          = $intent->get_client_secret();
 				$status                 = $intent->get_status();
-				$setup_intent_request = Request::get( WC_Payments_API_Client::SETUP_INTENTS_API, $intent_id );
-
-				$intent = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
-
-				$client_secret          = $intent['client_secret'];
-				$status                 = $intent['status'];
 				$charge_id              = '';
 				$charge                 = null;
 				$currency               = $order->get_currency();
@@ -883,13 +879,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 */
 	public function create_token_from_setup_intent( $setup_intent_id, $user ) {
 		try {
-			// TODO checks?
-			$setup_intent      = $this->payments_api_client->get_setup_intent( $setup_intent_id );
-			$payment_method_id = $setup_intent->get_payment_method_id();
-			$setup_intent_request = Request::get( WC_Payments_API_Client::SETUP_INTENTS_API, $setup_intent_id );
+			$setup_intent_request = Get_Setup_Intention::create( $setup_intent_id );
+			/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+			$setup_intent = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
 
-			$setup_intent      = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
-			$payment_method_id = $setup_intent['payment_method'];
+			$payment_method_id = $setup_intent->get_payment_method_id();
 			// TODO: When adding SEPA and Sofort, we will need a new API call to get the payment method and from there get the type.
 			// Leaving 'card' as a hardcoded value for now to avoid the extra API call.
 			$payment_method = $this->payment_methods['card'];
