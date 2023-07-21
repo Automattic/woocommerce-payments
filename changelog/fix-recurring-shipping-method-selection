@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Ensure when a customer changes the shipping method on cart and checkout that the recurring totals correctly reflect the chosen method.
