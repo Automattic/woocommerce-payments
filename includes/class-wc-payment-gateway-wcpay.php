@@ -1400,7 +1400,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		} elseif ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 			$payment_methods = [ 'card' ];
 			if ( WC_Payments_Features::is_upe_deferred_intent_enabled() &&
-				in_array( Payment_Method::CARD, $payment_methods, true ) &&
 				in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true ) ) {
 				$payment_methods[] = Payment_Method::LINK;
 			}
