@@ -3,11 +3,19 @@
  * External dependencies
  */
 import { render } from '@testing-library/react';
+import React from 'react';
 
 /**
  * Internal dependencies
  */
 import DisputeStatusChip from '../';
+
+function renderDisputeStatus( status: string, dueBy = undefined ) {
+	const { container } = render(
+		<DisputeStatusChip status={ status } dueBy={ dueBy } />
+	);
+	return container;
+}
 
 describe( 'DisputeStatusChip', () => {
 	test( 'renders default appearance if status is unrecognized', () => {
@@ -28,11 +36,4 @@ describe( 'DisputeStatusChip', () => {
 	test.each( statuses )( 'renders %s status', ( status ) => {
 		expect( renderDisputeStatus( status ) ).toMatchSnapshot();
 	} );
-
-	function renderDisputeStatus( status, dueBy = undefined ) {
-		const { container } = render(
-			<DisputeStatusChip status={ status } dueBy={ dueBy } />
-		);
-		return container;
-	}
 } );
