@@ -40,9 +40,9 @@ use WCPay\WC_Payments_Checkout;
 use WCPay\WC_Payments_UPE_Checkout;
 use WCPay\WooPay\Service\Checkout_Service;
 use WCPay\Core\WC_Payments_Customer_Service_API;
-use WCPay\Blocks_Data_Extractor;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\WooPay\WooPay_Scheduler;
+use WCPay\WooPay\WooPay_Session;
 
 /**
  * Main class for the WooPayments extension. Its responsibility is to initialize the extension.

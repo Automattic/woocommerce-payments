@@ -53,19 +53,43 @@ class WooPay_Session {
 		add_filter( 'rest_request_before_callbacks', [ __CLASS__, 'add_woopay_store_api_session_handler' ], 10, 3 );
 		add_action( 'woocommerce_store_api_checkout_update_order_meta', [ __CLASS__, 'remove_order_customer_id_on_requests_with_verified_email' ] );
 
-		add_action( 'wp_footer', [ __CLASS__, 'init_woopay_session_data' ] );
+		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'init_woopay_session_data_button' ], 20 );
+		add_action( 'wp_head', [ __CLASS__, 'init_woopay_session_data_checkout' ] );
 	}
 
 	/**
 	 * Initializes the session data for WooPay to be combined with the /verify request.
+	 * This is only used for the express button outside of the checkout page.
 	 *
 	 * @return void
 	 */
-	public static function init_woopay_session_data() {
+	public static function init_woopay_session_data_button() {
+
+		// the checkout is excluded and handled in init_woopay_session_data_checkout.
+		if ( ! WC_Payments_Features::is_woopay_enabled() || is_checkout() ) {
+			return;
+		}
 
 		$session_data = self::get_init_session_request();
 
-		wp_localize_script( 'WCPAY_CHECKOUT', 'sessionDataWooPay', $session_data );
+		wp_add_inline_script( 'WCPAY_WOOPAY_EXPRESS_BUTTON', 'sessionDataWooPay=' . wp_json_encode( $session_data ), 'before' );
+	}
+
+	/**
+	 * Initializes the session data for WooPay to be combined with the /verify request.
+	 * This is only used on the checkout page.
+	 *
+	 * @return void
+	 */
+	public static function init_woopay_session_data_checkout() {
+
+		if ( ! WC_Payments_Features::is_woopay_enabled() || ! is_checkout() ) {
+			return;
+		}
+
+		$session_data = self::get_init_session_request();
+
+		echo '<script type="text/javascript">sessionDataWooPay=' . wp_json_encode( $session_data ) . '</script>';
 	}
 
 	/**
@@ -260,8 +284,9 @@ class WooPay_Session {
 		// This uses the same logic as the Checkout block in hydrate_from_api to get the cart and checkout data.
 		$cart_data = rest_preload_api_request( [], '/wc/store/v1/cart' )['/wc/store/v1/cart']['body'];
 		add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
-		$checkout_data = rest_preload_api_request( [], '/wc/store/v1/checkout' )['/wc/store/v1/checkout']['body'];
+		$preloaded_checkout_data = rest_preload_api_request( [], '/wc/store/v1/checkout' );
 		remove_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+		$checkout_data = isset( $preloaded_checkout_data['/wc/store/v1/checkout'] ) ? $preloaded_checkout_data['/wc/store/v1/checkout']['body'] : '';
 
 		$request = [
 			'wcpay_version'      => WCPAY_VERSION_NUMBER,
