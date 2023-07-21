@@ -11,6 +11,7 @@ import { Card, CheckboxControl } from '@wordpress/components';
  */
 import CardBody from '../card-body';
 import GeneralPaymentRequestButtonSettings from './general-payment-request-button-settings';
+import ExpressCheckoutIncompatibilityNotice from '../settings-warnings/express-checkout-incompatibility-notice';
 import {
 	usePaymentRequestEnabledSettings,
 	usePaymentRequestLocations,
@@ -44,6 +45,7 @@ const PaymentRequestSettings = ( { section } ) => {
 		<Card>
 			{ 'enable' === section && (
 				<CardBody>
+					<ExpressCheckoutIncompatibilityNotice />
 					<CheckboxControl
 						checked={ isPaymentRequestEnabled }
 						onChange={ updateIsPaymentRequestEnabled }

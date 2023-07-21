@@ -11,6 +11,7 @@ import interpolateComponents from '@automattic/interpolate-components';
 import { getPaymentMethodSettingsUrl } from '../../utils';
 import ApplePay from 'assets/images/cards/apple-pay.svg?asset';
 import GooglePay from 'assets/images/cards/google-pay.svg?asset';
+import ExpressCheckoutIncompatibilityNotice from '../settings-warnings/express-checkout-incompatibility-notice';
 import { usePaymentRequestEnabledSettings } from 'wcpay/data';
 
 const AppleGooglePayExpressCheckoutItem = () => {
@@ -144,6 +145,8 @@ const AppleGooglePayExpressCheckoutItem = () => {
 					</a>
 				</div>
 			</div>
+
+			<ExpressCheckoutIncompatibilityNotice />
 		</li>
 	);
 };
