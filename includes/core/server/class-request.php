@@ -14,6 +14,7 @@ use WC_Payments_API_Client;
 use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
 use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
+use WCPay\Core\Server\Request\Get_Request;
 use WCPay\Exceptions\API_Exception;
 use WP_Error;
 
@@ -89,10 +90,86 @@ abstract class Request {
 	 *
 	 * @param mixed $id The identifier for various update/get/delete requests.
 	 *
+	 * @indexof $this->>routeList
+	 *
+	 * @return static
+	 */
+
+	/**
+	 * Route list.
+	 *
+	 * @var string[]
+	 */
+	private $route_list = [
+		WC_Payments_API_Client::ACCOUNTS_API             => 'accounts',
+		WC_Payments_API_Client::CAPABILITIES_API         => 'accounts/capabilities',
+		WC_Payments_API_Client::WOOPAY_ACCOUNTS_API      => 'accounts/platform_checkout',
+		WC_Payments_API_Client::WOOPAY_COMPATIBILITY_API => 'woopay/compatibility',
+		WC_Payments_API_Client::APPLE_PAY_API            => 'apple_pay',
+		WC_Payments_API_Client::CHARGES_API              => 'charges',
+		WC_Payments_API_Client::CONN_TOKENS_API          => 'terminal/connection_tokens',
+		WC_Payments_API_Client::TERMINAL_LOCATIONS_API   => 'terminal/locations',
+		WC_Payments_API_Client::CUSTOMERS_API            => 'customers',
+		WC_Payments_API_Client::CURRENCY_API             => 'currency',
+		WC_Payments_API_Client::INTENTIONS_API           => 'intentions',
+		WC_Payments_API_Client::REFUNDS_API              => 'refunds',
+		WC_Payments_API_Client::DEPOSITS_API             => 'deposits',
+		WC_Payments_API_Client::TRANSACTIONS_API         => 'transactions',
+		WC_Payments_API_Client::DISPUTES_API             => 'disputes',
+		WC_Payments_API_Client::FILES_API                => 'files',
+		WC_Payments_API_Client::ONBOARDING_API           => 'onboarding',
+		WC_Payments_API_Client::TIMELINE_API             => 'timeline',
+		WC_Payments_API_Client::PAYMENT_METHODS_API      => 'payment_methods',
+		WC_Payments_API_Client::SETUP_INTENTS_API        => 'setup_intents',
+		WC_Payments_API_Client::TRACKING_API             => 'tracking',
+		WC_Payments_API_Client::PRODUCTS_API             => 'products',
+		WC_Payments_API_Client::PRICES_API               => 'products/prices',
+		WC_Payments_API_Client::INVOICES_API             => 'invoices',
+		WC_Payments_API_Client::SUBSCRIPTIONS_API        => 'subscriptions',
+		WC_Payments_API_Client::SUBSCRIPTION_ITEMS_API   => 'subscriptions/items',
+		WC_Payments_API_Client::READERS_CHARGE_SUMMARY   => 'reader-charges/summary',
+		WC_Payments_API_Client::TERMINAL_READERS_API     => 'terminal/readers',
+		WC_Payments_API_Client::MINIMUM_RECURRING_AMOUNT_API => 'subscriptions/minimum_amount',
+		WC_Payments_API_Client::CAPITAL_API              => 'capital',
+		WC_Payments_API_Client::WEBHOOK_FETCH_API        => 'webhook/failed_events',
+		WC_Payments_API_Client::DOCUMENTS_API            => 'documents',
+		WC_Payments_API_Client::VAT_API                  => 'vat',
+		WC_Payments_API_Client::LINKS_API                => 'links',
+		WC_Payments_API_Client::AUTHORIZATIONS_API       => 'authorizations',
+		WC_Payments_API_Client::FRAUD_OUTCOMES_API       => 'fraud_outcomes',
+		WC_Payments_API_Client::FRAUD_RULESET_API        => 'fraud_ruleset',
+	];
+
+	/**
+	 * Creates a new request, loading dependencies in there.
+	 *
+	 * @param mixed $id The identifier for various update/get/delete requests.
+	 *
 	 * @return static
 	 */
 	public static function create( $id = null ) {
 		return WC_Payments::create_request( static::class, $id );
+	}
+
+	/**
+	 * GET Request wrapped for easier request creation.
+	 *
+	 * @param string $api Api method.
+	 * @param mixed  $id An optional ID for the item that will be updated/retrieved/deleted.
+	 *
+	 * @return Request|Get_Request
+	 *
+	 * @throws Invalid_Request_Parameter_Exception|\Exception
+	 */
+	public static function get( string $api, $id = null ) {
+		/**
+		 * Request variable.
+		 *
+		 * @var Get_Request $request
+		 */
+		$request = WC_Payments::create_request( Get_Request::class, $id );
+		$request->set_api( $api );
+		return $request;
 	}
 
 	/**
@@ -108,13 +185,7 @@ abstract class Request {
 		$this->api_client     = $api_client;
 		$this->http_interface = $http_interface;
 
-		if ( method_exists( $this, 'set_id' ) ) {
-			if ( null !== $id ) {
-				$this->set_id( $id );
-			} else {
-				throw new Invalid_Request_Parameter_Exception( 'This request requires an item ID.', 'wcpay_core_invalid_request_parameter_missing_id' );
-			}
-		}
+		$this->set_request_route_id_parameter( $id );
 	}
 
 	/**
@@ -273,6 +344,24 @@ abstract class Request {
 	}
 
 	/**
+	 * Used to validate passed ID from the constructor. You can easily override it if you need custom id handling in your classes.
+	 *
+	 * @param mixed $id ID parameter.
+	 *
+	 * @return void
+	 * @throws Invalid_Request_Parameter_Exception
+	 */
+	protected function set_request_route_id_parameter( $id ) {
+		if ( method_exists( $this, 'set_id' ) ) {
+			if ( null !== $id ) {
+				$this->set_id( $id );
+			} else {
+				throw new Invalid_Request_Parameter_Exception( 'This request requires an item ID.', 'wcpay_core_invalid_request_parameter_missing_id' );
+			}
+		}
+	}
+
+	/**
 	 * Stores a parameter within the internal props.
 	 *
 	 * Use this method within child classes in order to allow
@@ -359,6 +448,9 @@ abstract class Request {
 	final public function apply_filters( $hook, ...$args ) {
 		// Lock the class in order to prevent `set_param` for protected props.
 		$this->protected_mode = true;
+
+		// Validate API route.
+		$this->validate_api_route( $this->get_api() );
 
 		/**
 		 * Allows a request to be modified, extended or replaced.
@@ -539,7 +631,7 @@ abstract class Request {
 	 * @throws Invalid_Request_Parameter_Exception An exception if the format is not matched.
 	 * @return void
 	 */
-	protected function validate_is_larger_then( float $value_to_validate, float $value_to_compare ) {
+	protected function validate_is_larger_than( float $value_to_validate, float $value_to_compare ) {
 		if ( $value_to_validate > $value_to_compare ) {
 			return;
 		}
@@ -662,5 +754,25 @@ abstract class Request {
 				'wcpay_core_invalid_request_parameter_invalid_username'
 			);
 		}
+	}
+
+	/**
+	 * Validates API endpoint or route.
+	 *
+	 * @param string $api_route API route to validate.
+	 *
+	 * @throws Invalid_Request_Parameter_Exception
+	 */
+	public function validate_api_route( string $api_route ) {
+
+		$api_route = explode( '/', $api_route ); // In case if you have something after "/" like id or something similar.
+
+		// Some routes have 2 URIs. In case route we want to validate have 2 (or more) URI,s lets validate that first.
+		// There could be micro optimization to validate only array keys with two 'URI's but for now we can skip that part.
+		if ( ( count( $api_route ) > 1 && array_key_exists( "$api_route[0]/$api_route[1]", $this->route_list ) ) || array_key_exists( $api_route[0], $this->route_list ) ) {
+			return;
+		}
+		throw new Invalid_Request_Parameter_Exception( 'Invalid request api route', 'wcpay_core_invalid_request_parameter_api_route_not_defined' );
+
 	}
 }
