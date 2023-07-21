@@ -125,13 +125,13 @@ const PaymentProcessor = ( {
 					}
 				},
 				show_button: blocksShowLinkButtonHandler,
+				shipping_fields: BLOCKS_SHIPPING_ADDRESS_FIELDS,
+				billing_fields: BLOCKS_BILLING_ADDRESS_FIELDS,
 				complete_shipping: () => {
 					return (
 						null !== document.getElementById( 'shipping-address_1' )
 					);
 				},
-				shipping_fields: BLOCKS_SHIPPING_ADDRESS_FIELDS,
-				billing_fields: BLOCKS_BILLING_ADDRESS_FIELDS,
 				complete_billing: () => {
 					return (
 						null !== document.getElementById( 'billing-address_1' )

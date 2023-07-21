@@ -53,3 +53,23 @@ export const BLOCKS_BILLING_ADDRESS_FIELDS = {
 	first_name: 'billing-first_name',
 	last_name: 'billing-last_name',
 };
+export const SHORTCODE_SHIPPING_ADDRESS_FIELDS = {
+	line1: 'shipping_address_1',
+	line2: 'shipping_address_2',
+	city: 'shipping_city',
+	state: 'shipping_state',
+	postal_code: 'shipping_postcode',
+	country: 'shipping_country',
+	first_name: 'shipping_first_name',
+	last_name: 'shipping_last_name',
+};
+export const SHORTCODE_BILLING_ADDRESS_FIELDS = {
+	line1: 'billing_address_1',
+	line2: 'billing_address_2',
+	city: 'billing_city',
+	state: 'billing_state',
+	postal_code: 'billing_postcode',
+	country: 'billing_country',
+	first_name: 'billing_first_name',
+	last_name: 'billing_last_name',
+};
