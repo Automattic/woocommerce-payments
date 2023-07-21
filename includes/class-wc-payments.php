@@ -771,6 +771,15 @@ class WC_Payments {
 	}
 
 	/**
+	 * Sets registered card gateway instance.
+	 *
+	 * @param WC_Payment_Gateway_WCPay|UPE_Payment_Gateway|UPE_Split_Payment_Gateway $gateway Gateway instance.
+	 */
+	public static function set_registered_card_gateway( $gateway ) {
+		self::$registered_card_gateway = $gateway;
+	}
+
+	/**
 	 * Called on Payments setting page.
 	 *
 	 * Remove all WCPay gateways except CC one.
