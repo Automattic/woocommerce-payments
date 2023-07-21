@@ -26,12 +26,23 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 	};
 
 	const validateGiftCardFields = ( data ) => {
-		if ( data.hasOwnProperty( 'wc_gc_giftcard_to_multiple' ) ) {
-			if ( ! data.wc_gc_giftcard_to_multiple ) {
+		const requiredFields = [
+			'wc_gc_giftcard_to',
+			'wc_gc_giftcard_from',
+			'wc_gc_giftcard_to_multiple',
+		];
+
+		for ( const requiredField of requiredFields ) {
+			if (
+				data.hasOwnProperty( requiredField ) &&
+				! data[ requiredField ]
+			) {
 				alert( 'Please fill out all required fields' );
 				return false;
 			}
+		}
 
+		if ( data.hasOwnProperty( 'wc_gc_giftcard_to_multiple' ) ) {
 			if (
 				! data.wc_gc_giftcard_to_multiple
 					.split( ',' )
@@ -42,19 +53,10 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 			}
 		}
 
-		const emailFields = [ 'wc_gc_giftcard_to', 'wc_gc_giftcard_from' ];
-
-		for ( const emailField of emailFields ) {
-			if ( data.hasOwnProperty( emailField ) ) {
-				if ( ! data[ emailField ] ) {
-					alert( 'Please fill out all required fields' );
-					return false;
-				}
-
-				if ( ! validator.isEmail( data[ emailField ] ) ) {
-					alert( 'Please type only valid emails' );
-					return false;
-				}
+		if ( data.hasOwnProperty( 'wc_gc_giftcard_to' ) ) {
+			if ( ! validator.isEmail( data.wc_gc_giftcard_to ) ) {
+				alert( 'Please type only valid emails' );
+				return false;
 			}
 		}
 
