@@ -11,12 +11,11 @@ import React from 'react';
 import './style.scss';
 import { HoverTooltip } from 'wcpay/components/tooltip';
 
-type ChipType = 'primary' | 'success' | 'light' | 'warning' | 'alert';
-const types: ChipType[] = [ 'primary', 'success', 'light', 'warning', 'alert' ];
+const types = [ 'primary', 'success', 'light', 'warning', 'alert' ];
 
 interface Props {
 	message: string;
-	type?: ChipType | string;
+	type?: string;
 	isCompact?: boolean;
 	className?: string;
 	tooltip?: string;
