@@ -182,7 +182,6 @@ export const handleWooPayEmailInput = async (
 		// Set the initial value.
 		iframeHeaderValue = true;
 
-		// TODO send session info here
 		iframe.contentWindow.postMessage(
 			{
 				action: 'setSessionData',
