@@ -755,7 +755,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				];
 			}
 
-			if ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+			if ( WC_Payments_Features::is_upe_split_enabled() ) {
 				UPE_Split_Payment_Gateway::remove_upe_payment_intent_from_session();
 			} else {
 				UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
@@ -861,7 +861,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$order->add_order_note( $note );
 			}
 
-			if ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+			if ( WC_Payments_Features::is_upe_split_enabled() ) {
 				UPE_Split_Payment_Gateway::remove_upe_payment_intent_from_session();
 			} else {
 				UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
