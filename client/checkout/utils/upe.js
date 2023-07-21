@@ -1,4 +1,3 @@
-/* global jQuery */
 /**
  * Internal dependencies
  */
@@ -347,19 +346,18 @@ export const getBlocksEmailValue = () => {
  * @param {Object} linkAutofill Stripe Link Autofill instance.
  */
 export const blocksShowLinkButtonHandler = ( linkAutofill ) => {
-	jQuery( '#email' )
-		.parent()
-		.append( '<button class="wcpay-stripelink-modal-trigger"></button>' );
-	if ( '' !== jQuery( '#email' ).val() ) {
-		jQuery( '.wcpay-stripelink-modal-trigger' ).show();
-	}
+	const emailInput = document.getElementById( 'email' );
+	const buttonDisplay = emailInput.value ? 'inline-block' : 'none';
 
-	//Handle StripeLink button click.
-	jQuery( '.wcpay-stripelink-modal-trigger' ).on( 'click', ( event ) => {
+	const stripeLinkButton = document.createElement( 'button' );
+	stripeLinkButton.setAttribute( 'class', 'wcpay-stripelink-modal-trigger' );
+	stripeLinkButton.style.display = buttonDisplay;
+	stripeLinkButton.addEventListener( 'click', ( event ) => {
 		event.preventDefault();
-		// Trigger modal.
 		linkAutofill.launch( {
-			email: jQuery( '#email' ).val(),
+			email: document.getElementById( 'email' ).value,
 		} );
 	} );
+
+	emailInput.parentNode.appendChild( stripeLinkButton );
 };
