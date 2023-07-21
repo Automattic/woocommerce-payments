@@ -439,7 +439,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			add_action( 'woocommerce_update_order', [ $this, 'schedule_order_tracking' ], 10, 2 );
 
 			add_filter( 'rest_request_before_callbacks', [ $this, 'remove_all_actions_on_preflight_check' ], 10, 3 );
-			add_action( 'woocommerce_email_before_order_table', [ $this, 'set_payment_method_title_for_email' ], 10, 3 );
 		}
 
 		$this->maybe_init_subscriptions_hooks();
@@ -1389,15 +1388,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param array|bool $payment_method_details Array of payment method details from charge or false.
 	 */
 	public function set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details ) {
-	}
-
-	/**
-	 * By default this function does not do anything. But it can be overriden by child classes.
-	 * It is used to set the payment method title on the order for emails.
-	 *
-	 * @param WC_Order $order WC Order being processed.
-	 */
-	public function set_payment_method_title_for_email( $order ) {
 	}
 
 	/**
