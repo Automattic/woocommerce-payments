@@ -1,4 +1,10 @@
 /** @format */
+
+/**
+ * External dependencies
+ */
+import React from 'react';
+
 /**
  * External dependencies
  */
@@ -10,6 +16,16 @@ import { render } from '@testing-library/react';
 import Chip from '../';
 
 describe( 'Chip', () => {
+	function renderChip(
+		type: string | undefined,
+		message: string,
+		tooltip?: string
+	) {
+		return render(
+			<Chip type={ type } message={ message } tooltip={ tooltip } />
+		);
+	}
+
 	test( 'renders an alert chip', () => {
 		const { container: chip } = renderChip( 'alert', 'Alert message' );
 		expect( chip ).toMatchSnapshot();
@@ -48,10 +64,4 @@ describe( 'Chip', () => {
 		const { container: chip } = renderChip( 'invalidtype', 'Message' );
 		expect( chip ).toMatchSnapshot();
 	} );
-
-	function renderChip( type, message, tooltip ) {
-		return render(
-			<Chip type={ type } message={ message } tooltip={ tooltip } />
-		);
-	}
 } );

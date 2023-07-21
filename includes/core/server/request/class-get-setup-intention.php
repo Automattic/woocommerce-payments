@@ -1,35 +1,31 @@
 <?php
 /**
- * Class file for WCPay\Core\Server\Request\Get_Charge.
+ * Class file for WCPay\Core\Server\Request\Get_Setup_Intention.
  *
  * @package WooCommerce Payments
  */
 
 namespace WCPay\Core\Server\Request;
 
-use WC_Payments;
+use WC_Payments_API_Setup_Intention;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request;
 use WC_Payments_API_Client;
 
 /**
- * Request class for getting intents.
+ * Request class for getting setup intents.
  */
-class Get_Charge extends Request {
+class Get_Setup_Intention extends Request {
 	/**
 	 * Sets the intent ID, which will be used in the request URL.
 	 *
-	 * @param string $id Sets the intent ID, which will be used in the request URL.
+	 * @param string $setup_intent_id Sets the setup intent ID, which will be used in the request URL.
 	 *
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
-	protected function set_id( string $id ) {
-		/**
-		 * `py_XYZ` objects are identical to charges, and sometimes occur
-		 * whenever the payment was made in a non-deposit currency.
-		 */
-		$this->validate_stripe_id( $id, [ 'ch', 'py' ] );
-		$this->id = $id;
+	protected function set_id( string $setup_intent_id ) {
+		$this->validate_stripe_id( $setup_intent_id );
+		$this->id = $setup_intent_id;
 	}
 
 	/**
@@ -39,7 +35,7 @@ class Get_Charge extends Request {
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
 	public function get_api(): string {
-		return WC_Payments_API_Client::CHARGES_API . '/' . $this->id;
+		return WC_Payments_API_Client::SETUP_INTENTS_API . '/' . $this->id;
 	}
 
 	/**
@@ -48,17 +44,14 @@ class Get_Charge extends Request {
 	public function get_method(): string {
 		return 'GET';
 	}
+
 	/**
 	 * Formats the response from the server.
 	 *
 	 * @param  mixed $response The response from `WC_Payments_API_Client::request`.
-	 * @return mixed           Either the same response, or the correct object.
+	 * @return WC_Payments_API_Setup_Intention Either the same response, or the correct object.
 	 */
 	public function format_response( $response ) {
-		if ( is_wp_error( $response ) ) {
-			return $response;
-		}
-
-		return $this->api_client->add_additional_info_to_charge( $response );
+		return $this->api_client->deserialize_setup_intention_object_from_array( $response );
 	}
 }
