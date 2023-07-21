@@ -270,6 +270,7 @@ const WCPayUPEFields = ( {
 							paymentIntentSecret,
 							elements,
 							billingData,
+							customerData.shippingAddress,
 							emitResponse,
 							selectedUPEPaymentType
 						);
