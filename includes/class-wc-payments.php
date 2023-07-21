@@ -344,6 +344,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/class-cancel-intention.php';
 		include_once __DIR__ . '/core/server/request/class-create-setup-intention.php';
 		include_once __DIR__ . '/core/server/request/class-create-and-confirm-setup-intention.php';
+		include_once __DIR__ . '/core/server/request/class-get-setup-intention.php';
 		include_once __DIR__ . '/core/server/request/class-get-account.php';
 		include_once __DIR__ . '/core/server/request/class-get-account-login-data.php';
 		include_once __DIR__ . '/core/server/request/class-get-account-capital-link.php';
