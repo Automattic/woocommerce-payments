@@ -1,5 +1,3 @@
-/* global jQuery */
-
 /**
  * External dependencies
  */
@@ -26,6 +24,7 @@ import {
 	getStripeElementOptions,
 	useCustomerData,
 	isLinkEnabled,
+	blocksShowLinkButtonHandler,
 } from '../utils/upe';
 import { decryptClientSecret } from '../utils/encryption';
 import { PAYMENT_METHOD_NAME_CARD } from '../constants.js';
@@ -117,28 +116,7 @@ const WCPayUPEFields = ( {
 						);
 					}
 				},
-				show_button: ( linkAutofill ) => {
-					jQuery( '#email' )
-						.parent()
-						.append(
-							'<button class="wcpay-stripelink-modal-trigger"></button>'
-						);
-					if ( '' !== jQuery( '#email' ).val() ) {
-						jQuery( '.wcpay-stripelink-modal-trigger' ).show();
-					}
-
-					//Handle StripeLink button click.
-					jQuery( '.wcpay-stripelink-modal-trigger' ).on(
-						'click',
-						( event ) => {
-							event.preventDefault();
-							// Trigger modal.
-							linkAutofill.launch( {
-								email: jQuery( '#email' ).val(),
-							} );
-						}
-					);
-				},
+				show_button: blocksShowLinkButtonHandler,
 				complete_shipping: () => {
 					return (
 						null !== document.getElementById( 'shipping-address_1' )
