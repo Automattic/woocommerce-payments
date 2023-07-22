@@ -48,6 +48,8 @@ class WooPay_Session {
 		add_filter( 'rest_request_before_callbacks', [ __CLASS__, 'add_woopay_store_api_session_handler' ], 10, 3 );
 		add_action( 'woocommerce_order_payment_status_changed', [ __CLASS__, 'remove_order_customer_id_on_requests_with_verified_email' ] );
 		add_action( 'woopay_restore_order_customer_id', [ __CLASS__, 'restore_order_customer_id_from_requests_with_verified_email' ] );
+
+		register_deactivation_hook( WCPAY_PLUGIN_FILE, [ __CLASS__, 'run_and_remove_woopay_restore_order_customer_id_schedules' ] );
 	}
 
 	/**
@@ -164,11 +166,11 @@ class WooPay_Session {
 			return;
 		}
 
-		if ( ! self::is_request_from_woopay() || ! self::is_store_api_request() ) {
+		if ( ! self::is_woopay_enabled() ) {
 			return;
 		}
 
-		if ( ! self::is_woopay_enabled() ) {
+		if ( ! self::is_request_from_woopay() || ! self::is_store_api_request() ) {
 			return;
 		}
 
@@ -215,6 +217,27 @@ class WooPay_Session {
 		$order->set_customer_id( $order->get_meta( 'woopay_merchant_customer_id' ) );
 		$order->delete_meta_data( 'woopay_merchant_customer_id' );
 		$order->save();
+	}
+
+	/**
+	 * Restore all WooPay verified email orders customer ID
+	 * and disable the schedules when plugin is disabled.
+	 */
+	public static function run_and_remove_woopay_restore_order_customer_id_schedules() {
+		$args = [
+			'meta_key' => 'woopay_merchant_customer_id', //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+			'return'   => 'ids',
+		];
+
+		$order_ids = wc_get_orders( $args );
+
+		if ( ! empty( $order_ids ) ) {
+			foreach ( $order_ids as $order_id ) {
+				self::restore_order_customer_id_from_requests_with_verified_email( $order_id );
+			}
+		}
+
+		wp_clear_scheduled_hook( 'woopay_restore_order_customer_id' );
 	}
 
 	/**

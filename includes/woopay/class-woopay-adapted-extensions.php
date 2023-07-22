@@ -36,20 +36,23 @@ class WooPay_Adapted_Extensions {
 	 * Get WooPay adapted extensions settings and extra data needed on WooPay.
 	 *
 	 * @param string $email The user email the data will be loaded.
+	 *
+	 * @return array The extensions script data.
 	 */
 	public function get_adapted_extensions_data( $email ) {
 		$enabled_adapted_extensions = get_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, [] );
-		$extension_settings         = [];
 
 		if ( count( $enabled_adapted_extensions ) === 0 ) {
-			return null;
+			return [];
 		}
+
+		$extension_settings = [];
 
 		$user = wp_get_current_user();
 
 		if ( ! is_user_logged_in() ) {
-			// If the user is guest and has a merchant account, load data from there to know if need
-			// to verify their email on WooPay.
+			// If the user is a guest and has an account on the merchant site, load data
+			// from there to check if we need to verify their email on WooPay later.
 			$user_by_email = get_user_by( 'email', $email );
 
 			if ( false !== $user_by_email ) {
@@ -59,7 +62,11 @@ class WooPay_Adapted_Extensions {
 
 		// Points and Rewards.
 		if ( in_array( self::POINTS_AND_REWARDS_PLUGIN, $enabled_adapted_extensions, true ) ) {
-			$extension_settings[ self::POINTS_AND_REWARDS_API ] = self::get_points_and_rewards_data( $user );
+			$points_and_rewards_data = self::get_points_and_rewards_data( $user );
+
+			if ( null !== $points_and_rewards_data ) {
+				$extension_settings[ self::POINTS_AND_REWARDS_API ] = $points_and_rewards_data;
+			}
 		}
 
 		if ( in_array( self::GIFT_CARDS_API, $enabled_adapted_extensions, true ) ) {
@@ -72,8 +79,9 @@ class WooPay_Adapted_Extensions {
 	/**
 	 * Get Points and Rewards settings for WooPay.
 	 *
-	 * @psalm-suppress UndefinedClass
 	 * @param \WP_User $user The user the data will be loaded.
+	 *
+	 * @return array|null The Points and Rewards script data if installed.
 	 */
 	public function get_points_and_rewards_data( $user ) {
 		if (
@@ -96,7 +104,11 @@ class WooPay_Adapted_Extensions {
 			'monetary_value' => $monetary_value,
 		];
 
-		// Check if the user has points to show the verify email alert.
+		/**
+		 * Check if the user has points to show the verify email alert.
+		 *
+		 * @psalm-suppress UndefinedClass
+		 */
 		$available_points_for_user = \WC_Points_Rewards_Manager::get_users_points( $user->ID );
 
 		if ( $available_points_for_user > 0 && $available_points_for_user > $points_and_rewards_script_data['minimum_points_amount'] ) {
