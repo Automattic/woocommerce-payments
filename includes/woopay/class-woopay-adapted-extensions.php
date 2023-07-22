@@ -70,7 +70,11 @@ class WooPay_Adapted_Extensions {
 		}
 
 		if ( in_array( self::GIFT_CARDS_API, $enabled_adapted_extensions, true ) ) {
-			$extension_settings[ self::GIFT_CARDS_API ] = self::get_gift_cards_data( $user );
+			$gift_cards_data = self::get_gift_cards_data( $user );
+
+			if ( null !== $gift_cards_data ) {
+				$extension_settings[ self::GIFT_CARDS_API ] = $gift_cards_data;
+			}
 		}
 
 		return $extension_settings;
@@ -124,6 +128,8 @@ class WooPay_Adapted_Extensions {
 	 * Get Gift Cards settings for WooPay.
 	 *
 	 * @param \WP_User $user The user the data will be loaded.
+	 *
+	 * @return array|null The Gift Cards script data if installed.
 	 */
 	public function get_gift_cards_data( $user ) {
 		if (
