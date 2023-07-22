@@ -50,9 +50,8 @@ class WooPay_Adapted_Extensions_Test extends WCPAY_UnitTestCase {
 	public function test_get_adapted_extensions_data_without_enable_adapted_extensions() {
 		update_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, [] );
 
-		$this->assertNull( $this->woopay_adapted_extensions->get_adapted_extensions_data( 'test@example.com' ) );
+		$this->assertEquals( $this->woopay_adapted_extensions->get_adapted_extensions_data( 'test@example.com' ), [] );
 	}
-
 
 	public function test_get_points_and_rewards_data_while_logged_out() {
 		$expected = array_merge(
