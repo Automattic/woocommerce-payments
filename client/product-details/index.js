@@ -12,7 +12,7 @@ jQuery( function ( $ ) {
 	let { productId } = window.wcpayStripeSiteMessaging;
 
 	const resetBnplPaymentMessage = () => {
-		const quantity = $( '.quantity input' ).val();
+		const quantity = $( '.quantity input[type=number]' ).val();
 		productId = 'base_product';
 		bnplPaymentMessageElement.update( {
 			amount:
@@ -37,7 +37,7 @@ jQuery( function ( $ ) {
 			event,
 			variation
 		) {
-			const quantity = $( '.quantity input' ).val();
+			const quantity = $( '.quantity input[type=number]' ).val();
 			const variationPrice =
 				productVariations[ variation.variation_id ].amount;
 			productId = variation.variation_id;
