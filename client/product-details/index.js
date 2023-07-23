@@ -22,7 +22,7 @@ jQuery( function ( $ ) {
 		} );
 	};
 
-	$( '.quantity input' ).on( 'change', function ( event ) {
+	$( '.quantity input[type=number]' ).on( 'change', function ( event ) {
 		const newQuantity = event.target.value;
 		const price = productVariations[ productId ].amount;
 		bnplPaymentMessageElement.update( {
