@@ -48,16 +48,6 @@ class WC_Payments_Payment_Method_Messaging_Element {
 	 */
 	public function init(): string {
 		global $product;
-
-		$enabled_upe_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
-		// Filter non BNPL out of the list of payment methods.
-		$bnpl_payment_methods = array_intersect( $enabled_upe_payment_methods, [ Payment_Method::AFFIRM, Payment_Method::AFTERPAY ] );
-
-		// Do not render the messaging element if there are no BNPL payment methods enabled.
-		if ( empty( $bnpl_payment_methods ) ) {
-			return '';
-		}
-
 		$currency_code      = get_woocommerce_currency();
 		$store_country      = WC()->countries->get_base_country();
 		$billing_country    = WC()->customer->get_billing_country();
@@ -77,6 +67,10 @@ class WC_Payments_Payment_Method_Messaging_Element {
 				];
 			}
 		}
+
+		$enabled_upe_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
+		// Filter non BNPL out of the list of payment methods.
+		$bnpl_payment_methods = array_intersect( $enabled_upe_payment_methods, Payment_Method::BNPL_METHODS );
 
 		// register the script.
 		WC_Payments::register_script_with_dependencies( 'WCPAY_PRODUCT_DETAILS', 'dist/product-details', [ 'stripe' ] );
