@@ -80,7 +80,7 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 	 */
 	public function get_authorization( $request ) {
 		$wcpay_request = List_Authorizations::create();
-		$wcpay_request->set_payment_intent_id_is( $request->get_param( 'id' ) );
+		$wcpay_request->set_source_id_filter( $request->get_param( 'id' ) );
 		$wcpay_request->set_type_id( '' ); // With empty type we will skip default(legacy) behavior where we load authorizations that are only capturable.
 		$wcpay_request->set_sort_by( 'created' ); // Default sort.
 		$wcpay_request->set_page_size( 1 ); // Set page size to limit to only one record.
@@ -124,9 +124,10 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 		} elseif ( 'authorized' === $item['outcome_type'] && $is_captured && $date_interval->days <= 7 ) {
 			$type = 'uncaptured'; // If the diff is within 7 days, we mark it as uncaptured.
 		}
+		$prepared_item['id']                   = $item['charge_id'];
 		$prepared_item['date']                 = $item['created'];
 		$prepared_item['transaction_id']       = $item['transaction_id'];
-		$prepared_item['payment_intent_id']    = $item['payment_intent_id'];
+		$prepared_item['source_id']            = $item['payment_intent_id'];
 		$prepared_item['channel']              = $item['channel'];
 		$prepared_item['payment_method']       = [
 			'type' => $item['source'],
@@ -207,8 +208,8 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 				'required'          => false,
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-			'payment_intent_id' => [
-				'description'       => __( 'Filter authorizations based on their unique payment intent ID.', 'woocommerce-payments' ),
+			'source_id'         => [
+				'description'       => __( 'Filter authorizations based on their unique source ID.', 'woocommerce-payments' ),
 				'type'              => 'string',
 				'required'          => false,
 				'validate_callback' => 'rest_validate_request_arg',
@@ -272,6 +273,11 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 			'title'      => 'transaction',
 			'type'       => 'object',
 			'properties' => [
+				'id'                   => [
+					'description' => __( 'A unique identifier for each record based.', 'woocommerce-payments' ),
+					'type'        => 'string',
+					'context'     => [ 'view' ],
+				],
 				'date'                 => [
 					'description' => __( 'The date and time when the transaction was created.', 'woocommerce-payments' ),
 					'type'        => 'string',
@@ -283,7 +289,7 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 					'type'        => 'string',
 					'context'     => [ 'view' ],
 				],
-				'payment_intent_id'    => [
+				'source_id'            => [
 					'description' => __( 'A unique payment intent identifier for each transaction.', 'woocommerce-payments' ),
 					'type'        => 'string',
 					'context'     => [ 'view' ],

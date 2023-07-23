@@ -123,7 +123,7 @@ class List_Transactions extends Paginated {
 			'payment_method_id_is' => $request->get_param( 'payment_method_id' ),
 			'type_is'              => $request->get_param( 'type' ),
 			'transaction_id_is'    => $request->get_param( 'transaction_id' ),
-			'payment_intent_id_is' => $request->get_param( 'payment_intent_id' ),
+			'payment_intent_id_is' => $request->get_param( 'source_id' ),
 			'search'               => (array) $request->get_param( 'search' ),
 		];
 		$wcpay_request->set_filters( $filters );
@@ -222,14 +222,14 @@ class List_Transactions extends Paginated {
 	}
 
 	/**
-	 * Set payment intent id is.
+	 * Set source id filter.
 	 *
-	 * @param string $payment_intent_id Payment intent id.
+	 * @param string $source_id Source id.
 	 *
 	 * @return void
 	 */
-	public function set_payment_intent_id_is( string $payment_intent_id ) {
-		$this->set_param( 'payment_intent_id_is', $payment_intent_id );
+	public function set_source_id_filter( string $source_id ) {
+		$this->set_param( 'payment_intent_id_is', $source_id );
 	}
 
 	/**

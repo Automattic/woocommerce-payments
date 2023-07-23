@@ -81,7 +81,7 @@ class WC_REST_Payments_Reports_Transactions_Controller extends WC_Payments_REST_
 	public function get_transaction( $request ) {
 		$wcpay_request = List_Transactions::create();
 
-		$wcpay_request->set_payment_intent_id_is( $request->get_param( 'id' ) );
+		$wcpay_request->set_source_id_filter( $request->get_param( 'id' ) );
 		$wcpay_request->set_sort_by( 'date' ); // Default sort.
 		$wcpay_request->set_page_size( 1 ); // Set page size to limit to only one record.
 
@@ -111,9 +111,9 @@ class WC_REST_Payments_Reports_Transactions_Controller extends WC_Payments_REST_
 
 		$prepared_item = [];
 
+		$prepared_item['id']                   = $item['transaction_id'];
 		$prepared_item['date']                 = $item['date'];
-		$prepared_item['transaction_id']       = $item['transaction_id'];
-		$prepared_item['payment_intent_id']    = $item['payment_intent_id'];
+		$prepared_item['source_id']            = $item['payment_intent_id'];
 		$prepared_item['channel']              = $item['channel'];
 		$prepared_item['payment_method']       = [
 			'type' => $item['source'],
@@ -204,8 +204,8 @@ class WC_REST_Payments_Reports_Transactions_Controller extends WC_Payments_REST_
 				'required'          => false,
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-			'payment_intent_id' => [
-				'description'       => __( 'Filter transactions based on their unique payment intent ID.', 'woocommerce-payments' ),
+			'source_id'         => [
+				'description'       => __( 'Filter transactions based on their unique source ID.', 'woocommerce-payments' ),
 				'type'              => 'string',
 				'required'          => false,
 				'validate_callback' => 'rest_validate_request_arg',
@@ -280,8 +280,8 @@ class WC_REST_Payments_Reports_Transactions_Controller extends WC_Payments_REST_
 					'type'        => 'string',
 					'context'     => [ 'view' ],
 				],
-				'payment_intent_id'    => [
-					'description' => __( 'A unique payment intent identifier for each transaction.', 'woocommerce-payments' ),
+				'source_id'            => [
+					'description' => __( 'A unique source id for each transaction.', 'woocommerce-payments' ),
 					'type'        => 'string',
 					'context'     => [ 'view' ],
 				],
