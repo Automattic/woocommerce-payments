@@ -22,7 +22,7 @@ describe( 'Setup Real Payments', () => {
 
 		const queryHeading = () =>
 			screen.queryByRole( 'heading', {
-				name: 'Setup live payments on your store',
+				name: 'Set up live payments on your store',
 			} );
 
 		expect( queryHeading() ).not.toBeInTheDocument();
@@ -44,7 +44,7 @@ describe( 'Setup Real Payments', () => {
 
 		expect(
 			screen.queryByRole( 'heading', {
-				name: 'Setup live payments on your store',
+				name: 'Set up live payments on your store',
 			} )
 		).not.toBeInTheDocument();
 	} );

@@ -36,7 +36,7 @@ const SetupRealPayments: React.FC = () => {
 			<Card className="wcpay-setup-real-payments">
 				<CardHeader>
 					{ __(
-						'Ready to set up real payments on your store?',
+						'Set up real payments on your store',
 						'woocommerce-payments'
 					) }
 				</CardHeader>
@@ -77,7 +77,7 @@ const SetupRealPayments: React.FC = () => {
 			{ modalVisible && (
 				<Modal
 					title={ __(
-						'Setup live payments on your store',
+						'Set up live payments on your store',
 						'woocommerce-payments'
 					) }
 					className="wcpay-setup-real-payments-modal"
