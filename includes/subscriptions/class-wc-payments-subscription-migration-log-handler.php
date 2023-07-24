@@ -36,6 +36,13 @@ class WC_Payments_Subscription_Migration_Log_Handler {
 	const DB_ENTRY_EXTENSION_IN_YEARS = 5;
 
 	/**
+	 * The holding property for our WC_Logger instance.
+	 *
+	 * @var WC_Logger
+	 */
+	private static $logger = null;
+
+	/**
 	 * Constructor.
 	 */
 	public function __construct() {
@@ -54,8 +61,11 @@ class WC_Payments_Subscription_Migration_Log_Handler {
 	 * @param string $message The message to log.
 	 */
 	public static function log( $message ) {
-		$logger = wc_get_logger();
-		$logger->debug( $message, [ 'source' => self::HANDLE ] );
+		if ( ! self::$logger ) {
+			self::$logger = wc_get_logger();
+		}
+
+		self::$logger->debug( $message, [ 'source' => self::HANDLE ] );
 	}
 
 	/**
