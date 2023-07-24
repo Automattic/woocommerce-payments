@@ -32,13 +32,13 @@ describe( 'Setup Real Payments', () => {
 		expect( queryHeading() ).toBeInTheDocument();
 	} );
 
-	it( 'closes modal when go back button is clicked', () => {
+	it( 'closes modal when cancel button is clicked', () => {
 		render( <SetupRealPayments /> );
 
 		user.click( screen.getByRole( 'button' ) );
 		user.click(
 			screen.getByRole( 'button', {
-				name: 'Go back',
+				name: 'Cancel',
 			} )
 		);
 

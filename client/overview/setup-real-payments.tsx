@@ -11,6 +11,7 @@ import {
 	CardFooter,
 	CardHeader,
 	Modal,
+	Flex,
 } from '@wordpress/components';
 import { Icon, payment, globe, currencyDollar } from '@wordpress/icons';
 import ScheduledIcon from 'gridicons/dist/scheduled';
@@ -63,9 +64,14 @@ const SetupRealPayments: React.FC = () => {
 					</div>
 				</CardBody>
 				<CardFooter className="wcpay-setup-real-payments__footer">
-					<Button isPrimary onClick={ () => setModalVisible( true ) }>
-						{ __( 'Set up payments', 'woocommerce-payments' ) }
-					</Button>
+					<Flex align="center" justify="flex-start">
+						<Button
+							isSecondary={ true }
+							onClick={ () => setModalVisible( true ) }
+						>
+							{ __( 'Set up payments', 'woocommerce-payments' ) }
+						</Button>
+					</Flex>
 				</CardFooter>
 			</Card>
 			{ modalVisible && (
@@ -106,7 +112,7 @@ const SetupRealPayments: React.FC = () => {
 							isTertiary
 							onClick={ () => setModalVisible( false ) }
 						>
-							{ __( 'Go back', 'woocommerce-payments' ) }
+							{ __( 'Cancel', 'woocommerce-payments' ) }
 						</Button>
 						<Button isPrimary onClick={ handleContinue }>
 							{ __( 'Continue setup', 'woocommerce-payments' ) }
