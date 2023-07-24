@@ -7,6 +7,7 @@
 
 use Automattic\Jetpack\Identity_Crisis as Jetpack_Identity_Crisis;
 use Automattic\WooCommerce\Admin\PageController;
+use WCPay\Core\Server\Request;
 use WCPay\Database_Cache;
 use WCPay\Logger;
 
@@ -68,6 +69,13 @@ class WC_Payments_Admin {
 	private $onboarding_service;
 
 	/**
+	 * Instance of Order Service for accessing order data.
+	 *
+	 * @var WC_Payments_Order_Service
+	 */
+	private $order_service;
+
+	/**
 	 * WC_Payments_Incentives_Service instance to get information for incentives.
 	 *
 	 * @var WC_Payments_Incentives_Service
@@ -106,6 +114,7 @@ class WC_Payments_Admin {
 	 * @param WC_Payment_Gateway_WCPay       $gateway             WCPay Gateway instance to get information regarding WooCommerce Payments setup.
 	 * @param WC_Payments_Account            $account             Account instance.
 	 * @param WC_Payments_Onboarding_Service $onboarding_service  Onboarding service instance.
+	 * @param WC_Payments_Order_Service      $order_service       Order service instance.
 	 * @param WC_Payments_Incentives_Service $incentives_service  Incentives service instance.
 	 * @param Database_Cache                 $database_cache      Database Cache instance.
 	 */
@@ -114,6 +123,7 @@ class WC_Payments_Admin {
 		WC_Payment_Gateway_WCPay $gateway,
 		WC_Payments_Account $account,
 		WC_Payments_Onboarding_Service $onboarding_service,
+		WC_Payments_Order_Service $order_service,
 		WC_Payments_Incentives_Service $incentives_service,
 		Database_Cache $database_cache
 	) {
@@ -121,11 +131,14 @@ class WC_Payments_Admin {
 		$this->wcpay_gateway       = $gateway;
 		$this->account             = $account;
 		$this->onboarding_service  = $onboarding_service;
+		$this->order_service       = $order_service;
 		$this->incentives_service  = $incentives_service;
 		$this->database_cache      = $database_cache;
 
 		add_action( 'admin_notices', [ $this, 'display_not_supported_currency_notice' ], 9999 );
 		add_action( 'admin_notices', [ $this, 'display_isk_decimal_notice' ] );
+
+		add_action( 'woocommerce_admin_order_data_after_payment_info', [ $this, 'render_order_edit_payment_details_container' ] );
 
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
@@ -208,6 +221,15 @@ class WC_Payments_Admin {
 			</div>
 			<?php
 		}
+	}
+
+	/**
+	 * Render a container for adding notices to order details screen payment box.
+	 */
+	public function render_order_edit_payment_details_container() {
+		?>
+		<div id="wcpay-order-payment-details-container"></div>
+		<?php
 	}
 
 	/**
@@ -336,7 +358,7 @@ class WC_Payments_Admin {
 		}
 
 		if ( ! $should_render_full_menu ) {
-			if ( WC_Payments_Utils::is_in_progressive_onboarding_treatment_mode() || WC_Payments_Features::is_progressive_onboarding_enabled() ) {
+			if ( WC_Payments_Utils::should_use_progressive_onboarding_flow() ) {
 				wc_admin_register_page(
 					[
 						'id'         => 'wc-payments-onboarding',
@@ -672,7 +694,13 @@ class WC_Payments_Admin {
 						'formattedRefundAmount' => wp_strip_all_tags( wc_price( $refund_amount, [ 'currency' => $order->get_currency() ] ) ),
 						'refundedAmount'        => $order->get_total_refunded(),
 						'canRefund'             => $this->wcpay_gateway->can_refund_order( $order ),
+						'chargeId'              => $this->order_service->get_charge_id_for_order( $order ),
 					]
+				);
+				wp_localize_script(
+					'WCPAY_ADMIN_ORDER_ACTIONS',
+					'wcpaySettings',
+					$this->get_js_settings()
 				);
 
 				wp_enqueue_script( 'WCPAY_ADMIN_ORDER_ACTIONS' );
@@ -784,6 +812,9 @@ class WC_Payments_Admin {
 			'isFRTReviewFeatureActive'    => WC_Payments_Features::is_frt_review_feature_active(),
 			'fraudProtection'             => [
 				'isWelcomeTourDismissed' => WC_Payments_Features::is_fraud_protection_welcome_tour_dismissed(),
+			],
+			'progressiveOnboarding'       => [
+				'isNewFlowEnabled' => WC_Payments_Utils::should_use_progressive_onboarding_flow(),
 			],
 			'accountDefaultCurrency'      => $this->account->get_account_default_currency(),
 			'frtDiscoverBannerSettings'   => get_option( 'wcpay_frt_discover_banner_settings', '' ),
@@ -1145,9 +1176,14 @@ class WC_Payments_Admin {
 	 * @return int The number of disputes which need a response.
 	 */
 	private function get_disputes_awaiting_response_count() {
+		$send_callback = function() {
+			$request = Request::get( WC_Payments_API_Client::DISPUTES_API . '/status_counts' );
+			return $request->send( 'wcpay_get_dispute_status_counts' );
+		};
+
 		$disputes_status_counts = $this->database_cache->get_or_add(
 			Database_Cache::DISPUTE_STATUS_COUNTS_KEY,
-			[ $this->payments_api_client, 'get_dispute_status_counts' ],
+			$send_callback,
 			// We'll consider all array values to be valid as the cache is only invalidated when it is deleted or it expires.
 			'is_array'
 		);
@@ -1169,9 +1205,13 @@ class WC_Payments_Admin {
 		$test_mode = WC_Payments::mode()->is_test();
 		$cache_key = $test_mode ? DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE : DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY;
 
+		$send_callback         = function() {
+			$request = Request::get( WC_Payments_API_Client::AUTHORIZATIONS_API . '/summary' );
+			return $request->send( 'wc_pay_get_authorizations_summary' );
+		};
 		$authorization_summary = $this->database_cache->get_or_add(
 			$cache_key,
-			[ $this->payments_api_client, 'get_authorizations_summary' ],
+			$send_callback,
 			// We'll consider all array values to be valid as the cache is only invalidated when it is deleted or it expires.
 			'is_array'
 		);

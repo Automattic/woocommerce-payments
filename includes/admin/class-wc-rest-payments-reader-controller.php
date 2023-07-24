@@ -8,6 +8,7 @@
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Core\Server\Request;
 use WCPay\Exceptions\API_Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -237,7 +238,8 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 
 		if ( ! $readers ) {
 			// Retrieve terminal readers.
-			$readers_data = $this->api_client->get_terminal_readers();
+			$request      = Request::get( WC_Payments_API_Client::TERMINAL_READERS_API );
+			$readers_data = $request->send( 'wcpay_get_terminal_readers_request' );
 
 			// Retrieve the readers by charges.
 			$reader_by_charges = $this->api_client->get_readers_charge_summary( gmdate( 'Y-m-d', time() ) );

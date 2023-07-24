@@ -344,6 +344,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/class-cancel-intention.php';
 		include_once __DIR__ . '/core/server/request/class-create-setup-intention.php';
 		include_once __DIR__ . '/core/server/request/class-create-and-confirm-setup-intention.php';
+		include_once __DIR__ . '/core/server/request/class-get-setup-intention.php';
 		include_once __DIR__ . '/core/server/request/class-get-account.php';
 		include_once __DIR__ . '/core/server/request/class-get-account-login-data.php';
 		include_once __DIR__ . '/core/server/request/class-get-account-capital-link.php';
@@ -364,6 +365,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/class-woopay-create-and-confirm-setup-intention.php';
 		include_once __DIR__ . '/core/server/request/class-refund-charge.php';
 		include_once __DIR__ . '/core/server/request/class-list-charge-refunds.php';
+		include_once __DIR__ . '/core/server/request/class-get-request.php';
 
 		include_once __DIR__ . '/woopay/services/class-checkout-service.php';
 
@@ -594,7 +596,15 @@ class WC_Payments {
 		}
 
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
-			new WC_Payments_Admin( self::$api_client, self::get_gateway(), self::$account, self::$onboarding_service, self::$incentives_service, self::$database_cache );
+			new WC_Payments_Admin(
+				self::$api_client,
+				self::get_gateway(),
+				self::$account,
+				self::$onboarding_service,
+				self::$order_service,
+				self::$incentives_service,
+				self::$database_cache
+			);
 
 			new WC_Payments_Admin_Settings( self::get_gateway() );
 
@@ -613,6 +623,10 @@ class WC_Payments {
 		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
 			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
 			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account );
+		}
+
+		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.9.0', '<' ) ) {
+			add_action( 'woocommerce_onboarding_profile_data_updated', 'WC_Payments_Features::maybe_enable_wcpay_subscriptions_after_onboarding', 10, 2 );
 		}
 
 		// Load the WCPay Subscriptions migration class.
@@ -715,7 +729,7 @@ class WC_Payments {
 				self::get_gateway()->update_option( 'upe_enabled_payment_method_ids', $payment_methods );
 			}
 
-			if ( WC_Payments_Features::is_woopay_enabled() ) {
+			if ( ! WC_Payments_Features::is_upe_deferred_intent_enabled() && WC_Payments_Features::is_woopay_enabled() ) {
 				self::$registered_card_gateway = self::$legacy_card_gateway;
 			} else {
 				self::$registered_card_gateway = self::$card_gateway;
@@ -758,6 +772,15 @@ class WC_Payments {
 	 */
 	public static function get_registered_card_gateway() {
 		return self::$registered_card_gateway;
+	}
+
+	/**
+	 * Sets registered card gateway instance.
+	 *
+	 * @param WC_Payment_Gateway_WCPay|UPE_Payment_Gateway|UPE_Split_Payment_Gateway $gateway Gateway instance.
+	 */
+	public static function set_registered_card_gateway( $gateway ) {
+		self::$registered_card_gateway = $gateway;
 	}
 
 	/**
@@ -891,7 +914,9 @@ class WC_Payments {
 	 */
 	public static function create_api_client() {
 		require_once __DIR__ . '/wc-payment-api/models/class-wc-payments-api-charge.php';
-		require_once __DIR__ . '/wc-payment-api/models/class-wc-payments-api-intention.php';
+		require_once __DIR__ . '/wc-payment-api/models/class-wc-payments-api-abstract-intention.php';
+		require_once __DIR__ . '/wc-payment-api/models/class-wc-payments-api-payment-intention.php';
+		require_once __DIR__ . '/wc-payment-api/models/class-wc-payments-api-setup-intention.php';
 		require_once __DIR__ . '/wc-payment-api/class-wc-payments-api-client.php';
 
 		$http_class = self::get_wc_payments_http();
@@ -1478,14 +1503,20 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/compat/blocks/class-blocks-data-extractor.php';
 		$blocks_data_extractor = new Blocks_Data_Extractor();
 
+		// This uses the same logic as the Checkout block in hydrate_from_api to get the cart and checkout data.
+		$cart_data = rest_preload_api_request( [], '/wc/store/v1/cart' )['/wc/store/v1/cart']['body'];
+		add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+		$checkout_data = rest_preload_api_request( [], '/wc/store/v1/checkout' )['/wc/store/v1/checkout']['body'];
+		remove_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+
 		$body = [
-			'wcpay_version'   => WCPAY_VERSION_NUMBER,
-			'user_id'         => $user->ID,
-			'customer_id'     => $customer_id,
-			'session_nonce'   => wp_create_nonce( 'wc_store_api' ),
-			'store_api_token' => self::init_store_api_token(),
-			'email'           => $email,
-			'store_data'      => [
+			'wcpay_version'      => WCPAY_VERSION_NUMBER,
+			'user_id'            => $user->ID,
+			'customer_id'        => $customer_id,
+			'session_nonce'      => wp_create_nonce( 'wc_store_api' ),
+			'store_api_token'    => self::init_store_api_token(),
+			'email'              => $email,
+			'store_data'         => [
 				'store_name'                     => get_bloginfo( 'name' ),
 				'store_logo'                     => ! empty( $store_logo ) ? get_rest_url( null, 'wc/v3/payments/file/' . $store_logo ) : '',
 				'custom_message'                 => self::get_gateway()->get_option( 'platform_checkout_custom_message' ),
@@ -1504,8 +1535,20 @@ class WC_Payments {
 				'blocks_data'                    => $blocks_data_extractor->get_data(),
 				'checkout_schema_namespaces'     => $blocks_data_extractor->get_checkout_schema_namespaces(),
 			],
-			'user_session'    => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
+			'user_session'       => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
+			'preloaded_requests' => [
+				'cart'     => $cart_data,
+				'checkout' => $checkout_data,
+			],
 		];
+
+		if ( ! empty( $email ) ) {
+			// Save email in session to skip TYP verify email and check if
+			// WooPay verified email matches.
+			WC()->customer->set_billing_email( $email );
+			WC()->customer->save();
+		}
+
 		$args = [
 			'url'     => WooPay_Utilities::get_woopay_rest_url( 'init' ),
 			'method'  => 'POST',

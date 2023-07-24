@@ -13,10 +13,11 @@ use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Core\Server\Request\Create_Intention;
 use WCPay\Core\Server\Request\Create_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Intention;
+use WCPay\Core\Server\Request\Get_Setup_Intention;
 use WCPay\Core\Server\Request\Update_Intention;
-use WCPay\Core\Server\Response;
 use WCPay\Constants\Payment_Method;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Exceptions\Process_Payment_Exception;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\WC_Payments_UPE_Checkout;
@@ -162,7 +163,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->disableOriginalConstructor()
 			->setMethods(
 				[
-					'get_setup_intent',
 					'get_payment_method',
 					'is_server_connected',
 					'get_timeline',
@@ -778,7 +778,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn(
-				new Response(
+				WC_Helper_Intention::create_setup_intention(
 					[
 						'id'            => 'seti_mock',
 						'client_secret' => 'client_secret_mock',
@@ -815,7 +815,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn(
-				new Response(
+				WC_Helper_Intention::create_setup_intention(
 					[
 						'id'            => 'seti_mock',
 						'client_secret' => 'client_secret_mock',
@@ -1067,12 +1067,18 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$save_payment_method = false;
 		$user                = wp_get_current_user();
 		$intent_status       = Payment_Intent_Status::PROCESSING;
+		$intent_metadata     = [ 'order_id' => (string) $order_id ];
 		$charge_id           = 'ch_mock';
 		$customer_id         = 'cus_mock';
 		$intent_id           = 'pi_mock';
 		$payment_method_id   = 'pm_mock';
 
-		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => $intent_status ] );
+		$payment_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'   => $intent_status,
+				'metadata' => $intent_metadata,
+			]
+		);
 
 		$this->mock_upe_gateway->expects( $this->once() )
 			->method( 'manage_customer_details_for_order' )
@@ -1113,12 +1119,18 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$save_payment_method = false;
 		$user                = wp_get_current_user();
 		$intent_status       = Payment_Intent_Status::SUCCEEDED;
+		$intent_metadata     = [ 'order_id' => (string) $order_id ];
 		$charge_id           = 'ch_mock';
 		$customer_id         = 'cus_mock';
 		$intent_id           = 'pi_mock';
 		$payment_method_id   = 'pm_mock';
 
-		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => $intent_status ] );
+		$payment_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'   => $intent_status,
+				'metadata' => $intent_metadata,
+			]
+		);
 
 		$this->mock_upe_gateway->expects( $this->once() )
 			->method( 'manage_customer_details_for_order' )
@@ -1146,6 +1158,32 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( Order_Status::PROCESSING, $result_order->get_status() );
 	}
 
+	public function test_validate_order_id_received_vs_intent_meta_order_id_throw_exception() {
+		$order           = WC_Helper_Order::create_order();
+		$intent_metadata = [ 'order_id' => (string) ( $order->get_id() + 100 ) ];
+
+		$this->expectException( Process_Payment_Exception::class );
+		$this->expectExceptionMessage( "We're not able to process this payment due to the order ID mismatch. Please try again later." );
+
+		\PHPUnit_Utils::call_method(
+			$this->mock_upe_gateway,
+			'validate_order_id_received_vs_intent_meta_order_id',
+			[ $order, $intent_metadata ]
+		);
+	}
+
+	public function test_validate_order_id_received_vs_intent_meta_order_id_returning_void() {
+		$order           = WC_Helper_Order::create_order();
+		$intent_metadata = [ 'order_id' => (string) ( $order->get_id() ) ];
+
+		$res = \PHPUnit_Utils::call_method(
+			$this->mock_upe_gateway,
+			'validate_order_id_received_vs_intent_meta_order_id',
+			[ $order, $intent_metadata ]
+		);
+
+		$this->assertSame( null, $res );
+	}
 	public function test_process_redirect_setup_intent_succeded() {
 		$order               = WC_Helper_Order::create_order();
 		$order_id            = $order->get_id();
@@ -1164,18 +1202,20 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order->set_total( 0 );
 		$order->save();
 
-		$setup_intent = [
-			'id'                     => 'pi_mock',
-			'client_secret'          => $client_secret,
-			'status'                 => $intent_status,
-			'payment_method'         => $payment_method_id,
-			'payment_method_options' => [
-				'card' => [
-					'request_three_d_secure' => 'automatic',
+		$setup_intent = WC_Helper_Intention::create_setup_intention(
+			[
+				'id'                     => $intent_id,
+				'client_secret'          => $client_secret,
+				'status'                 => $intent_status,
+				'payment_method'         => $payment_method_id,
+				'payment_method_options' => [
+					'card' => [
+						'request_three_d_secure' => 'automatic',
+					],
 				],
-			],
-			'last_setup_error'       => [],
-		];
+				'last_setup_error'       => [],
+			]
+		);
 
 		$this->mock_upe_gateway->expects( $this->once() )
 			->method( 'manage_customer_details_for_order' )
@@ -1183,12 +1223,11 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				$this->returnValue( [ $user, $customer_id ] )
 			);
 
-		$this->mock_api_client->expects( $this->once() )
-			->method( 'get_setup_intent' )
-			->with( $intent_id )
-			->will(
-				$this->returnValue( $setup_intent )
-			);
+		$request = $this->mock_wcpay_request( Get_Setup_Intention::class, 1, $intent_id );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $setup_intent );
 
 		$this->mock_token_service->expects( $this->once() )
 			->method( 'add_payment_method_to_user' )
@@ -1216,13 +1255,19 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$save_payment_method = true;
 		$user                = wp_get_current_user();
 		$intent_status       = Payment_Intent_Status::PROCESSING;
+		$intent_metadata     = [ 'order_id' => (string) $order_id ];
 		$charge_id           = 'ch_mock';
 		$customer_id         = 'cus_mock';
 		$intent_id           = 'pi_mock';
 		$payment_method_id   = 'pm_mock';
 		$token               = WC_Helper_Token::create_token( $payment_method_id );
 
-		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => $intent_status ] );
+		$payment_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'   => $intent_status,
+				'metadata' => $intent_metadata,
+			]
+		);
 
 		$this->mock_upe_gateway->expects( $this->once() )
 			->method( 'manage_customer_details_for_order' )
@@ -1611,15 +1656,17 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$mock_setup_intent_id = 'si_mock';
 		$mock_user            = wp_get_current_user();
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_setup_intent' )
-			->with( $mock_setup_intent_id )
+		$request = $this->mock_wcpay_request( Get_Setup_Intention::class, 1, $mock_setup_intent_id );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn(
-				[
-					'id'             => $mock_setup_intent_id,
-					'payment_method' => 'pm_mock',
-				]
+				WC_Helper_Intention::create_setup_intention(
+					[
+						'id'             => $mock_setup_intent_id,
+						'payment_method' => 'pm_mock',
+					]
+				)
 			);
 
 		$this->mock_token_service->expects( $this->once() )

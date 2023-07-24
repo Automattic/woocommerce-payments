@@ -44,7 +44,7 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays base 
     >
       <span>
         <a
-          href="https://woocommerce.com/document/payments/faq/fees/#united-states"
+          href="https://woocommerce.com/document/woocommerce-payments/fees-and-debits/fees/#united-states"
           rel="noreferrer"
           target="_blank"
         >
@@ -101,7 +101,7 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays base 
     >
       <span>
         <a
-          href="https://woocommerce.com/document/payments/faq/fees/#united-states"
+          href="https://woocommerce.com/document/woocommerce-payments/fees-and-debits/fees/#united-states"
           rel="noreferrer"
           target="_blank"
         >
@@ -158,7 +158,7 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays custo
     >
       <span>
         <a
-          href="https://woocommerce.com/document/payments/faq/fees/#united-states"
+          href="https://woocommerce.com/document/woocommerce-payments/fees-and-debits/fees/#united-states"
           rel="noreferrer"
           target="_blank"
         >

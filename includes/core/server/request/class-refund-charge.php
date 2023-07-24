@@ -48,7 +48,7 @@ class Refund_Charge extends Request {
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
 	public function set_amount( int $amount ) {
-		$this->validate_is_larger_then( $amount, 0 );
+		$this->validate_is_larger_than( $amount, 0 );
 		$this->set_param( 'amount', $amount );
 	}
 

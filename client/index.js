@@ -103,6 +103,10 @@ addFilter(
 				],
 				__( 'Deposit details', 'woocommerce-payments' ),
 			],
+			navArgs: {
+				id: 'wc-payments-deposit-details',
+				parentPath: '/payments/deposits',
+			},
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
@@ -130,6 +134,10 @@ addFilter(
 				],
 				__( 'Payment details', 'woocommerce-payments' ),
 			],
+			navArgs: {
+				id: 'wc-payments-transaction-details',
+				parentPath: '/payments/transactions',
+			},
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
@@ -154,6 +162,10 @@ addFilter(
 				],
 				__( 'Dispute details', 'woocommerce-payments' ),
 			],
+			navArgs: {
+				id: 'wc-payments-disputes-details',
+				parentPath: '/payments/disputes',
+			},
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
@@ -168,6 +180,10 @@ addFilter(
 				],
 				__( 'Challenge dispute', 'woocommerce-payments' ),
 			],
+			navArgs: {
+				id: 'wc-payments-disputes-challenge',
+				parentPath: '/payments/disputes',
+			},
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
@@ -277,18 +293,11 @@ addFilter(
 	'woocommerce_admin_onboarding_task_list',
 	'woocommerce-payments',
 	( tasks ) => {
-		const {
-			accountStatus,
-			showUpdateDetailsTask,
-			wpcomReconnectUrl,
-			featureFlags: { accountOverviewTaskList },
-		} = wcpaySettings;
+		const { showUpdateDetailsTask, wpcomReconnectUrl } = wcpaySettings;
 
 		const wcPayTasks = getTasks( {
-			accountStatus,
 			showUpdateDetailsTask,
 			wpcomReconnectUrl,
-			isAccountOverviewTasksEnabled: Boolean( accountOverviewTaskList ),
 		} );
 
 		return [ ...tasks, ...wcPayTasks ];
