@@ -40,7 +40,7 @@ class Payment_Method extends Base_Constant {
 		self::INTERAC_PRESENT,
 	];
 
-	const BNPL_METHODS = [
+	const BNPL_PAYMENT_METHODS = [
 		self::AFFIRM,
 		self::AFTERPAY,
 	];

@@ -560,12 +560,11 @@ class WC_Payments {
 		self::maybe_display_express_checkout_buttons();
 
 		// Insert the Stripe Payment Messaging Element only if there is at least one BNPL method enabled.
-		$activated_bnpl_payment_methods = array_intersect(
-			Payment_Method::BNPL_METHODS,
+		$enabled_bnpl_payment_methods = array_intersect(
+			Payment_Method::BNPL_PAYMENT_METHODS,
 			self::get_gateway()->get_upe_enabled_payment_method_ids()
 		);
-
-		if ( ! empty( $activated_bnpl_payment_methods ) ) {
+		if ( [] !== $enabled_bnpl_payment_methods ) {
 			add_action( 'woocommerce_single_product_summary', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ], 30 );
 		}
 
