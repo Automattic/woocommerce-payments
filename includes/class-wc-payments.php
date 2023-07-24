@@ -630,7 +630,10 @@ class WC_Payments {
 		}
 
 		// Load the WCPay Subscriptions migration class.
-		include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions-migrator.php';
+		if ( WC_Payments_Features::is_subscription_migration_enabled() ) {
+			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions-migrator.php';
+			new WC_Payments_Subscriptions_Migrator( self::$api_client );
+		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'set_plugin_activation_timestamp' ] );
