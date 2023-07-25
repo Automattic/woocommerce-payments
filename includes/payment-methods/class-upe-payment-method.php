@@ -183,7 +183,7 @@ abstract class UPE_Payment_Method {
 		$current_store_currency = $this->get_currency( $order_id );
 
 		if ( $this->accept_only_domestic_payment ) {
-			if ( strtolower( $current_store_currency ) !== $account_default_currency ) {
+			if ( strtolower( $current_store_currency ) !== strtolower( $account_default_currency ) ) {
 				return false;
 			}
 		}
