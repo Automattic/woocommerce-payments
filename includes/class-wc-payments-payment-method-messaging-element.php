@@ -70,7 +70,7 @@ class WC_Payments_Payment_Method_Messaging_Element {
 
 		$enabled_upe_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
 		// Filter non BNPL out of the list of payment methods.
-		$bnpl_payment_methods = array_intersect( $enabled_upe_payment_methods, [ Payment_Method::AFFIRM, Payment_Method::AFTERPAY ] );
+		$bnpl_payment_methods = array_intersect( $enabled_upe_payment_methods, Payment_Method::BNPL_PAYMENT_METHODS );
 
 		// register the script.
 		WC_Payments::register_script_with_dependencies( 'WCPAY_PRODUCT_DETAILS', 'dist/product-details', [ 'stripe' ] );
