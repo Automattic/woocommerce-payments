@@ -44,13 +44,13 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays base 
     >
       <span>
         <a
-          href="https://woocommerce.com/document/payments/faq/fees/#united-states"
+          href="https://woocommerce.com/document/woocommerce-payments/fees-and-debits/fees/#united-states"
           rel="noreferrer"
           target="_blank"
         >
           Learn more
         </a>
-         about WooCommerce Payments Fees in your country
+         about WooPayments Fees in your country
       </span>
     </div>
   </div>
@@ -101,13 +101,13 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays base 
     >
       <span>
         <a
-          href="https://woocommerce.com/document/payments/faq/fees/#united-states"
+          href="https://woocommerce.com/document/woocommerce-payments/fees-and-debits/fees/#united-states"
           rel="noreferrer"
           target="_blank"
         >
           Learn more
         </a>
-         about WooCommerce Payments Fees in your country
+         about WooPayments Fees in your country
       </span>
     </div>
   </div>
@@ -158,13 +158,13 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays custo
     >
       <span>
         <a
-          href="https://woocommerce.com/document/payments/faq/fees/#united-states"
+          href="https://woocommerce.com/document/woocommerce-payments/fees-and-debits/fees/#united-states"
           rel="noreferrer"
           target="_blank"
         >
           Learn more
         </a>
-         about WooCommerce Payments Fees in your country
+         about WooPayments Fees in your country
       </span>
     </div>
   </div>

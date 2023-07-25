@@ -30,6 +30,8 @@ import {
 	getTerms,
 	getPaymentIntentFromSession,
 	getSelectedUPEGatewayPaymentMethod,
+	getBillingDetails,
+	getShippingDetails,
 	getUpeSettings,
 	isUsingSavedPaymentMethod,
 } from '../utils/upe';
@@ -109,56 +111,6 @@ jQuery( function ( $ ) {
 	 */
 	const unblockUI = ( $form ) => {
 		$form.removeClass( 'processing' ).unblock();
-	};
-
-	/**
-	 * Converts form fields object into Stripe `shipping` object.
-	 *
-	 * @param {Object} fields Object mapping checkout shipping fields to values.
-	 * @return {Object} Stripe formatted `shipping` object.
-	 */
-	const getShippingDetails = ( fields ) => {
-		return {
-			name:
-				`${ fields.billing_first_name } ${ fields.billing_last_name }`.trim() ||
-				'-',
-			phone: fields.billing_phone || '-',
-			address: {
-				country: fields.billing_country || '-',
-				line1: fields.billing_address_1 || '-',
-				line2: fields.billing_address_2 || '-',
-				city: fields.billing_city || '-',
-				state: fields.billing_state || '-',
-				postal_code: fields.billing_postcode || '-',
-			},
-		};
-	};
-
-	/**
-	 * Converts form fields object into Stripe `billing_details` object.
-	 *
-	 * @param {Object} fields Object mapping checkout billing fields to values.
-	 * @return {Object} Stripe formatted `billing_details` object.
-	 */
-	const getBillingDetails = ( fields ) => {
-		return {
-			name:
-				`${ fields.billing_first_name } ${ fields.billing_last_name }`.trim() ||
-				'-',
-			email:
-				'string' === typeof fields.billing_email
-					? fields.billing_email.trim()
-					: '-',
-			phone: fields.billing_phone || '-',
-			address: {
-				country: fields.billing_country || '-',
-				line1: fields.billing_address_1 || '-',
-				line2: fields.billing_address_2 || '-',
-				city: fields.billing_city || '-',
-				state: fields.billing_state || '-',
-				postal_code: fields.billing_postcode || '-',
-			},
-		};
 	};
 
 	/**
@@ -710,7 +662,7 @@ jQuery( function ( $ ) {
 		return clientSecret ? clientSecret : null;
 	}
 
-	// Handle the checkout form when WooCommerce Payments is chosen.
+	// Handle the checkout form when WooPayments is chosen.
 	const wcpayPaymentMethods = [
 		PAYMENT_METHOD_NAME_BANCONTACT,
 		PAYMENT_METHOD_NAME_BECS,
@@ -741,7 +693,7 @@ jQuery( function ( $ ) {
 		appendFingerprintInputToForm( $( this ), fingerprint );
 	} );
 
-	// Handle the add payment method form for WooCommerce Payments.
+	// Handle the add payment method form for WooPayments.
 	$( 'form#add_payment_method' ).on( 'submit', function () {
 		// Skip adding legacy cards as UPE payment methods.
 		if (
@@ -764,7 +716,7 @@ jQuery( function ( $ ) {
 		}
 	} );
 
-	// Handle the Pay for Order form if WooCommerce Payments is chosen.
+	// Handle the Pay for Order form if WooPayments is chosen.
 	$( '#order_review' ).on( 'submit', () => {
 		const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
 		if (

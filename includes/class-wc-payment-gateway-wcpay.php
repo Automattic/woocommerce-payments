@@ -24,6 +24,8 @@ use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
 use WCPay\Core\Server\Request\Create_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
+use WCPay\Core\Server\Request;
+use WCPay\Core\Server\Request\Get_Setup_Intention;
 use WCPay\Core\Server\Request\List_Charge_Refunds;
 use WCPay\Core\Server\Request\Refund_Charge;
 use WCPay\Core\Server\Request\Update_Intention;
@@ -40,7 +42,7 @@ use WCPay\Session_Rate_Limiter;
 use WCPay\Tracker;
 
 /**
- * Gateway class for WooCommerce Payments
+ * Gateway class for WooPayments
  */
 class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
@@ -204,13 +206,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->id                 = static::GATEWAY_ID;
 		$this->icon               = plugins_url( 'assets/images/payment-methods/cc.svg', WCPAY_PLUGIN_FILE );
 		$this->has_fields         = true;
-		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
+		$this->method_title       = 'WooPayments';
 		$this->method_description = WC_Payments_Utils::esc_interpolated_html(
-			/* translators: tosLink: Link to terms of service page, privacyLink: Link to privacy policy page */
-			__(
-				'WooCommerce Payments gives your store flexibility to accept credit cards, debit cards, and Apple Pay. Enable popular local payment methods and other digital wallets like Google Pay to give customers even more choice.<br/><br/>
-			By using WooCommerce Payments you agree to be bound by our <tosLink>Terms of Service</tosLink>  and acknowledge that you have read our <privacyLink>Privacy Policy</privacyLink>',
-				'woocommerce-payments'
+			sprintf(
+				/* translators: %1$s: WooPayments, tosLink: Link to terms of service page, privacyLink: Link to privacy policy page */
+				__(
+					'%1$s gives your store flexibility to accept credit cards, debit cards, and Apple Pay. Enable popular local payment methods and other digital wallets like Google Pay to give customers even more choice.<br/><br/>
+			By using %1$s you agree to be bound by our <tosLink>Terms of Service</tosLink>  and acknowledge that you have read our <privacyLink>Privacy Policy</privacyLink>',
+					'woocommerce-payments'
+				),
+				'WooPayments'
 			),
 			[
 				'br'          => '<br/>',
@@ -229,7 +234,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->form_fields = [
 			'enabled'                          => [
 				'title'       => __( 'Enable/disable', 'woocommerce-payments' ),
-				'label'       => __( 'Enable WooCommerce Payments', 'woocommerce-payments' ),
+				'label'       => sprintf(
+					/* translators: %s: WooPayments */
+					__( 'Enable %s', 'woocommerce-payments' ),
+					'WooPayments'
+				),
 				'type'        => 'checkbox',
 				'description' => '',
 				'default'     => 'no',
@@ -239,7 +248,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'title'       => __( 'Customer bank statement', 'woocommerce-payments' ),
 				'description' => WC_Payments_Utils::esc_interpolated_html(
 					__( 'Edit the way your store name appears on your customers’ bank statements (read more about requirements <a>here</a>).', 'woocommerce-payments' ),
-					[ 'a' => '<a href="https://woocommerce.com/document/payments/bank-statement-descriptor/" target="_blank" rel="noopener noreferrer">' ]
+					[ 'a' => '<a href="https://woocommerce.com/document/woocommerce-payments/customization-and-translation/bank-statement-descriptor/" target="_blank" rel="noopener noreferrer">' ]
 				),
 			],
 			'manual_capture'                   => [
@@ -608,7 +617,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Admin Panel Options.
 	 */
 	public function admin_options() {
-		// Add notices to the WooCommerce Payments settings page.
+		// Add notices to the WooPayments settings page.
 		do_action( 'woocommerce_woocommerce_payments_admin_notices' );
 
 		$this->output_payments_settings_screen();
@@ -663,7 +672,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if (
 			WC_Payments_Features::is_woopay_eligible() &&
 			'yes' === $this->get_option( 'platform_checkout', 'no' ) &&
-			! ( WC_Payments_Features::is_upe_legacy_enabled() && ! WC_Payments_Features::is_upe_split_enabled() && ! WC_Payments_Features::is_upe_deferred_intent_enabled() ) &&
+			! $this->is_upe_incompatible_with_woopay() &&
 			( is_checkout() || has_block( 'woocommerce/checkout' ) ) &&
 			! is_wc_endpoint_url( 'order-pay' ) &&
 			WC()->cart instanceof WC_Cart &&
@@ -674,6 +683,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return false;
+	}
+
+	/**
+	 * The legacy UPE is incompatible with WooPay, whereas split UPE and deferred intent UPE are compatible.
+	 * This method checks if there's incompatibility between WooPay and currently enabled UPE settings, applying the rule above.
+	 *
+	 * $return bool - true if UPE is incompatible with WooPay, false otherwise.
+	 */
+	private function is_upe_incompatible_with_woopay() {
+		return WC_Payments_Features::is_upe_legacy_enabled() && ! ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() );
 	}
 
 	/**
@@ -855,7 +874,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	protected function prepare_payment_information( $order ) {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$payment_information = Payment_Information::from_payment_request( $_POST, $order, Payment_Type::SINGLE(), Payment_Initiated_By::CUSTOMER(), $this->get_capture_type() );
+		$payment_information = Payment_Information::from_payment_request( $_POST, $order, Payment_Type::SINGLE(), Payment_Initiated_By::CUSTOMER(), $this->get_capture_type(), $this->get_payment_method_to_use_for_intent() );
 		$payment_information = $this->maybe_prepare_subscription_payment_information( $payment_information, $order->get_id() );
 
 		if ( ! empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-payment-method' ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -1062,16 +1081,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
 			}
 
-			$upe_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
-
-			if ( ! empty( $upe_payment_method ) && 'woocommerce_payments' !== $upe_payment_method ) {
-				$payment_methods = [ str_replace( 'woocommerce_payments_', '', $upe_payment_method ) ];
-			} elseif ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
-				$payment_methods = [ 'card' ];
-			} else {
-				$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
-			}
-
+			$payment_methods = $this->get_payment_methods_from_request();
 			// The sanitize_user call here is deliberate: it seems the most appropriate sanitization function
 			// for a string that will only contain latin alphanumeric characters and underscores.
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -1108,11 +1118,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_payment_methods( $payment_methods );
 				$request->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
 
-				// Afterpay expects the shipping address to be sent in the request. This is not required for other payment methods.
-				if ( Payment_Method::AFTERPAY === $payment_information->get_payment_method() ) {
-					$request->set_shipping( $this->get_shipping_data_from_order( $order ) );
-				}
-
 				// The below if-statement ensures the support for UPE payment methods.
 				if ( $this->upe_needs_redirection( $payment_methods ) ) {
 					$request->set_return_url(
@@ -1143,6 +1148,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					}
 				}
 
+				/** @var WC_Payments_API_Payment_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 				$intent = $request->send( 'wcpay_create_and_confirm_intent_request', $payment_information );
 			}
 
@@ -1172,9 +1178,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			if ( ! empty( $woopay_intent_id ) ) {
 				// If the setup intent is included in the request use that intent.
-				$intent = $this->payments_api_client->get_setup_intent( $woopay_intent_id );
+				$setup_intent_request = Get_Setup_Intention::create( $woopay_intent_id );
+				/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+				$intent = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
 
-				$intent_meta_order_id_raw = ! empty( $intent['metadata'] ) ? $intent['metadata']['order_id'] ?? '' : '';
+				$intent_metadata          = $intent->get_metadata();
+				$intent_meta_order_id_raw = $intent_metadata['order_id'] ?? '';
 				$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
 
 				if ( $intent_meta_order_id !== $order_id ) {
@@ -1205,17 +1214,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_customer( $customer_id );
 				$request->set_payment_method( $payment_information->get_payment_method() );
 				$request->set_metadata( $metadata );
+				/** @var WC_Payments_API_Setup_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 				$intent = $request->send( 'wcpay_create_and_confirm_setup_intention_request', $payment_information, false, $save_user_in_woopay );
-				$intent = $intent->to_array();
 			}
 
-			$intent_id     = $intent['id'];
-			$status        = $intent['status'];
+			$intent_id     = $intent->get_id();
+			$status        = $intent->get_status();
 			$charge_id     = '';
 			$charge        = null;
-			$client_secret = $intent['client_secret'];
+			$client_secret = $intent->get_client_secret();
 			$currency      = $order->get_currency();
-			$next_action   = $intent['next_action'];
+			$next_action   = $intent->get_next_action();
 			$processing    = [];
 		}
 
@@ -1228,10 +1237,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				try {
 					$token = null;
 
-					// Setup intents are currently not deserialized as payment intents are, so check if it's an array first.
 					// For WooPay checkouts, we may provide a platform payment method from `$payment_information`, but we need
 					// to return a connected payment method. So we should always retrieve the payment method from the intent.
-					$payment_method_id = is_array( $intent ) ? $intent['payment_method'] : $intent->get_payment_method_id();
+					$payment_method_id = $intent->get_payment_method_id();
 
 					// Handle orders that are paid via WooPay and contain subscriptions.
 					if ( $order->get_meta( 'is_woopay' ) && function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order ) ) {
@@ -1324,8 +1332,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 		} else {
 			$payment_method_details = false;
-			$payment_method_options = isset( $intent['payment_method_options'] ) ? array_keys( $intent['payment_method_options'] ) : null;
-			$payment_method_type    = $payment_method_options ? $payment_method_options[0] : null;
+			$payment_method_type    = $intent->get_payment_method_type();
 		}
 
 		if ( empty( $_POST['payment_request_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
@@ -1336,6 +1343,38 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'result'   => 'success',
 			'redirect' => $this->get_return_url( $order ),
 		];
+	}
+
+	/**
+	 * Get the payment method chosen by the customer for the payment processing.
+	 * This payment method is needed in case of the deferred intent creation flow only, because this is the only time when the current gateway might process payments other than of the card type.
+	 * Payment method is only one in case of the deferred intent creation flow, hence the first element of the array is returned.
+	 *
+	 * @return string|null Payment method to use for the intent.
+	 */
+	public function get_payment_method_to_use_for_intent() {
+		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+			return $this->get_payment_methods_from_request()[0];
+		}
+	}
+
+	/**
+	 * Get the payment methods used in the request.
+	 *
+	 * @return array List of payment methods.
+	 */
+	private function get_payment_methods_from_request() {
+		$upe_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+
+		if ( ! empty( $upe_payment_method ) && 'woocommerce_payments' !== $upe_payment_method ) {
+			$payment_methods = [ str_replace( 'woocommerce_payments_', '', $upe_payment_method ) ];
+		} elseif ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+			$payment_methods = [ 'card' ];
+		} else {
+			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
+		}
+
+		return $payment_methods;
 	}
 
 	/**
@@ -1562,25 +1601,27 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( empty( $reason ) ) {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the successfully charged amount, %2: refund id */
-					__( 'A refund of %1$s was successfully processed using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+					/* translators: %1: the successfully charged amount, %2: WooPayments, %3: refund id */
+					__( 'A refund of %1$s was successfully processed using %2$s (<code>%3$s</code>).', 'woocommerce-payments' ),
 					[
 						'code' => '<code>',
 					]
 				),
 				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
+				'WooPayments',
 				$refund['id']
 			);
 		} else {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the successfully charged amount, %2: refund id, %3: reason */
-					__( 'A refund of %1$s was successfully processed using WooCommerce Payments. Reason: %2$s. (<code>%3$s</code>)', 'woocommerce-payments' ),
+					/* translators: %1: the successfully charged amount, %2: WooPayments, %3: reason, %4: refund id */
+					__( 'A refund of %1$s was successfully processed using %2$s. Reason: %3$s. (<code>%4$s</code>)', 'woocommerce-payments' ),
 					[
 						'code' => '<code>',
 					]
 				),
 				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
+				'WooPayments',
 				$reason,
 				$refund['id']
 			);
@@ -1839,6 +1880,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			Logger::error( 'Failed to get account statement descriptor.' . $e );
 		}
 		return $empty_value;
+	}
+
+
+	/**
+	 * Gets account default currency.
+	 *
+	 * @return string Currency code.
+	 */
+	public function get_account_default_currency(): string {
+		return $this->account->get_account_default_currency();
 	}
 
 	/**
@@ -2673,8 +2724,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$this->order_service->attach_transaction_fee_to_order( $order, $charge );
 			} else {
 				// For $0 orders, fetch the Setup Intent instead.
-				$intent    = $this->payments_api_client->get_setup_intent( $intent_id );
-				$status    = $intent['status'];
+				$setup_intent_request = Get_Setup_Intention::create( $intent_id );
+				/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+				$intent    = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
+				$status    = $intent->get_status();
 				$charge_id = '';
 			}
 
@@ -2758,7 +2811,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
 			if ( ! isset( $_POST['wcpay-setup-intent'] ) ) {
 				throw new Add_Payment_Method_Exception(
-					__( 'A WooCommerce Payments payment method was not provided', 'woocommerce-payments' ),
+					sprintf(
+						/* translators: %s: WooPayments */
+						__( 'A %s payment method was not provided', 'woocommerce-payments' ),
+						'WooPayments'
+					),
 					'payment_method_intent_not_provided'
 				);
 			}
@@ -2775,16 +2832,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			$setup_intent = $this->payments_api_client->get_setup_intent( $setup_intent_id );
+			$setup_intent_request = Get_Setup_Intention::create( $setup_intent_id );
+			/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+			$setup_intent = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
 
-			if ( Payment_Intent_Status::SUCCEEDED !== $setup_intent['status'] ) {
+			if ( Payment_Intent_Status::SUCCEEDED !== $setup_intent->get_status() ) {
 				throw new Add_Payment_Method_Exception(
 					__( 'Failed to add the provided payment method. Please try again later', 'woocommerce-payments' ),
 					'invalid_response_status'
 				);
 			}
 
-			$payment_method = $setup_intent['payment_method'];
+			$payment_method = $setup_intent->get_payment_method_id();
 			$this->token_service->add_payment_method_to_user( $payment_method, wp_get_current_user() );
 
 			return [
@@ -2896,14 +2955,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Create a setup intent when adding cards using the my account page.
 	 *
-	 * @return mixed|\WCPay\Core\Server\Response
+	 * @return WC_Payments_API_Setup_Intention
+	 *
 	 * @throws API_Exception
 	 * @throws \WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception
 	 * @throws \WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception
 	 * @throws \WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception
 	 */
 	public function create_and_confirm_setup_intent() {
-		$payment_information             = Payment_Information::from_payment_request( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification
+		$payment_information             = Payment_Information::from_payment_request( $_POST, null, null, null, null, $this->get_payment_method_to_use_for_intent() ); // phpcs:ignore WordPress.Security.NonceVerification
 		$should_save_in_platform_account = false;
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -2940,14 +3000,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			$setup_intent = $this->create_and_confirm_setup_intent();
-			$setup_intent = $setup_intent->to_array(); // No longer working with a server response object.
+			$setup_intent        = $this->create_and_confirm_setup_intent();
+			$setup_intent_output = [
+				'id'            => $setup_intent->get_id(),
+				'status'        => $setup_intent->get_status(),
+				'client_secret' => WC_Payments_Utils::encrypt_client_secret(
+					$this->account->get_stripe_account_id(),
+					$setup_intent->get_client_secret()
+				),
+			];
 
-			if ( $setup_intent['client_secret'] ) {
-				$setup_intent['client_secret'] = WC_Payments_Utils::encrypt_client_secret( $this->account->get_stripe_account_id(), $setup_intent['client_secret'] );
-			}
-
-			wp_send_json_success( $setup_intent, 200 );
+			wp_send_json_success( $setup_intent_output, 200 );
 		} catch ( Exception $e ) {
 			// Send back error so it can be displayed to the customer.
 			wp_send_json_error(
@@ -3288,7 +3351,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Whether the current page is the WooCommerce Payments settings page.
+	 * Whether the current page is the WooPayments settings page.
 	 *
 	 * @deprecated 5.0.0
 	 *

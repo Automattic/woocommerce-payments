@@ -33,9 +33,12 @@ describe( 'useValidation', () => {
 	} );
 
 	it( 'uses a generic string for a non existing error', () => {
-		const { result } = renderHook( () => useValidation( 'country' ), {
-			wrapper: OnboardingContextProvider,
-		} );
+		const { result } = renderHook(
+			() => useValidation( 'annual_revenue' ),
+			{
+				wrapper: OnboardingContextProvider,
+			}
+		);
 
 		act( () => result.current.validate() );
 

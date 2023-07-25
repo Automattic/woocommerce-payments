@@ -35,7 +35,7 @@ function _manually_load_plugin() {
 	// needs to still make sure that all dependencies exist for it to successfully run.
 	define( 'WCPAY_TEST_ENV', true );
 
-	// Load the WooCommerce plugin so we can use its classes in our WooCommerce Payments plugin.
+	// Load the WooCommerce plugin so we can use its classes in our WooPayments plugin.
 	require_once WP_PLUGIN_DIR . '/woocommerce/woocommerce.php';
 
 	// Set a default currency to be used for the multi-currency tests because the default
@@ -57,7 +57,9 @@ function _manually_load_plugin() {
 
 	require_once $_plugin_dir . 'includes/class-wc-payments-db.php';
 	require_once $_plugin_dir . 'includes/wc-payment-api/models/class-wc-payments-api-charge.php';
-	require_once $_plugin_dir . 'includes/wc-payment-api/models/class-wc-payments-api-intention.php';
+	require_once $_plugin_dir . 'includes/wc-payment-api/models/class-wc-payments-api-abstract-intention.php';
+	require_once $_plugin_dir . 'includes/wc-payment-api/models/class-wc-payments-api-payment-intention.php';
+	require_once $_plugin_dir . 'includes/wc-payment-api/models/class-wc-payments-api-setup-intention.php';
 	require_once $_plugin_dir . 'includes/wc-payment-api/class-wc-payments-api-client.php';
 	require_once $_plugin_dir . 'includes/wc-payment-api/class-wc-payments-http-interface.php';
 	require_once $_plugin_dir . 'includes/wc-payment-api/class-wc-payments-http.php';
