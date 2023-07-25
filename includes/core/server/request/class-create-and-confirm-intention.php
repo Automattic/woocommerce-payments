@@ -110,7 +110,7 @@ class Create_And_Confirm_Intention extends Create_Intention {
 	}
 
 	/**
-	* Statement descriptor setter.
+	 * Statement descriptor setter.
 	 *
 	 * @param string $statement_descriptor The statement descriptor for this payment method (Optional).
 	 * @return void

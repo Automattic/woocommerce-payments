@@ -131,7 +131,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'short_statement_descriptor'          => [
+					'short_statement_descriptor'        => [
 						'description'       => __( 'We\'ll use the short version in combination with the customer order number.', 'woocommerce-payments' ),
 						'type'              => 'string',
 						'validate_callback' => [ $this, 'validate_short_statement_descriptor' ],
