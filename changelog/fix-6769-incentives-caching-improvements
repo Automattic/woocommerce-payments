@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-Add incentive cache invalidation based on store context hash.

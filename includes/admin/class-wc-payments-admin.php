@@ -7,6 +7,7 @@
 
 use Automattic\Jetpack\Identity_Crisis as Jetpack_Identity_Crisis;
 use Automattic\WooCommerce\Admin\PageController;
+use WCPay\Core\Server\Request;
 use WCPay\Database_Cache;
 use WCPay\Logger;
 
@@ -357,7 +358,7 @@ class WC_Payments_Admin {
 		}
 
 		if ( ! $should_render_full_menu ) {
-			if ( WC_Payments_Utils::is_in_progressive_onboarding_treatment_mode() || WC_Payments_Features::is_progressive_onboarding_enabled() ) {
+			if ( WC_Payments_Utils::should_use_progressive_onboarding_flow() ) {
 				wc_admin_register_page(
 					[
 						'id'         => 'wc-payments-onboarding',
@@ -812,6 +813,9 @@ class WC_Payments_Admin {
 			'fraudProtection'             => [
 				'isWelcomeTourDismissed' => WC_Payments_Features::is_fraud_protection_welcome_tour_dismissed(),
 			],
+			'progressiveOnboarding'       => [
+				'isNewFlowEnabled' => WC_Payments_Utils::should_use_progressive_onboarding_flow(),
+			],
 			'accountDefaultCurrency'      => $this->account->get_account_default_currency(),
 			'frtDiscoverBannerSettings'   => get_option( 'wcpay_frt_discover_banner_settings', '' ),
 			'storeCurrency'               => get_option( 'woocommerce_currency' ),
@@ -1172,9 +1176,14 @@ class WC_Payments_Admin {
 	 * @return int The number of disputes which need a response.
 	 */
 	private function get_disputes_awaiting_response_count() {
+		$send_callback = function() {
+			$request = Request::get( WC_Payments_API_Client::DISPUTES_API . '/status_counts' );
+			return $request->send( 'wcpay_get_dispute_status_counts' );
+		};
+
 		$disputes_status_counts = $this->database_cache->get_or_add(
 			Database_Cache::DISPUTE_STATUS_COUNTS_KEY,
-			[ $this->payments_api_client, 'get_dispute_status_counts' ],
+			$send_callback,
 			// We'll consider all array values to be valid as the cache is only invalidated when it is deleted or it expires.
 			'is_array'
 		);
@@ -1196,9 +1205,13 @@ class WC_Payments_Admin {
 		$test_mode = WC_Payments::mode()->is_test();
 		$cache_key = $test_mode ? DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE : DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY;
 
+		$send_callback         = function() {
+			$request = Request::get( WC_Payments_API_Client::AUTHORIZATIONS_API . '/summary' );
+			return $request->send( 'wc_pay_get_authorizations_summary' );
+		};
 		$authorization_summary = $this->database_cache->get_or_add(
 			$cache_key,
-			[ $this->payments_api_client, 'get_authorizations_summary' ],
+			$send_callback,
 			// We'll consider all array values to be valid as the cache is only invalidated when it is deleted or it expires.
 			'is_array'
 		);
