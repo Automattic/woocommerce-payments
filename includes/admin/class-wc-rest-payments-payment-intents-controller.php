@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
-use WCPay\Core\Server\Request\Create_Intention;
+use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Logger;
 
 defined( 'ABSPATH' ) || exit;
@@ -47,6 +47,17 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 	}
 
 	/**
+	 * WC_REST_Payments_Payment_Intents_Controller constructor.
+	 *
+	 * @param WC_Payments_API_Client   $api_client       WooCommerce Payments API client.
+	 * @param WC_Payment_Gateway_WCPay $gateway          WooCommerce Payments payment gateway.
+	 */
+	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $gateway ) {
+		parent::__construct( $api_client );
+		$this->gateway = $gateway;
+	}
+
+	/**
 	 * Retrieve charge to respond with via API.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
@@ -68,14 +79,15 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 			$order_id = $metadata['order_number'];
 			$order    = wc_get_order( $order_id );
 
-			$wcpay_server_request = Create_Intention::create();
+			$wcpay_server_request = Create_And_Confirm_Intention::create();
 			$currency             = strtolower( $order->get_currency() );
 			$amount               = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
 			$wcpay_server_request->set_currency_code( $currency );
 			$wcpay_server_request->set_amount( $amount );
 			$wcpay_server_request->set_metadata( $metadata );
 			$wcpay_server_request->set_customer( $request->get_param( 'customer' ) );
-			$wcpay_server_request->set_level3( $request->get_param( 'level3' ) );
+			$wcpay_server_request->set_level3( $this->gateway->get_level3_data_from_order( $order ) );
+			$wcpay_server_request->set_payment_method( $request->get_param( 'payment_method' ) );
 			$wcpay_server_request->set_payment_method_types( $request->get_param( 'payment_method_types' ) );
 			$wcpay_server_request->set_capture_method( WC_Payments::get_gateway()->get_option( 'manual_capture' ) && ( 'yes' === WC_Payments::get_gateway()->get_option( 'manual_capture' ) ) );
 

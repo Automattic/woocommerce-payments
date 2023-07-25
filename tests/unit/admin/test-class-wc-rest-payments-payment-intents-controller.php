@@ -6,7 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
-use WCPay\Core\Server\Request\Create_Intention;
+use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Exceptions\API_Exception;
 
 /**
@@ -26,10 +26,17 @@ class WC_REST_Payments_Payment_Intents_Controller_Test extends WCPAY_UnitTestCas
 	 */
 	private $mock_api_client;
 
+
+	/**
+	 * @var WC_Payment_Gateway_WCPay|MockObject
+	 */
+	private $mock_gateway;
+
 	public function set_up() {
 		parent::set_up();
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
-		$this->controller      = new WC_REST_Payments_Payment_Intents_Controller( $this->mock_api_client );
+		$this->mock_gateway    = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$this->controller      = new WC_REST_Payments_Payment_Intents_Controller( $this->mock_api_client, $this->mock_gateway );
 	}
 
 	public function test_create_payment_intent_success() {
@@ -42,12 +49,13 @@ class WC_REST_Payments_Payment_Intents_Controller_Test extends WCPAY_UnitTestCas
 					'order_number' => $current_order_id,
 				],
 				'customer'             => 'cus_123',
+				'payment_method'       => 'pm_123',
 				'payment_method_types' => [ 'card' ],
 			]
 		);
 
 		$mock_intent = WC_Helper_Intention::create_intention();
-		$this->mock_wcpay_request( Create_Intention::class )
+		$this->mock_wcpay_request( Create_And_Confirm_Intention::class )
 			->expects( $this->once() )
 			->method( 'format_response' )
 			->with()
@@ -68,6 +76,7 @@ class WC_REST_Payments_Payment_Intents_Controller_Test extends WCPAY_UnitTestCas
 					'order_number' => 'no_such_order',
 				],
 				'customer'             => 'cus_123',
+				'payment_method'       => 'pm_123',
 				'payment_method_types' => [ 'card' ],
 			]
 		);
@@ -109,11 +118,12 @@ class WC_REST_Payments_Payment_Intents_Controller_Test extends WCPAY_UnitTestCas
 					'order_number' => $current_order_id,
 				],
 				'customer'             => 'cus_123',
+				'payment_method'       => 'pm_123',
 				'payment_method_types' => [ 'card' ],
 			]
 		);
 
-		$wcpay_request = $this->mock_wcpay_request( Create_Intention::class );
+		$wcpay_request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
 		$wcpay_request->expects( $this->once() )
 			->method( 'format_response' )
 			->will(
