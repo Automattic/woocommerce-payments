@@ -9,7 +9,6 @@ namespace WCPay\Payment_Methods;
 
 use Exception;
 use WC_Payments_API_Setup_Intention;
-use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Request\Get_Setup_Intention;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
@@ -25,7 +24,7 @@ use WC_Payment_Token_CC;
 use WC_Payments_Token_Service;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Utils;
-use WC_Payments_Features;
+use WCPay\Constants\Payment_Method;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WP_User;
 
