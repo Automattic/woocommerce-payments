@@ -12,7 +12,7 @@ import PAYMENT_METHOD_IDS from 'wcpay/payment-methods/constants';
  * @param {string|null}   paymentIntentSecret Payment Intent Secret used to validate payment on rate limit error.
  * @param {Object}   elements       Reference to the UPE elements mounted on the page.
  * @param {Object}   billingData    An object containing the customer's billing data.
- * @param {Object}   shippingAddress    An object containing the customer's shipping address, needed for Afterpay.
+ * @param {Object}   shippingData    An object containing the customer's shipping data, needed for Afterpay.
  * @param {Object}   emitResponse   Various helpers for usage with observer response objects.
  * @param {string}   selectedUPEPaymentType   The selected UPE payment type.
  * @return {Object}                An object, which contains the result from the action.
@@ -24,7 +24,7 @@ export default async function confirmUPEPayment(
 	paymentIntentSecret,
 	elements,
 	billingData,
-	shippingAddress,
+	shippingData,
 	emitResponse,
 	selectedUPEPaymentType
 ) {
@@ -58,16 +58,16 @@ export default async function confirmUPEPayment(
 		if ( PAYMENT_METHOD_IDS.AFTERPAY_CLEARPAY === selectedUPEPaymentType ) {
 			confirmParams.shipping = {
 				name:
-					`${ shippingAddress.first_name } ${ shippingAddress.last_name }`.trim() ||
+					`${ shippingData.first_name } ${ shippingData.last_name }`.trim() ||
 					'-',
-				phone: shippingAddress.phone || '-',
+				phone: shippingData.phone || '-',
 				address: {
-					country: shippingAddress.country || '_',
-					postal_code: shippingAddress.postcode || '-',
-					state: shippingAddress.state || '-',
-					city: shippingAddress.city || '-',
-					line1: shippingAddress.address_1 || '-',
-					line2: shippingAddress.address_2 || '-',
+					country: shippingData.country || '_',
+					postal_code: shippingData.postcode || '-',
+					state: shippingData.state || '-',
+					city: shippingData.city || '-',
+					line1: shippingData.address_1 || '-',
+					line2: shippingData.address_2 || '-',
 				},
 			};
 		}
