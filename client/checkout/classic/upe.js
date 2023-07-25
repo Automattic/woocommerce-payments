@@ -12,6 +12,8 @@ import './style.scss';
 import {
 	PAYMENT_METHOD_NAME_CARD,
 	PAYMENT_METHOD_NAME_UPE,
+	SHORTCODE_SHIPPING_ADDRESS_FIELDS,
+	SHORTCODE_BILLING_ADDRESS_FIELDS,
 } from '../constants';
 import { getConfig, getCustomGatewayTitle } from 'utils/checkout';
 import WCPayAPI from '../api';
@@ -34,10 +36,6 @@ import {
 	appendFingerprintInputToForm,
 } from '../utils/fingerprint';
 import PAYMENT_METHOD_IDS from 'wcpay/payment-methods/constants';
-import {
-	SHORTCODE_SHIPPING_ADDRESS_FIELDS,
-	SHORTCODE_BILLING_ADDRESS_FIELDS,
-} from '../../constants';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );

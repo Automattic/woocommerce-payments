@@ -21,6 +21,8 @@ import {
 	PAYMENT_METHOD_NAME_SOFORT,
 	PAYMENT_METHOD_NAME_AFFIRM,
 	PAYMENT_METHOD_NAME_AFTERPAY,
+	SHORTCODE_SHIPPING_ADDRESS_FIELDS,
+	SHORTCODE_BILLING_ADDRESS_FIELDS,
 } from '../constants';
 import { getUPEConfig } from 'utils/checkout';
 import WCPayAPI from '../api';
@@ -45,10 +47,6 @@ import {
 	appendFingerprintInputToForm,
 } from '../utils/fingerprint';
 import PAYMENT_METHOD_IDS from 'wcpay/payment-methods/constants';
-import {
-	SHORTCODE_SHIPPING_ADDRESS_FIELDS,
-	SHORTCODE_BILLING_ADDRESS_FIELDS,
-} from '../../constants';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
