@@ -1,6 +1,7 @@
 *** WooPayments Changelog ***
 
 = 6.2.1 - 2023-07-25 =
+* Fix - Move the email title hook from the UPE class to the parent legacy gateway class, to avoid multiple callback invocations for the split UPE
 
 = 6.2.0 - 2023-07-19 =
 * Add - Add Android option in Device type advanced filter
