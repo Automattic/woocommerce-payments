@@ -82,16 +82,27 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 	 */
 	public function post_payment_intent( $request ) {
 		try {
-			$metadata = $request->get_param( 'metadata' );
-			$order_id = $metadata['order_number'];
+
+			$order_id = $request->get_param( 'order_id' );
 			$order    = wc_get_order( $order_id );
+			$currency = strtolower( $order->get_currency() );
+			$amount   = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
+			$name     = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
+			$email    = sanitize_email( $order->get_billing_email() );
+			$metadata = [
+				'customer_name'  => $name,
+				'customer_email' => $email,
+				'site_url'       => esc_url( get_site_url() ),
+				'order_id'       => $order->get_id(),
+				'order_number'   => $order->get_order_number(),
+				'order_key'      => $order->get_order_key(),
+				'payment_type'   => $request->get_param( 'payment_type' ),
+			];
 
 			$wcpay_server_request = Create_And_Confirm_Intention::create();
-			$currency             = strtolower( $order->get_currency() );
-			$amount               = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
 			$wcpay_server_request->set_currency_code( $currency );
 			$wcpay_server_request->set_amount( $amount );
-			$wcpay_server_request->set_metadata( $this->gateway->get_metadata_from_order( $order ) );
+			$wcpay_server_request->set_metadata( $metadata );
 			$wcpay_server_request->set_customer( $request->get_param( 'customer' ) );
 			$wcpay_server_request->set_level3( $this->gateway->get_level3_data_from_order( $order ) );
 			$wcpay_server_request->set_payment_method( $request->get_param( 'payment_method' ) );

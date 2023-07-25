@@ -45,9 +45,7 @@ class WC_REST_Payments_Payment_Intents_Controller_Test extends WCPAY_UnitTestCas
 		$request          = new WP_REST_Request( 'POST' );
 		$request->set_body_params(
 			[
-				'metadata'             => [
-					'order_number' => $current_order_id,
-				],
+				'order_id'             => $current_order_id,
 				'customer'             => 'cus_123',
 				'payment_method'       => 'pm_123',
 				'payment_method_types' => [ 'card' ],
@@ -72,9 +70,7 @@ class WC_REST_Payments_Payment_Intents_Controller_Test extends WCPAY_UnitTestCas
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_body_params(
 			[
-				'metadata'             => [
-					'order_number' => 'no_such_order',
-				],
+				'order_id'             => 'no_such_order',
 				'customer'             => 'cus_123',
 				'payment_method'       => 'pm_123',
 				'payment_method_types' => [ 'card' ],
@@ -95,9 +91,7 @@ class WC_REST_Payments_Payment_Intents_Controller_Test extends WCPAY_UnitTestCas
 		$request          = new WP_REST_Request( 'POST' );
 		$request->set_body_params(
 			[
-				'metadata' => [
-					'order_number' => $current_order_id,
-				],
+				'order_id' => $current_order_id,
 			]
 		);
 
@@ -114,9 +108,7 @@ class WC_REST_Payments_Payment_Intents_Controller_Test extends WCPAY_UnitTestCas
 		$request          = new WP_REST_Request( 'POST' );
 		$request->set_body_params(
 			[
-				'metadata'             => [
-					'order_number' => $current_order_id,
-				],
+				'order_id'             => $current_order_id,
 				'customer'             => 'cus_123',
 				'payment_method'       => 'pm_123',
 				'payment_method_types' => [ 'card' ],
