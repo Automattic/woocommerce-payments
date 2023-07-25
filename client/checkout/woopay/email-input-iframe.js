@@ -182,13 +182,36 @@ export const handleWooPayEmailInput = async (
 		// Set the initial value.
 		iframeHeaderValue = true;
 
-		iframe.contentWindow.postMessage(
-			{
-				action: 'setSessionData',
-				value: window.sessionDataWooPay,
-			},
-			getConfig( 'woopayHost' )
-		);
+		if ( window.sessionDataWooPay ) {
+			request(
+				buildAjaxURL(
+					getConfig( 'wcAjaxUrl' ),
+					'get_woopay_signature'
+				),
+				{
+					_ajax_nonce: getConfig( 'woopaySignatureNonce' ),
+				}
+			)
+				.then( ( response ) => {
+					if ( response.success ) {
+						return response.data;
+					}
+				} )
+				.then( ( data ) => {
+					if ( data.signature ) {
+						iframe.contentWindow.postMessage(
+							{
+								action: 'setSessionData',
+								value: {
+									...window.sessionDataWooPay,
+									request_signature: data.signature,
+								},
+							},
+							getConfig( 'woopayHost' )
+						);
+					}
+				} );
+		}
 
 		getWindowSize();
 		window.addEventListener( 'resize', getWindowSize );

@@ -3,6 +3,8 @@
  */
 import { __ } from '@wordpress/i18n';
 import { getConfig } from 'utils/checkout';
+import request from 'wcpay/checkout/utils/request';
+import { buildAjaxURL } from 'wcpay/payment-request/utils';
 import { getTargetElement, validateEmail } from '../utils';
 import wcpayTracks from 'tracks';
 
@@ -86,13 +88,36 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		// Set the initial value.
 		iframeHeaderValue = true;
 
-		iframe.contentWindow.postMessage(
-			{
-				action: 'setSessionData',
-				value: window.sessionDataWooPay,
-			},
-			getConfig( 'woopayHost' )
-		);
+		if ( window.sessionDataWooPay ) {
+			request(
+				buildAjaxURL(
+					getConfig( 'wcAjaxUrl' ),
+					'get_woopay_signature'
+				),
+				{
+					_ajax_nonce: getConfig( 'woopaySignatureNonce' ),
+				}
+			)
+				.then( ( response ) => {
+					if ( response.success ) {
+						return response.data;
+					}
+				} )
+				.then( ( data ) => {
+					if ( data.signature ) {
+						iframe.contentWindow.postMessage(
+							{
+								action: 'setSessionData',
+								value: {
+									...window.sessionDataWooPay,
+									request_signature: data.signature,
+								},
+							},
+							getConfig( 'woopayHost' )
+						);
+					}
+				} );
+		}
 
 		getWindowSize();
 		window.addEventListener( 'resize', getWindowSize );
