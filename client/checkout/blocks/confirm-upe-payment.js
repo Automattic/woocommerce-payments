@@ -12,10 +12,10 @@ import PAYMENT_METHOD_IDS from 'wcpay/payment-methods/constants';
  * @param {string|null}   paymentIntentSecret Payment Intent Secret used to validate payment on rate limit error.
  * @param {Object}   elements       Reference to the UPE elements mounted on the page.
  * @param {Object}   billingData    An object containing the customer's billing data.
- * @param {Object}   shippingData    An object containing the customer's shipping data, needed for Afterpay.
+ * @param {Object}   shippingData   An object containing the customer's shipping data, needed for Afterpay.
  * @param {Object}   emitResponse   Various helpers for usage with observer response objects.
  * @param {string}   selectedUPEPaymentType   The selected UPE payment type.
- * @return {Object}                An object, which contains the result from the action.
+ * @return {Object}                 An object, which contains the result from the action.
  */
 export default async function confirmUPEPayment(
 	api,
@@ -60,7 +60,6 @@ export default async function confirmUPEPayment(
 				name:
 					`${ shippingData.first_name } ${ shippingData.last_name }`.trim() ||
 					'-',
-				phone: shippingData.phone || '-',
 				address: {
 					country: shippingData.country || '_',
 					postal_code: shippingData.postcode || '-',
