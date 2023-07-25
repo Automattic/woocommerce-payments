@@ -48,24 +48,32 @@ class WC_Payments_API_Payment_Intention extends WC_Payments_API_Abstract_Intenti
 	private $processing;
 
 	/**
+	 * The statement descriptor of the intention.
+	 *
+	 * @var string|null
+	 */
+	private $statement_descriptor;
+
+	/**
 	 * WC_Payments_API_Intention constructor.
 	 *
-	 * @param string                 $id                   - ID of the intention.
-	 * @param integer                $amount               - Amount charged.
-	 * @param string                 $currency             - The currency of the intention.
-	 * @param string|null            $customer_id          - Stripe ID of the customer.
-	 * @param string|null            $payment_method_id    - Stripe ID of the payment method.
-	 * @param DateTime               $created              - Time charge created.
-	 * @param string                 $status               - Intention status.
-	 * @param string                 $client_secret        - The client secret of the intention.
-	 * @param WC_Payments_API_Charge $charge               - An array containing payment method details of associated charge.
-	 * @param array                  $next_action          - An array containing information for next action to take.
-	 * @param array                  $last_payment_error   - An array containing details of any errors.
-	 * @param array                  $metadata             - An array containing additional metadata of associated charge or order.
-	 * @param array                  $processing           - An array containing details of the processing state of the payment.
-	 * @param array                  $payment_method_types - An array containing the possible payment methods for the intent.
+	 * @param string                 $id                     - ID of the intention.
+	 * @param integer                $amount                 - Amount charged.
+	 * @param string                 $currency               - The currency of the intention.
+	 * @param string|null            $customer_id            - Stripe ID of the customer.
+	 * @param string|null            $payment_method_id      - Stripe ID of the payment method.
+	 * @param DateTime               $created                - Time charge created.
+	 * @param string                 $status                 - Intention status.
+	 * @param string                 $client_secret          - The client secret of the intention.
+	 * @param WC_Payments_API_Charge $charge                 - An array containing payment method details of associated charge.
+	 * @param array                  $next_action            - An array containing information for next action to take.
+	 * @param array                  $last_payment_error     - An array containing details of any errors.
+	 * @param array                  $metadata               - An array containing additional metadata of associated charge or order.
+	 * @param array                  $processing             - An array containing details of the processing state of the payment.
+	 * @param array                  $payment_method_types   - An array containing the possible payment methods for the intent.
 	 * @param array                  $payment_method_options - An array containing the payment method options for the intent.
-	 * @param array                  $order                - An array containing the order data associated with this intention.
+	 * @param string|null            $statement_descriptor   - Bank statement of the intention.
+	 * @param array                  $order                  - An array containing the order data associated with this intention.
 	 */
 	public function __construct(
 		$id,
@@ -83,6 +91,7 @@ class WC_Payments_API_Payment_Intention extends WC_Payments_API_Abstract_Intenti
 		$processing = [],
 		$payment_method_types = [],
 		$payment_method_options = [],
+		$statement_descriptor = null,
 		$order = []
 	) {
 		$this->id                     = $id;
@@ -100,6 +109,7 @@ class WC_Payments_API_Payment_Intention extends WC_Payments_API_Abstract_Intenti
 		$this->processing             = $processing;
 		$this->payment_method_types   = $payment_method_types;
 		$this->payment_method_options = $payment_method_options;
+		$this->statement_descriptor   = $statement_descriptor;
 		$this->order                  = $order;
 	}
 
