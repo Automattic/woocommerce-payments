@@ -1,5 +1,7 @@
 *** WooPayments Changelog ***
 
+= 6.2.1 - 2023-07-25 =
+
 = 6.2.0 - 2023-07-19 =
 * Add - Add Android option in Device type advanced filter
 * Add - Add dispute notice to the WooCommerce order screen to highlight disputes awaiting a response.
