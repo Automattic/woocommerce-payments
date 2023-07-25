@@ -102,16 +102,14 @@ jQuery( function ( $ ) {
 		}
 	}
 
-	function maybeMountStripePaymentElement() {
+	async function maybeMountStripePaymentElement() {
 		if (
 			$( '.wcpay-upe-element' ).length &&
 			! $( '.wcpay-upe-element' ).children().length
 		) {
-			$( '.wcpay-upe-element' )
-				.toArray()
-				.forEach( ( domElement ) =>
-					mountStripePaymentElement( api, domElement )
-				);
+			for ( const upeElement of $( '.wcpay-upe-element' ).toArray() ) {
+				await mountStripePaymentElement( api, upeElement );
+			}
 			maybeEnableStripeLink( api );
 		}
 	}
