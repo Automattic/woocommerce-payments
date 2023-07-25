@@ -207,6 +207,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( 'US' );
+		$this->mock_wcpay_account->method( 'get_account_default_currency' )->willReturn( 'USD' );
 
 		$payment_methods = [
 			'link' => [
