@@ -16,6 +16,13 @@ defined( 'ABSPATH' ) || exit;
 class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Controller {
 
 	/**
+	 * Instance of WC_Payment_Gateway_WCPay
+	 *
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private $gateway;
+
+	/**
 	 * Endpoint path.
 	 *
 	 * @var string
