@@ -310,8 +310,8 @@ export const getStripeElementOptions = (
 export const getShippingDetails = ( fields ) => {
 	// Shipping address is needed by Afterpay. If available, use shipping address, else fallback to billing address.
 	if (
-		document.getElementById( 'ship-to-different-address-checkbox' ) &&
-		document.getElementById( 'ship-to-different-address-checkbox' ).checked
+		fields.ship_to_different_address &&
+		'1' === fields.ship_to_different_address
 	) {
 		return {
 			name:
