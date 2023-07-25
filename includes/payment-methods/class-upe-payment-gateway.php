@@ -721,7 +721,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return bool True if the proper intent is used to process the order, false otherwise.
 	 */
 	public function is_proper_intent_used_with_order( $order, $intent_id_from_request ) {
-		$intent_id_attached_to_order = $this->order_service->get_intent_id_for_order( $order );
+		$intent_id_attached_to_order = $order->get_meta( '_intent_id', true );
 		if ( ! hash_equals( $intent_id_attached_to_order, $intent_id_from_request ) ) {
 			Logger::error(
 				sprintf(
