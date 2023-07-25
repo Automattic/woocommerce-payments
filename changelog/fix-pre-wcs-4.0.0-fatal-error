@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix a fatal error on sites using WC Subscriptions versions below 4.0.0
