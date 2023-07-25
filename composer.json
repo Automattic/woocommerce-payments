@@ -86,7 +86,8 @@
     },
     "autoload": {
       "psr-4": {
-        "WCPay\\MultiCurrency\\": "includes/multi-currency"
+        "WCPay\\MultiCurrency\\": "includes/multi-currency",
+        "WooPayments\\": "src"
       }
     },
     "repositories": [
