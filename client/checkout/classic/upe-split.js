@@ -21,7 +21,7 @@ import {
 	PAYMENT_METHOD_NAME_SOFORT,
 	PAYMENT_METHOD_NAME_AFFIRM,
 	PAYMENT_METHOD_NAME_AFTERPAY,
-} from '../constants.js';
+} from '../constants';
 import { getUPEConfig } from 'utils/checkout';
 import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
