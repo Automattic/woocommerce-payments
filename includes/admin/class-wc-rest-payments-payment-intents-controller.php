@@ -84,7 +84,7 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 			$amount               = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
 			$wcpay_server_request->set_currency_code( $currency );
 			$wcpay_server_request->set_amount( $amount );
-			$wcpay_server_request->set_metadata( $metadata );
+			$wcpay_server_request->set_metadata( $this->gateway->get_metadata_from_order( $order ) );
 			$wcpay_server_request->set_customer( $request->get_param( 'customer' ) );
 			$wcpay_server_request->set_level3( $this->gateway->get_level3_data_from_order( $order ) );
 			$wcpay_server_request->set_payment_method( $request->get_param( 'payment_method' ) );
