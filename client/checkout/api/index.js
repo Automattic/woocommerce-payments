@@ -3,7 +3,7 @@
 /**
  * Internal dependencies
  */
-import { getConfig } from 'utils/checkout';
+import { getConfig, getUPEConfig } from 'utils/checkout';
 import {
 	getPaymentRequestData,
 	getPaymentRequestAjaxURL,
@@ -42,6 +42,21 @@ export default class WCPayAPI {
 	}
 
 	/**
+	 * Overloaded method to get the Stripe object for UPE. Leverages the original getStripe method but before doing
+	 * so, sets the forceNetworkSavedCards option to the proper value for the payment method type.
+	 * forceNetworkSavedCards is currently the flag that among others determines whether or not to use the Stripe Platform on the checkout.
+	 *
+	 * @param {string} paymentMethodType The payment method type.
+	 * @return {Object} The Stripe Object.
+	 */
+	getStripeForUPE( paymentMethodType ) {
+		this.options.forceNetworkSavedCards = getUPEConfig(
+			'paymentMethodsConfig'
+		)[ paymentMethodType ].forceNetworkSavedCards;
+		return this.getStripe();
+	}
+
+	/**
 	 * Generates a new instance of Stripe.
 	 *
 	 * @param {boolean}  forceAccountRequest True to instantiate the Stripe object with the merchant's account key.
@@ -54,13 +69,14 @@ export default class WCPayAPI {
 			forceNetworkSavedCards,
 			locale,
 			isUPEEnabled,
+			isUPEDeferredEnabled,
 			isStripeLinkEnabled,
 		} = this.options;
 
 		if (
 			forceNetworkSavedCards &&
 			! forceAccountRequest &&
-			! isUPEEnabled
+			! ( isUPEEnabled && ! isUPEDeferredEnabled )
 		) {
 			if ( ! this.stripePlatform ) {
 				this.stripePlatform = this.createStripe(

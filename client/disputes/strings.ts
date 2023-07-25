@@ -116,13 +116,13 @@ export const reasons: Record<
 				'woocommerce-payments'
 			),
 			__(
-				'If you believe the payment was actually made using a stolen credit card, you will need to accept the dispute. The credit card networks place liability for accepting fraudulent payments with you, the business.',
+				'If you believe the payment was actually made using a stolen credit card, you will need to accept the dispute. The credit card networks place liability for accepting unauthorized transactions with you, the business.',
 				'woocommerce-payments'
 			),
 		],
 		summary: [
 			__(
-				'This is the most common reason for a dispute, and happens when a cardholder claims that they didn’t authorize the payment. This can happen if the card was lost or stolen and used to make a fraudulent purchase. It can also happen if the cardholder doesn’t recognize the payment as it appears on the billing statement from their card issuer.',
+				'This is the most common reason for a dispute, and happens when a cardholder claims that they didn’t authorize the payment. This can happen if the card was lost or stolen and used to make an unauthorized transaction. It can also happen if the cardholder doesn’t recognize the payment as it appears on the billing statement from their card issuer.',
 				'woocommerce-payments'
 			),
 		],
@@ -309,7 +309,7 @@ export const reasons: Record<
 		],
 		required: [
 			__(
-				'As with fraudulent disputes, get your customer to withdraw the dispute by helping them identify the payment. Otherwise challenge the dispute with appropriate evidence that proves the purchase was legitimate. ',
+				'Get your customer to withdraw the dispute by helping them identify the payment. Otherwise, challenge the dispute with appropriate evidence that proves the purchase was legitimate. ',
 				'woocommerce-payments'
 			),
 		],

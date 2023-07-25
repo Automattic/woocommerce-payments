@@ -459,7 +459,7 @@ exports[`Suspended Deposit Notice Renders Component Renders 1`] = `
           . 
           <a
             data-link-type="wc-admin"
-            href="https://woocommerce.com/document/payments/faq/deposits-suspended/"
+            href="https://woocommerce.com/document/woocommerce-payments/deposits/why-deposits-suspended/"
           >
             Learn more
           </a>

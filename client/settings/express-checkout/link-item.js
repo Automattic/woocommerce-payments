@@ -4,7 +4,6 @@
 import { __ } from '@wordpress/i18n';
 import { CheckboxControl, VisuallyHidden } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
-import { Icon } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -17,7 +16,7 @@ import {
 import './style.scss';
 import { HoverTooltip } from 'components/tooltip';
 import LinkIcon from 'assets/images/payment-methods/link.svg?asset';
-import Warning from 'components/icons/warning';
+import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 
 const LinkExpressCheckoutItem = () => {
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
@@ -63,7 +62,15 @@ const LinkExpressCheckoutItem = () => {
 									) }
 								>
 									<div className="loadable-checkbox__icon">
-										<Icon icon={ Warning } />
+										<NoticeOutlineIcon
+											style={ {
+												color: '#F0B849',
+												fill: 'currentColor',
+												marginBottom: '-5px',
+												marginRight: '16px',
+											} }
+											size={ 20 }
+										/>
 										<div
 											className="loadable-checkbox__icon-warning"
 											data-testid="loadable-checkbox-icon-warning"
@@ -153,7 +160,7 @@ const LinkExpressCheckoutItem = () => {
 												target="_blank"
 												rel="noreferrer"
 												/* eslint-disable-next-line max-len */
-												href="https://woocommerce.com/document/payments/woocommerce-payments-stripe-link/"
+												href="https://woocommerce.com/document/woocommerce-payments/payment-methods/link-by-stripe/"
 											/>
 										),
 									},

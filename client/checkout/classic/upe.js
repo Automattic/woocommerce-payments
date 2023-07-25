@@ -725,7 +725,7 @@ jQuery( function ( $ ) {
 		return clientSecret ? clientSecret : null;
 	}
 
-	// Handle the checkout form when WooCommerce Payments is chosen.
+	// Handle the checkout form when WooPayments is chosen.
 	const wcpayPaymentMethods = [
 		PAYMENT_METHOD_NAME_CARD,
 		PAYMENT_METHOD_NAME_UPE,
@@ -744,7 +744,7 @@ jQuery( function ( $ ) {
 		appendFingerprintInputToForm( $( this ), fingerprint );
 	} );
 
-	// Handle the add payment method form for WooCommerce Payments.
+	// Handle the add payment method form for WooPayments.
 	$( 'form#add_payment_method' ).on( 'submit', function () {
 		if (
 			$(
@@ -762,7 +762,7 @@ jQuery( function ( $ ) {
 		}
 	} );
 
-	// Handle the Pay for Order form if WooCommerce Payments is chosen.
+	// Handle the Pay for Order form if WooPayments is chosen.
 	$( '#order_review' ).on( 'submit', () => {
 		if ( ! isUsingSavedPaymentMethod() && isWCPayChosen() ) {
 			if ( isChangingPayment ) {

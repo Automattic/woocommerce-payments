@@ -9,7 +9,7 @@ import { NAMESPACE } from 'wcpay/data/constants';
 import { numberFormat } from '@woocommerce/number';
 
 /**
- * Returns true if WooCommerce Payments is in test mode, false otherwise.
+ * Returns true if WooPayments is in test mode, false otherwise.
  *
  * @param {boolean} fallback Test mode fallback value in case test mode value can't be found.
  *
@@ -25,7 +25,7 @@ export const isInTestMode = ( fallback = false ) => {
 export const getAdminUrl = ( args ) => addQueryArgs( 'admin.php', args );
 
 /**
- * Returns the URL to view a WooCommerce Payments document.
+ * Returns the URL to view a WooPayments document.
  *
  * @param {string} documentId The document ID.
  *
@@ -43,9 +43,9 @@ export const getDocumentUrl = ( documentId ) => {
 };
 
 /**
- * Returns the URL to the WooCommerce Payments settings.
+ * Returns the URL to the WooPayments settings.
  *
- * @return {string} URL to the WooCommerce Payments settings menu.
+ * @return {string} URL to the WooPayments settings menu.
  */
 export const getPaymentSettingsUrl = () => {
 	return getAdminUrl( {

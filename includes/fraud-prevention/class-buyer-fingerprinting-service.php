@@ -77,13 +77,16 @@ class Buyer_Fingerprinting_Service {
 			}
 		}
 
+		// According to https://www.php.net/manual/en/function.array-filter.php#111091
+		// Applying "strlen" as the callback function will remove `false`, `null` and empty strings, but not "0" values.
 		return array_filter(
 			[
 				'fraud_prevention_data_shopper_ip_hash' => $this->hash_data_for_fraud_prevention( WC_Geolocation::get_ip_address() ),
 				'fraud_prevention_data_shopper_ua_hash' => $fingerprint,
 				'fraud_prevention_data_ip_country'      => WC_Geolocation::geolocate_ip( '', true )['country'],
 				'fraud_prevention_data_cart_contents'   => $order_items_count,
-			]
+			],
+			'strlen'
 		);
 	}
 }

@@ -25,15 +25,19 @@ jest.mock( 'wcpay/utils/checkout', () => {
 				return {
 					card: {
 						label: 'Card',
+						forceNetworkSavedCards: true,
 					},
 					giropay: {
 						label: 'Giropay',
+						forceNetworkSavedCards: false,
 					},
 					ideal: {
 						label: 'iDEAL',
+						forceNetworkSavedCards: false,
 					},
 					sepa: {
 						label: 'SEPA',
+						forceNetworkSavedCards: false,
 					},
 				};
 			}
@@ -92,7 +96,7 @@ const mockCreatePaymentMethod = jest.fn( () => {
 	};
 } );
 
-const mockGetStripe = jest.fn( () => {
+const mockGetStripeForUPE = jest.fn( () => {
 	return {
 		elements: mockElements,
 		createPaymentMethod: mockCreatePaymentMethod,
@@ -110,11 +114,17 @@ const setupIntentMock = jest.fn( () => {
 
 const apiMock = {
 	saveUPEAppearance: saveUPEAppearanceMock,
-	getStripe: mockGetStripe,
+	getStripeForUPE: mockGetStripeForUPE,
 	setupIntent: setupIntentMock,
 };
 
 describe( 'Stripe Payment Element mounting', () => {
+	let mockDomElement;
+
+	beforeEach( () => {
+		mockDomElement = document.createElement( 'div' );
+	} );
+
 	afterEach( () => {
 		jest.clearAllMocks();
 	} );
@@ -130,7 +140,6 @@ describe( 'Stripe Payment Element mounting', () => {
 			return 'fingerprint';
 		} );
 
-		const mockDomElement = document.createElement( 'div' );
 		mockDomElement.dataset.paymentMethodType = 'giropay';
 
 		mountStripePaymentElement( apiMock, mockDomElement );
@@ -160,10 +169,30 @@ describe( 'Stripe Payment Element mounting', () => {
 					backgroundColor: '#fff',
 				};
 			}
+
+			if ( argument === 'paymentMethodsConfig' ) {
+				return {
+					ideal: {
+						label: 'iDEAL',
+						forceNetworkSavedCards: false,
+					},
+					card: {
+						label: 'Card',
+						forceNetworkSavedCards: true,
+					},
+					giropay: {
+						label: 'Giropay',
+						forceNetworkSavedCards: false,
+					},
+					sepa: {
+						label: 'SEPA',
+						forceNetworkSavedCards: false,
+					},
+				};
+			}
 		} );
 
-		const mockDomElement = document.createElement( 'div' );
-		mockDomElement.dataset.paymentMethodType = 'ideal';
+		mockDomElement.dataset.paymentMethodType = 'giropay';
 
 		mountStripePaymentElement( apiMock, mockDomElement );
 
@@ -184,7 +213,7 @@ describe( 'Stripe Payment Element mounting', () => {
 			expect( showErrorCheckout ).toHaveBeenCalledWith(
 				'No fingerprint'
 			);
-			expect( apiMock.getStripe ).not.toHaveBeenCalled();
+			expect( apiMock.getStripeForUPE ).not.toHaveBeenCalled();
 			expect( mockElements ).not.toHaveBeenCalled();
 			expect( mockCreateFunction ).not.toHaveBeenCalled();
 		} );
@@ -195,13 +224,12 @@ describe( 'Stripe Payment Element mounting', () => {
 			return 'fingerprint';
 		} );
 
-		const mockDomElement = document.createElement( 'div' );
 		mockDomElement.dataset.paymentMethodType = 'card';
 
 		mountStripePaymentElement( apiMock, mockDomElement );
 
 		await waitFor( () => {
-			expect( apiMock.getStripe ).toHaveBeenCalled();
+			expect( apiMock.getStripeForUPE ).toHaveBeenCalled();
 			expect( mockElements ).toHaveBeenCalled();
 			expect( mockCreateFunction ).toHaveBeenCalled();
 			expect( mockMountFunction ).toHaveBeenCalled();
@@ -247,20 +275,50 @@ describe( 'Stripe Payment Element mounting', () => {
 			return 'fingerprint';
 		} );
 
-		const mockDomElement = document.createElement( 'div' );
+		getUPEConfig.mockImplementation( ( argument ) => {
+			if ( argument === 'currency' ) {
+				return 'eur';
+			}
+
+			if ( argument === 'paymentMethodsConfig' ) {
+				return {
+					sepa: {
+						label: 'SEPA',
+						forceNetworkSavedCards: false,
+					},
+				};
+			}
+		} );
+
 		mockDomElement.dataset.paymentMethodType = 'sepa';
 
 		mountStripePaymentElement( apiMock, mockDomElement );
 		mountStripePaymentElement( apiMock, mockDomElement );
 
 		await waitFor( () => {
-			expect( apiMock.getStripe ).toHaveBeenCalled();
+			expect( apiMock.getStripeForUPE ).toHaveBeenCalled();
 			expect( mockElements ).toHaveBeenCalledTimes( 1 );
 		} );
 	} );
 } );
 
 describe( 'Payment processing', () => {
+	beforeEach( () => {
+		getUPEConfig.mockImplementation( ( argument ) => {
+			if ( argument === 'currency' ) {
+				return 'eur';
+			}
+
+			if ( argument === 'paymentMethodsConfig' ) {
+				return {
+					card: {
+						label: 'card',
+						forceNetworkSavedCards: false,
+					},
+				};
+			}
+		} );
+	} );
 	afterEach( () => {
 		jest.clearAllMocks();
 	} );

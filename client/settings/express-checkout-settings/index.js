@@ -140,10 +140,8 @@ const ExpressCheckoutSettings = ( { methodId } ) => {
 	return (
 		<SettingsLayout>
 			<h2 className="express-checkout-settings__breadcrumbs">
-				<a href={ getPaymentSettingsUrl() }>
-					{ __( 'WooCommerce Payments', 'woocommerce-payments' ) }
-				</a>{ ' ' }
-				&gt; <span>{ title }</span>
+				<a href={ getPaymentSettingsUrl() }>{ 'WooPayments' }</a> &gt;{ ' ' }
+				<span>{ title }</span>
 			</h2>
 
 			{ sections.map( ( { section, description } ) => (

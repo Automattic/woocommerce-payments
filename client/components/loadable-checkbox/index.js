@@ -7,7 +7,6 @@ import { __, sprintf } from '@wordpress/i18n';
 import React, { useEffect, useState } from 'react';
 import { CheckboxControl, VisuallyHidden } from '@wordpress/components';
 import classNames from 'classnames';
-import { Icon } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -15,7 +14,7 @@ import { Icon } from '@wordpress/icons';
 import { useManualCapture } from 'wcpay/data';
 import { HoverTooltip } from 'components/tooltip';
 import './style.scss';
-import Warning from 'components/icons/warning';
+import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 
 const LoadableCheckboxControl = ( {
 	label,
@@ -97,7 +96,15 @@ const LoadableCheckboxControl = ( {
 					) }
 				>
 					<div className="loadable-checkbox__icon">
-						<Icon icon={ Warning } />
+						<NoticeOutlineIcon
+							style={ {
+								color: '#F0B849',
+								fill: 'currentColor',
+								marginBottom: '-5px',
+								marginRight: '16px',
+							} }
+							size={ 20 }
+						/>
 						<div
 							className="loadable-checkbox__icon-warning"
 							data-testid="loadable-checkbox-icon-warning"

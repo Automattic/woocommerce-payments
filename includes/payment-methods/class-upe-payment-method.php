@@ -75,6 +75,14 @@ abstract class UPE_Payment_Method {
 	protected $icon_url;
 
 	/**
+	 * Supported customer locations for which charges for a payment method can be processed
+	 * Empty if all customer locations are supported
+	 *
+	 * @var string[]
+	 */
+	protected $countries = [];
+
+	/**
 	 * Create instance of payment method
 	 *
 	 * @param WC_Payments_Token_Service $token_service Instance of WC_Payments_Token_Service.
@@ -131,8 +139,10 @@ abstract class UPE_Payment_Method {
 			if ( isset( $this->limits_per_currency[ $currency ], WC()->cart ) ) {
 				$amount = WC_Payments_Utils::prepare_amount( WC()->cart->get_total( '' ), $currency );
 				if ( $amount > 0 ) {
-					$range = $this->limits_per_currency[ $currency ];
-					return $amount >= $range['min'] && $amount <= $range['max'];
+					$range            = $this->limits_per_currency[ $currency ];
+					$is_valid_minimum = null === $range['min'] || $amount >= $range['min'];
+					$is_valid_maximum = null === $range['max'] || $amount <= $range['max'];
+					return $is_valid_minimum && $is_valid_maximum;
 				}
 			}
 		}
@@ -188,6 +198,15 @@ abstract class UPE_Payment_Method {
 	 */
 	public function get_icon() {
 		return isset( $this->icon_url ) ? $this->icon_url : '';
+	}
+
+	/**
+	 * Returns payment method supported countries
+	 *
+	 * @return array
+	 */
+	public function get_countries() {
+		return $this->countries;
 	}
 
 	/**

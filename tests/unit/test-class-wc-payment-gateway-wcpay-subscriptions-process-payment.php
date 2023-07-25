@@ -10,6 +10,7 @@ use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
 use WCPay\Core\Server\Response;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Session_Rate_Limiter;
 
 /**
@@ -83,20 +84,14 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 	/**
 	 * Setup intent to be used during tests.
 	 *
-	 * @var array
+	 * @var WC_Payments_API_Setup_Intention
 	 */
-	private $setup_intent = [
-		'id'             => self::SETUP_INTENT_ID,
-		'status'         => Payment_Intent_Status::SUCCEEDED,
-		'client_secret'  => 'test_client_secret',
-		'next_action'    => [],
-		'payment_method' => self::PAYMENT_METHOD_ID,
-	];
+	private $setup_intent;
 
 	/**
 	 * Payment intent to be used during tests.
 	 *
-	 * @var WC_Payments_API_Intention
+	 * @var WC_Payments_API_Payment_Intention
 	 */
 	private $payment_intent;
 
@@ -112,6 +107,15 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 
 		wp_set_current_user( self::USER_ID );
 		$this->payment_intent = WC_Helper_Intention::create_intention();
+		$this->setup_intent   = WC_Helper_Intention::create_setup_intention(
+			[
+				'id'             => self::SETUP_INTENT_ID,
+				'status'         => Payment_Intent_Status::SUCCEEDED,
+				'client_secret'  => 'test_client_secret',
+				'next_action'    => [],
+				'payment_method' => self::PAYMENT_METHOD_ID,
+			]
+		);
 
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
@@ -135,6 +139,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 
 		$this->order_service = new WC_Payments_Order_Service( $this->mock_api_client );
 
+		$mock_dpps = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+
 		$this->mock_wcpay_gateway = $this->getMockBuilder( '\WC_Payment_Gateway_WCPay' )
 			->setConstructorArgs(
 				[
@@ -145,6 +151,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 					$this->mock_action_scheduler_service,
 					$this->mock_rate_limiter,
 					$this->order_service,
+					$mock_dpps,
 				]
 			)
 			->setMethods(
@@ -289,7 +296,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
-			->willReturn( new Response( $this->setup_intent ) );
+			->willReturn( $this->setup_intent );
 
 		$this->mock_token_service
 			->expects( $this->once() )
@@ -322,7 +329,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
-			->willReturn( new Response( $this->setup_intent ) );
+			->willReturn( $this->setup_intent );
 
 		$this->mock_token_service
 			->expects( $this->once() )
@@ -501,7 +508,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
-			->willReturn( new Response( $this->setup_intent ) );
+			->willReturn( $this->setup_intent );
 
 		$this->mock_token_service
 			->expects( $this->once() )
