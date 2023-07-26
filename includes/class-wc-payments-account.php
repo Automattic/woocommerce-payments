@@ -784,15 +784,16 @@ class WC_Payments_Account {
 		}
 
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
-			$incentive = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
+			$incentive   = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
+			$progressive = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
 
-			// Track connection start with promo incentive.
-			if ( ! isset( $_GET['wcpay-connect-jetpack-success'] )
-				&& ! empty( $incentive ) ) {
+			// Track connection start.
+			if ( ! isset( $_GET['wcpay-connect-jetpack-success'] ) ) {
 
 				$event_properties = [
-					'incentive'        => $incentive,
-					'woo_country_code' => WC()->countries->get_base_country(),
+					'incentive'              => $incentive,
+					'is_new_onboarding_flow' => $progressive,
+					'woo_country_code'       => WC()->countries->get_base_country(),
 				];
 				$this->tracks_event(
 					self::TRACKS_EVENT_ACCOUNT_CONNECT_START,
@@ -830,21 +831,26 @@ class WC_Payments_Account {
 					return;
 				}
 
-				// Track successful Jetpack connection with promo incentive.
-				if ( ! empty( $incentive ) ) {
-					$event_properties = [
-						'incentive'        => $incentive,
-						'woo_country_code' => WC()->countries->get_base_country(),
-					];
-					$this->tracks_event(
-						self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_SUCCESS,
-						$event_properties
-					);
-				}
+				// Track successful Jetpack connection.
+				$event_properties = [
+					'incentive'              => $incentive,
+					'is_new_onboarding_flow' => $progressive,
+					'woo_country_code'       => WC()->countries->get_base_country(),
+				];
+				$this->tracks_event(
+					self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_SUCCESS,
+					$event_properties
+				);
 			}
 
 			try {
-				$this->maybe_init_jetpack_connection( $wcpay_connect_param, [ 'promo' => $incentive ] );
+				$this->maybe_init_jetpack_connection(
+					$wcpay_connect_param,
+					[
+						'promo'       => $incentive,
+						'progressive' => $progressive,
+					]
+				);
 			} catch ( Exception $e ) {
 				$this->redirect_to_onboarding_welcome_page(
 				/* translators: error message. */
@@ -854,7 +860,13 @@ class WC_Payments_Account {
 			}
 
 			try {
-				$this->init_stripe_onboarding( $wcpay_connect_param, [ 'promo' => $incentive ] );
+				$this->init_stripe_onboarding(
+					$wcpay_connect_param,
+					[
+						'promo'       => $incentive,
+						'progressive' => $progressive,
+					]
+				);
 			} catch ( Exception $e ) {
 				Logger::error( 'Init Stripe onboarding flow failed. ' . $e );
 				$this->redirect_to_onboarding_welcome_page(
@@ -1092,8 +1104,8 @@ class WC_Payments_Account {
 		}
 
 		// Flags to enable progressive onboarding and collect payout requirements.
-		$progressive                 = isset( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
-		$collect_payout_requirements = isset( $_GET['collect_payout_requirements'] ) && 'true' === $_GET['collect_payout_requirements'];
+		$progressive                 = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
+		$collect_payout_requirements = ! empty( $_GET['collect_payout_requirements'] ) && 'true' === $_GET['collect_payout_requirements'];
 
 		// Onboarding self-assessment data.
 		$self_assessment_data = isset( $_GET['self_assessment'] ) ? wc_clean( wp_unslash( $_GET['self_assessment'] ) ) : [];
@@ -1234,18 +1246,18 @@ class WC_Payments_Account {
 		// Automatically enable split UPE for new stores.
 		update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '1' );
 
-		// Track account connection finish with promo incentive.
-		$incentive = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
-		if ( ! empty( $incentive ) ) {
-			$event_properties = [
-				'incentive'        => $incentive,
-				'woo_country_code' => WC()->countries->get_base_country(),
-			];
-			$this->tracks_event(
-				self::TRACKS_EVENT_ACCOUNT_CONNECT_FINISHED,
-				$event_properties
-			);
-		}
+		// Track account connection finish.
+		$incentive        = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
+		$progressive      = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
+		$event_properties = [
+			'incentive'              => $incentive,
+			'is_new_onboarding_flow' => $progressive,
+			'woo_country_code'       => WC()->countries->get_base_country(),
+		];
+		$this->tracks_event(
+			self::TRACKS_EVENT_ACCOUNT_CONNECT_FINISHED,
+			$event_properties
+		);
 
 		wp_safe_redirect(
 			add_query_arg(
