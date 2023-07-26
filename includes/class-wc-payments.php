@@ -45,7 +45,7 @@ use WCPay\Blocks_Data_Extractor;
 use WCPay\Constants\Payment_Method;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\WooPay\WooPay_Scheduler;
-use WooPayments\Internal\Services\PaymentService;
+use WooPayments\Internal\Service\PaymentProcessingService;
 
 /**
  * Main class for the WooPayments extension. Its responsibility is to initialize the extension.
@@ -649,7 +649,7 @@ class WC_Payments {
 
 		// phpcs:disable
 		if ( isset( $_GET['load'] ) ) {
-			$payment_service = new PaymentService();
+			$payment_service = new PaymentProcessingService();
 			var_dump( $payment_service );
 			exit;
 		}
