@@ -39,7 +39,6 @@ const useCustomerData = () => {
 		};
 	} );
 	const {
-		setShippingData,
 		setShippingAddress,
 		setBillingData,
 		setBillingAddress,
@@ -50,13 +49,11 @@ const useCustomerData = () => {
 		billingData: customerData.billingData,
 		// Backward compatibility billingData/billingAddress
 		billingAddress: customerData.billingAddress,
-		shippingData: customerData.shippingData,
 		shippingAddress: customerData.shippingAddress,
 		setBillingData,
 		// Backward compatibility setBillingData/setBillingAddress
 		setBillingAddress,
 		setShippingAddress,
-		setShippingData,
 	};
 };
 
@@ -64,7 +61,7 @@ const WCPayUPEFields = ( {
 	api,
 	activePaymentMethod,
 	billing: { billingData },
-	shipping: { shippingData },
+	shippingData,
 	eventRegistration: {
 		onPaymentProcessing,
 		onCheckoutAfterProcessingWithSuccess,

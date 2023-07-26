@@ -58,15 +58,15 @@ export default async function confirmUPEPayment(
 		if ( PAYMENT_METHOD_IDS.AFTERPAY_CLEARPAY === selectedUPEPaymentType ) {
 			confirmParams.shipping = {
 				name:
-					`${ shippingData.first_name } ${ shippingData.last_name }`.trim() ||
+					`${ shippingData.shippingAddress.first_name } ${ shippingData.shippingAddress.last_name }`.trim() ||
 					'-',
 				address: {
-					country: shippingData.country || '_',
-					postal_code: shippingData.postcode || '-',
-					state: shippingData.state || '-',
-					city: shippingData.city || '-',
-					line1: shippingData.address_1 || '-',
-					line2: shippingData.address_2 || '-',
+					country: shippingData.shippingAddress.country || '_',
+					postal_code: shippingData.shippingAddress.postcode || '-',
+					state: shippingData.shippingAddress.state || '-',
+					city: shippingData.shippingAddress.city || '-',
+					line1: shippingData.shippingAddress.address_1 || '-',
+					line2: shippingData.shippingAddress.address_2 || '-',
 				},
 			};
 		}
