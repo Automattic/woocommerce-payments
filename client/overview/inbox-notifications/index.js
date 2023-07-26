@@ -59,7 +59,7 @@ function hasValidNotes( notes ) {
 	const validNotes = notes.filter( ( { is_deleted: isDeleted } ) => {
 		return ! isDeleted;
 	} );
-	return 0 !== validNotes.length;
+	return validNotes.length !== 0;
 }
 
 const onBodyLinkClick = ( note, innerLink ) => {
@@ -205,7 +205,7 @@ const InboxPanel = () => {
 	};
 
 	const closeDismissModal = async ( confirmed = false ) => {
-		const noteNameDismissAll = 'all' === dismiss.type;
+		const noteNameDismissAll = dismiss.type === 'all';
 
 		wcpayTracks.recordEvent( 'wcpay_inbox_action_dismiss', {
 			note_name: dismiss.note.name,
@@ -234,7 +234,7 @@ const InboxPanel = () => {
 				setDismiss( undefined );
 				createNotice(
 					'success',
-					1 < notesRemoved.length
+					notesRemoved.length > 1
 						? __( 'All messages dismissed', 'woocommerce-admin' )
 						: __( 'Message dismissed', 'woocommerce-admin' ),
 					{
@@ -242,7 +242,7 @@ const InboxPanel = () => {
 							{
 								label: __( 'Undo', 'woocommerce-admin' ),
 								onClick: () => {
-									if ( 1 < notesRemoved.length ) {
+									if ( notesRemoved.length > 1 ) {
 										batchUpdateNotes(
 											notesRemoved.map(
 												( note ) => note.id
