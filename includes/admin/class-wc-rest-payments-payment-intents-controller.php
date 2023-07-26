@@ -96,7 +96,7 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 				'order_id'       => $order->get_id(),
 				'order_number'   => $order->get_order_number(),
 				'order_key'      => $order->get_order_key(),
-				'payment_type'   => $request->get_param( 'payment_type' ),
+				'payment_type'   => 'single',
 			];
 
 			$wcpay_server_request = Create_And_Confirm_Intention::create();
@@ -106,7 +106,7 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 			$wcpay_server_request->set_customer( $request->get_param( 'customer' ) );
 			$wcpay_server_request->set_level3( $this->gateway->get_level3_data_from_order( $order ) );
 			$wcpay_server_request->set_payment_method( $request->get_param( 'payment_method' ) );
-			$wcpay_server_request->set_payment_method_types( $request->get_param( 'payment_method_types' ) );
+			$wcpay_server_request->set_payment_method_types( ['card'] );
 			$wcpay_server_request->set_capture_method( WC_Payments::get_gateway()->get_option( 'manual_capture' ) && ( 'yes' === WC_Payments::get_gateway()->get_option( 'manual_capture' ) ) );
 
 			$intent = $wcpay_server_request->send( 'wcpay_create_intent_request', $order );
