@@ -66,7 +66,7 @@ const SetupRealPayments: React.FC = () => {
 				<CardFooter className="wcpay-setup-real-payments__footer">
 					<Flex align="center" justify="flex-start">
 						<Button
-							isSecondary={ true }
+							variant={ 'secondary' }
 							onClick={ () => setModalVisible( true ) }
 						>
 							{ __( 'Set up payments', 'woocommerce-payments' ) }
