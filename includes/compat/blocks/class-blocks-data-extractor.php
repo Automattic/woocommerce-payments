@@ -104,12 +104,13 @@ class Blocks_Data_Extractor {
 		 */
 		$settings_instance = \MailPoet\Settings\SettingsController::getInstance();
 		$settings          = [
-			'defaultText'  => $settings_instance->get( 'woocommerce.optin_on_checkout.message', '' ),
-			'optinEnabled' => $settings_instance->get( 'woocommerce.optin_on_checkout.enabled', false ),
+			'defaultText'   => $settings_instance->get( 'woocommerce.optin_on_checkout.message', '' ),
+			'optinEnabled'  => $settings_instance->get( 'woocommerce.optin_on_checkout.enabled', false ),
+			'defaultStatus' => false,
 		];
 
 		if ( version_compare( \MAILPOET_VERSION, '4.18.0', '<=' ) ) {
-			array_push( $settings, [ 'defaultStatus' => $mailpoet_wc_subscription->isCurrentUserSubscribed() ] );
+			$settings['defaultStatus'] = $mailpoet_wc_subscription->isCurrentUserSubscribed();
 		}
 		return $settings;
 	}
