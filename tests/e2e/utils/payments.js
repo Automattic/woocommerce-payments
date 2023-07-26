@@ -133,7 +133,7 @@ export async function fillCardDetailsPayForOrder( page, card ) {
 }
 
 // WooCommerce Blocks Checkout
-export async function fillLegacyCardDetailsWCB( page, card ) {
+export async function fillCardDetailsWCB( page, card ) {
 	await page.waitForSelector( '.__PrivateStripeElement' );
 	const frameHandle = await page.waitForSelector(
 		'#payment-method .wcpay-card-mounted iframe[name^="__privateStripeFrame"]'
@@ -142,23 +142,6 @@ export async function fillLegacyCardDetailsWCB( page, card ) {
 	const inputs = await stripeFrame.$$( '.InputElement.Input' );
 
 	const [ cardNumberInput, cardDateInput, cardCvcInput ] = inputs;
-	await cardNumberInput.type( card.number, { delay: 20 } );
-	await cardDateInput.type( card.expires.month + card.expires.year, {
-		delay: 20,
-	} );
-	await cardCvcInput.type( card.cvc, { delay: 20 } );
-}
-
-export async function fillUpeCardDetailsWCP( page, card ) {
-	await page.waitForSelector( '.__PrivateStripeElement' );
-	const frameHandle = await page.waitForSelector(
-		'.wcpay-payment-element iframe[name^="__privateStripeFrame"]'
-	);
-	const stripeFrame = await frameHandle.contentFrame();
-
-	const cardNumberInput = await stripeFrame.$( '#Field-numberInput.Input' );
-	const cardDateInput = await stripeFrame.$( '#Field-expiryInput.Input' );
-	const cardCvcInput = await stripeFrame.$( '#Field-cvcInput.Input' );
 	await cardNumberInput.type( card.number, { delay: 20 } );
 	await cardDateInput.type( card.expires.month + card.expires.year, {
 		delay: 20,
@@ -268,6 +251,7 @@ export async function setupCheckout( billingDetails ) {
 	await shopper.goToCheckout();
 	await uiUnblocked();
 	await shopper.fillBillingDetails( billingDetails );
+
 	// Woo core blocks and refreshes the UI after 1s after each key press in a text field or immediately after a select
 	// field changes. Need to wait to make sure that all key presses were processed by that mechanism.
 	await page.waitFor( 1000 );

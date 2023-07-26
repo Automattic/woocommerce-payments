@@ -20,7 +20,7 @@ use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Intent_Status;
 
 /**
- * Gateway class for WooCommerce Payments, with added compatibility with WooCommerce Subscriptions.
+ * Gateway class for WooPayments, with added compatibility with WooCommerce Subscriptions.
  */
 trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
@@ -47,6 +47,14 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @throws Add_Payment_Method_Exception When $0 order processing failed.
 	 */
 	abstract public function process_payment_for_order( $cart, $payment_information, $scheduled_subscription_payment = false );
+
+
+	/**
+	 * Get the payment method to use for the intent.
+	 *
+	 * @return string The payment method to use for the intent (e.g. 'card')
+	 */
+	abstract public function get_payment_method_to_use_for_intent();
 
 	/**
 	 * Saves the payment token to the order.
@@ -139,7 +147,16 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		}
 
 		$this->supports = array_merge( $this->supports, $payment_gateway_features );
+	}
 
+	/**
+	 * Initializes this trait's WP hooks.
+	 *
+	 * The hooks are not initialized more than once or if the ID of the attached gateway is not 'woocommerce_payments'.
+	 *
+	 * @return void
+	 */
+	public function maybe_init_subscriptions_hooks() {
 		/**
 		 * The following callbacks are only attached once to avoid duplication.
 		 * The callbacks are also only intended to be attached for the WCPay core payment gateway ($this->id = 'woocommerce_payments').
@@ -147,7 +164,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		 * If new payment method IDs (eg 'sepa_debit') are added to this condition in the future, care should be taken to ensure duplication,
 		 * including double renewal charging, isn't introduced.
 		 */
-		if ( self::$has_attached_integration_hooks || 'woocommerce_payments' !== $this->id ) {
+		if ( self::$has_attached_integration_hooks || 'woocommerce_payments' !== $this->id || ! $this->is_subscriptions_enabled() ) {
 			return;
 		}
 
@@ -304,7 +321,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		}
 
 		try {
-			$payment_information = new Payment_Information( '', $renewal_order, Payment_Type::RECURRING(), $token, Payment_Initiated_By::MERCHANT() );
+			$payment_information = new Payment_Information( '', $renewal_order, Payment_Type::RECURRING(), $token, Payment_Initiated_By::MERCHANT(), null, null, '', $this->get_payment_method_to_use_for_intent() );
 			$this->process_payment_for_order( null, $payment_information, true );
 		} catch ( API_Exception $e ) {
 			Logger::error( 'Error processing subscription renewal: ' . $e->getMessage() );

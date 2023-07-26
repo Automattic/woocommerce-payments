@@ -9,33 +9,55 @@
 }
 
 // Adapted from woocommerce-admin:client/homescreen/style.scss
-.components-card.woocommerce-task-card {
-	.components-card__body.is-size-large {
-		padding: 0;
-	}
+.wcpay-task-list.woocommerce-experimental-list {
+	position: relative;
 
-	.components-card__footer.is-size-large {
-		padding: 0 $gap-smaller;
-	}
-
-	.wcpay-task-list.woocommerce-experimental-list {
+	.woocommerce-experimental-list__item {
 		position: relative;
+	}
 
-		.woocommerce-experimental-list__item {
-			position: initial;
+	.woocommerce-task-list__item[data-key^='dispute-resolution-task'] {
+		// Hide the dispute resolution task tooltip / popover as it is irrelevant.
+		.components-popover {
+			display: none;
+		}
+
+		// Style non-urgent dispute tasks as yellow, keeping the level-1 exclamation icon.
+		&:not( [data-urgent='true'] ) {
+			.gridicons-notice-outline {
+				fill: #f0b849;
+			}
+			&::before {
+				background-color: #f0b849;
+			}
 		}
 	}
 }
 
 .wcpay-overview {
-	.components-notice {
+	> .components-notice {
 		margin: 24px 0;
 	}
 
 	.wcpay-connection-success {
+		position: relative;
 		text-align: center;
 		padding: $gap-large;
-		padding-bottom: $gap;
+
+		&__dropdown {
+			position: absolute;
+			top: $gap-large;
+			right: $gap-large;
+
+			.dashicons-ellipsis {
+				transform: rotate( 90deg );
+			}
+		}
+
+		.dashicons-button {
+			margin-right: 0;
+			display: none !important;
+		}
 
 		img {
 			max-height: 73px;
@@ -47,7 +69,7 @@
 			font-weight: 400;
 			letter-spacing: 0.7px;
 			line-height: 28px;
-			margin-bottom: 0;
+			margin-bottom: $gap-small;
 
 			@media ( min-width: 783px ) {
 				padding: 0 10%;
@@ -59,18 +81,78 @@
 		}
 	}
 
-	// To be removed when @wordpress/components is upgraded to 17.0.0.
-	.components-visually-hidden {
-		border: 0;
-		clip: rect( 1px, 1px, 1px, 1px );
-		-webkit-clip-path: inset( 50% );
-		clip-path: inset( 50% );
-		height: 1px;
-		margin: -1px;
-		overflow: hidden;
+	// Gutenberg compatibility adjustments. The component changed its classes and
+	// styling in @wordpress/components 19.11.0. We're currently using 11.1.5.
+	// To be removed when we upgrade this package.
+	.components-popover {
+		position: fixed;
+	}
+
+	.wcpay-setup-real-payments {
+		&__body {
+			display: grid;
+			grid-template-columns: repeat( 3, 1fr );
+			grid-column-gap: $gap-largest;
+			margin: $gap $gap-small;
+			text-align: center;
+			fill: $studio-woocommerce-purple-50;
+
+			@media ( max-width: 783px ) {
+				grid-template-columns: 1fr;
+			}
+
+			svg {
+				display: block;
+				margin: 0 auto $gap-smaller;
+			}
+		}
+
+		&__footer {
+			justify-content: end;
+		}
+	}
+}
+
+.wcpay-setup-real-payments-modal {
+	color: $gray-900;
+	fill: $studio-woocommerce-purple-50;
+
+	.components-modal__content {
+		box-sizing: border-box;
+		max-width: 600px;
+		margin: auto;
+		padding: $gap-smaller $gap-larger $gap-larger;
+	}
+
+	.components-modal__header {
+		position: initial;
 		padding: 0;
-		position: absolute;
-		width: 1px;
-		word-wrap: normal;
+		border: 0;
+
+		h1 {
+			@include wp-title-small;
+			margin-bottom: $gap-smaller;
+		}
+	}
+
+	&__title {
+		@include wp-title-small;
+	}
+
+	&__headline {
+		font-weight: 600;
+	}
+
+	&__content {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		gap: $gap;
+		padding: $gap-smallest;
+		align-items: center;
+		margin-bottom: $gap-large;
+	}
+
+	&__footer {
+		@include modal-footer-buttons;
 	}
 }

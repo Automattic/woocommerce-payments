@@ -212,8 +212,8 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * List of countries enabled for Stripe platform account. See also
-	 * https://woocommerce.com/document/payments/countries/ for the most actual status.
+	 * List of countries enabled for Stripe platform account. See also this URL:
+	 * https://woocommerce.com/document/woocommerce-payments/compatibility/countries/#supported-countries
 	 *
 	 * @return string[]
 	 */
@@ -222,19 +222,23 @@ class WC_Payments_Utils {
 			'AT' => __( 'Austria', 'woocommerce-payments' ),
 			'AU' => __( 'Australia', 'woocommerce-payments' ),
 			'BE' => __( 'Belgium', 'woocommerce-payments' ),
+			'BG' => __( 'Bulgaria', 'woocommerce-payments' ),
 			'CA' => __( 'Canada', 'woocommerce-payments' ),
 			'CH' => __( 'Switzerland', 'woocommerce-payments' ),
 			'CY' => __( 'Cyprus', 'woocommerce-payments' ),
+			'CZ' => __( 'Czech Republic', 'woocommerce-payments' ),
 			'DE' => __( 'Germany', 'woocommerce-payments' ),
 			'DK' => __( 'Denmark', 'woocommerce-payments' ),
 			'EE' => __( 'Estonia', 'woocommerce-payments' ),
 			'FI' => __( 'Finland', 'woocommerce-payments' ),
 			'ES' => __( 'Spain', 'woocommerce-payments' ),
 			'FR' => __( 'France', 'woocommerce-payments' ),
+			'HR' => __( 'Croatia', 'woocommerce-payments' ),
 			'LU' => __( 'Luxembourg', 'woocommerce-payments' ),
 			'GB' => __( 'United Kingdom (UK)', 'woocommerce-payments' ),
 			'GR' => __( 'Greece', 'woocommerce-payments' ),
 			'HK' => __( 'Hong Kong', 'woocommerce-payments' ),
+			'HU' => __( 'Hungary', 'woocommerce-payments' ),
 			'IE' => __( 'Ireland', 'woocommerce-payments' ),
 			'IT' => __( 'Italy', 'woocommerce-payments' ),
 			'LT' => __( 'Lithuania', 'woocommerce-payments' ),
@@ -245,6 +249,8 @@ class WC_Payments_Utils {
 			'NZ' => __( 'New Zealand', 'woocommerce-payments' ),
 			'PL' => __( 'Poland', 'woocommerce-payments' ),
 			'PT' => __( 'Portugal', 'woocommerce-payments' ),
+			'RO' => __( 'Romania', 'woocommerce-payments' ),
+			'SE' => __( 'Sweden', 'woocommerce-payments' ),
 			'SI' => __( 'Slovenia', 'woocommerce-payments' ),
 			'SK' => __( 'Slovakia', 'woocommerce-payments' ),
 			'SG' => __( 'Singapore', 'woocommerce-payments' ),
@@ -411,7 +417,7 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Checks if the currently displayed page is the WooCommerce Payments
+	 * Checks if the currently displayed page is the WooPayments
 	 * settings page or a payment method settings page.
 	 *
 	 * @return bool
@@ -550,6 +556,20 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Returns the customer facing HTTP status codes for an exception.
+	 *
+	 * @param   Exception $e  Exception to get the HTTP status code for.
+	 *
+	 * @return  int
+	 */
+	public static function get_filtered_error_status_code( Exception $e ) : int {
+		if ( $e instanceof API_Exception ) {
+			return $e->get_http_code() ?? 400;
+		}
+		return 400;
+	}
+
+	/**
 	 * Saves the minimum amount required for transactions in a given currency.
 	 *
 	 * @param string $currency The currency.
@@ -638,7 +658,7 @@ class WC_Payments_Utils {
 			return '';
 		}
 
-		return add_query_arg(
+		return add_query_arg( // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
 			array_merge(
 				[
 					'page' => 'wc-admin',
@@ -677,11 +697,24 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Check to see if the current user is in onboarding experiment treatment mode.
+	 * Helper function to check whether the user is either in the PO experiment, or has manually enabled PO via the dev tools.
+	 *
+	 * @return boolean
+	 */
+	public static function should_use_progressive_onboarding_flow(): bool {
+		if ( self::is_in_progressive_onboarding_treatment_mode() || WC_Payments_Features::is_progressive_onboarding_enabled() ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Check to see if the current user is in progressive onboarding experiment treatment mode.
 	 *
 	 * @return bool
 	 */
-	public static function is_in_onboarding_treatment_mode() {
+	public static function is_in_progressive_onboarding_treatment_mode(): bool {
 		if ( ! isset( $_COOKIE['tk_ai'] ) ) {
 			return false;
 		}
@@ -692,7 +725,8 @@ class WC_Payments_Utils {
 			'yes' === get_option( 'woocommerce_allow_tracking' )
 		);
 
-		return 'treatment' === $abtest->get_variation( 'woo_wcpayments_tasklist_click_introducing_select_business_type_202203_v3' );
+		return 'treatment' === $abtest->get_variation( 'woocommerce_payments_onboarding_progressive_express_2023_v1' )
+			|| 'treatment' === $abtest->get_variation( 'woocommerce_payments_onboarding_progressive_express_2023_v2' );
 	}
 
 	/**
@@ -863,5 +897,48 @@ class WC_Payments_Utils {
 		return version_compare( get_bloginfo( 'version' ), '6.2', '>=' )
 			? '\\WpOrg\\Requests\\Requests'
 			: '\\Requests';
+	}
+
+	/**
+	 * Returns a merchant-friendly description of the dispute reason.
+	 *
+	 * This mapping is duplicated in client/disputes/strings.ts and on Server.
+	 *
+	 * @param string $reason The dispute reason.
+	 *
+	 * @return string
+	 */
+	public static function get_dispute_reason_description( string $reason ): string {
+		switch ( $reason ) {
+			case 'bank_cannot_process':
+				return __( 'Bank cannot process', 'woocommerce-payments' );
+			case 'check_returned':
+				return __( 'Check returned', 'woocommerce-payments' );
+			case 'credit_not_processed':
+				return __( 'Credit not processed', 'woocommerce-payments' );
+			case 'customer_initiated':
+				return __( 'Customer initiated', 'woocommerce-payments' );
+			case 'debit_not_authorized':
+				return __( 'Debit not authorized', 'woocommerce-payments' );
+			case 'duplicate':
+				return __( 'Duplicate', 'woocommerce-payments' );
+			case 'fraudulent':
+				return __( 'Transaction unauthorized', 'woocommerce-payments' );
+			case 'incorrect_account_details':
+				return __( 'Incorrect account details', 'woocommerce-payments' );
+			case 'insufficient_funds':
+				return __( 'Insufficient funds', 'woocommerce-payments' );
+			case 'product_not_received':
+				return __( 'Product not received', 'woocommerce-payments' );
+			case 'product_unacceptable':
+				return __( 'Product unacceptable', 'woocommerce-payments' );
+			case 'subscription_canceled':
+				return __( 'Subscription canceled', 'woocommerce-payments' );
+			case 'unrecognized':
+				return __( 'Unrecognized', 'woocommerce-payments' );
+			default:
+			case 'general':
+				return __( 'General', 'woocommerce-payments' );
+		}
 	}
 }

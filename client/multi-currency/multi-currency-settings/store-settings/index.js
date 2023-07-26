@@ -1,9 +1,9 @@
 /**
  * External dependencies
  */
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Card, CardBody, CheckboxControl } from '@wordpress/components';
-import { sprintf, __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 
 /**
@@ -18,7 +18,7 @@ import PreviewModal from 'wcpay/multi-currency/preview-modal';
 
 const StoreSettingsDescription = () => {
 	const LEARN_MORE_URL =
-		'https://woocommerce.com/document/payments/currencies/multi-currency-setup/';
+		'https://woocommerce.com/document/woocommerce-payments/currencies/multi-currency-setup/';
 
 	return (
 		<>

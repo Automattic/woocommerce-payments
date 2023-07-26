@@ -20,7 +20,7 @@ class WC_Payments_Features {
 	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME = '_wcpay_feature_woopay_express_checkout';
 	const AUTH_AND_CAPTURE_FLAG_NAME        = '_wcpay_feature_auth_and_capture';
 	const PROGRESSIVE_ONBOARDING_FLAG_NAME  = '_wcpay_feature_progressive_onboarding';
-	const SIMPLIFY_DEPOSITS_UI_FLAG_NAME    = '_wcpay_feature_simplify_deposits_ui';
+	const MC_ORDER_META_HELPER_FLAG_NAME    = '_wcpay_feature_mc_order_meta_helper';
 
 	/**
 	 * Checks whether any UPE gateway is enabled.
@@ -112,6 +112,30 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Indicates whether card payments are enabled for this (Stripe) account.
+	 *
+	 * @return bool True if account can accept card payments, false otherwise.
+	 */
+	public static function are_payments_enabled() {
+		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
+
+		return is_array( $account ) && ( $account['payments_enabled'] ?? false );
+	}
+
+	/**
+	 * Checks if WooPay is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_woopay_enabled() {
+		$is_woopay_eligible               = self::is_woopay_eligible(); // Feature flag.
+		$is_woopay_enabled                = 'yes' === WC_Payments::get_gateway()->get_option( 'platform_checkout' );
+		$is_woopay_express_button_enabled = self::is_woopay_express_checkout_enabled();
+
+		return $is_woopay_eligible && $is_woopay_enabled && $is_woopay_express_button_enabled;
+	}
+
+	/**
 	 * Checks whether the customer Multi-Currency feature is enabled
 	 *
 	 * @return bool
@@ -145,29 +169,21 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether Account Overview page is enabled
-	 *
-	 * @return bool
-	 */
-	public static function is_account_overview_task_list_enabled() {
-		return '1' === get_option( '_wcpay_feature_account_overview_task_list', '1' );
-	}
-
-	/**
 	 * Checks whether WCPay Subscriptions is enabled.
 	 *
 	 * @return bool
 	 */
 	public static function is_wcpay_subscriptions_enabled() {
-		$enabled = get_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, null );
+		// After completing the WooCommerce onboarding, check if the merchant has chosen Subscription product types and enable the feature flag.
+		if ( (bool) get_option( 'wcpay_check_subscriptions_eligibility_after_onboarding', false ) ) {
+			if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.9.0', '<' ) ) {
+				self::maybe_enable_wcpay_subscriptions_after_onboarding( [], get_option( 'woocommerce_onboarding_profile', [] ) );
+			}
 
-		// Enable the feature by default for stores that are eligible.
-		if ( null === $enabled && function_exists( 'wc_get_base_location' ) && self::is_wcpay_subscriptions_eligible() ) {
-			$enabled = '1';
-			update_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, $enabled );
+			delete_option( 'wcpay_check_subscriptions_eligibility_after_onboarding' );
 		}
 
-		return apply_filters( 'wcpay_is_wcpay_subscriptions_enabled', '1' === $enabled );
+		return apply_filters( 'wcpay_is_wcpay_subscriptions_enabled', '1' === get_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '0' ) );
 	}
 
 	/**
@@ -176,16 +192,48 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_wcpay_subscriptions_eligible() {
+		if ( ! function_exists( 'wc_get_base_location' ) ) {
+			return false;
+		}
+
 		$store_base_location = wc_get_base_location();
 		return ! empty( $store_base_location['country'] ) && 'US' === $store_base_location['country'];
 	}
 
 	/**
-	 * Checks whether platform checkout is enabled.
+	 * Checks whether the merchant has chosen Subscription product types during onboarding
+	 * WooCommerce and is elible for WCPay Subscriptions, if so, enables the feature flag.
+	 *
+	 * @since 6.2.0
+	 *
+	 * @param array $onboarding_data Onboarding data.
+	 * @param array $updated         Updated onboarding settings.
+	 *
+	 * @return void
+	 */
+	public static function maybe_enable_wcpay_subscriptions_after_onboarding( $onboarding_data, $updated ) {
+		if ( empty( $updated['product_types'] ) || ! is_array( $updated['product_types'] ) || ! in_array( 'subscriptions', $updated['product_types'], true ) ) {
+			return;
+		}
+
+		if ( ! self::is_wcpay_subscriptions_eligible() ) {
+			return;
+		}
+
+		update_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '1' );
+	}
+
+	/**
+	 * Checks whether woopay is enabled.
 	 *
 	 * @return bool
 	 */
-	public static function is_platform_checkout_eligible() {
+	public static function is_woopay_eligible() {
+		// Checks for the dependency on Store API AbstractCartRoute.
+		if ( ! class_exists( 'Automattic\WooCommerce\StoreApi\Routes\V1\AbstractCartRoute' ) ) {
+			return false;
+		}
+
 		// read directly from cache, ignore cache expiration check.
 		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
 		return is_array( $account ) && ( $account['platform_checkout_eligible'] ?? false );
@@ -208,8 +256,8 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_woopay_express_checkout_enabled() {
-		// Confirm platform checkout eligibility as well.
-		return '1' === get_option( self::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME, '1' ) && self::is_platform_checkout_eligible();
+		// Confirm woopay eligibility as well.
+		return '1' === get_option( self::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME, '1' ) && self::is_woopay_eligible();
 	}
 
 	/**
@@ -235,8 +283,8 @@ class WC_Payments_Features {
 	 *
 	 * @return  bool
 	 */
-	public static function is_fraud_protection_settings_enabled(): bool {
-		return '1' === get_option( 'wcpay_fraud_protection_settings_active', '0' );
+	public static function is_frt_review_feature_active(): bool {
+		return '1' === get_option( 'wcpay_frt_review_feature_active', '0' );
 	}
 
 	/**
@@ -249,12 +297,20 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether Simplify Deposits UI is enabled.
+	 * Checks whether the BNPL Affirm Afterpay is enabled.
+	 */
+	public static function is_bnpl_affirm_afterpay_enabled(): bool {
+		$account = WC_Payments::get_account_service()->get_cached_account_data();
+		return ! isset( $account['is_bnpl_affirm_afterpay_enabled'] ) || true === $account['is_bnpl_affirm_afterpay_enabled'];
+	}
+
+	/**
+	 * Checks whether Multi-Currency Order Meta Helper is enabled.
 	 *
 	 * @return bool
 	 */
-	public static function is_simplify_deposits_ui_enabled(): bool {
-		return '1' === get_option( self::SIMPLIFY_DEPOSITS_UI_FLAG_NAME, '0' );
+	public static function is_mc_order_meta_helper_enabled(): bool {
+		return '1' === get_option( self::MC_ORDER_META_HELPER_FLAG_NAME, '0' );
 	}
 
 	/**
@@ -270,14 +326,13 @@ class WC_Payments_Features {
 				'upeDeferred'             => self::is_upe_deferred_intent_enabled(),
 				'upeSettingsPreview'      => self::is_upe_settings_preview_enabled(),
 				'multiCurrency'           => self::is_customer_multi_currency_enabled(),
-				'accountOverviewTaskList' => self::is_account_overview_task_list_enabled(),
-				'platformCheckout'        => self::is_platform_checkout_eligible(),
+				'woopay'                  => self::is_woopay_eligible(),
 				'documents'               => self::is_documents_section_enabled(),
 				'clientSecretEncryption'  => self::is_client_secret_encryption_enabled(),
 				'woopayExpressCheckout'   => self::is_woopay_express_checkout_enabled(),
 				'isAuthAndCaptureEnabled' => self::is_auth_and_capture_enabled(),
 				'progressiveOnboarding'   => self::is_progressive_onboarding_enabled(),
-				'simplifyDepositsUi'      => self::is_simplify_deposits_ui_enabled(),
+				'mcOrderMetaHelper'       => self::is_mc_order_meta_helper_enabled(),
 			]
 		);
 	}

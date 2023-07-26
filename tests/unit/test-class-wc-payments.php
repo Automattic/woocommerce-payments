@@ -6,13 +6,14 @@
  */
 
 use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
+
 /**
  * WC_Payments unit tests.
  */
 class WC_Payments_Test extends WCPAY_UnitTestCase {
 
-	const EXPECTED_PLATFORM_CHECKOUT_HOOKS = [
-		'wc_ajax_wcpay_init_platform_checkout' => [ WC_Payments::class, 'ajax_init_platform_checkout' ],
+	const EXPECTED_WOOPAY_HOOKS = [
+		'wc_ajax_wcpay_init_woopay' => [ WC_Payments::class, 'ajax_init_woopay' ],
 	];
 
 	public function set_up() {
@@ -48,29 +49,29 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $upgrade_run_count + 1, did_action( 'woocommerce_woocommerce_payments_updated' ) );
 	}
 
-	public function test_it_registers_platform_checkout_hooks_if_feature_flag_is_enabled() {
+	public function test_it_registers_woopay_hooks_if_feature_flag_is_enabled() {
 		// Enable dev mode so nonce check is disabled.
 		WC_Payments::mode()->is_dev();
 
-		$this->set_platform_checkout_enabled( true );
+		$this->set_woopay_enabled( true );
 
-		foreach ( self::EXPECTED_PLATFORM_CHECKOUT_HOOKS as $hook => $callback ) {
+		foreach ( self::EXPECTED_WOOPAY_HOOKS as $hook => $callback ) {
 			$this->assertEquals( 10, has_filter( $hook, $callback ) );
 		}
 	}
 
-	public function test_it_registers_platform_checkout_hooks_if_feature_flag_is_enabled_but_not_in_dev_mode() {
-		$this->set_platform_checkout_enabled( true );
+	public function test_it_registers_woopay_hooks_if_feature_flag_is_enabled_but_not_in_dev_mode() {
+		$this->set_woopay_enabled( true );
 
-		foreach ( self::EXPECTED_PLATFORM_CHECKOUT_HOOKS as $hook => $callback ) {
+		foreach ( self::EXPECTED_WOOPAY_HOOKS as $hook => $callback ) {
 			$this->assertEquals( 10, has_filter( $hook, $callback ) );
 		}
 	}
 
-	public function test_it_does_not_register_platform_checkout_hooks_if_feature_flag_is_disabled() {
-		$this->set_platform_checkout_enabled( false );
+	public function test_it_does_not_register_woopay_hooks_if_feature_flag_is_disabled() {
+		$this->set_woopay_enabled( false );
 
-		foreach ( self::EXPECTED_PLATFORM_CHECKOUT_HOOKS as $hook => $callback ) {
+		foreach ( self::EXPECTED_WOOPAY_HOOKS as $hook => $callback ) {
 			$this->assertEquals( false, has_filter( $hook, $callback ) );
 		}
 	}
@@ -107,7 +108,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 			$this->markTestSkipped( 'must be revisited. "/wc/store/checkout" is returning 404' );
 		}
 
-		$this->set_platform_checkout_feature_flag_enabled( true );
+		$this->set_woopay_feature_flag_enabled( true );
 		$request = new WP_REST_Request( 'GET', '/wc/store/checkout' );
 
 		$response = rest_do_request( $request );
@@ -116,11 +117,19 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'woocommerce_rest_missing_nonce', $response->get_data()['code'] );
 	}
 
-	public function test_ajax_init_platform_checkout_sends_correct_customer_id() {
+	public function test_ajax_init_woopay_sends_correct_customer_id() {
 		// Necessary in order to prevent die from being called.
 		define( 'DOING_AJAX', true );
 
 		$customer_id = 'cus_123456789';
+
+		$pre_http_dispatch = function ( $result, $server, $request ) {
+			if ( in_array( $request->get_route(), [ '/wc/store/v1/checkout', '/wc/store/v1/cart' ], true ) ) {
+				return new WP_REST_Response( [ 'body' => wp_json_encode( [] ) ], 200 );
+			}
+
+			return $result;
+		};
 
 		$pre_http_request_cb = function ( $preempt, $parsed_args, $url ) use ( $customer_id ) {
 			$body = json_decode( $parsed_args['body'] );
@@ -132,6 +141,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 			return function ( $message, $title, $args ) {};
 		};
 
+		add_filter( 'rest_pre_dispatch', $pre_http_dispatch, 10, 3 );
 		add_filter( 'pre_http_request', $pre_http_request_cb, 10, 3 );
 		add_filter( 'wp_die_ajax_handler', $wp_die_ajax_handler_cb );
 
@@ -145,41 +155,43 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 			->will( $this->returnValue( $customer_id ) );
 
 		WC_Payments::set_customer_service( $mock_customer_service );
-		$this->set_platform_checkout_feature_flag_enabled( true );
+		$this->set_woopay_feature_flag_enabled( true );
 
-		WC_Payments::ajax_init_platform_checkout();
+		ob_start();
+		WC_Payments::ajax_init_woopay();
+		ob_get_clean();
 	}
 
 	/**
 	 * @param bool $is_enabled
 	 */
-	private function set_platform_checkout_feature_flag_enabled( $is_enabled ) {
-		// Make sure platform checkout hooks are not registered.
-		foreach ( self::EXPECTED_PLATFORM_CHECKOUT_HOOKS as $hook => $callback ) {
+	private function set_woopay_feature_flag_enabled( $is_enabled ) {
+		// Make sure woopay hooks are not registered.
+		foreach ( self::EXPECTED_WOOPAY_HOOKS as $hook => $callback ) {
 			remove_filter( $hook, $callback );
 		}
 
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => $is_enabled ] );
-		// Testing feature flag, so platform_checkout setting should always be on.
+		// Testing feature flag, so woopay setting should always be on.
 		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'yes' );
 
-		WC_Payments::maybe_register_platform_checkout_hooks();
+		WC_Payments::maybe_register_woopay_hooks();
 
 		// Trigger the addition of the disable nonce filter when appropriate.
 		apply_filters( 'rest_request_before_callbacks', [], [], new WP_REST_Request() );
 	}
 
-	private function set_platform_checkout_enabled( $is_enabled ) {
-		// Make sure platform checkout hooks are not registered.
-		foreach ( self::EXPECTED_PLATFORM_CHECKOUT_HOOKS as $hook => $callback ) {
+	private function set_woopay_enabled( $is_enabled ) {
+		// Make sure woopay hooks are not registered.
+		foreach ( self::EXPECTED_WOOPAY_HOOKS as $hook => $callback ) {
 			remove_filter( $hook, $callback );
 		}
 
-		// Testing platform_checkout, so feature flag should always be on.
+		// Testing woopay, so feature flag should always be on.
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		WC_Payments::get_gateway()->update_option( 'platform_checkout', $is_enabled ? 'yes' : 'no' );
 
-		WC_Payments::maybe_register_platform_checkout_hooks();
+		WC_Payments::maybe_register_woopay_hooks();
 
 		// Trigger the addition of the disable nonce filter when appropriate.
 		apply_filters( 'rest_request_before_callbacks', [], [], new WP_REST_Request() );

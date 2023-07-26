@@ -32,6 +32,9 @@ declare module '@woocommerce/components' {
 		href: string;
 		children?: React.ReactNode;
 		type?: string;
+		target?: string;
+		rel?: string;
+		onClick?: ( ...props: any ) => any;
 	};
 	const Link: ( props: LinkParams ) => JSX.Element;
 
@@ -90,4 +93,11 @@ declare module '@woocommerce/components' {
 	}
 
 	const TourKit: ( props: any ) => JSX.Element;
+
+	interface ListProps {
+		className?: string;
+		items: any[];
+	}
+
+	const List: React.FC< ListProps >;
 }

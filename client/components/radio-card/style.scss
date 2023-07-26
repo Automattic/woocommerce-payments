@@ -1,18 +1,21 @@
 .wcpay-component-radio-card {
-	cursor: initial;
+	cursor: pointer;
 	display: block;
 	padding: $gap-large;
 	background-color: #fff;
-	margin-bottom: $gap-large;
 	border-radius: 3px;
 	border: 1px solid $light-gray-500;
 
+	&:not( :last-of-type ) {
+		margin-bottom: $gap-large;
+	}
+
+	&:hover,
 	&.checked {
 		box-shadow: 0 0 0 1px #007cba;
 	}
 
 	&__label {
-		cursor: pointer;
 		display: grid;
 		grid-template-columns: 24px 1fr 25px;
 		column-gap: $gap-small;

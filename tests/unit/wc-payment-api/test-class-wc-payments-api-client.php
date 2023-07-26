@@ -367,118 +367,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->payments_api_client->get_onboarding_required_verification_information( 'country', 'type' );
 	}
 
-	public function test_update_account() {
-		$test_data = [ 'mock' => true ];
-
-		$this->mock_http_client
-			->expects( $this->once() )
-			->method( 'remote_request' )
-			->with(
-				$this->callback(
-					function ( $data ): bool {
-						$this->validate_default_remote_request_params( $data, 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts', 'POST' );
-						$this->assertSame( 'POST', $data['method'] );
-						return true;
-					}
-				),
-				wp_json_encode(
-					array_merge(
-						[ 'test_mode' => false ],
-						[ 'mock' => true ]
-					)
-				),
-				true,
-				true // update_account should use user token auth.
-			)
-			->willReturn(
-				[
-					'body'     => wp_json_encode( [ 'mock_account' => true ] ),
-					'response' => [
-						'code'    => 200,
-						'message' => 'OK',
-					],
-				]
-			);
-
-		$result = $this->payments_api_client->update_account( $test_data );
-
-		$this->assertEquals( [ 'mock_account' => true ], $result );
-	}
-
-	public function test_get_login_data() {
-		$this->mock_http_client
-			->expects( $this->once() )
-			->method( 'remote_request' )
-			->with(
-				$this->callback(
-					function ( $data ): bool {
-						$this->validate_default_remote_request_params( $data, 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts/login_links', 'POST' );
-						$this->assertSame( 'POST', $data['method'] );
-						return true;
-					}
-				),
-				wp_json_encode(
-					[
-						'test_mode'    => false,
-						'redirect_url' => 'mock_url',
-					]
-				),
-				true,
-				true // get_login_data should use user token auth.
-			)
-			->willReturn(
-				[
-					'body'     => wp_json_encode( [ 'url' => 'mock' ] ),
-					'response' => [
-						'code'    => 200,
-						'message' => 'OK',
-					],
-				]
-			);
-
-		$result = $this->payments_api_client->get_login_data( 'mock_url' );
-
-		$this->assertEquals( [ 'url' => 'mock' ], $result );
-	}
-
-	public function test_get_capital_links() {
-		$this->mock_http_client
-			->expects( $this->once() )
-			->method( 'remote_request' )
-			->with(
-				$this->callback(
-					function ( $data ): bool {
-						$this->validate_default_remote_request_params( $data, 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts/capital_links', 'POST' );
-						$this->assertSame( 'POST', $data['method'] );
-						return true;
-					}
-				),
-				wp_json_encode(
-					[
-						'test_mode'   => false,
-						'type'        => 'capital_financing_offer',
-						'return_url'  => 'https://return.url',
-						'refresh_url' => 'https://refresh.url',
-					]
-				),
-				true,
-				true // get_capital_links should use user token auth.
-			)
-			->willReturn(
-				[
-					'body'     => wp_json_encode( [ 'url' => 'https://capital.url' ] ),
-					'response' => [
-						'code'    => 200,
-						'message' => 'OK',
-					],
-				]
-			);
-
-		$result = $this->payments_api_client->get_capital_link( 'capital_financing_offer', 'https://return.url', 'https://refresh.url' );
-
-		$this->assertEquals( [ 'url' => 'https://capital.url' ], $result );
-	}
-
 	public function test_get_link() {
 		$this->mock_http_client
 			->expects( $this->once() )
@@ -519,43 +407,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->assertEquals( [ 'url' => 'https://login.url' ], $result );
-	}
-
-	public function test_add_tos_agreement() {
-		$this->mock_http_client
-			->expects( $this->once() )
-			->method( 'remote_request' )
-			->with(
-				$this->callback(
-					function ( $data ): bool {
-						$this->validate_default_remote_request_params( $data, 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts/tos_agreements', 'POST' );
-						$this->assertSame( 'POST', $data['method'] );
-						return true;
-					}
-				),
-				wp_json_encode(
-					[
-						'test_mode' => false,
-						'source'    => 'mock_source',
-						'user_name' => 'mock_name',
-					]
-				),
-				true,
-				true // add_tos_agreement should use user token auth.
-			)
-			->willReturn(
-				[
-					'body'     => wp_json_encode( [ 'result' => 'success' ] ),
-					'response' => [
-						'code'    => 200,
-						'message' => 'OK',
-					],
-				]
-			);
-
-		$result = $this->payments_api_client->add_tos_agreement( 'mock_source', 'mock_name' );
-
-		$this->assertEquals( [ 'result' => 'success' ], $result );
 	}
 
 	public function test_get_currency_rates() {
@@ -1055,20 +906,20 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 
 		$po_eligible = $this->payments_api_client->get_onboarding_po_eligible(
 			[
-				'business' => [
-					'country'           => 'US',
-					'type'              => 'company',
-					'mcc'               => 'computers_peripherals_and_software',
-					'annual_revenue'    => 'less_than_250k',
-					'go_live_timeframe' => 'within_1month',
-				],
+				'country' => 'US',
+				'type'    => 'company',
+				'mcc'     => 'most_popular__software_services',
+			],
+			[
+				'annual_revenue'    => 'less_than_250k',
+				'go_live_timeframe' => 'within_1month',
 			]
 		);
 		$this->assertSame( 'eligible', $po_eligible['result'] );
 	}
 
 
-	public function test_get_platform_checkout_eligibility_success() {
+	public function test_get_woopay_eligibility_success() {
 		$this->set_http_mock_response(
 			200,
 			[
@@ -1076,7 +927,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$response = $this->payments_api_client->get_platform_checkout_eligibility();
+		$response = $this->payments_api_client->get_woopay_eligibility();
 		$this->assertTrue( $response['platform_checkout_eligible'] );
 	}
 
@@ -1154,68 +1005,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->expectExceptionMessage( 'Error: Document not found' );
 
 		$this->payments_api_client->get_document( 'someDocument' );
-	}
-
-	/**
-	 * Test a successful fetch of a single authorization.
-	 *
-	 * @throws Exception In case of test failure.
-	 */
-	public function test_get_authorization_success() {
-		$payment_intent_id = 'pi_123smtm';
-
-		$this->set_http_mock_response(
-			200,
-			[
-				'payment_intent_id' => $payment_intent_id,
-			]
-		);
-
-		$authorization = $this->payments_api_client->get_authorization( $payment_intent_id );
-		$this->assertSame( $payment_intent_id, $authorization['payment_intent_id'] );
-	}
-
-	/**
-	 * Test fetching of non existing authorization.
-	 *
-	 * @throws Exception In case of test failure.
-	 */
-	public function test_get_authorization_not_found() {
-		$payment_intent_id = 'pi_123smtm';
-		$error_message     = 'The authorization you asked for does not exist';
-
-		$this->set_http_mock_response(
-			404,
-			[
-				'error' => [
-					'code'    => 'authorization_missing',
-					'message' => $error_message,
-				],
-			]
-		);
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( "Error: $error_message" );
-
-		$this->payments_api_client->get_authorization( $payment_intent_id );
-	}
-	/**
-	 * Test a successful fetch of authorizations summary.
-	 *
-	 * @throws Exception In case of test failure.
-	 */
-	public function test_authorizations_summary_success() {
-		$this->set_http_mock_response(
-			200,
-			[
-				'count' => 123,
-				'total' => 1200,
-			]
-		);
-
-		$summary = $this->payments_api_client->get_authorizations_summary();
-
-		$this->assertSame( 123, $summary['count'] );
-		$this->assertSame( 1200, $summary['total'] );
 	}
 
 	/**

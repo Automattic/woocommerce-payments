@@ -32,15 +32,3 @@ export const checkPageExists = async ( slug ) => {
 		return Promise.reject();
 	}
 };
-
-// Randomize the email to avoid conflicts.
-export const randomizeEmail = ( email ) => {
-	return Date.now() + '+' + email;
-};
-
-// Get the text value of an HTML input element
-export const getInputTextValue = async ( inputName ) => {
-	const billingAddress = await page.$( inputName );
-	const propertyHandle = await billingAddress.getProperty( 'value' );
-	return await propertyHandle.jsonValue();
-};

@@ -51,14 +51,17 @@ class Checkout_Service_Test extends WCPAY_UnitTestCase {
 		$this->checkout_service->create_intention_request( $this->request, $this->payment_information );
 	}
 	public function test_is_platform_payment_method_will_return_if_saved_payment_method_is_used() {
-		$this->assertFalse( $this->checkout_service->is_platform_payment_method( true ) );
+		$this->payment_information = new Payment_Information( 'pm_mock', wc_create_order(), Payment_Type::SINGLE(), new WC_Payment_Token_WCPay_SEPA(), null, null, null, '', 'card' );
+		$this->assertFalse( $this->checkout_service->is_platform_payment_method( $this->payment_information ) );
 	}
 	public function test_is_platform_payment_method_will_return_if_is_platform_payment_method_parameter_is_missing() {
-		$this->assertFalse( $this->checkout_service->is_platform_payment_method( false ) );
+		$this->payment_information = new Payment_Information( 'pm_mock', wc_create_order(), Payment_Type::SINGLE(), null, null, null, null, '', 'card' );
+		$this->checkout_service->is_platform_payment_method( $this->payment_information );
+		$this->assertFalse( $this->checkout_service->is_platform_payment_method( $this->payment_information ) );
 	}
 	public function test_is_platform_payment_method_will_return_if_is_platform_payment_method_parameter_is_not_boolean() {
 		$_POST['wcpay-is-platform-payment-method'] = 'foo';
-		$this->assertFalse( $this->checkout_service->is_platform_payment_method( false ) );
+		$this->assertFalse( $this->checkout_service->is_platform_payment_method( $this->payment_information ) );
 	}
 
 	public function test_create_intention_request_will_create_request() {
@@ -75,7 +78,7 @@ class Checkout_Service_Test extends WCPAY_UnitTestCase {
 		// Simulate behavior that current request is platform payment.
 		$class = new class() extends Checkout_Service
 		{
-			public function is_platform_payment_method( bool $is_using_saved_payment_method ) {
+			public function is_platform_payment_method( Payment_Information $payment_information ) {
 				return true;
 			}
 		};
@@ -99,24 +102,24 @@ class Checkout_Service_Test extends WCPAY_UnitTestCase {
 		$request = $request->apply_filters( 'wcpay_create_and_confirm_setup_intention_request', $this->payment_information, false, false );
 		$this->assertInstanceOf( WooPay_Create_And_Confirm_Setup_Intention::class, $request );
 	}
-	public function test_create_and_confirm_setup_intention_request_will_create_request_for_platform_checkout() {
+	public function test_create_and_confirm_setup_intention_request_will_create_request_for_woopay() {
 		$request = new Create_And_Confirm_Setup_Intention( $this->createMock( WC_Payments_API_Client::class ), $this->createMock( WC_Payments_Http_Interface::class ) );
 
 		$class = new class() extends Checkout_Service
 		{
-			public function is_platform_payment_method( bool $is_using_saved_payment_method ) {
+			public function is_platform_payment_method( Payment_Information $payment_information ) {
 				return true;
 			}
 		};
-		add_filter( 'test_create_and_confirm_setup_intention_request_will_create_request_for_platform_checkout', [ $class, 'create_and_confirm_setup_intention_request' ], 1, 4 );
+		add_filter( 'test_create_and_confirm_setup_intention_request_will_create_request_for_woopay', [ $class, 'create_and_confirm_setup_intention_request' ], 1, 4 );
 		$request->set_customer( 'cus_1' );
 		$request->set_metadata( [ 'order_number' => 1 ] );
 		$request->set_payment_method( $this->payment_information->get_payment_method() );
-		$request = $request->apply_filters( 'test_create_and_confirm_setup_intention_request_will_create_request_for_platform_checkout', $this->payment_information, true, true );
+		$request = $request->apply_filters( 'test_create_and_confirm_setup_intention_request_will_create_request_for_woopay', $this->payment_information, true, true );
 		$this->assertInstanceOf( WooPay_Create_And_Confirm_Setup_Intention::class, $request );
 		$this->assertTrue( $request->get_param( 'is_platform_payment_method' ) );
 		$this->assertTrue( $request->get_param( 'save_payment_method_to_platform' ) );
 		$this->assertTrue( $request->get_param( 'save_in_platform_account' ) );
-		remove_filter( 'test_create_and_confirm_setup_intention_request_will_create_request_for_platform_checkout', [ $class, 'create_and_confirm_setup_intention_request' ], 1 );
+		remove_filter( 'test_create_and_confirm_setup_intention_request_will_create_request_for_woopay', [ $class, 'create_and_confirm_setup_intention_request' ], 1 );
 	}
 }

@@ -9,7 +9,7 @@ use WCPay\Fraud_Prevention\Models\Check;
 use WCPay\Exceptions\Fraud_Ruleset_Exception;
 
 /**
- * WC_Payments_Order_Success_Page unit tests.
+ * Fraud_Prevention_Models_Check_Test unit tests.
  */
 class Fraud_Prevention_Models_Check_Test extends WCPAY_UnitTestCase {
 	/**

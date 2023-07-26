@@ -2,24 +2,28 @@
  * External dependencies
  */
 import * as React from 'react';
-import { Flex, FlexItem, Icon } from '@wordpress/components';
+import {
+	CardBody,
+	CardDivider,
+	Flex,
+	FlexItem,
+	Icon,
+} from '@wordpress/components';
 import { calendar } from '@wordpress/icons';
 import { Link } from '@woocommerce/components';
 import InfoOutlineIcon from 'gridicons/dist/info-outline';
 import { Fragment } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
  */
-import strings from './strings';
 import './style.scss';
 import DepositStatusPill from 'components/deposit-status-pill';
-import Loadable from 'components/loadable';
 import { getDepositDate } from 'deposits/utils';
 import { CachedDeposit } from 'wcpay/types/deposits';
 import { formatCurrency } from 'wcpay/utils/currency';
 import { getDetailsURL } from 'wcpay/components/details-link';
-import useRecentDeposits from './hooks';
 import BannerNotice from '../banner-notice';
 
 interface DepositRowProps {
@@ -27,7 +31,7 @@ interface DepositRowProps {
 }
 
 interface RecentDepositsProps {
-	currency: string;
+	deposits: CachedDeposit[];
 }
 
 const tableClass = 'wcpay-deposits-overview__table';
@@ -59,27 +63,6 @@ const DepositTableRow: React.FC< DepositRowProps > = ( {
 };
 
 /**
- * Renders a recent deposits table row with loading placeholders.
- *
- * @return {JSX.Element} Deposit table row with loading placeholders.
- */
-const DepositTableRowLoading: React.FC = (): JSX.Element => {
-	return (
-		<Flex className={ `${ tableClass }__row` }>
-			<FlexItem className={ `${ tableClass }__cell` }>
-				<Loadable isLoading placeholder="loading" />
-			</FlexItem>
-			<FlexItem className={ `${ tableClass }__cell` }>
-				<Loadable isLoading placeholder="loading" />
-			</FlexItem>
-			<FlexItem className={ `${ tableClass }__cell` }>
-				<Loadable isLoading placeholder="loading" />
-			</FlexItem>
-		</Flex>
-	);
-};
-
-/**
  * Renders the Recent Deposit details component.
  *
  * This component includes the recent deposit heading, table and notice.
@@ -88,11 +71,9 @@ const DepositTableRowLoading: React.FC = (): JSX.Element => {
  * @return {JSX.Element} Rendered element with Next Deposit details.
  */
 const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
-	currency,
+	deposits,
 } ): JSX.Element => {
-	const { isLoading, deposits } = useRecentDeposits( currency );
-
-	if ( ! isLoading && deposits.length === 0 ) {
+	if ( deposits.length === 0 ) {
 		return <></>;
 	}
 
@@ -109,9 +90,12 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 			<DepositTableRow deposit={ deposit } />
 			{ deposit.id === oldestPendingDepositId && (
 				<BannerNotice
+					className="wcpay-deposits-overview__business-day-delay-notice"
 					status="info"
 					icon={ <InfoOutlineIcon /> }
-					children={ strings.notices.businessDayDelay }
+					children={
+						'Deposits pending or in-transit may take 1-2 business days to appear in your bank account once dispatched'
+					}
 					isDismissible={ false }
 				/>
 			) }
@@ -121,20 +105,23 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 	return (
 		<>
 			{ /* Next Deposit Table */ }
-			<div className={ tableClass }>
+			<CardBody className={ `${ tableClass }__container` }>
 				<Flex className={ `${ tableClass }__row__header` }>
 					<FlexItem className={ `${ tableClass }__cell` }>
-						{ strings.tableHeaders.recentDepositDate }
+						{ __( 'Dispatch date', 'woocommerce-payments' ) }
 					</FlexItem>
 					<FlexItem className={ `${ tableClass }__cell` }>
-						{ strings.tableHeaders.status }
+						{ __( 'Status', 'woocommerce-payments' ) }
 					</FlexItem>
 					<FlexItem className={ `${ tableClass }__cell` }>
-						{ strings.tableHeaders.amount }
+						{ __( 'Amount', 'woocommerce-payments' ) }
 					</FlexItem>
 				</Flex>
-				{ isLoading ? <DepositTableRowLoading /> : depositRows }
-			</div>
+			</CardBody>
+			<CardDivider />
+			<CardBody className={ `${ tableClass }__container` }>
+				{ depositRows }
+			</CardBody>
 		</>
 	);
 };

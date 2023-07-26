@@ -24,7 +24,28 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	private $mock_gateway;
 
 	/**
-	 * Mock database cache
+	 * Mock Onboarding Service.
+	 *
+	 * @var WC_Payments_Onboarding_Service|MockObject;
+	 */
+	private $mock_onboarding_service;
+
+	/**
+	 * Mock Order Service.
+	 *
+	 * @var WC_Payments_Order_Service|MockObject;
+	 */
+	private $mock_order_service;
+
+	/**
+	 * Mock Incentives Service.
+	 *
+	 * @var WC_Payments_Incentives_Service|MockObject;
+	 */
+	private $mock_incentives_service;
+
+	/**
+	 * Mock database cache.
 	 *
 	 * @var Database_Cache|MockObject;
 	 */
@@ -53,6 +74,18 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
+		$this->mock_onboarding_service = $this->getMockBuilder( WC_Payments_Onboarding_Service::class )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$this->mock_order_service = $this->getMockBuilder( WC_Payments_Order_Service::class )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$this->mock_incentives_service = $this->getMockBuilder( WC_Payments_Incentives_Service::class )
+			->disableOriginalConstructor()
+			->getMock();
+
 		$this->mock_database_cache = $this->getMockBuilder( Database_Cache::class )
 			->disableOriginalConstructor()
 			->getMock();
@@ -65,7 +98,15 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$this->payments_admin = new WC_Payments_Admin( $mock_api_client, $this->mock_gateway, $this->mock_account, $this->mock_database_cache );
+		$this->payments_admin = new WC_Payments_Admin(
+			$mock_api_client,
+			$this->mock_gateway,
+			$this->mock_account,
+			$this->mock_onboarding_service,
+			$this->mock_order_service,
+			$this->mock_incentives_service,
+			$this->mock_database_cache
+		);
 	}
 
 	public function tear_down() {
@@ -166,7 +207,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_account
 			->expects( $this->exactly( $expected_times_redirect_called ) )
-			->method( 'redirect_to_onboarding_page' );
+			->method( 'redirect_to_onboarding_welcome_page' );
 
 		$this->payments_admin->maybe_redirect_to_onboarding();
 	}
@@ -212,6 +253,108 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 				],
 			],
 			'stripe_connected'     => [
+				0,
+				true,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/overview',
+				],
+			],
+			'happy_path'           => [
+				1,
+				false,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/overview',
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider data_maybe_redirect_overview_to_connect
+	 */
+	public function test_maybe_redirect_overview_to_connect( $expected_times_redirect_called, $is_wc_registered_page, $get_params ) {
+		global $wp_actions;
+		// Avoid WP doing_it_wrong warnings.
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		$wp_actions['current_screen'] = true;
+
+		$_GET = $get_params;
+
+		// Register the Payments > Connect page as the top level menu item.
+		wc_admin_register_page(
+			[
+				'id'         => 'wc-payments',
+				'title'      => __( 'Payments', 'woocommerce-payments' ),
+				'capability' => 'manage_woocommerce',
+				'path'       => '/payments/connect',
+				'position'   => '55.7', // After WooCommerce & Product menu items.
+				'icon'       => '',
+				'nav_args'   => [
+					'title'        => 'WooPayments',
+					'is_category'  => false,
+					'menuId'       => 'plugins',
+					'is_top_level' => true,
+				],
+			]
+		);
+
+		// Whether the current page should be treated as a registered WC admin page or not.
+		if ( $is_wc_registered_page ) {
+			add_filter( 'woocommerce_navigation_is_registered_page', '__return_true', 999 );
+		}
+
+		$this->mock_account
+			->expects( $this->exactly( $expected_times_redirect_called ) )
+			->method( 'redirect_to_onboarding_welcome_page' );
+
+		$this->payments_admin->maybe_redirect_overview_to_connect();
+
+		remove_filter( 'woocommerce_navigation_is_registered_page', '__return_true', 999 );
+	}
+
+	/**
+	 * Data provider for test_maybe_redirect_overview_to_connect
+	 */
+	public function data_maybe_redirect_overview_to_connect() {
+		return [
+			'no_get_params'        => [
+				0,
+				false,
+				[],
+			],
+			'empty_page_param'     => [
+				0,
+				false,
+				[
+					'path' => '/payments/overview',
+				],
+			],
+			'incorrect_page_param' => [
+				0,
+				false,
+				[
+					'page' => 'wc-settings',
+					'path' => '/payments/overview',
+				],
+			],
+			'empty_path_param'     => [
+				0,
+				false,
+				[
+					'page' => 'wc-admin',
+				],
+			],
+			'incorrect_path_param' => [
+				0,
+				false,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/does-not-exist',
+				],
+			],
+			'wc registered page'   => [
 				0,
 				true,
 				[

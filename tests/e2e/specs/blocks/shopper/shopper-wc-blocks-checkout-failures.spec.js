@@ -22,7 +22,7 @@ const billingDetails = config.get( 'addresses.customer.billing' );
 const productName = config.get( 'products.simple.name' );
 
 import {
-	fillLegacyCardDetailsWCB,
+	fillCardDetailsWCB,
 	confirmCardAuthentication,
 } from '../../../utils/payments';
 
@@ -59,7 +59,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 
 		it( 'should throw an error that the card was simply declined', async () => {
 			const declinedCard = config.get( 'cards.declined' );
-			await fillLegacyCardDetailsWCB( page, declinedCard );
+			await fillCardDetailsWCB( page, declinedCard );
 			await expect( page ).toClick( 'button > span', {
 				text: 'Place Order',
 			} );
@@ -75,7 +75,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 
 		it( 'should throw an error that the card expiration date is in the past', async () => {
 			const cardInvalidExpDate = config.get( 'cards.invalid-exp-date' );
-			await fillLegacyCardDetailsWCB( page, cardInvalidExpDate );
+			await fillCardDetailsWCB( page, cardInvalidExpDate );
 			await expect( page ).toClick( 'button > span', {
 				text: 'Place Order',
 			} );
@@ -91,7 +91,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 
 		it( 'should throw an error that the card CVV number is invalid', async () => {
 			const cardInvalidCVV = config.get( 'cards.invalid-cvv-number' );
-			await fillLegacyCardDetailsWCB( page, cardInvalidCVV );
+			await fillCardDetailsWCB( page, cardInvalidCVV );
 			await expect( page ).toClick( 'button > span', {
 				text: 'Place Order',
 			} );
@@ -107,7 +107,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 
 		it( 'should throw an error that the card was declined due to insufficient funds', async () => {
 			const cardInsufficientFunds = config.get( 'cards.declined-funds' );
-			await fillLegacyCardDetailsWCB( page, cardInsufficientFunds );
+			await fillCardDetailsWCB( page, cardInsufficientFunds );
 			await expect( page ).toClick( 'button > span', {
 				text: 'Place Order',
 			} );
@@ -123,7 +123,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 
 		it( 'should throw an error that the card was declined due to expired card', async () => {
 			const cardExpired = config.get( 'cards.declined-expired' );
-			await fillLegacyCardDetailsWCB( page, cardExpired );
+			await fillCardDetailsWCB( page, cardExpired );
 			await expect( page ).toClick( 'button > span', {
 				text: 'Place Order',
 			} );
@@ -139,7 +139,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 
 		it( 'should throw an error that the card was declined due to incorrect CVC number', async () => {
 			const cardIncorrectCVC = config.get( 'cards.declined-cvc' );
-			await fillLegacyCardDetailsWCB( page, cardIncorrectCVC );
+			await fillCardDetailsWCB( page, cardIncorrectCVC );
 			await expect( page ).toClick( 'button > span', {
 				text: 'Place Order',
 			} );
@@ -157,7 +157,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			const cardProcessingError = config.get(
 				'cards.declined-processing'
 			);
-			await fillLegacyCardDetailsWCB( page, cardProcessingError );
+			await fillCardDetailsWCB( page, cardProcessingError );
 			await expect( page ).toClick( 'button > span', {
 				text: 'Place Order',
 			} );
@@ -176,7 +176,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			const cardIncorrectNumber = config.get(
 				'cards.declined-incorrect'
 			);
-			await fillLegacyCardDetailsWCB( page, cardIncorrectNumber );
+			await fillCardDetailsWCB( page, cardIncorrectNumber );
 			await expect( page ).toClick( 'button > span', {
 				text: 'Place Order',
 			} );
@@ -193,7 +193,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 
 		it( 'should throw an error that the card was declined due to invalid 3DS card', async () => {
 			const declinedCard = config.get( 'cards.declined-3ds' );
-			await fillLegacyCardDetailsWCB( page, declinedCard );
+			await fillCardDetailsWCB( page, declinedCard );
 			await expect( page ).toClick( 'button > span', {
 				text: 'Place Order',
 			} );

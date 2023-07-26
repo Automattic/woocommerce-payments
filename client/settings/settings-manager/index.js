@@ -62,9 +62,13 @@ const GeneralSettingsDescription = () => (
 	<>
 		<h2>{ __( 'General', 'woocommerce-payments' ) }</h2>
 		<p>
-			{ __(
-				'Enable or disable WooCommerce Payments on your store and turn on test mode to simulate transactions.',
-				'woocommerce-payments'
+			{ sprintf(
+				/* translators: %s: WooPayments */
+				__(
+					'Enable or disable %s on your store and turn on test mode to simulate transactions.',
+					'woocommerce-payments'
+				),
+				'WooPayments'
 			) }
 		</p>
 	</>
@@ -79,8 +83,8 @@ const TransactionsDescription = () => (
 				'woocommerce-payments'
 			) }
 		</p>
-		<ExternalLink href="https://woocommerce.com/document/payments/faq/">
-			{ __( 'View frequently asked questions', 'woocommerce-payments' ) }
+		<ExternalLink href="https://woocommerce.com/document/woocommerce-payments/">
+			{ __( 'View our documentation', 'woocommerce-payments' ) }
 		</ExternalLink>
 	</>
 );
@@ -100,7 +104,7 @@ const DepositsDescription = () => {
 					depositDelayDays
 				) }
 			</p>
-			<ExternalLink href="https://woocommerce.com/document/payments/faq/deposit-schedule/#section-2">
+			<ExternalLink href="https://woocommerce.com/document/woocommerce-payments/deposits/deposit-schedule/">
 				{ __(
 					'Learn more about pending schedules',
 					'woocommerce-payments'
@@ -238,18 +242,16 @@ const SettingsManager = () => {
 					</LoadableSettingsSection>
 				</div>
 			</SettingsSection>
-			{ wcpaySettings.isFraudProtectionSettingsEnabled && (
-				<SettingsSection
-					description={ FraudProtectionDescription }
-					id="fp-settings"
-				>
-					<LoadableSettingsSection numLines={ 20 }>
-						<ErrorBoundary>
-							<FraudProtection />
-						</ErrorBoundary>
-					</LoadableSettingsSection>
-				</SettingsSection>
-			) }
+			<SettingsSection
+				description={ FraudProtectionDescription }
+				id="fp-settings"
+			>
+				<LoadableSettingsSection numLines={ 20 }>
+					<ErrorBoundary>
+						<FraudProtection />
+					</ErrorBoundary>
+				</LoadableSettingsSection>
+			</SettingsSection>
 			<AdvancedSettings />
 			<SaveSettingsSection disabled={ ! isTransactionInputsValid } />
 		</SettingsLayout>

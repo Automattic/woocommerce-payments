@@ -87,8 +87,8 @@ const SetupComplete = () => {
 
 	return (
 		<WizardTaskItem
-			title={ __( 'Enjoy the new features', 'woocommerce-payments' ) }
-			index={ 3 }
+			title={ __( 'Enablement complete', 'woocommerce-payments' ) }
+			index={ 2 }
 		>
 			<CollapsibleBody>
 				<p className="wcpay-wizard-task__description-element is-muted-color">

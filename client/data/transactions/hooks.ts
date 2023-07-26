@@ -46,27 +46,29 @@ export interface Transaction {
 		| 'ach_credit_transfer'
 		| 'ach_debit'
 		| 'acss_debit'
+		| 'affirm'
+		| 'afterpay_clearpay'
 		| 'alipay'
+		| 'amex'
 		| 'au_becs_debit'
 		| 'bancontact'
-		| 'eps'
-		| 'giropay'
-		| 'sepa_debit'
-		| 'ideal'
-		| 'klarna'
-		| 'multibanco'
-		| 'p24'
-		| 'sofort'
-		| 'stripe_account'
-		| 'wechat'
-		| 'amex'
 		| 'diners'
 		| 'discover'
+		| 'eps'
+		| 'giropay'
+		| 'ideal'
 		| 'jcb'
+		| 'klarna'
+		| 'link'
 		| 'mastercard'
+		| 'multibanco'
+		| 'p24'
+		| 'sepa_debit'
+		| 'sofort'
+		| 'stripe_account'
 		| 'unionpay'
 		| 'visa'
-		| 'link';
+		| 'wechat';
 	loan_id?: string;
 	metadata?: {
 		charge_type: 'card_reader_fee';
@@ -95,6 +97,18 @@ interface TransactionsSummary {
 }
 
 export type FraudOutcomeStatus = 'allow' | 'review' | 'block';
+export type FraudMetaBoxType =
+	| 'allow'
+	| 'block'
+	| 'not_card'
+	| 'not_wcpay'
+	| 'payment_started'
+	| 'review'
+	| 'review_allowed'
+	| 'review_blocked'
+	| 'review_expired'
+	| 'review_failed'
+	| 'terminal_payment';
 
 export interface FraudOutcomeTransaction {
 	amount: number;
@@ -107,6 +121,7 @@ export interface FraudOutcomeTransaction {
 		status: string;
 	};
 	status: FraudOutcomeStatus;
+	fraud_meta_box_type: FraudMetaBoxType;
 }
 
 interface FraudOutcomeTransactions {
@@ -136,6 +151,8 @@ export const useTransactions = (
 		date_between: dateBetween,
 		type_is: typeIs,
 		type_is_not: typeIsNot,
+		source_device_is: sourceDeviceIs,
+		source_device_is_not: sourceDeviceIsNot,
 		store_currency_is: storeCurrencyIs,
 		customer_currency_is: customerCurrencyIs,
 		customer_currency_is_not: customerCurrencyIsNot,
@@ -171,6 +188,8 @@ export const useTransactions = (
 					),
 				typeIs,
 				typeIsNot,
+				sourceDeviceIs,
+				sourceDeviceIsNot,
 				storeCurrencyIs,
 				customerCurrencyIs,
 				customerCurrencyIsNot,
@@ -196,6 +215,8 @@ export const useTransactions = (
 			JSON.stringify( dateBetween ),
 			typeIs,
 			typeIsNot,
+			sourceDeviceIs,
+			sourceDeviceIsNot,
 			storeCurrencyIs,
 			customerCurrencyIs,
 			customerCurrencyIsNot,
@@ -213,6 +234,8 @@ export const useTransactionsSummary = (
 		date_between: dateBetween,
 		type_is: typeIs,
 		type_is_not: typeIsNot,
+		source_device_is: sourceDeviceIs,
+		source_device_is_not: sourceDeviceIsNot,
 		store_currency_is: storeCurrencyIs,
 		customer_currency_is: customerCurrencyIs,
 		customer_currency_is_not: customerCurrencyIsNot,
@@ -234,6 +257,8 @@ export const useTransactionsSummary = (
 				dateBetween,
 				typeIs,
 				typeIsNot,
+				sourceDeviceIs,
+				sourceDeviceIsNot,
 				storeCurrencyIs,
 				customerCurrencyIs,
 				customerCurrencyIsNot,
@@ -254,6 +279,8 @@ export const useTransactionsSummary = (
 			JSON.stringify( dateBetween ),
 			typeIs,
 			typeIsNot,
+			sourceDeviceIs,
+			sourceDeviceIsNot,
 			storeCurrencyIs,
 			customerCurrencyIs,
 			customerCurrencyIsNot,
@@ -265,7 +292,8 @@ export const useTransactionsSummary = (
 
 export const useFraudOutcomeTransactions = (
 	status: string,
-	{ paged, per_page: perPage, orderby, order, search }: Query
+	{ paged, per_page: perPage, orderby, order, search }: Query,
+	additionalStatus?: string
 ): FraudOutcomeTransactions =>
 	useSelect(
 		( select ) => {
@@ -285,6 +313,7 @@ export const useFraudOutcomeTransactions = (
 				orderby: orderby || 'date',
 				order: order || 'desc',
 				search,
+				additionalStatus,
 			};
 
 			return {
@@ -304,7 +333,8 @@ export const useFraudOutcomeTransactions = (
 
 export const useFraudOutcomeTransactionsSummary = (
 	status: string,
-	{ search }: Query
+	{ search }: Query,
+	additionalStatus?: string
 ): FraudOutcomeTransactionsSummary =>
 	useSelect(
 		( select ) => {
@@ -314,7 +344,7 @@ export const useFraudOutcomeTransactionsSummary = (
 				isResolving,
 			} = select( STORE_NAME );
 
-			const query = { search };
+			const query = { search, additionalStatus };
 
 			return {
 				transactionsSummary: getFraudOutcomeTransactionsSummary(

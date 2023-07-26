@@ -22,7 +22,7 @@ const billingDetails = config.get( 'addresses.customer.billing' );
 const productName = config.get( 'products.simple.name' );
 const card = config.get( 'cards.basic' );
 
-import { fillLegacyCardDetailsWCB } from '../../../utils/payments';
+import { fillCardDetailsWCB } from '../../../utils/payments';
 
 describeif( RUN_WC_BLOCKS_TESTS )( 'WooCommerce Blocks > Saved cards', () => {
 	beforeAll( async () => {
@@ -48,7 +48,7 @@ describeif( RUN_WC_BLOCKS_TESTS )( 'WooCommerce Blocks > Saved cards', () => {
 
 		// Fill CC details and save the card while purchasing the product
 		const savePaymentMethodCheckbox = '#checkbox-control-0';
-		await fillLegacyCardDetailsWCB( page, card );
+		await fillCardDetailsWCB( page, card );
 		await expect( page ).toClick( savePaymentMethodCheckbox );
 
 		await page.waitForSelector(

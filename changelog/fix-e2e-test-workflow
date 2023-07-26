@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: Fix the server E2E tests workflow by not deleting the dependencies if a specific env variable is not true
+
+

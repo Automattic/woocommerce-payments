@@ -27,7 +27,10 @@ declare const global: {
 // See https://github.com/WordPress/gutenberg/issues/15031
 jest.mock( '@wordpress/data', () => ( {
 	createRegistryControl: jest.fn(),
-	dispatch: jest.fn( () => ( { setIsMatching: jest.fn() } ) ),
+	dispatch: jest.fn( () => ( {
+		setIsMatching: jest.fn(),
+		onLoad: jest.fn(),
+	} ) ),
 	registerStore: jest.fn(),
 	select: jest.fn(),
 	combineReducers: jest.fn(),
@@ -35,6 +38,16 @@ jest.mock( '@wordpress/data', () => ( {
 	withDispatch: jest.fn( () => jest.fn() ),
 	withSelect: jest.fn( () => jest.fn() ),
 	useSelect: jest.fn(),
+} ) );
+
+jest.mock( '@woocommerce/navigation', () => ( {
+	getQuery: () => {
+		return {
+			status_is: '',
+			type_is: '',
+		};
+	},
+	addHistoryListener: jest.fn(),
 } ) );
 
 const chargeMock = {
@@ -109,10 +122,6 @@ const chargeMock = {
 			getAuthorization: jest.fn().mockReturnValue( {
 				created: '2022-09-27 17:07:09',
 			} ),
-			getLatestFraudOutcome: jest.fn().mockReturnValue( {
-				status: 'review',
-			} ),
-			getLatestFraudOutcomeError: jest.fn().mockReturnValue( null ),
 			getIsRequesting: jest.fn().mockReturnValue( false ),
 		} )
 	)
@@ -154,6 +163,12 @@ describe( 'Payment details page', () => {
 		);
 
 		expect( container ).toMatchSnapshot();
+
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+		// @ts-ignore
+		expect( console ).toHaveWarnedWith(
+			'List with items prop is deprecated is deprecated and will be removed in version 9.0.0. Note: See ExperimentalList / ExperimentalListItem for the new API that will replace this component in future versions.'
+		);
 	} );
 
 	it( 'should match the snapshot - Charge query param', () => {

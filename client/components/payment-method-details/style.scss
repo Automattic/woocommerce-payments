@@ -11,3 +11,9 @@
 		margin-top: 1px;
 	}
 }
+
+@media screen and ( max-width: 782px ) {
+	.payment-method-details__brand-tooltip {
+		display: none;
+	}
+}
