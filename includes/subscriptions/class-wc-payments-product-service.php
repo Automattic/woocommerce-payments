@@ -197,7 +197,6 @@ class WC_Payments_Product_Service {
 	 * @param int $product_id The ID of the product to handle.
 	 */
 	public function maybe_schedule_product_create_or_update( int $product_id ) {
-
 		// Skip products which have already been scheduled or aren't subscriptions.
 		$product = wc_get_product( $product_id );
 		if ( ! $product || isset( $this->products_to_update[ $product_id ] ) || ! WC_Subscriptions_Product::is_subscription( $product ) ) {
@@ -441,7 +440,7 @@ class WC_Payments_Product_Service {
 	/**
 	 * Prevents the subscription interval to be greater than 1 for yearly subscriptions.
 	 *
-	 * @param int $product_id Post ID of the product.
+	 * @param int $product_id ID of the product that's being saved.
 	 */
 	public function limit_subscription_product_intervals( $product_id ) {
 		if ( $this->is_subscriptions_plugin_active() ) {
@@ -533,7 +532,7 @@ class WC_Payments_Product_Service {
 		// This needs to run before WC_Subscriptions_Admin::save_product_variation(), which has a priority of 20.
 		add_action( 'woocommerce_save_product_variation', [ $this, 'limit_subscription_variation_intervals' ], 19, 2 );
 
-		add_action( 'save_post', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
+		add_action( 'save_post_product', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
 		add_action( 'woocommerce_save_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 30 );
 	}
 
@@ -544,7 +543,7 @@ class WC_Payments_Product_Service {
 		remove_action( 'save_post', [ $this, 'limit_subscription_product_intervals' ], 10 );
 		remove_action( 'woocommerce_save_product_variation', [ $this, 'limit_subscription_variation_intervals' ], 19 );
 
-		remove_action( 'save_post', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
+		remove_action( 'save_post_product', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
 		remove_action( 'woocommerce_save_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 30 );
 	}
 

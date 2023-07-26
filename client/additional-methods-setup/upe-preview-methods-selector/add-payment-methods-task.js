@@ -123,7 +123,7 @@ const ContinueButton = ( { paymentMethodsState } ) => {
 	return (
 		<Button
 			isBusy={ isSaving }
-			disabled={ isSaving || 1 > checkedPaymentMethods.length }
+			disabled={ isSaving || checkedPaymentMethods.length < 1 }
 			onClick={ handleContinueClick }
 			isPrimary
 		>
@@ -190,8 +190,8 @@ const AddPaymentMethodsTask = () => {
 		if ( status ) {
 			const statusAndRequirements = getStatusAndRequirements( method );
 			if (
-				'unrequested' === statusAndRequirements.status &&
-				0 < statusAndRequirements.requirements.length
+				statusAndRequirements.status === 'unrequested' &&
+				statusAndRequirements.requirements.length > 0
 			) {
 				handleActivationModalOpen( {
 					id: method,
@@ -296,7 +296,7 @@ const AddPaymentMethodsTask = () => {
 						</LoadableBlock>
 					</CardBody>
 					{ wcpaySettings.isBnplAffirmAfterpayEnabled &&
-						0 < availableBuyNowPayLaterUpeMethods.length && (
+						availableBuyNowPayLaterUpeMethods.length > 0 && (
 							<>
 								<CardDivider />
 								<CardBody>

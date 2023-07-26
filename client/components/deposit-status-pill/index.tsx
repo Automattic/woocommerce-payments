@@ -2,17 +2,18 @@
  * External dependencies
  */
 import * as React from 'react';
-import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import { displayStatus } from 'deposits/strings';
-import Pill from 'components/pill';
+import Pill, { PillType } from 'components/pill';
+import type { DepositStatus } from 'wcpay/types/deposits';
 
-const mappings: {
-	[ key: string ]: 'primary' | 'success' | 'alert' | 'danger' | 'light';
-} = {
+/**
+ * Maps a DepositStatus to a PillType.
+ */
+const mappings: Record< DepositStatus, PillType > = {
 	estimated: 'light',
 	pending: 'alert',
 	in_transit: 'success',
@@ -28,15 +29,9 @@ const mappings: {
  * @return {JSX.Element} Deposit status pill.
  */
 const DepositStatusPill: React.FC< {
-	status: string;
+	status: DepositStatus;
 } > = ( { status } ): JSX.Element => {
-	const label = displayStatus[ status as keyof typeof displayStatus ]
-		? displayStatus[ status as keyof typeof displayStatus ]
-		: __( 'Unknown', 'woocommerce-payments' );
-
-	const type = status && mappings[ status ] ? mappings[ status ] : 'light';
-
-	return <Pill type={ type }>{ label }</Pill>;
+	return <Pill type={ mappings[ status ] }>{ displayStatus[ status ] }</Pill>;
 };
 
 export default DepositStatusPill;

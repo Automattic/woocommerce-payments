@@ -138,7 +138,7 @@ const StoreSettings = () => {
 									}
 								) }
 							</div>
-							{ 'Storefront' === storeSettings.site_theme ? (
+							{ storeSettings.site_theme === 'Storefront' ? (
 								<CheckboxControl
 									checked={ isStorefrontSwitcherEnabledValue }
 									onChange={
