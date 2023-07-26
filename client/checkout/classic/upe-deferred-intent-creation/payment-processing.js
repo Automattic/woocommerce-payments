@@ -99,7 +99,7 @@ function createStripePaymentMethod(
 	paymentMethodType
 ) {
 	let params = {};
-	if ( jQueryForm.attr( 'name' ) === 'checkout' ) {
+	if ( 'checkout' === jQueryForm.attr( 'name' ) ) {
 		params = {
 			billing_details: {
 				name: document.querySelector( '#billing_first_name' )
@@ -142,7 +142,7 @@ function createStripePaymentMethod(
 async function createStripePaymentElement( api, paymentMethodType ) {
 	const amount = Number( getUPEConfig( 'cartTotal' ) );
 	const options = {
-		mode: amount < 1 ? 'setup' : 'payment',
+		mode: 1 > amount ? 'setup' : 'payment',
 		currency: getUPEConfig( 'currency' ).toLowerCase(),
 		amount: amount,
 		paymentMethodCreation: 'manual',

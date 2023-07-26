@@ -182,7 +182,7 @@ describe( 'UPE checkout utils', () => {
 
 		it( 'should not provide terms when cart does not contain subscriptions and the saving checkbox is unchecked', () => {
 			getUPEConfig.mockImplementation( ( argument ) => {
-				if ( argument === 'paymentMethodsConfig' ) {
+				if ( 'paymentMethodsConfig' === argument ) {
 					return {
 						card: {
 							label: 'Card',
@@ -191,7 +191,7 @@ describe( 'UPE checkout utils', () => {
 					};
 				}
 
-				if ( argument === 'cartContainsSubscription' ) {
+				if ( 'cartContainsSubscription' === argument ) {
 					return false;
 				}
 			} );
@@ -205,7 +205,7 @@ describe( 'UPE checkout utils', () => {
 
 		it( 'should provide terms when cart does not contain subscriptions but the saving checkbox is checked', () => {
 			getUPEConfig.mockImplementation( ( argument ) => {
-				if ( argument === 'paymentMethodsConfig' ) {
+				if ( 'paymentMethodsConfig' === argument ) {
 					return {
 						card: {
 							label: 'Card',
@@ -214,7 +214,7 @@ describe( 'UPE checkout utils', () => {
 					};
 				}
 
-				if ( argument === 'cartContainsSubscription' ) {
+				if ( 'cartContainsSubscription' === argument ) {
 					return false;
 				}
 			} );
@@ -229,7 +229,7 @@ describe( 'UPE checkout utils', () => {
 
 		it( 'should provide terms when cart contains subscriptions but the saving checkbox is unchecked', () => {
 			getUPEConfig.mockImplementation( ( argument ) => {
-				if ( argument === 'paymentMethodsConfig' ) {
+				if ( 'paymentMethodsConfig' === argument ) {
 					return {
 						card: {
 							label: 'Card',
@@ -238,7 +238,7 @@ describe( 'UPE checkout utils', () => {
 					};
 				}
 
-				if ( argument === 'cartContainsSubscription' ) {
+				if ( 'cartContainsSubscription' === argument ) {
 					return true;
 				}
 			} );
@@ -288,7 +288,7 @@ describe( 'getStripeElementOptions', () => {
 	test( 'should return options with "always" terms for cart containing subscription', () => {
 		const shouldSavePayment = false;
 		getUPEConfig.mockImplementation( ( argument ) => {
-			if ( argument === 'cartContainsSubscription' ) {
+			if ( 'cartContainsSubscription' === argument ) {
 				return true;
 			}
 		} );
@@ -336,7 +336,7 @@ describe( 'getStripeElementOptions', () => {
 	test( 'should return options with "always" terms when checkbox to save payment method is checked', () => {
 		const shouldSavePayment = true;
 		getUPEConfig.mockImplementation( ( argument ) => {
-			if ( argument === 'cartContainsSubscription' ) {
+			if ( 'cartContainsSubscription' === argument ) {
 				return false;
 			}
 		} );
@@ -390,7 +390,7 @@ describe( 'getStripeElementOptions', () => {
 		};
 
 		getUPEConfig.mockImplementation( ( argument ) => {
-			if ( argument === 'cartContainsSubscription' ) {
+			if ( 'cartContainsSubscription' === argument ) {
 				return false;
 			}
 		} );

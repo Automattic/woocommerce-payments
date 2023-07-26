@@ -42,7 +42,7 @@ const PaymentRequestSettings = ( { section } ) => {
 
 	return (
 		<Card>
-			{ section === 'enable' && (
+			{ 'enable' === section && (
 				<CardBody>
 					<CheckboxControl
 						checked={ isPaymentRequestEnabled }
@@ -118,7 +118,7 @@ const PaymentRequestSettings = ( { section } ) => {
 				</CardBody>
 			) }
 
-			{ section === 'general' && (
+			{ 'general' === section && (
 				<GeneralPaymentRequestButtonSettings type="google/apple" />
 			) }
 		</Card>

@@ -13,7 +13,7 @@ import { formatCurrencyName } from '../../utils/currency';
 export const DepositsFilters = ( props ) => {
 	const populateDepositCurrencies = ( filtersConfiguration ) => {
 		filtersConfiguration.forEach( ( filter ) => {
-			if ( filter.param === 'store_currency_is' ) {
+			if ( 'store_currency_is' === filter.param ) {
 				const currencies = props.storeCurrencies || [];
 				// Generate select options: pick the first one (default) and add provided currencies
 				filter.filters = [
@@ -24,7 +24,7 @@ export const DepositsFilters = ( props ) => {
 					} ) ),
 				];
 				// Show the select when several currencies are available.
-				if ( filter.filters.length > 2 ) {
+				if ( 2 < filter.filters.length ) {
 					filter.showFilters = () => true;
 				}
 			}

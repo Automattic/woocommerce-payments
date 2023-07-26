@@ -300,7 +300,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 						/>
 						<PhoneNumberInput
 							value={
-								phoneNumber === null
+								null === phoneNumber
 									? getPhoneFieldValue()
 									: phoneNumber
 							}

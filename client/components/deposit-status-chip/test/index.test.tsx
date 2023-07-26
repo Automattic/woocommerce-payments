@@ -10,6 +10,12 @@ import { render } from '@testing-library/react';
 import DepositStatusChip from '..';
 
 describe( 'Deposits status chip renders', () => {
+	test( 'Renders default status chip "unknown" when unknown/invalid status is given.', () => {
+		const { getByText } = render( <DepositStatusChip status="hello" /> );
+
+		expect( getByText( 'Unknown' ) ).toBeTruthy();
+	} );
+
 	test( 'Renders In Transit status chip.', () => {
 		const { getByText } = render(
 			<DepositStatusChip status="estimated" />

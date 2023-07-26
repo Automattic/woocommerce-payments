@@ -107,7 +107,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		);
 
 		// Handle Blocks Cart and Checkout notices.
-		if ( wcSettings.wcBlocksConfig && context !== 'product' ) {
+		if ( wcSettings.wcBlocksConfig && 'product' !== context ) {
 			// This handles adding the error notice to the cart page.
 			wp.data
 				.dispatch( 'core/notices' )
@@ -201,7 +201,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 	};
 
 	document.addEventListener( 'keyup', ( event ) => {
-		if ( event.key === 'Escape' && closeIframe() ) {
+		if ( 'Escape' === event.key && closeIframe() ) {
 			event.stopPropagation();
 		}
 	} );
@@ -228,7 +228,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 					if ( ! document.querySelector( '.woopay-otp-iframe' ) ) {
 						return;
 					}
-					if ( response.result === 'success' ) {
+					if ( 'success' === response.result ) {
 						window.location = response.url;
 					} else {
 						showErrorMessage();
@@ -245,7 +245,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 				closeIframe();
 				break;
 			case 'iframe_height':
-				if ( e.data.height > 300 ) {
+				if ( 300 < e.data.height ) {
 					if ( fullScreenModalBreakpoint <= window.innerWidth ) {
 						// set height to given value
 						iframe.style.height = e.data.height + 'px';

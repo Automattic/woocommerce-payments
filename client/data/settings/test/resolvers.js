@@ -47,7 +47,7 @@ describe( 'Settings resolvers tests', () => {
 
 			apiFetch.mockImplementation( () => {} );
 			dispatch.mockImplementation( ( storeName ) => {
-				if ( storeName === 'core/notices' ) {
+				if ( 'core/notices' === storeName ) {
 					return noticesDispatch;
 				}
 

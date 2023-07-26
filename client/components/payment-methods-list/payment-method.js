@@ -57,7 +57,7 @@ const PaymentMethod = ( {
 		<li
 			className={ classNames(
 				'payment-method',
-				{ 'has-icon-border': id !== 'card' },
+				{ 'has-icon-border': 'card' !== id },
 				{ overlay: needsOverlay },
 				className
 			) }

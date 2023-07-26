@@ -216,12 +216,12 @@ class WC_Payments_API_Client {
 	 *
 	 * @param string $intent_id intent id.
 	 *
-	 * @return WC_Payments_API_Payment_Intention intention object.
+	 * @return WC_Payments_API_Intention intention object.
 	 */
 	public function get_intent( $intent_id ) {
 		$intent = $this->request( [], self::INTENTIONS_API . '/' . $intent_id, self::GET );
 
-		return $this->deserialize_payment_intention_object_from_array( $intent );
+		return $this->deserialize_intention_object_from_array( $intent );
 	}
 
 	/**
@@ -2018,7 +2018,7 @@ class WC_Payments_API_Client {
 	private function add_order_info_to_object( $order, $object ) {
 		// Add order information to the `$transaction`.
 		// If the order couldn't be retrieved, return an empty order.
-		$object['order'] = [];
+		$object['order'] = null;
 
 		if ( $order ) {
 			$object['order'] = $this->build_order_info( $order );
@@ -2126,37 +2126,31 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * De-serialize an intention array into a payment intention object
+	 * De-serialize an intention array into a intention object
 	 *
 	 * @param array $intention_array - The intention array to de-serialize.
 	 *
-	 * @return WC_Payments_API_Payment_Intention
+	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Unable to deserialize intention array.
 	 */
-	public function deserialize_payment_intention_object_from_array( array $intention_array ) {
+	public function deserialize_intention_object_from_array( array $intention_array ) {
 		// TODO: Throw an exception if the response array doesn't contain mandatory properties.
 		$created = new DateTime();
 		$created->setTimestamp( $intention_array['created'] );
 
-		// Metadata can be an empty stdClass object, so we need to check array type too.
-		// See https://github.com/Automattic/woocommerce-payments/pull/419/commits/c2c8438c3ed7be6d604435e059209fb87fb6d0c4.
-		$raw_metadata           = $intention_array['metadata'];
-		$metadata               = is_array( $raw_metadata ) && ! empty( $raw_metadata )
-			? $raw_metadata
-			: [];
-		$charge_array           = 0 < $intention_array['charges']['total_count'] ? end( $intention_array['charges']['data'] ) : null;
-		$next_action            = $intention_array['next_action'] ?? [];
-		$last_payment_error     = $intention_array['last_payment_error'] ?? [];
-		$customer               = $intention_array['customer'] ?? $charge_array['customer'] ?? null;
-		$payment_method         = $intention_array['payment_method'] ?? $intention_array['source'] ?? null;
-		$processing             = $intention_array[ Payment_Intent_Status::PROCESSING ] ?? [];
-		$payment_method_types   = $intention_array['payment_method_types'] ?? [];
-		$payment_method_options = $intention_array['payment_method_options'] ?? [];
+		$charge_array         = 0 < $intention_array['charges']['total_count'] ? end( $intention_array['charges']['data'] ) : null;
+		$next_action          = ! empty( $intention_array['next_action'] ) ? $intention_array['next_action'] : [];
+		$last_payment_error   = ! empty( $intention_array['last_payment_error'] ) ? $intention_array['last_payment_error'] : [];
+		$metadata             = ! empty( $intention_array['metadata'] ) ? $intention_array['metadata'] : [];
+		$customer             = $intention_array['customer'] ?? $charge_array['customer'] ?? null;
+		$payment_method       = $intention_array['payment_method'] ?? $intention_array['source'] ?? null;
+		$processing           = $intention_array[ Payment_Intent_Status::PROCESSING ] ?? [];
+		$payment_method_types = $intention_array['payment_method_types'] ?? [];
 
 		$charge = ! empty( $charge_array ) ? self::deserialize_charge_object_from_array( $charge_array ) : null;
 		$order  = $this->get_order_info_from_intention_object( $intention_array['id'] );
 
-		$intent = new WC_Payments_API_Payment_Intention(
+		$intent = new WC_Payments_API_Intention(
 			$intention_array['id'],
 			$intention_array['amount'],
 			$intention_array['currency'],
@@ -2171,52 +2165,6 @@ class WC_Payments_API_Client {
 			$metadata,
 			$processing,
 			$payment_method_types,
-			$payment_method_options,
-			$order
-		);
-
-		return $intent;
-	}
-
-	/**
-	 * De-serialize an intention array into a setup intention object
-	 *
-	 * @param array $intention_array - The intention array to de-serialize.
-	 *
-	 * @return WC_Payments_API_Setup_Intention
-	 * @throws API_Exception - Unable to deserialize intention array.
-	 */
-	public function deserialize_setup_intention_object_from_array( array $intention_array ): WC_Payments_API_Setup_Intention {
-		$created = new DateTime();
-		$created->setTimestamp( $intention_array['created'] );
-
-		// Metadata can be an empty stdClass object, so we need to check array type too.
-		// See https://github.com/Automattic/woocommerce-payments/pull/419/commits/c2c8438c3ed7be6d604435e059209fb87fb6d0c4.
-		$raw_metadata           = $intention_array['metadata'];
-		$metadata               = is_array( $raw_metadata ) && ! empty( $raw_metadata )
-			? $raw_metadata
-			: [];
-		$next_action            = $intention_array['next_action'] ?? [];
-		$last_setup_error       = $intention_array['last_setup_error'] ?? [];
-		$customer               = $intention_array['customer'] ?? null;
-		$payment_method         = $intention_array['payment_method'] ?? $intention_array['source'] ?? null;
-		$payment_method_types   = $intention_array['payment_method_types'] ?? [];
-		$payment_method_options = $intention_array['payment_method_options'] ?? [];
-
-		$order = $this->get_order_info_from_intention_object( $intention_array['id'] );
-
-		$intent = new WC_Payments_API_Setup_Intention(
-			$intention_array['id'],
-			$customer,
-			$payment_method,
-			$created,
-			$intention_array['status'],
-			$intention_array['client_secret'],
-			$next_action,
-			$last_setup_error,
-			$metadata,
-			$payment_method_types,
-			$payment_method_options,
 			$order
 		);
 
@@ -2298,6 +2246,7 @@ class WC_Payments_API_Client {
 
 		return $customer_fingerprint_metadata;
 	}
+
 
 	/**
 	 * Return summary for authorizations.

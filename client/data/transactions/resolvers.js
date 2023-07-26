@@ -131,7 +131,7 @@ export function* getFraudOutcomeTransactions( status, query ) {
 			results.data || []
 		);
 	} catch ( e ) {
-		if ( e.code === 'wcpay_fraud_outcome_not_found' ) {
+		if ( 'wcpay_fraud_outcome_not_found' === e.code ) {
 			yield updateFraudOutcomeTransactions( status, query, [] );
 			return;
 		}
@@ -173,7 +173,7 @@ export function* getFraudOutcomeTransactionsSummary( status, query ) {
 			result || summaryFallback
 		);
 	} catch ( e ) {
-		if ( e.code === 'wcpay_fraud_outcome_not_found' ) {
+		if ( 'wcpay_fraud_outcome_not_found' === e.code ) {
 			yield updateFraudOutcomeTransactionsSummary(
 				status,
 				query,

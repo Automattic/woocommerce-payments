@@ -32,7 +32,7 @@ export const showAuthenticationModalIfRequired = ( api ) => {
 	);
 
 	// Boolean `true` means that there is nothing to confirm.
-	if ( confirmation === true ) {
+	if ( true === confirmation ) {
 		return;
 	}
 

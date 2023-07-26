@@ -39,10 +39,8 @@ describe( 'Shopper > Pay for Order', () => {
 		const payButtons = await page.$$( '.woocommerce-button.button.pay' );
 		const payButton = payButtons.find(
 			async ( button ) =>
-				( await page.evaluate(
-					( elem ) => elem.innerText,
-					button
-				) ) === 'Pay'
+				'Pay' ===
+				( await page.evaluate( ( elem ) => elem.innerText, button ) )
 		);
 		await payButton.click();
 		const card = config.get( 'cards.basic' );

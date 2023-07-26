@@ -57,9 +57,7 @@ function _manually_load_plugin() {
 
 	require_once $_plugin_dir . 'includes/class-wc-payments-db.php';
 	require_once $_plugin_dir . 'includes/wc-payment-api/models/class-wc-payments-api-charge.php';
-	require_once $_plugin_dir . 'includes/wc-payment-api/models/class-wc-payments-api-abstract-intention.php';
-	require_once $_plugin_dir . 'includes/wc-payment-api/models/class-wc-payments-api-payment-intention.php';
-	require_once $_plugin_dir . 'includes/wc-payment-api/models/class-wc-payments-api-setup-intention.php';
+	require_once $_plugin_dir . 'includes/wc-payment-api/models/class-wc-payments-api-intention.php';
 	require_once $_plugin_dir . 'includes/wc-payment-api/class-wc-payments-api-client.php';
 	require_once $_plugin_dir . 'includes/wc-payment-api/class-wc-payments-http-interface.php';
 	require_once $_plugin_dir . 'includes/wc-payment-api/class-wc-payments-http.php';

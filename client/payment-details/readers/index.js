@@ -86,7 +86,7 @@ const RenderPaymentCardReaderChargeDetails = ( props ) => {
 	];
 
 	const rows =
-		readers.length > 0
+		0 < readers.length
 			? readers.map( ( reader ) => {
 					return [
 						{

@@ -42,12 +42,12 @@ const renderDepositsStatus = ( { deposits } ) => {
 
 const renderAccountStatusDescription = ( accountStatus ) => {
 	const { status, currentDeadline, pastDue, accountLink } = accountStatus;
-	if ( status === 'complete' ) {
+	if ( 'complete' === status ) {
 		return '';
 	}
 
 	let description = '';
-	if ( status === 'restricted_soon' ) {
+	if ( 'restricted_soon' === status ) {
 		description = createInterpolateElement(
 			sprintf(
 				/* translators: %s - formatted requirements current deadline, <a> - dashboard login URL */
@@ -63,7 +63,7 @@ const renderAccountStatusDescription = ( accountStatus ) => {
 			// eslint-disable-next-line jsx-a11y/anchor-has-content
 			{ a: <a href={ accountLink } /> }
 		);
-	} else if ( status === 'restricted' && pastDue ) {
+	} else if ( 'restricted' === status && pastDue ) {
 		description = createInterpolateElement(
 			/* translators: <a> - dashboard login URL */
 			__(
@@ -73,22 +73,22 @@ const renderAccountStatusDescription = ( accountStatus ) => {
 			// eslint-disable-next-line jsx-a11y/anchor-has-content
 			{ a: <a href={ accountLink } /> }
 		);
-	} else if ( status === 'restricted_partially' ) {
+	} else if ( 'restricted_partially' === status ) {
 		description = __(
 			'Some payment methods and deposits are disabled for this account until all required documents are provided.',
 			'woocommerce-payments'
 		);
-	} else if ( status === 'restricted' ) {
+	} else if ( 'restricted' === status ) {
 		description = __(
 			'Payments and deposits are disabled for this account until business information is verified by the payment processor.',
 			'woocommerce-payments'
 		);
-	} else if ( status === 'rejected.fraud' ) {
+	} else if ( 'rejected.fraud' === status ) {
 		description = __(
 			'This account has been rejected because of suspected fraudulent activity.',
 			'woocommerce-payments'
 		);
-	} else if ( status === 'rejected.terms_of_service' ) {
+	} else if ( 'rejected.terms_of_service' === status ) {
 		description = __(
 			'This account has been rejected due to a Terms of Service violation.',
 			'woocommerce-payments'

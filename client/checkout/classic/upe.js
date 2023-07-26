@@ -17,13 +17,7 @@ import { getConfig, getCustomGatewayTitle } from 'utils/checkout';
 import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
-import {
-	getTerms,
-	getCookieValue,
-	isWCPayChosen,
-	getBillingDetails,
-	getShippingDetails,
-} from '../utils/upe';
+import { getTerms, getCookieValue, isWCPayChosen } from '../utils/upe';
 import { decryptClientSecret } from '../utils/encryption';
 import enableStripeLinkPaymentMethod from '../stripe-link';
 import apiRequest from '../utils/request';
@@ -160,6 +154,56 @@ jQuery( function ( $ ) {
 	// Set the payment country field
 	const setPaymentCountry = ( country ) => {
 		$( '#wcpay_payment_country' ).val( country );
+	};
+
+	/**
+	 * Converts form fields object into Stripe `shipping` object.
+	 *
+	 * @param {Object} fields Object mapping checkout shippinh fields to values.
+	 * @return {Object} Stripe formatted `shpping` object.
+	 */
+	const getShippingDetails = ( fields ) => {
+		return {
+			name:
+				`${ fields.billing_first_name } ${ fields.billing_last_name }`.trim() ||
+				'-',
+			phone: fields.billing_phone || '-',
+			address: {
+				country: fields.billing_country || '-',
+				line1: fields.billing_address_1 || '-',
+				line2: fields.billing_address_2 || '-',
+				city: fields.billing_city || '-',
+				state: fields.billing_state || '-',
+				postal_code: fields.billing_postcode || '-',
+			},
+		};
+	};
+
+	/**
+	 * Converts form fields object into Stripe `billing_details` object.
+	 *
+	 * @param {Object} fields Object mapping checkout billing fields to values.
+	 * @return {Object} Stripe formatted `billing_details` object.
+	 */
+	const getBillingDetails = ( fields ) => {
+		return {
+			name:
+				`${ fields.billing_first_name } ${ fields.billing_last_name }`.trim() ||
+				'-',
+			email:
+				'string' === typeof fields.billing_email
+					? fields.billing_email.trim()
+					: '-',
+			phone: fields.billing_phone || '-',
+			address: {
+				country: fields.billing_country || '-',
+				line1: fields.billing_address_1 || '-',
+				line2: fields.billing_address_2 || '-',
+				city: fields.billing_city || '-',
+				state: fields.billing_state || '-',
+				postal_code: fields.billing_postcode || '-',
+			},
+		};
 	};
 
 	/**
@@ -592,7 +636,7 @@ jQuery( function ( $ ) {
 		);
 
 		// Boolean `true` means that there is nothing to confirm.
-		if ( confirmation === true ) {
+		if ( true === confirmation ) {
 			return;
 		}
 
@@ -703,9 +747,10 @@ jQuery( function ( $ ) {
 	// Handle the add payment method form for WooPayments.
 	$( 'form#add_payment_method' ).on( 'submit', function () {
 		if (
+			'woocommerce_payments' !==
 			$(
 				"#add_payment_method input:checked[name='payment_method']"
-			).val() !== 'woocommerce_payments'
+			).val()
 		) {
 			return;
 		}
@@ -767,9 +812,10 @@ jQuery( function ( $ ) {
  */
 export function isUsingSavedPaymentMethod() {
 	return (
-		document.querySelector(
-			'#wc-woocommerce_payments-payment-token-new'
-		) !== null &&
+		null !==
+			document.querySelector(
+				'#wc-woocommerce_payments-payment-token-new'
+			) &&
 		! document.querySelector( '#wc-woocommerce_payments-payment-token-new' )
 			.checked
 	);

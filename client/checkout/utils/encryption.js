@@ -12,9 +12,9 @@ export const decryptClientSecret = function (
 ) {
 	if (
 		getConfig( 'isClientEncryptionEnabled' ) &&
-		encryptedValue.length > 3 &&
-		encryptedValue.slice( 0, 3 ) !== 'pi_' &&
-		encryptedValue.slice( 0, 5 ) !== 'seti_'
+		3 < encryptedValue.length &&
+		'pi_' !== encryptedValue.slice( 0, 3 ) &&
+		'seti_' !== encryptedValue.slice( 0, 5 )
 	) {
 		stripeAccountId = stripeAccountId || getConfig( 'accountId' );
 		return Utf8.stringify(

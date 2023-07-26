@@ -47,7 +47,7 @@ describe( 'Saved cards ', () => {
 					`${ card.label } (expires ${ card.expires.month }/${ card.expires.year })`
 				);
 
-				if ( cardType === 'basic' ) {
+				if ( 'basic' === cardType ) {
 					await shopper.placeOrder();
 				} else {
 					await expect( page ).toClick( '#place_order' );

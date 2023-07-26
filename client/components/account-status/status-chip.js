@@ -18,15 +18,15 @@ const StatusChip = ( props ) => {
 	let type = 'light';
 	let tooltip = '';
 	// Pending status is also shown when the account is PO enabled but not complete and in that case status is restricted.
-	if ( accountStatus === 'complete' ) {
+	if ( 'complete' === accountStatus ) {
 		description = __( 'Complete', 'woocommerce-payments' );
 		type = 'primary';
-	} else if ( accountStatus === 'restricted_soon' ) {
+	} else if ( 'restricted_soon' === accountStatus ) {
 		description = __( 'Restricted soon', 'woocommerce-payments' );
 		type = 'warning';
 	} else if (
-		accountStatus === 'pending_verification' ||
-		( poEnabled && ! poComplete && accountStatus === 'restricted' )
+		'pending_verification' === accountStatus ||
+		( poEnabled && ! poComplete && 'restricted' === accountStatus )
 	) {
 		description = __( 'Pending', 'woocommerce-payments' );
 		type = 'light';
@@ -34,10 +34,10 @@ const StatusChip = ( props ) => {
 			'Deposits are pending while Stripe verifies details on your account.',
 			'woocommerce-payments'
 		);
-	} else if ( accountStatus === 'restricted_partially' ) {
+	} else if ( 'restricted_partially' === accountStatus ) {
 		description = __( 'Restricted partially', 'woocommerce-payments' );
 		type = 'warning';
-	} else if ( accountStatus === 'restricted' ) {
+	} else if ( 'restricted' === accountStatus ) {
 		description = __( 'Restricted', 'woocommerce-payments' );
 		type = 'alert';
 	} else if ( accountStatus.startsWith( 'rejected' ) ) {

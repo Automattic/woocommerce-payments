@@ -7,12 +7,11 @@ import React from 'react';
 import { Button, Modal } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
+import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 
 /**
  * Internal dependencies
  */
-import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
-import type * as AccountOverview from 'wcpay/types/account-overview';
 import './style.scss';
 
 interface InstantDepositModalProps {

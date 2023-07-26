@@ -8,7 +8,7 @@
  */
 export const getPaymentRequestData = ( key ) => {
 	if (
-		typeof wcpayPaymentRequestParams === 'object' &&
+		'object' === typeof wcpayPaymentRequestParams &&
 		wcpayPaymentRequestParams.hasOwnProperty( key )
 	) {
 		return wcpayPaymentRequestParams[ key ];
@@ -45,7 +45,7 @@ export const getPaymentRequest = ( {
 
 	// Puerto Rico (PR) is the only US territory/possession that's supported by Stripe.
 	// Since it's considered a US state by Stripe, we need to do some special mapping.
-	if ( country === 'PR' ) {
+	if ( 'PR' === country ) {
 		country = 'US';
 	}
 
@@ -124,7 +124,7 @@ export const shouldUseGooglePayBrand = () => {
 	const isChrome =
 		/chrome/.test( ua ) &&
 		! /edge|edg|opr|brave\//.test( ua ) &&
-		window.navigator.vendor === 'Google Inc.';
+		'Google Inc.' === window.navigator.vendor;
 	// newer versions of Brave do not have the userAgent string
 	const isBrave = isChrome && window.navigator.brave;
 	return isChrome && ! isBrave;
@@ -143,10 +143,10 @@ export const displayLoginConfirmation = ( paymentRequestType ) => {
 	let message = getPaymentRequestData( 'login_confirmation' )?.message;
 
 	// Replace dialog text with specific payment request type "Apple Pay" or "Google Pay".
-	if ( paymentRequestType !== 'payment_request_api' ) {
+	if ( 'payment_request_api' !== paymentRequestType ) {
 		message = message.replace(
 			/\*\*.*?\*\*/,
-			paymentRequestType === 'apple_pay' ? 'Apple Pay' : 'Google Pay'
+			'apple_pay' === paymentRequestType ? 'Apple Pay' : 'Google Pay'
 		);
 	}
 

@@ -24,7 +24,7 @@ const PaymentMethodIcon = ( { name, showName } ) => {
 		<span
 			className={ classNames(
 				'woocommerce-payments__payment-method-icon',
-				{ 'has-icon-border': name !== 'card' }
+				{ 'has-icon-border': 'card' !== name }
 			) }
 		>
 			<Icon />

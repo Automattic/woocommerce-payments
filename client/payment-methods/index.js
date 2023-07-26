@@ -189,8 +189,8 @@ const PaymentMethods = () => {
 	const handleCheckClick = ( itemId ) => {
 		const statusAndRequirements = getStatusAndRequirements( itemId );
 		if (
-			statusAndRequirements.status === 'unrequested' &&
-			statusAndRequirements.requirements.length > 0
+			'unrequested' === statusAndRequirements.status &&
+			0 < statusAndRequirements.requirements.length
 		) {
 			handleActivationModalOpen( {
 				id: itemId,
@@ -204,7 +204,7 @@ const PaymentMethods = () => {
 	const handleUncheckClick = ( itemId ) => {
 		const methodConfig = methodsConfiguration[ itemId ];
 		const statusAndRequirements = getStatusAndRequirements( itemId );
-		if ( methodConfig && statusAndRequirements.status === 'active' ) {
+		if ( methodConfig && 'active' === statusAndRequirements.status ) {
 			handleDeleteModalOpen( {
 				id: itemId,
 				label: methodConfig.label,
@@ -224,7 +224,7 @@ const PaymentMethods = () => {
 
 	return (
 		<>
-			{ openModalIdentifier === 'disable' ? (
+			{ 'disable' === openModalIdentifier ? (
 				<DisableUPEModal
 					setOpenModal={ setOpenModalIdentifier }
 					triggerAfterDisable={ () =>
@@ -232,7 +232,7 @@ const PaymentMethods = () => {
 					}
 				/>
 			) : null }
-			{ openModalIdentifier === 'survey' ? (
+			{ 'survey' === openModalIdentifier ? (
 				<WcPaySurveyContextProvider>
 					<SurveyModal
 						setOpenModal={ setOpenModalIdentifier }
@@ -244,7 +244,7 @@ const PaymentMethods = () => {
 
 			<Card
 				className={ classNames( 'payment-methods', {
-					'is-loading': status === 'pending',
+					'is-loading': 'pending' === status,
 				} ) }
 			>
 				{ isUpeEnabled && (
@@ -256,7 +256,7 @@ const PaymentMethods = () => {
 									'woocommerce-payments'
 								) }
 							</span>
-							{ upeType !== 'split' && (
+							{ 'split' !== upeType && (
 								<>
 									{ ' ' }
 									<Pill>

@@ -88,7 +88,7 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 
 	const dismissTask = ( task, type ) => {
 		const params =
-			type === 'dismiss'
+			'dismiss' === type
 				? {
 						task,
 						dismissedTasks: dismissedTodoTasks,

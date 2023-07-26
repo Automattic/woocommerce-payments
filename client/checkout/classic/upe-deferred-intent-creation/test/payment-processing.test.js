@@ -21,7 +21,7 @@ jest.mock( 'wcpay/checkout/utils/upe' );
 jest.mock( 'wcpay/utils/checkout', () => {
 	return {
 		getUPEConfig: jest.fn( ( argument ) => {
-			if ( argument === 'paymentMethodsConfig' ) {
+			if ( 'paymentMethodsConfig' === argument ) {
 				return {
 					card: {
 						label: 'Card',
@@ -42,7 +42,7 @@ jest.mock( 'wcpay/utils/checkout', () => {
 				};
 			}
 
-			if ( argument === 'currency' ) {
+			if ( 'currency' === argument ) {
 				return 'eur';
 			}
 		} ),
@@ -160,17 +160,17 @@ describe( 'Stripe Payment Element mounting', () => {
 			return 'fingerprint';
 		} );
 		getUPEConfig.mockImplementation( ( argument ) => {
-			if ( argument === 'currency' ) {
+			if ( 'currency' === argument ) {
 				return 'eur';
 			}
 
-			if ( argument === 'upeAppearance' ) {
+			if ( 'upeAppearance' === argument ) {
 				return {
 					backgroundColor: '#fff',
 				};
 			}
 
-			if ( argument === 'paymentMethodsConfig' ) {
+			if ( 'paymentMethodsConfig' === argument ) {
 				return {
 					ideal: {
 						label: 'iDEAL',
@@ -243,11 +243,11 @@ describe( 'Stripe Payment Element mounting', () => {
 			},
 		};
 		getUPEConfig.mockImplementation( ( argument ) => {
-			if ( argument === 'currency' ) {
+			if ( 'currency' === argument ) {
 				return 'eur';
 			}
 
-			if ( argument === 'isUPEEnabled' ) {
+			if ( 'isUPEEnabled' === argument ) {
 				return true;
 			}
 		} );
@@ -276,11 +276,11 @@ describe( 'Stripe Payment Element mounting', () => {
 		} );
 
 		getUPEConfig.mockImplementation( ( argument ) => {
-			if ( argument === 'currency' ) {
+			if ( 'currency' === argument ) {
 				return 'eur';
 			}
 
-			if ( argument === 'paymentMethodsConfig' ) {
+			if ( 'paymentMethodsConfig' === argument ) {
 				return {
 					sepa: {
 						label: 'SEPA',
@@ -305,11 +305,11 @@ describe( 'Stripe Payment Element mounting', () => {
 describe( 'Payment processing', () => {
 	beforeEach( () => {
 		getUPEConfig.mockImplementation( ( argument ) => {
-			if ( argument === 'currency' ) {
+			if ( 'currency' === argument ) {
 				return 'eur';
 			}
 
-			if ( argument === 'paymentMethodsConfig' ) {
+			if ( 'paymentMethodsConfig' === argument ) {
 				return {
 					card: {
 						label: 'card',

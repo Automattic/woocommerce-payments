@@ -70,7 +70,7 @@ const RefundConfirmationModal = ( {
 				blockUI();
 			},
 			success: function ( response ) {
-				if ( response.success === true ) {
+				if ( true === response.success ) {
 					// Refresh the page to show the refunded status
 					window.location.reload();
 				} else {

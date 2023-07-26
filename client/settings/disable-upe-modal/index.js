@@ -52,7 +52,7 @@ const NeedHelpBarSection = () => {
 const DisableUpeModalBody = () => {
 	const [ enabledPaymentMethodIds ] = useEnabledPaymentMethodIds();
 	const upePaymentMethods = enabledPaymentMethodIds.filter(
-		( method ) => method !== 'card'
+		( method ) => 'card' !== method
 	);
 
 	return (
@@ -64,7 +64,7 @@ const DisableUpeModalBody = () => {
 					'woocommerce-payments'
 				) }
 			</p>
-			{ upePaymentMethods.length > 0 ? (
+			{ 0 < upePaymentMethods.length ? (
 				<>
 					<p>
 						{ __(
@@ -98,7 +98,7 @@ const DisableUpeModal = ( { setOpenModal, triggerAfterDisable } ) => {
 	}, [ isUpeEnabled, setOpenModal, triggerAfterDisable ] );
 
 	useEffect( () => {
-		if ( status === 'error' ) {
+		if ( 'error' === status ) {
 			dispatch( 'core/notices' ).createErrorNotice(
 				__(
 					'There was an error disabling the new payment methods.',
@@ -121,7 +121,7 @@ const DisableUpeModal = ( { setOpenModal, triggerAfterDisable } ) => {
 					<>
 						<Button
 							isSecondary
-							disabled={ status === 'pending' }
+							disabled={ 'pending' === status }
 							onClick={ () => setOpenModal( '' ) }
 						>
 							{ __( 'Cancel', 'woocommerce-payments' ) }
@@ -129,8 +129,8 @@ const DisableUpeModal = ( { setOpenModal, triggerAfterDisable } ) => {
 						<Button
 							isPrimary
 							isDestructive
-							isBusy={ status === 'pending' }
-							disabled={ status === 'pending' }
+							isBusy={ 'pending' === status }
+							disabled={ 'pending' === status }
 							onClick={ () => setIsUpeEnabled( false ) }
 						>
 							{ __( 'Disable', 'woocommerce-payments' ) }

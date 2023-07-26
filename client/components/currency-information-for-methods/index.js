@@ -15,9 +15,9 @@ import InlineNotice from '../inline-notice';
 import PaymentMethodsMap from '../../payment-methods-map';
 
 const ListToCommaSeparatedSentencePartConverter = ( items ) => {
-	if ( items.length === 1 ) {
+	if ( 1 === items.length ) {
 		return items[ 0 ];
-	} else if ( items.length === 2 ) {
+	} else if ( 2 === items.length ) {
 		return items.join( ' ' + __( 'and', 'woocommerce-payments' ) + ' ' );
 	}
 	const lastItem = items.pop();
@@ -49,7 +49,7 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 	const missingCurrencies = [];
 
 	selectedMethods.map( ( paymentMethod ) => {
-		if ( typeof PaymentMethodsMap[ paymentMethod ] !== 'undefined' ) {
+		if ( 'undefined' !== typeof PaymentMethodsMap[ paymentMethod ] ) {
 			PaymentMethodsMap[ paymentMethod ].currencies.map( ( currency ) => {
 				if (
 					! enabledCurrenciesIds.includes( currency.toLowerCase() )
@@ -66,7 +66,7 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 						currencyInfo.available[ currency ];
 
 					const missingCurrencyLabel =
-						missingCurrencyInfo != null
+						null != missingCurrencyInfo
 							? missingCurrencyInfo.name +
 							  ' (' +
 							  ( undefined !== missingCurrencyInfo.symbol
@@ -88,7 +88,7 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 		paymentMethodsWithMissingCurrencies
 	);
 
-	if ( missingCurrencyLabels.length > 0 ) {
+	if ( 0 < missingCurrencyLabels.length ) {
 		return (
 			<InlineNotice status="info" isDismissible={ false }>
 				{ interpolateComponents( {
@@ -107,7 +107,7 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 							paymentMethodsWithMissingCurrencies.length,
 							'woocommerce-payments'
 						),
-						missingCurrencyLabels.length === 1 ? 'an' : '',
+						1 === missingCurrencyLabels.length ? 'an' : '',
 						_n(
 							'currency',
 							'currencies',

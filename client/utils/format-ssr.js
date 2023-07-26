@@ -50,7 +50,7 @@ SUHOSIN Installed: ${
 MySQL Version: ${ systemStatus.environment.mysql_version_string }
 Max Upload Size: ${ formatSize( systemStatus.environment.max_upload_size ) }
 Default Timezone is UTC: ${
-		systemStatus.environment.default_timezone === 'UTC'
+		'UTC' === systemStatus.environment.default_timezone
 			? CHECK_MARK
 			: CROSS_MARK
 	}
@@ -126,7 +126,7 @@ Taxonomies: Product Visibility: ${ printTerms(
 		systemStatus.settings.product_visibility_terms
 	) }
 Connected to WooCommerce.com: ${
-		systemStatus.settings.woocommerce_com_connected === 'yes'
+		'yes' === systemStatus.settings.woocommerce_com_connected
 			? CHECK_MARK
 			: DASH_MARK
 	}
@@ -162,7 +162,7 @@ ${
 		: ''
 }
 Overrides: ${
-		systemStatus.theme.overrides.length > 0
+		0 < systemStatus.theme.overrides.length
 			? systemStatus.theme.overrides
 					.map( ( override ) => {
 						return override.file;
@@ -179,8 +179,8 @@ ${
 ### WooCommerce Payments ###
 
 Connected to WPCOM: ${
-		wcPayData.status === 'NOACCOUNT' ||
-		wcPayData.status === 'ONBOARDING_DISABLED'
+		'NOACCOUNT' === wcPayData.status ||
+		'ONBOARDING_DISABLED' === wcPayData.status
 			? 'No'
 			: 'Yes'
 	}
@@ -241,7 +241,7 @@ function printPostTypeCounts( postTypeCounts ) {
 
 function printPlugins( plugins, header ) {
 	let result = '';
-	if ( header && plugins.length > 0 ) {
+	if ( header && 0 < plugins.length ) {
 		result = '\n### ' + header + ' (' + plugins.length + ')\n\n';
 	}
 	plugins.forEach( ( plugin ) => {
@@ -307,7 +307,7 @@ function printTerms( arr ) {
  * @return {string} Human-readable string.
  */
 function formatSize( bytes, decimals = 0 ) {
-	if ( bytes === 0 ) {
+	if ( 0 === bytes ) {
 		return '0 B';
 	}
 

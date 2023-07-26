@@ -153,7 +153,7 @@ const SurveyModal = ( { setOpenModal, surveyKey, surveyQuestion } ) => {
 	useEffect( () => {
 		if ( ! surveyKey || ! surveyQuestion ) {
 			surveyCannotBeLoadedNotice();
-		} else if ( status === 'error' ) {
+		} else if ( 'error' === status ) {
 			submissionErrorNotice();
 		} else if ( isSurveySubmitted ) {
 			surveySubmittedConfirmation();
@@ -161,7 +161,7 @@ const SurveyModal = ( { setOpenModal, surveyKey, surveyQuestion } ) => {
 		}
 	}, [ status, isSurveySubmitted, surveyKey, surveyQuestion, setOpenModal ] );
 
-	if ( optionsArray < 1 ) return null;
+	if ( 1 > optionsArray ) return null;
 
 	return (
 		<>
@@ -176,15 +176,15 @@ const SurveyModal = ( { setOpenModal, surveyKey, surveyQuestion } ) => {
 					<>
 						<Button
 							isSecondary
-							disabled={ status === 'pending' }
+							disabled={ 'pending' === status }
 							onClick={ () => setOpenModal( '' ) }
 						>
 							{ __( 'Cancel', 'woocommerce-payments' ) }
 						</Button>
 						<Button
 							isPrimary
-							isBusy={ status === 'pending' }
-							disabled={ status === 'pending' }
+							isBusy={ 'pending' === status }
+							disabled={ 'pending' === status }
 							onClick={ () => submitSurvey() }
 						>
 							{ __( 'Send feedback', 'woocommerce-payments' ) }

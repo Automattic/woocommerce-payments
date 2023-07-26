@@ -10,7 +10,7 @@ export const useCurrencies = () =>
 	useSelect( ( select ) => {
 		const { getCurrencies, isResolving } = select( STORE_NAME );
 
-		if ( wcpaySettings.isMultiCurrencyEnabled !== '1' ) {
+		if ( '1' !== wcpaySettings.isMultiCurrencyEnabled ) {
 			return {
 				currencies: {},
 				isLoading: false,

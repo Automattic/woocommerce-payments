@@ -259,13 +259,13 @@ export const getFieldStyles = ( selector, upeElement, focus = false ) => {
 		}
 	}
 
-	if ( upeElement === '.Input' || upeElement === '.Tab--selected' ) {
+	if ( '.Input' === upeElement || '.Tab--selected' === upeElement ) {
 		const outline = generateOutlineStyle(
 			filteredStyles.outlineWidth,
 			filteredStyles.outlineStyle,
 			filteredStyles.outlineColor
 		);
-		if ( outline !== '' ) {
+		if ( '' !== outline ) {
 			filteredStyles.outline = outline;
 		}
 		delete filteredStyles.outlineWidth;
@@ -277,9 +277,9 @@ export const getFieldStyles = ( selector, upeElement, focus = false ) => {
 	//since Stripe doesn't support text-indents.
 	const textIndent = styles.getPropertyValue( 'text-indent' );
 	if (
-		textIndent !== '0px' &&
-		filteredStyles.paddingLeft === '0px' &&
-		filteredStyles.paddingRight === '0px'
+		'0px' !== textIndent &&
+		'0px' === filteredStyles.paddingLeft &&
+		'0px' === filteredStyles.paddingRight
 	) {
 		filteredStyles.paddingLeft = textIndent;
 		filteredStyles.paddingRight = textIndent;
@@ -302,7 +302,7 @@ export const getFontRulesFromPage = () => {
 			continue;
 		}
 		const url = new URL( sheets[ i ].href );
-		if ( fontDomains.indexOf( url.hostname ) !== -1 ) {
+		if ( -1 !== fontDomains.indexOf( url.hostname ) ) {
 			fontRules.push( {
 				cssSrc: sheets[ i ].href,
 			} );

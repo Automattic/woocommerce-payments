@@ -168,7 +168,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			'mark_complete_no_fraud_outcome_pmtype_card' => [
 				'order_status'            => false,
 				'intent_args'             => [
-					'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
+					'payment_method_types' => [ 'card' ],
 				],
 				'expected_note_1'         => 'Pending payment to Processing',
 				'expected_fraud_outcome'  => false,
@@ -177,10 +177,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			'mark_complete_fraud_outcome_allow'          => [
 				'order_status'            => false,
 				'intent_args'             => [
-					'metadata'               => [
+					'metadata'             => [
 						'fraud_outcome' => Rule::FRAUD_OUTCOME_ALLOW,
 					],
-					'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
+					'payment_method_types' => [ 'card' ],
 				],
 				'expected_note_1'         => 'Pending payment to Processing',
 				'expected_fraud_outcome'  => Rule::FRAUD_OUTCOME_ALLOW,
@@ -189,10 +189,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			'mark_complete_fraud_outcome_review'         => [
 				'order_status'            => Order_Status::ON_HOLD,
 				'intent_args'             => [
-					'metadata'               => [
+					'metadata'             => [
 						'fraud_outcome' => Rule::FRAUD_OUTCOME_ALLOW,
 					],
-					'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
+					'payment_method_types' => [ 'card' ],
 				],
 				'expected_note_1'         => 'On hold to Processing',
 				'expected_fraud_outcome'  => Rule::FRAUD_OUTCOME_ALLOW,
@@ -465,15 +465,15 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		return [
 			'mark_payment_started_intent_status_requires_action' => [
 				'intent_args'             => [
-					'status'                 => Payment_Intent_Status::REQUIRES_ACTION,
-					'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
+					'status'               => Payment_Intent_Status::REQUIRES_ACTION,
+					'payment_method_types' => [ 'card' ],
 				],
 				'expected_fraud_meta_box' => Fraud_Meta_Box_Type::PAYMENT_STARTED,
 			],
 			'mark_payment_started_intent_status_requires_payment_method' => [
 				'intent_args'             => [
-					'status'                 => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD,
-					'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
+					'status'               => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD,
+					'payment_method_types' => [ 'card' ],
 				],
 				'expected_fraud_meta_box' => Fraud_Meta_Box_Type::PAYMENT_STARTED,
 			],

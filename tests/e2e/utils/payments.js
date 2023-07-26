@@ -41,7 +41,7 @@ export async function fillCardDetails( page, card ) {
 		await page.waitFor( 1000 );
 
 		const zip = await stripeFrame.$( '[name="postalCode"]' );
-		if ( zip !== null ) {
+		if ( null !== zip ) {
 			await zip.type( '90210', { delay: 20 } );
 		}
 	} else {
@@ -191,7 +191,7 @@ export async function confirmCardAuthentication(
 	);
 	let challengeFrame = await challengeFrameHandle.contentFrame();
 	// 3DS 1 cards have another iframe enclosing the authorize form
-	if ( cardType.toUpperCase() === '3DS' ) {
+	if ( '3DS' === cardType.toUpperCase() ) {
 		const acsFrameHandle = await challengeFrame.waitForSelector(
 			'iframe[name="acsFrame"]'
 		);

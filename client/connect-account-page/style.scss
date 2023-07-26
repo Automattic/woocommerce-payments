@@ -45,7 +45,7 @@
 		}
 
 		p {
-			@include wc-others-caption;
+			@include wp-small-button;
 			color: $gray-700;
 			padding-top: $gap;
 			margin: 0;
@@ -53,8 +53,8 @@
 
 		@media screen and ( min-width: $break-small ) {
 			background: url( 'assets/images/illustrations/connect-hero.png?asset' )
-				no-repeat center right 24px/259px 260px;
-			padding-right: 316px;
+				no-repeat bottom right/334px 343px;
+			padding-right: 330px;
 			display: flex;
 			flex-direction: column;
 			justify-content: flex-end;
@@ -80,7 +80,6 @@
 			img {
 				height: 24px;
 				border: 1px solid $gray-300;
-				border-radius: 2px;
 			}
 
 			span {

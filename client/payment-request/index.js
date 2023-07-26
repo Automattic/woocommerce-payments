@@ -62,7 +62,7 @@ jQuery( ( $ ) => {
 					$( this ).attr( 'name' );
 				const value = $( this ).val() || '';
 
-				if ( value.length > 0 ) {
+				if ( 0 < value.length ) {
 					chosen++;
 				}
 
@@ -366,7 +366,7 @@ jQuery( ( $ ) => {
 					return;
 				}
 
-				if ( paymentRequestError.length > 0 ) {
+				if ( 0 < paymentRequestError.length ) {
 					evt.preventDefault();
 					window.alert( paymentRequestError );
 					return;

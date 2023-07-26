@@ -76,6 +76,7 @@
 				"definedTags": [ "format" ]
 			}
 		],
+		"yoda": [ "error", "always" ],
 		/* partially disable rules to get @woocommerce/eslint-plugin integration done */
 		"jsdoc/no-undefined-types": "off",
 		"jsdoc/require-param": "off",

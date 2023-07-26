@@ -32,7 +32,7 @@ import './style.scss';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
-	const showLoginError = queryParams[ 'wcpay-login-error' ] === '1';
+	const showLoginError = '1' === queryParams[ 'wcpay-login-error' ];
 	if ( ! wcpaySettings.errorMessage && ! showLoginError ) {
 		return null;
 	}
@@ -79,30 +79,31 @@ const OverviewPage = () => {
 		accountStatus.status && accountStatus.status.startsWith( 'rejected' );
 
 	const showConnectionSuccess =
-		queryParams[ 'wcpay-connection-success' ] === '1';
+		'1' === queryParams[ 'wcpay-connection-success' ];
 
-	const showLoanOfferError = queryParams[ 'wcpay-loan-offer-error' ] === '1';
+	const showLoanOfferError = '1' === queryParams[ 'wcpay-loan-offer-error' ];
 	const showServerLinkError =
-		queryParams[ 'wcpay-server-link-error' ] === '1';
+		'1' === queryParams[ 'wcpay-server-link-error' ];
 	const showProgressiveOnboardingEligibilityModal =
 		showConnectionSuccess &&
 		accountStatus.progressiveOnboarding.isEnabled &&
 		! accountStatus.progressiveOnboarding.isComplete;
-	const showTaskList = ! accountRejected && tasks.length > 0;
+	const showTaskList = ! accountRejected && 0 < tasks.length;
 
 	const activeAccountFees = Object.entries( wcpaySettings.accountFees )
 		.map( ( [ key, value ] ) => {
 			const isPaymentMethodEnabled =
 				! settingsIsLoading &&
-				settings.enabled_payment_method_ids.filter(
-					( enabledMethod ) => {
-						return enabledMethod === key;
-					}
-				).length > 0;
+				0 <
+					settings.enabled_payment_method_ids.filter(
+						( enabledMethod ) => {
+							return enabledMethod === key;
+						}
+					).length;
 			if (
 				settingsIsLoading ||
 				! isPaymentMethodEnabled ||
-				value.discount.length === 0
+				0 === value.discount.length
 			) {
 				return null;
 			}

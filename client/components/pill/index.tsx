@@ -10,10 +10,8 @@ import classNames from 'classnames';
  */
 import './style.scss';
 
-export type PillType = 'primary' | 'success' | 'alert' | 'danger' | 'light';
-
 type PillProps = {
-	type?: PillType;
+	type?: 'primary' | 'success' | 'alert' | 'danger' | 'light';
 	className?: string;
 	children?: ReactNode;
 };

@@ -62,11 +62,11 @@ const ContinueButton = ( {
 	return (
 		<Button
 			isBusy={ isSaving }
-			disabled={ isSaving || selectedCurrencyCodesLength < 1 }
+			disabled={ isSaving || 1 > selectedCurrencyCodesLength }
 			onClick={ handleContinueClick }
 			isPrimary
 		>
-			{ selectedCurrencyCodesLength === 0
+			{ 0 === selectedCurrencyCodesLength
 				? __( 'Add currencies', 'woocommerce-payments' )
 				: sprintf(
 						_n(
@@ -151,9 +151,10 @@ const AddCurrenciesTask = () => {
 		: visibleCurrencyCodes.filter( ( code ) => {
 				const { symbol, name } = availableCurrencies[ code ];
 				return (
+					-1 <
 					`${ symbol } ${ code } ${ name }`
 						.toLocaleLowerCase()
-						.indexOf( searchText.toLocaleLowerCase() ) > -1
+						.indexOf( searchText.toLocaleLowerCase() )
 				);
 		  } );
 
@@ -178,7 +179,7 @@ const AddCurrenciesTask = () => {
 					selectedCurrencyCodesLength,
 					'woocommerce-payments'
 				),
-				selectedCurrencyCodesLength < 10
+				10 > selectedCurrencyCodesLength
 					? _.capitalize( numberWords[ selectedCurrencyCodesLength ] )
 					: selectedCurrencyCodesLength
 			) }
@@ -204,7 +205,7 @@ const AddCurrenciesTask = () => {
 							},
 						} ) }
 				</p>
-				{ enabledCurrencyCodes.length > 1 && (
+				{ 1 < enabledCurrencyCodes.length && (
 					<p className="wcpay-wizard-task__description-element is-muted-color">
 						{ interpolateComponents( {
 							mixedString: __(

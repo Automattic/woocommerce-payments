@@ -17,7 +17,7 @@ const Banner = ( { style } ) => {
 		logoHeight,
 		showPill,
 		className = 'woocommerce-payments-banner';
-	if ( style === 'account-page' ) {
+	if ( 'account-page' === style ) {
 		logoWidth = 196;
 		logoHeight = 65;
 		showPill = true;

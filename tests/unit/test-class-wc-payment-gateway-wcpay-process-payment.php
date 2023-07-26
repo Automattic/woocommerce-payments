@@ -958,19 +958,17 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$mock_cart = $this->createMock( 'WC_Cart' );
 
 		// Arrange: Return a 'requires_action' response from create_and_confirm_setup_intent().
-		$intent  = WC_Helper_Intention::create_setup_intention(
-			[
-				'id'            => $intent_id,
-				'status'        => $status,
-				'client_secret' => $secret,
-				'next_action'   => [],
-			]
-		);
+		$intent  = [
+			'id'            => $intent_id,
+			'status'        => $status,
+			'client_secret' => $secret,
+			'next_action'   => [],
+		];
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
-			->willReturn( $intent );
+			->willReturn( new Response( $intent ) );
 
 				// Assert: Order has correct charge id meta data.
 		// Assert: Order has correct intention status meta data.

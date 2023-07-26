@@ -84,14 +84,20 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 	/**
 	 * Setup intent to be used during tests.
 	 *
-	 * @var WC_Payments_API_Setup_Intention
+	 * @var array
 	 */
-	private $setup_intent;
+	private $setup_intent = [
+		'id'             => self::SETUP_INTENT_ID,
+		'status'         => Payment_Intent_Status::SUCCEEDED,
+		'client_secret'  => 'test_client_secret',
+		'next_action'    => [],
+		'payment_method' => self::PAYMENT_METHOD_ID,
+	];
 
 	/**
 	 * Payment intent to be used during tests.
 	 *
-	 * @var WC_Payments_API_Payment_Intention
+	 * @var WC_Payments_API_Intention
 	 */
 	private $payment_intent;
 
@@ -107,15 +113,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 
 		wp_set_current_user( self::USER_ID );
 		$this->payment_intent = WC_Helper_Intention::create_intention();
-		$this->setup_intent   = WC_Helper_Intention::create_setup_intention(
-			[
-				'id'             => self::SETUP_INTENT_ID,
-				'status'         => Payment_Intent_Status::SUCCEEDED,
-				'client_secret'  => 'test_client_secret',
-				'next_action'    => [],
-				'payment_method' => self::PAYMENT_METHOD_ID,
-			]
-		);
 
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
@@ -296,7 +293,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
-			->willReturn( $this->setup_intent );
+			->willReturn( new Response( $this->setup_intent ) );
 
 		$this->mock_token_service
 			->expects( $this->once() )
@@ -329,7 +326,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
-			->willReturn( $this->setup_intent );
+			->willReturn( new Response( $this->setup_intent ) );
 
 		$this->mock_token_service
 			->expects( $this->once() )
@@ -508,7 +505,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
-			->willReturn( $this->setup_intent );
+			->willReturn( new Response( $this->setup_intent ) );
 
 		$this->mock_token_service
 			->expects( $this->once() )

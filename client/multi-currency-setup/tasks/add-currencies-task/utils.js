@@ -45,7 +45,7 @@ export const ConcatenateCurrencyStrings = (
 		.join( ', ' )
 		.replace(
 			/, ([^,]+)$/,
-			filteredCurrencies.length === 2
+			2 === filteredCurrencies.length
 				? ' ' + __and + ' $1'
 				: ', ' + __and + ' $1'
 		);

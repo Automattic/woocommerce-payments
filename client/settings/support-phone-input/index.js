@@ -18,7 +18,7 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 		?.account_business_support_phone?.message;
 
 	const currentPhone = useRef( supportPhone ).current;
-	const isEmptyPhoneValid = supportPhone === '' && currentPhone === '';
+	const isEmptyPhoneValid = '' === supportPhone && '' === currentPhone;
 
 	const [ isPhoneValid, setPhoneValidity ] = useState( true );
 	if ( ! isPhoneValid && ! isEmptyPhoneValid ) {
@@ -28,7 +28,7 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 		);
 	}
 
-	if ( supportPhone === '' && currentPhone !== '' ) {
+	if ( '' === supportPhone && '' !== currentPhone ) {
 		supportPhoneError = __(
 			'Support phone number cannot be empty once it has been set before, please specify.',
 			'woocommerce-payments'

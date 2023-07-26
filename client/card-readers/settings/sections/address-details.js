@@ -100,7 +100,7 @@ const AddressDetailsSection = () => {
 					handleAddressPropertyChange( 'city', value )
 				}
 			/>
-			{ countryStatesOptions.length > 0 && (
+			{ 0 < countryStatesOptions.length && (
 				<SelectControl
 					label={ __( 'State', 'woocommerce-payments' ) }
 					value={ accountBusinessSupportAddressState }

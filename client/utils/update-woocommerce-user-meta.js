@@ -4,14 +4,14 @@
 import { dispatch, select } from '@wordpress/data';
 
 export async function updateWoocommerceUserMeta( newMetaData ) {
-	if ( ! newMetaData || Object.keys( newMetaData ).length === 0 ) {
+	if ( ! newMetaData || 0 === Object.keys( newMetaData ).length ) {
 		return;
 	}
 	const user = await select( 'core' ).getCurrentUser();
 
 	const metaData = Object.keys( newMetaData ).reduce( ( val, key ) => {
 		let newValue = newMetaData[ key ];
-		if ( typeof newValue !== 'string' ) {
+		if ( 'string' !== typeof newValue ) {
 			newValue = JSON.stringify( newValue );
 		}
 		return {

@@ -213,8 +213,8 @@ const SingleCurrencySettings = () => {
 															'exchange-rate-selector'
 														}
 														checked={
-															exchangeRateType ===
-															'automatic'
+															'automatic' ===
+															exchangeRateType
 														}
 														onChange={ () =>
 															setExchangeRateType(
@@ -276,8 +276,8 @@ const SingleCurrencySettings = () => {
 															'exchange-rate-selector'
 														}
 														checked={
-															exchangeRateType ===
-															'manual'
+															'manual' ===
+															exchangeRateType
 														}
 														onChange={ () =>
 															setExchangeRateType(
@@ -305,7 +305,7 @@ const SingleCurrencySettings = () => {
 												</p>
 											</label>
 										</li>
-										{ exchangeRateType === 'manual' ? (
+										{ 'manual' === exchangeRateType ? (
 											<li>
 												<h4>
 													{ __(
@@ -504,7 +504,7 @@ const SingleCurrencySettings = () => {
 							storeCurrency={ storeCurrency }
 							targetCurrency={ targetCurrency }
 							currencyRate={
-								exchangeRateType === 'manual'
+								'manual' === exchangeRateType
 									? manualRate
 									: null
 							}

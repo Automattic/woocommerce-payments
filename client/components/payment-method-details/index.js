@@ -54,7 +54,7 @@ const PaymentMethodDetails = ( props ) => {
 	const { payment } = props;
 	const paymentMethod = payment ? payment[ payment.type ] : null;
 
-	if ( ! paymentMethod && ( ! payment || payment.type !== 'link' ) ) {
+	if ( ! paymentMethod && ( ! payment || 'link' !== payment.type ) ) {
 		return <span>&ndash;</span>;
 	}
 
