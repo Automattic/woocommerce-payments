@@ -30,6 +30,8 @@ import {
 	getTerms,
 	getPaymentIntentFromSession,
 	getSelectedUPEGatewayPaymentMethod,
+	getBillingDetails,
+	getShippingDetails,
 	getUpeSettings,
 	isUsingSavedPaymentMethod,
 } from '../utils/upe';
@@ -109,56 +111,6 @@ jQuery( function ( $ ) {
 	 */
 	const unblockUI = ( $form ) => {
 		$form.removeClass( 'processing' ).unblock();
-	};
-
-	/**
-	 * Converts form fields object into Stripe `shipping` object.
-	 *
-	 * @param {Object} fields Object mapping checkout shipping fields to values.
-	 * @return {Object} Stripe formatted `shipping` object.
-	 */
-	const getShippingDetails = ( fields ) => {
-		return {
-			name:
-				`${ fields.billing_first_name } ${ fields.billing_last_name }`.trim() ||
-				'-',
-			phone: fields.billing_phone || '-',
-			address: {
-				country: fields.billing_country || '-',
-				line1: fields.billing_address_1 || '-',
-				line2: fields.billing_address_2 || '-',
-				city: fields.billing_city || '-',
-				state: fields.billing_state || '-',
-				postal_code: fields.billing_postcode || '-',
-			},
-		};
-	};
-
-	/**
-	 * Converts form fields object into Stripe `billing_details` object.
-	 *
-	 * @param {Object} fields Object mapping checkout billing fields to values.
-	 * @return {Object} Stripe formatted `billing_details` object.
-	 */
-	const getBillingDetails = ( fields ) => {
-		return {
-			name:
-				`${ fields.billing_first_name } ${ fields.billing_last_name }`.trim() ||
-				'-',
-			email:
-				'string' === typeof fields.billing_email
-					? fields.billing_email.trim()
-					: '-',
-			phone: fields.billing_phone || '-',
-			address: {
-				country: fields.billing_country || '-',
-				line1: fields.billing_address_1 || '-',
-				line2: fields.billing_address_2 || '-',
-				city: fields.billing_city || '-',
-				state: fields.billing_state || '-',
-				postal_code: fields.billing_postcode || '-',
-			},
-		};
 	};
 
 	/**
@@ -320,7 +272,7 @@ jQuery( function ( $ ) {
 		unblockUI( $upeContainer );
 		upeElement.on( 'change', ( event ) => {
 			const selectedUPEPaymentType =
-				'link' !== event.value.type ? event.value.type : 'card';
+				event.value.type !== 'link' ? event.value.type : 'card';
 			gatewayUPEComponents[ selectedUPEPaymentType ].country =
 				event.value.country;
 			gatewayUPEComponents[ selectedUPEPaymentType ].isUPEComplete =
@@ -652,7 +604,7 @@ jQuery( function ( $ ) {
 		);
 
 		// Boolean `true` means that there is nothing to confirm.
-		if ( true === confirmation ) {
+		if ( confirmation === true ) {
 			return;
 		}
 
@@ -745,11 +697,10 @@ jQuery( function ( $ ) {
 	$( 'form#add_payment_method' ).on( 'submit', function () {
 		// Skip adding legacy cards as UPE payment methods.
 		if (
-			'woocommerce_payments' ===
-				$(
-					"#add_payment_method input:checked[name='payment_method']"
-				).val() &&
-			'0' === isUPESplitEnabled
+			$(
+				"#add_payment_method input:checked[name='payment_method']"
+			).val() === 'woocommerce_payments' &&
+			isUPESplitEnabled === '0'
 		) {
 			return;
 		}
@@ -769,7 +720,7 @@ jQuery( function ( $ ) {
 		const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
 		if (
 			! isUsingSavedPaymentMethod( paymentMethodType ) &&
-			null !== paymentMethodType
+			paymentMethodType !== null
 		) {
 			if ( isChangingPayment ) {
 				handleUPEAddPayment( $( '#order_review' ) );
