@@ -34,6 +34,7 @@ class WC_Payments_Account {
 	const TRACKS_EVENT_ACCOUNT_CONNECT_START                    = 'wcpay_account_connect_start';
 	const TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_SUCCESS = 'wcpay_account_connect_wpcom_connection_success';
 	const TRACKS_EVENT_ACCOUNT_CONNECT_FINISHED                 = 'wcpay_account_connect_finished';
+	const TRACKS_EVENT_KYC_REMINDER_MERCHANT_RETURNED           = 'wcpay_kyc_reminder_merchant_returned';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -724,7 +725,7 @@ class WC_Payments_Account {
 			'offset'      => $offset,
 			'description' => $description,
 		];
-		wc_admin_record_tracks_event( 'wcpay_kyc_reminder_merchant_returned', $track_props );
+		$this->tracks_event( self::TRACKS_EVENT_KYC_REMINDER_MERCHANT_RETURNED, $track_props );
 
 		// Take the user to the 'wcpay-connect' URL.
 		// We handle creating and redirecting to the account link there.
