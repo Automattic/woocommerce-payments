@@ -182,7 +182,7 @@ export function updateDepositScheduleMonthlyAnchor(
 ) {
 	return updateSettingsValues( {
 		deposit_schedule_monthly_anchor:
-			'' === depositScheduleMonthlyAnchor
+			depositScheduleMonthlyAnchor === ''
 				? null
 				: parseInt( depositScheduleMonthlyAnchor, 10 ),
 	} );
@@ -213,7 +213,7 @@ export function* saveSettings() {
 		yield updateIsSavingSettings( false, error );
 	}
 
-	return null === error;
+	return error === null;
 }
 
 export function updatePaymentRequestLocations( locations ) {

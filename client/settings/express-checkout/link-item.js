@@ -38,7 +38,7 @@ const LinkExpressCheckoutItem = () => {
 			] );
 		} else {
 			updateEnabledMethodIds( [
-				...enabledMethodIds.filter( ( id ) => 'link' !== id ),
+				...enabledMethodIds.filter( ( id ) => id !== 'link' ),
 			] );
 		}
 	};

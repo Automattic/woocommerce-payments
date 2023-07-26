@@ -9,9 +9,9 @@
 export const getConfig = ( name ) => {
 	// Classic checkout or blocks-based one.
 	let config = null;
-	if ( 'undefined' !== typeof wcpayConfig ) {
+	if ( typeof wcpayConfig !== 'undefined' ) {
 		config = wcpayConfig;
-	} else if ( 'undefined' !== typeof wcpay_upe_config ) {
+	} else if ( typeof wcpay_upe_config !== 'undefined' ) {
 		config = wcpay_upe_config;
 	} else {
 		config = wc.wcSettings.getSetting( 'woocommerce_payments_data' );
@@ -29,7 +29,7 @@ export const getConfig = ( name ) => {
 export const getUPEConfig = ( name ) => {
 	// Classic checkout or blocks-based one.
 	const config =
-		'undefined' !== typeof wcpay_upe_config
+		typeof wcpay_upe_config !== 'undefined'
 			? wcpay_upe_config
 			: wc.wcSettings.getSetting( 'woocommerce_payments_data' );
 
@@ -46,7 +46,7 @@ export const getCustomGatewayTitle = ( paymentMethodsConfig ) => {
 	const enabledPaymentMethods = Object.keys( paymentMethodsConfig ).sort();
 	let label = '';
 
-	if ( 2 > enabledPaymentMethods.length ) {
+	if ( enabledPaymentMethods.length < 2 ) {
 		label = paymentMethodsConfig[ enabledPaymentMethods[ 0 ] ].title;
 	} else {
 		label = getConfig( 'checkoutTitle' );

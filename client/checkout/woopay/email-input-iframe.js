@@ -70,10 +70,10 @@ export const handleWooPayEmailInput = async (
 	//Checks if customer has clicked the back button to prevent auto redirect
 	const searchParams = new URLSearchParams( window.location.search );
 	const customerClickedBackButton =
-		( 'undefined' !== typeof performance &&
-			'back_forward' ===
-				performance.getEntriesByType( 'navigation' )[ 0 ].type ) ||
-		'true' === searchParams.get( 'skip_woopay' );
+		( typeof performance !== 'undefined' &&
+			performance.getEntriesByType( 'navigation' )[ 0 ].type ===
+				'back_forward' ) ||
+		searchParams.get( 'skip_woopay' ) === 'true';
 
 	// Track the current state of the header. This default
 	// value should match the default state on the platform.
@@ -124,11 +124,11 @@ export const handleWooPayEmailInput = async (
 		 * scroll the window so the iframe is in view.
 		 */
 		if (
-			0 >= iframe.getBoundingClientRect().top ||
-			0 >=
-				window.innerHeight -
-					( iframe.getBoundingClientRect().height +
-						iframe.getBoundingClientRect().top )
+			iframe.getBoundingClientRect().top <= 0 ||
+			window.innerHeight -
+				( iframe.getBoundingClientRect().height +
+					iframe.getBoundingClientRect().top ) <=
+				0
 		) {
 			const topOffset = 50;
 			const scrollTop =
@@ -163,8 +163,8 @@ export const handleWooPayEmailInput = async (
 
 		// Check if the iframe is off the right edge of the screen. If so, stick it to the right edge of the window.
 		if (
-			50 >=
-			window.innerWidth - ( anchorRect.right + iframeRect.width )
+			window.innerWidth - ( anchorRect.right + iframeRect.width ) <=
+			50
 		) {
 			iframe.style.left = 'auto';
 			iframeArrow.style.left = 'auto';
@@ -293,7 +293,7 @@ export const handleWooPayEmailInput = async (
 	};
 
 	document.addEventListener( 'keyup', ( event ) => {
-		if ( 'Escape' === event.key && closeIframe() ) {
+		if ( event.key === 'Escape' && closeIframe() ) {
 			event.stopPropagation();
 		}
 	} );
@@ -386,7 +386,7 @@ export const handleWooPayEmailInput = async (
 				);
 			} )
 			.then( ( response ) => {
-				if ( 200 !== response.status ) {
+				if ( response.status !== 200 ) {
 					showErrorMessage();
 				}
 
@@ -398,7 +398,7 @@ export const handleWooPayEmailInput = async (
 
 				if ( data[ 'user-exists' ] ) {
 					openIframe( email );
-				} else if ( 'rest_invalid_param' !== data.code ) {
+				} else if ( data.code !== 'rest_invalid_param' ) {
 					wcpayTracks.recordUserEvent(
 						wcpayTracks.events.WOOPAY_OFFERED
 					);
@@ -408,7 +408,7 @@ export const handleWooPayEmailInput = async (
 				// Only show the error if it's not an AbortError,
 				// it occur when the fetch request is aborted because user
 				// clicked the Place Order button while loading.
-				if ( 'AbortError' !== err.name ) {
+				if ( err.name !== 'AbortError' ) {
 					showErrorMessage();
 				}
 			} )
@@ -493,7 +493,7 @@ export const handleWooPayEmailInput = async (
 					e.data.platformCheckoutUserSession
 				)
 					.then( ( response ) => {
-						if ( 'success' === response.result ) {
+						if ( response.result === 'success' ) {
 							loginSessionIframeWrapper.classList.add(
 								'woopay-login-session-iframe-wrapper'
 							);
@@ -519,7 +519,7 @@ export const handleWooPayEmailInput = async (
 						// Only show the error if it's not an AbortError,
 						// it occurs when the fetch request is aborted because user
 						// clicked the Place Order button while loading.
-						if ( 'AbortError' !== err.name ) {
+						if ( err.name !== 'AbortError' ) {
 							showErrorMessage();
 						}
 					} )
@@ -555,7 +555,7 @@ export const handleWooPayEmailInput = async (
 						) {
 							return;
 						}
-						if ( 'success' === response.result ) {
+						if ( response.result === 'success' ) {
 							window.location = response.url;
 						} else {
 							showErrorMessage();
@@ -576,7 +576,7 @@ export const handleWooPayEmailInput = async (
 				closeIframe();
 				break;
 			case 'iframe_height':
-				if ( 300 < e.data.height ) {
+				if ( e.data.height > 300 ) {
 					if ( fullScreenModalBreakpoint <= window.innerWidth ) {
 						// attach iframe to right side of woopayEmailInput.
 
@@ -634,7 +634,7 @@ export const handleWooPayEmailInput = async (
 
 		let { pathname } = window.location;
 
-		if ( '' !== searchParams.toString() ) {
+		if ( searchParams.toString() !== '' ) {
 			pathname += '?' + searchParams.toString();
 		}
 
