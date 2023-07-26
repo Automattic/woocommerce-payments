@@ -148,6 +148,9 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 	const closeIframe = () => {
 		window.removeEventListener( 'resize', getWindowSize );
 		window.removeEventListener( 'resize', setPopoverPosition );
+		window.removeEventListener( 'pageshow', onPageShow );
+		window.removeEventListener( 'message', onMessage );
+		document.removeEventListener( 'keyup', onKeyUp );
 
 		iframeWrapper.remove();
 		iframe.classList.remove( 'open' );
@@ -162,6 +165,10 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		if ( document.querySelector( '.woopay-otp-iframe' ) ) {
 			return;
 		}
+
+		window.addEventListener( 'pageshow', onPageShow );
+		window.addEventListener( 'message', onMessage );
+		document.addEventListener( 'keyup', onKeyUp );
 
 		const viewportWidth = window.document.documentElement.clientWidth;
 		const viewportHeight = window.document.documentElement.clientHeight;
@@ -200,13 +207,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		iframe.focus();
 	};
 
-	document.addEventListener( 'keyup', ( event ) => {
-		if ( event.key === 'Escape' && closeIframe() ) {
-			event.stopPropagation();
-		}
-	} );
-
-	window.addEventListener( 'message', ( e ) => {
+	function onMessage( e ) {
 		if ( ! getConfig( 'woopayHost' ).startsWith( e.origin ) ) {
 			return;
 		}
@@ -264,14 +265,20 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 			default:
 			// do nothing, only respond to expected actions.
 		}
-	} );
+	}
 
-	window.addEventListener( 'pageshow', function ( event ) {
+	function onPageShow( event ) {
 		if ( event.persisted ) {
 			// Safari needs to close iframe with this.
 			closeIframe( false );
 		}
-	} );
+	}
+
+	function onKeyUp( event ) {
+		if ( event.key === 'Escape' && closeIframe() ) {
+			event.stopPropagation();
+		}
+	}
 
 	openIframe( woopayEmailInput?.value );
 };
