@@ -112,10 +112,10 @@ describe( 'UPE split checkout', () => {
 		beforeEach( () => {
 			const spy = jest.spyOn( CheckoutUtils, 'getUPEConfig' );
 			spy.mockImplementation( ( param ) => {
-				if ( 'paymentMethodsConfig' === param ) {
+				if ( param === 'paymentMethodsConfig' ) {
 					return { card: {}, bancontact: {} };
 				}
-				if ( 'gatewayId' === param ) {
+				if ( param === 'gatewayId' ) {
 					return 'woocommerce_payments';
 				}
 			} );
