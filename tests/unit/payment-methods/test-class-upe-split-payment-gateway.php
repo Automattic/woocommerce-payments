@@ -12,6 +12,7 @@ use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Core\Server\Request\Get_Request;
+use WCPay\Core\Server\Request\Get_Setup_Intention;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
@@ -207,6 +208,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( 'US' );
+		$this->mock_wcpay_account->method( 'get_account_default_currency' )->willReturn( 'USD' );
 
 		$payment_methods = [
 			'link' => [
@@ -728,10 +730,12 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn(
-				[
-					'id'            => 'seti_mock',
-					'client_secret' => 'client_secret_mock',
-				]
+				WC_Helper_Intention::create_setup_intention(
+					[
+						'id'            => 'seti_mock',
+						'client_secret' => 'client_secret_mock',
+					]
+				)
 			);
 
 		$this->set_cart_contains_subscription_items( false );
@@ -764,10 +768,12 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn(
-				[
-					'id'            => 'seti_mock',
-					'client_secret' => 'client_secret_mock',
-				]
+				WC_Helper_Intention::create_setup_intention(
+					[
+						'id'            => 'seti_mock',
+						'client_secret' => 'client_secret_mock',
+					]
+				)
 			);
 
 		$this->set_cart_contains_subscription_items( false );
@@ -1193,19 +1199,20 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order->set_total( 0 );
 		$order->save();
 
-		$setup_intent = [
-			'id'                     => 'pi_mock',
-			'client_secret'          => $client_secret,
-			'status'                 => $intent_status,
-			'metadata'               => $intent_metadata,
-			'payment_method'         => $payment_method_id,
-			'payment_method_options' => [
-				'card' => [
-					'request_three_d_secure' => 'automatic',
+		$setup_intent = WC_Helper_Intention::create_setup_intention(
+			[
+				'id'                     => 'pi_mock',
+				'client_secret'          => $client_secret,
+				'status'                 => $intent_status,
+				'payment_method'         => $payment_method_id,
+				'payment_method_options' => [
+					'card' => [
+						'request_three_d_secure' => 'automatic',
+					],
 				],
-			],
-			'last_setup_error'       => [],
-		];
+				'last_setup_error'       => [],
+			]
+		);
 
 		$mock_upe_gateway->expects( $this->once() )
 			->method( 'manage_customer_details_for_order' )
@@ -1213,7 +1220,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				$this->returnValue( [ $user, $customer_id ] )
 			);
 
-		$request = $this->mock_wcpay_request( Get_Request::class, 1, $intent_id );
+		$request = $this->mock_wcpay_request( Get_Setup_Intention::class, 1, $intent_id );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -1558,31 +1565,32 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$becs_method       = $this->mock_payment_methods['au_becs_debit'];
 
 		WC_Helper_Site_Currency::$mock_site_currency = 'EUR';
+		$account_default_currency                    = 'USD';
 
-		$this->assertTrue( $card_method->is_currency_valid() );
-		$this->assertTrue( $giropay_method->is_currency_valid() );
-		$this->assertTrue( $sofort_method->is_currency_valid() );
-		$this->assertTrue( $bancontact_method->is_currency_valid() );
-		$this->assertTrue( $eps_method->is_currency_valid() );
-		$this->assertTrue( $sepa_method->is_currency_valid() );
-		$this->assertTrue( $p24_method->is_currency_valid() );
-		$this->assertTrue( $ideal_method->is_currency_valid() );
-		$this->assertFalse( $becs_method->is_currency_valid() );
+		$this->assertTrue( $card_method->is_currency_valid( $account_default_currency ) );
+		$this->assertTrue( $giropay_method->is_currency_valid( $account_default_currency ) );
+		$this->assertTrue( $sofort_method->is_currency_valid( $account_default_currency ) );
+		$this->assertTrue( $bancontact_method->is_currency_valid( $account_default_currency ) );
+		$this->assertTrue( $eps_method->is_currency_valid( $account_default_currency ) );
+		$this->assertTrue( $sepa_method->is_currency_valid( $account_default_currency ) );
+		$this->assertTrue( $p24_method->is_currency_valid( $account_default_currency ) );
+		$this->assertTrue( $ideal_method->is_currency_valid( $account_default_currency ) );
+		$this->assertFalse( $becs_method->is_currency_valid( $account_default_currency ) );
 
 		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
 
-		$this->assertTrue( $card_method->is_currency_valid() );
-		$this->assertFalse( $giropay_method->is_currency_valid() );
-		$this->assertFalse( $sofort_method->is_currency_valid() );
-		$this->assertFalse( $bancontact_method->is_currency_valid() );
-		$this->assertFalse( $eps_method->is_currency_valid() );
-		$this->assertFalse( $sepa_method->is_currency_valid() );
-		$this->assertFalse( $p24_method->is_currency_valid() );
-		$this->assertFalse( $ideal_method->is_currency_valid() );
-		$this->assertFalse( $becs_method->is_currency_valid() );
+		$this->assertTrue( $card_method->is_currency_valid( $account_default_currency ) );
+		$this->assertFalse( $giropay_method->is_currency_valid( $account_default_currency ) );
+		$this->assertFalse( $sofort_method->is_currency_valid( $account_default_currency ) );
+		$this->assertFalse( $bancontact_method->is_currency_valid( $account_default_currency ) );
+		$this->assertFalse( $eps_method->is_currency_valid( $account_default_currency ) );
+		$this->assertFalse( $sepa_method->is_currency_valid( $account_default_currency ) );
+		$this->assertFalse( $p24_method->is_currency_valid( $account_default_currency ) );
+		$this->assertFalse( $ideal_method->is_currency_valid( $account_default_currency ) );
+		$this->assertFalse( $becs_method->is_currency_valid( $account_default_currency ) );
 
 		WC_Helper_Site_Currency::$mock_site_currency = 'AUD';
-		$this->assertTrue( $becs_method->is_currency_valid() );
+		$this->assertTrue( $becs_method->is_currency_valid( $account_default_currency ) );
 
 		WC_Helper_Site_Currency::$mock_site_currency = '';
 	}
@@ -1601,15 +1609,17 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			);
 
 		foreach ( $this->mock_payment_gateways as $mock_upe_gateway ) {
-			$request = $this->mock_wcpay_request( Get_Request::class, 1, $mock_setup_intent_id );
+			$request = $this->mock_wcpay_request( Get_Setup_Intention::class, 1, $mock_setup_intent_id );
 
 			$request->expects( $this->once() )
 				->method( 'format_response' )
 				->willReturn(
-					[
-						'id'             => $mock_setup_intent_id,
-						'payment_method' => 'pm_mock',
-					]
+					WC_Helper_Intention::create_setup_intention(
+						[
+							'id'             => $mock_setup_intent_id,
+							'payment_method' => 'pm_mock',
+						]
+					)
 				);
 			$this->assertEquals( $mock_token, $mock_upe_gateway->create_token_from_setup_intent( $mock_setup_intent_id, $mock_user ) );
 		}
