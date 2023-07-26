@@ -22,7 +22,7 @@ const paymentRequestPaymentMethod = ( api ) => ( {
 			return true;
 		}
 
-		if ( 'undefined' === typeof wcpayPaymentRequestParams ) {
+		if ( typeof wcpayPaymentRequestParams === 'undefined' ) {
 			return false;
 		}
 

@@ -7,7 +7,8 @@
 
 namespace WCPay\Payment_Methods;
 
-use WC_Payments_API_Intention;
+use WC_Payments_API_Payment_Intention;
+use WC_Payments_API_Setup_Intention;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Constants\Payment_Method;
@@ -17,6 +18,7 @@ use WCPay\Core\Server\Request\Create_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request;
+use WCPay\Core\Server\Request\Get_Setup_Intention;
 use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
@@ -118,10 +120,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return void
 	 */
 	public function init_hooks() {
+		// Initializing a hook within this function increases the probability of multiple calls for each split UPE gateway. Consider adding the hook in the parent hook initialization.
 		if ( ! is_admin() ) {
 			add_filter( 'woocommerce_gateway_title', [ $this, 'maybe_filter_gateway_title' ], 10, 2 );
 		}
-		add_action( 'woocommerce_email_before_order_table', [ $this, 'set_payment_method_title_for_email' ], 10, 3 );
 		parent::init_hooks();
 	}
 
@@ -420,11 +422,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$request = Create_Setup_Intention::create();
 		$request->set_customer( $customer_id );
 		$request->set_payment_method_types( array_values( $displayed_payment_methods ) );
+		/** @var WC_Payments_API_Setup_Intention $setup_intent */  // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 		$setup_intent = $request->send( 'wcpay_create_setup_intention_request' );
 
 		return [
-			'id'            => $setup_intent['id'],
-			'client_secret' => $setup_intent['client_secret'],
+			'id'            => $setup_intent->get_id(),
+			'client_secret' => $setup_intent->get_client_secret(),
 		];
 	}
 
@@ -726,7 +729,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			// Get payment intent to confirm status.
 			if ( $payment_needed ) {
 				$request = Get_Intention::create( $intent_id );
-				/** @var WC_Payments_API_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+				/** @var WC_Payments_API_Payment_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 				$intent                 = $request->send( 'wcpay_get_intent_request', $order );
 				$client_secret          = $intent->get_client_secret();
 				$status                 = $intent->get_status();
@@ -744,20 +747,18 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$intent_metadata = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
 				$this->validate_order_id_received_vs_intent_meta_order_id( $order, $intent_metadata );
 			} else {
-				$setup_intent_request = Request::get( WC_Payments_API_Client::SETUP_INTENTS_API, $intent_id );
-
-				$intent = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
-
-				$client_secret          = $intent['client_secret'];
-				$status                 = $intent['status'];
+				$request = Get_Setup_Intention::create( $intent_id );
+				/** @var WC_Payments_API_Setup_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+				$intent                 = $request->send( 'wcpay_get_setup_intent_request' );
+				$client_secret          = $intent->get_client_secret();
+				$status                 = $intent->get_status();
 				$charge_id              = '';
 				$charge                 = null;
 				$currency               = $order->get_currency();
-				$payment_method_id      = $intent['payment_method'];
+				$payment_method_id      = $intent->get_payment_method_id();
 				$payment_method_details = false;
-				$payment_method_options = array_keys( $intent['payment_method_options'] );
-				$payment_method_type    = $payment_method_options ? $payment_method_options[0] : null;
-				$error                  = $intent['last_setup_error'];
+				$payment_method_type    = $intent->get_payment_method_type();
+				$error                  = $intent->get_last_setup_error();
 			}
 
 			if ( ! empty( $error ) ) {
@@ -878,10 +879,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 */
 	public function create_token_from_setup_intent( $setup_intent_id, $user ) {
 		try {
-			$setup_intent_request = Request::get( WC_Payments_API_Client::SETUP_INTENTS_API, $setup_intent_id );
+			$setup_intent_request = Get_Setup_Intention::create( $setup_intent_id );
+			/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+			$setup_intent = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
 
-			$setup_intent      = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
-			$payment_method_id = $setup_intent['payment_method'];
+			$payment_method_id = $setup_intent->get_payment_method_id();
 			// TODO: When adding SEPA and Sofort, we will need a new API call to get the payment method and from there get the type.
 			// Leaving 'card' as a hardcoded value for now to avoid the extra API call.
 			$payment_method = $this->payment_methods['card'];
@@ -949,7 +951,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 				$skip_currency_check       = ! $force_currency_check && is_admin();
 				$processing_payment_method = $this->payment_methods[ $payment_method_id ];
-				if ( $processing_payment_method->is_enabled_at_checkout() && ( $skip_currency_check || $processing_payment_method->is_currency_valid( $order_id ) ) ) {
+				if ( $processing_payment_method->is_enabled_at_checkout() && ( $skip_currency_check || $processing_payment_method->is_currency_valid( $this->get_account_default_currency(), $order_id ) ) ) {
 					$status = $active_payment_methods[ $payment_method_capability_key ]['status'] ?? null;
 					if ( 'active' === $status ) {
 						$enabled_payment_methods[] = $payment_method_id;
@@ -1159,7 +1161,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			return false;
 		}
 		return $payment_method->is_reusable()
-			&& ( is_admin() || $payment_method->is_currency_valid() );
+			&& ( is_admin() || $payment_method->is_currency_valid( $this->get_account_default_currency() ) );
 	}
 
 	/**

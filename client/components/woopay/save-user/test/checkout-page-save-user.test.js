@@ -44,7 +44,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		} ) );
 
 		getConfig.mockImplementation(
-			( setting ) => 'forceNetworkSavedCards' === setting
+			( setting ) => setting === 'forceNetworkSavedCards'
 		);
 	} );
 

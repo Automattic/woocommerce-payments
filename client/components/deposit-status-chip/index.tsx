@@ -2,17 +2,18 @@
  * External dependencies
  */
 import * as React from 'react';
-import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import { displayStatus } from 'deposits/strings';
-import Chip from 'components/chip';
+import Chip, { ChipType } from 'components/chip';
+import type { DepositStatus } from 'wcpay/types/deposits';
 
-const mappings: {
-	[ key: string ]: 'primary' | 'success' | 'light' | 'warning' | 'alert';
-} = {
+/**
+ * Maps a DepositStatus to a ChipType.
+ */
+const mappings: Record< DepositStatus, ChipType > = {
 	estimated: 'light',
 	pending: 'warning',
 	in_transit: 'success',
@@ -27,15 +28,9 @@ const mappings: {
  * @return {JSX.Element} Deposit status chip.
  */
 const DepositStatusChip: React.FC< {
-	status: string;
-} > = ( { status } ): JSX.Element => {
-	const label = displayStatus[ status as keyof typeof displayStatus ]
-		? displayStatus[ status as keyof typeof displayStatus ]
-		: __( 'Unknown', 'woocommerce-payments' );
-
-	const type = status && mappings[ status ] ? mappings[ status ] : 'light';
-
-	return <Chip type={ type } message={ label } />;
-};
+	status: DepositStatus;
+} > = ( { status } ): JSX.Element => (
+	<Chip type={ mappings[ status ] } message={ displayStatus[ status ] } />
+);
 
 export default DepositStatusChip;

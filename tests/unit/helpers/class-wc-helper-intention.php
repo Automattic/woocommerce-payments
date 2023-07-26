@@ -6,6 +6,7 @@
  */
 
 use WCPay\Constants\Payment_Intent_Status;
+
 /**
  * Class WC_Helper_Intention.
  *
@@ -49,30 +50,31 @@ class WC_Helper_Intention {
 	 *
 	 * @param array $data Data to override defaults.
 	 *
-	 * @return WC_Payments_API_Intention
+	 * @return WC_Payments_API_Payment_Intention
 	 */
 	public static function create_intention( $data = [] ) {
 		$intent_data = wp_parse_args(
 			$data,
 			[
-				'id'                   => 'pi_mock',
-				'amount'               => 5000,
-				'currency'             => 'usd',
-				'customer_id'          => 'cus_mock',
-				'payment_method_id'    => 'pm_mock',
-				'status'               => Payment_Intent_Status::SUCCEEDED,
-				'client_secret'        => 'cs_mock',
-				'charge'               => [],
-				'created'              => new DateTime( '2022-05-20 19:05:38' ),
-				'next_action'          => [],
-				'last_payment_error'   => [],
-				'metadata'             => [],
-				'processing'           => [],
-				'payment_method_types' => [],
+				'id'                     => 'pi_mock',
+				'amount'                 => 5000,
+				'currency'               => 'usd',
+				'customer_id'            => 'cus_mock',
+				'payment_method_id'      => 'pm_mock',
+				'status'                 => Payment_Intent_Status::SUCCEEDED,
+				'client_secret'          => 'cs_mock',
+				'charge'                 => [],
+				'created'                => new DateTime( '2022-05-20 19:05:38' ),
+				'next_action'            => [],
+				'last_payment_error'     => [],
+				'metadata'               => [],
+				'processing'             => [],
+				'payment_method_types'   => [],
+				'payment_method_options' => [],
 			]
 		);
 
-		$intention = new WC_Payments_API_Intention(
+		$intention = new WC_Payments_API_Payment_Intention(
 			$intent_data['id'],
 			$intent_data['amount'],
 			$intent_data['currency'],
@@ -86,7 +88,54 @@ class WC_Helper_Intention {
 			$intent_data['last_payment_error'],
 			$intent_data['metadata'],
 			$intent_data['processing'],
-			$intent_data['payment_method_types']
+			$intent_data['payment_method_types'],
+			$intent_data['payment_method_options']
+		);
+
+		return $intention;
+	}
+
+	/**
+	 * Create a setup intent.
+	 *
+	 * @param array $data Data to override defaults.
+	 *
+	 * @return WC_Payments_API_Setup_Intention
+	 */
+	public static function create_setup_intention( $data = [] ): WC_Payments_API_Setup_Intention {
+		$intent_data = wp_parse_args(
+			$data,
+			[
+				'id'                     => 'seti_mock',
+				'customer_id'            => 'cus_mock',
+				'payment_method_id'      => 'pm_mock',
+				'status'                 => Payment_Intent_Status::SUCCEEDED,
+				'client_secret'          => 'cs_mock',
+				'created'                => new DateTime( '2022-05-20 19:05:38' ),
+				'next_action'            => [],
+				'last_setup_error'       => [],
+				'metadata'               => [],
+				'payment_method_types'   => [],
+				'payment_method_options' => [
+					'card' => [
+						'request_three_d_secure' => 'automatic',
+					],
+				],
+			]
+		);
+
+		$intention = new WC_Payments_API_Setup_Intention(
+			$intent_data['id'],
+			$intent_data['customer_id'],
+			$intent_data['payment_method_id'],
+			$intent_data['created'],
+			$intent_data['status'],
+			$intent_data['client_secret'],
+			$intent_data['next_action'],
+			$intent_data['last_setup_error'],
+			$intent_data['metadata'],
+			$intent_data['payment_method_types'],
+			$intent_data['payment_method_options']
 		);
 
 		return $intention;

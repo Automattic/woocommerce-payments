@@ -25,6 +25,7 @@ import { getDepositDate } from 'deposits/utils';
 import { useAllDepositsOverviews, useDepositIncludesLoan } from 'wcpay/data';
 import BannerNotice from 'wcpay/components/banner-notice';
 import { useSelectedCurrency } from 'wcpay/overview/hooks';
+import type * as AccountOverview from 'wcpay/types/account-overview';
 
 type NextDepositProps = {
 	isLoading: boolean;
