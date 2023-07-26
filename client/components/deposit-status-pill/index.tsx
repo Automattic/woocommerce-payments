@@ -8,7 +8,7 @@ import * as React from 'react';
  */
 import { displayStatus } from 'deposits/strings';
 import Pill, { PillType } from 'components/pill';
-import { DepositStatus } from 'wcpay/types/deposits';
+import type { DepositStatus } from 'wcpay/types/deposits';
 
 /**
  * Maps a DepositStatus to a PillType.

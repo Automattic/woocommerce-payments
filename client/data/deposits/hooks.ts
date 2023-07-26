@@ -10,14 +10,14 @@ import moment from 'moment';
  * Internal dependencies
  */
 import { STORE_NAME } from '../constants';
-import { Query } from '@woocommerce/navigation';
-import {
+import type { Query } from '@woocommerce/navigation';
+import type {
 	CachedDeposits,
 	CachedDeposit,
 	DepositsSummaryCache,
 } from 'wcpay/types/deposits';
-import { Transaction } from 'wcpay/data/transactions';
-import * as AccountOverview from 'wcpay/types/account-overview';
+import type { Transaction } from 'wcpay/data/transactions';
+import type * as AccountOverview from 'wcpay/types/account-overview';
 
 export const useDeposit = (
 	id: string

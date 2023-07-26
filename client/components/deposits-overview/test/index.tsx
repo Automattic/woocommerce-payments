@@ -9,7 +9,6 @@ import { render } from '@testing-library/react';
  */
 import DepositsOverview from '..';
 import NextDepositDetails from '../next-deposit';
-import { CachedDeposit, DepositStatus } from 'wcpay/types/deposits';
 import RecentDepositsList from '../recent-deposits-list';
 import DepositsOverviewFooter from '../footer';
 import DepositSchedule from '../deposit-schedule';
@@ -23,7 +22,8 @@ import {
 	useDeposits,
 	useAllDepositsOverviews,
 } from 'wcpay/data';
-import * as AccountOverview from 'wcpay/types/account-overview';
+import type { CachedDeposit, DepositStatus } from 'wcpay/types/deposits';
+import type * as AccountOverview from 'wcpay/types/account-overview';
 
 jest.mock( 'wcpay/data', () => ( {
 	useDepositIncludesLoan: jest.fn(),
