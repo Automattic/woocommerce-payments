@@ -45,7 +45,6 @@ use WCPay\Blocks_Data_Extractor;
 use WCPay\Constants\Payment_Method;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\WooPay\WooPay_Scheduler;
-use WooPayments\Internal\Service\PaymentProcessingService;
 
 /**
  * Main class for the WooPayments extension. Its responsibility is to initialize the extension.
@@ -646,14 +645,6 @@ class WC_Payments {
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
 
 		self::$duplicate_payment_prevention_service->init( self::$card_gateway, self::$order_service );
-
-		// phpcs:disable
-		if ( isset( $_GET['load'] ) ) {
-			$payment_service = new PaymentProcessingService();
-			var_dump( $payment_service );
-			exit;
-		}
-		// phpcs:enable
 	}
 
 	/**
