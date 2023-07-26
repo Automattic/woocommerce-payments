@@ -136,11 +136,11 @@ const WCPayUPEFields = ( {
 							: customerData.billingData ||
 							  customerData.billingAddress;
 
-					if ( 'line1' === key ) {
+					if ( key === 'line1' ) {
 						customerAddress.address_1 = address.address[ key ];
-					} else if ( 'line2' === key ) {
+					} else if ( key === 'line2' ) {
 						customerAddress.address_2 = address.address[ key ];
-					} else if ( 'postal_code' === key ) {
+					} else if ( key === 'postal_code' ) {
 						customerAddress.postcode = address.address[ key ];
 					} else {
 						customerAddress[ key ] = address.address[ key ];
@@ -168,7 +168,7 @@ const WCPayUPEFields = ( {
 						.append(
 							'<button class="wcpay-stripelink-modal-trigger"></button>'
 						);
-					if ( '' !== jQuery( '#email' ).val() ) {
+					if ( jQuery( '#email' ).val() !== '' ) {
 						jQuery( '.wcpay-stripelink-modal-trigger' ).show();
 					}
 
@@ -186,14 +186,14 @@ const WCPayUPEFields = ( {
 				},
 				complete_shipping: () => {
 					return (
-						null !== document.getElementById( 'shipping-address_1' )
+						document.getElementById( 'shipping-address_1' ) !== null
 					);
 				},
 				shipping_fields: shippingAddressFields,
 				billing_fields: billingAddressFields,
 				complete_billing: () => {
 					return (
-						null !== document.getElementById( 'billing-address_1' )
+						document.getElementById( 'billing-address_1' ) !== null
 					);
 				},
 			} );

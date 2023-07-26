@@ -38,7 +38,7 @@ export default async function confirmUPEPayment(
 				billing_details: {
 					name,
 					email:
-						'string' === typeof billingData.email
+						typeof billingData.email === 'string'
 							? billingData.email.trim()
 							: '-',
 					phone: billingData.phone || '-',
