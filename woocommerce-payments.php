@@ -17,6 +17,8 @@
  * @package WooCommerce\Payments
  */
 
+use WooPayments\Container;
+
 defined( 'ABSPATH' ) || exit;
 
 define( 'WCPAY_PLUGIN_FILE', __FILE__ );
@@ -140,7 +142,6 @@ Automattic\Jetpack\Connection\Rest_Authentication::init();
  */
 \WCPay\WooPay\WooPay_Session::init();
 
-
 // Jetpack-config will initialize the modules on "plugins_loaded" with priority 2, so this code needs to be run before that.
 add_action( 'plugins_loaded', 'wcpay_jetpack_init', 1 );
 
@@ -149,6 +150,7 @@ add_action( 'plugins_loaded', 'wcpay_jetpack_init', 1 );
  * so WooCommerce classes are guaranteed to exist at this point (if WooCommerce is enabled).
  */
 function wcpay_init() {
+	$GLOBALS['woopayments_container'] = new Container();
 	require_once WCPAY_ABSPATH . '/includes/class-wc-payments.php';
 	WC_Payments::init();
 }
@@ -156,6 +158,15 @@ function wcpay_init() {
 // Make sure this is run *after* WooCommerce has a chance to initialize its packages (wc-admin, etc). That is run with priority 10.
 // If you change the priority of this action, you'll need to change it in the wcpay_check_old_jetpack_version function too.
 add_action( 'plugins_loaded', 'wcpay_init', 11 );
+
+/**
+ * Returns the WooPayments DI container.
+ *
+ * @return Container
+ */
+function wcpay_get_container() {
+	return $GLOBALS['woopayments_container'];
+}
 
 if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 

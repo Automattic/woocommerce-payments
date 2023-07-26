@@ -650,7 +650,7 @@ class WC_Payments {
 		// phpcs:disable
 		if ( isset( $_GET['load'] ) ) {
 			$payment_service = new PaymentService();
-			var_dump( $payment_service );
+			var_dump( $payment_service, wcpay_get_container() );
 			exit;
 		}
 		// phpcs:enable
