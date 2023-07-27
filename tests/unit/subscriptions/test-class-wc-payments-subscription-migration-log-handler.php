@@ -121,6 +121,27 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 			)
 		);
 
+		// Confirm initial state.
+		$results = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT source, COUNT(*) as count
+				FROM {$wpdb->prefix}woocommerce_log
+				WHERE source IN ( %s, %s )
+				GROUP BY source",
+				WC_Payments_Subscription_Migration_Log_Handler::HANDLE,
+				$this->test_log_source
+			),
+			ARRAY_A
+		);
+
+		$results = wp_list_pluck( $results, 'count', 'source' );
+
+		// Confirm our migration and dummy entries exist.
+		$this->assertArrayHasKey( WC_Payments_Subscription_Migration_Log_Handler::HANDLE, $results );
+		$this->assertEquals( 1, $results[ WC_Payments_Subscription_Migration_Log_Handler::HANDLE ] );
+		$this->assertArrayHasKey( $this->test_log_source, $results );
+		$this->assertEquals( 1, $results[ $this->test_log_source ] );
+
 		// Trigger WC's log cleanup.
 		do_action( 'woocommerce_cleanup_logs' );
 
