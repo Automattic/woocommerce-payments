@@ -9,6 +9,7 @@ namespace WooPayments;
 
 use Psr\Container\ContainerInterface;
 use WooPayments\Internal\DependencyManagement\ExtendedContainer;
+use WooPayments\Internal\DependencyManagement\ServiceProvider\PaymentsServiceProvider;
 use WooPayments\Internal\DependencyManagement\WooContainerDelegate;
 
 /**
@@ -32,6 +33,8 @@ class Container implements ContainerInterface {
 		$this->container = new ExtendedContainer();
 
 		$this->container->addShared( static::class, $this );
+
+		$this->container->addServiceProvider( new PaymentsServiceProvider() );
 
 		$this->container->delegate( new WooContainerDelegate() );
 	}
