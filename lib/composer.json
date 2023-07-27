@@ -6,14 +6,13 @@
 			"league/container": "4.2",
 			"coenjacobs/mozart": "0.7.1"
 		},
+    "license": "GPL-3.0-or-later",
 		"scripts": {
         "post-install-cmd": [
-            "\"vendor/bin/mozart\" compose",
-            "composer dump-autoload"
+            "\"vendor/bin/mozart\" compose"
         ],
         "post-update-cmd": [
-            "\"vendor/bin/mozart\" compose",
-            "composer dump-autoload"
+            "\"vendor/bin/mozart\" compose"
         ]
 		},
 		"extra": {

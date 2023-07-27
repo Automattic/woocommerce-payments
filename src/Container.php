@@ -7,7 +7,7 @@
 
 namespace WooPayments;
 
-use Automattic\WooCommerce\Vendor\Psr\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
 use WooPayments\Internal\DependencyManagement\ExtendedContainer;
 use WooPayments\Internal\DependencyManagement\WooContainerDelegate;
 
