@@ -98,8 +98,9 @@ class WC_Payments_Subscription_Migration_Log_Handler {
 		$wpdb->query(
 			$wpdb->prepare(
 				"UPDATE {$wpdb->prefix}woocommerce_log
-				SET timestamp = DATE_ADD( timestamp, INTERVAL 5 YEAR ), context = %s
+				SET timestamp = DATE_ADD( timestamp, INTERVAL %d YEAR ), context = %s
 				WHERE source = %s",
+				self::DB_ENTRY_EXTENSION_IN_YEARS,
 				self::EXTENDED_DB_ENTRY_FLAG,
 				self::HANDLE
 			)
