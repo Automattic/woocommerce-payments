@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { useContext } from 'react';
+import React, { useContext } from 'react';
 import classNames from 'classnames';
 import interpolateComponents from '@automattic/interpolate-components';
 
@@ -22,6 +22,7 @@ import {
 import './payment-method.scss';
 import { useManualCapture } from 'wcpay/data';
 import { getDocumentationUrlForDisabledPaymentMethod } from './utils';
+import { FeeStructure } from 'wcpay/types/fees';
 
 const PaymentMethod = ( {
 	id,
@@ -36,14 +37,32 @@ const PaymentMethod = ( {
 	isAllowingManualCapture,
 	required,
 	locked,
-} ) => {
+}: {
+	id: string;
+	label: string;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	Icon: () => JSX.Element | null;
+	description: string;
+	status: string;
+	checked: boolean;
+	onCheckClick: ( id: string ) => void;
+	onUncheckClick: ( id: string ) => void;
+	className?: string;
+	isAllowingManualCapture: boolean;
+	required: boolean;
+	locked: boolean;
+} ): React.ReactElement => {
 	const disabled = upeCapabilityStatuses.INACTIVE === status;
-	const { accountFees } = useContext( WCPaySettingsContext );
+	const {
+		accountFees,
+	}: { accountFees: Record< string, FeeStructure > } = useContext(
+		WCPaySettingsContext
+	);
 	const [ isManualCaptureEnabled ] = useManualCapture();
 
 	const needsOverlay = isManualCaptureEnabled && ! isAllowingManualCapture;
 
-	const handleChange = ( newStatus ) => {
+	const handleChange = ( newStatus: string ) => {
 		// If the payment method control is locked, reject any changes.
 		if ( locked ) {
 			return;
