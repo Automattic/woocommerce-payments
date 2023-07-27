@@ -101,7 +101,7 @@ const mockDisputes = [
 		customer_country: 'US',
 		status: 'needs_response' as DisputeStatus,
 		created: '2019-11-01 23:59:59',
-		due_by: '2019-11-08 02:46:00',
+		due_by: '2019-11-10 02:46:00',
 		order: {
 			number: '1',
 			customer_url: 'https://shop.local',
@@ -147,6 +147,11 @@ const mockDisputes = [
 
 describe( 'Disputes list', () => {
 	beforeEach( () => {
+		// mock Date.now that moment library uses to get current date for testing purposes
+		Date.now = jest.fn( () =>
+			new Date( '2019-11-07T12:33:37.000Z' ).getTime()
+		);
+
 		global.wcpaySettings = {
 			zeroDecimalCurrencies: [],
 			connect: {
@@ -164,6 +169,11 @@ describe( 'Disputes list', () => {
 				},
 			},
 		};
+	} );
+
+	afterEach( () => {
+		// roll it back
+		Date.now = () => new Date().getTime();
 	} );
 
 	test( 'renders correctly', () => {
@@ -269,7 +279,7 @@ describe( 'Disputes list', () => {
 				'Email',
 				'Country',
 				'"Disputed on"',
-				'"Response date"',
+				'"Respond by"',
 			];
 
 			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
