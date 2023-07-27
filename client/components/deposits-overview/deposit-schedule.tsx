@@ -10,6 +10,7 @@ import moment from 'moment';
  * Internal dependencies
  */
 import { getDepositMonthlyAnchorLabel } from 'wcpay/deposits/utils';
+import type * as AccountOverview from 'wcpay/types/account-overview';
 
 /**
  * The type of the props for the DepositScheduleDescription component.

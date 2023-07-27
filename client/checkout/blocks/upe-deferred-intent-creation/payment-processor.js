@@ -115,7 +115,7 @@ const PaymentProcessor = ( {
 					await validateElements( elements );
 
 					const paymentMethodObject = await api
-						.getStripe()
+						.getStripeForUPE( paymentMethodId )
 						.createPaymentMethod( {
 							elements,
 							params: {

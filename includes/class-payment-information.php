@@ -99,6 +99,13 @@ class Payment_Information {
 	private $fingerprint = '';
 
 	/**
+	 * The Stripe ID of the payment method used for this payment.
+	 *
+	 * @var string
+	 */
+	private $payment_method_stripe_id;
+
+	/**
 	 * Payment information constructor.
 	 *
 	 * @param string               $payment_method The ID of the payment method used for this payment.
@@ -109,6 +116,7 @@ class Payment_Information {
 	 * @param Payment_Capture_Type $manual_capture Indicates whether the payment will be only authorized or captured immediately.
 	 * @param string               $cvc_confirmation The CVC confirmation for this payment method.
 	 * @param string               $fingerprint The attached fingerprint.
+	 * @param string               $payment_method_stripe_id The Stripe ID of the payment method used for this payment.
 	 *
 	 * @throws Invalid_Payment_Method_Exception When no payment method is found in the provided request.
 	 */
@@ -120,7 +128,8 @@ class Payment_Information {
 		Payment_Initiated_By $payment_initiated_by = null,
 		Payment_Capture_Type $manual_capture = null,
 		string $cvc_confirmation = null,
-		string $fingerprint = ''
+		string $fingerprint = '',
+		string $payment_method_stripe_id = null
 	) {
 		if ( empty( $payment_method ) && empty( $token ) && ! \WC_Payments::is_network_saved_cards_enabled() ) {
 			// If network-wide cards are enabled, a payment method or token may not be specified and the platform default one will be used.
@@ -129,14 +138,15 @@ class Payment_Information {
 				'payment_method_not_provided'
 			);
 		}
-		$this->payment_method       = $payment_method;
-		$this->order                = $order;
-		$this->token                = $token;
-		$this->payment_initiated_by = $payment_initiated_by ?? Payment_Initiated_By::CUSTOMER();
-		$this->manual_capture       = $manual_capture ?? Payment_Capture_Type::AUTOMATIC();
-		$this->payment_type         = $payment_type ?? Payment_Type::SINGLE();
-		$this->cvc_confirmation     = $cvc_confirmation;
-		$this->fingerprint          = $fingerprint;
+		$this->payment_method           = $payment_method;
+		$this->order                    = $order;
+		$this->token                    = $token;
+		$this->payment_initiated_by     = $payment_initiated_by ?? Payment_Initiated_By::CUSTOMER();
+		$this->manual_capture           = $manual_capture ?? Payment_Capture_Type::AUTOMATIC();
+		$this->payment_type             = $payment_type ?? Payment_Type::SINGLE();
+		$this->cvc_confirmation         = $cvc_confirmation;
+		$this->fingerprint              = $fingerprint;
+		$this->payment_method_stripe_id = $payment_method_stripe_id;
 	}
 
 	/**
@@ -219,6 +229,7 @@ class Payment_Information {
 	 * @param Payment_Type         $payment_type The type of the payment.
 	 * @param Payment_Initiated_By $payment_initiated_by Indicates whether the payment is merchant-initiated or customer-initiated.
 	 * @param Payment_Capture_Type $manual_capture Indicates whether the payment will be only authorized or captured immediately.
+	 * @param string               $payment_method_stripe_id The Stripe ID of the payment method used for this payment.
 	 *
 	 * @throws \Exception - If no payment method is found in the provided request.
 	 */
@@ -227,7 +238,8 @@ class Payment_Information {
 		\WC_Order $order = null,
 		Payment_Type $payment_type = null,
 		Payment_Initiated_By $payment_initiated_by = null,
-		Payment_Capture_Type $manual_capture = null
+		Payment_Capture_Type $manual_capture = null,
+		string $payment_method_stripe_id = null
 	): Payment_Information {
 		$payment_method   = self::get_payment_method_from_request( $request );
 		$token            = self::get_token_from_request( $request );
@@ -238,7 +250,7 @@ class Payment_Information {
 			$order->add_meta_data( 'is_woopay', true, true );
 			$order->save_meta_data();
 		}
-		return new Payment_Information( $payment_method, $order, $payment_type, $token, $payment_initiated_by, $manual_capture, $cvc_confirmation, $fingerprint );
+		return new Payment_Information( $payment_method, $order, $payment_type, $token, $payment_initiated_by, $manual_capture, $cvc_confirmation, $fingerprint, $payment_method_stripe_id );
 	}
 
 	/**
@@ -414,5 +426,14 @@ class Payment_Information {
 	 */
 	public function get_fingerprint() {
 		return $this->fingerprint;
+	}
+
+	/**
+	 * Returns the Stripe ID of payment method.
+	 *
+	 * @return string The Stripe ID of payment method.
+	 */
+	public function get_payment_method_stripe_id() {
+		return $this->payment_method_stripe_id;
 	}
 }

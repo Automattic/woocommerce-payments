@@ -61,12 +61,13 @@ const api = new WCPayAPI(
 		locale: getUPEConfig( 'locale' ),
 		isUPEEnabled: getUPEConfig( 'isUPEEnabled' ),
 		isUPESplitEnabled: getUPEConfig( 'isUPESplitEnabled' ),
+		isUPEDeferredEnabled: getUPEConfig( 'isUPEDeferredEnabled' ),
 		isStripeLinkEnabled,
 	},
 	request
 );
 Object.entries( enabledPaymentMethodsConfig )
-	.filter( ( [ upeName ] ) => 'link' !== upeName )
+	.filter( ( [ upeName ] ) => upeName !== 'link' )
 	.forEach( ( [ upeName, upeConfig ] ) => {
 		registerPaymentMethod( {
 			name: upeMethods[ upeName ],
@@ -103,7 +104,9 @@ Object.entries( enabledPaymentMethodsConfig )
 				const isAvailableInTheCountry =
 					! isRestrictedInAnyCountry ||
 					upeConfig.countries.includes( billingCountry );
-				return isAvailableInTheCountry && !! api.getStripe();
+				return (
+					isAvailableInTheCountry && !! api.getStripeForUPE( upeName )
+				);
 			},
 			paymentMethodId: upeMethods[ upeName ],
 			// see .wc-block-checkout__payment-method styles in blocks/style.scss

@@ -145,7 +145,7 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 	}, [] );
 
 	const otherButtons =
-		'woopay' === type
+		type === 'woopay'
 			? __( 'Apple Pay / Google Pay buttons', 'woocommerce-payments' )
 			: __( 'WooPay button', 'woocommerce-payments' );
 
