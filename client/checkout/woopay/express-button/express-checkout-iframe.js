@@ -221,7 +221,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 					wcpayTracks.events.WOOPAY_OTP_COMPLETE
 				);
 				api.initWooPay(
-					userEmail,
+					userEmail || e.data.userEmail,
 					e.data.platformCheckoutUserSession
 				).then( ( response ) => {
 					// Do nothing if the iframe has been closed.
