@@ -7,6 +7,7 @@ import { Icon, VisuallyHidden } from '@wordpress/components';
 import { useCallback } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import classNames from 'classnames';
+import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies
@@ -23,6 +24,7 @@ import Pill from '../pill';
 import { HoverTooltip } from 'components/tooltip';
 import './payment-method-checkbox.scss';
 import { useManualCapture } from 'wcpay/data';
+import { getDocumentationUrlForDisabledPaymentMethod } from 'components/payment-methods-list/utils';
 
 const PaymentMethodDescription = ( { name } ) => {
 	const description = PaymentMethodsMap[ name ]?.description;
@@ -154,17 +156,31 @@ const PaymentMethodCheckbox = ( {
 					) }
 					{ disabled && (
 						<HoverTooltip
-							content={ sprintf(
-								__(
-									'To use %s, please contact WooCommerce support.',
+							content={ interpolateComponents( {
+								//TODO: translators hint.
+								mixedString: __(
+									'We need more information from you to enable this method. ' +
+										'{{learnMoreLink}}Learn more.{{/learnMoreLink}},',
 									'woocommerce-payments'
 								),
-								PaymentMethodsMap[ name ].label
-							) }
+								components: {
+									learnMoreLink: (
+										// eslint-disable-next-line jsx-a11y/anchor-has-content
+										<a
+											target="_blank"
+											rel="noreferrer"
+											/* eslint-disable-next-line max-len */
+											href={ getDocumentationUrlForDisabledPaymentMethod(
+												name
+											) }
+										/>
+									),
+								},
+							} ) }
 						>
 							<Pill className={ 'payment-status-' + status }>
 								{ __(
-									'Contact WooCommerce Support',
+									'More information needed',
 									'woocommerce-payments'
 								) }
 							</Pill>

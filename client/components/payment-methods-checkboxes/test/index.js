@@ -157,7 +157,7 @@ describe( 'PaymentMethodsCheckboxes', () => {
 		);
 
 		expect( page.container ).toContainHTML(
-			'<span class="wcpay-pill payment-status-inactive">Contact WooCommerce Support</span>'
+			'<span class="wcpay-pill payment-status-inactive">More information needed</span>'
 		);
 	} );
 
