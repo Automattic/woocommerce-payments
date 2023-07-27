@@ -95,14 +95,14 @@
         },
       "mozart": {
         "dep_namespace": "WooPayments\\Vendor\\",
-        "dep_directory": "/vendor/woopayments/",
+        "dep_directory": "/lib/packages/",
         "packages": [
           "league/container"
         ],
         "excluded_packages":[
           "psr/container"
         ],
-        "classmap_directory": "/lib2653/",
+        "classmap_directory": "/lib/classmaps/",
         "classmap_prefix": "WooPayments_Vendor",
         "delete_vendor_directories": true
       }
@@ -110,7 +110,7 @@
     "autoload": {
       "psr-4": {
         "WCPay\\MultiCurrency\\": "includes/multi-currency",
-        "WooPayments\\Vendor\\": "vendor/woopayments",
+        "WooPayments\\Vendor\\": "lib/packages",
         "WooPayments\\": "src"
       }
     },
