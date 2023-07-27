@@ -21,7 +21,7 @@ import {
 } from 'wcpay/utils/account-fees';
 import './payment-method.scss';
 import { useManualCapture } from 'wcpay/data';
-import { getDocumentationLinkForDisabledPaymentMethod } from './utils';
+import { getDocumentationUrlForDisabledPaymentMethod } from './utils';
 
 const PaymentMethod = ( {
 	id,
@@ -144,8 +144,16 @@ const PaymentMethod = ( {
 										'woocommerce-payments'
 									),
 									components: {
-										learnMoreLink: getDocumentationLinkForDisabledPaymentMethod(
-											id
+										learnMoreLink: (
+											// eslint-disable-next-line jsx-a11y/anchor-has-content
+											<a
+												target="_blank"
+												rel="noreferrer"
+												/* eslint-disable-next-line max-len */
+												href={ getDocumentationUrlForDisabledPaymentMethod(
+													id
+												) }
+											/>
 										),
 									},
 								} ) }
