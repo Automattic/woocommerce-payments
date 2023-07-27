@@ -55,7 +55,7 @@ class WC_Points_Rewards_Integration implements IntegrationInterface {
  * Mock class for test usage.
  */
 class WC_Points_Rewards_Manager {
-	public function get_users_points( $user_id ) {
+	public static function get_users_points( $user_id ) {
 		return $user_id;
 	}
 }
