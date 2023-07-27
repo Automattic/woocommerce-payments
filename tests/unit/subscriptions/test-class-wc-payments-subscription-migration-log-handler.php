@@ -52,21 +52,12 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 			->disableOriginalConstructor()
 			->getMock();
 
-		// Get the reflection of the class.
-		$reflection_class = new ReflectionClass( 'WC_Payments_Subscription_Migration_Log_Handler' );
-
-		// Get the reflection of the private static property.
-		$property = $reflection_class->getProperty( 'logger' );
-		$property->setAccessible( true );
-
-		// Modify the private static property.
-		$property->setValue( $mock_logger );
-
 		$mock_logger->expects( $this->once() )
 			->method( 'debug' )
 			->with( 'test message', [ 'source' => WC_Payments_Subscription_Migration_Log_Handler::HANDLE ] );
 
-		WC_Payments_Subscription_Migration_Log_Handler::log( 'test message' );
+		$logger = new WC_Payments_Subscription_Migration_Log_Handler( $mock_logger );
+		$logger->log( 'test message' );
 	}
 
 	/**
@@ -78,7 +69,8 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 		$message = 'Test message 1234567890';
 
 		// Log messages - Log to the migration file and a dummy log.
-		WC_Payments_Subscription_Migration_Log_Handler::log( $message );
+		$logger = new WC_Payments_Subscription_Migration_Log_Handler();
+		$logger->log( $message );
 		wc_get_logger()->log( 'debug', $message, [ 'source' => $this->test_log_source ] );
 
 		$log_files = $this->get_log_files();
@@ -110,12 +102,13 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 	public function test_extend_life_of_migration_db_logs() {
 		global $wpdb;
 
-		$logger  = $this->setup_db_log_handler();
-		$message = 'Test message 1234567890';
+		$db_logger = $this->get_logger_with_db_log_handler();
+		$logger    = new WC_Payments_Subscription_Migration_Log_Handler( $db_logger );
+		$message   = 'Test message 1234567890';
 
 		// Log messages - Log a migration entry and a dummy log.
-		WC_Payments_Subscription_Migration_Log_Handler::log( $message );
-		$logger->log( 'debug', $message, [ 'source' => $this->test_log_source ] );
+		$logger->log( $message );
+		$db_logger->log( 'debug', $message, [ 'source' => $this->test_log_source ] );
 
 		// Mock the log entries being very old.
 		$wpdb->query(
@@ -178,26 +171,14 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 	 *
 	 * @return WC_Logger
 	 */
-	private function setup_db_log_handler() {
+	private function get_logger_with_db_log_handler() {
 		Constants::set_constant( 'WC_LOG_HANDLER', 'WC_Log_Handler_DB' );
 		$mock_db_log_handler = new WC_Log_Handler_DB();
 		$db_logger           = new WC_Logger( [ $mock_db_log_handler ] );
 
-		// Get the reflection of the class.
-		$reflection_class = new ReflectionClass( 'WC_Payments_Subscription_Migration_Log_Handler' );
-
-		// Get the reflection of the private static property.
-		$property = $reflection_class->getProperty( 'logger' );
-		$property->setAccessible( true );
-
-		// Modify the private static property.
-		$property->setValue( $db_logger );
-
 		add_action( 'woocommerce_cleanup_logs', [ $db_logger, 'clear_expired_logs' ] );
 
 		// Since we changed the default log handler, we need to re-instantiate our log handler.
-		new WC_Payments_Subscription_Migration_Log_Handler();
-
 		return $db_logger;
 	}
 }
