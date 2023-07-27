@@ -4,6 +4,7 @@
  */
 import { useContext } from 'react';
 import classNames from 'classnames';
+import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies
@@ -20,6 +21,7 @@ import {
 } from 'wcpay/utils/account-fees';
 import './payment-method.scss';
 import { useManualCapture } from 'wcpay/data';
+import { getDocumentationLink } from './utils';
 
 const PaymentMethod = ( {
 	id,
@@ -134,17 +136,30 @@ const PaymentMethod = ( {
 						) }
 						{ disabled && (
 							<HoverTooltip
-								content={ sprintf(
-									__(
-										'To use %s, please contact WooCommerce support.',
+								content={ interpolateComponents( {
+									mixedString: __(
+										'We need more information from you to enable this method. ' +
+											'{{learnMoreLink}}Learn more.{{/learnMoreLink}},',
 										'woocommerce-payments'
 									),
-									label
-								) }
+									components: {
+										learnMoreLink: (
+											// eslint-disable-next-line jsx-a11y/anchor-has-content
+											<a
+												target="_blank"
+												rel="noreferrer"
+												/* eslint-disable-next-line max-len */
+												href={ getDocumentationLink(
+													id
+												) }
+											/>
+										),
+									},
+								} ) }
 							>
 								<Pill className={ 'payment-status-' + status }>
 									{ __(
-										'Contact WooCommerce Support',
+										'More information needed',
 										'woocommerce-payments'
 									) }
 								</Pill>
