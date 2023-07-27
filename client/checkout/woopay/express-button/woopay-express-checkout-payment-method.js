@@ -34,7 +34,7 @@ const wooPayExpressCheckoutPaymentMethod = () => ( {
 			emailSelector="#email"
 		/>
 	),
-	canMakePayment: () => 'undefined' !== typeof wcpayConfig,
+	canMakePayment: () => typeof wcpayConfig !== 'undefined',
 	paymentMethodId: PAYMENT_METHOD_NAME_WOOPAY_EXPRESS_CHECKOUT,
 	supports: {
 		features: getConfig( 'features' ),

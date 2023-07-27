@@ -102,7 +102,7 @@ const CustomizeDepositSchedule = () => {
 						},
 					] }
 				/>
-				{ 'monthly' === depositScheduleInterval && (
+				{ depositScheduleInterval === 'monthly' && (
 					<SelectControl
 						label={ __( 'Date', 'woocommerce-payments' ) }
 						value={ depositScheduleMonthlyAnchor }
@@ -110,7 +110,7 @@ const CustomizeDepositSchedule = () => {
 						options={ monthlyAnchors }
 					/>
 				) }
-				{ 'weekly' === depositScheduleInterval && (
+				{ depositScheduleInterval === 'weekly' && (
 					<SelectControl
 						label={ __( 'Day', 'woocommerce-payments' ) }
 						value={ depositScheduleWeeklyAnchor }
@@ -120,17 +120,17 @@ const CustomizeDepositSchedule = () => {
 				) }
 			</div>
 			<p className="help-text">
-				{ 'monthly' === depositScheduleInterval &&
+				{ depositScheduleInterval === 'monthly' &&
 					__(
 						'Deposits scheduled on a weekend will be sent on the next business day.',
 						'woocommerce-payments'
 					) }
-				{ 'weekly' === depositScheduleInterval &&
+				{ depositScheduleInterval === 'weekly' &&
 					__(
 						'Deposits that fall on a holiday will initiate on the next business day.',
 						'woocommerce-payments'
 					) }
-				{ 'daily' === depositScheduleInterval &&
+				{ depositScheduleInterval === 'daily' &&
 					__(
 						'Deposits will occur every business day.',
 						'woocommerce-payments'
@@ -145,8 +145,8 @@ const DepositsSchedule = () => {
 	const completedWaitingPeriod = useCompletedWaitingPeriod();
 
 	if (
-		'enabled' !== depositStatus ||
-		'schedule_restricted' === depositRestrictions
+		depositStatus !== 'enabled' ||
+		depositRestrictions === 'schedule_restricted'
 	) {
 		return (
 			<Notice
@@ -174,7 +174,7 @@ const DepositsSchedule = () => {
 			</Notice>
 		);
 	}
-	if ( true !== completedWaitingPeriod ) {
+	if ( completedWaitingPeriod !== true ) {
 		return (
 			<Notice
 				status="warning"
