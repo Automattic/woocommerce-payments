@@ -21,7 +21,7 @@ import {
 } from 'wcpay/utils/account-fees';
 import './payment-method.scss';
 import { useManualCapture } from 'wcpay/data';
-import { getDocumentationLink } from './utils';
+import { getDocumentationLinkForDisabledPaymentMethod } from './utils';
 
 const PaymentMethod = ( {
 	id,
@@ -137,22 +137,15 @@ const PaymentMethod = ( {
 						{ disabled && (
 							<HoverTooltip
 								content={ interpolateComponents( {
+									//TODO: translators hint.
 									mixedString: __(
 										'We need more information from you to enable this method. ' +
 											'{{learnMoreLink}}Learn more.{{/learnMoreLink}},',
 										'woocommerce-payments'
 									),
 									components: {
-										learnMoreLink: (
-											// eslint-disable-next-line jsx-a11y/anchor-has-content
-											<a
-												target="_blank"
-												rel="noreferrer"
-												/* eslint-disable-next-line max-len */
-												href={ getDocumentationLink(
-													id
-												) }
-											/>
+										learnMoreLink: getDocumentationLinkForDisabledPaymentMethod(
+											id
 										),
 									},
 								} ) }
