@@ -19,7 +19,7 @@ class WC_Payments_Subscription_Migration_Log_Handler {
 	 *
 	 * @var string
 	 */
-	const HANDLE = 'woo-payments-subscription-migration';
+	const HANDLE = 'woopayments-subscription-migration';
 
 	/**
 	 * A flag temporarily stored in the context column used to identify DB log entries that have been extended to avoid automated deletion.
