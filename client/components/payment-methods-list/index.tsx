@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { ReactNode } from 'react';
 import classNames from 'classnames';
 
 /**
@@ -10,7 +10,13 @@ import classNames from 'classnames';
  */
 import './style.scss';
 
-const PaymentMethodsList = ( { className, children } ) => {
+const PaymentMethodsList = ( {
+	className,
+	children,
+}: {
+	className: string;
+	children: ReactNode;
+} ): React.ReactElement => {
 	return (
 		<ul className={ classNames( 'payment-methods-list', className ) }>
 			{ children }
