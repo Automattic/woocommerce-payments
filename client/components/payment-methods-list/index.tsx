@@ -14,7 +14,7 @@ const PaymentMethodsList = ( {
 	className,
 	children,
 }: {
-	className: string;
+	className?: string;
 	children: ReactNode;
 } ): React.ReactElement => {
 	return (
