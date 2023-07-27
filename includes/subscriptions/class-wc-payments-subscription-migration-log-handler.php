@@ -44,12 +44,8 @@ class WC_Payments_Subscription_Migration_Log_Handler {
 
 	/**
 	 * Constructor.
-	 *
-	 * @param WC_Logger|null $logger The logger instance to use.
 	 */
-	public function __construct( $logger = null ) {
-		$this->logger = $logger;
-
+	public function __construct() {
 		// WC Core will delete logs on priority 10, so we need to run before that.
 		if ( $this->has_file_logger_enabled() ) {
 			add_action( 'woocommerce_cleanup_logs', [ $this, 'extend_life_of_migration_file_logs' ], 5 );

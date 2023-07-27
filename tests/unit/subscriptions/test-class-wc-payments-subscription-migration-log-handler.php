@@ -103,8 +103,11 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 		global $wpdb;
 
 		$db_logger = $this->get_logger_with_db_log_handler();
-		$logger    = new WC_Payments_Subscription_Migration_Log_Handler( $db_logger );
-		$message   = 'Test message 1234567890';
+		$logger    = new WC_Payments_Subscription_Migration_Log_Handler();
+
+		$this->set_logger_property( $logger, $db_logger );
+
+		$message = 'Test message 1234567890';
 
 		// Log messages - Log a migration entry and a dummy log.
 		$logger->log( $message );
@@ -201,5 +204,18 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 
 		// Since we changed the default log handler, we need to re-instantiate our log handler.
 		return $db_logger;
+	}
+
+	/**
+	 * Sets the private $logger property of a WC_Payments_Subscription_Migration_Log_Handler instance.
+	 *
+	 * @param WC_Payments_Subscription_Migration_Log_Handler $logger
+	 * @param WC_Logger $wc_logger
+	 */
+	private function set_logger_property( $logger, $wc_logger ) {
+		$reflection = new ReflectionClass( $logger );
+		$property   = $reflection->getProperty( 'logger' );
+		$property->setAccessible( true );
+		$property->setValue( $logger, $wc_logger );
 	}
 }
