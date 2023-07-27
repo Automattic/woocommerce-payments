@@ -1,0 +1,34 @@
+{
+		"name": "woopayments/woopayments-lib",
+		"description": "A package for hiding re-nameed dependencies.",
+		"minimum-stability": "dev",
+		"require-dev": {
+			"league/container": "4.2",
+			"coenjacobs/mozart": "0.7.1"
+		},
+		"scripts": {
+        "post-install-cmd": [
+            "\"vendor/bin/mozart\" compose",
+            "composer dump-autoload"
+        ],
+        "post-update-cmd": [
+            "\"vendor/bin/mozart\" compose",
+            "composer dump-autoload"
+        ]
+		},
+		"extra": {
+			"mozart": {
+				"dep_namespace": "WooPayments\\Vendor\\",
+				"dep_directory": "/packages/",
+				"packages": [
+					"league/container"
+				],
+				"excluded_packages":[
+					"psr/container"
+				],
+				"classmap_directory": "/classmaps/",
+				"classmap_prefix": "WooPayments_Vendor",
+				"delete_vendor_directories": true
+			}
+		}
+}

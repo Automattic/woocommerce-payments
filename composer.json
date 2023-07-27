@@ -27,7 +27,8 @@
       "automattic/jetpack-autoloader": "2.11.18",
       "automattic/jetpack-identity-crisis": "0.8.43",
       "automattic/jetpack-sync": "1.47.7",
-      "woocommerce/subscriptions-core": "6.0.0"
+      "woocommerce/subscriptions-core": "6.0.0",
+        "psr/container": "^1.1"
     },
     "require-dev": {
       "composer/installers": "1.10.0",
@@ -43,9 +44,7 @@
       "cweagans/composer-patches": "1.7.1",
       "automattic/jetpack-changelogger": "3.3.2",
       "spatie/phpunit-watcher": "1.23",
-      "woocommerce/qit-cli": "0.3.4",
-      "coenjacobs/mozart": "0.7.1",
-      "league/container": "4.2"
+      "woocommerce/qit-cli": "0.3.4"
     },
     "scripts": {
       "test": [
@@ -56,14 +55,6 @@
       ],
       "phpcbf": [
         "phpcbf -p"
-      ],
-      "post-install-cmd": [
-        "\"vendor/bin/mozart\" compose",
-        "composer dump-autoload"
-      ],
-      "post-update-cmd": [
-        "\"vendor/bin/mozart\" compose",
-        "composer dump-autoload"
       ]
     },
     "extra": {
@@ -92,20 +83,7 @@
                 "filename": "bin/class-wcpay-changelog-formatter.php"
             },
             "changes-dir": "changelog"
-        },
-      "mozart": {
-        "dep_namespace": "WooPayments\\Vendor\\",
-        "dep_directory": "/lib/packages/",
-        "packages": [
-          "league/container"
-        ],
-        "excluded_packages":[
-          "psr/container"
-        ],
-        "classmap_directory": "/lib/classmaps/",
-        "classmap_prefix": "WooPayments_Vendor",
-        "delete_vendor_directories": true
-      }
+        }
     },
     "autoload": {
       "psr-4": {
