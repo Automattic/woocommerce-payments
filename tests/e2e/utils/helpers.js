@@ -28,7 +28,7 @@ export const checkPageExists = async ( slug ) => {
 		waitUntil: 'load',
 	} );
 
-	if ( 404 === wcbPage.status() ) {
+	if ( wcbPage.status() === 404 ) {
 		return Promise.reject();
 	}
 };

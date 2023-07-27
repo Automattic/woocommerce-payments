@@ -22,14 +22,14 @@ export const WoopayExpressCheckoutButton = ( {
 } ) => {
 	const { type: buttonType, height, size, theme, context } = buttonSettings;
 	const text =
-		'default' !== buttonType
+		buttonType !== 'default'
 			? sprintf(
 					__( `%s with`, 'woocommerce-payments' ),
 					buttonType.charAt( 0 ).toUpperCase() +
 						buttonType.slice( 1 ).toLowerCase()
 			  )
 			: '';
-	const ThemedWooPayIcon = 'dark' === theme ? WoopayIcon : WoopayIconLight;
+	const ThemedWooPayIcon = theme === 'dark' ? WoopayIcon : WoopayIconLight;
 
 	const {
 		addToCart,
@@ -84,7 +84,7 @@ export const WoopayExpressCheckoutButton = ( {
 	return (
 		<button
 			key={ `${ buttonType }-${ theme }-${ size }` }
-			aria-label={ 'default' !== buttonType ? text : __( 'WooPay' ) }
+			aria-label={ buttonType !== 'default' ? text : __( 'WooPay' ) }
 			onClick={ initWooPay }
 			className="woopay-express-button"
 			disabled={ isAddToCartDisabled }
