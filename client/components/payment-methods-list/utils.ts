@@ -7,7 +7,7 @@
  */
 import PAYMENT_METHOD_IDS from 'wcpay/payment-methods/constants';
 
-export const DOCUMENTATION_URL_FOR_DISABLED_PAYMENT_METHOD = {
+export const DocumentationUrlForDisabledPaymentMethod = {
 	DEFAULT:
 		'https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/#method-cant-be-enabled',
 	BNPLS:
@@ -15,16 +15,16 @@ export const DOCUMENTATION_URL_FOR_DISABLED_PAYMENT_METHOD = {
 };
 
 export const getDocumentationUrlForDisabledPaymentMethod = (
-	paymentMethodId
-) => {
+	paymentMethodId: string
+): string => {
 	let link;
 	switch ( paymentMethodId ) {
 		case PAYMENT_METHOD_IDS.AFTERPAY_CLEARPAY:
 		case PAYMENT_METHOD_IDS.AFFIRM:
-			link = DOCUMENTATION_URL_FOR_DISABLED_PAYMENT_METHOD.BNPLS;
+			link = DocumentationUrlForDisabledPaymentMethod.BNPLS;
 			break;
 		default:
-			link = DOCUMENTATION_URL_FOR_DISABLED_PAYMENT_METHOD.DEFAULT;
+			link = DocumentationUrlForDisabledPaymentMethod.DEFAULT;
 	}
 	return link;
 };
