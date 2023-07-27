@@ -12,7 +12,6 @@ use Jetpack_Tracks_Event;
 use WC_Payments;
 use WC_Payments_Features;
 use WP_Error;
-use WCPay\Logger;
 
 defined( 'ABSPATH' ) || exit; // block direct access.
 
