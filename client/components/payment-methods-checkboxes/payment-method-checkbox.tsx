@@ -25,8 +25,9 @@ import { HoverTooltip } from 'components/tooltip';
 import './payment-method-checkbox.scss';
 import { useManualCapture } from 'wcpay/data';
 import { getDocumentationUrlForDisabledPaymentMethod } from 'components/payment-methods-list/utils';
+import { FeeStructure } from 'wcpay/types/fees';
 
-const PaymentMethodDescription = ( { name } ) => {
+const PaymentMethodDescription = ( { name }: { name: string } ) => {
 	const description = PaymentMethodsMap[ name ]?.description;
 	if ( ! description ) return null;
 
@@ -53,8 +54,20 @@ const PaymentMethodCheckbox = ( {
 	status,
 	required,
 	locked,
-} ) => {
-	const { accountFees } = useContext( WCPaySettingsContext );
+}: {
+	onChange: ( name: string, enabled: boolean ) => void;
+	name: string;
+	checked: boolean;
+	fees: string;
+	status: string;
+	required: boolean;
+	locked: boolean;
+} ): React.ReactElement => {
+	const {
+		accountFees,
+	}: { accountFees: Record< string, FeeStructure > } = useContext(
+		WCPaySettingsContext
+	);
 
 	const handleChange = useCallback(
 		( enabled ) => {
@@ -92,7 +105,7 @@ const PaymentMethodCheckbox = ( {
 				label={ paymentMethod.label }
 				checked={ checked }
 				disabled={ disabled || locked }
-				onChange={ ( state ) => {
+				onChange={ ( state: string ) => {
 					handleChange( state );
 				} }
 				delayMsOnCheck={ 1500 }
@@ -101,7 +114,7 @@ const PaymentMethodCheckbox = ( {
 				isAllowingManualCapture={ paymentMethod.allows_manual_capture }
 			/>
 			<div className={ 'woocommerce-payments__payment-method-icon' }>
-				{ paymentMethod.icon() }
+				{ paymentMethod.icon( {} ) }
 			</div>
 			<div className={ 'payment-method-checkbox__pills' }>
 				<div className={ 'payment-method-checkbox__pills-left' }>
