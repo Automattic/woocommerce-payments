@@ -48,6 +48,9 @@ class WC_Payments_Subscriptions_Migrator {
 
 		// Hook onto Scheduled Action to migrate wcpay subscription.
 		// add_action( 'wcpay_migrate_subscription', [ $this, 'migrate_wcpay_subscription' ] );.
+
+		// Don't copy migrated subscription meta keys to related orders.
+		add_filter( 'wc_subscriptions_object_data', [ $this, 'exclude_migrated_meta' ], 10, 1 );
 	}
 
 	/**
@@ -245,6 +248,21 @@ class WC_Payments_Subscriptions_Migrator {
 		}
 
 		return $wcpay_subscription['status'];
+	}
+
+	/**
+	 * Don't copy migrated WCPay subscription metadata to any subscription related orders (renewal/switch/resubscribe).
+	 *
+	 * @param array $meta_data The meta data to be copied.
+	 *
+	 * @return array
+	 */
+	public function exclude_migrated_meta( $meta_data ) {
+		foreach ( $this->migrated_meta_keys as $key ) {
+			unset( $meta_data[ $key ] );
+		}
+
+		return $meta_data;
 	}
 
 	/**
