@@ -40,9 +40,9 @@ export const WoopayExpressCheckoutButton = ( {
 	useEffect( () => {
 		if ( ! isPreview ) {
 			wcpayTracks.recordUserEvent(
-				wcpayTracks.events.WOOPAY_EXPRESS_BUTTON_OFFERED,
+				wcpayTracks.events.WOOPAY_BUTTON_LOAD,
 				{
-					context,
+					source: context,
 				}
 			);
 		}
@@ -55,12 +55,9 @@ export const WoopayExpressCheckoutButton = ( {
 			return; // eslint-disable-line no-useless-return
 		}
 
-		wcpayTracks.recordUserEvent(
-			wcpayTracks.events.WOOPAY_EXPRESS_BUTTON_CLICKED,
-			{
-				context: context,
-			}
-		);
+		wcpayTracks.recordUserEvent( wcpayTracks.events.WOOPAY_BUTTON_CLICK, {
+			source: context,
+		} );
 
 		if ( isProductPage ) {
 			const productData = getProductData();

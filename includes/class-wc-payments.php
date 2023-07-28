@@ -638,6 +638,12 @@ class WC_Payments {
 			add_action( 'woocommerce_onboarding_profile_data_updated', 'WC_Payments_Features::maybe_enable_wcpay_subscriptions_after_onboarding', 10, 2 );
 		}
 
+		// Load the WCPay Subscriptions migration class.
+		if ( WC_Payments_Features::is_subscription_migration_enabled() ) {
+			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions-migrator.php';
+			new WC_Payments_Subscriptions_Migrator( self::$api_client );
+		}
+
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'set_plugin_activation_timestamp' ] );
 
@@ -1516,13 +1522,13 @@ class WC_Payments {
 		remove_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
 
 		$body = [
-			'wcpay_version'      => WCPAY_VERSION_NUMBER,
-			'user_id'            => $user->ID,
-			'customer_id'        => $customer_id,
-			'session_nonce'      => wp_create_nonce( 'wc_store_api' ),
-			'store_api_token'    => self::init_store_api_token(),
-			'email'              => $email,
-			'store_data'         => [
+			'wcpay_version'        => WCPAY_VERSION_NUMBER,
+			'user_id'              => $user->ID,
+			'customer_id'          => $customer_id,
+			'session_nonce'        => wp_create_nonce( 'wc_store_api' ),
+			'store_api_token'      => self::init_store_api_token(),
+			'email'                => $email,
+			'store_data'           => [
 				'store_name'                     => get_bloginfo( 'name' ),
 				'store_logo'                     => ! empty( $store_logo ) ? get_rest_url( null, 'wc/v3/payments/file/' . $store_logo ) : '',
 				'custom_message'                 => self::get_gateway()->get_option( 'platform_checkout_custom_message' ),
@@ -1541,11 +1547,12 @@ class WC_Payments {
 				'blocks_data'                    => $blocks_data_extractor->get_data(),
 				'checkout_schema_namespaces'     => $blocks_data_extractor->get_checkout_schema_namespaces(),
 			],
-			'user_session'       => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
-			'preloaded_requests' => [
+			'user_session'         => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
+			'preloaded_requests'   => [
 				'cart'     => $cart_data,
 				'checkout' => $checkout_data,
 			],
+			'tracks_user_identity' => self::woopay_tracker()->tracks_get_identity( $user->ID ),
 		];
 
 		if ( ! empty( $email ) ) {
