@@ -133,6 +133,7 @@ class WooPay_Adapted_Extensions_Test extends WCPAY_UnitTestCase {
 	public function test_get_gift_cards_data_while_logged_out_with_zero_balance() {
 		$expected            = [
 			'account_orders_link' => add_query_arg( [ 'wc_gc_show_pending_orders' => 'yes' ], wc_get_account_endpoint_url( 'orders' ) ),
+			'should_verify_email' => false,
 		];
 		$this->test_user->ID = 0;
 

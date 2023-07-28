@@ -10,13 +10,32 @@
 use Automattic\WooCommerce\Blocks\Integrations\IntegrationInterface;
 
 /**
+ * Class WC_GC_Gift_Card_Data.
+ *
+ * Mock class for test usage.
+ */
+class WC_GC_Gift_Card_Data {
+	private $balance = 0;
+
+	public function __construct( $balance ) {
+		$this->balance = $balance;
+	}
+
+	public function get_balance() {
+		return $this->balance;
+	}
+}
+
+/**
  * Class WC_GC_Account.
  *
  * Mock class for test usage.
  */
 class WC_GC_Account {
 	public function get_active_giftcards( $user_id ) {
-		return $user_id;
+		$data = new WC_GC_Gift_Card_Data( $user_id );
+
+		return [ $data ];
 	}
 }
 
