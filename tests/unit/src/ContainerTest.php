@@ -7,8 +7,8 @@
 
 namespace WooPayments\Tests;
 
-use Automattic\WooCommerce\Proxies\LegacyProxy;
 use WCPAY_UnitTestCase;
+use Automattic\WooCommerce\Proxies\LegacyProxy;
 use WooPayments\Container;
 use WooPayments\Internal\Service\PaymentProcessingService;
 
@@ -21,6 +21,13 @@ class ContainerTest extends WCPAY_UnitTestCase {
 	 */
 	public function test_wcpay_get_container_returns_container() {
 		$this->assertInstanceOf( Container::class, wcpay_get_container() );
+	}
+
+	/**
+	 * Ensures that the container is available through itself.
+	 */
+	public function test_container_contains_itself() {
+		$this->assertInstanceOf( Container::class, wcpay_get_container()->get( Container::class ) );
 	}
 
 	/**
@@ -37,5 +44,19 @@ class ContainerTest extends WCPAY_UnitTestCase {
 	public function test_container_delegates() {
 		$proxy = wcpay_get_container()->get( LegacyProxy::class );
 		$this->assertInstanceOf( LegacyProxy::class, $proxy );
+	}
+
+	/**
+	 * Ensures that a class can be replaced within the container during tests.
+	 */
+	public function test_container_allows_replacement() {
+		$replacement_service = new class() extends PaymentProcessingService {
+
+		};
+
+		$container = wcpay_get_test_container();
+		$container->replace( PaymentProcessingService::class, $replacement_service );
+
+		$this->assertTrue( true );
 	}
 }
