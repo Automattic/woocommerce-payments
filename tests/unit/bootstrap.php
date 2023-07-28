@@ -118,6 +118,9 @@ if ( defined( 'PHP_VERSION_ID' ) && PHP_VERSION_ID >= 70400 ) {
 function wcpay_init_subscriptions_core() {
 }
 
+// Placeholder for the test container.
+$GLOBALS['wcpay_test_container'] = null;
+
 /**
  * Extracts the internal ExtendedContainer instance of the WooPayments container.
  *
@@ -128,6 +131,10 @@ function wcpay_init_subscriptions_core() {
  * @return ExtendedContainer The extended container.
  */
 function wcpay_get_test_container() {
+	if ( ! is_null( $GLOBALS['wcpay_test_container'] ) ) {
+		return $GLOBALS['wcpay_test_container'];
+	}
+
 	$container = $GLOBALS['woopayments_container'] ?? null;
 	if ( ! $container instanceof Container ) {
 		throw new Exception( 'Tests require the WooPayments dependency container to be set up.' );

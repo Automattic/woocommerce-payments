@@ -16,12 +16,55 @@ use WooPayments\Vendor\League\Container\Container;
  */
 class ExtendedContainer extends Container {
 	/**
-	 * Simple placeholder method, tbd.
+	 * Concretes will be stored here before being replaced,
+	 * allowing them to be restored later.
 	 *
-	 * @param string $class_name  The name of the class.
-	 * @param mixed  $replacement The class to replace it with.
+	 * @var array
 	 */
-	public function replace( $class_name, $replacement ) {
+	protected $original_concretes = [];
 
+	/**
+	 * Replaces an existing definition with another concret.
+	 *
+	 * Useful while testing, as the concrete could be a mock object.
+	 *
+	 * @param string $id       ID/Name of the class.
+	 * @param object $concrete The concrete (instance) to use.
+	 */
+	public function replace( string $id, object $concrete ) {
+		$definition = $this->extend( $id );
+
+		// Store the original.
+		$this->original_concretes[ $id ] = $definition->getConcrete();
+
+		// Replace.
+		$definition->setConcrete( $concrete );
+	}
+
+	/**
+	 * Resets a specific replacement to the original definition.
+	 *
+	 * If the instance was never replaced, nothing will happen.
+	 *
+	 * @param string $id ID/name of the class.
+	 */
+	public function reset_replacement( string $id ) {
+		if ( ! isset( $this->original_concretes[ $id ] ) ) {
+			return;
+		}
+
+		$this->extend( $id )->setConcrete( $this->original_concretes[ $id ] );
+		unset( $this->original_concretes[ $id ] ); // No longer needed.
+	}
+
+	/**
+	 * Resets all replacements.
+	 */
+	public function reset_all_replacements() {
+		foreach ( $this->original_concretes as $id => $concrete ) {
+			$this->extend( $id )->setConcrete( $concrete );
+		}
+
+		$this->original_concretes = [];
 	}
 }
