@@ -11,8 +11,15 @@ Currently the directory only contains the `League\Container` package.
 
 ## Adding new packages
 
-TBD
+Please be mindful of adding packages to `lib`, as they will both live in git, require maintenance, and be distributed within the plugin.
+
+- Navigate to this directory `lib`.
+- Modify `extra.mozart.packages` within `composer.json`, adding the new package.
+- Require the package through Composer (ex. `composer require --dev provider/package`).
+- Open a PR, and commit the result.
 
 ## Updating packages
 
-TBD
+- Navigate to this directory `lib`.
+- Run `composer update`.
+- Open a PR, and commit the result.
