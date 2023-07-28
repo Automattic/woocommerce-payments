@@ -17,6 +17,10 @@ use WooPayments\Internal\DependencyManagement\ExtendedContainer;
 
 /**
  * Payment processing service unit tests.
+ *
+ * This one has a couple of Service under Test (sut) props, because
+ * we want to check the result of the main container, while manipulating
+ * the internal instance.
  */
 class ContainerTest extends WCPAY_UnitTestCase {
 	/**
