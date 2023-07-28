@@ -49,6 +49,15 @@ class WC_Payments_Subscriptions_Migrator_Test extends WCPAY_UnitTestCase {
 				]
 			);
 
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'cancel_subscription' )
+			->with( $mock_wcpay_subscription_id )
+			->willReturn(
+				[
+					'id' => $mock_wcpay_subscription_id,
+				]
+			);
+
 		$this->assertEmpty( $mock_subscription->get_meta( '_migrated_wcpay_subscription_id' ) );
 
 		$migrator = new WC_Payments_Subscriptions_Migrator( $this->mock_api_client );
