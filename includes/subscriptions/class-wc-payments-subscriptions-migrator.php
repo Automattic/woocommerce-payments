@@ -7,6 +7,8 @@
 
 use WCPay\Exceptions\API_Exception;
 
+require_once __DIR__ . '/class-wc-payments-subscription-migration-log-handler.php';
+
 /**
  * Handles migrating WCPay Subscriptions to tokenized subscriptions.
  */
@@ -39,12 +41,20 @@ class WC_Payments_Subscriptions_Migrator {
 	private $api_client;
 
 	/**
+	 * WC_Payments_Subscription_Migration_Log_Handler instance.
+	 *
+	 * @var WC_Payments_Subscription_Migration_Log_Handler
+	 */
+	private $logger;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param WC_Payments_API_Client|null $api_client WC_Payments_API_Client instance.
 	 */
 	public function __construct( $api_client = null ) {
 		$this->api_client = $api_client;
+		$this->logger     = new WC_Payments_Subscription_Migration_Log_Handler();
 
 		// Hook onto Scheduled Action to migrate wcpay subscription.
 		// add_action( 'wcpay_migrate_subscription', [ $this, 'migrate_wcpay_subscription' ] );.
@@ -70,7 +80,7 @@ class WC_Payments_Subscriptions_Migrator {
 			$subscription       = $this->validate_subscription_to_migrate( $subscription_id );
 			$wcpay_subscription = $this->fetch_wcpay_subscription( $subscription );
 
-			$this->log( sprintf( 'Migrating subscription #%d (%s)', $subscription_id, $wcpay_subscription['id'] ) );
+			$this->logger->log( sprintf( 'Migrating subscription #%d (%s)', $subscription_id, $wcpay_subscription['id'] ) );
 
 			$this->maybe_cancel_wcpay_subscription( $wcpay_subscription );
 
@@ -85,16 +95,16 @@ class WC_Payments_Subscriptions_Migrator {
 				$new_next_payment = gmdate( 'Y-m-d H:i:s', $subscription->get_time( 'next_payment' ) + 1 );
 				$subscription->update_dates( [ 'next_payment' => $new_next_payment ] );
 
-				$this->log( sprintf( '---- Next payment date updated to %s to ensure active subscription has a pending scheduled payment.', $new_next_payment ) );
+				$this->logger->log( sprintf( '---- Next payment date updated to %s to ensure active subscription has a pending scheduled payment.', $new_next_payment ) );
 			}
 
 			$this->update_wcpay_subscription_meta( $subscription );
 
 			$subscription->add_order_note( __( 'This subscription has been successfully migrated to a WooPayments tokenized subscription.', 'woocommerce-payments' ) );
 
-			$this->log( '---- SUCCESS: Subscription migrated.' );
+			$this->logger->log( '---- SUCCESS: Subscription migrated.' );
 		} catch ( \Exception $e ) {
-			$this->log( $e->getMessage() );
+			$this->logger->log( $e->getMessage() );
 		}
 	}
 
@@ -185,7 +195,7 @@ class WC_Payments_Subscriptions_Migrator {
 	private function maybe_cancel_wcpay_subscription( $wcpay_subscription ) {
 		// Valid statuses to cancel subscription at Stripe: active, past_due, trialing, paused.
 		if ( in_array( $wcpay_subscription['status'], $this->active_statuses, true ) ) {
-			$this->log( sprintf( '---- Subscription at Stripe has "%s" status. Canceling the subscription.', $this->get_wcpay_subscription_status( $wcpay_subscription ) ) );
+			$this->logger->log( sprintf( '---- Subscription at Stripe has "%s" status. Canceling the subscription.', $this->get_wcpay_subscription_status( $wcpay_subscription ) ) );
 
 			try {
 				// Cancel the subscription in Stripe.
@@ -194,10 +204,10 @@ class WC_Payments_Subscriptions_Migrator {
 				throw new \Exception( sprintf( '---- ERROR: Failed to cancel the subscription at Stripe. %s', $e->getMessage() ) );
 			}
 
-			$this->log( '---- Subscription successfully canceled at Stripe.' );
+			$this->logger->log( '---- Subscription successfully canceled at Stripe.' );
 		} else {
 			// Statuses that don't need to be canceled: incomplete, incomplete_expired, canceled, unpaid.
-			$this->log( sprintf( '---- Subscription has "%s" status. Skipping canceling the subscription at Stripe.', $this->get_wcpay_subscription_status( $wcpay_subscription ) ) );
+			$this->logger->log( sprintf( '---- Subscription has "%s" status. Skipping canceling the subscription at Stripe.', $this->get_wcpay_subscription_status( $wcpay_subscription ) ) );
 		}
 	}
 

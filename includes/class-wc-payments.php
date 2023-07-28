@@ -450,7 +450,6 @@ class WC_Payments {
 		include_once __DIR__ . '/core/service/class-wc-payments-customer-service-api.php';
 		include_once __DIR__ . '/class-duplicate-payment-prevention-service.php';
 		include_once __DIR__ . '/class-wc-payments-incentives-service.php';
-		include_once __DIR__ . '/subscriptions/class-wc-payments-subscription-migration-log-handler.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
@@ -654,8 +653,6 @@ class WC_Payments {
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
 
 		self::$duplicate_payment_prevention_service->init( self::$card_gateway, self::$order_service );
-
-		new WC_Payments_Subscription_Migration_Log_Handler();
 	}
 
 	/**
