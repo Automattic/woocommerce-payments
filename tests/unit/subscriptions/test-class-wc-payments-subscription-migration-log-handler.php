@@ -20,6 +20,15 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 	private $test_log_source = 'dummy-log-source';
 
 	/**
+	 * Set up the test.
+	 */
+	public function set_up() {
+		parent::set_up();
+
+		update_option( '_wcpay_feature_allow_subscription_migrations', '1' );
+	}
+
+	/**
 	 * Tear down the test.
 	 */
 	public function tearDown(): void {
