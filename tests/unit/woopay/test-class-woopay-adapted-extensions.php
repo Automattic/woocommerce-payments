@@ -115,6 +115,7 @@ class WooPay_Adapted_Extensions_Test extends WCPAY_UnitTestCase {
 
 		$expected = [
 			'account_orders_link' => add_query_arg( [ 'wc_gc_show_pending_orders' => 'yes' ], wc_get_account_endpoint_url( 'orders' ) ),
+			'should_verify_email' => false,
 		];
 
 		$this->assertEquals( $this->woopay_adapted_extensions->get_gift_cards_data( $this->test_user ), $expected );
