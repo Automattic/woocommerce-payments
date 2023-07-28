@@ -9,7 +9,9 @@ namespace WooPayments\Tests;
 
 use WCPAY_UnitTestCase;
 use Automattic\WooCommerce\Proxies\LegacyProxy;
+use stdClass;
 use WooPayments\Container;
+use WooPayments\Internal\DependencyManagement\ContainerException;
 use WooPayments\Internal\Service\PaymentProcessingService;
 use WooPayments\Internal\DependencyManagement\ExtendedContainer;
 
@@ -29,7 +31,7 @@ class ContainerTest extends WCPAY_UnitTestCase {
 	 *
 	 * @var ExtendedContainer
 	 */
-	private $extended_sut;
+	private $test_sut;
 
 	/**
 	 * Sets up the container.
@@ -37,8 +39,8 @@ class ContainerTest extends WCPAY_UnitTestCase {
 	protected function setUp(): void {
 		parent::setUp();
 
-		$this->sut          = wcpay_get_container();
-		$this->extended_sut = wcpay_get_test_container();
+		$this->sut      = wcpay_get_container();
+		$this->test_sut = wcpay_get_test_container();
 	}
 
 	/**
@@ -71,6 +73,11 @@ class ContainerTest extends WCPAY_UnitTestCase {
 		$this->assertInstanceOf( LegacyProxy::class, $proxy );
 	}
 
+	public function test_container_doesnt_allow_replacements_of_unknowns() {
+		$this->expectException( ContainerException::class );
+		$this->test_sut->replace( 'UnknownClassThatDoesNotExist', new stdClass() );
+	}
+
 	/**
 	 * Ensures that a class can be replaced within the container during tests.
 	 */
@@ -92,7 +99,7 @@ class ContainerTest extends WCPAY_UnitTestCase {
 		$this->replace_payment_processing_service();
 
 		// Act: Reset the replacement.
-		$this->extended_sut->reset_replacement( PaymentProcessingService::class );
+		$this->test_sut->reset_replacement( PaymentProcessingService::class );
 		$result = $this->sut->get( PaymentProcessingService::class );
 
 		// Assert: The original resolution is available.
@@ -108,7 +115,7 @@ class ContainerTest extends WCPAY_UnitTestCase {
 		$this->replace_payment_processing_service();
 
 		// Act: Reset all replacements.
-		$this->extended_sut->reset_all_replacements();
+		$this->test_sut->reset_all_replacements();
 		$result = $this->sut->get( PaymentProcessingService::class );
 
 		// Assert: The original resolution is available.
@@ -123,7 +130,7 @@ class ContainerTest extends WCPAY_UnitTestCase {
 	private function replace_payment_processing_service() {
 		$replacement_service = new class() extends PaymentProcessingService {};
 
-		$this->extended_sut->replace( PaymentProcessingService::class, $replacement_service );
+		$this->test_sut->replace( PaymentProcessingService::class, $replacement_service );
 
 		return $replacement_service;
 	}

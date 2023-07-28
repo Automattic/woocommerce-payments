@@ -30,8 +30,18 @@ class ExtendedContainer extends Container {
 	 *
 	 * @param string $id       ID/Name of the class.
 	 * @param object $concrete The concrete (instance) to use.
+	 * @throws ContainerException In case the ID is not found within the container.
 	 */
 	public function replace( string $id, object $concrete ) {
+		if ( ! $this->has( $id ) ) {
+			throw new ContainerException(
+				sprintf(
+					'The ID you provided (%s) for replacement is not associated with anything inside the container. Maybe try adding it instead?',
+					$id
+				)
+			);
+		}
+
 		$definition = $this->extend( $id );
 
 		// Store the original.
