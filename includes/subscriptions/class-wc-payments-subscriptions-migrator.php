@@ -20,6 +20,18 @@ class WC_Payments_Subscriptions_Migrator {
 	private $active_statuses = [ 'active', 'past_due', 'trialing', 'paused' ];
 
 	/**
+	 * WCPay Subscription meta keys for migrated data.
+	 *
+	 * @var array $migrated_meta_keys
+	 */
+	private $migrated_meta_keys = [
+		'_migrated_wcpay_subscription_id',
+		'_migrated_wcpay_billing_invoice_id',
+		'_migrated_wcpay_pending_invoice_id',
+		'_migrated_wcpay_subscription_discount_ids',
+	];
+
+	/**
 	 * WC_Payments_API_Client instance.
 	 *
 	 * @var WC_Payments_API_Client
@@ -73,13 +85,9 @@ class WC_Payments_Subscriptions_Migrator {
 				$this->log( sprintf( '---- Next payment date updated to %s to ensure active subscription has a pending scheduled payment.', $new_next_payment ) );
 			}
 
-			// Remove the WCPay Subscription metadata that tells us the subscription's billing cycle is managed by Stripe's billing engine. Keep it stored in separate meta.
-			$subscription->update_meta_data( '_migrated_wcpay_subscription_id', $wcpay_subscription['id'] );
-			$subscription->delete_meta_data( WC_Payments_Subscription_Service::SUBSCRIPTION_ID_META_KEY );
+			$this->update_wcpay_subscription_meta( $subscription );
 
 			$subscription->add_order_note( __( 'This subscription has been successfully migrated to a WooPayments tokenized subscription.', 'woocommerce-payments' ) );
-
-			$subscription->save();
 
 			$this->log( '---- SUCCESS: Subscription migrated.' );
 		} catch ( \Exception $e ) {
@@ -187,6 +195,31 @@ class WC_Payments_Subscriptions_Migrator {
 		} else {
 			// Statuses that don't need to be canceled: incomplete, incomplete_expired, canceled, unpaid.
 			$this->log( sprintf( '---- Subscription has "%s" status. Skipping canceling the subscription at Stripe.', $this->get_wcpay_subscription_status( $wcpay_subscription ) ) );
+		}
+	}
+
+	/**
+	 * Moves the existing WCPay Subscription meta to new meta data prefixed with `_migrated` meta
+	 * and deletes the old meta.
+	 *
+	 * @param WC_Subscription $subscription The subscription with wcpay meta saved.
+	 */
+	private function update_wcpay_subscription_meta( $subscription ) {
+		$updated = false;
+
+		foreach ( $this->migrated_meta_keys as $meta_key ) {
+			$old_key = str_replace( '_migrated', '', $meta_key );
+
+			if ( $subscription->meta_exists( $old_key ) ) {
+				$subscription->update_meta_data( $meta_key, $subscription->get_meta( $old_key, true ) );
+				$subscription->delete_meta_data( $old_key );
+
+				$updated = true;
+			}
+		}
+
+		if ( $updated ) {
+			$subscription->save();
 		}
 	}
 
