@@ -136,17 +136,24 @@ class WooPay_Adapted_Extensions {
 			empty( $this->registered_integrations[ self::GIFT_CARDS_BLOCKS ] ) ||
 			! function_exists( 'WC_GC' ) ||
 			! property_exists( WC_GC(), 'account' ) ||
-			! method_exists( WC_GC()->account, 'get_balance' )
+			! method_exists( WC_GC()->account, 'get_active_giftcards' )
 		) {
 			return null;
 		}
 
-		$gift_cards_script_data = $this->registered_integrations[ self::GIFT_CARDS_BLOCKS ]->get_script_data();
+		$gift_cards_script_data                        = $this->registered_integrations[ self::GIFT_CARDS_BLOCKS ]->get_script_data();
+		$gift_cards_script_data['should_verify_email'] = false;
 
 		if ( ! is_user_logged_in() ) {
-			$gift_cards_balance = WC_GC()->account->get_balance( $user->ID );
+			// Verify if the user has Gift Card balance to ask them to verify email on WooPay.
+			$gift_cards = WC_GC()->account->get_active_giftcards( $user->ID );
+			$balance    = 0;
 
-			if ( $gift_cards_balance > 0 ) {
+			foreach ( $gift_cards as $giftcard_data ) {
+				$balance += (float) $giftcard_data->get_balance();
+			}
+
+			if ( $balance > 0 ) {
 				$gift_cards_script_data['should_verify_email'] = true;
 			}
 		}

@@ -15,7 +15,7 @@ use Automattic\WooCommerce\Blocks\Integrations\IntegrationInterface;
  * Mock class for test usage.
  */
 class WC_GC_Account {
-	public function get_balance( $user_id ) {
+	public function get_active_giftcards( $user_id ) {
 		return $user_id;
 	}
 }
