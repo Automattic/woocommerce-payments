@@ -77,6 +77,8 @@ class WC_Payments_Subscriptions_Migrator {
 	 */
 	public function migrate_wcpay_subscription( $subscription_id ) {
 		try {
+			add_action( 'shutdown', [ $this, 'log_unexpected_shutdown' ] );
+
 			$subscription       = $this->validate_subscription_to_migrate( $subscription_id );
 			$wcpay_subscription = $this->fetch_wcpay_subscription( $subscription );
 
@@ -106,6 +108,8 @@ class WC_Payments_Subscriptions_Migrator {
 		} catch ( \Exception $e ) {
 			$this->logger->log( $e->getMessage() );
 		}
+
+		remove_action( 'shutdown', [ $this, 'log_unexpected_shutdown' ] );
 	}
 
 	/**
@@ -276,11 +280,13 @@ class WC_Payments_Subscriptions_Migrator {
 	}
 
 	/**
-	 * Logs a migration message. TODO: implement logging.
-	 *
-	 * @param string $message The message to log.
+	 * Log any fatal errors occurred while migrating WCPay Subscriptions.
 	 */
-	public function log( $message ) {
-		error_log( $message ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log  -- Will remove this once we have a proper logger.
+	public function log_unexpected_shutdown() {
+		$error = error_get_last();
+
+		if ( ! empty( $error['type'] ) && in_array( $error['type'], [ E_ERROR, E_PARSE, E_COMPILE_ERROR, E_USER_ERROR, E_RECOVERABLE_ERROR ], true ) ) {
+			$this->logger->log( sprintf( '---- ERROR: %s in %s on line %s.', $error['message'] ?? 'No message', $error['file'] ?? 'no file found', $error['line'] ?? '0' ) );
+		}
 	}
 }
