@@ -1,27 +1,28 @@
 <?php
 /**
- * Payments service provider file.
+ * Proxies service provider file.
  *
  * @package WooPayments
  */
 
 namespace WooPayments\Internal\DependencyManagement\ServiceProvider;
 
-use WCPay\Core\Mode;
 use WooPayments\Internal\DependencyManagement\AbstractServiceProvider;
-use WooPayments\Internal\Service\PaymentProcessingService;
+use WooPayments\Internal\Proxy\HooksProxy;
+use WooPayments\Internal\Proxy\LegacyProxy;
 
 /**
- * WooPayments payments service provider.
+ * WooPayments Proxies service provider.
  */
-class PaymentsServiceProvider extends AbstractServiceProvider {
+class ProxiesServiceProvider extends AbstractServiceProvider {
 	/**
 	 * Contains all provided classes/aliases.
 	 *
 	 * @var string[]
 	 */
 	protected $provides = [
-		PaymentProcessingService::class,
+		LegacyProxy::class,
+		HooksProxy::class,
 	];
 
 	/**
@@ -29,7 +30,7 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 	 */
 	public function register(): void {
 		$container = $this->getContainer();
-		$container->addShared( PaymentProcessingService::class )
-			->addArgument( Mode::class );
+		$container->addShared( LegacyProxy::class );
+		$container->addShared( HooksProxy::class );
 	}
 }
