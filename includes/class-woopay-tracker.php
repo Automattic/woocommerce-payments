@@ -194,7 +194,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 			return false;
 		}
 
-		// Track without checking for .
+		// Track all events without checking for WooPay availability.
 		if ( $track_on_all_stores ) {
 			return true;
 		}
