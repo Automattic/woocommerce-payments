@@ -137,4 +137,52 @@ class WooPay_Adapted_Extensions_Test extends WCPAY_UnitTestCase {
 
 		$this->assertEquals( $this->woopay_adapted_extensions->get_gift_cards_data( $this->test_user ), $expected );
 	}
+
+	public function test_get_store_api_nonce_for_user_nonce_does_not_works_for_guest_user() {
+		wp_set_current_user( 0 );
+
+		$nonce_for_test_user = $this->woopay_adapted_extensions->get_store_api_nonce_for_user( $this->test_user );
+
+		$this->assertFalse( wp_verify_nonce( $nonce_for_test_user, 'wc_store_api' ) );
+	}
+
+	public function test_get_store_api_nonce_for_user_nonce_works_for_authenticated_user() {
+		wp_set_current_user( $this->test_user->ID );
+
+		$nonce_for_test_user = $this->woopay_adapted_extensions->get_store_api_nonce_for_user( $this->test_user );
+
+		$this->assertEquals( wp_verify_nonce( $nonce_for_test_user, 'wc_store_api' ), 1 );
+	}
+
+	public function test_get_store_api_nonce_for_user_does_not_work_for_guest_user() {
+		wp_set_current_user( 0 );
+
+		$nonce_for_test_user = $this->woopay_adapted_extensions->get_store_api_nonce_for_user( $this->test_user );
+
+		$this->assertFalse( wp_verify_nonce( $nonce_for_test_user, 'wc_store_api' ) );
+	}
+
+	public function test_get_store_api_nonce_for_user_works_for_authenticated_user() {
+		wp_set_current_user( $this->test_user->ID );
+
+		$nonce_for_test_user = $this->woopay_adapted_extensions->get_store_api_nonce_for_user( $this->test_user );
+
+		$this->assertEquals( wp_verify_nonce( $nonce_for_test_user, 'wc_store_api' ), 1 );
+	}
+
+	public function test_get_store_api_nonce_for_user_does_not_work_for_guest_user_with_another_action() {
+		wp_set_current_user( 0 );
+
+		$nonce_for_test_user = $this->woopay_adapted_extensions->get_store_api_nonce_for_user( $this->test_user );
+
+		$this->assertFalse( wp_verify_nonce( $nonce_for_test_user, 'nonce_action' ) );
+	}
+
+	public function test_get_store_api_nonce_for_user_does_not_work_for_authenticated_user_with_another_action() {
+		wp_set_current_user( $this->test_user->ID );
+
+		$nonce_for_test_user = $this->woopay_adapted_extensions->get_store_api_nonce_for_user( $this->test_user );
+
+		$this->assertFalse( wp_verify_nonce( $nonce_for_test_user, 'nonce_action' ) );
+	}
 }
