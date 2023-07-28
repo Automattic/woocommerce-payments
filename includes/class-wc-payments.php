@@ -42,6 +42,7 @@ use WCPay\WC_Payments_UPE_Checkout;
 use WCPay\WooPay\Service\Checkout_Service;
 use WCPay\Core\WC_Payments_Customer_Service_API;
 use WCPay\Blocks_Data_Extractor;
+use WCPay\WooPay\WooPay_Adapted_Extensions;
 use WCPay\Constants\Payment_Method;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\WooPay\WooPay_Scheduler;
@@ -444,10 +445,12 @@ class WC_Payments {
 		include_once __DIR__ . '/woopay/class-woopay-order-status-sync.php';
 		include_once __DIR__ . '/woopay/class-woopay-store-api-session-handler.php';
 		include_once __DIR__ . '/woopay/class-woopay-scheduler.php';
+		include_once __DIR__ . '/woopay/class-woopay-adapted-extensions.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-link.php';
 		include_once __DIR__ . '/core/service/class-wc-payments-customer-service-api.php';
 		include_once __DIR__ . '/class-duplicate-payment-prevention-service.php';
 		include_once __DIR__ . '/class-wc-payments-incentives-service.php';
+		include_once __DIR__ . '/subscriptions/class-wc-payments-subscription-migration-log-handler.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
@@ -651,6 +654,8 @@ class WC_Payments {
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
 
 		self::$duplicate_payment_prevention_service->init( self::$card_gateway, self::$order_service );
+
+		new WC_Payments_Subscription_Migration_Log_Handler();
 	}
 
 	/**
@@ -1557,6 +1562,25 @@ class WC_Payments {
 			// WooPay verified email matches.
 			WC()->customer->set_billing_email( $email );
 			WC()->customer->save();
+
+			$body['adapted_extensions'] = ( new WooPay_Adapted_Extensions() )->get_adapted_extensions_data( $email );
+
+			if ( ! is_user_logged_in() ) {
+				$store_user_email_registered = get_user_by( 'email', $email );
+
+				if ( $store_user_email_registered ) {
+					// Create a nonce for email verified WooPay users use on the Store API request.
+					$store_api_nonce_for_woopay_verified_email = function ( $uid, $action ) use ( $store_user_email_registered ) {
+						return 'wc_store_api' === $action ? $store_user_email_registered->ID : $uid;
+					};
+
+					add_filter( 'nonce_user_logged_out', $store_api_nonce_for_woopay_verified_email, 10, 2 );
+
+					$body['email_verified_session_nonce'] = wp_create_nonce( 'wc_store_api' );
+
+					remove_filter( 'nonce_user_logged_out', $store_api_nonce_for_woopay_verified_email );
+				}
+			}
 		}
 
 		$args = [
