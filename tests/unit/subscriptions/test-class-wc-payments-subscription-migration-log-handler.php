@@ -56,7 +56,13 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 			->method( 'debug' )
 			->with( 'test message', [ 'source' => WC_Payments_Subscription_Migration_Log_Handler::HANDLE ] );
 
-		$logger = new WC_Payments_Subscription_Migration_Log_Handler( $mock_logger );
+		$logger = new WC_Payments_Subscription_Migration_Log_Handler();
+
+		$reflection = new ReflectionClass( $logger );
+		$property   = $reflection->getProperty( 'logger' );
+		$property->setAccessible( true );
+		$property->setValue( $logger, $mock_logger );
+
 		$logger->log( 'test message' );
 	}
 
