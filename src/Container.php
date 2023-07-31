@@ -8,11 +8,11 @@
 namespace WooPayments;
 
 use Psr\Container\ContainerInterface;
-use WooPayments\Internal\DependencyManagement\Delegate\LegacyContainer;
-use WooPayments\Internal\DependencyManagement\Delegate\WooContainer;
 use WooPayments\Internal\DependencyManagement\ExtendedContainer;
 use WooPayments\Internal\DependencyManagement\ServiceProvider\PaymentsServiceProvider;
 use WooPayments\Internal\DependencyManagement\ServiceProvider\ProxiesServiceProvider;
+use WooPayments\Internal\DependencyManagement\DelegateContainer\LegacyContainer;
+use WooPayments\Internal\DependencyManagement\DelegateContainer\WooContainer;
 
 /**
  * WooPayments Dependency Injection Container.
@@ -56,12 +56,10 @@ class Container implements ContainerInterface {
 		$this->load_providers();
 
 		// Allow delegating unresolved queries to classes from `includes`.
-		$legacy_container = $legacy_container ?? new LegacyContainer();
-		$this->container->delegate( $legacy_container );
+		$this->container->delegate( $legacy_container ?? new LegacyContainer() );
 
 		// Allow delegating unresolved queries to the WooCommerce container.
-		$woo_container = $woo_container ?? new WooContainer();
-		$this->container->delegate( $woo_container );
+		$this->container->delegate( $woo_container ?? new WooContainer() );
 	}
 
 	/**

@@ -5,7 +5,7 @@
  * @package WooPayments
  */
 
-namespace WooPayments\Internal\DependencyManagement\Delegate;
+namespace WooPayments\Internal\DependencyManagement\DelegateContainer;
 
 use Psr\Container\ContainerInterface;
 use WC_Payments;

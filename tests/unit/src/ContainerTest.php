@@ -14,7 +14,10 @@ use WCPay\Core\Mode;
 use WooPayments\Container;
 use WooPayments\Internal\DependencyManagement\ContainerException;
 use WooPayments\Internal\DependencyManagement\ExtendedContainer;
+use WooPayments\Internal\DependencyManagement\DelegateContainer\WooContainer;
+use WooPayments\Internal\DependencyManagement\DelegateContainer\LegacyContainer;
 use WooPayments\Internal\Service\ExampleService;
+use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * Dependency injection container unit tests.
@@ -39,10 +42,30 @@ class ContainerTest extends WCPAY_UnitTestCase {
 	private $test_sut;
 
 	/**
+	 * A mock of the WooContainer.
+	 *
+	 * @var WooContainer|MockObject
+	 */
+	private $mock_woo_container;
+
+	/**
+	 * A mock of the legacy container.
+	 *
+	 * @var LegacyContainer|MockObject
+	 */
+	private $mock_legacy_container;
+
+	/**
 	 * Sets up the container.
 	 */
 	protected function setUp(): void {
 		parent::setUp();
+
+		// Setup the mock, and make sure the globals are fresh.
+		$this->mock_woo_container         = $this->createMock( WooContainer::class );
+		$this->mock_legacy_container      = new LegacyContainer();
+		$GLOBALS['woopayments_container'] = new Container( $this->mock_legacy_container, $this->mock_woo_container );
+		$GLOBALS['wcpay_test_container']  = null;
 
 		$this->sut      = wcpay_get_container();
 		$this->test_sut = wcpay_get_test_container();
@@ -77,10 +100,26 @@ class ContainerTest extends WCPAY_UnitTestCase {
 	 * Checks if the delegate container provides a WooCommerce instance.
 	 */
 	public function test_container_delegates() {
-		$proxy = $this->sut->get( LegacyProxy::class );
-		$this->assertInstanceOf( LegacyProxy::class, $proxy );
+		$proxy = new LegacyProxy();
+
+		$this->mock_woo_container->expects( $this->once() )
+			->method( 'has' )
+			->with( LegacyProxy::class )
+			->willReturn( true );
+
+		$this->mock_woo_container->expects( $this->once() )
+			->method( 'get' )
+			->with( LegacyProxy::class )
+			->willReturn( $proxy );
+
+		$result = $this->sut->get( LegacyProxy::class );
+		$this->assertSame( $proxy, $result );
 	}
 
+	/**
+	 * Makes sure that the container does not allow replacements of
+	 * classes that it is not aware of.
+	 */
 	public function test_container_doesnt_allow_replacements_of_unknowns() {
 		$this->expectException( ContainerException::class );
 		$this->test_sut->replace( 'UnknownClassThatDoesNotExist', new stdClass() );
@@ -91,7 +130,7 @@ class ContainerTest extends WCPAY_UnitTestCase {
 	 */
 	public function test_container_allows_replacement() {
 		// Set up: Store the replacement in the extended (test) container.
-		$replacement_service = $this->replace_payment_processing_service();
+		$replacement_service = $this->replace_example_service();
 
 		// Assert: The mock is returned.
 		$result = $this->sut->get( ExampleService::class );
@@ -104,7 +143,7 @@ class ContainerTest extends WCPAY_UnitTestCase {
 	public function test_container_resets_single_replacement() {
 		// Set up: Load original and replace.
 		$original = $this->sut->get( ExampleService::class );
-		$this->replace_payment_processing_service();
+		$this->replace_example_service();
 
 		// Act: Reset the replacement.
 		$this->test_sut->reset_replacement( ExampleService::class );
@@ -120,7 +159,7 @@ class ContainerTest extends WCPAY_UnitTestCase {
 	public function test_container_resets_all_replacements() {
 		// Set up: Load original and replace.
 		$original = $this->sut->get( ExampleService::class );
-		$this->replace_payment_processing_service();
+		$this->replace_example_service();
 
 		// Act: Reset all replacements.
 		$this->test_sut->reset_all_replacements();
@@ -163,11 +202,11 @@ class ContainerTest extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Replaces the payment processing service within the container.
+	 * Replaces the example service within the container.
 	 *
 	 * @return object The replacement.
 	 */
-	private function replace_payment_processing_service() {
+	private function replace_example_service() {
 		$mock_mode           = $this->createMock( Mode::class );
 		$replacement_service = new class( $mock_mode ) extends ExampleService {};
 
