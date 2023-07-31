@@ -210,7 +210,7 @@ export function isUsingSavedPaymentMethod( paymentMethodType ) {
 	const prefix = '#wc-woocommerce_payments';
 	const suffix = '-payment-token-new';
 	const savedPaymentSelector =
-		'card' === paymentMethodType || 'link' === paymentMethodType
+		paymentMethodType === 'card' || paymentMethodType === 'link'
 			? prefix + suffix
 			: prefix + '_' + paymentMethodType + suffix;
 
@@ -323,7 +323,7 @@ export const isLinkEnabled = ( paymentMethodsConfig ) => {
 export const getPaymentMethodTypes = ( paymentMethodType ) => {
 	const paymentMethodTypes = [ paymentMethodType ];
 	if (
-		'card' === paymentMethodType &&
+		paymentMethodType === 'card' &&
 		isLinkEnabled( getUPEConfig( 'paymentMethodsConfig' ) )
 	) {
 		paymentMethodTypes.push( 'link' );
