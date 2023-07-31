@@ -144,6 +144,9 @@ class WooPay_Session {
 			$user = get_user_by( 'email', $woopay_verified_email_address );
 
 			if ( $woopay_verified_email_address === $customer['email'] && $user ) {
+				// Remove Gift Cards session cache to load account gift cards.
+				add_filter( 'woocommerce_gc_account_session_timeout_minutes', '__return_false' );
+
 				return $user->ID;
 			}
 		}
