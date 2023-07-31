@@ -12,14 +12,14 @@ import InfoNoticeModal from '../info-notice-modal';
 
 declare const global: {
 	wcpaySettings: {
-		isWooPayEligible?: boolean;
+		isWooPayStoreCountryAvailable?: boolean;
 	};
 };
 
 describe( 'Connect Account Page – Info Notice Modal', () => {
 	test( 'renders correctly when opened', () => {
 		global.wcpaySettings = {
-			isWooPayEligible: true,
+			isWooPayStoreCountryAvailable: true,
 		};
 
 		render( <InfoNoticeModal /> );

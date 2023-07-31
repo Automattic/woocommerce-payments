@@ -29,7 +29,7 @@ const PaymentMethods: React.FC = () => {
 				<img src={ Visa } alt="Visa" />
 				<img src={ MasterCard } alt="MasterCard" />
 				<img src={ AmericanExpress } alt="American Express" />
-				{ wcpaySettings.isWooPayEligible && (
+				{ wcpaySettings.isWooPayStoreCountryAvailable && (
 					<img src={ WooPay } alt="WooPay" />
 				) }
 				<img src={ ApplePay } alt="Apple Pay" />

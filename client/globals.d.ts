@@ -93,7 +93,7 @@ declare global {
 			description: string;
 			tc_url: string;
 		};
-		isWooPayEligible: boolean;
+		isWooPayStoreCountryAvailable: boolean;
 	};
 
 	const wcTracks: any;

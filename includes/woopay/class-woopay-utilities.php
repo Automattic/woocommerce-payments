@@ -10,7 +10,6 @@ namespace WCPay\WooPay;
 use WC_Payments_Features;
 use WC_Payments_Subscriptions_Utilities;
 use WooPay_Extension;
-use WCPay\Logger;
 use WC_Geolocation;
 use WC_Payments;
 
@@ -131,6 +130,23 @@ class WooPay_Utilities {
 		$available_countries = $this->get_persisted_available_countries();
 
 		return in_array( $location_data['country'], $available_countries, true );
+	}
+
+	/**
+	 * Get if WooPay is available on the store country.
+	 *
+	 * @return boolean
+	 */
+	public function is_store_country_available() {
+		$store_base_location = wc_get_base_location();
+
+		if ( empty( $store_base_location['country'] ) ) {
+			return false;
+		}
+
+		$available_countries = $this->get_persisted_available_countries();
+
+		return in_array( $store_base_location['country'], $available_countries, true );
 	}
 
 	/**

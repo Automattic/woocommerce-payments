@@ -172,7 +172,7 @@ const ConnectAccountPage: React.FC = () => {
 								{ strings.button }
 							</Button>
 							<p>
-								{ wcpaySettings.isWooPayEligible
+								{ wcpaySettings.isWooPayStoreCountryAvailable
 									? strings.agreementWithWooPay
 									: strings.agreement }
 							</p>
