@@ -49,7 +49,7 @@ const PaymentElements = ( { api, ...props } ) => {
 			<Elements
 				stripe={ stripe }
 				options={ {
-					mode: 1 > amount ? 'setup' : 'payment',
+					mode: amount < 1 ? 'setup' : 'payment',
 					amount: amount,
 					currency: currency,
 					paymentMethodCreation: 'manual',

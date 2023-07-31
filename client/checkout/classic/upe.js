@@ -575,7 +575,7 @@ jQuery( function ( $ ) {
 		);
 
 		// Boolean `true` means that there is nothing to confirm.
-		if ( true === confirmation ) {
+		if ( confirmation === true ) {
 			return;
 		}
 
@@ -686,10 +686,9 @@ jQuery( function ( $ ) {
 	// Handle the add payment method form for WooPayments.
 	$( 'form#add_payment_method' ).on( 'submit', function () {
 		if (
-			'woocommerce_payments' !==
 			$(
 				"#add_payment_method input:checked[name='payment_method']"
-			).val()
+			).val() !== 'woocommerce_payments'
 		) {
 			return;
 		}
@@ -751,10 +750,9 @@ jQuery( function ( $ ) {
  */
 export function isUsingSavedPaymentMethod() {
 	return (
-		null !==
-			document.querySelector(
-				'#wc-woocommerce_payments-payment-token-new'
-			) &&
+		document.querySelector(
+			'#wc-woocommerce_payments-payment-token-new'
+		) !== null &&
 		! document.querySelector( '#wc-woocommerce_payments-payment-token-new' )
 			.checked
 	);

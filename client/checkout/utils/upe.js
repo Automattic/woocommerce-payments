@@ -86,11 +86,11 @@ export const getSelectedUPEGatewayPaymentMethod = () => {
 	const radio = document.querySelector(
 		'li.wc_payment_method input.input-radio:checked, li.woocommerce-PaymentMethod input.input-radio:checked'
 	);
-	if ( null !== radio ) {
+	if ( radio !== null ) {
 		selectedGatewayId = radio.id;
 	}
 
-	if ( 'payment_method_woocommerce_payments' === selectedGatewayId ) {
+	if ( selectedGatewayId === 'payment_method_woocommerce_payments' ) {
 		selectedGatewayId = 'payment_method_woocommerce_payments_card';
 	}
 
@@ -179,7 +179,7 @@ function shouldIncludeTerms() {
 		'wc-woocommerce_payments-new-payment-method'
 	);
 	if (
-		null !== savePaymentMethodCheckbox &&
+		savePaymentMethodCheckbox !== null &&
 		savePaymentMethodCheckbox.checked
 	) {
 		return true;
@@ -215,7 +215,7 @@ export function isUsingSavedPaymentMethod( paymentMethodType ) {
 			: prefix + '_' + paymentMethodType + suffix;
 
 	return (
-		null !== document.querySelector( savedPaymentSelector ) &&
+		document.querySelector( savedPaymentSelector ) !== null &&
 		! document.querySelector( savedPaymentSelector ).checked
 	);
 }
@@ -373,7 +373,7 @@ export const getBillingDetails = ( fields ) => {
 			`${ fields.billing_first_name } ${ fields.billing_last_name }`.trim() ||
 			'-',
 		email:
-			'string' === typeof fields.billing_email
+			typeof fields.billing_email === 'string'
 				? fields.billing_email.trim()
 				: '-',
 		phone: fields.billing_phone || '-',
@@ -398,7 +398,7 @@ export const getShippingDetails = ( fields ) => {
 	// Shipping address is needed by Afterpay. If available, use shipping address, else fallback to billing address.
 	if (
 		fields.ship_to_different_address &&
-		'1' === fields.ship_to_different_address
+		fields.ship_to_different_address === '1'
 	) {
 		return {
 			name:
