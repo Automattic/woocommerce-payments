@@ -4,7 +4,7 @@ Tags: payment gateway, payment, apple pay, credit card, google pay
 Requires at least: 5.9
 Tested up to: 6.1
 Requires PHP: 7.0
-Stable tag: 5.5.3
+Stable tag: 5.5.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,6 +98,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 5.5.4 - 2023-07-31 =
+* Fix - Enhance query parameters validation in redirected requests.
+
 = 5.5.3 - 2023-06-05 =
 * Fix - Improve validation of WC analytics query filters
 * Fix - Improved validation of the order key arg when redirecting to subscription's change payment method URL.
@@ -145,6 +148,9 @@ Please note that our support for the checkout block is still experimental and th
 = 5.4.0 - 2023-02-01 =
 * Add - Add logging and order notes when WCPay Subscriptions are suspended or put on-hold.
 * Add - Highlight subscriptions with overdue payment in list view with red icon == Changelog ==
+
+= 5.5.4 - 2023-07-31 =
+* Fix - Enhance query parameters validation in redirected requests.
 
 = 5.5.0 - 2023-02-22 =
 * Add - Added learn more link to deposits page
@@ -214,6 +220,9 @@ Please note that our support for the checkout block is still experimental and th
 * Dev - Introduced a new `untrash_order()` in the `WCS_Orders_Table_Subscription_Data_Store` class to fix untrashing subscriptions on stores that have HPOS enabled.
 * Dev - Introduced a WCS_Object_Data_Cache_Manager and WCS_Object_Data_Cache_Manager_Many_To_One class as HPOS equivalents of the WCS_Post_Meta_Cache_Manager classes.
 * Dev - Moved the trash, untrash == Changelog ==
+
+= 5.5.4 - 2023-07-31 =
+* Fix - Enhance query parameters validation in redirected requests.
 
 = 5.5.0 - 2023-02-22 =
 * Add - Added learn more link to deposits page
