@@ -13,11 +13,11 @@ use stdClass;
 use WCPay\Core\Mode;
 use WooPayments\Container;
 use WooPayments\Internal\DependencyManagement\ContainerException;
-use WooPayments\Internal\Service\PaymentProcessingService;
 use WooPayments\Internal\DependencyManagement\ExtendedContainer;
+use WooPayments\Internal\Service\ExampleService;
 
 /**
- * Payment processing service unit tests.
+ * Dependency injection container unit tests.
  *
  * This one has a couple of Service under Test (sut) props, because
  * we want to check the result of the main container, while manipulating
@@ -66,8 +66,8 @@ class ContainerTest extends WCPAY_UnitTestCase {
 	 * Checks if a service can be loaded through the container.
 	 */
 	public function test_container_loads_service() {
-		$service = $this->sut->get( PaymentProcessingService::class );
-		$this->assertInstanceOf( PaymentProcessingService::class, $service );
+		$service = $this->sut->get( ExampleService::class );
+		$this->assertInstanceOf( ExampleService::class, $service );
 	}
 
 	/**
@@ -91,7 +91,7 @@ class ContainerTest extends WCPAY_UnitTestCase {
 		$replacement_service = $this->replace_payment_processing_service();
 
 		// Assert: The mock is returned.
-		$result = $this->sut->get( PaymentProcessingService::class );
+		$result = $this->sut->get( ExampleService::class );
 		$this->assertSame( $replacement_service, $result );
 	}
 
@@ -100,12 +100,12 @@ class ContainerTest extends WCPAY_UnitTestCase {
 	 */
 	public function test_container_resets_single_replacement() {
 		// Set up: Load original and replace.
-		$original = $this->sut->get( PaymentProcessingService::class );
+		$original = $this->sut->get( ExampleService::class );
 		$this->replace_payment_processing_service();
 
 		// Act: Reset the replacement.
-		$this->test_sut->reset_replacement( PaymentProcessingService::class );
-		$result = $this->sut->get( PaymentProcessingService::class );
+		$this->test_sut->reset_replacement( ExampleService::class );
+		$result = $this->sut->get( ExampleService::class );
 
 		// Assert: The original resolution is available.
 		$this->assertSame( $original, $result );
@@ -116,12 +116,12 @@ class ContainerTest extends WCPAY_UnitTestCase {
 	 */
 	public function test_container_resets_all_replacements() {
 		// Set up: Load original and replace.
-		$original = $this->sut->get( PaymentProcessingService::class );
+		$original = $this->sut->get( ExampleService::class );
 		$this->replace_payment_processing_service();
 
 		// Act: Reset all replacements.
 		$this->test_sut->reset_all_replacements();
-		$result = $this->sut->get( PaymentProcessingService::class );
+		$result = $this->sut->get( ExampleService::class );
 
 		// Assert: The original resolution is available.
 		$this->assertSame( $original, $result );
@@ -134,9 +134,9 @@ class ContainerTest extends WCPAY_UnitTestCase {
 	 */
 	private function replace_payment_processing_service() {
 		$mock_mode           = $this->createMock( Mode::class );
-		$replacement_service = new class( $mock_mode ) extends PaymentProcessingService {};
+		$replacement_service = new class( $mock_mode ) extends ExampleService {};
 
-		$this->test_sut->replace( PaymentProcessingService::class, $replacement_service );
+		$this->test_sut->replace( ExampleService::class, $replacement_service );
 
 		return $replacement_service;
 	}

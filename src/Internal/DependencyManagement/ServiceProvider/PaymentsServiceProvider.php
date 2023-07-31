@@ -10,6 +10,7 @@ namespace WooPayments\Internal\DependencyManagement\ServiceProvider;
 use WCPay\Core\Mode;
 use WooPayments\Internal\DependencyManagement\AbstractServiceProvider;
 use WooPayments\Internal\Service\PaymentProcessingService;
+use WooPayments\Internal\Service\ExampleService;
 
 /**
  * WooPayments payments service provider.
@@ -22,6 +23,7 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 	 */
 	protected $provides = [
 		PaymentProcessingService::class,
+		ExampleService::class,
 	];
 
 	/**
@@ -29,7 +31,10 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 	 */
 	public function register(): void {
 		$container = $this->getContainer();
-		$container->addShared( PaymentProcessingService::class )
+
+		$container->addShared( PaymentProcessingService::class );
+
+		$container->addShared( ExampleService::class )
 			->addArgument( Mode::class );
 	}
 }

@@ -36,20 +36,32 @@ class Container implements ContainerInterface {
 
 	/**
 	 * Initializes the container.
+	 *
+	 * Dependencies should not be provided during runtime,
+	 * but are useful while testing the container.
+	 *
+	 * @param LegacyContainer $legacy_container Delegate container for classes in `includes` (Optional).
+	 * @param WooContainer    $woo_container    Delegate container for WooCommerce (Optional).
 	 */
-	public function __construct() {
+	public function __construct(
+		LegacyContainer $legacy_container = null,
+		WooContainer $woo_container = null
+	) {
 		$this->container = new ExtendedContainer();
 
 		// Allow the container to be used as a dependency.
 		$this->container->addShared( static::class, $this );
 
 		// Add shared services.
-		$this->container->addServiceProvider( new ProxiesServiceProvider() );
-		$this->container->addServiceProvider( new PaymentsServiceProvider() );
+		$this->load_providers();
 
-		// Allow delegating unresolved queries to the WooCommerce and legacy containers.
-		$this->container->delegate( new WooContainer() );
-		$this->container->delegate( new LegacyContainer() );
+		// Allow delegating unresolved queries to classes from `includes`.
+		$legacy_container = $legacy_container ?? new LegacyContainer();
+		$this->container->delegate( $legacy_container );
+
+		// Allow delegating unresolved queries to the WooCommerce container.
+		$woo_container = $woo_container ?? new WooContainer();
+		$this->container->delegate( $woo_container );
 	}
 
 	/**
@@ -70,5 +82,13 @@ class Container implements ContainerInterface {
 	 */
 	public function has( $id ) {
 		return $this->container->has( $id );
+	}
+
+	/**
+	 * Loads all available providers into the container.
+	 */
+	private function load_providers() {
+		$this->container->addServiceProvider( new ProxiesServiceProvider() );
+		$this->container->addServiceProvider( new PaymentsServiceProvider() );
 	}
 }
