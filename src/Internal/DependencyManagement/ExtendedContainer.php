@@ -8,6 +8,7 @@
 namespace WooPayments\Internal\DependencyManagement;
 
 use WooPayments\Vendor\League\Container\Container;
+use WooPayments\Vendor\League\Container\Definition\Definition;
 
 /**
  * Extends the League container to allow WooPayments customizations.
@@ -33,22 +34,44 @@ class ExtendedContainer extends Container {
 	 * @throws ContainerException In case the ID is not found within the container.
 	 */
 	public function replace( string $id, object $concrete ) {
+		/**
+		 * `has` checks existing definitions, providers, and delegate containers.
+		 *
+		 * If this returns false, then the ID cannot be resolved by the container.
+		 */
 		if ( ! $this->has( $id ) ) {
 			throw new ContainerException(
 				sprintf(
-					'The ID you provided (%s) for replacement is not associated with anything inside the container. Maybe try adding it instead?',
+					'The ID you provided (%s) for replacement is not associated with anything inside the container or its delegates. Maybe try adding it instead?',
 					$id
 				)
 			);
 		}
 
-		$definition = $this->extend( $id );
+		/**
+		 * The `has` call above must have already triggered providers.
+		 * If we have a definition, we'll store the original concrete.
+		 *
+		 * If the definitions don't contain the ID, it must be in a delegate container.
+		 * In this case we'll store `null` in `original_concretes`, indicating that
+		 * the definiton should be deleted when resetting replacements.
+		 */
+		if ( $this->definitions->has( $id ) ) {
+			$definition = $this->extend( $id );
 
-		// Store the original.
-		$this->original_concretes[ $id ] = $definition->getConcrete();
+			// Store the original.
+			$this->original_concretes[ $id ] = $definition->getConcrete();
 
-		// Replace.
-		$definition->setConcrete( $concrete );
+			// Replace.
+			$definition->setConcrete( $concrete );
+		} else {
+			// Create a new definition and store it.
+			$definition = new Definition( $id, $concrete );
+			$this->definitions->add( $id, $definition );
+
+			// Store null to indicate that deletion is needed.
+			$this->original_concretes[ $id ] = null;
+		}
 	}
 
 	/**
@@ -59,11 +82,19 @@ class ExtendedContainer extends Container {
 	 * @param string $id ID/name of the class.
 	 */
 	public function reset_replacement( string $id ) {
-		if ( ! isset( $this->original_concretes[ $id ] ) ) {
+		// Nothing to reset.
+		if ( ! array_key_exists( $id, $this->original_concretes ) ) {
 			return;
 		}
 
-		$this->extend( $id )->setConcrete( $this->original_concretes[ $id ] );
+		// Null concrete means delete instead of restore.
+		if ( is_null( $this->original_concretes[ $id ] ) ) {
+			// TBD: This should be replaced by another mechanism.
+			$this->extend( $id )->setConcrete( $this->original_concretes[ $id ] );
+		} else {
+			$this->extend( $id )->setConcrete( $this->original_concretes[ $id ] );
+		}
+
 		unset( $this->original_concretes[ $id ] ); // No longer needed.
 	}
 

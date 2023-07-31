@@ -128,6 +128,25 @@ class ContainerTest extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Checks whether the container delegates to the legacy container.
+	 */
+	public function test_container_delegates_to_legacy_container() {
+		$result = $this->sut->get( Mode::class );
+		$this->assertInstanceOf( Mode::class, $result );
+	}
+
+	/**
+	 * Ensure that using a replacement will also work with delegate containers.
+	 */
+	public function test_container_handles_delegate_replacement() {
+		$mode = new stdClass(); // Just a mock.
+		$this->test_sut->replace( Mode::class, $mode );
+		$result = $this->sut->get( Mode::class );
+
+		$this->assertSame( $result, $mode );
+	}
+
+	/**
 	 * Replaces the payment processing service within the container.
 	 *
 	 * @return object The replacement.
