@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React, { useContext, useState } from 'react';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import {
 	Button,
 	Card,
@@ -26,6 +26,7 @@ import {
 	useGetPaymentMethodStatuses,
 	useSelectedPaymentMethod,
 	useUnselectedPaymentMethod,
+	useAccountDefaultCurrency,
 } from 'wcpay/data';
 
 import useIsUpeEnabled from '../settings/wcpay-upe-toggle/hook.js';
@@ -159,6 +160,8 @@ const PaymentMethods = () => {
 
 	const [ , updateSelectedPaymentMethod ] = useSelectedPaymentMethod();
 
+	const [ stripeAccountDefaultCurrency ] = useAccountDefaultCurrency();
+
 	const completeActivation = ( itemId ) => {
 		updateSelectedPaymentMethod( itemId );
 		handleActivationModalOpen( null );
@@ -221,6 +224,11 @@ const PaymentMethods = () => {
 
 	const { isUpeEnabled, status, upeType } = useContext( WcPayUpeContext );
 	const [ openModalIdentifier, setOpenModalIdentifier ] = useState( '' );
+
+	const PAYMENT_METHODS_WITH_DYNAMIC_DESCRIPTION = [
+		PAYMENT_METHOD_IDS.AFFIRM,
+		PAYMENT_METHOD_IDS.AFTERPAY_CLEARPAY,
+	];
 
 	return (
 		<>
@@ -288,7 +296,16 @@ const PaymentMethods = () => {
 									id={ id }
 									key={ id }
 									label={ label }
-									description={ description }
+									description={
+										PAYMENT_METHODS_WITH_DYNAMIC_DESCRIPTION.includes(
+											id
+										)
+											? sprintf(
+													description,
+													stripeAccountDefaultCurrency.toUpperCase()
+											  )
+											: description
+									}
 									checked={
 										enabledMethodIds.includes( id ) &&
 										upeCapabilityStatuses.INACTIVE !==
