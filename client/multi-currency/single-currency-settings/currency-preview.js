@@ -74,7 +74,7 @@ const CurrencyPreview = ( {
 				<CardBody>
 					<div>
 						<h4>{ storeCurrency.name }</h4>
-						{ 'left' === storeCurrency.symbol_position ? (
+						{ storeCurrency.symbol_position === 'left' ? (
 							<TextControlWithAffixes
 								prefix={ storeCurrency.symbol }
 								data-testid="store_currency_value"

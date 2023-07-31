@@ -14,7 +14,25 @@ use WCPay\WooPay\WooPay_Scheduler;
  * WooPay_Session unit tests.
  */
 class WooPay_Session_Test extends WCPAY_UnitTestCase {
+	public function set_up() {
+		parent::set_up();
+
+		// Mock the main class's cache service.
+		$this->_cache     = WC_Payments::get_database_cache();
+		$this->mock_cache = $this->createMock( WCPay\Database_Cache::class );
+		WC_Payments::set_database_cache( $this->mock_cache );
+
+		// Enable woopay.
+		$this->set_is_woopay_eligible( true );
+		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'yes' );
+
+		$_SERVER['HTTP_USER_AGENT'] = 'WooPay';
+		$_SERVER['REQUEST_URI']     = '/wp-json/wc/store/v1/checkout';
+	}
+
 	public function test_get_user_id_from_cart_token_with_guest_user() {
+		define( 'REST_REQUEST', true );
+
 		$woopay_store_api_token = WooPay_Store_Api_Token::init();
 		$guest_cart_token       = $woopay_store_api_token->get_cart_token();
 
@@ -115,9 +133,12 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		$order = \WC_Helper_Order::create_order( $verified_user->ID );
 		$order->set_billing_email( $verified_user->user_email );
-		WooPay_Session::remove_order_customer_id_on_requests_with_verified_email( $order );
+		$order->save();
+		WooPay_Session::remove_order_customer_id_on_requests_with_verified_email( $order->get_Id() );
 
-		$this->assertEquals( $order->get_customer_id(), $verified_user->ID );
+		$updated_order = wc_get_order( $order->get_id() );
+		$this->assertEmpty( $updated_order->get_meta( 'woopay_merchant_customer_id' ) );
+		$this->assertEquals( $updated_order->get_customer_id(), $verified_user->ID );
 	}
 
 	public function test_remove_order_customer_id_on_requests_with_verified_email_with_verified_user_store_api_token_with_non_matching_order_billing_email() {
@@ -133,9 +154,12 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		$order = \WC_Helper_Order::create_order( $verified_user->ID );
 		$order->set_billing_email( 'test@example.com' );
-		WooPay_Session::remove_order_customer_id_on_requests_with_verified_email( $order );
+		$order->save();
+		WooPay_Session::remove_order_customer_id_on_requests_with_verified_email( $order->get_id() );
 
-		$this->assertEquals( $order->get_customer_id(), $verified_user->ID );
+		$updated_order = wc_get_order( $order->get_id() );
+		$this->assertEmpty( $updated_order->get_meta( 'woopay_merchant_customer_id' ) );
+		$this->assertEquals( $updated_order->get_customer_id(), $verified_user->ID );
 	}
 
 	public function test_remove_order_customer_id_on_requests_with_verified_email_with_verified_user_store_api_token() {
@@ -151,9 +175,12 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		$order = \WC_Helper_Order::create_order( $verified_user->ID );
 		$order->set_billing_email( $verified_user->user_email );
-		WooPay_Session::remove_order_customer_id_on_requests_with_verified_email( $order );
+		$order->save();
+		WooPay_Session::remove_order_customer_id_on_requests_with_verified_email( $order->get_id() );
 
-		$this->assertEquals( $order->get_customer_id(), 0 );
+		$updated_order = wc_get_order( $order->get_id() );
+		$this->assertEquals( $updated_order->get_meta( 'woopay_merchant_customer_id' ), $verified_user->ID );
+		$this->assertEquals( $updated_order->get_customer_id(), 0 );
 	}
 
 	private function setup_session( $customer_id, $customer_email = null ) {
@@ -174,5 +201,9 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 	private function setup_adapted_extensions() {
 		update_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, [ 'woocommerce-points-and-rewards' ] );
+	}
+
+	private function set_is_woopay_eligible( $is_woopay_eligible ) {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => $is_woopay_eligible ] );
 	}
 }

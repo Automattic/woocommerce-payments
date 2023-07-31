@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Improve split UPE support of WooPay with multiple payment methods enabled.
