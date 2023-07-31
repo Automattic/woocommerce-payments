@@ -4,7 +4,7 @@ Tags: payment gateway, payment, apple pay, credit card, google pay
 Requires at least: 5.9
 Tested up to: 6.1
 Requires PHP: 7.0
-Stable tag: 5.4.2
+Stable tag: 5.4.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,6 +98,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 5.4.3 - 2023-07-31 =
+* Fix - Enhance query parameters validation in redirected requests.
+
 = 5.4.2 - 2023-06-05 =
 * Fix - Improve validation of WC analytics query filters
 * Fix - Improved validation of the order key arg when redirecting to subscription's change payment method URL.
@@ -109,7 +112,10 @@ Please note that our support for the checkout block is still experimental and th
 
 = 5.4.0 - 2023-02-01 =
 * Add - Add logging and order notes when WCPay Subscriptions are suspended or put on-hold.
-* Add - Highlight subscriptions with overdue payment in list view with red icon == Changelog == tooltip.
+* Add - Highlight subscriptions with overdue payment in list view with red icon == Changelog ==
+
+= 5.4.3 - 2023-07-31 =
+* Fix - Enhance query parameters validation in redirected requests. tooltip.
 * Add - More context to the business details to show the actual message from Stripe, shows a modal if there is more than one error from Stripe.
 * Add - New wcs_set_order_address() helper function to set an array of address fields on an order or subscription.
 * Add - Skipping the email input step for WooPay express checkout flow when the email input field has already a value. The WooPay express checkout feature is behind a feature flag currently.
@@ -152,7 +158,10 @@ Please note that our support for the checkout block is still experimental and th
 * Dev - Fix phpcs violations in the `WC_Subscriptions_Tracker` and `WCS_Admin_System_Status` classes to improve code quality.
 * Dev - Introduced a new `untrash_order()` in the `WCS_Orders_Table_Subscription_Data_Store` class to fix untrashing subscriptions on stores that have HPOS enabled.
 * Dev - Introduced a WCS_Object_Data_Cache_Manager and WCS_Object_Data_Cache_Manager_Many_To_One class as HPOS equivalents of the WCS_Post_Meta_Cache_Manager classes.
-* Dev - Moved the trash, untrash == Changelog == delete related `add_actions()` in the `WC_Subscriptions_Manager` class to be added on the `woocommerce_loaded` action.
+* Dev - Moved the trash, untrash == Changelog ==
+
+= 5.4.3 - 2023-07-31 =
+* Fix - Enhance query parameters validation in redirected requests. delete related `add_actions()` in the `WC_Subscriptions_Manager` class to be added on the `woocommerce_loaded` action.
 * Dev - Remove deprecated `strptime` function in favour of `DateTime::createFromFormat`.
 * Dev - Skip running blocks E2E tests, add comment for the same.
 * Dev - unified express checkout settings
