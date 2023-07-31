@@ -133,7 +133,7 @@ $GLOBALS['wcpay_test_container'] = null;
  * @return ExtendedContainer The extended container.
  */
 function wcpay_get_test_container() {
-	if ( ! $GLOBALS['wcpay_test_container'] instanceof ExtendedContainer ) {
+	if ( $GLOBALS['wcpay_test_container'] instanceof ExtendedContainer ) {
 		return $GLOBALS['wcpay_test_container'];
 	}
 
