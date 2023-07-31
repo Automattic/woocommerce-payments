@@ -24,7 +24,7 @@ class LegacyContainer implements ContainerInterface {
 	 * @param string $id Identifier of the entry to look for.
 	 * @return mixed Entry.
 	 */
-	public function get( string $id ) {
+	public function get( $id ) {
 		$method = $this->transform_class_to_method( $id );
 		return $this->$method();
 	}
@@ -36,7 +36,7 @@ class LegacyContainer implements ContainerInterface {
 	 * @param string $id Identifier of the entry to look for.
 	 * @return bool
 	 */
-	public function has( string $id ) {
+	public function has( $id ) {
 		$method = $this->transform_class_to_method( $id );
 		return method_exists( $this, $method );
 	}
