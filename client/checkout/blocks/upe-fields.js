@@ -61,6 +61,7 @@ const WCPayUPEFields = ( {
 	api,
 	activePaymentMethod,
 	billing: { billingData },
+	shippingData,
 	eventRegistration: {
 		onPaymentProcessing,
 		onCheckoutAfterProcessingWithSuccess,
@@ -294,6 +295,7 @@ const WCPayUPEFields = ( {
 							paymentIntentSecret,
 							elements,
 							billingData,
+							shippingData,
 							emitResponse,
 							selectedUPEPaymentType
 						);
