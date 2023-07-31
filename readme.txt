@@ -4,7 +4,7 @@ Tags: payment gateway, payment, apple pay, credit card, google pay
 Requires at least: 5.9
 Tested up to: 6.1
 Requires PHP: 7.0
-Stable tag: 5.7.1
+Stable tag: 5.7.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,6 +98,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 5.7.2 - 2023-07-31 =
+* Fix - Enhance query parameters validation in redirected requests.
+
 = 5.7.1 - 2023-06-05 =
 * Fix - Improve validation of WC analytics query filters
 * Fix - Improved validation of the order key arg when redirecting to subscription's change payment method URL.
@@ -134,12 +137,18 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Fix WooPay phone number on blocks checkout
 * Fix - Prevent the WooPay Express button from showing up for pre-order products to be paid upon release.
 * Fix - Sort uncaptured transactions with oldest first.
-* Update - Add documentation links to fraud == Changelog == risk tools.
+* Update - Add documentation links to fraud == Changelog ==
+
+= 5.7.2 - 2023-07-31 =
+* Fix - Enhance query parameters validation in redirected requests. risk tools.
 * Update - Adds basic protection level modal and fixes standard and high level protection modal rules
 * Update - Change the link in the Express checkouts setting.
 * Update - Change user-facing wording from payouts to deposits.
 * Update - Connection success notice.
-* Update - Improve Fraud == Changelog == Risk tools layout and add missing UI elements.
+* Update - Improve Fraud == Changelog ==
+
+= 5.7.2 - 2023-07-31 =
+* Fix - Enhance query parameters validation in redirected requests. Risk tools layout and add missing UI elements.
 * Update - Replace custom tour component with TourKit from the WooCommerce components library.
 * Update - Replace international billing address with IP country filter on fraud and risk tools
 * Update - Update international filters to use selling locations settings instead stripe account country
