@@ -15,6 +15,8 @@ use Automattic\WooCommerce\Blocks\Integrations\IntegrationInterface;
 class WooPay_Adapted_Extensions {
 	const POINTS_AND_REWARDS_PLUGIN = 'woocommerce-points-and-rewards';
 	const POINTS_AND_REWARDS_API    = 'points-and-rewards';
+	const GIFT_CARDS_API            = 'woocommerce-gift-cards';
+	const GIFT_CARDS_BLOCKS         = 'wc-gift-cards-blocks';
 
 	/**
 	 * WC Blocks registered integrations, as `$name => $instance` pairs.
@@ -67,6 +69,14 @@ class WooPay_Adapted_Extensions {
 			}
 		}
 
+		if ( in_array( self::GIFT_CARDS_API, $enabled_adapted_extensions, true ) ) {
+			$gift_cards_data = self::get_gift_cards_data( $user );
+
+			if ( null !== $gift_cards_data ) {
+				$extension_settings[ self::GIFT_CARDS_API ] = $gift_cards_data;
+			}
+		}
+
 		return $extension_settings;
 	}
 
@@ -112,6 +122,43 @@ class WooPay_Adapted_Extensions {
 		}
 
 		return $points_and_rewards_script_data;
+	}
+
+	/**
+	 * Get Gift Cards settings for WooPay.
+	 *
+	 * @param \WP_User $user The user the data will be loaded.
+	 *
+	 * @return array|null The Gift Cards script data if installed.
+	 */
+	public function get_gift_cards_data( $user ) {
+		if (
+			empty( $this->registered_integrations[ self::GIFT_CARDS_BLOCKS ] ) ||
+			! function_exists( 'WC_GC' ) ||
+			! property_exists( WC_GC(), 'account' ) ||
+			! method_exists( WC_GC()->account, 'get_active_giftcards' )
+		) {
+			return null;
+		}
+
+		$gift_cards_script_data                        = $this->registered_integrations[ self::GIFT_CARDS_BLOCKS ]->get_script_data();
+		$gift_cards_script_data['should_verify_email'] = false;
+
+		if ( ! is_user_logged_in() ) {
+			// Verify if the user has Gift Card balance to ask them to verify email on WooPay.
+			$gift_cards = WC_GC()->account->get_active_giftcards( $user->ID );
+			$balance    = 0;
+
+			foreach ( $gift_cards as $giftcard_data ) {
+				$balance += (float) $giftcard_data->get_balance();
+			}
+
+			if ( $balance > 0 ) {
+				$gift_cards_script_data['should_verify_email'] = true;
+			}
+		}
+
+		return $gift_cards_script_data;
 	}
 
 	/**
