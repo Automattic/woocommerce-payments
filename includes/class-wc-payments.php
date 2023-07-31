@@ -1568,7 +1568,7 @@ class WC_Payments {
 				$store_user_email_registered = get_user_by( 'email', $email );
 
 				if ( $store_user_email_registered ) {
-					$body['email_verified_session_nonce'] = $woopay_adapted_extensions->get_store_api_nonce_for_user( $store_user_email_registered );
+					$body['email_verified_session_nonce'] = self::create_woopay_nonce( $store_user_email_registered->ID );
 				}
 			}
 		}

@@ -162,27 +162,6 @@ class WooPay_Adapted_Extensions {
 	}
 
 	/**
-	 * Create a nonce for email verified WooPay users use on the Store API request.
-	 *
-	 * @param \WP_User $user The user to create a nonce for.
-	 *
-	 * @return string A nonce for the giver user.
-	 */
-	public function get_store_api_nonce_for_user( $user ) {
-		$store_api_nonce_for_woopay_verified_email = function ( $uid, $action ) use ( $user ) {
-			return 'wc_store_api' === $action ? $user->ID : $uid;
-		};
-
-		add_filter( 'nonce_user_logged_out', $store_api_nonce_for_woopay_verified_email, 10, 2 );
-
-		$user_nonce = wp_create_nonce( 'wc_store_api' );
-
-		remove_filter( 'nonce_user_logged_out', $store_api_nonce_for_woopay_verified_email );
-
-		return $user_nonce;
-	}
-
-	/**
 	 * Get WC Blocks registered integrations.
 	 *
 	 * @param IntegrationInterface $integration An instance of IntegrationInterface.
