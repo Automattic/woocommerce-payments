@@ -46,6 +46,9 @@ class ContainerTest extends WCPAY_UnitTestCase {
 
 		$this->sut      = wcpay_get_container();
 		$this->test_sut = wcpay_get_test_container();
+
+		// Prevent leaks between tests.
+		$this->test_sut->reset_all_replacements();
 	}
 
 	/**
@@ -144,6 +147,19 @@ class ContainerTest extends WCPAY_UnitTestCase {
 		$result = $this->sut->get( Mode::class );
 
 		$this->assertSame( $result, $mode );
+	}
+
+	/**
+	 * Ensures that delegate replacements can be reset.
+	 */
+	public function test_container_handles_delegate_replacement_reset() {
+		$original = $this->sut->get( Mode::class );
+
+		$this->test_sut->replace( Mode::class, new stdClass() ); // Just a mock.
+		$this->test_sut->reset_replacement( Mode::class );
+
+		$result = $this->sut->get( Mode::class );
+		$this->assertSame( $result, $original );
 	}
 
 	/**

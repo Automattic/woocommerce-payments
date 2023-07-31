@@ -17,12 +17,11 @@ use WooPayments\Vendor\League\Container\Definition\Definition;
  */
 class ExtendedContainer extends Container {
 	/**
-	 * Concretes will be stored here before being replaced,
-	 * allowing them to be restored later.
+	 * Holds all replacements, which take precedence over definitions.
 	 *
-	 * @var array
+	 * @var Definition[]
 	 */
-	protected $original_concretes = [];
+	protected $replacements;
 
 	/**
 	 * Replaces an existing definition with another concret.
@@ -48,30 +47,7 @@ class ExtendedContainer extends Container {
 			);
 		}
 
-		/**
-		 * The `has` call above must have already triggered providers.
-		 * If we have a definition, we'll store the original concrete.
-		 *
-		 * If the definitions don't contain the ID, it must be in a delegate container.
-		 * In this case we'll store `null` in `original_concretes`, indicating that
-		 * the definiton should be deleted when resetting replacements.
-		 */
-		if ( $this->definitions->has( $id ) ) {
-			$definition = $this->extend( $id );
-
-			// Store the original.
-			$this->original_concretes[ $id ] = $definition->getConcrete();
-
-			// Replace.
-			$definition->setConcrete( $concrete );
-		} else {
-			// Create a new definition and store it.
-			$definition = new Definition( $id, $concrete );
-			$this->definitions->add( $id, $definition );
-
-			// Store null to indicate that deletion is needed.
-			$this->original_concretes[ $id ] = null;
-		}
+		$this->replacements[ $id ] = new Definition( $id, $concrete );
 	}
 
 	/**
@@ -82,30 +58,45 @@ class ExtendedContainer extends Container {
 	 * @param string $id ID/name of the class.
 	 */
 	public function reset_replacement( string $id ) {
-		// Nothing to reset.
-		if ( ! array_key_exists( $id, $this->original_concretes ) ) {
+		if ( ! isset( $this->replacements[ $id ] ) ) {
 			return;
 		}
 
-		// Null concrete means delete instead of restore.
-		if ( is_null( $this->original_concretes[ $id ] ) ) {
-			// TBD: This should be replaced by another mechanism.
-			$this->extend( $id )->setConcrete( $this->original_concretes[ $id ] );
-		} else {
-			$this->extend( $id )->setConcrete( $this->original_concretes[ $id ] );
-		}
-
-		unset( $this->original_concretes[ $id ] ); // No longer needed.
+		unset( $this->replacements[ $id ] );
 	}
 
 	/**
 	 * Resets all replacements.
 	 */
 	public function reset_all_replacements() {
-		foreach ( $this->original_concretes as $id => $concrete ) {
-			$this->extend( $id )->setConcrete( $concrete );
+		$this->replacements = [];
+	}
+
+	/**
+	 * Resolves a definition.
+	 *
+	 * @param string $id ID/name of the class.
+	 * @return mixed
+	 */
+	public function get( $id ) {
+		if ( isset( $this->replacements[ $id ] ) ) {
+			return $this->replacements[ $id ]->getConcrete();
 		}
 
-		$this->original_concretes = [];
+		return parent::get( $id );
+	}
+
+	/**
+	 * Checks whether a definition is available.
+	 *
+	 * @param string $id ID/name of the class.
+	 * @return bool
+	 */
+	public function has( $id ): bool {
+		if ( isset( $this->replacements[ $id ] ) ) {
+			return true;
+		}
+
+		return parent::has( $id );
 	}
 }
