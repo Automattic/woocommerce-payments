@@ -34,18 +34,23 @@ class Container implements ContainerInterface {
 
 	/**
 	 * Initializes the container.
+	 *
+	 * Dependencies should not be provided during runtime, but will allow
+	 * mocking during tests. This is only needed for the container.
+	 *
+	 * @param WooContainer $woo_container The delegate container for WooCommerce (Optional).
 	 */
-	public function __construct() {
+	public function __construct( WooContainer $woo_container = null ) {
 		$this->container = new ExtendedContainer();
 
 		// Allow the container to be used as a dependency.
 		$this->container->addShared( static::class, $this );
 
 		// Add shared services.
-		$this->container->addServiceProvider( new PaymentsServiceProvider() );
+		$this->load_providers();
 
 		// Allow delegating unresolved queries to the WooCommerce container.
-		$this->container->delegate( new WooContainer() );
+		$this->container->delegate( $woo_container ?? new WooContainer() );
 	}
 
 	/**
@@ -66,5 +71,12 @@ class Container implements ContainerInterface {
 	 */
 	public function has( $id ) {
 		return $this->container->has( $id );
+	}
+
+	/**
+	 * Loads all available providers into the container.
+	 */
+	private function load_providers() {
+		$this->container->addServiceProvider( new PaymentsServiceProvider() );
 	}
 }

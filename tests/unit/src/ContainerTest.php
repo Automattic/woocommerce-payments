@@ -12,8 +12,10 @@ use Automattic\WooCommerce\Proxies\LegacyProxy;
 use stdClass;
 use WooPayments\Container;
 use WooPayments\Internal\DependencyManagement\ContainerException;
+use WooPayments\Internal\DependencyManagement\DelegateContainer\WooContainer;
 use WooPayments\Internal\Service\PaymentProcessingService;
 use WooPayments\Internal\DependencyManagement\ExtendedContainer;
+use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * Payment processing service unit tests.
@@ -38,10 +40,22 @@ class ContainerTest extends WCPAY_UnitTestCase {
 	private $test_sut;
 
 	/**
+	 * A mock of the WooContainer.
+	 *
+	 * @var WooContainer|MockObject
+	 */
+	private $mock_woo_container;
+
+	/**
 	 * Sets up the container.
 	 */
 	protected function setUp(): void {
 		parent::setUp();
+
+		// Setup the mock, and make sure the globals are fresh.
+		$this->mock_woo_container         = $this->createMock( WooContainer::class );
+		$GLOBALS['woopayments_container'] = new Container( $this->mock_woo_container );
+		$GLOBALS['wcpay_test_container']  = null;
 
 		$this->sut      = wcpay_get_container();
 		$this->test_sut = wcpay_get_test_container();
@@ -73,10 +87,26 @@ class ContainerTest extends WCPAY_UnitTestCase {
 	 * Checks if the delegate container provides a WooCommerce instance.
 	 */
 	public function test_container_delegates() {
-		$proxy = $this->sut->get( LegacyProxy::class );
-		$this->assertInstanceOf( LegacyProxy::class, $proxy );
+		$proxy = new LegacyProxy();
+
+		$this->mock_woo_container->expects( $this->once() )
+			->method( 'has' )
+			->with( LegacyProxy::class )
+			->willReturn( true );
+
+		$this->mock_woo_container->expects( $this->once() )
+			->method( 'get' )
+			->with( LegacyProxy::class )
+			->willReturn( $proxy );
+
+		$result = $this->sut->get( LegacyProxy::class );
+		$this->assertSame( $proxy, $result );
 	}
 
+	/**
+	 * Makes sure that the container does not allow replacements of
+	 * classes that it is not aware of.
+	 */
 	public function test_container_doesnt_allow_replacements_of_unknowns() {
 		$this->expectException( ContainerException::class );
 		$this->test_sut->replace( 'UnknownClassThatDoesNotExist', new stdClass() );
