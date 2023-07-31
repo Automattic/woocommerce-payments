@@ -1,5 +1,8 @@
 *** WooCommerce Payments Changelog ***
 
+= 4.5.3 - 2023-07-31 =
+* Fix - Enhance query parameters validation in redirected requests.
+
 = 4.5.2 - 2023-06-05 =
 * Fix - Improve validation of WC analytics query filters
 * Fix - Improved validation of the order key arg when redirecting to subscription's change payment method URL.
