@@ -1,11 +1,11 @@
 <?php
 /**
- * Class WooContainerDelegate
+ * Class WooContainer
  *
  * @package WooPayments
  */
 
-namespace WooPayments\Internal\DependencyManagement;
+namespace WooPayments\Internal\DependencyManagement\DelegateContainer;
 
 use Psr\Container\ContainerInterface;
 
@@ -15,7 +15,7 @@ use Psr\Container\ContainerInterface;
  * This class refers to the WooCommerce container to allow
  * delegation within from within our primary container.
  */
-class WooContainerDelegate implements ContainerInterface {
+class WooContainer implements ContainerInterface {
 	/**
 	 * Finds an entry of the container by its identifier and returns it.
 	 *
