@@ -21,11 +21,18 @@ defined( 'ABSPATH' ) || exit; // block direct access.
 class WooPay_Tracker extends Jetpack_Tracks_Client {
 
 	/**
-	 * WooPay user event prefix
+	 * Legacy prefix used for WooPay user events
 	 *
 	 * @var string
 	 */
-	private static $user_prefix = 'woocommerceanalytics';
+	private static $legacy_user_prefix = 'woocommerceanalytics';
+
+	/**
+	 * WCPay user event prefix
+	 *
+	 * @var string
+	 */
+	private static $user_prefix = 'wcpay';
 
 	/**
 	 * WooPay admin event prefix
@@ -55,8 +62,8 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		add_action( 'wp_ajax_nopriv_platform_tracks', [ $this, 'ajax_tracks' ] );
 
 		// Actions that should result in recorded Tracks events.
-		add_action( 'woocommerce_after_checkout_form', [ $this, 'checkout_start' ] );
-		add_action( 'woocommerce_blocks_enqueue_checkout_block_scripts_after', [ $this, 'checkout_start' ] );
+		add_action( 'woocommerce_after_checkout_form', [ $this, 'classic_checkout_start' ] );
+		add_action( 'woocommerce_blocks_enqueue_checkout_block_scripts_after', [ $this, 'blocks_checkout_start' ] );
 		add_action( 'woocommerce_checkout_order_processed', [ $this, 'checkout_order_processed' ] );
 		add_action( 'woocommerce_blocks_checkout_order_processed', [ $this, 'checkout_order_processed' ] );
 		add_action( 'woocommerce_payments_save_user_in_woopay', [ $this, 'must_save_payment_method_to_platform' ] );
@@ -92,8 +99,10 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 				$tracks_data = $event_prop;
 			}
 		}
-
-		$this->maybe_record_event( sanitize_text_field( wp_unslash( $_REQUEST['tracksEventName'] ) ), $tracks_data );
+		// Legacy events are shopper events that still use the woocommerceanalytics prefix.
+		// These need to be migrated to the wcpay prefix.
+		$is_legacy_event = isset( $_REQUEST['isLegacy'] ) ? rest_sanitize_boolean( wc_clean( wp_unslash( $_REQUEST['isLegacy'] ) ) ) : false;
+		$this->maybe_record_event( sanitize_text_field( wp_unslash( $_REQUEST['tracksEventName'] ) ), $tracks_data, $is_legacy_event );
 
 		wp_send_json_success();
 	}
@@ -101,16 +110,36 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	/**
 	 * Generic method to track user events.
 	 *
+	 * @param string  $event name of the event.
+	 * @param array   $data array of event properties.
+	 * @param boolean $is_legacy indicate whether this is a legacy event.
+	 */
+	public function maybe_record_event( $event, $data = [], $is_legacy = true ) {
+		// Top level events should not be namespaced.
+		if ( '_aliasUser' !== $event ) {
+			$prefix = $is_legacy ? self::$legacy_user_prefix : self::$user_prefix;
+			$event  = $prefix . '_' . $event;
+		}
+
+		return $this->tracks_record_event( $event, $data );
+	}
+
+	/**
+	 * Track shopper events with the wcpay_prefix.
+	 *
 	 * @param string $event name of the event.
 	 * @param array  $data array of event properties.
 	 */
-	public function maybe_record_event( $event, $data = [] ) {
+	public function maybe_record_wcpay_shopper_event( $event, $data = [] ) {
 		// Top level events should not be namespaced.
 		if ( '_aliasUser' !== $event ) {
 			$event = self::$user_prefix . '_' . $event;
 		}
 
-		return $this->tracks_record_event( $event, $data );
+		$is_admin_event      = false;
+		$track_on_all_stores = true;
+
+		return $this->tracks_record_event( $event, $data, $is_admin_event, $track_on_all_stores );
 	}
 
 	/**
@@ -134,10 +163,11 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 * Override parent method to omit the jetpack TOS check.
 	 *
 	 * @param bool $is_admin_event Indicate whether the event is emitted from admin area.
+	 * @param bool $track_on_all_stores Indicate whether the event is tracked on all WCPay stores.
 	 *
 	 * @return bool
 	 */
-	public function should_enable_tracking( $is_admin_event = false ) {
+	public function should_enable_tracking( $is_admin_event = false, $track_on_all_stores = false ) {
 		// Always respect the user specific opt-out cookie.
 		if ( ! empty( $_COOKIE['tk_opt-out'] ) ) {
 			return false;
@@ -151,7 +181,8 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		// For all other events ensure:
 		// 1. Only site pages are tracked.
 		// 2. Site Admin activity in site pages are not tracked.
-		// 3. Site page tracking is only enabled when WooPay is active.
+		// 3. If track_on_all_stores is enabled, track all events.
+		// 4. Otherwise, track only when WooPay is active.
 
 		// Track only site pages.
 		if ( is_admin() && ! wp_doing_ajax() ) {
@@ -163,7 +194,12 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 			return false;
 		}
 
-		// Don't track when woopay is disabled.
+		// Track all events without checking for WooPay availability.
+		if ( $track_on_all_stores ) {
+			return true;
+		}
+
+		// For the remaining events, don't track when woopay is disabled.
 		$gateway            = \WC_Payments::get_gateway();
 		$is_woopay_eligible = WC_Payments_Features::is_woopay_eligible(); // Feature flag.
 		$is_woopay_enabled  = 'yes' === $gateway->get_option( 'platform_checkout', 'no' );
@@ -307,22 +343,42 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 
 
 	/**
-	 * Record a Tracks event that the checkout has started.
+	 * Record a Tracks event that the classic checkout page has loaded.
 	 */
-	public function checkout_start() {
-		$this->maybe_record_event( 'order_checkout_start' );
+	public function classic_checkout_start() {
+		$is_woopay_enabled = WC_Payments_Features::is_woopay_enabled();
+		$this->maybe_record_wcpay_shopper_event(
+			'checkout_page_view',
+			[
+				'theme_type'     => 'short_code',
+				'woopay_enabled' => $is_woopay_enabled,
+			]
+		);
+	}
+
+	/**
+	 * Record a Tracks event that the blocks checkout page has loaded.
+	 */
+	public function blocks_checkout_start() {
+		$is_woopay_enabled = WC_Payments_Features::is_woopay_enabled();
+		$this->maybe_record_wcpay_shopper_event(
+			'checkout_page_view',
+			[
+				'theme_type'     => 'blocks',
+				'woopay_enabled' => $is_woopay_enabled,
+			]
+		);
 	}
 
 	/**
 	 * Record a Tracks event that the order has been processed.
 	 */
 	public function checkout_order_processed() {
-		$this->maybe_record_event(
-			'order_checkout_complete',
-			[
-				'source' => ( isset( $_SERVER['HTTP_USER_AGENT'] ) && 'WooPay' === $_SERVER['HTTP_USER_AGENT'] ) ? 'platform' : 'standard',
-			]
-		);
+		$is_woopay_order = ( isset( $_SERVER['HTTP_USER_AGENT'] ) && 'WooPay' === $_SERVER['HTTP_USER_AGENT'] );
+		// Don't track WooPay orders. They will be tracked on WooPay side with more flow specific details.
+		if ( ! $is_woopay_order ) {
+			$this->maybe_record_wcpay_shopper_event( 'checkout_order_placed' );
+		}
 	}
 
 	/**

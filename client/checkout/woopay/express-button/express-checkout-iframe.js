@@ -93,7 +93,11 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		window.addEventListener( 'resize', setPopoverPosition );
 
 		iframe.classList.add( 'open' );
-		wcpayTracks.recordUserEvent( wcpayTracks.events.WOOPAY_OTP_START );
+		wcpayTracks.recordUserEvent(
+			wcpayTracks.events.WOOPAY_OTP_START,
+			[],
+			true
+		);
 	} );
 
 	// Add the iframe to the wrapper.
@@ -107,7 +111,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		);
 
 		// Handle Blocks Cart and Checkout notices.
-		if ( wcSettings.wcBlocksConfig && 'product' !== context ) {
+		if ( wcSettings.wcBlocksConfig && context !== 'product' ) {
 			// This handles adding the error notice to the cart page.
 			wp.data
 				.dispatch( 'core/notices' )
@@ -201,7 +205,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 	};
 
 	document.addEventListener( 'keyup', ( event ) => {
-		if ( 'Escape' === event.key && closeIframe() ) {
+		if ( event.key === 'Escape' && closeIframe() ) {
 			event.stopPropagation();
 		}
 	} );
@@ -218,17 +222,19 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 			case 'redirect_to_platform_checkout':
 			case 'redirect_to_woopay':
 				wcpayTracks.recordUserEvent(
-					wcpayTracks.events.WOOPAY_OTP_COMPLETE
+					wcpayTracks.events.WOOPAY_OTP_COMPLETE,
+					[],
+					true
 				);
 				api.initWooPay(
-					userEmail,
+					userEmail || e.data.userEmail,
 					e.data.platformCheckoutUserSession
 				).then( ( response ) => {
 					// Do nothing if the iframe has been closed.
 					if ( ! document.querySelector( '.woopay-otp-iframe' ) ) {
 						return;
 					}
-					if ( 'success' === response.result ) {
+					if ( response.result === 'success' ) {
 						window.location = response.url;
 					} else {
 						showErrorMessage();
@@ -238,14 +244,16 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 				break;
 			case 'otp_validation_failed':
 				wcpayTracks.recordUserEvent(
-					wcpayTracks.events.WOOPAY_OTP_FAILED
+					wcpayTracks.events.WOOPAY_OTP_FAILED,
+					[],
+					true
 				);
 				break;
 			case 'close_modal':
 				closeIframe();
 				break;
 			case 'iframe_height':
-				if ( 300 < e.data.height ) {
+				if ( e.data.height > 300 ) {
 					if ( fullScreenModalBreakpoint <= window.innerWidth ) {
 						// set height to given value
 						iframe.style.height = e.data.height + 'px';

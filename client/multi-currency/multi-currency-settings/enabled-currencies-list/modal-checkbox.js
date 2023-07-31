@@ -30,7 +30,7 @@ const EnabledCurrenciesModalCheckbox = ( {
 					components: {
 						flag: (
 							<span className="enabled-currency-checkbox__flag">
-								{ '' !== flag ? (
+								{ flag !== '' ? (
 									flag
 								) : (
 									<div className="enabled-currency-checkbox__flag-text">
