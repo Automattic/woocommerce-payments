@@ -828,6 +828,7 @@ class WC_Payments_Admin {
 			'frtDiscoverBannerSettings'   => get_option( 'wcpay_frt_discover_banner_settings', '' ),
 			'storeCurrency'               => get_option( 'woocommerce_currency' ),
 			'isBnplAffirmAfterpayEnabled' => WC_Payments_Features::is_bnpl_affirm_afterpay_enabled(),
+			'isWooPayEligible'            => WC_Payments_Features::is_woopay_eligible(),
 		];
 
 		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );

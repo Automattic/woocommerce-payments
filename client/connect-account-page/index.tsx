@@ -171,7 +171,11 @@ const ConnectAccountPage: React.FC = () => {
 							>
 								{ strings.button }
 							</Button>
-							<p>{ strings.agreement }</p>
+							<p>
+								{ wcpaySettings.isWooPayEligible
+									? strings.agreementWithWooPay
+									: strings.agreement }
+							</p>
 						</div>
 						<CardDivider />
 						<div className="connect-account-page__payment-methods">
