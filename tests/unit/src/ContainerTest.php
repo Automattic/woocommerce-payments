@@ -10,6 +10,7 @@ namespace WooPayments\Tests;
 use WCPAY_UnitTestCase;
 use Automattic\WooCommerce\Proxies\LegacyProxy;
 use stdClass;
+use WCPay\Core\Mode;
 use WooPayments\Container;
 use WooPayments\Internal\DependencyManagement\ContainerException;
 use WooPayments\Internal\Service\PaymentProcessingService;
@@ -132,7 +133,8 @@ class ContainerTest extends WCPAY_UnitTestCase {
 	 * @return object The replacement.
 	 */
 	private function replace_payment_processing_service() {
-		$replacement_service = new class() extends PaymentProcessingService {};
+		$mock_mode           = $this->createMock( Mode::class );
+		$replacement_service = new class( $mock_mode ) extends PaymentProcessingService {};
 
 		$this->test_sut->replace( PaymentProcessingService::class, $replacement_service );
 
