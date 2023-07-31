@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fixes Stripe Link compatibility with split UPE payment gateway

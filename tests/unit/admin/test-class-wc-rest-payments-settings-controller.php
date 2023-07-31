@@ -9,6 +9,7 @@ use Automattic\WooCommerce\Blocks\Package;
 use Automattic\WooCommerce\Blocks\RestApi;
 use WCPay\Constants\Payment_Method;
 use WCPay\Database_Cache;
+use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
@@ -114,9 +115,10 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->mock_db_cache      = $this->createMock( Database_Cache::class );
 		$customer_service         = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_wcpay_account, $this->mock_db_cache );
 		$token_service            = new WC_Payments_Token_Service( $this->mock_api_client, $customer_service );
-		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client );
-		$mock_rate_limiter        = $this->createMock( Session_Rate_Limiter::class );
 		$order_service            = new WC_Payments_Order_Service( $this->mock_api_client );
+		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client, $order_service );
+		$mock_rate_limiter        = $this->createMock( Session_Rate_Limiter::class );
+		$mock_dpps                = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 
 		$this->gateway    = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
@@ -125,7 +127,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$token_service,
 			$action_scheduler_service,
 			$mock_rate_limiter,
-			$order_service
+			$order_service,
+			$mock_dpps
 		);
 		$this->controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->gateway );
 
@@ -163,7 +166,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$action_scheduler_service,
 			$mock_payment_methods,
 			$mock_rate_limiter,
-			$order_service
+			$order_service,
+			$mock_dpps
 		);
 
 		$this->upe_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->mock_upe_payment_gateway );
@@ -177,7 +181,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$mock_payment_methods['card'],
 			$mock_payment_methods,
 			$mock_rate_limiter,
-			$order_service
+			$order_service,
+			$mock_dpps
 		);
 
 		$this->upe_split_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->mock_upe_split_payment_gateway );
@@ -269,28 +274,16 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_settings_request_returns_test_mode_flag() {
-		add_filter(
-			'wcpay_dev_mode',
-			function () {
-				return true;
-			}
-		);
-		$this->gateway->update_option( 'test_mode', 'yes' );
+		WC_Payments::mode()->dev();
 		$this->assertEquals( true, $this->controller->get_settings()->get_data()['is_test_mode_enabled'] );
 
 		$this->gateway->update_option( 'test_mode', 'no' );
 		$this->assertEquals( true, $this->controller->get_settings()->get_data()['is_test_mode_enabled'] );
 
-		add_filter(
-			'wcpay_dev_mode',
-			function () {
-				return false;
-			}
-		);
-		$this->gateway->update_option( 'test_mode', 'yes' );
+		WC_Payments::mode()->test();
 		$this->assertEquals( true, $this->controller->get_settings()->get_data()['is_test_mode_enabled'] );
 
-		$this->gateway->update_option( 'test_mode', 'no' );
+		WC_Payments::mode()->live();
 		$this->assertEquals( false, $this->controller->get_settings()->get_data()['is_test_mode_enabled'] );
 	}
 
@@ -475,12 +468,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_update_settings_does_not_save_debug_log_when_dev_mode_enabled() {
-		add_filter(
-			'wcpay_dev_mode',
-			function () {
-				return true;
-			}
-		);
+		WC_Payments::mode()->dev();
 		$this->assertEquals( 'no', $this->gateway->get_option( 'enable_logging' ) );
 
 		$request = new WP_REST_Request();
@@ -489,6 +477,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->controller->update_settings( $request );
 
 		$this->assertEquals( 'no', $this->gateway->get_option( 'enable_logging' ) );
+		WC_Payments::mode()->live();
 	}
 
 	public function test_update_settings_saves_test_mode() {
@@ -503,14 +492,9 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_update_settings_does_not_save_test_mode_when_dev_mode_enabled() {
-		add_filter(
-			'wcpay_dev_mode',
-			function () {
-				return true;
-			}
-		);
+		WC_Payments::mode()->dev();
 		$this->assertEquals( 'no', $this->gateway->get_option( 'test_mode' ) );
-		$this->assertEquals( true, $this->gateway->is_in_test_mode() );
+		$this->assertEquals( true, WC_Payments::mode()->is_test() );
 
 		$request = new WP_REST_Request();
 		$request->set_param( 'is_test_mode_enabled', true );
@@ -518,7 +502,9 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->controller->update_settings( $request );
 
 		$this->assertEquals( 'no', $this->gateway->get_option( 'test_mode' ) );
-		$this->assertEquals( true, $this->gateway->is_in_test_mode() );
+		$this->assertEquals( true, WC_Payments::mode()->is_test() );
+
+		WC_Payments::mode()->live();
 	}
 
 	public function test_update_settings_saves_account() {
@@ -623,6 +609,19 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'no', $this->gateway->get_option( 'saved_cards' ) );
 	}
 
+	public function test_enable_woopay_converts_upe_flag() {
+		update_option( '_wcpay_feature_upe', '1' );
+		update_option( '_wcpay_feature_upe_split', '0' );
+		$this->gateway->update_option( 'platform_checkout', 'no' );
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_woopay_enabled', true );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( '0', get_option( '_wcpay_feature_upe' ) );
+		$this->assertEquals( '1', get_option( '_wcpay_feature_upe_split' ) );
+	}
 
 	public function deposit_schedules_data_provider() {
 		return [

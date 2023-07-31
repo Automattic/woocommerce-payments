@@ -19,10 +19,20 @@
         <code>$this->get_deposit_schedule_monthly_anchor()</code>
     </NullableReturnStatement>
   </file>
+  <file src="includes/class-wc-payments-woopay-button-handler.php">
+    <UndefinedClass occurrences="3">
+      <code>WC_Pre_Orders_Product</code>
+    </UndefinedClass>
+  </file>
   <file src="includes/class-wc-payments-payment-request-button-handler.php">
     <UndefinedClass occurrences="3">
       <code>WC_Pre_Orders_Product</code>
       <code>WC_Subscriptions_Product</code>
+      <code>WC_Subscriptions_Product</code>
+    </UndefinedClass>
+  </file>
+  <file src="includes/class-wc-payments.php">
+    <UndefinedClass occurrences="1">
       <code>WC_Subscriptions_Product</code>
     </UndefinedClass>
   </file>

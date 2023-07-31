@@ -9,11 +9,14 @@
 
 namespace WCPay\Payment_Methods;
 
+use WC_Payments_Utils;
+use WCPay\MultiCurrency\MultiCurrency;
 use WP_User;
 use WC_Payments_Token_Service;
 use WC_Payment_Token_CC;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Subscriptions_Utilities;
+use WCPay\Logger;
 
 /**
  * Extendable abstract class for payment methods.
@@ -54,9 +57,25 @@ abstract class UPE_Payment_Method {
 	 * Supported presentment currencies for which charges for a payment method can be processed
 	 * Empty if all currencies are supported
 	 *
-	 * @var array
+	 * @var string[]
 	 */
 	protected $currencies;
+
+	/**
+	 * Should payment method be restricted to only domestic payments.
+	 * E.g. only to Stripe's connected account currency.
+	 * gs
+	 *
+	 * @var boolean
+	 */
+	protected $accept_only_domestic_payment = false;
+
+	/**
+	 * Represent payment total limitations for the payment method (per-currency).
+	 *
+	 * @var array<string,array<string,int>>
+	 */
+	protected $limits_per_currency = [];
 
 	/**
 	 * Payment method icon URL
@@ -64,6 +83,14 @@ abstract class UPE_Payment_Method {
 	 * @var string
 	 */
 	protected $icon_url;
+
+	/**
+	 * Supported customer locations for which charges for a payment method can be processed
+	 * Empty if all customer locations are supported
+	 *
+	 * @var string[]
+	 */
+	protected $countries = [];
 
 	/**
 	 * Create instance of payment method
@@ -110,9 +137,26 @@ abstract class UPE_Payment_Method {
 	 * @return bool
 	 */
 	public function is_enabled_at_checkout() {
-		if ( $this->is_subscription_item_in_cart() ) {
+		if ( $this->is_subscription_item_in_cart() || $this->is_changing_payment_method_for_subscription() ) {
 			return $this->is_reusable();
 		}
+
+		// This part ensures that when payment limits for the currency declared, those will be respected (e.g. BNPLs).
+		if ( [] !== $this->limits_per_currency ) {
+			$currency = get_woocommerce_currency();
+			// If the currency limits are not defined, we allow the PM for now (gateway has similar validation for limits).
+			// Additionally, we don't engage with limits verification in no-checkout context (cart is not available or empty).
+			if ( isset( $this->limits_per_currency[ $currency ], WC()->cart ) ) {
+				$amount = WC_Payments_Utils::prepare_amount( WC()->cart->get_total( '' ), $currency );
+				if ( $amount > 0 ) {
+					$range            = $this->limits_per_currency[ $currency ];
+					$is_valid_minimum = null === $range['min'] || $amount >= $range['min'];
+					$is_valid_maximum = null === $range['max'] || $amount <= $range['max'];
+					return $is_valid_minimum && $is_valid_maximum;
+				}
+			}
+		}
+
 		return true;
 	}
 
@@ -130,10 +174,21 @@ abstract class UPE_Payment_Method {
 	 * Returns boolean dependent on whether payment method will accept charges
 	 * with chosen currency
 	 *
+	 * @param string   $account_default_currency Default account currency.
+	 * @param int|null $order_id                 Optional order ID, if order currency should take precedence.
+	 *
 	 * @return bool
 	 */
-	public function is_currency_valid() {
-		return empty( $this->currencies ) || in_array( get_woocommerce_currency(), $this->currencies, true );
+	public function is_currency_valid( string $account_default_currency, $order_id = null ) {
+		$current_store_currency = $this->get_currency( $order_id );
+
+		if ( $this->accept_only_domestic_payment ) {
+			if ( strtolower( $current_store_currency ) !== strtolower( $account_default_currency ) ) {
+				return false;
+			}
+		}
+
+		return empty( $this->currencies ) || in_array( $current_store_currency, $this->currencies, true );
 	}
 
 	/**
@@ -162,5 +217,33 @@ abstract class UPE_Payment_Method {
 	 */
 	public function get_icon() {
 		return isset( $this->icon_url ) ? $this->icon_url : '';
+	}
+
+	/**
+	 * Returns payment method supported countries
+	 *
+	 * @return array
+	 */
+	public function get_countries() {
+		return $this->countries;
+	}
+
+	/**
+	 * Returns valid currency to use to filter payment methods.
+	 *
+	 * @param int $order_id Optional order ID, if order currency should take precedence.
+	 *
+	 * @return string
+	 */
+	private function get_currency( $order_id = null ) {
+		if ( is_wc_endpoint_url( 'order-pay' ) || null !== $order_id ) {
+			global $wp;
+			if ( null === $order_id ) {
+				$order_id = absint( $wp->query_vars['order-pay'] );
+			}
+			$order = wc_get_order( $order_id );
+			return $order->get_currency();
+		}
+		return get_woocommerce_currency();
 	}
 }

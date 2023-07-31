@@ -36,6 +36,13 @@ function renderCaptureAuthorizationButton(
 		/>
 	);
 }
+const defaultUseAuthorization = {
+	doCaptureAuthorization: jest.fn(),
+	doCancelAuthorization: jest.fn(),
+	isLoading: false,
+	isRequesting: false,
+	authorization: {} as Authorization,
+};
 
 describe( 'CaptureAuthorizationButton', () => {
 	afterEach( () => {
@@ -43,11 +50,8 @@ describe( 'CaptureAuthorizationButton', () => {
 	} );
 
 	test( 'should render normal status', () => {
-		mockUseAuthorization.mockReturnValue( {
-			doCaptureAuthorization: jest.fn(),
-			isLoading: false,
-			authorization: {} as Authorization,
-		} );
+		mockUseAuthorization.mockReturnValue( defaultUseAuthorization );
+
 		const { container } = renderCaptureAuthorizationButton(
 			42,
 			'paymentIntentId',
@@ -60,12 +64,10 @@ describe( 'CaptureAuthorizationButton', () => {
 
 	test( 'should transition to busy state when clicked', async () => {
 		const doCaptureAuthorizationMock = jest.fn();
-		const mockAuthorization = {} as Authorization;
 
 		mockUseAuthorization.mockReturnValue( {
+			...defaultUseAuthorization,
 			doCaptureAuthorization: doCaptureAuthorizationMock,
-			isLoading: false,
-			authorization: mockAuthorization,
 		} );
 
 		const { container, rerender } = renderCaptureAuthorizationButton(
@@ -80,9 +82,9 @@ describe( 'CaptureAuthorizationButton', () => {
 		await user.click( screen.getByRole( 'button' ) );
 
 		mockUseAuthorization.mockReturnValue( {
-			doCaptureAuthorization: doCaptureAuthorizationMock,
+			...defaultUseAuthorization,
 			isLoading: true,
-			authorization: mockAuthorization,
+			doCaptureAuthorization: doCaptureAuthorizationMock,
 		} );
 
 		expect( doCaptureAuthorizationMock.mock.calls.length ).toBe( 1 );
@@ -95,6 +97,23 @@ describe( 'CaptureAuthorizationButton', () => {
 		);
 
 		expect( screen.getByRole( 'button' ) ).toHaveClass( 'is-busy' );
+		expect( screen.getByRole( 'button' ) ).toBeDisabled();
+		expect( container ).toMatchSnapshot();
+	} );
+
+	test( 'should be disabled when requesting is true', () => {
+		mockUseAuthorization.mockReturnValue( {
+			...defaultUseAuthorization,
+			isRequesting: true,
+		} );
+
+		const { container } = renderCaptureAuthorizationButton(
+			42,
+			'paymentIntentId',
+			false,
+			true
+		);
+
 		expect( screen.getByRole( 'button' ) ).toBeDisabled();
 		expect( container ).toMatchSnapshot();
 	} );

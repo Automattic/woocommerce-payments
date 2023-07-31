@@ -8,7 +8,7 @@ on:
         description: 'The release version for testing (e.g. 4.5.0-test-2 for prerelease during week 2)'
         required: true
         type: string
-  
+
 defaults:
   run:
     shell: bash
@@ -19,25 +19,17 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       RELEASE_VERSION: ${{ inputs.releaseVersion }}
-      
+
     steps:
       - name: "Checkout repository"
         uses: actions/checkout@v3
-        with:
-          ref: 'develop'
-          
+
       - name: "Set up repository"
         uses: ./.github/actions/setup-repo
-        
+
       - name: "Create a test branch"
         id: create_branch
         uses: ./.github/actions/create-branch
-        with:
-          version: ${{ env.RELEASE_VERSION }}
-
-      - name: "Create a test tag"
-        id: create_tag
-        uses: ./.github/actions/create-tag
         with:
           version: ${{ env.RELEASE_VERSION }}
 
@@ -45,18 +37,33 @@ jobs:
         id: generate_changelog
         uses: ./.github/actions/process-changelog
         with:
-          release-version: ${{ steps.create_tag.outputs.trimmed-version }}
-          
+          release-version: ${{ steps.create_branch.outputs.trimmed-version }}
+
       - name: "Bump version header"
         env:
-          VERSION: ${{ steps.create_tag.outputs.trimmed-version }}
+          VERSION: ${{ steps.create_branch.outputs.trimmed-version }}
         run: |
           sed -i "s/^ \* Version: .*$/ * Version: $VERSION/" woocommerce-payments.php
-      
+
+      - name: "Commit and push changes"
+        env:
+          BRANCH_NAME: ${{ steps.create_branch.outputs.branch-name }}
+          RELEASE_VERSION: ${{ steps.create_branch.outputs.trimmed-version }}
+        uses: ./.github/actions/commit-push-as-bot
+        with:
+          release-version: ${{ env.RELEASE_VERSION }}
+          branch: ${{ env.BRANCH_NAME }}
+
+      - name: "Create a test tag"
+        id: create_tag
+        uses: ./.github/actions/create-tag
+        with:
+          version: ${{ env.RELEASE_VERSION }}
+
       - name: "Build the plugin"
         id: build_plugin
         uses: ./.github/actions/build
-          
+
       - name: "Create GH pre-release"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -67,7 +74,7 @@ jobs:
         run: |
           RELEASE_NOTES=$(echo -e "${CHANGELOG}")
           gh release create $VERSION --notes "$RELEASE_NOTES" --title "$TAG_MESSAGE" --target "develop" "--prerelease" $FILENAME
-          
+
       - name: "Trigger translations update on GlotPress"
         uses: ./.github/actions/trigger-translations
         with:

@@ -1,22 +1,35 @@
 .express-checkouts {
+	.wcpay-card-body {
+		padding: 0;
+	}
+
 	.express-checkouts-list {
 		.express-checkout {
-			display: flex;
 			margin: 0;
 			padding: 16px 24px 14px 24px;
 			background: #fff;
-			flex-wrap: wrap;
-			justify-content: flex-start;
-			align-items: center;
 
 			@include breakpoint( '>660px' ) {
 				padding: 24px 24px 24px 24px;
+			}
+
+			&__row {
+				display: flex;
+				flex-wrap: wrap;
+				justify-content: flex-start;
+				align-items: center;
 				flex-wrap: nowrap;
+			}
+
+			&__notice {
+				margin-top: 16px;
 			}
 
 			&__description {
 				color: #757575;
 				font-size: 12px;
+				padding: 1px;
+				margin-right: 17px;
 			}
 
 			&:not( :last-child ) {
@@ -58,6 +71,9 @@
 					&:not( :last-child ) {
 						margin-right: 4px;
 					}
+					img {
+						width: 100%;
+					}
 				}
 			}
 
@@ -71,7 +87,7 @@
 			}
 
 			&__link {
-				margin-left: 16px;
+				margin-left: auto;
 				padding: 12px;
 				border: 1px solid #007cba;
 				border-radius: 2px;

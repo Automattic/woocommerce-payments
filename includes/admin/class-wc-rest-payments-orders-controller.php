@@ -7,6 +7,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Core\Server\Request\Create_Intention;
+use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Logger;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Intent_Status;
@@ -94,6 +96,20 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
+			$this->rest_base . '/(?P<order_id>\w+)/cancel_authorization',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'cancel_authorization' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+				'args'                => [
+					'payment_intent_id' => [
+						'required' => true,
+					],
+				],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
 			$this->rest_base . '/(?P<order_id>\w+)/create_terminal_intent',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
@@ -140,7 +156,9 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			}
 
 			// Do not process intents that can't be captured.
-			$intent                   = $this->api_client->get_intent( $intent_id );
+			$request = Get_Intention::create( $intent_id );
+			$intent  = $request->send( 'wcpay_get_intent_request', $order );
+
 			$intent_metadata          = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
 			$intent_meta_order_id_raw = $intent_metadata['order_id'] ?? '';
 			$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
@@ -159,7 +177,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			$intent_status = $intent->get_status();
 			$charge        = $intent->get_charge();
 			$charge_id     = $charge ? $charge->get_id() : null;
-			$this->gateway->attach_intent_info_to_order(
+			$this->order_service->attach_intent_info_to_order(
 				$order,
 				$intent_id,
 				$intent_status,
@@ -168,12 +186,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				$charge_id,
 				$intent->get_currency()
 			);
-			$this->gateway->update_order_status_from_intent(
-				$order,
-				$intent_id,
-				$intent_status,
-				$charge_id
-			);
+			$this->order_service->update_order_status_from_intent( $order, $intent );
 
 			// Certain payments (eg. Interac) are captured on the client-side (mobile app).
 			// The client may send us the captured intent to link it to its WC order.
@@ -243,7 +256,9 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			}
 
 			// Do not process intents that can't be captured.
-			$intent                   = $this->api_client->get_intent( $intent_id );
+			$request = Get_Intention::create( $intent_id );
+			$intent  = $request->send( 'wcpay_get_intent_request', $order );
+
 			$intent_metadata          = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
 			$intent_meta_order_id_raw = $intent_metadata['order_id'] ?? '';
 			$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
@@ -254,6 +269,8 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			if ( ! in_array( $intent->get_status(), WC_Payment_Gateway_WCPay::SUCCESSFUL_INTENT_STATUS, true ) ) {
 				return new WP_Error( 'wcpay_payment_uncapturable', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
 			}
+
+			$this->add_fraud_outcome_manual_entry( $order, 'approve' );
 
 			$result = $this->gateway->capture_charge( $order, false );
 
@@ -269,9 +286,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				);
 			}
 
-			// Actualize order status.
-			$charge = $intent->get_charge();
-			$this->order_service->mark_payment_capture_completed( $order, $intent_id, $result['status'], $charge->get_id() );
+			$order->save_meta_data();
 
 			return rest_ensure_response(
 				[
@@ -319,7 +334,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			}
 
 			$order_user        = $order->get_user();
-			$customer_id       = $order->get_meta( '_stripe_customer_id' );
+			$customer_id       = $this->order_service->get_customer_id_for_order( $order );
 			$customer_data     = WC_Payments_Customer_Service::map_customer_data( $order );
 			$is_guest_customer = false === $order_user;
 
@@ -333,7 +348,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				? $this->customer_service->update_customer_for_user( $customer_id, $order_user, $customer_data )
 				: $this->customer_service->create_customer_for_user( $order_user, $customer_data );
 
-			$order->update_meta_data( '_stripe_customer_id', $customer_id );
+			$this->order_service->set_customer_id_for_order( $order, $customer_id );
 			$order->save();
 
 			return rest_ensure_response(
@@ -360,16 +375,28 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 		if ( false === $order ) {
 			return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
 		}
-
 		try {
-			$result = $this->gateway->create_intent(
-				$order,
-				$this->get_terminal_intent_payment_method( $request ),
-				$this->get_terminal_intent_capture_method( $request ),
-				$request->get_param( 'metadata' ) ?? [],
-				$request->get_param( 'customer_id' )
+			$currency                 = strtolower( $order->get_currency() );
+			$customer_id              = $request->get_param( 'customer_id' );
+			$metadata                 = $request->get_param( 'metadata' ) ?? [];
+			$metadata['order_number'] = $order->get_order_number();
+
+			$wcpay_server_request = Create_Intention::create();
+			$wcpay_server_request->set_currency_code( $currency );
+			$wcpay_server_request->set_amount( WC_Payments_Utils::prepare_amount( $order->get_total(), $currency ) );
+			if ( $customer_id ) {
+				$wcpay_server_request->set_customer( $customer_id );
+			}
+			$wcpay_server_request->set_metadata( $metadata );
+			$wcpay_server_request->set_payment_method_types( $this->get_terminal_intent_payment_method( $request ) );
+			$wcpay_server_request->set_capture_method( 'manual' === $this->get_terminal_intent_capture_method( $request ) );
+			$intent = $wcpay_server_request->send( 'wcpay_create_intent_request', $order );
+
+			return rest_ensure_response(
+				[
+					'id' => ! empty( $intent ) ? $intent->get_id() : null,
+				]
 			);
-			return rest_ensure_response( $result );
 		} catch ( \Throwable $e ) {
 			Logger::error( 'Failed to create an intention via REST API: ' . $e );
 			return new WP_Error( 'wcpay_server_error', __( 'Unexpected server error', 'woocommerce-payments' ), [ 'status' => 500 ] );
@@ -424,5 +451,99 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 		}
 
 		return $capture_method;
+	}
+
+	/**
+	 * Cancels an authorization.
+	 * Use-cases: Merchants manually canceling when blocking an on hold review by Fraud & Risk tools.
+	 *
+	 * @param  WP_REST_Request $request Full data about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function cancel_authorization( WP_REST_Request $request ) {
+		try {
+			$intent_id = $request['payment_intent_id'];
+			$order_id  = $request['order_id'];
+
+			// Do not process non-existing orders.
+			$order = wc_get_order( $order_id );
+			if ( false === $order ) {
+				return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
+			}
+
+			// Do not process orders with refund(s).
+			if ( 0 < $order->get_total_refunded() ) {
+				return new WP_Error(
+					'wcpay_refunded_order_uncapturable',
+					__( 'Payment cannot be canceled for partially or fully refunded orders.', 'woocommerce-payments' ),
+					[ 'status' => 400 ]
+				);
+			}
+
+			// Do not process intents that can't be canceled.
+			$request = Get_Intention::create( $intent_id );
+			$intent  = $request->send( 'wcpay_get_intent_request', $order );
+
+			$intent_metadata          = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
+			$intent_meta_order_id_raw = $intent_metadata['order_id'] ?? '';
+			$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
+			if ( $intent_meta_order_id !== $order->get_id() ) {
+				Logger::error( 'Payment cancelation rejected due to failed validation: order id on intent is incorrect or missing.' );
+				return new WP_Error( 'wcpay_intent_order_mismatch', __( 'The payment cannot be canceled', 'woocommerce-payments' ), [ 'status' => 409 ] );
+			}
+			if ( ! in_array( $intent->get_status(), [ Payment_Intent_Status::REQUIRES_CAPTURE ], true ) ) {
+				return new WP_Error( 'wcpay_payment_uncapturable', __( 'The payment cannot be canceled', 'woocommerce-payments' ), [ 'status' => 409 ] );
+			}
+
+			$this->add_fraud_outcome_manual_entry( $order, 'block' );
+
+			$result = $this->gateway->cancel_authorization( $order );
+
+			if ( Payment_Intent_Status::SUCCEEDED !== $result['status'] ) {
+				return new WP_Error(
+					'wcpay_cancel_error',
+					sprintf(
+					// translators: %s: the error message.
+						__( 'Payment cancel failed to complete with the following message: %s', 'woocommerce-payments' ),
+						$result['message'] ?? __( 'Unknown error', 'woocommerce-payments' )
+					),
+					[ 'status' => $result['http_code'] ?? 502 ]
+				);
+			}
+
+			$order->save_meta_data();
+
+			return rest_ensure_response(
+				[
+					'status' => $result['status'],
+					'id'     => $result['id'],
+				]
+			);
+		} catch ( \Throwable $e ) {
+			Logger::error( 'Failed to cancel an authorization via REST API: ' . $e );
+			return new WP_Error( 'wcpay_server_error', __( 'Unexpected server error', 'woocommerce-payments' ), [ 'status' => 500 ] );
+		}
+	}
+
+	/**
+	 * Adds the fraud_outcome_manual_entry meta to the order.
+	 *
+	 * @param \WC_Order $order  Order object.
+	 * @param string    $action User action.
+	 */
+	private function add_fraud_outcome_manual_entry( $order, $action ) {
+		$current_user = wp_get_current_user();
+		$order->add_meta_data(
+			'_wcpay_fraud_outcome_manual_entry',
+			[
+				'type'     => 'fraud_outcome_manual_' . $action,
+				'user'     => [
+					'id'       => $current_user->ID,
+					'username' => $current_user->user_login,
+				],
+				'action'   => 'block' === $action ? 'blocked' : 'approved',
+				'datetime' => time(),
+			]
+		);
 	}
 }

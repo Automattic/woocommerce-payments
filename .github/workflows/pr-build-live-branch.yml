@@ -1,0 +1,143 @@
+name: Prepare live branch for Jetpack Beta Builder
+
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-inform-zip-file:
+    name: "Build and inform the zip file"
+    runs-on: ubuntu-20.04
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v3
+
+      - name: "Get current version"
+        id: current-version
+        run: |
+          VERSION=$(jq '.version' package.json -r)
+          echo "Current version found: $VERSION" >> $GITHUB_STEP_SUMMARY
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: "Set up repository"
+        uses: ./.github/actions/setup-repo
+
+      - name: "Calculate the next version"
+        id: next-version
+        env:
+          RELEASE_VERSION: ${{ steps.current-version.outputs.VERSION }}
+        run: php .github/workflows/scripts/get-next-version.php # outputs.NEXT_RELEASE_VERSION
+
+      - name: "Get dev version"
+        id: get-dev-version
+        env:
+          NEXT_RELEASE_VERSION: ${{ steps.next-version.outputs.NEXT_RELEASE_VERSION }}
+          PR_NUMBER: ${{ github.event.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          DEV_SUFFIX_VERSION="dev_PR-${PR_NUMBER}_commit-${PR_HEAD_SHA:0:7}"
+          DEV_VERSION="${NEXT_RELEASE_VERSION}-${DEV_SUFFIX_VERSION}"
+          echo "Dev Version: $DEV_VERSION" >> $GITHUB_STEP_SUMMARY          
+          echo "DEV_VERSION=$DEV_VERSION" >> $GITHUB_OUTPUT
+
+      - name: "Bump dev version"
+        id: bump-dev-version
+        env:
+          DEV_VERSION: ${{ steps.get-dev-version.outputs.DEV_VERSION }}
+        run: |
+          # 'Version' header in woocommerce-payments.php
+          sed -i "s/^ \* Version: .*$/ * Version: $DEV_VERSION/" woocommerce-payments.php
+
+          # 'version' field in package.json
+          sed -ri 's/("version": )".*"/\1"'${DEV_VERSION}'"/' package.json
+
+          # 'Stable tag' header in readme.txt;
+          sed -i "s/^Stable tag: .*$/Stable tag: $DEV_VERSION/" readme.txt
+
+      - name: "Build the plugin"
+        id: build_plugin
+        uses: ./.github/actions/build
+
+      - name: "Update the structure of artifacts for Jetpack Beta Builder" 
+        run: |
+          cd release
+          mv woocommerce-payments woocommerce-payments-dev
+          zip -q -r "woocommerce-payments-dev.zip" "woocommerce-payments-dev/"
+          rm -fR "woocommerce-payments-dev"
+
+      - name: "Add file size notice"
+        run: |
+          echo ":information_source: Ignore the artifact size mentioned since GitHub calculates the size of the source folder instead of the zip file created." >> $GITHUB_STEP_SUMMARY
+
+      - name: "Upload the zip file as an artifact"
+        uses: actions/upload-artifact@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          name: plugins # Hard-coded value for Jetpack Beta Builder.
+          path: release
+          # Only need to retain for a day since the Jetpack Beta Builder slurps it up to distribute.
+          retention-days: 1
+
+      - name: "Get plugin data for Jetpack Beta Builder"
+        id: get-plugin-data
+        env:
+          DEV_VERSION: ${{ steps.get-dev-version.outputs.DEV_VERSION }}          
+        run: |
+          # Plugin data is passed as a JSON object.
+          PLUGIN_DATA="{}"          
+          PLUGIN_DATA=$( jq -c --arg slug "woocommerce-payments" --arg ver "$DEV_VERSION" '.[ $slug ] = { version: $ver }' <<<"$PLUGIN_DATA" )
+          echo "plugin-data=$PLUGIN_DATA" >> $GITHUB_OUTPUT
+
+      - name: "Inform Jetpack Beta Builder webhook"
+        if: steps.get-plugin-data.outputs.plugin-data != '{}'
+        env:
+          SECRET: ${{ secrets.WCPAYBETA_SECRET }}
+          PLUGIN_DATA: ${{ steps.get-plugin-data.outputs.plugin-data }}
+          PR: ${{ github.event.number }}
+        run: |
+          curl -v --fail -L \
+            --url "https://betadownload.jetpack.me/gh-action.php?run_id=$GITHUB_RUN_ID&pr=$PR&commit=$GITHUB_SHA" \
+            --form-string "repo=$GITHUB_REPOSITORY" \
+            --form-string "branch=${GITHUB_REF#refs/heads/}" \
+            --form-string "plugins=$PLUGIN_DATA" \
+            --form-string "secret=$SECRET"
+
+      - name: "Add/update the information as a comment in the PR"
+        env:
+          GITHUB_TOKEN: ${{ secrets.BOTWOO_TOKEN }}
+          PR_NUMBER: ${{ github.event.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_HEAD_REF: ${{ github.head_ref }}
+        run: |
+          BODY="### Test the build 
+          
+          #### Option 1. Jetpack Beta
+          
+          - Install and activate [Jetpack Beta](https://jetpack.com/download-jetpack-beta/).
+          - Use this build by searching for PR number \`${PR_NUMBER}\` or branch name \`${PR_HEAD_REF}\` in your-test.site/wp-admin/admin.php?page=jetpack-beta&plugin=woocommerce-payments          
+          
+          #### Option 2. Jurassic Ninja - available for logged-in A12s
+         
+          :rocket: [Launch a JN site with this branch](https://jurassic.ninja/create/?jetpack-beta&shortlived&nojetpack&woocommerce&branches.woocommerce-payments=${PR_HEAD_REF}) :rocket:
+          
+          :information_source: Install this [Tampermonkey script](https://github.com/Automattic/woocommerce-payments/tree/develop/bin/wcpay-live-branches) to get more options.
+          
+          ---
+
+          Build info: 
+          
+          - Latest commit: ${PR_HEAD_SHA}
+          - Build time: $(date -u "+%Y-%m-%d %H:%M:%S UTC")
+
+          _Note: the build is updated when a new commit is pushed to this PR._"
+          # End declaring variable BODY
+
+          # Try to update the last comment first. If not work, just create a new comment.
+          if ! gh pr comment ${PR_NUMBER} --body "${BODY}" --edit-last
+          then
+            gh pr comment ${PR_NUMBER} --body "${BODY}"
+          fi

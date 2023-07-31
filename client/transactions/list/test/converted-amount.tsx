@@ -74,9 +74,18 @@ describe( 'ConvertedAmount', () => {
 
 		expect( container ).toMatchSnapshot(); // Before tooltip appears.
 
-		fireEvent.mouseEnter( getByTestId( 'conversion-indicator' ) );
+		const conversionIndicator = getByTestId( 'conversion-indicator' );
 
+		expect( conversionIndicator ).toBeInTheDocument();
+		expect( conversionIndicator ).toHaveStyle( 'width: 18px' );
+		expect( conversionIndicator ).toHaveStyle( 'height: 18px' );
+
+		fireEvent.mouseEnter( conversionIndicator );
 		expect( await findByText( 'Converted from MOK 2.00' ) ).toBeVisible();
 		expect( container ).toMatchSnapshot(); // After tooltip appears.
+
+		// Making sure the element layout doesn't get changed after adding the Tooltip
+		expect( conversionIndicator ).toHaveStyle( 'width: 18px' );
+		expect( conversionIndicator ).toHaveStyle( 'height: 18px' );
 	} );
 } );

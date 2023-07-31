@@ -4,20 +4,24 @@ on:
     pull_request:
     workflow_dispatch:
 
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
 jobs:
     build:
         name: Bundle size check
         runs-on: ubuntu-latest
 
         steps:
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v3
             - name: Use desired version of NodeJS
-              uses: actions/setup-node@v2
+              uses: actions/setup-node@v3
               with:
                   node-version-file: '.nvmrc'
                   cache: npm
             - name: Checking for file changes
-              uses: preactjs/compressed-size-action@b03ec15e1a93cb5c062d66a1c263f9ddbd2f81ef
+              uses: preactjs/compressed-size-action@265b0667736973f2d83b1a35fdc5440d6cb3322e
               with:
                   pattern: '{release/**/*.js,release/**/*.css}'
                   exclude: '{release/vendor/**}'

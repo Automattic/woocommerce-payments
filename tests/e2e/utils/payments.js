@@ -32,16 +32,16 @@ export async function fillCardDetails( page, card ) {
 		await cardDateInput.type( card.expires.month + card.expires.year, {
 			delay: 20,
 		} );
+		await page.waitFor( 1000 );
 
 		const cardCvcInput = await stripeFrame.waitForSelector(
 			'[name="cvc"]'
 		);
 		await cardCvcInput.type( card.cvc, { delay: 20 } );
+		await page.waitFor( 1000 );
 
-		if ( null !== ( await page.$( '#add_payment_method' ) ) ) {
-			const zip = await stripeFrame.waitForSelector(
-				'[name="postalCode"]'
-			);
+		const zip = await stripeFrame.$( '[name="postalCode"]' );
+		if ( zip !== null ) {
 			await zip.type( '90210', { delay: 20 } );
 		}
 	} else {
@@ -56,19 +56,24 @@ export async function fillCardDetails( page, card ) {
 			{ timeout: 30000 }
 		);
 		await cardNumberInput.type( card.number, { delay: 20 } );
+		await page.waitFor( 1000 );
 
 		const cardDateInput = await stripeFrame.waitForSelector(
-			'[name="exp-date"]'
+			'[name="exp-date"]',
+			{ timeout: 30000 }
 		);
 
 		await cardDateInput.type( card.expires.month + card.expires.year, {
 			delay: 20,
 		} );
+		await page.waitFor( 1000 );
 
 		const cardCvcInput = await stripeFrame.waitForSelector(
-			'[name="cvc"]'
+			'[name="cvc"]',
+			{ timeout: 30000 }
 		);
 		await cardCvcInput.type( card.cvc, { delay: 20 } );
+		await page.waitFor( 1000 );
 	}
 }
 
@@ -78,26 +83,28 @@ export async function clearCardDetails() {
 		'#payment #wcpay-card-element iframe[name^="__privateStripeFrame"]'
 	);
 	const stripeFrame = await frameHandle.contentFrame();
+
 	const cardNumberInput = await stripeFrame.waitForSelector(
 		'[name="cardnumber"]'
 	);
-	const cardDateInput = await stripeFrame.waitForSelector(
-		'[name="exp-date"]'
-	);
-	const cardCvcInput = await stripeFrame.waitForSelector( '[name="cvc"]' );
-
 	await cardNumberInput.click();
 	await page.waitFor( 1000 );
 	await cardNumberInput.click( { clickCount: 3 } );
 	await page.keyboard.press( 'Backspace' );
 
+	const cardDateInput = await stripeFrame.waitForSelector(
+		'[name="exp-date"]'
+	);
 	await page.waitFor( 1000 );
 	await cardDateInput.click( { clickCount: 3 } );
 	await page.keyboard.press( 'Backspace' );
 
+	const cardCvcInput = await stripeFrame.waitForSelector( '[name="cvc"]' );
 	await page.waitFor( 1000 );
 	await cardCvcInput.click( { clickCount: 3 } );
 	await page.keyboard.press( 'Backspace' );
+
+	await page.waitFor( 1000 );
 }
 
 export async function fillCardDetailsPayForOrder( page, card ) {
@@ -184,7 +191,7 @@ export async function confirmCardAuthentication(
 	);
 	let challengeFrame = await challengeFrameHandle.contentFrame();
 	// 3DS 1 cards have another iframe enclosing the authorize form
-	if ( '3DS' === cardType.toUpperCase() ) {
+	if ( cardType.toUpperCase() === '3DS' ) {
 		const acsFrameHandle = await challengeFrame.waitForSelector(
 			'iframe[name="acsFrame"]'
 		);
@@ -244,6 +251,7 @@ export async function setupCheckout( billingDetails ) {
 	await shopper.goToCheckout();
 	await uiUnblocked();
 	await shopper.fillBillingDetails( billingDetails );
+
 	// Woo core blocks and refreshes the UI after 1s after each key press in a text field or immediately after a select
 	// field changes. Need to wait to make sure that all key presses were processed by that mechanism.
 	await page.waitFor( 1000 );

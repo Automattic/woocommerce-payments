@@ -1,5 +1,10 @@
 /** @format */
 
+/**
+ * Internal dependencies
+ */
+import { ProtectionLevel } from '../../settings/fraud-protection/advanced-settings/constants';
+
 const EMPTY_OBJ = {};
 const EMPTY_ARR = [];
 
@@ -119,6 +124,10 @@ export const getDepositStatus = ( state ) => {
 	return getSettings( state ).deposit_status || '';
 };
 
+export const getDepositRestrictions = ( state ) => {
+	return getSettings( state ).deposit_restrictions || '';
+};
+
 export const getIsManualCaptureEnabled = ( state ) => {
 	return getSettings( state ).is_manual_capture_enabled || false;
 };
@@ -183,20 +192,32 @@ export const getIsSubscriptionsPluginActive = ( state ) => {
 	return getSettings( state ).is_subscriptions_plugin_active || false;
 };
 
-export const getIsPlatformCheckoutEnabled = ( state ) => {
-	return getSettings( state ).is_platform_checkout_enabled || false;
+export const getIsWooPayEnabled = ( state ) => {
+	return getSettings( state ).is_woopay_enabled || false;
 };
 
-export const getPlatformCheckoutCustomMessage = ( state ) => {
-	return getSettings( state ).platform_checkout_custom_message || '';
+export const getWooPayCustomMessage = ( state ) => {
+	return getSettings( state ).woopay_custom_message || '';
 };
 
-export const getPlatformCheckoutStoreLogo = ( state ) => {
-	return getSettings( state ).platform_checkout_store_logo || '';
+export const getWooPayStoreLogo = ( state ) => {
+	return getSettings( state ).woopay_store_logo || '';
 };
 
-export const getPlatformCheckoutLocations = ( state ) => {
+export const getWooPayLocations = ( state ) => {
+	return getSettings( state ).woopay_enabled_locations || EMPTY_ARR;
+};
+
+export const getCurrentProtectionLevel = ( state ) => {
 	return (
-		getSettings( state ).platform_checkout_enabled_locations || EMPTY_ARR
+		getSettings( state ).current_protection_level || ProtectionLevel.BASIC
 	);
+};
+
+export const getAdvancedFraudProtectionSettings = ( state ) => {
+	return getSettings( state ).advanced_fraud_protection_settings || EMPTY_ARR;
+};
+
+export const getShowWooPayIncompatibilityNotice = ( state ) => {
+	return getSettings( state ).show_woopay_incompatibility_notice || false;
 };

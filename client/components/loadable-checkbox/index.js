@@ -6,11 +6,15 @@
 import { __, sprintf } from '@wordpress/i18n';
 import React, { useEffect, useState } from 'react';
 import { CheckboxControl, VisuallyHidden } from '@wordpress/components';
-import './style.scss';
 import classNames from 'classnames';
+
+/**
+ * Internal dependencies
+ */
 import { useManualCapture } from 'wcpay/data';
-import { Icon, warning } from '@wordpress/icons';
-import Tooltip from '../tooltip';
+import { HoverTooltip } from 'components/tooltip';
+import './style.scss';
+import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 
 const LoadableCheckboxControl = ( {
 	label,
@@ -28,7 +32,7 @@ const LoadableCheckboxControl = ( {
 
 	const handleOnChange = ( status ) => {
 		const timeout = status ? delayMsOnCheck : delayMsOnUncheck;
-		if ( 0 < timeout ) {
+		if ( timeout > 0 ) {
 			setLoading( true );
 			setTimeout( () => {
 				onChange( status );
@@ -81,7 +85,7 @@ const LoadableCheckboxControl = ( {
 				</div>
 			) }
 			{ isManualCaptureEnabled && ! isAllowingManualCapture ? (
-				<Tooltip
+				<HoverTooltip
 					content={ sprintf(
 						/* translators: %s: a payment method name. */
 						__(
@@ -92,7 +96,15 @@ const LoadableCheckboxControl = ( {
 					) }
 				>
 					<div className="loadable-checkbox__icon">
-						<Icon icon={ warning } fill={ '#ffc83f' } />
+						<NoticeOutlineIcon
+							style={ {
+								color: '#F0B849',
+								fill: 'currentColor',
+								marginBottom: '-5px',
+								marginRight: '16px',
+							} }
+							size={ 20 }
+						/>
 						<div
 							className="loadable-checkbox__icon-warning"
 							data-testid="loadable-checkbox-icon-warning"
@@ -109,7 +121,7 @@ const LoadableCheckboxControl = ( {
 							</VisuallyHidden>
 						</div>
 					</div>
-				</Tooltip>
+				</HoverTooltip>
 			) : (
 				<CheckboxControl
 					label={ label }

@@ -64,7 +64,7 @@ class Analytics {
 			$this->register_customer_currencies();
 		}
 
-		if ( WC_Payments::get_gateway()->is_in_dev_mode() ) {
+		if ( WC_Payments::mode()->is_dev() ) {
 			add_filter( 'woocommerce_analytics_report_should_use_cache', [ $this, 'disable_report_caching' ] );
 		}
 
@@ -106,17 +106,7 @@ class Analytics {
 	 * @return void
 	 */
 	public function register_admin_scripts() {
-		$script_src_url    = plugins_url( 'dist/multi-currency-analytics.js', WCPAY_PLUGIN_FILE );
-		$script_asset_path = WCPAY_ABSPATH . 'dist/multi-currency-analytics.asset.php';
-		$script_asset      = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ];
-
-		wp_register_script(
-			self::SCRIPT_NAME,
-			$script_src_url,
-			$script_asset['dependencies'],
-			\WC_Payments::get_file_version( 'dist/multi-currency-analytics.js' ),
-			true
-		);
+		WC_Payments::register_script_with_dependencies( self::SCRIPT_NAME, 'dist/multi-currency-analytics' );
 	}
 
 	/**
@@ -355,17 +345,29 @@ class Analytics {
 
 		$currency_args = $this->get_customer_currency_args_from_request();
 		if ( ! empty( $currency_args['currency_is'] ) ) {
-			$currency_is = sprintf( "'%s'", implode( "', '", $currency_args['currency_is'] ) );
+			/**
+			 * Skip implode complaining array_map as wrong argument.
+			 *
+			 * @psalm-suppress InvalidArgument
+			 */
+			$currency_is = sprintf( "'%s'", implode( "', '", array_map( 'esc_sql', $currency_args['currency_is'] ) ) );
 			$clauses[]   = "AND {$currency_field} IN ({$currency_is})";
 		}
 
 		if ( ! empty( $currency_args['currency_is_not'] ) ) {
-			$currency_is_not = sprintf( "'%s'", implode( "', '", $currency_args['currency_is_not'] ) );
+			/**
+			 * Skip implode complaining array_map as wrong argument.
+			 *
+			 * @psalm-suppress InvalidArgument
+			 */
+			$currency_is_not = sprintf( "'%s'", implode( "', '", array_map( 'esc_sql', $currency_args['currency_is_not'] ) ) );
 			$clauses[]       = "AND {$currency_field} NOT IN ({$currency_is_not})";
 		}
 
 		if ( ! empty( $currency_args['currency'] ) ) {
-			$clauses[] = "AND {$currency_field} = '{$currency_args['currency']}'";
+			global $wpdb;
+			$expression = "AND {$currency_field} = '%s'";
+			$clauses[]  = $wpdb->prepare( $expression, $currency_args['currency'] ); //phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		}
 
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_where_clauses', $clauses );

@@ -14,7 +14,7 @@ We adopt the L-2 version support policy for WordPress core strictly, and a loose
 
 ### Install dependencies & build
 
--   `npm install` 
+-   `npm install`
 -   `composer install`
 -   `npm run build:client`, or if you're developing the client you can have it auto-update when changes are made: `npm start`
 
@@ -27,9 +27,13 @@ Loading composer repositories with package information
 GitHub API limit (0 calls/hr) is exhausted, could not fetch https://api.github.com/repos/automattic/woocommerce-subscriptions-core. Create a GitHub OAuth token to go over the API rate limit. You can also wait until ? for the rate limit to reset.
 
 Head to https://github.com/settings/tokens/new?scopes=repo&description=Composer+XXXXXX to retrieve a token. It will be stored in "/Users/yourname/.composer/auth.json" for future use by Composer.
-````
+```
 
 To fix this up, follow the link provided in the prompt and paste the token into the terminal window to continue.
+
+### Extending WooCommerce Payments
+
+If you are extending WooCommerce Payments, or building on top of it, please refer to the [core docs](includes/core/README.md) and directory (`includes/core`) for guides and recommended ways of doing it.
 
 ## Setup
 
@@ -39,10 +43,19 @@ https://github.com/Automattic/woocommerce-payments/blob/trunk/docker/README.md
 Install the following plugins:
 
 -   WooCommerce
+-   WCPay Dev Tools (clone or download [the GitHub repo](https://github.com/Automattic/woocommerce-payments-dev-tools))
+
+### Optional local.env file
+
+If you are using a custom local development setup (as opposed to the Docker-based one), you can create a `local.env` file to provide environment variables for our development scripts.
+
+We currently support the following variables:
+
+-   `LOCAL_WCPAY_DEV_TOOLS_PLUGIN_REPO_PATH`: The path to your local WCPay Dev Tools plugin directory for auto-updates; it defaults to `docker/wordpress/wp-content/plugins/woocommerce-payments-dev-tools`.
 
 ## Test account setup
 
-For setting up a test account follow [these instructions](https://woocommerce.com/document/payments/testing/dev-mode/).
+For setting up a test account follow [these instructions](https://woocommerce.com/document/woocommerce-payments/testing-and-troubleshooting/dev-mode/).
 
 You will need a externally accessible URL to set up the plugin. You can use ngrok for this.
 

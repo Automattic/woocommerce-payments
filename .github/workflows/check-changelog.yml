@@ -5,16 +5,19 @@ on:
     branches:
       - develop
       - 'release/**'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   check-changelog:
     name:    Check changelog
     runs-on: ubuntu-20.04
     steps:
       # clone the repository
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       # enable dependencies caching
       - name: Add composer to cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cache/composer/
           key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
@@ -25,7 +28,7 @@ jobs:
           tools:    composer
           coverage: none
       # Install composer packages.
-      - run: composer self-update 2.0.6 && composer install --no-progress
+      - run: composer self-update && composer install --no-progress
       # Fetch the target branch before running the check.
       - name: Fetch the target origin branch
         run: git fetch origin $GITHUB_BASE_REF

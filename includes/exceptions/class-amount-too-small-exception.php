@@ -41,7 +41,7 @@ class Amount_Too_Small_Exception extends API_Exception {
 		$this->amount   = $minimum_amount;
 		$this->currency = $currency;
 
-		parent::__construct( $message, 'amount_too_small', $http_code, null, $code, $previous );
+		parent::__construct( $message, 'amount_too_small', $http_code, null, null, $code, $previous );
 	}
 
 	/**

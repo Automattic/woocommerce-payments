@@ -5,8 +5,13 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Core\Server\Request\List_Charge_Refunds;
+use WCPay\Core\Server\Request\Refund_Charge;
+use WCPay\Core\Server\Response;
+use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Session_Rate_Limiter;
 
@@ -16,7 +21,7 @@ require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
 /**
  * WC_Payment_Gateway_WCPay::process_refund unit tests.
  */
-class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
+class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 	/**
 	 * System under test.
 	 *
@@ -83,6 +88,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$this->mock_action_scheduler_service = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
 		$this->mock_rate_limiter             = $this->createMock( Session_Rate_Limiter::class );
 		$this->mock_order_service            = $this->createMock( WC_Payments_Order_Service::class );
+		$mock_dpps                           = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 
 		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
@@ -91,7 +97,8 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 			$this->mock_token_service,
 			$this->mock_action_scheduler_service,
 			$this->mock_rate_limiter,
-			$this->mock_order_service
+			$this->mock_order_service,
+			$mock_dpps
 		);
 	}
 
@@ -104,48 +111,78 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->save();
 
-		$this->mock_api_client->expects( $this->once() )->method( 'refund_charge' )->will(
-			$this->returnValue(
-				[
-					'id'                       => 're_123456789',
-					'object'                   => 'refund',
-					'amount'                   => 19.99,
-					'balance_transaction'      => 'txn_987654321',
-					'charge'                   => 'ch_121212121212',
-					'created'                  => 1610123467,
-					'payment_intent'           => 'pi_1234567890',
-					'reason'                   => null,
-					'receipt_number'           => null,
-					'source_transfer_reversal' => null,
-					'status'                   => Payment_Intent_Status::SUCCEEDED,
-					'transfer_reversal'        => null,
-					'currency'                 => 'usd',
-				]
-			)
+		$response = new Response(
+			[
+				'id'                       => 're_123456789',
+				'object'                   => 'refund',
+				'amount'                   => $amount = 19.99,
+				'balance_transaction'      => 'txn_987654321',
+				'charge'                   => 'ch_121212121212',
+				'created'                  => 1610123467,
+				'payment_intent'           => 'pi_1234567890',
+				'reason'                   => null,
+				'receipt_number'           => null,
+				'source_transfer_reversal' => null,
+				'status'                   => Payment_Intent_Status::SUCCEEDED,
+				'transfer_reversal'        => null,
+				'currency'                 => 'usd',
+			]
 		);
+		$request  = $this->mock_wcpay_request( Refund_Charge::class );
 
-		$result = $this->wcpay_gateway->process_refund( $order->get_id(), 19.99 );
+		$request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
+
+		$request->expects( $this->once() )
+			->method( 'set_amount' )
+			->with( WC_Payments_Utils::prepare_amount( $amount ) );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $response );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
+
+		$result = $this->wcpay_gateway->process_refund( $order->get_id(), $amount );
 
 		$this->assertTrue( $result );
 	}
 
 	public function test_process_refund_should_work_without_payment_method_id_meta() {
-		$order = WC_Helper_Order::create_order();
+
+		$charge_id = 'ch_yyyyyyyyy';
+		$order     = WC_Helper_Order::create_order();
 		$order->update_meta_data( '_charge_id', 'ch_yyyyyyyyy' );
 		$order->save();
 
 		// Arrange: Mock Stripe's call with an empty payment method ID.
 		$this->mock_api_client->method( 'get_payment_method' )->with( '' )->willThrowException( new Exception( 'Missing required parameter: type.' ) );
-
-		$this->mock_api_client->expects( $this->once() )->method( 'refund_charge' )->will(
-			$this->returnValue(
-				[
-					'id'       => 're_123456789',
-					'amount'   => 5000,
-					'currency' => 'usd',
-				]
-			)
+		$response = new Response(
+			[
+				'id'       => 're_123456789',
+				'amount'   => $amount = 5000,
+				'currency' => 'usd',
+			]
 		);
+		$request  = $this->mock_wcpay_request( Refund_Charge::class );
+		$request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
+
+		$request->expects( $this->once() )
+			->method( 'set_amount' )
+			->with( $amount );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $response );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
 
 		$result = $this->wcpay_gateway->process_refund( $order->get_id(), $order->get_total() );
 
@@ -166,25 +203,39 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 
 		$refund = wc_create_refund( [ 'order_id' => $order->get_id() ] );
 
-		$this->mock_api_client->expects( $this->once() )->method( 'refund_charge' )->will(
-			$this->returnValue(
-				[
-					'id'                       => 're_123456789',
-					'object'                   => 'refund',
-					'amount'                   => 19.99,
-					'balance_transaction'      => 'txn_987654321',
-					'charge'                   => 'ch_121212121212',
-					'created'                  => 1610123467,
-					'payment_intent'           => 'pi_1234567890',
-					'reason'                   => null,
-					'receipt_number'           => null,
-					'source_transfer_reversal' => null,
-					'status'                   => Payment_Intent_Status::SUCCEEDED,
-					'transfer_reversal'        => null,
-					'currency'                 => 'usd',
-				]
-			)
+		$response = new Response(
+			[
+				'id'                       => 're_123456789',
+				'object'                   => 'refund',
+				'amount'                   => $amount = 19.99,
+				'balance_transaction'      => 'txn_987654321',
+				'charge'                   => 'ch_121212121212',
+				'created'                  => 1610123467,
+				'payment_intent'           => 'pi_1234567890',
+				'reason'                   => null,
+				'receipt_number'           => null,
+				'source_transfer_reversal' => null,
+				'status'                   => Payment_Intent_Status::SUCCEEDED,
+				'transfer_reversal'        => null,
+				'currency'                 => 'usd',
+			]
 		);
+		$request  = $this->mock_wcpay_request( Refund_Charge::class );
+		$request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
+
+		$request->expects( $this->once() )
+			->method( 'set_amount' )
+			->with( WC_Payments_Utils::prepare_amount( $amount ) );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $response );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
 
 		$result = $this->wcpay_gateway->process_refund( $order->get_id(), 19.99 );
 
@@ -197,7 +248,6 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$latest_wcpay_note = $notes[0];
 
 		$this->assertTrue( $result );
-		$this->assertEquals( 're_123456789', $refund->get_meta( '_wcpay_refund_id', true ) );
 		$this->assertStringContainsString( 'successfully processed', $latest_wcpay_note->content );
 		$this->assertStringContainsString( wc_price( 19.99, [ 'currency' => 'USD' ] ), $latest_wcpay_note->content );
 		$this->assertStringContainsString( 're_123456789', $latest_wcpay_note->content );
@@ -212,25 +262,39 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->save();
 
-		$this->mock_api_client->expects( $this->once() )->method( 'refund_charge' )->will(
-			$this->returnValue(
-				[
-					'id'                       => 're_123456789',
-					'object'                   => 'refund',
-					'amount'                   => 19.99,
-					'balance_transaction'      => 'txn_987654321',
-					'charge'                   => 'ch_121212121212',
-					'created'                  => 1610123467,
-					'payment_intent'           => 'pi_1234567890',
-					'reason'                   => null,
-					'receipt_number'           => null,
-					'source_transfer_reversal' => null,
-					'status'                   => Payment_Intent_Status::SUCCEEDED,
-					'transfer_reversal'        => null,
-					'currency'                 => 'eur',
-				]
-			)
+		$response = new Response(
+			[
+				'id'                       => 're_123456789',
+				'object'                   => 'refund',
+				'amount'                   => $amount = 19.99,
+				'balance_transaction'      => 'txn_987654321',
+				'charge'                   => 'ch_121212121212',
+				'created'                  => 1610123467,
+				'payment_intent'           => 'pi_1234567890',
+				'reason'                   => null,
+				'receipt_number'           => null,
+				'source_transfer_reversal' => null,
+				'status'                   => Payment_Intent_Status::SUCCEEDED,
+				'transfer_reversal'        => null,
+				'currency'                 => 'eur',
+			]
 		);
+		$request  = $this->mock_wcpay_request( Refund_Charge::class );
+		$request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
+
+		$request->expects( $this->once() )
+			->method( 'set_amount' )
+			->with( WC_Payments_Utils::prepare_amount( $amount, 'eur' ) );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $response );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
 
 		$result = $this->wcpay_gateway->process_refund( $order->get_id(), 19.99 );
 
@@ -256,25 +320,39 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->save();
 
-		$this->mock_api_client->expects( $this->once() )->method( 'refund_charge' )->will(
-			$this->returnValue(
-				[
-					'id'                       => 're_123456789',
-					'object'                   => 'refund',
-					'amount'                   => 19.99,
-					'balance_transaction'      => 'txn_987654321',
-					'charge'                   => 'ch_121212121212',
-					'created'                  => 1610123467,
-					'payment_intent'           => 'pi_1234567890',
-					'reason'                   => null,
-					'receipt_number'           => null,
-					'source_transfer_reversal' => null,
-					'status'                   => Payment_Intent_Status::SUCCEEDED,
-					'transfer_reversal'        => null,
-					'currency'                 => 'eur',
-				]
-			)
+		$response = new Response(
+			[
+				'id'                       => 're_123456789',
+				'object'                   => 'refund',
+				'amount'                   => $amount = 19.99,
+				'balance_transaction'      => 'txn_987654321',
+				'charge'                   => 'ch_121212121212',
+				'created'                  => 1610123467,
+				'payment_intent'           => 'pi_1234567890',
+				'reason'                   => null,
+				'receipt_number'           => null,
+				'source_transfer_reversal' => null,
+				'status'                   => Payment_Intent_Status::SUCCEEDED,
+				'transfer_reversal'        => null,
+				'currency'                 => 'eur',
+			]
 		);
+		$request  = $this->mock_wcpay_request( Refund_Charge::class );
+		$request->expects( $this->once() )
+			->method( 'set_amount' )
+			->with( WC_Payments_Utils::prepare_amount( $amount, 'eur' ) );
+
+		$request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $response );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
 
 		$result = $this->wcpay_gateway->process_refund( $order->get_id(), 19.99, 'some reason' );
 
@@ -304,6 +382,14 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$order->update_meta_data( WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'EUR' );
 		$order->save();
 
+		$this->mock_order_service
+			->method( 'get_payment_method_id_for_order' )
+			->willReturn( $payment_method_id );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
+
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_payment_method' )
@@ -316,35 +402,38 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 				]
 			);
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'list_refunds' )
-			->with( $charge_id )
+		$list_request = $this->mock_wcpay_request( List_Charge_Refunds::class );
+		$list_request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
+
+		$list_request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn(
-				[
-					'data' => [
-						[
-							'id'                       => 're_123456789',
-							'object'                   => 'refund',
-							'amount'                   => 1999,
-							'balance_transaction'      => 'txn_987654321',
-							'charge'                   => 'ch_121212121212',
-							'created'                  => 1610123467,
-							'payment_intent'           => 'pi_1234567890',
-							'reason'                   => null,
-							'receipt_number'           => null,
-							'source_transfer_reversal' => null,
-							'status'                   => Payment_Intent_Status::SUCCEEDED,
-							'transfer_reversal'        => null,
-							'currency'                 => 'eur',
+				new Response(
+					[
+						'data' => [
+							[
+								'id'                       => 're_123456789',
+								'object'                   => 'refund',
+								'amount'                   => 1999,
+								'balance_transaction'      => 'txn_987654321',
+								'charge'                   => 'ch_121212121212',
+								'created'                  => 1610123467,
+								'payment_intent'           => 'pi_1234567890',
+								'reason'                   => null,
+								'receipt_number'           => null,
+								'source_transfer_reversal' => null,
+								'status'                   => Payment_Intent_Status::SUCCEEDED,
+								'transfer_reversal'        => null,
+								'currency'                 => 'eur',
+							],
 						],
-					],
-				]
+					]
+				)
 			);
 
-		$this->mock_api_client
-			->expects( $this->never() )
-			->method( 'refund_charge' );
+		$this->mock_wcpay_request( Refund_Charge::class, 0 );
 
 		$result = $this->wcpay_gateway->process_refund( $order->get_id(), 19.99 );
 
@@ -370,20 +459,30 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->save();
 
-		// Arrange: Mock Stripe's call with an empty payment method ID.
-		$this->mock_api_client->method( 'get_payment_method' )->with( '' )->willThrowException( new Exception( 'Missing required parameter: type.' ) );
+		$this->mock_order_service
+			->method( 'get_intent_id_for_order' )
+			->willReturn( $intent_id );
 
-		$this->mock_api_client
-			->method( 'get_intent' )
-			->with( $intent_id )
-			->willReturn(
-				WC_Helper_Intention::create_intention( [ 'charge' => [ 'payment_method_details' => [ 'type' => 'interac_present' ] ] ] )
-			);
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'list_refunds' )
-			->with( $charge_id )
+			// Arrange: Mock Stripe's call with an empty payment method ID.
+			$this->mock_api_client->method( 'get_payment_method' )->with( '' )->willThrowException( new Exception( 'Missing required parameter: type.' ) );
+
+			$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
+			$request->expects( $this->once() )
+				->method( 'format_response' )
+				->willReturn(
+					WC_Helper_Intention::create_intention( [ 'charge' => [ 'payment_method_details' => [ 'type' => 'interac_present' ] ] ] )
+				);
+
+		$list_request = $this->mock_wcpay_request( List_Charge_Refunds::class );
+		$list_request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
+		$list_request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn(
 				[
 					'data' => [
@@ -406,9 +505,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 				]
 			);
 
-		$this->mock_api_client
-			->expects( $this->never() )
-			->method( 'refund_charge' );
+		$this->mock_wcpay_request( Refund_Charge::class, 0 );
 
 		$result = $this->wcpay_gateway->process_refund( $order->get_id(), $order->get_total() );
 
@@ -437,6 +534,18 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$order->update_meta_data( WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'EUR' );
 		$order->save();
 
+		$this->mock_order_service
+			->method( 'get_intent_id_for_order' )
+			->willReturn( $intent_id );
+
+		$this->mock_order_service
+			->method( 'get_payment_method_id_for_order' )
+			->willReturn( $payment_method_id );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
+
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_payment_method' )
@@ -449,19 +558,19 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 				]
 			);
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'list_refunds' )
-			->with( $charge_id )
+		$list_request = $this->mock_wcpay_request( List_Charge_Refunds::class );
+		$list_request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
+		$list_request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn(
 				[
 					'data' => [],
 				]
 			);
 
-		$this->mock_api_client
-			->expects( $this->never() )
-			->method( 'refund_charge' );
+		$this->mock_wcpay_request( Refund_Charge::class, 0 );
 
 		$result = $this->wcpay_gateway->process_refund( $order->get_id(), 19.99 );
 
@@ -481,6 +590,18 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$order->update_meta_data( WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'EUR' );
 		$order->save();
 
+		$this->mock_order_service
+			->method( 'get_intent_id_for_order' )
+			->willReturn( $intent_id );
+
+		$this->mock_order_service
+			->method( 'get_payment_method_id_for_order' )
+			->willReturn( $payment_method_id );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
+
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_payment_method' )
@@ -493,10 +614,12 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 				]
 			);
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'list_refunds' )
-			->with( $charge_id )
+		$list_request = $this->mock_wcpay_request( List_Charge_Refunds::class );
+		$list_request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
+		$list_request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn(
 				[
 					'data' => [
@@ -519,9 +642,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 				]
 			);
 
-		$this->mock_api_client
-			->expects( $this->never() )
-			->method( 'refund_charge' );
+		$this->mock_wcpay_request( Refund_Charge::class, 0 );
 
 		$result = $this->wcpay_gateway->process_refund( $order->get_id(), 19.99 );
 
@@ -540,6 +661,18 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_payment_method_id', $payment_method_id );
 		$order->save();
 
+		$this->mock_order_service
+			->method( 'get_intent_id_for_order' )
+			->willReturn( $intent_id );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
+
+		$this->mock_order_service
+			->method( 'get_payment_method_id_for_order' )
+			->willReturn( $payment_method_id );
+
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_payment_method' )
@@ -552,28 +685,36 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 				]
 			);
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'refund_charge' )
-			->willReturn(
-				[
-					'id'                       => 're_123456789',
-					'object'                   => 'refund',
-					'amount'                   => 19.99,
-					'balance_transaction'      => 'txn_987654321',
-					'charge'                   => 'ch_121212121212',
-					'created'                  => 1610123467,
-					'payment_intent'           => 'pi_1234567890',
-					'reason'                   => null,
-					'receipt_number'           => null,
-					'source_transfer_reversal' => null,
-					'status'                   => Payment_Intent_Status::SUCCEEDED,
-					'transfer_reversal'        => null,
-					'currency'                 => 'eur',
-				]
-			);
+		$response = new Response(
+			[
+				'id'                       => 're_123456789',
+				'object'                   => 'refund',
+				'amount'                   => $amount = 19.99,
+				'balance_transaction'      => 'txn_987654321',
+				'charge'                   => 'ch_121212121212',
+				'created'                  => 1610123467,
+				'payment_intent'           => 'pi_1234567890',
+				'reason'                   => null,
+				'receipt_number'           => null,
+				'source_transfer_reversal' => null,
+				'status'                   => Payment_Intent_Status::SUCCEEDED,
+				'transfer_reversal'        => null,
+				'currency'                 => 'eur',
+			]
+		);
+		$request  = $this->mock_wcpay_request( Refund_Charge::class );
+		$request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
+		$request->expects( $this->once() )
+			->method( 'set_amount' )
+			->with( WC_Payments_Utils::prepare_amount( $amount, 'eur' ) );
 
-		$result = $this->wcpay_gateway->process_refund( $order->get_id(), 19.99 );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $response );
+
+		$result = $this->wcpay_gateway->process_refund( $order->get_id(), $amount );
 
 		$notes             = wc_get_order_notes(
 			[
@@ -598,6 +739,18 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_intention_status', Payment_Intent_Status::REQUIRES_CAPTURE );
 		$order->update_status( Order_Status::ON_HOLD );
 		$order->save();
+
+		$this->mock_order_service
+			->method( 'get_intent_id_for_order' )
+			->willReturn( $intent_id );
+
+		$this->mock_order_service
+			->method( 'get_intention_status_for_order' )
+			->willReturn( 'requires_capture' );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
 
 		$order_id = $order->get_id();
 
@@ -643,27 +796,40 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->save();
 
-		$this->mock_api_client->expects( $this->once() )->method( 'refund_charge' )->will(
-			$this->returnValue(
-				[
-					'id'                       => 're_123456789',
-					'object'                   => 'refund',
-					'amount'                   => 19.99,
-					'balance_transaction'      => 'txn_987654321',
-					'charge'                   => 'ch_121212121212',
-					'created'                  => 1610123467,
-					'payment_intent'           => 'pi_1234567890',
-					'reason'                   => null,
-					'receipt_number'           => null,
-					'source_transfer_reversal' => null,
-					'status'                   => Payment_Intent_Status::SUCCEEDED,
-					'transfer_reversal'        => null,
-					'currency'                 => 'usd',
-				]
-			)
+		$response = new Response(
+			[
+				'id'                       => 're_123456789',
+				'object'                   => 'refund',
+				'amount'                   => $amount = 19.99,
+				'balance_transaction'      => 'txn_987654321',
+				'charge'                   => 'ch_121212121212',
+				'created'                  => 1610123467,
+				'payment_intent'           => 'pi_1234567890',
+				'reason'                   => null,
+				'receipt_number'           => null,
+				'source_transfer_reversal' => null,
+				'status'                   => Payment_Intent_Status::SUCCEEDED,
+				'transfer_reversal'        => null,
+				'currency'                 => 'usd',
+			]
 		);
+		$request  = $this->mock_wcpay_request( Refund_Charge::class );
+		$request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
+		$request->expects( $this->once() )
+			->method( 'set_amount' )
+			->with( WC_Payments_Utils::prepare_amount( $amount ) );
 
-		$this->wcpay_gateway->process_refund( $order->get_id(), 19.99 );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $response );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
+
+		$this->wcpay_gateway->process_refund( $order->get_id(), $amount );
 
 		// Reload the order information to get the new meta.
 		$order = wc_get_order( $order->get_id() );
@@ -682,10 +848,23 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 
 		$order_id = $order->get_id();
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'refund_charge' )
+		$request = $this->mock_wcpay_request( Refund_Charge::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willThrowException( new \Exception( 'Test message' ) );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
+
+		$this->mock_order_service
+			->method( 'get_wcpay_refund_status_for_order' )
+			->willReturn( 'failed' );
 
 		$this->wcpay_gateway->process_refund( $order_id, 19.99 );
 
@@ -704,11 +883,30 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$order->update_status( Order_Status::PROCESSING );
 		$order->save();
 
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention() );
+
+		$this->mock_order_service
+			->method( 'get_intent_id_for_order' )
+			->willReturn( $intent_id );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
+
 		$order_id = $order->get_id();
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'refund_charge' )
+		$request = $this->mock_wcpay_request( Refund_Charge::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willThrowException( new \Exception( 'Test message' ) );
 
 		$result = $this->wcpay_gateway->process_refund( $order_id, 19.99 );
@@ -729,11 +927,35 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$order->update_status( Order_Status::PROCESSING );
 		$order->save();
 
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention() );
+
+		$this->mock_order_service
+			->method( 'get_intent_id_for_order' )
+			->willReturn( $intent_id );
+
+		$this->mock_order_service
+			->method( 'get_wcpay_intent_currency_for_order' )
+			->willReturn( 'EUR' );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
+
 		$order_id = $order->get_id();
 
-		$this->mock_api_client
+		$request = $this->mock_wcpay_request( Refund_Charge::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
+
+		$request
 			->expects( $this->once() )
-			->method( 'refund_charge' )
+			->method( 'format_response' )
 			->willThrowException( new API_Exception( 'Test message', 'server_error', 500 ) );
 
 		$result = $this->wcpay_gateway->process_refund( $order_id, 19.99 );

@@ -21,8 +21,9 @@ import { SavedTokenHandler } from './saved-token-handler';
 import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
 import paymentRequestPaymentMethod from '../../payment-request/blocks';
-import { handlePlatformCheckoutEmailInput } from '../platform-checkout/email-input-iframe';
-import wooPayExpressCheckoutPaymentMethod from '../platform-checkout/express-button/woopay-express-checkout-payment-method';
+import { handleWooPayEmailInput } from '../woopay/email-input-iframe';
+import wooPayExpressCheckoutPaymentMethod from '../woopay/express-button/woopay-express-checkout-payment-method';
+import { isPreviewing } from '../preview';
 
 // Create an API object, which will be used throughout the checkout.
 const api = new WCPayAPI(
@@ -59,18 +60,19 @@ registerPaymentMethod( {
 		showSavedCards: getConfig( 'isSavedCardsEnabled' ) ?? false,
 		showSaveOption:
 			( getConfig( 'isSavedCardsEnabled' ) &&
-				! getConfig( 'isPlatformCheckoutEnabled' ) ) ??
+				! getConfig( 'isWooPayEnabled' ) ) ??
 			false,
 		features: getConfig( 'features' ),
 	},
 } );
 
-// Call handlePlatformCheckoutEmailInput if platform checkout is enabled and this is the checkout page.
-if ( getConfig( 'isPlatformCheckoutEnabled' ) ) {
+// Call handleWooPayEmailInput if woopay is enabled and this is the checkout page.
+if ( getConfig( 'isWooPayEnabled' ) ) {
 	if (
-		document.querySelector( '[data-block-name="woocommerce/checkout"]' )
+		document.querySelector( '[data-block-name="woocommerce/checkout"]' ) &&
+		! isPreviewing()
 	) {
-		handlePlatformCheckoutEmailInput( '#email', api, true );
+		handleWooPayEmailInput( '#email', api, true );
 	}
 
 	if ( getConfig( 'isWoopayExpressCheckoutEnabled' ) ) {

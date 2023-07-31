@@ -14,7 +14,6 @@ import {
 	// eslint-disable-next-line import/no-unresolved
 } from '@woocommerce/blocks-registry';
 import { useEffect, useState } from '@wordpress/element';
-import { useDispatch, useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -24,49 +23,23 @@ import './style.scss';
 import confirmUPEPayment from './confirm-upe-payment.js';
 import { getUPEConfig } from 'utils/checkout';
 import {
-	getTerms,
 	getPaymentIntentFromSession,
 	getCookieValue,
+	useCustomerData,
+	getStripeElementOptions,
 } from '../utils/upe';
-import { WC_STORE_CART } from '../constants.js';
 import { decryptClientSecret } from '../utils/encryption';
 import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
 import { getAppearance, getFontRulesFromPage } from '../upe-styles';
 import { useFingerprint } from './hooks';
 import { LoadableBlock } from '../../components/loadable';
 
-const useCustomerData = () => {
-	const { customerData, isInitialized } = useSelect( ( select ) => {
-		const store = select( WC_STORE_CART );
-		return {
-			customerData: store.getCustomerData(),
-			isInitialized: store.hasFinishedResolution( 'getCartData' ),
-		};
-	} );
-	const {
-		setShippingAddress,
-		setBillingData,
-		setBillingAddress,
-	} = useDispatch( WC_STORE_CART );
-
-	return {
-		isInitialized,
-		billingData: customerData.billingData,
-		// Backward compatibility billingData/billingAddress
-		billingAddress: customerData.billingAddress,
-		shippingAddress: customerData.shippingAddress,
-		setBillingData,
-		// Backward compatibility setBillingData/setBillingAddress
-		setBillingAddress,
-		setShippingAddress,
-	};
-};
-
 const WCPayUPEFields = ( {
 	api,
 	activePaymentMethod,
 	testingInstructions,
 	billing: { billingData },
+	shippingData,
 	eventRegistration: {
 		onPaymentProcessing,
 		onCheckoutAfterProcessingWithSuccess,
@@ -139,11 +112,11 @@ const WCPayUPEFields = ( {
 							: customerData.billingData ||
 							  customerData.billingAddress;
 
-					if ( 'line1' === key ) {
+					if ( key === 'line1' ) {
 						customerAddress.address_1 = address.address[ key ];
-					} else if ( 'line2' === key ) {
+					} else if ( key === 'line2' ) {
 						customerAddress.address_2 = address.address[ key ];
-					} else if ( 'postal_code' === key ) {
+					} else if ( key === 'postal_code' ) {
 						customerAddress.postcode = address.address[ key ];
 					} else {
 						customerAddress[ key ] = address.address[ key ];
@@ -171,7 +144,7 @@ const WCPayUPEFields = ( {
 						.append(
 							'<button class="wcpay-stripelink-modal-trigger"></button>'
 						);
-					if ( '' !== jQuery( '#email' ).val() ) {
+					if ( jQuery( '#email' ).val() !== '' ) {
 						jQuery( '.wcpay-stripelink-modal-trigger' ).show();
 					}
 
@@ -189,14 +162,14 @@ const WCPayUPEFields = ( {
 				},
 				complete_shipping: () => {
 					return (
-						null !== document.getElementById( 'shipping-address_1' )
+						document.getElementById( 'shipping-address_1' ) !== null
 					);
 				},
 				shipping_fields: shippingAddressFields,
 				billing_fields: billingAddressFields,
 				complete_billing: () => {
 					return (
-						null !== document.getElementById( 'billing-address_1' )
+						document.getElementById( 'billing-address_1' ) !== null
 					);
 				},
 			} );
@@ -236,8 +209,10 @@ const WCPayUPEFields = ( {
 				) {
 					return {
 						type: 'error',
-						message:
+						message: __(
 							'This payment method can not be saved for future use.',
+							'woocommerce-payments'
+						),
 					};
 				}
 
@@ -296,7 +271,9 @@ const WCPayUPEFields = ( {
 							paymentIntentSecret,
 							elements,
 							billingData,
-							emitResponse
+							shippingData,
+							emitResponse,
+							selectedUPEPaymentType
 						);
 					}
 
@@ -320,7 +297,7 @@ const WCPayUPEFields = ( {
 	const upeOnChange = ( event ) => {
 		// Update WC Blocks gateway config based on selected UPE payment method.
 		const paymentType =
-			'link' !== event.value.type ? event.value.type : 'card';
+			event.value.type !== 'link' ? event.value.type : 'card';
 		gatewayConfig.supports.showSaveOption =
 			paymentMethodsConfig[ paymentType ].showSaveOption;
 
@@ -328,34 +305,6 @@ const WCPayUPEFields = ( {
 		setSelectedUPEPaymentType( paymentType );
 		setPaymentCountry( event.value.country );
 	};
-
-	const elementOptions = {
-		fields: {
-			billingDetails: {
-				name: 'never',
-				email: 'never',
-				phone: 'never',
-				address: {
-					country: 'never',
-					line1: 'never',
-					line2: 'never',
-					city: 'never',
-					state: 'never',
-					postalCode: 'never',
-				},
-			},
-		},
-		wallets: {
-			applePay: 'never',
-			googlePay: 'never',
-		},
-	};
-
-	const showTerms =
-		shouldSavePayment || getUPEConfig( 'cartContainsSubscription' )
-			? 'always'
-			: 'never';
-	elementOptions.terms = getTerms( paymentMethodsConfig, showTerms );
 
 	return (
 		<>
@@ -366,7 +315,10 @@ const WCPayUPEFields = ( {
 				} }
 			></p>
 			<PaymentElement
-				options={ elementOptions }
+				options={ getStripeElementOptions(
+					shouldSavePayment,
+					paymentMethodsConfig
+				) }
 				onChange={ upeOnChange }
 				className="wcpay-payment-element"
 			/>
@@ -397,7 +349,7 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 		async function generateUPEAppearance() {
 			// Generate UPE input styles.
 			const upeAppearance = getAppearance( true );
-			await api.saveUPEAppearance( upeAppearance, true );
+			await api.saveUPEAppearance( upeAppearance, 'true' );
 
 			// Update appearance state
 			setAppearance( upeAppearance );
@@ -514,4 +466,18 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 	);
 };
 
-export default ConsumableWCPayFields;
+export const getSplitUPEFields = (
+	upeName,
+	upeMethods,
+	api,
+	testingInstructions
+) => {
+	return (
+		<ConsumableWCPayFields
+			paymentMethodId={ upeName }
+			upeMethods={ upeMethods }
+			api={ api }
+			testingInstructions={ testingInstructions }
+		/>
+	);
+};

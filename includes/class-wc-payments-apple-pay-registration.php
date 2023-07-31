@@ -246,9 +246,9 @@ class WC_Payments_Apple_Pay_Registration {
 	 * @return string A string representation of the current mode.
 	 */
 	private function get_gateway_mode_string() {
-		if ( $this->gateway->is_in_dev_mode() ) {
+		if ( WC_Payments::mode()->is_dev() ) {
 			return 'dev';
-		} elseif ( $this->gateway->is_in_test_mode() ) {
+		} elseif ( WC_Payments::mode()->is_test() ) {
 			return 'test';
 		}
 		return 'live';
@@ -358,7 +358,13 @@ class WC_Payments_Apple_Pay_Registration {
 		<div class="notice notice-warning apple-pay-message">
 			<p>
 				<strong><?php echo esc_html( 'Apple Pay:' ); ?></strong>
-				<?php echo esc_html_e( 'Express checkouts are enabled. To use Apple Pay, please use a live WooCommerce Payments account.', 'woocommerce-payments' ); ?>
+				<?php
+					printf(
+						/* translators: %s: WooPayments */
+						esc_html__( 'Express checkouts are enabled. To use Apple Pay, please use a live %s account.', 'woocommerce-payments' ),
+						'WooPayments'
+					);
+				?>
 			</p>
 		</div>
 		<?php

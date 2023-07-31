@@ -4,7 +4,7 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { Button, Card, CardBody, CheckboxControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import interpolateComponents from 'interpolate-components';
+import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies
@@ -114,7 +114,7 @@ const StoreSettingsTask = () => {
 								'woocommerce-payments'
 							) }
 						</div>
-						{ 'Storefront' === storeSettings.site_theme ? (
+						{ storeSettings.site_theme === 'Storefront' ? (
 							<>
 								<CheckboxControl
 									checked={ isStorefrontSwitcherEnabledValue }
@@ -123,7 +123,7 @@ const StoreSettingsTask = () => {
 									}
 									data-testid={ 'enable_storefront_switcher' }
 									label={ __(
-										'Add a currency switcher to the cart widget',
+										'Add a currency switcher to the Storefront theme on breadcrumb section.',
 										'woocommerce-payments'
 									) }
 								/>

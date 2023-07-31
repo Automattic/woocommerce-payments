@@ -23,10 +23,16 @@ describe( 'Transactions reducer tests', () => {
 			net: 1900,
 		},
 	];
+	const newTransactions = [ ...mockTransactions, ...mockTransactions ];
 	const mockSummary = {
 		total: 1000,
 		fees: 50,
 		net: 950,
+	};
+	const newSummary = {
+		total: 5000,
+		fees: 100,
+		net: 4900,
 	};
 
 	const emptyState = {};
@@ -37,6 +43,28 @@ describe( 'Transactions reducer tests', () => {
 		summary: {
 			[ getResourceId( mockQuery ) ]: {
 				data: mockSummary,
+			},
+		},
+		fraudProtection: {
+			block: {
+				[ getResourceId( mockQuery ) ]: {
+					data: mockTransactions,
+				},
+				summary: {
+					[ getResourceId( mockQuery ) ]: {
+						data: mockSummary,
+					},
+				},
+			},
+			review: {
+				[ getResourceId( mockQuery ) ]: {
+					data: mockTransactions,
+				},
+				summary: {
+					[ getResourceId( mockQuery ) ]: {
+						data: mockSummary,
+					},
+				},
 			},
 		},
 	};
@@ -67,8 +95,6 @@ describe( 'Transactions reducer tests', () => {
 	} );
 
 	test( 'Transactions updated correctly on updated info', () => {
-		const newTransactions = [ ...mockTransactions, ...mockTransactions ];
-
 		const expected = {
 			...filledState,
 			[ getResourceId( mockQuery ) ]: {
@@ -102,12 +128,6 @@ describe( 'Transactions reducer tests', () => {
 	} );
 
 	test( 'Transactions summary updated correctly on updated info', () => {
-		const newSummary = {
-			total: 5000,
-			fees: 100,
-			net: 4900,
-		};
-
 		const expected = {
 			...filledState,
 			summary: {
@@ -123,5 +143,99 @@ describe( 'Transactions reducer tests', () => {
 			query: mockQuery,
 		} );
 		expect( reduced ).toStrictEqual( expected );
+	} );
+
+	describe( 'Fraud outcome transactions', () => {
+		[ 'review', 'block' ].forEach( ( status ) => {
+			test( `New fraud outcome transactions reduced correctly - ${ status }`, () => {
+				const expected = {
+					fraudProtection: {
+						[ status ]: {
+							[ getResourceId( mockQuery ) ]: {
+								data: mockTransactions,
+							},
+						},
+					},
+				};
+
+				const reduced = reducer( emptyState, {
+					type: types.SET_FRAUD_OUTCOME_TRANSACTIONS,
+					status,
+					data: mockTransactions,
+					query: mockQuery,
+				} );
+				expect( reduced ).toStrictEqual( expected );
+			} );
+
+			test( `Fraud outcome transactions for updated correctly on updated info - ${ status }`, () => {
+				const expected = {
+					...filledState,
+					fraudProtection: {
+						...filledState.fraudProtection,
+						[ status ]: {
+							...filledState.fraudProtection[ status ],
+							[ getResourceId( mockQuery ) ]: {
+								data: newTransactions,
+							},
+						},
+					},
+				};
+
+				const reduced = reducer( filledState, {
+					type: types.SET_FRAUD_OUTCOME_TRANSACTIONS,
+					status,
+					data: newTransactions,
+					query: mockQuery,
+				} );
+				expect( reduced ).toStrictEqual( expected );
+			} );
+
+			test( `Fraud outcome transactions summary reduced correctly - ${ status }`, () => {
+				const expected = {
+					fraudProtection: {
+						[ status ]: {
+							summary: {
+								[ getResourceId( mockQuery ) ]: {
+									data: mockSummary,
+								},
+							},
+						},
+					},
+				};
+
+				const reduced = reducer( emptyState, {
+					type: types.SET_FRAUD_OUTCOME_TRANSACTIONS_SUMMARY,
+					status,
+					data: mockSummary,
+					query: mockQuery,
+				} );
+				expect( reduced ).toStrictEqual( expected );
+			} );
+
+			test( `Fraud outcome transactions summary for updated correctly on updated info - ${ status }`, () => {
+				const expected = {
+					...filledState,
+					fraudProtection: {
+						...filledState.fraudProtection,
+						[ status ]: {
+							...filledState.fraudProtection[ status ],
+							summary: {
+								[ getResourceId( mockQuery ) ]: {
+									data: newSummary,
+								},
+							},
+						},
+					},
+				};
+
+				const reduced = reducer( filledState, {
+					type: types.SET_FRAUD_OUTCOME_TRANSACTIONS_SUMMARY,
+					status,
+					data: newSummary,
+					query: mockQuery,
+				} );
+				expect( reduced ).toStrictEqual( expected );
+			} );
+		} );
 	} );
 } );

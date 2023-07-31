@@ -14,12 +14,14 @@ module.exports = {
 			'upe-blocks-checkout': './client/checkout/blocks/upe.js',
 			'upe-split-blocks-checkout':
 				'./client/checkout/blocks/upe-split.js',
-			'platform-checkout': './client/checkout/platform-checkout/index.js',
-			'platform-checkout-express-button':
-				'./client/checkout/platform-checkout/express-button/index.js',
+			woopay: './client/checkout/woopay/index.js',
+			'woopay-express-button':
+				'./client/checkout/woopay/express-button/index.js',
 			checkout: './client/checkout/classic/index.js',
 			upe_checkout: './client/checkout/classic/upe.js',
 			upe_split_checkout: './client/checkout/classic/upe-split.js',
+			upe_with_deferred_intent_creation_checkout:
+				'./client/checkout/classic/upe-deferred-intent-creation/event-handlers.js',
 			'payment-request': './client/payment-request/index.js',
 			'subscription-edit-page': './client/subscription-edit-page.js',
 			tos: './client/tos/index.js',
@@ -36,6 +38,7 @@ module.exports = {
 				'./client/subscription-product-onboarding/modal.js',
 			'subscription-product-onboarding-toast':
 				'./client/subscription-product-onboarding/toast.js',
+			'product-details': './client/product-details/index.js',
 		},
 		// Override webpack public path dynamically on every entry.
 		// Required for chunks loading to work on sites with JS concatenation.
@@ -88,16 +91,20 @@ module.exports = {
 			},
 			{
 				test: /\.(svg|png)$/,
-				exclude: [
-					/node_modules/,
-					/client\/components\/platform-checkout\/icons/,
+				exclude: [ /node_modules/ ],
+				oneOf: [
+					{
+						resourceQuery: /asset/,
+						type: 'asset/resource',
+						generator: {
+							emit: false,
+							filename: '../[file]?ver=[hash]',
+						},
+					},
+					{
+						type: 'asset/inline',
+					},
 				],
-				type: 'asset/inline',
-			},
-			{
-				test: /\.svg$/,
-				use: [ '@svgr/webpack' ],
-				include: [ /client\/components\/platform-checkout/ ],
 			},
 		],
 	},
@@ -105,6 +112,7 @@ module.exports = {
 		extensions: [ '.ts', '.tsx', '.json', '.js', '.jsx' ],
 		modules: [ path.join( process.cwd(), 'client' ), 'node_modules' ],
 		alias: {
+			assets: path.resolve( process.cwd(), 'assets' ),
 			wcpay: path.resolve( process.cwd(), 'client' ),
 			iti: path.resolve(
 				process.cwd(),
@@ -119,7 +127,7 @@ module.exports = {
 	},
 	plugins: [
 		new ProvidePlugin( {
-			process: 'process/browser',
+			process: 'process/browser.js',
 		} ),
 		new MiniCssExtractPlugin( { filename: '[name].css' } ),
 		new WooCommerceDependencyExtractionWebpackPlugin( {
@@ -142,4 +150,10 @@ module.exports = {
 			},
 		} ),
 	],
+	resolveLoader: {
+		modules: [
+			path.resolve( process.cwd(), 'node_modules' ),
+			path.resolve( process.cwd(), 'webpack/loaders' ),
+		],
+	},
 };

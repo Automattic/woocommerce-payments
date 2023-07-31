@@ -3,8 +3,8 @@
  */
 import React from 'react';
 import { Button } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
-import interpolateComponents from 'interpolate-components';
+import { __, sprintf } from '@wordpress/i18n';
+import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies
@@ -13,7 +13,7 @@ import './styles.scss';
 import { useGetAvailablePaymentMethodIds } from '../data';
 import PaymentMethodIcon from '../settings/payment-method-icon';
 import PaymentDeleteIllustration from '../components/payment-delete-illustration';
-import WooCardIcon from '../gateway-icons/woo-card';
+import WooCardIcon from 'assets/images/cards/woo-card.svg?asset';
 import ConfirmationModal from '../components/confirmation-modal';
 
 const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
@@ -21,9 +21,10 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 
 	return (
 		<ConfirmationModal
-			title={ __(
-				'Disable WooCommerce Payments',
-				'woocommerce-payments'
+			title={ sprintf(
+				/* translators: %s: WooPayments */
+				__( 'Disable %s', 'woocommerce-payments' ),
+				'WooPayments'
 			) }
 			onRequestClose={ onClose }
 			actions={
@@ -37,14 +38,22 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 				</>
 			}
 		>
-			<PaymentDeleteIllustration icon={ WooCardIcon } />
+			<PaymentDeleteIllustration
+				icon={ ( props ) => (
+					<img src={ WooCardIcon } alt="WooCard" { ...props } />
+				) }
+			/>
 			<p>
 				{ interpolateComponents( {
-					mixedString: __(
-						'WooCommerce Payments is currently powering multiple popular payment methods on your store. ' +
-							'Without it, they will no longer be available to your customers ' +
-							'which may {{strong}}influence conversions and sales on your store.{{/strong}}',
-						'woocommerce-payments'
+					mixedString: sprintf(
+						/* translators: %s: WooPayments */
+						__(
+							'%s is currently powering multiple popular payment methods on your store. ' +
+								'Without it, they will no longer be available to your customers ' +
+								'which may {{strong}}influence conversions and sales on your store.{{/strong}}',
+							'woocommerce-payments'
+						),
+						'WooPayments'
 					),
 					components: {
 						strong: <strong />,
@@ -53,9 +62,13 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 			</p>
 			<p>
 				{ interpolateComponents( {
-					mixedString: __(
-						'You can enable WooCommerce Payments again at any time in {{settingsLink}}settings{{/settingsLink}}.',
-						'woocommerce-payments'
+					mixedString: sprintf(
+						/* translators: %s: WooPayments */
+						__(
+							'You can enable %s again at any time in {{settingsLink}}settings{{/settingsLink}}.',
+							'woocommerce-payments'
+						),
+						'WooPayments'
 					),
 					components: {
 						settingsLink: (
@@ -67,9 +80,13 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 			</p>
 			<p>
 				<strong>
-					{ __(
-						'Payment methods that need WooCommerce Payments:',
-						'woocommerce-payments'
+					{ sprintf(
+						/* translators: %s: WooPayments */
+						__(
+							'Payment methods that need %s:',
+							'woocommerce-payments'
+						),
+						'WooPayments'
 					) }
 				</strong>
 			</p>
@@ -82,17 +99,21 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 			</ul>
 			<p>
 				{ interpolateComponents( {
-					mixedString: __(
-						'{{strong}}Need help?{{/strong}} ' +
-							'Learn more about {{wooCommercePaymentsLink}}WooCommerce Payments{{/wooCommercePaymentsLink}} or ' +
-							'{{contactSupportLink}}contact WooCommerce Support{{/contactSupportLink}}.',
-						'woocommerce-payments'
+					mixedString: sprintf(
+						/* translators: %s: WooPayments */
+						__(
+							'{{strong}}Need help?{{/strong}} ' +
+								'Learn more about {{wooCommercePaymentsLink}}%s{{/wooCommercePaymentsLink}} or ' +
+								'{{contactSupportLink}}contact WooCommerce Support{{/contactSupportLink}}.',
+							'woocommerce-payments'
+						),
+						'WooPayments'
 					),
 					components: {
 						strong: <strong />,
 						wooCommercePaymentsLink: (
 							// eslint-disable-next-line jsx-a11y/anchor-has-content
-							<a href="https://woocommerce.com/document/payments/" />
+							<a href="https://woocommerce.com/document/woocommerce-payments/" />
 						),
 						contactSupportLink: (
 							// eslint-disable-next-line jsx-a11y/anchor-has-content

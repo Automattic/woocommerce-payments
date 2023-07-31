@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Session_Rate_Limiter;
 
@@ -75,6 +76,16 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 	 */
 	private $mock_wcpay_account;
 
+	public function tear_down() {
+		parent::tear_down();
+
+		// So that the gateway hooks are re-attached for the next test, we need to reset the flag that prevents the integration hooks from being attached.
+		$reflection = new \ReflectionClass( $this->wcpay_gateway );
+		$property   = $reflection->getProperty( 'has_attached_integration_hooks' );
+		$property->setAccessible( true );
+		$property->setValue( $this->wcpay_gateway, false );
+	}
+
 	public function set_up() {
 		parent::set_up();
 
@@ -106,6 +117,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 			->disableOriginalConstructor()
 			->getMock();
 
+		$mock_dpps = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+
 		$this->wcpay_gateway = new \WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
 			$this->mock_wcpay_account,
@@ -113,8 +126,10 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 			$this->mock_token_service,
 			$this->mock_action_scheduler_service,
 			$this->mock_session_rate_limiter,
-			$this->mock_order_service
+			$this->mock_order_service,
+			$mock_dpps
 		);
+		$this->wcpay_gateway->init_hooks();
 
 		$this->renewal_order = WC_Helper_Order::create_order( self::USER_ID );
 
@@ -314,8 +329,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 				]
 			);
 
-		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $mock_subscription );
-		$new_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $mock_subscription );
+		$old_payment_method_title_modified = $this->wcpay_gateway->get_specific_old_payment_method_title( $old_payment_method_title, $old_payment_method, $mock_subscription );
+		$new_payment_method_title_modified = $this->wcpay_gateway->get_specific_new_payment_method_title( $new_payment_method_title, $new_payment_method, $mock_subscription );
 		$this->assertStringContainsString( $this->last4digits[1], $old_payment_method_title_modified );
 		$this->assertStringContainsString( $this->last4digits[3], $new_payment_method_title_modified );
 
@@ -326,7 +341,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 			->method( 'get_payment_tokens' )
 			->will( $this->returnValue( [ $this->token1->get_id() ] ) );
 
-		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $mock_subscription );
+		$old_payment_method_title_modified = $this->wcpay_gateway->get_specific_old_payment_method_title( $old_payment_method_title, $old_payment_method, $mock_subscription );
 		$this->assertEquals( $old_payment_method_title, $old_payment_method_title_modified );
 	}
 

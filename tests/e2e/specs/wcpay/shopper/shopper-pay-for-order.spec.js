@@ -1,8 +1,4 @@
-const {
-	createSimpleProduct,
-	uiUnblocked,
-	shopper,
-} = require( '@woocommerce/e2e-utils' );
+const { uiUnblocked, shopper } = require( '@woocommerce/e2e-utils' );
 const {
 	setupProductCheckout,
 	fillCardDetails,
@@ -14,7 +10,6 @@ const { shopperWCP } = require( '../../../utils' );
 describe( 'Shopper > Pay for Order', () => {
 	beforeAll( async () => {
 		await shopper.login();
-		await createSimpleProduct();
 		await setupProductCheckout(
 			config.get( 'addresses.customer.billing' )
 		);
@@ -27,6 +22,7 @@ describe( 'Shopper > Pay for Order', () => {
 	it( 'should be able to pay for a failed order', async () => {
 		// try to pay with a declined card
 		const declinedCard = config.get( 'cards.declined' );
+		await shopperWCP.selectNewPaymentMethod();
 		await fillCardDetails( page, declinedCard );
 		await expect( page ).toClick( '#place_order' );
 		await uiUnblocked();
@@ -40,19 +36,21 @@ describe( 'Shopper > Pay for Order', () => {
 		// after the card has been declined, go to the order page and pay with a basic card
 		await shopperWCP.goToOrders();
 
-		const payButtons = await page.$$(
-			'.woocommerce-button.wp-element-button.button.pay'
-		);
+		const payButtons = await page.$$( '.woocommerce-button.button.pay' );
 		const payButton = payButtons.find(
 			async ( button ) =>
-				'Pay' ===
-				( await page.evaluate( ( elem ) => elem.innerText, button ) )
+				( await page.evaluate(
+					( elem ) => elem.innerText,
+					button
+				) ) === 'Pay'
 		);
 		await payButton.click();
 		const card = config.get( 'cards.basic' );
 		await fillCardDetailsPayForOrder( page, card );
 		await expect( page ).toClick( 'button', { text: 'Pay for order' } );
-		await uiUnblocked();
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
 		await expect( page ).toMatch( 'Order received' );
 	} );
 } );

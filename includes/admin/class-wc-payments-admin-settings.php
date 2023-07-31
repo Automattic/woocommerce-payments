@@ -44,12 +44,18 @@ class WC_Payments_Admin_Settings {
 	 * Add notice explaining test mode when it's enabled.
 	 */
 	public function display_test_mode_notice() {
-		if ( $this->gateway->is_in_test_mode() ) {
+		if ( WC_Payments::mode()->is_test() ) {
 			?>
 			<div id="wcpay-test-mode-notice" class="notice notice-warning">
 				<p>
 					<b><?php esc_html_e( 'Test mode active: ', 'woocommerce-payments' ); ?></b>
-					<?php esc_html_e( "All transactions are simulated. Customers can't make real purchases through WooCommerce Payments.", 'woocommerce-payments' ); ?>
+					<?php
+						echo sprintf(
+							/* translators: %s: WooPayments */
+							esc_html__( "All transactions are simulated. Customers can't make real purchases through %s.", 'woocommerce-payments' ),
+							'WooPayments'
+						);
+					?>
 				</p>
 			</div>
 			<?php
@@ -72,7 +78,7 @@ class WC_Payments_Admin_Settings {
 	}
 
 	/**
-	 * Whether the current page is the WooCommerce Payments settings page.
+	 * Whether the current page is the WooPayments settings page.
 	 *
 	 * @return bool
 	 */
@@ -86,6 +92,6 @@ class WC_Payments_Admin_Settings {
 	 * @return string URL of the configuration screen for this gateway
 	 */
 	public static function get_settings_url() {
-		return admin_url( add_query_arg( self::$settings_url_params, 'admin.php' ) );
+		return admin_url( add_query_arg( self::$settings_url_params, 'admin.php' ) ); // nosemgrep: audit.php.wp.security.xss.query-arg -- constant string is passed in.
 	}
 }

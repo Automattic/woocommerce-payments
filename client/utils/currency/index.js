@@ -3,7 +3,7 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import Currency from '@woocommerce/currency';
-import { find, trimEnd, endsWith } from 'lodash';
+import { endsWith, find, trimEnd } from 'lodash';
 
 const currencyNames = {
 	aud: __( 'Australian dollar', 'woocommerce-payments' ),
@@ -28,13 +28,13 @@ const currencyNames = {
 export const formatCurrencyName = ( currencyCode ) =>
 	currencyNames[ currencyCode.toLowerCase() ] || currencyCode.toUpperCase();
 
+/* eslint-disable valid-jsdoc */
 /**
  * Gets wc-admin Currency for the given currency code
  *
  * @param {string} currencyCode Currency code
  * @param {string} baseCurrencyCode Base Currency code to override decimal and thousand separators
  *
- * @return {Currency|null} Currency object
  */
 export const getCurrency = ( currencyCode, baseCurrencyCode = null ) => {
 	const {
@@ -45,7 +45,7 @@ export const getCurrency = ( currencyCode, baseCurrencyCode = null ) => {
 	const currency = find( currencyData, { code: currencyCode.toUpperCase() } );
 	if ( currency ) {
 		if (
-			( null !== baseCurrencyCode &&
+			( baseCurrencyCode !== null &&
 				baseCurrencyCode.toUpperCase() !==
 					currencyCode.toUpperCase() ) ||
 			currencyData[ country ]
@@ -60,15 +60,16 @@ export const getCurrency = ( currencyCode, baseCurrencyCode = null ) => {
 				currency.decimalSeparator = baseCurrency.decimalSeparator;
 				currency.thousandSeparator = baseCurrency.thousandSeparator;
 				currency.symbolPosition = baseCurrency.symbolPosition;
-				if ( 0 !== currency.precision ) {
+				if ( currency.precision !== 0 ) {
 					currency.precision = baseCurrency.precision;
 				}
 			}
 		}
-		return new Currency( currency );
+		return Currency( currency );
 	}
 	return null;
 };
+/* eslint-enable valid-jsdoc */
 
 /**
  * Determines if the given currency is zero decimal.
@@ -105,12 +106,12 @@ export const formatCurrency = (
 
 	const currency = getCurrency( currencyCode, baseCurrencyCode );
 
-	if ( null === currency ) {
+	if ( currency === null ) {
 		return composeFallbackCurrency( amount, currencyCode, isZeroDecimal );
 	}
 
 	try {
-		return 'function' === typeof currency.formatAmount
+		return typeof currency.formatAmount === 'function'
 			? htmlDecode( currency.formatAmount( amount ) )
 			: htmlDecode( currency.formatCurrency( amount ) );
 	} catch ( err ) {
@@ -129,7 +130,7 @@ export const formatCurrency = (
  * @return {string} formatted currency representation with the currency code suffix
  */
 const appendCurrencyCode = ( formatted, currencyCode ) => {
-	if ( -1 === formatted.toString().indexOf( currencyCode ) ) {
+	if ( formatted.toString().indexOf( currencyCode ) === -1 ) {
 		formatted = formatted + ' ' + currencyCode;
 	}
 	return formatted;
@@ -192,9 +193,9 @@ function formatExchangeRate( from, to ) {
 	const { currencyData } = wcpaySettings;
 
 	let exchangeRate =
-		'number' === typeof to.amount &&
-		'number' === typeof from.amount &&
-		0 !== from.amount
+		typeof to.amount === 'number' &&
+		typeof from.amount === 'number' &&
+		from.amount !== 0
 			? Math.abs( to.amount / from.amount )
 			: 0;
 	if ( isZeroDecimalCurrency( to.currency ) ) {
@@ -209,7 +210,7 @@ function formatExchangeRate( from, to ) {
 		code: to.currency.toUpperCase(),
 	} );
 
-	const precision = 1 > exchangeRate ? 6 : 5;
+	const precision = exchangeRate < 1 ? 6 : 5;
 	const isZeroDecimal = isZeroDecimalCurrency( to.currency );
 
 	if ( ! exchangeCurrencyConfig ) {
@@ -219,7 +220,7 @@ function formatExchangeRate( from, to ) {
 			to.currency.toUpperCase()
 		);
 	}
-	const exchangeCurrency = new Currency( {
+	const exchangeCurrency = Currency( {
 		...exchangeCurrencyConfig,
 		precision,
 	} );

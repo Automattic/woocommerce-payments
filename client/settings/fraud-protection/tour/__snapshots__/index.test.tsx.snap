@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FraudProtectionTour should not render the tour component if it was already dismissed 1`] = `
+<body>
+  <div />
+</body>
+`;
+
+exports[`FraudProtectionTour should render the tour component correctly 1`] = `
+<body>
+  <div>
+    <div
+      id="fraud-protection-welcome-tour-first-step"
+    />
+    <div>
+      Tour Component
+    </div>
+  </div>
+</body>
+`;

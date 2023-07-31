@@ -30,13 +30,7 @@ class WC_Payments_UPE_Blocks_Payment_Method extends WC_Payments_Blocks_Payment_M
 			true
 		);
 
-		wp_register_script(
-			'WCPAY_BLOCKS_UPE_CHECKOUT',
-			plugins_url( 'dist/upe-blocks-checkout.js', WCPAY_PLUGIN_FILE ),
-			[ 'stripe' ],
-			'1.0.1',
-			true
-		);
+		WC_Payments::register_script_with_dependencies( 'WCPAY_BLOCKS_UPE_CHECKOUT', 'dist/upe-blocks-checkout', [ 'stripe' ] );
 		wp_set_script_translations( 'WCPAY_BLOCKS_UPE_CHECKOUT', 'woocommerce-payments' );
 
 		return [ 'WCPAY_BLOCKS_UPE_CHECKOUT' ];

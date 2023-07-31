@@ -347,6 +347,13 @@ export const useDepositStatus = () => {
 		return getDepositStatus();
 	}, [] );
 };
+export const useDepositRestrictions = () => {
+	return useSelect( ( select ) => {
+		const { getDepositRestrictions } = select( STORE_NAME );
+
+		return getDepositRestrictions();
+	}, [] );
+};
 export const useManualCapture = () => {
 	const { updateIsManualCaptureEnabled } = useDispatch( STORE_NAME );
 
@@ -403,7 +410,7 @@ export const useSettings = () => {
 			} = select( STORE_NAME );
 
 			const isLoading =
-				isResolving( 'getSettings' ) ||
+				!! isResolving( 'getSettings' ) ||
 				! hasFinishedResolution( 'getSettings' );
 
 			return {
@@ -484,60 +491,81 @@ export const useGetSavingError = () => {
 	}, [] );
 };
 
-export const usePlatformCheckoutEnabledSettings = () => {
-	const { updateIsPlatformCheckoutEnabled } = useDispatch( STORE_NAME );
+export const useWooPayEnabledSettings = () => {
+	const { updateIsWooPayEnabled } = useDispatch( STORE_NAME );
 
 	return useSelect( ( select ) => {
-		const { getIsPlatformCheckoutEnabled } = select( STORE_NAME );
+		const { getIsWooPayEnabled } = select( STORE_NAME );
 
+		return [ getIsWooPayEnabled(), updateIsWooPayEnabled ];
+	} );
+};
+
+export const useWooPayCustomMessage = () => {
+	const { updateWooPayCustomMessage } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getWooPayCustomMessage } = select( STORE_NAME );
+
+			return [ getWooPayCustomMessage(), updateWooPayCustomMessage ];
+		},
+		[ updateWooPayCustomMessage ]
+	);
+};
+
+export const useWooPayStoreLogo = () => {
+	const { updateWooPayStoreLogo } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getWooPayStoreLogo } = select( STORE_NAME );
+
+			return [ getWooPayStoreLogo(), updateWooPayStoreLogo ];
+		},
+		[ updateWooPayStoreLogo ]
+	);
+};
+
+export const useWooPayLocations = () => {
+	const { updateWooPayLocations } = useDispatch( STORE_NAME );
+
+	return useSelect( ( select ) => {
+		const { getWooPayLocations } = select( STORE_NAME );
+
+		return [ getWooPayLocations(), updateWooPayLocations ];
+	} );
+};
+
+export const useCurrentProtectionLevel = () => {
+	const { updateProtectionLevel } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getCurrentProtectionLevel } = select( STORE_NAME );
+
+			return [ getCurrentProtectionLevel(), updateProtectionLevel ];
+		},
+		[ updateProtectionLevel ]
+	);
+};
+
+export const useAdvancedFraudProtectionSettings = () => {
+	const { updateAdvancedFraudProtectionSettings } = useDispatch( STORE_NAME );
+
+	return useSelect( ( select ) => {
+		const { getAdvancedFraudProtectionSettings } = select( STORE_NAME );
 		return [
-			getIsPlatformCheckoutEnabled(),
-			updateIsPlatformCheckoutEnabled,
+			getAdvancedFraudProtectionSettings(),
+			updateAdvancedFraudProtectionSettings,
 		];
 	} );
 };
 
-export const usePlatformCheckoutCustomMessage = () => {
-	const { updatePlatformCheckoutCustomMessage } = useDispatch( STORE_NAME );
-
-	return useSelect(
-		( select ) => {
-			const { getPlatformCheckoutCustomMessage } = select( STORE_NAME );
-
-			return [
-				getPlatformCheckoutCustomMessage(),
-				updatePlatformCheckoutCustomMessage,
-			];
-		},
-		[ updatePlatformCheckoutCustomMessage ]
-	);
-};
-
-export const usePlatformCheckoutStoreLogo = () => {
-	const { updatePlatformCheckoutStoreLogo } = useDispatch( STORE_NAME );
-
-	return useSelect(
-		( select ) => {
-			const { getPlatformCheckoutStoreLogo } = select( STORE_NAME );
-
-			return [
-				getPlatformCheckoutStoreLogo(),
-				updatePlatformCheckoutStoreLogo,
-			];
-		},
-		[ updatePlatformCheckoutStoreLogo ]
-	);
-};
-
-export const usePlatformCheckoutLocations = () => {
-	const { updatePlatformCheckoutLocations } = useDispatch( STORE_NAME );
-
+export const useWooPayShowIncompatibilityNotice = () => {
 	return useSelect( ( select ) => {
-		const { getPlatformCheckoutLocations } = select( STORE_NAME );
+		const { getShowWooPayIncompatibilityNotice } = select( STORE_NAME );
 
-		return [
-			getPlatformCheckoutLocations(),
-			updatePlatformCheckoutLocations,
-		];
+		return getShowWooPayIncompatibilityNotice();
 	} );
 };

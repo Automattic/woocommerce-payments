@@ -35,11 +35,14 @@ export const normalizeOrderData = ( paymentData ) => {
 	const phone = paymentData?.paymentMethod?.billing_details?.phone ?? '';
 	const billing = paymentData?.paymentMethod?.billing_details?.address ?? {};
 	const shipping = paymentData?.shippingAddress ?? {};
+	const fraudPreventionTokenInput = document.querySelector(
+		'input[name="wcpay-fraud-prevention-token"]'
+	);
 
 	let paymentRequestType = 'payment_request_api';
-	if ( 'applePay' === paymentData?.walletName ) {
+	if ( paymentData?.walletName === 'applePay' ) {
 		paymentRequestType = 'apple_pay';
-	} else if ( 'googlePay' === paymentData?.walletName ) {
+	} else if ( paymentData?.walletName === 'googlePay' ) {
 		paymentRequestType = 'google_pay';
 	}
 
@@ -75,6 +78,7 @@ export const normalizeOrderData = ( paymentData ) => {
 		terms: 1,
 		'wcpay-payment-method': paymentData?.paymentMethod?.id,
 		payment_request_type: paymentRequestType,
+		'wcpay-fraud-prevention-token': fraudPreventionTokenInput?.value ?? '',
 	};
 };
 
@@ -108,9 +112,9 @@ export const normalizeShippingAddress = ( shippingAddress ) => {
 
 export const normalizePayForOrderData = ( paymentData ) => {
 	let paymentRequestType = 'payment_request_api';
-	if ( 'applePay' === paymentData?.walletName ) {
+	if ( paymentData?.walletName === 'applePay' ) {
 		paymentRequestType = 'apple_pay';
-	} else if ( 'googlePay' === paymentData?.walletName ) {
+	} else if ( paymentData?.walletName === 'googlePay' ) {
 		paymentRequestType = 'google_pay';
 	}
 

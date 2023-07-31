@@ -7,7 +7,7 @@
 }
 
 /* stylelint-disable-next-line selector-id-pattern */
-#express-payment-method-platform_checkout {
+#express-payment-method-woopay {
 	width: 100%;
 }
 
@@ -28,8 +28,7 @@ button.wcpay-stripelink-modal-trigger {
 	right: 5px;
 	width: 64px;
 	height: 40px;
-	background: no-repeat
-		url( '../../../assets/images/payment-methods/link.svg' );
+	background: no-repeat url( 'assets/images/payment-methods/link.svg?asset' );
 	background-color: transparent;
 	cursor: pointer;
 	border: none;
@@ -50,5 +49,5 @@ button.wcpay-stripelink-modal-trigger:hover {
 	}
 }
 
-@import '../platform-checkout/style';
+@import '../woopay/style';
 @import '../../components/loadable/style';

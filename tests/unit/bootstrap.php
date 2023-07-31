@@ -35,7 +35,7 @@ function _manually_load_plugin() {
 	// needs to still make sure that all dependencies exist for it to successfully run.
 	define( 'WCPAY_TEST_ENV', true );
 
-	// Load the WooCommerce plugin so we can use its classes in our WooCommerce Payments plugin.
+	// Load the WooCommerce plugin so we can use its classes in our WooPayments plugin.
 	require_once WP_PLUGIN_DIR . '/woocommerce/woocommerce.php';
 
 	// Set a default currency to be used for the multi-currency tests because the default
@@ -51,13 +51,17 @@ function _manually_load_plugin() {
 		}
 	);
 
+	update_option( '_wcpay_feature_allow_subscription_migrations', '1' );
+
 	$_plugin_dir = dirname( __FILE__ ) . '/../../';
 
 	require $_plugin_dir . 'woocommerce-payments.php';
 
 	require_once $_plugin_dir . 'includes/class-wc-payments-db.php';
 	require_once $_plugin_dir . 'includes/wc-payment-api/models/class-wc-payments-api-charge.php';
-	require_once $_plugin_dir . 'includes/wc-payment-api/models/class-wc-payments-api-intention.php';
+	require_once $_plugin_dir . 'includes/wc-payment-api/models/class-wc-payments-api-abstract-intention.php';
+	require_once $_plugin_dir . 'includes/wc-payment-api/models/class-wc-payments-api-payment-intention.php';
+	require_once $_plugin_dir . 'includes/wc-payment-api/models/class-wc-payments-api-setup-intention.php';
 	require_once $_plugin_dir . 'includes/wc-payment-api/class-wc-payments-api-client.php';
 	require_once $_plugin_dir . 'includes/wc-payment-api/class-wc-payments-http-interface.php';
 	require_once $_plugin_dir . 'includes/wc-payment-api/class-wc-payments-http.php';
@@ -74,6 +78,7 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/admin/class-wc-payments-rest-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-accounts-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-orders-controller.php';
+	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-fraud-outcomes-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-onboarding-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-webhook-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-terminal-locations-controller.php';
@@ -85,7 +90,7 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/notes/class-wc-payments-notes-additional-payment-methods.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-reader-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-files-controller.php';
-	require_once $_plugin_dir . 'includes/class-platform-checkout-tracker.php';
+	require_once $_plugin_dir . 'includes/class-woopay-tracker.php';
 }
 
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );

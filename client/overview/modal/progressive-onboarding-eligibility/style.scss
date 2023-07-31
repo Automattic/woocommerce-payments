@@ -1,0 +1,85 @@
+.wcpay-progressive-onboarding-eligibility-modal {
+	// fix for the modal being too short on smaller screens
+	@media ( max-height: 880px ) {
+		max-height: 100% !important;
+	}
+	.components-modal__content {
+		box-sizing: border-box;
+		max-width: 700px;
+		margin: 0 auto;
+		padding: $gap-larger;
+	}
+
+	.components-modal__header {
+		height: 0;
+
+		.components-button {
+			position: absolute;
+			left: initial;
+			top: $gap-smaller;
+			right: $gap-smaller;
+		}
+	}
+
+	&__image {
+		margin: -$gap-larger;
+		margin-bottom: $gap-larger;
+		background-color: $studio-gray-0;
+
+		img {
+			display: block;
+			max-width: 100%;
+			max-height: 200px;
+			margin: 0 auto;
+		}
+	}
+
+	&__heading {
+		@include wp-title-large;
+		text-align: center;
+		margin-bottom: 0;
+	}
+
+	&__subheading {
+		@include wc-body-large;
+		text-align: center;
+		font-weight: normal;
+		color: $gray-60;
+		margin-bottom: $gap-largest;
+	}
+
+	&__benefits {
+		display: grid;
+		grid-template-columns: repeat( 3, 1fr );
+		column-gap: $gap-largest;
+		text-align: center;
+		fill: $studio-woocommerce-purple-50;
+		@include wp-label;
+		color: $gray-700;
+
+		&__subtitle {
+			@include wp-subtitle;
+			text-align: center;
+			margin-bottom: $gap-smaller;
+		}
+
+		@media screen and ( max-width: $break-small ) {
+			grid-template-columns: 1fr;
+			row-gap: $gap-large;
+		}
+	}
+
+	&__footer {
+		text-align: center;
+		margin-top: $gap-large;
+
+		& :first-child {
+			margin-right: $gap-smaller;
+		}
+
+		button {
+			margin-top: $gap;
+			padding: $gap-smaller $gap;
+		}
+	}
+}

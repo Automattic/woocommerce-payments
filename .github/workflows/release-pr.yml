@@ -13,6 +13,16 @@ on:
         required: false
         default: "next wednesday"
         type: string
+      skip-smoke-tests:
+        type: boolean
+        required: false
+        default: false
+        description: "Skip running smoke tests"
+    outputs:
+      release-pr-id:
+        description: "ID of the release PR created"
+        value: ${{ jobs.prepare-release.outputs.release-pr-id }}
+
 
   workflow_dispatch:
     inputs:
@@ -25,7 +35,17 @@ on:
         required: false
         default: "next wednesday"
         type: string
-  
+      skip-build-zip:
+        type: boolean
+        required: false
+        default: true
+        description: "Skip building the zip file"
+      skip-smoke-tests:
+        type: boolean
+        required: false
+        default: false
+        description: "Skip running smoke tests"
+
 defaults:
   run:
     shell: bash
@@ -34,16 +54,17 @@ jobs:
   prepare-release:
     name: "Prepare a stable release"
     runs-on: ubuntu-20.04
-    outputs: 
+    outputs:
       branch: ${{ steps.create_branch.outputs.branch-name }}
+      release-pr-id: ${{ steps.create-pr-to-trunk.outputs.RELEASE_PR_ID }}
     env:
       RELEASE_VERSION: ${{ inputs.releaseVersion }}
-      RELEASE_DATE_STRING: ${{ inputs.releaseDateString }}    
-    
+      RELEASE_DATE_STRING: ${{ inputs.releaseDateString }}
+
     steps:
       - name: "Checkout repository"
         uses: actions/checkout@v3
-        
+
       - name: "Set up repository"
         uses: ./.github/actions/setup-repo
 
@@ -53,7 +74,7 @@ jobs:
         with:
           version: ${{ env.RELEASE_VERSION }}
           is-pre-release: 'false'
-          
+
       - name: "Define the release date"
         id: define_var
         run: |
@@ -66,7 +87,7 @@ jobs:
         with:
           release-version: ${{ steps.create_branch.outputs.trimmed-version }}
           release-date: ${{ steps.define_var.outputs.RELEASE_DATE }}
-          
+
       - name: "Bump version"
         env:
           RELEASE_VERSION: ${{ steps.create_branch.outputs.trimmed-version }}
@@ -78,34 +99,51 @@ jobs:
           # 'Version' header in woocommerce-payments.php
           sed -i "s/^ \* Version: .*$/ * Version: $RELEASE_VERSION/" woocommerce-payments.php
 
-          # 'version' field in package.json
-          sed -ri 's/("version": )".*"/\1"'${RELEASE_VERSION}'"/' package.json
+          # 'version' field in package.json and package-lock.json
+          npm version $RELEASE_VERSION --no-git-tag-version
 
           # 'Stable tag' header in readme.txt;
           sed -i "s/^Stable tag: .*$/Stable tag: $RELEASE_VERSION/" readme.txt
 
-          # Duplicate the generated changelog into the Changelog section from the readme.txt 
-          sed -ri "s|(== Changelog ==)|\1\n\n= $RELEASE_VERSION - $RELEASE_DATE =\n$CHANGELOG|" readme.txt
-      
       - name: "Commit and push changes"
         env:
           RELEASE_VERSION: ${{ steps.create_branch.outputs.trimmed-version }}
           BRANCH_NAME: ${{ steps.create_branch.outputs.branch-name }}
-        run: |
-          npm install # To update package-lock.json with the new version of the plugin
-          git config user.name "github-actions[bot]"
-          # We could consider fetching the bot's ID through an API call to be future-proof. Hardcoded for now. 
-          # See https://github.com/Automattic/woocommerce-payments/pull/5200#discussion_r1034560144
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -am "Update version and add changelog entries for release $RELEASE_VERSION"
-          git push --set-upstream origin $BRANCH_NAME
+        uses: ./.github/actions/commit-push-as-bot
+        with:
+          release-version: ${{ env.RELEASE_VERSION }}
+          branch: ${{ env.BRANCH_NAME }}
 
       - name: "Create a PR to trunk"
+        id: create-pr-to-trunk
         env:
           GITHUB_TOKEN: ${{ secrets.BOTWOO_TOKEN }}
           BRANCH_NAME: ${{ steps.create_branch.outputs.branch-name }}
           CHANGELOG: ${{ steps.generate_changelog.outputs.changelog }}
           RELEASE_VERSION: ${{ steps.create_branch.outputs.trimmed-version }}
         run: |
-          PR_BODY=$(echo -e ":warning: Please do not merge the PR from the GitHub interface. :warning:\n\n Instead, you can use the following command:\n\`\`\`\n git checkout trunk && git pull \n git merge --no-ff $BRANCH_NAME -m 'Merge $BRANCH_NAME into trunk' \n git push origin trunk \n\`\`\` \n Changelog: \n\`\`\`\n${CHANGELOG}\n\`\`\`")
-          gh pr create --title "Release branch for $RELEASE_VERSION" --body="$PR_BODY" --base="trunk"
+          PR_BODY=$(echo -e ":warning: Please do not merge the PR from the GitHub interface. :warning:\n\n Instead, you can use the following command:\n\`\`\`\n git checkout $BRANCH_NAME && git pull \n git checkout trunk && git pull \n git merge --no-ff $BRANCH_NAME -m 'Merge $BRANCH_NAME into trunk' \n git push origin trunk \n\`\`\` \n Changelog: \n\`\`\`\n${CHANGELOG}\n\`\`\`")
+          PR_URL=$(gh pr create --title "Release branch for $RELEASE_VERSION" --body="$PR_BODY" --base="trunk")
+          PR_ID=${PR_URL##*/}
+          if [[ $PR_ID =~ ^[0-9]+$ ]]; then
+            echo "RELEASE_PR_ID=$PR_ID" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Add comment to PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_PR_ID: ${{ steps.create-pr-to-trunk.outputs.RELEASE_PR_ID }}
+        run: |
+          gh pr comment https://github.com/Automattic/woocommerce-payments/pull/$RELEASE_PR_ID --body="### Release zip build & Smoke tests
+
+          Check status of zip file build & smoke tests at https://github.com/Automattic/woocommerce-payments/actions/runs/${GITHUB_RUN_ID}"
+
+  build-zip-and-run-smoke-tests:
+    name: "Build zip & Run smoke tests"
+    needs: prepare-release
+    if: ${{ ! inputs.skip-build-zip }}
+    uses: ./.github/workflows/build-zip-and-run-smoke-tests.yml
+    with:
+      skip-smoke-tests: ${{ inputs.skip-smoke-tests }}
+      repo-branch: ${{ needs.prepare-release.outputs.branch }}
+    secrets: inherit

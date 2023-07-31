@@ -10,7 +10,7 @@ import { __ } from '@wordpress/i18n';
  */
 import ExpirationBar from './expiration-bar';
 import ExpirationDescription from './expiration-description';
-import { getCurrency, formatCurrencyName } from 'utils/currency';
+import { formatCurrencyName, getCurrency } from 'utils/currency';
 import {
 	formatAccountFeesDescription,
 	getCurrentBaseFee,
@@ -56,7 +56,7 @@ const AccountFees = ( props ) => {
 	let haveDiscounts = false;
 	const activeDiscounts = Object.entries( accountFees ).map(
 		( [ key, value ] ) => {
-			if ( 0 === value.fee.discount.length ) {
+			if ( value.fee.discount.length === 0 ) {
 				return null;
 			}
 			haveDiscounts = true;

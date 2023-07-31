@@ -109,25 +109,31 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 	public function redirect_pay_for_order_to_update_payment_method() {
 		global $wp;
 
-		if ( isset( $_GET['pay_for_order'], $_GET['key'] ) && empty( $_GET['change_payment_method'] ) && ( isset( $_GET['order_id'] ) || isset( $wp->query_vars['order-pay'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			// Check if the order is linked to a billing invoice.
-			$order_id = ( isset( $wp->query_vars['order-pay'] ) ) ? absint( $wp->query_vars['order-pay'] ) : absint( $_GET['order_id'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$order    = wc_get_order( $order_id );
+		// Note: There is no nonce verification for the "pay for order" action - the URL is long living.
+		if ( ! isset( $_GET['pay_for_order'], $_GET['key'] ) || ! empty( $_GET['change_payment_method'] ) || ( ! isset( $_GET['order_id'] ) && ! isset( $wp->query_vars['order-pay'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return;
+		}
 
-			if ( $order && $order instanceof WC_Order ) {
-				$invoice_id = WC_Payments_Invoice_Service::get_order_invoice_id( $order );
+		$order_id  = ( isset( $wp->query_vars['order-pay'] ) ) ? absint( $wp->query_vars['order-pay'] ) : absint( $_GET['order_id'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$order_key = wc_clean( wp_unslash( $_GET['key'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$order     = wc_get_order( $order_id );
 
-				if ( $invoice_id ) {
-					$subscriptions = wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] );
+		if ( ! $order || ! hash_equals( $order->get_order_key(), $order_key ) || ! current_user_can( 'pay_for_order', $order->get_id() ) ) {
+			return;
+		}
 
-					if ( ! empty( $subscriptions ) ) {
-						$subscription = array_pop( $subscriptions );
+		// Check if the order is linked to a billing invoice.
+		$invoice_id = WC_Payments_Invoice_Service::get_order_invoice_id( $order );
 
-						if ( $subscription && WC_Payments_Invoice_Service::get_pending_invoice_id( $subscription ) ) {
-							wp_safe_redirect( $this->get_subscription_update_payment_url( $subscription ) );
-							exit;
-						}
-					}
+		if ( $invoice_id ) {
+			$subscriptions = wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] );
+
+			if ( ! empty( $subscriptions ) ) {
+				$subscription = array_pop( $subscriptions );
+
+				if ( $subscription && current_user_can( 'edit_shop_subscription_payment_method', $subscription->get_id() ) && WC_Payments_Invoice_Service::get_pending_invoice_id( $subscription ) ) {
+					wp_safe_redirect( $this->get_subscription_update_payment_url( $subscription ) );
+					exit;
 				}
 			}
 		}
@@ -173,7 +179,7 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 	 */
 	private function does_subscription_need_payment_updated( $subscription ) {
 		// We're only interested in WC Pay subscriptions that are on hold due to a failed payment.
-		if ( ! $subscription->has_status( 'on-hold' ) || ! WC_Payments_Subscription_Service::get_wcpay_subscription_id( $subscription ) ) {
+		if ( ! $subscription->has_status( 'on-hold' ) || ! WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ) {
 			return false;
 		}
 
@@ -189,7 +195,7 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 	 * @return string The update payment method
 	 */
 	private function get_subscription_update_payment_url( $subscription ) {
-		return add_query_arg(
+		return add_query_arg( // nosemgrep: audit.php.wp.security.xss.query-arg -- no user input is used in this URL.
 			[
 				'change_payment_method' => $subscription->get_id(),
 				'_wpnonce'              => wp_create_nonce(),

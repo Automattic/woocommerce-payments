@@ -8,6 +8,7 @@
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\WC_Payments_Checkout;
+use WCPay\WooPay\WooPay_Utilities;
 
 /**
  * The payment method, which allows the gateway to work with WooCommerce Blocks.
@@ -67,13 +68,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 			true
 		);
 
-		wp_register_script(
-			'WCPAY_BLOCKS_CHECKOUT',
-			plugins_url( 'dist/blocks-checkout.js', WCPAY_PLUGIN_FILE ),
-			[ 'stripe' ],
-			'1.0.1',
-			true
-		);
+		WC_Payments::register_script_with_dependencies( 'WCPAY_BLOCKS_CHECKOUT', 'dist/blocks-checkout', [ 'stripe' ] );
 		wp_set_script_translations( 'WCPAY_BLOCKS_CHECKOUT', 'woocommerce-payments' );
 
 		return [ 'WCPAY_BLOCKS_CHECKOUT' ];
@@ -85,13 +80,13 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	 * @return array An associative array, containing all necessary values.
 	 */
 	public function get_payment_method_data() {
-		$is_platform_checkout_eligible = WC_Payments_Features::is_platform_checkout_eligible(); // Feature flag.
-		$is_platform_checkout_enabled  = 'yes' === $this->gateway->get_option( 'platform_checkout', 'no' );
-		$platform_checkout_config      = [];
+		$is_woopay_eligible = WC_Payments_Features::is_woopay_eligible(); // Feature flag.
+		$is_woopay_enabled  = 'yes' === $this->gateway->get_option( 'platform_checkout', 'no' );
+		$woopay_config      = [];
 
-		if ( $is_platform_checkout_eligible && $is_platform_checkout_enabled ) {
-			$platform_checkout_config = [
-				'platformCheckoutHost' => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'https://pay.woo.com',
+		if ( $is_woopay_eligible && $is_woopay_enabled ) {
+			$woopay_config = [
+				'woopayHost' => WooPay_Utilities::get_woopay_url(),
 			];
 		}
 
@@ -101,7 +96,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 				'description' => $this->gateway->get_option( 'description', '' ),
 				'is_admin'    => is_admin(), // Used to display payment method preview in wp-admin.
 			],
-			$platform_checkout_config,
+			$woopay_config,
 			$this->wc_payments_checkout->get_payment_fields_js_config()
 		);
 	}

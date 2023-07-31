@@ -2,7 +2,7 @@
 @import '../../stylesheets/abstracts/variables';
 @import '/node_modules/intl-tel-input/build/css/intlTelInput.css';
 
-.platform-checkout-save-new-user-container {
+.woopay-save-new-user-container {
 	display: flex;
 	flex-direction: column;
 	gap: $gap;
@@ -107,7 +107,7 @@
 		margin-top: $gap-smaller;
 	}
 
-	.platform-checkout-save-new-user-container + .place-order {
+	.woopay-save-new-user-container + .place-order {
 		margin-top: $gap-large !important;
 	}
 }
@@ -127,6 +127,10 @@
 .iti {
 	width: 100%;
 	margin-top: $gap-large;
+
+	&--container {
+		margin-top: 0;
+	}
 }
 
 .no-top-margin .iti {

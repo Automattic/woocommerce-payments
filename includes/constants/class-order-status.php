@@ -11,14 +11,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use MyCLabs\Enum\Enum;
-
 /**
  * This class gives a list of all the possible order status constants.
  *
  * @psalm-immutable
  */
-class Order_Status extends Enum {
+class Order_Status extends Base_Constant {
 	const CANCELLED  = 'cancelled';
 	const COMPLETED  = 'completed';
 	const FAILED     = 'failed';

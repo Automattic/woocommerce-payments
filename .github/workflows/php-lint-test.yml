@@ -1,51 +1,68 @@
 name: PHP linting and tests
 
 on:
-  pull_request
+  pull_request:
+  merge_group:
 
 env:
   WP_VERSION:        latest
-  WC_L2_VERSION: '7.1.1'  # the min supported version as per L-2 policy
+  WC_MIN_SUPPORTED_VERSION: '7.6.0'
   GUTENBERG_VERSION: latest
+  PHP_MIN_SUPPORTED_VERSION: '7.3'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   lint:
     name:    PHP linting
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       # clone the repository
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       # enable dependencies caching
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: ~/.cache/composer/
-          key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
       # setup PHP, but without debug extensions for reasonable performance
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '7.2'
-          tools:       composer
-          coverage:    none
+          php-version: '7.4'
+          tools: composer
+          coverage: none
       # install dependencies and run linter
-      - run: composer self-update 2.0.6 && composer install --no-progress && ./vendor/bin/phpcs --standard=phpcs.xml.dist $(git ls-files | grep .php$) && ./vendor/bin/psalm
+      - run: composer self-update && composer install --no-progress && ./vendor/bin/phpcs --standard=phpcs.xml.dist $(git ls-files | grep .php$) && ./vendor/bin/psalm
+
+  generate-test-matrix:
+    name: "Generate the matrix for php tests dynamically"
+    runs-on: ubuntu-20.04
+    outputs:
+      matrix: ${{ steps.generate_matrix.outputs.matrix }}
+    steps:
+      - name: "Generate matrix"
+        id: generate_matrix
+        run: |
+          PHP_VERSIONS=$( echo "[\"$PHP_MIN_SUPPORTED_VERSION\", \"7.3\", \"7.4\"]" )
+          echo "matrix={\"php\":$PHP_VERSIONS}" >> $GITHUB_OUTPUT
 
   test:
-    name:    PHP testing
-    runs-on: ubuntu-18.04
+    name: PHP testing
+    needs: generate-test-matrix
+    runs-on: ubuntu-20.04
     strategy:
-      fail-fast:    false
+      fail-fast: false
       max-parallel: 10
-      matrix:
-        php: [ '7.2', '7.3', '7.4' ]
+      matrix: ${{ fromJSON(needs.generate-test-matrix.outputs.matrix) }}
     steps:
       # clone the repository
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       # enable dependencies caching
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: ~/.cache/composer/
           key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
-      # setup PHP, but without debug extensions for reasonable performance
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
@@ -54,4 +71,4 @@ jobs:
       # run CI checks
       - run: bash bin/run-ci-tests.bash
         env:
-          WC_VERSION: ${{ env.WC_L2_VERSION }}
+          WC_VERSION: ${{ env.WC_MIN_SUPPORTED_VERSION }}

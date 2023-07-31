@@ -15,42 +15,42 @@ describe( 'PaymentMethodIcon', () => {
 		const { container } = render(
 			<PaymentMethodIcon name="au_becs_debit" />
 		);
-		expect( container.querySelector( 'svg' ) ).toBeInTheDocument();
+		expect( container.querySelector( 'img' ) ).toBeInTheDocument();
 	} );
 
 	test( 'renders Bancontact payment method icon', () => {
 		const { container } = render( <PaymentMethodIcon name="bancontact" /> );
-		expect( container.querySelector( 'svg' ) ).toBeInTheDocument();
+		expect( container.querySelector( 'img' ) ).toBeInTheDocument();
 	} );
 
 	test( 'renders EPS payment method icon', () => {
 		const { container } = render( <PaymentMethodIcon name="eps" /> );
-		expect( container.querySelector( 'svg' ) ).toBeInTheDocument();
+		expect( container.querySelector( 'img' ) ).toBeInTheDocument();
 	} );
 
 	test( 'renders giropay payment method icon', () => {
 		const { container } = render( <PaymentMethodIcon name="giropay" /> );
-		expect( container.querySelector( 'svg' ) ).toBeInTheDocument();
+		expect( container.querySelector( 'img' ) ).toBeInTheDocument();
 	} );
 
 	test( 'renders Sepa payment method icon', () => {
 		const { container } = render( <PaymentMethodIcon name="sepa_debit" /> );
-		expect( container.querySelector( 'svg' ) ).toBeInTheDocument();
+		expect( container.querySelector( 'img' ) ).toBeInTheDocument();
 	} );
 
 	test( 'renders Sofort payment method icon', () => {
 		const { container } = render( <PaymentMethodIcon name="sofort" /> );
-		expect( container.querySelector( 'svg' ) ).toBeInTheDocument();
+		expect( container.querySelector( 'img' ) ).toBeInTheDocument();
 	} );
 
 	test( 'renders p24 payment method icon', () => {
 		const { container } = render( <PaymentMethodIcon name="p24" /> );
-		expect( container.querySelector( 'svg' ) ).toBeInTheDocument();
+		expect( container.querySelector( 'img' ) ).toBeInTheDocument();
 	} );
 
 	test( 'renders iDEAL payment method icon', () => {
 		const { container } = render( <PaymentMethodIcon name="ideal" /> );
-		expect( container.querySelector( 'svg' ) ).toBeInTheDocument();
+		expect( container.querySelector( 'img' ) ).toBeInTheDocument();
 	} );
 
 	test( 'renders BECS payment method icon and label', () => {

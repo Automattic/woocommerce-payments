@@ -38,9 +38,12 @@ if ( expressCheckoutSettingsContainer ) {
 	const methodId = expressCheckoutSettingsContainer.dataset.methodId;
 
 	ReactDOM.render(
-		<ErrorBoundary>
-			<ExpressCheckoutSettings methodId={ methodId } />
-		</ErrorBoundary>,
+		<WCPaySettingsContext.Provider value={ wcpaySettings }>
+			<ErrorBoundary>
+				<ExpressCheckoutSettings methodId={ methodId } />
+			</ErrorBoundary>
+			,
+		</WCPaySettingsContext.Provider>,
 		expressCheckoutSettingsContainer
 	);
 }

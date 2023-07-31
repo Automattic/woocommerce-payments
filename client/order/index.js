@@ -1,16 +1,32 @@
 /* global jQuery */
 
-import { __ } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
+import { dateI18n } from '@wordpress/date';
 import ReactDOM from 'react-dom';
+import { dispatch } from '@wordpress/data';
+import moment from 'moment';
+
 /**
  * Internal dependencies
  */
 import { getConfig } from 'utils/order';
 import RefundConfirmationModal from './refund-confirm-modal';
+import CancelConfirmationModal from './cancel-confirm-modal';
+import BannerNotice from 'wcpay/components/banner-notice';
+import { formatExplicitCurrency } from 'utils/currency';
+import { reasons } from 'wcpay/disputes/strings';
+import { getDetailsURL } from 'wcpay/components/details-link';
+import { disputeAwaitingResponseStatuses } from 'wcpay/disputes/filters/config';
+import { useCharge } from 'wcpay/data';
+import wcpayTracks from 'tracks';
+import './style.scss';
 
 jQuery( function ( $ ) {
 	const disableManualRefunds = getConfig( 'disableManualRefunds' ) ?? false;
 	const manualRefundsTip = getConfig( 'manualRefundsTip' ) ?? '';
+	const chargeId = getConfig( 'chargeId' );
+
+	maybeShowDisputeNotice();
 
 	$( '#woocommerce-order-items' ).on(
 		'click',
@@ -39,33 +55,180 @@ jQuery( function ( $ ) {
 		const canRefund = getConfig( 'canRefund' );
 		const refundAmount = getConfig( 'refundAmount' );
 		if (
-			'wc-refunded' === this.value &&
-			'wc-refunded' !== originalStatus
+			this.value === 'wc-refunded' &&
+			originalStatus !== 'wc-refunded'
 		) {
-			if ( ! canRefund ) {
-				alert(
-					__( 'Order cannot be refunded', 'woocommerce-payments' )
-				);
+			renderRefundConfirmationModal(
+				originalStatus,
+				canRefund,
+				refundAmount
+			);
+		} else if (
+			this.value === 'wc-cancelled' &&
+			originalStatus !== 'wc-cancelled'
+		) {
+			if ( ! canRefund || refundAmount <= 0 ) {
 				return;
 			}
-			if ( 0 >= refundAmount ) {
-				alert( __( 'Invalid Refund Amount', 'woocommerce-payments' ) );
-				return;
-			}
-			const container = document.createElement( 'div' );
-			container.id = 'wcpay-refund-confirm-container';
-			document.body.appendChild( container );
-			ReactDOM.render(
-				<RefundConfirmationModal
-					orderStatus={ originalStatus }
-					refundAmount={ refundAmount }
-					formattedRefundAmount={ getConfig(
-						'formattedRefundAmount'
-					) }
-					refundedAmount={ getConfig( 'refundedAmount' ) }
-				/>,
-				container
+			renderModal(
+				<CancelConfirmationModal
+					originalOrderStatus={ originalStatus }
+				/>
 			);
 		}
 	} );
+
+	function renderRefundConfirmationModal(
+		originalStatus,
+		canRefund,
+		refundAmount
+	) {
+		if ( ! canRefund ) {
+			dispatch( 'core/notices' ).createErrorNotice(
+				__( 'Order cannot be refunded', 'woocommerce-payments' )
+			);
+			return;
+		}
+		if ( refundAmount <= 0 ) {
+			dispatch( 'core/notices' ).createErrorNotice(
+				__( 'Invalid Refund Amount', 'woocommerce-payments' )
+			);
+			return;
+		}
+		renderModal(
+			<RefundConfirmationModal
+				orderStatus={ originalStatus }
+				refundAmount={ refundAmount }
+				formattedRefundAmount={ getConfig( 'formattedRefundAmount' ) }
+				refundedAmount={ getConfig( 'refundedAmount' ) }
+			/>
+		);
+	}
+
+	function renderModal( modalToRender ) {
+		const container = document.createElement( 'div' );
+		container.id = 'wcpay-orderstatus-confirm-container';
+		document.body.appendChild( container );
+		ReactDOM.render( modalToRender, container );
+	}
+
+	function maybeShowDisputeNotice() {
+		const container = document.querySelector(
+			'#wcpay-order-payment-details-container'
+		);
+
+		// If the container doesn't exist (WC < 7.9), or the charge ID isn't present, don't render the notice.
+		if ( ! container || ! chargeId ) {
+			return;
+		}
+
+		ReactDOM.render( <DisputeNotice chargeId={ chargeId } />, container );
+	}
 } );
+
+const DisputeNotice = ( { chargeId } ) => {
+	const { data: charge } = useCharge( chargeId );
+
+	if (
+		! charge?.dispute ||
+		! charge?.dispute?.evidence_details?.due_by ||
+		// Only show the notice if the dispute is awaiting a response.
+		! disputeAwaitingResponseStatuses.includes( charge?.dispute?.status )
+	) {
+		return null;
+	}
+
+	const { dispute } = charge;
+
+	const now = moment();
+	const dueBy = moment.unix( dispute.evidence_details?.due_by );
+	const countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
+
+	// If the dispute is due in the past, we don't want to show the notice.
+	if ( now.isAfter( dueBy ) ) {
+		return;
+	}
+
+	const amountFormatted = formatExplicitCurrency(
+		dispute.amount,
+		dispute.currency
+	);
+
+	let urgency = 'warning';
+	let buttonLabel = __( 'Respond now', 'woocommerce-payments' );
+	let title = sprintf(
+		// Translators: %1$s is the formatted dispute amount, %2$s is the dispute reason, %3$s is the due date.
+		__(
+			'This order has a chargeback dispute of %1$s labeled as "%2$s". Please respond to this dispute before %3$s.',
+			'woocommerce-payments'
+		),
+		amountFormatted,
+		reasons[ dispute.reason ].display,
+		dateI18n( 'M j, Y', dueBy.local().toISOString() )
+	);
+	let suffix = '';
+
+	// If the dispute is due within 7 days, use different wording.
+	if ( countdownDays < 7 ) {
+		title = sprintf(
+			// Translators: %1$s is the formatted dispute amount, %2$s is the dispute reason, %3$s is the due date.
+			__(
+				'Please resolve the dispute on this order for %1$s labeled "%2$s" by %3$s.',
+				'woocommerce-payments'
+			),
+			amountFormatted,
+			reasons[ dispute.reason ].display,
+			dateI18n( 'M j, Y', dueBy.local().toISOString() )
+		);
+		suffix = sprintf(
+			// Translators: %s is the number of days left to respond to the dispute.
+			_n(
+				'(%s day left)',
+				'(%s days left)',
+				countdownDays,
+				'woocommerce-payments'
+			),
+			countdownDays
+		);
+	}
+
+	// If the dispute is due within 72 hours, we want to highlight it as urgent/red.
+	if ( countdownDays < 3 ) {
+		urgency = 'error';
+	}
+
+	if ( countdownDays < 1 ) {
+		urgency = 'error';
+		buttonLabel = __( 'Respond today', 'woocommerce-payments' );
+		suffix = __( '(Last day today)', 'woocommerce-payments' );
+	}
+	return (
+		<BannerNotice
+			status={ urgency }
+			isDismissible={ false }
+			actions={ [
+				{
+					label: buttonLabel,
+					variant: 'secondary',
+					onClick: () => {
+						wcpayTracks.recordEvent(
+							wcpayTracks.events
+								.ORDER_DISPUTE_NOTICE_BUTTON_CLICK,
+							{
+								due_by_days: parseInt( countdownDays, 10 ),
+							}
+						);
+						window.location = getDetailsURL(
+							dispute.id,
+							'disputes'
+						);
+					},
+				},
+			] }
+		>
+			<strong>
+				{ title } { suffix }
+			</strong>
+		</BannerNotice>
+	);
+};

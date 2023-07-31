@@ -8,6 +8,7 @@ exports[`ConvertedAmount renders an amount with conversion icon and tooltip 1`] 
     <span
       class="conversion-indicator"
       data-testid="conversion-indicator"
+      style="height: 18px; width: 18px;"
     >
       <svg
         class="gridicon gridicons-sync"
@@ -18,7 +19,7 @@ exports[`ConvertedAmount renders an amount with conversion icon and tooltip 1`] 
       >
         <g>
           <path
-            d="M23.5 13.5l-3.086 3.086L19 18l-4.5-4.5 1.414-1.414L18 14.172V12c0-3.308-2.692-6-6-6V4c4.418 0 8 3.582 8 8v2.172l2.086-2.086L23.5 13.5zM6 12V9.828l2.086 2.086L9.5 10.5 5 6 3.586 7.414.5 10.5l1.414 1.414L4 9.828V12c0 4.418 3.582 8 8 8v-2c-3.308 0-6-2.692-6-6z"
+            d="M23.5 13.5l-3.086 3.086L19 18l-4.5-4.5 1.414-1.414L18 14.172V12c0-3.308-2.692-6-6-6V4a8 8 0 018 8v2.172l2.086-2.086L23.5 13.5zM6 12V9.828l2.086 2.086L9.5 10.5 5 6 3.586 7.414.5 10.5l1.414 1.414L4 9.828V12a8 8 0 008 8v-2c-3.308 0-6-2.692-6-6z"
           />
         </g>
       </svg>
@@ -36,6 +37,7 @@ exports[`ConvertedAmount renders an amount with conversion icon and tooltip 2`] 
     <span
       class="conversion-indicator"
       data-testid="conversion-indicator"
+      style="height: 18px; width: 18px;"
     >
       <svg
         class="gridicon gridicons-sync"
@@ -46,35 +48,30 @@ exports[`ConvertedAmount renders an amount with conversion icon and tooltip 2`] 
       >
         <g>
           <path
-            d="M23.5 13.5l-3.086 3.086L19 18l-4.5-4.5 1.414-1.414L18 14.172V12c0-3.308-2.692-6-6-6V4c4.418 0 8 3.582 8 8v2.172l2.086-2.086L23.5 13.5zM6 12V9.828l2.086 2.086L9.5 10.5 5 6 3.586 7.414.5 10.5l1.414 1.414L4 9.828V12c0 4.418 3.582 8 8 8v-2c-3.308 0-6-2.692-6-6z"
+            d="M23.5 13.5l-3.086 3.086L19 18l-4.5-4.5 1.414-1.414L18 14.172V12c0-3.308-2.692-6-6-6V4a8 8 0 018 8v2.172l2.086-2.086L23.5 13.5zM6 12V9.828l2.086 2.086L9.5 10.5 5 6 3.586 7.414.5 10.5l1.414 1.414L4 9.828V12a8 8 0 008 8v-2c-3.308 0-6-2.692-6-6z"
           />
         </g>
       </svg>
       <span>
-        <div>
+        <div
+          aria-hidden="true"
+          class="components-popover components-tooltip is-without-arrow"
+          data-x-axis="center"
+          data-y-axis="bottom"
+          style="top: 0px; left: 0px;"
+          tabindex="-1"
+        >
           <div
-            aria-hidden="true"
-            class="components-popover components-tooltip is-without-arrow"
-            data-x-axis="center"
-            data-y-axis="bottom"
-            style="top: 0px; left: 0px;"
+            class="components-popover__content"
           >
             <div
-              class="components-popover__content"
-              tabindex="-1"
+              style="position: relative;"
             >
               <div
-                style="position: relative;"
-              >
-                <iframe
-                  aria-hidden="true"
-                  frameborder="0"
-                  src="about:blank"
-                  style="display: block; opacity: 0; position: absolute; top: 0px; left: 0px; height: 100%; width: 100%; overflow: hidden; pointer-events: none; z-index: -1;"
-                  tabindex="-1"
-                />
-                Converted from MOK 2.00
-              </div>
+                aria-hidden="true"
+                style="position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px; pointer-events: none; opacity: 0; overflow: hidden; z-index: -1;"
+              />
+              Converted from MOK 2.00
             </div>
           </div>
         </div>

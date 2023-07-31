@@ -21,7 +21,7 @@ exports[`ToS modal should render ToS modal 1`] = `
           class="components-modal__header-heading"
           id="components-modal-header-0"
         >
-          WooCommerce Payments: Terms of Service
+          WooPayments: Terms of Service
         </h1>
       </div>
     </div>
@@ -31,7 +31,7 @@ exports[`ToS modal should render ToS modal 1`] = `
       <div
         class="woocommerce-payments__tos-modal-message"
       >
-        To continue using WooCommerce Payments, please review and agree to our 
+        To continue using WooPayments, please review and agree to our 
         <a
           data-link-type="external"
           href="https://wordpress.com/tos"
@@ -84,7 +84,7 @@ exports[`ToS modal should render disable plugin modal on decline 1`] = `
           class="components-modal__header-heading"
           id="components-modal-header-3"
         >
-          Disable WooCommerce Payments
+          Disable WooPayments
         </h1>
       </div>
     </div>
@@ -103,7 +103,7 @@ exports[`ToS modal should render disable plugin modal on decline 1`] = `
         >
           Terms of Service
         </a>
-        , you’ll no longer be able to capture credit card payments using WooCommerce Payments. Your previous transaction and deposit data will still be available.
+        , you’ll no longer be able to capture credit card payments using WooPayments. Your previous transaction and deposit data will still be available.
       </div>
       <div
         class="woocommerce-payments__tos-footer"

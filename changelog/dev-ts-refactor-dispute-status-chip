@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Migrate DisputeStatusChip comp to TypeScript to improve code quality.

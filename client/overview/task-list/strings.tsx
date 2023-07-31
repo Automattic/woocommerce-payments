@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 import React from 'react';
 
@@ -283,5 +283,134 @@ export default {
 			'Underage. Age must be at least 18.',
 			'woocommerce-payments'
 		),
+	},
+	// Strings needed for the progressive onboarding related tasks.
+	po_tasks: {
+		no_payment_14_days: {
+			title: __(
+				'Please add your bank details to keep selling',
+				'woocommerce-payments'
+			),
+			description: ( dueDate: string ): React.ReactElement => {
+				return createInterpolateElement(
+					sprintf(
+						__(
+							'You have time until <strong>%s</strong> to make your first sale without undergoing full business verification. Take advantage of this time window and start selling now.',
+							'woocommerce-payments'
+						),
+						dueDate
+					),
+					{
+						strong: <strong />,
+					}
+				);
+			},
+			action_label: __( 'Set up deposits', 'woocommerce-payments' ),
+		},
+		no_payment_30_days: {
+			title: __(
+				'Payments paused! Verify your bank details to reactivate.',
+				'woocommerce-payments'
+			),
+			description: (): React.ReactElement => {
+				return createInterpolateElement(
+					__(
+						'You have reached the <strong>30-day limit</strong> for early selling access. In order to reactivate payments, please verify your bank details.',
+						'woocommerce-payments'
+					),
+					{
+						strong: <strong />,
+					}
+				);
+			},
+			action_label: __( 'Verify bank details', 'woocommerce-payments' ),
+		},
+		after_payment: {
+			title: __(
+				'Verify your bank account to start receiving deposits',
+				'woocommerce-payments'
+			),
+			description: ( dueDate: string ): React.ReactElement => {
+				return createInterpolateElement(
+					sprintf(
+						__(
+							'Add the required details by <strong>%s</strong> or <strong>before reaching $5,000</strong> in sales to avoid a disruption in payments.',
+							'woocommerce-payments'
+						),
+						dueDate
+					),
+					{
+						strong: <strong />,
+					}
+				);
+			},
+			action_label: __(
+				'Start receiving deposits',
+				'woocommerce-payments'
+			),
+		},
+		balance_rising: {
+			title: __(
+				'Verify your bank account to start receiving deposits',
+				'woocommerce-payments'
+			),
+			description: ( dueDate: string ): React.ReactElement => {
+				return createInterpolateElement(
+					sprintf(
+						__(
+							'To ensure a smooth payments process, please make sure to confirm your bank details by <strong>%s</strong> or before you reach <strong>$5,000</strong> in sales.',
+							'woocommerce-payments'
+						),
+						dueDate
+					),
+					{
+						strong: <strong />,
+					}
+				);
+			},
+			action_label: __(
+				'Start receiving deposits',
+				'woocommerce-payments'
+			),
+		},
+		near_threshold: {
+			title: __( 'Verify your bank details', 'woocommerce-payments' ),
+			description: ( dueDate: string ): React.ReactElement => {
+				return createInterpolateElement(
+					sprintf(
+						__(
+							'Verify your bank details by <strong>%s</strong> or before reaching <strong>$5,000</strong> in sales to avoid a disruption in payments.',
+							'woocommerce-payments'
+						),
+						dueDate
+					),
+					{
+						strong: <strong />,
+					}
+				);
+			},
+			action_label: __( 'Set up deposits', 'woocommerce-payments' ),
+		},
+		threshold_reached: {
+			title: __(
+				'Payments paused! Verify your bank details to reactivate.',
+				'woocommerce-payments'
+			),
+			description: ( dueDate: string ): React.ReactElement => {
+				return createInterpolateElement(
+					sprintf(
+						__(
+							'<strong>You have reached the deposit threshold of $5,000.00. Please verify your bank account now to reactivate payments.</strong> Your customers can no longer make purchases on your store until your account is verified.',
+							'woocommerce-payments'
+						),
+						dueDate
+					),
+					{
+						strong: <strong />,
+					}
+				);
+			},
+			action_label: __( 'Verify bank details', 'woocommerce-payments' ),
+		},
 	},
 };

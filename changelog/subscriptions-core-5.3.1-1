@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fatal error when loading the Edit Subscription page with custom admin billing or shipping fields.

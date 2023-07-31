@@ -6,6 +6,7 @@
 import { flatMap } from 'lodash';
 import { __, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
+import { addQueryArgs } from '@wordpress/url';
 import moment from 'moment';
 import { createInterpolateElement } from '@wordpress/element';
 import { Link } from '@woocommerce/components';
@@ -28,6 +29,8 @@ import {
 } from 'utils/currency';
 import { formatFee } from 'utils/fees';
 import { getAdminUrl } from 'wcpay/utils';
+import { ShieldIcon } from 'wcpay/icons';
+import { fraudOutcomeRulesetMapping } from './mappings';
 
 /**
  * Creates a timeline item about a payment status change
@@ -214,7 +217,7 @@ const isBaseFeeOnly = ( event ) => {
 	if ( ! event.fee_rates ) return false;
 
 	const history = event.fee_rates.history;
-	return 1 === history?.length && 'base' === history[ 0 ].type;
+	return history?.length === 1 && history[ 0 ].type === 'base';
 };
 
 const formatNetString = ( event ) => {
@@ -308,7 +311,7 @@ export const composeFXString = ( event ) => {
 
 // Conditionally adds the ARN details to the timeline in case they're available.
 const getRefundTrackingDetails = ( event ) => {
-	return 'available' === event.acquirer_reference_number_status
+	return event.acquirer_reference_number_status === 'available'
 		? sprintf(
 				/* translators: %s is a trcking reference number */
 				__(
@@ -370,7 +373,7 @@ export const feeBreakdown = ( event ) => {
 				return __( 'Base fee: capped at %2$s', 'woocommerce-payments' );
 			}
 
-			if ( 0 !== fixedRate ) {
+			if ( fixedRate !== 0 ) {
 				/* translators: %1$s% is the fee percentage and %2$s is the fixed rate */
 				return __( 'Base fee: %1$s%% + %2$s', 'woocommerce-payments' );
 			}
@@ -380,7 +383,7 @@ export const feeBreakdown = ( event ) => {
 		} )(),
 
 		'additional-international':
-			0 !== fixedRate
+			fixedRate !== 0
 				? __(
 						/* translators: %1$s% is the fee percentage and %2$s is the fixed rate */
 						'International card fee: %1$s%% + %2$s',
@@ -392,7 +395,7 @@ export const feeBreakdown = ( event ) => {
 						'woocommerce-payments'
 				  ),
 		'additional-fx':
-			0 !== fixedRate
+			fixedRate !== 0
 				? __(
 						/* translators: %1$s% is the fee percentage and %2$s is the fixed rate */
 						'Foreign exchange fee: %1$s%% + %2$s',
@@ -404,7 +407,7 @@ export const feeBreakdown = ( event ) => {
 						'woocommerce-payments'
 				  ),
 		'additional-wcpay-subscription':
-			0 !== fixedRate
+			fixedRate !== 0
 				? __(
 						/* translators: %1$s% is the fee amount and %2$s is the fixed rate */
 						'Subscription transaction fee: %1$s%% + %2$s',
@@ -413,6 +416,18 @@ export const feeBreakdown = ( event ) => {
 				: __(
 						/* translators: %1$s% is the fee amount */
 						'Subscription transaction fee: %1$s%%',
+						'woocommerce-payments'
+				  ),
+		'additional-device':
+			fixedRate !== 0
+				? __(
+						/* translators: %1$s% is the fee amount and %2$s is the fixed rate */
+						'Tap to pay transaction fee: %1$s%% + %2$s',
+						'woocommerce-payments'
+				  )
+				: __(
+						/* translators: %1$s% is the fee amount */
+						'Tap to pay transaction fee: %1$s%%',
 						'woocommerce-payments'
 				  ),
 		discount: __( 'Discount', 'woocommerce-payments' ),
@@ -441,7 +456,7 @@ export const feeBreakdown = ( event ) => {
 			fixedRateFormatted
 		);
 
-		if ( 'discount' === labelType ) {
+		if ( labelType === 'discount' ) {
 			feeHistoryStrings[ labelType ] = {
 				label,
 				variable:
@@ -467,7 +482,7 @@ export const feeBreakdown = ( event ) => {
 export const composeFeeBreakdown = ( event ) => {
 	const feeHistoryStrings = feeBreakdown( event );
 
-	if ( 'object' !== typeof feeHistoryStrings ) {
+	if ( typeof feeHistoryStrings !== 'object' ) {
 		return;
 	}
 
@@ -484,14 +499,92 @@ export const composeFeeBreakdown = ( event ) => {
 		const fee = feeHistoryStrings[ labelType ];
 		return (
 			<li key={ labelType }>
-				{ 'discount' === labelType ? fee.label : fee }
+				{ labelType === 'discount' ? fee.label : fee }
 
-				{ 'discount' === labelType && renderDiscountSplit( fee ) }
+				{ labelType === 'discount' && renderDiscountSplit( fee ) }
 			</li>
 		);
 	} );
 
 	return <ul className="fee-breakdown-list"> { list } </ul>;
+};
+
+const getManualFraudOutcomeTimelineItem = ( event, status ) => {
+	const isBlock = status === 'block';
+
+	const headline = isBlock
+		? // translators: %s: the username that approved the payment, <a> - link to the user
+		  __( 'Payment was blocked by <a>%s</a>', 'woocommerce-payments' )
+		: // translators: %s: the username that approved the payment, <a> - link to the user
+		  __( 'Payment was approved by <a>%s</a>', 'woocommerce-payments' );
+
+	const icon = isBlock ? (
+		<CrossIcon className="is-error" />
+	) : (
+		<CheckmarkIcon className="is-success" />
+	);
+
+	return [
+		getMainTimelineItem(
+			event,
+			createInterpolateElement(
+				sprintf( headline, event.user.username ),
+				{
+					a: (
+						// eslint-disable-next-line jsx-a11y/anchor-has-content
+						<a
+							href={ addQueryArgs( 'user-edit.php', {
+								user_id: event.user.id,
+							} ) }
+							tabIndex={ -1 }
+						/>
+					),
+				}
+			),
+			icon
+		),
+	];
+};
+
+const buildAutomaticFraudOutcomeRuleset = ( event ) => {
+	const rulesetResults = Object.entries( event.ruleset_results || {} );
+
+	return rulesetResults
+		.filter( ( [ , status ] ) => status !== 'allow' )
+		.map( ( [ rule, status ] ) => (
+			<p key={ rule } className="fraud-outcome-ruleset-item">
+				{ fraudOutcomeRulesetMapping[ status ][ rule ] }
+			</p>
+		) );
+};
+
+const getAutomaticFraudOutcomeTimelineItem = ( event, status ) => {
+	const isBlock = status === 'block';
+
+	const headline = isBlock
+		? __(
+				'Payment was screened by your fraud filters and blocked.',
+				'woocommerce-payments'
+		  )
+		: __(
+				'Payment was screened by your fraud filters and placed in review.',
+				'woocommerce-payments'
+		  );
+
+	const icon = isBlock ? (
+		<CrossIcon className="is-error" />
+	) : (
+		<ShieldIcon className="is-fraud-outcome-review" />
+	);
+
+	return [
+		getMainTimelineItem(
+			event,
+			headline,
+			icon,
+			buildAutomaticFraudOutcomeRuleset( event )
+		),
+	];
 };
 
 /**
@@ -616,7 +709,7 @@ const mapEventToTimelineItems = ( event ) => {
 			return [
 				getStatusChangeTimelineItem(
 					event,
-					'full_refund' === type
+					type === 'full_refund'
 						? __( 'Refunded', 'woocommerce-payments' )
 						: __( 'Partial refund', 'woocommerce-payments' )
 				),
@@ -696,7 +789,7 @@ const mapEventToTimelineItems = ( event ) => {
 			} );
 
 			let depositTimelineItem;
-			if ( null === event.amount ) {
+			if ( event.amount === null ) {
 				depositTimelineItem = {
 					date: new Date( event.datetime * 1000 ),
 					icon: <InfoOutlineIcon />,
@@ -878,6 +971,14 @@ const mapEventToTimelineItems = ( event ) => {
 					]
 				),
 			];
+		case 'fraud_outcome_manual_approve':
+			return getManualFraudOutcomeTimelineItem( event, 'allow' );
+		case 'fraud_outcome_manual_block':
+			return getManualFraudOutcomeTimelineItem( event, 'block' );
+		case 'fraud_outcome_review':
+			return getAutomaticFraudOutcomeTimelineItem( event, 'review' );
+		case 'fraud_outcome_block':
+			return getAutomaticFraudOutcomeTimelineItem( event, 'block' );
 		default:
 			return [];
 	}

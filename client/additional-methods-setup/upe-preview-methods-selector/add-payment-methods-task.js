@@ -9,8 +9,14 @@ import React, {
 	useState,
 } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Button, Card, CardBody, ExternalLink } from '@wordpress/components';
-import interpolateComponents from 'interpolate-components';
+import {
+	Button,
+	Card,
+	CardBody,
+	ExternalLink,
+	CardDivider,
+} from '@wordpress/components';
+import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies
@@ -117,7 +123,7 @@ const ContinueButton = ( { paymentMethodsState } ) => {
 	return (
 		<Button
 			isBusy={ isSaving }
-			disabled={ isSaving || 1 > checkedPaymentMethods.length }
+			disabled={ isSaving || checkedPaymentMethods.length < 1 }
 			onClick={ handleContinueClick }
 			isPrimary
 		>
@@ -184,8 +190,8 @@ const AddPaymentMethodsTask = () => {
 		if ( status ) {
 			const statusAndRequirements = getStatusAndRequirements( method );
 			if (
-				'unrequested' === statusAndRequirements.status &&
-				0 < statusAndRequirements.requirements.length
+				statusAndRequirements.status === 'unrequested' &&
+				statusAndRequirements.requirements.length > 0
 			) {
 				handleActivationModalOpen( {
 					id: method,
@@ -199,28 +205,54 @@ const AddPaymentMethodsTask = () => {
 		}
 	};
 
+	const prepareUpePaymentMethods = ( upeMethodIds ) => {
+		return upeMethodIds.map(
+			( key ) =>
+				availablePaymentMethods.includes( key ) && (
+					<PaymentMethodCheckbox
+						key={ key }
+						checked={
+							paymentMethodsState[ key ] &&
+							upeCapabilityStatuses.INACTIVE !==
+								getStatusAndRequirements( key ).status
+						}
+						status={ getStatusAndRequirements( key ).status }
+						onChange={ ( name, status ) => {
+							handleCheckClick( name, status );
+						} }
+						name={ key }
+					/>
+				)
+		);
+	};
+
+	const availableBuyNowPayLaterUpeMethods = upeMethods.filter(
+		( id ) =>
+			paymentMethodsMap[ id ].allows_pay_later &&
+			availablePaymentMethods.includes( id )
+	);
+
 	return (
 		<WizardTaskItem
 			className="add-payment-methods-task"
 			title={ __(
-				'Boost your sales with payment methods',
+				'Enable additional payment methods',
 				'woocommerce-payments'
 			) }
-			index={ 2 }
+			index={ 1 }
 		>
 			<CollapsibleBody>
 				<p className="wcpay-wizard-task__description-element is-muted-color">
 					{ interpolateComponents( {
 						mixedString: __(
-							'For best results, we recommend adding all available payment methods. ' +
-								"We'll only show your customer the most relevant payment methods " +
-								'based on their location. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+							'Increase your store’s conversion by offering your customers' +
+								' preferred and convenient payment methods on checkout.',
 							'woocommerce-payments'
 						),
 						components: {
 							learnMoreLink: (
 								// eslint-disable-next-line max-len
-								<ExternalLink href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods" />
+								<ExternalLink href="https://woocommerce.com/document/woocommerce-payments/payment-methods/additional-payment-methods/" />
 							),
 						},
 					} ) }
@@ -233,7 +265,7 @@ const AddPaymentMethodsTask = () => {
 						{ /* eslint-disable-next-line max-len */ }
 						<p className="add-payment-methods-task__payment-selector-title wcpay-wizard-task__description-element">
 							{ __(
-								'Payments accepted at checkout',
+								'Popular in your country',
 								'woocommerce-payments'
 							) }
 						</p>
@@ -252,67 +284,58 @@ const AddPaymentMethodsTask = () => {
 										}
 										name="card"
 									/>
-									{ upeMethods.map(
-										( key ) =>
-											availablePaymentMethods.includes(
-												key
-											) && (
-												<PaymentMethodCheckbox
-													key={ key }
-													checked={
-														paymentMethodsState[
-															key
-														] &&
-														upeCapabilityStatuses.INACTIVE !==
-															getStatusAndRequirements(
-																key
-															).status
-													}
-													status={
-														getStatusAndRequirements(
-															key
-														).status
-													}
-													onChange={ (
-														name,
-														status
-													) => {
-														handleCheckClick(
-															name,
-															status
-														);
-													} }
-													name={ key }
-												/>
-											)
+									{ prepareUpePaymentMethods(
+										upeMethods.filter(
+											( id ) =>
+												! paymentMethodsMap[ id ]
+													.allows_pay_later
+										)
 									) }
 								</PaymentMethodCheckboxes>
 							</LoadableSettingsSection>
 						</LoadableBlock>
-						{ activationModalParams && (
-							<ConfirmPaymentMethodActivationModal
-								onClose={ () => {
-									handleActivationModalOpen( null );
-								} }
-								onConfirmClose={ () => {
-									completeActivation(
-										activationModalParams.id
-									);
-								} }
-								requirements={
-									activationModalParams.requirements
-								}
-								paymentMethod={ activationModalParams.id }
-							/>
-						) }
 					</CardBody>
-				</Card>
-				<p className="add-payment-methods-task__payment-selector-description wcpay-wizard-task__description-element is-muted-color">
-					{ __(
-						'You can always change or add more payment methods later.',
-						'woocommerce-payments'
+					{ wcpaySettings.isBnplAffirmAfterpayEnabled &&
+						availableBuyNowPayLaterUpeMethods.length > 0 && (
+							<>
+								<CardDivider />
+								<CardBody>
+									<p className="add-payment-methods-task__payment-selector-title wcpay-wizard-task__description-element">
+										{ __(
+											'Buy Now, Pay Later',
+											'woocommerce-payments'
+										) }
+									</p>
+									<LoadableBlock
+										numLines={ 10 }
+										isLoading={ ! isActive }
+									>
+										<LoadableSettingsSection
+											numLines={ 10 }
+										>
+											<PaymentMethodCheckboxes>
+												{ prepareUpePaymentMethods(
+													availableBuyNowPayLaterUpeMethods
+												) }
+											</PaymentMethodCheckboxes>
+										</LoadableSettingsSection>
+									</LoadableBlock>
+								</CardBody>
+							</>
+						) }
+					{ activationModalParams && (
+						<ConfirmPaymentMethodActivationModal
+							onClose={ () => {
+								handleActivationModalOpen( null );
+							} }
+							onConfirmClose={ () => {
+								completeActivation( activationModalParams.id );
+							} }
+							requirements={ activationModalParams.requirements }
+							paymentMethod={ activationModalParams.id }
+						/>
 					) }
-				</p>
+				</Card>
 				<CurrencyInformationForMethods
 					selectedMethods={ selectedMethods }
 				/>

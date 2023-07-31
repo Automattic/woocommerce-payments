@@ -17,7 +17,7 @@ declare module '@woocommerce/explat' {
 	const Experiment: ( props: ExperimentProps ) => JSX.Element;
 }
 
-declare module 'interpolate-components' {
+declare module '@automattic/interpolate-components' {
 	interface InterpolateComponentsParams {
 		mixedString: string;
 		components: Record< string, React.ReactNode >;
@@ -79,6 +79,12 @@ declare module '@woocommerce/components' {
 		isSortable?: boolean;
 		defaultSort?: boolean;
 	}
+
+	interface TableCardBodyColumn {
+		value?: string | number | boolean;
+		display?: React.ReactNode;
+	}
+
 	interface TableCardProps {
 		className?: string;
 		title?: string;
@@ -86,10 +92,7 @@ declare module '@woocommerce/components' {
 		rowsPerPage?: number;
 		totalRows?: number;
 		headers?: TableCardColumn[];
-		rows?: {
-			value?: string | number | boolean;
-			display?: React.ReactNode;
-		}[][];
+		rows?: TableCardBodyColumn[][];
 		summary?: { label: string; value: string | number | boolean }[];
 		query?: Query;
 		onQueryChange?: unknown;
@@ -100,6 +103,16 @@ declare module '@woocommerce/components' {
 }
 
 declare module '@woocommerce/navigation' {
+	import type { BrowserHistory, Location } from 'history';
+	/**
+	 * Extension of history.BrowserHistory but also adds { pathname: string } to the location object.
+	 */
+	interface WooBrowserHistory extends BrowserHistory {
+		location: Location & {
+			pathname: string;
+		};
+	}
+
 	// TODO: replace the `unknown` types with actual types.
 	interface Query {
 		path?: unknown;
@@ -114,6 +127,8 @@ declare module '@woocommerce/navigation' {
 		date_between?: string[];
 		type_is?: unknown;
 		type_is_not?: unknown;
+		source_device_is?: unknown;
+		source_device_is_not?: unknown;
 		customer_currency_is?: unknown;
 		customer_currency_is_not?: unknown;
 		store_currency_is?: string;
@@ -134,6 +149,7 @@ declare module '@woocommerce/navigation' {
 		path?: string,
 		currentQuery?: Query
 	) => void;
+	const getHistory: () => WooBrowserHistory;
 }
 
 declare module '@woocommerce/csv-export' {
@@ -152,5 +168,3 @@ declare module '@woocommerce/csv-export' {
 		params: Record< string, any >
 	) => string;
 }
-
-declare module '*.svg';

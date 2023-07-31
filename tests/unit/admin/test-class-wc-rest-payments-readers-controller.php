@@ -7,7 +7,10 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_REST_Payments_Reader_Controller as Controller;
+use WCPay\Core\Server\Request\Get_Charge;
+use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Core\Server\Request\Get_Request;
 use WCPay\Exceptions\API_Exception;
 
 require_once WCPAY_ABSPATH . 'includes/in-person-payments/class-wc-payments-printed-receipt-sample-order.php';
@@ -154,9 +157,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 	public function test_getting_all_readers_uses_cache_for_existing_readers() {
 		set_transient( Controller::STORE_READERS_TRANSIENT_KEY, [ $this->reader ] );
 
-		$this->mock_api_client
-			->expects( $this->never() )
-			->method( 'get_terminal_readers' );
+		$this->mock_wcpay_request( Get_Request::class, 0 );
 
 		$this->mock_api_client
 			->expects( $this->never() )
@@ -261,16 +262,16 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 
 		$receipt = 'receipt';
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_intent' )
-			->with( 'pi_mock' )
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, 'pi_mock' );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $payment_intent );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_charge' )
-			->with( 'ch_mock' )
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class, 1, 'ch_mock' );
+
+		$charge_request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $charge );
 
 		$this->mock_wcpay_gateway
@@ -296,6 +297,8 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 
 	public function test_preview_print_receipt(): void {
 		$order = new WC_Payments_Printed_Receipt_Sample_Order();
+
+		$this->assertEquals( WC_Payments_Printed_Receipt_Sample_Order::PREVIEW_RECEIPT_ORDER_DATA, $order->get_data() );
 
 		$mock_receipt = '<p>Receipt</p>';
 		$this->mock_wcpay_gateway
@@ -416,16 +419,13 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_generate_print_receipt_invalid_payment_error(): void {
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_intent' )
-			->with( 'pi_mock' )
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, 'pi_mock' );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::PROCESSING ] ) );
 
-		$this->mock_api_client
-			->expects( $this->never() )
-			->method( 'get_charge' );
-
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class, 0, 'ch_mock' );
 		$this->mock_wcpay_gateway
 			->expects( $this->never() )
 			->method( 'get_option' );
@@ -446,15 +446,14 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_generate_print_receipt_handle_api_exceptions(): void {
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_intent' )
-			->with( 'pi_mock' )
+
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, 'pi_mock' );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willThrowException( new API_Exception( 'Something bad happened', 'test error', 500 ) );
 
-		$this->mock_api_client
-			->expects( $this->never() )
-			->method( 'get_charge' );
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class, 0, 'ch_mock' );
 
 		$this->mock_wcpay_gateway
 			->expects( $this->never() )
@@ -480,16 +479,16 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 
 		$charge = $this->mock_charge( '42' );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_intent' )
-			->with( 'pi_mock' )
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, 'pi_mock' );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $payment_intent );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_charge' )
-			->with( 'ch_mock' )
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class, 1, 'ch_mock' );
+
+		$charge_request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $charge );
 
 		$this->mock_wcpay_gateway
@@ -518,16 +517,16 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 
 		$charge = $this->mock_charge( $order->get_id() );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_intent' )
-			->with( 'pi_mock' )
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, 'pi_mock' );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $payment_intent );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_charge' )
-			->with( 'ch_mock' )
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class, 1, 'ch_mock' );
+
+		$charge_request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $charge );
 
 		$this->mock_wcpay_gateway
@@ -550,7 +549,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 500, $data['status'] );
 	}
 
-	public function test_generate_print_receipt_handle_receipt_service_exception(): void {
+	public function test_generate_print_receipt_handle_receipt_service_exception() {
 		$order = WC_Helper_Order::create_order();
 
 		$payment_intent = WC_Helper_Intention::create_intention();
@@ -559,16 +558,16 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 
 		$settings = $this->mock_settings();
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_intent' )
-			->with( 'pi_mock' )
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, 'pi_mock' );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $payment_intent );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_charge' )
-			->with( 'ch_mock' )
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class, 1, 'ch_mock' );
+
+		$charge_request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $charge );
 
 		$this->mock_wcpay_gateway

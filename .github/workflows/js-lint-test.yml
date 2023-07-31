@@ -1,24 +1,29 @@
 name: JS linting and tests
 
 on:
-  pull_request
+  pull_request:
+  merge_group:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   lint:
     name:    JS linting
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       # clone the repository
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
       # enable dependencies caching
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: ~/.cache/composer/
           key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: ~/.npm/
           key:  ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
@@ -27,19 +32,19 @@ jobs:
 
   test:
     name:    JS testing
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       # clone the repository
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
       # enable dependencies caching
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: ~/.cache/composer/
           key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: ~/.npm/
           key:  ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}

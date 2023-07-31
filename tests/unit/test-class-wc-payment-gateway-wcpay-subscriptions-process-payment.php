@@ -5,8 +5,12 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
+use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
+use WCPay\Core\Server\Response;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Session_Rate_Limiter;
 
 /**
@@ -80,20 +84,14 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 	/**
 	 * Setup intent to be used during tests.
 	 *
-	 * @var array
+	 * @var WC_Payments_API_Setup_Intention
 	 */
-	private $setup_intent = [
-		'id'             => self::SETUP_INTENT_ID,
-		'status'         => Payment_Intent_Status::SUCCEEDED,
-		'client_secret'  => 'test_client_secret',
-		'next_action'    => [],
-		'payment_method' => self::PAYMENT_METHOD_ID,
-	];
+	private $setup_intent;
 
 	/**
 	 * Payment intent to be used during tests.
 	 *
-	 * @var WC_Payments_API_Intention
+	 * @var WC_Payments_API_Payment_Intention
 	 */
 	private $payment_intent;
 
@@ -108,8 +106,16 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		parent::set_up();
 
 		wp_set_current_user( self::USER_ID );
-
 		$this->payment_intent = WC_Helper_Intention::create_intention();
+		$this->setup_intent   = WC_Helper_Intention::create_setup_intention(
+			[
+				'id'             => self::SETUP_INTENT_ID,
+				'status'         => Payment_Intent_Status::SUCCEEDED,
+				'client_secret'  => 'test_client_secret',
+				'next_action'    => [],
+				'payment_method' => self::PAYMENT_METHOD_ID,
+			]
+		);
 
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
@@ -133,6 +139,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 
 		$this->order_service = new WC_Payments_Order_Service( $this->mock_api_client );
 
+		$mock_dpps = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+
 		$this->mock_wcpay_gateway = $this->getMockBuilder( '\WC_Payment_Gateway_WCPay' )
 			->setConstructorArgs(
 				[
@@ -143,6 +151,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 					$this->mock_action_scheduler_service,
 					$this->mock_rate_limiter,
 					$this->order_service,
+					$mock_dpps,
 				]
 			)
 			->setMethods(
@@ -180,10 +189,69 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$this->mock_wcs_order_contains_subscription( true );
 		$this->mock_wcs_get_subscriptions_for_order( $subscriptions );
 
-		$this->mock_api_client
+		$this->mock_customer_service
 			->expects( $this->once() )
-			->method( 'create_and_confirm_intention' )
-			->with( $this->anything(), $this->anything(), self::PAYMENT_METHOD_ID, self::CUSTOMER_ID, $this->anything(), true, false, $this->anything(), $this->anything(), false )
+			->method( 'get_customer_id_by_user_id' )
+			->with( self::USER_ID )
+			->willReturn( self::CUSTOMER_ID );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_customer' )
+			->with( self::CUSTOMER_ID );
+
+		$request->expects( $this->once() )
+			->method( 'set_payment_method' )
+			->with( self::PAYMENT_METHOD_ID );
+
+		$request->expects( $this->once() )
+			->method( 'set_cvc_confirmation' )
+			->with( null );
+
+		$request->expects( $this->once() )
+			->method( 'set_amount' )
+			->with( 5000 )
+			->willReturn( $request );
+
+		$request->expects( $this->once() )
+			->method( 'set_currency_code' )
+			->with( 'usd' )
+			->willReturn( $request );
+
+		$request->expects( $this->once() )
+			->method( 'setup_future_usage' );
+
+		$request->expects( $this->once() )
+			->method( 'set_capture_method' )
+			->with( false );
+
+		$request->expects( $this->once() )
+			->method( 'set_off_session' )
+			->with( false );
+
+		$request->expects( $this->once() )
+			->method( 'set_capture_method' )
+			->with( false )
+			->willReturn( $request );
+
+		$request->expects( $this->once() )
+			->method( 'set_metadata' )
+			->with(
+				$this->callback(
+					function( $metadata ) {
+						$required_keys = [ 'customer_name', 'customer_email', 'site_url', 'order_id', 'order_number', 'order_key', 'payment_type' ];
+						foreach ( $required_keys as $key ) {
+							if ( ! array_key_exists( $key, $metadata ) ) {
+								return false;
+							}
+						}
+						return true;
+					}
+				)
+			);
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $this->payment_intent );
 
 		$this->mock_token_service
@@ -216,10 +284,18 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$this->mock_wcs_order_contains_subscription( true );
 		$this->mock_wcs_get_subscriptions_for_order( $subscriptions );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'create_and_confirm_setup_intent' )
-			->with( self::PAYMENT_METHOD_ID, self::CUSTOMER_ID )
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_customer' )
+			->with( self::CUSTOMER_ID );
+
+		$request->expects( $this->once() )
+			->method( 'set_payment_method' )
+			->with( self::PAYMENT_METHOD_ID );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $this->setup_intent );
 
 		$this->mock_token_service
@@ -249,10 +325,10 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$subscriptions = [ new WC_Subscription() ];
 		$subscriptions[0]->set_parent( $order );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'create_and_confirm_setup_intent' )
-			->with( self::PAYMENT_METHOD_ID, self::CUSTOMER_ID )
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $this->setup_intent );
 
 		$this->mock_token_service
@@ -286,10 +362,64 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$this->mock_wcs_order_contains_subscription( true );
 		$this->mock_wcs_get_subscriptions_for_order( $subscriptions );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'create_and_confirm_intention' )
-			->with( $this->anything(), $this->anything(), self::PAYMENT_METHOD_ID, self::CUSTOMER_ID, $this->anything(), false, false, $this->anything(), $this->anything(), false )
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_customer' )
+			->with( self::CUSTOMER_ID );
+
+		$request->expects( $this->once() )
+			->method( 'set_payment_method' )
+			->with( self::PAYMENT_METHOD_ID );
+
+		$request->expects( $this->once() )
+			->method( 'set_cvc_confirmation' )
+			->with( null );
+
+		$request->expects( $this->once() )
+			->method( 'set_amount' )
+			->with( 5000 )
+			->willReturn( $request );
+
+		$request->expects( $this->once() )
+			->method( 'set_currency_code' )
+			->with( 'usd' )
+			->willReturn( $request );
+
+		$request->expects( $this->never() )
+			->method( 'setup_future_usage' );
+
+		$request->expects( $this->once() )
+			->method( 'set_capture_method' )
+			->with( false );
+
+		$request->expects( $this->once() )
+			->method( 'set_off_session' )
+			->with( false );
+
+		$request->expects( $this->once() )
+			->method( 'set_capture_method' )
+			->with( false )
+			->willReturn( $request );
+
+		$request->expects( $this->once() )
+			->method( 'set_metadata' )
+			->with(
+				$this->callback(
+					function( $metadata ) {
+						$required_keys = [ 'customer_name', 'customer_email', 'site_url', 'order_id', 'order_number', 'order_key', 'payment_type' ];
+						foreach ( $required_keys as $key ) {
+							if ( ! array_key_exists( $key, $metadata ) ) {
+								return false;
+							}
+						}
+						return true;
+					}
+				)
+			);
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $this->payment_intent );
 
 		$this->mock_token_service
@@ -323,9 +453,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$this->mock_wcs_order_contains_subscription( true );
 
 		// The card is already saved and there's no payment needed, so no Setup Intent needs to be created.
-		$this->mock_api_client
-			->expects( $this->never() )
-			->method( 'create_and_confirm_setup_intent' );
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class, 0 );
 
 		// We're not saving a new payment method, so we don't need to add the payment method to
 		// a user account.
@@ -368,10 +496,18 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		);
 
 		$this->mock_wcs_get_subscriptions_for_order( [] );
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'create_and_confirm_setup_intent' )
-			->with( self::PAYMENT_METHOD_ID, self::CUSTOMER_ID )
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_customer' )
+			->with( self::CUSTOMER_ID );
+
+		$request->expects( $this->once() )
+			->method( 'set_payment_method' )
+			->with( self::PAYMENT_METHOD_ID );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $this->setup_intent );
 
 		$this->mock_token_service
@@ -410,9 +546,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		);
 		$this->mock_wcs_get_subscriptions_for_order( [] );
 
-		$this->mock_api_client
-			->expects( $this->never() )
-			->method( 'create_and_confirm_setup_intent' );
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class, 0 );
 
 		$this->mock_token_service
 			->expects( $this->never() )

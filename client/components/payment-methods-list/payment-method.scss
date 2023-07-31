@@ -21,6 +21,7 @@
 		order: 1;
 		display: flex;
 		flex-wrap: nowrap;
+		justify-content: space-between;
 
 		@include breakpoint( '>660px' ) {
 			flex: 1 1 auto;
@@ -136,6 +137,8 @@
 
 	.wcpay-pill {
 		margin-left: $gap-smaller;
+		padding: 2px $gap-smaller;
+
 		&.payment-status-pending-approval,
 		&.payment-status-pending-verification {
 			border: 0 solid transparent;

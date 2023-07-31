@@ -3,7 +3,7 @@
 /**
  * Internal dependencies
  */
-import { getConfig } from 'utils/checkout';
+import { getConfig, getUPEConfig } from 'utils/checkout';
 import {
 	getPaymentRequestData,
 	getPaymentRequestAjaxURL,
@@ -42,6 +42,21 @@ export default class WCPayAPI {
 	}
 
 	/**
+	 * Overloaded method to get the Stripe object for UPE. Leverages the original getStripe method but before doing
+	 * so, sets the forceNetworkSavedCards option to the proper value for the payment method type.
+	 * forceNetworkSavedCards is currently the flag that among others determines whether or not to use the Stripe Platform on the checkout.
+	 *
+	 * @param {string} paymentMethodType The payment method type.
+	 * @return {Object} The Stripe Object.
+	 */
+	getStripeForUPE( paymentMethodType ) {
+		this.options.forceNetworkSavedCards = getUPEConfig(
+			'paymentMethodsConfig'
+		)[ paymentMethodType ].forceNetworkSavedCards;
+		return this.getStripe();
+	}
+
+	/**
 	 * Generates a new instance of Stripe.
 	 *
 	 * @param {boolean}  forceAccountRequest True to instantiate the Stripe object with the merchant's account key.
@@ -54,13 +69,14 @@ export default class WCPayAPI {
 			forceNetworkSavedCards,
 			locale,
 			isUPEEnabled,
+			isUPEDeferredEnabled,
 			isStripeLinkEnabled,
 		} = this.options;
 
 		if (
 			forceNetworkSavedCards &&
 			! forceAccountRequest &&
-			! isUPEEnabled
+			! ( isUPEEnabled && ! isUPEDeferredEnabled )
 		) {
 			if ( ! this.stripePlatform ) {
 				this.stripePlatform = this.createStripe(
@@ -143,11 +159,11 @@ export default class WCPayAPI {
 			 */
 			prepareValue( name, value ) {
 				// Fall back to the value in `preparedCustomerData`.
-				if ( 'undefined' === typeof value || 0 === value.length ) {
+				if ( typeof value === 'undefined' || value.length === 0 ) {
 					value = preparedCustomerData[ name ]; // `undefined` if not set.
 				}
 
-				if ( 'undefined' !== typeof value && 0 < value.length ) {
+				if ( typeof value !== 'undefined' && value.length > 0 ) {
 					return value;
 				}
 			}
@@ -160,7 +176,7 @@ export default class WCPayAPI {
 			 */
 			setBillingDetail( name, value ) {
 				const preparedValue = this.prepareValue( name, value );
-				if ( 'undefined' !== typeof preparedValue ) {
+				if ( typeof preparedValue !== 'undefined' ) {
 					this.args.billing_details[ name ] = preparedValue;
 				}
 			}
@@ -173,7 +189,7 @@ export default class WCPayAPI {
 			 */
 			setAddressDetail( name, value ) {
 				const preparedValue = this.prepareValue( name, value );
-				if ( 'undefined' !== typeof preparedValue ) {
+				if ( typeof preparedValue !== 'undefined' ) {
 					this.args.billing_details.address[ name ] = preparedValue;
 				}
 			}
@@ -214,13 +230,13 @@ export default class WCPayAPI {
 			return true;
 		}
 
-		const isSetupIntent = 'si' === partials[ 1 ];
+		const isSetupIntent = partials[ 1 ] === 'si';
 		let orderId = partials[ 2 ];
 		const clientSecret = partials[ 3 ];
 		const nonce = partials[ 4 ];
 
 		const orderPayIndex = redirectUrl.indexOf( 'order-pay' );
-		const isOrderPage = -1 < orderPayIndex;
+		const isOrderPage = orderPayIndex > -1;
 
 		// If we're on the Pay for Order page, get the order ID
 		// directly from the URL instead of relying on the hash.
@@ -245,7 +261,7 @@ export default class WCPayAPI {
 				'accountIdForIntentConfirmation'
 			);
 
-			// If this is a setup intent we're not processing a platform checkout payment so we can
+			// If this is a setup intent we're not processing a woopay payment so we can
 			// use the regular getStripe function.
 			if ( isSetupIntent ) {
 				return this.getStripe().confirmCardSetup(
@@ -253,7 +269,7 @@ export default class WCPayAPI {
 				);
 			}
 
-			// For platform checkout we need the capability to switch up the account ID specifically for
+			// For woopay we need the capability to switch up the account ID specifically for
 			// the intent confirmation step, that's why we create a new instance of the Stripe JS here.
 			if ( accountIdForIntentConfirmation ) {
 				return this.createStripe(
@@ -268,7 +284,7 @@ export default class WCPayAPI {
 				);
 			}
 
-			// When not dealing with a setup intent or platform checkout we need to force an account
+			// When not dealing with a setup intent or woopay we need to force an account
 			// specific request in Stripe.
 			return this.getStripe( true ).confirmCardPayment(
 				decryptClientSecret( clientSecret )
@@ -314,7 +330,7 @@ export default class WCPayAPI {
 
 				return verificationCall.then( ( response ) => {
 					const result =
-						'string' === typeof response
+						typeof response === 'string'
 							? JSON.parse( response )
 							: response;
 
@@ -369,7 +385,7 @@ export default class WCPayAPI {
 				throw response.data.error;
 			}
 
-			if ( 'succeeded' === response.data.status ) {
+			if ( response.data.status === 'succeeded' ) {
 				// No need for further authentication.
 				return response.data;
 			}
@@ -465,7 +481,7 @@ export default class WCPayAPI {
 			'wcpay-fingerprint': fingerprint,
 		} )
 			.then( ( response ) => {
-				if ( 'failure' === response.result ) {
+				if ( response.result === 'failure' ) {
 					throw new Error( response.messages );
 				}
 				return response;
@@ -502,14 +518,14 @@ export default class WCPayAPI {
 		if (
 			paymentIntentSecret &&
 			confirmPaymentResult.error &&
-			'lock_timeout' === confirmPaymentResult.error.code
+			confirmPaymentResult.error.code === 'lock_timeout'
 		) {
 			const paymentIntentResult = await stripe.retrievePaymentIntent(
 				decryptClientSecret( paymentIntentSecret )
 			);
 			if (
 				! paymentIntentResult.error &&
-				'succeeded' === paymentIntentResult.paymentIntent.status
+				paymentIntentResult.paymentIntent.status === 'succeeded'
 			) {
 				window.location.href = confirmParams.redirect_url;
 				return paymentIntentResult; //To prevent returning an error during the redirection.
@@ -523,11 +539,11 @@ export default class WCPayAPI {
 	 * Saves the calculated UPE appearance values in a transient.
 	 *
 	 * @param {Object} appearance The UPE appearance object with style values
-	 * @param {boolean} isBlocksCheckout True if save request is for Blocks Checkout. Default false.
+	 * @param {string} isBlocksCheckout 'true' if save request is for Blocks Checkout. Default 'false'.
 	 *
 	 * @return {Promise} The final promise for the request to the server.
 	 */
-	saveUPEAppearance( appearance, isBlocksCheckout = false ) {
+	saveUPEAppearance( appearance, isBlocksCheckout = 'false' ) {
 		return this.request( getConfig( 'ajaxUrl' ), {
 			is_blocks_checkout: isBlocksCheckout,
 			appearance: JSON.stringify( appearance ),
@@ -567,7 +583,7 @@ export default class WCPayAPI {
 			}
 		)
 			.then( ( response ) => {
-				if ( 'failure' === response.result ) {
+				if ( response.result === 'failure' ) {
 					throw new Error( response.messages );
 				}
 				return response;
@@ -671,17 +687,14 @@ export default class WCPayAPI {
 		} );
 	}
 
-	initPlatformCheckout( userEmail, platformCheckoutUserSession ) {
+	initWooPay( userEmail, woopayUserSession ) {
 		const wcAjaxUrl = getConfig( 'wcAjaxUrl' );
-		const nonce = getConfig( 'initPlatformCheckoutNonce' );
-		return this.request(
-			buildAjaxURL( wcAjaxUrl, 'init_platform_checkout' ),
-			{
-				_wpnonce: nonce,
-				email: userEmail,
-				user_session: platformCheckoutUserSession,
-			}
-		);
+		const nonce = getConfig( 'initWooPayNonce' );
+		return this.request( buildAjaxURL( wcAjaxUrl, 'init_woopay' ), {
+			_wpnonce: nonce,
+			email: userEmail,
+			user_session: woopayUserSession,
+		} );
 	}
 
 	expressCheckoutAddToCart( productData ) {

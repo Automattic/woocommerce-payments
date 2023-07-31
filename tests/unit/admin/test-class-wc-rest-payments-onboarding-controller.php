@@ -107,12 +107,89 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 			[
 				'country'   => 'US',
 				'type'      => 'company',
-				'structure' => 'sole_propreitor',
+				'structure' => 'sole_proprietor',
 			]
 		);
 		$response = $this->controller->get_required_verification_information( $request );
 
 		$this->assertSame( 200, $response->status );
 		$this->assertSame( [ 'data' => $mock_requirements ], $response->get_data() );
+	}
+
+	public function test_get_progressive_onboarding_eligible() {
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_onboarding_po_eligible' )
+			->willReturn(
+				[
+					'result' => 'eligible',
+					'data'   => [],
+				]
+			);
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'business'        => [
+					'country' => 'US',
+					'type'    => 'company',
+					'mcc'     => 'most_popular__software_services',
+				],
+				'store'           => [
+					'annual_revenue'    => 'less_than_250k',
+					'go_live_timeframe' => 'within_1month',
+				],
+				'woo_store_stats' => [],
+			]
+		);
+
+		$response = $this->controller->get_progressive_onboarding_eligible( $request );
+		$this->assertSame( 200, $response->status );
+		$this->assertSame(
+			[
+				'result' => 'eligible',
+				'data'   => [],
+			],
+			$response->get_data()
+		);
+	}
+
+	public function test_get_progressive_onboarding_not_eligible() {
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_onboarding_po_eligible' )
+			->willReturn(
+				[
+					'result' => 'not_eligible',
+					'data'   => [],
+				]
+			);
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+
+				'business'        => [
+					'country' => 'US',
+					'type'    => 'company',
+					'mcc'     => 'most_popular__software_services',
+				],
+				'store'           => [
+					'annual_revenue'    => 'from_1m_to_20m',
+					'go_live_timeframe' => 'from_1_to_3months', // Fails because of the go live timeframe.
+				],
+				'woo_store_stats' => [],
+			]
+		);
+
+		$response = $this->controller->get_progressive_onboarding_eligible( $request );
+		$this->assertSame( 200, $response->status );
+		$this->assertSame(
+			[
+				'result' => 'not_eligible',
+				'data'   => [],
+			],
+			$response->get_data()
+		);
 	}
 }

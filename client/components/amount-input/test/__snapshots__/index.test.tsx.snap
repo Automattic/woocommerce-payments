@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Amount input renders correctly 1`] = `
+<div>
+  <div
+    class="components-base-control components-amount-input__container"
+  >
+    <div
+      class="components-base-control__field components-amount-input__input_container"
+    >
+      <span
+        class="components-amount-input__prefix"
+      >
+        test_prefix
+      </span>
+      <input
+        class="components-text-control__input components-amount-input__input"
+        data-testid="amount-input"
+        id="test_id"
+        placeholder="test_placeholder"
+        value=""
+      />
+    </div>
+    <span
+      class="components-amount-input__help_text"
+    >
+      this is a helptext
+    </span>
+  </div>
+</div>
+`;

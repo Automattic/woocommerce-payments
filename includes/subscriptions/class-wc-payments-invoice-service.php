@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
 use WCPay\Logger;
@@ -44,21 +45,40 @@ class WC_Payments_Invoice_Service {
 	 */
 	private $product_service;
 
+
+	/**
+	 * Order Service
+	 *
+	 * @var WC_Payments_Order_Service
+	 */
+	private $order_service;
+
 	/**
 	 * Constructor.
 	 *
 	 * @param WC_Payments_API_Client      $payments_api_client  WooCommerce Payments API client.
 	 * @param WC_Payments_Product_Service $product_service      Product Service.
-	 * @param WC_Payment_Gateway_WCPay    $gateway              WC payments Payment Gateway.
+	 * @param WC_Payments_Order_Service   $order_service              WC payments Order Service.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
 		WC_Payments_Product_Service $product_service,
-		WC_Payment_Gateway_WCPay $gateway
+		WC_Payments_Order_Service $order_service
 	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->product_service     = $product_service;
-		$this->gateway             = $gateway;
+		$this->order_service       = $order_service;
+
+		/**
+		 * When a store is in staging mode we don't want any order status chagnes to fire off corrisponding invoice requests to the server.
+		 *
+		 * Sending these requests from staging sites can have unintended consequences for the live store. For example, updating an unpaid
+		 * renewal order's status on a duplicate site, would lead to the corrisponding subscription being marked as paid in the live
+		 * account at Stripe.
+		 */
+		if ( WC_Payments_Subscriptions::is_duplicate_site() ) {
+			return;
+		}
 
 		add_action( 'woocommerce_order_payment_status_changed', [ $this, 'maybe_record_invoice_payment' ], 10, 1 );
 		add_action( 'woocommerce_renewal_order_payment_complete', [ $this, 'maybe_record_invoice_payment' ], 11, 1 );
@@ -162,10 +182,17 @@ class WC_Payments_Invoice_Service {
 	 * or when a subscription with no corresponding Stripe subscription is manually renewed,
 	 * make sure the invoice is marked as paid (without charging the customer since it was charged on checkout).
 	 *
+	 * Note: this function has no impact on staging sites to prevent corrupting the live subscriptions on the WCPay account.
+	 *
 	 * @param int $order_id The WC order ID.
 	 * @throws API_Exception If the request to mark the invoice as paid fails.
 	 */
 	public function maybe_record_invoice_payment( int $order_id ) {
+
+		if ( WC_Payments_Subscriptions::is_duplicate_site() ) {
+			return;
+		}
+
 		$order = wc_get_order( $order_id );
 
 		if ( ! $order || self::get_order_invoice_id( $order ) ) {
@@ -260,10 +287,14 @@ class WC_Payments_Invoice_Service {
 	 *
 	 * @param WC_Order $order The order to update.
 	 * @param string   $intent_id The intent ID.
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function get_and_attach_intent_info_to_order( $order, $intent_id ) {
 		try {
-			$intent_object = $this->payments_api_client->get_intent( $intent_id );
+			$request       = Get_Intention::create( $intent_id );
+			$intent_object = $request->send( 'wcpay_get_intent_request', $order );
+
 		} catch ( API_Exception $e ) {
 			$order->add_order_note( __( 'The payment info couldn\'t be added to the order.', 'woocommerce-payments' ) );
 			return;
@@ -271,7 +302,7 @@ class WC_Payments_Invoice_Service {
 
 		$charge = $intent_object->get_charge();
 
-		$this->gateway->attach_intent_info_to_order(
+		$this->order_service->attach_intent_info_to_order(
 			$order,
 			$intent_id,
 			$intent_object->get_status(),

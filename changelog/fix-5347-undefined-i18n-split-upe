@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Add wp-i18n as split UPE script dependency to load split UPE elements.

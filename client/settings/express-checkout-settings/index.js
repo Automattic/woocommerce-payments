@@ -12,17 +12,17 @@ import './index.scss';
 import SettingsSection from '../settings-section';
 import { getPaymentSettingsUrl } from '../../utils';
 import PaymentRequestSettings from './payment-request-settings';
-import PlatformCheckoutSettings from './platform-checkout-settings';
+import WooPaySettings from './woopay-settings';
 import SettingsLayout from '../settings-layout';
 import LoadableSettingsSection from '../loadable-settings-section';
 import SaveSettingsSection from '../save-settings-section';
 import ErrorBoundary from '../../components/error-boundary';
-import WooIcon from 'wcpay/gateway-icons/woo';
-import ApplePay from 'wcpay/gateway-icons/apple-pay';
-import GooglePay from 'wcpay/gateway-icons/google-pay';
+import WooIcon from 'assets/images/payment-methods/woo.svg?asset';
+import ApplePay from 'assets/images/cards/apple-pay.svg?asset';
+import GooglePay from 'assets/images/cards/google-pay.svg?asset';
 
 const methods = {
-	platform_checkout: {
+	woopay: {
 		title: 'WooPay',
 		sections: [
 			{
@@ -30,7 +30,7 @@ const methods = {
 				description: () => (
 					<>
 						<div className="express-checkout-settings__icon">
-							<WooIcon />
+							<img src={ WooIcon } alt="WooPay" />
 						</div>
 						<p>
 							{ __(
@@ -66,7 +66,7 @@ const methods = {
 				),
 			},
 		],
-		controls: ( props ) => <PlatformCheckoutSettings { ...props } />,
+		controls: ( props ) => <WooPaySettings { ...props } />,
 	},
 	payment_request: {
 		title: 'Apple Pay / Google Pay',
@@ -77,10 +77,10 @@ const methods = {
 					<>
 						<div className="express-checkout-settings__icons">
 							<div className="express-checkout-settings__icon">
-								<ApplePay />
+								<img src={ ApplePay } alt="Apple Pay" />
 							</div>
 							<div className="express-checkout-settings__icon">
-								<GooglePay />
+								<img src={ GooglePay } alt="Google Pay" />
 							</div>
 						</div>
 						<p>
@@ -127,11 +127,11 @@ const ExpressCheckoutSettings = ( { methodId } ) => {
 
 	// Only show the 'general' section of the WooPay method if the WooPay express checkout feature is enabled.
 	if (
-		'WooPay' === method.title &&
+		method.title === 'WooPay' &&
 		! wcpaySettings.featureFlags.woopayExpressCheckout
 	) {
 		method.sections = method.sections.filter( ( section ) => {
-			return 'general' !== section.section;
+			return section.section !== 'general';
 		} );
 	}
 
@@ -140,10 +140,8 @@ const ExpressCheckoutSettings = ( { methodId } ) => {
 	return (
 		<SettingsLayout>
 			<h2 className="express-checkout-settings__breadcrumbs">
-				<a href={ getPaymentSettingsUrl() }>
-					{ __( 'WooCommerce Payments', 'woocommerce-payments' ) }
-				</a>{ ' ' }
-				&gt; <span>{ title }</span>
+				<a href={ getPaymentSettingsUrl() }>{ 'WooPayments' }</a> &gt;{ ' ' }
+				<span>{ title }</span>
 			</h2>
 
 			{ sections.map( ( { section, description } ) => (

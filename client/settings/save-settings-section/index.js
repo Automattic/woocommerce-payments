@@ -25,9 +25,9 @@ const SaveSettingsSection = ( { disabled = false } ) => {
 	] = useState( null );
 
 	if (
-		null === initialIsPaymentRequestEnabled &&
+		initialIsPaymentRequestEnabled === null &&
 		settings &&
-		'undefined' !== typeof settings.is_payment_request_enabled
+		typeof settings.is_payment_request_enabled !== 'undefined'
 	) {
 		setInitialIsPaymentRequestEnabled(
 			settings.is_payment_request_enabled

@@ -15,3 +15,7 @@ export function getUnformattedAmount( formattedAmount ) {
 export function formatDate( date, format ) {
 	return dateI18n( format, moment.utc( date ).toISOString(), true );
 }
+
+export function getUserTimeZone() {
+	return moment( new Date() ).format( 'Z' );
+}

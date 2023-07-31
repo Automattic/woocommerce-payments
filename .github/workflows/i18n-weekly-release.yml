@@ -10,19 +10,19 @@ jobs:
 
     steps:
       # clone the repository
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # Use project specific node version
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
 
       # enable dependencies caching (vendor and node_modules are wiped during build so they are ignored here)
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: ~/.cache/composer/
           key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: ~/.npm/
           key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}

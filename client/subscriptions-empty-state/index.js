@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import {
 	createInterpolateElement,
 	render,
@@ -13,8 +13,8 @@ import { Button } from '@wordpress/components';
 
 import wcpayTracks from '../tracks';
 
-import connectedImage from '../../assets/images/subscriptions-empty-state-connected.svg';
-import unconnectedImage from '../../assets/images/subscriptions-empty-state-unconnected.svg';
+import ConnectedImage from 'assets/images/subscriptions-empty-state-connected.svg?asset';
+import UnconnectedImage from 'assets/images/subscriptions-empty-state-unconnected.svg?asset';
 
 import './style.scss';
 
@@ -23,7 +23,7 @@ const {
 } = window;
 
 const Image = () => (
-	<img src={ isConnected ? connectedImage : unconnectedImage } alt="" />
+	<img src={ isConnected ? ConnectedImage : UnconnectedImage } alt="" />
 );
 
 const Description = () => (
@@ -34,10 +34,14 @@ const Description = () => (
 						'subscription product to turn one-time purchases into a steady income.',
 					'woocommerce-payments'
 			  )
-			: __(
-					'Track recurring revenue and manage active subscriptions directly from your store’s ' +
-						'dashboard — powered by WooCommerce Payments.',
-					'woocommerce-payments'
+			: sprintf(
+					/* translators: %s: WooPayments */
+					__(
+						'Track recurring revenue and manage active subscriptions directly from your store’s ' +
+							'dashboard — powered by %s.',
+						'woocommerce-payments'
+					),
+					'WooPayments'
 			  ) }
 	</p>
 );

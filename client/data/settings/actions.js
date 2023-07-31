@@ -182,7 +182,7 @@ export function updateDepositScheduleMonthlyAnchor(
 ) {
 	return updateSettingsValues( {
 		deposit_schedule_monthly_anchor:
-			'' === depositScheduleMonthlyAnchor
+			depositScheduleMonthlyAnchor === ''
 				? null
 				: parseInt( depositScheduleMonthlyAnchor, 10 ),
 	} );
@@ -213,7 +213,7 @@ export function* saveSettings() {
 		yield updateIsSavingSettings( false, error );
 	}
 
-	return null === error;
+	return error === null;
 }
 
 export function updatePaymentRequestLocations( locations ) {
@@ -222,24 +222,34 @@ export function updatePaymentRequestLocations( locations ) {
 	} );
 }
 
-export function updateIsPlatformCheckoutEnabled( isEnabled ) {
-	return updateSettingsValues( { is_platform_checkout_enabled: isEnabled } );
+export function updateIsWooPayEnabled( isEnabled ) {
+	return updateSettingsValues( { is_woopay_enabled: isEnabled } );
 }
 
-export function updatePlatformCheckoutCustomMessage( message ) {
+export function updateWooPayCustomMessage( message ) {
 	return updateSettingsValues( {
-		platform_checkout_custom_message: message,
+		woopay_custom_message: message,
 	} );
 }
 
-export function updatePlatformCheckoutStoreLogo( storeLogo ) {
+export function updateWooPayStoreLogo( storeLogo ) {
 	return updateSettingsValues( {
-		platform_checkout_store_logo: storeLogo,
+		woopay_store_logo: storeLogo,
 	} );
 }
 
-export function updatePlatformCheckoutLocations( locations ) {
+export function updateWooPayLocations( locations ) {
 	return updateSettingsValues( {
-		platform_checkout_enabled_locations: [ ...locations ],
+		woopay_enabled_locations: [ ...locations ],
+	} );
+}
+
+export function updateProtectionLevel( level ) {
+	return updateSettingsValues( { current_protection_level: level } );
+}
+
+export function updateAdvancedFraudProtectionSettings( settings ) {
+	return updateSettingsValues( {
+		advanced_fraud_protection_settings: settings,
 	} );
 }

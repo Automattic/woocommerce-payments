@@ -37,10 +37,7 @@ class WC_Payments_Admin_Settings_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_it_hides_test_mode_notice() {
-		$this->mock_gateway
-			->expects( $this->any() )
-			->method( 'is_in_test_mode' )
-			->willReturn( false );
+		WC_Payments::mode()->live();
 
 		ob_start();
 		$this->payments_admin_settings->display_test_mode_notice();
@@ -50,10 +47,7 @@ class WC_Payments_Admin_Settings_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_it_renders_test_mode_notice() {
-		$this->mock_gateway
-			->expects( $this->any() )
-			->method( 'is_in_test_mode' )
-			->willReturn( true );
+		WC_Payments::mode()->test();
 
 		ob_start();
 		$this->payments_admin_settings->display_test_mode_notice();

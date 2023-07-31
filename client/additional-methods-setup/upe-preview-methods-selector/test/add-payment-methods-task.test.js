@@ -213,7 +213,10 @@ describe( 'AddPaymentMethodsTask', () => {
 
 		expect(
 			screen.queryByText(
-				/(we\'ll add|and) Polish złoty \(zł\) (and|to your store)/
+				/(we\'ll add|and) Polish złoty \(zł\) (and|to your store)/,
+				{
+					ignore: '.a11y-speak-region',
+				}
 			)
 		).not.toBeInTheDocument();
 		expect( screen.getByText( 'Continue' ) ).toBeEnabled();
@@ -240,14 +243,17 @@ describe( 'AddPaymentMethodsTask', () => {
 		jest.useFakeTimers();
 		act( () => {
 			userEvent.click( screen.getByLabelText( 'Przelewy24 (P24)' ) );
-			jest.runAllTimers();
+			jest.runOnlyPendingTimers();
 		} );
 
 		expect( screen.getByText( 'Continue' ) ).toBeEnabled();
 
 		expect(
 			screen.queryByText(
-				/(we\'ll add|and) Polish złoty \(zł\) (and|to your store)/
+				/(we\'ll add|and) Polish złoty \(zł\) (and|to your store)/,
+				{
+					ignore: '.a11y-speak-region',
+				}
 			)
 		).toBeInTheDocument();
 
@@ -312,7 +318,7 @@ describe( 'AddPaymentMethodsTask', () => {
 			const methodsToCheck = [ 'Bancontact', 'giropay' ];
 			methodsToCheck.forEach( function ( checkboxName ) {
 				userEvent.click( screen.getByLabelText( checkboxName ) );
-				jest.runAllTimers();
+				jest.runOnlyPendingTimers();
 			} );
 		} );
 
@@ -423,7 +429,7 @@ describe( 'AddPaymentMethodsTask', () => {
 		act( () => {
 			// Enabling a PM with requirements should show the activation modal
 			userEvent.click( cardCheckbox );
-			jest.runAllTimers();
+			jest.runOnlyPendingTimers();
 		} );
 
 		expect(

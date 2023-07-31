@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Session_Rate_Limiter;
 
 /**
@@ -89,11 +90,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 					'is_server_connected',
 					'capture_intention',
 					'cancel_intention',
-					'get_intent',
-					'create_and_confirm_setup_intent',
-					'get_setup_intent',
 					'get_payment_method',
-					'refund_charge',
 				]
 			)
 			->getMock();
@@ -143,6 +140,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		$mock_action_scheduler_service = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
 		$mock_rate_limiter             = $this->createMock( Session_Rate_Limiter::class );
 		$mock_order_service            = $this->createMock( WC_Payments_Order_Service::class );
+		$mock_dpps                     = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 
 		return new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
@@ -151,7 +149,8 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 			$mock_token_service,
 			$mock_action_scheduler_service,
 			$mock_rate_limiter,
-			$mock_order_service
+			$mock_order_service,
+			$mock_dpps
 		);
 	}
 

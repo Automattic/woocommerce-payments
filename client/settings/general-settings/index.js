@@ -2,9 +2,9 @@
  * External dependencies
  */
 import React from 'react';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { Card, CheckboxControl } from '@wordpress/components';
-import interpolateComponents from 'interpolate-components';
+import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies
@@ -23,13 +23,18 @@ const GeneralSettings = () => {
 				<CheckboxControl
 					checked={ isWCPayEnabled }
 					onChange={ setIsWCPayEnabled }
-					label={ __(
-						'Enable WooCommerce Payments',
-						'woocommerce-payments'
+					label={ sprintf(
+						/* translators: %s: WooPayments */
+						__( 'Enable %s', 'woocommerce-payments' ),
+						'WooPayments'
 					) }
-					help={ __(
-						'When enabled, payment methods powered by WooCommerce Payments will appear on checkout.',
-						'woocommerce-payments'
+					help={ sprintf(
+						/* translators: %s: WooPayments */
+						__(
+							'When enabled, payment methods powered by %s will appear on checkout.',
+							'woocommerce-payments'
+						),
+						'WooPayments'
 					) }
 				/>
 				<h4>{ __( 'Test mode', 'woocommerce-payments' ) }</h4>
@@ -58,7 +63,8 @@ const GeneralSettings = () => {
 								<a
 									target="_blank"
 									rel="noreferrer"
-									href="https://woocommerce.com/document/payments/testing/#test-cards"
+									/* eslint-disable-next-line max-len */
+									href="https://woocommerce.com/document/woocommerce-payments/testing-and-troubleshooting/testing/#test-cards"
 								/>
 							),
 							learnMoreLink: (
@@ -66,7 +72,7 @@ const GeneralSettings = () => {
 								<a
 									target="_blank"
 									rel="noreferrer"
-									href="https://woocommerce.com/document/payments/testing/"
+									href="https://woocommerce.com/document/woocommerce-payments/testing-and-troubleshooting/testing/"
 								/>
 							),
 						},

@@ -3,7 +3,8 @@
  * External Dependencies
  */
 import { Query } from '@woocommerce/navigation';
-import { apiFetch, dispatch } from '@wordpress/data-controls';
+import { apiFetch } from '@wordpress/data-controls';
+import { controls } from '@wordpress/data';
 import { sprintf, __ } from '@wordpress/i18n';
 
 /**
@@ -72,14 +73,29 @@ export function updateAuthorizationsSummary(
 	};
 }
 
+export function setIsRequestingAuthorization(
+	data: boolean
+): { type: string; data: boolean } {
+	return { type: TYPES.SET_IS_REQUESTING_AUTHORIZATION, data };
+}
+
 export function* submitCaptureAuthorization(
 	paymentIntentId: string,
 	orderId: number
 ): Generator< unknown | Authorization > {
 	try {
-		yield dispatch( STORE_NAME, 'startResolution', 'getAuthorization', [
-			paymentIntentId,
-		] );
+		yield controls.dispatch(
+			STORE_NAME,
+			'startResolution',
+			'getAuthorization',
+			[ paymentIntentId ]
+		);
+
+		yield controls.dispatch(
+			STORE_NAME,
+			'setIsRequestingAuthorization',
+			true
+		);
 
 		const result = yield apiFetch( {
 			path: `/wc/v3/payments/orders/${ orderId }/capture_authorization`,
@@ -99,25 +115,44 @@ export function* submitCaptureAuthorization(
 		yield updateAuthorization( authorization as Authorization );
 
 		// Need to invalidate the resolution so that the components will render again.
-		yield dispatch(
+		yield controls.dispatch(
 			STORE_NAME,
 			'invalidateResolutionForStoreSelector',
 			'getAuthorizations'
 		);
 
-		yield dispatch(
+		yield controls.dispatch(
 			STORE_NAME,
 			'invalidateResolutionForStoreSelector',
 			'getAuthorizationsSummary'
 		);
 
-		yield dispatch(
+		yield controls.dispatch(
+			STORE_NAME,
+			'invalidateResolutionForStoreSelector',
+			'getFraudOutcomeTransactions'
+		);
+
+		yield controls.dispatch(
+			STORE_NAME,
+			'invalidateResolutionForStoreSelector',
+			'getFraudOutcomeTransactionsSummary'
+		);
+
+		yield controls.dispatch(
 			STORE_NAME,
 			'invalidateResolutionForStoreSelector',
 			'getTimeline'
 		);
+
+		yield controls.dispatch(
+			STORE_NAME,
+			'invalidateResolutionForStoreSelector',
+			'getPaymentIntent'
+		);
+
 		// Create success notice.
-		yield dispatch(
+		yield controls.dispatch(
 			'core/notices',
 			'createSuccessNotice',
 			sprintf(
@@ -130,7 +165,7 @@ export function* submitCaptureAuthorization(
 			)
 		);
 	} catch ( error ) {
-		yield dispatch(
+		yield controls.dispatch(
 			'core/notices',
 			'createErrorNotice',
 			sprintf(
@@ -143,9 +178,131 @@ export function* submitCaptureAuthorization(
 			)
 		);
 	} finally {
-		yield dispatch( STORE_NAME, 'finishResolution', 'getAuthorization', [
-			paymentIntentId,
-		] );
+		yield controls.dispatch(
+			STORE_NAME,
+			'finishResolution',
+			'getAuthorization',
+			[ paymentIntentId ]
+		);
+		yield controls.dispatch(
+			STORE_NAME,
+			'setIsRequestingAuthorization',
+			false
+		);
+	}
+}
+
+export function* submitCancelAuthorization(
+	paymentIntentId: string,
+	orderId: number
+): Generator< unknown | Authorization > {
+	try {
+		yield controls.dispatch(
+			STORE_NAME,
+			'startResolution',
+			'getAuthorization',
+			[ paymentIntentId ]
+		);
+
+		yield controls.dispatch(
+			STORE_NAME,
+			'setIsRequestingAuthorization',
+			true
+		);
+
+		const result = yield apiFetch( {
+			path: `/wc/v3/payments/orders/${ orderId }/cancel_authorization`,
+			method: 'post',
+			data: {
+				payment_intent_id: paymentIntentId,
+			},
+		} );
+
+		const authorization = {
+			payment_intent_id: ( result as CaptureAuthorizationApiResponse ).id,
+			captured:
+				( result as CaptureAuthorizationApiResponse ).status ===
+				'succeeded',
+		};
+
+		yield updateAuthorization( authorization as Authorization );
+
+		// Need to invalidate the resolution so that the components will render again.
+		yield controls.dispatch(
+			STORE_NAME,
+			'invalidateResolutionForStoreSelector',
+			'getAuthorizations'
+		);
+
+		yield controls.dispatch(
+			STORE_NAME,
+			'invalidateResolutionForStoreSelector',
+			'getAuthorizationsSummary'
+		);
+
+		yield controls.dispatch(
+			STORE_NAME,
+			'invalidateResolutionForStoreSelector',
+			'getFraudOutcomeTransactions'
+		);
+
+		yield controls.dispatch(
+			STORE_NAME,
+			'invalidateResolutionForStoreSelector',
+			'getFraudOutcomeTransactionsSummary'
+		);
+
+		yield controls.dispatch(
+			STORE_NAME,
+			'invalidateResolutionForStoreSelector',
+			'getTimeline'
+		);
+
+		yield controls.dispatch(
+			STORE_NAME,
+			'invalidateResolutionForStoreSelector',
+			'getPaymentIntent'
+		);
+
+		// Create success notice.
+		yield controls.dispatch(
+			'core/notices',
+			'createSuccessNotice',
+			sprintf(
+				// translators: %s Order id
+				__(
+					'Payment for order #%s canceled successfully.',
+					'woocommerce-payments'
+				),
+				orderId
+			)
+		);
+	} catch ( error ) {
+		yield controls.dispatch(
+			'core/notices',
+			'createErrorNotice',
+			sprintf(
+				// translators: %s Order id
+				__(
+					'There has been an error canceling the payment for order #%s. Please try again later.',
+					'woocommerce-payments'
+				),
+				orderId
+			)
+		);
+	} finally {
+		yield controls.dispatch(
+			STORE_NAME,
+			'finishResolution',
+			'getAuthorization',
+			[ paymentIntentId ]
+		);
+
+		yield controls.dispatch(
+			STORE_NAME,
+			'setIsRequestingAuthorization',
+			false
+		);
 	}
 }
 

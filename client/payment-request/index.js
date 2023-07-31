@@ -62,7 +62,7 @@ jQuery( ( $ ) => {
 					$( this ).attr( 'name' );
 				const value = $( this ).val() || '';
 
-				if ( 0 < value.length ) {
+				if ( value.length > 0 ) {
 					chosen++;
 				}
 
@@ -366,7 +366,7 @@ jQuery( ( $ ) => {
 					return;
 				}
 
-				if ( 0 < paymentRequestError.length ) {
+				if ( paymentRequestError.length > 0 ) {
 					evt.preventDefault();
 					window.alert( paymentRequestError );
 					return;
@@ -440,7 +440,7 @@ jQuery( ( $ ) => {
 
 		getElements: () => {
 			return $(
-				'#wcpay-payment-request-wrapper,#wcpay-payment-request-button-separator'
+				'.wcpay-payment-request-wrapper,#wcpay-payment-request-button-separator'
 			);
 		},
 

@@ -2,27 +2,22 @@
  * External dependencies
  */
 import config from 'config';
-
-const {
-	createSimpleProduct,
-	uiUnblocked,
-} = require( '@woocommerce/e2e-utils' );
-
 /**
  * Internal dependencies
  */
 import { shopperWCP } from '../../../utils';
 
 import {
-	fillCardDetails,
 	clearCardDetails,
-	setupProductCheckout,
 	confirmCardAuthentication,
+	fillCardDetails,
+	setupProductCheckout,
 } from '../../../utils/payments';
+
+const { uiUnblocked } = require( '@woocommerce/e2e-utils' );
 
 describe( 'Shopper > Checkout > Failures with various cards', () => {
 	beforeAll( async () => {
-		await createSimpleProduct();
 		await setupProductCheckout(
 			config.get( 'addresses.customer.billing' )
 		);
@@ -54,6 +49,9 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 	it( 'should throw an error that the card expiration date is in the past', async () => {
 		const cardInvalidExpDate = config.get( 'cards.invalid-exp-date' );
 		await fillCardDetails( page, cardInvalidExpDate );
+		await page.waitForSelector(
+			'div#wcpay-errors > ul.woocommerce-error > li'
+		);
 		await expect( page ).toMatchElement(
 			'div#wcpay-errors > ul.woocommerce-error > li',
 			{
@@ -151,7 +149,6 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 
 	it( 'should throw an error that the card was declined due to invalid 3DS card', async () => {
 		const declinedCard = config.get( 'cards.declined-3ds' );
-		await uiUnblocked();
 		await fillCardDetails( page, declinedCard );
 		await expect( page ).toClick( '#place_order' );
 		await confirmCardAuthentication( page, '3DS' );
