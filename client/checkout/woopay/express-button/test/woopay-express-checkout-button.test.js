@@ -188,7 +188,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			} );
 		} );
 
-		test( 'do not call call `addToCart` on express button click on product page when validation fails', async () => {
+		test( 'do not call `addToCart` on express button click on product page when validation fails', async () => {
 			useExpressCheckoutProductHandler.mockImplementation( () => ( {
 				addToCart: mockAddToCart,
 				getProductData: jest.fn().mockReturnValue( false ),
