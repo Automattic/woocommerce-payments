@@ -22,7 +22,7 @@ class WooContainerDelegate implements ContainerInterface {
 	 * @param string $id Identifier of the entry to look for.
 	 * @return mixed Entry.
 	 */
-	public function get( string $id ) {
+	public function get( $id ) {
 		return wc_get_container()->get( $id );
 	}
 
@@ -33,7 +33,7 @@ class WooContainerDelegate implements ContainerInterface {
 	 * @param string $id Identifier of the entry to look for.
 	 * @return bool
 	 */
-	public function has( string $id ) {
+	public function has( $id ) {
 		return wc_get_container()->has( $id );
 	}
 }
