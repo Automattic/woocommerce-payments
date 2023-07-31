@@ -170,10 +170,10 @@ const PaymentMethodCheckbox = ( {
 					{ disabled && (
 						<HoverTooltip
 							content={ interpolateComponents( {
-								//TODO: translators hint.
+								// translators: {{learnMoreLink}}: placeholders are opening and closing anchor tags.
 								mixedString: __(
 									'We need more information from you to enable this method. ' +
-										'{{learnMoreLink}}Learn more.{{/learnMoreLink}},',
+										'{{learnMoreLink}}Learn more.{{/learnMoreLink}}',
 									'woocommerce-payments'
 								),
 								components: {
