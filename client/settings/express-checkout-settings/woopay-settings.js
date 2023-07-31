@@ -54,7 +54,7 @@ const WooPaySettings = ( { section } ) => {
 
 	return (
 		<Card className="woopay-settings">
-			{ 'enable' === section && (
+			{ section === 'enable' && (
 				<CardBody>
 					{ showIncompatibilityNotice && (
 						<WooPayIncompatibilityNotice />
@@ -172,7 +172,7 @@ const WooPaySettings = ( { section } ) => {
 				</CardBody>
 			) }
 
-			{ 'appearance' === section && (
+			{ section === 'appearance' && (
 				<CardBody style={ { marginTop: 12 } }>
 					<div className="woopay-settings__preview">
 						<WooPayPreview
@@ -227,7 +227,7 @@ const WooPaySettings = ( { section } ) => {
 				</CardBody>
 			) }
 
-			{ 'general' === section && (
+			{ section === 'general' && (
 				<GeneralPaymentRequestButtonSettings type="woopay" />
 			) }
 		</Card>
