@@ -10,6 +10,7 @@ use Automattic\WooCommerce\Admin\PageController;
 use WCPay\Core\Server\Request;
 use WCPay\Database_Cache;
 use WCPay\Logger;
+use WCPay\WooPay\WooPay_Utilities;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -828,7 +829,7 @@ class WC_Payments_Admin {
 			'frtDiscoverBannerSettings'     => get_option( 'wcpay_frt_discover_banner_settings', '' ),
 			'storeCurrency'                 => get_option( 'woocommerce_currency' ),
 			'isBnplAffirmAfterpayEnabled'   => WC_Payments_Features::is_bnpl_affirm_afterpay_enabled(),
-			'isWooPayStoreCountryAvailable' => WC_Payments_Features::is_woopay_eligible(),
+			'isWooPayStoreCountryAvailable' => WooPay_Utilities::is_store_country_available(),
 		];
 
 		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );
