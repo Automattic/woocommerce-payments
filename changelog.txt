@@ -1,5 +1,8 @@
 *** WooCommerce Payments Changelog ***
 
+= 6.0.1 - 2023-07-31 =
+* Fix - Enhance query parameters validation in redirected requests.
+
 = 6.0.0 - 2023-06-08 =
 * Add - Show Progressive Onboarding Express using Explat experiment
 * Fix - Add a session check to avoid fatal errors.
