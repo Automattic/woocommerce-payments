@@ -75,6 +75,15 @@ final class SessionHandler extends WC_Session {
 	}
 
 	/**
+	 * Return true if the current user has an active session,.
+	 *
+	 * @return bool
+	 */
+	public function has_session() {
+		return ! empty( $this->token );
+	}
+
+	/**
 	 * Returns the session.
 	 *
 	 * @param string $customer_id Customer ID.
