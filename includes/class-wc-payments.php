@@ -1525,7 +1525,7 @@ class WC_Payments {
 			'wcpay_version'        => WCPAY_VERSION_NUMBER,
 			'user_id'              => $user->ID,
 			'customer_id'          => $customer_id,
-			'session_nonce'        => wp_create_nonce( 'wc_store_api' ),
+			'session_nonce'        => self::create_woopay_nonce( $user->ID ),
 			'store_api_token'      => self::init_store_api_token(),
 			'email'                => $email,
 			'store_data'           => [
@@ -1877,5 +1877,21 @@ class WC_Payments {
 			</p>
 		</div>
 		<?php
+	}
+
+	/**
+	 * WooPay requests to the merchant API does not include a cookie, so the token
+	 * is always empty. This function creates a nonce that can be used without
+	 * a cookie.
+	 *
+	 * @param int $uid The uid to be used for the nonce. Most likely the user ID.
+	 * @return false|string
+	 */
+	private static function create_woopay_nonce( int $uid ) {
+		$action = 'wc_store_api';
+		$token  = '';
+		$i      = wp_nonce_tick( $action );
+
+		return substr( wp_hash( $i . '|' . $action . '|' . $uid . '|' . $token, 'nonce' ), -12, 10 );
 	}
 }
