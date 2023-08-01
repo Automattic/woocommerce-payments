@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed the creation of the nonce that is sent to WooPay

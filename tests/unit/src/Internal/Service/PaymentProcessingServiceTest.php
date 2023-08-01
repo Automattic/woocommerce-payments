@@ -2,13 +2,13 @@
 /**
  * Class PaymentProcessingServiceTest
  *
- * @package WooPayments
+ * @package WooCommerce\Payments
  */
 
-namespace WooPayments\Tests\Internal\Service;
+namespace WCPay\Tests\Internal\Service;
 
 use WCPAY_UnitTestCase;
-use WooPayments\Internal\Service\PaymentProcessingService;
+use WCPay\Internal\Service\PaymentProcessingService;
 
 /**
  * Payment processing service unit tests.
