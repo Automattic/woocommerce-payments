@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { useContext, useEffect } from 'react';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { dispatch } from '@wordpress/data';
 import { Button, RadioControl, TextareaControl } from '@wordpress/components';
 
@@ -94,9 +94,13 @@ const SurveyModalBody = ( { options, surveyQuestion } ) => {
 			) }
 
 			<p className="survey-bottom-disclaimer">
-				{ __(
-					'Feedback will be sent anonymously to the WooCommerce Payments development team.',
-					'woocommerce-payments'
+				{ sprintf(
+					/* translators: %s: WooPayments */
+					__(
+						'Feedback will be sent anonymously to the %s development team.',
+						'woocommerce-payments'
+					),
+					'WooPayments'
 				) }
 			</p>
 		</>
@@ -149,7 +153,7 @@ const SurveyModal = ( { setOpenModal, surveyKey, surveyQuestion } ) => {
 	useEffect( () => {
 		if ( ! surveyKey || ! surveyQuestion ) {
 			surveyCannotBeLoadedNotice();
-		} else if ( 'error' === status ) {
+		} else if ( status === 'error' ) {
 			submissionErrorNotice();
 		} else if ( isSurveySubmitted ) {
 			surveySubmittedConfirmation();
@@ -157,7 +161,7 @@ const SurveyModal = ( { setOpenModal, surveyKey, surveyQuestion } ) => {
 		}
 	}, [ status, isSurveySubmitted, surveyKey, surveyQuestion, setOpenModal ] );
 
-	if ( 1 > optionsArray ) return null;
+	if ( optionsArray < 1 ) return null;
 
 	return (
 		<>
@@ -172,15 +176,15 @@ const SurveyModal = ( { setOpenModal, surveyKey, surveyQuestion } ) => {
 					<>
 						<Button
 							isSecondary
-							disabled={ 'pending' === status }
+							disabled={ status === 'pending' }
 							onClick={ () => setOpenModal( '' ) }
 						>
 							{ __( 'Cancel', 'woocommerce-payments' ) }
 						</Button>
 						<Button
 							isPrimary
-							isBusy={ 'pending' === status }
-							disabled={ 'pending' === status }
+							isBusy={ status === 'pending' }
+							disabled={ status === 'pending' }
 							onClick={ () => submitSurvey() }
 						>
 							{ __( 'Send feedback', 'woocommerce-payments' ) }

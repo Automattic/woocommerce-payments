@@ -8,6 +8,7 @@
 namespace WCPay\MultiCurrency\Compatibility;
 
 use WC_Payments_Features;
+use WCPay\Logger;
 use WCPay\MultiCurrency\MultiCurrency;
 
 /**
@@ -84,7 +85,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 
 			// There should only ever be one item, so use that item.
 			$item                   = array_shift( $switch_cart_items );
-			$item_id                = isset( $item['variation_id'] ) ? $item['variation_id'] : $item['product_id'];
+			$item_id                = ! empty( $item['variation_id'] ) ? $item['variation_id'] : $item['product_id'];
 			$switch_cart_item       = $this->switch_cart_item;
 			$this->switch_cart_item = $item['key'];
 
@@ -354,11 +355,31 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 * @return int|bool The ID of the subscription being switched, or false if it cannot be found.
 	 */
 	private function get_subscription_switch_id_from_superglobal() {
-		if ( isset( $_GET['_wcsnonce'] ) && wp_verify_nonce( sanitize_key( $_GET['_wcsnonce'] ), 'wcs_switch_request' ) ) {
-			if ( isset( $_GET['switch-subscription'] ) ) {
-				return (int) $_GET['switch-subscription'];
-			}
+		// Return false if there's no nonce, or if it fails.
+		if ( ! isset( $_GET['_wcsnonce'] ) || ! wp_verify_nonce( sanitize_key( $_GET['_wcsnonce'] ), 'wcs_switch_request' ) ) {
+			return false;
 		}
+
+		// Return false if the param isn't set, or if it isn't numeric.
+		if ( ! isset( $_GET['switch-subscription'] ) || ! is_numeric( $_GET['switch-subscription'] ) ) {
+			return false;
+		}
+
+		// Get the switch ID from the param.
+		$switch_id = (int) sanitize_key( $_GET['switch-subscription'] );
+
+		// Get the sub, preventing an infinite loop with running_override_selected_currency_filters.
+		$this->running_override_selected_currency_filters = true;
+		$switch_subscription                              = $this->get_subscription( $switch_id );
+		$this->running_override_selected_currency_filters = false;
+
+		// Confirm the sub user matches current user, and return the sub ID.
+		if ( $switch_subscription && $switch_subscription->get_customer_id() === get_current_user_id() ) {
+			return $switch_subscription->get_id();
+		} else {
+			Logger::notice( 'User (' . get_current_user_id() . ') attempted to switch a subscription (' . $switch_subscription->get_id() . ') not assigned to them.' );
+		}
+
 		return false;
 	}
 
@@ -383,23 +404,32 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 * @return bool True if found in the cart, false if not.
 	 */
 	private function is_product_subscription_type_in_cart( $product, $type ): bool {
+		if ( ! function_exists( 'wcs_get_subscription' ) ) {
+			return false;
+		}
+
 		$subscription = false;
 
 		switch ( $type ) {
 			case 'renewal':
-				$subscription = $this->cart_contains_renewal();
+				$subscription_item = $this->cart_contains_renewal();
+
+				if ( $subscription_item ) {
+					$subscription = wcs_get_subscription( $subscription_item['subscription_renewal']['subscription_id'] );
+				}
 				break;
 
 			case 'resubscribe':
-				$subscription = $this->cart_contains_resubscribe();
+				$subscription_item = $this->cart_contains_resubscribe();
+
+				if ( $subscription_item ) {
+					$subscription = wcs_get_subscription( $subscription_item['subscription_resubscribe']['subscription_id'] );
+				}
 				break;
 		}
 
-		if ( $subscription && $product ) {
-			if ( ( isset( $subscription['variation_id'] ) && $subscription['variation_id'] === $product->get_id() )
-				|| $subscription['product_id'] === $product->get_id() ) {
-				return true;
-			}
+		if ( $subscription && $product && $subscription->has_product( $product->get_id() ) ) {
+			return true;
 		}
 
 		return false;

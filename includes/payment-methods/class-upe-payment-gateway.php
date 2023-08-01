@@ -7,6 +7,8 @@
 
 namespace WCPay\Payment_Methods;
 
+use WC_Payments_API_Payment_Intention;
+use WC_Payments_API_Setup_Intention;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Constants\Payment_Method;
@@ -15,6 +17,8 @@ use WCPay\Core\Server\Request\Create_Intention;
 use WCPay\Core\Server\Request\Create_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
+use WCPay\Core\Server\Request;
+use WCPay\Core\Server\Request\Get_Setup_Intention;
 use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
@@ -38,6 +42,7 @@ use WC_Payments_Token_Service;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Utils;
 use WC_Payments_Features;
+use WCPay\Duplicate_Payment_Prevention_Service;
 use WP_User;
 
 
@@ -62,6 +67,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 	const KEY_UPE_SETUP_INTENT = 'wcpay_upe_setup_intent';
 
+	const PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE = 'upe_process_redirect_order_id_mismatched';
+
 	/**
 	 * Array mapping payment method string IDs to classes
 	 *
@@ -79,14 +86,15 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * UPE Constructor same parameters as WC_Payment_Gateway_WCPay constructor.
 	 *
-	 * @param WC_Payments_API_Client               $payments_api_client             - WooCommerce Payments API client.
-	 * @param WC_Payments_Account                  $account                         - Account class instance.
-	 * @param WC_Payments_Customer_Service         $customer_service                - Customer class instance.
-	 * @param WC_Payments_Token_Service            $token_service                   - Token class instance.
-	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service        - Action Scheduler service instance.
-	 * @param array                                $payment_methods                 - Array of UPE payment methods.
-	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter - Session Rate Limiter instance.
-	 * @param WC_Payments_Order_Service            $order_service                   - Order class instance.
+	 * @param WC_Payments_API_Client               $payments_api_client                  - WooCommerce Payments API client.
+	 * @param WC_Payments_Account                  $account                              - Account class instance.
+	 * @param WC_Payments_Customer_Service         $customer_service                     - Customer class instance.
+	 * @param WC_Payments_Token_Service            $token_service                        - Token class instance.
+	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service             - Action Scheduler service instance.
+	 * @param array                                $payment_methods                      - Array of UPE payment methods.
+	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter      - Session Rate Limiter instance.
+	 * @param WC_Payments_Order_Service            $order_service                        - Order class instance.
+	 * @param Duplicate_Payment_Prevention_Service $duplicate_payment_prevention_service - Service for preventing duplicate payments.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
@@ -96,10 +104,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		WC_Payments_Action_Scheduler_Service $action_scheduler_service,
 		array $payment_methods,
 		Session_Rate_Limiter $failed_transaction_rate_limiter,
-		WC_Payments_Order_Service $order_service
+		WC_Payments_Order_Service $order_service,
+		Duplicate_Payment_Prevention_Service $duplicate_payment_prevention_service
 	) {
-		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $failed_transaction_rate_limiter, $order_service );
-		$this->title           = __( 'WooCommerce Payments', 'woocommerce-payments' );
+		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $failed_transaction_rate_limiter, $order_service, $duplicate_payment_prevention_service );
+		$this->title           = 'WooPayments';
 		$this->description     = '';
 		$this->checkout_title  = __( 'Popular payment methods', 'woocommerce-payments' );
 		$this->payment_methods = $payment_methods;
@@ -111,10 +120,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return void
 	 */
 	public function init_hooks() {
+		// Initializing a hook within this function increases the probability of multiple calls for each split UPE gateway. Consider adding the hook in the parent hook initialization.
 		if ( ! is_admin() ) {
 			add_filter( 'woocommerce_gateway_title', [ $this, 'maybe_filter_gateway_title' ], 10, 2 );
 		}
-		add_action( 'woocommerce_email_before_order_table', [ $this, 'set_payment_method_title_for_email' ], 10, 3 );
 		parent::init_hooks();
 	}
 
@@ -202,13 +211,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			return;
 		}
 
-		$check_session_order = $this->check_against_session_processing_order( $order );
+		$check_session_order = $this->duplicate_payment_prevention_service->check_against_session_processing_order( $order );
 		if ( is_array( $check_session_order ) ) {
 			return $check_session_order;
 		}
-		$this->maybe_update_session_processing_order( $order_id );
+		$this->duplicate_payment_prevention_service->maybe_update_session_processing_order( $order_id );
 
-		$check_existing_intention = $this->check_payment_intent_attached_to_order_succeeded( $order );
+		$check_existing_intention = $this->duplicate_payment_prevention_service->check_payment_intent_attached_to_order_succeeded( $order );
 		if ( is_array( $check_existing_intention ) ) {
 			return $check_existing_intention;
 		}
@@ -237,7 +246,18 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$request->set_customer( $customer_id );
 			}
 
-			$request->send( 'wcpay_update_intention_request', $order, $payment_intent_id );
+			$updated_payment_intent = $request->send( 'wcpay_update_intention_request', $order, $payment_intent_id );
+
+			// Attach the intent and exchange info to the order before doing the redirect,
+			// so that when processing redirect, the up-to-date intent information is available.
+			$intent_id      = $updated_payment_intent->get_id();
+			$intent_status  = $updated_payment_intent->get_status();
+			$payment_method = $updated_payment_intent->get_payment_method_id();
+			$charge         = $updated_payment_intent->get_charge();
+			$charge_id      = $charge ? $charge->get_id() : null;
+
+			$this->order_service->attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency );
+			$this->attach_exchange_info_to_order( $order, $charge_id );
 		}
 
 		return [
@@ -413,11 +433,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$request = Create_Setup_Intention::create();
 		$request->set_customer( $customer_id );
 		$request->set_payment_method_types( array_values( $displayed_payment_methods ) );
+		/** @var WC_Payments_API_Setup_Intention $setup_intent */  // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 		$setup_intent = $request->send( 'wcpay_create_setup_intention_request' );
 
 		return [
-			'id'            => $setup_intent['id'],
-			'client_secret' => $setup_intent['client_secret'],
+			'id'            => $setup_intent->get_id(),
+			'client_secret' => $setup_intent->get_client_secret(),
 		];
 	}
 
@@ -498,13 +519,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $exception ) );
 				}
 
-				$check_session_order = $this->check_against_session_processing_order( $order );
+				$check_session_order = $this->duplicate_payment_prevention_service->check_against_session_processing_order( $order );
 				if ( is_array( $check_session_order ) ) {
 					return $check_session_order;
 				}
-				$this->maybe_update_session_processing_order( $order_id );
+				$this->duplicate_payment_prevention_service->maybe_update_session_processing_order( $order_id );
 
-				$check_existing_intention = $this->check_payment_intent_attached_to_order_succeeded( $order );
+				$check_existing_intention = $this->duplicate_payment_prevention_service->check_payment_intent_attached_to_order_succeeded( $order );
 				if ( is_array( $check_existing_intention ) ) {
 					return $check_existing_intention;
 				}
@@ -563,7 +584,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$this->attach_exchange_info_to_order( $order, $charge_id );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 				if ( Payment_Intent_Status::SUCCEEDED === $intent_status ) {
-					$this->remove_session_processing_order( $order->get_id() );
+					$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 				}
 				$this->order_service->update_order_status_from_intent( $order, $updated_payment_intent );
 
@@ -584,7 +605,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				esc_url_raw(
 					add_query_arg(
 						[
-							'order_id'            => $order_id,
 							'wc_payment_method'   => self::GATEWAY_ID,
 							'_wpnonce'            => wp_create_nonce( 'wcpay_process_redirect_order_nonce' ),
 							'save_payment_method' => $save_payment_method ? 'yes' : 'no',
@@ -665,40 +685,54 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		}
 
 		if ( ! empty( $_GET['payment_intent_client_secret'] ) ) {
-			$intent_id = isset( $_GET['payment_intent'] ) ? wc_clean( wp_unslash( $_GET['payment_intent'] ) ) : '';
+			$intent_id_from_request = isset( $_GET['payment_intent'] ) ? wc_clean( wp_unslash( $_GET['payment_intent'] ) ) : '';
 		} elseif ( ! empty( $_GET['setup_intent_client_secret'] ) ) {
-			$intent_id = isset( $_GET['setup_intent'] ) ? wc_clean( wp_unslash( $_GET['setup_intent'] ) ) : '';
+			$intent_id_from_request = isset( $_GET['setup_intent'] ) ? wc_clean( wp_unslash( $_GET['setup_intent'] ) ) : '';
 		} else {
 			return;
 		}
 
-		$order_id            = isset( $_GET['order_id'] ) ? wc_clean( wp_unslash( $_GET['order_id'] ) ) : '';
-		$save_payment_method = isset( $_GET['save_payment_method'] ) ? 'yes' === wc_clean( wp_unslash( $_GET['save_payment_method'] ) ) : false;
+		$order_id               = absint( get_query_var( 'order-received' ) );
+		$order_key_from_request = isset( $_GET['key'] ) ? wc_clean( wp_unslash( $_GET['key'] ) ) : '';
+		$save_payment_method    = isset( $_GET['save_payment_method'] ) ? 'yes' === wc_clean( wp_unslash( $_GET['save_payment_method'] ) ) : false;
 
-		if ( empty( $intent_id ) || empty( $order_id ) ) {
+		if ( empty( $intent_id_from_request ) || empty( $order_id ) || empty( $order_key_from_request ) ) {
 			return;
 		}
 
-		$this->process_redirect_payment( $order_id, $intent_id, $save_payment_method );
+		$order = wc_get_order( $order_id );
+
+		if ( ! is_a( $order, 'WC_Order' ) ) {
+			// the ID of non-existing order was passed in.
+			return;
+		}
+
+		if ( $order->get_order_key() !== $order_key_from_request ) {
+			// Valid return url should have matching order key.
+			return;
+		}
+
+		// Perform additional checks for non-zero-amount. For zero-amount orders, we can't compare intents because they are not attached to the order at this stage.
+		// Once https://github.com/Automattic/woocommerce-payments/issues/6575 is closed, this check can be applied for zero-amount orders as well.
+		if ( $order->get_total() > 0 && ! $this->is_proper_intent_used_with_order( $order, $intent_id_from_request ) ) {
+			return;
+		}
+
+		$this->process_redirect_payment( $order, $intent_id_from_request, $save_payment_method );
 	}
 
 	/**
 	 * Processes redirect payments.
 	 *
-	 * @param int|string $order_id The order ID being processed.
-	 * @param string     $intent_id The Stripe setup/payment intent ID for the order payment.
-	 * @param bool       $save_payment_method Boolean representing whether payment method for order should be saved.
+	 * @param WC_Order $order The order being processed.
+	 * @param string   $intent_id The Stripe setup/payment intent ID for the order payment.
+	 * @param bool     $save_payment_method Boolean representing whether payment method for order should be saved.
 	 *
 	 * @throws Process_Payment_Exception When the payment intent has an error.
 	 */
-	public function process_redirect_payment( $order_id, $intent_id, $save_payment_method ) {
+	public function process_redirect_payment( $order, $intent_id, $save_payment_method ) {
 		try {
-			$order = wc_get_order( $order_id );
-
-			if ( ! is_object( $order ) ) {
-				return;
-			}
-
+			$order_id = $order->get_id();
 			if ( $order->has_status(
 				[
 					Order_Status::PROCESSING,
@@ -709,7 +743,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				return;
 			}
 
-			Logger::log( "Begin processing UPE redirect payment for order $order_id for the amount of {$order->get_total()}" );
+			Logger::log( "Begin processing UPE redirect payment for order {$order_id} for the amount of {$order->get_total()}" );
 
 			// Get user/customer for order.
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
@@ -719,7 +753,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			// Get payment intent to confirm status.
 			if ( $payment_needed ) {
 				$request = Get_Intention::create( $intent_id );
-
+				/** @var WC_Payments_API_Payment_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 				$intent                 = $request->send( 'wcpay_get_intent_request', $order );
 				$client_secret          = $intent->get_client_secret();
 				$status                 = $intent->get_status();
@@ -730,18 +764,25 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
 				$payment_method_type    = $this->get_payment_method_type_from_payment_details( $payment_method_details );
 				$error                  = $intent->get_last_payment_error();
+
+				// This check applies to payment intents only due to two reasons:
+				// (1) metadata is missed for setup intents. See https://github.com/Automattic/woocommerce-payments/issues/6575.
+				// (2) most issues so far affect only payment intents.
+				$intent_metadata = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
+				$this->validate_order_id_received_vs_intent_meta_order_id( $order, $intent_metadata );
 			} else {
-				$intent                 = $this->payments_api_client->get_setup_intent( $intent_id );
-				$client_secret          = $intent['client_secret'];
-				$status                 = $intent['status'];
+				$request = Get_Setup_Intention::create( $intent_id );
+				/** @var WC_Payments_API_Setup_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+				$intent                 = $request->send( 'wcpay_get_setup_intent_request' );
+				$client_secret          = $intent->get_client_secret();
+				$status                 = $intent->get_status();
 				$charge_id              = '';
 				$charge                 = null;
 				$currency               = $order->get_currency();
-				$payment_method_id      = $intent['payment_method'];
+				$payment_method_id      = $intent->get_payment_method_id();
 				$payment_method_details = false;
-				$payment_method_options = array_keys( $intent['payment_method_options'] );
-				$payment_method_type    = $payment_method_options ? $payment_method_options[0] : null;
-				$error                  = $intent['last_setup_error'];
+				$payment_method_type    = $intent->get_payment_method_type();
+				$error                  = $intent->get_last_setup_error();
 			}
 
 			if ( ! empty( $error ) ) {
@@ -769,7 +810,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$this->order_service->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method_id, $customer_id, $charge_id, $currency );
 				$this->attach_exchange_info_to_order( $order, $charge_id );
 				if ( Payment_Intent_Status::SUCCEEDED === $status ) {
-					$this->remove_session_processing_order( $order->get_id() );
+					$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 				}
 				$this->order_service->update_order_status_from_intent( $order, $intent );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
@@ -799,20 +840,57 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		} catch ( Exception $e ) {
 			Logger::log( 'Error: ' . $e->getMessage() );
 
-			// Confirm our needed variables are set before using them due to there could be a server issue during the get_intent process.
-			$status    = $status ?? null;
-			$charge_id = $charge_id ?? null;
+			$is_order_id_mismatched_exception =
+				is_a( $e, Process_Payment_Exception::class )
+				&& self::PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE === $e->get_error_code();
 
-			/* translators: localized exception message */
-			$message = sprintf( __( 'UPE payment failed: %s', 'woocommerce-payments' ), $e->getMessage() );
-			$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id, $message );
+			// If the order ID mismatched exception is thrown, do not mark the order as failed.
+			// Because the outcome of the payment intent is for another order, not for the order processed here.
+			if ( ! $is_order_id_mismatched_exception ) {
+				// Confirm our needed variables are set before using them due to there could be a server issue during the get_intent process.
+				$status    = $status ?? null;
+				$charge_id = $charge_id ?? null;
+
+				/* translators: localized exception message */
+				$message = sprintf( __( 'UPE payment failed: %s', 'woocommerce-payments' ), $e->getMessage() );
+				$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id, $message );
+			}
 
 			self::remove_upe_payment_intent_from_session();
 
 			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
-			wp_safe_redirect( wc_get_checkout_url() );
+
+			$redirect_url = wc_get_checkout_url();
+			if ( $is_order_id_mismatched_exception ) {
+				$redirect_url = add_query_arg( self::PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE, 'yes', $redirect_url );
+			}
+			wp_safe_redirect( $redirect_url );
 			exit;
 		}
+	}
+
+	/**
+	 * Verifies that the proper intent is used to process the order.
+	 *
+	 * @param WC_Order $order The order object based on the order_id received from the request.
+	 * @param string   $intent_id_from_request The intent ID received from the request.
+	 *
+	 * @return bool True if the proper intent is used to process the order, false otherwise.
+	 */
+	public function is_proper_intent_used_with_order( $order, $intent_id_from_request ) {
+		$intent_id_attached_to_order = $this->order_service->get_intent_id_for_order( $order );
+		if ( ! hash_equals( $intent_id_attached_to_order, $intent_id_from_request ) ) {
+			Logger::error(
+				sprintf(
+					'Intent ID mismatch. Received in request: %1$s. Attached to order: %2$s. Order ID: %3$d',
+					$intent_id_from_request,
+					$intent_id_attached_to_order,
+					$order->get_id()
+				)
+			);
+			return false;
+		}
+		return true;
 	}
 
 	/**
@@ -849,8 +927,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 */
 	public function create_token_from_setup_intent( $setup_intent_id, $user ) {
 		try {
-			$setup_intent      = $this->payments_api_client->get_setup_intent( $setup_intent_id );
-			$payment_method_id = $setup_intent['payment_method'];
+			$setup_intent_request = Get_Setup_Intention::create( $setup_intent_id );
+			/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+			$setup_intent = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
+
+			$payment_method_id = $setup_intent->get_payment_method_id();
 			// TODO: When adding SEPA and Sofort, we will need a new API call to get the payment method and from there get the type.
 			// Leaving 'card' as a hardcoded value for now to avoid the extra API call.
 			$payment_method = $this->payment_methods['card'];
@@ -918,7 +999,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 				$skip_currency_check       = ! $force_currency_check && is_admin();
 				$processing_payment_method = $this->payment_methods[ $payment_method_id ];
-				if ( $processing_payment_method->is_enabled_at_checkout() && ( $skip_currency_check || $processing_payment_method->is_currency_valid( $order_id ) ) ) {
+				if ( $processing_payment_method->is_enabled_at_checkout() && ( $skip_currency_check || $processing_payment_method->is_currency_valid( $this->get_account_default_currency(), $order_id ) ) ) {
 					$status = $active_payment_methods[ $payment_method_capability_key ]['status'] ?? null;
 					if ( 'active' === $status ) {
 						$enabled_payment_methods[] = $payment_method_id;
@@ -1073,6 +1154,36 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
+	 * Validate order_id received from the request vs value saved in the intent metadata.
+	 * Throw an exception if they're not matched.
+	 *
+	 * @param  WC_Order $order The received order to process.
+	 * @param  array    $intent_metadata The metadata of attached intent to the order.
+	 *
+	 * @return void
+	 * @throws Process_Payment_Exception
+	 */
+	private function validate_order_id_received_vs_intent_meta_order_id( WC_Order $order, array $intent_metadata ): void {
+		$intent_meta_order_id_raw = $intent_metadata['order_id'] ?? '';
+		$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
+
+		if ( $order->get_id() !== $intent_meta_order_id ) {
+			Logger::error(
+				sprintf(
+					'UPE Process Redirect Payment - Order ID mismatched. Received: %1$d. Intent Metadata Value: %2$d',
+					$order->get_id(),
+					$intent_meta_order_id
+				)
+			);
+
+			throw new Process_Payment_Exception(
+				__( "We're not able to process this payment due to the order ID mismatch. Please try again later.", 'woocommerce-payments' ),
+				self::PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE
+			);
+		}
+	}
+
+	/**
 	 * Gets payment method settings to pass to client scripts
 	 *
 	 * @deprecated 5.0.0
@@ -1098,7 +1209,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			return false;
 		}
 		return $payment_method->is_reusable()
-			&& ( is_admin() || $payment_method->is_currency_valid() );
+			&& ( is_admin() || $payment_method->is_currency_valid( $this->get_account_default_currency() ) );
 	}
 
 	/**

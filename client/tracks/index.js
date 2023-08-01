@@ -35,8 +35,9 @@ function recordEvent( eventName, eventProperties ) {
  *
  * @param {string}  eventName         Name of the event.
  * @param {Object}  [eventProperties] Event properties (optional).
+ * @param {boolean} isLegacy Event properties (optional).
  */
-function recordUserEvent( eventName, eventProperties ) {
+function recordUserEvent( eventName, eventProperties, isLegacy = false ) {
 	const nonce =
 		getConfig( 'platformTrackerNonce' ) ??
 		getPaymentRequestData( 'nonce' )?.platform_tracker;
@@ -48,6 +49,7 @@ function recordUserEvent( eventName, eventProperties ) {
 	body.append( 'action', 'platform_tracks' );
 	body.append( 'tracksEventName', eventName );
 	body.append( 'tracksEventProp', JSON.stringify( eventProperties ) );
+	body.append( 'isLegacy', isLegacy );
 	fetch( ajaxUrl, {
 		method: 'post',
 		body,
@@ -62,6 +64,9 @@ const events = {
 	CONNECT_ACCOUNT_KYC_MODAL_OPENED: 'wcpay_connect_account_kyc_modal_opened',
 	DEPOSITS_ROW_CLICK: 'wcpay_deposits_row_click',
 	DEPOSITS_DOWNLOAD_CSV_CLICK: 'wcpay_deposits_download',
+	DISPUTES_ROW_ACTION_CLICK: 'wcpay_disputes_row_action_click',
+	ORDER_DISPUTE_NOTICE_BUTTON_CLICK:
+		'wcpay_order_dispute_notice_action_click',
 	OVERVIEW_BALANCES_CURRENCY_CLICK:
 		'wcpay_overview_balances_currency_tab_click',
 	OVERVIEW_DEPOSITS_VIEW_HISTORY_CLICK:
@@ -92,10 +97,10 @@ const events = {
 	WOOPAY_OTP_START: 'woopay_otp_prompt_start',
 	WOOPAY_OTP_COMPLETE: 'woopay_otp_prompt_complete',
 	WOOPAY_OTP_FAILED: 'woopay_otp_prompt_failed',
-	WOOPAY_AUTO_REDIRECT: 'woopay_auto_redirect',
+	WOOPAY_AUTO_REDIRECT: 'checkout_woopay_auto_redirect',
 	WOOPAY_SKIPPED: 'woopay_skipped',
-	WOOPAY_EXPRESS_BUTTON_OFFERED: 'woopay_express_button_offered',
-	WOOPAY_EXPRESS_BUTTON_CLICKED: 'woopay_express_button_clicked',
+	WOOPAY_BUTTON_LOAD: 'woopay_button_load',
+	WOOPAY_BUTTON_CLICK: 'woopay_button_click',
 	// Onboarding flow.
 	ONBOARDING_FLOW_STARTED: 'wcpay_onboarding_flow_started',
 	ONBOARDING_FLOW_MODE_SELECTED: 'wcpay_onboarding_flow_mode_selected',

@@ -13,6 +13,12 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
  */
 import { TransactionsFilters } from '../';
 
+// TODO: this is a bit of a hack as we're mocking an old version of WC, we should relook at this.
+jest.mock( '@woocommerce/settings', () => ( {
+	...jest.requireActual( '@woocommerce/settings' ),
+	getSetting: jest.fn( ( key ) => ( key === 'wcVersion' ? 7.7 : '' ) ),
+} ) );
+
 function addAdvancedFilter( filter: string ) {
 	user.click( screen.getByRole( 'button', { name: /Add a Filter/i } ) );
 	user.click( screen.getByRole( 'button', { name: filter } ) );
@@ -239,6 +245,21 @@ describe( 'Transactions filters', () => {
 			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().source_device_is ).toEqual( 'ios' );
+		} );
+
+		test( 'should filter by is_not', () => {
+			user.selectOptions( ruleSelector, 'is_not' );
+
+			// need to include $ in name, otherwise "Select a transaction type filter" is also matched.
+			user.selectOptions(
+				screen.getByRole( 'combobox', {
+					name: /transaction device type$/i,
+				} ),
+				'android'
+			);
+			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+
+			expect( getQuery().source_device_is_not ).toEqual( 'android' );
 		} );
 	} );
 } );

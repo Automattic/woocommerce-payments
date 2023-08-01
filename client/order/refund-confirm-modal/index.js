@@ -70,7 +70,7 @@ const RefundConfirmationModal = ( {
 				blockUI();
 			},
 			success: function ( response ) {
-				if ( true === response.success ) {
+				if ( response.success === true ) {
 					// Refresh the page to show the refunded status
 					window.location.reload();
 				} else {
@@ -112,11 +112,15 @@ const RefundConfirmationModal = ( {
 					}
 				>
 					<p>
-						{ __(
-							"Issue a full refund back to your customer's credit card using WooCommerce Payments. " +
-								'This action can not be undone. To issue a partial refund, click "Cancel", and use ' +
-								'the "Refund" button in the order details below.',
-							'woocommerce-payments'
+						{ sprintf(
+							/* translators: %s: WooPayments */
+							__(
+								"Issue a full refund back to your customer's credit card using %s. " +
+									'This action can not be undone. To issue a partial refund, click "Cancel", and use ' +
+									'the "Refund" button in the order details below.',
+								'woocommerce-payments'
+							),
+							'WooPayments'
 						) }
 					</p>
 				</ConfirmationModal>

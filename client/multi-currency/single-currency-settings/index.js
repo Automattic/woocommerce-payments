@@ -213,8 +213,8 @@ const SingleCurrencySettings = () => {
 															'exchange-rate-selector'
 														}
 														checked={
-															'automatic' ===
-															exchangeRateType
+															exchangeRateType ===
+															'automatic'
 														}
 														onChange={ () =>
 															setExchangeRateType(
@@ -276,8 +276,8 @@ const SingleCurrencySettings = () => {
 															'exchange-rate-selector'
 														}
 														checked={
-															'manual' ===
-															exchangeRateType
+															exchangeRateType ===
+															'manual'
 														}
 														onChange={ () =>
 															setExchangeRateType(
@@ -305,7 +305,7 @@ const SingleCurrencySettings = () => {
 												</p>
 											</label>
 										</li>
-										{ 'manual' === exchangeRateType ? (
+										{ exchangeRateType === 'manual' ? (
 											<li>
 												<h4>
 													{ __(
@@ -411,8 +411,8 @@ const SingleCurrencySettings = () => {
 													isLink
 													onClick={ () => {
 														open(
-															'http://woocommerce.com/document/payments/' +
-																'currencies/multi-currency-setup/#price-rounding',
+															/* eslint-disable-next-line max-len */
+															'https://woocommerce.com/document/woocommerce-payments/currencies/multi-currency-setup/#price-rounding',
 															'_blank'
 														);
 													} }
@@ -476,8 +476,8 @@ const SingleCurrencySettings = () => {
 													isLink
 													onClick={ () => {
 														open(
-															'http://woocommerce.com/document/payments/' +
-																'currencies/multi-currency-setup/#price-charm',
+															/* eslint-disable-next-line max-len */
+															'https://woocommerce.com/document/woocommerce-payments/currencies/multi-currency-setup/#charm-pricing',
 															'_blank'
 														);
 													} }
@@ -504,7 +504,7 @@ const SingleCurrencySettings = () => {
 							storeCurrency={ storeCurrency }
 							targetCurrency={ targetCurrency }
 							currencyRate={
-								'manual' === exchangeRateType
+								exchangeRateType === 'manual'
 									? manualRate
 									: null
 							}

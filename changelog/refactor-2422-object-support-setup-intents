@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Introduce model class WC_Payments_API_Setup_Intention for setup intents

@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { MccsDisplayTreeItem, Country } from 'onboarding-prototype/types';
+import { MccsDisplayTreeItem, Country } from 'onboarding/types';
 
 declare global {
 	const wcpaySettings: {
@@ -71,6 +71,9 @@ declare global {
 		shouldUseExplicitPrice: boolean;
 		fraudProtection: {
 			isWelcomeTourDismissed?: boolean;
+		};
+		progressiveOnboarding?: {
+			isNewFlowEnabled: boolean;
 		};
 		accountDefaultCurrency: string;
 		isFRTReviewFeatureActive: boolean;

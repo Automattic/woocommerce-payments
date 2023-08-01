@@ -34,6 +34,9 @@ import './style.scss';
 const ConnectAccountPage: React.FC = () => {
 	const firstName = wcSettings.admin?.currentUserData?.first_name;
 	const incentive = wcpaySettings.connectIncentive;
+	const isNewFlowEnabled =
+		wcpaySettings.progressiveOnboarding?.isNewFlowEnabled;
+
 	const [ errorMessage, setErrorMessage ] = useState< string >(
 		wcpaySettings.errorMessage
 	);
@@ -49,6 +52,11 @@ const ConnectAccountPage: React.FC = () => {
 			...( incentive && {
 				incentive_id: incentive.id,
 			} ),
+			woo_country_code:
+				wcSettings?.preloadSettings?.general
+					?.woocommerce_default_country ||
+				wcSettings?.admin?.preloadSettings?.general
+					?.woocommerce_default_country,
 		} );
 		// We only want to run this once.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
@@ -89,9 +97,15 @@ const ConnectAccountPage: React.FC = () => {
 
 		wcpayTracks.recordEvent( wcpayTracks.events.CONNECT_ACCOUNT_CLICKED, {
 			wpcom_connection: wcpaySettings.isJetpackConnected ? 'Yes' : 'No',
+			is_new_onboarding_flow: isNewFlowEnabled,
 			...( incentive && {
 				incentive_id: incentive.id,
 			} ),
+			woo_country_code:
+				wcSettings?.preloadSettings?.general
+					?.woocommerce_default_country ||
+				wcSettings?.admin?.preloadSettings?.general
+					?.woocommerce_default_country,
 		} );
 
 		// If there is an incentive available, request promo activation before redirecting.

@@ -11,6 +11,7 @@ import AccountBalances from '..';
 import { getCurrencyTabTitle } from '../utils';
 import { useAllDepositsOverviews, useInstantDeposit } from 'wcpay/data';
 import { useSelectedCurrency } from 'wcpay/overview/hooks';
+import type * as AccountOverview from 'wcpay/types/account-overview';
 
 const mockAccount: AccountOverview.Account = {
 	default_currency: 'USD',
@@ -148,7 +149,7 @@ const createMockOverview = (
 			date: Date.now(),
 			fee: 0,
 			fee_percentage: 0,
-			status: 'scheduled',
+			status: 'estimated',
 		},
 		instant: {
 			currency: currencyCode,
