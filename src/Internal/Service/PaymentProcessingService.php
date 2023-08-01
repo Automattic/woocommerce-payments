@@ -2,10 +2,10 @@
 /**
  * Class PaymentProcessingService
  *
- * @package WooPayments
+ * @package WooCommerce\Payments
  */
 
-namespace WooPayments\Internal\Service;
+namespace WCPay\Internal\Service;
 
 /**
  *  Payment Processing Service.
