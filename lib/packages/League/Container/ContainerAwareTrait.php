@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace WooPayments\Vendor\League\Container;
+namespace WCPay\Vendor\League\Container;
 
 use BadMethodCallException;
-use WooPayments\Vendor\League\Container\Exception\ContainerException;
+use WCPay\Vendor\League\Container\Exception\ContainerException;
 
 trait ContainerAwareTrait
 {

@@ -2,18 +2,18 @@
 /**
  * Class Container
  *
- * @package WooPayments
+ * @package WooCommerce\Payments
  */
 
-namespace WooPayments;
+namespace WCPay;
 
 use Psr\Container\ContainerInterface;
-use WooPayments\Internal\DependencyManagement\DelegateContainer\WooContainer;
-use WooPayments\Internal\DependencyManagement\ExtendedContainer;
-use WooPayments\Internal\DependencyManagement\ServiceProvider\PaymentsServiceProvider;
+use WCPay\Internal\DependencyManagement\DelegateContainer\WooContainer;
+use WCPay\Internal\DependencyManagement\ExtendedContainer;
+use WCPay\Internal\DependencyManagement\ServiceProvider\PaymentsServiceProvider;
 
 /**
- * WooPayments Dependency Injection Container.
+ * WCPay Dependency Injection Container.
  *
  * Wraps the ExtendedContainer implementation to only allow public access to
  * certain methods of the internal container.

@@ -2,19 +2,19 @@
 /**
  * Class ContainerTest
  *
- * @package WooPayments
+ * @package WooCommerce\Payments
  */
 
-namespace WooPayments\Tests;
+namespace WCPay\Tests;
 
 use WCPAY_UnitTestCase;
 use Automattic\WooCommerce\Proxies\LegacyProxy;
 use stdClass;
-use WooPayments\Container;
-use WooPayments\Internal\DependencyManagement\ContainerException;
-use WooPayments\Internal\DependencyManagement\DelegateContainer\WooContainer;
-use WooPayments\Internal\Service\PaymentProcessingService;
-use WooPayments\Internal\DependencyManagement\ExtendedContainer;
+use WCPay\Container;
+use WCPay\Internal\DependencyManagement\ContainerException;
+use WCPay\Internal\DependencyManagement\DelegateContainer\WooContainer;
+use WCPay\Internal\Service\PaymentProcessingService;
+use WCPay\Internal\DependencyManagement\ExtendedContainer;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
@@ -53,9 +53,9 @@ class ContainerTest extends WCPAY_UnitTestCase {
 		parent::setUp();
 
 		// Setup the mock, and make sure the globals are fresh.
-		$this->mock_woo_container         = $this->createMock( WooContainer::class );
-		$GLOBALS['woopayments_container'] = new Container( $this->mock_woo_container );
-		$GLOBALS['wcpay_test_container']  = null;
+		$this->mock_woo_container        = $this->createMock( WooContainer::class );
+		$GLOBALS['wcpay_container']      = new Container( $this->mock_woo_container );
+		$GLOBALS['wcpay_test_container'] = null;
 
 		$this->sut      = wcpay_get_container();
 		$this->test_sut = wcpay_get_test_container();

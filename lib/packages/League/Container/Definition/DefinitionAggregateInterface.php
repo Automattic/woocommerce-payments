@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace WooPayments\Vendor\League\Container\Definition;
+namespace WCPay\Vendor\League\Container\Definition;
 
 use IteratorAggregate;
-use WooPayments\Vendor\League\Container\ContainerAwareInterface;
+use WCPay\Vendor\League\Container\ContainerAwareInterface;
 
 interface DefinitionAggregateInterface extends ContainerAwareInterface, IteratorAggregate
 {

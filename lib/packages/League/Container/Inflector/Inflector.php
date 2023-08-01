@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace WooPayments\Vendor\League\Container\Inflector;
+namespace WCPay\Vendor\League\Container\Inflector;
 
-use WooPayments\Vendor\League\Container\Argument\ArgumentResolverInterface;
-use WooPayments\Vendor\League\Container\Argument\ArgumentResolverTrait;
-use WooPayments\Vendor\League\Container\ContainerAwareTrait;
+use WCPay\Vendor\League\Container\Argument\ArgumentResolverInterface;
+use WCPay\Vendor\League\Container\Argument\ArgumentResolverTrait;
+use WCPay\Vendor\League\Container\ContainerAwareTrait;
 
 class Inflector implements ArgumentResolverInterface, InflectorInterface
 {

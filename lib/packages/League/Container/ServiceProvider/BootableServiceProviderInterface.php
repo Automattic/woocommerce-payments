@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WooPayments\Vendor\League\Container\ServiceProvider;
+namespace WCPay\Vendor\League\Container\ServiceProvider;
 
 interface BootableServiceProviderInterface extends ServiceProviderInterface
 {

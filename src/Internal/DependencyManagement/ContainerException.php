@@ -2,10 +2,10 @@
 /**
  * Class ContainerException
  *
- * @package WooPayments
+ * @package WooCommerce\Payments
  */
 
-namespace WooPayments\Internal\DependencyManagement;
+namespace WCPay\Internal\DependencyManagement;
 
 use Psr\Container\NotFoundExceptionInterface;
 use InvalidArgumentException;

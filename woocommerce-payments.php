@@ -149,7 +149,7 @@ add_action( 'plugins_loaded', 'wcpay_jetpack_init', 1 );
  */
 function wcpay_init() {
 	require_once WCPAY_ABSPATH . '/includes/class-wc-payments.php';
-	require_once WCPAY_ABSPATH . '/src/woopayments.php';
+	require_once WCPAY_ABSPATH . '/src/wcpay-get-container.php';
 	WC_Payments::init();
 }
 

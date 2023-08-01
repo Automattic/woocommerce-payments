@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace WooPayments\Vendor\League\Container\Definition;
+namespace WCPay\Vendor\League\Container\Definition;
 
-use WooPayments\Vendor\League\Container\Argument\{
+use WCPay\Vendor\League\Container\Argument\{
     ArgumentResolverInterface,
     ArgumentResolverTrait,
     ArgumentInterface,
     LiteralArgumentInterface
 };
-use WooPayments\Vendor\League\Container\ContainerAwareTrait;
-use WooPayments\Vendor\League\Container\Exception\ContainerException;
+use WCPay\Vendor\League\Container\ContainerAwareTrait;
+use WCPay\Vendor\League\Container\Exception\ContainerException;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
 

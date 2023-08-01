@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WooPayments\Vendor\League\Container;
+namespace WCPay\Vendor\League\Container;
 
 interface ContainerAwareInterface
 {

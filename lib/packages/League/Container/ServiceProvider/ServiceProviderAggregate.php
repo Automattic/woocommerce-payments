@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace WooPayments\Vendor\League\Container\ServiceProvider;
+namespace WCPay\Vendor\League\Container\ServiceProvider;
 
 use Generator;
-use WooPayments\Vendor\League\Container\Exception\ContainerException;
-use WooPayments\Vendor\League\Container\{ContainerAwareInterface, ContainerAwareTrait};
+use WCPay\Vendor\League\Container\Exception\ContainerException;
+use WCPay\Vendor\League\Container\{ContainerAwareInterface, ContainerAwareTrait};
 
 class ServiceProviderAggregate implements ServiceProviderAggregateInterface
 {

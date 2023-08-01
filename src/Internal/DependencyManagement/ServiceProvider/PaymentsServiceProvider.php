@@ -2,16 +2,16 @@
 /**
  * Payments service provider file.
  *
- * @package WooPayments
+ * @package WooCommerce\Payments
  */
 
-namespace WooPayments\Internal\DependencyManagement\ServiceProvider;
+namespace WCPay\Internal\DependencyManagement\ServiceProvider;
 
-use WooPayments\Internal\DependencyManagement\AbstractServiceProvider;
-use WooPayments\Internal\Service\PaymentProcessingService;
+use WCPay\Internal\DependencyManagement\AbstractServiceProvider;
+use WCPay\Internal\Service\PaymentProcessingService;
 
 /**
- * WooPayments payments service provider.
+ * WCPay payments service provider.
  */
 class PaymentsServiceProvider extends AbstractServiceProvider {
 	/**
