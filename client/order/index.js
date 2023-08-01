@@ -55,8 +55,8 @@ jQuery( function ( $ ) {
 		const canRefund = getConfig( 'canRefund' );
 		const refundAmount = getConfig( 'refundAmount' );
 		if (
-			'wc-refunded' === this.value &&
-			'wc-refunded' !== originalStatus
+			this.value === 'wc-refunded' &&
+			originalStatus !== 'wc-refunded'
 		) {
 			renderRefundConfirmationModal(
 				originalStatus,
@@ -64,10 +64,10 @@ jQuery( function ( $ ) {
 				refundAmount
 			);
 		} else if (
-			'wc-cancelled' === this.value &&
-			'wc-cancelled' !== originalStatus
+			this.value === 'wc-cancelled' &&
+			originalStatus !== 'wc-cancelled'
 		) {
-			if ( ! canRefund || 0 >= refundAmount ) {
+			if ( ! canRefund || refundAmount <= 0 ) {
 				return;
 			}
 			renderModal(
@@ -89,7 +89,7 @@ jQuery( function ( $ ) {
 			);
 			return;
 		}
-		if ( 0 >= refundAmount ) {
+		if ( refundAmount <= 0 ) {
 			dispatch( 'core/notices' ).createErrorNotice(
 				__( 'Invalid Refund Amount', 'woocommerce-payments' )
 			);
@@ -169,7 +169,7 @@ const DisputeNotice = ( { chargeId } ) => {
 	let suffix = '';
 
 	// If the dispute is due within 7 days, use different wording.
-	if ( 7 > countdownDays ) {
+	if ( countdownDays < 7 ) {
 		title = sprintf(
 			// Translators: %1$s is the formatted dispute amount, %2$s is the dispute reason, %3$s is the due date.
 			__(
@@ -193,11 +193,11 @@ const DisputeNotice = ( { chargeId } ) => {
 	}
 
 	// If the dispute is due within 72 hours, we want to highlight it as urgent/red.
-	if ( 3 > countdownDays ) {
+	if ( countdownDays < 3 ) {
 		urgency = 'error';
 	}
 
-	if ( 1 > countdownDays ) {
+	if ( countdownDays < 1 ) {
 		urgency = 'error';
 		buttonLabel = __( 'Respond today', 'woocommerce-payments' );
 		suffix = __( '(Last day today)', 'woocommerce-payments' );

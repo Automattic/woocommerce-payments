@@ -73,7 +73,7 @@ const wooCommerceVersion = parseFloat( wooCommerceVersionString ); // This will 
 export const advancedFilters = {
 	/** translators: A sentence describing filters for deposits. See screen shot for context: https://d.pr/i/NcGpwL */
 	title:
-		7.8 > wooCommerceVersion
+		wooCommerceVersion < 7.8
 			? __(
 					'Deposits match {{select /}} filters',
 					'woocommerce-payments'
@@ -93,7 +93,7 @@ export const advancedFilters = {
 				),
 				/* translators: A sentence describing a deposit date filter. See screen shot for context: https://d.pr/i/NcGpwL */
 				title:
-					7.8 > wooCommerceVersion
+					wooCommerceVersion < 7.8
 						? __(
 								'{{title}}Date{{/title}} {{rule /}} {{filter /}}',
 								'woocommerce-payments'
@@ -135,7 +135,7 @@ export const advancedFilters = {
 				),
 				/* translators: A sentence describing a deposit status filter. See screen shot for context: https://d.pr/i/NcGpwL */
 				title:
-					7.8 > wooCommerceVersion
+					wooCommerceVersion < 7.8
 						? __(
 								'{{title}}Status{{/title}} {{rule /}} {{filter /}}',
 								'woocommerce-payments'

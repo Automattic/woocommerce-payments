@@ -86,11 +86,11 @@ export const getSelectedUPEGatewayPaymentMethod = () => {
 	const radio = document.querySelector(
 		'li.wc_payment_method input.input-radio:checked, li.woocommerce-PaymentMethod input.input-radio:checked'
 	);
-	if ( null !== radio ) {
+	if ( radio !== null ) {
 		selectedGatewayId = radio.id;
 	}
 
-	if ( 'payment_method_woocommerce_payments' === selectedGatewayId ) {
+	if ( selectedGatewayId === 'payment_method_woocommerce_payments' ) {
 		selectedGatewayId = 'payment_method_woocommerce_payments_card';
 	}
 
@@ -179,7 +179,7 @@ function shouldIncludeTerms() {
 		'wc-woocommerce_payments-new-payment-method'
 	);
 	if (
-		null !== savePaymentMethodCheckbox &&
+		savePaymentMethodCheckbox !== null &&
 		savePaymentMethodCheckbox.checked
 	) {
 		return true;
@@ -210,12 +210,12 @@ export function isUsingSavedPaymentMethod( paymentMethodType ) {
 	const prefix = '#wc-woocommerce_payments';
 	const suffix = '-payment-token-new';
 	const savedPaymentSelector =
-		'card' === paymentMethodType
+		paymentMethodType === 'card'
 			? prefix + suffix
 			: prefix + '_' + paymentMethodType + suffix;
 
 	return (
-		null !== document.querySelector( savedPaymentSelector ) &&
+		document.querySelector( savedPaymentSelector ) !== null &&
 		! document.querySelector( savedPaymentSelector ).checked
 	);
 }
@@ -299,4 +299,65 @@ export const getStripeElementOptions = (
 	options.terms = getTerms( paymentMethodsConfig, showTerms );
 
 	return options;
+};
+
+/**
+ * Converts form fields object into Stripe `billing_details` object.
+ *
+ * @param {Object} fields Object mapping checkout billing fields to values.
+ * @return {Object} Stripe formatted `billing_details` object.
+ */
+export const getBillingDetails = ( fields ) => {
+	return {
+		name:
+			`${ fields.billing_first_name } ${ fields.billing_last_name }`.trim() ||
+			'-',
+		email:
+			typeof fields.billing_email === 'string'
+				? fields.billing_email.trim()
+				: '-',
+		phone: fields.billing_phone || '-',
+		address: {
+			country: fields.billing_country || '-',
+			line1: fields.billing_address_1 || '-',
+			line2: fields.billing_address_2 || '-',
+			city: fields.billing_city || '-',
+			state: fields.billing_state || '-',
+			postal_code: fields.billing_postcode || '-',
+		},
+	};
+};
+
+/**
+ * Converts form fields object into Stripe `shipping` object.
+ *
+ * @param {Object} fields Object mapping checkout shipping fields to values.
+ * @return {Object} Stripe formatted `shipping` object.
+ */
+export const getShippingDetails = ( fields ) => {
+	// Shipping address is needed by Afterpay. If available, use shipping address, else fallback to billing address.
+	if (
+		fields.ship_to_different_address &&
+		fields.ship_to_different_address === '1'
+	) {
+		return {
+			name:
+				`${ fields.shipping_first_name } ${ fields.shipping_last_name }`.trim() ||
+				'-',
+			address: {
+				country: fields.shipping_country || '-',
+				line1: fields.shipping_address_1 || '-',
+				line2: fields.shipping_address_2 || '-',
+				city: fields.shipping_city || '-',
+				state: fields.shipping_state || '-',
+				postal_code: fields.shipping_postcode || '-',
+			},
+		};
+	}
+
+	const billingAsShippingAddress = getBillingDetails( fields );
+	delete billingAsShippingAddress.email;
+	delete billingAsShippingAddress.phone;
+
+	return billingAsShippingAddress;
 };
