@@ -94,6 +94,40 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 6.3.0-test-2 - unreleased =
+* Add - Add Tracks events around account connect when promo is active.
+* Add - Add warning to the advanced settings page for WooPay incompatible extensions
+* Add - Add WooPay Gift Cards support.
+* Add - Add WooPay Points and Rewards support
+* Add - Allow WooPay verified email requests
+* Add - Ensure WooPay compatibility with the split UPE that has deferred intent creation implementation.
+* Fix - Adding more descriptive error messages in gradual signup
+* Fix - Allow only domestic payments for BNPL payment methods
+* Fix - Avoid creating duplicate paid orders from a single payment intent.
+* Fix - Disputes listing column renamed to Respond by and will show empty when dispute does not need response or if respond by date has passed.
+* Fix - Fatal error when using latest MailPoet with WooPay
+* Fix - Fixed the creation of the nonce that is sent to WooPay
+* Fix - Fix error while selecting product variations. Make the stripe payment messaging element load only if at least one BNPL method is active.
+* Fix - Get WooPay adapted extensions from server
+* Fix - Highlight menu item when transaction details, deposit details, and disputes details page are opened.
+* Fix - Improve split UPE support of WooPay with multiple payment methods enabled.
+* Fix - Move the email title hook from the UPE class to the parent legacy gateway class, to avoid multiple callback invocations for the split UPE
+* Fix - Send correct shipping address to Afterpay in Classic Checkout
+* Fix - Send shipping address correctly to Afterpay in block checkout, when separate billing address is provided.
+* Fix - Visual fixes for the Connect page hero.
+* Update - Allows nulls in min/max payment ranges definitions for UPE payment methods
+* Update - Minor copy fixes on the onboarding form.
+* Dev - Add generic Get_Request class, and migrate current simple requests to use it
+* Dev - Add unit tests to cover WooPay button eligibility.
+* Dev - Adjust coding standards to align with WC Core.
+* Dev - Avoiding product-service exceptions during checkout, making debugging easier.
+* Dev - Fix Husky post-merge script to conform to `sh` syntax
+* Dev - Introduce model class WC_Payments_API_Setup_Intention for setup intents
+* Dev - Migrate certain WCPay shopper tracks to use wcpay prefix
+* Dev - Migrate Chip component to TypeScript to improve code quality.
+* Dev - Migrate DisputeStatusChip comp to TypeScript to improve code quality.
+* Dev - Pass Tracks identity to WooPay to improve telemetry
+
 = 6.2.0 - 2023-07-19 =
 * Add - Add Android option in Device type advanced filter
 * Add - Add dispute notice to the WooCommerce order screen to highlight disputes awaiting a response.
