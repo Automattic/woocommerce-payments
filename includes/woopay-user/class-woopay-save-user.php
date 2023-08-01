@@ -54,6 +54,9 @@ class WooPay_Save_User {
 			[],
 			\WC_Payments::get_file_version( 'dist/woopay.css' )
 		);
+
+		wp_style_add_data( 'WCPAY_WOOPAY', 'rtl', 'replace' );
+
 		WC_Payments::register_script_with_dependencies( 'WCPAY_WOOPAY', 'dist/woopay' );
 
 		wp_enqueue_style( 'WCPAY_WOOPAY' );

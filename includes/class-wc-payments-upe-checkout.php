@@ -318,6 +318,8 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 				WC_Payments::get_file_version( 'dist/checkout.css' )
 			);
 
+			wp_style_add_data( 'wcpay-upe-checkout', 'rtl', 'replace' );
+
 			// Output the form HTML.
 			?>
 			<?php if ( ! empty( $this->gateway->get_description() ) ) : ?>

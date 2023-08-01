@@ -168,6 +168,8 @@ class WC_Payments_WooPay_Button_Handler {
 			WCPAY_VERSION_NUMBER
 		);
 
+		wp_style_add_data( 'WCPAY_WOOPAY', 'rtl', 'replace' );
+
 		wp_enqueue_style( 'WCPAY_WOOPAY' );
 	}
 
