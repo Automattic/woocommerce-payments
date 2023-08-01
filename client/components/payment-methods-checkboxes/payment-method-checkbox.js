@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useMemo } from 'react';
 import { Icon, VisuallyHidden } from '@wordpress/components';
 import { useCallback } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
@@ -22,10 +22,30 @@ import PaymentMethodsMap from '../../payment-methods-map';
 import Pill from '../pill';
 import { HoverTooltip } from 'components/tooltip';
 import './payment-method-checkbox.scss';
-import { useManualCapture } from 'wcpay/data';
+import { useManualCapture, useAccountDefaultCurrency } from 'wcpay/data';
+
+const getDescription = ( name, currency ) => {
+	const paymentMethod = PaymentMethodsMap[ name ];
+
+	if ( ! paymentMethod ) return null;
+
+	let description = paymentMethod.description;
+	const isAllowingPayLater = paymentMethod.allows_pay_later;
+
+	if ( isAllowingPayLater ) {
+		description = sprintf( description, currency.toUpperCase() );
+	}
+
+	return description;
+};
 
 const PaymentMethodDescription = ( { name } ) => {
-	const description = PaymentMethodsMap[ name ]?.description;
+	const [ stripeAccountDefaultCurrency ] = useAccountDefaultCurrency();
+	const description = useMemo(
+		() => getDescription( name, stripeAccountDefaultCurrency ),
+		[ name, stripeAccountDefaultCurrency ]
+	);
+
 	if ( ! description ) return null;
 
 	return (

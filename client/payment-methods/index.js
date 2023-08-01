@@ -225,11 +225,6 @@ const PaymentMethods = () => {
 	const { isUpeEnabled, status, upeType } = useContext( WcPayUpeContext );
 	const [ openModalIdentifier, setOpenModalIdentifier ] = useState( '' );
 
-	const PAYMENT_METHODS_WITH_DYNAMIC_DESCRIPTION = [
-		PAYMENT_METHOD_IDS.AFFIRM,
-		PAYMENT_METHOD_IDS.AFTERPAY_CLEARPAY,
-	];
-
 	return (
 		<>
 			{ openModalIdentifier === 'disable' ? (
@@ -291,15 +286,14 @@ const PaymentMethods = () => {
 								description,
 								icon: Icon,
 								allows_manual_capture: isAllowingManualCapture,
+								allows_pay_later: isAllowingPayLater,
 							} ) => (
 								<PaymentMethod
 									id={ id }
 									key={ id }
 									label={ label }
 									description={
-										PAYMENT_METHODS_WITH_DYNAMIC_DESCRIPTION.includes(
-											id
-										)
+										isAllowingPayLater
 											? sprintf(
 													description,
 													stripeAccountDefaultCurrency.toUpperCase()
