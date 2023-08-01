@@ -23,8 +23,13 @@ import Pill from '../pill';
 import { HoverTooltip } from 'components/tooltip';
 import './payment-method-checkbox.scss';
 import { useManualCapture, useAccountDefaultCurrency } from 'wcpay/data';
+import { FeeStructure } from 'wcpay/types/fees';
 
-const getDescription = ( name, currency ) => {
+type PaymentMethodProps = {
+	name: string;
+};
+
+const getDescription = ( name: string, currency: string ) => {
 	const paymentMethod = PaymentMethodsMap[ name ];
 
 	if ( ! paymentMethod ) return null;
@@ -39,10 +44,12 @@ const getDescription = ( name, currency ) => {
 	return description;
 };
 
-const PaymentMethodDescription = ( { name } ) => {
+const PaymentMethodDescription: React.FC< PaymentMethodProps > = ( {
+	name,
+} ) => {
 	const [ stripeAccountDefaultCurrency ] = useAccountDefaultCurrency();
 	const description = useMemo(
-		() => getDescription( name, stripeAccountDefaultCurrency ),
+		() => getDescription( name, stripeAccountDefaultCurrency as string ),
 		[ name, stripeAccountDefaultCurrency ]
 	);
 
@@ -63,7 +70,17 @@ const PaymentMethodDescription = ( { name } ) => {
 	);
 };
 
-const PaymentMethodCheckbox = ( {
+type PaymentMethodCheckboxProps = {
+	onChange: ( name: string, enabled: boolean ) => void;
+	name: string;
+	checked: boolean;
+	fees: any; // Need more details to determine the type
+	status: string;
+	required: boolean;
+	locked: boolean;
+};
+
+const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
 	onChange,
 	name,
 	checked,
@@ -72,7 +89,11 @@ const PaymentMethodCheckbox = ( {
 	required,
 	locked,
 } ) => {
-	const { accountFees } = useContext( WCPaySettingsContext );
+	const {
+		accountFees,
+	}: { accountFees: Record< string, FeeStructure > } = useContext(
+		WCPaySettingsContext
+	);
 
 	const handleChange = useCallback(
 		( enabled ) => {
@@ -110,7 +131,7 @@ const PaymentMethodCheckbox = ( {
 				label={ paymentMethod.label }
 				checked={ checked }
 				disabled={ disabled || locked }
-				onChange={ ( state ) => {
+				onChange={ ( state: boolean ) => {
 					handleChange( state );
 				} }
 				delayMsOnCheck={ 1500 }
@@ -119,7 +140,7 @@ const PaymentMethodCheckbox = ( {
 				isAllowingManualCapture={ paymentMethod.allows_manual_capture }
 			/>
 			<div className={ 'woocommerce-payments__payment-method-icon' }>
-				{ paymentMethod.icon() }
+				{ paymentMethod.icon( {} ) }
 			</div>
 			<div className={ 'payment-method-checkbox__pills' }>
 				<div className={ 'payment-method-checkbox__pills-left' }>
