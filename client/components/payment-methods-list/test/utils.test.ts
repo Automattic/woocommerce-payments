@@ -4,7 +4,7 @@
 import {
 	getDocumentationUrlForDisabledPaymentMethod,
 	DocumentationUrlForDisabledPaymentMethod,
-} from '../utils';
+} from '../../payment-method-disabled-tooltip/utils';
 import PAYMENT_METHOD_IDS from 'wcpay/payment-methods/constants';
 
 describe( 'getDocumentationUrlForDisabledPaymentMethod', () => {

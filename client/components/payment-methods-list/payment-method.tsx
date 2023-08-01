@@ -2,27 +2,26 @@
 /**
  * External dependencies
  */
-import React, { useContext } from 'react';
 import classNames from 'classnames';
-import interpolateComponents from '@automattic/interpolate-components';
+import React, { useContext } from 'react';
 
 /**
  * Internal dependencies
  */
-import Pill from '../pill';
-import { HoverTooltip } from 'components/tooltip';
-import WCPaySettingsContext from '../../settings/wcpay-settings-context';
-import LoadableCheckboxControl from '../loadable-checkbox';
 import { __, sprintf } from '@wordpress/i18n';
+import { HoverTooltip } from 'components/tooltip';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
+import { useManualCapture } from 'wcpay/data';
+import { FeeStructure } from 'wcpay/types/fees';
 import {
 	formatMethodFeesDescription,
 	formatMethodFeesTooltip,
 } from 'wcpay/utils/account-fees';
+import WCPaySettingsContext from '../../settings/wcpay-settings-context';
+import LoadableCheckboxControl from '../loadable-checkbox';
+import Pill from '../pill';
+import PaymentMethodDisabledTooltip from '../payment-method-disabled-tooltip';
 import './payment-method.scss';
-import { useManualCapture } from 'wcpay/data';
-import { getDocumentationUrlForDisabledPaymentMethod } from './utils';
-import { FeeStructure } from 'wcpay/types/fees';
 
 const PaymentMethod = ( {
 	id,
@@ -154,36 +153,14 @@ const PaymentMethod = ( {
 							</HoverTooltip>
 						) }
 						{ disabled && (
-							<HoverTooltip
-								content={ interpolateComponents( {
-									// translators: {{learnMoreLink}}: placeholders are opening and closing anchor tags.
-									mixedString: __(
-										'We need more information from you to enable this method. ' +
-											'{{learnMoreLink}}Learn more.{{/learnMoreLink}}',
-										'woocommerce-payments'
-									),
-									components: {
-										learnMoreLink: (
-											// eslint-disable-next-line jsx-a11y/anchor-has-content
-											<a
-												target="_blank"
-												rel="noreferrer"
-												/* eslint-disable-next-line max-len */
-												href={ getDocumentationUrlForDisabledPaymentMethod(
-													id
-												) }
-											/>
-										),
-									},
-								} ) }
-							>
+							<PaymentMethodDisabledTooltip id={ id }>
 								<Pill className={ 'payment-status-' + status }>
 									{ __(
 										'More information needed',
 										'woocommerce-payments'
 									) }
 								</Pill>
-							</HoverTooltip>
+							</PaymentMethodDisabledTooltip>
 						) }
 					</div>
 					<div className="payment-method__description">
