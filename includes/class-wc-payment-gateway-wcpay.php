@@ -219,7 +219,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			sprintf(
 				/* translators: %1$s: WooPayments, tosLink: Link to terms of service page, privacyLink: Link to privacy policy page */
 				__(
-					'%1$s gives your store flexibility to accept credit cards, debit cards, and Apple Pay. Enable popular local payment methods and other digital wallets like Google Pay to give customers even more choice.<br/><br/>
+					'Payments made simple — including WooPay, a new express checkout feature.<br/><br/>
 			By using %1$s you agree to be bound by our <tosLink>Terms of Service</tosLink> (including WooPay <woopayMechantTosLink>merchant terms</woopayMechantTosLink>) and acknowledge that you have read our <privacyLink>Privacy Policy</privacyLink>',
 					'woocommerce-payments'
 				),
