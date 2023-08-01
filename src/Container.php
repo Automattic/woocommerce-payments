@@ -10,7 +10,6 @@ namespace WooPayments;
 use Psr\Container\ContainerInterface;
 use WooPayments\Internal\DependencyManagement\ExtendedContainer;
 use WooPayments\Internal\DependencyManagement\ServiceProvider\PaymentsServiceProvider;
-use WooPayments\Internal\DependencyManagement\ServiceProvider\ProxiesServiceProvider;
 use WooPayments\Internal\DependencyManagement\DelegateContainer\LegacyContainer;
 use WooPayments\Internal\DependencyManagement\DelegateContainer\WooContainer;
 
@@ -86,7 +85,6 @@ class Container implements ContainerInterface {
 	 * Loads all available providers into the container.
 	 */
 	private function load_providers() {
-		$this->container->addServiceProvider( new ProxiesServiceProvider() );
 		$this->container->addServiceProvider( new PaymentsServiceProvider() );
 	}
 }
