@@ -15,28 +15,5 @@ use WCPay\Core\Mode;
  * to test with.
  */
 class ExampleService {
-	/**
-	 * Mode.
-	 *
-	 * @var Mode
-	 */
-	private $mode;
 
-	/**
-	 * Instantiates the class.
-	 *
-	 * @param Mode $mode The Mode object.
-	 */
-	public function __construct( Mode $mode ) {
-		$this->mode = $mode;
-	}
-
-	/**
-	 * Temporary method to test the Mode.
-	 *
-	 * @return bool
-	 */
-	public function is_in_test_mode() {
-		return $this->mode->is_test();
-	}
 }

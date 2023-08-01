@@ -9,6 +9,7 @@ namespace WooPayments\Tests;
 
 use WCPAY_UnitTestCase;
 use Automattic\WooCommerce\Proxies\LegacyProxy;
+use Automattic\WooCommerce\Utilities\PluginUtil;
 use stdClass;
 use WCPay\Core\Mode;
 use WooPayments\Container;
@@ -17,6 +18,7 @@ use WooPayments\Internal\DependencyManagement\ExtendedContainer;
 use WooPayments\Internal\DependencyManagement\DelegateContainer\WooContainer;
 use WooPayments\Internal\DependencyManagement\DelegateContainer\LegacyContainer;
 use WooPayments\Internal\Service\ExampleService;
+use WooPayments\Internal\Service\ExampleServiceWithDependencies;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
@@ -63,7 +65,7 @@ class ContainerTest extends WCPAY_UnitTestCase {
 
 		// Setup the mock, and make sure the globals are fresh.
 		$this->mock_woo_container         = $this->createMock( WooContainer::class );
-		$this->mock_legacy_container      = new LegacyContainer();
+		$this->mock_legacy_container      = $this->createMock( LegacyContainer::class );
 		$GLOBALS['woopayments_container'] = new Container( $this->mock_legacy_container, $this->mock_woo_container );
 		$GLOBALS['wcpay_test_container']  = null;
 
@@ -173,32 +175,109 @@ class ContainerTest extends WCPAY_UnitTestCase {
 	 * Checks whether the container delegates to the legacy container.
 	 */
 	public function test_container_delegates_to_legacy_container() {
+		$mock_mode = $this->createMock( Mode::class );
+
+		$this->mock_legacy_container
+			->expects( $this->once() )
+			->method( 'has' )
+			->with( Mode::class )
+			->willReturn( true );
+
+		$this->mock_legacy_container
+			->expects( $this->once() )
+			->method( 'get' )
+			->with( Mode::class )
+			->willReturn( $mock_mode );
+
 		$result = $this->sut->get( Mode::class );
-		$this->assertInstanceOf( Mode::class, $result );
+		$this->assertSame( $mock_mode, $result );
 	}
 
 	/**
 	 * Ensure that using a replacement will also work with delegate containers.
 	 */
 	public function test_container_handles_delegate_replacement() {
-		$mode = new stdClass(); // Just a mock.
-		$this->test_sut->replace( Mode::class, $mode );
+		$mock_mode = new stdClass(); // Just a mock.
+
+		// The ExtendedContainer will check whether a delegate provides the class.
+		$this->mock_legacy_container
+			->expects( $this->once() )
+			->method( 'has' )
+			->with( Mode::class )
+			->willReturn( true );
+
+		// But should never try to instantiate it.
+		$this->mock_legacy_container
+			->expects( $this->never() )
+			->method( 'get' );
+
+		$this->test_sut->replace( Mode::class, $mock_mode );
 		$result = $this->sut->get( Mode::class );
 
-		$this->assertSame( $result, $mode );
+		$this->assertSame( $result, $mock_mode );
 	}
 
 	/**
 	 * Ensures that delegate replacements can be reset.
 	 */
 	public function test_container_handles_delegate_replacement_reset() {
-		$original = $this->sut->get( Mode::class );
+		$mock_mode = $this->createMock( Mode::class );
+
+		/**
+		 * The ExtendedContainer will check whether a delegate provides the class:
+		 * - Before replacing it.
+		 * - When trying to retrieve it after reset.
+		 */
+		$this->mock_legacy_container
+			->expects( $this->exactly( 2 ) )
+			->method( 'has' )
+			->with( Mode::class )
+			->willReturn( true );
 
 		$this->test_sut->replace( Mode::class, new stdClass() ); // Just a mock.
+
 		$this->test_sut->reset_replacement( Mode::class );
 
+		$this->mock_legacy_container
+			->expects( $this->once() )
+			->method( 'get' )
+			->with( Mode::class )
+			->willReturn( $mock_mode );
+
 		$result = $this->sut->get( Mode::class );
-		$this->assertSame( $result, $original );
+		$this->assertSame( $result, $mock_mode );
+	}
+
+	/**
+	 * Test that all containers are linked with a mix of dependencies.
+	 */
+	public function test_all_containers() {
+		$this->mock_legacy_container
+			->expects( $this->exactly( 4 ) )
+			->method( 'has' )
+			->withConsecutive( [ Mode::class ], [ Mode::class ], [ PluginUtil::class ], [ PluginUtil::class ] )
+			->willReturnOnConsecutiveCalls( true, true, false, false );
+
+		$this->mock_legacy_container
+			->expects( $this->once() )
+			->method( 'get' )
+			->with( Mode::class )
+			->willReturn( $this->createMock( Mode::class ) );
+
+		$this->mock_woo_container
+			->expects( $this->exactly( 2 ) )
+			->method( 'has' )
+			->with( PluginUtil::class )
+			->willReturn( true );
+
+		$this->mock_woo_container
+			->expects( $this->once() )
+			->method( 'get' )
+			->with( PluginUtil::class )
+			->willReturn( new PluginUtil() ); // final class, cannot be mocked.
+
+		$result = $this->sut->get( ExampleServiceWithDependencies::class );
+		$this->assertInstanceOf( ExampleServiceWithDependencies::class, $result );
 	}
 
 	/**
