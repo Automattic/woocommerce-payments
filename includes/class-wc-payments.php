@@ -1561,22 +1561,14 @@ class WC_Payments {
 			WC()->customer->set_billing_email( $email );
 			WC()->customer->save();
 
-			$body['adapted_extensions'] = ( new WooPay_Adapted_Extensions() )->get_adapted_extensions_data( $email );
+			$woopay_adapted_extensions  = new WooPay_Adapted_Extensions();
+			$body['adapted_extensions'] = $woopay_adapted_extensions->get_adapted_extensions_data( $email );
 
 			if ( ! is_user_logged_in() ) {
 				$store_user_email_registered = get_user_by( 'email', $email );
 
 				if ( $store_user_email_registered ) {
-					// Create a nonce for email verified WooPay users use on the Store API request.
-					$store_api_nonce_for_woopay_verified_email = function ( $uid, $action ) use ( $store_user_email_registered ) {
-						return 'wc_store_api' === $action ? $store_user_email_registered->ID : $uid;
-					};
-
-					add_filter( 'nonce_user_logged_out', $store_api_nonce_for_woopay_verified_email, 10, 2 );
-
-					$body['email_verified_session_nonce'] = wp_create_nonce( 'wc_store_api' );
-
-					remove_filter( 'nonce_user_logged_out', $store_api_nonce_for_woopay_verified_email );
+					$body['email_verified_session_nonce'] = self::create_woopay_nonce( $store_user_email_registered->ID );
 				}
 			}
 		}

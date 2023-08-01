@@ -358,10 +358,10 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order_id            = $order->get_id();
 		$order_number        = $order->get_order_number();
 		$product_item        = current( $order->get_items( 'line_item' ) );
-		$intent_id           = 'pi_mock';
 		$user                = '';
 		$customer_id         = 'cus_mock';
 		$save_payment_method = true;
+		$intent              = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD ] );
 
 		$this->set_cart_contains_subscription_items( false );
 
@@ -403,28 +403,23 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		// Test update_payment_intent on each payment gateway.
 		foreach ( $this->mock_payment_gateways as $mock_payment_gateway ) {
-			$request = $this->mock_wcpay_request( Update_Intention::class, 1, 'pi_mock' );
+			$request = $this->mock_wcpay_request( Update_Intention::class, 1, $intent->get_id() );
 			$request->expects( $this->once() )->method( 'set_amount' )->with( 5000 );
 			$request->expects( $this->once() )->method( 'set_currency_code' )->with( 'usd' );
 			$request->expects( $this->once() )->method( 'setup_future_usage' );
 			$request->expects( $this->once() )->method( 'set_customer' )->with( 'cus_mock' );
 			$request->expects( $this->once() )->method( 'set_metadata' )->with( $metadata );
 			$request->expects( $this->once() )->method( 'set_level3' )->with( $level3 );
-			$request
-				->expects( $this->once() )
+			$request->expects( $this->once() )
 				->method( 'format_response' )
-				->willReturn(
-					[
-						'sucess' => true,
-					]
-				);
+				->willReturn( $intent );
 
 			$mock_payment_gateway
 				->method( 'manage_customer_details_for_order' )
 				->will(
 					$this->returnValue( [ $user, $customer_id ] )
 				);
-			$result = $mock_payment_gateway->update_payment_intent( $intent_id, $order_id, $save_payment_method );
+			$result = $mock_payment_gateway->update_payment_intent( $intent->get_id(), $order_id, $save_payment_method );
 			$this->assertSame( [ 'success' => true ], $result );
 		}
 	}
@@ -434,10 +429,10 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order_id            = $order->get_id();
 		$order_number        = $order->get_order_number();
 		$product_item        = current( $order->get_items( 'line_item' ) );
-		$intent_id           = 'pi_mock';
 		$user                = '';
 		$customer_id         = 'cus_mock';
 		$save_payment_method = true;
+		$intent              = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD ] );
 
 		$this->set_cart_contains_subscription_items( false );
 
@@ -482,7 +477,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		* its input are mocked in sequence, matching the gateways.
 		*/
 		foreach ( $this->mock_payment_gateways as $payment_method_id => $mock_payment_gateway ) {
-			$request = $this->mock_wcpay_request( Update_Intention::class, 1, 'pi_mock' );
+			$request = $this->mock_wcpay_request( Update_Intention::class, 1, $intent->get_id() );
 			$request->expects( $this->once() )->method( 'set_amount' )->with( 5000 );
 			$request->expects( $this->once() )->method( 'set_currency_code' )->with( 'usd' );
 			$request->expects( $this->once() )->method( 'setup_future_usage' );
@@ -493,11 +488,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 			$request->expects( $this->once() )
 				->method( 'format_response' )
-				->willReturn(
-					[
-						'sucess' => 'true',
-					]
-				);
+				->willReturn( $intent );
 
 			// Test update_payment_intent on each payment gateway.
 			$mock_payment_gateway
@@ -505,7 +496,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				->will(
 					$this->returnValue( [ $user, $customer_id ] )
 				);
-			$result = $mock_payment_gateway->update_payment_intent( $intent_id, $order_id, $save_payment_method, $payment_method_id );
+			$result = $mock_payment_gateway->update_payment_intent( $intent->get_id(), $order_id, $save_payment_method, $payment_method_id );
 			$this->assertSame( [ 'success' => true ], $result );
 		}
 	}
@@ -515,6 +506,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order_id     = $order->get_id();
 		$order_number = $order->get_order_number();
 		$product_item = current( $order->get_items( 'line_item' ) );
+		$intent       = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD ] );
 
 		$this->set_cart_contains_subscription_items( false );
 
@@ -556,7 +548,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		// Test update_payment_intent on each payment gateway.
 		foreach ( $this->mock_payment_gateways as $mock_payment_gateway ) {
-			$request = $this->mock_wcpay_request( Update_Intention::class, 1, 'pi_mock' );
+			$request = $this->mock_wcpay_request( Update_Intention::class, 1, $intent->get_id() );
 			$request->expects( $this->once() )->method( 'set_amount' )->with( 5000 );
 			$request->expects( $this->once() )->method( 'set_currency_code' )->with( 'usd' );
 			$request->expects( $this->once() )->method( 'set_customer' )->with( 'cus_mock' );
@@ -565,18 +557,14 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			$request->expects( $this->once() )->method( 'set_payment_country' )->with( 'US' );
 			$request->expects( $this->once() )
 				->method( 'format_response' )
-				->willReturn(
-					[
-						'sucess' => 'true',
-					]
-				);
+				->willReturn( $intent );
 
 			$mock_payment_gateway
 				->method( 'manage_customer_details_for_order' )
 				->will(
 					$this->returnValue( [ '', 'cus_mock' ] )
 				);
-			$result = $mock_payment_gateway->update_payment_intent( 'pi_mock', $order_id, false, null, 'US' );
+			$result = $mock_payment_gateway->update_payment_intent( $intent->get_id(), $order_id, false, null, 'US' );
 			$this->assertSame( [ 'success' => true ], $result );
 		}
 	}
@@ -801,7 +789,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			$result = $mock_payment_gateway->process_payment( $order->get_id() );
 			$this->assertEquals( 'success', $result['result'] );
 			$this->assertEquals( true, $result['payment_needed'] );
-			$this->assertMatchesRegularExpression( "/order_id=$order_id/", $result['redirect_url'] );
 			$this->assertMatchesRegularExpression( '/wc_payment_method=woocommerce_payments/', $result['redirect_url'] );
 			$this->assertMatchesRegularExpression( '/save_payment_method=no/', $result['redirect_url'] );
 		}
@@ -833,7 +820,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		// Test saving with SEPA.
 		$result = $mock_sepa_payment_gateway->process_payment( $order->get_id() );
 		$this->assertEquals( 'success', $result['result'] );
-		$this->assertMatchesRegularExpression( "/order_id=$order_id/", $result['redirect_url'] );
 		$this->assertMatchesRegularExpression( '/wc_payment_method=woocommerce_payments/', $result['redirect_url'] );
 		$this->assertMatchesRegularExpression( '/save_payment_method=yes/', $result['redirect_url'] );
 
@@ -866,7 +852,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$result = $mock_card_payment_gateway->process_payment( $order->get_id() );
 		$this->assertEquals( 'success', $result['result'] );
 		$this->assertEquals( true, $result['payment_needed'] );
-		$this->assertMatchesRegularExpression( "/order_id=$order_id/", $result['redirect_url'] );
 		$this->assertMatchesRegularExpression( '/wc_payment_method=woocommerce_payments/', $result['redirect_url'] );
 		$this->assertMatchesRegularExpression( '/save_payment_method=yes/', $result['redirect_url'] );
 
@@ -885,7 +870,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$result = $mock_sepa_payment_gateway->process_payment( $order->get_id() );
 		$this->assertEquals( 'success', $result['result'] );
 		$this->assertEquals( true, $result['payment_needed'] );
-		$this->assertMatchesRegularExpression( "/order_id=$order_id/", $result['redirect_url'] );
 		$this->assertMatchesRegularExpression( '/wc_payment_method=woocommerce_payments/', $result['redirect_url'] );
 		$this->assertMatchesRegularExpression( '/save_payment_method=yes/', $result['redirect_url'] );
 
@@ -1073,6 +1057,10 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$intent_id           = 'pi_mock';
 		$payment_method_id   = 'pm_mock';
 
+		// Supply the order with the intent id so that it can be retrieved during the redirect payment processing.
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->save();
+
 		$card_method = $this->mock_payment_methods['card'];
 
 		$payment_intent = WC_Helper_Intention::create_intention(
@@ -1099,7 +1087,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$this->set_cart_contains_subscription_items( false );
 
-		$mock_upe_gateway->process_redirect_payment( $order_id, $intent_id, $save_payment_method );
+		$mock_upe_gateway->process_redirect_payment( $order, $intent_id, $save_payment_method );
 
 		$result_order = wc_get_order( $order_id );
 		$note         = wc_get_order_notes(
@@ -1133,6 +1121,10 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$intent_id           = 'pi_mock';
 		$payment_method_id   = 'pm_mock';
 
+		// Supply the order with the intent id so that it can be retrieved during the redirect payment processing.
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->save();
+
 		$card_method = $this->mock_payment_methods['card'];
 
 		$payment_intent = WC_Helper_Intention::create_intention(
@@ -1159,7 +1151,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$this->set_cart_contains_subscription_items( false );
 
-		$mock_upe_gateway->process_redirect_payment( $order_id, $intent_id, $save_payment_method );
+		$mock_upe_gateway->process_redirect_payment( $order, $intent_id, $save_payment_method );
 
 		$result_order = wc_get_order( $order_id );
 
@@ -1169,6 +1161,10 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $payment_method_id, $result_order->get_meta( '_payment_method_id', true ) );
 		$this->assertEquals( $customer_id, $result_order->get_meta( '_stripe_customer_id', true ) );
 		$this->assertEquals( Order_Status::PROCESSING, $result_order->get_status() );
+	}
+
+	public function is_proper_intent_used_with_order_returns_false() {
+		$this->assertFalse( $this->mock_upe_gateway->is_proper_intent_used_with_order( WC_Helper_Order::create_order(), 'wrong_intent_id' ) );
 	}
 
 	public function test_process_redirect_setup_intent_succeded() {
@@ -1186,6 +1182,10 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$intent_id           = 'si_mock';
 		$payment_method_id   = 'pm_mock';
 		$token               = WC_Helper_Token::create_token( $payment_method_id );
+
+		// Supply the order with the intent id so that it can be retrieved during the redirect payment processing.
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->save();
 
 		$card_method = $this->mock_payment_methods['card'];
 
@@ -1234,7 +1234,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$this->set_cart_contains_subscription_items( true );
 
-		$mock_upe_gateway->process_redirect_payment( $order_id, $intent_id, $save_payment_method );
+		$mock_upe_gateway->process_redirect_payment( $order, $intent_id, $save_payment_method );
 
 		$result_order = wc_get_order( $order_id );
 
@@ -1261,6 +1261,10 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$intent_id           = 'pi_mock';
 		$payment_method_id   = 'pm_mock';
 		$token               = WC_Helper_Token::create_token( $payment_method_id );
+
+		// Supply the order with the intent id so that it can be retrieved during the redirect payment processing.
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->save();
 
 		$card_method = $this->mock_payment_methods['card'];
 
@@ -1294,7 +1298,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$this->set_cart_contains_subscription_items( false );
 
-		$mock_upe_gateway->process_redirect_payment( $order_id, $intent_id, $save_payment_method );
+		$mock_upe_gateway->process_redirect_payment( $order, $intent_id, $save_payment_method );
 
 		$result_order = wc_get_order( $order_id );
 		$note         = wc_get_order_notes(
