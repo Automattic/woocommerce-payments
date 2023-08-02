@@ -301,11 +301,13 @@ class WC_Payments_Admin {
 				],
 			]
 		);
-		wp_enqueue_style(
+		WC_Payments_Utils::register_and_enqueue_style(
 			'wcpay-admin-css',
 			plugins_url( 'assets/css/admin.css', WCPAY_PLUGIN_FILE ),
 			[],
-			WC_Payments::get_file_version( 'assets/css/admin.css' )
+			WC_Payments::get_file_version( 'assets/css/admin.css' ),
+			'all',
+			true
 		);
 
 		$this->add_menu_notification_badge();
@@ -510,11 +512,13 @@ class WC_Payments_Admin {
 			);
 		}
 
-		wp_enqueue_style(
+		WC_Payments_Utils::register_and_enqueue_style(
 			'wcpay-admin-css',
 			plugins_url( 'assets/css/admin.css', WCPAY_PLUGIN_FILE ),
 			[],
-			WC_Payments::get_file_version( 'assets/css/admin.css' )
+			WC_Payments::get_file_version( 'assets/css/admin.css' ),
+			'all',
+			true
 		);
 
 		$this->add_menu_notification_badge();
@@ -576,20 +580,24 @@ class WC_Payments_Admin {
 
 		wp_set_script_translations( 'WCPAY_ADMIN_SETTINGS', 'woocommerce-payments' );
 
-		wp_register_style(
+		WC_Payments_Utils::register_style(
 			'WCPAY_ADMIN_SETTINGS',
 			plugins_url( 'dist/settings.css', WCPAY_PLUGIN_FILE ),
 			[ 'wc-components' ],
-			WC_Payments::get_file_version( 'dist/settings.css' )
+			WC_Payments::get_file_version( 'dist/settings.css' ),
+			'all',
+			true
 		);
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_PAYMENT_GATEWAYS_PAGE', 'dist/payment-gateways' );
 
-		wp_register_style(
+		WC_Payments_Utils::register_style(
 			'WCPAY_PAYMENT_GATEWAYS_PAGE',
 			plugins_url( 'dist/payment-gateways.css', WCPAY_PLUGIN_FILE ),
 			[ 'wc-components' ],
-			WC_Payments::get_file_version( 'dist/payment-gateways.css' )
+			WC_Payments::get_file_version( 'dist/payment-gateways.css' ),
+			'all',
+			true
 		);
 	}
 
@@ -704,7 +712,7 @@ class WC_Payments_Admin {
 				);
 
 				wp_enqueue_script( 'WCPAY_ADMIN_ORDER_ACTIONS' );
-				wp_enqueue_style( 'WCPAY_ADMIN_ORDER_ACTIONS' );
+				WC_Payments_Utils::register_and_enqueue_style( 'WCPAY_ADMIN_ORDER_ACTIONS', '', [], WC_VERSION, 'all', true );
 			}
 		}
 	}

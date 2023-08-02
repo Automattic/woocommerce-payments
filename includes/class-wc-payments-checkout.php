@@ -219,11 +219,13 @@ class WC_Payments_Checkout {
 				wp_localize_script( 'WCPAY_CHECKOUT', 'wcpayCustomerData', $prepared_customer_data );
 			}
 
-			wp_enqueue_style(
+			WC_Payments_Utils::register_and_enqueue_style(
 				'WCPAY_CHECKOUT',
 				plugins_url( 'dist/checkout.css', WCPAY_PLUGIN_FILE ),
 				[],
-				WC_Payments::get_file_version( 'dist/checkout.css' )
+				WC_Payments::get_file_version( 'dist/checkout.css' ),
+				'all',
+				true
 			);
 
 			// Output the form HTML.
