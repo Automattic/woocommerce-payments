@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React, { useContext, useEffect, useMemo } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Icon, VisuallyHidden } from '@wordpress/components';
 import { useCallback } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
