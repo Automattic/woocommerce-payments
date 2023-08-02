@@ -253,6 +253,10 @@ export async function mountStripePaymentElement( api, domElement ) {
 	document.body.dispatchEvent( event );
 
 	const paymentMethodType = domElement.dataset.paymentMethodType;
+	if ( ! gatewayUPEComponents[ paymentMethodType ] ) {
+		return;
+	}
+
 	const upeElement =
 		gatewayUPEComponents[ paymentMethodType ].upeElement ||
 		( await createStripePaymentElement( api, paymentMethodType ) );
