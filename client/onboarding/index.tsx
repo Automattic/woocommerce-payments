@@ -60,6 +60,8 @@ const OnboardingPage: React.FC = () => {
 	const businessUrl = isLocalhost
 		? 'https://wcpay.test'
 		: wcSettings?.homeUrl ?? '';
+	const businessName = wcSettings?.siteTitle ?? '';
+	const country = wcpaySettings?.connect?.country ?? '';
 
 	useEffect( () => {
 		trackStarted();
@@ -80,7 +82,13 @@ const OnboardingPage: React.FC = () => {
 
 	return (
 		<div className="wcpay-onboarding-prototype">
-			<OnboardingContextProvider initialData={ { url: businessUrl } }>
+			<OnboardingContextProvider
+				initialData={ {
+					business_name: businessName,
+					url: businessUrl,
+					country: country,
+				} }
+			>
 				<OnboardingStepper />
 			</OnboardingContextProvider>
 		</div>
