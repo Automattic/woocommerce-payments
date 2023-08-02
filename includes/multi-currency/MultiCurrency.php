@@ -1480,6 +1480,7 @@ class MultiCurrency {
 			'updated'    => time(),
 		];
 	}
+	
 	/**
 	 * Get all the currencies that have been used in the store.
 	 *
