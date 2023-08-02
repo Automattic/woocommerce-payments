@@ -208,7 +208,7 @@ describe( 'PaymentMethods', () => {
 		expect( screen.queryAllByText( /Pending /i ).length ).toEqual( 2 );
 
 		expect(
-			screen.queryAllByText( /Contact WooCommerce Support/i ).length
+			screen.queryAllByText( /More information needed/i ).length
 		).toEqual( 4 );
 	} );
 

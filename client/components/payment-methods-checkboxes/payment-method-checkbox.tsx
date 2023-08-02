@@ -2,28 +2,29 @@
 /**
  * External dependencies
  */
-import React, { useContext, useEffect } from 'react';
 import { Icon, VisuallyHidden } from '@wordpress/components';
 import { useCallback } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import classNames from 'classnames';
+import React, { useContext, useEffect } from 'react';
 
 /**
  * Internal dependencies
  */
+import LoadableCheckboxControl from 'components/loadable-checkbox';
+import { HoverTooltip } from 'components/tooltip';
+import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
+import { useManualCapture, useAccountDefaultCurrency } from 'wcpay/data';
+import { FeeStructure } from 'wcpay/types/fees';
+import PaymentMethodsMap from '../../payment-methods-map';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import {
 	formatMethodFeesDescription,
 	formatMethodFeesTooltip,
 } from '../../utils/account-fees';
-import LoadableCheckboxControl from 'components/loadable-checkbox';
-import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
-import PaymentMethodsMap from '../../payment-methods-map';
+import PaymentMethodDisabledTooltip from '../payment-method-disabled-tooltip';
 import Pill from '../pill';
-import { HoverTooltip } from 'components/tooltip';
 import './payment-method-checkbox.scss';
-import { useManualCapture, useAccountDefaultCurrency } from 'wcpay/data';
-import { FeeStructure } from 'wcpay/types/fees';
 
 type PaymentMethodProps = {
 	name: string;
@@ -193,22 +194,14 @@ const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
 						</HoverTooltip>
 					) }
 					{ disabled && (
-						<HoverTooltip
-							content={ sprintf(
-								__(
-									'To use %s, please contact WooCommerce support.',
-									'woocommerce-payments'
-								),
-								PaymentMethodsMap[ name ].label
-							) }
-						>
+						<PaymentMethodDisabledTooltip id={ name }>
 							<Pill className={ 'payment-status-' + status }>
 								{ __(
-									'Contact WooCommerce Support',
+									'More information needed',
 									'woocommerce-payments'
 								) }
 							</Pill>
-						</HoverTooltip>
+						</PaymentMethodDisabledTooltip>
 					) }
 				</div>
 				<div className={ 'payment-method-checkbox__pills-right' }>
