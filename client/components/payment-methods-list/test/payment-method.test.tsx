@@ -3,6 +3,7 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import { act } from 'react-dom/test-utils';
@@ -35,6 +36,11 @@ describe( 'PaymentMethod', () => {
 				onCheckClick={ handleOnCheckClickMock }
 				onUncheckClick={ handleOnUnCheckClickMock }
 				description="Bar"
+				Icon={ (): null => null }
+				status={ '' }
+				isAllowingManualCapture={ false }
+				required={ false }
+				locked={ false }
 			/>
 		);
 	};
@@ -80,6 +86,10 @@ describe( 'PaymentMethod', () => {
 				onUncheckClick={ handleOnUnCheckClickMock }
 				description="Bar"
 				required={ true }
+				Icon={ (): null => null }
+				status={ '' }
+				isAllowingManualCapture={ false }
+				locked={ false }
 			/>
 		);
 
@@ -98,6 +108,10 @@ describe( 'PaymentMethod', () => {
 				onUncheckClick={ handleOnUnCheckClickMock }
 				description="Locked payment method"
 				locked={ true }
+				Icon={ (): null => null }
+				status={ '' }
+				isAllowingManualCapture={ false }
+				required={ false }
 			/>
 		);
 	};

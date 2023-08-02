@@ -3,12 +3,13 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { render, screen } from '@testing-library/react';
 
 /**
  * Internal dependencies
  */
-import PaymentMethodsList from '../';
+import PaymentMethodsList from '..';
 
 describe( 'PaymentMethodsList', () => {
 	test( 'renders list with children as items', () => {

@@ -122,8 +122,8 @@
 		}
 		&.payment-status-inactive {
 			border: 0 solid transparent;
-			background: #cc1818;
-			color: #fff;
+			background: $studio-yellow-5;
+			color: $studio-yellow-50;
 		}
 	}
 }
