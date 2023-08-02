@@ -12,37 +12,27 @@ import {
 import { Button } from '@wordpress/components';
 
 import wcpayTracks from '../tracks';
-
-import ConnectedImage from 'assets/images/subscriptions-empty-state-connected.svg?asset';
 import UnconnectedImage from 'assets/images/subscriptions-empty-state-unconnected.svg?asset';
 
 import './style.scss';
 
 const {
-	wcpay: { connectUrl, isConnected, newProductUrl },
+	wcpay: { connectUrl, newProductUrl },
 } = window;
 
-const Image = () => (
-	<img src={ isConnected ? ConnectedImage : UnconnectedImage } alt="" />
-);
+const Image = () => <img src={ UnconnectedImage } alt="" />;
 
 const Description = () => (
-	<p className="wcpay-empty-subscriptions__description">
-		{ isConnected
-			? __(
-					'This is where you’ll see and manage all subscriptions in your store. Create a ' +
-						'subscription product to turn one-time purchases into a steady income.',
-					'woocommerce-payments'
-			  )
-			: sprintf(
-					/* translators: %s: WooPayments */
-					__(
-						'Track recurring revenue and manage active subscriptions directly from your store’s ' +
-							'dashboard — powered by %s.',
-						'woocommerce-payments'
-					),
-					'WooPayments'
-			  ) }
+	<p className="woo_subscriptions_empty_state__description">
+		{ sprintf(
+			/* translators: %s: WooPayments */
+			__(
+				'Track recurring revenue and manage active subscriptions directly from your store’s ' +
+					'dashboard — powered by %s.',
+				'woocommerce-payments'
+			),
+			'WooPayments'
+		) }
 	</p>
 );
 
@@ -72,24 +62,22 @@ const ActionButtons = () => {
 	const [ isCreatingProduct, setIsCreatingProduct ] = useState( false );
 
 	return (
-		<div className="wcpay-empty-subscriptions__button_container">
-			{ ! isConnected && (
-				<Button
-					disabled={ isFinishingSetup }
-					href={ connectUrl }
-					isBusy={ isFinishingSetup }
-					isPrimary
-					onClick={ () => {
-						wcpayTracks.recordEvent(
-							wcpayTracks.events
-								.SUBSCRIPTIONS_EMPTY_STATE_FINISH_SETUP
-						);
-						setIsFinishingSetup( true );
-					} }
-				>
-					{ __( 'Finish setup', 'woocommerce-payments' ) }
-				</Button>
-			) }
+		<div className="woo_subscriptions_empty_state__button_container">
+			<Button
+				disabled={ isFinishingSetup }
+				href={ connectUrl }
+				isBusy={ isFinishingSetup }
+				isPrimary
+				onClick={ () => {
+					wcpayTracks.recordEvent(
+						wcpayTracks.events
+							.SUBSCRIPTIONS_EMPTY_STATE_FINISH_SETUP
+					);
+					setIsFinishingSetup( true );
+				} }
+			>
+				{ __( 'Finish setup', 'woocommerce-payments' ) }
+			</Button>
 			<Button
 				disabled={ isCreatingProduct }
 				href={ newProductUrl }
@@ -114,16 +102,16 @@ const EmptyState = () => {
 		wcpayTracks.recordEvent(
 			wcpayTracks.events.SUBSCRIPTIONS_EMPTY_STATE_VIEW,
 			{
-				is_connected: isConnected ? 'yes' : 'no',
+				is_connected: 'no',
 			}
 		);
 	}, [] );
 
 	return (
-		<div className="wcpay-empty-subscriptions__container">
+		<div className="woo_subscriptions_empty_state__container">
 			<Image />
 			<Description />
-			{ ! isConnected && <TOS /> }
+			<TOS />
 			<ActionButtons />
 		</div>
 	);
@@ -131,5 +119,5 @@ const EmptyState = () => {
 
 render(
 	<EmptyState />,
-	document.querySelector( '#wcpay_subscriptions_empty_state' )
+	document.querySelector( '#woo_subscriptions_empty_state' )
 );
