@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace WooPayments\Vendor\League\Container\Argument;
+namespace WCPay\Vendor\League\Container\Argument;
 
-use WooPayments\Vendor\League\Container\ContainerAwareInterface;
+use WCPay\Vendor\League\Container\ContainerAwareInterface;
 use ReflectionFunctionAbstract;
 
 interface ArgumentResolverInterface extends ContainerAwareInterface

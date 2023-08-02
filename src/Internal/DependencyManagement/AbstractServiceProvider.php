@@ -2,15 +2,15 @@
 /**
  * Abstract service provider file.
  *
- * @package WooPayments
+ * @package WooCommerce\Payments
  */
 
-namespace WooPayments\Internal\DependencyManagement;
+namespace WCPay\Internal\DependencyManagement;
 
-use WooPayments\Vendor\League\Container\ServiceProvider\AbstractServiceProvider as BaseProvider;
+use WCPay\Vendor\League\Container\ServiceProvider\AbstractServiceProvider as BaseProvider;
 
 /**
- * WooPayments base service provider.
+ * WCPay base service provider.
  */
 abstract class AbstractServiceProvider extends BaseProvider {
 	/**

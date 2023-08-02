@@ -12,7 +12,7 @@
  * WC tested up to: 7.8.0
  * Requires at least: 6.0
  * Requires PHP: 7.3
- * Version: 6.2.0
+ * Version: 6.2.2
  *
  * @package WooCommerce\Payments
  */
@@ -149,7 +149,7 @@ add_action( 'plugins_loaded', 'wcpay_jetpack_init', 1 );
  */
 function wcpay_init() {
 	require_once WCPAY_ABSPATH . '/includes/class-wc-payments.php';
-	require_once WCPAY_ABSPATH . '/src/woopayments.php';
+	require_once WCPAY_ABSPATH . '/src/wcpay-get-container.php';
 	WC_Payments::init();
 }
 

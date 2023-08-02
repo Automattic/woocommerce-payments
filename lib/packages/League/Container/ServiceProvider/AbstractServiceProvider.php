@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace WooPayments\Vendor\League\Container\ServiceProvider;
+namespace WCPay\Vendor\League\Container\ServiceProvider;
 
-use WooPayments\Vendor\League\Container\ContainerAwareTrait;
+use WCPay\Vendor\League\Container\ContainerAwareTrait;
 
 abstract class AbstractServiceProvider implements ServiceProviderInterface
 {

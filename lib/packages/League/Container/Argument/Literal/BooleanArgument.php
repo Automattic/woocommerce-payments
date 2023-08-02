@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace WooPayments\Vendor\League\Container\Argument\Literal;
+namespace WCPay\Vendor\League\Container\Argument\Literal;
 
-use WooPayments\Vendor\League\Container\Argument\LiteralArgument;
+use WCPay\Vendor\League\Container\Argument\LiteralArgument;
 
 class BooleanArgument extends LiteralArgument
 {

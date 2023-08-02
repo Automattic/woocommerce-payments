@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace WooPayments\Vendor\League\Container;
+namespace WCPay\Vendor\League\Container;
 
-use WooPayments\Vendor\League\Container\Definition\DefinitionInterface;
-use WooPayments\Vendor\League\Container\Inflector\InflectorInterface;
-use WooPayments\Vendor\League\Container\ServiceProvider\ServiceProviderInterface;
+use WCPay\Vendor\League\Container\Definition\DefinitionInterface;
+use WCPay\Vendor\League\Container\Inflector\InflectorInterface;
+use WCPay\Vendor\League\Container\ServiceProvider\ServiceProviderInterface;
 use Psr\Container\ContainerInterface;
 
 interface DefinitionContainerInterface extends ContainerInterface

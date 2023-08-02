@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace WooPayments\Vendor\League\Container;
+namespace WCPay\Vendor\League\Container;
 
-use WooPayments\Vendor\League\Container\Argument\{ArgumentResolverInterface, ArgumentResolverTrait};
-use WooPayments\Vendor\League\Container\Exception\ContainerException;
-use WooPayments\Vendor\League\Container\Exception\NotFoundException;
+use WCPay\Vendor\League\Container\Argument\{ArgumentResolverInterface, ArgumentResolverTrait};
+use WCPay\Vendor\League\Container\Exception\ContainerException;
+use WCPay\Vendor\League\Container\Exception\NotFoundException;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
 use ReflectionFunction;

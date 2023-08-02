@@ -2,23 +2,23 @@
 /**
  * Class ContainerTest
  *
- * @package WooPayments
+ * @package WooCommerce\Payments
  */
 
-namespace WooPayments\Tests;
+namespace WCPay\Tests;
 
 use WCPAY_UnitTestCase;
 use Automattic\WooCommerce\Proxies\LegacyProxy;
 use Automattic\WooCommerce\Utilities\PluginUtil;
 use stdClass;
+use WCPay\Container;
 use WCPay\Core\Mode;
-use WooPayments\Container;
-use WooPayments\Internal\DependencyManagement\ContainerException;
-use WooPayments\Internal\DependencyManagement\ExtendedContainer;
-use WooPayments\Internal\DependencyManagement\DelegateContainer\WooContainer;
-use WooPayments\Internal\DependencyManagement\DelegateContainer\LegacyContainer;
-use WooPayments\Internal\Service\ExampleService;
-use WooPayments\Internal\Service\ExampleServiceWithDependencies;
+use WCPay\Internal\DependencyManagement\ContainerException;
+use WCPay\Internal\DependencyManagement\ExtendedContainer;
+use WCPay\Internal\DependencyManagement\DelegateContainer\WooContainer;
+use WCPay\Internal\DependencyManagement\DelegateContainer\LegacyContainer;
+use WCPay\Internal\Service\ExampleService;
+use WCPay\Internal\Service\ExampleServiceWithDependencies;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
@@ -64,10 +64,10 @@ class ContainerTest extends WCPAY_UnitTestCase {
 		parent::setUp();
 
 		// Setup the mock, and make sure the globals are fresh.
-		$this->mock_woo_container         = $this->createMock( WooContainer::class );
-		$this->mock_legacy_container      = $this->createMock( LegacyContainer::class );
-		$GLOBALS['woopayments_container'] = new Container( $this->mock_legacy_container, $this->mock_woo_container );
-		$GLOBALS['wcpay_test_container']  = null;
+		$this->mock_woo_container        = $this->createMock( WooContainer::class );
+		$this->mock_legacy_container     = $this->createMock( LegacyContainer::class );
+		$GLOBALS['wcpay_container']      = new Container( $this->mock_legacy_container, $this->mock_woo_container );
+		$GLOBALS['wcpay_test_container'] = null;
 
 		$this->sut      = wcpay_get_container();
 		$this->test_sut = wcpay_get_test_container();

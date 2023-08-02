@@ -2,10 +2,10 @@
 /**
  * Class ExampleServiceWithDependencies
  *
- * @package WooPayments
+ * @package WooCommerce\Payments
  */
 
-namespace WooPayments\Internal\Service;
+namespace WCPay\Internal\Service;
 
 use Automattic\WooCommerce\Utilities\PluginUtil;
 use WCPay\Core\Mode;

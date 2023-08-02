@@ -5,8 +5,8 @@
  * @package WooCommerce\Payments
  */
 
-use WooPayments\Container;
-use WooPayments\Internal\DependencyManagement\ExtendedContainer;
+use WCPay\Container;
+use WCPay\Internal\DependencyManagement\ExtendedContainer;
 
 $_tests_dir = getenv( 'WP_TESTS_DIR' );
 
@@ -59,7 +59,7 @@ function _manually_load_plugin() {
 	$_plugin_dir = dirname( __FILE__ ) . '/../../';
 
 	require $_plugin_dir . 'woocommerce-payments.php';
-	require $_plugin_dir . 'src/woopayments.php';
+	require $_plugin_dir . 'src/wcpay-get-container.php';
 
 	require_once $_plugin_dir . 'includes/class-wc-payments-db.php';
 	require_once $_plugin_dir . 'includes/wc-payment-api/models/class-wc-payments-api-charge.php';
@@ -124,7 +124,7 @@ function wcpay_init_subscriptions_core() {
 $GLOBALS['wcpay_test_container'] = null;
 
 /**
- * Extracts the internal ExtendedContainer instance of the WooPayments container.
+ * Extracts the internal ExtendedContainer instance of the WCPay container.
  *
  * This allows full access to the full ExtendedContainer functionality,
  * rather than only to the non-test `get` and `has` methods of the container.
@@ -137,9 +137,9 @@ function wcpay_get_test_container() {
 		return $GLOBALS['wcpay_test_container'];
 	}
 
-	$container = $GLOBALS['woopayments_container'] ?? null;
+	$container = $GLOBALS['wcpay_container'] ?? null;
 	if ( ! $container instanceof Container ) {
-		throw new Exception( 'Tests require the WooPayments dependency container to be set up.' );
+		throw new Exception( 'Tests require the WCPay dependency container to be set up.' );
 	}
 
 	// Load the property through reflection.

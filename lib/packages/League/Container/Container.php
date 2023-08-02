@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace WooPayments\Vendor\League\Container;
+namespace WCPay\Vendor\League\Container;
 
-use WooPayments\Vendor\League\Container\Definition\{DefinitionAggregate, DefinitionInterface, DefinitionAggregateInterface};
-use WooPayments\Vendor\League\Container\Exception\{NotFoundException, ContainerException};
-use WooPayments\Vendor\League\Container\Inflector\{InflectorAggregate, InflectorInterface, InflectorAggregateInterface};
-use WooPayments\Vendor\League\Container\ServiceProvider\{ServiceProviderAggregate,
+use WCPay\Vendor\League\Container\Definition\{DefinitionAggregate, DefinitionInterface, DefinitionAggregateInterface};
+use WCPay\Vendor\League\Container\Exception\{NotFoundException, ContainerException};
+use WCPay\Vendor\League\Container\Inflector\{InflectorAggregate, InflectorInterface, InflectorAggregateInterface};
+use WCPay\Vendor\League\Container\ServiceProvider\{ServiceProviderAggregate,
     ServiceProviderAggregateInterface,
     ServiceProviderInterface};
 use Psr\Container\ContainerInterface;

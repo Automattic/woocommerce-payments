@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WooPayments\Vendor\League\Container\Exception;
+namespace WCPay\Vendor\League\Container\Exception;
 
 use Psr\Container\NotFoundExceptionInterface;
 use InvalidArgumentException;

@@ -2,16 +2,16 @@
 /**
  * Class ExtendedContainer
  *
- * @package WooPayments
+ * @package WooCommerce\Payments
  */
 
-namespace WooPayments\Internal\DependencyManagement;
+namespace WCPay\Internal\DependencyManagement;
 
-use WooPayments\Vendor\League\Container\Container;
-use WooPayments\Vendor\League\Container\Definition\Definition;
+use WCPay\Vendor\League\Container\Container;
+use WCPay\Vendor\League\Container\Definition\Definition;
 
 /**
- * Extends the League container to allow WooPayments customizations.
+ * Extends the League container to allow WCPay customizations.
  *
  * During tests, `wcpay_get_test_container()` will return an instance of this class.
  */

@@ -2,10 +2,10 @@
 /**
  * Class LegacyContainer
  *
- * @package WooPayments
+ * @package WooCommerce\Payments
  */
 
-namespace WooPayments\Internal\DependencyManagement\DelegateContainer;
+namespace WCPay\Internal\DependencyManagement\DelegateContainer;
 
 use Psr\Container\ContainerInterface;
 use WC_Payments;

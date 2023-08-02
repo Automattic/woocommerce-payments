@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace WooPayments\Vendor\League\Container\Definition;
+namespace WCPay\Vendor\League\Container\Definition;
 
 use Generator;
-use WooPayments\Vendor\League\Container\ContainerAwareTrait;
-use WooPayments\Vendor\League\Container\Exception\NotFoundException;
+use WCPay\Vendor\League\Container\ContainerAwareTrait;
+use WCPay\Vendor\League\Container\Exception\NotFoundException;
 
 class DefinitionAggregate implements DefinitionAggregateInterface
 {

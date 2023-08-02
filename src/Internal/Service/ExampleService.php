@@ -2,10 +2,10 @@
 /**
  * Class ExampleService
  *
- * @package WooPayments
+ * @package WooCommerce\Payments
  */
 
-namespace WooPayments\Internal\Service;
+namespace WCPay\Internal\Service;
 
 use WCPay\Core\Mode;
 
