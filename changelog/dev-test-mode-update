@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Only show the post-onboarding congratulations message if user did not onboard in test mode.
