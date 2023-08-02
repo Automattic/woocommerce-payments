@@ -30,14 +30,13 @@ type PaymentMethodProps = {
 };
 
 const getDescription = ( name: string, currency: string ) => {
-	const paymentMethod = PaymentMethodsMap[ name ];
+	let { description, allows_pay_later: allowsPayLater } = PaymentMethodsMap[
+		name
+	];
 
-	if ( ! paymentMethod ) return null;
+	if ( ! description ) return null;
 
-	let description = paymentMethod.description;
-	const isAllowingPayLater = paymentMethod.allows_pay_later;
-
-	if ( isAllowingPayLater ) {
+	if ( allowsPayLater ) {
 		description = sprintf( description, currency.toUpperCase() );
 	}
 
@@ -48,9 +47,9 @@ const PaymentMethodDescription: React.FC< PaymentMethodProps > = ( {
 	name,
 } ) => {
 	const [ stripeAccountDefaultCurrency ] = useAccountDefaultCurrency();
-	const description = useMemo(
-		() => getDescription( name, stripeAccountDefaultCurrency as string ),
-		[ name, stripeAccountDefaultCurrency ]
+	const description = getDescription(
+		name,
+		stripeAccountDefaultCurrency as string
 	);
 
 	if ( ! description ) return null;
@@ -74,7 +73,7 @@ type PaymentMethodCheckboxProps = {
 	onChange: ( name: string, enabled: boolean ) => void;
 	name: string;
 	checked: boolean;
-	fees: any; // Need more details to determine the type
+	fees: string;
 	status: string;
 	required: boolean;
 	locked: boolean;
