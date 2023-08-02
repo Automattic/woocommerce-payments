@@ -107,3 +107,34 @@
 		position: fixed;
 	}
 }
+
+.rtl {
+	.payment-methods {
+		&__express-checkouts {
+			h3 {
+				padding-right: 0;
+				padding-left: 215px;
+			}
+			p {
+				padding-right: 0;
+				padding-left: 230px;
+			}
+			&-get-started {
+				margin-right: 0;
+				margin-left: 16px;
+			}
+			&.background-local-payment-methods {
+				background: url( 'assets/images/payment-methods/local_payments.svg?asset' )
+					no-repeat left;
+			}
+		}
+	}
+	.express-checkouts .express-checkouts-list .express-checkout {
+		&__icon {
+			margin: 1px 1px 1px 17px;
+		}
+		&__link {
+			margin: auto;
+		}
+	}
+}
