@@ -193,6 +193,7 @@ class WC_Payments_Checkout {
 			'woopaySignatureNonce'           => wp_create_nonce( 'woopay_signature_nonce' ),
 			'woopayMerchantId'               => Jetpack_Options::get_option( 'id' ),
 			'icon'                           => $this->gateway->get_icon_url(),
+			'tracksUserIdentity'             => WC_Payments::woopay_tracker()->tracks_get_identity( get_current_user_id() ),
 		];
 
 		/**

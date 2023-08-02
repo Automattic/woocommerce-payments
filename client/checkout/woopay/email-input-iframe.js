@@ -234,6 +234,7 @@ export const handleWooPayEmailInput = async (
 		const viewportHeight = window.document.documentElement.clientHeight;
 
 		const urlParams = new URLSearchParams();
+
 		urlParams.append( 'email', email );
 		urlParams.append( 'testMode', getConfig( 'testMode' ) );
 		urlParams.append(
@@ -246,6 +247,10 @@ export const handleWooPayEmailInput = async (
 		urlParams.append(
 			'viewport',
 			`${ viewportWidth }x${ viewportHeight }`
+		);
+		urlParams.append(
+			'tracksUserIdentity',
+			JSON.stringify( getConfig( 'tracksUserIdentity' ) )
 		);
 
 		iframe.src = `${ getConfig(
