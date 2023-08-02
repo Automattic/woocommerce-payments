@@ -137,4 +137,12 @@
 			margin: auto;
 		}
 	}
+	.iti {
+		&__country-list {
+			display: none;
+		}
+		&__selected-flag {
+			display: none;
+		}
+	}
 }
