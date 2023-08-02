@@ -198,8 +198,6 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 			WC_Payments::get_file_version( 'dist/subscription-product-onboarding-modal.css' )
 		);
 
-		wp_style_add_data( 'wcpay-subscription-product-onboarding-modal', 'rtl', 'replace' );
-
 		wp_enqueue_script( 'wcpay-subscription-product-onboarding-modal' );
 		wp_enqueue_style( 'wcpay-subscription-product-onboarding-modal' );
 	}

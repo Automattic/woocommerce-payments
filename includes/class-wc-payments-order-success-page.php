@@ -123,7 +123,5 @@ class WC_Payments_Order_Success_Page {
 			[],
 			WC_Payments::get_file_version( 'assets/css/success.css' )
 		);
-
-		wp_style_add_data( 'wcpay-success-css', 'rtl', 'replace' );
 	}
 }

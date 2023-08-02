@@ -71,8 +71,6 @@ class WC_Payments_Subscriptions_Plugin_Notice_Manager {
 			WCPAY_VERSION_NUMBER
 		);
 
-		wp_style_add_data( 'wcpay-subscriptions-plugin-styles', 'rtl', 'replace' );
-
 		wp_enqueue_style( 'wcpay-subscriptions-plugin-styles' );
 	}
 

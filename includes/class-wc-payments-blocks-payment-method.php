@@ -60,7 +60,6 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 			[],
 			'1.0'
 		);
-		wp_style_add_data( 'wc-blocks-checkout-style', 'rtl', 'replace' );
 		wp_register_script(
 			'stripe',
 			'https://js.stripe.com/v3/',

@@ -351,7 +351,6 @@ class MultiCurrency {
 		$this->register_admin_scripts();
 
 		wp_enqueue_script( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
-		wp_style_add_data( 'WCPAY_MULTI_CURRENCY_SETTINGS', 'rtl', 'replace' );
 		wp_enqueue_style( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
 	}
 
@@ -1248,8 +1247,6 @@ class MultiCurrency {
 			[ 'wc-components', 'WCPAY_ADMIN_SETTINGS' ],
 			\WC_Payments::get_file_version( 'dist/multi-currency.css' )
 		);
-
-		wp_style_add_data( 'WCPAY_MULTI_CURRENCY_SETTINGS', 'rtl', 'replace' );
 	}
 
 	/**
