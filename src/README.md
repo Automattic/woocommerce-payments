@@ -126,7 +126,7 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		$container->addShared( SimpleService::class );
 
 		$container->addShared( SimpleServiceWithDependencies::class )
-			->addArgument( ServiceWithDependencies::class);
+			->addArgument( SimpleService::class);
 
 		$container->add( Request::class )
 			->addArgument( WC_Payments_API_Client::class );
