@@ -72,6 +72,9 @@ declare global {
 		fraudProtection: {
 			isWelcomeTourDismissed?: boolean;
 		};
+		progressiveOnboarding?: {
+			isNewFlowEnabled: boolean;
+		};
 		accountDefaultCurrency: string;
 		isFRTReviewFeatureActive: boolean;
 		frtDiscoverBannerSettings: string;
@@ -90,6 +93,7 @@ declare global {
 			description: string;
 			tc_url: string;
 		};
+		isWooPayStoreCountryAvailable: boolean;
 	};
 
 	const wcTracks: any;

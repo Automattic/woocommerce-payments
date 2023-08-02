@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react';
 import PaymentProcessor from './payment-processor';
 
 const PaymentElements = ( { api, ...props } ) => {
-	const stripe = api.getStripe();
+	const stripe = api.getStripeForUPE( props.paymentMethodId );
 	const [ errorMessage, setErrorMessage ] = useState( null );
 	const [ appearance, setAppearance ] = useState(
 		getUPEConfig( 'wcBlocksUPEAppearance' )
@@ -47,7 +47,7 @@ const PaymentElements = ( { api, ...props } ) => {
 			<Elements
 				stripe={ stripe }
 				options={ {
-					mode: 1 > amount ? 'setup' : 'payment',
+					mode: amount < 1 ? 'setup' : 'payment',
 					amount: amount,
 					currency: currency,
 					paymentMethodCreation: 'manual',

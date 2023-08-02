@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: WooPayments
+ * Plugin Name: WooCommerce Payments
  * Plugin URI: https://woocommerce.com/payments/
  * Description: Accept payments via credit card. Manage transactions within WordPress.
  * Author: Automattic
@@ -12,7 +12,7 @@
  * WC tested up to: 7.8.0
  * Requires at least: 6.0
  * Requires PHP: 7.3
- * Version: 6.1.1
+ * Version: 6.2.2
  *
  * @package WooCommerce\Payments
  */
@@ -33,8 +33,9 @@ require_once __DIR__ . '/includes/woopay/class-woopay-session.php';
  * Plugin activation hook.
  */
 function wcpay_activated() {
-	// Do not take any action if activated in a REST request (via wc-admin).
+	// When WooCommerce Payments is installed and activated from the WooCommerce onboarding wizard (via wc-admin REST request), check if the site is eligible for subscriptions.
 	if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+		update_option( 'wcpay_check_subscriptions_eligibility_after_onboarding', true );
 		return;
 	}
 
@@ -170,11 +171,26 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 			$plugin_slug = "$plugin_name/$plugin_name.php";
 
 			// Check if the specified $plugin_name is in the process of being activated via the Admin > Plugins screen.
-			if ( isset( $_GET['action'], $_GET['plugin'], $_GET['_wpnonce'] ) && wp_verify_nonce( wc_clean( wp_unslash( $_GET['_wpnonce'] ) ), "activate-plugin_{$plugin_slug}" ) ) {
-				$action = sanitize_text_field( wp_unslash( $_GET['action'] ) );
-				$plugin = sanitize_text_field( wp_unslash( $_GET['plugin'] ) );
+			if ( isset( $_REQUEST['action'], $_REQUEST['_wpnonce'] ) && current_user_can( 'activate_plugin', $plugin_slug ) ) {
+				$action            = sanitize_text_field( wp_unslash( $_REQUEST['action'] ) );
+				$activating_plugin = '';
 
-				if ( current_user_can( 'activate_plugin', $plugin_slug ) && 'activate' === $action && $plugin_slug === $plugin ) {
+				switch ( $action ) {
+					case 'activate':
+					case 'activate-plugin':
+						if ( isset( $_REQUEST['plugin'] ) && wp_verify_nonce( wc_clean( wp_unslash( $_REQUEST['_wpnonce'] ) ), "activate-plugin_{$plugin_slug}" ) ) {
+							$activating_plugin = sanitize_text_field( wp_unslash( $_REQUEST['plugin'] ) );
+						}
+						break;
+					case 'activate-selected':
+						// When multiple plugins are being activated at once the $_REQUEST['checked'] is an array of plugin slugs. Check if the specified $plugin_name is in that array.
+						if ( isset( $_REQUEST['checked'] ) && is_array( $_REQUEST['checked'] ) && in_array( $plugin_slug, $_REQUEST['checked'], true ) && wp_verify_nonce( wc_clean( wp_unslash( $_REQUEST['_wpnonce'] ) ), 'bulk-plugins' ) ) {
+							$activating_plugin = $plugin_slug;
+						}
+						break;
+				}
+
+				if ( ! empty( $activating_plugin ) && $plugin_slug === $activating_plugin ) {
 					return true;
 				}
 			}
@@ -302,7 +318,7 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 			__( 'We’ve detected that you have duplicate sites connected to %s. When Safe Mode is active, payments will not be interrupted. However, some features may not be available until you’ve resolved this issue below. Safe Mode is most frequently activated when you’re transferring your site from one domain to another, or creating a staging site for testing. A site adminstrator can resolve this issue. <safeModeLink>Learn more</safeModeLink>', 'woocommerce-payments' ),
 			'WooPayments'
 		),
-		'supportURL'                => 'https://woocommerce.com/document/payments/faq/safe-mode/',
+		'supportURL'                => 'https://woocommerce.com/document/woocommerce-payments/testing-and-troubleshooting/safe-mode/',
 		'adminBarSafeModeLabel'     => sprintf(
 			/* translators: %s: WooPayments. */
 			__( '%s Safe Mode', 'woocommerce-payments' ),
@@ -313,7 +329,7 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 			__( "<strong>Notice:</strong> It appears that your 'wp-config.php' file might be using dynamic site URL values. Dynamic site URLs could cause %s to enter Safe Mode. <dynamicSiteUrlSupportLink>Learn how to set a static site URL.</dynamicSiteUrlSupportLink>", 'woocommerce-payments' ),
 			'WooPayments'
 		),
-		'dynamicSiteUrlSupportLink' => 'https://woocommerce.com/document/payments/faq/safe-mode/#dynamic-site-urls',
+		'dynamicSiteUrlSupportLink' => 'https://woocommerce.com/document/woocommerce-payments/testing-and-troubleshooting/safe-mode/#dynamic-site-urls',
 	];
 
 	$urls = Automattic\Jetpack\Identity_Crisis::get_mismatched_urls();

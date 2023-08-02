@@ -50,12 +50,12 @@ const WCPAY_DEV_TOOLS = baseUrl + 'wp-admin/admin.php?page=wcpaydev';
 const SHOP_CART_PAGE = baseUrl + 'cart/';
 
 export const RUN_SUBSCRIPTIONS_TESTS =
-	'1' !== process.env.SKIP_WC_SUBSCRIPTIONS_TESTS;
+	process.env.SKIP_WC_SUBSCRIPTIONS_TESTS !== '1';
 
 export const RUN_ACTION_SCHEDULER_TESTS =
-	'1' !== process.env.SKIP_WC_ACTION_SCHEDULER_TESTS;
+	process.env.SKIP_WC_ACTION_SCHEDULER_TESTS !== '1';
 
-export const RUN_WC_BLOCKS_TESTS = '1' !== process.env.SKIP_WC_BLOCKS_TESTS;
+export const RUN_WC_BLOCKS_TESTS = process.env.SKIP_WC_BLOCKS_TESTS !== '1';
 
 // The generic flows will be moved to their own package soon (more details in p7bje6-2gV-p2), so we're
 // keeping our customizations grouped here so it's easier to extend the flows once the move happens.
@@ -96,8 +96,8 @@ export const shopperWCP = {
 
 	selectNewPaymentMethod: async () => {
 		if (
-			null !==
-			( await page.$( '#wc-woocommerce_payments-payment-token-new' ) )
+			( await page.$( '#wc-woocommerce_payments-payment-token-new' ) ) !==
+			null
 		) {
 			await expect( page ).toClick(
 				'#wc-woocommerce_payments-payment-token-new'
@@ -152,8 +152,8 @@ export const shopperWCP = {
 		} );
 
 		if (
-			null !==
-			( await page.$( '#wc-woocommerce_payments-payment-token-new' ) )
+			( await page.$( '#wc-woocommerce_payments-payment-token-new' ) ) !==
+			null
 		) {
 			await setCheckbox( '#wc-woocommerce_payments-payment-token-new' );
 		}
@@ -242,9 +242,9 @@ export const shopperWCP = {
 		} );
 
 		// Remove products if they exist
-		if ( null !== ( await page.$$( '.remove' ) ) ) {
+		if ( ( await page.$$( '.remove' ) ) !== null ) {
 			let products = await page.$$( '.remove' );
-			while ( products && 0 < products.length ) {
+			while ( products && products.length > 0 ) {
 				for ( const product of products ) {
 					await product.click();
 					await uiUnblocked();
@@ -254,7 +254,7 @@ export const shopperWCP = {
 		}
 
 		// Remove coupons if they exist
-		if ( null !== ( await page.$( '.woocommerce-remove-coupon' ) ) ) {
+		if ( ( await page.$( '.woocommerce-remove-coupon' ) ) !== null ) {
 			await page.click( '.woocommerce-remove-coupon' );
 			await uiUnblocked();
 		}
@@ -270,19 +270,6 @@ export const shopperWCP = {
 			waitUntil: 'networkidle0',
 		} );
 		await shopper.addToCart();
-	},
-
-	validateCheckoutError: async () => {
-		const errorMessage =
-			"Error: There's a problem with this payment. Please try again or use a different payment method.";
-
-		await page.waitForSelector( '.woocommerce-error' );
-		await expect(
-			page
-		).toMatchElement(
-			'div.woocommerce-NoticeGroup > ul.woocommerce-error > li',
-			{ text: errorMessage }
-		);
 	},
 };
 
@@ -626,11 +613,11 @@ export const merchantWCP = {
 	openActionScheduler: async ( status, search ) => {
 		let pageUrl = ACTION_SCHEDULER;
 
-		if ( 'undefined' !== typeof status ) {
+		if ( typeof status !== 'undefined' ) {
 			pageUrl += '&status=' + status;
 		}
 
-		if ( 'undefined' !== typeof search ) {
+		if ( typeof search !== 'undefined' ) {
 			pageUrl += '&s=' + search;
 		}
 
@@ -708,7 +695,7 @@ export const merchantWCP = {
 		const checkboxStatus = await (
 			await checkbox.getProperty( 'checked' )
 		 ).jsonValue();
-		if ( true !== checkboxStatus ) {
+		if ( checkboxStatus !== true ) {
 			await checkbox.click();
 		}
 	},
@@ -718,7 +705,7 @@ export const merchantWCP = {
 		const checkboxStatus = await (
 			await checkbox.getProperty( 'checked' )
 		 ).jsonValue();
-		if ( true === checkboxStatus ) {
+		if ( checkboxStatus === true ) {
 			await checkbox.click();
 		}
 	},
@@ -763,108 +750,6 @@ export const merchantWCP = {
 		await expect( page ).toClick( 'input#submit' );
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
-		} );
-	},
-
-	openAdvancedFraudProtectionSettings: async () => {
-		const advancedLevelRadioSelector =
-			'#fraud-protection-level-select_advanced-level';
-		const advancedLevelConfigureLinkSelector =
-			'.fraud-protection__advanced-level-container > a';
-
-		await expect( page ).toClick( advancedLevelRadioSelector );
-		await expect( page ).toClick( advancedLevelConfigureLinkSelector );
-
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
-	openLatestBlockedOrder: async () => {
-		await merchantWCP.openTransactions();
-
-		await expect( page ).toClick(
-			'.components-tab-panel__tabs-item.blocked-list'
-		);
-		await uiLoaded();
-		await page.waitFor( 1000 );
-		await expect( page ).toClick(
-			'.woocommerce-table__table tbody > tr:nth-child(2) > th > a'
-		);
-	},
-
-	checkTransactionStatus: async ( expectedStatus ) => {
-		const statusChipSelector = '.payment-details-summary .chip';
-
-		await page.waitForSelector( '.payment-details-summary' );
-		await page.waitForSelector( statusChipSelector );
-
-		await expect( page ).toMatchElement( statusChipSelector, {
-			text: expectedStatus,
-		} );
-	},
-
-	checkFraudOutcomeEntry: async ( expectedOutcome ) => {
-		await page.waitForSelector( '.woocommerce-timeline' );
-
-		await expect( page ).toMatchElement( '.fraud-outcome-ruleset-item', {
-			text: expectedOutcome,
-		} );
-	},
-
-	disableAllFraudProtectionRules: async () => {
-		await merchantWCP.openWCPSettings();
-		await merchantWCP.skipFraudProtectionTour();
-		await merchantWCP.openAdvancedFraudProtectionSettings();
-
-		const rulesToToggle = [
-			'international-ip-address-card',
-			'ip-address-mismatch',
-			'address-mismatch-card',
-			'purchase-price-threshold-card',
-			'order-items-threshold-card',
-		];
-
-		for ( const rule of rulesToToggle ) {
-			const ruleSelector = `#${ rule } .is-checked .components-form-toggle__input`;
-
-			const ruleToggle = await page.$( ruleSelector );
-
-			if ( ruleToggle ) {
-				await page.$eval( ruleSelector, ( method ) => method.click() );
-			}
-		}
-	},
-
-	toggleFraudProtectionRule: async ( ruleName, settings = null ) => {
-		await page.$eval(
-			`#${ ruleName }-card .components-form-toggle__input`,
-			( method ) => method.click()
-		);
-
-		if ( settings ) {
-			for ( const [ selector, value ] of Object.entries( settings ) ) {
-				const settingInput = await page.waitForSelector( selector );
-
-				await settingInput.click( { clickCount: 3 } );
-				await page.keyboard.press( 'Backspace' );
-
-				if ( '' !== value ) {
-					await page.keyboard.type( value );
-				}
-
-				await page.waitFor( 500 );
-			}
-		}
-
-		await expect( page ).toClick(
-			'.fraud-protection-advanced-settings__footer button'
-		);
-
-		await page.waitForSelector( '.components-snackbar' );
-		await expect( page ).toMatchElement( '.components-snackbar', {
-			text: 'Settings saved',
-			timeout: 60000,
 		} );
 	},
 };

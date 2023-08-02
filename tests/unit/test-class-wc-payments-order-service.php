@@ -168,7 +168,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			'mark_complete_no_fraud_outcome_pmtype_card' => [
 				'order_status'            => false,
 				'intent_args'             => [
-					'payment_method_types' => [ 'card' ],
+					'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 				],
 				'expected_note_1'         => 'Pending payment to Processing',
 				'expected_fraud_outcome'  => false,
@@ -177,10 +177,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			'mark_complete_fraud_outcome_allow'          => [
 				'order_status'            => false,
 				'intent_args'             => [
-					'metadata'             => [
+					'metadata'               => [
 						'fraud_outcome' => Rule::FRAUD_OUTCOME_ALLOW,
 					],
-					'payment_method_types' => [ 'card' ],
+					'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 				],
 				'expected_note_1'         => 'Pending payment to Processing',
 				'expected_fraud_outcome'  => Rule::FRAUD_OUTCOME_ALLOW,
@@ -189,10 +189,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			'mark_complete_fraud_outcome_review'         => [
 				'order_status'            => Order_Status::ON_HOLD,
 				'intent_args'             => [
-					'metadata'             => [
+					'metadata'               => [
 						'fraud_outcome' => Rule::FRAUD_OUTCOME_ALLOW,
 					],
-					'payment_method_types' => [ 'card' ],
+					'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 				],
 				'expected_note_1'         => 'On hold to Processing',
 				'expected_fraud_outcome'  => Rule::FRAUD_OUTCOME_ALLOW,
@@ -465,15 +465,15 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		return [
 			'mark_payment_started_intent_status_requires_action' => [
 				'intent_args'             => [
-					'status'               => Payment_Intent_Status::REQUIRES_ACTION,
-					'payment_method_types' => [ 'card' ],
+					'status'                 => Payment_Intent_Status::REQUIRES_ACTION,
+					'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 				],
 				'expected_fraud_meta_box' => Fraud_Meta_Box_Type::PAYMENT_STARTED,
 			],
 			'mark_payment_started_intent_status_requires_payment_method' => [
 				'intent_args'             => [
-					'status'               => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD,
-					'payment_method_types' => [ 'card' ],
+					'status'                 => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD,
+					'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 				],
 				'expected_fraud_meta_box' => Fraud_Meta_Box_Type::PAYMENT_STARTED,
 			],
@@ -696,15 +696,15 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_capture_expired_with_provider( $fraud_outcome, $expected_fraud_outcome, $expected_fraud_meta_box ) {
 		// Arrange: Create the intent, get the proper order status variations, and get the charge. Set the fraud outcome status.
-		$intent            = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::CANCELED ] ); // Stripe uses single 'l'.
-		$order_status      = Order_Status::CANCELLED; // WCPay uses double 'l'.
-		$wc_order_statuses = wc_get_order_statuses(); // WooCommerce uses single 'l' for US English.
+		$intent            = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::CANCELED ] );
+		$order_status      = Order_Status::FAILED;
+		$wc_order_statuses = wc_get_order_statuses();
 		$charge            = $intent->get_charge();
 		if ( $fraud_outcome ) {
 			$this->order_service->set_fraud_outcome_status_for_order( $this->order, $fraud_outcome );
 		}
 
-		// Act: Attempt to mark the payment/order expired/cancelled.
+		// Act: Attempt to mark the payment/order expired/failed.
 		$this->order_service->mark_payment_capture_expired( $this->order, $intent->get_id(), $intent->get_status(), $charge->get_id() );
 
 		// Assert: Check to make sure the intent_status meta was set.
@@ -719,7 +719,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertStringContainsString( 'Pending payment to ' . $wc_order_statuses['wc-cancelled'], $notes[1]->content );
+		$this->assertStringContainsString( 'Pending payment to ' . $wc_order_statuses['wc-failed'], $notes[1]->content );
 		$this->assertStringContainsString( 'Payment authorization has <strong>expired</strong>', $notes[0]->content );
 		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
 

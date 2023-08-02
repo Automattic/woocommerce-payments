@@ -10,6 +10,7 @@
 namespace WCPay\Payment_Methods;
 
 use WC_Payments_Utils;
+use WCPay\MultiCurrency\MultiCurrency;
 use WP_User;
 use WC_Payments_Token_Service;
 use WC_Payment_Token_CC;
@@ -59,6 +60,15 @@ abstract class UPE_Payment_Method {
 	 * @var string[]
 	 */
 	protected $currencies;
+
+	/**
+	 * Should payment method be restricted to only domestic payments.
+	 * E.g. only to Stripe's connected account currency.
+	 * gs
+	 *
+	 * @var boolean
+	 */
+	protected $accept_only_domestic_payment = false;
 
 	/**
 	 * Represent payment total limitations for the payment method (per-currency).
@@ -139,8 +149,10 @@ abstract class UPE_Payment_Method {
 			if ( isset( $this->limits_per_currency[ $currency ], WC()->cart ) ) {
 				$amount = WC_Payments_Utils::prepare_amount( WC()->cart->get_total( '' ), $currency );
 				if ( $amount > 0 ) {
-					$range = $this->limits_per_currency[ $currency ];
-					return $amount >= $range['min'] && $amount <= $range['max'];
+					$range            = $this->limits_per_currency[ $currency ];
+					$is_valid_minimum = null === $range['min'] || $amount >= $range['min'];
+					$is_valid_maximum = null === $range['max'] || $amount <= $range['max'];
+					return $is_valid_minimum && $is_valid_maximum;
 				}
 			}
 		}
@@ -162,12 +174,21 @@ abstract class UPE_Payment_Method {
 	 * Returns boolean dependent on whether payment method will accept charges
 	 * with chosen currency
 	 *
-	 * @param int $order_id Optional order ID, if order currency should take precedence.
+	 * @param string   $account_default_currency Default account currency.
+	 * @param int|null $order_id                 Optional order ID, if order currency should take precedence.
 	 *
 	 * @return bool
 	 */
-	public function is_currency_valid( $order_id = null ) {
-		return empty( $this->currencies ) || in_array( $this->get_currency( $order_id ), $this->currencies, true );
+	public function is_currency_valid( string $account_default_currency, $order_id = null ) {
+		$current_store_currency = $this->get_currency( $order_id );
+
+		if ( $this->accept_only_domestic_payment ) {
+			if ( strtolower( $current_store_currency ) !== strtolower( $account_default_currency ) ) {
+				return false;
+			}
+		}
+
+		return empty( $this->currencies ) || in_array( $current_store_currency, $this->currencies, true );
 	}
 
 	/**

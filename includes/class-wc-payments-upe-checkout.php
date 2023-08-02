@@ -97,6 +97,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts_for_zero_order_total' ], 11 );
+		add_action( 'woocommerce_email_before_order_table', [ $this->gateway, 'set_payment_method_title_for_email' ], 10, 3 );
 	}
 
 	/**
@@ -200,7 +201,6 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 				$payment_fields['orderReturnURL'] = esc_url_raw(
 					add_query_arg(
 						[
-							'order_id'          => $order_id,
 							'wc_payment_method' => UPE_Payment_Gateway::GATEWAY_ID,
 							'_wpnonce'          => wp_create_nonce( 'wcpay_process_redirect_order_nonce' ),
 						],
@@ -251,6 +251,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 			];
 
 			if ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+				$gateway_for_payment_method                             = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
 				$settings[ $payment_method_id ]['upePaymentIntentData'] = $this->gateway->get_payment_intent_data_from_session( $payment_method_id );
 				$settings[ $payment_method_id ]['upeSetupIntentData']   = $this->gateway->get_setup_intent_data_from_session( $payment_method_id );
 				$settings[ $payment_method_id ]['testingInstructions']  = WC_Payments_Utils::esc_interpolated_html(
@@ -258,9 +259,10 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 					$payment_method->get_testing_instructions(),
 					[
 						'strong' => '<strong>',
-						'a'      => '<a href="https://woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
+						'a'      => '<a href="https://woocommerce.com/document/woocommerce-payments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
 					]
 				);
+				$settings[ $payment_method_id ]['forceNetworkSavedCards'] = $gateway_for_payment_method->should_use_stripe_platform_on_checkout_page();
 			}
 		}
 
@@ -332,7 +334,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 							$testing_instructions,
 							[
 								'strong' => '<strong>',
-								'a'      => '<a href="https://woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
+								'a'      => '<a href="https://woocommerce.com/document/woocommerce-payments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
 							]
 						);
 					}

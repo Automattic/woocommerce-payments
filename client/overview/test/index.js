@@ -303,7 +303,7 @@ describe( 'Overview page', () => {
 		render( <OverviewPage /> );
 
 		expect(
-			screen.getByText( 'Ready to setup real payments on your store?' )
+			screen.getByText( 'Set up real payments on your store' )
 		).toBeInTheDocument();
 	} );
 
@@ -316,7 +316,7 @@ describe( 'Overview page', () => {
 		render( <OverviewPage /> );
 
 		expect(
-			screen.queryByText( 'Ready to setup real payments on your store?' )
+			screen.queryByText( 'Set up real payments on your store' )
 		).not.toBeInTheDocument();
 	} );
 

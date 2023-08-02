@@ -10,8 +10,18 @@ import userEvent from '@testing-library/user-event';
  */
 import InfoNoticeModal from '../info-notice-modal';
 
+declare const global: {
+	wcpaySettings: {
+		isWooPayStoreCountryAvailable?: boolean;
+	};
+};
+
 describe( 'Connect Account Page – Info Notice Modal', () => {
 	test( 'renders correctly when opened', () => {
+		global.wcpaySettings = {
+			isWooPayStoreCountryAvailable: true,
+		};
+
 		render( <InfoNoticeModal /> );
 
 		const learnMore = screen.getByRole( 'button', { name: /learn more/i } );

@@ -2206,7 +2206,7 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
                 usd
               </span>
               <span
-                class="chip chip-light"
+                class="chip chip-primary"
               >
                 Disputed: Under review
               </span>
