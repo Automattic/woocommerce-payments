@@ -22,16 +22,16 @@ export const DocumentationUrlForDisabledPaymentMethod = {
 export const getDocumentationUrlForDisabledPaymentMethod = (
 	paymentMethodId: string
 ): string => {
-	let link;
+	let url;
 	switch ( paymentMethodId ) {
 		case PAYMENT_METHOD_IDS.AFTERPAY_CLEARPAY:
 		case PAYMENT_METHOD_IDS.AFFIRM:
-			link = DocumentationUrlForDisabledPaymentMethod.BNPLS;
+			url = DocumentationUrlForDisabledPaymentMethod.BNPLS;
 			break;
 		default:
-			link = DocumentationUrlForDisabledPaymentMethod.DEFAULT;
+			url = DocumentationUrlForDisabledPaymentMethod.DEFAULT;
 	}
-	return link;
+	return url;
 };
 
 const PaymentMethodDisabledTooltip = ( {
