@@ -234,7 +234,6 @@ export const handleWooPayEmailInput = async (
 		const viewportHeight = window.document.documentElement.clientHeight;
 
 		const urlParams = new URLSearchParams();
-
 		urlParams.append( 'email', email );
 		urlParams.append( 'testMode', getConfig( 'testMode' ) );
 		urlParams.append(
