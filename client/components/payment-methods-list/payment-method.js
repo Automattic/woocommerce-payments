@@ -10,6 +10,7 @@ import classNames from 'classnames';
  */
 import Pill from '../pill';
 import { HoverTooltip } from 'components/tooltip';
+import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import LoadableCheckboxControl from '../loadable-checkbox';
 import { __, sprintf } from '@wordpress/i18n';
@@ -32,6 +33,8 @@ const PaymentMethod = ( {
 	onUncheckClick,
 	className,
 	isAllowingManualCapture,
+	isSetupRequired,
+	setupTooltip,
 	required,
 	locked,
 } ) => {
@@ -63,16 +66,34 @@ const PaymentMethod = ( {
 			) }
 		>
 			<div className="payment-method__checkbox">
-				<LoadableCheckboxControl
-					label={ label }
-					checked={ checked }
-					disabled={ disabled || locked }
-					onChange={ handleChange }
-					delayMsOnCheck={ 1500 }
-					delayMsOnUncheck={ 0 }
-					hideLabel
-					isAllowingManualCapture={ isAllowingManualCapture }
-				/>
+				{ ! isSetupRequired && (
+					<LoadableCheckboxControl
+						label={ label }
+						checked={ checked }
+						disabled={ disabled || locked }
+						onChange={ handleChange }
+						delayMsOnCheck={ 1500 }
+						delayMsOnUncheck={ 0 }
+						hideLabel
+						isAllowingManualCapture={ isAllowingManualCapture }
+					/>
+				) }
+
+				{ isSetupRequired && (
+					<HoverTooltip content={ setupTooltip }>
+						<div>
+							<NoticeOutlineIcon
+								style={ {
+									color: '#F0B849',
+									fill: 'currentColor',
+									marginRight: '12px',
+									marginLeft: '-2px',
+								} }
+								size={ 26 }
+							/>
+						</div>
+					</HoverTooltip>
+				) }
 			</div>
 			<div className="payment-method__icon">
 				<Icon />
