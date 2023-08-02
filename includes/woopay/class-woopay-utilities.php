@@ -10,7 +10,6 @@ namespace WCPay\WooPay;
 use WC_Payments_Features;
 use WC_Payments_Subscriptions_Utilities;
 use WooPay_Extension;
-use WCPay\Logger;
 use WC_Geolocation;
 use WC_Payments;
 
@@ -102,21 +101,6 @@ class WooPay_Utilities {
 	}
 
 	/**
-	 * Get the persisted available countries.
-	 *
-	 * @return array
-	 */
-	public function get_persisted_available_countries() {
-		$available_countries = json_decode( get_option( self::AVAILABLE_COUNTRIES_OPTION_NAME, self::AVAILABLE_COUNTRIES_DEFAULT ), true );
-
-		if ( ! is_array( $available_countries ) ) {
-			return json_decode( self::AVAILABLE_COUNTRIES_DEFAULT );
-		}
-
-		return $available_countries;
-	}
-
-	/**
 	 * Get if WooPay is available on the user country.
 	 *
 	 * @return boolean
@@ -128,9 +112,26 @@ class WooPay_Utilities {
 
 		$location_data = WC_Geolocation::geolocate_ip();
 
-		$available_countries = $this->get_persisted_available_countries();
+		$available_countries = self::get_persisted_available_countries();
 
 		return in_array( $location_data['country'], $available_countries, true );
+	}
+
+	/**
+	 * Get if WooPay is available on the store country.
+	 *
+	 * @return boolean
+	 */
+	public static function is_store_country_available() {
+		$store_base_location = wc_get_base_location();
+
+		if ( empty( $store_base_location['country'] ) ) {
+			return false;
+		}
+
+		$available_countries = self::get_persisted_available_countries();
+
+		return in_array( $store_base_location['country'], $available_countries, true );
 	}
 
 	/**
@@ -236,5 +237,20 @@ class WooPay_Utilities {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Get the persisted available countries.
+	 *
+	 * @return array
+	 */
+	private static function get_persisted_available_countries() {
+		$available_countries = json_decode( get_option( self::AVAILABLE_COUNTRIES_OPTION_NAME, self::AVAILABLE_COUNTRIES_DEFAULT ), true );
+
+		if ( ! is_array( $available_countries ) ) {
+			return json_decode( self::AVAILABLE_COUNTRIES_DEFAULT );
+		}
+
+		return $available_countries;
 	}
 }
