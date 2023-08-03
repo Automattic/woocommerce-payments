@@ -115,5 +115,7 @@ if ( emptyStateContainer ) {
 		}
 	);
 
-	render( <EmptyState />, emptyStateContainer );
+	if ( ! isConnected ) {
+		render( <EmptyState />, emptyStateContainer );
+	}
 }
