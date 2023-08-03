@@ -9,7 +9,6 @@ namespace WCPay\Internal\DependencyManagement\DelegateContainer;
 
 use Psr\Container\ContainerInterface;
 use WC_Payments;
-use WCPay\Core\Mode;
 
 /**
  * WooPayments Legacy Container Delegate.
@@ -54,9 +53,99 @@ class LegacyContainer implements ContainerInterface {
 	/**
 	 * Returns an instance of the mode class.
 	 *
-	 * @return Mode
+	 * @return \WCPay\Core\Mode
 	 */
 	private function get_wcpay_core_mode_instance() {
 		return WC_Payments::mode();
+	}
+
+	/**
+	 * Returns main CC gateway registered for WCPay.
+	 *
+	 * @return \WC_Payment_Gateway_WCPay
+	 */
+	private function get_wc_payment_gateway_wcpay_instance() {
+		return WC_Payments::get_gateway();
+	}
+
+	/**
+	 * Returns the WooPay_Tracker instance.
+	 *
+	 * @return \WCPay\WooPay_Tracker
+	 */
+	private function get_wcpay_woopay_tracker_instance() {
+		return WC_Payments::woopay_tracker();
+	}
+
+	/**
+	 * Returns the WC_Payments_Checkout instance.
+	 *
+	 * @return \WCPay\WC_Payments_Checkout
+	 */
+	private function get_wcpay_wc_payments_checkout_instance() {
+		return WC_Payments::get_wc_payments_checkout();
+	}
+
+	/**
+	 * Returns the Database_Cache instance.
+	 *
+	 * @return \WCPay\Database_Cache
+	 */
+	private function get_wcpay_database_cache_instance() {
+		return WC_Payments::get_database_cache();
+	}
+
+	/**
+	 * Returns the WC_Payments_Account instance.
+	 *
+	 * @return \WC_Payments_Account
+	 */
+	private function get_wc_payments_account_instance() {
+		return WC_Payments::get_account_service();
+	}
+
+	/**
+	 * Returns the WC_Payments_API_Client.
+	 *
+	 * @return \WC_Payments_API_Client
+	 */
+	private function get_wc_payments_api_client_instance() {
+		return WC_Payments::get_payments_api_client();
+	}
+
+	/**
+	 * Returns the WC_Payments_Localization_Service.
+	 *
+	 * @return \WC_Payments_Localization_Service
+	 */
+	private function get_wc_payments_localization_service_instance() {
+		return WC_Payments::get_localization_service();
+	}
+
+	/**
+	 * Returns the WC_Payments_Action_Scheduler_Service.
+	 *
+	 * @return \WC_Payments_Action_Scheduler_Service
+	 */
+	private function get_wc_payments_action_scheduler_service_instance() {
+		return WC_Payments::get_action_scheduler_service();
+	}
+
+	/**
+	 * Returns the WC_Payments_Fraud_Service instance.
+	 *
+	 * @return \WC_Payments_Fraud_Service
+	 */
+	private function get_wc_payments_fraud_service_instance() {
+		return WC_Payments::get_fraud_service();
+	}
+
+	/**
+	 * Returns the WC_Payments_Customer_Service instance.
+	 *
+	 * @return \WC_Payments_Customer_Service
+	 */
+	private function get_wc_payments_customer_service_instance() {
+		return WC_Payments::get_customer_service();
 	}
 }
