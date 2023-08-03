@@ -39,6 +39,16 @@ final class LegacyContainer implements ContainerInterface {
 This is a list of the currently supported legacy classes by the container.
 
 - `WCPay\Core\Mode`
+- `WC_Payment_Gateway_WCPay`
+- `WCPay\WooPay_Tracker`
+- `WCPay\WC_Payments_Checkout`
+- `WCPay\Database_Cache`
+- `WC_Payments_Account`
+- `WC_Payments_API_Client`
+- `WC_Payments_Localization_Service`
+- `WC_Payments_Action_Scheduler_Service`
+- `WC_Payments_Fraud_Service`
+- `WC_Payments_Customer_Service`
 
 ### Adding classes
 

@@ -8,8 +8,8 @@
 namespace WCPay\Tests\Internal\DependencyManagement\DelegateContainer;
 
 use WCPAY_UnitTestCase;
-use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Mode;
+use WCPay\Database_Cache;
 use WCPay\Internal\DependencyManagement\DelegateContainer\LegacyContainer;
 
 /**
@@ -32,10 +32,22 @@ class LegacyContainerTest extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Makes sure that the container supports the WCPay\Core\Mode class.
+	 * Returns all classes, which should be supported by LegacyContainer.
 	 */
-	public function test_container_loads_mode() {
-		$this->test_retrieval( Mode::class );
+	public function available_classes_provider() {
+		return [
+			[ \WCPay\Core\Mode::class ],
+			[ \WC_Payment_Gateway_WCPay::class ],
+			[ \WCPay\WooPay_Tracker::class ],
+			[ \WCPay\WC_Payments_Checkout::class ],
+			[ \WCPay\Database_Cache::class ],
+			[ \WC_Payments_Account::class ],
+			[ \WC_Payments_API_Client::class ],
+			[ \WC_Payments_Localization_Service::class ],
+			[ \WC_Payments_Action_Scheduler_Service::class ],
+			[ \WC_Payments_Fraud_Service::class ],
+			[ \WC_Payments_Customer_Service::class ],
+		];
 	}
 
 	/**
@@ -43,8 +55,9 @@ class LegacyContainerTest extends WCPAY_UnitTestCase {
 	 * and that it returns an instance of that very class.
 	 *
 	 * @param string $class_name The name of the needed class.
+	 * @dataProvider available_classes_provider
 	 */
-	private function test_retrieval( $class_name ) {
+	public function test_retrieval( $class_name ) {
 		$this->assertTrue( $this->sut->has( $class_name ) );
 		$this->assertInstanceOf( $class_name, $this->sut->get( $class_name ) );
 	}
