@@ -52,6 +52,7 @@ class WC_Payments_Token_Service {
 		add_action( 'woocommerce_payment_token_set_default', [ $this, 'woocommerce_payment_token_set_default' ], 10, 2 );
 		add_filter( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
 		add_filter( 'woocommerce_payment_methods_list_item', [ $this, 'get_account_saved_payment_methods_list_item_sepa' ], 10, 2 );
+		add_filter( 'woocommerce_payment_methods_list_item', [ $this, 'get_account_saved_payment_methods_list_item_link' ], 10, 2 );
 		add_filter( 'woocommerce_get_credit_card_type_label', [ $this, 'normalize_sepa_label' ] );
 	}
 
@@ -261,6 +262,21 @@ class WC_Payments_Token_Service {
 			$item['method']['brand'] = esc_html__( 'SEPA IBAN', 'woocommerce-payments' );
 		}
 
+		return $item;
+	}
+
+	/**
+	 * Controls the output for Stripe Link on the My account page.
+	 *
+	 * @param  array                                        $item          Individual list item from woocommerce_saved_payment_methods_list.
+	 * @param  WC_Payment_Token|WC_Payment_Token_WCPay_Link $payment_token The payment token associated with this method entry.
+	 * @return array                                        Filtered item
+	 */
+	public function get_account_saved_payment_methods_list_item_link( $item, $payment_token ) {
+		if ( WC_Payment_Token_WCPay_Link::TYPE === strtolower( $payment_token->get_type() ) ) {
+			/* translators: %s is a registered Stripe Link email. */
+			$item['method']['brand'] = sprintf( esc_html__( 'Stripe Link email %s', 'woocommerce-payments' ), esc_html( $payment_token->get_email() ) );
+		}
 		return $item;
 	}
 
