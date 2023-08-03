@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
@@ -16,7 +16,13 @@ import { act } from 'react-dom/test-utils';
 
 jest.mock( '@woocommerce/components', () => {
 	return {
-		Pill: ( { className, children } ) => (
+		Pill: ( {
+			className,
+			children,
+		}: {
+			className: string;
+			children: ReactNode;
+		} ): React.ReactElement => (
 			<span className={ className }>{ children }</span>
 		),
 	};
@@ -40,11 +46,14 @@ describe( 'PaymentMethodsCheckboxes', () => {
 			<PaymentMethodsCheckboxes>
 				{ upeMethods.map( ( key ) => (
 					<PaymentMethodsCheckbox
-						key={ key[ 0 ] }
+						key={ key[ 0 ] as React.Key }
 						onChange={ handleChange }
-						checked={ key[ 1 ] }
-						name={ key[ 0 ] }
+						checked={ key[ 1 ] as boolean }
+						name={ key[ 0 ] as string }
 						status={ upeCapabilityStatuses.ACTIVE }
+						fees={ '' }
+						required={ false }
+						locked={ false }
 					/>
 				) ) }
 			</PaymentMethodsCheckboxes>
@@ -101,9 +110,12 @@ describe( 'PaymentMethodsCheckboxes', () => {
 				<PaymentMethodsCheckbox
 					key={ 'sofort' }
 					onChange={ handleChange }
-					checked={ 0 }
+					checked={ false }
 					name={ 'sofort' }
 					status={ upeCapabilityStatuses.PENDING_APPROVAL }
+					fees={ '' }
+					required={ false }
+					locked={ false }
 				/>
 			</PaymentMethodsCheckboxes>
 		);
@@ -123,16 +135,18 @@ describe( 'PaymentMethodsCheckboxes', () => {
 	} );
 
 	it( 'shows the required label on payment methods which are required', () => {
-		const handleChange = () => {};
+		const handleChange = jest.fn();
 		const page = render(
 			<PaymentMethodsCheckboxes>
 				<PaymentMethodsCheckbox
 					key={ 'card' }
 					onChange={ handleChange }
-					checked={ 1 }
+					checked={ true }
 					name={ 'card' }
 					required={ true }
 					status={ upeCapabilityStatuses.ACTIVE }
+					fees={ '' }
+					locked={ false }
 				/>
 			</PaymentMethodsCheckboxes>
 		);
@@ -143,21 +157,24 @@ describe( 'PaymentMethodsCheckboxes', () => {
 	} );
 
 	it( 'shows the disabled notice pill on payment methods with disabled statuses', () => {
-		const handleChange = () => {};
+		const handleChange = jest.fn();
 		const page = render(
 			<PaymentMethodsCheckboxes>
 				<PaymentMethodsCheckbox
 					key={ 'sofort' }
 					onChange={ handleChange }
-					checked={ 1 }
+					checked={ true }
 					name={ 'sofort' }
 					status={ upeCapabilityStatuses.INACTIVE }
+					fees={ '' }
+					required={ false }
+					locked={ false }
 				/>
 			</PaymentMethodsCheckboxes>
 		);
 
 		expect( page.container ).toContainHTML(
-			'<span class="wcpay-pill payment-status-inactive">Contact WooCommerce Support</span>'
+			'<span class="wcpay-pill payment-status-inactive">More information needed</span>'
 		);
 	} );
 
@@ -168,10 +185,12 @@ describe( 'PaymentMethodsCheckboxes', () => {
 				<PaymentMethodsCheckbox
 					key={ 'card' }
 					onChange={ handleChange }
-					checked={ 0 }
+					checked={ false }
 					name={ 'card' }
 					locked={ true }
 					status={ upeCapabilityStatuses.ACTIVE }
+					fees={ '' }
+					required={ false }
 				/>
 			</PaymentMethodsCheckboxes>
 		);
@@ -191,9 +210,12 @@ describe( 'PaymentMethodsCheckboxes', () => {
 				<PaymentMethodsCheckbox
 					key={ 'sofort' }
 					onChange={ handleChange }
-					checked={ 0 }
+					checked={ false }
 					name={ 'sofort' }
 					status={ upeCapabilityStatuses.INACTIVE }
+					fees={ '' }
+					required={ false }
+					locked={ false }
 				/>
 			</PaymentMethodsCheckboxes>
 		);
@@ -206,23 +228,29 @@ describe( 'PaymentMethodsCheckboxes', () => {
 		expect( sofortCheckbox ).not.toBeChecked();
 	} );
 
-	it( 'doesnt show the disabled notice pill on payment methods with active and unrequested statuses', () => {
-		const handleChange = () => {};
+	it( "doesn't show the disabled notice pill on payment methods with active and unrequested statuses", () => {
+		const handleChange = jest.fn();
 		render(
 			<PaymentMethodsCheckboxes>
 				<PaymentMethodsCheckbox
 					key={ 'sofort' }
 					onChange={ handleChange }
-					checked={ 1 }
+					checked={ true }
 					name={ 'sofort' }
 					status={ upeCapabilityStatuses.ACTIVE }
+					fees={ '' }
+					required={ false }
+					locked={ false }
 				/>
 				<PaymentMethodsCheckbox
 					key={ 'giropay' }
 					onChange={ handleChange }
-					checked={ 1 }
+					checked={ true }
 					name={ 'giropay' }
 					status={ upeCapabilityStatuses.UNREQUESTED }
+					fees={ '' }
+					required={ false }
+					locked={ false }
 				/>
 			</PaymentMethodsCheckboxes>
 		);
