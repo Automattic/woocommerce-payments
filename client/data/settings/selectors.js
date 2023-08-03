@@ -104,6 +104,10 @@ export const getAccountBrandingLogo = ( state ) => {
 	return getSettings( state ).account_branding_logo || '';
 };
 
+export const getAccountCountry = ( state ) => {
+	return getSettings( state ).account_country || '';
+};
+
 export const getDepositScheduleInterval = ( state ) => {
 	return getSettings( state ).deposit_schedule_interval || '';
 };

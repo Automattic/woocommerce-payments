@@ -26,7 +26,7 @@ import {
 	useGetPaymentMethodStatuses,
 	useSelectedPaymentMethod,
 	useUnselectedPaymentMethod,
-	useAccountDefaultCurrency,
+	useAccountCountry,
 } from 'wcpay/data';
 
 import useIsUpeEnabled from '../settings/wcpay-upe-toggle/hook.js';
@@ -160,7 +160,7 @@ const PaymentMethods = () => {
 
 	const [ , updateSelectedPaymentMethod ] = useSelectedPaymentMethod();
 
-	const [ stripeAccountDefaultCurrency ] = useAccountDefaultCurrency();
+	const [ stripeAccountCountry ] = useAccountCountry();
 
 	const completeActivation = ( itemId ) => {
 		updateSelectedPaymentMethod( itemId );
@@ -296,7 +296,7 @@ const PaymentMethods = () => {
 										isAllowingPayLater
 											? sprintf(
 													description,
-													stripeAccountDefaultCurrency.toUpperCase()
+													stripeAccountCountry.toUpperCase()
 											  )
 											: description
 									}

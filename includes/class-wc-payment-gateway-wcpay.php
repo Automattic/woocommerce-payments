@@ -1742,8 +1742,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->get_account_statement_descriptor();
 			case 'account_business_name':
 				return $this->get_account_business_name();
-			case 'account_default_currency':
-				return $this->get_account_default_currency();
 			case 'account_business_url':
 				return $this->get_account_business_url();
 			case 'account_business_support_address':
@@ -1760,6 +1758,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->get_account_branding_primary_color();
 			case 'account_branding_secondary_color':
 				return $this->get_account_branding_secondary_color();
+			case 'account_country':
+				return $this->get_account_country();
 			case 'deposit_schedule_interval':
 				return $this->get_deposit_schedule_interval();
 			case 'deposit_schedule_weekly_anchor':
@@ -2070,6 +2070,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return $default_value;
+	}
+
+	/**
+	 * Retrieves the country of the current account.
+	 */
+	protected function get_account_country(): string {
+		return $this->account->get_account_country();
 	}
 
 	/**

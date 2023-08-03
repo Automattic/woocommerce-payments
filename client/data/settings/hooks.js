@@ -59,11 +59,11 @@ export const useEnabledPaymentMethodIds = () => {
 	);
 };
 
-export const useAccountDefaultCurrency = () => {
+export const useAccountCountry = () => {
 	return useSelect( ( select ) => {
-		const { getAccountDefaultCurrency } = select( STORE_NAME );
+		const { getAccountCountry } = select( STORE_NAME );
 
-		return [ getAccountDefaultCurrency() ];
+		return [ getAccountCountry() ];
 	}, [] );
 };
 
