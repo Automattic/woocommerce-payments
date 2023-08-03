@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React, { useContext, useState } from 'react';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import {
 	Button,
 	Card,
@@ -26,6 +26,7 @@ import {
 	useGetPaymentMethodStatuses,
 	useSelectedPaymentMethod,
 	useUnselectedPaymentMethod,
+	useAccountDefaultCurrency,
 } from 'wcpay/data';
 
 import useIsUpeEnabled from '../settings/wcpay-upe-toggle/hook.js';
@@ -159,6 +160,8 @@ const PaymentMethods = () => {
 
 	const [ , updateSelectedPaymentMethod ] = useSelectedPaymentMethod();
 
+	const [ stripeAccountDefaultCurrency ] = useAccountDefaultCurrency();
+
 	const completeActivation = ( itemId ) => {
 		updateSelectedPaymentMethod( itemId );
 		handleActivationModalOpen( null );
@@ -283,12 +286,20 @@ const PaymentMethods = () => {
 								description,
 								icon: Icon,
 								allows_manual_capture: isAllowingManualCapture,
+								allows_pay_later: isAllowingPayLater,
 							} ) => (
 								<PaymentMethod
 									id={ id }
 									key={ id }
 									label={ label }
-									description={ description }
+									description={
+										isAllowingPayLater
+											? sprintf(
+													description,
+													stripeAccountDefaultCurrency.toUpperCase()
+											  )
+											: description
+									}
 									checked={
 										enabledMethodIds.includes( id ) &&
 										upeCapabilityStatuses.INACTIVE !==
