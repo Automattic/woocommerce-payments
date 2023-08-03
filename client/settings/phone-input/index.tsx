@@ -70,14 +70,29 @@ const PhoneNumberInput = ( {
 			}
 		};
 
+		let onlyCountries = {
+			initialCountry: 'US',
+			onlyCountries: [],
+		};
+
+		const accountCountry = wcpaySettings?.accountStatus?.country ?? '';
+		if ( accountCountry === 'JP' ) {
+			onlyCountries = {
+				initialCountry: 'JP',
+				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+				// @ts-ignore
+				onlyCountries: [ 'JP' ],
+			};
+		}
+
 		if ( currentRef ) {
 			iti = intlTelInput( currentRef, {
-				initialCountry: 'US',
 				customPlaceholder: () => '',
 				separateDialCode: true,
 				hiddenInput: 'full',
 				utilsScript: utils,
 				dropdownContainer: document.body,
+				...onlyCountries,
 			} );
 			setInputInstance( iti );
 
