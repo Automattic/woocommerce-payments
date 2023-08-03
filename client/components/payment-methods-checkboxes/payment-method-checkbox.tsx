@@ -14,7 +14,7 @@ import React, { useContext, useEffect } from 'react';
 import LoadableCheckboxControl from 'components/loadable-checkbox';
 import { HoverTooltip } from 'components/tooltip';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
-import { useManualCapture, useAccountDefaultCurrency } from 'wcpay/data';
+import { useManualCapture } from 'wcpay/data';
 import { FeeStructure } from 'wcpay/types/fees';
 import PaymentMethodsMap from '../../payment-methods-map';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
@@ -26,33 +26,8 @@ import PaymentMethodDisabledTooltip from '../payment-method-disabled-tooltip';
 import Pill from '../pill';
 import './payment-method-checkbox.scss';
 
-type PaymentMethodProps = {
-	name: string;
-};
-
-const getDescription = ( name: string, currency: string ) => {
-	let { description, allows_pay_later: allowsPayLater } = PaymentMethodsMap[
-		name
-	];
-
-	if ( ! description ) return null;
-
-	if ( allowsPayLater ) {
-		description = sprintf( description, currency.toUpperCase() );
-	}
-
-	return description;
-};
-
-const PaymentMethodDescription: React.FC< PaymentMethodProps > = ( {
-	name,
-} ) => {
-	const [ stripeAccountDefaultCurrency ] = useAccountDefaultCurrency();
-	const description = getDescription(
-		name,
-		stripeAccountDefaultCurrency as string
-	);
-
+const PaymentMethodDescription = ( { name }: { name: string } ) => {
+	const description = PaymentMethodsMap[ name ]?.description;
 	if ( ! description ) return null;
 
 	return (
@@ -70,17 +45,7 @@ const PaymentMethodDescription: React.FC< PaymentMethodProps > = ( {
 	);
 };
 
-type PaymentMethodCheckboxProps = {
-	onChange: ( name: string, enabled: boolean ) => void;
-	name: string;
-	checked: boolean;
-	fees: string;
-	status: string;
-	required: boolean;
-	locked: boolean;
-};
-
-const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
+const PaymentMethodCheckbox = ( {
 	onChange,
 	name,
 	checked,
@@ -88,7 +53,15 @@ const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
 	status,
 	required,
 	locked,
-} ) => {
+}: {
+	onChange: ( name: string, enabled: boolean ) => void;
+	name: string;
+	checked: boolean;
+	fees: string;
+	status: string;
+	required: boolean;
+	locked: boolean;
+} ): React.ReactElement => {
 	const {
 		accountFees,
 	}: { accountFees: Record< string, FeeStructure > } = useContext(
@@ -131,7 +104,7 @@ const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
 				label={ paymentMethod.label }
 				checked={ checked }
 				disabled={ disabled || locked }
-				onChange={ ( state: boolean ) => {
+				onChange={ ( state: string ) => {
 					handleChange( state );
 				} }
 				delayMsOnCheck={ 1500 }

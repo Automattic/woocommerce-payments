@@ -1742,8 +1742,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->get_account_statement_descriptor();
 			case 'account_business_name':
 				return $this->get_account_business_name();
-			case 'account_default_currency':
-				return $this->get_account_default_currency();
 			case 'account_business_url':
 				return $this->get_account_business_url();
 			case 'account_business_support_address':
