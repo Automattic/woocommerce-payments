@@ -629,7 +629,7 @@ class WC_Payments {
 		}
 
 		// Load WCPay Subscriptions.
-		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
+		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() || WC_Payments_Features::is_subscription_migration_enabled() ) {
 			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
 			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account );
 		}
@@ -639,7 +639,7 @@ class WC_Payments {
 		}
 
 		// Load the WCPay Subscriptions migration class.
-		if ( WC_Payments_Features::is_subscription_migration_enabled() ) {
+		if ( WC_Payments_Features::is_subscription_migration_enabled() && class_exists( 'WCS_Background_Repairer' ) ) {
 			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions-migrator.php';
 			new WC_Payments_Subscriptions_Migrator( self::$api_client );
 		}
