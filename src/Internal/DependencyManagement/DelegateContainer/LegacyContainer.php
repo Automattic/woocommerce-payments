@@ -17,7 +17,7 @@ use WCPay\Core\Mode;
  * This class is a proxy between `src` and `includes`, allwing
  * `includes` classes to be used as dependencies.
  */
-class LegacyContainer implements ContainerInterface {
+final class LegacyContainer implements ContainerInterface {
 	/**
 	 * Finds an entry of the container by its identifier and returns it.
 	 *
