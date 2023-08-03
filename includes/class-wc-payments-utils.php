@@ -973,8 +973,10 @@ class WC_Payments_Utils {
 	 * @param  string   $media   The media for which this stylesheet has been defined. Accepts media types like 'all', 'print' and 'screen', or media queries like '(orientation: portrait)' and '(max-width: 640px)'.
 	 * @param  boolean  $has_rtl If has RTL version to load too.
 	 */
-	public static function register_and_enqueue_style( $handle, $path = '', $deps = [], $version = WC_VERSION, $media = 'all', $has_rtl = false ) {
-		self::register_style( $handle, $path, $deps, $version, $media, $has_rtl );
+	public static function enqueue_style( $handle, $path = '', $deps = [], $version = WC_VERSION, $media = 'all', $has_rtl = false ) {
+		if ( '' !== $path ) {
+			self::register_style( $handle, $path, $deps, $version, $media, $has_rtl );
+		}
 		wp_enqueue_style( $handle );
 	}
 }
