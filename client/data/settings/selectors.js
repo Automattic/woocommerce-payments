@@ -56,6 +56,10 @@ export const getAccountBusinessName = ( state ) => {
 	return getSettings( state ).account_business_name || '';
 };
 
+export const getAccountDefaultCurrency = ( state ) => {
+	return getSettings( state ).account_default_currency || '';
+};
+
 export const getAccountBusinessURL = ( state ) => {
 	return getSettings( state ).account_business_url || '';
 };
