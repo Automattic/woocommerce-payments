@@ -205,6 +205,12 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			->expects( $this->any() )
 			->method( 'get_is_live' )
 			->willReturn( true );
+
+		$this->mock_wcpay_account
+			->expects( $this->any() )
+			->method( 'get_account_default_currency' )
+			->willReturn( 'usd' );
+
 	}
 
 	public function tear_down() {
