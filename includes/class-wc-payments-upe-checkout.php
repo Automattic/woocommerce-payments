@@ -311,7 +311,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 				wp_localize_script( 'wcpay-upe-checkout', 'wcpayCustomerData', $prepared_customer_data );
 			}
 
-			WC_Payments_Utils::register_and_enqueue_style(
+			WC_Payments_Utils::enqueue_style(
 				'wcpay-upe-checkout',
 				plugins_url( 'dist/checkout.css', WCPAY_PLUGIN_FILE ),
 				[],

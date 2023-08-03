@@ -351,7 +351,7 @@ class MultiCurrency {
 		$this->register_admin_scripts();
 
 		wp_enqueue_script( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
-		WC_Payments_Utils::register_and_enqueue_style( 'WCPAY_MULTI_CURRENCY_SETTINGS', '', [], WC_VERSION, 'all', true );
+		WC_Payments_Utils::enqueue_style( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
 	}
 
 	/**

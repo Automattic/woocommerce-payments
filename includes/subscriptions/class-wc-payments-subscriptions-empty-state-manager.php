@@ -61,7 +61,7 @@ class WC_Payments_Subscriptions_Empty_State_Manager {
 			$wcpay_settings
 		);
 
-		WC_Payments_Utils::register_and_enqueue_style(
+		WC_Payments_Utils::enqueue_style(
 			'WCPAY_SUBSCRIPTIONS_EMPTY_STATE',
 			plugins_url( 'dist/subscriptions-empty-state.css', WCPAY_PLUGIN_FILE ),
 			[],

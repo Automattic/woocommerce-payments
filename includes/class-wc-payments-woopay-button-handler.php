@@ -161,7 +161,7 @@ class WC_Payments_WooPay_Button_Handler {
 
 		wp_enqueue_script( 'WCPAY_WOOPAY_EXPRESS_BUTTON' );
 
-		WC_Payments_Utils::register_and_enqueue_style(
+		WC_Payments_Utils::enqueue_style(
 			'WCPAY_WOOPAY',
 			plugins_url( 'dist/woopay.css', WCPAY_PLUGIN_FILE ),
 			[],

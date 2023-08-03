@@ -219,7 +219,7 @@ class WC_Payments_Checkout {
 				wp_localize_script( 'WCPAY_CHECKOUT', 'wcpayCustomerData', $prepared_customer_data );
 			}
 
-			WC_Payments_Utils::register_and_enqueue_style(
+			WC_Payments_Utils::enqueue_style(
 				'WCPAY_CHECKOUT',
 				plugins_url( 'dist/checkout.css', WCPAY_PLUGIN_FILE ),
 				[],

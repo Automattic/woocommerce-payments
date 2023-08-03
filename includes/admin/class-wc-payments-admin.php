@@ -301,7 +301,7 @@ class WC_Payments_Admin {
 				],
 			]
 		);
-		WC_Payments_Utils::register_and_enqueue_style(
+		WC_Payments_Utils::enqueue_style(
 			'wcpay-admin-css',
 			plugins_url( 'assets/css/admin.css', WCPAY_PLUGIN_FILE ),
 			[],
@@ -512,7 +512,7 @@ class WC_Payments_Admin {
 			);
 		}
 
-		WC_Payments_Utils::register_and_enqueue_style(
+		WC_Payments_Utils::enqueue_style(
 			'wcpay-admin-css',
 			plugins_url( 'assets/css/admin.css', WCPAY_PLUGIN_FILE ),
 			[],
@@ -712,7 +712,7 @@ class WC_Payments_Admin {
 				);
 
 				wp_enqueue_script( 'WCPAY_ADMIN_ORDER_ACTIONS' );
-				WC_Payments_Utils::register_and_enqueue_style( 'WCPAY_ADMIN_ORDER_ACTIONS', '', [], WC_VERSION, 'all', true );
+				WC_Payments_Utils::enqueue_style( 'WCPAY_ADMIN_ORDER_ACTIONS' );
 			}
 		}
 	}

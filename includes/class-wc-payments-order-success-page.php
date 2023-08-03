@@ -117,7 +117,7 @@ class WC_Payments_Order_Success_Page {
 			return;
 		}
 
-		WC_Payments_Utils::register_and_enqueue_style(
+		WC_Payments_Utils::enqueue_style(
 			'wcpay-success-css',
 			plugins_url( 'assets/css/success.css', WCPAY_PLUGIN_FILE ),
 			[],

@@ -48,7 +48,7 @@ class WooPay_Save_User {
 
 		$style_url = plugins_url( 'dist/woopay.css', WCPAY_PLUGIN_FILE );
 
-		WC_Payments_Utils::register_and_enqueue_style(
+		WC_Payments_Utils::enqueue_style(
 			'WCPAY_WOOPAY',
 			$style_url,
 			[],
