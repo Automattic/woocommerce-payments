@@ -2,29 +2,31 @@
 /**
  * External dependencies
  */
-import React, { useContext, useEffect } from 'react';
 import { Icon, VisuallyHidden } from '@wordpress/components';
 import { useCallback } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import classNames from 'classnames';
+import React, { useContext, useEffect } from 'react';
 
 /**
  * Internal dependencies
  */
+import LoadableCheckboxControl from 'components/loadable-checkbox';
+import { HoverTooltip } from 'components/tooltip';
+import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
+import { useManualCapture } from 'wcpay/data';
+import { FeeStructure } from 'wcpay/types/fees';
+import PaymentMethodsMap from '../../payment-methods-map';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import {
 	formatMethodFeesDescription,
 	formatMethodFeesTooltip,
 } from '../../utils/account-fees';
-import LoadableCheckboxControl from 'components/loadable-checkbox';
-import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
-import PaymentMethodsMap from '../../payment-methods-map';
+import PaymentMethodDisabledTooltip from '../payment-method-disabled-tooltip';
 import Pill from '../pill';
-import { HoverTooltip } from 'components/tooltip';
 import './payment-method-checkbox.scss';
-import { useManualCapture } from 'wcpay/data';
 
-const PaymentMethodDescription = ( { name } ) => {
+const PaymentMethodDescription = ( { name }: { name: string } ) => {
 	const description = PaymentMethodsMap[ name ]?.description;
 	if ( ! description ) return null;
 
@@ -51,8 +53,20 @@ const PaymentMethodCheckbox = ( {
 	status,
 	required,
 	locked,
-} ) => {
-	const { accountFees } = useContext( WCPaySettingsContext );
+}: {
+	onChange: ( name: string, enabled: boolean ) => void;
+	name: string;
+	checked: boolean;
+	fees: string;
+	status: string;
+	required: boolean;
+	locked: boolean;
+} ): React.ReactElement => {
+	const {
+		accountFees,
+	}: { accountFees: Record< string, FeeStructure > } = useContext(
+		WCPaySettingsContext
+	);
 
 	const handleChange = useCallback(
 		( enabled ) => {
@@ -90,7 +104,7 @@ const PaymentMethodCheckbox = ( {
 				label={ paymentMethod.label }
 				checked={ checked }
 				disabled={ disabled || locked }
-				onChange={ ( state ) => {
+				onChange={ ( state: string ) => {
 					handleChange( state );
 				} }
 				delayMsOnCheck={ 1500 }
@@ -99,7 +113,7 @@ const PaymentMethodCheckbox = ( {
 				isAllowingManualCapture={ paymentMethod.allows_manual_capture }
 			/>
 			<div className={ 'woocommerce-payments__payment-method-icon' }>
-				{ paymentMethod.icon() }
+				{ paymentMethod.icon( {} ) }
 			</div>
 			<div className={ 'payment-method-checkbox__pills' }>
 				<div className={ 'payment-method-checkbox__pills-left' }>
@@ -153,22 +167,14 @@ const PaymentMethodCheckbox = ( {
 						</HoverTooltip>
 					) }
 					{ disabled && (
-						<HoverTooltip
-							content={ sprintf(
-								__(
-									'To use %s, please contact WooCommerce support.',
-									'woocommerce-payments'
-								),
-								PaymentMethodsMap[ name ].label
-							) }
-						>
+						<PaymentMethodDisabledTooltip id={ name }>
 							<Pill className={ 'payment-status-' + status }>
 								{ __(
-									'Contact WooCommerce Support',
+									'More information needed',
 									'woocommerce-payments'
 								) }
 							</Pill>
-						</HoverTooltip>
+						</PaymentMethodDisabledTooltip>
 					) }
 				</div>
 				<div className={ 'payment-method-checkbox__pills-right' }>

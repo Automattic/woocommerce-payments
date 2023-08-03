@@ -28,6 +28,7 @@ declare const global: {
 			description: string;
 			tc_url: string;
 		};
+		isWooPayStoreCountryAvailable?: boolean;
 	};
 };
 
@@ -51,6 +52,7 @@ describe( 'ConnectAccountPage', () => {
 				country: 'US',
 				availableCountries: { US: 'United States (US)' },
 			},
+			isWooPayStoreCountryAvailable: false,
 		};
 	} );
 
@@ -61,6 +63,12 @@ describe( 'ConnectAccountPage', () => {
 
 	test( 'should render correctly when on-boarding disabled', () => {
 		global.wcpaySettings.onBoardingDisabled = true;
+		const { container: page } = render( <ConnectAccountPage /> );
+		expect( page ).toMatchSnapshot();
+	} );
+
+	test( 'should render correctly with WooPay eligible', () => {
+		global.wcpaySettings.isWooPayStoreCountryAvailable = true;
 		const { container: page } = render( <ConnectAccountPage /> );
 		expect( page ).toMatchSnapshot();
 	} );
