@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments
  */
 
-namespace WCPay\Tests;
+namespace WCPay\Tests\Internal\DependencyManagement\DelegateContainer;
 
 use WCPAY_UnitTestCase;
 use PHPUnit\Framework\MockObject\MockObject;
