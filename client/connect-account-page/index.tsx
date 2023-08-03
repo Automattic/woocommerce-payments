@@ -52,6 +52,11 @@ const ConnectAccountPage: React.FC = () => {
 			...( incentive && {
 				incentive_id: incentive.id,
 			} ),
+			woo_country_code:
+				wcSettings?.preloadSettings?.general
+					?.woocommerce_default_country ||
+				wcSettings?.admin?.preloadSettings?.general
+					?.woocommerce_default_country,
 		} );
 		// We only want to run this once.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
@@ -96,6 +101,11 @@ const ConnectAccountPage: React.FC = () => {
 			...( incentive && {
 				incentive_id: incentive.id,
 			} ),
+			woo_country_code:
+				wcSettings?.preloadSettings?.general
+					?.woocommerce_default_country ||
+				wcSettings?.admin?.preloadSettings?.general
+					?.woocommerce_default_country,
 		} );
 
 		// If there is an incentive available, request promo activation before redirecting.
@@ -161,7 +171,11 @@ const ConnectAccountPage: React.FC = () => {
 							>
 								{ strings.button }
 							</Button>
-							<p>{ strings.agreement }</p>
+							<p>
+								{ wcpaySettings.isWooPayStoreCountryAvailable
+									? strings.agreementWithWooPay
+									: strings.agreement }
+							</p>
 						</div>
 						<CardDivider />
 						<div className="connect-account-page__payment-methods">
