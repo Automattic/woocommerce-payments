@@ -538,30 +538,36 @@ class WC_Payments_Admin {
 
 		wp_set_script_translations( 'WCPAY_DASH_APP', 'woocommerce-payments' );
 
-		wp_register_style(
+		WC_Payments_Utils::register_style(
 			'WCPAY_DASH_APP',
 			plugins_url( 'dist/index.css', WCPAY_PLUGIN_FILE ),
 			[ 'wc-components' ],
-			WC_Payments::get_file_version( 'dist/index.css' )
+			WC_Payments::get_file_version( 'dist/index.css' ),
+			'all',
+			true
 		);
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_TOS', 'dist/tos' );
 		wp_set_script_translations( 'WCPAY_TOS', 'woocommerce-payments' );
 
-		wp_register_style(
+		WC_Payments_Utils::register_style(
 			'WCPAY_TOS',
 			plugins_url( 'dist/tos.css', WCPAY_PLUGIN_FILE ),
 			[],
-			WC_Payments::get_file_version( 'dist/tos.css' )
+			WC_Payments::get_file_version( 'dist/tos.css' ),
+			'all',
+			true
 		);
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_ADMIN_ORDER_ACTIONS', 'dist/order', [ 'jquery-tiptip' ] );
 
-		wp_register_style(
+		WC_Payments_Utils::register_style(
 			'WCPAY_ADMIN_ORDER_ACTIONS',
 			plugins_url( 'dist/order.css', WCPAY_PLUGIN_FILE ),
 			[],
-			WC_Payments::get_file_version( 'dist/order.css' )
+			WC_Payments::get_file_version( 'dist/order.css' ),
+			'all',
+			true
 		);
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_ADMIN_SETTINGS', 'dist/settings' );
