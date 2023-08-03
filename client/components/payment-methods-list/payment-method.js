@@ -10,7 +10,6 @@ import classNames from 'classnames';
  */
 import Pill from '../pill';
 import { HoverTooltip } from 'components/tooltip';
-import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import LoadableCheckboxControl from '../loadable-checkbox';
 import { __, sprintf } from '@wordpress/i18n';
@@ -42,7 +41,9 @@ const PaymentMethod = ( {
 	const { accountFees } = useContext( WCPaySettingsContext );
 	const [ isManualCaptureEnabled ] = useManualCapture();
 
-	const needsOverlay = isManualCaptureEnabled && ! isAllowingManualCapture;
+	const needsOverlay =
+		( isManualCaptureEnabled && ! isAllowingManualCapture ) ||
+		isSetupRequired;
 
 	// As the JCB is not a separate payment method we fallback to card.
 	if ( id === 'jcb' ) {
@@ -71,34 +72,18 @@ const PaymentMethod = ( {
 			) }
 		>
 			<div className="payment-method__checkbox">
-				{ ! isSetupRequired && (
-					<LoadableCheckboxControl
-						label={ label }
-						checked={ checked }
-						disabled={ disabled || locked }
-						onChange={ handleChange }
-						delayMsOnCheck={ 1500 }
-						delayMsOnUncheck={ 0 }
-						hideLabel
-						isAllowingManualCapture={ isAllowingManualCapture }
-					/>
-				) }
-
-				{ isSetupRequired && (
-					<HoverTooltip content={ setupTooltip }>
-						<div>
-							<NoticeOutlineIcon
-								style={ {
-									color: '#F0B849',
-									fill: 'currentColor',
-									marginRight: '12px',
-									marginLeft: '-2px',
-								} }
-								size={ 26 }
-							/>
-						</div>
-					</HoverTooltip>
-				) }
+				<LoadableCheckboxControl
+					label={ label }
+					checked={ checked }
+					disabled={ disabled || locked }
+					onChange={ handleChange }
+					delayMsOnCheck={ 1500 }
+					delayMsOnUncheck={ 0 }
+					hideLabel
+					isAllowingManualCapture={ isAllowingManualCapture }
+					isSetupRequired={ isSetupRequired }
+					setupTooltip={ setupTooltip }
+				/>
 			</div>
 			<div className="payment-method__icon">
 				<Icon />

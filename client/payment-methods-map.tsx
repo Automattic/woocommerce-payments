@@ -3,7 +3,6 @@
  */
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies
@@ -36,7 +35,7 @@ export interface PaymentMethodMapEntry {
 	allows_manual_capture: boolean;
 	allows_pay_later: boolean;
 	setup_required?: boolean;
-	setup_tooltip?: JSX.Element;
+	setup_tooltip?: string;
 }
 
 const PaymentMethodInformationObject: Record<
@@ -241,22 +240,10 @@ const PaymentMethodInformationObject: Record<
 		allows_manual_capture: false,
 		allows_pay_later: false,
 		setup_required: true,
-		setup_tooltip: interpolateComponents( {
-			mixedString: sprintf(
-				/* translators: %s: WooPayments */
-				__(
-					'JCB is coming soon to your country. {{link}}Learn more{{/link}}',
-					'woocommerce-payments'
-				),
-				'WooPayments'
-			),
-			components: {
-				link: (
-					// eslint-disable-next-line jsx-a11y/anchor-has-content
-					<a href="https://www.global.jcb/" />
-				),
-			},
-		} ),
+		setup_tooltip: __(
+			'JCB is coming soon to your country.',
+			'woocommerce-payments'
+		),
 	},
 };
 
