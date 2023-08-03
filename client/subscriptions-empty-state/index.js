@@ -3,12 +3,7 @@
  */
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import {
-	createInterpolateElement,
-	render,
-	useEffect,
-	useState,
-} from '@wordpress/element';
+import { createInterpolateElement, render, useState } from '@wordpress/element';
 import { Button } from '@wordpress/components';
 
 import wcpayTracks from '../tracks';
@@ -17,7 +12,7 @@ import UnconnectedImage from 'assets/images/subscriptions-empty-state-unconnecte
 import './style.scss';
 
 const {
-	wcpay: { connectUrl, newProductUrl },
+	wcpay: { connectUrl, isConnected, newProductUrl },
 } = window;
 
 const Image = () => <img src={ UnconnectedImage } alt="" />;
@@ -98,15 +93,6 @@ const ActionButtons = () => {
 };
 
 const EmptyState = () => {
-	useEffect( () => {
-		wcpayTracks.recordEvent(
-			wcpayTracks.events.SUBSCRIPTIONS_EMPTY_STATE_VIEW,
-			{
-				is_connected: 'no',
-			}
-		);
-	}, [] );
-
 	return (
 		<div className="woo_subscriptions_empty_state__container">
 			<Image />
@@ -117,7 +103,17 @@ const EmptyState = () => {
 	);
 };
 
-render(
-	<EmptyState />,
-	document.querySelector( '#woo_subscriptions_empty_state' )
+const emptyStateContainer = document.querySelector(
+	'#woo_subscriptions_empty_state'
 );
+
+if ( emptyStateContainer ) {
+	wcpayTracks.recordEvent(
+		wcpayTracks.events.SUBSCRIPTIONS_EMPTY_STATE_VIEW,
+		{
+			is_connected: isConnected ? 'yes' : 'no',
+		}
+	);
+
+	render( <EmptyState />, emptyStateContainer );
+}
