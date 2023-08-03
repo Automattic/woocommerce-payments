@@ -208,8 +208,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_wcpay_account
 			->expects( $this->any() )
-			->method( 'get_account_default_currency' )
-			->willReturn( 'usd' );
+			->method( 'get_account_country' )
+			->willReturn( 'us' );
 
 	}
 
