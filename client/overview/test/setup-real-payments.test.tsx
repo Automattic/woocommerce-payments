@@ -22,7 +22,7 @@ describe( 'Setup Real Payments', () => {
 
 		const queryHeading = () =>
 			screen.queryByRole( 'heading', {
-				name: 'Setup live payments on your store',
+				name: 'Set up live payments on your store',
 			} );
 
 		expect( queryHeading() ).not.toBeInTheDocument();
@@ -32,19 +32,19 @@ describe( 'Setup Real Payments', () => {
 		expect( queryHeading() ).toBeInTheDocument();
 	} );
 
-	it( 'closes modal when go back button is clicked', () => {
+	it( 'closes modal when cancel button is clicked', () => {
 		render( <SetupRealPayments /> );
 
 		user.click( screen.getByRole( 'button' ) );
 		user.click(
 			screen.getByRole( 'button', {
-				name: 'Go back',
+				name: 'Cancel',
 			} )
 		);
 
 		expect(
 			screen.queryByRole( 'heading', {
-				name: 'Setup live payments on your store',
+				name: 'Set up live payments on your store',
 			} )
 		).not.toBeInTheDocument();
 	} );

@@ -44,7 +44,7 @@ describe( 'Strings in captured events', () => {
 		);
 		return fs
 			.readdirSync( dir )
-			.filter( ( name ) => '.json' === path.extname( name ) )
+			.filter( ( name ) => path.extname( name ) === '.json' )
 			.map( ( name ) => require( path.join( dir, name ) ) );
 	};
 

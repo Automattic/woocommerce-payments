@@ -33,7 +33,7 @@ export default {
 				note: sprintf(
 					/* translators: %s: WooPayments */
 					__(
-						'This option will set up %s in development mode. You can use our test data to set up. When you’re ready to launch your store, switching to live payments is easy.',
+						'This option will set up %s in development mode. You can use test data to set up, no personal information is required. When you’re ready to launch your store, switching to live payments is easy.',
 						'woocommerce-payments'
 					),
 					'WooPayments'
@@ -122,12 +122,33 @@ export default {
 	},
 	errors: {
 		generic: __( 'Please provide a response', 'woocommerce-payments' ),
+		'individual.first_name': __(
+			'Please provide a first name',
+			'woocommerce-payments'
+		),
+		'individual.last_name': __(
+			'Please provide a last name',
+			'woocommerce-payments'
+		),
 		email: __( 'Please provide a valid email', 'woocommerce-payments' ),
 		phone: __(
 			'Please provide a valid phone number',
 			'woocommerce-payments'
 		),
 		url: __( 'Please provide a valid website', 'woocommerce-payments' ),
+		business_name: __(
+			'Please provide a business name',
+			'woocommerce-payments'
+		),
+		country: __( 'Please provide a country', 'woocommerce-payments' ),
+		business_type: __(
+			'Please provide a business type',
+			'woocommerce-payments'
+		),
+		mcc: __(
+			'Please provide a type of goods or services',
+			'woocommerce-payments'
+		),
 	},
 	placeholders: {
 		country: __(
