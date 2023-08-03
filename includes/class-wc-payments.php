@@ -748,24 +748,11 @@ class WC_Payments {
 			}
 			$gateways[]       = self::$registered_card_gateway;
 			$all_upe_gateways = [];
-			$reusable_methods = [];
 			foreach ( $payment_methods as $payment_method_id ) {
 				if ( 'card' === $payment_method_id || 'link' === $payment_method_id ) {
 					continue;
 				}
-				$upe_gateway        = self::get_payment_gateway_by_id( $payment_method_id );
-				$upe_payment_method = self::get_payment_method_by_id( $payment_method_id );
-
-				if ( $upe_payment_method->is_reusable() ) {
-					$reusable_methods[] = $upe_gateway;
-				}
-
-				$all_upe_gateways[] = $upe_gateway;
-
-			}
-
-			if ( is_add_payment_method_page() ) {
-				return array_merge( $gateways, $reusable_methods );
+				$all_upe_gateways[] = self::get_payment_gateway_by_id( $payment_method_id );
 			}
 
 			return array_merge( $gateways, $all_upe_gateways );
