@@ -44,6 +44,11 @@ const PaymentMethod = ( {
 
 	const needsOverlay = isManualCaptureEnabled && ! isAllowingManualCapture;
 
+	// As the JCB is not a separate payment method we fallback to card.
+	if ( id === 'jcb' ) {
+		id = 'card';
+	}
+
 	const handleChange = ( newStatus ) => {
 		// If the payment method control is locked, reject any changes.
 		if ( locked ) {
