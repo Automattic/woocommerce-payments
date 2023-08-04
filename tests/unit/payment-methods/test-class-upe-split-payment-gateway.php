@@ -286,7 +286,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 						'get_payment_method_ids_enabled_at_checkout',
 						'wc_payments_get_payment_gateway_by_id',
 						'get_selected_payment_method',
-						'remove_upe_payment_intent_from_session',
 					]
 				)
 				->getMock();
@@ -1089,9 +1088,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->set_cart_contains_subscription_items( false );
 
 		$mock_upe_gateway->process_redirect_payment( $order, $intent_id, $save_payment_method );
-
-		$mock_upe_gateway->expects( $this->any() )
-			->method( 'remove_upe_payment_intent_from_session' );
 
 		$result_order = wc_get_order( $order_id );
 		$note         = wc_get_order_notes(
@@ -2061,7 +2057,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_customer_service,
 					$this->mock_token_service,
 					$this->mock_action_scheduler_service,
-					$this->mock_payment_methods[ Payment_Method::LINK ],
+					$this->mock_payment_methods[ Payment_Method::CARD ],
 					$this->mock_payment_methods,
 					$this->mock_rate_limiter,
 					$this->order_service,
