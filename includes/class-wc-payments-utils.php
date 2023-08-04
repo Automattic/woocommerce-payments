@@ -234,6 +234,7 @@ class WC_Payments_Utils {
 			'ES' => __( 'Spain', 'woocommerce-payments' ),
 			'FR' => __( 'France', 'woocommerce-payments' ),
 			'HR' => __( 'Croatia', 'woocommerce-payments' ),
+			'JP' => __( 'Japan', 'woocommerce-payments' ),
 			'LU' => __( 'Luxembourg', 'woocommerce-payments' ),
 			'GB' => __( 'United Kingdom (UK)', 'woocommerce-payments' ),
 			'GR' => __( 'Greece', 'woocommerce-payments' ),
