@@ -28,11 +28,11 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	 *
 	 * @var array $migrated_meta_keys
 	 */
-	private $migrated_meta_keys = [
-		'_migrated_wcpay_subscription_id',
-		'_migrated_wcpay_billing_invoice_id',
-		'_migrated_wcpay_pending_invoice_id',
-		'_migrated_wcpay_subscription_discount_ids',
+	private $meta_keys_to_migrate = [
+		WC_Payments_Subscription_Service::SUBSCRIPTION_ID_META_KEY,
+		WC_Payments_Invoice_Service::ORDER_INVOICE_ID_KEY,
+		WC_Payments_Invoice_Service::PENDING_INVOICE_ID_KEY,
+		WC_Payments_Subscription_Service::SUBSCRIPTION_DISCOUNT_IDS_META_KEY,
 	];
 
 	/**
@@ -49,12 +49,26 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	 */
 	protected $logger;
 
+	/**
+	 * The Action Scheduler hook used to find and schedule individual migrations of WCPay Subscriptions.
+	 *
+	 * @var string
+	 */
 	public $scheduled_hook = 'wcpay_schedule_subscription_migrations';
 
 	/**
-	 * The action hook to schedule migrations of WCPay Subscriptions.
+	 * The Action Scheduler hook to migrate a WCPay Subscription.
+	 *
+	 * @var string
 	 */
 	public $migrate_hook = 'wcpay_migrate_subscription';
+
+	/**
+	 * The option name used to store a batch identifier for the current migration batch.
+	 *
+	 * @var string
+	 */
+	private $migration_batch_identifier_option = 'wcpay_subscription_migration_batch';
 
 	/**
 	 * Constructor.
@@ -69,7 +83,7 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 		add_filter( 'wc_subscriptions_object_data', [ $this, 'exclude_migrated_meta' ], 10, 1 );
 
 		// Add manual migration tool to WooCommerce > Status > Tools.
-		add_filter( 'woocommerce_debug_tools', array( $this, 'add_manual_migration_tool' ) );
+		add_filter( 'woocommerce_debug_tools', [ $this, 'add_manual_migration_tool' ] );
 
 		$this->init();
 	}
@@ -241,18 +255,17 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 		 * If this subscription is being migrated while scheduling individual actions is on-going, make sure we store meta on the subscription
 		 * so that it's still returned by the query in @see get_items_to_repair() to not affect the limit and pagination.
 		 */
-		$migration_start = get_option( 'wcpay_scheduling_subscription_migration', 0 );
+		$migration_start = get_option( $this->migration_batch_identifier_option, 0 );
+
 		if ( 0 !== $migration_start ) {
-			$subscription->update_meta_data( '_migrated_during', $migration_start );
+			$subscription->update_meta_data( '_wcpay_subscription_migrated_during', $migration_start );
 			$updated = true;
 		}
 
-		foreach ( $this->migrated_meta_keys as $meta_key ) {
-			$old_key = str_replace( '_migrated', '', $meta_key );
-
-			if ( $subscription->meta_exists( $old_key ) ) {
-				$subscription->update_meta_data( $meta_key, $subscription->get_meta( $old_key, true ) );
-				$subscription->delete_meta_data( $old_key );
+		foreach ( $this->meta_keys_to_migrate as $meta_key ) {
+			if ( $subscription->meta_exists( $meta_key ) ) {
+				$subscription->update_meta_data( 'migrated_' . $meta_key, $subscription->get_meta( $meta_key, true ) );
+				$subscription->delete_meta_data( $meta_key );
 
 				$updated = true;
 			}
@@ -288,22 +301,24 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	}
 
 	/**
-	 * Don't copy migrated WCPay subscription metadata to any subscription related orders (renewal/switch/resubscribe).
+	 * Prevents migrated WCPay subscription metadata being copied to subscription related orders (renewal/switch/resubscribe).
 	 *
 	 * @param array $meta_data The meta data to be copied.
-	 *
-	 * @return array
+	 * @return array The meta data to be copied.
 	 */
 	public function exclude_migrated_meta( $meta_data ) {
-		foreach ( $this->migrated_meta_keys as $key ) {
-			unset( $meta_data[ $key ] );
+		foreach ( $this->meta_keys_to_migrate as $key ) {
+			unset( $meta_data[ 'migrated_' . $key ] );
 		}
 
 		return $meta_data;
 	}
 
 	/**
-	 * Log any fatal errors occurred while migrating WCPay Subscriptions.
+	 * Logs any fatal errors that occur while processing a scheduled migrate WCPay Subscription action.
+	 *
+	 * @param string $action_id The Action Scheduler action ID.
+	 * @param array  $error     The error data.
 	 */
 	public function log_unexpected_shutdown( $action_id, $error = null ) {
 		if ( ! empty( $error['type'] ) && in_array( $error['type'], [ E_ERROR, E_PARSE, E_COMPILE_ERROR, E_USER_ERROR, E_RECOVERABLE_ERROR ], true ) ) {
@@ -312,14 +327,17 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	}
 
 	/**
-	 * Log any unexpected errors caught by the action scheduler while migrating WCPay Subscriptions.
+	 * Logs any unexpected failures that occur while processing a scheduled migrate WCPay Subscription action.
+	 *
+	 * @param string    $action_id The Action Scheduler action ID.
+	 * @param Exception $exception The exception thrown during action processing.
 	 */
 	public function log_unexpected_action_failure( $action_id, $exception ) {
 		$this->logger->log( sprintf( '---- ERROR: %s', $exception->getMessage() ) );
 	}
 
 	/**
-	 * Add a manual migration tool to WooCommerce > Status > Tools.
+	 * Adds a manual migration tool to WooCommerce > Status > Tools.
 	 *
 	 * This tool is only loaded on stores that have:
 	 *  - WC Subscriptions extension activated
@@ -328,7 +346,7 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	 *
 	 * @param array $tools List of WC debug tools.
 	 *
-	 * @return array
+	 * @return array List of WC debug tools.
 	 */
 	public function add_manual_migration_tool( $tools ) {
 		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() || ! class_exists( 'WC_Subscriptions' ) ) {
@@ -342,9 +360,9 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 					'return'     => 'ids',
 					'type'       => 'shop_subscription',
 					'limit'      => -1,
-					'meta_query' => [
+					'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 						[
-							'key'     => '_wcpay_subscription_id',
+							'key'     => WC_Payments_Subscription_Service::SUBSCRIPTION_ID_META_KEY,
 							'compare' => 'EXISTS',
 						],
 					],
@@ -358,40 +376,40 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 
 		$disabled = as_next_scheduled_action( $this->scheduled_hook );
 
-		$tools['migrate_wcpay_subscriptions'] = array(
-			'name'              => __( 'Migrate Stripe Billing subscriptions', 'woocommerce-payments' ),
-			'button'            => $disabled ? __( 'Migration in progress', 'woocommerce-payments' ) : __( 'Migrate Subscriptions', 'woocommerce-payments' ),
-			'desc'              => sprintf(
+		$tools['migrate_wcpay_subscriptions'] = [
+			'name'             => __( 'Migrate Stripe Billing subscriptions', 'woocommerce-payments' ),
+			'button'           => $disabled ? __( 'Migration in progress', 'woocommerce-payments' ) : __( 'Migrate Subscriptions', 'woocommerce-payments' ),
+			'desc'             => sprintf(
+				// translators: %1$s and %2$s are <a> tags, %3$d is the number of subscriptions.
 				__( 'This tool will migrate all Stripe Billing subscriptions to tokenized subscriptions with WooPayments. %1$sRead more.%2$sNumber of Stripe Billing subscriptions found: %3$d', 'woocommerce-payments' ),
 				'<a href="" target="_blank">',
 				'</a><br>',
 				$wcpay_subscriptions_count,
 			),
-			'callback'          => array( $this, 'schedule_migrate_wcpay_subscriptions_action' ),
-			'disabled'          => $disabled,
-			'requires_refresh'  => false,
-		);
+			'callback'         => [ $this, 'schedule_migrate_wcpay_subscriptions_action' ],
+			'disabled'         => $disabled,
+			'requires_refresh' => false,
+		];
 
 		return $tools;
 	}
 
 	/**
-	 *
+	 * Schedules the initial migration action which signals the start of the migration process.
 	 */
 	public function schedule_migrate_wcpay_subscriptions_action() {
 		if ( as_next_scheduled_action( $this->scheduled_hook ) ) {
 			return;
 		}
 
-		update_option( 'wcpay_scheduling_subscription_migration', time() );
+		update_option( $this->migration_batch_identifier_option, time() );
+
 		$this->logger->log( 'Started scheduling subscription migrations.' );
 		$this->schedule_repair();
 	}
 
 	/**
-	 *
-	 * Override WCS_Background_Repairer methods
-	 *
+	 * Override WCS_Background_Repairer methods.
 	 */
 
 	/**
@@ -423,6 +441,8 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 
 	/**
 	 * Gets a batch of items which need to be repaired.
+	 *
+	 * @param int $item The ID of the subscription to migrate.
 	 */
 	public function repair_item( $item ) {
 		$this->migrate_wcpay_subscription( $item );
@@ -432,10 +452,13 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	 * Gets a batch of 100 subscriptions to migrate.
 	 *
 	 * Because this function fetches items in batches using limit and paged query args, we need to make sure
-	 * the result of this query is consistent regardless of whether some subscriptions have been repaired/migrated in between.
+	 * the result of this query is consistent regardless of whether some subscriptions have been repaired/migrated in between.\
+	 *
+	 * @param int $page The page of results to fetch.
+	 *
+	 * @return int[] The IDs of the subscriptions to migrate.
 	 */
 	public function get_items_to_repair( $page ) {
-		$migration_start  = get_option( 'wcpay_scheduling_subscription_migration', 0 );
 		$items_to_migrate = wcs_get_orders_with_meta_query(
 			[
 				'return'     => 'ids',
@@ -444,15 +467,19 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 				'paged'      => $page,
 				'order'      => 'ASC',
 				'orderby'    => 'ID',
-				'meta_query' => [
+				'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 					'relation' => 'OR',
 					[
-						'key'     => '_wcpay_subscription_id',
+						'key'     => WC_Payments_Subscription_Service::SUBSCRIPTION_ID_META_KEY,
 						'compare' => 'EXISTS',
 					],
+					// In this query we include subscriptions which have already been migrated as part of this migration to make
+					// sure paging is maintained as subscriptions migrate and fall out of this query. When subscriptions are migrated,
+					// they no longer have WCPay subscription ID meta and so wouldn't have been included.
+					// These subscriptions aren't expected to be returned by this query, but should pad out the earlier pages.
 					[
-						'key'     => '_migrated_during',
-						'value'   => $migration_start,
+						'key'     => '_wcpay_subscription_migrated_during',
+						'value'   => get_option( $this->migration_batch_identifier_option, 0 ),
 						'compare' => '=',
 					],
 				],
@@ -466,9 +493,12 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 		return $items_to_migrate;
 	}
 
+	/**
+	 * Runs any actions that need to handle the completion of the migration.
+	 */
 	protected function unschedule_background_updates() {
 		parent::unschedule_background_updates();
 
-		delete_option( 'wcpay_scheduling_subscription_migration' );
+		delete_option( $this->migration_batch_identifier_option );
 	}
 }
