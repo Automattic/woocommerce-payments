@@ -53,13 +53,4 @@ export const PAYMENT_METHOD_TITLES = {
 	wechat: __( 'WeChat', 'woocommerce-payments' ),
 };
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const BNPL_COUNTRY_CURRENCY_MAP: Record< string, string > = {
-	AU: 'AUD',
-	CA: 'CAD',
-	GB: 'GBP',
-	NZ: 'NZD',
-	US: 'USD',
-};
-
 export default PAYMENT_METHOD_IDS;
