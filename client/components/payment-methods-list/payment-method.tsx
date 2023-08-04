@@ -2,24 +2,26 @@
 /**
  * External dependencies
  */
-import { useContext } from 'react';
 import classNames from 'classnames';
+import React, { useContext } from 'react';
 
 /**
  * Internal dependencies
  */
-import Pill from '../pill';
-import { HoverTooltip } from 'components/tooltip';
-import WCPaySettingsContext from '../../settings/wcpay-settings-context';
-import LoadableCheckboxControl from '../loadable-checkbox';
 import { __, sprintf } from '@wordpress/i18n';
+import { HoverTooltip } from 'components/tooltip';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
+import { useManualCapture } from 'wcpay/data';
+import { FeeStructure } from 'wcpay/types/fees';
 import {
 	formatMethodFeesDescription,
 	formatMethodFeesTooltip,
 } from 'wcpay/utils/account-fees';
+import WCPaySettingsContext from '../../settings/wcpay-settings-context';
+import LoadableCheckboxControl from '../loadable-checkbox';
+import Pill from '../pill';
+import PaymentMethodDisabledTooltip from '../payment-method-disabled-tooltip';
 import './payment-method.scss';
-import { useManualCapture } from 'wcpay/data';
 
 const PaymentMethod = ( {
 	id,
@@ -36,9 +38,27 @@ const PaymentMethod = ( {
 	setupTooltip,
 	required,
 	locked,
-} ) => {
+}: {
+	id: string;
+	label: string;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	Icon: () => JSX.Element | null;
+	description: string;
+	status: string;
+	checked: boolean;
+	onCheckClick: ( id: string ) => void;
+	onUncheckClick: ( id: string ) => void;
+	className?: string;
+	isAllowingManualCapture: boolean;
+	required: boolean;
+	locked: boolean;
+} ): React.ReactElement => {
 	const disabled = upeCapabilityStatuses.INACTIVE === status;
-	const { accountFees } = useContext( WCPaySettingsContext );
+	const {
+		accountFees,
+	}: { accountFees: Record< string, FeeStructure > } = useContext(
+		WCPaySettingsContext
+	);
 	const [ isManualCaptureEnabled ] = useManualCapture();
 
 	const needsOverlay =
@@ -50,7 +70,7 @@ const PaymentMethod = ( {
 		id = 'card';
 	}
 
-	const handleChange = ( newStatus ) => {
+	const handleChange = ( newStatus: string ) => {
 		// If the payment method control is locked, reject any changes.
 		if ( locked ) {
 			return;
@@ -144,22 +164,14 @@ const PaymentMethod = ( {
 							</HoverTooltip>
 						) }
 						{ disabled && (
-							<HoverTooltip
-								content={ sprintf(
-									__(
-										'To use %s, please contact WooCommerce support.',
-										'woocommerce-payments'
-									),
-									label
-								) }
-							>
+							<PaymentMethodDisabledTooltip id={ id }>
 								<Pill className={ 'payment-status-' + status }>
 									{ __(
-										'Contact WooCommerce Support',
+										'More information needed',
 										'woocommerce-payments'
 									) }
 								</Pill>
-							</HoverTooltip>
+							</PaymentMethodDisabledTooltip>
 						) }
 					</div>
 					<div className="payment-method__description">
