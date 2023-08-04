@@ -55,11 +55,6 @@ export const getAccountStatementDescriptor = ( state ) => {
 export const getAccountBusinessName = ( state ) => {
 	return getSettings( state ).account_business_name || '';
 };
-
-export const getAccountDefaultCurrency = ( state ) => {
-	return getSettings( state ).account_default_currency || '';
-};
-
 export const getAccountBusinessURL = ( state ) => {
 	return getSettings( state ).account_business_url || '';
 };
@@ -104,8 +99,8 @@ export const getAccountBrandingLogo = ( state ) => {
 	return getSettings( state ).account_branding_logo || '';
 };
 
-export const getAccountCountry = ( state ) => {
-	return getSettings( state ).account_country || '';
+export const getAccountDomesticCurrency = ( state ) => {
+	return getSettings( state ).account_domestic_currency || '';
 };
 
 export const getDepositScheduleInterval = ( state ) => {

@@ -77,6 +77,13 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 	private $mock_wcpay_gateway;
 
 	/**
+	 * WC_Payments_Localization_Service instance.
+	 *
+	 * @var WC_Payments_Localization_Service
+	 */
+	private $mock_localization_service;
+
+	/**
 	 * Sets up things all tests need.
 	 */
 	public function set_up() {
@@ -135,12 +142,13 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 	 * @return WC_Payment_Gateway_WCPay
 	 */
 	private function make_wcpay_gateway() {
-		$mock_customer_service         = $this->createMock( WC_Payments_Customer_Service::class );
-		$mock_token_service            = $this->createMock( WC_Payments_Token_Service::class );
-		$mock_action_scheduler_service = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
-		$mock_rate_limiter             = $this->createMock( Session_Rate_Limiter::class );
-		$mock_order_service            = $this->createMock( WC_Payments_Order_Service::class );
-		$mock_dpps                     = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+		$mock_customer_service           = $this->createMock( WC_Payments_Customer_Service::class );
+		$mock_token_service              = $this->createMock( WC_Payments_Token_Service::class );
+		$mock_action_scheduler_service   = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
+		$mock_rate_limiter               = $this->createMock( Session_Rate_Limiter::class );
+		$mock_order_service              = $this->createMock( WC_Payments_Order_Service::class );
+		$mock_dpps                       = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
 
 		return new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
@@ -150,7 +158,8 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 			$mock_action_scheduler_service,
 			$mock_rate_limiter,
 			$mock_order_service,
-			$mock_dpps
+			$mock_dpps,
+			$this->mock_localization_service
 		);
 	}
 

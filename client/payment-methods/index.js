@@ -26,12 +26,12 @@ import {
 	useGetPaymentMethodStatuses,
 	useSelectedPaymentMethod,
 	useUnselectedPaymentMethod,
-	useAccountCountry,
+	useAccountDomesticCurrency,
 } from 'wcpay/data';
 
 import useIsUpeEnabled from '../settings/wcpay-upe-toggle/hook.js';
 import WcPayUpeContext from '../settings/wcpay-upe-toggle/context';
-import PAYMENT_METHOD_IDS, { BNPL_COUNTRY_CURRENCY_MAP } from './constants';
+import PAYMENT_METHOD_IDS from './constants';
 
 // Survey modal imports.
 import WcPaySurveyContextProvider from '../settings/survey-modal/provider';
@@ -47,13 +47,6 @@ import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants'
 import ConfirmPaymentMethodActivationModal from './activation-modal';
 import ConfirmPaymentMethodDeleteModal from './delete-modal';
 import { getAdminUrl } from 'wcpay/utils';
-
-const getBNPLCountryCurrencyMap = ( country ) => {
-	if ( BNPL_COUNTRY_CURRENCY_MAP.hasOwnProperty( country ) ) {
-		return BNPL_COUNTRY_CURRENCY_MAP[ country ];
-	}
-	return '';
-};
 
 const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 	return (
@@ -167,7 +160,7 @@ const PaymentMethods = () => {
 
 	const [ , updateSelectedPaymentMethod ] = useSelectedPaymentMethod();
 
-	const [ stripeAccountCountry ] = useAccountCountry();
+	const [ stripeAccountDomesticCurrency ] = useAccountDomesticCurrency();
 
 	const completeActivation = ( itemId ) => {
 		updateSelectedPaymentMethod( itemId );
@@ -303,9 +296,7 @@ const PaymentMethods = () => {
 										isAllowingPayLater
 											? sprintf(
 													description,
-													getBNPLCountryCurrencyMap(
-														stripeAccountCountry.toUpperCase()
-													)
+													stripeAccountDomesticCurrency.toUpperCase()
 											  )
 											: description
 									}

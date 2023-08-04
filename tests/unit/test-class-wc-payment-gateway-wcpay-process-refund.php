@@ -78,6 +78,13 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 	 */
 	private $mock_order_service;
 
+	/**
+	 * WC_Payments_Localization_Service instance.
+	 *
+	 * @var WC_Payments_Localization_Service
+	 */
+	private $mock_localization_service;
+
 	public function set_up() {
 		parent::set_up();
 
@@ -88,6 +95,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$this->mock_action_scheduler_service = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
 		$this->mock_rate_limiter             = $this->createMock( Session_Rate_Limiter::class );
 		$this->mock_order_service            = $this->createMock( WC_Payments_Order_Service::class );
+		$this->mock_localization_service     = $this->createMock( WC_Payments_Localization_Service::class );
 		$mock_dpps                           = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 
 		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
@@ -98,7 +106,8 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 			$this->mock_action_scheduler_service,
 			$this->mock_rate_limiter,
 			$this->mock_order_service,
-			$mock_dpps
+			$mock_dpps,
+			$this->mock_localization_service
 		);
 	}
 

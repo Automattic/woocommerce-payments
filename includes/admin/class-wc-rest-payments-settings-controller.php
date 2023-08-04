@@ -409,7 +409,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'account_branding_icon'               => $this->wcpay_gateway->get_option( 'account_branding_icon' ),
 				'account_branding_primary_color'      => $this->wcpay_gateway->get_option( 'account_branding_primary_color' ),
 				'account_branding_secondary_color'    => $this->wcpay_gateway->get_option( 'account_branding_secondary_color' ),
-				'account_country'                     => $this->wcpay_gateway->get_option( 'account_country' ),
+				'account_domestic_currency'           => $this->wcpay_gateway->get_option( 'account_domestic_currency' ),
 				'is_payment_request_enabled'          => 'yes' === $this->wcpay_gateway->get_option( 'payment_request' ),
 				'is_debug_log_enabled'                => 'yes' === $this->wcpay_gateway->get_option( 'enable_logging' ),
 				'payment_request_enabled_locations'   => $this->wcpay_gateway->get_option( 'payment_request_button_locations' ),

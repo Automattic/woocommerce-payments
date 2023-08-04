@@ -94,6 +94,13 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	private $upe_split_controller;
 
 	/**
+	 * WC_Payments_Localization_Service instance.
+	 *
+	 * @var WC_Payments_Localization_Service
+	 */
+	private $mock_localization_service;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -111,14 +118,21 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
-		$this->mock_db_cache      = $this->createMock( Database_Cache::class );
-		$customer_service         = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_wcpay_account, $this->mock_db_cache );
-		$token_service            = new WC_Payments_Token_Service( $this->mock_api_client, $customer_service );
-		$order_service            = new WC_Payments_Order_Service( $this->mock_api_client );
-		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client, $order_service );
-		$mock_rate_limiter        = $this->createMock( Session_Rate_Limiter::class );
-		$mock_dpps                = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+		$this->mock_wcpay_account        = $this->createMock( WC_Payments_Account::class );
+		$this->mock_db_cache             = $this->createMock( Database_Cache::class );
+		$customer_service                = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_wcpay_account, $this->mock_db_cache );
+		$token_service                   = new WC_Payments_Token_Service( $this->mock_api_client, $customer_service );
+		$order_service                   = new WC_Payments_Order_Service( $this->mock_api_client );
+		$action_scheduler_service        = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client, $order_service );
+		$mock_rate_limiter               = $this->createMock( Session_Rate_Limiter::class );
+		$mock_dpps                       = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
+
+		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn(
+			[
+				'currency_code' => 'usd',
+			]
+		);
 
 		$this->gateway    = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
@@ -128,7 +142,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$action_scheduler_service,
 			$mock_rate_limiter,
 			$order_service,
-			$mock_dpps
+			$mock_dpps,
+			$this->mock_localization_service
 		);
 		$this->controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->gateway );
 
@@ -167,7 +182,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$mock_payment_methods,
 			$mock_rate_limiter,
 			$order_service,
-			$mock_dpps
+			$mock_dpps,
+			$this->mock_localization_service
 		);
 
 		$this->upe_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->mock_upe_payment_gateway );
@@ -182,7 +198,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$mock_payment_methods,
 			$mock_rate_limiter,
 			$order_service,
-			$mock_dpps
+			$mock_dpps,
+			$this->mock_localization_service
 		);
 
 		$this->upe_split_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->mock_upe_split_payment_gateway );
