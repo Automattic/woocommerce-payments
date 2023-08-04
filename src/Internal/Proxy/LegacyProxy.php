@@ -33,7 +33,8 @@ class LegacyProxy {
 	/**
 	 * Calls the static method of a class outside of `src`.
 	 *
-	 * Use this for non-`src` classes. `src` classes should only have pure static methods.
+	 * Use this for non-`src` classes.
+	 * Static methods on `src` classes should be pure (without side effects).
 	 *
 	 * @param string $class_name    Name of the class.
 	 * @param string $method_name   Name of the method.
