@@ -190,6 +190,10 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 			'viewport',
 			`${ viewportWidth }x${ viewportHeight }`
 		);
+		urlParams.append(
+			'tracksUserIdentity',
+			JSON.stringify( getConfig( 'tracksUserIdentity' ) )
+		);
 
 		iframe.src = `${ getConfig(
 			'woopayHost'
