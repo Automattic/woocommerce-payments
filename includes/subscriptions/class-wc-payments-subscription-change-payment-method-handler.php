@@ -67,25 +67,24 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 			return $actions;
 		}
 
-		$invoice_id         = WC_Payments_Invoice_Service::get_order_invoice_id( $order );
-		$updated_pay_action = false;
+		// If there isn't an invoice linked to this order, there's nothing to update.
+		if ( ! WC_Payments_Invoice_Service::get_order_invoice_id( $order ) ) {
+			return $actions;
+		}
 
-		// Don't show the default pay link for any WC Pay Subscription order because we don't want customer paying for them.
-		if ( $invoice_id ) {
-			$subscriptions = wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] );
+		$subscriptions = wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] );
+		$subscription  = ! empty( $subscriptions ) ? array_pop( $subscriptions ) : null;
 
-			if ( ! empty( $subscriptions ) ) {
-				$subscription = array_pop( $subscriptions );
+		// If we couldn't locate the subscription, we can assume this is a WCPay subscription by the fact the order has an invoice ID.
+		// As a failsafe remove the 'pay' action for this order as that's not the accepted flow for WCPay subscriptions.
+		if ( ! $subscription ) {
+			unset( $actions['pay'] );
+			return $actions;
+		}
 
-				if ( $subscription && WC_Payments_Invoice_Service::get_pending_invoice_id( $subscription ) ) {
-					$actions['pay']['url'] = $this->get_subscription_update_payment_url( $subscription );
-					$updated_pay_action    = true;
-				}
-			}
-
-			if ( ! $updated_pay_action ) {
-				unset( $actions['pay'] );
-			}
+		// Only alter the pay action if the subscription needs a new payment method.
+		if ( $this->does_subscription_need_payment_updated( $subscription ) ) {
+			$actions['pay']['url'] = $this->get_subscription_update_payment_url( $subscription );
 		}
 
 		return $actions;
@@ -131,7 +130,7 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 			if ( ! empty( $subscriptions ) ) {
 				$subscription = array_pop( $subscriptions );
 
-				if ( $subscription && current_user_can( 'edit_shop_subscription_payment_method', $subscription->get_id() ) && WC_Payments_Invoice_Service::get_pending_invoice_id( $subscription ) ) {
+				if ( $subscription && current_user_can( 'edit_shop_subscription_payment_method', $subscription->get_id() ) && $this->does_subscription_need_payment_updated( $subscription ) ) {
 					wp_safe_redirect( $this->get_subscription_update_payment_url( $subscription ) );
 					exit;
 				}
@@ -185,7 +184,7 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 
 		$last_order = $subscription->get_last_order( 'all', 'any' );
 
-		return $last_order && $last_order->has_status( 'failed' );
+		return $last_order && $last_order->has_status( 'failed' ) && WC_Payments_Invoice_Service::get_pending_invoice_id( $subscription );
 	}
 
 	/**

@@ -13,6 +13,7 @@
 	<exclude-pattern>./node_modules/*</exclude-pattern>
 	<exclude-pattern>./vendor/*</exclude-pattern>
 	<exclude-pattern>./vendor-dist/*</exclude-pattern>
+	<exclude-pattern>./lib/*</exclude-pattern>
 
 	<!-- Configs -->
 	<config name="minimum_supported_wp_version" value="6.0" />
