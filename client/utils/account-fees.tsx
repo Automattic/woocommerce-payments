@@ -41,6 +41,7 @@ const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 	HU: 'hungary',
 	IE: 'ireland',
 	IT: 'italy',
+	JP: 'japan',
 	LT: 'lithuania',
 	LV: 'latvia',
 	MT: 'malta',
