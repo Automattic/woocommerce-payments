@@ -31,7 +31,11 @@ const OnboardingStepper = () => {
 	const handleStepChange = () => window.scroll( 0, 0 );
 
 	return (
-		<Stepper onStepChange={ handleStepChange } onExit={ handleExit }>
+		<Stepper
+			initialStep={ wcpaySettings.onboardingFlowState?.current_step }
+			onStepChange={ handleStepChange }
+			onExit={ handleExit }
+		>
 			<Step name="mode">
 				<ModeChoice />
 			</Step>
@@ -55,14 +59,16 @@ const OnboardingStepper = () => {
 	);
 };
 
-const OnboardingPage: React.FC = () => {
-	const isLocalhost = location.hostname === 'localhost';
-	const businessUrl = isLocalhost
-		? 'https://wcpay.test'
-		: wcSettings?.homeUrl ?? '';
-	const businessName = wcSettings?.siteTitle ?? '';
-	const country = wcpaySettings?.connect?.country ?? '';
+const initialData = wcpaySettings.onboardingFlowState?.data ?? {
+	business_name: wcSettings?.siteTitle,
+	url:
+		location.hostname === 'localhost'
+			? 'https://wcpay.test'
+			: wcSettings?.homeUrl,
+	country: wcpaySettings?.connect?.country,
+};
 
+const OnboardingPage: React.FC = () => {
 	useEffect( () => {
 		trackStarted();
 
@@ -82,13 +88,7 @@ const OnboardingPage: React.FC = () => {
 
 	return (
 		<div className="wcpay-onboarding-prototype">
-			<OnboardingContextProvider
-				initialData={ {
-					business_name: businessName,
-					url: businessUrl,
-					country: country,
-				} }
-			>
+			<OnboardingContextProvider initialData={ initialData }>
 				<OnboardingStepper />
 			</OnboardingContextProvider>
 		</div>

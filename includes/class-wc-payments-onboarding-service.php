@@ -192,6 +192,10 @@ class WC_Payments_Onboarding_Service {
 		return $classes;
 	}
 
+	public function get_onboarding_flow_state() {
+		return get_option( self::ONBOARDING_FLOW_STATE_OPTION );
+	}
+
 	public function set_onboarding_flow_state( array $value ) {
 		return update_option( self::ONBOARDING_FLOW_STATE_OPTION, $value );
 	}
