@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -18,6 +18,7 @@ import IdealIcon from 'assets/images/payment-methods/ideal.svg?asset';
 import BankDebitIcon from 'assets/images/payment-methods/bank-debit.svg?asset';
 import AffirmIcon from 'assets/images/payment-methods/affirm.svg?asset';
 import AfterpayIcon from 'assets/images/payment-methods/afterpay.svg?asset';
+import JCBIcon from 'assets/images/payment-methods/jcb.svg?asset';
 
 const iconComponent = ( src: string, alt: string ): ReactImgFuncComponent => (
 	props
@@ -33,6 +34,8 @@ export interface PaymentMethodMapEntry {
 	stripe_key: string;
 	allows_manual_capture: boolean;
 	allows_pay_later: boolean;
+	setup_required?: boolean;
+	setup_tooltip?: string;
 }
 
 const PaymentMethodInformationObject: Record<
@@ -220,6 +223,27 @@ const PaymentMethodInformationObject: Record<
 		stripe_key: 'afterpay_clearpay_payments',
 		allows_manual_capture: false,
 		allows_pay_later: true,
+	},
+	jcb: {
+		id: 'jcb',
+		label: __( 'JCB', 'woocommerce-payments' ),
+		brandTitles: {
+			jcb: __( 'JCB', 'woocommerce-payments' ),
+		},
+		description: __(
+			'Let your customers pay with JCB, the only international payment brand based in Japan.',
+			'woocommerce-payments'
+		),
+		icon: iconComponent( JCBIcon, 'JCB' ),
+		currencies: [ 'JPY' ],
+		stripe_key: 'card_payments',
+		allows_manual_capture: false,
+		allows_pay_later: false,
+		setup_required: true,
+		setup_tooltip: __(
+			'JCB is coming soon to your country.',
+			'woocommerce-payments'
+		),
 	},
 };
 
