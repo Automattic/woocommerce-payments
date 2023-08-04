@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { sprintf, __ } from '@wordpress/i18n';
-import { useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 /**
  * Internal dependencies
@@ -20,7 +20,16 @@ export const WoopayExpressCheckoutButton = ( {
 	isProductPage = false,
 	emailSelector = '#email',
 } ) => {
+	const buttonWidthTypes = {
+		narrow: 'narrow',
+		wide: 'wide',
+	};
+	const buttonRef = useRef();
 	const { type: buttonType, height, size, theme, context } = buttonSettings;
+	const [ buttonWidthType, setButtonWidthType ] = useState(
+		buttonWidthTypes.wide
+	);
+
 	const text =
 		buttonType !== 'default'
 			? sprintf(
@@ -36,6 +45,18 @@ export const WoopayExpressCheckoutButton = ( {
 		getProductData,
 		isAddToCartDisabled,
 	} = useExpressCheckoutProductHandler( api, isProductPage );
+
+	useEffect( () => {
+		if ( ! buttonRef.current ) {
+			return;
+		}
+
+		const buttonWidth = buttonRef.current.getBoundingClientRect().width;
+		const isButtonWide = buttonWidth > 140;
+		setButtonWidthType(
+			isButtonWide ? buttonWidthTypes.wide : buttonWidthTypes.narrow
+		);
+	}, [ buttonWidthTypes.narrow, buttonWidthTypes.wide ] );
 
 	useEffect( () => {
 		if ( ! isPreview ) {
@@ -80,6 +101,7 @@ export const WoopayExpressCheckoutButton = ( {
 
 	return (
 		<button
+			ref={ buttonRef }
 			key={ `${ buttonType }-${ theme }-${ size }` }
 			aria-label={ buttonType !== 'default' ? text : __( 'WooPay' ) }
 			onClick={ initWooPay }
@@ -88,9 +110,10 @@ export const WoopayExpressCheckoutButton = ( {
 			data-type={ buttonType }
 			data-size={ size }
 			data-theme={ theme }
+			data-width-type={ buttonWidthType }
 			style={ { height: `${ height }px` } }
 		>
-			{ text }
+			<div>{ text }</div>
 			<ThemedWooPayIcon />
 		</button>
 	);
