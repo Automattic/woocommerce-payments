@@ -24,7 +24,7 @@ const LoadableCheckboxControl = ( {
 	hideLabel = false,
 	isAllowingManualCapture = false,
 	isSetupRequired = false,
-	setupTooltip,
+	setupTooltip = '',
 	delayMsOnCheck = 0,
 	delayMsOnUncheck = 0,
 } ) => {

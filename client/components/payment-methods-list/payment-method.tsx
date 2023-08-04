@@ -50,6 +50,8 @@ const PaymentMethod = ( {
 	onUncheckClick: ( id: string ) => void;
 	className?: string;
 	isAllowingManualCapture: boolean;
+	isSetupRequired?: boolean;
+	setupTooltip?: string;
 	required: boolean;
 	locked: boolean;
 } ): React.ReactElement => {
