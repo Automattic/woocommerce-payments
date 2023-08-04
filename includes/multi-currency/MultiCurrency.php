@@ -1246,8 +1246,7 @@ class MultiCurrency {
 			plugins_url( 'dist/multi-currency.css', WCPAY_PLUGIN_FILE ),
 			[ 'wc-components', 'WCPAY_ADMIN_SETTINGS' ],
 			\WC_Payments::get_file_version( 'dist/multi-currency.css' ),
-			'all',
-			true
+			'all'
 		);
 	}
 

@@ -66,8 +66,7 @@ class WC_Payments_Subscriptions_Empty_State_Manager {
 			plugins_url( 'dist/subscriptions-empty-state.css', WCPAY_PLUGIN_FILE ),
 			[],
 			WC_Payments::get_file_version( 'dist/subscriptions-empty-state.css' ),
-			'all',
-			true
+			'all'
 		);
 
 		wp_enqueue_script( 'WCPAY_SUBSCRIPTIONS_EMPTY_STATE' );

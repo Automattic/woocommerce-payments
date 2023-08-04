@@ -224,8 +224,7 @@ class WC_Payments_Checkout {
 				plugins_url( 'dist/checkout.css', WCPAY_PLUGIN_FILE ),
 				[],
 				WC_Payments::get_file_version( 'dist/checkout.css' ),
-				'all',
-				true
+				'all'
 			);
 
 			// Output the form HTML.

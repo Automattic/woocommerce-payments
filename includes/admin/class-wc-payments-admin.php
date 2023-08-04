@@ -306,8 +306,7 @@ class WC_Payments_Admin {
 			plugins_url( 'assets/css/admin.css', WCPAY_PLUGIN_FILE ),
 			[],
 			WC_Payments::get_file_version( 'assets/css/admin.css' ),
-			'all',
-			true
+			'all'
 		);
 
 		$this->add_menu_notification_badge();
@@ -517,8 +516,7 @@ class WC_Payments_Admin {
 			plugins_url( 'assets/css/admin.css', WCPAY_PLUGIN_FILE ),
 			[],
 			WC_Payments::get_file_version( 'assets/css/admin.css' ),
-			'all',
-			true
+			'all'
 		);
 
 		$this->add_menu_notification_badge();
@@ -543,8 +541,7 @@ class WC_Payments_Admin {
 			plugins_url( 'dist/index.css', WCPAY_PLUGIN_FILE ),
 			[ 'wc-components' ],
 			WC_Payments::get_file_version( 'dist/index.css' ),
-			'all',
-			true
+			'all'
 		);
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_TOS', 'dist/tos' );
@@ -555,8 +552,7 @@ class WC_Payments_Admin {
 			plugins_url( 'dist/tos.css', WCPAY_PLUGIN_FILE ),
 			[],
 			WC_Payments::get_file_version( 'dist/tos.css' ),
-			'all',
-			true
+			'all'
 		);
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_ADMIN_ORDER_ACTIONS', 'dist/order', [ 'jquery-tiptip' ] );
@@ -566,8 +562,7 @@ class WC_Payments_Admin {
 			plugins_url( 'dist/order.css', WCPAY_PLUGIN_FILE ),
 			[],
 			WC_Payments::get_file_version( 'dist/order.css' ),
-			'all',
-			true
+			'all'
 		);
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_ADMIN_SETTINGS', 'dist/settings' );
@@ -591,8 +586,7 @@ class WC_Payments_Admin {
 			plugins_url( 'dist/settings.css', WCPAY_PLUGIN_FILE ),
 			[ 'wc-components' ],
 			WC_Payments::get_file_version( 'dist/settings.css' ),
-			'all',
-			true
+			'all'
 		);
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_PAYMENT_GATEWAYS_PAGE', 'dist/payment-gateways' );
@@ -602,8 +596,7 @@ class WC_Payments_Admin {
 			plugins_url( 'dist/payment-gateways.css', WCPAY_PLUGIN_FILE ),
 			[ 'wc-components' ],
 			WC_Payments::get_file_version( 'dist/payment-gateways.css' ),
-			'all',
-			true
+			'all'
 		);
 	}
 

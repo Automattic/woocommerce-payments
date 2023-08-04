@@ -122,8 +122,7 @@ class WC_Payments_Order_Success_Page {
 			plugins_url( 'assets/css/success.css', WCPAY_PLUGIN_FILE ),
 			[],
 			WC_Payments::get_file_version( 'assets/css/success.css' ),
-			'all',
-			true
+			'all'
 		);
 	}
 }

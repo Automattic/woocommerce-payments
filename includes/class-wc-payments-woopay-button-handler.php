@@ -166,8 +166,7 @@ class WC_Payments_WooPay_Button_Handler {
 			plugins_url( 'dist/woopay.css', WCPAY_PLUGIN_FILE ),
 			[],
 			WCPAY_VERSION_NUMBER,
-			'all',
-			true
+			'all'
 		);
 	}
 

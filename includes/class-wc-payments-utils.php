@@ -953,7 +953,7 @@ class WC_Payments_Utils {
 	 * @param  string   $media   The media for which this stylesheet has been defined. Accepts media types like 'all', 'print' and 'screen', or media queries like '(orientation: portrait)' and '(max-width: 640px)'.
 	 * @param  boolean  $has_rtl If has RTL version to load too.
 	 */
-	public static function register_style( $handle, $path, $deps = [], $version = WC_VERSION, $media = 'all', $has_rtl = false ) {
+	public static function register_style( $handle, $path, $deps = [], $version = WC_VERSION, $media = 'all', $has_rtl = true ) {
 		wp_register_style( $handle, $path, $deps, $version, $media );
 
 		if ( $has_rtl ) {
@@ -973,7 +973,7 @@ class WC_Payments_Utils {
 	 * @param  string   $media   The media for which this stylesheet has been defined. Accepts media types like 'all', 'print' and 'screen', or media queries like '(orientation: portrait)' and '(max-width: 640px)'.
 	 * @param  boolean  $has_rtl If has RTL version to load too.
 	 */
-	public static function enqueue_style( $handle, $path = '', $deps = [], $version = WC_VERSION, $media = 'all', $has_rtl = false ) {
+	public static function enqueue_style( $handle, $path = '', $deps = [], $version = WC_VERSION, $media = 'all', $has_rtl = true ) {
 		if ( '' !== $path ) {
 			self::register_style( $handle, $path, $deps, $version, $media, $has_rtl );
 		}

@@ -196,8 +196,7 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 			plugins_url( 'dist/subscription-product-onboarding-modal.css', WCPAY_PLUGIN_FILE ),
 			[],
 			WC_Payments::get_file_version( 'dist/subscription-product-onboarding-modal.css' ),
-			'all',
-			true
+			'all'
 		);
 
 		wp_enqueue_script( 'wcpay-subscription-product-onboarding-modal' );

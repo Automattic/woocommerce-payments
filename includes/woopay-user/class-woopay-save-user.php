@@ -53,8 +53,7 @@ class WooPay_Save_User {
 			$style_url,
 			[],
 			\WC_Payments::get_file_version( 'dist/woopay.css' ),
-			'all',
-			true
+			'all'
 		);
 		WC_Payments::register_script_with_dependencies( 'WCPAY_WOOPAY', 'dist/woopay' );
 

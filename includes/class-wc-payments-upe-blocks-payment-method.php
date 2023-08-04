@@ -20,8 +20,7 @@ class WC_Payments_UPE_Blocks_Payment_Method extends WC_Payments_Blocks_Payment_M
 			plugins_url( 'dist/upe-blocks-checkout.css', WCPAY_PLUGIN_FILE ),
 			[],
 			'1.0',
-			'all',
-			true
+			'all'
 		);
 
 		wp_register_script(

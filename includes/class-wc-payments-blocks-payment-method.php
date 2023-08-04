@@ -59,8 +59,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 			plugins_url( 'dist/blocks-checkout.css', WCPAY_PLUGIN_FILE ),
 			[],
 			'1.0',
-			'all',
-			true
+			'all'
 		);
 		wp_register_script(
 			'stripe',
