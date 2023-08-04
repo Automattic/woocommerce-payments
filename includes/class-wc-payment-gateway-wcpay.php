@@ -719,7 +719,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function process_payment( $order_id ) {
 
 		if ( defined( 'WCPAY_NEW_PROCESS' ) && true === WCPAY_NEW_PROCESS ) {
-			$new_process = new PaymentProcessingService();
+			$new_process = wcpay_get_container()->get( PaymentProcessingService::class );
 			return $new_process->process_payment( $order_id );
 		}
 
