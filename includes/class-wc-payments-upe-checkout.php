@@ -145,16 +145,18 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 	 */
 	public function get_payment_fields_js_config() {
 
-		$payment_fields                             = parent::get_payment_fields_js_config();
-		$payment_fields['accountDescriptor']        = $this->gateway->get_account_statement_descriptor();
-		$payment_fields['addPaymentReturnURL']      = wc_get_account_endpoint_url( 'payment-methods' );
-		$payment_fields['gatewayId']                = UPE_Payment_Gateway::GATEWAY_ID;
-		$payment_fields['isCheckout']               = is_checkout();
-		$payment_fields['paymentMethodsConfig']     = $this->get_enabled_payment_method_config();
-		$payment_fields['testMode']                 = WC_Payments::mode()->is_test();
-		$payment_fields['upeAppearance']            = get_transient( UPE_Payment_Gateway::UPE_APPEARANCE_TRANSIENT );
-		$payment_fields['wcBlocksUPEAppearance']    = get_transient( UPE_Payment_Gateway::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
-		$payment_fields['cartContainsSubscription'] = $this->gateway->is_subscription_item_in_cart();
+		$payment_fields                                    = parent::get_payment_fields_js_config();
+		$payment_fields['accountDescriptor']               = $this->gateway->get_account_statement_descriptor();
+		$payment_fields['isShortAccountDescriptorEnabled'] = 'yes' === $this->gateway->get_option( 'is_short_statement_descriptor_enabled' );
+		$payment_fields['shortAccountDescriptor']          = $this->gateway->get_option( 'short_statement_descriptor', '' );
+		$payment_fields['addPaymentReturnURL']             = wc_get_account_endpoint_url( 'payment-methods' );
+		$payment_fields['gatewayId']                       = UPE_Payment_Gateway::GATEWAY_ID;
+		$payment_fields['isCheckout']                      = is_checkout();
+		$payment_fields['paymentMethodsConfig']            = $this->get_enabled_payment_method_config();
+		$payment_fields['testMode']                        = WC_Payments::mode()->is_test();
+		$payment_fields['upeAppearance']                   = get_transient( UPE_Payment_Gateway::UPE_APPEARANCE_TRANSIENT );
+		$payment_fields['wcBlocksUPEAppearance']           = get_transient( UPE_Payment_Gateway::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
+		$payment_fields['cartContainsSubscription']        = $this->gateway->is_subscription_item_in_cart();
 
 		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 			$payment_fields['currency']  = get_woocommerce_currency();

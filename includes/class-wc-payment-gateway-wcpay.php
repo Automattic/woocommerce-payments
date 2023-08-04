@@ -1108,6 +1108,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 			}
 
+			$statement_descriptor = $this->maybe_use_statement_descriptor( $order->get_payment_method(), $order );
+
 			if ( empty( $intent ) ) {
 				$request = Create_And_Confirm_Intention::create();
 				$request->set_amount( $converted_amount );
@@ -1136,6 +1138,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							)
 						)
 					);
+				}
+
+				if ( $statement_descriptor ) {
+					$request->set_statement_descriptor( $statement_descriptor );
 				}
 
 				// Make sure that setting fingerprint is performed after setting metadata because metadata will override any values you set before for metadata param.
@@ -2354,16 +2360,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param  string $key Field key.
 	 * @param  string $value Posted Value.
+	 * @param  int    $max_length Maximum length of the field.
 	 *
 	 * @return string                   Sanitized statement descriptor.
 	 * @throws InvalidArgumentException When statement descriptor is invalid.
 	 */
-	public function validate_account_statement_descriptor_field( $key, $value ) {
+	public function validate_account_statement_descriptor_field( $key, $value, $max_length ) {
 		// Since the value is escaped, and we are saving in a place that does not require escaping, apply stripslashes.
 		$value = trim( stripslashes( $value ) );
+		$field = __( 'Customer bank statement', 'woocommerce-payments' );
+
+		if ( 'short_statement_descriptor' === $key ) {
+			$field = __( 'Shortened customer bank statement', 'woocommerce-payments' );
+		}
 
 		// Validation can be done with a single regex but splitting into multiple for better readability.
-		$valid_length   = '/^.{5,22}$/';
+		$valid_length   = '/^.{5,' . $max_length . '}$/';
 		$has_one_letter = '/^.*[a-zA-Z]+/';
 		$no_specials    = '/^[^*"\'<>]*$/';
 
@@ -2372,10 +2384,46 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			! preg_match( $has_one_letter, $value ) ||
 			! preg_match( $no_specials, $value )
 		) {
-			throw new InvalidArgumentException( __( 'Customer bank statement is invalid. Statement should be between 5 and 22 characters long, contain at least single Latin character and does not contain special characters: \' " * &lt; &gt;', 'woocommerce-payments' ) );
+			throw new InvalidArgumentException(
+				sprintf(
+					/* translators: %1 field name, %2 Number of the maximum characters allowed */
+					__( '%1$s is invalid. Statement should be between 5 and %2$u characters long, contain at least a single Latin character, and not contain any of the following special characters: \' " * &lt; &gt;', 'woocommerce-payments' ),
+					$field,
+					$max_length
+				)
+			);
 		}
 
 		return $value;
+	}
+
+	/**
+	 * Returns the account statement descriptor, the shortened statement descriptor,
+	 * or null, depending on the payment method.
+	 *
+	 * If it returns null, the default statement descriptor will be used by default
+	 * because it's also set in the Stripe account. However, that's not what happen when
+	 * the payment method is not a card, that's why we have a condition for it.
+	 *
+	 * @param  string   $payment_method Payment method being used.
+	 * @param  WC_Order $order WC Order.
+	 *
+	 * @return string|null Statement descriptor.
+	 */
+	public function maybe_use_statement_descriptor( $payment_method, $order ) {
+		$is_card_payment                       = in_array( $payment_method, [ 'card', 'woocommerce_payments' ], true );
+		$statement_descriptor                  = $this->get_account_statement_descriptor();
+		$short_statement_descriptor            = $this->get_option( 'short_statement_descriptor', '' );
+		$is_short_statement_descriptor_enabled = 'yes' === $this->get_option( 'is_short_statement_descriptor_enabled' );
+
+		if ( $is_card_payment && $is_short_statement_descriptor_enabled && ! empty( $short_statement_descriptor ) ) {
+			// Use the shortened statement descriptor for card transactions only.
+			return WC_Payments_Utils::get_dynamic_statement_descriptor( $short_statement_descriptor, $order );
+		} elseif ( ! ( $is_card_payment || empty( $statement_descriptor ) ) ) {
+			return $statement_descriptor;
+		}
+
+		return null;
 	}
 
 	/**
