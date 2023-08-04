@@ -318,7 +318,7 @@ class OrderMetaHelper {
 	/**
 	 * Appends our parameter to the edit post link if needed.
 	 *
-	 * @param string $url     The current edit post link.
+	 * @param string $url The current edit post link.
 	 *
 	 * @return string
 	 */
