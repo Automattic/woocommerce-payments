@@ -13,6 +13,14 @@ describe( 'PhoneNumberInput', () => {
 	const handlePhoneNumberChangeMock = jest.fn();
 	const handlePhoneValidationChangeMock = jest.fn();
 
+	beforeEach( () => {
+		window.wcpaySettings = {
+			accountStatus: {
+				country: 'US',
+			},
+		};
+	} );
+
 	it( 'should render phone number input', () => {
 		render(
 			<PhoneNumberInput

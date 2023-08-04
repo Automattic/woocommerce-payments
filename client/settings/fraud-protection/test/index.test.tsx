@@ -100,6 +100,15 @@ describe( 'FraudProtection', () => {
 	} );
 
 	it( 'should render correctly', () => {
+		Object.defineProperty( window, 'location', {
+			configurable: true,
+			enumerable: true,
+			value: {
+				search:
+					'?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/',
+			},
+		} );
+
 		const { container: fraudProtectionSettings } = render(
 			<WCPaySettingsContext.Provider
 				value={ { isWelcomeTourDismissed: true } as any }

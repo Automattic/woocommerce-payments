@@ -283,6 +283,8 @@ const PaymentMethods = () => {
 								description,
 								icon: Icon,
 								allows_manual_capture: isAllowingManualCapture,
+								setup_required: isSetupRequired,
+								setup_tooltip: setupTooltip,
 							} ) => (
 								<PaymentMethod
 									id={ id }
@@ -309,6 +311,8 @@ const PaymentMethods = () => {
 									status={
 										getStatusAndRequirements( id ).status
 									}
+									isSetupRequired={ isSetupRequired }
+									setupTooltip={ setupTooltip }
 									isAllowingManualCapture={
 										isAllowingManualCapture
 									}
