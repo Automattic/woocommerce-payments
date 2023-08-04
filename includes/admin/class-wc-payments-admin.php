@@ -301,12 +301,15 @@ class WC_Payments_Admin {
 				],
 			]
 		);
+
+		// RTL=false for these files as they aren't currently transpiled by webpack.
 		WC_Payments_Utils::enqueue_style(
 			'wcpay-admin-css',
 			plugins_url( 'assets/css/admin.css', WCPAY_PLUGIN_FILE ),
 			[],
 			WC_Payments::get_file_version( 'assets/css/admin.css' ),
-			'all'
+			'all',
+			false
 		);
 
 		$this->add_menu_notification_badge();
@@ -511,12 +514,14 @@ class WC_Payments_Admin {
 			);
 		}
 
+		// RTL=false for these files as they aren't currently transpiled by webpack.
 		WC_Payments_Utils::enqueue_style(
 			'wcpay-admin-css',
 			plugins_url( 'assets/css/admin.css', WCPAY_PLUGIN_FILE ),
 			[],
 			WC_Payments::get_file_version( 'assets/css/admin.css' ),
-			'all'
+			'all',
+			false
 		);
 
 		$this->add_menu_notification_badge();
