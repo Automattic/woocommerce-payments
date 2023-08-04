@@ -1490,7 +1490,7 @@ class WC_Payments {
 			$woopay_button_handler          = new WC_Payments_WooPay_Button_Handler( self::$account, self::get_gateway(), self::$woopay_util );
 
 			$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $payment_request_button_handler, $woopay_button_handler );
-			$express_checkout_button_display_handler->init_hooks();
+			$express_checkout_button_display_handler->init();
 		}
 	}
 
