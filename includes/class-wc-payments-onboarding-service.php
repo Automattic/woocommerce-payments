@@ -192,13 +192,18 @@ class WC_Payments_Onboarding_Service {
 		return $classes;
 	}
 
-	public function get_onboarding_flow_state() {
+	public static function get_onboarding_flow_state() {
 		return get_option( self::ONBOARDING_FLOW_STATE_OPTION );
 	}
 
-	public function set_onboarding_flow_state( array $value ) {
+	public static function set_onboarding_flow_state( array $value ) {
 		return update_option( self::ONBOARDING_FLOW_STATE_OPTION, $value );
 	}
+
+	public static function clear_onboarding_flow_state() {
+		return delete_option( self::ONBOARDING_FLOW_STATE_OPTION );
+	}
+
 	/**
 	 * Set onboarding test mode.
 	 * Will also switch WC_Payments mode immediately.

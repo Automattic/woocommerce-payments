@@ -142,6 +142,17 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 						],
 					],
 				],
+				register_rest_route(
+					$this->namespace,
+					'/' . $this->rest_base . '/flow-state',
+					[
+						'methods'             => WP_REST_Server::DELETABLE,
+						'callback'            => [ $this, 'clear_flow_state' ],
+						'permission_callback' => [ $this, 'check_permission' ],
+
+					]
+				)
+			)
 		);
 	}
 
@@ -209,6 +220,10 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	}
 
 	public function update_flow_state( WP_REST_Request $request ) {
-		$this->onboarding_service->set_onboarding_flow_state( $request->get_json_params() );
+		WC_Payments_Onboarding_Service::set_onboarding_flow_state( $request->get_json_params() );
+	}
+
+	public function clear_flow_state() {
+		WC_Payments_Onboarding_Service::clear_onboarding_flow_state();
 	}
 }
