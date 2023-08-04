@@ -86,6 +86,10 @@ const CustomizeDepositSchedule = () => {
 
 	let depositIntervalsOptions = [
 		{
+			value: 'daily',
+			label: __( 'Daily', 'woocommerce-payments' ),
+		},
+		{
 			value: 'weekly',
 			label: __( 'Weekly', 'woocommerce-payments' ),
 		},
@@ -95,14 +99,9 @@ const CustomizeDepositSchedule = () => {
 		},
 	];
 
-	if ( settings.deposit_delay_days <= 1 ) {
-		depositIntervalsOptions = [
-			{
-				value: 'daily',
-				label: __( 'Daily', 'woocommerce-payments' ),
-			},
-			...depositIntervalsOptions,
-		];
+	if ( settings.account_country === 'JP' ) {
+		// Japanese accounts can't have daily payouts.
+		depositIntervalsOptions = depositIntervalsOptions.slice( 1 );
 	}
 
 	return (
