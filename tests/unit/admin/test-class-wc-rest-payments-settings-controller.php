@@ -9,6 +9,7 @@ use Automattic\WooCommerce\Blocks\Package;
 use Automattic\WooCommerce\Blocks\RestApi;
 use WCPay\Constants\Payment_Method;
 use WCPay\Database_Cache;
+use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
@@ -117,6 +118,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$order_service            = new WC_Payments_Order_Service( $this->mock_api_client );
 		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client, $order_service );
 		$mock_rate_limiter        = $this->createMock( Session_Rate_Limiter::class );
+		$mock_dpps                = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 
 		$this->gateway    = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
@@ -125,9 +127,10 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$token_service,
 			$action_scheduler_service,
 			$mock_rate_limiter,
-			$order_service
+			$order_service,
+			$mock_dpps
 		);
-		$this->controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->gateway );
+		$this->controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->gateway, $this->mock_wcpay_account );
 
 		$mock_payment_methods   = [];
 		$payment_method_classes = [
@@ -163,10 +166,11 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$action_scheduler_service,
 			$mock_payment_methods,
 			$mock_rate_limiter,
-			$order_service
+			$order_service,
+			$mock_dpps
 		);
 
-		$this->upe_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->mock_upe_payment_gateway );
+		$this->upe_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->mock_upe_payment_gateway, $this->mock_wcpay_account );
 
 		$this->mock_upe_split_payment_gateway = new UPE_Split_Payment_Gateway(
 			$this->mock_api_client,
@@ -177,10 +181,11 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$mock_payment_methods['card'],
 			$mock_payment_methods,
 			$mock_rate_limiter,
-			$order_service
+			$order_service,
+			$mock_dpps
 		);
 
-		$this->upe_split_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->mock_upe_split_payment_gateway );
+		$this->upe_split_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->mock_upe_split_payment_gateway, $this->mock_wcpay_account );
 
 		$this->mock_api_client
 			->method( 'is_server_connected' )

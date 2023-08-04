@@ -18,7 +18,7 @@ import PreviewModal from 'wcpay/multi-currency/preview-modal';
 
 const StoreSettingsDescription = () => {
 	const LEARN_MORE_URL =
-		'https://woocommerce.com/document/payments/currencies/multi-currency-setup/';
+		'https://woocommerce.com/document/woocommerce-payments/currencies/multi-currency-setup/';
 
 	return (
 		<>
@@ -138,7 +138,7 @@ const StoreSettings = () => {
 									}
 								) }
 							</div>
-							{ 'Storefront' === storeSettings.site_theme ? (
+							{ storeSettings.site_theme === 'Storefront' ? (
 								<CheckboxControl
 									checked={ isStorefrontSwitcherEnabledValue }
 									onChange={

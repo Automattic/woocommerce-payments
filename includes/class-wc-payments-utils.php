@@ -212,8 +212,8 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * List of countries enabled for Stripe platform account. See also
-	 * https://woocommerce.com/document/payments/countries/ for the most actual status.
+	 * List of countries enabled for Stripe platform account. See also this URL:
+	 * https://woocommerce.com/document/woocommerce-payments/compatibility/countries/#supported-countries
 	 *
 	 * @return string[]
 	 */
@@ -235,6 +235,7 @@ class WC_Payments_Utils {
 			'ES' => __( 'Spain', 'woocommerce-payments' ),
 			'FR' => __( 'France', 'woocommerce-payments' ),
 			'HR' => __( 'Croatia', 'woocommerce-payments' ),
+			'JP' => __( 'Japan', 'woocommerce-payments' ),
 			'LU' => __( 'Luxembourg', 'woocommerce-payments' ),
 			'GB' => __( 'United Kingdom (UK)', 'woocommerce-payments' ),
 			'GR' => __( 'Greece', 'woocommerce-payments' ),
@@ -418,7 +419,7 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Checks if the currently displayed page is the WooCommerce Payments
+	 * Checks if the currently displayed page is the WooPayments
 	 * settings page or a payment method settings page.
 	 *
 	 * @return bool
@@ -698,22 +699,16 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Check to see if the current user is in onboarding experiment treatment mode.
+	 * Helper function to check whether the user is either in the PO experiment, or has manually enabled PO via the dev tools.
 	 *
-	 * @return bool
+	 * @return boolean
 	 */
-	public static function is_in_onboarding_treatment_mode() {
-		if ( ! isset( $_COOKIE['tk_ai'] ) ) {
-			return false;
+	public static function should_use_progressive_onboarding_flow(): bool {
+		if ( self::is_in_progressive_onboarding_treatment_mode() || WC_Payments_Features::is_progressive_onboarding_enabled() ) {
+			return true;
 		}
 
-		$abtest = new \WCPay\Experimental_Abtest(
-			sanitize_text_field( wp_unslash( $_COOKIE['tk_ai'] ) ),
-			'woocommerce',
-			'yes' === get_option( 'woocommerce_allow_tracking' )
-		);
-
-		return 'treatment' === $abtest->get_variation( 'woo_wcpayments_tasklist_click_introducing_select_business_type_202203_v3' );
+		return false;
 	}
 
 	/**
@@ -947,5 +942,43 @@ class WC_Payments_Utils {
 			case 'general':
 				return __( 'General', 'woocommerce-payments' );
 		}
+	}
+
+	/**
+	 * Register a style for use.
+	 *
+	 * @uses   wp_register_style()
+	 * @param  string   $handle  Name of the stylesheet. Should be unique.
+	 * @param  string   $path    Full URL of the stylesheet, or path of the stylesheet relative to the WordPress root directory.
+	 * @param  string[] $deps    An array of registered stylesheet handles this stylesheet depends on.
+	 * @param  string   $version String specifying stylesheet version number, if it has one, which is added to the URL as a query string for cache busting purposes. If version is set to false, a version number is automatically added equal to current installed WordPress version. If set to null, no version is added.
+	 * @param  string   $media   The media for which this stylesheet has been defined. Accepts media types like 'all', 'print' and 'screen', or media queries like '(orientation: portrait)' and '(max-width: 640px)'.
+	 * @param  boolean  $has_rtl If has RTL version to load too.
+	 */
+	public static function register_style( $handle, $path, $deps = [], $version = WC_VERSION, $media = 'all', $has_rtl = true ) {
+		wp_register_style( $handle, $path, $deps, $version, $media );
+
+		if ( $has_rtl ) {
+			wp_style_add_data( $handle, 'rtl', 'replace' );
+		}
+	}
+
+
+	/**
+	 * Register and enqueue a styles for use.
+	 *
+	 * @uses   wp_enqueue_style()
+	 * @param  string   $handle  Name of the stylesheet. Should be unique.
+	 * @param  string   $path    Full URL of the stylesheet, or path of the stylesheet relative to the WordPress root directory.
+	 * @param  string[] $deps    An array of registered stylesheet handles this stylesheet depends on.
+	 * @param  string   $version String specifying stylesheet version number, if it has one, which is added to the URL as a query string for cache busting purposes. If version is set to false, a version number is automatically added equal to current installed WordPress version. If set to null, no version is added.
+	 * @param  string   $media   The media for which this stylesheet has been defined. Accepts media types like 'all', 'print' and 'screen', or media queries like '(orientation: portrait)' and '(max-width: 640px)'.
+	 * @param  boolean  $has_rtl If has RTL version to load too.
+	 */
+	public static function enqueue_style( $handle, $path = '', $deps = [], $version = WC_VERSION, $media = 'all', $has_rtl = true ) {
+		if ( '' !== $path ) {
+			self::register_style( $handle, $path, $deps, $version, $media, $has_rtl );
+		}
+		wp_enqueue_style( $handle );
 	}
 }

@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -18,6 +18,7 @@ import IdealIcon from 'assets/images/payment-methods/ideal.svg?asset';
 import BankDebitIcon from 'assets/images/payment-methods/bank-debit.svg?asset';
 import AffirmIcon from 'assets/images/payment-methods/affirm.svg?asset';
 import AfterpayIcon from 'assets/images/payment-methods/afterpay.svg?asset';
+import JCBIcon from 'assets/images/payment-methods/jcb.svg?asset';
 
 const iconComponent = ( src: string, alt: string ): ReactImgFuncComponent => (
 	props
@@ -26,12 +27,15 @@ const iconComponent = ( src: string, alt: string ): ReactImgFuncComponent => (
 export interface PaymentMethodMapEntry {
 	id: string;
 	label: string;
+	brandTitles: Record< string, string >;
 	description: string;
 	icon: ReactImgFuncComponent;
 	currencies: string[];
 	stripe_key: string;
 	allows_manual_capture: boolean;
 	allows_pay_later: boolean;
+	setup_required?: boolean;
+	setup_tooltip?: string;
 }
 
 const PaymentMethodInformationObject: Record<
@@ -41,6 +45,15 @@ const PaymentMethodInformationObject: Record<
 	card: {
 		id: 'card',
 		label: __( 'Credit card / debit card', 'woocommerce-payments' ),
+		brandTitles: {
+			amex: __( 'American Express', 'woocommerce-payments' ),
+			diners: __( 'Diners Club', 'woocommerce-payments' ),
+			discover: __( 'Discover', 'woocommerce-payments' ),
+			jcb: __( 'JCB', 'woocommerce-payments' ),
+			mastercard: __( 'Mastercard', 'woocommerce-payments' ),
+			unionpay: __( 'UnionPay', 'woocommerce-payments' ),
+			visa: __( 'Visa', 'woocommerce-payments' ),
+		},
 		description: __(
 			'Let your customers pay with major credit and debit cards without leaving your store.',
 			'woocommerce-payments'
@@ -54,6 +67,9 @@ const PaymentMethodInformationObject: Record<
 	au_becs_debit: {
 		id: 'au_becs_debit',
 		label: __( 'BECS Direct Debit', 'woocommerce-payments' ),
+		brandTitles: {
+			au_becs_debit: __( 'BECS Direct Debit', 'woocommerce-payments' ),
+		},
 		description: __(
 			'Bulk Electronic Clearing System — Accept secure bank transfer from Australia.',
 			'woocommerce-payments'
@@ -67,6 +83,9 @@ const PaymentMethodInformationObject: Record<
 	bancontact: {
 		id: 'bancontact',
 		label: __( 'Bancontact', 'woocommerce-payments' ),
+		brandTitles: {
+			bancontact: __( 'Bancontact', 'woocommerce-payments' ),
+		},
 		description: __(
 			'Bancontact is a bank redirect payment method offered by more than 80% of online businesses in Belgium.',
 			'woocommerce-payments'
@@ -80,6 +99,9 @@ const PaymentMethodInformationObject: Record<
 	eps: {
 		id: 'eps',
 		label: __( 'EPS', 'woocommerce-payments' ),
+		brandTitles: {
+			eps: __( 'EPS', 'woocommerce-payments' ),
+		},
 		description: __(
 			'Accept your payment with EPS — a common payment method in Austria.',
 			'woocommerce-payments'
@@ -93,6 +115,9 @@ const PaymentMethodInformationObject: Record<
 	giropay: {
 		id: 'giropay',
 		label: __( 'giropay', 'woocommerce-payments' ),
+		brandTitles: {
+			giropay: __( 'giropay', 'woocommerce-payments' ),
+		},
 		description: __(
 			'Expand your business with giropay — Germany’s second most popular payment system.',
 			'woocommerce-payments'
@@ -106,6 +131,9 @@ const PaymentMethodInformationObject: Record<
 	ideal: {
 		id: 'ideal',
 		label: __( 'iDEAL', 'woocommerce-payments' ),
+		brandTitles: {
+			ideal: __( 'iDEAL', 'woocommerce-payments' ),
+		},
 		description: __(
 			'Expand your business with iDEAL — Netherlands’s most popular payment method.',
 			'woocommerce-payments'
@@ -119,6 +147,9 @@ const PaymentMethodInformationObject: Record<
 	p24: {
 		id: 'p24',
 		label: __( 'Przelewy24 (P24)', 'woocommerce-payments' ),
+		brandTitles: {
+			p24: __( 'Przelewy24 (P24)', 'woocommerce-payments' ),
+		},
 		description: __(
 			'Accept payments with Przelewy24 (P24), the most popular payment method in Poland.',
 			'woocommerce-payments'
@@ -132,6 +163,9 @@ const PaymentMethodInformationObject: Record<
 	sepa_debit: {
 		id: 'sepa_debit',
 		label: __( 'SEPA Direct Debit', 'woocommerce-payments' ),
+		brandTitles: {
+			sepa_debit: __( 'SEPA Direct Debit', 'woocommerce-payments' ),
+		},
 		description: __(
 			'Reach 500 million customers and over 20 million businesses across the European Union.',
 			'woocommerce-payments'
@@ -145,6 +179,9 @@ const PaymentMethodInformationObject: Record<
 	sofort: {
 		id: 'sofort',
 		label: __( 'Sofort', 'woocommerce-payments' ),
+		brandTitles: {
+			sofort: __( 'Sofort', 'woocommerce-payments' ),
+		},
 		description: __(
 			'Accept secure bank transfers from Austria, Belgium, Germany, Italy, Netherlands, and Spain.',
 			'woocommerce-payments'
@@ -158,6 +195,9 @@ const PaymentMethodInformationObject: Record<
 	affirm: {
 		id: 'affirm',
 		label: __( 'Affirm', 'woocommerce-payments' ),
+		brandTitles: {
+			affirm: __( 'Affirm', 'woocommerce-payments' ),
+		},
 		description: __(
 			'Expand your business with Affirm',
 			'woocommerce-payments'
@@ -171,6 +211,9 @@ const PaymentMethodInformationObject: Record<
 	afterpay_clearpay: {
 		id: 'afterpay_clearpay',
 		label: __( 'Afterpay', 'woocommerce-payments' ),
+		brandTitles: {
+			afterpay_clearpay: __( 'Afterpay', 'woocommerce-payments' ),
+		},
 		description: __(
 			'Expand your business with Afterpay',
 			'woocommerce-payments'
@@ -180,6 +223,27 @@ const PaymentMethodInformationObject: Record<
 		stripe_key: 'afterpay_clearpay_payments',
 		allows_manual_capture: false,
 		allows_pay_later: true,
+	},
+	jcb: {
+		id: 'jcb',
+		label: __( 'JCB', 'woocommerce-payments' ),
+		brandTitles: {
+			jcb: __( 'JCB', 'woocommerce-payments' ),
+		},
+		description: __(
+			'Let your customers pay with JCB, the only international payment brand based in Japan.',
+			'woocommerce-payments'
+		),
+		icon: iconComponent( JCBIcon, 'JCB' ),
+		currencies: [ 'JPY' ],
+		stripe_key: 'card_payments',
+		allows_manual_capture: false,
+		allows_pay_later: false,
+		setup_required: true,
+		setup_tooltip: __(
+			'JCB is coming soon to your country.',
+			'woocommerce-payments'
+		),
 	},
 };
 

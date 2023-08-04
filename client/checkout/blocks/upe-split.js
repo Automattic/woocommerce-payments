@@ -1,8 +1,6 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
-
 // Handled as an external dependency: see '/webpack.config.js:83'
 import {
 	registerPaymentMethod,
@@ -14,6 +12,7 @@ import {
  * Internal dependencies
  */
 import { getUPEConfig } from 'utils/checkout';
+import { isLinkEnabled } from '../utils/upe';
 import WCPayAPI from './../api';
 import { SavedTokenHandler } from './saved-token-handler';
 import request from '../utils/request';
@@ -33,7 +32,7 @@ import {
 	PAYMENT_METHOD_NAME_AFTERPAY,
 } from '../constants.js';
 import { getSplitUPEFields } from './upe-split-fields';
-import { getDeferredIntentCreationUPEFields } from './upe-deferred-intent-creation/payment-elements.js';
+import { getDeferredIntentCreationUPEFields } from './upe-deferred-intent-creation/payment-elements';
 
 const upeMethods = {
 	card: PAYMENT_METHOD_NAME_CARD,
@@ -50,9 +49,7 @@ const upeMethods = {
 };
 
 const enabledPaymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
-const isStripeLinkEnabled =
-	enabledPaymentMethodsConfig.link !== undefined &&
-	enabledPaymentMethodsConfig.card !== undefined;
+const isStripeLinkEnabled = isLinkEnabled( enabledPaymentMethodsConfig );
 
 // Create an API object, which will be used throughout the checkout.
 const api = new WCPayAPI(
@@ -63,43 +60,42 @@ const api = new WCPayAPI(
 		locale: getUPEConfig( 'locale' ),
 		isUPEEnabled: getUPEConfig( 'isUPEEnabled' ),
 		isUPESplitEnabled: getUPEConfig( 'isUPESplitEnabled' ),
+		isUPEDeferredEnabled: getUPEConfig( 'isUPEDeferredEnabled' ),
 		isStripeLinkEnabled,
 	},
 	request
 );
+const getUPEFields = getUPEConfig( 'isUPEDeferredEnabled' )
+	? getDeferredIntentCreationUPEFields
+	: getSplitUPEFields;
 Object.entries( enabledPaymentMethodsConfig )
-	.filter( ( [ upeName ] ) => 'link' !== upeName )
-	.map( ( [ upeName, upeConfig ] ) =>
+	.filter( ( [ upeName ] ) => upeName !== 'link' )
+	.forEach( ( [ upeName, upeConfig ] ) => {
 		registerPaymentMethod( {
 			name: upeMethods[ upeName ],
-			content: getUPEConfig( 'isUPEDeferredEnabled' )
-				? getDeferredIntentCreationUPEFields(
-						upeName,
-						upeMethods,
-						api,
-						upeConfig.testingInstructions
-				  )
-				: getSplitUPEFields(
-						upeName,
-						upeMethods,
-						api,
-						upeConfig.testingInstructions
-				  ),
-			edit: getUPEConfig( 'isUPEDeferredEnabled' )
-				? getDeferredIntentCreationUPEFields(
-						upeName,
-						upeMethods,
-						api,
-						upeConfig.testingInstructions
-				  )
-				: getSplitUPEFields(
-						upeName,
-						upeMethods,
-						api,
-						upeConfig.testingInstructions
-				  ),
+			content: getUPEFields(
+				upeName,
+				upeMethods,
+				api,
+				upeConfig.testingInstructions
+			),
+			edit: getUPEFields(
+				upeName,
+				upeMethods,
+				api,
+				upeConfig.testingInstructions
+			),
 			savedTokenComponent: <SavedTokenHandler api={ api } />,
-			canMakePayment: () => !! api.getStripe(),
+			canMakePayment: ( cartData ) => {
+				const billingCountry = cartData.billingAddress.country;
+				const isRestrictedInAnyCountry = !! upeConfig.countries.length;
+				const isAvailableInTheCountry =
+					! isRestrictedInAnyCountry ||
+					upeConfig.countries.includes( billingCountry );
+				return (
+					isAvailableInTheCountry && !! api.getStripeForUPE( upeName )
+				);
+			},
 			paymentMethodId: upeMethods[ upeName ],
 			// see .wc-block-checkout__payment-method styles in blocks/style.scss
 			label: (
@@ -110,14 +106,14 @@ Object.entries( enabledPaymentMethodsConfig )
 					</span>
 				</>
 			),
-			ariaLabel: __( 'WooCommerce Payments', 'woocommerce-payments' ),
+			ariaLabel: 'WooPayments',
 			supports: {
 				showSavedCards: getUPEConfig( 'isSavedCardsEnabled' ) ?? false,
 				showSaveOption: upeConfig.showSaveOption ?? false,
 				features: getUPEConfig( 'features' ),
 			},
-		} )
-	);
+		} );
+	} );
 
 registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
 window.addEventListener( 'load', () => {

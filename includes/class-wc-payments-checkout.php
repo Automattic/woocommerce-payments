@@ -176,14 +176,14 @@ class WC_Payments_Checkout {
 			'genericErrorMessage'            => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
 			'fraudServices'                  => $this->account->get_fraud_services_config(),
 			'features'                       => $this->gateway->supports,
-			'forceNetworkSavedCards'         => WC_Payments::is_network_saved_cards_enabled() || $this->gateway->should_use_stripe_platform_on_checkout_page(),
+			'forceNetworkSavedCards'         => WC_Payments::is_network_saved_cards_enabled() || WC_Payments::get_registered_card_gateway()->should_use_stripe_platform_on_checkout_page(),
 			'locale'                         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 			'isPreview'                      => is_preview(),
 			'isUPEEnabled'                   => WC_Payments_Features::is_upe_enabled(),
 			'isUPESplitEnabled'              => WC_Payments_Features::is_upe_split_enabled(),
 			'isUPEDeferredEnabled'           => WC_Payments_Features::is_upe_deferred_intent_enabled(),
 			'isSavedCardsEnabled'            => $this->gateway->is_saved_cards_enabled(),
-			'isWooPayEnabled'                => $this->woopay_util->should_enable_woopay( $this->gateway ),
+			'isWooPayEnabled'                => $this->woopay_util->should_enable_woopay( $this->gateway ) && $this->woopay_util->should_enable_woopay_on_cart_or_checkout(),
 			'isWoopayExpressCheckoutEnabled' => $this->woopay_util->is_woopay_express_checkout_enabled(),
 			'isClientEncryptionEnabled'      => WC_Payments_Features::is_client_secret_encryption_enabled(),
 			'woopayHost'                     => WooPay_Utilities::get_woopay_url(),
@@ -219,11 +219,12 @@ class WC_Payments_Checkout {
 				wp_localize_script( 'WCPAY_CHECKOUT', 'wcpayCustomerData', $prepared_customer_data );
 			}
 
-			wp_enqueue_style(
+			WC_Payments_Utils::enqueue_style(
 				'WCPAY_CHECKOUT',
 				plugins_url( 'dist/checkout.css', WCPAY_PLUGIN_FILE ),
 				[],
-				WC_Payments::get_file_version( 'dist/checkout.css' )
+				WC_Payments::get_file_version( 'dist/checkout.css' ),
+				'all'
 			);
 
 			// Output the form HTML.
@@ -240,7 +241,7 @@ class WC_Payments_Checkout {
 						__( '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC, or any test card numbers listed <a>here</a>.', 'woocommerce-payments' ),
 						[
 							'strong' => '<strong>',
-							'a'      => '<a href="https://woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
+							'a'      => '<a href="https://woocommerce.com/document/woocommerce-payments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
 						]
 					);
 					?>

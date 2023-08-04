@@ -17,6 +17,7 @@ use WCPay\Database_Cache;
 use WCPay\Logger;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyRateException;
+use WCPay\MultiCurrency\Helpers\OrderMetaHelper;
 use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
 
 defined( 'ABSPATH' ) || exit;
@@ -178,6 +179,13 @@ class MultiCurrency {
 	protected $simulation_params = [];
 
 	/**
+	 * Instance of OrderMetaHelper.
+	 *
+	 * @var OrderMetaHelper
+	 */
+	private $order_meta_helper;
+
+	/**
 	 * Main MultiCurrency Instance.
 	 *
 	 * Ensures only one instance of MultiCurrency is loaded or can be loaded.
@@ -266,6 +274,7 @@ class MultiCurrency {
 		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service, $this->utils, $this->compatibility );
 		$this->backend_currencies  = new BackendCurrencies( $this, $this->localization_service );
 		$this->tracking            = new Tracking( $this );
+		$this->order_meta_helper   = new OrderMetaHelper( $this->payments_api_client );
 
 		add_action( 'woocommerce_order_refunded', [ $this, 'add_order_meta_on_refund' ], 50, 2 );
 
@@ -342,7 +351,7 @@ class MultiCurrency {
 		$this->register_admin_scripts();
 
 		wp_enqueue_script( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
-		wp_enqueue_style( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
+		WC_Payments_Utils::enqueue_style( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
 	}
 
 	/**
@@ -1232,11 +1241,12 @@ class MultiCurrency {
 	private function register_admin_scripts() {
 		WC_Payments::register_script_with_dependencies( 'WCPAY_MULTI_CURRENCY_SETTINGS', 'dist/multi-currency', [ 'WCPAY_ADMIN_SETTINGS' ] );
 
-		wp_register_style(
+		WC_Payments_Utils::register_style(
 			'WCPAY_MULTI_CURRENCY_SETTINGS',
 			plugins_url( 'dist/multi-currency.css', WCPAY_PLUGIN_FILE ),
 			[ 'wc-components', 'WCPAY_ADMIN_SETTINGS' ],
-			\WC_Payments::get_file_version( 'dist/multi-currency.css' )
+			\WC_Payments::get_file_version( 'dist/multi-currency.css' ),
+			'all'
 		);
 	}
 

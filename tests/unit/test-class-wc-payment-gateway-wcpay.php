@@ -12,11 +12,12 @@ use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
+use WCPay\Core\Server\Request\Get_Setup_Intention;
 use WCPay\Core\Server\Request\Update_Intention;
-use WCPay\Core\Server\Response;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
@@ -106,6 +107,12 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private $payments_checkout;
 
 	/**
+	 * Duplicate_Payment_Prevention_Service instance.
+	 * @var Duplicate_Payment_Prevention_Service
+	 */
+	private $mock_dpps;
+
+	/**
 	 * @var string
 	 */
 	private $mock_charge_id = 'ch_mock';
@@ -132,7 +139,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					'create_intention',
 					'create_and_confirm_intention',
 					'create_and_confirm_setup_intent',
-					'get_setup_intent',
 					'get_payment_method',
 					'get_timeline',
 				]
@@ -158,6 +164,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service = new WC_Payments_Order_Service( $this->mock_api_client );
 
+		$this->mock_dpps = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+
 		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
 			$this->mock_wcpay_account,
@@ -165,7 +173,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->mock_token_service,
 			$this->mock_action_scheduler_service,
 			$this->mock_rate_limiter,
-			$this->order_service
+			$this->order_service,
+			$this->mock_dpps
 		);
 
 		$this->woopay_utilities = new WooPay_Utilities();
@@ -1268,8 +1277,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$result
 		);
 		$this->assertStringContainsString( 'expired', $note->content );
-		$this->assertEquals( Payment_Intent_Status::CANCELED, $order->get_meta( '_intention_status', true ) );
-		$this->assertEquals( Order_Status::CANCELLED, $order->get_status() );
+		$this->assertSame( Payment_Intent_Status::CANCELED, $order->get_meta( '_intention_status', true ) );
+		$this->assertSame( Order_Status::FAILED, $order->get_status() );
 	}
 
 	public function test_capture_charge_metadata() {
@@ -1515,11 +1524,15 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
-			->willReturn( new Response( [ 'id' => 'pm_mock' ] ) );
+			->willReturn(
+				WC_Helper_Intention::create_setup_intention(
+					[ 'id' => 'seti_mock_123' ]
+				)
+			);
 
 		$result = $this->wcpay_gateway->create_and_confirm_setup_intent();
 
-		$this->assertEquals( 'pm_mock', $result['id'] );
+		$this->assertSame( 'seti_mock_123', $result->get_id() );
 	}
 
 	public function test_create_and_confirm_setup_intent_no_customer() {
@@ -1538,11 +1551,15 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class );
 		$request->expects( $this->once() )
 			->method( 'format_response' )
-			->willReturn( new Response( [ 'id' => 'pm_mock' ] ) );
+			->willReturn(
+				WC_Helper_Intention::create_setup_intention(
+					[ 'id' => 'seti_mock_123' ]
+				)
+			);
 
 		$result = $this->wcpay_gateway->create_and_confirm_setup_intent();
 
-		$this->assertEquals( 'pm_mock', $result['id'] );
+		$this->assertSame( 'seti_mock_123', $result->get_id() );
 	}
 
 	public function test_add_payment_method_no_intent() {
@@ -1558,15 +1575,17 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'get_customer_id_by_user_id' )
 			->will( $this->returnValue( 'cus_12345' ) );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_setup_intent' )
-			->with( 'sti_mock' )
+		$request = $this->mock_wcpay_request( Get_Setup_Intention::class, 1, 'sti_mock' );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn(
-				[
-					'status'         => Payment_Intent_Status::SUCCEEDED,
-					'payment_method' => 'pm_mock',
-				]
+				WC_Helper_Intention::create_setup_intention(
+					[
+						'status'         => Payment_Intent_Status::SUCCEEDED,
+						'payment_method' => 'pm_mock',
+					]
+				)
 			);
 
 		$this->mock_token_service
@@ -1587,9 +1606,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'get_customer_id_by_user_id' )
 			->will( $this->returnValue( null ) );
 
-		$this->mock_api_client
-			->expects( $this->never() )
-			->method( 'get_setup_intent' );
+		$this->mock_wcpay_request( Get_Setup_Intention::class, 0 );
 
 		$this->mock_token_service
 			->expects( $this->never() )
@@ -1608,11 +1625,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'get_customer_id_by_user_id' )
 			->will( $this->returnValue( 'cus_12345' ) );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_setup_intent' )
-			->with( 'sti_mock' )
-			->willReturn( [ 'status' => Payment_Intent_Status::CANCELED ] );
+		$request = $this->mock_wcpay_request( Get_Setup_Intention::class, 1, 'sti_mock' );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_setup_intention( [ 'status' => Payment_Intent_Status::CANCELED ] ) );
 
 		$this->mock_token_service
 			->expects( $this->never() )
@@ -2133,10 +2149,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function test_is_woopay_enabled_returns_true() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
-		$this->assertTrue( $this->woopay_utilities->should_enable_woopay( $this->wcpay_gateway ) );
+		wp_set_current_user( 1 );
+		add_filter( 'woocommerce_is_checkout', '__return_true' );
 
-		// This will return TRUE because woopay_utilities->should_enable_woopay() will return true.
+		$this->assertTrue( $this->woopay_utilities->should_enable_woopay( $this->wcpay_gateway ) );
 		$this->assertTrue( $this->payments_checkout->get_payment_fields_js_config()['isWooPayEnabled'] );
+
+		remove_filter( 'woocommerce_is_checkout', '__return_true' );
 	}
 
 	public function test_should_use_stripe_platform_on_checkout_page_not_woopay_eligible() {
@@ -2159,6 +2178,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'should_use_stripe_platform_on_checkout_page' )
 			->willReturn( true );
 
+		WC_Payments::set_registered_card_gateway( $mock_wcpay_gateway );
+
 		$payments_checkout = new WC_Payments_Checkout(
 			$mock_wcpay_gateway,
 			$this->woopay_utilities,
@@ -2167,6 +2188,26 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->assertTrue( $payments_checkout->get_payment_fields_js_config()['forceNetworkSavedCards'] );
+	}
+
+	public function test_force_network_saved_cards_is_returned_as_false_if_should_not_use_stripe_platform() {
+		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'should_use_stripe_platform_on_checkout_page' ] );
+
+		$mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'should_use_stripe_platform_on_checkout_page' )
+			->willReturn( false );
+
+		WC_Payments::set_registered_card_gateway( $mock_wcpay_gateway );
+
+		$payments_checkout = new WC_Payments_Checkout(
+			$mock_wcpay_gateway,
+			$this->woopay_utilities,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service
+		);
+
+		$this->assertFalse( $payments_checkout->get_payment_fields_js_config()['forceNetworkSavedCards'] );
 	}
 
 	public function test_is_woopay_enabled_returns_false_if_ineligible() {
@@ -2246,6 +2287,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					$this->mock_action_scheduler_service,
 					$this->mock_rate_limiter,
 					$this->order_service,
+					$this->mock_dpps,
 				]
 			)
 			->setMethods( $methods )

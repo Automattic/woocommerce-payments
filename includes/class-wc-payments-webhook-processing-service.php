@@ -213,6 +213,10 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @throws Invalid_Webhook_Data_Exception Event mode does not match the gateway mode.
 	 */
 	private function is_webhook_mode_mismatch( array $event_body ): bool {
+		if ( ! $this->has_webhook_property( $event_body, 'livemode' ) ) {
+			return false;
+		}
+
 		$is_gateway_live_mode = WC_Payments::mode()->is_live();
 		$is_event_live_mode   = $this->read_webhook_property( $event_body, 'livemode' );
 
@@ -271,8 +275,8 @@ class WC_Payments_Webhook_Processing_Service {
 
 		$note = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-			/* translators: %1: the refund amount, %2: ID of the refund */
-				__( 'A refund of %1$s was <strong>unsuccessful</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+			/* translators: %1: the refund amount, %2: WooPayments, %3: ID of the refund */
+				__( 'A refund of %1$s was <strong>unsuccessful</strong> using %2$s (<code>%3$s</code>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'code'   => '<code>',
@@ -282,6 +286,7 @@ class WC_Payments_Webhook_Processing_Service {
 				wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount, $currency ), [ 'currency' => strtoupper( $currency ) ] ),
 				$order
 			),
+			'WooPayments',
 			$refund_id
 		);
 
@@ -482,16 +487,13 @@ class WC_Payments_Webhook_Processing_Service {
 		// Save the order after updating the meta data values.
 		$order->save();
 
-		$payment_method = $charges_data[0]['payment_method_details']['type'] ?? null;
-		$intent_data    = [
-			'id'                  => $intent_id,
-			'status'              => $intent_status,
-			'charge_id'           => $charge_id,
-			'fraud_outcome'       => $metadata['fraud_outcome'] ?? '',
-			'payment_method_type' => $payment_method,
-		];
-		$this->order_service->update_order_status_from_intent( $order, $intent_data );
+		// This is an incoming request from WCPay server rather than an outgoing request to WCPay server.
+		// However, the shape of the payment intent object are the same.
+		// Using this extraction method will reduce the code duplication.
+		$payment_intent = $this->api_client->deserialize_payment_intention_object_from_array( $event_object );
+		$this->order_service->update_order_status_from_intent( $order, $payment_intent );
 
+		$payment_method = $charges_data[0]['payment_method_details']['type'] ?? null;
 		// Send the customer a card reader receipt if it's an in person payment type.
 		if ( Payment_Method::CARD_PRESENT === $payment_method || Payment_Method::INTERAC_PRESENT === $payment_method ) {
 			$merchant_settings = [
@@ -687,6 +689,18 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 		return $array[ $key ];
+	}
+
+	/**
+	 * Safely check whether a webhook contains a property.
+	 *
+	 * @param array  $array Array to read from.
+	 * @param string $key   ID to fetch on.
+	 *
+	 * @return bool
+	 */
+	private function has_webhook_property( $array, $key ) {
+		return isset( $array[ $key ] );
 	}
 
 	/**

@@ -48,7 +48,7 @@ jQuery( function ( $ ) {
 	// Customer information for Pay for Order and Save Payment method.
 	/* global wcpayCustomerData */
 	const preparedCustomerData =
-		'undefined' !== typeof wcpayCustomerData ? wcpayCustomerData : {};
+		typeof wcpayCustomerData !== 'undefined' ? wcpayCustomerData : {};
 
 	// Create a card element.
 	const cardElement = elements.create( 'card', {
@@ -413,7 +413,7 @@ jQuery( function ( $ ) {
 		);
 
 		// Boolean `true` means that there is nothing to confirm.
-		if ( true === confirmation ) {
+		if ( confirmation === true ) {
 			return;
 		}
 
@@ -478,7 +478,7 @@ jQuery( function ( $ ) {
 		);
 	}
 
-	// Handle the checkout form when WooCommerce Payments is chosen.
+	// Handle the checkout form when WooPayments is chosen.
 	const wcpayPaymentMethods = [ PAYMENT_METHOD_NAME_CARD ];
 	const checkoutEvents = wcpayPaymentMethods
 		.map( ( method ) => `checkout_place_order_${ method }` )
@@ -496,7 +496,7 @@ jQuery( function ( $ ) {
 		}
 	} );
 
-	// Handle the Pay for Order form if WooCommerce Payments is chosen.
+	// Handle the Pay for Order form if WooPayments is chosen.
 	$( '#order_review' ).on( 'submit', () => {
 		if (
 			isUsingSavedPaymentMethod() ||
@@ -512,13 +512,12 @@ jQuery( function ( $ ) {
 		);
 	} );
 
-	// Handle the add payment method form for WooCommerce Payments.
+	// Handle the add payment method form for WooPayments.
 	$( 'form#add_payment_method' ).on( 'submit', function () {
 		if (
-			'woocommerce_payments' !==
 			$(
 				"#add_payment_method input:checked[name='payment_method']"
-			).val()
+			).val() !== 'woocommerce_payments'
 		) {
 			return;
 		}

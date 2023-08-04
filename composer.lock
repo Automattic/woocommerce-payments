@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b4f6a5ec0d357a7ab0227976b517898c",
+    "content-hash": "e5d6dbd579dee11681fa7a39a11506f1",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -108,23 +108,23 @@
         },
         {
             "name": "automattic/jetpack-assets",
-            "version": "v1.18.4",
+            "version": "v1.18.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-assets.git",
-                "reference": "fbb76cd3d88ef31ba65d3fa0d3bfed155c016d05"
+                "reference": "094d19cc5649b8a9e5d12beecee9371ff0ea4279"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-assets/zipball/fbb76cd3d88ef31ba65d3fa0d3bfed155c016d05",
-                "reference": "fbb76cd3d88ef31ba65d3fa0d3bfed155c016d05",
+                "url": "https://api.github.com/repos/Automattic/jetpack-assets/zipball/094d19cc5649b8a9e5d12beecee9371ff0ea4279",
+                "reference": "094d19cc5649b8a9e5d12beecee9371ff0ea4279",
                 "shasum": ""
             },
             "require": {
                 "automattic/jetpack-constants": "^1.6.22"
             },
             "require-dev": {
-                "automattic/jetpack-changelogger": "^3.3.4",
+                "automattic/jetpack-changelogger": "^3.3.6",
                 "brain/monkey": "2.6.1",
                 "wikimedia/testing-access-wrapper": "^1.0 || ^2.0",
                 "yoast/phpunit-polyfills": "1.0.4"
@@ -158,9 +158,9 @@
             ],
             "description": "Asset management utilities for Jetpack ecosystem packages",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-assets/tree/v1.18.4"
+                "source": "https://github.com/Automattic/jetpack-assets/tree/v1.18.7"
             },
-            "time": "2023-06-06T19:19:42+00:00"
+            "time": "2023-07-11T05:13:08+00:00"
         },
         {
             "name": "automattic/jetpack-autoloader",
@@ -679,24 +679,24 @@
         },
         {
             "name": "automattic/jetpack-status",
-            "version": "v1.17.1",
+            "version": "v1.18.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-status.git",
-                "reference": "0032ee4bce1d4644722ba46858c702a0afa76cff"
+                "reference": "98feb85e54ec04ccd2dd37acc4df18ec521249d3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-status/zipball/0032ee4bce1d4644722ba46858c702a0afa76cff",
-                "reference": "0032ee4bce1d4644722ba46858c702a0afa76cff",
+                "url": "https://api.github.com/repos/Automattic/jetpack-status/zipball/98feb85e54ec04ccd2dd37acc4df18ec521249d3",
+                "reference": "98feb85e54ec04ccd2dd37acc4df18ec521249d3",
                 "shasum": ""
             },
             "require": {
                 "automattic/jetpack-constants": "^1.6.22"
             },
             "require-dev": {
-                "automattic/jetpack-changelogger": "^3.3.2",
-                "automattic/jetpack-ip": "^0.1.3",
+                "automattic/jetpack-changelogger": "^3.3.7",
+                "automattic/jetpack-ip": "^0.1.4",
                 "brain/monkey": "2.6.1",
                 "yoast/phpunit-polyfills": "1.0.4"
             },
@@ -711,7 +711,7 @@
                     "link-template": "https://github.com/Automattic/jetpack-status/compare/v${old}...v${new}"
                 },
                 "branch-alias": {
-                    "dev-trunk": "1.17.x-dev"
+                    "dev-trunk": "1.18.x-dev"
                 }
             },
             "autoload": {
@@ -725,9 +725,9 @@
             ],
             "description": "Used to retrieve information about the current status of Jetpack and the site overall.",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-status/tree/v1.17.1"
+                "source": "https://github.com/Automattic/jetpack-status/tree/v1.18.0"
             },
-            "time": "2023-05-11T05:50:45+00:00"
+            "time": "2023-07-18T23:45:14+00:00"
         },
         {
             "name": "automattic/jetpack-sync",
@@ -939,17 +939,65 @@
             "time": "2021-01-14T11:07:16+00:00"
         },
         {
-            "name": "woocommerce/subscriptions-core",
-            "version": "5.7.2",
+            "name": "psr/container",
+            "version": "1.1.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/Automattic/woocommerce-subscriptions-core.git",
-                "reference": "f2987e24ba5a1e5e564843b96a434596e05cc96c"
+                "url": "https://github.com/php-fig/container.git",
+                "reference": "8622567409010282b7aeebe4bb841fe98b58dcaf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/f2987e24ba5a1e5e564843b96a434596e05cc96c",
-                "reference": "f2987e24ba5a1e5e564843b96a434596e05cc96c",
+                "url": "https://api.github.com/repos/php-fig/container/zipball/8622567409010282b7aeebe4bb841fe98b58dcaf",
+                "reference": "8622567409010282b7aeebe4bb841fe98b58dcaf",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Container\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "Common Container Interface (PHP FIG PSR-11)",
+            "homepage": "https://github.com/php-fig/container",
+            "keywords": [
+                "PSR-11",
+                "container",
+                "container-interface",
+                "container-interop",
+                "psr"
+            ],
+            "support": {
+                "issues": "https://github.com/php-fig/container/issues",
+                "source": "https://github.com/php-fig/container/tree/1.1.1"
+            },
+            "time": "2021-03-05T17:36:06+00:00"
+        },
+        {
+            "name": "woocommerce/subscriptions-core",
+            "version": "6.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Automattic/woocommerce-subscriptions-core.git",
+                "reference": "b48c46a6a08b73d8afc7a0e686173c5b5c55ecbb"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/b48c46a6a08b73d8afc7a0e686173c5b5c55ecbb",
+                "reference": "b48c46a6a08b73d8afc7a0e686173c5b5c55ecbb",
                 "shasum": ""
             },
             "require": {
@@ -990,10 +1038,10 @@
             "description": "Sell products and services with recurring payments in your WooCommerce Store.",
             "homepage": "https://github.com/Automattic/woocommerce-subscriptions-core",
             "support": {
-                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/5.7.2",
+                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/6.0.0",
                 "issues": "https://github.com/Automattic/woocommerce-subscriptions-core/issues"
             },
-            "time": "2023-06-05T01:57:20+00:00"
+            "time": "2023-07-18T06:28:51+00:00"
         }
     ],
     "packages-dev": [
@@ -2332,16 +2380,16 @@
         },
         {
             "name": "nikic/php-parser",
-            "version": "v4.15.5",
+            "version": "v4.16.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nikic/PHP-Parser.git",
-                "reference": "11e2663a5bc9db5d714eedb4277ee300403b4a9e"
+                "reference": "19526a33fb561ef417e822e85f08a00db4059c17"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/11e2663a5bc9db5d714eedb4277ee300403b4a9e",
-                "reference": "11e2663a5bc9db5d714eedb4277ee300403b4a9e",
+                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/19526a33fb561ef417e822e85f08a00db4059c17",
+                "reference": "19526a33fb561ef417e822e85f08a00db4059c17",
                 "shasum": ""
             },
             "require": {
@@ -2382,9 +2430,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nikic/PHP-Parser/issues",
-                "source": "https://github.com/nikic/PHP-Parser/tree/v4.15.5"
+                "source": "https://github.com/nikic/PHP-Parser/tree/v4.16.0"
             },
-            "time": "2023-05-19T20:20:00+00:00"
+            "time": "2023-06-25T14:52:30+00:00"
         },
         {
             "name": "openlss/lib-array2xml",
@@ -3041,16 +3089,16 @@
         },
         {
             "name": "phpunit/php-code-coverage",
-            "version": "9.2.26",
+            "version": "9.2.27",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-code-coverage.git",
-                "reference": "443bc6912c9bd5b409254a40f4b0f4ced7c80ea1"
+                "reference": "b0a88255cb70d52653d80c890bd7f38740ea50d1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/443bc6912c9bd5b409254a40f4b0f4ced7c80ea1",
-                "reference": "443bc6912c9bd5b409254a40f4b0f4ced7c80ea1",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/b0a88255cb70d52653d80c890bd7f38740ea50d1",
+                "reference": "b0a88255cb70d52653d80c890bd7f38740ea50d1",
                 "shasum": ""
             },
             "require": {
@@ -3106,7 +3154,8 @@
             ],
             "support": {
                 "issues": "https://github.com/sebastianbergmann/php-code-coverage/issues",
-                "source": "https://github.com/sebastianbergmann/php-code-coverage/tree/9.2.26"
+                "security": "https://github.com/sebastianbergmann/php-code-coverage/security/policy",
+                "source": "https://github.com/sebastianbergmann/php-code-coverage/tree/9.2.27"
             },
             "funding": [
                 {
@@ -3114,7 +3163,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2023-03-06T12:58:08+00:00"
+            "time": "2023-07-26T13:44:30+00:00"
         },
         {
             "name": "phpunit/php-file-iterator",
@@ -3461,54 +3510,6 @@
             "time": "2022-02-18T12:54:07+00:00"
         },
         {
-            "name": "psr/container",
-            "version": "1.1.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/php-fig/container.git",
-                "reference": "8622567409010282b7aeebe4bb841fe98b58dcaf"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/php-fig/container/zipball/8622567409010282b7aeebe4bb841fe98b58dcaf",
-                "reference": "8622567409010282b7aeebe4bb841fe98b58dcaf",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=7.2.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Psr\\Container\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "PHP-FIG",
-                    "homepage": "https://www.php-fig.org/"
-                }
-            ],
-            "description": "Common Container Interface (PHP FIG PSR-11)",
-            "homepage": "https://github.com/php-fig/container",
-            "keywords": [
-                "PSR-11",
-                "container",
-                "container-interface",
-                "container-interop",
-                "psr"
-            ],
-            "support": {
-                "issues": "https://github.com/php-fig/container/issues",
-                "source": "https://github.com/php-fig/container/tree/1.1.1"
-            },
-            "time": "2021-03-05T17:36:06+00:00"
-        },
-        {
             "name": "psr/log",
             "version": "1.1.4",
             "source": {
@@ -3632,16 +3633,16 @@
         },
         {
             "name": "react/stream",
-            "version": "v1.2.0",
+            "version": "v1.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/reactphp/stream.git",
-                "reference": "7a423506ee1903e89f1e08ec5f0ed430ff784ae9"
+                "reference": "6fbc9672905c7d5a885f2da2fc696f65840f4a66"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/reactphp/stream/zipball/7a423506ee1903e89f1e08ec5f0ed430ff784ae9",
-                "reference": "7a423506ee1903e89f1e08ec5f0ed430ff784ae9",
+                "url": "https://api.github.com/repos/reactphp/stream/zipball/6fbc9672905c7d5a885f2da2fc696f65840f4a66",
+                "reference": "6fbc9672905c7d5a885f2da2fc696f65840f4a66",
                 "shasum": ""
             },
             "require": {
@@ -3651,12 +3652,12 @@
             },
             "require-dev": {
                 "clue/stream-filter": "~1.2",
-                "phpunit/phpunit": "^9.3 || ^5.7 || ^4.8.35"
+                "phpunit/phpunit": "^9.5 || ^5.7 || ^4.8.35"
             },
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "React\\Stream\\": "src"
+                    "React\\Stream\\": "src/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -3698,19 +3699,15 @@
             ],
             "support": {
                 "issues": "https://github.com/reactphp/stream/issues",
-                "source": "https://github.com/reactphp/stream/tree/v1.2.0"
+                "source": "https://github.com/reactphp/stream/tree/v1.3.0"
             },
             "funding": [
                 {
-                    "url": "https://github.com/WyriHaximus",
-                    "type": "github"
-                },
-                {
-                    "url": "https://github.com/clue",
-                    "type": "github"
+                    "url": "https://opencollective.com/reactphp",
+                    "type": "open_collective"
                 }
             ],
-            "time": "2021-07-11T12:37:55+00:00"
+            "time": "2023-06-16T10:52:11+00:00"
         },
         {
             "name": "rregeer/phpunit-coverage-check",
@@ -4843,16 +4840,16 @@
         },
         {
             "name": "symfony/console",
-            "version": "v5.4.24",
+            "version": "v5.4.26",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
-                "reference": "560fc3ed7a43e6d30ea94a07d77f9a60b8ed0fb8"
+                "reference": "b504a3d266ad2bb632f196c0936ef2af5ff6e273"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/console/zipball/560fc3ed7a43e6d30ea94a07d77f9a60b8ed0fb8",
-                "reference": "560fc3ed7a43e6d30ea94a07d77f9a60b8ed0fb8",
+                "url": "https://api.github.com/repos/symfony/console/zipball/b504a3d266ad2bb632f196c0936ef2af5ff6e273",
+                "reference": "b504a3d266ad2bb632f196c0936ef2af5ff6e273",
                 "shasum": ""
             },
             "require": {
@@ -4922,7 +4919,7 @@
                 "terminal"
             ],
             "support": {
-                "source": "https://github.com/symfony/console/tree/v5.4.24"
+                "source": "https://github.com/symfony/console/tree/v5.4.26"
             },
             "funding": [
                 {
@@ -4938,7 +4935,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-05-26T05:13:16+00:00"
+            "time": "2023-07-19T20:11:33+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
@@ -5009,16 +5006,16 @@
         },
         {
             "name": "symfony/finder",
-            "version": "v5.4.21",
+            "version": "v5.4.27",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/finder.git",
-                "reference": "078e9a5e1871fcfe6a5ce421b539344c21afef19"
+                "reference": "ff4bce3c33451e7ec778070e45bd23f74214cd5d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/finder/zipball/078e9a5e1871fcfe6a5ce421b539344c21afef19",
-                "reference": "078e9a5e1871fcfe6a5ce421b539344c21afef19",
+                "url": "https://api.github.com/repos/symfony/finder/zipball/ff4bce3c33451e7ec778070e45bd23f74214cd5d",
+                "reference": "ff4bce3c33451e7ec778070e45bd23f74214cd5d",
                 "shasum": ""
             },
             "require": {
@@ -5052,7 +5049,7 @@
             "description": "Finds files and directories via an intuitive fluent interface",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/finder/tree/v5.4.21"
+                "source": "https://github.com/symfony/finder/tree/v5.4.27"
             },
             "funding": [
                 {
@@ -5068,7 +5065,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-02-16T09:33:00+00:00"
+            "time": "2023-07-31T08:02:31+00:00"
         },
         {
             "name": "symfony/polyfill-ctype",
@@ -5564,16 +5561,16 @@
         },
         {
             "name": "symfony/process",
-            "version": "v5.4.24",
+            "version": "v5.4.26",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/process.git",
-                "reference": "e3c46cc5689c8782944274bb30702106ecbe3b64"
+                "reference": "1a44dc377ec86a50fab40d066cd061e28a6b482f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/process/zipball/e3c46cc5689c8782944274bb30702106ecbe3b64",
-                "reference": "e3c46cc5689c8782944274bb30702106ecbe3b64",
+                "url": "https://api.github.com/repos/symfony/process/zipball/1a44dc377ec86a50fab40d066cd061e28a6b482f",
+                "reference": "1a44dc377ec86a50fab40d066cd061e28a6b482f",
                 "shasum": ""
             },
             "require": {
@@ -5606,7 +5603,7 @@
             "description": "Executes commands in sub-processes",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/process/tree/v5.4.24"
+                "source": "https://github.com/symfony/process/tree/v5.4.26"
             },
             "funding": [
                 {
@@ -5622,7 +5619,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-05-17T11:26:05+00:00"
+            "time": "2023-07-12T15:44:31+00:00"
         },
         {
             "name": "symfony/service-contracts",
@@ -5709,16 +5706,16 @@
         },
         {
             "name": "symfony/string",
-            "version": "v5.4.22",
+            "version": "v5.4.26",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/string.git",
-                "reference": "8036a4c76c0dd29e60b6a7cafcacc50cf088ea62"
+                "reference": "1181fe9270e373537475e826873b5867b863883c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/string/zipball/8036a4c76c0dd29e60b6a7cafcacc50cf088ea62",
-                "reference": "8036a4c76c0dd29e60b6a7cafcacc50cf088ea62",
+                "url": "https://api.github.com/repos/symfony/string/zipball/1181fe9270e373537475e826873b5867b863883c",
+                "reference": "1181fe9270e373537475e826873b5867b863883c",
                 "shasum": ""
             },
             "require": {
@@ -5775,7 +5772,7 @@
                 "utf8"
             ],
             "support": {
-                "source": "https://github.com/symfony/string/tree/v5.4.22"
+                "source": "https://github.com/symfony/string/tree/v5.4.26"
             },
             "funding": [
                 {
@@ -5791,7 +5788,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-03-14T06:11:53+00:00"
+            "time": "2023-06-28T12:46:07+00:00"
         },
         {
             "name": "symfony/yaml",
@@ -6233,12 +6230,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/woocommerce/qit-cli.git",
-                "reference": "ba2eed918086c340efb49f06d7309410604ccd7e"
+                "reference": "f5ca3706b844579f2864cac4bf6e1a0e0bea9fb9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/woocommerce/qit-cli/zipball/ba2eed918086c340efb49f06d7309410604ccd7e",
-                "reference": "ba2eed918086c340efb49f06d7309410604ccd7e",
+                "url": "https://api.github.com/repos/woocommerce/qit-cli/zipball/f5ca3706b844579f2864cac4bf6e1a0e0bea9fb9",
+                "reference": "f5ca3706b844579f2864cac4bf6e1a0e0bea9fb9",
                 "shasum": ""
             },
             "require": {
@@ -6258,7 +6255,7 @@
                 "issues": "https://github.com/woocommerce/qit-cli/issues",
                 "source": "https://github.com/woocommerce/qit-cli/tree/0.3.4"
             },
-            "time": "2023-06-12T17:32:37+00:00"
+            "time": "2023-06-13T13:14:38+00:00"
         },
         {
             "name": "woocommerce/woocommerce-sniffs",
@@ -6489,5 +6486,5 @@
     "platform-overrides": {
         "php": "7.3"
     },
-    "plugin-api-version": "2.1.0"
+    "plugin-api-version": "2.3.0"
 }

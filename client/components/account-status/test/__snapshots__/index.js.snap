@@ -69,7 +69,7 @@ exports[`AccountStatus renders normal status 1`] = `
           data-wp-component="FlexBlock"
         >
           <span
-            class="chip chip-primary is-compact"
+            class="chip chip-success is-compact"
           >
             Complete
           </span>
@@ -209,9 +209,19 @@ exports[`AccountStatus renders normal status 1`] = `
 exports[`StatusChip renders complete status 1`] = `
 <div>
   <span
-    class="chip chip-primary is-compact"
+    class="chip chip-success is-compact"
   >
     Complete
+  </span>
+</div>
+`;
+
+exports[`StatusChip renders enabled status 1`] = `
+<div>
+  <span
+    class="chip chip-primary is-compact"
+  >
+    Enabled
   </span>
 </div>
 `;

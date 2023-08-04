@@ -263,28 +263,10 @@ describe( 'Overview page', () => {
 		).toBeVisible();
 	} );
 
-	it( 'dismisses the FRTDiscoverabilityBanner when remind me later button is clicked', async () => {
-		render( <OverviewPage /> );
-
-		const bannerHeader = screen.getByText(
-			'Enhanced fraud protection for your store'
-		);
-
-		expect( bannerHeader ).toBeInTheDocument();
-
-		userEvent.click( screen.getByText( 'Remind me later' ) );
-
-		await waitFor( () => {
-			expect( bannerHeader ).not.toBeInTheDocument();
-		} );
-	} );
-
 	it( 'dismisses the FRTDiscoverabilityBanner when dismiss button is clicked', async () => {
 		global.wcpaySettings = {
 			...global.wcpaySettings,
 			frtDiscoverBannerSettings: JSON.stringify( {
-				remindMeCount: 3,
-				remindMeAt: null,
 				dontShowAgain: false,
 			} ),
 		};
@@ -321,7 +303,7 @@ describe( 'Overview page', () => {
 		render( <OverviewPage /> );
 
 		expect(
-			screen.getByText( 'Ready to setup real payments on your store?' )
+			screen.getByText( 'Set up real payments on your store' )
 		).toBeInTheDocument();
 	} );
 
@@ -334,7 +316,7 @@ describe( 'Overview page', () => {
 		render( <OverviewPage /> );
 
 		expect(
-			screen.queryByText( 'Ready to setup real payments on your store?' )
+			screen.queryByText( 'Set up real payments on your store' )
 		).not.toBeInTheDocument();
 	} );
 
