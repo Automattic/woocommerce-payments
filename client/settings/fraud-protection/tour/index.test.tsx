@@ -46,6 +46,15 @@ describe( 'FraudProtectionTour', () => {
 	} );
 
 	it( 'should render the tour component correctly', () => {
+		Reflect.defineProperty( window, 'location', {
+			configurable: true,
+			enumerable: true,
+			value: {
+				search:
+					'?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/',
+			},
+		} );
+
 		const { baseElement } = render( <FraudProtectionTour /> );
 
 		expect( baseElement ).toMatchSnapshot();
@@ -57,6 +66,22 @@ describe( 'FraudProtectionTour', () => {
 				isWelcomeTourDismissed: true,
 			},
 		};
+
+		const { baseElement } = render( <FraudProtectionTour /> );
+
+		expect( baseElement ).toMatchSnapshot();
+	} );
+
+	it( 'should not render the tour component if settings page accessed directly', () => {
+		Reflect.deleteProperty( window, 'location' );
+		Reflect.defineProperty( window, 'location', {
+			configurable: true,
+			enumerable: true,
+			value: {
+				search:
+					'?page=wc-settings&tab=checkout&section=woocommerce_payments/',
+			},
+		} );
 
 		const { baseElement } = render( <FraudProtectionTour /> );
 
