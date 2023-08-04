@@ -646,7 +646,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 *
 	 * @return array
 	 */
-	private function get_selected_upe_payment_methods( string $selected_upe_payment_type, array $enabled_payment_methods ) {
+	protected function get_selected_upe_payment_methods( string $selected_upe_payment_type, array $enabled_payment_methods ) {
 		$payment_methods = [];
 		if ( '' !== $selected_upe_payment_type ) {
 			// Only update the payment_method_types if we have a reference to the payment type the customer selected.
@@ -825,7 +825,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 				$this->order_service->attach_transaction_fee_to_order( $order, $charge );
 
-				self::remove_upe_payment_intent_from_session();
+				static::remove_upe_payment_intent_from_session();
 
 				if ( Payment_Intent_Status::REQUIRES_ACTION === $status ) {
 					// I don't think this case should be possible, but just in case...
@@ -865,7 +865,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id, $message );
 			}
 
-			self::remove_upe_payment_intent_from_session();
+			static::remove_upe_payment_intent_from_session();
 
 			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
 
@@ -1070,15 +1070,33 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$available_methods[] = Affirm_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 
+		// List JCB method for Japanese account only.
+		if ( 'JP' === $this->account->get_account_country() ) {
+			$available_methods[] = JCB_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		}
+
 		$available_methods = array_values(
 			apply_filters(
 				'wcpay_upe_available_payment_methods',
 				$available_methods
 			)
 		);
-		$methods_with_fees = array_keys( $this->account->get_fees() );
 
-		return array_values( array_intersect( $available_methods, $methods_with_fees ) );
+		$methods_with_fees           = array_keys( $this->account->get_fees() );
+		$available_methods_with_fees = array_intersect( $available_methods, $methods_with_fees );
+
+		// As the JCB is not a real payment method it doesn't have fees.
+		// If JCB is still available after the filter, bypass it to the available payment methods with fees.
+		if ( in_array(
+			JCB_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			$available_methods,
+			true
+		)
+		) {
+			$available_methods_with_fees[] = JCB_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		}
+
+		return array_values( $available_methods_with_fees );
 	}
 
 	/**
@@ -1269,11 +1287,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			$this->order_service->mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $error_message );
 
-			self::remove_upe_payment_intent_from_session();
+			static::remove_upe_payment_intent_from_session();
 
 			wp_send_json_success();
 		} catch ( Exception $e ) {
-			self::remove_upe_payment_intent_from_session();
+			static::remove_upe_payment_intent_from_session();
 
 			wp_send_json_error(
 				[

@@ -55,6 +55,7 @@ export const getAccountStatementDescriptor = ( state ) => {
 export const getAccountBusinessName = ( state ) => {
 	return getSettings( state ).account_business_name || '';
 };
+
 export const getAccountBusinessURL = ( state ) => {
 	return getSettings( state ).account_business_url || '';
 };

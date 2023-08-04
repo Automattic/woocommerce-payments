@@ -9,7 +9,6 @@ namespace WCPay\Payment_Methods;
 
 use Exception;
 use WC_Payments_API_Setup_Intention;
-use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Request\Get_Setup_Intention;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
@@ -25,7 +24,7 @@ use WC_Payment_Token_CC;
 use WC_Payments_Token_Service;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Utils;
-use WC_Payments_Features;
+use WCPay\Constants\Payment_Method;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WP_User;
 use WC_Payments_Localization_Service;
@@ -168,7 +167,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 
 		$payment_method_title = $payment_method->get_title( $payment_method_details );
 
-		$payment_gateway = 'card' === $payment_method->get_id() ? self::GATEWAY_ID : self::GATEWAY_ID . '_' . $payment_method_type;
+		$payment_gateway = in_array( $payment_method->get_id(), [ Payment_Method::CARD, Payment_Method::LINK ], true ) ? self::GATEWAY_ID : self::GATEWAY_ID . '_' . $payment_method_type;
 
 		$order->set_payment_method( $payment_gateway );
 		$order->set_payment_method_title( $payment_method_title );

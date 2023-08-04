@@ -140,7 +140,6 @@ Automattic\Jetpack\Connection\Rest_Authentication::init();
  */
 \WCPay\WooPay\WooPay_Session::init();
 
-
 // Jetpack-config will initialize the modules on "plugins_loaded" with priority 2, so this code needs to be run before that.
 add_action( 'plugins_loaded', 'wcpay_jetpack_init', 1 );
 

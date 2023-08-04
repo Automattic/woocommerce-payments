@@ -29,15 +29,29 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	private $wcpay_gateway;
 
 	/**
+	 * WC_Payments_Account instance to get information about the account
+	 *
+	 * @var WC_Payments_Account
+	 */
+	protected $account;
+
+
+	/**
 	 * WC_REST_Payments_Settings_Controller constructor.
 	 *
 	 * @param WC_Payments_API_Client   $api_client WC_Payments_API_Client instance.
 	 * @param WC_Payment_Gateway_WCPay $wcpay_gateway WC_Payment_Gateway_WCPay instance.
+	 * @param WC_Payments_Account      $account  Account class instance.
 	 */
-	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $wcpay_gateway ) {
+	public function __construct(
+		WC_Payments_API_Client $api_client,
+		WC_Payment_Gateway_WCPay $wcpay_gateway,
+		WC_Payments_Account $account
+	) {
 		parent::__construct( $api_client );
 
 		$this->wcpay_gateway = $wcpay_gateway;
+		$this->account       = $account;
 	}
 
 	/**
@@ -333,6 +347,16 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'rest_invalid_pattern',
 				__( 'Error: Invalid phone number: ', 'woocommerce-payments' ) . $value
 			);
+		}
+
+		// Japan accounts require Japanese phone numbers.
+		if ( 'JP' === $this->account->get_account_country() ) {
+			if ( '+81' !== substr( $value, 0, 3 ) ) {
+				return new WP_Error(
+					'rest_invalid_pattern',
+					__( 'Error: Invalid Japanese phone number: ', 'woocommerce-payments' ) . $value
+				);
+			}
 		}
 
 		return true;

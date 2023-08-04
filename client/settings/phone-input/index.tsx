@@ -70,14 +70,31 @@ const PhoneNumberInput = ( {
 			}
 		};
 
+		let phoneCountries = {
+			initialCountry: 'US',
+			onlyCountries: [],
+		};
+
+		const accountCountry = wcpaySettings?.accountStatus?.country ?? '';
+
+		// Special case for Japan: Only Japanese phone numbers are accepted by Stripe
+		if ( accountCountry === 'JP' ) {
+			phoneCountries = {
+				initialCountry: 'JP',
+				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+				// @ts-ignore
+				onlyCountries: [ 'JP' ],
+			};
+		}
+
 		if ( currentRef ) {
 			iti = intlTelInput( currentRef, {
-				initialCountry: 'US',
 				customPlaceholder: () => '',
 				separateDialCode: true,
 				hiddenInput: 'full',
 				utilsScript: utils,
 				dropdownContainer: document.body,
+				...phoneCountries,
 			} );
 			setInputInstance( iti );
 
