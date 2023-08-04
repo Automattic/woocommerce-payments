@@ -1567,7 +1567,7 @@ class WC_Payments {
 			$woopay_adapted_extensions  = new WooPay_Adapted_Extensions();
 			$body['adapted_extensions'] = $woopay_adapted_extensions->get_adapted_extensions_data( $email );
 
-			if ( ! is_user_logged_in() ) {
+			if ( ! is_user_logged_in() && count( $body['adapted_extensions'] ) > 0 ) {
 				$store_user_email_registered = get_user_by( 'email', $email );
 
 				if ( $store_user_email_registered ) {

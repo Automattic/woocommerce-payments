@@ -311,11 +311,12 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 				wp_localize_script( 'wcpay-upe-checkout', 'wcpayCustomerData', $prepared_customer_data );
 			}
 
-			wp_enqueue_style(
+			WC_Payments_Utils::enqueue_style(
 				'wcpay-upe-checkout',
 				plugins_url( 'dist/checkout.css', WCPAY_PLUGIN_FILE ),
 				[],
-				WC_Payments::get_file_version( 'dist/checkout.css' )
+				WC_Payments::get_file_version( 'dist/checkout.css' ),
+				'all'
 			);
 
 			// Output the form HTML.
