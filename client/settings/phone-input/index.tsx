@@ -70,14 +70,14 @@ const PhoneNumberInput = ( {
 			}
 		};
 
-		let onlyCountries = {
+		let phoneCountries = {
 			initialCountry: 'US',
 			onlyCountries: [],
 		};
 
 		const accountCountry = wcpaySettings?.accountStatus?.country ?? '';
 		if ( accountCountry === 'JP' ) {
-			onlyCountries = {
+			phoneCountries = {
 				initialCountry: 'JP',
 				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 				// @ts-ignore
@@ -92,7 +92,7 @@ const PhoneNumberInput = ( {
 				hiddenInput: 'full',
 				utilsScript: utils,
 				dropdownContainer: document.body,
-				...onlyCountries,
+				...phoneCountries,
 			} );
 			setInputInstance( iti );
 
