@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<ruleset name="WCPay" namespace="WCPay\CodingStandards">
+	<description>WCPay custom coding standards.</description>
+
+	<exclude-pattern>*/includes/multi-currency/*</exclude-pattern>
+	<exclude-pattern>*/includes/subscriptions/*</exclude-pattern>
+	<exclude-pattern>*/includes/compat/subscriptions/*</exclude-pattern>
+	<exclude-pattern>*/includes/emails/*</exclude-pattern>
+</ruleset>

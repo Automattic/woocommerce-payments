@@ -7,6 +7,7 @@
 	<arg name="extensions" value="php"/>
 
     <!-- Exclude paths -->
+	<exclude-pattern>./dev/*</exclude-pattern>
 	<exclude-pattern>./dist/*</exclude-pattern>
 	<exclude-pattern>./release/*</exclude-pattern>
 	<exclude-pattern>./docker/*</exclude-pattern>
@@ -68,4 +69,7 @@
 	</rule>
 
 	<rule ref="PEAR.WhiteSpace.ObjectOperatorIndent" />
+
+	<!-- Custom WCPay rules -->
+	<rule ref="./dev/phpcs/ruleset.xml"/>
 </ruleset>
