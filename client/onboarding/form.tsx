@@ -26,14 +26,16 @@ import strings from './strings';
 import GroupedSelectControl, {
 	ListItem,
 } from 'components/grouped-select-control';
+import { persistState } from './utils';
 
 export const OnboardingForm: React.FC = ( { children } ) => {
-	const { errors, touched, setTouched } = useOnboardingContext();
+	const { data, errors, touched, setTouched } = useOnboardingContext();
 	const { currentStep, nextStep } = useStepperContext();
 
 	const handleContinue = () => {
 		if ( isEmpty( errors ) ) {
 			trackStepCompleted( currentStep );
+			persistState( currentStep, data );
 			return nextStep();
 		}
 		setTouched( mapValues( touched, () => true ) );

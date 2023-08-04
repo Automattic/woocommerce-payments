@@ -17,7 +17,8 @@ use WCPay\Exceptions\API_Exception;
  */
 class WC_Payments_Onboarding_Service {
 
-	const TEST_MODE_OPTION = 'wcpay_onboarding_test_mode';
+	const TEST_MODE_OPTION             = 'wcpay_onboarding_test_mode';
+	const ONBOARDING_FLOW_STATE_OPTION = 'wcpay_onboarding_flow_state';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -191,6 +192,9 @@ class WC_Payments_Onboarding_Service {
 		return $classes;
 	}
 
+	public function set_onboarding_flow_state( array $value ) {
+		return update_option( self::ONBOARDING_FLOW_STATE_OPTION, $value );
+	}
 	/**
 	 * Set onboarding test mode.
 	 * Will also switch WC_Payments mode immediately.

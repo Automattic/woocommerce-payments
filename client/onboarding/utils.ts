@@ -9,6 +9,9 @@ import { set, toPairs } from 'lodash';
 import businessTypeDescriptionStrings from './translations/descriptions';
 import { ListItem } from 'components/grouped-select-control';
 import { Country } from './types';
+// TEMP
+import apiFetch from '@wordpress/api-fetch';
+import { NAMESPACE } from 'data/constants';
 
 export const fromDotNotation = (
 	record: Record< string, unknown >
@@ -79,3 +82,19 @@ export const getMccsFlatList = (): ListItem[] => {
 		];
 	}, [] as ListItem[] );
 };
+
+export const persistState = (
+	currentStep: string,
+	data: any
+): Promise< void > =>
+	apiFetch( {
+		path: `${ NAMESPACE }/onboarding/flow-state`,
+		method: 'post',
+		data: { current_step: currentStep, data },
+	} );
+
+export const clearState = (): Promise< void > =>
+	apiFetch( {
+		path: `${ NAMESPACE }/onboarding/flow-state`,
+		method: 'delete',
+	} );
