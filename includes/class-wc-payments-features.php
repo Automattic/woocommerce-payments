@@ -314,15 +314,6 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether Multi-Currency Order Meta Helper is enabled.
-	 *
-	 * @return bool
-	 */
-	public static function is_mc_order_meta_helper_enabled(): bool {
-		return '1' === get_option( self::MC_ORDER_META_HELPER_FLAG_NAME, '0' );
-	}
-
-	/**
 	 * Returns feature flags as an array suitable for display on the front-end.
 	 *
 	 * @return bool[]
@@ -341,7 +332,6 @@ class WC_Payments_Features {
 				'woopayExpressCheckout'   => self::is_woopay_express_checkout_enabled(),
 				'isAuthAndCaptureEnabled' => self::is_auth_and_capture_enabled(),
 				'progressiveOnboarding'   => self::is_progressive_onboarding_enabled(),
-				'mcOrderMetaHelper'       => self::is_mc_order_meta_helper_enabled(),
 			]
 		);
 	}
