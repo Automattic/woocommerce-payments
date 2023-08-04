@@ -22,7 +22,7 @@ const countryFeeStripeDocsBaseLink =
 const countryFeeStripeDocsBaseLinkNoCountry =
 	'https://woocommerce.com/document/payments/faq/fees';
 const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
-	AE: 'arabemirates',
+	AE: 'united-arab-emirates',
 	AU: 'australia',
 	AT: 'austria',
 	BE: 'belgium',
