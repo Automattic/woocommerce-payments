@@ -7,6 +7,7 @@ import { getUPEConfig } from 'wcpay/utils/checkout';
 import {
 	generateCheckoutEventNames,
 	getSelectedUPEGatewayPaymentMethod,
+	isLinkEnabled,
 	isUsingSavedPaymentMethod,
 } from '../../utils/upe';
 import {
@@ -14,6 +15,7 @@ import {
 	mountStripePaymentElement,
 	renderTerms,
 	createAndConfirmSetupIntent,
+	maybeEnableStripeLink,
 } from './payment-processing';
 import enqueueFraudScripts from 'fraud-scripts';
 import { showAuthenticationModalIfRequired } from './3ds-flow-handling';
@@ -31,6 +33,9 @@ jQuery( function ( $ ) {
 			forceNetworkSavedCards: getUPEConfig( 'forceNetworkSavedCards' ),
 			locale: getUPEConfig( 'locale' ),
 			isUPEEnabled: getUPEConfig( 'isUPEEnabled' ),
+			isStripeLinkEnabled: isLinkEnabled(
+				getUPEConfig( 'paymentMethodsConfig' )
+			),
 			isUPEDeferredEnabled: getUPEConfig( 'isUPEDeferredEnabled' ),
 		},
 		apiRequest
@@ -97,16 +102,15 @@ jQuery( function ( $ ) {
 		}
 	}
 
-	function maybeMountStripePaymentElement() {
+	async function maybeMountStripePaymentElement() {
 		if (
 			$( '.wcpay-upe-element' ).length &&
 			! $( '.wcpay-upe-element' ).children().length
 		) {
-			$( '.wcpay-upe-element' )
-				.toArray()
-				.forEach( ( domElement ) =>
-					mountStripePaymentElement( api, domElement )
-				);
+			for ( const upeElement of $( '.wcpay-upe-element' ).toArray() ) {
+				await mountStripePaymentElement( api, upeElement );
+			}
+			maybeEnableStripeLink( api );
 		}
 	}
 } );
