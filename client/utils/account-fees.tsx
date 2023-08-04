@@ -22,6 +22,7 @@ const countryFeeStripeDocsBaseLink =
 const countryFeeStripeDocsBaseLinkNoCountry =
 	'https://woocommerce.com/document/woocommerce-payments/fees-and-debits/fees/';
 const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
+	AE: 'united-arab-emirates',
 	AU: 'australia',
 	AT: 'austria',
 	BE: 'belgium',
@@ -41,6 +42,7 @@ const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 	HU: 'hungary',
 	IE: 'ireland',
 	IT: 'italy',
+	JP: 'japan',
 	LT: 'lithuania',
 	LV: 'latvia',
 	MT: 'malta',

@@ -219,6 +219,7 @@ class WC_Payments_Utils {
 	 */
 	public static function supported_countries(): array {
 		return [
+			'AE' => __( 'United Arab Emirates', 'woocommerce-payments' ),
 			'AT' => __( 'Austria', 'woocommerce-payments' ),
 			'AU' => __( 'Australia', 'woocommerce-payments' ),
 			'BE' => __( 'Belgium', 'woocommerce-payments' ),
@@ -234,6 +235,7 @@ class WC_Payments_Utils {
 			'ES' => __( 'Spain', 'woocommerce-payments' ),
 			'FR' => __( 'France', 'woocommerce-payments' ),
 			'HR' => __( 'Croatia', 'woocommerce-payments' ),
+			'JP' => __( 'Japan', 'woocommerce-payments' ),
 			'LU' => __( 'Luxembourg', 'woocommerce-payments' ),
 			'GB' => __( 'United Kingdom (UK)', 'woocommerce-payments' ),
 			'GR' => __( 'Greece', 'woocommerce-payments' ),
