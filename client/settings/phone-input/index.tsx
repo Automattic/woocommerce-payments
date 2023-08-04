@@ -76,6 +76,8 @@ const PhoneNumberInput = ( {
 		};
 
 		const accountCountry = wcpaySettings?.accountStatus?.country ?? '';
+
+		// Special case for Japan: Only Japanese phone numbers are accepted by Stripe
 		if ( accountCountry === 'JP' ) {
 			phoneCountries = {
 				initialCountry: 'JP',
