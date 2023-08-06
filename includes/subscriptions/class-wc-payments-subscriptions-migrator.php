@@ -89,14 +89,14 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	}
 
 	/**
-	 * Migrate WCPay Subscription to WC Subscriptions
+	 * Migrates a WCPay Subscription to a tokenized WooPayments subscription powered by WC Subscriptions
 	 *
 	 * Migration process:
-	 * 1. Validate the request to migrate subscription
-	 * 2. Fetches the subscription from Stripe
-	 * 3. Cancels the subscription at Stripe if it is active
-	 * 4. Update the subscription meta to indicate that it has been migrated
-	 * 5. Add an order note on the subscription
+	 *   1. Validate the request to migrate subscription
+	 *   2. Fetches the subscription from Stripe
+	 *   3. Cancels the subscription at Stripe if it is active
+	 *   4. Update the subscription meta to indicate that it has been migrated
+	 *   5. Add an order note on the subscription
 	 *
 	 * @param int $subscription_id The ID of the subscription to migrate.
 	 */
@@ -214,10 +214,10 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	 * This function checks the status on the subscription at Stripe then cancels it if it's a valid status and logs any errors.
 	 *
 	 * We skip canceling any subscriptions at Stripe that are:
-	 * - incomplete: the subscription was created but no payment method was added to the subscription
-	 * - incomplete_expired: the incomplete subscription expired after 24hrs of no payment method being added.
-	 * - canceled: the subscription is already canceled
-	 * - unpaid: this status is not used by subscriptions in WooCommerce Payments
+	 *   - incomplete: the subscription was created but no payment method was added to the subscription
+	 *   - incomplete_expired: the incomplete subscription expired after 24hrs of no payment method being added.
+	 *   - canceled: the subscription is already canceled
+	 *   - unpaid: this status is not used by subscriptions in WooCommerce Payments
 	 *
 	 * @param array $wcpay_subscription The subscription data from Stripe.
 	 *
@@ -243,8 +243,7 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	}
 
 	/**
-	 * Moves the existing WCPay Subscription meta to new meta data prefixed with `_migrated` meta
-	 * and deletes the old meta.
+	 * Migrates WCPay Subscription related metadata to a new key prefixed with `_migrated` and deletes the old meta.
 	 *
 	 * @param WC_Subscription $subscription The subscription with wcpay meta saved.
 	 */
@@ -279,14 +278,15 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	/**
 	 * Returns the subscription status from the WCPay subscription data for logging purposes.
 	 *
-	 * When a subscription is on-hold, we don't change the status of the subscription at Stripe, instead, we set
-	 * the subscription as active and set the `pause_collection` behavior to `void` so that the subscription is not charged.
+	 * If a subscription is on-hold in WC we wouldn't have changed the status of the subscription at Stripe, instead, the
+	 * subscription would remain active and set `pause_collection` behavior to `void` so that the subscription is not charged.
 	 *
-	 * The purpose of this function is factor in the `paused_collection` value when determining the subscription status at Stripe.
+	 * The purpose of this function is to handle the `paused_collection` value when mapping the subscription status at Stripe to
+	 * a status for logging.
 	 *
 	 * @param array $wcpay_subscription The subscription data from Stripe.
 	 *
-	 * @return string
+	 * @return string The WCPay subscription status for logging purposes.
 	 */
 	private function get_wcpay_subscription_status( $wcpay_subscription ) {
 		if ( empty( $wcpay_subscription['status'] ) ) {
@@ -357,6 +357,7 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 		$wcpay_subscriptions_count = count(
 			wcs_get_orders_with_meta_query(
 				[
+					'status'     => 'any',
 					'return'     => 'ids',
 					'type'       => 'shop_subscription',
 					'limit'      => -1,
@@ -417,7 +418,6 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	 */
 	public function init() {
 		$this->repair_hook = $this->migrate_hook;
-		$this->time_limit  = 0; // No need to set a time limit for scheduling the migration actions.
 
 		parent::init();
 	}
@@ -440,7 +440,10 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	}
 
 	/**
-	 * Gets a batch of items which need to be repaired.
+	 * Migrates an individual subscription.
+	 *
+	 * The repair_item() function is called by the parent class when the individual scheduled action is run.
+	 * This acts as a wrapper for the migrate_wcpay_subscription() function.
 	 *
 	 * @param int $item The ID of the subscription to migrate.
 	 */
@@ -452,7 +455,10 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	 * Gets a batch of 100 subscriptions to migrate.
 	 *
 	 * Because this function fetches items in batches using limit and paged query args, we need to make sure
-	 * the result of this query is consistent regardless of whether some subscriptions have been repaired/migrated in between.\
+	 * the paging of this query is consistent regardless of whether some subscriptions have been repaired/migrated in between.
+	 *
+	 * To do this, we use the $this->migration_batch_identifier_option value to identify subscriptions previously returned by
+	 * this function that have been migrated so they will still be considered for paging.
 	 *
 	 * @param int $page The page of results to fetch.
 	 *
@@ -464,6 +470,7 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 				'return'     => 'ids',
 				'type'       => 'shop_subscription',
 				'limit'      => 100,
+				'status'     => 'any',
 				'paged'      => $page,
 				'order'      => 'ASC',
 				'orderby'    => 'ID',
@@ -473,10 +480,10 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 						'key'     => WC_Payments_Subscription_Service::SUBSCRIPTION_ID_META_KEY,
 						'compare' => 'EXISTS',
 					],
-					// In this query we include subscriptions which have already been migrated as part of this migration to make
-					// sure paging is maintained as subscriptions migrate and fall out of this query. When subscriptions are migrated,
-					// they no longer have WCPay subscription ID meta and so wouldn't have been included.
-					// These subscriptions aren't expected to be returned by this query, but should pad out the earlier pages.
+					// We need to include subscriptions which have already been migrated as part of this migration group to make
+					// sure correct paging is maintained. As subscriptions are migrated they would migrate the WCPay subscription ID
+					// meta key and therefore fall out of this query's scope - messing with the paging of future queries.
+					// Subscriptions with the `migrated_during` meta aren't expected to be returned by this query, they are included to pad out the earlier pages.
 					[
 						'key'     => '_wcpay_subscription_migrated_during',
 						'value'   => get_option( $this->migration_batch_identifier_option, 0 ),
