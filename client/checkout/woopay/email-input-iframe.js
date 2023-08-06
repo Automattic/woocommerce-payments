@@ -206,7 +206,11 @@ export const handleWooPayEmailInput = async (
 		window.addEventListener( 'resize', setPopoverPosition );
 
 		iframe.classList.add( 'open' );
-		wcpayTracks.recordUserEvent( wcpayTracks.events.WOOPAY_OTP_START );
+		wcpayTracks.recordUserEvent(
+			wcpayTracks.events.WOOPAY_OTP_START,
+			[],
+			true
+		);
 	} );
 
 	// Add the iframe and iframe arrow to the wrapper.
@@ -259,6 +263,10 @@ export const handleWooPayEmailInput = async (
 		urlParams.append(
 			'viewport',
 			`${ viewportWidth }x${ viewportHeight }`
+		);
+		urlParams.append(
+			'tracksUserIdentity',
+			JSON.stringify( getConfig( 'tracksUserIdentity' ) )
 		);
 
 		iframe.src = `${ getConfig(
@@ -386,7 +394,9 @@ export const handleWooPayEmailInput = async (
 					openIframe( email );
 				} else if ( data.code !== 'rest_invalid_param' ) {
 					wcpayTracks.recordUserEvent(
-						wcpayTracks.events.WOOPAY_OFFERED
+						wcpayTracks.events.WOOPAY_OFFERED,
+						[],
+						true
 					);
 				}
 			} )
@@ -528,7 +538,9 @@ export const handleWooPayEmailInput = async (
 			case 'redirect_to_platform_checkout':
 			case 'redirect_to_woopay':
 				wcpayTracks.recordUserEvent(
-					wcpayTracks.events.WOOPAY_OTP_COMPLETE
+					wcpayTracks.events.WOOPAY_OTP_COMPLETE,
+					[],
+					true
 				);
 				api.initWooPay(
 					woopayEmailInput.value,
@@ -555,7 +567,9 @@ export const handleWooPayEmailInput = async (
 				break;
 			case 'otp_validation_failed':
 				wcpayTracks.recordUserEvent(
-					wcpayTracks.events.WOOPAY_OTP_FAILED
+					wcpayTracks.events.WOOPAY_OTP_FAILED,
+					[],
+					true
 				);
 				break;
 			case 'close_modal':
@@ -614,7 +628,11 @@ export const handleWooPayEmailInput = async (
 			dispatchUserExistEvent( true );
 		}, 2000 );
 
-		wcpayTracks.recordUserEvent( wcpayTracks.events.WOOPAY_SKIPPED );
+		wcpayTracks.recordUserEvent(
+			wcpayTracks.events.WOOPAY_SKIPPED,
+			[],
+			true
+		);
 
 		searchParams.delete( 'skip_woopay' );
 

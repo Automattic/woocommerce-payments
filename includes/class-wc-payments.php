@@ -26,6 +26,7 @@ use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
+use WCPay\Payment_Methods\JCB_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\WooPay_Tracker;
@@ -41,6 +42,7 @@ use WCPay\WC_Payments_UPE_Checkout;
 use WCPay\WooPay\Service\Checkout_Service;
 use WCPay\Core\WC_Payments_Customer_Service_API;
 use WCPay\Blocks_Data_Extractor;
+use WCPay\WooPay\WooPay_Adapted_Extensions;
 use WCPay\Constants\Payment_Method;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\WooPay\WooPay_Scheduler;
@@ -397,6 +399,7 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-link-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-affirm-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-afterpay-payment-method.php';
+		include_once __DIR__ . '/payment-methods/class-jcb-payment-method.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-status.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
@@ -444,6 +447,7 @@ class WC_Payments {
 		include_once __DIR__ . '/woopay/class-woopay-order-status-sync.php';
 		include_once __DIR__ . '/woopay/class-woopay-store-api-session-handler.php';
 		include_once __DIR__ . '/woopay/class-woopay-scheduler.php';
+		include_once __DIR__ . '/woopay/class-woopay-adapted-extensions.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-link.php';
 		include_once __DIR__ . '/core/service/class-wc-payments-customer-service-api.php';
 		include_once __DIR__ . '/class-duplicate-payment-prevention-service.php';
@@ -503,6 +507,7 @@ class WC_Payments {
 			Link_Payment_Method::class,
 			Affirm_Payment_Method::class,
 			Afterpay_Payment_Method::class,
+			JCB_Payment_Method::class,
 		];
 		if ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 			$payment_methods = [];
@@ -634,6 +639,12 @@ class WC_Payments {
 
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.9.0', '<' ) ) {
 			add_action( 'woocommerce_onboarding_profile_data_updated', 'WC_Payments_Features::maybe_enable_wcpay_subscriptions_after_onboarding', 10, 2 );
+		}
+
+		// Load the WCPay Subscriptions migration class.
+		if ( WC_Payments_Features::is_subscription_migration_enabled() ) {
+			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions-migrator.php';
+			new WC_Payments_Subscriptions_Migrator( self::$api_client );
 		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
@@ -1011,7 +1022,7 @@ class WC_Payments {
 		$accounts_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-controller.php';
-		$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::get_gateway() );
+		$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::get_gateway(), self::$account );
 		$settings_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-reader-controller.php';
@@ -1502,6 +1513,17 @@ class WC_Payments {
 			// WooPay verified email matches.
 			WC()->customer->set_billing_email( $email );
 			WC()->customer->save();
+
+			$woopay_adapted_extensions  = new WooPay_Adapted_Extensions();
+			$body['adapted_extensions'] = $woopay_adapted_extensions->get_adapted_extensions_data( $email );
+
+			if ( ! is_user_logged_in() && count( $body['adapted_extensions'] ) > 0 ) {
+				$store_user_email_registered = get_user_by( 'email', $email );
+
+				if ( $store_user_email_registered ) {
+					$body['email_verified_session_nonce'] = self::create_woopay_nonce( $store_user_email_registered->ID );
+				}
+			}
 		}
 
 		$args = [

@@ -224,6 +224,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Returns whether WCPay Subscription migration is enabled
+	 *
+	 * @return bool
+	 */
+	public static function is_subscription_migration_enabled() {
+		return '1' === get_option( '_wcpay_feature_allow_subscription_migrations', '0' );
+	}
+
+	/**
 	 * Checks whether woopay is enabled.
 	 *
 	 * @return bool

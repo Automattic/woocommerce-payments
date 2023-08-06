@@ -9,7 +9,6 @@ namespace WCPay\Payment_Methods;
 
 use Exception;
 use WC_Payments_API_Setup_Intention;
-use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Request\Get_Setup_Intention;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
@@ -25,7 +24,7 @@ use WC_Payment_Token_CC;
 use WC_Payments_Token_Service;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Utils;
-use WC_Payments_Features;
+use WCPay\Constants\Payment_Method;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WP_User;
 
@@ -133,6 +132,23 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	}
 
 	/**
+	 * This method is used by WooCommerce Core's WC_Payment_Gateways::get_available_payment_gateways() to filter out gateways.
+	 *
+	 * The availability decision includes an additional business rule that checks if the payment method is enabled at checkout
+	 * via the is_enabled_at_checkout method. This method provides crucial information, among others, to determine if the gateway
+	 * is reusable in case there's a subcription in the cart.
+	 *
+	 * @return bool Whether the gateway is enabled and ready to accept payments.
+	 */
+	public function is_available() {
+		$processing_payment_method = $this->payment_methods[ $this->payment_method->get_id() ];
+		if ( ! $processing_payment_method->is_enabled_at_checkout() ) {
+			return false;
+		}
+		return parent::is_available();
+	}
+
+	/**
 	 * Gets UPE_Payment_Method instance from ID.
 	 *
 	 * @param string $payment_method_type Stripe payment method type ID.
@@ -158,7 +174,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 
 		$payment_method_title = $payment_method->get_title( $payment_method_details );
 
-		$payment_gateway = 'card' === $payment_method->get_id() ? self::GATEWAY_ID : self::GATEWAY_ID . '_' . $payment_method_type;
+		$payment_gateway = in_array( $payment_method->get_id(), [ Payment_Method::CARD, Payment_Method::LINK ], true ) ? self::GATEWAY_ID : self::GATEWAY_ID . '_' . $payment_method_type;
 
 		$order->set_payment_method( $payment_gateway );
 		$order->set_payment_method_title( $payment_method_title );

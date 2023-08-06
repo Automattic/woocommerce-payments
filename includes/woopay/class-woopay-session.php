@@ -40,6 +40,7 @@ class WooPay_Session {
 		'@^\/wc\/store(\/v[\d]+)?\/cart\/select-shipping-rate$@',
 		'@^\/wc\/store(\/v[\d]+)?\/cart\/update-customer$@',
 		'@^\/wc\/store(\/v[\d]+)?\/cart\/update-item$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/extensions$@',
 		'@^\/wc\/store(\/v[\d]+)?\/checkout$@',
 	];
 
@@ -51,7 +52,10 @@ class WooPay_Session {
 	public static function init() {
 		add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_woopay' ], 20 );
 		add_filter( 'rest_request_before_callbacks', [ __CLASS__, 'add_woopay_store_api_session_handler' ], 10, 3 );
-		add_action( 'woocommerce_store_api_checkout_update_order_meta', [ __CLASS__, 'remove_order_customer_id_on_requests_with_verified_email' ] );
+		add_action( 'woocommerce_order_payment_status_changed', [ __CLASS__, 'remove_order_customer_id_on_requests_with_verified_email' ] );
+		add_action( 'woopay_restore_order_customer_id', [ __CLASS__, 'restore_order_customer_id_from_requests_with_verified_email' ] );
+
+		register_deactivation_hook( WCPAY_PLUGIN_FILE, [ __CLASS__, 'run_and_remove_woopay_restore_order_customer_id_schedules' ] );
 	}
 
 	/**
@@ -146,6 +150,9 @@ class WooPay_Session {
 			$user = get_user_by( 'email', $woopay_verified_email_address );
 
 			if ( $woopay_verified_email_address === $customer['email'] && $user ) {
+				// Remove Gift Cards session cache to load account gift cards.
+				add_filter( 'woocommerce_gc_account_session_timeout_minutes', '__return_false' );
+
 				return $user->ID;
 			}
 		}
@@ -156,13 +163,23 @@ class WooPay_Session {
 	/**
 	 * Prevent set order customer ID on requests with
 	 * email verified to skip the login screen on the TYP.
+	 * After 10 minutes, the customer ID will be restored
+	 * and the user will need to login to access the TYP.
 	 *
-	 * @param \WC_Order $order The order being updated.
+	 * @param \WC_Order $order_id The order ID being updated.
 	 */
-	public static function remove_order_customer_id_on_requests_with_verified_email( $order ) {
+	public static function remove_order_customer_id_on_requests_with_verified_email( $order_id ) {
 		$woopay_verified_email_address = self::get_woopay_verified_email_address();
 
 		if ( null === $woopay_verified_email_address ) {
+			return;
+		}
+
+		if ( ! self::is_woopay_enabled() ) {
+			return;
+		}
+
+		if ( ! self::is_request_from_woopay() || ! self::is_store_api_request() ) {
 			return;
 		}
 
@@ -178,14 +195,58 @@ class WooPay_Session {
 			return;
 		}
 
+		$order = wc_get_order( $order_id );
+
 		// Guest users user_id on the cart token payload looks like "t_hash" and the order
 		// customer id is 0, logged in users is the real user id in both cases.
 		$user_is_logged_in = $payload->user_id === $order->get_customer_id();
 
 		if ( ! $user_is_logged_in && $woopay_verified_email_address === $order->get_billing_email() ) {
+			$order->add_meta_data( 'woopay_merchant_customer_id', $order->get_customer_id(), true );
 			$order->set_customer_id( 0 );
 			$order->save();
+
+			wp_schedule_single_event( time() + 10 * MINUTE_IN_SECONDS, 'woopay_restore_order_customer_id', [ $order_id ] );
 		}
+	}
+
+	/**
+	 * Restore the order customer ID after 10 minutes
+	 * on requests with email verified.
+	 *
+	 * @param \WC_Order $order_id The order ID being updated.
+	 */
+	public static function restore_order_customer_id_from_requests_with_verified_email( $order_id ) {
+		$order = wc_get_order( $order_id );
+
+		if ( ! $order->meta_exists( 'woopay_merchant_customer_id' ) ) {
+			return;
+		}
+
+		$order->set_customer_id( $order->get_meta( 'woopay_merchant_customer_id' ) );
+		$order->delete_meta_data( 'woopay_merchant_customer_id' );
+		$order->save();
+	}
+
+	/**
+	 * Restore all WooPay verified email orders customer ID
+	 * and disable the schedules when plugin is disabled.
+	 */
+	public static function run_and_remove_woopay_restore_order_customer_id_schedules() {
+		$args = [
+			'meta_key' => 'woopay_merchant_customer_id', //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+			'return'   => 'ids',
+		];
+
+		$order_ids = wc_get_orders( $args );
+
+		if ( ! empty( $order_ids ) ) {
+			foreach ( $order_ids as $order_id ) {
+				self::restore_order_customer_id_from_requests_with_verified_email( $order_id );
+			}
+		}
+
+		wp_clear_scheduled_hook( 'woopay_restore_order_customer_id' );
 	}
 
 	/**
@@ -230,8 +291,7 @@ class WooPay_Session {
 	public static function get_frontend_init_session_request() {
 		$session = self::get_init_session_request();
 
-		// $store_blog_token = Jetpack_Options::get_option( 'blog_token' );
-		$store_blog_token = 'abc123';
+		$store_blog_token = Jetpack_Options::get_option( 'blog_token' );
 
 		$message = wp_json_encode( $session );
 
@@ -287,13 +347,13 @@ class WooPay_Session {
 		$checkout_data = isset( $preloaded_checkout_data['/wc/store/v1/checkout'] ) ? $preloaded_checkout_data['/wc/store/v1/checkout']['body'] : '';
 
 		$request = [
-			'wcpay_version'      => WCPAY_VERSION_NUMBER,
-			'user_id'            => $user->ID,
-			'customer_id'        => $customer_id,
-			'session_nonce'      => wp_create_nonce( 'wc_store_api' ),
-			'store_api_token'    => self::init_store_api_token(),
-			'email'              => '',
-			'store_data'         => [
+			'wcpay_version'        => WCPAY_VERSION_NUMBER,
+			'user_id'              => $user->ID,
+			'customer_id'          => $customer_id,
+			'session_nonce'        => self::create_woopay_nonce( $user->ID ),
+			'store_api_token'      => self::init_store_api_token(),
+			'email'                => '',
+			'store_data'           => [
 				'store_name'                     => get_bloginfo( 'name' ),
 				'store_logo'                     => ! empty( $store_logo ) ? get_rest_url( null, 'wc/v3/payments/file/' . $store_logo ) : '',
 				'custom_message'                 => WC_Payments::get_gateway()->get_option( 'platform_checkout_custom_message' ),
@@ -312,11 +372,12 @@ class WooPay_Session {
 				'blocks_data'                    => $blocks_data_extractor->get_data(),
 				'checkout_schema_namespaces'     => $blocks_data_extractor->get_checkout_schema_namespaces(),
 			],
-			'user_session'       => null,
-			'preloaded_requests' => [
+			'user_session'         => null,
+			'preloaded_requests'   => [
 				'cart'     => $cart_data,
 				'checkout' => $checkout_data,
 			],
+			'tracks_user_identity' => WC_Payments::woopay_tracker()->tracks_get_identity( $user->ID ),
 		];
 
 		return $request;
@@ -394,6 +455,22 @@ class WooPay_Session {
 		$cart_route = WooPay_Store_Api_Token::init();
 
 		return $cart_route->get_cart_token();
+	}
+
+	/**
+	 * WooPay requests to the merchant API does not include a cookie, so the token
+	 * is always empty. This function creates a nonce that can be used without
+	 * a cookie.
+	 *
+	 * @param int $uid The uid to be used for the nonce. Most likely the user ID.
+	 * @return false|string
+	 */
+	private static function create_woopay_nonce( int $uid ) {
+		$action = 'wc_store_api';
+		$token  = '';
+		$i      = wp_nonce_tick( $action );
+
+		return substr( wp_hash( $i . '|' . $action . '|' . $uid . '|' . $token, 'nonce' ), -12, 10 );
 	}
 
 }
