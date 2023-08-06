@@ -52,44 +52,6 @@ class WooPay_Session {
 		add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_woopay' ], 20 );
 		add_filter( 'rest_request_before_callbacks', [ __CLASS__, 'add_woopay_store_api_session_handler' ], 10, 3 );
 		add_action( 'woocommerce_store_api_checkout_update_order_meta', [ __CLASS__, 'remove_order_customer_id_on_requests_with_verified_email' ] );
-
-		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'init_woopay_session_data_button' ], 20 );
-		add_action( 'wp_head', [ __CLASS__, 'init_woopay_session_data_checkout' ] );
-	}
-
-	/**
-	 * Initializes the session data for WooPay to be combined with the /verify request.
-	 * This is only used for the express button outside of the checkout page.
-	 *
-	 * @return void
-	 */
-	public static function init_woopay_session_data_button() {
-
-		// the checkout is excluded and handled in init_woopay_session_data_checkout.
-		if ( ! WC_Payments_Features::is_woopay_enabled() || is_checkout() ) {
-			return;
-		}
-
-		$session_data = self::get_init_session_request();
-
-		wp_add_inline_script( 'WCPAY_WOOPAY_EXPRESS_BUTTON', 'sessionDataWooPay=' . wp_json_encode( $session_data ), 'before' );
-	}
-
-	/**
-	 * Initializes the session data for WooPay to be combined with the /verify request.
-	 * This is only used on the checkout page.
-	 *
-	 * @return void
-	 */
-	public static function init_woopay_session_data_checkout() {
-
-		if ( ! WC_Payments_Features::is_woopay_enabled() || ! is_checkout() ) {
-			return;
-		}
-
-		$session_data = self::get_init_session_request();
-
-		echo '<script type="text/javascript">sessionDataWooPay=' . wp_json_encode( $session_data ) . '</script>';
 	}
 
 	/**
@@ -258,6 +220,42 @@ class WooPay_Session {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Returns the encrypted session request for the frontend.
+	 *
+	 * @return array The encrypted session request.
+	 */
+	public static function get_frontend_init_session_request() {
+		$session = self::get_init_session_request();
+
+		// $store_blog_token = Jetpack_Options::get_option( 'blog_token' );
+		$store_blog_token = 'abc123';
+
+		$message = wp_json_encode( $session );
+
+		// Generate an initialization vector (IV) for encryption.
+		$iv = openssl_random_pseudo_bytes( openssl_cipher_iv_length( 'aes-256-cbc' ) );
+
+		// Encrypt the JSON session.
+		$session_encrypted = openssl_encrypt( $message, 'aes-256-cbc', $store_blog_token, OPENSSL_RAW_DATA, $iv );
+
+		// Create an HMAC hash for data integrity.
+		$hash = hash_hmac( 'sha256', $session_encrypted, $store_blog_token );
+
+		$data = [
+			'session' => $session_encrypted,
+			'iv'      => $iv,
+			'hash'    => $hash,
+		];
+
+		$response = [
+			'blog_id' => Jetpack_Options::get_option( 'id' ),
+			'data'    => array_map( 'base64_encode', $data ),
+		];
+
+		return $response;
 	}
 
 	/**

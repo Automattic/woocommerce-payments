@@ -1421,6 +1421,7 @@ class WC_Payments {
 
 		if ( $is_woopay_eligible && $is_woopay_enabled ) {
 			add_action( 'wc_ajax_wcpay_init_woopay', [ __CLASS__, 'ajax_init_woopay' ] );
+			add_action( 'wc_ajax_wcpay_get_woopay_session', [ __CLASS__, 'ajax_get_woopay_session' ] );
 			add_action( 'wc_ajax_wcpay_get_woopay_signature', [ __CLASS__, 'ajax_get_woopay_signature' ] );
 
 			// This injects the payments API and draft orders into core, so the WooCommerce Blocks plugin is not necessary.
@@ -1539,6 +1540,24 @@ class WC_Payments {
 
 		Logger::log( $response_body_json );
 		wp_send_json( json_decode( $response_body_json ) );
+	}
+
+	/**
+	 * Used to initialize woopay session on frontend
+	 *
+	 * @return void
+	 */
+	public static function ajax_get_woopay_session() {
+		$is_nonce_valid = check_ajax_referer( 'woopay_session_nonce', false, false );
+
+		if ( ! $is_nonce_valid ) {
+			wp_send_json_error(
+				__( 'You aren’t authorized to do that.', 'woocommerce-payments' ),
+				403
+			);
+		}
+
+		wp_send_json( WooPay_Session::get_frontend_init_session_request() );
 	}
 
 	/**

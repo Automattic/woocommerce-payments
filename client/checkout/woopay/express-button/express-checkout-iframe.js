@@ -88,36 +88,22 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		// Set the initial value.
 		iframeHeaderValue = true;
 
-		if ( window.sessionDataWooPay ) {
-			request(
-				buildAjaxURL(
-					getConfig( 'wcAjaxUrl' ),
-					'get_woopay_signature'
-				),
-				{
-					_ajax_nonce: getConfig( 'woopaySignatureNonce' ),
-				}
-			)
-				.then( ( response ) => {
-					if ( response.success ) {
-						return response.data;
-					}
-				} )
-				.then( ( data ) => {
-					if ( data.signature ) {
-						iframe.contentWindow.postMessage(
-							{
-								action: 'setSessionData',
-								value: {
-									...window.sessionDataWooPay,
-									request_signature: data.signature,
-								},
-							},
-							getConfig( 'woopayHost' )
-						);
-					}
-				} );
-		}
+		request(
+			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_session' ),
+			{
+				_ajax_nonce: getConfig( 'woopaySessionNonce' ),
+			}
+		).then( ( response ) => {
+			if ( response.data.session ) {
+				iframe.contentWindow.postMessage(
+					{
+						action: 'setSessionData',
+						value: response,
+					},
+					getConfig( 'woopayHost' )
+				);
+			}
+		} );
 
 		getWindowSize();
 		window.addEventListener( 'resize', getWindowSize );
