@@ -1,5 +1,6 @@
 export type AccountStatus =
 	| 'complete'
+	| 'enabled'
 	| 'pending_verification'
 	| 'restricted_partially'
 	| 'restricted'
