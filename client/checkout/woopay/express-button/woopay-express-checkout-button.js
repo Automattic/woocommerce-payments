@@ -113,7 +113,7 @@ export const WoopayExpressCheckoutButton = ( {
 			data-width-type={ buttonWidthType }
 			style={ { height: `${ height }px` } }
 		>
-			<div>{ text }</div>
+			{ text }
 			<ThemedWooPayIcon />
 		</button>
 	);
