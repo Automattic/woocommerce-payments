@@ -1065,6 +1065,11 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-authorizations-controller.php';
 		$authorizations_controller = new WC_REST_Payments_Authorizations_Controller( self::$api_client );
 		$authorizations_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-transactions-controller.php';
+		$reports_transactions_controller = new WC_REST_Payments_Reports_Transactions_Controller( self::$api_client );
+		$reports_transactions_controller->register_routes();
+		
 	}
 
 	/**
