@@ -9,8 +9,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use Automattic\WooCommerce\StoreApi\StoreApi;
-use Automattic\WooCommerce\StoreApi\RoutesController;
 use WCPay\Core\Mode;
 use WCPay\Core\Server\Request;
 use WCPay\Logger;
@@ -1606,24 +1604,6 @@ class WC_Payments {
 			],
 			200
 		);
-	}
-
-	/**
-	 * Retrieves the Store API URL.
-	 *
-	 * @return string
-	 */
-	public static function get_store_api_url() {
-		if ( class_exists( StoreApi::class ) && class_exists( RoutesController::class ) ) {
-			try {
-				$cart          = StoreApi::container()->get( RoutesController::class )->get( 'cart' );
-				$store_api_url = method_exists( $cart, 'get_namespace' ) ? $cart->get_namespace() : 'wc/store';
-			} catch ( Exception $e ) {
-				$store_api_url = 'wc/store';
-			}
-		}
-
-		return get_rest_url( null, $store_api_url ?? 'wc/store' );
 	}
 
 	/**

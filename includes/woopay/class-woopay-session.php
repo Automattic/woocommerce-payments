@@ -8,6 +8,8 @@
 namespace WCPay\WooPay;
 
 use Automattic\Jetpack\Connection\Rest_Authentication;
+use Automattic\WooCommerce\StoreApi\RoutesController;
+use Automattic\WooCommerce\StoreApi\StoreApi;
 use Automattic\WooCommerce\StoreApi\Utilities\JsonWebToken;
 use Jetpack_Options;
 use WCPay\Blocks_Data_Extractor;
@@ -361,7 +363,7 @@ class WooPay_Session {
 				'blog_url'                       => get_site_url(),
 				'blog_checkout_url'              => wc_get_checkout_url(),
 				'blog_shop_url'                  => get_permalink( wc_get_page_id( 'shop' ) ),
-				'store_api_url'                  => WC_Payments::get_store_api_url(),
+				'store_api_url'                  => self::get_store_api_url(),
 				'account_id'                     => $account_id,
 				'test_mode'                      => WC_Payments::mode()->is_test(),
 				'capture_method'                 => empty( WC_Payments::get_gateway()->get_option( 'manual_capture' ) ) || 'no' === WC_Payments::get_gateway()->get_option( 'manual_capture' ) ? 'automatic' : 'manual',
@@ -455,6 +457,24 @@ class WooPay_Session {
 		$cart_route = WooPay_Store_Api_Token::init();
 
 		return $cart_route->get_cart_token();
+	}
+
+	/**
+	 * Retrieves the Store API URL.
+	 *
+	 * @return string
+	 */
+	public static function get_store_api_url() {
+		if ( class_exists( StoreApi::class ) && class_exists( RoutesController::class ) ) {
+			try {
+				$cart          = StoreApi::container()->get( RoutesController::class )->get( 'cart' );
+				$store_api_url = method_exists( $cart, 'get_namespace' ) ? $cart->get_namespace() : 'wc/store';
+			} catch ( \Exception $e ) {
+				$store_api_url = 'wc/store';
+			}
+		}
+
+		return get_rest_url( null, $store_api_url ?? 'wc/store' );
 	}
 
 	/**
