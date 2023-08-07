@@ -94,7 +94,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 6.3.0 - 2023-08-09 =
+= 6.3.0-test-3 - unreleased =
 * Add - Add constant flag to use the new payment service (project reengineering payment process).
 * Add - Add JCB payment method coming soon notice
 * Add - Add payment service class (project reengineering payment process).
