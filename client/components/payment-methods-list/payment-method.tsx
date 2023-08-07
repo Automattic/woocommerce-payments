@@ -34,6 +34,8 @@ const PaymentMethod = ( {
 	onUncheckClick,
 	className,
 	isAllowingManualCapture,
+	isSetupRequired,
+	setupTooltip,
 	required,
 	locked,
 }: {
@@ -48,6 +50,8 @@ const PaymentMethod = ( {
 	onUncheckClick: ( id: string ) => void;
 	className?: string;
 	isAllowingManualCapture: boolean;
+	isSetupRequired?: boolean;
+	setupTooltip?: string;
 	required: boolean;
 	locked: boolean;
 } ): React.ReactElement => {
@@ -59,7 +63,14 @@ const PaymentMethod = ( {
 	);
 	const [ isManualCaptureEnabled ] = useManualCapture();
 
-	const needsOverlay = isManualCaptureEnabled && ! isAllowingManualCapture;
+	const needsOverlay =
+		( isManualCaptureEnabled && ! isAllowingManualCapture ) ||
+		isSetupRequired;
+
+	// As the JCB is not a separate payment method we fallback to card.
+	if ( id === 'jcb' ) {
+		id = 'card';
+	}
 
 	const handleChange = ( newStatus: string ) => {
 		// If the payment method control is locked, reject any changes.
@@ -92,6 +103,8 @@ const PaymentMethod = ( {
 					delayMsOnUncheck={ 0 }
 					hideLabel
 					isAllowingManualCapture={ isAllowingManualCapture }
+					isSetupRequired={ isSetupRequired }
+					setupTooltip={ setupTooltip }
 				/>
 			</div>
 			<div className="payment-method__icon">

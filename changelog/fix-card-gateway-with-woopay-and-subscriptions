@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Allow card gateway to load properly with WooPay enabled and subscription item in the cart.
