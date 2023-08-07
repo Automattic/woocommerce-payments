@@ -2118,11 +2118,27 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Retrieves the country of the current account.
+	 * Retrieves the domestic currency of the current account based on its country.
+	 * It will fallback to the store's currency if the account's country is not supported.
+	 *
+	 * @return string The domestic currency code.
 	 */
 	protected function get_account_domestic_currency(): string {
-		$merchant_country = $this->account->get_account_country();
-		return $this->localization_service->get_country_locale_data( $merchant_country )['currency_code'];
+		$merchant_country    = $this->account->get_account_country();
+		$country_locale_data = $this->localization_service->get_country_locale_data( $merchant_country );
+
+		// Check for missing country locale data.
+		if ( ! $country_locale_data || ! isset( $country_locale_data['currency_code'] ) ) {
+			Logger::error(
+				sprintf(
+					'Could not find locale data for merchant country: %s. Falling back to the store\'s default currency.',
+					$merchant_country
+				)
+			);
+			return $this->get_account_default_currency();
+		}
+
+		return $country_locale_data['currency_code'];
 	}
 
 	/**
