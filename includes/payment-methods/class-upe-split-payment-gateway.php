@@ -142,6 +142,23 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	}
 
 	/**
+	 * This method is used by WooCommerce Core's WC_Payment_Gateways::get_available_payment_gateways() to filter out gateways.
+	 *
+	 * The availability decision includes an additional business rule that checks if the payment method is enabled at checkout
+	 * via the is_enabled_at_checkout method. This method provides crucial information, among others, to determine if the gateway
+	 * is reusable in case there's a subcription in the cart.
+	 *
+	 * @return bool Whether the gateway is enabled and ready to accept payments.
+	 */
+	public function is_available() {
+		$processing_payment_method = $this->payment_methods[ $this->payment_method->get_id() ];
+		if ( ! $processing_payment_method->is_enabled_at_checkout() ) {
+			return false;
+		}
+		return parent::is_available();
+	}
+
+	/**
 	 * Gets UPE_Payment_Method instance from ID.
 	 *
 	 * @param string $payment_method_type Stripe payment method type ID.
