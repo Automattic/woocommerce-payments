@@ -13,13 +13,13 @@ use Jetpack_Options;
 use WCPay\Blocks_Data_Extractor;
 use WCPay\Logger;
 use WCPay\Platform_Checkout\SessionHandler;
+use WCPay\Platform_Checkout\WooPay_Store_Api_Token;
 use WCPay\WooPay\WooPay_Scheduler;
 use WC_Customer;
 use WC_Payments;
 use WC_Payments_Customer_Service;
 use WC_Payments_Features;
 use WP_REST_Request;
-use WCPay\Platform_Checkout\WooPay_Store_Api_Token;
 
 /**
  * Class responsible for handling woopay sessions.
@@ -465,7 +465,7 @@ class WooPay_Session {
 	 * @param int $uid The uid to be used for the nonce. Most likely the user ID.
 	 * @return false|string
 	 */
-	private static function create_woopay_nonce( int $uid ) {
+	public static function create_woopay_nonce( int $uid ) {
 		$action = 'wc_store_api';
 		$token  = '';
 		$i      = wp_nonce_tick( $action );

@@ -41,7 +41,6 @@ use WCPay\WC_Payments_Checkout;
 use WCPay\WC_Payments_UPE_Checkout;
 use WCPay\WooPay\Service\Checkout_Service;
 use WCPay\Core\WC_Payments_Customer_Service_API;
-use WCPay\Blocks_Data_Extractor;
 use WCPay\WooPay\WooPay_Adapted_Extensions;
 use WCPay\Constants\Payment_Method;
 use WCPay\Duplicate_Payment_Prevention_Service;
@@ -1521,7 +1520,7 @@ class WC_Payments {
 				$store_user_email_registered = get_user_by( 'email', $email );
 
 				if ( $store_user_email_registered ) {
-					$body['email_verified_session_nonce'] = self::create_woopay_nonce( $store_user_email_registered->ID );
+					$body['email_verified_session_nonce'] = WooPay_Session::create_woopay_nonce( $store_user_email_registered->ID );
 				}
 			}
 		}
