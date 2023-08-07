@@ -60,7 +60,7 @@ export const getCurrency = ( currencyCode, baseCurrencyCode = null ) => {
 				currency.decimalSeparator = baseCurrency.decimalSeparator;
 				currency.thousandSeparator = baseCurrency.thousandSeparator;
 				currency.symbolPosition = baseCurrency.symbolPosition;
-				if ( currency.precision !== 0 ) {
+				if ( currency.precision !== 0 && country !== 'JP' ) {
 					currency.precision = baseCurrency.precision;
 				}
 			}
