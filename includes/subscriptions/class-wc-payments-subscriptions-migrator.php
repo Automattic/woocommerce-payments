@@ -389,7 +389,7 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 			),
 			'callback'         => [ $this, 'schedule_migrate_wcpay_subscriptions_action' ],
 			'disabled'         => $disabled,
-			'requires_refresh' => false,
+			'requires_refresh' => true,
 		];
 
 		return $tools;
