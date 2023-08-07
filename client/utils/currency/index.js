@@ -60,6 +60,8 @@ export const getCurrency = ( currencyCode, baseCurrencyCode = null ) => {
 				currency.decimalSeparator = baseCurrency.decimalSeparator;
 				currency.thousandSeparator = baseCurrency.thousandSeparator;
 				currency.symbolPosition = baseCurrency.symbolPosition;
+				// If the country is Japan we should skip overwriting the precission
+				// as overwriting it would cause non-zero decimal currencies to act as zero-decimal.
 				if ( currency.precision !== 0 && country !== 'JP' ) {
 					currency.precision = baseCurrency.precision;
 				}
