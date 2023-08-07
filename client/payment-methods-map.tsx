@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -247,24 +247,6 @@ const PaymentMethodInformationObject: Record<
 			'woocommerce-payments'
 		),
 	},
-};
-
-export const getPaymentMethodDescription = (
-	paymentMethodId: string,
-	currency: string
-): string | null => {
-	let {
-		description,
-		allows_pay_later: allowsPayLater,
-	} = PaymentMethodInformationObject[ paymentMethodId ];
-
-	if ( ! description ) return null;
-
-	if ( allowsPayLater ) {
-		description = sprintf( description, currency.toUpperCase() );
-	}
-
-	return description;
 };
 
 export default PaymentMethodInformationObject;

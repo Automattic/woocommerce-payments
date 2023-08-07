@@ -16,9 +16,7 @@ import { HoverTooltip } from 'components/tooltip';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 import { useManualCapture, useAccountDomesticCurrency } from 'wcpay/data';
 import { FeeStructure } from 'wcpay/types/fees';
-import PaymentMethodsMap, {
-	getPaymentMethodDescription,
-} from '../../payment-methods-map';
+import PaymentMethodsMap from '../../payment-methods-map';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import {
 	formatMethodFeesDescription,
@@ -26,6 +24,7 @@ import {
 } from '../../utils/account-fees';
 import PaymentMethodDisabledTooltip from '../payment-method-disabled-tooltip';
 import Pill from '../pill';
+import { getPaymentMethodDescription } from 'wcpay/utils/payment-methods';
 import './payment-method-checkbox.scss';
 
 type PaymentMethodProps = {

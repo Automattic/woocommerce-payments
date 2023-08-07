@@ -41,14 +41,13 @@ import PaymentMethodsList from 'components/payment-methods-list';
 import PaymentMethod from 'components/payment-methods-list/payment-method';
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
 import Pill from '../components/pill';
-import methodsConfiguration, {
-	getPaymentMethodDescription,
-} from '../payment-methods-map';
+import methodsConfiguration from '../payment-methods-map';
 import CardBody from '../settings/card-body';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 import ConfirmPaymentMethodActivationModal from './activation-modal';
 import ConfirmPaymentMethodDeleteModal from './delete-modal';
 import { getAdminUrl } from 'wcpay/utils';
+import { getPaymentMethodDescription } from 'wcpay/utils/payment-methods';
 
 const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 	return (
