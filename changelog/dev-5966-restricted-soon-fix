@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Add support for the Enabled status from Stripe (will replace Restricted Soon in the case where there is no active deadline).

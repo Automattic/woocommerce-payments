@@ -64,8 +64,9 @@ class Container implements ContainerInterface {
 	/**
 	 * Retrieves an instance of a given class.
 	 *
-	 * @param string $id The ID of the class to retrieve.
-	 * @return mixed
+	 * @template ID
+	 * @param class-string<ID> $id The ID of the class to retrieve.
+	 * @return ID
 	 */
 	public function get( $id ) {
 		return $this->container->get( $id );

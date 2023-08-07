@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Enable customers who have migrated a WCPay subscription to a tokenised subscription to pay for existing failed orders.

@@ -71,9 +71,6 @@ class ContainerTest extends WCPAY_UnitTestCase {
 
 		$this->sut      = wcpay_get_container();
 		$this->test_sut = wcpay_get_test_container();
-
-		// Prevent leaks between tests.
-		$this->test_sut->reset_all_replacements();
 	}
 
 	/**

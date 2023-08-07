@@ -35,6 +35,7 @@ use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
+use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\WooPay\WooPay_Order_Status_Sync;
 use WCPay\WooPay\WooPay_Utilities;
@@ -208,22 +209,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->icon               = plugins_url( 'assets/images/payment-methods/cc.svg', WCPAY_PLUGIN_FILE );
 		$this->has_fields         = true;
 		$this->method_title       = 'WooPayments';
-		$this->method_description = WC_Payments_Utils::esc_interpolated_html(
-			sprintf(
-				/* translators: %1$s: WooPayments, tosLink: Link to terms of service page, privacyLink: Link to privacy policy page */
-				__(
-					'%1$s gives your store flexibility to accept credit cards, debit cards, and Apple Pay. Enable popular local payment methods and other digital wallets like Google Pay to give customers even more choice.<br/><br/>
-			By using %1$s you agree to be bound by our <tosLink>Terms of Service</tosLink>  and acknowledge that you have read our <privacyLink>Privacy Policy</privacyLink>',
-					'woocommerce-payments'
-				),
-				'WooPayments'
-			),
-			[
-				'br'          => '<br/>',
-				'tosLink'     => '<a href="https://wordpress.com/tos/" target="_blank" rel="noopener noreferrer">',
-				'privacyLink' => '<a href="https://automattic.com/privacy/" target="_blank" rel="noopener noreferrer">',
-			]
-		);
+		$this->method_description = $this->get_method_description();
+
 		$this->title       = __( 'Credit card / debit card', 'woocommerce-payments' );
 		$this->description = __( 'Enter your card details', 'woocommerce-payments' );
 		$this->supports    = [
@@ -764,7 +751,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				];
 			}
 
-			UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
+			if ( WC_Payments_Features::is_upe_split_enabled() ) {
+				UPE_Split_Payment_Gateway::remove_upe_payment_intent_from_session();
+			} else {
+				UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
+			}
 
 			$check_session_order = $this->duplicate_payment_prevention_service->check_against_session_processing_order( $order );
 			if ( is_array( $check_session_order ) ) {
@@ -866,7 +857,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$order->add_order_note( $note );
 			}
 
-			UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
+			if ( WC_Payments_Features::is_upe_split_enabled() ) {
+				UPE_Split_Payment_Gateway::remove_upe_payment_intent_from_session();
+			} else {
+				UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
+			}
 
 			// Re-throw the exception after setting everything up.
 			// This makes the error notice show up both in the regular and block checkout.
@@ -1155,6 +1150,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					}
 				}
 
+				// For Stripe Link with deferred intent UPE, we must create mandate to acknowledge that terms have been shown to customer.
+				if (
+					WC_Payments_Features::is_upe_deferred_intent_enabled() &&
+					Payment_Method::CARD === $this->get_selected_stripe_payment_type_id() &&
+					in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true )
+					) {
+					$request->set_mandate_data( $this->get_mandate_data() );
+				}
+
 				/** @var WC_Payments_API_Payment_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 				$intent = $request->send( 'wcpay_create_and_confirm_intent_request', $payment_information );
 			}
@@ -1221,6 +1225,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_customer( $customer_id );
 				$request->set_payment_method( $payment_information->get_payment_method() );
 				$request->set_metadata( $metadata );
+
+				if (
+					WC_Payments_Features::is_upe_deferred_intent_enabled() &&
+					Payment_Method::CARD === $this->get_selected_stripe_payment_type_id() &&
+					in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true )
+					) {
+					$request->set_payment_method_types( $this->get_payment_methods_from_request() );
+					$request->set_mandate_data( $this->get_mandate_data() );
+				}
+
 				/** @var WC_Payments_API_Setup_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 				$intent = $request->send( 'wcpay_create_and_confirm_setup_intention_request', $payment_information, false, $save_user_in_woopay );
 			}
@@ -1377,11 +1391,32 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_methods = [ str_replace( 'woocommerce_payments_', '', $upe_payment_method ) ];
 		} elseif ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 			$payment_methods = [ 'card' ];
+			if ( WC_Payments_Features::is_upe_deferred_intent_enabled() &&
+				in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true ) ) {
+				$payment_methods[] = Payment_Method::LINK;
+			}
 		} else {
 			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
 		}
 
 		return $payment_methods;
+	}
+
+	/**
+	 * Get values for Stripe mandate_data parameter
+	 *
+	 * @return array mandate_data values to use in request.
+	 */
+	private function get_mandate_data() {
+		return [
+			'customer_acceptance' => [
+				'type'   => 'online',
+				'online' => [
+					'ip_address' => WC_Geolocation::get_ip_address(),
+					'user_agent' => 'WooCommerce Payments/' . WCPAY_VERSION_NUMBER . '; ' . get_bloginfo( 'url' ),
+				],
+			],
+		];
 	}
 
 	/**
@@ -1738,6 +1773,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		switch ( $key ) {
 			case 'enabled':
 				return parent::get_option( static::METHOD_ENABLED_KEY, $empty_value );
+			case 'account_country':
+				return $this->get_account_country();
 			case 'account_statement_descriptor':
 				return $this->get_account_statement_descriptor();
 			case 'account_business_name':
@@ -2138,6 +2175,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 		} catch ( Exception $e ) {
 			Logger::error( 'Failed to get deposit delay days.' . $e );
+		}
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account country.
+	 *
+	 * @param string $default_value Value to return when not connected or fails to fetch account details. Default is US.
+	 *
+	 * @return string code of the country.
+	 */
+	protected function get_account_country( string $default_value = 'US' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_account_country() ?? $default_value;
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account country.' . $e );
 		}
 		return $default_value;
 	}
@@ -3329,6 +3384,50 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public static function get_settings_url() {
 		return WC_Payments_Admin_Settings::get_settings_url();
+	}
+
+	/**
+	 * Get the right method description if WooPay is eligible.
+	 *
+	 * @return string
+	 */
+	public function get_method_description() {
+		$description_links = [
+			'br'                   => '<br/>',
+			'tosLink'              => '<a href="https://wordpress.com/tos/" target="_blank" rel="noopener noreferrer">',
+			'privacyLink'          => '<a href="https://automattic.com/privacy/" target="_blank" rel="noopener noreferrer">',
+			'woopayMechantTosLink' => '<a href="https://wordpress.com/tos/#more-woopay-specifically" target="_blank" rel="noopener noreferrer">',
+		];
+
+		$description = WC_Payments_Utils::esc_interpolated_html(
+			sprintf(
+				/* translators: %1$s: WooPayments, tosLink: Link to terms of service page, privacyLink: Link to privacy policy page */
+				__(
+					'%1$s gives your store flexibility to accept credit cards, debit cards, and Apple Pay. Enable popular local payment methods and other digital wallets like Google Pay to give customers even more choice.<br/><br/>
+			By using %1$s you agree to be bound by our <tosLink>Terms of Service</tosLink>  and acknowledge that you have read our <privacyLink>Privacy Policy</privacyLink>',
+					'woocommerce-payments'
+				),
+				'WooPayments'
+			),
+			$description_links
+		);
+
+		if ( WooPay_Utilities::is_store_country_available() ) {
+			$description = WC_Payments_Utils::esc_interpolated_html(
+				sprintf(
+					/* translators: %1$s: WooPayments, tosLink: Link to terms of service page, woopayMechantTosLink: Link to WooPay merchant terms, privacyLink: Link to privacy policy page */
+					__(
+						'Payments made simple — including WooPay, a new express checkout feature.<br/><br/>
+				By using %1$s you agree to be bound by our <tosLink>Terms of Service</tosLink> (including WooPay <woopayMechantTosLink>merchant terms</woopayMechantTosLink>) and acknowledge that you have read our <privacyLink>Privacy Policy</privacyLink>',
+						'woocommerce-payments'
+					),
+					'WooPayments'
+				),
+				$description_links
+			);
+		}
+
+		return $description;
 	}
 
 	// Start: Deprecated functions.
