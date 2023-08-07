@@ -325,7 +325,7 @@ class WooPay_Session {
 	 *
 	 * @return array
 	 */
-	public static function get_init_session_request() {
+	private static function get_init_session_request() {
 		$user        = wp_get_current_user();
 		$customer_id = WC_Payments::get_customer_service()->get_customer_id_by_user_id( $user->ID );
 		if ( null === $customer_id ) {
@@ -383,6 +383,101 @@ class WooPay_Session {
 		];
 
 		return $request;
+	}
+
+	/**
+	 * Used to initialize woopay session.
+	 *
+	 * @return void
+	 */
+	public static function ajax_init_woopay() {
+		$is_nonce_valid = check_ajax_referer( 'wcpay_init_woopay_nonce', false, false );
+
+		if ( ! $is_nonce_valid ) {
+			wp_send_json_error(
+				__( 'You aren’t authorized to do that.', 'woocommerce-payments' ),
+				403
+			);
+		}
+
+		$email = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : '';
+
+		$body                 = self::get_init_session_request();
+		$body['email']        = $email;
+		$body['user_session'] = isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null;
+
+		if ( ! empty( $email ) ) {
+			// Save email in session to skip TYP verify email and check if
+			// WooPay verified email matches.
+			WC()->customer->set_billing_email( $email );
+			WC()->customer->save();
+
+			$woopay_adapted_extensions  = new WooPay_Adapted_Extensions();
+			$body['adapted_extensions'] = $woopay_adapted_extensions->get_adapted_extensions_data( $email );
+
+			if ( ! is_user_logged_in() && count( $body['adapted_extensions'] ) > 0 ) {
+				$store_user_email_registered = get_user_by( 'email', $email );
+
+				if ( $store_user_email_registered ) {
+					$body['email_verified_session_nonce'] = self::create_woopay_nonce( $store_user_email_registered->ID );
+				}
+			}
+		}
+
+		$args = [
+			'url'     => WooPay_Utilities::get_woopay_rest_url( 'init' ),
+			'method'  => 'POST',
+			'timeout' => 30,
+			'body'    => wp_json_encode( $body ),
+			'headers' => [
+				'Content-Type' => 'application/json',
+			],
+		];
+
+		/**
+		 * Suppress psalm error from Jetpack Connection namespacing WP_Error.
+		 *
+		 * @psalm-suppress UndefinedDocblockClass
+		 */
+		$response = \Automattic\Jetpack\Connection\Client::remote_request( $args, wp_json_encode( $body ) );
+
+		if ( is_wp_error( $response ) || ! is_array( $response ) ) {
+			Logger::error( 'HTTP_REQUEST_ERROR ' . var_export( $response, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+			// phpcs:ignore
+			/**
+			 * @psalm-suppress UndefinedDocblockClass
+			 */
+			$message = sprintf(
+				// translators: %1: original error message.
+				__( 'Http request failed. Reason: %1$s', 'woocommerce-payments' ),
+				$response->get_error_message()
+			);
+			// Respond with same message platform would respond with on failure.
+			$response_body_json = wp_json_encode( [ 'result' => 'failure' ] );
+		} else {
+			$response_body_json = wp_remote_retrieve_body( $response );
+		}
+
+		Logger::log( $response_body_json );
+		wp_send_json( json_decode( $response_body_json ) );
+	}
+
+	/**
+	 * Used to initialize woopay session on frontend
+	 *
+	 * @return void
+	 */
+	public static function ajax_get_woopay_session() {
+		$is_nonce_valid = check_ajax_referer( 'woopay_session_nonce', false, false );
+
+		if ( ! $is_nonce_valid ) {
+			wp_send_json_error(
+				__( 'You aren’t authorized to do that.', 'woocommerce-payments' ),
+				403
+			);
+		}
+
+		wp_send_json( self::get_frontend_init_session_request() );
 	}
 
 	/**
@@ -464,7 +559,7 @@ class WooPay_Session {
 	 *
 	 * @return string
 	 */
-	public static function get_store_api_url() {
+	private static function get_store_api_url() {
 		if ( class_exists( StoreApi::class ) && class_exists( RoutesController::class ) ) {
 			try {
 				$cart          = StoreApi::container()->get( RoutesController::class )->get( 'cart' );
@@ -485,7 +580,7 @@ class WooPay_Session {
 	 * @param int $uid The uid to be used for the nonce. Most likely the user ID.
 	 * @return false|string
 	 */
-	public static function create_woopay_nonce( int $uid ) {
+	private static function create_woopay_nonce( int $uid ) {
 		$action = 'wc_store_api';
 		$token  = '';
 		$i      = wp_nonce_tick( $action );

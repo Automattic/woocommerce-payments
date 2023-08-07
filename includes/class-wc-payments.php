@@ -11,7 +11,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WCPay\Core\Mode;
 use WCPay\Core\Server\Request;
-use WCPay\Logger;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
 use WCPay\Payment_Methods\CC_Payment_Method;
@@ -39,11 +38,9 @@ use WCPay\WC_Payments_Checkout;
 use WCPay\WC_Payments_UPE_Checkout;
 use WCPay\WooPay\Service\Checkout_Service;
 use WCPay\Core\WC_Payments_Customer_Service_API;
-use WCPay\WooPay\WooPay_Adapted_Extensions;
 use WCPay\Constants\Payment_Method;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\WooPay\WooPay_Scheduler;
-use WCPay\WooPay\WooPay_Session;
 
 /**
  * Main class for the WooPayments extension. Its responsibility is to initialize the extension.
@@ -1428,8 +1425,8 @@ class WC_Payments {
 		$is_woopay_enabled  = 'yes' === self::get_gateway()->get_option( 'platform_checkout', 'no' );
 
 		if ( $is_woopay_eligible && $is_woopay_enabled ) {
-			add_action( 'wc_ajax_wcpay_init_woopay', [ __CLASS__, 'ajax_init_woopay' ] );
-			add_action( 'wc_ajax_wcpay_get_woopay_session', [ __CLASS__, 'ajax_get_woopay_session' ] );
+			add_action( 'wc_ajax_wcpay_init_woopay', [ '\WCPay\WooPay\WooPay_Session', 'ajax_init_woopay' ] );
+			add_action( 'wc_ajax_wcpay_get_woopay_session', [ '\WCPay\WooPay\WooPay_Session', 'ajax_get_woopay_session' ] );
 			add_action( 'wc_ajax_wcpay_get_woopay_signature', [ __CLASS__, 'ajax_get_woopay_signature' ] );
 
 			// This injects the payments API and draft orders into core, so the WooCommerce Blocks plugin is not necessary.
@@ -1482,101 +1479,6 @@ class WC_Payments {
 			$woopay_button_handler                   = new WC_Payments_WooPay_Button_Handler( self::$account, self::get_gateway(), self::$woopay_util );
 			$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $payment_request_button_handler, $woopay_button_handler );
 		}
-	}
-
-	/**
-	 * Used to initialize woopay session.
-	 *
-	 * @return void
-	 */
-	public static function ajax_init_woopay() {
-		$is_nonce_valid = check_ajax_referer( 'wcpay_init_woopay_nonce', false, false );
-
-		if ( ! $is_nonce_valid ) {
-			wp_send_json_error(
-				__( 'You aren’t authorized to do that.', 'woocommerce-payments' ),
-				403
-			);
-		}
-
-		$email = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : '';
-
-		$body                 = WooPay_Session::get_init_session_request();
-		$body['email']        = $email;
-		$body['user_session'] = isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null;
-
-		if ( ! empty( $email ) ) {
-			// Save email in session to skip TYP verify email and check if
-			// WooPay verified email matches.
-			WC()->customer->set_billing_email( $email );
-			WC()->customer->save();
-
-			$woopay_adapted_extensions  = new WooPay_Adapted_Extensions();
-			$body['adapted_extensions'] = $woopay_adapted_extensions->get_adapted_extensions_data( $email );
-
-			if ( ! is_user_logged_in() && count( $body['adapted_extensions'] ) > 0 ) {
-				$store_user_email_registered = get_user_by( 'email', $email );
-
-				if ( $store_user_email_registered ) {
-					$body['email_verified_session_nonce'] = WooPay_Session::create_woopay_nonce( $store_user_email_registered->ID );
-				}
-			}
-		}
-
-		$args = [
-			'url'     => WooPay_Utilities::get_woopay_rest_url( 'init' ),
-			'method'  => 'POST',
-			'timeout' => 30,
-			'body'    => wp_json_encode( $body ),
-			'headers' => [
-				'Content-Type' => 'application/json',
-			],
-		];
-
-		/**
-		 * Suppress psalm error from Jetpack Connection namespacing WP_Error.
-		 *
-		 * @psalm-suppress UndefinedDocblockClass
-		 */
-		$response = Automattic\Jetpack\Connection\Client::remote_request( $args, wp_json_encode( $body ) );
-
-		if ( is_wp_error( $response ) || ! is_array( $response ) ) {
-			Logger::error( 'HTTP_REQUEST_ERROR ' . var_export( $response, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
-			// phpcs:ignore
-			/**
-			 * @psalm-suppress UndefinedDocblockClass
-			 */
-			$message = sprintf(
-				// translators: %1: original error message.
-				__( 'Http request failed. Reason: %1$s', 'woocommerce-payments' ),
-				$response->get_error_message()
-			);
-			// Respond with same message platform would respond with on failure.
-			$response_body_json = wp_json_encode( [ 'result' => 'failure' ] );
-		} else {
-			$response_body_json = wp_remote_retrieve_body( $response );
-		}
-
-		Logger::log( $response_body_json );
-		wp_send_json( json_decode( $response_body_json ) );
-	}
-
-	/**
-	 * Used to initialize woopay session on frontend
-	 *
-	 * @return void
-	 */
-	public static function ajax_get_woopay_session() {
-		$is_nonce_valid = check_ajax_referer( 'woopay_session_nonce', false, false );
-
-		if ( ! $is_nonce_valid ) {
-			wp_send_json_error(
-				__( 'You aren’t authorized to do that.', 'woocommerce-payments' ),
-				403
-			);
-		}
-
-		wp_send_json( WooPay_Session::get_frontend_init_session_request() );
 	}
 
 	/**
