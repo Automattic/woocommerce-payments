@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React, { useContext, useState } from 'react';
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import {
 	Button,
 	Card,
@@ -41,7 +41,9 @@ import PaymentMethodsList from 'components/payment-methods-list';
 import PaymentMethod from 'components/payment-methods-list/payment-method';
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
 import Pill from '../components/pill';
-import methodsConfiguration from '../payment-methods-map';
+import methodsConfiguration, {
+	getPaymentMethodDescription,
+} from '../payment-methods-map';
 import CardBody from '../settings/card-body';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 import ConfirmPaymentMethodActivationModal from './activation-modal';
@@ -283,25 +285,19 @@ const PaymentMethods = () => {
 							( {
 								id,
 								label,
-								description,
 								icon: Icon,
 								allows_manual_capture: isAllowingManualCapture,
 								setup_required: isSetupRequired,
 								setup_tooltip: setupTooltip,
-								allows_pay_later: isAllowingPayLater,
 							} ) => (
 								<PaymentMethod
 									id={ id }
 									key={ id }
 									label={ label }
-									description={
-										isAllowingPayLater
-											? sprintf(
-													description,
-													stripeAccountDomesticCurrency.toUpperCase()
-											  )
-											: description
-									}
+									description={ getPaymentMethodDescription(
+										id,
+										stripeAccountDomesticCurrency
+									) }
 									checked={
 										enabledMethodIds.includes( id ) &&
 										upeCapabilityStatuses.INACTIVE !==

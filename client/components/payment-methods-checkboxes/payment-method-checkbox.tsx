@@ -16,7 +16,9 @@ import { HoverTooltip } from 'components/tooltip';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 import { useManualCapture, useAccountDomesticCurrency } from 'wcpay/data';
 import { FeeStructure } from 'wcpay/types/fees';
-import PaymentMethodsMap from '../../payment-methods-map';
+import PaymentMethodsMap, {
+	getPaymentMethodDescription,
+} from '../../payment-methods-map';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import {
 	formatMethodFeesDescription,
@@ -30,25 +32,11 @@ type PaymentMethodProps = {
 	name: string;
 };
 
-const getDescription = ( name: string, currency: string ) => {
-	let { description, allows_pay_later: allowsPayLater } = PaymentMethodsMap[
-		name
-	];
-
-	if ( ! description ) return null;
-
-	if ( allowsPayLater ) {
-		description = sprintf( description, currency.toUpperCase() );
-	}
-
-	return description;
-};
-
 const PaymentMethodDescription: React.FC< PaymentMethodProps > = ( {
 	name,
 } ) => {
 	const [ stripeAccountDomesticCurrency ] = useAccountDomesticCurrency();
-	const description = getDescription(
+	const description = getPaymentMethodDescription(
 		name,
 		stripeAccountDomesticCurrency as string
 	);
