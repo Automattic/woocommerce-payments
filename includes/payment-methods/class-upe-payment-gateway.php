@@ -83,12 +83,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @var string
 	 */
 	protected $checkout_title;
-	/**
-	 * WC_Payments_Localization_Service instance.
-	 *
-	 * @var WC_Payments_Localization_Service
-	 */
-	protected $localization_service;
 
 	/**
 	 * UPE Constructor same parameters as WC_Payment_Gateway_WCPay constructor.

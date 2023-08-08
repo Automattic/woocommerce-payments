@@ -50,13 +50,6 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	protected $stripe_id;
 
 	/**
-	 * WC_Payments_Localization_Service instance.
-	 *
-	 * @var WC_Payments_Localization_Service
-	 */
-	protected $localization_service;
-
-	/**
 	 * UPE Constructor same parameters as WC_Payment_Gateway_WCPay constructor.
 	 *
 	 * @param WC_Payments_API_Client               $payments_api_client                  - WooCommerce Payments API client.
