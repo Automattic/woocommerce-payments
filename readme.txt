@@ -127,6 +127,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Highlight menu item when transaction details, deposit details, and disputes details page are opened.
 * Fix - Improve split UPE support of WooPay with multiple payment methods enabled.
 * Fix - Minor copy changes on the Set Up Real Payments modal.
+* Fix - Provide per active discount Terms and Conditions link in the Account details card.
 * Fix - Remove daily deposits for JP merchants as it's not permitted by our payment processor
 * Fix - Reverting change to the plugin name because of compatibility with iOS app.
 * Fix - Send correct shipping address to Afterpay in Classic Checkout
@@ -146,6 +147,7 @@ Please note that our support for the checkout block is still experimental and th
 * Dev - Adjust coding standards to align with WC Core.
 * Dev - Avoiding product-service exceptions during checkout, making debugging easier.
 * Dev - Fix Husky post-merge script to conform to `sh` syntax
+* Dev - Ignore updating currency precision if the country is Japan
 * Dev - Introduce model class WC_Payments_API_Setup_Intention for setup intents
 * Dev - Migrate certain WCPay shopper tracks to use wcpay prefix
 * Dev - Migrate Chip component to TypeScript to improve code quality.
