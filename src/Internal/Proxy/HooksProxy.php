@@ -8,7 +8,7 @@
 namespace WCPay\Internal\Proxy;
 
 /**
- * Actions Proxy
+ * Hooks Proxy
  *
  * Used for accessing WP hooks, incl. actions and filters.
  *
