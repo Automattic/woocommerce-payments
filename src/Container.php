@@ -67,6 +67,9 @@ class Container implements ContainerInterface {
 	 * @template ID
 	 * @param class-string<ID> $id The ID of the class to retrieve.
 	 * @return ID
+	 *
+	 * Psalm expects $id to be a string, based on ContainerInterface.
+	 * @psalm-suppress MoreSpecificImplementedParamType
 	 */
 	public function get( $id ) {
 		return $this->container->get( $id );
