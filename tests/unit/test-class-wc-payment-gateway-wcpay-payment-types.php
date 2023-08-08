@@ -78,13 +78,6 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 	 */
 	private $mock_order_service;
 
-	/**
-	 * WC_Payments_Localization_Service instance.
-	 *
-	 * @var WC_Payments_Localization_Service
-	 */
-	private $mock_localization_service;
-
 	const USER_ID           = 1;
 	const PAYMENT_METHOD_ID = 'pm_mock';
 
@@ -147,7 +140,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 					$this->mock_rate_limiter,
 					$this->mock_order_service,
 					$mock_dpps,
-					$this->mock_localization_service,
+					$this->createMock( WC_Payments_Localization_Service::class ),
 				]
 			)
 			->setMethods(

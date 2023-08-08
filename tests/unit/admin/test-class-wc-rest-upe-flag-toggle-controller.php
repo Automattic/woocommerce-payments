@@ -34,13 +34,6 @@ class WC_REST_UPE_Flag_Toggle_Controller_Test extends WCPAY_UnitTestCase {
 	private $gateway;
 
 	/**
-	 * WC_Payments_Localization_Service instance.
-	 *
-	 * @var WC_Payments_Localization_Service
-	 */
-	private $mock_localization_service;
-
-	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -53,15 +46,14 @@ class WC_REST_UPE_Flag_Toggle_Controller_Test extends WCPAY_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$mock_wcpay_account              = $this->createMock( WC_Payments_Account::class );
-		$this->mock_db_cache             = $this->createMock( Database_Cache::class );
-		$customer_service                = new WC_Payments_Customer_Service( $mock_api_client, $mock_wcpay_account, $this->mock_db_cache );
-		$token_service                   = new WC_Payments_Token_Service( $mock_api_client, $customer_service );
-		$order_service                   = new WC_Payments_Order_Service( $mock_api_client );
-		$action_scheduler_service        = new WC_Payments_Action_Scheduler_Service( $mock_api_client, $order_service );
-		$rate_limiter                    = new Session_Rate_Limiter( 'wcpay_card_declined_registry', 5, 60 );
-		$mock_dpps                       = $this->createMock( Duplicate_Payment_Prevention_Service::class );
-		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
+		$mock_wcpay_account       = $this->createMock( WC_Payments_Account::class );
+		$this->mock_db_cache      = $this->createMock( Database_Cache::class );
+		$customer_service         = new WC_Payments_Customer_Service( $mock_api_client, $mock_wcpay_account, $this->mock_db_cache );
+		$token_service            = new WC_Payments_Token_Service( $mock_api_client, $customer_service );
+		$order_service            = new WC_Payments_Order_Service( $mock_api_client );
+		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $mock_api_client, $order_service );
+		$rate_limiter             = new Session_Rate_Limiter( 'wcpay_card_declined_registry', 5, 60 );
+		$mock_dpps                = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 
 		$this->gateway    = new WC_Payment_Gateway_WCPay(
 			$mock_api_client,
@@ -72,7 +64,7 @@ class WC_REST_UPE_Flag_Toggle_Controller_Test extends WCPAY_UnitTestCase {
 			$rate_limiter,
 			$order_service,
 			$mock_dpps,
-			$this->mock_localization_service
+			$this->createMock( WC_Payments_Localization_Service::class )
 		);
 		$this->controller = new WC_REST_UPE_Flag_Toggle_Controller( $this->gateway );
 	}
