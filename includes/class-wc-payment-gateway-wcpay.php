@@ -2130,10 +2130,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$country_locale_data = $this->localization_service->get_country_locale_data( $merchant_country );
 
 		// Check for missing country locale data.
-		if ( ! $country_locale_data || ! isset( $country_locale_data['currency_code'] ) ) {
+		if ( ! isset( $country_locale_data['currency_code'] ) ) {
 			Logger::error(
 				sprintf(
-					'Could not find locale data for merchant country: %s. Falling back to the store\'s default currency.',
+					'Could not find locale data for merchant country: %s. Falling back to the merchant\'s default currency.',
 					$merchant_country
 				)
 			);
