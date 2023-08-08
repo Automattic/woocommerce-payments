@@ -9,6 +9,7 @@ namespace WCPay\Internal\DependencyManagement\DelegateContainer;
 
 use Psr\Container\ContainerInterface;
 use WC_Payments;
+use WCPay\Internal\DependencyManagement\ContainerException;
 
 /**
  * WooPayments Legacy Container Delegate.
@@ -23,9 +24,15 @@ class LegacyContainer implements ContainerInterface {
 	 * @template ID
 	 * @param class-string<ID> $id Identifier of the entry to look for.
 	 * @return ID
+	 * @throws ContainerException In case the container cannot resolve the identifier.
 	 */
 	public function get( $id ) {
 		$method = $this->transform_class_to_method( $id );
+
+		if ( ! $this->has( $id ) ) {
+			throw new ContainerException( sprintf( 'Class (%s) is not being managed by the legacy container', $id ) );
+		}
+
 		return $this->$method();
 	}
 
