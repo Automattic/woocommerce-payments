@@ -2126,7 +2126,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string The domestic currency code.
 	 */
 	protected function get_account_domestic_currency(): string {
-		$merchant_country    = $this->account->get_account_country();
+		$merchant_country    = strtoupper( $this->account->get_account_country() );
 		$country_locale_data = $this->localization_service->get_country_locale_data( $merchant_country );
 
 		// Check for missing country locale data.
