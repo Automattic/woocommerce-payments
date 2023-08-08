@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Fix Fraud and Risk Tools welcome tour to only show if Fraud and Risk banner learn more button is clicked and tour not previously dismissed.

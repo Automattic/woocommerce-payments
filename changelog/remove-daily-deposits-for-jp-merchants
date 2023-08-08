@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Remove daily deposits for JP merchants as it's not permitted by our payment processor
