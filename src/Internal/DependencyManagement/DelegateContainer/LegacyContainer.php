@@ -13,15 +13,16 @@ use WC_Payments;
 /**
  * WooPayments Legacy Container Delegate.
  *
- * This class is a proxy between `src` and `includes`, allwing
+ * This class is a proxy between `src` and `includes`, allowing
  * `includes` classes to be used as dependencies.
  */
 class LegacyContainer implements ContainerInterface {
 	/**
 	 * Finds an entry of the container by its identifier and returns it.
 	 *
-	 * @param string $id Identifier of the entry to look for.
-	 * @return mixed Entry.
+	 * @template ID
+	 * @param class-string<ID> $id Identifier of the entry to look for.
+	 * @return ID
 	 */
 	public function get( $id ) {
 		$method = $this->transform_class_to_method( $id );
