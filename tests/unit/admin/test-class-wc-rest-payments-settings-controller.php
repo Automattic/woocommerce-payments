@@ -796,6 +796,65 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $response->get_data()['is_card_present_eligible'] );
 	}
 
+	public function test_upe_get_settings_domestic_currency(): void {
+		$mock_domestic_currency = 'usd';
+		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn(
+			[
+				'currency_code' => $mock_domestic_currency,
+			]
+		);
+		$this->mock_wcpay_account
+			->expects( $this->never() )
+			->method( 'get_account_default_currency' );
+
+		$response = $this->upe_controller->get_settings();
+
+		$this->assertArrayHasKey( 'account_domestic_currency', $response->get_data() );
+		$this->assertSame( $mock_domestic_currency, $response->get_data()['account_domestic_currency'] );
+	}
+
+	public function test_upe_get_settings_domestic_currency_fallbacks_to_default_currency(): void {
+		$mock_domestic_currency = 'usd';
+		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn( [] );
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_account_default_currency' )
+			->willReturn( $mock_domestic_currency );
+		$response = $this->upe_controller->get_settings();
+
+		$this->assertArrayHasKey( 'account_domestic_currency', $response->get_data() );
+		$this->assertSame( $mock_domestic_currency, $response->get_data()['account_domestic_currency'] );
+	}
+
+	public function test_upe_split_get_settings_domestic_currency(): void {
+		$mock_domestic_currency = 'usd';
+		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn(
+			[
+				'currency_code' => $mock_domestic_currency,
+			]
+		);
+		$this->mock_wcpay_account
+			->expects( $this->never() )
+			->method( 'get_account_default_currency' );
+		$response = $this->upe_split_controller->get_settings();
+
+		$this->assertArrayHasKey( 'account_domestic_currency', $response->get_data() );
+		$this->assertSame( $mock_domestic_currency, $response->get_data()['account_domestic_currency'] );
+	}
+
+	public function test_upe_split_get_settings_domestic_currency_fallbacks_to_default_currency(): void {
+		$mock_domestic_currency = 'usd';
+		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn( [] );
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_account_default_currency' )
+			->willReturn( $mock_domestic_currency );
+		$response = $this->upe_split_controller->get_settings();
+
+		$this->assertArrayHasKey( 'account_domestic_currency', $response->get_data() );
+		$this->assertSame( $mock_domestic_currency, $response->get_data()['account_domestic_currency'] );
+	}
+
 	/**
 	 * Tests account business support address validator
 	 *
