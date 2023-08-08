@@ -7,8 +7,6 @@
 
 namespace WCPay\Internal\Proxy;
 
-use Exception; // ToDo: Replace this with another exception.
-
 /**
  * Legacy Proxy
  *
@@ -59,13 +57,13 @@ class LegacyProxy {
 	/**
 	 * Returns a global variable.
 	 *
-	 * @param string $name Name of the variable.
-	 * @throws Exception   In case the variable is not set.
+	 * @param string $name    Name of the variable.
+	 * @throws ProxyException In case the variable is not set.
 	 * @return mixed
 	 */
 	public function get_global( string $name ) {
 		if ( ! $this->has_global( $name ) ) {
-			throw new Exception( sprintf( 'The global "%s" is not set.', $name ) );
+			throw new ProxyException( sprintf( 'The global "%s" is not set.', $name ) );
 		}
 
 		return $GLOBALS[ $name ];
