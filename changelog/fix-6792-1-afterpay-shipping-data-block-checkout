@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Send shipping address correctly to Afterpay in block checkout, when separate billing address is provided.
