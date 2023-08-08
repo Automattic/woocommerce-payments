@@ -340,19 +340,19 @@ class WC_Payments_Features {
 	public static function to_array() {
 		return array_filter(
 			[
-				'upe'                      => self::is_upe_enabled(),
-				'upeSplit'                 => self::is_upe_split_enabled(),
-				'upeDeferred'              => self::is_upe_deferred_intent_enabled(),
-				'upeSettingsPreview'       => self::is_upe_settings_preview_enabled(),
-				'multiCurrency'            => self::is_customer_multi_currency_enabled(),
-				'woopay'                   => self::is_woopay_eligible(),
-				'documents'                => self::is_documents_section_enabled(),
-				'clientSecretEncryption'   => self::is_client_secret_encryption_enabled(),
-				'woopayExpressCheckout'    => self::is_woopay_express_checkout_enabled(),
-				'isAuthAndCaptureEnabled'  => self::is_auth_and_capture_enabled(),
-				'progressiveOnboarding'    => self::is_progressive_onboarding_enabled(),
-				'mcOrderMetaHelper'        => self::is_mc_order_meta_helper_enabled(),
-				'disputeOnTransactionPage' => self::is_dispute_on_transaction_page_enabled(),
+				'upe'                               => self::is_upe_enabled(),
+				'upeSplit'                          => self::is_upe_split_enabled(),
+				'upeDeferred'                       => self::is_upe_deferred_intent_enabled(),
+				'upeSettingsPreview'                => self::is_upe_settings_preview_enabled(),
+				'multiCurrency'                     => self::is_customer_multi_currency_enabled(),
+				'woopay'                            => self::is_woopay_eligible(),
+				'documents'                         => self::is_documents_section_enabled(),
+				'clientSecretEncryption'            => self::is_client_secret_encryption_enabled(),
+				'woopayExpressCheckout'             => self::is_woopay_express_checkout_enabled(),
+				'isAuthAndCaptureEnabled'           => self::is_auth_and_capture_enabled(),
+				'progressiveOnboarding'             => self::is_progressive_onboarding_enabled(),
+				'mcOrderMetaHelper'                 => self::is_mc_order_meta_helper_enabled(),
+				'isDisputeOnTransactionPageEnabled' => self::is_dispute_on_transaction_page_enabled(),
 			]
 		);
 	}
