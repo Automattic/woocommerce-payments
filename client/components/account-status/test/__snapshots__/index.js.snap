@@ -179,15 +179,6 @@ exports[`AccountStatus renders normal status 1`] = `
           2.9% + 0,00 € per transaction
         </s>
          2.9% + 0,30 € per transaction
-        <p>
-          <a
-            href="https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            Learn more
-          </a>
-        </p>
       </div>
     </div>
     <div

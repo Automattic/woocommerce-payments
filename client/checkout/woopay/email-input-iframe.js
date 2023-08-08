@@ -247,6 +247,10 @@ export const handleWooPayEmailInput = async (
 			'viewport',
 			`${ viewportWidth }x${ viewportHeight }`
 		);
+		urlParams.append(
+			'tracksUserIdentity',
+			JSON.stringify( getConfig( 'tracksUserIdentity' ) )
+		);
 
 		iframe.src = `${ getConfig(
 			'woopayHost'
