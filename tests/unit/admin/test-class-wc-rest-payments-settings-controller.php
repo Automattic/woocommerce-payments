@@ -128,12 +128,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$mock_dpps                       = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
 
-		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn(
-			[
-				'currency_code' => 'usd',
-			]
-		);
-
 		$this->gateway    = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
 			$this->mock_wcpay_account,
@@ -222,12 +216,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			->expects( $this->any() )
 			->method( 'get_is_live' )
 			->willReturn( true );
-
-		$this->mock_wcpay_account
-			->expects( $this->any() )
-			->method( 'get_account_country' )
-			->willReturn( 'us' );
-
 	}
 
 	public function tear_down() {
@@ -245,6 +233,12 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_settings_returns_enabled_payment_method_ids() {
+		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn(
+			[
+				'currency_code' => 'usd',
+			]
+		);
+
 		$response           = $this->controller->get_settings();
 		$enabled_method_ids = $response->get_data()['enabled_payment_method_ids'];
 
@@ -255,6 +249,11 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_upe_get_settings_returns_available_payment_method_ids() {
+		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn(
+			[
+				'currency_code' => 'usd',
+			]
+		);
 		$response           = $this->upe_controller->get_settings();
 		$enabled_method_ids = $response->get_data()['available_payment_method_ids'];
 
@@ -276,6 +275,11 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_split_upe_get_settings_returns_available_payment_method_ids() {
+		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn(
+			[
+				'currency_code' => 'usd',
+			]
+		);
 		$response           = $this->upe_split_controller->get_settings();
 		$enabled_method_ids = $response->get_data()['available_payment_method_ids'];
 
@@ -297,6 +301,11 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_settings_request_returns_test_mode_flag() {
+		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn(
+			[
+				'currency_code' => 'usd',
+			]
+		);
 		WC_Payments::mode()->dev();
 		$this->assertEquals( true, $this->controller->get_settings()->get_data()['is_test_mode_enabled'] );
 
@@ -311,6 +320,11 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_settings_returns_if_wcpay_is_enabled() {
+		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn(
+			[
+				'currency_code' => 'usd',
+			]
+		);
 		$this->gateway->enable();
 		$response = $this->controller->get_settings();
 		$this->assertTrue( $response->get_data()['is_wcpay_enabled'] );
@@ -335,6 +349,11 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_settings_without_error_when_faulty_enabled_payment_methods() {
+		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn(
+			[
+				'currency_code' => 'usd',
+			]
+		);
 		$this->gateway->update_option(
 			'available_payment_method_ids',
 			[
@@ -754,6 +773,11 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_upe_get_settings_card_eligible_flag() {
+		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn(
+			[
+				'currency_code' => 'usd',
+			]
+		);
 		$response = $this->upe_controller->get_settings();
 
 		$this->assertArrayHasKey( 'is_card_present_eligible', $response->get_data() );
@@ -761,6 +785,11 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_upe_split_get_settings_card_eligible_flag() {
+		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn(
+			[
+				'currency_code' => 'usd',
+			]
+		);
 		$response = $this->upe_split_controller->get_settings();
 
 		$this->assertArrayHasKey( 'is_card_present_eligible', $response->get_data() );
