@@ -41,6 +41,7 @@ use WCPay\Core\WC_Payments_Customer_Service_API;
 use WCPay\Constants\Payment_Method;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\WooPay\WooPay_Scheduler;
+use WCPay\WooPay\WooPay_Session;
 
 /**
  * Main class for the WooPayments extension. Its responsibility is to initialize the extension.
@@ -1425,8 +1426,8 @@ class WC_Payments {
 		$is_woopay_enabled  = 'yes' === self::get_gateway()->get_option( 'platform_checkout', 'no' );
 
 		if ( $is_woopay_eligible && $is_woopay_enabled ) {
-			add_action( 'wc_ajax_wcpay_init_woopay', [ '\WCPay\WooPay\WooPay_Session', 'ajax_init_woopay' ] );
-			add_action( 'wc_ajax_wcpay_get_woopay_session', [ '\WCPay\WooPay\WooPay_Session', 'ajax_get_woopay_session' ] );
+			add_action( 'wc_ajax_wcpay_init_woopay', [ WooPay_Session::class, 'ajax_init_woopay' ] );
+			add_action( 'wc_ajax_wcpay_get_woopay_session', [ WooPay_Session::class, 'ajax_get_woopay_session' ] );
 			add_action( 'wc_ajax_wcpay_get_woopay_signature', [ __CLASS__, 'ajax_get_woopay_signature' ] );
 
 			// This injects the payments API and draft orders into core, so the WooCommerce Blocks plugin is not necessary.
