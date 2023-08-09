@@ -632,7 +632,7 @@ class WC_Payments {
 		}
 
 		// Load WCPay Subscriptions.
-		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() || WC_Payments_Features::is_subscription_migration_enabled() ) {
+		if ( self::should_load_wcpay_subscriptions() ) {
 			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
 			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account );
 		}
@@ -1882,5 +1882,22 @@ class WC_Payments {
 		$i      = wp_nonce_tick( $action );
 
 		return substr( wp_hash( $i . '|' . $action . '|' . $uid . '|' . $token, 'nonce' ), -12, 10 );
+	}
+
+	/**
+	 * Determins whether we should load WCPay Subscription related classes.
+	 *
+	 * Return true when:
+	 *  - the WCPay Subscriptions feature flag is enabled, or
+	 *  - the migration feature flag is enabled && the store has WC Subscriptions activated
+	 *
+	 * @return bool
+	 */
+	private static function should_load_wcpay_subscriptions() {
+		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
+			return true;
+		}
+
+		return WC_Payments_Features::is_subscription_migration_enabled() && class_exists( 'WC_Subscriptions' );
 	}
 }
