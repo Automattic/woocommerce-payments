@@ -1,6 +1,6 @@
 <?php
 /**
- * Class Payment_Intent_Status
+ * Class Intent_Status
  *
  * @package WooCommerce\Payments
  */
@@ -12,12 +12,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * This class gives a list of all Payment Intent status name constants.
- * ref: https://stripe.com/docs/api/payment_intents/object#payment_intent_object-status
+ * This class gives a list of all Payment and Setup Intent status name constants.
+ * - https://stripe.com/docs/api/payment_intents/object#payment_intent_object-status
+ * - https://stripe.com/docs/api/setup_intents/object#setup_intent_object-status
  *
  * @psalm-immutable
  */
-class Payment_Intent_Status extends Base_Constant {
+class Intent_Status extends Base_Constant {
 	const REQUIRES_PAYMENT_METHOD = 'requires_payment_method';
 	const REQUIRES_CONFIRMATION   = 'requires_confirmation';
 	const REQUIRES_ACTION         = 'requires_action';
