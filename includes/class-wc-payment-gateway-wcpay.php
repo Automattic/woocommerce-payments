@@ -1084,7 +1084,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
 			}
 
-			$payment_methods = $this->get_payment_methods_from_request();
+			$payment_methods = $this->get_payment_method_types( $payment_information );
 			// The sanitize_user call here is deliberate: it seems the most appropriate sanitization function
 			// for a string that will only contain latin alphanumeric characters and underscores.
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -1231,7 +1231,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					Payment_Method::CARD === $this->get_selected_stripe_payment_type_id() &&
 					in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true )
 					) {
-					$request->set_payment_method_types( $this->get_payment_methods_from_request() );
+					$request->set_payment_method_types( $this->get_payment_method_types( $payment_information ) );
 					$request->set_mandate_data( $this->get_mandate_data() );
 				}
 
@@ -1375,20 +1375,39 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function get_payment_method_to_use_for_intent() {
 		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
-			return $this->get_payment_methods_from_request()[0];
+			$request_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+			return $this->get_payment_methods_from_gateway_id( $request_payment_method )[0];
 		}
+	}
+
+	/**
+	 * Get payment method types to attach to intention request.
+	 *
+	 * @param Payment_Information $payment_information Payment information object for transaction.
+	 * @return array List of payment methods.
+	 */
+	private function get_payment_method_types( $payment_information ) {
+		$request_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+
+		if ( ! empty( $request_payment_method ) ) {
+			$payment_methods = $this->get_payment_methods_from_gateway_id( $request_payment_method );
+		} else {
+			$token           = $payment_information->get_payment_token();
+			$payment_methods = $this->get_payment_methods_from_gateway_id( $token->get_gateway_id() );
+		}
+
+		return $payment_methods;
 	}
 
 	/**
 	 * Get the payment methods used in the request.
 	 *
+	 * @param string $gateway_id ID of processing payment gateway.
 	 * @return array List of payment methods.
 	 */
-	private function get_payment_methods_from_request() {
-		$upe_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
-
-		if ( ! empty( $upe_payment_method ) && 'woocommerce_payments' !== $upe_payment_method ) {
-			$payment_methods = [ str_replace( 'woocommerce_payments_', '', $upe_payment_method ) ];
+	private function get_payment_methods_from_gateway_id( $gateway_id ) {
+		if ( 'woocommerce_payments' !== $gateway_id ) {
+			$payment_methods = [ str_replace( 'woocommerce_payments_', '', $gateway_id ) ];
 		} elseif ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 			$payment_methods = [ 'card' ];
 			if ( WC_Payments_Features::is_upe_deferred_intent_enabled() &&
