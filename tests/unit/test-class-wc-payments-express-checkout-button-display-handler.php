@@ -226,7 +226,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 		ob_start();
 		$this->express_checkout_button_display_handler->display_express_checkout_separator_if_necessary();
 
-		$this->assertEmpty( ob_get_contents() );
+		$this->assertStringNotContainsString( 'wcpay-payment-request-button-separator', ob_get_contents() );
 		ob_end_clean();
 	}
 
@@ -259,7 +259,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 		ob_start();
 		$this->express_checkout_button_display_handler->display_express_checkout_buttons();
 
-		$this->assertEmpty( ob_get_contents() );
+		$this->assertStringNotContainsString( 'wcpay-payment-request-button-separator', ob_get_contents() );
 		ob_end_clean();
 	}
 

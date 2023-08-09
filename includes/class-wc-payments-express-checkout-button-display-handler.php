@@ -87,9 +87,17 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 * @return void
 	 */
 	public function display_express_checkout_buttons() {
-		$this->platform_checkout_button_handler->display_woopay_button_html();
-		$this->payment_request_button_handler->display_payment_request_button_html();
-		$this->display_express_checkout_separator_if_necessary();
+		?>
+		<div class='wcpay-payment-request-wrapper' >
+		<?php
+			$this->platform_checkout_button_handler->display_woopay_button_html();
+			$this->payment_request_button_handler->display_payment_request_button_html();
+		?>
+		</div >
+		<?php
+		if ( $this->payment_request_button_handler->is_checkout() ) {
+			$this->display_express_checkout_separator_if_necessary();
+		}
 	}
 
 	/**
