@@ -128,6 +128,7 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		$container->addShared( SimpleServiceWithDependencies::class )
 			->addArgument( SimpleService::class);
 
+		// See the "Loading legacy classes" section.
 		$container->add( Request::class )
 			->addArgument( WC_Payments_API_Client::class );
 	}
@@ -141,6 +142,44 @@ Highlights:
 - `addShared()` is used to register shared classes. This is similar to singletons, meaning that only one instance will be ever created.
 - `add()` registers a class, which will be instantiated every time it gets resolved.
 - Both `add()` and `addShared()` return a definition, which can be further used to add the necessary constructor arguments through `addArgument()`. `addArgument()` returns the definition, so multiple calls can be chained.
+
+### Loading legacy classes
+
+Some (not all) instances from includes are available for immediate use as dependencies within `src`.
+
+This is achieved through the [`WCPay\Internal\DependencyManagement\DelegateContainer\LegacyContainer`](Internal/DependencyManagement/DelegateContainer/LegacyContainer.php). Please check [the `DelegateContainer` directory](Internal/DependencyManagement/DelegateContainer/REAMDE.md) for more details, and a list of available classes.
+
+
+One of those classes is `WCPay\Core\Mode`. Here is an example service provider, and a class, which uses `Mode`:
+
+__Service provider__
+```php
+use WCPay\Core\Mode;
+
+class PaymentsServiceProvider extends AbstractServiceProvider {
+	protected $provides = [
+		PaymentProcessingService::class,
+	];
+
+	public function register(): void {
+		$this->getContainer()
+			->addShared( PaymentProcessingService::class )
+			->addArgument( Mode::class );
+	}
+}
+
+// ---
+
+use WCPay\Core\Mode;
+
+class PaymentProcessingService {
+	public function __construct( Mode $mode ) {
+		$this->mode = $mode;
+	}
+}
+```
+
+Keep in mind that all legacy classes are only available as shared instances, meaning that a single instance of the class will be provided whenever needed.
 
 ### Loading Woo classes
 
