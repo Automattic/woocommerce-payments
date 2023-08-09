@@ -123,6 +123,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Fix error while selecting product variations. Make the stripe payment messaging element load only if at least one BNPL method is active.
 * Fix - Fix extra requests when clicking WooPay express checkout button.
 * Fix - Fix Fraud and Risk Tools welcome tour to only show if Fraud and Risk banner learn more button is clicked and tour not previously dismissed.
+* Fix - Fix phone number input widget on checkout page
 * Fix - Get WooPay adapted extensions from server
 * Fix - Highlight menu item when transaction details, deposit details, and disputes details page are opened.
 * Fix - Improve split UPE support of WooPay with multiple payment methods enabled.
