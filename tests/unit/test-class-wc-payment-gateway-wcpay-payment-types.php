@@ -125,8 +125,6 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 
 		$mock_dpps = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 
-		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
-
 		// Arrange: Mock WC_Payment_Gateway_WCPay so that some of its methods can be
 		// mocked, and their return values can be used for testing.
 		$this->mock_wcpay_gateway = $this->getMockBuilder( 'WC_Payment_Gateway_WCPay' )
