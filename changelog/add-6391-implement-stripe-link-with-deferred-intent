@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-Adds integration for Stripe Link while using split UPE with deferred intent creation.

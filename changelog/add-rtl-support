@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Add webpack script to generate RTL .css files and enqueue it for RTL languages
