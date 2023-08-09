@@ -263,7 +263,7 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 
 		foreach ( $this->meta_keys_to_migrate as $meta_key ) {
 			if ( $subscription->meta_exists( $meta_key ) ) {
-				$subscription->update_meta_data( 'migrated_' . $meta_key, $subscription->get_meta( $meta_key, true ) );
+				$subscription->update_meta_data( '_migrated' . $meta_key, $subscription->get_meta( $meta_key, true ) );
 				$subscription->delete_meta_data( $meta_key );
 
 				$updated = true;
@@ -308,7 +308,7 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	 */
 	public function exclude_migrated_meta( $meta_data ) {
 		foreach ( $this->meta_keys_to_migrate as $key ) {
-			unset( $meta_data[ 'migrated_' . $key ] );
+			unset( $meta_data[ '_migrated' . $key ] );
 		}
 
 		return $meta_data;
