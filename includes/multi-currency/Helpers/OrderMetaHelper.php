@@ -262,19 +262,15 @@ class OrderMetaHelper {
 		}
 
 		// Define our labels.
-		$purpose                       = __( 'This tool\'s intended use is to add or update the Multi-Currency exchange rate for the order if it is missing.', 'woocommerce-payments' );
-		$new_exchange_rate_description = __( 'Enter a new exchange rate and then click the Update button for the order.', 'woocommerce-payments' );
-		$suggested_label               = __( 'Suggested exchange rate: ', 'woocommerce-payments' );
-		$new_exchange_rate_label       = __( 'New exchange rate:', 'woocommerce-payments' );
-		$nonce_value                   = wp_create_nonce( 'wcpay_multi_currency_exchange_rate_nonce_' . $order->get_id() );
+		$form_description        = __( 'If the exchange rate meta data is missing, update the order with the suggested exchange rate. Once the rate is updated, you can then use the Import historical data tool under Analytics > Settings to correct analytical data.', 'woocommerce-payments' );
+		$suggested_label         = __( 'Suggested exchange rate: ', 'woocommerce-payments' );
+		$new_exchange_rate_label = __( 'New exchange rate:', 'woocommerce-payments' );
+		$nonce_value             = wp_create_nonce( 'wcpay_multi_currency_exchange_rate_nonce_' . $order->get_id() );
 
 		// Display the form itself.
 		?>
 			<p style="font-weight:bold; font-size:14px;">
-				<?php echo esc_html( $purpose ); ?>
-			</p>
-			<p style="font-weight:bold; font-size:14px;">
-				<?php echo esc_html( $new_exchange_rate_description ); ?>
+				<?php echo esc_html( $form_description ); ?>
 			</p>
 			<?php if ( false !== $suggested ) { ?>
 				<p style="font-weight:bold; font-size:14px;">
