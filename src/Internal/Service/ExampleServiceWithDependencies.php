@@ -60,6 +60,7 @@ class ExampleServiceWithDependencies {
 	 * @return bool
 	 */
 	public function is_in_test_mode() {
+		$this->example_service->do_something_with_exception();
 		return $this->mode->is_test();
 	}
 }
