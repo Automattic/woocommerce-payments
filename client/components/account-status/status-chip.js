@@ -20,6 +20,9 @@ const StatusChip = ( props ) => {
 	// Pending status is also shown when the account is PO enabled but not complete and in that case status is restricted.
 	if ( accountStatus === 'complete' ) {
 		description = __( 'Complete', 'woocommerce-payments' );
+		type = 'success';
+	} else if ( accountStatus === 'enabled' ) {
+		description = __( 'Enabled', 'woocommerce-payments' );
 		type = 'primary';
 	} else if ( accountStatus === 'restricted_soon' ) {
 		description = __( 'Restricted soon', 'woocommerce-payments' );

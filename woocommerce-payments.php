@@ -12,7 +12,7 @@
  * WC tested up to: 7.8.0
  * Requires at least: 6.0
  * Requires PHP: 7.3
- * Version: 6.2.2
+ * Version: 6.3.0
  *
  * @package WooCommerce\Payments
  */
@@ -139,7 +139,6 @@ Automattic\Jetpack\Connection\Rest_Authentication::init();
  * Check https://github.com/Automattic/woocommerce-payments/issues/4759
  */
 \WCPay\WooPay\WooPay_Session::init();
-
 
 // Jetpack-config will initialize the modules on "plugins_loaded" with priority 2, so this code needs to be run before that.
 add_action( 'plugins_loaded', 'wcpay_jetpack_init', 1 );

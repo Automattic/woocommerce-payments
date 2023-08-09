@@ -107,3 +107,16 @@
 		position: fixed;
 	}
 }
+
+// RTL - hide flags dropdown for phone input
+// @TODO find a way to make the dropdown working for LTR
+.rtl {
+	.iti {
+		&__country-list {
+			display: none;
+		}
+		&__arrow {
+			display: none;
+		}
+	}
+}

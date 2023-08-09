@@ -21,7 +21,9 @@ import {
 	PAYMENT_METHOD_NAME_SOFORT,
 	PAYMENT_METHOD_NAME_AFFIRM,
 	PAYMENT_METHOD_NAME_AFTERPAY,
-} from '../constants.js';
+	SHORTCODE_SHIPPING_ADDRESS_FIELDS,
+	SHORTCODE_BILLING_ADDRESS_FIELDS,
+} from '../constants';
 import { getUPEConfig } from 'utils/checkout';
 import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
@@ -34,6 +36,7 @@ import {
 	getShippingDetails,
 	getUpeSettings,
 	isUsingSavedPaymentMethod,
+	isLinkEnabled,
 } from '../utils/upe';
 import { decryptClientSecret } from '../utils/encryption';
 import enableStripeLinkPaymentMethod from '../stripe-link';
@@ -53,9 +56,7 @@ jQuery( function ( $ ) {
 	const isUPEEnabled = getUPEConfig( 'isUPEEnabled' );
 	const isUPESplitEnabled = getUPEConfig( 'isUPESplitEnabled' );
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
-	const isStripeLinkEnabled =
-		paymentMethodsConfig.link !== undefined &&
-		paymentMethodsConfig.card !== undefined;
+	const isStripeLinkEnabled = isLinkEnabled( paymentMethodsConfig );
 
 	const gatewayUPEComponents = {};
 	for ( const paymentMethodType in paymentMethodsConfig ) {
@@ -238,26 +239,8 @@ jQuery( function ( $ ) {
 						).checked
 					);
 				},
-				shipping_fields: {
-					line1: 'shipping_address_1',
-					line2: 'shipping_address_2',
-					city: 'shipping_city',
-					state: 'shipping_state',
-					postal_code: 'shipping_postcode',
-					country: 'shipping_country',
-					first_name: 'shipping_first_name',
-					last_name: 'shipping_last_name',
-				},
-				billing_fields: {
-					line1: 'billing_address_1',
-					line2: 'billing_address_2',
-					city: 'billing_city',
-					state: 'billing_state',
-					postal_code: 'billing_postcode',
-					country: 'billing_country',
-					first_name: 'billing_first_name',
-					last_name: 'billing_last_name',
-				},
+				shipping_fields: SHORTCODE_SHIPPING_ADDRESS_FIELDS,
+				billing_fields: SHORTCODE_BILLING_ADDRESS_FIELDS,
 			} );
 		}
 
