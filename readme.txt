@@ -94,6 +94,13 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 6.4.0 - 2023-08-09 =
+* Fix - Fix phone number input widget on checkout page
+* Fix - Fix the WooPay logo so that it stays scaled up and visible on the WooPay button.
+* Fix - Provide per active discount Terms and Conditions link in the Account details card.
+* Dev - Add LegacyContainer to `src` to allow loading classes from `includes`.
+* Dev - Ignore updating currency precision if the country is Japan
+
 = 6.3.0 - 2023-08-09 =
 * Add - Add constant flag to use the new payment service (project reengineering payment process).
 * Add - Add JCB payment method coming soon notice
