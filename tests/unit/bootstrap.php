@@ -115,8 +115,11 @@ if ( defined( 'PHP_VERSION_ID' ) && PHP_VERSION_ID >= 70400 ) {
  *
  * Init'ing the subscriptions-core loads all subscriptions class and hooks, which breaks existing WCPAY unit tests.
  * WCPAY already mocks the WC Subscriptions classes/functions it needs so there's no need to load them anyway.
+ *
+ * This function should only be used to load any mocked Subscriptions Core classes that need to be loaded before the PHPUnit FileLoader.
  */
 function wcpay_init_subscriptions_core() {
+	require_once __DIR__ . '/helpers/class-wcs-helper-background-repairer.php';
 }
 
 // Placeholder for the test container.
