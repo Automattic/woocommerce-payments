@@ -1393,7 +1393,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_methods = $this->get_payment_methods_from_gateway_id( $request_payment_method );
 		} else {
 			$token           = $payment_information->get_payment_token();
-			$payment_methods = $this->get_payment_methods_from_gateway_id( $token->get_gateway_id() );
+			$order           = $payment_information->get_order();
+			$order_id        = is_a( $order, 'WC_Order' ) ? $order->get_id() : null;
+			$payment_methods = $this->get_payment_methods_from_gateway_id( $token->get_gateway_id(), $order_id );
 		}
 
 		return $payment_methods;
@@ -1403,9 +1405,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Get the payment methods used in the request.
 	 *
 	 * @param string $gateway_id ID of processing payment gateway.
+	 * @param int    $order_id ID of related order, if applicable.
 	 * @return array List of payment methods.
 	 */
-	private function get_payment_methods_from_gateway_id( $gateway_id ) {
+	private function get_payment_methods_from_gateway_id( $gateway_id, $order_id = null ) {
 		if ( 'woocommerce_payments' !== $gateway_id ) {
 			$payment_methods = [ str_replace( 'woocommerce_payments_', '', $gateway_id ) ];
 		} elseif ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
@@ -1415,7 +1418,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$payment_methods[] = Payment_Method::LINK;
 			}
 		} else {
-			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
+			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( $order_id, true );
 		}
 
 		return $payment_methods;
