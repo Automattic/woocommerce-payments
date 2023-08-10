@@ -218,13 +218,6 @@ class WC_REST_Payments_Reports_Transactions_Controller extends WC_Payments_REST_
 				'type'        => 'string',
 				'required'    => false,
 			],
-			'order'               => [
-				'description' => __( 'Order transactions based on the passed field.', 'woocommerce-payments' ),
-				'type'        => 'string',
-				'required'    => false,
-				'default'     => 'desc',
-				'enum'        => [ 'asc', 'desc' ],
-			],
 			'page'                => [
 				'description' => __( 'Page number.', 'woocommerce-payments' ),
 				'type'        => 'integer',
