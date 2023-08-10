@@ -25,6 +25,9 @@ class LegacyContainer implements ContainerInterface {
 	 * @param class-string<ID> $id Identifier of the entry to look for.
 	 * @return ID
 	 * @throws ContainerException In case the container cannot resolve the identifier.
+	 *
+	 * Psalm expects $id to be a string, based on ContainerInterface.
+	 * @psalm-suppress MoreSpecificImplementedParamType
 	 */
 	public function get( $id ) {
 		$method = $this->transform_class_to_method( $id );
