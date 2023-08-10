@@ -64,7 +64,7 @@ class ExampleServiceWithDependencies {
 	public function is_in_test_mode() {
 		try {
 			$this->example_service->do_something_with_exception();
-		} catch ( Exception ) {
+		} catch ( Exception $e ) {
 			// Do nothing, this is fine. We're just testing Psalm.
 			return false;
 		}
