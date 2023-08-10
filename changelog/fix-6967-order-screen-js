@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Refund and Disputes now show correctly on admin order screens with HPOS enabled.
+JavaScript is now correctly loaded on admin order screens when HPOS is enabled.
