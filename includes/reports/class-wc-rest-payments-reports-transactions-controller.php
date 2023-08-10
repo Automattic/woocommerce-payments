@@ -59,7 +59,16 @@ class WC_REST_Payments_Reports_Transactions_Controller extends WC_Payments_REST_
 	public function get_transactions( $request ) {
 
 		$wcpay_request = List_Transactions::from_rest_request( $request );
-		$wcpay_request->set_page_size( $request->get_param( 'per_page' ) );
+		$wcpay_request->set_page_size( $request->get_param( 'per_page' ) ?? 25 );
+
+		// Setting the request with filters.
+		$request->get_param( 'type' ) ? $wcpay_request->set_type_is( $request->get_param( 'type' ) ) : null;
+		$filters = [
+			'order_id_is'       => $request->get_param( 'order_id' ),
+			'customer_email_is' => $request->get_param( 'customer_email' ),
+			'source_is'         => $request->get_param( 'payment_method_type' ),
+		];
+		$wcpay_request->set_filters( $filters );
 
 		$transactions = $wcpay_request->handle_rest_request( 'wcpay_list_transactions_request' );
 		if ( is_wp_error( $transactions ) ) {
@@ -152,102 +161,78 @@ class WC_REST_Payments_Reports_Transactions_Controller extends WC_Payments_REST_
 	 */
 	public function get_collection_params() {
 		return [
-			'date_before'       => [
+			'date_before'         => [
 				'description' => __( 'Filter transactions before this date.', 'woocommerce-payments' ),
 				'type'        => 'string',
 				'format'      => 'date-time',
 				'required'    => false,
 			],
-			'date_after'        => [
+			'date_after'          => [
 				'description' => __( 'Filter transactions after this date.', 'woocommerce-payments' ),
 				'type'        => 'string',
 				'format'      => 'date-time',
 				'required'    => false,
 			],
-			'date_between'      => [
+			'date_between'        => [
 				'description' => __( 'Filter transactions between these dates.', 'woocommerce-payments' ),
 				'type'        => 'array',
 			],
-			'order_id'          => [
+			'order_id'            => [
 				'description'       => __( 'Filter transactions based on the associated order ID.', 'woocommerce-payments' ),
 				'type'              => 'integer',
 				'required'          => false,
 				'sanitize_callback' => 'absint',
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-			'deposit_id'        => [
+			'deposit_id'          => [
 				'description'       => __( 'Filter transactions based on the associated deposit ID.', 'woocommerce-payments' ),
 				'type'              => 'string',
 				'required'          => false,
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-			'email'             => [
+			'customer_email'      => [
 				'description'       => __( 'Filter transactions based on the customer email.', 'woocommerce-payments' ),
 				'type'              => 'string',
 				'required'          => false,
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-			'payment_method_id' => [
+			'payment_method_type' => [
 				'description'       => __( 'Filter transactions based on the payment method used.', 'woocommerce-payments' ),
 				'type'              => 'string',
 				'required'          => false,
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-			'type'              => [
+			'type'                => [
 				'description'       => __( 'Filter transactions where type is a specific value.', 'woocommerce-payments' ),
 				'type'              => 'string',
 				'required'          => false,
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-			'transaction_id'    => [
-				'description'       => __( 'Filter transactions based on their unique transaction ID.', 'woocommerce-payments' ),
-				'type'              => 'string',
-				'required'          => false,
-				'validate_callback' => 'rest_validate_request_arg',
-			],
-			'source_id'         => [
-				'description'       => __( 'Filter transactions based on their unique source ID.', 'woocommerce-payments' ),
-				'type'              => 'string',
-				'required'          => false,
-				'validate_callback' => 'rest_validate_request_arg',
-			],
-			'match'             => [
+			'match'               => [
 				'description' => __( 'Match filter for the transactions.', 'woocommerce-payments' ),
 				'type'        => 'string',
 				'required'    => false,
 			],
-			'search'            => [
-				'description'       => __( 'Search parameter for the transactions.', 'woocommerce-payments' ),
-				'type'              => 'array',
-				'required'          => false,
-				'validate_callback' => 'rest_validate_request_arg',
-			],
-			'user_timezone'     => [
+			'user_timezone'       => [
 				'description' => __( 'Include timezone into date filtering.', 'woocommerce-payments' ),
 				'type'        => 'string',
 				'required'    => false,
 			],
-			'orderby'           => [
-				'description' => __( 'Sort transactions based on the passed field.', 'woocommerce-payments' ),
-				'type'        => 'string',
-				'required'    => false,
-				'default'     => 'date',
-			],
-			'order'             => [
+			'order'               => [
 				'description' => __( 'Order transactions based on the passed field.', 'woocommerce-payments' ),
 				'type'        => 'string',
 				'required'    => false,
 				'default'     => 'desc',
 				'enum'        => [ 'asc', 'desc' ],
 			],
-			'page'              => [
+			'page'                => [
 				'description' => __( 'Page number.', 'woocommerce-payments' ),
 				'type'        => 'integer',
 				'required'    => false,
 				'default'     => 1,
 				'minimum'     => 1,
 			],
-			'per_page'          => [
+			'per_page'            => [
 				'description' => __( 'Page size.', 'woocommerce-payments' ),
 				'type'        => 'integer',
 				'required'    => false,
@@ -255,6 +240,7 @@ class WC_REST_Payments_Reports_Transactions_Controller extends WC_Payments_REST_
 				'minimum'     => 1,
 				'maximum'     => 100,
 			],
+
 		];
 	}
 

@@ -40,10 +40,75 @@ class WC_REST_Payments_Reports_Transactions_Controller_Test extends WCPAY_UnitTe
 		$mock_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $this->get_transactions_list_from_server() );
+
+		//check that in the end, page size is set correctly
+		$mock_request->expects( $this->any() )
+			->method( 'set_page_size' )
+			->withConsecutive(
+				[ $this->anything() ],
+				[ '2' ]
+			);
 		$response = $this->controller->get_transactions( $request );
 		$this->assertEquals( $this->get_transactions_list(), $response->get_data() );
-
 	}
+
+	public function test_get_transactions_filter_type() {
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_param( 'type', 'refund' );
+		
+		$mock_request = $this->mock_wcpay_request( List_Transactions::class );
+		$mock_request->expects( $this->once() )
+			->method( 'set_type_is' )
+			->with( 'refund' );
+			
+		$this->controller->get_transactions( $request );	
+	}
+
+	public function test_get_transactions_filter_order_id() {
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_param( 'order_id', 123 );
+		
+		$mock_request = $this->mock_wcpay_request( List_Transactions::class );
+		$mock_request->expects( $this->any() )
+			->method( 'set_filters' )
+			->withConsecutive(
+				[ $this->anything() ],
+				[ 
+					[ 
+						'order_id_is' => 123,
+			 			'customer_email_is' => null,
+						'source_is' => null 
+					] 
+				]
+			);
+
+		$this->controller->get_transactions( $request );	
+	}
+
+	public function test_get_transactions_filter_all() {
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_param( 'order_id', 345 );
+		$request->set_param( 'customer_email', 'test@woocommerce.com' );
+		$request->set_param( 'payment_method_type', 'visa' );
+		
+		$mock_request = $this->mock_wcpay_request( List_Transactions::class );
+		$mock_request->expects( $this->any() )
+			->method( 'set_filters' )
+			->withConsecutive(
+				[ $this->anything() ],
+				[ 
+					[ 
+						'order_id_is' => 345,
+			 			'customer_email_is' => 'test@woocommerce.com',
+						'source_is' => 'visa' 
+					] 
+				]
+			);
+
+		$this->controller->get_transactions( $request );	
+	}
+
+	//TODO: date filter, server error, invalid request.
 
 
 	private function get_transactions_list_from_server() {
