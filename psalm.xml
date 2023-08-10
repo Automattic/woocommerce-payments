@@ -10,7 +10,7 @@
 >
     <projectFiles>
         <file name="woocommerce-payments.php" />
-        <!-- <directory name="includes" /> -->
+        <directory name="includes" />
         <directory name="src" />
         <ignoreFiles>
 			<directory name="client" />
