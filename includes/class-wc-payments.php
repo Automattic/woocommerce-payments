@@ -1072,7 +1072,7 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-transactions-controller.php';
 		$reports_transactions_controller = new WC_REST_Payments_Reports_Transactions_Controller( self::$api_client );
 		$reports_transactions_controller->register_routes();
-		
+
 	}
 
 	/**
