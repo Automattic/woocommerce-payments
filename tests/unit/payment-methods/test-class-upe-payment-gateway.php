@@ -280,6 +280,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		// so that get_payment_method_from_request() does not throw error.
 		$_POST = [
 			'wcpay-payment-method' => 'pm_mock',
+			'payment_method'       => UPE_Payment_Gateway::GATEWAY_ID,
 		];
 	}
 

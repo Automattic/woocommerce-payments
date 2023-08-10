@@ -1388,14 +1388,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	private function get_payment_method_types( $payment_information ) {
 		$request_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		$token                  = $payment_information->get_payment_token();
 
 		if ( ! empty( $request_payment_method ) ) {
 			$payment_methods = $this->get_payment_methods_from_gateway_id( $request_payment_method );
-		} else {
-			$token           = $payment_information->get_payment_token();
+		} elseif ( ! is_null( $token ) ) {
 			$order           = $payment_information->get_order();
 			$order_id        = is_a( $order, 'WC_Order' ) ? $order->get_id() : null;
 			$payment_methods = $this->get_payment_methods_from_gateway_id( $token->get_gateway_id(), $order_id );
+		} else {
+			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
 		}
 
 		return $payment_methods;

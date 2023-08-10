@@ -1871,10 +1871,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// There is no payment method data within the request. This is the case e.g. for the automatic subscription renewals.
 		$_POST['payment_method'] = '';
 
+		$token = WC_Helper_Token::create_token( 'pm_mock' );
+
 		$expected_upe_payment_method = 'card';
 		$order                       = WC_Helper_Order::create_order();
 		$order->set_currency( 'USD' );
 		$order->set_total( 100 );
+		$order->add_payment_token( $token );
 		$order->save();
 
 		$pi = new Payment_Information( 'pm_test', $order );
