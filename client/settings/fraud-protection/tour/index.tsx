@@ -45,15 +45,19 @@ const options = {
 const FraudProtectionTour: React.FC = () => {
 	const { isWelcomeTourDismissed } = wcpaySettings.fraudProtection;
 
+	const searchParams = new URLSearchParams( window.location.search );
+	const anchorParam = searchParams.get( 'anchor' );
+	const isTourParam = '#fp-settings' === anchorParam;
+
 	const { isLoading } = useSettings();
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
 	const [ showTour, setShowTour ] = useState( false );
 
 	useEffect( () => {
-		if ( ! isLoading && ! isWelcomeTourDismissed ) {
+		if ( ! isLoading && ! isWelcomeTourDismissed && isTourParam ) {
 			setShowTour( true );
 		}
-	}, [ isLoading, isWelcomeTourDismissed ] );
+	}, [ isLoading, isWelcomeTourDismissed, isTourParam ] );
 
 	const handleTourEnd = (
 		stepList: any[],

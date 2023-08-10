@@ -69,7 +69,7 @@ exports[`AccountStatus renders normal status 1`] = `
           data-wp-component="FlexBlock"
         >
           <span
-            class="chip chip-primary"
+            class="chip chip-success"
           >
             Complete
           </span>
@@ -179,15 +179,6 @@ exports[`AccountStatus renders normal status 1`] = `
           2.9% + 0,00 € per transaction
         </s>
          2.9% + 0,30 € per transaction
-        <p>
-          <a
-            href="https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            Learn more
-          </a>
-        </p>
       </div>
     </div>
     <div
@@ -209,9 +200,19 @@ exports[`AccountStatus renders normal status 1`] = `
 exports[`StatusChip renders complete status 1`] = `
 <div>
   <span
-    class="chip chip-primary"
+    class="chip chip-success"
   >
     Complete
+  </span>
+</div>
+`;
+
+exports[`StatusChip renders enabled status 1`] = `
+<div>
+  <span
+    class="chip chip-primary"
+  >
+    Enabled
   </span>
 </div>
 `;

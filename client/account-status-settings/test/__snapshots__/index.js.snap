@@ -5,7 +5,7 @@ exports[`AccountStatus renders connected account 1`] = `
   <div>
     <div>
       <span
-        class="chip chip-primary"
+        class="chip chip-success"
       >
         Complete
       </span>
@@ -66,7 +66,7 @@ exports[`AccountStatus renders manual deposits 1`] = `
   <div>
     <div>
       <span
-        class="chip chip-primary"
+        class="chip chip-success"
       >
         Complete
       </span>
