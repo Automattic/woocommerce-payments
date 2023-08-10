@@ -51,5 +51,6 @@ export const isDueWithin = ( { dueBy, days }: IsDueWithinProps ): boolean => {
 };
 
 export const isInquiry = ( dispute: Dispute | CachedDispute ): boolean => {
+	// Inquiry disputes statuses are one of `warning_needs_response`, `warning_under_review` or `warning_closed`.
 	return dispute.status.indexOf( 'warning' ) === 0;
 };
