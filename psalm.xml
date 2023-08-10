@@ -10,6 +10,7 @@
     <projectFiles>
         <file name="woocommerce-payments.php" />
         <directory name="includes" />
+        <directory name="src" />
         <ignoreFiles>
 			<directory name="client" />
 			<directory name="docker" />
@@ -32,7 +33,13 @@
 			<errorLevel type="suppress">
 				<referencedClass name="Automattic\WooCommerce\StoreApi\Utilities\JsonWebToken" />
 				<referencedClass name="Automattic\WooCommerce\StoreApi\SessionHandler" />
+				<referencedClass name="Automattic\WooCommerce\Utilities\PluginUtil" />
 			</errorLevel>
 		</UndefinedClass>
+		<UndefinedDocblockClass>
+			<errorLevel type="suppress">
+				<referencedClass name="Automattic\WooCommerce\Utilities\PluginUtil" />
+			</errorLevel>
+		</UndefinedDocblockClass>
 	</issueHandlers>
 </psalm>
