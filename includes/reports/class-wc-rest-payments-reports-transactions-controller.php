@@ -92,7 +92,7 @@ class WC_REST_Payments_Reports_Transactions_Controller extends WC_Payments_REST_
 	public function get_transaction( $request ) {
 		$wcpay_request = List_Transactions::create();
 
-		$wcpay_request->set_source_id_filter( $request->get_param( 'id' ) );
+		$wcpay_request->set_filters( [ 'transaction_id_is' => $request->get_param( 'id' ) ] );
 		$wcpay_request->set_sort_by( 'date' ); // Default sort.
 		$wcpay_request->set_page_size( 1 ); // Set page size to limit to only one record.
 
