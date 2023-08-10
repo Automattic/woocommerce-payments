@@ -29,15 +29,29 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	private $wcpay_gateway;
 
 	/**
+	 * WC_Payments_Account instance to get information about the account
+	 *
+	 * @var WC_Payments_Account
+	 */
+	protected $account;
+
+
+	/**
 	 * WC_REST_Payments_Settings_Controller constructor.
 	 *
 	 * @param WC_Payments_API_Client   $api_client WC_Payments_API_Client instance.
 	 * @param WC_Payment_Gateway_WCPay $wcpay_gateway WC_Payment_Gateway_WCPay instance.
+	 * @param WC_Payments_Account      $account  Account class instance.
 	 */
-	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $wcpay_gateway ) {
+	public function __construct(
+		WC_Payments_API_Client $api_client,
+		WC_Payment_Gateway_WCPay $wcpay_gateway,
+		WC_Payments_Account $account
+	) {
 		parent::__construct( $api_client );
 
 		$this->wcpay_gateway = $wcpay_gateway;
+		$this->account       = $account;
 	}
 
 	/**
@@ -335,6 +349,16 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			);
 		}
 
+		// Japan accounts require Japanese phone numbers.
+		if ( 'JP' === $this->account->get_account_country() ) {
+			if ( '+81' !== substr( $value, 0, 3 ) ) {
+				return new WP_Error(
+					'rest_invalid_pattern',
+					__( 'Error: Invalid Japanese phone number: ', 'woocommerce-payments' ) . $value
+				);
+			}
+		}
+
 		return true;
 	}
 
@@ -399,6 +423,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'is_wcpay_subscriptions_enabled'      => WC_Payments_Features::is_wcpay_subscriptions_enabled(),
 				'is_wcpay_subscriptions_eligible'     => WC_Payments_Features::is_wcpay_subscriptions_eligible(),
 				'is_subscriptions_plugin_active'      => $this->wcpay_gateway->is_subscriptions_plugin_active(),
+				'account_country'                     => $this->wcpay_gateway->get_option( 'account_country' ),
 				'account_statement_descriptor'        => $this->wcpay_gateway->get_option( 'account_statement_descriptor' ),
 				'account_business_name'               => $this->wcpay_gateway->get_option( 'account_business_name' ),
 				'account_business_url'                => $this->wcpay_gateway->get_option( 'account_business_url' ),

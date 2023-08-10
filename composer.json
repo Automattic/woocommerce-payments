@@ -7,9 +7,9 @@
     "prefer-stable": true,
     "minimum-stability": "dev",
     "config": {
-      "platform": {
-        "php": "7.3"
-      },
+        "platform": {
+            "php": "7.3"
+        },
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true,
             "composer/package-versions-deprecated": true,
@@ -20,57 +20,58 @@
         }
     },
     "require": {
-      "php": ">=7.2",
-      "ext-json": "*",
-      "automattic/jetpack-connection": "1.51.7",
-      "automattic/jetpack-config": "1.15.2",
-      "automattic/jetpack-autoloader": "2.11.18",
-      "automattic/jetpack-identity-crisis": "0.8.43",
-      "automattic/jetpack-sync": "1.47.7",
-      "woocommerce/subscriptions-core": "6.0.0"
+        "php": ">=7.2",
+        "ext-json": "*",
+        "automattic/jetpack-connection": "1.51.7",
+        "automattic/jetpack-config": "1.15.2",
+        "automattic/jetpack-autoloader": "2.11.18",
+        "automattic/jetpack-identity-crisis": "0.8.43",
+        "automattic/jetpack-sync": "1.47.7",
+        "woocommerce/subscriptions-core": "6.0.0",
+        "psr/container": "^1.1"
     },
     "require-dev": {
-      "composer/installers": "1.10.0",
-      "phpunit/phpunit": "9.5.14",
-      "woocommerce/woocommerce-sniffs": "0.1.0",
-      "woocommerce/action-scheduler": "3.1.6",
-      "kalessil/production-dependencies-guard": "dev-master",
-      "vimeo/psalm": "4.13.1",
-      "php-stubs/wordpress-stubs": "5.8.2",
-      "php-stubs/woocommerce-stubs": "6.8.0",
-      "rregeer/phpunit-coverage-check": "0.3.1",
-      "yoast/phpunit-polyfills": "1.0.3",
-      "cweagans/composer-patches": "1.7.1",
-      "automattic/jetpack-changelogger": "3.3.2",
-      "spatie/phpunit-watcher": "1.23",
-      "woocommerce/qit-cli": "0.3.4"
+        "composer/installers": "1.10.0",
+        "phpunit/phpunit": "9.5.14",
+        "woocommerce/woocommerce-sniffs": "0.1.0",
+        "woocommerce/action-scheduler": "3.1.6",
+        "kalessil/production-dependencies-guard": "dev-master",
+        "vimeo/psalm": "4.13.1",
+        "php-stubs/wordpress-stubs": "5.8.2",
+        "php-stubs/woocommerce-stubs": "6.8.0",
+        "rregeer/phpunit-coverage-check": "0.3.1",
+        "yoast/phpunit-polyfills": "1.0.3",
+        "cweagans/composer-patches": "1.7.1",
+        "automattic/jetpack-changelogger": "3.3.2",
+        "spatie/phpunit-watcher": "1.23",
+        "woocommerce/qit-cli": "0.3.4"
     },
     "scripts": {
-      "test": [
-        "phpunit"
-      ],
-      "phpcs": [
-        "phpcs -s -p"
-      ],
-      "phpcbf": [
-        "phpcbf -p"
-      ]
+        "test": [
+            "phpunit"
+        ],
+        "phpcs": [
+            "phpcs -s -p"
+        ],
+        "phpcbf": [
+            "phpcbf -p"
+        ]
     },
     "extra": {
-      "scripts-description": {
-        "test": "Run unit tests",
-        "phpcs": "Analyze code against the WordPress coding standards with PHP_CodeSniffer",
-        "phpcbf": "Fix coding standards warnings/errors automatically with PHP Code Beautifier"
-      },
-      "installer-disable": true,
-      "production-dependencies-guard": [
-        "check-lock-file",
-        "check-abandoned"
-      ],
-      "composer-exit-on-patch-failure": true,
-      "patches": {
-      },
-      "changelogger": {
+        "scripts-description": {
+            "test": "Run unit tests",
+            "phpcs": "Analyze code against the WordPress coding standards with PHP_CodeSniffer",
+            "phpcbf": "Fix coding standards warnings/errors automatically with PHP Code Beautifier"
+        },
+        "installer-disable": true,
+        "production-dependencies-guard": [
+            "check-lock-file",
+            "check-abandoned"
+        ],
+        "composer-exit-on-patch-failure": true,
+        "patches": {
+        },
+        "changelogger": {
             "changelog": "changelog.txt",
             "types": {
                 "add": "Add",
@@ -85,15 +86,19 @@
         }
     },
     "autoload": {
-      "psr-4": {
-        "WCPay\\MultiCurrency\\": "includes/multi-currency",
-        "WCPay\\": "src"
-      }
+        "psr-4": {
+            "WCPay\\MultiCurrency\\": "includes/multi-currency",
+            "WCPay\\Vendor\\": "lib/packages",
+            "WCPay\\": "src"
+        },
+        "files": [ 
+            "src/wcpay-get-container.php" 
+        ]
     },
     "repositories": [
-      {
-        "type": "vcs",
-        "url": "https://github.com/automattic/woocommerce-subscriptions-core.git"
-      }
+        {
+            "type": "vcs",
+            "url": "https://github.com/automattic/woocommerce-subscriptions-core.git"
+        }
     ]
 }

@@ -22,6 +22,7 @@ const countryFeeStripeDocsBaseLink =
 const countryFeeStripeDocsBaseLinkNoCountry =
 	'https://woocommerce.com/document/woocommerce-payments/fees-and-debits/fees/';
 const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
+	AE: 'united-arab-emirates',
 	AU: 'australia',
 	AT: 'austria',
 	BE: 'belgium',
@@ -41,6 +42,7 @@ const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 	HU: 'hungary',
 	IE: 'ireland',
 	IT: 'italy',
+	JP: 'japan',
 	LT: 'lithuania',
 	LV: 'latvia',
 	MT: 'malta',
@@ -251,6 +253,10 @@ export const formatAccountFeesDescription = (
 		fee: __( '%1$f%% + %2$s per transaction', 'woocommerce-payments' ),
 		/* translators: %f percentage discount to apply */
 		discount: __( '(%f%% discount)', 'woocommerce-payments' ),
+		tc_link: __(
+			' — see <tclink>Terms and Conditions</tclink>',
+			'woocommerce-payments'
+		),
 		displayBaseFeeIfDifferent: true,
 		...customFormats,
 	};
@@ -309,9 +315,27 @@ export const formatAccountFeesDescription = (
 				sprintf( formats.discount, formatFee( discountFee.discount ) );
 		}
 
-		return createInterpolateElement( currentBaseFeeDescription, {
+		const conversionMap: Record< string, any > = {
 			s: <s />,
-		} );
+		};
+
+		if ( discountFee.tc_url && 0 < formats.tc_link.length ) {
+			currentBaseFeeDescription += ' ' + formats.tc_link;
+
+			conversionMap.tclink = (
+				// eslint-disable-next-line jsx-a11y/anchor-has-content
+				<a
+					href={ discountFee.tc_url }
+					target="_blank"
+					rel="noreferrer"
+				/>
+			);
+		}
+
+		return createInterpolateElement(
+			currentBaseFeeDescription,
+			conversionMap
+		);
 	}
 
 	return feeDescription;

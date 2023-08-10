@@ -88,7 +88,7 @@ export const getUpdateBusinessDetailsTask = (
 	};
 
 	const handleClick = () => {
-		if ( 'complete' === status ) {
+		if ( 'complete' === status || 'enabled' === status ) {
 			return;
 		}
 
@@ -108,7 +108,7 @@ export const getUpdateBusinessDetailsTask = (
 			'WooPayments'
 		),
 		content: accountDetailsTaskDescription,
-		completed: 'complete' === status,
+		completed: 'complete' === status || 'enabled' === status,
 		onClick: handleClick,
 		action: handleClick,
 		actionLabel: hasMultipleErrors

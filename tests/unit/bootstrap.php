@@ -5,6 +5,9 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Container;
+use WCPay\Internal\DependencyManagement\ExtendedContainer;
+
 $_tests_dir = getenv( 'WP_TESTS_DIR' );
 
 if ( ! $_tests_dir ) {
@@ -115,4 +118,34 @@ if ( defined( 'PHP_VERSION_ID' ) && PHP_VERSION_ID >= 70400 ) {
  * WCPAY already mocks the WC Subscriptions classes/functions it needs so there's no need to load them anyway.
  */
 function wcpay_init_subscriptions_core() {
+}
+
+// Placeholder for the test container.
+$GLOBALS['wcpay_test_container'] = null;
+
+/**
+ * Extracts the internal ExtendedContainer instance of the WCPay container.
+ *
+ * This allows full access to the full ExtendedContainer functionality,
+ * rather than only to the non-test `get` and `has` methods of the container.
+ *
+ * @throws Exception In case the container is not available.
+ * @return ExtendedContainer The extended container.
+ */
+function wcpay_get_test_container() {
+	if ( $GLOBALS['wcpay_test_container'] instanceof ExtendedContainer ) {
+		return $GLOBALS['wcpay_test_container'];
+	}
+
+	$container = $GLOBALS['wcpay_container'] ?? null;
+	if ( ! $container instanceof Container ) {
+		throw new Exception( 'Tests require the WCPay dependency container to be set up.' );
+	}
+
+	// Load the property through reflection.
+	$property = new ReflectionProperty( $container, 'container' );
+	$property->setAccessible( true );
+	$extended_container = $property->getValue( $container );
+
+	return $extended_container;
 }

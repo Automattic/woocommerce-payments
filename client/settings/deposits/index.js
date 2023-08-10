@@ -2,6 +2,7 @@
  * External dependencies
  */
 import React, { useContext } from 'react';
+import { select } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 import {
 	Card,
@@ -10,6 +11,7 @@ import {
 	Notice,
 } from '@wordpress/components';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
+import { STORE_NAME } from 'wcpay/data/constants';
 
 /**
  * Internal dependencies
@@ -62,6 +64,8 @@ const CustomizeDepositSchedule = () => {
 		setDepositScheduleMonthlyAnchor,
 	] = useDepositScheduleMonthlyAnchor();
 
+	const settings = select( STORE_NAME ).getSettings();
+
 	const handleIntervalChange = ( newInterval ) => {
 		switch ( newInterval ) {
 			case 'weekly':
@@ -80,6 +84,26 @@ const CustomizeDepositSchedule = () => {
 		setDepositScheduleInterval( newInterval );
 	};
 
+	let depositIntervalsOptions = [
+		{
+			value: 'daily',
+			label: __( 'Daily', 'woocommerce-payments' ),
+		},
+		{
+			value: 'weekly',
+			label: __( 'Weekly', 'woocommerce-payments' ),
+		},
+		{
+			value: 'monthly',
+			label: __( 'Monthly', 'woocommerce-payments' ),
+		},
+	];
+
+	if ( settings.account_country === 'JP' ) {
+		// Japanese accounts can't have daily payouts.
+		depositIntervalsOptions = depositIntervalsOptions.slice( 1 );
+	}
+
 	return (
 		<>
 			<div className="schedule-controls">
@@ -87,20 +111,7 @@ const CustomizeDepositSchedule = () => {
 					label={ __( 'Frequency', 'woocommerce-payments' ) }
 					value={ depositScheduleInterval }
 					onChange={ handleIntervalChange }
-					options={ [
-						{
-							value: 'daily',
-							label: __( 'Daily', 'woocommerce-payments' ),
-						},
-						{
-							value: 'weekly',
-							label: __( 'Weekly', 'woocommerce-payments' ),
-						},
-						{
-							value: 'monthly',
-							label: __( 'Monthly', 'woocommerce-payments' ),
-						},
-					] }
+					options={ depositIntervalsOptions }
 				/>
 				{ depositScheduleInterval === 'monthly' && (
 					<SelectControl

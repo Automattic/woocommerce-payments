@@ -9,6 +9,7 @@ import {
 	generateCheckoutEventNames,
 	getUpeSettings,
 	getStripeElementOptions,
+	blocksShowLinkButtonHandler,
 } from '../upe';
 import { getPaymentMethodsConstants } from '../../constants';
 import { getUPEConfig } from 'wcpay/utils/checkout';
@@ -419,5 +420,50 @@ describe( 'getStripeElementOptions', () => {
 			terms: { card: 'never' },
 			wallets: { applePay: 'never', googlePay: 'never' },
 		} );
+	} );
+} );
+
+describe( 'blocksShowLinkButtonHandler', () => {
+	let container;
+	const autofill = {
+		launch: ( props ) => {
+			return props.email;
+		},
+	};
+
+	beforeEach( () => {
+		container = document.createElement( 'div' );
+		container.innerHTML = `
+			<input id="email" type="email" value="">
+			<label for="email">Email address</label>
+		`;
+		document.body.appendChild( container );
+	} );
+
+	afterEach( () => {
+		document.body.removeChild( container );
+		container = null;
+	} );
+
+	test( 'should hide link button if email input is empty', () => {
+		blocksShowLinkButtonHandler( autofill );
+
+		const stripeLinkButton = document.querySelector(
+			'.wcpay-stripelink-modal-trigger'
+		);
+		expect( stripeLinkButton ).toBeDefined();
+		expect( stripeLinkButton.style.display ).toEqual( 'none' );
+	} );
+
+	test( 'should show link button if email input is present', () => {
+		document.getElementById( 'email' ).value = 'admin@example.com';
+
+		blocksShowLinkButtonHandler( autofill );
+
+		const stripeLinkButton = document.querySelector(
+			'.wcpay-stripelink-modal-trigger'
+		);
+		expect( stripeLinkButton ).toBeDefined();
+		expect( stripeLinkButton.style.display ).toEqual( 'inline-block' );
 	} );
 } );

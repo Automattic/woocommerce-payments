@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Add LegacyContainer to `src` to allow loading classes from `includes`.
