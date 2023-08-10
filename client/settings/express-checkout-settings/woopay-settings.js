@@ -18,8 +18,10 @@ import {
 	useWooPayCustomMessage,
 	useWooPayStoreLogo,
 	useWooPayLocations,
+	useWooPayShowIncompatibilityNotice,
 } from 'wcpay/data';
 import GeneralPaymentRequestButtonSettings from './general-payment-request-button-settings';
+import WooPayIncompatibilityNotice from '../settings-warnings/incompatibility-notice';
 
 const CUSTOM_MESSAGE_MAX_LENGTH = 100;
 
@@ -48,10 +50,15 @@ const WooPaySettings = ( { section } ) => {
 		}
 	};
 
+	const showIncompatibilityNotice = useWooPayShowIncompatibilityNotice();
+
 	return (
 		<Card className="woopay-settings">
-			{ 'enable' === section && (
+			{ section === 'enable' && (
 				<CardBody>
+					{ showIncompatibilityNotice && (
+						<WooPayIncompatibilityNotice />
+					) }
 					<CheckboxControl
 						checked={ isWooPayEnabled }
 						onChange={ updateIsWooPayEnabled }
@@ -165,7 +172,7 @@ const WooPaySettings = ( { section } ) => {
 				</CardBody>
 			) }
 
-			{ 'appearance' === section && (
+			{ section === 'appearance' && (
 				<CardBody style={ { marginTop: 12 } }>
 					<div className="woopay-settings__preview">
 						<WooPayPreview
@@ -220,7 +227,7 @@ const WooPaySettings = ( { section } ) => {
 				</CardBody>
 			) }
 
-			{ 'general' === section && (
+			{ section === 'general' && (
 				<GeneralPaymentRequestButtonSettings type="woopay" />
 			) }
 		</Card>

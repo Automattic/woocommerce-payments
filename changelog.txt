@@ -1,5 +1,67 @@
 *** WooPayments Changelog ***
 
+= 6.3.0 - 2023-08-09 =
+* Add - Add constant flag to use the new payment service (project reengineering payment process).
+* Add - Add JCB payment method coming soon notice
+* Add - Add payment service class (project reengineering payment process).
+* Add - Adds integration for Stripe Link while using split UPE with deferred intent creation.
+* Add - Add support for Japan
+* Add - Add support for the Enabled status from Stripe (will replace Restricted Soon in the case where there is no active deadline).
+* Add - Add support for United Arab Emirates
+* Add - Add Tracks events around account connect when promo is active.
+* Add - Add warning to the advanced settings page for WooPay incompatible extensions
+* Add - Add WooPay Gift Cards support.
+* Add - Add WooPay on onboarding payment methods.
+* Add - Add WooPay Points and Rewards support
+* Add - Allow WooPay verified email requests
+* Add - Ensure WooPay compatibility with the split UPE that has deferred intent creation implementation.
+* Add - Include WooPay merchant terms on WooCommerce Payment Methods settings.
+* Add - Prefill the Business Name and Country fields during WooPayments KYC.
+* Fix - Adding more descriptive error messages in gradual signup
+* Fix - Allow card gateway to load properly with WooPay enabled and subscription item in the cart.
+* Fix - Allow only domestic payments for BNPL payment methods
+* Fix - Allow only Japanese phone numbers for Japanese accounts
+* Fix - Avoid creating duplicate paid orders from a single payment intent.
+* Fix - Disputes listing column renamed to Respond by and will show empty when dispute does not need response or if respond by date has passed.
+* Fix - Enable customers who have migrated a WCPay subscription to a tokenised subscription to pay for existing failed orders.
+* Fix - Fatal error when using latest MailPoet with WooPay
+* Fix - Fixed the creation of the nonce that is sent to WooPay
+* Fix - Fix error while selecting product variations. Make the stripe payment messaging element load only if at least one BNPL method is active.
+* Fix - Fix extra requests when clicking WooPay express checkout button.
+* Fix - Fix Fraud and Risk Tools welcome tour to only show if Fraud and Risk banner learn more button is clicked and tour not previously dismissed.
+* Fix - Fix phone number input widget on checkout page
+* Fix - Get WooPay adapted extensions from server
+* Fix - Highlight menu item when transaction details, deposit details, and disputes details page are opened.
+* Fix - Improve split UPE support of WooPay with multiple payment methods enabled.
+* Fix - Minor copy changes on the Set Up Real Payments modal.
+* Fix - Provide per active discount Terms and Conditions link in the Account details card.
+* Fix - Remove daily deposits for JP merchants as it's not permitted by our payment processor
+* Fix - Reverting change to the plugin name because of compatibility with iOS app.
+* Fix - Send correct shipping address to Afterpay in Classic Checkout
+* Fix - Send shipping address correctly to Afterpay in block checkout, when separate billing address is provided.
+* Fix - Update excerpt in readme.txt to improve ranking
+* Fix - Visual fixes for the Connect page hero.
+* Update - Allows nulls in min/max payment ranges definitions for UPE payment methods
+* Update - Minor copy fixes on the onboarding form.
+* Update - Modify 'Contact WooCommerce Support' badge located on the 'Payments accepted on checkout' section of Payments > Settings.
+* Update - Only show the post-onboarding congratulations message if user did not onboard in test mode.
+* Update - Unify payment method icon design
+* Dev - Add a dependency container for the new src directory.
+* Dev - Add generic Get_Request class, and migrate current simple requests to use it
+* Dev - Add PSR-4 autoloading for the src directory.
+* Dev - Add unit tests to cover WooPay button eligibility.
+* Dev - Add webpack script to generate RTL .css files and enqueue it for RTL languages
+* Dev - Adjust coding standards to align with WC Core.
+* Dev - Avoiding product-service exceptions during checkout, making debugging easier.
+* Dev - Fix Husky post-merge script to conform to `sh` syntax
+* Dev - Ignore updating currency precision if the country is Japan
+* Dev - Introduce model class WC_Payments_API_Setup_Intention for setup intents
+* Dev - Migrate certain WCPay shopper tracks to use wcpay prefix
+* Dev - Migrate Chip component to TypeScript to improve code quality.
+* Dev - Migrate DisputeStatusChip comp to TypeScript to improve code quality.
+* Dev - Pass tracks identity to WooPay iframe
+* Dev - Pass Tracks identity to WooPay to improve telemetry
+
 = 6.2.2 - 2023-08-01 =
 * Fix - Move the email title hook from the UPE class to the parent legacy gateway class, to avoid multiple callback invocations for the split UPE
 

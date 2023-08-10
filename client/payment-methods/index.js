@@ -189,8 +189,8 @@ const PaymentMethods = () => {
 	const handleCheckClick = ( itemId ) => {
 		const statusAndRequirements = getStatusAndRequirements( itemId );
 		if (
-			'unrequested' === statusAndRequirements.status &&
-			0 < statusAndRequirements.requirements.length
+			statusAndRequirements.status === 'unrequested' &&
+			statusAndRequirements.requirements.length > 0
 		) {
 			handleActivationModalOpen( {
 				id: itemId,
@@ -204,7 +204,7 @@ const PaymentMethods = () => {
 	const handleUncheckClick = ( itemId ) => {
 		const methodConfig = methodsConfiguration[ itemId ];
 		const statusAndRequirements = getStatusAndRequirements( itemId );
-		if ( methodConfig && 'active' === statusAndRequirements.status ) {
+		if ( methodConfig && statusAndRequirements.status === 'active' ) {
 			handleDeleteModalOpen( {
 				id: itemId,
 				label: methodConfig.label,
@@ -224,7 +224,7 @@ const PaymentMethods = () => {
 
 	return (
 		<>
-			{ 'disable' === openModalIdentifier ? (
+			{ openModalIdentifier === 'disable' ? (
 				<DisableUPEModal
 					setOpenModal={ setOpenModalIdentifier }
 					triggerAfterDisable={ () =>
@@ -232,7 +232,7 @@ const PaymentMethods = () => {
 					}
 				/>
 			) : null }
-			{ 'survey' === openModalIdentifier ? (
+			{ openModalIdentifier === 'survey' ? (
 				<WcPaySurveyContextProvider>
 					<SurveyModal
 						setOpenModal={ setOpenModalIdentifier }
@@ -244,7 +244,7 @@ const PaymentMethods = () => {
 
 			<Card
 				className={ classNames( 'payment-methods', {
-					'is-loading': 'pending' === status,
+					'is-loading': status === 'pending',
 				} ) }
 			>
 				{ isUpeEnabled && (
@@ -256,7 +256,7 @@ const PaymentMethods = () => {
 									'woocommerce-payments'
 								) }
 							</span>
-							{ 'split' !== upeType && (
+							{ upeType !== 'split' && (
 								<>
 									{ ' ' }
 									<Pill>
@@ -283,6 +283,8 @@ const PaymentMethods = () => {
 								description,
 								icon: Icon,
 								allows_manual_capture: isAllowingManualCapture,
+								setup_required: isSetupRequired,
+								setup_tooltip: setupTooltip,
 							} ) => (
 								<PaymentMethod
 									id={ id }
@@ -309,6 +311,8 @@ const PaymentMethods = () => {
 									status={
 										getStatusAndRequirements( id ).status
 									}
+									isSetupRequired={ isSetupRequired }
+									setupTooltip={ setupTooltip }
 									isAllowingManualCapture={
 										isAllowingManualCapture
 									}

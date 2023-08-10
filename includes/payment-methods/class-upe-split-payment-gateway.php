@@ -8,30 +8,23 @@
 namespace WCPay\Payment_Methods;
 
 use Exception;
-use WCPay\Constants\Order_Status;
-use WCPay\Constants\Payment_Method;
-use WCPay\Constants\Payment_Type;
-use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WC_Payments_API_Setup_Intention;
+use WCPay\Core\Server\Request\Get_Setup_Intention;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
-use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Logger;
-use WCPay\Payment_Information;
 use WCPay\Session_Rate_Limiter;
-use WC_Order;
 use WC_Payments;
 use WC_Payments_Account;
 use WC_Payments_Action_Scheduler_Service;
 use WC_Payments_API_Client;
 use WC_Payments_Customer_Service;
-use WC_Payments_Explicit_Price_Formatter;
-use WC_Payment_Gateway_WCPay;
 use WC_Payments_Order_Service;
 use WC_Payment_Token_CC;
 use WC_Payments_Token_Service;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Utils;
-use WC_Payments_Features;
+use WCPay\Constants\Payment_Method;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WP_User;
 
@@ -139,6 +132,23 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	}
 
 	/**
+	 * This method is used by WooCommerce Core's WC_Payment_Gateways::get_available_payment_gateways() to filter out gateways.
+	 *
+	 * The availability decision includes an additional business rule that checks if the payment method is enabled at checkout
+	 * via the is_enabled_at_checkout method. This method provides crucial information, among others, to determine if the gateway
+	 * is reusable in case there's a subcription in the cart.
+	 *
+	 * @return bool Whether the gateway is enabled and ready to accept payments.
+	 */
+	public function is_available() {
+		$processing_payment_method = $this->payment_methods[ $this->payment_method->get_id() ];
+		if ( ! $processing_payment_method->is_enabled_at_checkout() ) {
+			return false;
+		}
+		return parent::is_available();
+	}
+
+	/**
 	 * Gets UPE_Payment_Method instance from ID.
 	 *
 	 * @param string $payment_method_type Stripe payment method type ID.
@@ -152,7 +162,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 * Set formatted readable payment method title for order,
 	 * using payment method details from accompanying charge.
 	 *
-	 * @param WC_Order   $order WC Order being processed.
+	 * @param \WC_Order  $order WC Order being processed.
 	 * @param string     $payment_method_type Stripe payment method key.
 	 * @param array|bool $payment_method_details Array of payment method details from charge or false.
 	 */
@@ -164,7 +174,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 
 		$payment_method_title = $payment_method->get_title( $payment_method_details );
 
-		$payment_gateway = 'card' === $payment_method->get_id() ? self::GATEWAY_ID : self::GATEWAY_ID . '_' . $payment_method_type;
+		$payment_gateway = in_array( $payment_method->get_id(), [ Payment_Method::CARD, Payment_Method::LINK ], true ) ? self::GATEWAY_ID : self::GATEWAY_ID . '_' . $payment_method_type;
 
 		$order->set_payment_method( $payment_gateway );
 		$order->set_payment_method_title( $payment_method_title );
@@ -346,8 +356,11 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 */
 	public function create_token_from_setup_intent( $setup_intent_id, $user ) {
 		try {
-			$setup_intent      = $this->payments_api_client->get_setup_intent( $setup_intent_id );
-			$payment_method_id = $setup_intent['payment_method'];
+			$setup_intent_request = Get_Setup_Intention::create( $setup_intent_id );
+			/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+			$setup_intent = $setup_intent_request->send( 'wcpay_get_setup_intent_request' );
+
+			$payment_method_id = $setup_intent->get_payment_method_id();
 			// TODO: When adding SEPA and Sofort, we will need a new API call to get the payment method and from there get the type.
 			// Leaving 'card' as a hardcoded value for now to avoid the extra API call.
 			// $payment_method = $this->payment_methods['card'];// Maybe this should be enforced.

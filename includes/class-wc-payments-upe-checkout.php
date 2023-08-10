@@ -251,6 +251,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 			];
 
 			if ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+				$gateway_for_payment_method                             = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
 				$settings[ $payment_method_id ]['upePaymentIntentData'] = $this->gateway->get_payment_intent_data_from_session( $payment_method_id );
 				$settings[ $payment_method_id ]['upeSetupIntentData']   = $this->gateway->get_setup_intent_data_from_session( $payment_method_id );
 				$settings[ $payment_method_id ]['testingInstructions']  = WC_Payments_Utils::esc_interpolated_html(
@@ -261,6 +262,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 						'a'      => '<a href="https://woocommerce.com/document/woocommerce-payments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
 					]
 				);
+				$settings[ $payment_method_id ]['forceNetworkSavedCards'] = $gateway_for_payment_method->should_use_stripe_platform_on_checkout_page();
 			}
 		}
 
@@ -309,11 +311,12 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 				wp_localize_script( 'wcpay-upe-checkout', 'wcpayCustomerData', $prepared_customer_data );
 			}
 
-			wp_enqueue_style(
+			WC_Payments_Utils::enqueue_style(
 				'wcpay-upe-checkout',
 				plugins_url( 'dist/checkout.css', WCPAY_PLUGIN_FILE ),
 				[],
-				WC_Payments::get_file_version( 'dist/checkout.css' )
+				WC_Payments::get_file_version( 'dist/checkout.css' ),
+				'all'
 			);
 
 			// Output the form HTML.

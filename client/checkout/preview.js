@@ -15,7 +15,7 @@ export const isPreviewing = () => {
 	// Check for the URL parameter used in the iframe of the customize.php page
 	// and for the is_preview() value for posts.
 	return (
-		null !== searchParams.get( 'customize_messenger_channel' ) ||
+		searchParams.get( 'customize_messenger_channel' ) !== null ||
 		getConfig( 'isPreview' )
 	);
 };

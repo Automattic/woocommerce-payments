@@ -17,7 +17,7 @@ import './multi-currency-setup.scss';
 
 const MultiCurrencySetup = ( { isSetupCompleted } ) => {
 	// Redirect to MC Settings page if the onboarding is once completed.
-	if ( 'yes' === isSetupCompleted ) {
+	if ( isSetupCompleted === 'yes' ) {
 		window.location.assign(
 			'admin.php?page=wc-settings&tab=wcpay_multi_currency'
 		);

@@ -59,6 +59,7 @@ phpunit.xml
 # Composer
 /vendor/
 /vendor-dist/
+/lib/vendor/
 contributors.md
 
 # Screenshots for e2e tests failures
