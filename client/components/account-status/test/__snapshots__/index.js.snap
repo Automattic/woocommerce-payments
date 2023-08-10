@@ -210,7 +210,7 @@ exports[`StatusChip renders complete status 1`] = `
 exports[`StatusChip renders enabled status 1`] = `
 <div>
   <span
-    class="chip chip-primary is-compact"
+    class="chip chip-primary"
   >
     Enabled
   </span>
