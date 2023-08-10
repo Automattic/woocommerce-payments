@@ -591,7 +591,7 @@ class WC_Payments_Subscription_Service {
 	 */
 	public function maybe_attempt_payment_for_subscription( $subscription, WC_Payment_Token $token ) {
 
-		if ( ! wcs_is_subscription( $subscription ) ) {
+		if ( ! wcs_is_subscription( $subscription ) || ! self::is_wcpay_subscription( $subscription ) ) {
 			return;
 		}
 
@@ -868,7 +868,6 @@ class WC_Payments_Subscription_Service {
 		$response              = null;
 
 		if ( ! $wcpay_subscription_id ) {
-			Logger::log( 'There was a problem updating the WCPay subscription in: Subscription does not contain a valid subscription ID.' );
 			return;
 		}
 
@@ -1045,10 +1044,6 @@ class WC_Payments_Subscription_Service {
 	 * @return bool True if store has active WCPay subscriptions, otherwise false.
 	 */
 	public static function store_has_active_wcpay_subscriptions() {
-		if ( ! function_exists( 'wcs_get_subscriptions' ) ) {
-			return false;
-		}
-
 		$active_wcpay_subscriptions = wcs_get_subscriptions(
 			[
 				'subscriptions_per_page' => 1,

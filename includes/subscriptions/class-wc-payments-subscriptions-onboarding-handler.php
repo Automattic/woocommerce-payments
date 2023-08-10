@@ -123,7 +123,7 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 	 */
 	public function account_data_refreshed() {
 
-		if ( ! $this->account->is_stripe_connected() ) {
+		if ( $this->is_subscriptions_plugin_active() || ! $this->account->is_stripe_connected() ) {
 			return;
 		}
 
