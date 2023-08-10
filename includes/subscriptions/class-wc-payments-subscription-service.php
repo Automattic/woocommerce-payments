@@ -591,13 +591,13 @@ class WC_Payments_Subscription_Service {
 	 */
 	public function maybe_attempt_payment_for_subscription( $subscription, WC_Payment_Token $token ) {
 
-		if ( ! wcs_is_subscription( $subscription ) || ! self::is_wcpay_subscription( $subscription ) ) {
+		if ( ! wcs_is_subscription( $subscription ) ) {
 			return;
 		}
 
 		$wcpay_invoice_id = WC_Payments_Invoice_Service::get_pending_invoice_id( $subscription );
 
-		if ( ! $wcpay_invoice_id ) {
+		if ( ! $wcpay_invoice_id || ! self::is_wcpay_subscription( $subscription ) ) {
 			return;
 		}
 

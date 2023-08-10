@@ -137,6 +137,9 @@ class WC_Payments_Invoice_Service_Test extends WCPAY_UnitTestCase {
 		$mock_order        = WC_Helper_Order::create_order();
 		$mock_subscription = new WC_Subscription();
 
+		$mock_subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, 'sub_123abc' );
+		$mock_subscription->save();
+
 		// With the following calls to `maybe_record_first_invoice_payment()`, we only expect 2 calls (see Positive Cases) to result in an API call.
 		$this->mock_api_client->expects( $this->exactly( 2 ) )
 			->method( 'charge_invoice' )

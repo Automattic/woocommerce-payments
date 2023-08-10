@@ -197,7 +197,7 @@ class WC_Payments_Invoice_Service {
 		foreach ( wcs_get_subscriptions_for_order( $order, [ 'order_type' => [ 'parent', 'renewal' ] ] ) as $subscription ) {
 			$invoice_id = self::get_subscription_invoice_id( $subscription );
 
-			if ( ! $invoice_id || ! WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ) {
+			if ( ! $invoice_id || ! (bool) WC_Payments_Subscription_Service::get_wcpay_subscription_id( $subscription ) ) {
 				continue;
 			}
 
