@@ -6,7 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
-use WCPay\Exceptions\API_Exception;
+use WCPay\Exceptions\Connection_Exception;
 use WCPay\Core\Server\Request\List_Transactions;
 
 /**
@@ -41,7 +41,7 @@ class WC_REST_Payments_Reports_Transactions_Controller_Test extends WCPAY_UnitTe
 			->method( 'format_response' )
 			->willReturn( $this->get_transactions_list_from_server() );
 
-		//check that in the end, page size is set correctly
+		// check that in the end, page size is set correctly.
 		$mock_request->expects( $this->any() )
 			->method( 'set_page_size' )
 			->withConsecutive(
@@ -52,37 +52,59 @@ class WC_REST_Payments_Reports_Transactions_Controller_Test extends WCPAY_UnitTe
 		$this->assertEquals( $this->get_transactions_list(), $response->get_data() );
 	}
 
+	public function test_get_transactions_response_error() {
+		$request = new WP_REST_Request( 'POST' );
+
+		$mock_request = $this->mock_wcpay_request( List_Transactions::class );
+		$mock_request->expects( $this->once() )
+			->method( 'format_response' )
+			->will(
+				$this->throwException(
+					new Connection_Exception(
+						'Test error.',
+						'wcpay_http_request_failed',
+						400
+					)
+				)
+			);
+
+		$response = $this->controller->get_transactions( $request );
+		$expected = new WP_Error( 'wcpay_http_request_failed', 'Test error.' );
+		$this->assertEquals( $expected, $response );
+	}
+
+
 	public function test_get_transactions_filter_type() {
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_param( 'type', 'refund' );
-		
+
 		$mock_request = $this->mock_wcpay_request( List_Transactions::class );
 		$mock_request->expects( $this->once() )
 			->method( 'set_type_is' )
 			->with( 'refund' );
-			
-		$this->controller->get_transactions( $request );	
+
+		$this->controller->get_transactions( $request );
 	}
 
 	public function test_get_transactions_filter_order_id() {
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_param( 'order_id', 123 );
-		
+
 		$mock_request = $this->mock_wcpay_request( List_Transactions::class );
 		$mock_request->expects( $this->any() )
 			->method( 'set_filters' )
 			->withConsecutive(
 				[ $this->anything() ],
-				[ 
-					[ 
-						'order_id_is' => 123,
-			 			'customer_email_is' => null,
-						'source_is' => null 
-					] 
+				[
+					[
+						'order_id_is'       => 123,
+						'customer_email_is' => null,
+						'source_is'         => null,
+					],
 				]
 			);
 
-		$this->controller->get_transactions( $request );	
+		$this->controller->get_transactions( $request );
 	}
 
 	public function test_get_transactions_filter_all() {
@@ -90,26 +112,23 @@ class WC_REST_Payments_Reports_Transactions_Controller_Test extends WCPAY_UnitTe
 		$request->set_param( 'order_id', 345 );
 		$request->set_param( 'customer_email', 'test@woocommerce.com' );
 		$request->set_param( 'payment_method_type', 'visa' );
-		
+
 		$mock_request = $this->mock_wcpay_request( List_Transactions::class );
 		$mock_request->expects( $this->any() )
 			->method( 'set_filters' )
 			->withConsecutive(
 				[ $this->anything() ],
-				[ 
-					[ 
-						'order_id_is' => 345,
-			 			'customer_email_is' => 'test@woocommerce.com',
-						'source_is' => 'visa' 
-					] 
+				[
+					[
+						'order_id_is'       => 345,
+						'customer_email_is' => 'test@woocommerce.com',
+						'source_is'         => 'visa',
+					],
 				]
 			);
 
-		$this->controller->get_transactions( $request );	
+		$this->controller->get_transactions( $request );
 	}
-
-	//TODO: date filter, server error, invalid request.
-
 
 	private function get_transactions_list_from_server() {
 		return [

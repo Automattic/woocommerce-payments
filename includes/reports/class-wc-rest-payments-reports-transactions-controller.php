@@ -70,12 +70,12 @@ class WC_REST_Payments_Reports_Transactions_Controller extends WC_Payments_REST_
 		];
 		$wcpay_request->set_filters( $filters );
 
-		$transactions = $wcpay_request->handle_rest_request( 'wcpay_list_transactions_request' );
-		if ( is_wp_error( $transactions ) ) {
-			return $transactions;
+		$response = $wcpay_request->handle_rest_request( 'wcpay_list_transactions_request' );
+		if ( is_wp_error( $response ) ) {
+			return $response;
 		}
 		$data = [];
-		foreach ( $transactions['data'] ?? [] as $transaction ) {
+		foreach ( $response['data'] ?? [] as $transaction ) {
 			$response = $this->prepare_item_for_response( $transaction, $request );
 			$data[]   = $this->prepare_response_for_collection( $response );
 		}
@@ -96,11 +96,11 @@ class WC_REST_Payments_Reports_Transactions_Controller extends WC_Payments_REST_
 		$wcpay_request->set_sort_by( 'date' ); // Default sort.
 		$wcpay_request->set_page_size( 1 ); // Set page size to limit to only one record.
 
-		$transactions = $wcpay_request->handle_rest_request( 'wcpay_list_transactions_request' );
-		if ( is_wp_error( $transactions ) ) {
-			return $transactions;
+		$response = $wcpay_request->handle_rest_request( 'wcpay_list_transactions_request' );
+		if ( is_wp_error( $response ) ) {
+			return $response;
 		}
-		$transaction = $transactions['data'][0] ?? null;
+		$transaction = $response['data'][0] ?? null;
 		if ( ! $transaction ) {
 			return rest_ensure_response( [] );
 		}
