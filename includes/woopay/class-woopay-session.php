@@ -304,7 +304,7 @@ class WooPay_Session {
 		$session_encrypted = openssl_encrypt( $message, 'aes-256-cbc', WC_Payments::mode()->is_dev() ? 'dev_mode' : $store_blog_token, OPENSSL_RAW_DATA, $iv );
 
 		// Create an HMAC hash for data integrity.
-		$hash = hash_hmac( 'sha256', $session_encrypted, $store_blog_token );
+		$hash = hash_hmac( 'sha256', $session_encrypted, WC_Payments::mode()->is_dev() ? 'dev_mode' : $store_blog_token );
 
 		$data = [
 			'session' => $session_encrypted,
