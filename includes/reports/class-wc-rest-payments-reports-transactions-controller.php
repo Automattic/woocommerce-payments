@@ -233,7 +233,18 @@ class WC_REST_Payments_Reports_Transactions_Controller extends WC_Payments_REST_
 				'minimum'     => 1,
 				'maximum'     => 100,
 			],
-
+			'sort'                => [
+				'description' => __( 'Field on which to sort.', 'woocommerce-payments' ),
+				'type'        => 'string',
+				'required'    => false,
+				'default'     => 'date',
+			],
+			'direction'           => [
+				'description' => __( 'Direction on which to sort.', 'woocommerce-payments' ),
+				'type'        => 'string',
+				'required'    => false,
+				'default'     => 'desc',
+			],
 		];
 	}
 
