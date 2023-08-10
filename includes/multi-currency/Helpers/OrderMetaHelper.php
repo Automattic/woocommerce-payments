@@ -8,8 +8,9 @@
 namespace WCPay\MultiCurrency\Helpers;
 
 use WC_Payments_API_Client;
-use WC_Payments_Features;
 use WC_Payments_Utils;
+use WCPay\Exceptions\API_Exception;
+use WCPay\Logger;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -39,42 +40,6 @@ class OrderMetaHelper {
 	public function __construct( WC_Payments_API_Client $payments_api_client ) {
 		$this->payments_api_client = $payments_api_client;
 		$this->add_actions();
-	}
-
-	/**
-	 * Adds the button to toggle the tool on and off under WooCommerce > Status > Tools.
-	 *
-	 * @param array $tools The current array of tools.
-	 *
-	 * @return array The modified tools array.
-	 */
-	public function add_tool_button( $tools ) {
-		/**
-		 * We are not able to look at the current status of the tool to dynamically change these labels. The tool runs after the labels are created.
-		 */
-		$tools['wcpay_mc_meta_helper_toggle'] = [
-			'name'     => __( 'Enable/Disable Multi-Currency Meta Helper', 'woocommerce-payments' ),
-			'button'   => __( 'Enable/Disable', 'woocommerce-payments' ),
-			'desc'     => __( 'This tool can be used to fix meta data on orders related to Multi-Currency conversion rates.', 'woocommerce-payments' ),
-			'callback' => [ $this, 'toggle_helper_option' ],
-		];
-
-		return $tools;
-	}
-
-	/**
-	 * Toggles the feature on and off via database option.
-	 *
-	 * @return string Whether the feature has been enabled or disabled.
-	 */
-	public function toggle_helper_option() {
-		if ( WC_Payments_Features::is_mc_order_meta_helper_enabled() ) {
-			update_option( WC_Payments_Features::MC_ORDER_META_HELPER_FLAG_NAME, 0 );
-			return __( 'Multi-Currency Meta Helper has been disabled', 'woocommerce-payments' );
-		}
-
-		update_option( WC_Payments_Features::MC_ORDER_META_HELPER_FLAG_NAME, 1 );
-		return __( 'Multi-Currency Meta Helper has been enabled', 'woocommerce-payments' );
 	}
 
 	/**
@@ -154,7 +119,7 @@ class OrderMetaHelper {
 	/**
 	 * Maybe add the meta box.
 	 *
-	 * @param string $post_type The type of post being viewed.
+	 * @param string $post_type Unused. The type of post being viewed.
 	 * @param object $post      The post object for the post being viewed.
 	 *
 	 * @return void
@@ -190,7 +155,6 @@ class OrderMetaHelper {
 		$order_currency = strtoupper( $order->get_currency() );
 		$intent_id      = $order->get_meta( '_intent_id' );
 		$payment_method = $order->get_payment_method();
-		$is_wcpay       = false !== strpos( $payment_method, 'woocommerce_payments' );
 
 		// Define the store items.
 		$store_items = [
@@ -248,19 +212,25 @@ class OrderMetaHelper {
 			],
 		];
 
-		/**
-		 * If the intent isn't a good intent, then a fatal error is thrown. For this reason, we check if it's WCPay.
-		 * https://github.com/Automattic/woocommerce-payments/issues/6566
-		 */
-		if ( ! empty( $intent_id ) && $is_wcpay ) {
-			// Get the intent, charge, and then the transaction from the charge.
-			$intent_object       = $this->payments_api_client->get_intent( $intent_id );
-			$charge_object       = $intent_object->get_charge();
-			$balance_transaction = $charge_object->get_balance_transaction();
+		if ( ! empty( $intent_id ) ) {
+			// Attempt to get the intent.
+			try {
+				$intent_object = $this->payments_api_client->get_intent( $intent_id );
+			} catch ( API_Exception $e ) {
+				// Log the error returned.
+				Logger::error( "Error when attempting to get intent ($intent_id):\n" . $e->getMessage() );
+				$intent_object = null;
+			}
 
-			// Set the Charge Exchange Rate value from the intent itself.
-			$charge_items['charge_exchange_rate']['value'] = $balance_transaction['exchange_rate'];
-			$charge_items['charge_currency']['value']      = strtoupper( $charge_object->get_currency() );
+			// If we have an intent, then get the charge and the exchange rate from it.
+			if ( is_a( $intent_object, 'WC_Payments_API_Payment_Intention' ) ) {
+				$charge_object       = $intent_object->get_charge();
+				$balance_transaction = $charge_object->get_balance_transaction();
+
+				// Set the Charge Exchange Rate value from the intent itself.
+				$charge_items['charge_exchange_rate']['value'] = $balance_transaction['exchange_rate'];
+				$charge_items['charge_currency']['value']      = strtoupper( $charge_object->get_currency() );
+			}
 		}
 
 		/**
@@ -292,19 +262,15 @@ class OrderMetaHelper {
 		}
 
 		// Define our labels.
-		$purpose                       = __( 'This tool\'s intended use is to add or update the Multi-Currency exchange rate for the order if it is missing.', 'woocommerce-payments' );
-		$new_exchange_rate_description = __( 'Enter a new exchange rate and then click the Update button for the order.', 'woocommerce-payments' );
-		$suggested_label               = __( 'Suggested exchange rate: ', 'woocommerce-payments' );
-		$new_exchange_rate_label       = __( 'New exchange rate:', 'woocommerce-payments' );
-		$nonce_value                   = wp_create_nonce( 'wcpay_multi_currency_exchange_rate_nonce_' . $order->get_id() );
+		$form_description        = __( 'If the exchange rate meta data is missing, update the order with the suggested exchange rate. Once the rate is updated, you can then use the Import historical data tool under Analytics > Settings to correct analytical data.', 'woocommerce-payments' );
+		$suggested_label         = __( 'Suggested exchange rate: ', 'woocommerce-payments' );
+		$new_exchange_rate_label = __( 'New exchange rate:', 'woocommerce-payments' );
+		$nonce_value             = wp_create_nonce( 'wcpay_multi_currency_exchange_rate_nonce_' . $order->get_id() );
 
 		// Display the form itself.
 		?>
 			<p style="font-weight:bold; font-size:14px;">
-				<?php echo esc_html( $purpose ); ?>
-			</p>
-			<p style="font-weight:bold; font-size:14px;">
-				<?php echo esc_html( $new_exchange_rate_description ); ?>
+				<?php echo esc_html( $form_description ); ?>
 			</p>
 			<?php if ( false !== $suggested ) { ?>
 				<p style="font-weight:bold; font-size:14px;">
@@ -315,6 +281,7 @@ class OrderMetaHelper {
 				<label for="wcpay_multi_currency_exchange_rate"><?php echo esc_html( $new_exchange_rate_label ); ?><br />
 				<input type="text" name="wcpay_multi_currency_exchange_rate" id="wcpay_multi_currency_exchange_rate" />
 				<input type="hidden" name="wcpay_multi_currency_exchange_rate_nonce" id="wcpay_multi_currency_exchange_rate_nonce" value="<?php echo esc_html( $nonce_value ); ?>" />
+				<input type="hidden" name="wcpay_mc_meta_helper" id="wcpay_mc_meta_helper" value="1" />
 			</p>
 			<hr>
 		<?php
@@ -345,6 +312,20 @@ class OrderMetaHelper {
 	}
 
 	/**
+	 * Appends our parameter to the edit post link if needed.
+	 *
+	 * @param string $url The current edit post link.
+	 *
+	 * @return string
+	 */
+	public function maybe_update_edit_post_link( $url ): string {
+		if ( $this->is_feature_enabled() ) {
+			$url .= '&wcpay_mc_meta_helper=1';
+		}
+		return $url;
+	}
+
+	/**
 	 * Adds our actions and hooks.
 	 *
 	 * @return void
@@ -352,8 +333,18 @@ class OrderMetaHelper {
 	private function add_actions() {
 		add_action( 'add_meta_boxes', [ $this, 'maybe_add_meta_box' ], 10, 2 );
 		add_action( 'save_post', [ $this, 'maybe_update_exchange_rate' ] );
-		add_filter( 'woocommerce_debug_tools', [ $this, 'add_tool_button' ] );
 		add_action( 'admin_notices', [ $this, 'maybe_output_errors' ] );
+		add_filter( 'get_edit_post_link', [ $this, 'maybe_update_edit_post_link' ] );
+	}
+
+	/**
+	 * Checks to see if the feature is enabled by the request parameter.
+	 *
+	 * @return bool
+	 */
+	private function is_feature_enabled(): bool {
+		// Nonce verification ignored due to this is just checking for a set specific value.
+		return isset( $_REQUEST['wcpay_mc_meta_helper'] ) && 1 === intval( $_REQUEST['wcpay_mc_meta_helper'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	}
 
 	/**
@@ -365,7 +356,7 @@ class OrderMetaHelper {
 	 */
 	private function confirm_actions( $order ) {
 		// If the feature is not enabled, exit.
-		if ( ! WC_Payments_Features::is_mc_order_meta_helper_enabled() ) {
+		if ( ! $this->is_feature_enabled() ) {
 			return false;
 		}
 
@@ -407,7 +398,7 @@ class OrderMetaHelper {
 	 *
 	 * @return array The array of errors.
 	 */
-	private function get_errors() {
+	private function get_errors(): array {
 		// Get any errors from the database.
 		$errors = array_filter( (array) get_option( '_wcpay_multi_currency_order_meta_helper_errors' ) );
 
@@ -427,7 +418,7 @@ class OrderMetaHelper {
 	 *
 	 * @return bool
 	 */
-	private function has_errors() {
+	private function has_errors(): bool {
 		return 0 < count( $this->get_errors() );
 	}
 
