@@ -75,16 +75,18 @@ const PhoneNumberInput = ( {
 			onlyCountries: [],
 		};
 
-		const accountCountry = wcpaySettings?.accountStatus?.country ?? '';
-
-		// Special case for Japan: Only Japanese phone numbers are accepted by Stripe
-		if ( accountCountry === 'JP' ) {
-			phoneCountries = {
-				initialCountry: 'JP',
-				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-				// @ts-ignore
-				onlyCountries: [ 'JP' ],
-			};
+		//if in admin panel
+		if ( 'undefined' !== typeof wcpaySettings ) {
+			const accountCountry = wcpaySettings?.accountStatus?.country ?? '';
+			// Special case for Japan: Only Japanese phone numbers are accepted by Stripe
+			if ( accountCountry === 'JP' ) {
+				phoneCountries = {
+					initialCountry: 'JP',
+					// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+					// @ts-ignore
+					onlyCountries: [ 'JP' ],
+				};
+			}
 		}
 
 		if ( currentRef ) {
