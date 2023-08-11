@@ -6,6 +6,12 @@ exports[`FraudProtectionTour should not render the tour component if it was alre
 </body>
 `;
 
+exports[`FraudProtectionTour should not render the tour component if settings page accessed directly 1`] = `
+<body>
+  <div />
+</body>
+`;
+
 exports[`FraudProtectionTour should render the tour component correctly 1`] = `
 <body>
   <div>

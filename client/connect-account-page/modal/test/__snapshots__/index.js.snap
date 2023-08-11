@@ -23,7 +23,7 @@ exports[`Onboarding: location check dialog renders correctly when continue butto
           class="components-modal__header-heading"
           id="components-modal-header-1"
         >
-          WooCommerce Payments
+          WooPayments
         </h1>
       </div>
       <button
@@ -35,13 +35,12 @@ exports[`Onboarding: location check dialog renders correctly when continue butto
           aria-hidden="true"
           focusable="false"
           height="24"
-          role="img"
           viewBox="0 0 24 24"
           width="24"
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
-            d="M13 11.8l6.1-6.3-1-1-6.1 6.2-6.1-6.2-1 1 6.1 6.3-6.5 6.7 1 1 6.5-6.6 6.5 6.6 1-1z"
+            d="M12 13.06l3.712 3.713 1.061-1.06L13.061 12l3.712-3.712-1.06-1.06L12 10.938 8.288 7.227l-1.061 1.06L10.939 12l-3.712 3.712 1.06 1.061L12 13.061z"
           />
         </svg>
       </button>
@@ -52,7 +51,7 @@ exports[`Onboarding: location check dialog renders correctly when continue butto
       <div
         class="woocommerce-payments__onboarding_location_check-modal-message"
       >
-        It appears you're attempting to set up WooCommerce Payments from an unsupported country. In order to complete the set up of WooCommerce Payments, your store is required to have a business entity in one of the following countries: 
+        It appears you're attempting to set up WooPayments from an unsupported country. In order to complete the set up of WooPayments, your store is required to have a business entity in one of the following countries: 
         <ul
           class="woocommerce-list"
           role="menu"
@@ -95,7 +94,7 @@ exports[`Onboarding: location check dialog renders correctly when continue butto
          
         <a
           data-link-type="external"
-          href="https://woocommerce.com/document/payments/countries/"
+          href="https://woocommerce.com/document/woocommerce-payments/compatibility/countries/"
           rel="noopener noreferrer"
           target="_blank"
         >
@@ -146,7 +145,7 @@ exports[`Onboarding: location check dialog renders correctly when opened 1`] = `
           class="components-modal__header-heading"
           id="components-modal-header-0"
         >
-          WooCommerce Payments
+          WooPayments
         </h1>
       </div>
       <button
@@ -158,13 +157,12 @@ exports[`Onboarding: location check dialog renders correctly when opened 1`] = `
           aria-hidden="true"
           focusable="false"
           height="24"
-          role="img"
           viewBox="0 0 24 24"
           width="24"
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
-            d="M13 11.8l6.1-6.3-1-1-6.1 6.2-6.1-6.2-1 1 6.1 6.3-6.5 6.7 1 1 6.5-6.6 6.5 6.6 1-1z"
+            d="M12 13.06l3.712 3.713 1.061-1.06L13.061 12l3.712-3.712-1.06-1.06L12 10.938 8.288 7.227l-1.061 1.06L10.939 12l-3.712 3.712 1.06 1.061L12 13.061z"
           />
         </svg>
       </button>
@@ -175,7 +173,7 @@ exports[`Onboarding: location check dialog renders correctly when opened 1`] = `
       <div
         class="woocommerce-payments__onboarding_location_check-modal-message"
       >
-        It appears you're attempting to set up WooCommerce Payments from an unsupported country. In order to complete the set up of WooCommerce Payments, your store is required to have a business entity in one of the following countries: 
+        It appears you're attempting to set up WooPayments from an unsupported country. In order to complete the set up of WooPayments, your store is required to have a business entity in one of the following countries: 
         <ul
           class="woocommerce-list"
           role="menu"
@@ -218,7 +216,7 @@ exports[`Onboarding: location check dialog renders correctly when opened 1`] = `
          
         <a
           data-link-type="external"
-          href="https://woocommerce.com/document/payments/countries/"
+          href="https://woocommerce.com/document/woocommerce-payments/compatibility/countries/"
           rel="noopener noreferrer"
           target="_blank"
         >

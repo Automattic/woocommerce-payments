@@ -6,6 +6,7 @@
  */
 
 use WCPay\Database_Cache;
+use WCPay\Duplicate_Payment_Prevention_Service as Duplicate_Payment_Prevention_Service;
 use WCPay\Session_Rate_Limiter;
 
 /**
@@ -52,6 +53,7 @@ class WC_REST_UPE_Flag_Toggle_Controller_Test extends WCPAY_UnitTestCase {
 		$order_service            = new WC_Payments_Order_Service( $mock_api_client );
 		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $mock_api_client, $order_service );
 		$rate_limiter             = new Session_Rate_Limiter( 'wcpay_card_declined_registry', 5, 60 );
+		$mock_dpps                = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 
 		$this->gateway    = new WC_Payment_Gateway_WCPay(
 			$mock_api_client,
@@ -60,7 +62,8 @@ class WC_REST_UPE_Flag_Toggle_Controller_Test extends WCPAY_UnitTestCase {
 			$token_service,
 			$action_scheduler_service,
 			$rate_limiter,
-			$order_service
+			$order_service,
+			$mock_dpps
 		);
 		$this->controller = new WC_REST_UPE_Flag_Toggle_Controller( $this->gateway );
 	}

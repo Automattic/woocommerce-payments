@@ -31,13 +31,19 @@ jest.mock( '@woocommerce/experimental', () => {
 		Text: () => <div>text</div>,
 	};
 } );
-jest.mock( '@woocommerce/navigation', () => ( { getQuery: jest.fn() } ) );
+jest.mock( '@woocommerce/navigation', () => ( {
+	getQuery: jest.fn(),
+	addHistoryListener: jest.fn(),
+} ) );
 
 jest.mock( '@wordpress/data', () => ( {
 	registerStore: jest.fn(),
 	combineReducers: jest.fn(),
 	useDispatch: jest.fn( () => ( { updateOptions: jest.fn() } ) ),
-	dispatch: jest.fn( () => ( { setIsMatching: jest.fn() } ) ),
+	dispatch: jest.fn( () => ( {
+		setIsMatching: jest.fn(),
+		onLoad: jest.fn(),
+	} ) ),
 	withDispatch: jest.fn( () => jest.fn() ),
 	createRegistryControl: jest.fn(),
 	select: jest.fn(),
@@ -49,6 +55,9 @@ jest.mock( 'wcpay/data', () => ( {
 	useSettings: jest.fn().mockReturnValue( {
 		settings: { enabled_payment_method_ids: [ 'foo', 'bar' ] },
 	} ),
+	useDisputes: jest
+		.fn()
+		.mockReturnValue( { disputes: [], isLoading: false } ),
 	useDeposits: jest
 		.fn()
 		.mockReturnValue( { deposits: [], isLoading: false } ),
@@ -254,28 +263,10 @@ describe( 'Overview page', () => {
 		).toBeVisible();
 	} );
 
-	it( 'dismisses the FRTDiscoverabilityBanner when remind me later button is clicked', async () => {
-		render( <OverviewPage /> );
-
-		const bannerHeader = screen.getByText(
-			'Enhanced fraud protection for your store'
-		);
-
-		expect( bannerHeader ).toBeInTheDocument();
-
-		userEvent.click( screen.getByText( 'Remind me later' ) );
-
-		await waitFor( () => {
-			expect( bannerHeader ).not.toBeInTheDocument();
-		} );
-	} );
-
 	it( 'dismisses the FRTDiscoverabilityBanner when dismiss button is clicked', async () => {
 		global.wcpaySettings = {
 			...global.wcpaySettings,
 			frtDiscoverBannerSettings: JSON.stringify( {
-				remindMeCount: 3,
-				remindMeAt: null,
 				dontShowAgain: false,
 			} ),
 		};
@@ -312,7 +303,7 @@ describe( 'Overview page', () => {
 		render( <OverviewPage /> );
 
 		expect(
-			screen.getByText( 'Ready to setup real payments on your store?' )
+			screen.getByText( 'Set up real payments on your store' )
 		).toBeInTheDocument();
 	} );
 
@@ -325,7 +316,7 @@ describe( 'Overview page', () => {
 		render( <OverviewPage /> );
 
 		expect(
-			screen.queryByText( 'Ready to setup real payments on your store?' )
+			screen.queryByText( 'Set up real payments on your store' )
 		).not.toBeInTheDocument();
 	} );
 

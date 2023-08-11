@@ -81,6 +81,17 @@ class WC_Payments_Product_Service {
 	public function __construct( WC_Payments_API_Client $payments_api_client ) {
 		$this->payments_api_client = $payments_api_client;
 
+		/**
+		 * When a store is in staging mode, we don't want any product handling to be sent to the server.
+		 *
+		 * Sending these requests from staging sites can have unintended consequences for the live store. For example,
+		 * deleting a subscription product on a staging site would delete the product record at Stripe and that product
+		 * would be in use for the live site.
+		 */
+		if ( WC_Payments_Subscriptions::is_duplicate_site() ) {
+			return;
+		}
+
 		add_action( 'shutdown', [ $this, 'create_or_update_products' ] );
 		add_action( 'wp_trash_post', [ $this, 'maybe_archive_product' ] );
 		add_action( 'untrashed_post', [ $this, 'maybe_unarchive_product' ] );
@@ -186,7 +197,6 @@ class WC_Payments_Product_Service {
 	 * @param int $product_id The ID of the product to handle.
 	 */
 	public function maybe_schedule_product_create_or_update( int $product_id ) {
-
 		// Skip products which have already been scheduled or aren't subscriptions.
 		$product = wc_get_product( $product_id );
 		if ( ! $product || isset( $this->products_to_update[ $product_id ] ) || ! WC_Subscriptions_Product::is_subscription( $product ) ) {
@@ -430,7 +440,7 @@ class WC_Payments_Product_Service {
 	/**
 	 * Prevents the subscription interval to be greater than 1 for yearly subscriptions.
 	 *
-	 * @param int $product_id Post ID of the product.
+	 * @param int $product_id ID of the product that's being saved.
 	 */
 	public function limit_subscription_product_intervals( $product_id ) {
 		if ( $this->is_subscriptions_plugin_active() ) {
@@ -522,7 +532,7 @@ class WC_Payments_Product_Service {
 		// This needs to run before WC_Subscriptions_Admin::save_product_variation(), which has a priority of 20.
 		add_action( 'woocommerce_save_product_variation', [ $this, 'limit_subscription_variation_intervals' ], 19, 2 );
 
-		add_action( 'save_post', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
+		add_action( 'save_post_product', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
 		add_action( 'woocommerce_save_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 30 );
 	}
 
@@ -533,7 +543,7 @@ class WC_Payments_Product_Service {
 		remove_action( 'save_post', [ $this, 'limit_subscription_product_intervals' ], 10 );
 		remove_action( 'woocommerce_save_product_variation', [ $this, 'limit_subscription_variation_intervals' ], 19 );
 
-		remove_action( 'save_post', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
+		remove_action( 'save_post_product', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
 		remove_action( 'woocommerce_save_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 30 );
 	}
 

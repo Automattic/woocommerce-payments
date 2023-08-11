@@ -47,7 +47,8 @@ class Create_Intention extends Request {
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
 	public function set_payment_method( string $payment_method_id ) {
-		$this->validate_stripe_id( $payment_method_id, [ 'pm', 'src' ] );
+		// Including the 'card' prefix to support subscription renewals using legacy payment method IDs.
+		$this->validate_stripe_id( $payment_method_id, [ 'pm', 'src', 'card' ] );
 		$this->set_param( 'payment_method', $payment_method_id );
 	}
 
@@ -82,7 +83,7 @@ class Create_Intention extends Request {
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
 	public function set_amount( int $amount ) {
-		$this->validate_is_larger_then( $amount, 0 );
+		$this->validate_is_larger_than( $amount, 0 );
 		$this->set_param( 'amount', $amount );
 	}
 
@@ -163,12 +164,36 @@ class Create_Intention extends Request {
 	}
 
 	/**
+	 * Mandate data setter.
+	 *
+	 * @param array $mandate_data Array containing details about mandate to create.
+	 *
+	 * @return void
+	 */
+	public function set_mandate_data( array $mandate_data ) {
+		$this->set_param( 'mandate_data', $mandate_data );
+	}
+
+	/**
+	 * Shipping data setter.
+	 *
+	 * @param array $shipping Shipping data.
+	 */
+	public function set_shipping( array $shipping ) {
+		if ( empty( $shipping ) || ! is_array( $shipping ) ) {
+			return;
+		}
+
+		$this->set_param( 'shipping', $shipping );
+	}
+
+	/**
 	 * Formats the response from the server.
 	 *
 	 * @param  mixed $response The response from `WC_Payments_API_Client::request`.
 	 * @return mixed           Either the same response, or the correct object.
 	 */
 	public function format_response( $response ) {
-		return WC_Payments::get_payments_api_client()->deserialize_intention_object_from_array( $response );
+		return $this->api_client->deserialize_payment_intention_object_from_array( $response );
 	}
 }

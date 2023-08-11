@@ -1,133 +1,206 @@
 .connect-account-page {
-	.wcpay-connect-account-page-masthead {
-		position: relative;
-		height: 120px;
-		border-bottom: 1px solid $studio-gray-5;
-
-		h1 {
-			position: absolute;
-			top: 24px;
-			left: 24px;
-		}
-
-		.wcpay-connect-account-page-recommended {
-			position: absolute;
-			top: 44px;
-			left: 246px;
-		}
-
-		.wcpay-connect-account-page-hero {
-			@include breakpoint( '<660px' ) {
-				display: none;
-			}
-			position: absolute;
-			top: -100px;
-			right: -36px;
-			clip: rect( 100px, 220px, 220px, auto );
-		}
+	h2 {
+		@include wp-title-small;
+		color: $gray-90;
+		margin: 0;
 	}
 
-	.wcpay-connect-account-page-pill {
-		/* adapted from https://github.com/woocommerce/woocommerce-admin/blob/main/packages/components/src/pill/style.scss */
-		font-size: 12px;
-		border: 1px solid $studio-gray-70;
-		border-radius: 28px;
-		color: $studio-gray-70;
-		display: inline-block;
-		padding: 2px 8px;
-	}
+	&__heading {
+		padding: $gap-larger $gap-large 0;
 
-	.wcpay-connect-account-page-payment-methods {
 		img {
-			display: inline-block;
-			height: 35px;
-			width: 52px;
-			margin-right: 0.5em;
-			margin-bottom: 0.5em;
-			border: 1px solid #f3f3f3;
-		}
-	}
-
-	.wcpay-connect-account-page-terms-of-service {
-		display: block;
-		margin: 0.5em 0;
-	}
-
-	.connect-page-onboarding-steps {
-		@include breakpoint( '>660px' ) {
-			display: flex;
-			flex-direction: row;
+			height: 29px;
+			margin-bottom: $gap-smaller;
 		}
 
-		.connect-page-onboarding-steps-item {
-			margin-top: 30px;
-
-			@include breakpoint( '>660px' ) {
-				margin-top: 0;
-				margin-right: 80px;
+		@media screen and ( min-width: $break-small ) {
+			h2 {
+				margin-right: 7%;
 			}
 		}
 	}
 
-	.wcpay-connect-account-page-step-number {
-		background-color: $studio-woocommerce-purple-50;
-		color: $white;
-		font-size: 20px;
-		border-radius: 50%;
-		min-height: 32px;
-		min-width: 32px;
-		display: inline-block;
-		text-align: center;
-		line-height: 32px;
-	}
+	&__content {
+		padding: 0 $gap-large $gap-larger;
 
-	.connect-account {
-		h2 {
-			font-size: 20px;
-			font-weight: 300;
-		}
+		&-usp {
+			display: grid;
+			grid-template-columns: auto 1fr;
+			column-gap: $gap-smaller;
+			row-gap: $gap;
+			padding: $gap-large 0;
+			@include wc-others-caption;
+			color: $gray-800;
 
-		h3 {
-			font-size: 1em;
-		}
+			svg {
+				margin-top: 2px;
+				height: 18px;
+				fill: $studio-woocommerce-purple-60;
 
-		.connect-account__card {
-			> .components-card__body {
-				padding: 0;
-
-				.content {
-					padding: 0 24px 24px 24px;
-
-					a {
-						text-decoration: none;
-					}
-
-					hr {
-						position: relative;
-						left: -24px;
-						width: calc( 100% + 48px );
-					}
+				&:first-child {
+					height: 24px;
+					margin-top: 0;
 				}
 			}
 		}
 
-		.connect-account__action {
-			margin-top: 16px;
-			margin-bottom: 0;
+		p {
+			@include wc-others-caption;
+			color: $gray-700;
+			padding-top: $gap;
+			margin: 0;
 		}
 
-		.connect-account__steps {
-			.components-card__body {
-				padding: 24px;
+		@media screen and ( min-width: $break-small ) {
+			background: url( 'assets/images/illustrations/connect-hero.png?asset' )
+				no-repeat center right 24px/259px 260px;
+			padding-right: 316px;
+			display: flex;
+			flex-direction: column;
+			justify-content: flex-end;
+			align-items: flex-start;
+		}
+	}
+
+	&__payment-methods {
+		padding: $gap-large;
+
+		p {
+			@include wp-small-button;
+			color: $gray-700;
+			margin-top: 0;
+		}
+
+		&__icons {
+			display: grid;
+			column-gap: $gap-smaller;
+			row-gap: $gap;
+			grid-template-columns: repeat( auto-fill, minmax( 39px, 1fr ) );
+
+			img {
+				height: 24px;
+				border: 1px solid $gray-300;
+				border-radius: 2px;
 			}
 
-			h2 {
-				margin-top: 0;
+			span {
+				@include wc-others-caption;
+				color: $gray-700;
+				display: none;
+
+				@media screen and ( min-width: $break-small ) {
+					display: initial;
+					white-space: nowrap;
+					align-self: end;
+				}
 			}
 		}
 	}
 
-	.wcpay-component-tip-box {
+	&__details {
+		padding: $gap-larger $gap-large;
+
+		.wcpay-component-tip-box {
+			margin-top: $gap-large;
+		}
+	}
+
+	&__steps {
+		@media screen and ( min-width: $break-small ) {
+			display: grid;
+			grid-template-columns: repeat( 3, 1fr );
+			column-gap: 20px;
+		}
+	}
+
+	&__step {
+		padding-top: $gap-smaller;
+		display: grid;
+		grid-template-rows: auto 1fr auto;
+
+		span {
+			background-color: $studio-woocommerce-purple-0;
+			color: $studio-woocommerce-purple-60;
+			font-size: 20px;
+			font-weight: 800;
+			border-radius: 12px;
+			height: 40px;
+			width: 40px;
+			display: inline-block;
+			text-align: center;
+			line-height: 40px;
+			margin-bottom: $gap-smaller;
+		}
+
+		h3 {
+			@include wp-subtitle-small;
+			color: $gray-900;
+			margin-bottom: 0;
+		}
+
+		p {
+			@include wc-others-caption;
+			color: $gray-800;
+			margin-top: $gap-smallest;
+		}
+	}
+
+	&__info-modal {
+		&.components-modal__frame {
+			max-width: 700px;
+		}
+
+		.components-notice {
+			margin: $gap 0 0;
+			padding: $gap-small $gap-small 0;
+		}
+
+		hr {
+			margin: $gap-large 0;
+		}
+
+		&__footer {
+			@include modal-footer-buttons;
+		}
+	}
+
+	&__incentive {
+		background: #faf8ff;
+		border: 1px solid #ae7dd0;
+		border-radius: 2px;
+		padding: $gap-large;
 		margin-bottom: $gap-large;
+
+		&-pill {
+			display: inline-block;
+			padding: 0 $gap-small;
+			border: 1px solid #1d2327; // Gray 90
+			border-radius: 16px;
+			text-transform: uppercase;
+			font-size: 12px;
+			line-height: 22px;
+			font-weight: 600;
+			color: $gray-900;
+			margin-bottom: $gap-small;
+		}
+
+		p {
+			@include wc-others-caption;
+			color: #50575e;
+
+			&:last-child {
+				margin-bottom: 0;
+			}
+		}
+
+		@media screen and ( min-width: $break-small ) {
+			h2 {
+				margin-right: 10%;
+			}
+
+			p {
+				margin-right: 15%;
+			}
+		}
 	}
 }

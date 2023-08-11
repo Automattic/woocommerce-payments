@@ -3,10 +3,14 @@
 exports[`Deposits Overview footer renders Component Renders 1`] = `
 <div>
   <div
-    class="components-flex components-card__footer is-size-medium wcpay-deposits-overview__footer e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
+    class="components-flex components-card__footer components-card-footer wcpay-deposits-overview__footer css-p1v47q-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="CardFooter"
   >
     <div
-      class="components-flex css-18koiq9-Flex eboqfv50"
+      class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Flex"
     >
       <a
         class="components-button is-secondary"
@@ -28,283 +32,385 @@ exports[`Deposits Overview footer renders Component Renders 1`] = `
 exports[`Deposits Overview information Component Renders 1`] = `
 <div>
   <div
-    class="components-card is-size-medium wcpay-deposits-overview css-1xs3c37-CardUI e1q7k77g0"
+    class="components-surface components-card wcpay-deposits-overview css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
   >
     <div
-      class="components-flex components-card__header is-size-medium e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+      class="css-mgwsf4-View-Content em57xhy0"
     >
-      Deposits
-    </div>
-    <div
-      class="components-card__body is-size-medium wcpay-deposits-overview__heading css-xmjzce-BodyUI e1q7k77g3"
-    >
-      <span
-        class="wcpay-deposits-overview__heading__title"
-      >
-        Next deposit
-      </span>
       <div
-        class="wcpay-deposits-overview__heading__description"
+        class="components-flex components-card__header components-card-header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardHeader"
+      >
+        Deposits
+      </div>
+      <div
+        class="components-card__body components-card-body wcpay-deposits-overview__heading css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
         <span
-          class="wcpay-deposits-overview__heading__description__text"
+          class="wcpay-deposits-overview__heading__title"
         >
-          The amount may change while payments are still accumulating
+          Next deposit
         </span>
-      </div>
-    </div>
-    <div
-      class="components-card__body is-size-medium wcpay-deposits-overview__table__container css-xmjzce-BodyUI e1q7k77g3"
-    >
-      <div
-        class="components-flex wcpay-deposits-overview__table__row__header css-1rdm0qk-Flex eboqfv50"
-      >
         <div
-          class="components-flex__item wcpay-deposits-overview__table__cell css-1s295sp-Item eboqfv51"
-        >
-          Estimated dispatch date
-        </div>
-        <div
-          class="components-flex__item wcpay-deposits-overview__table__cell css-1s295sp-Item eboqfv51"
-        >
-          Status
-        </div>
-        <div
-          class="components-flex__item wcpay-deposits-overview__table__cell css-1s295sp-Item eboqfv51"
-        >
-          Amount
-        </div>
-      </div>
-    </div>
-    <hr
-      class="components-card__divider css-lh2anh-DividerUI e1q7k77g5"
-      role="separator"
-    />
-    <div
-      class="components-card__body is-size-medium wcpay-deposits-overview__table__container css-xmjzce-BodyUI e1q7k77g3"
-    >
-      <div
-        class="components-flex wcpay-deposits-overview__table__row css-1rdm0qk-Flex eboqfv50"
-      >
-        <div
-          class="components-flex__item wcpay-deposits-overview__table__cell css-1s295sp-Item eboqfv51"
-        >
-          <svg
-            aria-hidden="true"
-            focusable="false"
-            size="17"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm.5 16c0 .3-.2.5-.5.5H5c-.3 0-.5-.2-.5-.5V7h15v12zM9 10H7v2h2v-2zm0 4H7v2h2v-2zm4-4h-2v2h2v-2zm4 0h-2v2h2v-2zm-4 4h-2v2h2v-2zm4 0h-2v2h2v-2z"
-            />
-          </svg>
-          —
-        </div>
-        <div
-          class="components-flex__item wcpay-deposits-overview__table__cell css-1s295sp-Item eboqfv51"
+          class="wcpay-deposits-overview__heading__description"
         >
           <span
-            class="woocommerce-pill css-1qmnemh-Text e15wbhsk0"
+            class="wcpay-deposits-overview__heading__description__text"
           >
-            Estimated
+            The amount may change while payments are still accumulating
           </span>
         </div>
-        <div
-          class="components-flex__item wcpay-deposits-overview__table__cell css-1s295sp-Item eboqfv51"
-        >
-          $1.00
-        </div>
-      </div>
-    </div>
-    <div
-      class="components-card__body is-size-medium wcpay-deposits-overview__notices__container css-xmjzce-BodyUI e1q7k77g3"
-    />
-    <div
-      class="components-card__body is-size-medium wcpay-deposits-overview__heading css-xmjzce-BodyUI e1q7k77g3"
-    >
-      <span
-        class="wcpay-deposits-overview__heading__title"
-      >
-        Deposit history
-      </span>
-      <div
-        class="wcpay-deposits-overview__heading__description"
-      >
-        <span
-          class="wcpay-deposits-overview__heading__description__text"
-        >
-          Your deposits are dispatched 
-          <strong>
-            automatically every Monday
-          </strong>
-        </span>
-      </div>
-    </div>
-    <div
-      class="components-card__body is-size-medium wcpay-deposits-overview__table__container css-xmjzce-BodyUI e1q7k77g3"
-    >
-      <div
-        class="components-flex wcpay-deposits-overview__table__row__header css-1rdm0qk-Flex eboqfv50"
-      >
-        <div
-          class="components-flex__item wcpay-deposits-overview__table__cell css-1s295sp-Item eboqfv51"
-        >
-          Dispatch date
-        </div>
-        <div
-          class="components-flex__item wcpay-deposits-overview__table__cell css-1s295sp-Item eboqfv51"
-        >
-          Status
-        </div>
-        <div
-          class="components-flex__item wcpay-deposits-overview__table__cell css-1s295sp-Item eboqfv51"
-        >
-          Amount
-        </div>
-      </div>
-    </div>
-    <hr
-      class="components-card__divider css-lh2anh-DividerUI e1q7k77g5"
-      role="separator"
-    />
-    <div
-      class="components-card__body is-size-medium wcpay-deposits-overview__table__container css-xmjzce-BodyUI e1q7k77g3"
-    >
-      <div
-        class="components-flex wcpay-deposits-overview__table__row css-1rdm0qk-Flex eboqfv50"
-      >
-        <div
-          class="components-flex__item wcpay-deposits-overview__table__cell css-1s295sp-Item eboqfv51"
-        >
-          <svg
-            aria-hidden="true"
-            focusable="false"
-            size="17"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm.5 16c0 .3-.2.5-.5.5H5c-.3 0-.5-.2-.5-.5V7h15v12zM9 10H7v2h2v-2zm0 4H7v2h2v-2zm4-4h-2v2h2v-2zm4 0h-2v2h2v-2zm-4 4h-2v2h2v-2zm4 0h-2v2h2v-2z"
-            />
-          </svg>
-          <a
-            data-link-type="wc-admin"
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
-          >
-            January 2, 2020
-          </a>
-        </div>
-        <div
-          class="components-flex__item wcpay-deposits-overview__table__cell css-1s295sp-Item eboqfv51"
-        >
-          <span
-            class="woocommerce-pill css-1qmnemh-Text e15wbhsk0"
-          >
-            Paid
-          </span>
-        </div>
-        <div
-          class="components-flex__item wcpay-deposits-overview__table__cell css-1s295sp-Item eboqfv51"
-        >
-          $20.00
-        </div>
       </div>
       <div
-        class="components-flex wcpay-deposits-overview__table__row css-1rdm0qk-Flex eboqfv50"
+        class="components-card__body components-card-body wcpay-deposits-overview__table__container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
         <div
-          class="components-flex__item wcpay-deposits-overview__table__cell css-1s295sp-Item eboqfv51"
-        >
-          <svg
-            aria-hidden="true"
-            focusable="false"
-            size="17"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm.5 16c0 .3-.2.5-.5.5H5c-.3 0-.5-.2-.5-.5V7h15v12zM9 10H7v2h2v-2zm0 4H7v2h2v-2zm4-4h-2v2h2v-2zm4 0h-2v2h2v-2zm-4 4h-2v2h2v-2zm4 0h-2v2h2v-2z"
-            />
-          </svg>
-          <a
-            data-link-type="wc-admin"
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
-          >
-            January 3, 2020
-          </a>
-        </div>
-        <div
-          class="components-flex__item wcpay-deposits-overview__table__cell css-1s295sp-Item eboqfv51"
-        >
-          <span
-            class="woocommerce-pill css-1qmnemh-Text e15wbhsk0"
-          >
-            Pending
-          </span>
-        </div>
-        <div
-          class="components-flex__item wcpay-deposits-overview__table__cell css-1s295sp-Item eboqfv51"
-        >
-          $30.00
-        </div>
-      </div>
-      <div
-        class="wcpay-banner-notice wcpay-banner-info-notice wcpay-deposits-overview__business-day-delay-notice components-notice is-info"
-      >
-        <div
-          class="components-notice__content"
+          class="components-flex wcpay-deposits-overview__table__row__header css-1giw1wa-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
         >
           <div
-            class="components-flex css-18koiq9-Flex eboqfv50"
+            class="components-flex-item wcpay-deposits-overview__table__cell css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
           >
-            <div
-              class="components-flex__item wcpay-banner-notice__icon wcpay-banner-info-notice__icon css-1s295sp-Item eboqfv51"
-            >
-              <svg
-                class="gridicon gridicons-info-outline"
-                height="24"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <g>
-                  <path
-                    d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.411 0-8 3.589-8 8s3.589 8 8 8 8-3.589 8-8-3.589-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
-                  />
-                </g>
-              </svg>
-            </div>
-            <div
-              class="components-flex__item wcpay-banner-notice__content wcpay-banner-info-notice__content css-1s295sp-Item eboqfv51"
-            >
-              Deposits pending or in-transit may take 1-2 business days to appear in your bank account once dispatched
-            </div>
+            Estimated dispatch date
+          </div>
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            Status
+          </div>
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            Amount
           </div>
         </div>
       </div>
-    </div>
-    <div
-      class="components-flex components-card__footer is-size-medium wcpay-deposits-overview__footer e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
-    >
+      <hr
+        aria-orientation="horizontal"
+        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        data-wp-c16t="true"
+        data-wp-component="CardDivider"
+        role="separator"
+      />
       <div
-        class="components-flex css-18koiq9-Flex eboqfv50"
+        class="components-card__body components-card-body wcpay-deposits-overview__table__container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
-        <a
-          class="components-button is-secondary"
-          href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits"
+        <div
+          class="components-flex wcpay-deposits-overview__table__row css-1giw1wa-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
         >
-          View full deposits history
-        </a>
-        <a
-          data-link-type="wp-admin"
-          href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments#deposit-schedule"
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              height="17"
+              viewBox="0 0 24 24"
+              width="17"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm.5 16c0 .3-.2.5-.5.5H5c-.3 0-.5-.2-.5-.5V7h15v12zM9 10H7v2h2v-2zm0 4H7v2h2v-2zm4-4h-2v2h2v-2zm4 0h-2v2h2v-2zm-4 4h-2v2h2v-2zm4 0h-2v2h2v-2z"
+              />
+            </svg>
+            —
+          </div>
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            <span
+              class="components-truncate components-text woocommerce-pill wcpay-pill__light css-1g4vivm-View-Text-sx-Base em57xhy0"
+              data-wp-c16t="true"
+              data-wp-component="Text"
+            >
+              Estimated
+            </span>
+          </div>
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            $1.00
+          </div>
+        </div>
+      </div>
+      <div
+        class="components-card__body components-card-body wcpay-deposits-overview__notices__container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
+      />
+      <div
+        class="components-card__body components-card-body wcpay-deposits-overview__heading css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
+      >
+        <span
+          class="wcpay-deposits-overview__heading__title"
         >
-          Change deposit schedule
-        </a>
+          Deposit history
+        </span>
+        <div
+          class="wcpay-deposits-overview__heading__description"
+        >
+          <span
+            class="wcpay-deposits-overview__heading__description__text"
+          >
+            Your deposits are dispatched 
+            <strong>
+              automatically every Monday
+            </strong>
+          </span>
+        </div>
+      </div>
+      <div
+        class="components-card__body components-card-body wcpay-deposits-overview__table__container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
+      >
+        <div
+          class="components-flex wcpay-deposits-overview__table__row__header css-1giw1wa-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
+        >
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            Dispatch date
+          </div>
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            Status
+          </div>
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            Amount
+          </div>
+        </div>
+      </div>
+      <hr
+        aria-orientation="horizontal"
+        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        data-wp-c16t="true"
+        data-wp-component="CardDivider"
+        role="separator"
+      />
+      <div
+        class="components-card__body components-card-body wcpay-deposits-overview__table__container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
+      >
+        <div
+          class="components-flex wcpay-deposits-overview__table__row css-1giw1wa-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
+        >
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              height="17"
+              viewBox="0 0 24 24"
+              width="17"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm.5 16c0 .3-.2.5-.5.5H5c-.3 0-.5-.2-.5-.5V7h15v12zM9 10H7v2h2v-2zm0 4H7v2h2v-2zm4-4h-2v2h2v-2zm4 0h-2v2h2v-2zm-4 4h-2v2h2v-2zm4 0h-2v2h2v-2z"
+              />
+            </svg>
+            <a
+              data-link-type="wc-admin"
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
+            >
+              January 2, 2020
+            </a>
+          </div>
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            <span
+              class="components-truncate components-text woocommerce-pill wcpay-pill__success css-1g4vivm-View-Text-sx-Base em57xhy0"
+              data-wp-c16t="true"
+              data-wp-component="Text"
+            >
+              Paid
+            </span>
+          </div>
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            $20.00
+          </div>
+        </div>
+        <div
+          class="components-flex wcpay-deposits-overview__table__row css-1giw1wa-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
+        >
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              height="17"
+              viewBox="0 0 24 24"
+              width="17"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm.5 16c0 .3-.2.5-.5.5H5c-.3 0-.5-.2-.5-.5V7h15v12zM9 10H7v2h2v-2zm0 4H7v2h2v-2zm4-4h-2v2h2v-2zm4 0h-2v2h2v-2zm-4 4h-2v2h2v-2zm4 0h-2v2h2v-2z"
+              />
+            </svg>
+            <a
+              data-link-type="wc-admin"
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
+            >
+              January 3, 2020
+            </a>
+          </div>
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            <span
+              class="components-truncate components-text woocommerce-pill wcpay-pill__alert css-1g4vivm-View-Text-sx-Base em57xhy0"
+              data-wp-c16t="true"
+              data-wp-component="Text"
+            >
+              Pending
+            </span>
+          </div>
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            $30.00
+          </div>
+        </div>
+        <div
+          class="wcpay-banner-notice wcpay-banner-info-notice wcpay-deposits-overview__business-day-delay-notice components-notice is-info"
+        >
+          <div
+            class="components-notice__content"
+          >
+            <div
+              class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+              data-wp-c16t="true"
+              data-wp-component="Flex"
+            >
+              <div
+                class="components-flex-item wcpay-banner-notice__icon wcpay-banner-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+                data-wp-c16t="true"
+                data-wp-component="FlexItem"
+              >
+                <svg
+                  class="gridicon gridicons-info-outline"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g>
+                    <path
+                      d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.411 0-8 3.589-8 8s3.589 8 8 8 8-3.589 8-8-3.589-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+                    />
+                  </g>
+                </svg>
+              </div>
+              <div
+                class="components-flex-item wcpay-banner-notice__content wcpay-banner-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+                data-wp-c16t="true"
+                data-wp-component="FlexItem"
+              >
+                Deposits pending or in-transit may take 1-2 business days to appear in your bank account once dispatched
+              </div>
+            </div>
+            <div
+              class="components-notice__actions"
+            />
+          </div>
+        </div>
+      </div>
+      <div
+        class="components-flex components-card__footer components-card-footer wcpay-deposits-overview__footer css-p1v47q-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardFooter"
+      >
+        <div
+          class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
+        >
+          <a
+            class="components-button is-secondary"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits"
+          >
+            View full deposits history
+          </a>
+          <a
+            data-link-type="wp-admin"
+            href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments#deposit-schedule"
+          >
+            Change deposit schedule
+          </a>
+        </div>
       </div>
     </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
   </div>
 </div>
 `;
@@ -318,10 +424,14 @@ exports[`Suspended Deposit Notice Renders Component Renders 1`] = `
       class="components-notice__content"
     >
       <div
-        class="components-flex css-18koiq9-Flex eboqfv50"
+        class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Flex"
       >
         <div
-          class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+          class="components-flex-item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="FlexItem"
         >
           <svg
             class="gridicon gridicons-notice-outline"
@@ -338,7 +448,9 @@ exports[`Suspended Deposit Notice Renders Component Renders 1`] = `
           </svg>
         </div>
         <div
-          class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
+          class="components-flex-item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="FlexItem"
         >
           Your deposits are 
           <strong>
@@ -347,12 +459,15 @@ exports[`Suspended Deposit Notice Renders Component Renders 1`] = `
           . 
           <a
             data-link-type="wc-admin"
-            href="https://woocommerce.com/document/payments/faq/deposits-suspended/"
+            href="https://woocommerce.com/document/woocommerce-payments/deposits/why-deposits-suspended/"
           >
             Learn more
           </a>
         </div>
       </div>
+      <div
+        class="components-notice__actions"
+      />
     </div>
   </div>
 </div>

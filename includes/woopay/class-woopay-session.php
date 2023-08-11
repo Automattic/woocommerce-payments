@@ -34,6 +34,7 @@ class WooPay_Session {
 		'@^\/wc\/store(\/v[\d]+)?\/cart\/select-shipping-rate$@',
 		'@^\/wc\/store(\/v[\d]+)?\/cart\/update-customer$@',
 		'@^\/wc\/store(\/v[\d]+)?\/cart\/update-item$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/extensions$@',
 		'@^\/wc\/store(\/v[\d]+)?\/checkout$@',
 	];
 
@@ -45,6 +46,10 @@ class WooPay_Session {
 	public static function init() {
 		add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_woopay' ], 20 );
 		add_filter( 'rest_request_before_callbacks', [ __CLASS__, 'add_woopay_store_api_session_handler' ], 10, 3 );
+		add_action( 'woocommerce_order_payment_status_changed', [ __CLASS__, 'remove_order_customer_id_on_requests_with_verified_email' ] );
+		add_action( 'woopay_restore_order_customer_id', [ __CLASS__, 'restore_order_customer_id_from_requests_with_verified_email' ] );
+
+		register_deactivation_hook( WCPAY_PLUGIN_FILE, [ __CLASS__, 'run_and_remove_woopay_restore_order_customer_id_schedules' ] );
 	}
 
 	/**
@@ -113,7 +118,137 @@ class WooPay_Session {
 	 *
 	 * @return int|null The User ID or null if there's no cart token in the request.
 	 */
-	private static function get_user_id_from_cart_token() {
+	public static function get_user_id_from_cart_token() {
+		$payload = self::get_payload_from_cart_token();
+
+		if ( null === $payload ) {
+			return null;
+		}
+
+		$session_handler = new SessionHandler();
+		$session_data    = $session_handler->get_session( $payload->user_id );
+		$customer        = maybe_unserialize( $session_data['customer'] );
+
+			// If the token is already authenticated, return the customer ID.
+		if ( is_numeric( $customer['id'] ) && intval( $customer['id'] ) > 0 ) {
+			return intval( $customer['id'] );
+		}
+
+		$woopay_verified_email_address = self::get_woopay_verified_email_address();
+		$enabled_adapted_extensions    = get_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, [] );
+
+		// If the email is verified on WooPay, matches session email (set during the redirection),
+		// and the store has an adapted extension installed,
+		// return the user to get extension data without authentication.
+		if ( count( $enabled_adapted_extensions ) > 0 && null !== $woopay_verified_email_address && ! empty( $customer['email'] ) ) {
+			$user = get_user_by( 'email', $woopay_verified_email_address );
+
+			if ( $woopay_verified_email_address === $customer['email'] && $user ) {
+				// Remove Gift Cards session cache to load account gift cards.
+				add_filter( 'woocommerce_gc_account_session_timeout_minutes', '__return_false' );
+
+				return $user->ID;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Prevent set order customer ID on requests with
+	 * email verified to skip the login screen on the TYP.
+	 * After 10 minutes, the customer ID will be restored
+	 * and the user will need to login to access the TYP.
+	 *
+	 * @param \WC_Order $order_id The order ID being updated.
+	 */
+	public static function remove_order_customer_id_on_requests_with_verified_email( $order_id ) {
+		$woopay_verified_email_address = self::get_woopay_verified_email_address();
+
+		if ( null === $woopay_verified_email_address ) {
+			return;
+		}
+
+		if ( ! self::is_woopay_enabled() ) {
+			return;
+		}
+
+		if ( ! self::is_request_from_woopay() || ! self::is_store_api_request() ) {
+			return;
+		}
+
+		$enabled_adapted_extensions = get_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, [] );
+
+		if ( count( $enabled_adapted_extensions ) === 0 ) {
+			return;
+		}
+
+		$payload = self::get_payload_from_cart_token();
+
+		if ( null === $payload ) {
+			return;
+		}
+
+		$order = wc_get_order( $order_id );
+
+		// Guest users user_id on the cart token payload looks like "t_hash" and the order
+		// customer id is 0, logged in users is the real user id in both cases.
+		$user_is_logged_in = $payload->user_id === $order->get_customer_id();
+
+		if ( ! $user_is_logged_in && $woopay_verified_email_address === $order->get_billing_email() ) {
+			$order->add_meta_data( 'woopay_merchant_customer_id', $order->get_customer_id(), true );
+			$order->set_customer_id( 0 );
+			$order->save();
+
+			wp_schedule_single_event( time() + 10 * MINUTE_IN_SECONDS, 'woopay_restore_order_customer_id', [ $order_id ] );
+		}
+	}
+
+	/**
+	 * Restore the order customer ID after 10 minutes
+	 * on requests with email verified.
+	 *
+	 * @param \WC_Order $order_id The order ID being updated.
+	 */
+	public static function restore_order_customer_id_from_requests_with_verified_email( $order_id ) {
+		$order = wc_get_order( $order_id );
+
+		if ( ! $order->meta_exists( 'woopay_merchant_customer_id' ) ) {
+			return;
+		}
+
+		$order->set_customer_id( $order->get_meta( 'woopay_merchant_customer_id' ) );
+		$order->delete_meta_data( 'woopay_merchant_customer_id' );
+		$order->save();
+	}
+
+	/**
+	 * Restore all WooPay verified email orders customer ID
+	 * and disable the schedules when plugin is disabled.
+	 */
+	public static function run_and_remove_woopay_restore_order_customer_id_schedules() {
+		$args = [
+			'meta_key' => 'woopay_merchant_customer_id', //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+			'return'   => 'ids',
+		];
+
+		$order_ids = wc_get_orders( $args );
+
+		if ( ! empty( $order_ids ) ) {
+			foreach ( $order_ids as $order_id ) {
+				self::restore_order_customer_id_from_requests_with_verified_email( $order_id );
+			}
+		}
+
+		wp_clear_scheduled_hook( 'woopay_restore_order_customer_id' );
+	}
+
+	/**
+	 * Returns the payload from a cart token.
+	 *
+	 * @return object|null The cart token payload if it's valid.
+	 */
+	private static function get_payload_from_cart_token() {
 		if ( ! isset( $_SERVER['HTTP_CART_TOKEN'] ) ) {
 			return null;
 		}
@@ -136,14 +271,21 @@ class WooPay_Session {
 				return null;
 			}
 
-			$session_handler = new SessionHandler();
-			$session_data    = $session_handler->get_session( $payload->user_id );
-			$customer        = maybe_unserialize( $session_data['customer'] );
-
-			return is_numeric( $customer['id'] ) ? intval( $customer['id'] ) : null;
+			return $payload;
 		}
 
 		return null;
+	}
+
+	/**
+	 * Get the WooPay verified email address from the header.
+	 *
+	 * @return string|null The WooPay verified email address if it's set.
+	 */
+	private static function get_woopay_verified_email_address() {
+		$has_woopay_verified_email_address = isset( $_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] );
+
+		return $has_woopay_verified_email_address ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] ) ) : null;
 	}
 
 	/**

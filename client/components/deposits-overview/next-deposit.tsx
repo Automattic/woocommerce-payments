@@ -13,7 +13,7 @@ import { calendar } from '@wordpress/icons';
 import InfoOutlineIcon from 'gridicons/dist/info-outline';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import interpolateComponents from '@automattic/interpolate-components';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
@@ -22,9 +22,10 @@ import Loadable from 'components/loadable';
 import { getNextDeposit } from './utils';
 import DepositStatusPill from 'components/deposit-status-pill';
 import { getDepositDate } from 'deposits/utils';
-import { useDepositIncludesLoan, useAllDepositsOverviews } from 'wcpay/data';
+import { useAllDepositsOverviews, useDepositIncludesLoan } from 'wcpay/data';
 import BannerNotice from 'wcpay/components/banner-notice';
 import { useSelectedCurrency } from 'wcpay/overview/hooks';
+import type * as AccountOverview from 'wcpay/types/account-overview';
 
 type NextDepositProps = {
 	isLoading: boolean;
@@ -94,9 +95,13 @@ const NegativeBalanceDepositsPausedNotice = () => (
 		isDismissible={ false }
 	>
 		{ interpolateComponents( {
-			mixedString: __(
-				'Deposits may be interrupted while your WooCommerce Payments balance remains negative. {{whyLink}}Why?{{/whyLink}}',
-				'woocommerce-payments'
+			mixedString: sprintf(
+				/* translators: %s: WooPayments */
+				__(
+					'Deposits may be interrupted while your %s balance remains negative. {{whyLink}}Why?{{/whyLink}}',
+					'woocommerce-payments'
+				),
+				'WooPayments'
 			),
 			components: {
 				whyLink: (

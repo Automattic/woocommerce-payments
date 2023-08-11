@@ -213,7 +213,10 @@ describe( 'AddPaymentMethodsTask', () => {
 
 		expect(
 			screen.queryByText(
-				/(we\'ll add|and) Polish złoty \(zł\) (and|to your store)/
+				/(we\'ll add|and) Polish złoty \(zł\) (and|to your store)/,
+				{
+					ignore: '.a11y-speak-region',
+				}
 			)
 		).not.toBeInTheDocument();
 		expect( screen.getByText( 'Continue' ) ).toBeEnabled();
@@ -247,7 +250,10 @@ describe( 'AddPaymentMethodsTask', () => {
 
 		expect(
 			screen.queryByText(
-				/(we\'ll add|and) Polish złoty \(zł\) (and|to your store)/
+				/(we\'ll add|and) Polish złoty \(zł\) (and|to your store)/,
+				{
+					ignore: '.a11y-speak-region',
+				}
 			)
 		).toBeInTheDocument();
 

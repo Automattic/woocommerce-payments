@@ -70,10 +70,10 @@ export const handleWooPayEmailInput = async (
 	//Checks if customer has clicked the back button to prevent auto redirect
 	const searchParams = new URLSearchParams( window.location.search );
 	const customerClickedBackButton =
-		( 'undefined' !== typeof performance &&
-			'back_forward' ===
-				performance.getEntriesByType( 'navigation' )[ 0 ].type ) ||
-		'true' === searchParams.get( 'skip_woopay' );
+		( typeof performance !== 'undefined' &&
+			performance.getEntriesByType( 'navigation' )[ 0 ].type ===
+				'back_forward' ) ||
+		searchParams.get( 'skip_woopay' ) === 'true';
 
 	// Track the current state of the header. This default
 	// value should match the default state on the platform.
@@ -124,11 +124,11 @@ export const handleWooPayEmailInput = async (
 		 * scroll the window so the iframe is in view.
 		 */
 		if (
-			0 >= iframe.getBoundingClientRect().top ||
-			0 >=
-				window.innerHeight -
-					( iframe.getBoundingClientRect().height +
-						iframe.getBoundingClientRect().top )
+			iframe.getBoundingClientRect().top <= 0 ||
+			window.innerHeight -
+				( iframe.getBoundingClientRect().height +
+					iframe.getBoundingClientRect().top ) <=
+				0
 		) {
 			const topOffset = 50;
 			const scrollTop =
@@ -163,8 +163,8 @@ export const handleWooPayEmailInput = async (
 
 		// Check if the iframe is off the right edge of the screen. If so, stick it to the right edge of the window.
 		if (
-			50 >=
-			window.innerWidth - ( anchorRect.right + iframeRect.width )
+			window.innerWidth - ( anchorRect.right + iframeRect.width ) <=
+			50
 		) {
 			iframe.style.left = 'auto';
 			iframeArrow.style.left = 'auto';
@@ -189,7 +189,11 @@ export const handleWooPayEmailInput = async (
 		window.addEventListener( 'resize', setPopoverPosition );
 
 		iframe.classList.add( 'open' );
-		wcpayTracks.recordUserEvent( wcpayTracks.events.WOOPAY_OTP_START );
+		wcpayTracks.recordUserEvent(
+			wcpayTracks.events.WOOPAY_OTP_START,
+			[],
+			true
+		);
 	} );
 
 	// Add the iframe and iframe arrow to the wrapper.
@@ -243,6 +247,10 @@ export const handleWooPayEmailInput = async (
 			'viewport',
 			`${ viewportWidth }x${ viewportHeight }`
 		);
+		urlParams.append(
+			'tracksUserIdentity',
+			JSON.stringify( getConfig( 'tracksUserIdentity' ) )
+		);
 
 		iframe.src = `${ getConfig(
 			'woopayHost'
@@ -262,7 +270,7 @@ export const handleWooPayEmailInput = async (
 	};
 
 	document.addEventListener( 'keyup', ( event ) => {
-		if ( 'Escape' === event.key && closeIframe() ) {
+		if ( event.key === 'Escape' && closeIframe() ) {
 			event.stopPropagation();
 		}
 	} );
@@ -355,7 +363,7 @@ export const handleWooPayEmailInput = async (
 				);
 			} )
 			.then( ( response ) => {
-				if ( 200 !== response.status ) {
+				if ( response.status !== 200 ) {
 					showErrorMessage();
 				}
 
@@ -367,9 +375,11 @@ export const handleWooPayEmailInput = async (
 
 				if ( data[ 'user-exists' ] ) {
 					openIframe( email );
-				} else if ( 'rest_invalid_param' !== data.code ) {
+				} else if ( data.code !== 'rest_invalid_param' ) {
 					wcpayTracks.recordUserEvent(
-						wcpayTracks.events.WOOPAY_OFFERED
+						wcpayTracks.events.WOOPAY_OFFERED,
+						[],
+						true
 					);
 				}
 			} )
@@ -377,7 +387,7 @@ export const handleWooPayEmailInput = async (
 				// Only show the error if it's not an AbortError,
 				// it occur when the fetch request is aborted because user
 				// clicked the Place Order button while loading.
-				if ( 'AbortError' !== err.name ) {
+				if ( err.name !== 'AbortError' ) {
 					showErrorMessage();
 				}
 			} )
@@ -457,9 +467,12 @@ export const handleWooPayEmailInput = async (
 			case 'auto_redirect_to_platform_checkout':
 			case 'auto_redirect_to_woopay':
 				hasCheckedLoginSession = true;
-				api.initWooPay( '', e.data.platformCheckoutUserSession )
+				api.initWooPay(
+					e.data.userEmail,
+					e.data.platformCheckoutUserSession
+				)
 					.then( ( response ) => {
-						if ( 'success' === response.result ) {
+						if ( response.result === 'success' ) {
 							loginSessionIframeWrapper.classList.add(
 								'woopay-login-session-iframe-wrapper'
 							);
@@ -485,7 +498,7 @@ export const handleWooPayEmailInput = async (
 						// Only show the error if it's not an AbortError,
 						// it occurs when the fetch request is aborted because user
 						// clicked the Place Order button while loading.
-						if ( 'AbortError' !== err.name ) {
+						if ( err.name !== 'AbortError' ) {
 							showErrorMessage();
 						}
 					} )
@@ -500,7 +513,9 @@ export const handleWooPayEmailInput = async (
 			case 'redirect_to_platform_checkout':
 			case 'redirect_to_woopay':
 				wcpayTracks.recordUserEvent(
-					wcpayTracks.events.WOOPAY_OTP_COMPLETE
+					wcpayTracks.events.WOOPAY_OTP_COMPLETE,
+					[],
+					true
 				);
 				api.initWooPay(
 					woopayEmailInput.value,
@@ -513,7 +528,7 @@ export const handleWooPayEmailInput = async (
 						) {
 							return;
 						}
-						if ( 'success' === response.result ) {
+						if ( response.result === 'success' ) {
 							window.location = response.url;
 						} else {
 							showErrorMessage();
@@ -527,14 +542,16 @@ export const handleWooPayEmailInput = async (
 				break;
 			case 'otp_validation_failed':
 				wcpayTracks.recordUserEvent(
-					wcpayTracks.events.WOOPAY_OTP_FAILED
+					wcpayTracks.events.WOOPAY_OTP_FAILED,
+					[],
+					true
 				);
 				break;
 			case 'close_modal':
 				closeIframe();
 				break;
 			case 'iframe_height':
-				if ( 300 < e.data.height ) {
+				if ( e.data.height > 300 ) {
 					if ( fullScreenModalBreakpoint <= window.innerWidth ) {
 						// attach iframe to right side of woopayEmailInput.
 
@@ -586,13 +603,17 @@ export const handleWooPayEmailInput = async (
 			dispatchUserExistEvent( true );
 		}, 2000 );
 
-		wcpayTracks.recordUserEvent( wcpayTracks.events.WOOPAY_SKIPPED );
+		wcpayTracks.recordUserEvent(
+			wcpayTracks.events.WOOPAY_SKIPPED,
+			[],
+			true
+		);
 
 		searchParams.delete( 'skip_woopay' );
 
 		let { pathname } = window.location;
 
-		if ( '' !== searchParams.toString() ) {
+		if ( searchParams.toString() !== '' ) {
 			pathname += '?' + searchParams.toString();
 		}
 

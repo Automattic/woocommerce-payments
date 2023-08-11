@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { useContext, useEffect } from 'react';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { dispatch } from '@wordpress/data';
 import { Button, ExternalLink } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
@@ -29,10 +29,11 @@ const NeedHelpBarSection = () => {
 				components: {
 					docsLink: (
 						// eslint-disable-next-line max-len
-						<ExternalLink href="https://woocommerce.com/document/payments/additional-payment-methods/#introduction">
-							{ __(
-								'WooCommerce Payments docs',
-								'woocommerce-payments'
+						<ExternalLink href="https://woocommerce.com/document/woocommerce-payments/payment-methods/additional-payment-methods/">
+							{ sprintf(
+								/* translators: %s: WooPayments */
+								__( '%s docs', 'woocommerce-payments' ),
+								'WooPayments'
 							) }
 						</ExternalLink>
 					),
@@ -51,7 +52,7 @@ const NeedHelpBarSection = () => {
 const DisableUpeModalBody = () => {
 	const [ enabledPaymentMethodIds ] = useEnabledPaymentMethodIds();
 	const upePaymentMethods = enabledPaymentMethodIds.filter(
-		( method ) => 'card' !== method
+		( method ) => method !== 'card'
 	);
 
 	return (
@@ -63,7 +64,7 @@ const DisableUpeModalBody = () => {
 					'woocommerce-payments'
 				) }
 			</p>
-			{ 0 < upePaymentMethods.length ? (
+			{ upePaymentMethods.length > 0 ? (
 				<>
 					<p>
 						{ __(
@@ -97,7 +98,7 @@ const DisableUpeModal = ( { setOpenModal, triggerAfterDisable } ) => {
 	}, [ isUpeEnabled, setOpenModal, triggerAfterDisable ] );
 
 	useEffect( () => {
-		if ( 'error' === status ) {
+		if ( status === 'error' ) {
 			dispatch( 'core/notices' ).createErrorNotice(
 				__(
 					'There was an error disabling the new payment methods.',
@@ -120,7 +121,7 @@ const DisableUpeModal = ( { setOpenModal, triggerAfterDisable } ) => {
 					<>
 						<Button
 							isSecondary
-							disabled={ 'pending' === status }
+							disabled={ status === 'pending' }
 							onClick={ () => setOpenModal( '' ) }
 						>
 							{ __( 'Cancel', 'woocommerce-payments' ) }
@@ -128,8 +129,8 @@ const DisableUpeModal = ( { setOpenModal, triggerAfterDisable } ) => {
 						<Button
 							isPrimary
 							isDestructive
-							isBusy={ 'pending' === status }
-							disabled={ 'pending' === status }
+							isBusy={ status === 'pending' }
+							disabled={ status === 'pending' }
 							onClick={ () => setIsUpeEnabled( false ) }
 						>
 							{ __( 'Disable', 'woocommerce-payments' ) }

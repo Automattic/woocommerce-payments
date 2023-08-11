@@ -19,15 +19,14 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	protected $mock_cache;
 
 	const FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING = [
-		'_wcpay_feature_upe'                        => 'upe',
-		'_wcpay_feature_upe_split'                  => 'upeSplit',
-		'_wcpay_feature_upe_deferred_intent'        => 'upeDeferred',
-		'_wcpay_feature_upe_settings_preview'       => 'upeSettingsPreview',
-		'_wcpay_feature_customer_multi_currency'    => 'multiCurrency',
-		'_wcpay_feature_documents'                  => 'documents',
-		'_wcpay_feature_account_overview_task_list' => 'accountOverviewTaskList',
-		'_wcpay_feature_auth_and_capture'           => 'isAuthAndCaptureEnabled',
-		'_wcpay_feature_progressive_onboarding'     => 'progressiveOnboarding',
+		'_wcpay_feature_upe'                     => 'upe',
+		'_wcpay_feature_upe_split'               => 'upeSplit',
+		'_wcpay_feature_upe_deferred_intent'     => 'upeDeferred',
+		'_wcpay_feature_upe_settings_preview'    => 'upeSettingsPreview',
+		'_wcpay_feature_customer_multi_currency' => 'multiCurrency',
+		'_wcpay_feature_documents'               => 'documents',
+		'_wcpay_feature_auth_and_capture'        => 'isAuthAndCaptureEnabled',
+		'_wcpay_feature_progressive_onboarding'  => 'progressiveOnboarding',
 	];
 
 	public function set_up() {
@@ -388,6 +387,51 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 	public function test_is_frt_review_feature_active_returns_false_when_flag_is_not_set() {
 		$this->assertFalse( WC_Payments_Features::is_frt_review_feature_active() );
+	}
+
+	public function test_is_bnpl_affirm_afterpay_enabled_return_true_if_flag_not_present_in_account_cache() {
+		$account_service_mock = $this->getMockBuilder( WC_Payments_Account::class )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$account_service_mock
+			->expects( $this->once() )
+			->method( 'get_cached_account_data' )
+			->willReturn( [] );
+
+		WC_Payments::set_account_service( $account_service_mock );
+
+		$this->assertTrue( WC_Payments_Features::is_bnpl_affirm_afterpay_enabled() );
+	}
+
+	public function test_is_bnpl_affirm_afterpay_enabled_return_true_if_flag_is_enabled_in_account_cache() {
+		$account_service_mock = $this->getMockBuilder( WC_Payments_Account::class )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$account_service_mock
+			->expects( $this->once() )
+			->method( 'get_cached_account_data' )
+			->willReturn( [ 'is_bnpl_affirm_afterpay_enabled' => true ] );
+
+		WC_Payments::set_account_service( $account_service_mock );
+
+		$this->assertTrue( WC_Payments_Features::is_bnpl_affirm_afterpay_enabled() );
+	}
+
+	public function test_is_bnpl_affirm_afterpay_enabled_return_false_if_flag_is_disabled_in_account_cache() {
+		$account_service_mock = $this->getMockBuilder( WC_Payments_Account::class )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$account_service_mock
+			->expects( $this->once() )
+			->method( 'get_cached_account_data' )
+			->willReturn( [ 'is_bnpl_affirm_afterpay_enabled' => false ] );
+
+		WC_Payments::set_account_service( $account_service_mock );
+
+		$this->assertFalse( WC_Payments_Features::is_bnpl_affirm_afterpay_enabled() );
 	}
 
 	private function setup_enabled_flags( array $enabled_flags ) {

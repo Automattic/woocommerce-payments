@@ -44,8 +44,14 @@ describe( 'CheckoutPageSaveUser', () => {
 		} ) );
 
 		getConfig.mockImplementation(
-			( setting ) => 'forceNetworkSavedCards' === setting
+			( setting ) => setting === 'forceNetworkSavedCards'
 		);
+
+		window.wcpaySettings = {
+			accountStatus: {
+				country: 'US',
+			},
+		};
 	} );
 
 	afterEach( () => {

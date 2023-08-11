@@ -7,11 +7,12 @@ import React from 'react';
 import { Button, Modal } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
-import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 
 /**
  * Internal dependencies
  */
+import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
+import type * as AccountOverview from 'wcpay/types/account-overview';
 import './style.scss';
 
 interface InstantDepositModalProps {
@@ -28,7 +29,7 @@ const InstantDepositModal: React.FC< InstantDepositModalProps > = ( {
 	inProgress,
 } ) => {
 	const learnMoreHref =
-		'https://woocommerce.com/document/payments/instant-deposits/';
+		'https://woocommerce.com/document/woocommerce-payments/deposits/instant-deposits/';
 	const feePercentage = `${ percentage }%`;
 	const description = createInterpolateElement(
 		/* translators: %s: amount representing the fee percentage, <a>: instant payout doc URL */

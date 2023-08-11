@@ -36,13 +36,13 @@ describe( 'Shopper > Pay for Order', () => {
 		// after the card has been declined, go to the order page and pay with a basic card
 		await shopperWCP.goToOrders();
 
-		const payButtons = await page.$$(
-			'.woocommerce-button.wp-element-button.button.pay'
-		);
+		const payButtons = await page.$$( '.woocommerce-button.button.pay' );
 		const payButton = payButtons.find(
 			async ( button ) =>
-				'Pay' ===
-				( await page.evaluate( ( elem ) => elem.innerText, button ) )
+				( await page.evaluate(
+					( elem ) => elem.innerText,
+					button
+				) ) === 'Pay'
 		);
 		await payButton.click();
 		const card = config.get( 'cards.basic' );

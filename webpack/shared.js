@@ -4,6 +4,7 @@ const { mapValues } = require( 'lodash' );
 const { ProvidePlugin } = require( 'webpack' );
 const MiniCssExtractPlugin = require( 'mini-css-extract-plugin' );
 const WooCommerceDependencyExtractionWebpackPlugin = require( '@woocommerce/dependency-extraction-webpack-plugin' );
+const WebpackRTLPlugin = require( 'webpack-rtl-plugin' );
 
 module.exports = {
 	entry: mapValues(
@@ -38,6 +39,7 @@ module.exports = {
 				'./client/subscription-product-onboarding/modal.js',
 			'subscription-product-onboarding-toast':
 				'./client/subscription-product-onboarding/toast.js',
+			'product-details': './client/product-details/index.js',
 		},
 		// Override webpack public path dynamically on every entry.
 		// Required for chunks loading to work on sites with JS concatenation.
@@ -126,9 +128,12 @@ module.exports = {
 	},
 	plugins: [
 		new ProvidePlugin( {
-			process: 'process/browser',
+			process: 'process/browser.js',
 		} ),
 		new MiniCssExtractPlugin( { filename: '[name].css' } ),
+		new WebpackRTLPlugin( {
+			filename: '[name]-rtl.[ext]',
+		} ),
 		new WooCommerceDependencyExtractionWebpackPlugin( {
 			injectPolyfill: true,
 			requestToExternal( request ) {

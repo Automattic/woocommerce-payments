@@ -18,16 +18,18 @@ import { PaymentMethod } from 'wcpay/types/payment-methods';
 import { createInterpolateElement } from '@wordpress/element';
 
 const countryFeeStripeDocsBaseLink =
-	'https://woocommerce.com/document/payments/faq/fees/#';
+	'https://woocommerce.com/document/woocommerce-payments/fees-and-debits/fees/#';
 const countryFeeStripeDocsBaseLinkNoCountry =
-	'https://woocommerce.com/document/payments/faq/fees';
+	'https://woocommerce.com/document/woocommerce-payments/fees-and-debits/fees/';
 const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
+	AE: 'united-arab-emirates',
 	AU: 'australia',
 	AT: 'austria',
 	BE: 'belgium',
 	BG: 'bulgaria',
 	CA: 'canada',
 	CY: 'cyprus',
+	CZ: 'czech-republic',
 	FR: 'france',
 	LU: 'luxembourg',
 	DE: 'germany',
@@ -37,8 +39,10 @@ const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 	GR: 'greece',
 	HK: 'hong-kong',
 	HR: 'croatia',
+	HU: 'hungary',
 	IE: 'ireland',
 	IT: 'italy',
+	JP: 'japan',
 	LT: 'lithuania',
 	LV: 'latvia',
 	MT: 'malta',
@@ -50,6 +54,7 @@ const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 	SG: 'singapore',
 	SI: 'slovenia',
 	SK: 'slovakia',
+	SW: 'sweden',
 	ES: 'spain',
 	CH: 'switzerland',
 	UK: 'united-kingdom',
@@ -167,9 +172,13 @@ export const formatMethodFeesTooltip = (
 							wcpaySettings.connect.country
 						)
 							? interpolateComponents( {
-									mixedString: __(
-										'{{linkToStripePage /}} about WooCommerce Payments Fees in your country',
-										'woocommerce-payments'
+									mixedString: sprintf(
+										/* translators: %s: WooPayments */
+										__(
+											'{{linkToStripePage /}} about %s Fees in your country',
+											'woocommerce-payments'
+										),
+										'WooPayments'
 									),
 									components: {
 										linkToStripePage: (
@@ -190,9 +199,13 @@ export const formatMethodFeesTooltip = (
 									},
 							  } )
 							: interpolateComponents( {
-									mixedString: __(
-										'{{linkToStripePage /}} about WooCommerce Payments Fees',
-										'woocommerce-payments'
+									mixedString: sprintf(
+										/* translators: %s: WooPayments */
+										__(
+											'{{linkToStripePage /}} about %s Fees',
+											'woocommerce-payments'
+										),
+										'WooPayments'
 									),
 									components: {
 										linkToStripePage: (
@@ -240,6 +253,10 @@ export const formatAccountFeesDescription = (
 		fee: __( '%1$f%% + %2$s per transaction', 'woocommerce-payments' ),
 		/* translators: %f percentage discount to apply */
 		discount: __( '(%f%% discount)', 'woocommerce-payments' ),
+		tc_link: __(
+			' — see <tclink>Terms and Conditions</tclink>',
+			'woocommerce-payments'
+		),
 		displayBaseFeeIfDifferent: true,
 		...customFormats,
 	};
@@ -298,9 +315,27 @@ export const formatAccountFeesDescription = (
 				sprintf( formats.discount, formatFee( discountFee.discount ) );
 		}
 
-		return createInterpolateElement( currentBaseFeeDescription, {
+		const conversionMap: Record< string, any > = {
 			s: <s />,
-		} );
+		};
+
+		if ( discountFee.tc_url && 0 < formats.tc_link.length ) {
+			currentBaseFeeDescription += ' ' + formats.tc_link;
+
+			conversionMap.tclink = (
+				// eslint-disable-next-line jsx-a11y/anchor-has-content
+				<a
+					href={ discountFee.tc_url }
+					target="_blank"
+					rel="noreferrer"
+				/>
+			);
+		}
+
+		return createInterpolateElement(
+			currentBaseFeeDescription,
+			conversionMap
+		);
 	}
 
 	return feeDescription;
@@ -341,9 +376,9 @@ export const getTransactionsPaymentMethodName = (
 		case 'eps':
 			return __( 'EPS transactions', 'woocommerce-payments' );
 		case 'giropay':
-			return __( 'GiroPay transactions', 'woocommerce-payments' );
+			return __( 'giropay transactions', 'woocommerce-payments' );
 		case 'ideal':
-			return __( 'iDeal transactions', 'woocommerce-payments' );
+			return __( 'iDEAL transactions', 'woocommerce-payments' );
 		case 'p24':
 			return __(
 				'Przelewy24 (P24) transactions',
@@ -356,6 +391,10 @@ export const getTransactionsPaymentMethodName = (
 			);
 		case 'sofort':
 			return __( 'Sofort transactions', 'woocommerce-payments' );
+		case 'affirm':
+			return __( 'Affirm transactions', 'woocommerce-payments' );
+		case 'afterpay_clearpay':
+			return __( 'Afterpay transactions', 'woocommerce-payments' );
 		default:
 			return __( 'Unknown transactions', 'woocommerce-payments' );
 	}

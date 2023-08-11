@@ -67,25 +67,24 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 			return $actions;
 		}
 
-		$invoice_id         = WC_Payments_Invoice_Service::get_order_invoice_id( $order );
-		$updated_pay_action = false;
+		// If there isn't an invoice linked to this order, there's nothing to update.
+		if ( ! WC_Payments_Invoice_Service::get_order_invoice_id( $order ) ) {
+			return $actions;
+		}
 
-		// Don't show the default pay link for any WC Pay Subscription order because we don't want customer paying for them.
-		if ( $invoice_id ) {
-			$subscriptions = wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] );
+		$subscriptions = wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] );
+		$subscription  = ! empty( $subscriptions ) ? array_pop( $subscriptions ) : null;
 
-			if ( ! empty( $subscriptions ) ) {
-				$subscription = array_pop( $subscriptions );
+		// If we couldn't locate the subscription, we can assume this is a WCPay subscription by the fact the order has an invoice ID.
+		// As a failsafe remove the 'pay' action for this order as that's not the accepted flow for WCPay subscriptions.
+		if ( ! $subscription ) {
+			unset( $actions['pay'] );
+			return $actions;
+		}
 
-				if ( $subscription && WC_Payments_Invoice_Service::get_pending_invoice_id( $subscription ) ) {
-					$actions['pay']['url'] = $this->get_subscription_update_payment_url( $subscription );
-					$updated_pay_action    = true;
-				}
-			}
-
-			if ( ! $updated_pay_action ) {
-				unset( $actions['pay'] );
-			}
+		// Only alter the pay action if the subscription needs a new payment method.
+		if ( $this->does_subscription_need_payment_updated( $subscription ) ) {
+			$actions['pay']['url'] = $this->get_subscription_update_payment_url( $subscription );
 		}
 
 		return $actions;
@@ -109,25 +108,31 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 	public function redirect_pay_for_order_to_update_payment_method() {
 		global $wp;
 
-		if ( isset( $_GET['pay_for_order'], $_GET['key'] ) && empty( $_GET['change_payment_method'] ) && ( isset( $_GET['order_id'] ) || isset( $wp->query_vars['order-pay'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			// Check if the order is linked to a billing invoice.
-			$order_id = ( isset( $wp->query_vars['order-pay'] ) ) ? absint( $wp->query_vars['order-pay'] ) : absint( $_GET['order_id'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$order    = wc_get_order( $order_id );
+		// Note: There is no nonce verification for the "pay for order" action - the URL is long living.
+		if ( ! isset( $_GET['pay_for_order'], $_GET['key'] ) || ! empty( $_GET['change_payment_method'] ) || ( ! isset( $_GET['order_id'] ) && ! isset( $wp->query_vars['order-pay'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return;
+		}
 
-			if ( $order && $order instanceof WC_Order ) {
-				$invoice_id = WC_Payments_Invoice_Service::get_order_invoice_id( $order );
+		$order_id  = ( isset( $wp->query_vars['order-pay'] ) ) ? absint( $wp->query_vars['order-pay'] ) : absint( $_GET['order_id'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$order_key = wc_clean( wp_unslash( $_GET['key'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$order     = wc_get_order( $order_id );
 
-				if ( $invoice_id ) {
-					$subscriptions = wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] );
+		if ( ! $order || ! hash_equals( $order->get_order_key(), $order_key ) || ! current_user_can( 'pay_for_order', $order->get_id() ) ) {
+			return;
+		}
 
-					if ( ! empty( $subscriptions ) ) {
-						$subscription = array_pop( $subscriptions );
+		// Check if the order is linked to a billing invoice.
+		$invoice_id = WC_Payments_Invoice_Service::get_order_invoice_id( $order );
 
-						if ( $subscription && WC_Payments_Invoice_Service::get_pending_invoice_id( $subscription ) ) {
-							wp_safe_redirect( $this->get_subscription_update_payment_url( $subscription ) );
-							exit;
-						}
-					}
+		if ( $invoice_id ) {
+			$subscriptions = wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] );
+
+			if ( ! empty( $subscriptions ) ) {
+				$subscription = array_pop( $subscriptions );
+
+				if ( $subscription && current_user_can( 'edit_shop_subscription_payment_method', $subscription->get_id() ) && $this->does_subscription_need_payment_updated( $subscription ) ) {
+					wp_safe_redirect( $this->get_subscription_update_payment_url( $subscription ) );
+					exit;
 				}
 			}
 		}
@@ -173,13 +178,13 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 	 */
 	private function does_subscription_need_payment_updated( $subscription ) {
 		// We're only interested in WC Pay subscriptions that are on hold due to a failed payment.
-		if ( ! $subscription->has_status( 'on-hold' ) || ! WC_Payments_Subscription_Service::get_wcpay_subscription_id( $subscription ) ) {
+		if ( ! $subscription->has_status( 'on-hold' ) || ! WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ) {
 			return false;
 		}
 
 		$last_order = $subscription->get_last_order( 'all', 'any' );
 
-		return $last_order && $last_order->has_status( 'failed' );
+		return $last_order && $last_order->has_status( 'failed' ) && WC_Payments_Invoice_Service::get_pending_invoice_id( $subscription );
 	}
 
 	/**

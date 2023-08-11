@@ -3,83 +3,105 @@
 exports[`Order items threshold card renders correctly 1`] = `
 <div>
   <div
-    class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
     id="order-items-threshold-card"
   >
     <div
-      class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
-    >
-      <div>
-        <p
-          class="fraud-protection-rule-card-header"
-        >
-          Order Items Threshold
-        </p>
-        <p
-          class="fraud-protection-rule-card-description"
-        >
-          This filter compares the amount of items in an order to the minimum and maximum counts that you specify.
-        </p>
-      </div>
-    </div>
-    <hr />
-    <div
-      class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
+      class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="fraud-protection-rule-toggle"
+        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
-        <strong>
-          Enable filtering
-        </strong>
-        <div
-          class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
-        >
-          <div
-            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-          >
-            <span
-              class="components-form-toggle"
-            >
-              <input
-                aria-describedby="inspector-toggle-control-0__help"
-                class="components-form-toggle__input"
-                id="inspector-toggle-control-0"
-                type="checkbox"
-              />
-              <span
-                class="components-form-toggle__track"
-              />
-              <span
-                class="components-form-toggle__thumb"
-              />
-            </span>
-            <label
-              class="components-toggle-control__label"
-              for="inspector-toggle-control-0"
-            >
-              Block transactions for abnormal item counts
-            </label>
-          </div>
+        <div>
           <p
-            class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-            id="inspector-toggle-control-0__help"
+            class="fraud-protection-rule-card-header"
           >
-            When enabled, the payment will be blocked.
+            Order Items Threshold
+          </p>
+          <p
+            class="fraud-protection-rule-card-description"
+          >
+            This filter compares the amount of items in an order to the minimum and maximum counts that you specify.
           </p>
         </div>
       </div>
+      <hr />
       <div
-        class="fraud-protection-rule-description"
+        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
-        <strong>
-          How does this filter protect me?
-        </strong>
-        <p>
-          An unusually high item count, compared to the average for your business, can indicate potential fraudulent activity.
-        </p>
+        <div
+          class="fraud-protection-rule-toggle"
+        >
+          <strong>
+            Enable filtering
+          </strong>
+          <div
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
+          >
+            <div
+              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+            >
+              <span
+                class="components-form-toggle"
+              >
+                <input
+                  aria-describedby="inspector-toggle-control-0__help"
+                  class="components-form-toggle__input"
+                  id="inspector-toggle-control-0"
+                  type="checkbox"
+                />
+                <span
+                  class="components-form-toggle__track"
+                />
+                <span
+                  class="components-form-toggle__thumb"
+                />
+              </span>
+              <label
+                class="components-toggle-control__label"
+                for="inspector-toggle-control-0"
+              >
+                Block transactions for abnormal item counts
+              </label>
+            </div>
+            <p
+              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
+              id="inspector-toggle-control-0__help"
+            >
+              When enabled, the payment will be blocked.
+            </p>
+          </div>
+        </div>
+        <div
+          class="fraud-protection-rule-description"
+        >
+          <strong>
+            How does this filter protect me?
+          </strong>
+          <p>
+            An unusually high item count, compared to the average for your business, can indicate potential fraudulent activity.
+          </p>
+        </div>
       </div>
     </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
   </div>
 </div>
 `;
@@ -87,199 +109,230 @@ exports[`Order items threshold card renders correctly 1`] = `
 exports[`Order items threshold card renders correctly when enabled 1`] = `
 <div>
   <div
-    class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
     id="order-items-threshold-card"
   >
     <div
-      class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
-    >
-      <div>
-        <p
-          class="fraud-protection-rule-card-header"
-        >
-          Order Items Threshold
-        </p>
-        <p
-          class="fraud-protection-rule-card-description"
-        >
-          This filter compares the amount of items in an order to the minimum and maximum counts that you specify.
-        </p>
-      </div>
-    </div>
-    <hr />
-    <div
-      class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
+      class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="fraud-protection-rule-toggle"
+        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
-        <strong>
-          Enable filtering
-        </strong>
-        <div
-          class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
-        >
-          <div
-            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-          >
-            <span
-              class="components-form-toggle is-checked"
-            >
-              <input
-                aria-describedby="inspector-toggle-control-1__help"
-                class="components-form-toggle__input"
-                id="inspector-toggle-control-1"
-                type="checkbox"
-              />
-              <span
-                class="components-form-toggle__track"
-              />
-              <span
-                class="components-form-toggle__thumb"
-              />
-            </span>
-            <label
-              class="components-toggle-control__label"
-              for="inspector-toggle-control-1"
-            >
-              Block transactions for abnormal item counts
-            </label>
-          </div>
+        <div>
           <p
-            class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-            id="inspector-toggle-control-1__help"
+            class="fraud-protection-rule-card-header"
           >
-            The payment will be blocked.
+            Order Items Threshold
+          </p>
+          <p
+            class="fraud-protection-rule-card-description"
+          >
+            This filter compares the amount of items in an order to the minimum and maximum counts that you specify.
           </p>
         </div>
-        <div>
+      </div>
+      <hr />
+      <div
+        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
+      >
+        <div
+          class="fraud-protection-rule-toggle"
+        >
+          <strong>
+            Enable filtering
+          </strong>
           <div
-            class="fraud-protection-rule-toggle-children-container"
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
           >
-            <strong>
-              Limits
-            </strong>
             <div
-              class="fraud-protection-rule-toggle-children-horizontal-form"
+              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
             >
-              <div
-                class="fraud-protection-rule-toggle-children-vertical-form"
+              <span
+                class="components-form-toggle is-checked"
               >
-                <label
-                  for="fraud-protection-order-items-minimum"
-                >
-                  Minimum items per order
-                </label>
-                <div
-                  class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
-                >
-                  <div
-                    class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-                  >
-                    <input
-                      aria-describedby="inspector-text-control-0__help"
-                      class="components-text-control__input"
-                      id="fraud-protection-order-items-minimum"
-                      min="1"
-                      placeholder="0"
-                      step="1"
-                      type="number"
-                      value=""
-                    />
-                  </div>
-                  <p
-                    class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-text-control-0__help"
-                  >
-                    Leave blank for no limit
-                  </p>
-                </div>
-              </div>
-              <div
-                class="fraud-protection-rule-toggle-children-vertical-form"
+                <input
+                  aria-describedby="inspector-toggle-control-1__help"
+                  class="components-form-toggle__input"
+                  id="inspector-toggle-control-1"
+                  type="checkbox"
+                />
+                <span
+                  class="components-form-toggle__track"
+                />
+                <span
+                  class="components-form-toggle__thumb"
+                />
+              </span>
+              <label
+                class="components-toggle-control__label"
+                for="inspector-toggle-control-1"
               >
-                <label
-                  for="fraud-protection-order-items-maximum"
-                >
-                  Maximum items per order
-                </label>
-                <div
-                  class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
-                >
-                  <div
-                    class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-                  >
-                    <input
-                      aria-describedby="inspector-text-control-1__help"
-                      class="components-text-control__input"
-                      id="fraud-protection-order-items-maximum"
-                      min="1"
-                      placeholder="0"
-                      step="1"
-                      type="number"
-                      value=""
-                    />
-                  </div>
-                  <p
-                    class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-text-control-1__help"
-                  >
-                    Leave blank for no limit
-                  </p>
-                </div>
-              </div>
+                Block transactions for abnormal item counts
+              </label>
             </div>
-            <div>
-              <br />
+            <p
+              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
+              id="inspector-toggle-control-1__help"
+            >
+              The payment will be blocked.
+            </p>
+          </div>
+          <div>
+            <div
+              class="fraud-protection-rule-toggle-children-container"
+            >
+              <strong>
+                Limits
+              </strong>
               <div
-                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+                class="fraud-protection-rule-toggle-children-horizontal-form"
               >
                 <div
-                  class="components-notice__content"
+                  class="fraud-protection-rule-toggle-children-vertical-form"
                 >
+                  <label
+                    for="fraud-protection-order-items-minimum"
+                  >
+                    Minimum items per order
+                  </label>
                   <div
-                    class="components-flex css-18koiq9-Flex eboqfv50"
+                    class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
                   >
                     <div
-                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                      class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
                     >
-                      <svg
-                        class="gridicon gridicons-notice-outline"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        width="24"
-                        xmlns="http://www.w3.org/2000/svg"
+                      <input
+                        aria-describedby="inspector-text-control-0__help"
+                        class="components-text-control__input"
+                        id="fraud-protection-order-items-minimum"
+                        min="1"
+                        placeholder="0"
+                        step="1"
+                        type="number"
+                        value=""
+                      />
+                    </div>
+                    <p
+                      class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
+                      id="inspector-text-control-0__help"
+                    >
+                      Leave blank for no limit
+                    </p>
+                  </div>
+                </div>
+                <div
+                  class="fraud-protection-rule-toggle-children-vertical-form"
+                >
+                  <label
+                    for="fraud-protection-order-items-maximum"
+                  >
+                    Maximum items per order
+                  </label>
+                  <div
+                    class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
+                  >
+                    <div
+                      class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+                    >
+                      <input
+                        aria-describedby="inspector-text-control-1__help"
+                        class="components-text-control__input"
+                        id="fraud-protection-order-items-maximum"
+                        min="1"
+                        placeholder="0"
+                        step="1"
+                        type="number"
+                        value=""
+                      />
+                    </div>
+                    <p
+                      class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
+                      id="inspector-text-control-1__help"
+                    >
+                      Leave blank for no limit
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <br />
+                <div
+                  class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+                >
+                  <div
+                    class="components-notice__content"
+                  >
+                    <div
+                      class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+                      data-wp-c16t="true"
+                      data-wp-component="Flex"
+                    >
+                      <div
+                        class="components-flex-item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+                        data-wp-c16t="true"
+                        data-wp-component="FlexItem"
                       >
-                        <g>
-                          <path
-                            d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                          />
-                        </g>
-                      </svg>
+                        <svg
+                          class="gridicon gridicons-notice-outline"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <g>
+                            <path
+                              d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                            />
+                          </g>
+                        </svg>
+                      </div>
+                      <div
+                        class="components-flex-item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+                        data-wp-c16t="true"
+                        data-wp-component="FlexItem"
+                      >
+                        An item range must be set for this filter to take effect.
+                      </div>
                     </div>
                     <div
-                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                    >
-                      An item range must be set for this filter to take effect.
-                    </div>
+                      class="components-notice__actions"
+                    />
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <div
-        class="fraud-protection-rule-description"
-      >
-        <strong>
-          How does this filter protect me?
-        </strong>
-        <p>
-          An unusually high item count, compared to the average for your business, can indicate potential fraudulent activity.
-        </p>
+        <div
+          class="fraud-protection-rule-description"
+        >
+          <strong>
+            How does this filter protect me?
+          </strong>
+          <p>
+            An unusually high item count, compared to the average for your business, can indicate potential fraudulent activity.
+          </p>
+        </div>
       </div>
     </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
   </div>
 </div>
 `;
@@ -287,199 +340,230 @@ exports[`Order items threshold card renders correctly when enabled 1`] = `
 exports[`Order items threshold card renders correctly when enabled and checked 1`] = `
 <div>
   <div
-    class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
     id="order-items-threshold-card"
   >
     <div
-      class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
-    >
-      <div>
-        <p
-          class="fraud-protection-rule-card-header"
-        >
-          Order Items Threshold
-        </p>
-        <p
-          class="fraud-protection-rule-card-description"
-        >
-          This filter compares the amount of items in an order to the minimum and maximum counts that you specify.
-        </p>
-      </div>
-    </div>
-    <hr />
-    <div
-      class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
+      class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="fraud-protection-rule-toggle"
+        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
-        <strong>
-          Enable filtering
-        </strong>
-        <div
-          class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
-        >
-          <div
-            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-          >
-            <span
-              class="components-form-toggle is-checked"
-            >
-              <input
-                aria-describedby="inspector-toggle-control-2__help"
-                class="components-form-toggle__input"
-                id="inspector-toggle-control-2"
-                type="checkbox"
-              />
-              <span
-                class="components-form-toggle__track"
-              />
-              <span
-                class="components-form-toggle__thumb"
-              />
-            </span>
-            <label
-              class="components-toggle-control__label"
-              for="inspector-toggle-control-2"
-            >
-              Block transactions for abnormal item counts
-            </label>
-          </div>
+        <div>
           <p
-            class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-            id="inspector-toggle-control-2__help"
+            class="fraud-protection-rule-card-header"
           >
-            The payment will be blocked.
+            Order Items Threshold
+          </p>
+          <p
+            class="fraud-protection-rule-card-description"
+          >
+            This filter compares the amount of items in an order to the minimum and maximum counts that you specify.
           </p>
         </div>
-        <div>
+      </div>
+      <hr />
+      <div
+        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
+      >
+        <div
+          class="fraud-protection-rule-toggle"
+        >
+          <strong>
+            Enable filtering
+          </strong>
           <div
-            class="fraud-protection-rule-toggle-children-container"
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
           >
-            <strong>
-              Limits
-            </strong>
             <div
-              class="fraud-protection-rule-toggle-children-horizontal-form"
+              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
             >
-              <div
-                class="fraud-protection-rule-toggle-children-vertical-form"
+              <span
+                class="components-form-toggle is-checked"
               >
-                <label
-                  for="fraud-protection-order-items-minimum"
-                >
-                  Minimum items per order
-                </label>
-                <div
-                  class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
-                >
-                  <div
-                    class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-                  >
-                    <input
-                      aria-describedby="inspector-text-control-2__help"
-                      class="components-text-control__input"
-                      id="fraud-protection-order-items-minimum"
-                      min="1"
-                      placeholder="0"
-                      step="1"
-                      type="number"
-                      value=""
-                    />
-                  </div>
-                  <p
-                    class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-text-control-2__help"
-                  >
-                    Leave blank for no limit
-                  </p>
-                </div>
-              </div>
-              <div
-                class="fraud-protection-rule-toggle-children-vertical-form"
+                <input
+                  aria-describedby="inspector-toggle-control-2__help"
+                  class="components-form-toggle__input"
+                  id="inspector-toggle-control-2"
+                  type="checkbox"
+                />
+                <span
+                  class="components-form-toggle__track"
+                />
+                <span
+                  class="components-form-toggle__thumb"
+                />
+              </span>
+              <label
+                class="components-toggle-control__label"
+                for="inspector-toggle-control-2"
               >
-                <label
-                  for="fraud-protection-order-items-maximum"
-                >
-                  Maximum items per order
-                </label>
-                <div
-                  class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
-                >
-                  <div
-                    class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-                  >
-                    <input
-                      aria-describedby="inspector-text-control-3__help"
-                      class="components-text-control__input"
-                      id="fraud-protection-order-items-maximum"
-                      min="1"
-                      placeholder="0"
-                      step="1"
-                      type="number"
-                      value=""
-                    />
-                  </div>
-                  <p
-                    class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-text-control-3__help"
-                  >
-                    Leave blank for no limit
-                  </p>
-                </div>
-              </div>
+                Block transactions for abnormal item counts
+              </label>
             </div>
-            <div>
-              <br />
+            <p
+              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
+              id="inspector-toggle-control-2__help"
+            >
+              The payment will be blocked.
+            </p>
+          </div>
+          <div>
+            <div
+              class="fraud-protection-rule-toggle-children-container"
+            >
+              <strong>
+                Limits
+              </strong>
               <div
-                class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+                class="fraud-protection-rule-toggle-children-horizontal-form"
               >
                 <div
-                  class="components-notice__content"
+                  class="fraud-protection-rule-toggle-children-vertical-form"
                 >
+                  <label
+                    for="fraud-protection-order-items-minimum"
+                  >
+                    Minimum items per order
+                  </label>
                   <div
-                    class="components-flex css-18koiq9-Flex eboqfv50"
+                    class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
                   >
                     <div
-                      class="components-flex__item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-1s295sp-Item eboqfv51"
+                      class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
                     >
-                      <svg
-                        class="gridicon gridicons-notice-outline"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        width="24"
-                        xmlns="http://www.w3.org/2000/svg"
+                      <input
+                        aria-describedby="inspector-text-control-2__help"
+                        class="components-text-control__input"
+                        id="fraud-protection-order-items-minimum"
+                        min="1"
+                        placeholder="0"
+                        step="1"
+                        type="number"
+                        value=""
+                      />
+                    </div>
+                    <p
+                      class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
+                      id="inspector-text-control-2__help"
+                    >
+                      Leave blank for no limit
+                    </p>
+                  </div>
+                </div>
+                <div
+                  class="fraud-protection-rule-toggle-children-vertical-form"
+                >
+                  <label
+                    for="fraud-protection-order-items-maximum"
+                  >
+                    Maximum items per order
+                  </label>
+                  <div
+                    class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
+                  >
+                    <div
+                      class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+                    >
+                      <input
+                        aria-describedby="inspector-text-control-3__help"
+                        class="components-text-control__input"
+                        id="fraud-protection-order-items-maximum"
+                        min="1"
+                        placeholder="0"
+                        step="1"
+                        type="number"
+                        value=""
+                      />
+                    </div>
+                    <p
+                      class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
+                      id="inspector-text-control-3__help"
+                    >
+                      Leave blank for no limit
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <br />
+                <div
+                  class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+                >
+                  <div
+                    class="components-notice__content"
+                  >
+                    <div
+                      class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+                      data-wp-c16t="true"
+                      data-wp-component="Flex"
+                    >
+                      <div
+                        class="components-flex-item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+                        data-wp-c16t="true"
+                        data-wp-component="FlexItem"
                       >
-                        <g>
-                          <path
-                            d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                          />
-                        </g>
-                      </svg>
+                        <svg
+                          class="gridicon gridicons-notice-outline"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <g>
+                            <path
+                              d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                            />
+                          </g>
+                        </svg>
+                      </div>
+                      <div
+                        class="components-flex-item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+                        data-wp-c16t="true"
+                        data-wp-component="FlexItem"
+                      >
+                        An item range must be set for this filter to take effect.
+                      </div>
                     </div>
                     <div
-                      class="components-flex__item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-1s295sp-Item eboqfv51"
-                    >
-                      An item range must be set for this filter to take effect.
-                    </div>
+                      class="components-notice__actions"
+                    />
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <div
-        class="fraud-protection-rule-description"
-      >
-        <strong>
-          How does this filter protect me?
-        </strong>
-        <p>
-          An unusually high item count, compared to the average for your business, can indicate potential fraudulent activity.
-        </p>
+        <div
+          class="fraud-protection-rule-description"
+        >
+          <strong>
+            How does this filter protect me?
+          </strong>
+          <p>
+            An unusually high item count, compared to the average for your business, can indicate potential fraudulent activity.
+          </p>
+        </div>
       </div>
     </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
   </div>
 </div>
 `;
@@ -487,83 +571,105 @@ exports[`Order items threshold card renders correctly when enabled and checked 1
 exports[`Order items threshold card renders like disabled when checked, but not enabled 1`] = `
 <div>
   <div
-    class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
+    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="Card"
     id="order-items-threshold-card"
   >
     <div
-      class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
-    >
-      <div>
-        <p
-          class="fraud-protection-rule-card-header"
-        >
-          Order Items Threshold
-        </p>
-        <p
-          class="fraud-protection-rule-card-description"
-        >
-          This filter compares the amount of items in an order to the minimum and maximum counts that you specify.
-        </p>
-      </div>
-    </div>
-    <hr />
-    <div
-      class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
+      class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="fraud-protection-rule-toggle"
+        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
-        <strong>
-          Enable filtering
-        </strong>
-        <div
-          class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
-        >
-          <div
-            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-          >
-            <span
-              class="components-form-toggle"
-            >
-              <input
-                aria-describedby="inspector-toggle-control-3__help"
-                class="components-form-toggle__input"
-                id="inspector-toggle-control-3"
-                type="checkbox"
-              />
-              <span
-                class="components-form-toggle__track"
-              />
-              <span
-                class="components-form-toggle__thumb"
-              />
-            </span>
-            <label
-              class="components-toggle-control__label"
-              for="inspector-toggle-control-3"
-            >
-              Block transactions for abnormal item counts
-            </label>
-          </div>
+        <div>
           <p
-            class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-            id="inspector-toggle-control-3__help"
+            class="fraud-protection-rule-card-header"
           >
-            When enabled, the payment will be blocked.
+            Order Items Threshold
+          </p>
+          <p
+            class="fraud-protection-rule-card-description"
+          >
+            This filter compares the amount of items in an order to the minimum and maximum counts that you specify.
           </p>
         </div>
       </div>
+      <hr />
       <div
-        class="fraud-protection-rule-description"
+        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
       >
-        <strong>
-          How does this filter protect me?
-        </strong>
-        <p>
-          An unusually high item count, compared to the average for your business, can indicate potential fraudulent activity.
-        </p>
+        <div
+          class="fraud-protection-rule-toggle"
+        >
+          <strong>
+            Enable filtering
+          </strong>
+          <div
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
+          >
+            <div
+              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+            >
+              <span
+                class="components-form-toggle"
+              >
+                <input
+                  aria-describedby="inspector-toggle-control-3__help"
+                  class="components-form-toggle__input"
+                  id="inspector-toggle-control-3"
+                  type="checkbox"
+                />
+                <span
+                  class="components-form-toggle__track"
+                />
+                <span
+                  class="components-form-toggle__thumb"
+                />
+              </span>
+              <label
+                class="components-toggle-control__label"
+                for="inspector-toggle-control-3"
+              >
+                Block transactions for abnormal item counts
+              </label>
+            </div>
+            <p
+              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
+              id="inspector-toggle-control-3__help"
+            >
+              When enabled, the payment will be blocked.
+            </p>
+          </div>
+        </div>
+        <div
+          class="fraud-protection-rule-description"
+        >
+          <strong>
+            How does this filter protect me?
+          </strong>
+          <p>
+            An unusually high item count, compared to the average for your business, can indicate potential fraudulent activity.
+          </p>
+        </div>
       </div>
     </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
   </div>
 </div>
 `;

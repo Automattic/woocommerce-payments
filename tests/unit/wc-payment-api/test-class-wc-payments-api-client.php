@@ -906,13 +906,13 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 
 		$po_eligible = $this->payments_api_client->get_onboarding_po_eligible(
 			[
-				'business' => [
-					'country'           => 'US',
-					'type'              => 'company',
-					'mcc'               => 'software_services',
-					'annual_revenue'    => 'less_than_250k',
-					'go_live_timeframe' => 'within_1month',
-				],
+				'country' => 'US',
+				'type'    => 'company',
+				'mcc'     => 'most_popular__software_services',
+			],
+			[
+				'annual_revenue'    => 'less_than_250k',
+				'go_live_timeframe' => 'within_1month',
 			]
 		);
 		$this->assertSame( 'eligible', $po_eligible['result'] );
@@ -1005,68 +1005,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->expectExceptionMessage( 'Error: Document not found' );
 
 		$this->payments_api_client->get_document( 'someDocument' );
-	}
-
-	/**
-	 * Test a successful fetch of a single authorization.
-	 *
-	 * @throws Exception In case of test failure.
-	 */
-	public function test_get_authorization_success() {
-		$payment_intent_id = 'pi_123smtm';
-
-		$this->set_http_mock_response(
-			200,
-			[
-				'payment_intent_id' => $payment_intent_id,
-			]
-		);
-
-		$authorization = $this->payments_api_client->get_authorization( $payment_intent_id );
-		$this->assertSame( $payment_intent_id, $authorization['payment_intent_id'] );
-	}
-
-	/**
-	 * Test fetching of non existing authorization.
-	 *
-	 * @throws Exception In case of test failure.
-	 */
-	public function test_get_authorization_not_found() {
-		$payment_intent_id = 'pi_123smtm';
-		$error_message     = 'The authorization you asked for does not exist';
-
-		$this->set_http_mock_response(
-			404,
-			[
-				'error' => [
-					'code'    => 'authorization_missing',
-					'message' => $error_message,
-				],
-			]
-		);
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( "Error: $error_message" );
-
-		$this->payments_api_client->get_authorization( $payment_intent_id );
-	}
-	/**
-	 * Test a successful fetch of authorizations summary.
-	 *
-	 * @throws Exception In case of test failure.
-	 */
-	public function test_authorizations_summary_success() {
-		$this->set_http_mock_response(
-			200,
-			[
-				'count' => 123,
-				'total' => 1200,
-			]
-		);
-
-		$summary = $this->payments_api_client->get_authorizations_summary();
-
-		$this->assertSame( 123, $summary['count'] );
-		$this->assertSame( 1200, $summary['total'] );
 	}
 
 	/**

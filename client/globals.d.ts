@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { MccsDisplayTreeItem, Country } from 'onboarding-prototype/types';
+import { MccsDisplayTreeItem, Country } from 'onboarding/types';
 
 declare global {
 	const wcpaySettings: {
@@ -62,15 +62,18 @@ declare global {
 		connect: {
 			country: string;
 			availableStates: Array< Record< string, string > >;
+			availableCountries: Record< string, string >;
 		};
 		accountEmail: string;
 		currentUserEmail: string;
 		zeroDecimalCurrencies: string[];
 		restUrl: string;
 		shouldUseExplicitPrice: boolean;
-		numDisputesNeedingResponse: string;
 		fraudProtection: {
 			isWelcomeTourDismissed?: boolean;
+		};
+		progressiveOnboarding?: {
+			isNewFlowEnabled: boolean;
 		};
 		accountDefaultCurrency: string;
 		isFRTReviewFeatureActive: boolean;
@@ -82,6 +85,15 @@ declare global {
 		};
 		storeCurrency: string;
 		isMultiCurrencyEnabled: string;
+		errorMessage: string;
+		onBoardingDisabled: boolean;
+		isBnplAffirmAfterpayEnabled: boolean;
+		connectIncentive?: {
+			id: string;
+			description: string;
+			tc_url: string;
+		};
+		isWooPayStoreCountryAvailable: boolean;
 	};
 
 	const wcTracks: any;

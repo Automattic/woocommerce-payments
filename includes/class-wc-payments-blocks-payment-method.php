@@ -8,6 +8,7 @@
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\WC_Payments_Checkout;
+use WCPay\WooPay\WooPay_Utilities;
 
 /**
  * The payment method, which allows the gateway to work with WooCommerce Blocks.
@@ -53,11 +54,12 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	 * @return string[] A list of script handles.
 	 */
 	public function get_payment_method_script_handles() {
-		wp_enqueue_style(
+		WC_Payments_Utils::enqueue_style(
 			'wc-blocks-checkout-style',
 			plugins_url( 'dist/blocks-checkout.css', WCPAY_PLUGIN_FILE ),
 			[],
-			'1.0'
+			'1.0',
+			'all'
 		);
 		wp_register_script(
 			'stripe',
@@ -85,7 +87,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 
 		if ( $is_woopay_eligible && $is_woopay_enabled ) {
 			$woopay_config = [
-				'woopayHost' => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'https://pay.woo.com',
+				'woopayHost' => WooPay_Utilities::get_woopay_url(),
 			];
 		}
 

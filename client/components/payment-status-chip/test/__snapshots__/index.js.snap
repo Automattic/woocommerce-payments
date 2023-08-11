@@ -43,7 +43,7 @@ exports[`PaymentStatusChip renders disputed_lost status 1`] = `
 exports[`PaymentStatusChip renders disputed_needs_response status 1`] = `
 <div>
   <span
-    class="chip chip-primary"
+    class="chip chip-warning"
   >
     Disputed: Needs response
   </span>
@@ -53,7 +53,7 @@ exports[`PaymentStatusChip renders disputed_needs_response status 1`] = `
 exports[`PaymentStatusChip renders disputed_under_review status 1`] = `
 <div>
   <span
-    class="chip chip-light"
+    class="chip chip-primary"
   >
     Disputed: Under review
   </span>
@@ -73,7 +73,7 @@ exports[`PaymentStatusChip renders disputed_warning_closed status 1`] = `
 exports[`PaymentStatusChip renders disputed_warning_needs_response status 1`] = `
 <div>
   <span
-    class="chip chip-primary"
+    class="chip chip-warning"
   >
     Inquiry: Needs response
   </span>
@@ -83,7 +83,7 @@ exports[`PaymentStatusChip renders disputed_warning_needs_response status 1`] = 
 exports[`PaymentStatusChip renders disputed_warning_under_review status 1`] = `
 <div>
   <span
-    class="chip chip-light"
+    class="chip chip-primary"
   >
     Inquiry: Under review
   </span>
@@ -93,7 +93,7 @@ exports[`PaymentStatusChip renders disputed_warning_under_review status 1`] = `
 exports[`PaymentStatusChip renders disputed_won status 1`] = `
 <div>
   <span
-    class="chip chip-light"
+    class="chip chip-success"
   >
     Disputed: Won
   </span>

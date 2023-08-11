@@ -114,7 +114,7 @@ const StoreSettingsTask = () => {
 								'woocommerce-payments'
 							) }
 						</div>
-						{ 'Storefront' === storeSettings.site_theme ? (
+						{ storeSettings.site_theme === 'Storefront' ? (
 							<>
 								<CheckboxControl
 									checked={ isStorefrontSwitcherEnabledValue }
@@ -123,7 +123,7 @@ const StoreSettingsTask = () => {
 									}
 									data-testid={ 'enable_storefront_switcher' }
 									label={ __(
-										'Add a currency switcher to the cart widget',
+										'Add a currency switcher to the Storefront theme on breadcrumb section.',
 										'woocommerce-payments'
 									) }
 								/>

@@ -38,7 +38,7 @@ class WC_Payments_Subscription_Change_Payment_Method_Test extends WCPAY_UnitTest
 		// Test the false case - no change to input.
 		$this->assertSame( [], $this->change_payment_method_handler->update_subscription_change_payment_button( [], $mock_subscription ) );
 
-		// Set up a subscriotion with a failed last payment to test the positive/true case.
+		// Set up a subscription with a failed last payment to test the positive/true case.
 		$mock_subscription->status     = 'on-hold';
 		$mock_subscription->last_order = WC_Helper_Order::create_order();
 		$mock_subscription->last_order->set_status( 'failed' );
@@ -46,6 +46,8 @@ class WC_Payments_Subscription_Change_Payment_Method_Test extends WCPAY_UnitTest
 		// The update_subscription_change_payment_button function attempts to call WC_Subscription->get_checkout_payment_url(). To avoid errors mock that function's return.
 		$mock_subscription->checkout_payment_url = 'example.com';
 		$mock_subscription->update_meta_data( WC_Payments_Subscription_Service::SUBSCRIPTION_ID_META_KEY, 'sub_test123' );
+		$mock_subscription->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$mock_subscription->update_meta_data( WC_Payments_Invoice_Service::PENDING_INVOICE_ID_KEY, 'inv_test123' );
 		$mock_subscription->save();
 
 		$default_actions = [
@@ -101,12 +103,19 @@ class WC_Payments_Subscription_Change_Payment_Method_Test extends WCPAY_UnitTest
 		$this->assertSame( $test_actions, $this->change_payment_method_handler->update_order_pay_button( $test_actions, $mock_order ) );
 
 		// Set up the positive/true case.
+		$mock_order->set_status( 'failed' );
 		$mock_order->update_meta_data( WC_Payments_Invoice_Service::ORDER_INVOICE_ID_KEY, 'in_test123' );
 		$mock_order->save();
 
+		$mock_subscription->status = 'on-hold';
+
+		$mock_subscription->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$mock_subscription->update_meta_data( WC_Payments_Subscription_Service::SUBSCRIPTION_ID_META_KEY, 'sub_test123' );
 		$mock_subscription->update_meta_data( WC_Payments_Invoice_Service::PENDING_INVOICE_ID_KEY, 'in_test123' );
 		$mock_subscription->save();
+
 		$this->mock_wcs_get_subscriptions_for_order( [ $mock_subscription ] );
+		$mock_subscription->set_last_order( $mock_order );
 
 		$result = $this->change_payment_method_handler->update_order_pay_button( $test_actions, $mock_order );
 
@@ -132,6 +141,8 @@ class WC_Payments_Subscription_Change_Payment_Method_Test extends WCPAY_UnitTest
 
 		$mock_subscription->last_order = $mock_order;
 		$mock_subscription->update_meta_data( WC_Payments_Subscription_Service::SUBSCRIPTION_ID_META_KEY, 'sub_test123' );
+		$mock_subscription->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$mock_subscription->update_meta_data( WC_Payments_Invoice_Service::PENDING_INVOICE_ID_KEY, 'in_test123' );
 		$mock_subscription->save();
 
 		// Confirm the input is unchanged on the negative case.
@@ -163,6 +174,8 @@ class WC_Payments_Subscription_Change_Payment_Method_Test extends WCPAY_UnitTest
 
 		$mock_subscription->last_order = $mock_order;
 		$mock_subscription->update_meta_data( WC_Payments_Subscription_Service::SUBSCRIPTION_ID_META_KEY, 'sub_test123' );
+		$mock_subscription->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$mock_subscription->update_meta_data( WC_Payments_Invoice_Service::PENDING_INVOICE_ID_KEY, 'in_test123' );
 		$mock_subscription->save();
 
 		// Confirm the input is unchanged on the negative case.
@@ -213,6 +226,8 @@ class WC_Payments_Subscription_Change_Payment_Method_Test extends WCPAY_UnitTest
 
 		$mock_subscription->last_order = $mock_order;
 		$mock_subscription->update_meta_data( WC_Payments_Subscription_Service::SUBSCRIPTION_ID_META_KEY, 'sub_test123' );
+		$mock_subscription->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$mock_subscription->update_meta_data( WC_Payments_Invoice_Service::PENDING_INVOICE_ID_KEY, 'in_test123' );
 		$mock_subscription->save();
 
 		// Confirm the input is unchanged on the negative case.

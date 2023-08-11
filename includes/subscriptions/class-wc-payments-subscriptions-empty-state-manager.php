@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class for loading WooCommerce Payments Subscription empty state screen.
+ * Class for loading WooPayments Subscription empty state screen.
  */
 class WC_Payments_Subscriptions_Empty_State_Manager {
 
@@ -61,15 +61,15 @@ class WC_Payments_Subscriptions_Empty_State_Manager {
 			$wcpay_settings
 		);
 
-		wp_register_style(
+		WC_Payments_Utils::enqueue_style(
 			'WCPAY_SUBSCRIPTIONS_EMPTY_STATE',
 			plugins_url( 'dist/subscriptions-empty-state.css', WCPAY_PLUGIN_FILE ),
 			[],
-			WC_Payments::get_file_version( 'dist/subscriptions-empty-state.css' )
+			WC_Payments::get_file_version( 'dist/subscriptions-empty-state.css' ),
+			'all'
 		);
 
 		wp_enqueue_script( 'WCPAY_SUBSCRIPTIONS_EMPTY_STATE' );
-		wp_enqueue_style( 'WCPAY_SUBSCRIPTIONS_EMPTY_STATE' );
 	}
 
 	/**

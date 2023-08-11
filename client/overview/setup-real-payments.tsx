@@ -11,6 +11,7 @@ import {
 	CardFooter,
 	CardHeader,
 	Modal,
+	Flex,
 } from '@wordpress/components';
 import { Icon, payment, globe, currencyDollar } from '@wordpress/icons';
 import ScheduledIcon from 'gridicons/dist/scheduled';
@@ -35,7 +36,7 @@ const SetupRealPayments: React.FC = () => {
 			<Card className="wcpay-setup-real-payments">
 				<CardHeader>
 					{ __(
-						'Ready to setup real payments on your store?',
+						'Set up real payments on your store',
 						'woocommerce-payments'
 					) }
 				</CardHeader>
@@ -63,19 +64,24 @@ const SetupRealPayments: React.FC = () => {
 					</div>
 				</CardBody>
 				<CardFooter className="wcpay-setup-real-payments__footer">
-					<Button isPrimary onClick={ () => setModalVisible( true ) }>
-						{ __( 'Set up payments', 'woocommerce-payments' ) }
-					</Button>
+					<Flex align="center" justify="flex-start">
+						<Button
+							variant={ 'secondary' }
+							onClick={ () => setModalVisible( true ) }
+						>
+							{ __( 'Set up payments', 'woocommerce-payments' ) }
+						</Button>
+					</Flex>
 				</CardFooter>
 			</Card>
 			{ modalVisible && (
 				<Modal
 					title={ __(
-						'Setup live payments on your store',
+						'Set up live payments on your store',
 						'woocommerce-payments'
 					) }
 					className="wcpay-setup-real-payments-modal"
-					isDismissible={ false }
+					isDismissible={ true }
 					onRequestClose={ () => setModalVisible( false ) }
 				>
 					<p className="wcpay-setup-real-payments-modal__headline">
@@ -106,7 +112,7 @@ const SetupRealPayments: React.FC = () => {
 							isTertiary
 							onClick={ () => setModalVisible( false ) }
 						>
-							{ __( 'Go back', 'woocommerce-payments' ) }
+							{ __( 'Cancel', 'woocommerce-payments' ) }
 						</Button>
 						<Button isPrimary onClick={ handleContinue }>
 							{ __( 'Continue setup', 'woocommerce-payments' ) }

@@ -71,7 +71,14 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		$this->woopay_util      = $woopay_util;
 		$this->account          = $account;
 		$this->customer_service = $customer_service;
+	}
 
+	/**
+	 * Initializes this class's WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		add_action( 'wc_payments_set_gateway', [ $this, 'set_gateway' ] );
 		add_action( 'wc_payments_add_upe_payment_fields', [ $this, 'payment_fields' ] );
 		add_action( 'woocommerce_after_account_payment_methods', [ $this->gateway, 'remove_upe_setup_intent_from_session' ], 10, 0 );
@@ -88,6 +95,44 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		add_action( 'wc_ajax_wcpay_init_setup_intent', [ $this->gateway, 'init_setup_intent_ajax' ] );
 		add_action( 'wc_ajax_wcpay_log_payment_error', [ $this->gateway, 'log_payment_error_ajax' ] );
 
+		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
+		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts_for_zero_order_total' ], 11 );
+		add_action( 'woocommerce_email_before_order_table', [ $this->gateway, 'set_payment_method_title_for_email' ], 10, 3 );
+	}
+
+	/**
+	 * Registers all scripts, necessary for the gateway.
+	 */
+	public function register_scripts() {
+		// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
+		// loaded twice in the event a site has both plugins enabled. We still run the risk of different plugins
+		// loading different versions however. If Stripe release a v4 of their JavaScript, we could consider
+		// changing the ID to stripe_v4. This would allow older plugins to keep using v3 while we used any new
+		// feature in v4. Stripe have allowed loading of 2 different versions of stripe.js in the past (
+		// https://stripe.com/docs/stripe-js/elements/migrating).
+		wp_register_script(
+			'stripe',
+			'https://js.stripe.com/v3/',
+			[],
+			'3.0',
+			true
+		);
+
+		$script_dependencies = [ 'stripe', 'wc-checkout', 'wp-i18n' ];
+
+		if ( $this->gateway->supports( 'tokenization' ) ) {
+			$script_dependencies[] = 'woocommerce-tokenization-form';
+		}
+
+		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+			$script = 'dist/upe_with_deferred_intent_creation_checkout';
+		} elseif ( WC_Payments_Features::is_upe_split_enabled() ) {
+			$script = 'dist/upe_split_checkout';
+		} else {
+			$script = 'dist/upe_checkout';
+		}
+
+		WC_Payments::register_script_with_dependencies( 'wcpay-upe-checkout', $script, $script_dependencies );
 	}
 
 	/**
@@ -150,10 +195,12 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 			$order                        = wc_get_order( $order_id );
 
 			if ( is_a( $order, 'WC_Order' ) ) {
+				$order_currency                   = $order->get_currency();
+				$payment_fields['currency']       = $order_currency;
+				$payment_fields['cartTotal']      = WC_Payments_Utils::prepare_amount( $order->get_total(), $order_currency );
 				$payment_fields['orderReturnURL'] = esc_url_raw(
 					add_query_arg(
 						[
-							'order_id'          => $order_id,
 							'wc_payment_method' => UPE_Payment_Gateway::GATEWAY_ID,
 							'_wpnonce'          => wp_create_nonce( 'wcpay_process_redirect_order_nonce' ),
 						],
@@ -200,9 +247,11 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 				'title'          => $payment_method->get_title(),
 				'icon'           => $payment_method->get_icon(),
 				'showSaveOption' => $this->should_upe_payment_method_show_save_option( $payment_method ),
+				'countries'      => $payment_method->get_countries(),
 			];
 
 			if ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+				$gateway_for_payment_method                             = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
 				$settings[ $payment_method_id ]['upePaymentIntentData'] = $this->gateway->get_payment_intent_data_from_session( $payment_method_id );
 				$settings[ $payment_method_id ]['upeSetupIntentData']   = $this->gateway->get_setup_intent_data_from_session( $payment_method_id );
 				$settings[ $payment_method_id ]['testingInstructions']  = WC_Payments_Utils::esc_interpolated_html(
@@ -210,9 +259,10 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 					$payment_method->get_testing_instructions(),
 					[
 						'strong' => '<strong>',
-						'a'      => '<a href="https://woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
+						'a'      => '<a href="https://woocommerce.com/document/woocommerce-payments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
 					]
 				);
+				$settings[ $payment_method_id ]['forceNetworkSavedCards'] = $gateway_for_payment_method->should_use_stripe_platform_on_checkout_page();
 			}
 		}
 
@@ -261,11 +311,12 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 				wp_localize_script( 'wcpay-upe-checkout', 'wcpayCustomerData', $prepared_customer_data );
 			}
 
-			wp_enqueue_style(
+			WC_Payments_Utils::enqueue_style(
 				'wcpay-upe-checkout',
 				plugins_url( 'dist/checkout.css', WCPAY_PLUGIN_FILE ),
 				[],
-				WC_Payments::get_file_version( 'dist/checkout.css' )
+				WC_Payments::get_file_version( 'dist/checkout.css' ),
+				'all'
 			);
 
 			// Output the form HTML.
@@ -284,7 +335,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 							$testing_instructions,
 							[
 								'strong' => '<strong>',
-								'a'      => '<a href="https://woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
+								'a'      => '<a href="https://woocommerce.com/document/woocommerce-payments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
 							]
 						);
 					}

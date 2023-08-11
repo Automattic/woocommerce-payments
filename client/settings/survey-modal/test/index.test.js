@@ -26,7 +26,7 @@ describe( 'WcPaySurveyContextProvider', () => {
 		};
 
 		dispatch.mockImplementation( ( storeName ) => {
-			if ( 'core/notices' === storeName ) {
+			if ( storeName === 'core/notices' ) {
 				return noticesDispatch;
 			}
 

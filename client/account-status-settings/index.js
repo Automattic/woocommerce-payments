@@ -42,12 +42,12 @@ const renderDepositsStatus = ( { deposits } ) => {
 
 const renderAccountStatusDescription = ( accountStatus ) => {
 	const { status, currentDeadline, pastDue, accountLink } = accountStatus;
-	if ( 'complete' === status ) {
+	if ( status === 'complete' ) {
 		return '';
 	}
 
 	let description = '';
-	if ( 'restricted_soon' === status ) {
+	if ( status === 'restricted_soon' ) {
 		description = createInterpolateElement(
 			sprintf(
 				/* translators: %s - formatted requirements current deadline, <a> - dashboard login URL */
@@ -63,7 +63,7 @@ const renderAccountStatusDescription = ( accountStatus ) => {
 			// eslint-disable-next-line jsx-a11y/anchor-has-content
 			{ a: <a href={ accountLink } /> }
 		);
-	} else if ( 'restricted' === status && pastDue ) {
+	} else if ( status === 'restricted' && pastDue ) {
 		description = createInterpolateElement(
 			/* translators: <a> - dashboard login URL */
 			__(
@@ -73,22 +73,28 @@ const renderAccountStatusDescription = ( accountStatus ) => {
 			// eslint-disable-next-line jsx-a11y/anchor-has-content
 			{ a: <a href={ accountLink } /> }
 		);
-	} else if ( 'restricted_partially' === status ) {
+	} else if ( status === 'restricted_partially' ) {
 		description = __(
 			'Some payment methods and deposits are disabled for this account until all required documents are provided.',
 			'woocommerce-payments'
 		);
-	} else if ( 'restricted' === status ) {
+	} else if ( status === 'enabled' ) {
+		description = __(
+			// eslint-disable-next-line max-len
+			'This account is in good standing. Additional business information might be required when a payment volume threshold is reached.',
+			'woocommerce-payments'
+		);
+	} else if ( status === 'restricted' ) {
 		description = __(
 			'Payments and deposits are disabled for this account until business information is verified by the payment processor.',
 			'woocommerce-payments'
 		);
-	} else if ( 'rejected.fraud' === status ) {
+	} else if ( status === 'rejected.fraud' ) {
 		description = __(
 			'This account has been rejected because of suspected fraudulent activity.',
 			'woocommerce-payments'
 		);
-	} else if ( 'rejected.terms_of_service' === status ) {
+	} else if ( status === 'rejected.terms_of_service' ) {
 		description = __(
 			'This account has been rejected due to a Terms of Service violation.',
 			'woocommerce-payments'
@@ -123,7 +129,13 @@ const AccountStatus = ( props ) => {
 	return (
 		<div>
 			<div>
-				<StatusChip accountStatus={ accountStatus.status } />
+				<StatusChip
+					accountStatus={ accountStatus.status }
+					poEnabled={ accountStatus.progressiveOnboarding.isEnabled }
+					poComplete={
+						accountStatus.progressiveOnboarding.isComplete
+					}
+				/>
 				{ renderPaymentsStatus( accountStatus.paymentsEnabled ) }
 				{ renderDepositsStatus( { deposits: accountStatus.deposits } ) }
 			</div>

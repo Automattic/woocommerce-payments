@@ -9,6 +9,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
  */
 import InstantDepositButton from '../';
 import { useInstantDeposit } from 'wcpay/data';
+import type * as AccountOverview from 'wcpay/types/account-overview';
 
 jest.mock( 'wcpay/data', () => ( { useInstantDeposit: jest.fn() } ) );
 
@@ -21,12 +22,6 @@ mockUseInstantDeposit.mockReturnValue( {
 	inProgress: false,
 	submit: () => null,
 } );
-
-// eslint-disable-next-line no-unused-vars
-const isButtonDisabled = jest
-	.fn()
-	.mockReturnValue( false ) // Default response to show enabled button.
-	.mockReturnValueOnce( true ); // Response for first test that should have button disabled.
 
 const mockInstantBalance = {
 	amount: 12345,

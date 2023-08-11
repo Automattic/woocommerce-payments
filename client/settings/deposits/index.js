@@ -2,6 +2,7 @@
  * External dependencies
  */
 import React, { useContext } from 'react';
+import { select } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 import {
 	Card,
@@ -10,6 +11,7 @@ import {
 	Notice,
 } from '@wordpress/components';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
+import { STORE_NAME } from 'wcpay/data/constants';
 
 /**
  * Internal dependencies
@@ -23,6 +25,7 @@ import {
 	useDepositScheduleMonthlyAnchor,
 	useDepositStatus,
 	useCompletedWaitingPeriod,
+	useDepositRestrictions,
 } from '../../data';
 import './style.scss';
 import wcpayTracks from 'wcpay/tracks';
@@ -61,6 +64,8 @@ const CustomizeDepositSchedule = () => {
 		setDepositScheduleMonthlyAnchor,
 	] = useDepositScheduleMonthlyAnchor();
 
+	const settings = select( STORE_NAME ).getSettings();
+
 	const handleIntervalChange = ( newInterval ) => {
 		switch ( newInterval ) {
 			case 'weekly':
@@ -79,6 +84,26 @@ const CustomizeDepositSchedule = () => {
 		setDepositScheduleInterval( newInterval );
 	};
 
+	let depositIntervalsOptions = [
+		{
+			value: 'daily',
+			label: __( 'Daily', 'woocommerce-payments' ),
+		},
+		{
+			value: 'weekly',
+			label: __( 'Weekly', 'woocommerce-payments' ),
+		},
+		{
+			value: 'monthly',
+			label: __( 'Monthly', 'woocommerce-payments' ),
+		},
+	];
+
+	if ( settings.account_country === 'JP' ) {
+		// Japanese accounts can't have daily payouts.
+		depositIntervalsOptions = depositIntervalsOptions.slice( 1 );
+	}
+
 	return (
 		<>
 			<div className="schedule-controls">
@@ -86,22 +111,9 @@ const CustomizeDepositSchedule = () => {
 					label={ __( 'Frequency', 'woocommerce-payments' ) }
 					value={ depositScheduleInterval }
 					onChange={ handleIntervalChange }
-					options={ [
-						{
-							value: 'daily',
-							label: __( 'Daily', 'woocommerce-payments' ),
-						},
-						{
-							value: 'weekly',
-							label: __( 'Weekly', 'woocommerce-payments' ),
-						},
-						{
-							value: 'monthly',
-							label: __( 'Monthly', 'woocommerce-payments' ),
-						},
-					] }
+					options={ depositIntervalsOptions }
 				/>
-				{ 'monthly' === depositScheduleInterval && (
+				{ depositScheduleInterval === 'monthly' && (
 					<SelectControl
 						label={ __( 'Date', 'woocommerce-payments' ) }
 						value={ depositScheduleMonthlyAnchor }
@@ -109,7 +121,7 @@ const CustomizeDepositSchedule = () => {
 						options={ monthlyAnchors }
 					/>
 				) }
-				{ 'weekly' === depositScheduleInterval && (
+				{ depositScheduleInterval === 'weekly' && (
 					<SelectControl
 						label={ __( 'Day', 'woocommerce-payments' ) }
 						value={ depositScheduleWeeklyAnchor }
@@ -119,17 +131,17 @@ const CustomizeDepositSchedule = () => {
 				) }
 			</div>
 			<p className="help-text">
-				{ 'monthly' === depositScheduleInterval &&
+				{ depositScheduleInterval === 'monthly' &&
 					__(
 						'Deposits scheduled on a weekend will be sent on the next business day.',
 						'woocommerce-payments'
 					) }
-				{ 'weekly' === depositScheduleInterval &&
+				{ depositScheduleInterval === 'weekly' &&
 					__(
 						'Deposits that fall on a holiday will initiate on the next business day.',
 						'woocommerce-payments'
 					) }
-				{ 'daily' === depositScheduleInterval &&
+				{ depositScheduleInterval === 'daily' &&
 					__(
 						'Deposits will occur every business day.',
 						'woocommerce-payments'
@@ -140,9 +152,13 @@ const CustomizeDepositSchedule = () => {
 };
 const DepositsSchedule = () => {
 	const depositStatus = useDepositStatus();
+	const depositRestrictions = useDepositRestrictions();
 	const completedWaitingPeriod = useCompletedWaitingPeriod();
 
-	if ( 'enabled' !== depositStatus ) {
+	if (
+		depositStatus !== 'enabled' ||
+		depositRestrictions === 'schedule_restricted'
+	) {
 		return (
 			<Notice
 				status="warning"
@@ -160,7 +176,7 @@ const DepositsSchedule = () => {
 						'Learn more about deposit scheduling.',
 						'woocommerce-payments'
 					) }
-					href="https://woocommerce.com/document/payments/faq/deposit-schedule/"
+					href="https://woocommerce.com/document/woocommerce-payments/deposits/deposit-schedule/"
 					target="_blank"
 					rel="external noreferrer noopener"
 				>
@@ -169,7 +185,7 @@ const DepositsSchedule = () => {
 			</Notice>
 		);
 	}
-	if ( true !== completedWaitingPeriod ) {
+	if ( completedWaitingPeriod !== true ) {
 		return (
 			<Notice
 				status="warning"
@@ -187,7 +203,7 @@ const DepositsSchedule = () => {
 						'Learn more about deposit scheduling.',
 						'woocommerce-payments'
 					) }
-					href="https://woocommerce.com/document/payments/faq/deposit-schedule/"
+					href="https://woocommerce.com/document/woocommerce-payments/deposits/deposit-schedule/"
 					target="_blank"
 					rel="external noreferrer noopener"
 				>
