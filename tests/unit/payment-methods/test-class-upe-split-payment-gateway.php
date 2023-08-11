@@ -102,12 +102,11 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	private $mock_payment_gateways;
 
 	/**
-	 * WC_Payments_Checkout.
+	 * WC_Payments_Checkout
 	 *
 	 * @var WC_Payments_Checkout
 	 */
 	private $mock_legacy_checkout;
-
 
 	/**
 	 * WC_Payments_Account instance.
@@ -318,7 +317,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->returnValueMap( $get_payment_gateway_by_id_return_value_map )
 				);
 		}
-		WC_Payments::set_registered_card_gateway( $this->mock_payment_gateways[ Payment_Method::CARD ] );
 	}
 
 	/**
@@ -335,6 +333,9 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		);
 		$checkout->init_hooks();
 
+		$registered_card_gateway = WC_Payments::get_registered_card_gateway();
+		WC_Payments::set_registered_card_gateway( $this->mock_payment_gateways[ Payment_Method::CARD ] );
+
 		foreach ( $this->mock_payment_gateways as $payment_method_id => $mock_payment_gateway ) {
 			$mock_payment_gateway
 				->method( 'get_payment_method_ids_enabled_at_checkout' )
@@ -350,6 +351,8 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 			$this->assertStringContainsString( '<div class="wcpay-upe-element" data-payment-method-type="' . $payment_method_id . '"></div>', $actual_output );
 		}
+
+		WC_Payments::set_registered_card_gateway( $registered_card_gateway );
 	}
 
 	public function test_should_not_use_stripe_platform_on_checkout_page_for_upe() {
@@ -2252,6 +2255,8 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$payment_methods = $mock_upe_gateway->get_payment_method_types( $payment_information );
 
 		$this->assertSame( [ Payment_Method::CARD ], $payment_methods );
+
+		unset( $_POST['payment_method'] ); // phpcs:ignore WordPress.Security.NonceVerification
 	}
 
 	/**
@@ -2329,6 +2334,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		unset( $_POST['payment_method'] ); // phpcs:ignore WordPress.Security.NonceVerification
 
+		$gateway = WC_Payments::get_gateway();
 		WC_Payments::set_gateway( $mock_upe_gateway );
 
 		$mock_upe_gateway->expects( $this->never() )
@@ -2341,6 +2347,8 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$payment_methods = $mock_upe_gateway->get_payment_method_types( $payment_information );
 
 		$this->assertSame( [ Payment_Method::CARD ], $payment_methods );
+
+		WC_Payments::set_gateway( $gateway );
 	}
 
 	/**
@@ -2372,6 +2380,8 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				]
 			)
 			->getMock();
+
+		$gateway = WC_Payments::get_gateway();
 		WC_Payments::set_gateway( $mock_upe_gateway );
 
 		$payment_methods = $mock_upe_gateway->get_payment_methods_from_gateway_id( UPE_Split_Payment_Gateway::GATEWAY_ID );
@@ -2415,6 +2425,8 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$payment_methods = $mock_upe_gateway->get_payment_methods_from_gateway_id( UPE_Split_Payment_Gateway::GATEWAY_ID, $order->get_id() );
 
 		$this->assertSame( [ Payment_Method::CARD ], $payment_methods );
+
+		WC_Payments::set_gateway( $gateway );
 	}
 
 	/**
