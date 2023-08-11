@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: Use botwoo for the release changelog GitHub actions to avoid having PR checks stuck on the release branch when running the workflow.
+
+
