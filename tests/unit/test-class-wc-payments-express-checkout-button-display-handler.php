@@ -113,6 +113,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			->setMethods(
 				[
 					'should_show_payment_request_button',
+					'is_checkout',
 				]
 			)
 			->getMock();
@@ -150,86 +151,6 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 		);
 	}
 
-	public function test_display_express_checkout_separator_if_necessary_all_enabled() {
-		$this->mock_woopay_button_handler
-			->method( 'is_woopay_enabled' )
-			->willReturn( true );
-
-		$this->mock_woopay_button_handler
-			->method( 'should_show_woopay_button' )
-			->willReturn( true );
-
-		$this->mock_payment_request_button_handler
-			->method( 'should_show_payment_request_button' )
-			->willReturn( true );
-
-		ob_start();
-		$this->express_checkout_button_display_handler->display_express_checkout_separator_if_necessary();
-
-		$this->assertStringContainsString( 'wcpay-payment-request-button-separator', ob_get_contents() );
-		ob_end_clean();
-	}
-
-	public function test_display_express_checkout_separator_if_necessary_woopay_disabled() {
-		$this->mock_woopay_button_handler
-			->method( 'is_woopay_enabled' )
-			->willReturn( false );
-
-		$this->mock_woopay_button_handler
-			->method( 'should_show_woopay_button' )
-			->willReturn( false );
-
-		$this->mock_payment_request_button_handler
-			->method( 'should_show_payment_request_button' )
-			->willReturn( true );
-
-		ob_start();
-		$this->express_checkout_button_display_handler->display_express_checkout_separator_if_necessary();
-
-		$this->assertStringContainsString( 'wcpay-payment-request-button-separator', ob_get_contents() );
-		ob_end_clean();
-	}
-
-	public function test_display_express_checkout_separator_if_necessary_payment_request_disabled() {
-		$this->mock_woopay_button_handler
-			->method( 'is_woopay_enabled' )
-			->willReturn( true );
-
-		$this->mock_woopay_button_handler
-			->method( 'should_show_woopay_button' )
-			->willReturn( true );
-
-		$this->mock_payment_request_button_handler
-			->method( 'should_show_payment_request_button' )
-			->willReturn( false );
-
-		ob_start();
-		$this->express_checkout_button_display_handler->display_express_checkout_separator_if_necessary();
-
-		$this->assertStringContainsString( 'wcpay-payment-request-button-separator', ob_get_contents() );
-		ob_end_clean();
-	}
-
-	public function test_display_express_checkout_separator_if_necessary_all_disabled() {
-		$this->mock_woopay_button_handler
-			->method( 'is_woopay_enabled' )
-			->willReturn( false );
-
-		$this->mock_woopay_button_handler
-			->method( 'should_show_woopay_button' )
-			->willReturn( false );
-
-		$this->mock_payment_request_button_handler
-			->method( 'should_show_payment_request_button' )
-			->willReturn( false );
-
-		ob_start();
-		$this->express_checkout_button_display_handler->display_express_checkout_separator_if_necessary();
-
-		$this->assertStringNotContainsString( 'wcpay-payment-request-button-separator', ob_get_contents() );
-		ob_end_clean();
-	}
-
 	public function test_display_express_checkout_buttons_all_enabled() {
 		$this->mock_woopay_button_handler
 			->method( 'should_show_woopay_button' )
@@ -239,11 +160,16 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			->method( 'should_show_payment_request_button' )
 			->willReturn( true );
 
+		$this->mock_payment_request_button_handler
+			->method( 'is_checkout' )
+			->willReturn( false );
+
 		ob_start();
 		$this->express_checkout_button_display_handler->display_express_checkout_buttons();
 
 		$this->assertStringContainsString( 'wcpay-woopay-button', ob_get_contents() );
 		$this->assertStringContainsString( 'wcpay-payment-request-button', ob_get_contents() );
+		$this->assertStringNotContainsString( 'wcpay-payment-request-button-separator', ob_get_contents() );
 		ob_end_clean();
 	}
 
@@ -256,10 +182,14 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			->method( 'should_show_payment_request_button' )
 			->willReturn( false );
 
+		$this->mock_payment_request_button_handler
+			->method( 'is_checkout' )
+			->willReturn( false );
+
 		ob_start();
 		$this->express_checkout_button_display_handler->display_express_checkout_buttons();
 
-		$this->assertStringNotContainsString( 'wcpay-payment-request-button-separator', ob_get_contents() );
+		$this->assertStringNotContainsString( 'wcpay-payment-request-wrapper', ob_get_contents() );
 		ob_end_clean();
 	}
 
@@ -272,10 +202,15 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			->method( 'should_show_payment_request_button' )
 			->willReturn( false );
 
+		$this->mock_payment_request_button_handler
+			->method( 'is_checkout' )
+			->willReturn( false );
+
 		ob_start();
 		$this->express_checkout_button_display_handler->display_express_checkout_buttons();
 
 		$this->assertStringContainsString( 'wcpay-woopay-button', ob_get_contents() );
+		$this->assertStringNotContainsString( 'wcpay-payment-request-button-separator', ob_get_contents() );
 		ob_end_clean();
 	}
 
@@ -288,10 +223,16 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			->method( 'should_show_payment_request_button' )
 			->willReturn( true );
 
+		$this->mock_payment_request_button_handler
+			->method( 'is_checkout' )
+			->willReturn( true );
+
 		ob_start();
 		$this->express_checkout_button_display_handler->display_express_checkout_buttons();
 
 		$this->assertStringContainsString( 'wcpay-payment-request-button', ob_get_contents() );
+		$this->assertStringContainsString( 'wcpay-payment-request-button-separator', ob_get_contents() );
+		$this->assertStringContainsString( 'display:none;', ob_get_contents() );
 		ob_end_clean();
 	}
 }
