@@ -82,7 +82,7 @@ class Fraud_Risk_Tools {
 			return;
 		}
 
-		if ( ! $this->payments_account->is_stripe_connected() || ! $this->payments_account->is_stripe_account_valid() ) {
+		if ( ! $this->payments_account->is_stripe_account_valid() ) {
 			return;
 		}
 
