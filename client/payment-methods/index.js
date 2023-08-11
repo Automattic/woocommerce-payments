@@ -26,6 +26,7 @@ import {
 	useGetPaymentMethodStatuses,
 	useSelectedPaymentMethod,
 	useUnselectedPaymentMethod,
+	useAccountDomesticCurrency,
 } from 'wcpay/data';
 
 import useIsUpeEnabled from '../settings/wcpay-upe-toggle/hook.js';
@@ -46,6 +47,7 @@ import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants'
 import ConfirmPaymentMethodActivationModal from './activation-modal';
 import ConfirmPaymentMethodDeleteModal from './delete-modal';
 import { getAdminUrl } from 'wcpay/utils';
+import { getPaymentMethodDescription } from 'wcpay/utils/payment-methods';
 
 const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 	return (
@@ -158,6 +160,8 @@ const PaymentMethods = () => {
 	const [ deleteModalParams, handleDeleteModalOpen ] = useState( null );
 
 	const [ , updateSelectedPaymentMethod ] = useSelectedPaymentMethod();
+
+	const [ stripeAccountDomesticCurrency ] = useAccountDomesticCurrency();
 
 	const completeActivation = ( itemId ) => {
 		updateSelectedPaymentMethod( itemId );
@@ -280,7 +284,6 @@ const PaymentMethods = () => {
 							( {
 								id,
 								label,
-								description,
 								icon: Icon,
 								allows_manual_capture: isAllowingManualCapture,
 								setup_required: isSetupRequired,
@@ -290,7 +293,10 @@ const PaymentMethods = () => {
 									id={ id }
 									key={ id }
 									label={ label }
-									description={ description }
+									description={ getPaymentMethodDescription(
+										id,
+										stripeAccountDomesticCurrency
+									) }
 									checked={
 										enabledMethodIds.includes( id ) &&
 										upeCapabilityStatuses.INACTIVE !==
