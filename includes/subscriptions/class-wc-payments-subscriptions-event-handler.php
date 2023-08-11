@@ -7,6 +7,7 @@
 
 use WCPay\Logger;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
+use WCPay\Exceptions\Order_Not_Found_Exception;
 
 /**
  * Subscriptions Event/Webhook Handler class

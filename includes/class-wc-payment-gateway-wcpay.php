@@ -175,6 +175,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected $duplicate_payment_prevention_service;
 
 	/**
+	 * WC_Payments_Localization_Service instance.
+	 *
+	 * @var WC_Payments_Localization_Service
+	 */
+	protected $localization_service;
+
+	/**
 	 * WC_Payment_Gateway_WCPay constructor.
 	 *
 	 * @param WC_Payments_API_Client               $payments_api_client                  - WooCommerce Payments API client.
@@ -185,6 +192,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter      - Rate Limiter for failed transactions.
 	 * @param WC_Payments_Order_Service            $order_service                        - Order class instance.
 	 * @param Duplicate_Payment_Prevention_Service $duplicate_payment_prevention_service - Service for preventing duplicate payments.
+	 * @param WC_Payments_Localization_Service     $localization_service                 - Localization service instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
@@ -194,7 +202,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		WC_Payments_Action_Scheduler_Service $action_scheduler_service,
 		Session_Rate_Limiter $failed_transaction_rate_limiter = null,
 		WC_Payments_Order_Service $order_service,
-		Duplicate_Payment_Prevention_Service $duplicate_payment_prevention_service
+		Duplicate_Payment_Prevention_Service $duplicate_payment_prevention_service,
+		WC_Payments_Localization_Service $localization_service
 	) {
 		$this->payments_api_client                  = $payments_api_client;
 		$this->account                              = $account;
@@ -204,6 +213,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->failed_transaction_rate_limiter      = $failed_transaction_rate_limiter;
 		$this->order_service                        = $order_service;
 		$this->duplicate_payment_prevention_service = $duplicate_payment_prevention_service;
+		$this->localization_service                 = $localization_service;
 
 		$this->id                 = static::GATEWAY_ID;
 		$this->icon               = plugins_url( 'assets/images/payment-methods/cc.svg', WCPAY_PLUGIN_FILE );
@@ -1819,6 +1829,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->get_account_branding_primary_color();
 			case 'account_branding_secondary_color':
 				return $this->get_account_branding_secondary_color();
+			case 'account_domestic_currency':
+				return $this->get_account_domestic_currency();
 			case 'deposit_schedule_interval':
 				return $this->get_deposit_schedule_interval();
 			case 'deposit_schedule_weekly_anchor':
@@ -2129,6 +2141,30 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return $default_value;
+	}
+
+	/**
+	 * Retrieves the domestic currency of the current account based on its country.
+	 * It will fallback to the store's currency if the account's country is not supported.
+	 *
+	 * @return string The domestic currency code.
+	 */
+	protected function get_account_domestic_currency(): string {
+		$merchant_country    = strtoupper( $this->account->get_account_country() );
+		$country_locale_data = $this->localization_service->get_country_locale_data( $merchant_country );
+
+		// Check for missing country locale data.
+		if ( ! isset( $country_locale_data['currency_code'] ) ) {
+			Logger::error(
+				sprintf(
+					'Could not find locale data for merchant country: %s. Falling back to the merchant\'s default currency.',
+					$merchant_country
+				)
+			);
+			return $this->get_account_default_currency();
+		}
+
+		return $country_locale_data['currency_code'];
 	}
 
 	/**
