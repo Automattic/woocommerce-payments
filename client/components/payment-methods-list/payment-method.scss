@@ -1,14 +1,12 @@
 .payment-method {
 	display: flex;
 	margin: 0;
-	padding: 16px 24px 14px 24px;
+	padding: 24px;
 	background: #fff;
-	flex-wrap: wrap;
 	justify-content: space-between;
 	align-items: center;
 
 	@include breakpoint( '>660px' ) {
-		padding: 24px 24px 24px 24px;
 		flex-wrap: nowrap;
 	}
 
@@ -27,6 +25,10 @@
 			flex: 1 1 auto;
 			order: 3;
 		}
+
+		@include breakpoint( '<660px' ) {
+			flex-wrap: wrap;
+		}
 	}
 
 	&__checkbox {
@@ -43,15 +45,46 @@
 				cursor: not-allowed;
 			}
 		}
+
+		@include breakpoint( '<660px' ) {
+			align-self: flex-start;
+			margin-top: 5px;
+		}
+	}
+
+	&__text-container {
+		display: flex;
+		flex: 1;
+
+		@include breakpoint( '<660px' ) {
+			flex-wrap: wrap;
+		}
 	}
 
 	&__label {
-		display: inline-block;
 		font-size: 14px;
 		font-weight: 600;
 		line-height: 20px;
 		color: $gray-900;
 		margin-bottom: 4px;
+	}
+
+	&__label-desktop {
+		display: block;
+
+		@include breakpoint( '<660px' ) {
+			display: none;
+		}
+	}
+
+	&__label-mob {
+		display: none;
+
+		@include breakpoint( '<660px' ) {
+			display: block;
+			align-self: center;
+			font-size: 16px;
+		}
 	}
 
 	&__required-label {
@@ -95,14 +128,24 @@
 
 	&__icon {
 		border-radius: 2px;
-		display: none;
 		flex: 0 0 63.69px;
 		height: 40px;
 		margin: 1px 17px 1px 1px; // 1px to accommodate for box-shadow
+		align-self: center;
 
 		@include breakpoint( '>660px' ) {
 			display: flex;
 			order: 2;
+		}
+
+		@include breakpoint( '<660px' ) {
+			margin: 0 10px 5px 0;
+			flex: 0;
+			height: auto;
+
+			img {
+				height: 30px;
+			}
 		}
 	}
 
@@ -112,6 +155,10 @@
 		justify-content: flex-end;
 		white-space: nowrap;
 		margin-left: 16px;
+
+		@include breakpoint( '<660px' ) {
+			margin-left: 0;
+		}
 	}
 
 	&.has-icon-border &__icon {
@@ -120,6 +167,7 @@
 
 	&.overlay {
 		position: relative;
+
 		&::after {
 			content: '';
 			position: absolute;
@@ -139,12 +187,17 @@
 		margin-left: $gap-smaller;
 		padding: 2px $gap-smaller;
 
+		@include breakpoint( '<660px' ) {
+			margin-left: 0;
+		}
+
 		&.payment-status-pending-approval,
 		&.payment-status-pending-verification {
 			border: 0 solid transparent;
 			background: #f0b849;
 			color: #1f1f1f;
 		}
+
 		&.payment-status-inactive {
 			border: 0 solid transparent;
 			background: $studio-yellow-5;
