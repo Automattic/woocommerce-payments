@@ -1385,8 +1385,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function get_payment_method_to_use_for_intent() {
 		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
-			$request_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
-			return $this->get_payment_methods_from_gateway_id( $request_payment_method )[0];
+			$requested_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+			return $this->get_payment_methods_from_gateway_id( $requested_payment_method )[0];
 		}
 	}
 
@@ -1396,17 +1396,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param Payment_Information $payment_information Payment information object for transaction.
 	 * @return array List of payment methods.
 	 */
-	public function get_payment_method_types( $payment_information ) {
-		$request_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
-		$token                  = $payment_information->get_payment_token();
+	public function get_payment_method_types( $payment_information ) : array {
+		$requested_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		$token                    = $payment_information->get_payment_token();
 
-		if ( ! empty( $request_payment_method ) ) {
-			$payment_methods = $this->get_payment_methods_from_gateway_id( $request_payment_method );
+		if ( ! empty( $requested_payment_method ) ) {
+			// All checkout requests should contain $_POST context, so we check this first.
+			$payment_methods = $this->get_payment_methods_from_gateway_id( $requested_payment_method );
 		} elseif ( ! is_null( $token ) ) {
+			// If $_POST is empty, this may be a subscription renewal, where saved payment token will be present instead.
 			$order           = $payment_information->get_order();
-			$order_id        = is_a( $order, 'WC_Order' ) ? $order->get_id() : null;
+			$order_id        = $order instanceof WC_Order ? $order->get_id() : null;
 			$payment_methods = $this->get_payment_methods_from_gateway_id( $token->get_gateway_id(), $order_id );
 		} else {
+			// Final fallback case, if all else fails.
 			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
 		}
 
@@ -1421,14 +1424,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array List of payment methods.
 	 */
 	public function get_payment_methods_from_gateway_id( $gateway_id, $order_id = null ) {
-		if ( 'woocommerce_payments' !== $gateway_id ) {
-			$payment_methods = [ str_replace( 'woocommerce_payments_', '', $gateway_id ) ];
-		} elseif ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
-			$payment_methods = [ 'card' ];
-			if ( WC_Payments_Features::is_upe_deferred_intent_enabled() &&
-				in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true ) ) {
+		$split_upe_gateway_prefix = self::GATEWAY_ID . '_';
+		// If $gateway_id begins with 'woocommerce_payments_' payment method is a split UPE LPM.
+		// Otherwise $gateway_id must be 'woocommerce_payments'.
+		if ( substr( $gateway_id, 0, strlen( $split_upe_gateway_prefix ) ) === $split_upe_gateway_prefix ) {
+			$payment_methods = [ str_replace( $split_upe_gateway_prefix, '', $gateway_id ) ];
+		} elseif ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+			$payment_methods = [ Payment_Method::CARD ];
+			if ( in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true ) ) {
 				$payment_methods[] = Payment_Method::LINK;
 			}
+		} elseif ( WC_Payments_Features::is_upe_split_enabled() ) {
+			$payment_methods = [ Payment_Method::CARD ];
 		} else {
 			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( $order_id, true );
 		}
