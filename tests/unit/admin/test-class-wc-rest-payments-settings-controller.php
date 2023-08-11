@@ -130,7 +130,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$order_service,
 			$mock_dpps
 		);
-		$this->controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->gateway );
+		$this->controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->gateway, $this->mock_wcpay_account );
 
 		$mock_payment_methods   = [];
 		$payment_method_classes = [
@@ -170,7 +170,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$mock_dpps
 		);
 
-		$this->upe_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->mock_upe_payment_gateway );
+		$this->upe_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->mock_upe_payment_gateway, $this->mock_wcpay_account );
 
 		$this->mock_upe_split_payment_gateway = new UPE_Split_Payment_Gateway(
 			$this->mock_api_client,
@@ -185,7 +185,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$mock_dpps
 		);
 
-		$this->upe_split_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->mock_upe_split_payment_gateway );
+		$this->upe_split_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->mock_upe_split_payment_gateway, $this->mock_wcpay_account );
 
 		$this->mock_api_client
 			->method( 'is_server_connected' )
@@ -205,12 +205,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			->expects( $this->any() )
 			->method( 'get_is_live' )
 			->willReturn( true );
-
-		$this->mock_wcpay_account
-			->expects( $this->any() )
-			->method( 'get_account_default_currency' )
-			->willReturn( 'usd' );
-
 	}
 
 	public function tear_down() {

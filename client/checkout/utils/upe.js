@@ -210,7 +210,7 @@ export function isUsingSavedPaymentMethod( paymentMethodType ) {
 	const prefix = '#wc-woocommerce_payments';
 	const suffix = '-payment-token-new';
 	const savedPaymentSelector =
-		paymentMethodType === 'card'
+		paymentMethodType === 'card' || paymentMethodType === 'link'
 			? prefix + suffix
 			: prefix + '_' + paymentMethodType + suffix;
 
@@ -299,6 +299,66 @@ export const getStripeElementOptions = (
 	options.terms = getTerms( paymentMethodsConfig, showTerms );
 
 	return options;
+};
+
+/**
+ * Check whether Stripe Link is enabled.
+ *
+ * @param {Object} paymentMethodsConfig Checkout payment methods configuration settings object.
+ * @return {boolean} True, if enabled; false otherwise.
+ */
+export const isLinkEnabled = ( paymentMethodsConfig ) => {
+	return (
+		paymentMethodsConfig.link !== undefined &&
+		paymentMethodsConfig.card !== undefined
+	);
+};
+
+/**
+ * Get array of payment method types to use with intent.
+ *
+ * @param {string} paymentMethodType Payment method type Stripe ID.
+ * @return {Array} Array of payment method types to use with intent.
+ */
+export const getPaymentMethodTypes = ( paymentMethodType ) => {
+	const paymentMethodTypes = [ paymentMethodType ];
+	if (
+		paymentMethodType === 'card' &&
+		isLinkEnabled( getUPEConfig( 'paymentMethodsConfig' ) )
+	) {
+		paymentMethodTypes.push( 'link' );
+	}
+	return paymentMethodTypes;
+};
+
+/**
+ * Returns the value of the email input on the blocks checkout page.
+ *
+ * @return {string} The value of email input.
+ */
+export const getBlocksEmailValue = () => {
+	return document.getElementById( 'email' ).value;
+};
+
+/**
+ * Function to initialise Stripe Link button on email input field.
+ *
+ * @param {Object} linkAutofill Stripe Link Autofill instance.
+ */
+export const blocksShowLinkButtonHandler = ( linkAutofill ) => {
+	const emailInput = document.getElementById( 'email' );
+
+	const stripeLinkButton = document.createElement( 'button' );
+	stripeLinkButton.setAttribute( 'class', 'wcpay-stripelink-modal-trigger' );
+	stripeLinkButton.style.display = emailInput.value ? 'inline-block' : 'none';
+	stripeLinkButton.addEventListener( 'click', ( event ) => {
+		event.preventDefault();
+		linkAutofill.launch( {
+			email: document.getElementById( 'email' ).value,
+		} );
+	} );
+
+	emailInput.parentNode.appendChild( stripeLinkButton );
 };
 
 /**

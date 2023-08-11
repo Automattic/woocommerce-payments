@@ -1,5 +1,3 @@
-/* global jQuery */
-
 /**
  * External dependencies
  */
@@ -25,14 +23,21 @@ import { getUPEConfig } from 'utils/checkout';
 import {
 	getPaymentIntentFromSession,
 	getCookieValue,
-	useCustomerData,
 	getStripeElementOptions,
+	getBlocksEmailValue,
+	blocksShowLinkButtonHandler,
+	useCustomerData,
+	isLinkEnabled,
 } from '../utils/upe';
 import { decryptClientSecret } from '../utils/encryption';
 import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
 import { getAppearance, getFontRulesFromPage } from '../upe-styles';
 import { useFingerprint } from './hooks';
 import { LoadableBlock } from '../../components/loadable';
+import {
+	BLOCKS_SHIPPING_ADDRESS_FIELDS,
+	BLOCKS_BILLING_ADDRESS_FIELDS,
+} from '../constants';
 
 const WCPayUPEFields = ( {
 	api,
@@ -71,43 +76,19 @@ const WCPayUPEFields = ( {
 	const customerData = useCustomerData();
 
 	useEffect( () => {
-		if (
-			paymentMethodsConfig.link !== undefined &&
-			paymentMethodsConfig.card !== undefined
-		) {
-			const shippingAddressFields = {
-				line1: 'shipping-address_1',
-				line2: 'shipping-address_2',
-				city: 'shipping-city',
-				state: 'components-form-token-input-1',
-				postal_code: 'shipping-postcode',
-				country: 'components-form-token-input-0',
-				first_name: 'shipping-first_name',
-				last_name: 'shipping-last_name',
-			};
-			const billingAddressFields = {
-				line1: 'billing-address_1',
-				line2: 'billing-address_2',
-				city: 'billing-city',
-				state: 'components-form-token-input-3',
-				postal_code: 'billing-postcode',
-				country: 'components-form-token-input-2',
-				first_name: 'billing-first_name',
-				last_name: 'billing-last_name',
-			};
-
+		if ( isLinkEnabled( paymentMethodsConfig ) ) {
 			enableStripeLinkPaymentMethod( {
 				api: api,
 				elements: elements,
 				emailId: 'email',
 				fill_field_method: ( address, nodeId, key ) => {
 					const setAddress =
-						shippingAddressFields[ key ] === nodeId
+						BLOCKS_SHIPPING_ADDRESS_FIELDS[ key ] === nodeId
 							? customerData.setShippingAddress
 							: customerData.setBillingData ||
 							  customerData.setBillingAddress;
 					const customerAddress =
-						shippingAddressFields[ key ] === nodeId
+						BLOCKS_SHIPPING_ADDRESS_FIELDS[ key ] === nodeId
 							? customerData.shippingAddress
 							: customerData.billingData ||
 							  customerData.billingAddress;
@@ -124,49 +105,24 @@ const WCPayUPEFields = ( {
 
 					setAddress( customerAddress );
 
-					function getEmail() {
-						return document.getElementById( 'email' ).value;
-					}
-
 					if ( customerData.billingData ) {
-						customerData.billingData.email = getEmail();
+						customerData.billingData.email = getBlocksEmailValue();
 						customerData.setBillingData( customerData.billingData );
 					} else {
-						customerData.billingAddress.email = getEmail();
+						customerData.billingAddress.email = getBlocksEmailValue();
 						customerData.setBillingAddress(
 							customerData.billingAddress
 						);
 					}
 				},
-				show_button: ( linkAutofill ) => {
-					jQuery( '#email' )
-						.parent()
-						.append(
-							'<button class="wcpay-stripelink-modal-trigger"></button>'
-						);
-					if ( jQuery( '#email' ).val() !== '' ) {
-						jQuery( '.wcpay-stripelink-modal-trigger' ).show();
-					}
-
-					//Handle StripeLink button click.
-					jQuery( '.wcpay-stripelink-modal-trigger' ).on(
-						'click',
-						( event ) => {
-							event.preventDefault();
-							// Trigger modal.
-							linkAutofill.launch( {
-								email: jQuery( '#email' ).val(),
-							} );
-						}
-					);
-				},
+				show_button: blocksShowLinkButtonHandler,
 				complete_shipping: () => {
 					return (
 						document.getElementById( 'shipping-address_1' ) !== null
 					);
 				},
-				shipping_fields: shippingAddressFields,
-				billing_fields: billingAddressFields,
+				shipping_fields: BLOCKS_SHIPPING_ADDRESS_FIELDS,
+				billing_fields: BLOCKS_BILLING_ADDRESS_FIELDS,
 				complete_billing: () => {
 					return (
 						document.getElementById( 'billing-address_1' ) !== null

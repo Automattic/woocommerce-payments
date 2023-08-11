@@ -12,7 +12,6 @@ import user from '@testing-library/user-event';
  */
 import PaymentMethods from '..';
 import {
-	useAccountDefaultCurrency,
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
 	useGetPaymentMethodStatuses,
@@ -42,7 +41,6 @@ jest.mock( '../../data', () => ( {
 	useManualCapture: jest.fn(),
 	useSelectedPaymentMethod: jest.fn(),
 	useUnselectedPaymentMethod: jest.fn(),
-	useAccountDefaultCurrency: jest.fn(),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
@@ -82,7 +80,6 @@ describe( 'PaymentMethods', () => {
 		global.wcpaySettings = {
 			accountEmail: 'admin@example.com',
 		};
-		useAccountDefaultCurrency.mockReturnValue( 'USD' );
 	} );
 
 	test( 'payment methods are rendered correctly', () => {
