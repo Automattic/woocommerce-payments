@@ -288,9 +288,13 @@ class WooPay_Session {
 	/**
 	 * Returns the encrypted session request for the frontend.
 	 *
-	 * @return array The encrypted session request.
+	 * @return array The encrypted session request or an empty array if the server is not eligible for encryption.
 	 */
 	public static function get_frontend_init_session_request() {
+		if ( ! WC_Payments_Features::is_client_secret_encryption_eligible() ) {
+			return [];
+		}
+
 		$session = self::get_init_session_request();
 
 		$store_blog_token = Jetpack_Options::get_option( 'blog_token' );

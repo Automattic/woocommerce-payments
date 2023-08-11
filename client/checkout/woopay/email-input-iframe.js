@@ -188,7 +188,7 @@ export const handleWooPayEmailInput = async (
 				_ajax_nonce: getConfig( 'woopaySessionNonce' ),
 			}
 		).then( ( response ) => {
-			if ( response.data.session ) {
+			if ( response?.data?.session ) {
 				iframe.contentWindow.postMessage(
 					{
 						action: 'setSessionData',
