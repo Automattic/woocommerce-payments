@@ -527,7 +527,7 @@ export const handleWooPayEmailInput = async (
 				hasCheckedLoginSession = true;
 				closeLoginSessionIframe();
 				break;
-			case 'redirect_to_platform_checkout_skip_session_init':
+			case 'redirect_to_woopay_skip_session_init':
 				wcpayTracks.recordUserEvent(
 					wcpayTracks.events.WOOPAY_OTP_COMPLETE
 				);
