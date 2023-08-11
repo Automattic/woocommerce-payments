@@ -23,7 +23,7 @@ import Pill from '../pill';
 import PaymentMethodDisabledTooltip from '../payment-method-disabled-tooltip';
 import './payment-method.scss';
 
-function PaymentMethodLabel( {
+const PaymentMethodLabel = ( {
 	label,
 	required,
 	status,
@@ -35,7 +35,7 @@ function PaymentMethodLabel( {
 	status: string;
 	disabled: boolean;
 	id: string;
-} ): React.ReactElement {
+} ): React.ReactElement => {
 	return (
 		<>
 			{ label }
@@ -85,7 +85,7 @@ function PaymentMethodLabel( {
 			) }
 		</>
 	);
-}
+};
 
 const PaymentMethod = ( {
 	id,
