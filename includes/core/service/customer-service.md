@@ -4,7 +4,7 @@ The customer service is available through the `WC_Payments_Customer_Service_API`
 
 Example:
 ```php
-$payment_methods = WC_Payments::get_customer_service_api( 'cus_XXX', 'card' );
+$payment_methods = WC_Payments::get_customer_service_api()->get_payment_methods_for_customer( 'cus_XXX', 'card' );
 ```
 
 ## Available methods
