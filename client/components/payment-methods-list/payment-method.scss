@@ -77,7 +77,7 @@
 		}
 	}
 
-	&__label-mob {
+	&__label-mobile {
 		display: none;
 
 		@include breakpoint( '<660px' ) {

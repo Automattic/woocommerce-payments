@@ -175,7 +175,7 @@ const PaymentMethod = ( {
 				<div className="payment-method__icon">
 					<Icon />
 				</div>
-				<div className="payment-method__label payment-method__label-mob">
+				<div className="payment-method__label payment-method__label-mobile">
 					<PaymentMethodLabel
 						label={ label }
 						required={ required }
