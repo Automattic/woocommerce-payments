@@ -5,6 +5,11 @@
 		padding: 0;
 	}
 
+	.components-popover__content {
+		position: relative;
+		right: 120px;
+	}
+
 	&__header {
 		justify-content: space-between;
 
