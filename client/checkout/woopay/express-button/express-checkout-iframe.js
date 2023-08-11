@@ -245,7 +245,9 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 				break;
 			case 'redirect_to_woopay_skip_session_init':
 				wcpayTracks.recordUserEvent(
-					wcpayTracks.events.WOOPAY_OTP_COMPLETE
+					wcpayTracks.events.WOOPAY_OTP_COMPLETE,
+					[],
+					true
 				);
 				if ( e.data.redirectUrl ) {
 					window.location = e.data.redirectUrl;
