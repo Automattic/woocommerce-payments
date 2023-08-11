@@ -219,6 +219,7 @@ class WC_Payments_Utils {
 	 */
 	public static function supported_countries(): array {
 		return [
+			'AE' => __( 'United Arab Emirates', 'woocommerce-payments' ),
 			'AT' => __( 'Austria', 'woocommerce-payments' ),
 			'AU' => __( 'Australia', 'woocommerce-payments' ),
 			'BE' => __( 'Belgium', 'woocommerce-payments' ),
@@ -234,6 +235,7 @@ class WC_Payments_Utils {
 			'ES' => __( 'Spain', 'woocommerce-payments' ),
 			'FR' => __( 'France', 'woocommerce-payments' ),
 			'HR' => __( 'Croatia', 'woocommerce-payments' ),
+			'JP' => __( 'Japan', 'woocommerce-payments' ),
 			'LU' => __( 'Luxembourg', 'woocommerce-payments' ),
 			'GB' => __( 'United Kingdom (UK)', 'woocommerce-payments' ),
 			'GR' => __( 'Greece', 'woocommerce-payments' ),
@@ -940,5 +942,43 @@ class WC_Payments_Utils {
 			case 'general':
 				return __( 'General', 'woocommerce-payments' );
 		}
+	}
+
+	/**
+	 * Register a style for use.
+	 *
+	 * @uses   wp_register_style()
+	 * @param  string   $handle  Name of the stylesheet. Should be unique.
+	 * @param  string   $path    Full URL of the stylesheet, or path of the stylesheet relative to the WordPress root directory.
+	 * @param  string[] $deps    An array of registered stylesheet handles this stylesheet depends on.
+	 * @param  string   $version String specifying stylesheet version number, if it has one, which is added to the URL as a query string for cache busting purposes. If version is set to false, a version number is automatically added equal to current installed WordPress version. If set to null, no version is added.
+	 * @param  string   $media   The media for which this stylesheet has been defined. Accepts media types like 'all', 'print' and 'screen', or media queries like '(orientation: portrait)' and '(max-width: 640px)'.
+	 * @param  boolean  $has_rtl If has RTL version to load too.
+	 */
+	public static function register_style( $handle, $path, $deps = [], $version = WC_VERSION, $media = 'all', $has_rtl = true ) {
+		wp_register_style( $handle, $path, $deps, $version, $media );
+
+		if ( $has_rtl ) {
+			wp_style_add_data( $handle, 'rtl', 'replace' );
+		}
+	}
+
+
+	/**
+	 * Register and enqueue a styles for use.
+	 *
+	 * @uses   wp_enqueue_style()
+	 * @param  string   $handle  Name of the stylesheet. Should be unique.
+	 * @param  string   $path    Full URL of the stylesheet, or path of the stylesheet relative to the WordPress root directory.
+	 * @param  string[] $deps    An array of registered stylesheet handles this stylesheet depends on.
+	 * @param  string   $version String specifying stylesheet version number, if it has one, which is added to the URL as a query string for cache busting purposes. If version is set to false, a version number is automatically added equal to current installed WordPress version. If set to null, no version is added.
+	 * @param  string   $media   The media for which this stylesheet has been defined. Accepts media types like 'all', 'print' and 'screen', or media queries like '(orientation: portrait)' and '(max-width: 640px)'.
+	 * @param  boolean  $has_rtl If has RTL version to load too.
+	 */
+	public static function enqueue_style( $handle, $path = '', $deps = [], $version = WC_VERSION, $media = 'all', $has_rtl = true ) {
+		if ( '' !== $path ) {
+			self::register_style( $handle, $path, $deps, $version, $media, $has_rtl );
+		}
+		wp_enqueue_style( $handle );
 	}
 }
