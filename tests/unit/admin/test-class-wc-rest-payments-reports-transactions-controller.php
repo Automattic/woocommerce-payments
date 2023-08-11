@@ -130,6 +130,65 @@ class WC_REST_Payments_Reports_Transactions_Controller_Test extends WCPAY_UnitTe
 		$this->controller->get_transactions( $request );
 	}
 
+	public function test_get_transaction_success() {
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_param( 'id', 'txn_567' );
+
+		$mock_request = $this->mock_wcpay_request( List_Transactions::class );
+		// test the params are set correctly.
+		$mock_request->expects( $this->once() )
+			->method( 'set_filters' )
+			->with(
+				[ 'transaction_id_is' => 'txn_567' ]
+			);
+		$mock_request->expects( $this->once() )
+			->method( 'set_page_size' )
+			->with( 1 );
+		$mock_request->expects( $this->once() )
+			->method( 'set_sort_by' )
+			->with( 'date' );
+
+		$mock_request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( [ 'data' => [ $this->get_transactions_list_from_server()['data'][0] ] ] );
+
+		$response = $this->controller->get_transaction( $request );
+		$this->assertEquals( $this->get_transactions_list()[0], $response->get_data() );
+	}
+
+	public function test_get_transaction_response_error() {
+		$request = new WP_REST_Request( 'POST' );
+
+		$mock_request = $this->mock_wcpay_request( List_Transactions::class );
+		$mock_request->expects( $this->once() )
+			->method( 'format_response' )
+			->will(
+				$this->throwException(
+					new Connection_Exception(
+						'Test error.',
+						'wcpay_http_request_failed',
+						400
+					)
+				)
+			);
+
+		$response = $this->controller->get_transaction( $request );
+		$expected = new WP_Error( 'wcpay_http_request_failed', 'Test error.' );
+		$this->assertEquals( $expected, $response );
+	}
+
+	public function test_get_transaction_empty_result() {
+		$request = new WP_REST_Request( 'POST' );
+
+		$mock_request = $this->mock_wcpay_request( List_Transactions::class );
+		$mock_request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( [ 'data' => [] ] );
+
+		$response = $this->controller->get_transaction( $request );
+		$this->assertEquals( [], $response->get_data() );
+	}
+
 	private function get_transactions_list_from_server() {
 		return [
 			'data' => [
