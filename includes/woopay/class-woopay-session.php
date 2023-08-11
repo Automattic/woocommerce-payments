@@ -447,15 +447,6 @@ class WooPay_Session {
 
 		if ( is_wp_error( $response ) || ! is_array( $response ) ) {
 			Logger::error( 'HTTP_REQUEST_ERROR ' . var_export( $response, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
-			// phpcs:ignore
-			/**
-			 * @psalm-suppress UndefinedDocblockClass
-			 */
-			$message = sprintf(
-				// translators: %1: original error message.
-				__( 'Http request failed. Reason: %1$s', 'woocommerce-payments' ),
-				$response->get_error_message()
-			);
 			// Respond with same message platform would respond with on failure.
 			$response_body_json = wp_json_encode( [ 'result' => 'failure' ] );
 		} else {
