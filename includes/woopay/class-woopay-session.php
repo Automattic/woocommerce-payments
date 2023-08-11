@@ -325,9 +325,9 @@ class WooPay_Session {
 	}
 
 	/**
-	 * Summary of get_init_session_request
+	 * Returns the initial session request data.
 	 *
-	 * @return array
+	 * @return array The initial session request data without email and user_session.
 	 */
 	private static function get_init_session_request() {
 		$user        = wp_get_current_user();
