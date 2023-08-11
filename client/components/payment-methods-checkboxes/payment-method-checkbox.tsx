@@ -14,7 +14,7 @@ import React, { useContext, useEffect } from 'react';
 import LoadableCheckboxControl from 'components/loadable-checkbox';
 import { HoverTooltip } from 'components/tooltip';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
-import { useManualCapture } from 'wcpay/data';
+import { useManualCapture, useAccountDomesticCurrency } from 'wcpay/data';
 import { FeeStructure } from 'wcpay/types/fees';
 import PaymentMethodsMap from '../../payment-methods-map';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
@@ -24,10 +24,22 @@ import {
 } from '../../utils/account-fees';
 import PaymentMethodDisabledTooltip from '../payment-method-disabled-tooltip';
 import Pill from '../pill';
+import { getPaymentMethodDescription } from 'wcpay/utils/payment-methods';
 import './payment-method-checkbox.scss';
 
-const PaymentMethodDescription = ( { name }: { name: string } ) => {
-	const description = PaymentMethodsMap[ name ]?.description;
+type PaymentMethodProps = {
+	name: string;
+};
+
+const PaymentMethodDescription: React.FC< PaymentMethodProps > = ( {
+	name,
+} ) => {
+	const [ stripeAccountDomesticCurrency ] = useAccountDomesticCurrency();
+	const description = getPaymentMethodDescription(
+		name,
+		stripeAccountDomesticCurrency as string
+	);
+
 	if ( ! description ) return null;
 
 	return (
@@ -45,15 +57,7 @@ const PaymentMethodDescription = ( { name }: { name: string } ) => {
 	);
 };
 
-const PaymentMethodCheckbox = ( {
-	onChange,
-	name,
-	checked,
-	fees,
-	status,
-	required,
-	locked,
-}: {
+type PaymentMethodCheckboxProps = {
 	onChange: ( name: string, enabled: boolean ) => void;
 	name: string;
 	checked: boolean;
@@ -61,7 +65,17 @@ const PaymentMethodCheckbox = ( {
 	status: string;
 	required: boolean;
 	locked: boolean;
-} ): React.ReactElement => {
+};
+
+const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
+	onChange,
+	name,
+	checked,
+	fees,
+	status,
+	required,
+	locked,
+} ) => {
 	const {
 		accountFees,
 	}: { accountFees: Record< string, FeeStructure > } = useContext(
@@ -104,7 +118,7 @@ const PaymentMethodCheckbox = ( {
 				label={ paymentMethod.label }
 				checked={ checked }
 				disabled={ disabled || locked }
-				onChange={ ( state: string ) => {
+				onChange={ ( state: boolean ) => {
 					handleChange( state );
 				} }
 				delayMsOnCheck={ 1500 }
