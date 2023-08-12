@@ -7,6 +7,10 @@ button.single_add_to_cart_button.button {
 .wcpay-payment-request-wrapper {
 	margin-top: 1.5em;
 	width: 100%;
+
+	&:first-child {
+		margin-top: 0;
+	}
 }
 
 .woocommerce-checkout .wcpay-payment-request-wrapper,
