@@ -8,6 +8,7 @@
 namespace WCPay\WooPay;
 
 use Automattic\WooCommerce\Blocks\Integrations\IntegrationRegistry;
+use Automattic\WooCommerce\Blocks\Integrations\IntegrationInterface;
 
 /**
  * WooPay
@@ -152,5 +153,22 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 		}
 
 		return $gift_cards_script_data;
+	}
+
+	/**
+	 * Get WC Blocks registered integrations.
+	 *
+	 * @param IntegrationInterface $integration An instance of IntegrationInterface.
+	 *
+	 * @return boolean True means registered successfully.
+	 */
+	public function register( IntegrationInterface $integration ) {
+		$name = $integration->get_name();
+
+		if ( self::GIFT_CARDS_BLOCKS !== $name && self::POINTS_AND_REWARDS_API !== $name ) {
+			$this->registered_integrations[ $name ] = $integration;
+		}
+
+		return true;
 	}
 }
