@@ -165,7 +165,7 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 	public function register( IntegrationInterface $integration ) {
 		$name = $integration->get_name();
 
-		if ( self::GIFT_CARDS_BLOCKS !== $name && self::POINTS_AND_REWARDS_API !== $name ) {
+		if ( self::GIFT_CARDS_BLOCKS === $name || self::POINTS_AND_REWARDS_API === $name ) {
 			$this->registered_integrations[ $name ] = $integration;
 		}
 
