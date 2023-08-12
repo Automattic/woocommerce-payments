@@ -1425,11 +1425,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function get_payment_methods_from_gateway_id( $gateway_id, $order_id = null ) {
 		$split_upe_gateway_prefix = self::GATEWAY_ID . '_';
-		// If $gateway_id begins with 'woocommerce_payments_' payment method is a split UPE LPM.
-		// Otherwise $gateway_id must be 'woocommerce_payments'.
+		// If $gateway_id begins with `woocommerce_payments_` payment method is a split UPE LPM.
+		// Otherwise $gateway_id must be `woocommerce_payments`.
 		if ( substr( $gateway_id, 0, strlen( $split_upe_gateway_prefix ) ) === $split_upe_gateway_prefix ) {
 			$payment_methods = [ str_replace( $split_upe_gateway_prefix, '', $gateway_id ) ];
 		} elseif ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+			// If split or deferred intent UPE is enabled and $gateway_id is `woocommerce_payments`, this must be the CC gateway.
+			// We only need to return single `card` payment method, adding `link` since deferred intent UPE gateway is compatible with Link.
 			$payment_methods = [ Payment_Method::CARD ];
 			if ( in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true ) ) {
 				$payment_methods[] = Payment_Method::LINK;
@@ -1437,6 +1439,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		} elseif ( WC_Payments_Features::is_upe_split_enabled() ) {
 			$payment_methods = [ Payment_Method::CARD ];
 		} else {
+			// $gateway_id must be `woocommerce_payments` and gateway is either legacy UPE or legacy card.
+			// Find the relevant gateway and return all available payment methods.
 			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( $order_id, true );
 		}
 
