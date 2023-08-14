@@ -17,13 +17,12 @@ interface DisputeDetailsProps {
 
 const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 	return (
-		<div>
-			<Card className="transaction-details-dispute-details-wrapper">
+		<div className="transaction-details-dispute-details-wrapper">
+			<Card>
 				<CardBody>
 					<div></div>
 				</CardBody>
 			</Card>
-			<br />
 		</div>
 	);
 };
