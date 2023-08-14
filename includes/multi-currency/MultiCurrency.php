@@ -1455,18 +1455,19 @@ class MultiCurrency {
 		if ( class_exists( 'Automattic\WooCommerce\Utilities\OrderUtil' ) &&
 					\Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
 			foreach ( $currencies as $currency ) {
-				$query_union[] = sprintf(
-					'SELECT "%1$s" AS currency_code, EXISTS(SELECT currency FROM %2$s WHERE currency="%1$s" LIMIT 1) AS exists_in_orders',
+				$query_union[] = $wpdb->prepare(
+					"SELECT %s AS currency_code, EXISTS(SELECT currency FROM {$wpdb->prefix}wc_orders WHERE currency=%s LIMIT 1) AS exists_in_orders",
 					$currency->code,
-					$wpdb->prefix . 'wc_orders'
+					$currency->code
 				);
 			}
 		} else {
 			foreach ( $currencies as $currency ) {
-				$query_union[] = sprintf(
-					'SELECT "%1$s" AS currency_code, EXISTS(SELECT meta_value FROM %2$s WHERE meta_key="_order_currency" AND meta_value="%1$s" LIMIT 1) AS exists_in_orders',
+				$query_union[] = $wpdb->prepare(
+					"SELECT %s AS currency_code, EXISTS(SELECT meta_value FROM {$wpdb->postmeta} WHERE meta_key=%s AND meta_value=%s LIMIT 1) AS exists_in_orders",
 					$currency->code,
-					$wpdb->postmeta
+					'_order_currency',
+					$currency->code
 				);
 			}
 		}
