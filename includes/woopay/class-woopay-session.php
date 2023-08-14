@@ -297,7 +297,7 @@ class WooPay_Session {
 
 		$session = self::get_init_session_request();
 
-		$store_blog_token = Jetpack_Options::get_option( 'blog_token' );
+		$store_blog_token = WC_Payments::mode()->is_dev() ? 'dev_mode' : Jetpack_Options::get_option( 'blog_token' );
 
 		$message = wp_json_encode( $session );
 
@@ -305,10 +305,10 @@ class WooPay_Session {
 		$iv = openssl_random_pseudo_bytes( openssl_cipher_iv_length( 'aes-256-cbc' ) );
 
 		// Encrypt the JSON session.
-		$session_encrypted = openssl_encrypt( $message, 'aes-256-cbc', WC_Payments::mode()->is_dev() ? 'dev_mode' : $store_blog_token, OPENSSL_RAW_DATA, $iv );
+		$session_encrypted = openssl_encrypt( $message, 'aes-256-cbc', $store_blog_token, OPENSSL_RAW_DATA, $iv );
 
 		// Create an HMAC hash for data integrity.
-		$hash = hash_hmac( 'sha256', $session_encrypted, WC_Payments::mode()->is_dev() ? 'dev_mode' : $store_blog_token );
+		$hash = hash_hmac( 'sha256', $session_encrypted, $store_blog_token );
 
 		$data = [
 			'session' => $session_encrypted,
