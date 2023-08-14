@@ -96,6 +96,7 @@ Please note that our support for the checkout block is still experimental and th
 
 = 6.3.1 - 2023-08-14 =
 * Fix - Fix AutomateWoo error on WooPay redirection.
+* Fix - Fix WooPay Session Handler in Store API requests.
 
 = 6.3.0 - 2023-08-09 =
 * Add - Add constant flag to use the new payment service (project reengineering payment process).
