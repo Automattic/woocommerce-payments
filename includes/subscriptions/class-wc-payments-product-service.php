@@ -194,11 +194,15 @@ class WC_Payments_Product_Service {
 	 *
 	 * @since 3.2.0
 	 *
-	 * @param int $product_id The ID of the product to handle.
+	 * @param int        $product_id The ID of the product to handle.
+	 * @param WC_Product $product    The product to handle.
 	 */
-	public function maybe_schedule_product_create_or_update( int $product_id ) {
+	public function maybe_schedule_product_create_or_update( int $product_id, $product = null ) {
+		if ( ! is_a( $product, 'WC_Product' ) ) {
+			$product = wc_get_product( $product_id );
+		}
+
 		// Skip products which have already been scheduled or aren't subscriptions.
-		$product = wc_get_product( $product_id );
 		if ( ! $product || isset( $this->products_to_update[ $product_id ] ) || ! WC_Subscriptions_Product::is_subscription( $product ) ) {
 			return;
 		}
@@ -532,7 +536,8 @@ class WC_Payments_Product_Service {
 		// This needs to run before WC_Subscriptions_Admin::save_product_variation(), which has a priority of 20.
 		add_action( 'woocommerce_save_product_variation', [ $this, 'limit_subscription_variation_intervals' ], 19, 2 );
 
-		add_action( 'save_post_product', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
+		add_action( 'woocommerce_create_product', [ $this, 'maybe_schedule_product_create_or_update' ], 10, 2 );
+		add_action( 'woocommerce_update_product', [ $this, 'maybe_schedule_product_create_or_update' ], 10, 2 );
 		add_action( 'woocommerce_save_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 30 );
 	}
 
@@ -543,7 +548,8 @@ class WC_Payments_Product_Service {
 		remove_action( 'save_post', [ $this, 'limit_subscription_product_intervals' ], 10 );
 		remove_action( 'woocommerce_save_product_variation', [ $this, 'limit_subscription_variation_intervals' ], 19 );
 
-		remove_action( 'save_post_product', [ $this, 'maybe_schedule_product_create_or_update' ], 12 );
+		remove_action( 'woocommerce_create_product', [ $this, 'maybe_schedule_product_create_or_update' ], 10, 2 );
+		remove_action( 'woocommerce_update_product', [ $this, 'maybe_schedule_product_create_or_update' ], 10, 2 );
 		remove_action( 'woocommerce_save_product_variation', [ $this, 'maybe_schedule_product_create_or_update' ], 30 );
 	}
 
