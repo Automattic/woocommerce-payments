@@ -68,6 +68,7 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
+
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base . '/router/po_eligible',
@@ -122,37 +123,28 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 				'callback'            => [ $this, 'get_progressive_onboarding_eligible' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 			],
-			register_rest_route(
-				$this->namespace,
-				'/' . $this->rest_base . '/flow-state',
-				[
-					'methods'             => WP_REST_Server::EDITABLE,
-					'callback'            => [ $this, 'update_flow_state' ],
-					'permission_callback' => [ $this, 'check_permission' ],
-					'args'                => [
-						'current_step' => [
-							'required'    => true,
-							'description' => 'The current step of the onboarding process.',
-							'type'        => 'string',
-						],
-						'data'         => [
-							'required'    => true,
-							'description' => 'The onboarding context data.',
-							'type'        => 'object',
-						],
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/flow-state',
+			[
+				'methods'             => WP_REST_Server::EDITABLE,
+				'callback'            => [ $this, 'update_flow_state' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+				'args'                => [
+					'current_step' => [
+						'required'    => true,
+						'description' => 'The current step of the onboarding process.',
+						'type'        => 'string',
+					],
+					'data'         => [
+						'required'    => true,
+						'description' => 'The onboarding context data.',
+						'type'        => 'object',
 					],
 				],
-				register_rest_route(
-					$this->namespace,
-					'/' . $this->rest_base . '/flow-state',
-					[
-						'methods'             => WP_REST_Server::DELETABLE,
-						'callback'            => [ $this, 'clear_flow_state' ],
-						'permission_callback' => [ $this, 'check_permission' ],
-
-					]
-				)
-			)
+			],
 		);
 	}
 
@@ -221,9 +213,5 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 
 	public function update_flow_state( WP_REST_Request $request ) {
 		WC_Payments_Onboarding_Service::set_onboarding_flow_state( $request->get_json_params() );
-	}
-
-	public function clear_flow_state() {
-		WC_Payments_Onboarding_Service::clear_onboarding_flow_state();
 	}
 }

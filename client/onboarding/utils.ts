@@ -88,7 +88,7 @@ export const persistFlowState = (
 ): Promise< void > =>
 	apiFetch( {
 		path: `${ NAMESPACE }/onboarding/flow-state`,
-		method: 'post',
+		method: 'POST',
 		data: { current_step: currentStep, data },
 		parse: false,
 	} );
@@ -96,6 +96,6 @@ export const persistFlowState = (
 export const clearFlowState = (): Promise< void > =>
 	apiFetch( {
 		path: `${ NAMESPACE }/onboarding/flow-state`,
-		method: 'delete',
+		method: 'DELETE',
 		parse: false,
 	} );
