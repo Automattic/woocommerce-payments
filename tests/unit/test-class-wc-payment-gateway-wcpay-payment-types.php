@@ -131,6 +131,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 					$this->mock_rate_limiter,
 					$this->mock_order_service,
 					$mock_dpps,
+					$this->createMock( WC_Payments_Localization_Service::class ),
 				]
 			)
 			->setMethods(

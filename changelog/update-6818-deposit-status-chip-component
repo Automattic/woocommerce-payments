@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Refactor the deposit status UI element to use the `Chip` component.
