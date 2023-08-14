@@ -11,6 +11,7 @@ declare global {
 			customSearch: boolean;
 			isAuthAndCaptureEnabled: boolean;
 			paymentTimeline: boolean;
+			isDisputeOnTransactionPageEnabled: boolean;
 		};
 		fraudServices: unknown[];
 		isJetpackConnected: boolean;
@@ -93,6 +94,7 @@ declare global {
 			description: string;
 			tc_url: string;
 		};
+		isWooPayStoreCountryAvailable: boolean;
 	};
 
 	const wcTracks: any;

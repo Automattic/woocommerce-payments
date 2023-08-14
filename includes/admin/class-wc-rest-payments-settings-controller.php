@@ -29,15 +29,29 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	private $wcpay_gateway;
 
 	/**
+	 * WC_Payments_Account instance to get information about the account
+	 *
+	 * @var WC_Payments_Account
+	 */
+	protected $account;
+
+
+	/**
 	 * WC_REST_Payments_Settings_Controller constructor.
 	 *
 	 * @param WC_Payments_API_Client   $api_client WC_Payments_API_Client instance.
 	 * @param WC_Payment_Gateway_WCPay $wcpay_gateway WC_Payment_Gateway_WCPay instance.
+	 * @param WC_Payments_Account      $account  Account class instance.
 	 */
-	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $wcpay_gateway ) {
+	public function __construct(
+		WC_Payments_API_Client $api_client,
+		WC_Payment_Gateway_WCPay $wcpay_gateway,
+		WC_Payments_Account $account
+	) {
 		parent::__construct( $api_client );
 
 		$this->wcpay_gateway = $wcpay_gateway;
+		$this->account       = $account;
 	}
 
 	/**
@@ -254,7 +268,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 							'type' => 'string',
 							'enum' => array_keys( $wcpay_form_fields['payment_request_button_locations']['options'] ),
 						],
-						'default'           => [],
+						'default'           => array_keys( $wcpay_form_fields['payment_request_button_locations']['options'] ),
 						'validate_callback' => 'rest_validate_request_arg',
 					],
 				],
@@ -335,6 +349,16 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			);
 		}
 
+		// Japan accounts require Japanese phone numbers.
+		if ( 'JP' === $this->account->get_account_country() ) {
+			if ( '+81' !== substr( $value, 0, 3 ) ) {
+				return new WP_Error(
+					'rest_invalid_pattern',
+					__( 'Error: Invalid Japanese phone number: ', 'woocommerce-payments' ) . $value
+				);
+			}
+		}
+
 		return true;
 	}
 
@@ -372,6 +396,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * @return WP_REST_Response
 	 */
 	public function get_settings(): WP_REST_Response {
+		$wcpay_form_fields             = $this->wcpay_gateway->get_form_fields();
 		$available_upe_payment_methods = $this->wcpay_gateway->get_upe_available_payment_methods();
 		/**
 		 * It might be possible that enabled payment methods settings have an invalid state. As an example,
@@ -399,6 +424,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'is_wcpay_subscriptions_enabled'      => WC_Payments_Features::is_wcpay_subscriptions_enabled(),
 				'is_wcpay_subscriptions_eligible'     => WC_Payments_Features::is_wcpay_subscriptions_eligible(),
 				'is_subscriptions_plugin_active'      => $this->wcpay_gateway->is_subscriptions_plugin_active(),
+				'account_country'                     => $this->wcpay_gateway->get_option( 'account_country' ),
 				'account_statement_descriptor'        => $this->wcpay_gateway->get_option( 'account_statement_descriptor' ),
 				'account_business_name'               => $this->wcpay_gateway->get_option( 'account_business_name' ),
 				'account_business_url'                => $this->wcpay_gateway->get_option( 'account_business_url' ),
@@ -409,6 +435,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'account_branding_icon'               => $this->wcpay_gateway->get_option( 'account_branding_icon' ),
 				'account_branding_primary_color'      => $this->wcpay_gateway->get_option( 'account_branding_primary_color' ),
 				'account_branding_secondary_color'    => $this->wcpay_gateway->get_option( 'account_branding_secondary_color' ),
+				'account_domestic_currency'           => $this->wcpay_gateway->get_option( 'account_domestic_currency' ),
 				'is_payment_request_enabled'          => 'yes' === $this->wcpay_gateway->get_option( 'payment_request' ),
 				'is_debug_log_enabled'                => 'yes' === $this->wcpay_gateway->get_option( 'enable_logging' ),
 				'payment_request_enabled_locations'   => $this->wcpay_gateway->get_option( 'payment_request_button_locations' ),
@@ -421,7 +448,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'show_woopay_incompatibility_notice'  => get_option( 'woopay_invalid_extension_found', false ),
 				'woopay_custom_message'               => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),
 				'woopay_store_logo'                   => $this->wcpay_gateway->get_option( 'platform_checkout_store_logo' ),
-				'woopay_enabled_locations'            => $this->wcpay_gateway->get_option( 'platform_checkout_button_locations', [] ),
+				'woopay_enabled_locations'            => $this->wcpay_gateway->get_option( 'platform_checkout_button_locations', array_keys( $wcpay_form_fields['payment_request_button_locations']['options'] ) ),
 				'deposit_schedule_interval'           => $this->wcpay_gateway->get_option( 'deposit_schedule_interval' ),
 				'deposit_schedule_monthly_anchor'     => $this->wcpay_gateway->get_option( 'deposit_schedule_monthly_anchor' ),
 				'deposit_schedule_weekly_anchor'      => $this->wcpay_gateway->get_option( 'deposit_schedule_weekly_anchor' ),

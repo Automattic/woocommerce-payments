@@ -17,6 +17,7 @@ const ConnectionSuccessNotice: React.FC = () => {
 		accountStatus: {
 			progressiveOnboarding: { isComplete, isEnabled },
 		},
+		onboardingTestMode,
 	} = wcpaySettings;
 
 	const DismissMenu = () => {
@@ -36,7 +37,7 @@ const ConnectionSuccessNotice: React.FC = () => {
 		);
 	};
 
-	return ! isDismissed ? (
+	return ! isDismissed && ! onboardingTestMode ? (
 		<Card className="wcpay-connection-success">
 			{ /* Show dismiss button only at the end of Progressive Onboarding //
 			or at the end of the full KYC flow. */ }

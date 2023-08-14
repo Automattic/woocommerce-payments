@@ -59,6 +59,14 @@ export const useEnabledPaymentMethodIds = () => {
 	);
 };
 
+export const useAccountDomesticCurrency = () => {
+	return useSelect( ( select ) => {
+		const { getAccountDomesticCurrency } = select( STORE_NAME );
+
+		return [ getAccountDomesticCurrency() ];
+	}, [] );
+};
+
 export const useSelectedPaymentMethod = () => {
 	const { updateSelectedPaymentMethod } = useDispatch( STORE_NAME );
 
