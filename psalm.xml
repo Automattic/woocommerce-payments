@@ -6,6 +6,7 @@
 	xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
 	autoloader="psalm-loader.php"
     errorBaseline="psalm-baseline.xml"
+	checkForThrowsDocblock="true"
 >
     <projectFiles>
         <file name="woocommerce-payments.php" />
@@ -41,5 +42,10 @@
 				<referencedClass name="Automattic\WooCommerce\Utilities\PluginUtil" />
 			</errorLevel>
 		</UndefinedDocblockClass>
+		<MissingThrowsDocblock>
+			<errorLevel type="suppress">
+				<directory name="includes" />
+			</errorLevel>
+		</MissingThrowsDocblock>
 	</issueHandlers>
 </psalm>
