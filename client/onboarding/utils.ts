@@ -2,16 +2,15 @@
  * External dependencies
  */
 import { set, toPairs } from 'lodash';
+import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
  */
-import businessTypeDescriptionStrings from './translations/descriptions';
-import { ListItem } from 'components/grouped-select-control';
-import { Country } from './types';
-// TEMP
-import apiFetch from '@wordpress/api-fetch';
 import { NAMESPACE } from 'data/constants';
+import { ListItem } from 'components/grouped-select-control';
+import businessTypeDescriptionStrings from './translations/descriptions';
+import { Country, OnboardingFields } from './types';
 
 export const fromDotNotation = (
 	record: Record< string, unknown >
@@ -83,9 +82,9 @@ export const getMccsFlatList = (): ListItem[] => {
 	}, [] as ListItem[] );
 };
 
-export const persistState = (
+export const persistFlowState = (
 	currentStep: string,
-	data: any
+	data: OnboardingFields
 ): Promise< void > =>
 	apiFetch( {
 		path: `${ NAMESPACE }/onboarding/flow-state`,
@@ -94,7 +93,7 @@ export const persistState = (
 		parse: false,
 	} );
 
-export const clearState = (): Promise< void > =>
+export const clearFlowState = (): Promise< void > =>
 	apiFetch( {
 		path: `${ NAMESPACE }/onboarding/flow-state`,
 		method: 'delete',
