@@ -94,6 +94,21 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 6.4.0-test-1 - unreleased =
+* Fix - Fix phone number input widget on checkout page
+* Fix - Fix the WooPay logo so that it stays scaled up and visible on the WooPay button.
+* Fix - Prevent displaying "Fraud protection" menu on half-onboarded stores
+* Fix - Provide per active discount Terms and Conditions link in the Account details card.
+* Update - BNPLs: updated methods copy on settings page
+* Update - Improve `Chip` component styles to with improved visual design and accessible contrast ratios.
+* Update - Set WooPay button default enabled for product/cart/checkout pages
+* Dev - Adding HooksProxy and LegacyProxy to src, used to access code outside of it (hooks, globals, functions, and static methods).
+* Dev - Adding Psalm checks to function calls within `src`.
+* Dev - Add LegacyContainer to `src` to allow loading classes from `includes`.
+* Dev - Fixing a mistake in the doc regarding the customer service.
+* Dev - Move Multi-Currency Order Meta Helper functionality behind url param.
+* Dev - Refactor the deposit status UI element to use the `Chip` component.
+
 = 6.3.0 - 2023-08-09 =
 * Add - Add constant flag to use the new payment service (project reengineering payment process).
 * Add - Add JCB payment method coming soon notice
