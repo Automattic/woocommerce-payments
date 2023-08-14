@@ -45,7 +45,7 @@ class WooPay_Session {
 	 */
 	public static function init() {
 		add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_woopay' ], 20 );
-		add_filter( 'rest_request_before_callbacks', [ __CLASS__, 'add_woopay_store_api_session_handler' ], 10, 3 );
+		add_filter( 'woocommerce_session_handler', [ __CLASS__, 'add_woopay_store_api_session_handler' ], 20, 1 );
 		add_action( 'woocommerce_order_payment_status_changed', [ __CLASS__, 'remove_order_customer_id_on_requests_with_verified_email' ] );
 		add_action( 'woopay_restore_order_customer_id', [ __CLASS__, 'restore_order_customer_id_from_requests_with_verified_email' ] );
 
@@ -56,14 +56,12 @@ class WooPay_Session {
 	 * This filter is used to add a custom session handler before processing Store API request callbacks.
 	 * This is only necessary because the Store API SessionHandler currently doesn't provide an `init_session_cookie` method.
 	 *
-	 * @param mixed           $response The response object.
-	 * @param mixed           $handler The handler used for the response.
-	 * @param WP_REST_Request $request The request used to generate the response.
+	 * @param string $default_session_handler The default session handler class name.
 	 *
-	 * @return mixed
+	 * @return string The session handler class name.
 	 */
-	public static function add_woopay_store_api_session_handler( $response, $handler, WP_REST_Request $request ) {
-		$cart_token = $request->get_header( 'Cart-Token' );
+	public static function add_woopay_store_api_session_handler( $default_session_handler ) {
+		$cart_token = wc_clean( wp_unslash( $_SERVER['HTTP_CART_TOKEN'] ?? null ) );
 
 		if (
 			$cart_token &&
@@ -71,16 +69,10 @@ class WooPay_Session {
 			class_exists( JsonWebToken::class ) &&
 			JsonWebToken::validate( $cart_token, '@' . wp_salt() )
 		) {
-			add_filter(
-				'woocommerce_session_handler',
-				function ( $session_handler ) {
-					return SessionHandler::class;
-				},
-				20
-			);
+			return SessionHandler::class;
 		}
 
-		return $response;
+		return $default_session_handler;
 	}
 
 	/**
