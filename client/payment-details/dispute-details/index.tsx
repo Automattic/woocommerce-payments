@@ -7,7 +7,7 @@ import React from 'react';
 /**
  * Internal dependencies
  */
-import { Dispute } from '../../types/disputes';
+import type { Dispute } from 'wcpay/types/disputes';
 import { Card, CardBody } from '@wordpress/components';
 import './style.scss';
 
