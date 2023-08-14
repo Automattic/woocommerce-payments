@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix extra requests when clicking WooPay express checkout button.
