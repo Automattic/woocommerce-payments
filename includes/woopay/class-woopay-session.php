@@ -297,7 +297,7 @@ class WooPay_Session {
 
 		$session = self::get_init_session_request();
 
-		$store_blog_token = WC_Payments::mode()->is_dev() ? 'dev_mode' : Jetpack_Options::get_option( 'blog_token' );
+		$store_blog_token = ( WooPay_Utilities::get_woopay_url() === WooPay_Utilities::DEFAULT_WOOPAY_URL ) ? Jetpack_Options::get_option( 'blog_token' ) : 'dev_mode';
 
 		$message = wp_json_encode( $session );
 
