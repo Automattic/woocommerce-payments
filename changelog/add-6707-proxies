@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Adding HooksProxy and LegacyProxy to src, used to access code outside of it (hooks, globals, functions, and static methods).

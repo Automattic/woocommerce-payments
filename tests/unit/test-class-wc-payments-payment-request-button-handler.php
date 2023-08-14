@@ -150,7 +150,8 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 			$mock_action_scheduler_service,
 			$mock_rate_limiter,
 			$mock_order_service,
-			$mock_dpps
+			$mock_dpps,
+			$this->createMock( WC_Payments_Localization_Service::class )
 		);
 	}
 

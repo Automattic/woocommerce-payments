@@ -195,6 +195,24 @@ describe( 'getTasks()', () => {
 		);
 	} );
 
+	it( 'handles when account is enabled', () => {
+		global.wcpaySettings.accountStatus.status = 'enabled';
+		global.wcpaySettings.accountStatus.currentDeadline = 0;
+
+		const actual = getTasks( {
+			showUpdateDetailsTask: true,
+		} );
+
+		expect( actual ).toEqual(
+			expect.arrayContaining( [
+				expect.objectContaining( {
+					key: 'update-business-details',
+					completed: true,
+				} ),
+			] )
+		);
+	} );
+
 	it( 'adds WPCOM user reconnect task when the url is specified', () => {
 		global.wcpaySettings.accountStatus.status = 'complete';
 

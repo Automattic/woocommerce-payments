@@ -63,7 +63,8 @@ class WC_REST_UPE_Flag_Toggle_Controller_Test extends WCPAY_UnitTestCase {
 			$action_scheduler_service,
 			$rate_limiter,
 			$order_service,
-			$mock_dpps
+			$mock_dpps,
+			$this->createMock( WC_Payments_Localization_Service::class )
 		);
 		$this->controller = new WC_REST_UPE_Flag_Toggle_Controller( $this->gateway );
 	}

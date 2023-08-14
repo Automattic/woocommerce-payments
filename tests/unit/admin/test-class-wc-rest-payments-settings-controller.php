@@ -94,6 +94,13 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	private $upe_split_controller;
 
 	/**
+	 * WC_Payments_Localization_Service instance.
+	 *
+	 * @var WC_Payments_Localization_Service
+	 */
+	private $mock_localization_service;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -111,14 +118,15 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
-		$this->mock_db_cache      = $this->createMock( Database_Cache::class );
-		$customer_service         = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_wcpay_account, $this->mock_db_cache );
-		$token_service            = new WC_Payments_Token_Service( $this->mock_api_client, $customer_service );
-		$order_service            = new WC_Payments_Order_Service( $this->mock_api_client );
-		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client, $order_service );
-		$mock_rate_limiter        = $this->createMock( Session_Rate_Limiter::class );
-		$mock_dpps                = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+		$this->mock_wcpay_account        = $this->createMock( WC_Payments_Account::class );
+		$this->mock_db_cache             = $this->createMock( Database_Cache::class );
+		$customer_service                = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_wcpay_account, $this->mock_db_cache );
+		$token_service                   = new WC_Payments_Token_Service( $this->mock_api_client, $customer_service );
+		$order_service                   = new WC_Payments_Order_Service( $this->mock_api_client );
+		$action_scheduler_service        = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client, $order_service );
+		$mock_rate_limiter               = $this->createMock( Session_Rate_Limiter::class );
+		$mock_dpps                       = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
 
 		$this->gateway    = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
@@ -128,9 +136,10 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$action_scheduler_service,
 			$mock_rate_limiter,
 			$order_service,
-			$mock_dpps
+			$mock_dpps,
+			$this->mock_localization_service
 		);
-		$this->controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->gateway );
+		$this->controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->gateway, $this->mock_wcpay_account );
 
 		$mock_payment_methods   = [];
 		$payment_method_classes = [
@@ -167,10 +176,11 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$mock_payment_methods,
 			$mock_rate_limiter,
 			$order_service,
-			$mock_dpps
+			$mock_dpps,
+			$this->mock_localization_service
 		);
 
-		$this->upe_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->mock_upe_payment_gateway );
+		$this->upe_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->mock_upe_payment_gateway, $this->mock_wcpay_account );
 
 		$this->mock_upe_split_payment_gateway = new UPE_Split_Payment_Gateway(
 			$this->mock_api_client,
@@ -182,10 +192,11 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$mock_payment_methods,
 			$mock_rate_limiter,
 			$order_service,
-			$mock_dpps
+			$mock_dpps,
+			$this->mock_localization_service
 		);
 
-		$this->upe_split_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->mock_upe_split_payment_gateway );
+		$this->upe_split_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->mock_upe_split_payment_gateway, $this->mock_wcpay_account );
 
 		$this->mock_api_client
 			->method( 'is_server_connected' )
@@ -222,6 +233,12 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_settings_returns_enabled_payment_method_ids() {
+		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn(
+			[
+				'currency_code' => 'usd',
+			]
+		);
+
 		$response           = $this->controller->get_settings();
 		$enabled_method_ids = $response->get_data()['enabled_payment_method_ids'];
 
@@ -232,6 +249,11 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_upe_get_settings_returns_available_payment_method_ids() {
+		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn(
+			[
+				'currency_code' => 'usd',
+			]
+		);
 		$response           = $this->upe_controller->get_settings();
 		$enabled_method_ids = $response->get_data()['available_payment_method_ids'];
 
@@ -253,6 +275,11 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_split_upe_get_settings_returns_available_payment_method_ids() {
+		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn(
+			[
+				'currency_code' => 'usd',
+			]
+		);
 		$response           = $this->upe_split_controller->get_settings();
 		$enabled_method_ids = $response->get_data()['available_payment_method_ids'];
 
@@ -274,6 +301,11 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_settings_request_returns_test_mode_flag() {
+		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn(
+			[
+				'currency_code' => 'usd',
+			]
+		);
 		WC_Payments::mode()->dev();
 		$this->assertEquals( true, $this->controller->get_settings()->get_data()['is_test_mode_enabled'] );
 
@@ -288,6 +320,11 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_settings_returns_if_wcpay_is_enabled() {
+		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn(
+			[
+				'currency_code' => 'usd',
+			]
+		);
 		$this->gateway->enable();
 		$response = $this->controller->get_settings();
 		$this->assertTrue( $response->get_data()['is_wcpay_enabled'] );
@@ -312,6 +349,11 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_settings_without_error_when_faulty_enabled_payment_methods() {
+		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn(
+			[
+				'currency_code' => 'usd',
+			]
+		);
 		$this->gateway->update_option(
 			'available_payment_method_ids',
 			[
@@ -731,6 +773,11 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_upe_get_settings_card_eligible_flag() {
+		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn(
+			[
+				'currency_code' => 'usd',
+			]
+		);
 		$response = $this->upe_controller->get_settings();
 
 		$this->assertArrayHasKey( 'is_card_present_eligible', $response->get_data() );
@@ -738,10 +785,74 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_upe_split_get_settings_card_eligible_flag() {
+		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn(
+			[
+				'currency_code' => 'usd',
+			]
+		);
 		$response = $this->upe_split_controller->get_settings();
 
 		$this->assertArrayHasKey( 'is_card_present_eligible', $response->get_data() );
 		$this->assertTrue( $response->get_data()['is_card_present_eligible'] );
+	}
+
+	public function test_upe_get_settings_domestic_currency(): void {
+		$mock_domestic_currency = 'usd';
+		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn(
+			[
+				'currency_code' => $mock_domestic_currency,
+			]
+		);
+		$this->mock_wcpay_account
+			->expects( $this->never() )
+			->method( 'get_account_default_currency' );
+
+		$response = $this->upe_controller->get_settings();
+
+		$this->assertArrayHasKey( 'account_domestic_currency', $response->get_data() );
+		$this->assertSame( $mock_domestic_currency, $response->get_data()['account_domestic_currency'] );
+	}
+
+	public function test_upe_get_settings_domestic_currency_fallbacks_to_default_currency(): void {
+		$mock_domestic_currency = 'usd';
+		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn( [] );
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_account_default_currency' )
+			->willReturn( $mock_domestic_currency );
+		$response = $this->upe_controller->get_settings();
+
+		$this->assertArrayHasKey( 'account_domestic_currency', $response->get_data() );
+		$this->assertSame( $mock_domestic_currency, $response->get_data()['account_domestic_currency'] );
+	}
+
+	public function test_upe_split_get_settings_domestic_currency(): void {
+		$mock_domestic_currency = 'usd';
+		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn(
+			[
+				'currency_code' => $mock_domestic_currency,
+			]
+		);
+		$this->mock_wcpay_account
+			->expects( $this->never() )
+			->method( 'get_account_default_currency' );
+		$response = $this->upe_split_controller->get_settings();
+
+		$this->assertArrayHasKey( 'account_domestic_currency', $response->get_data() );
+		$this->assertSame( $mock_domestic_currency, $response->get_data()['account_domestic_currency'] );
+	}
+
+	public function test_upe_split_get_settings_domestic_currency_fallbacks_to_default_currency(): void {
+		$mock_domestic_currency = 'usd';
+		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn( [] );
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_account_default_currency' )
+			->willReturn( $mock_domestic_currency );
+		$response = $this->upe_split_controller->get_settings();
+
+		$this->assertArrayHasKey( 'account_domestic_currency', $response->get_data() );
+		$this->assertSame( $mock_domestic_currency, $response->get_data()['account_domestic_currency'] );
 	}
 
 	/**
