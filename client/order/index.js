@@ -157,8 +157,8 @@ const DisputeNotice = ( { chargeId } ) => {
 			'This order has been disputed in the amount of %1$s. The customer provided the following reason: %2$s. Please respond to this dispute before %3$s.',
 			'woocommerce-payments'
 		),
-    // Translators: %1$s is the formatted dispute amount, %2$s is the dispute reason, %3$s is the due date.
-	  inquiry_default: __(
+		// Translators: %1$s is the formatted dispute amount, %2$s is the dispute reason, %3$s is the due date.
+		inquiry_default: __(
 			// eslint-disable-next-line max-len
 			'The card network involved in this order has opened an inquiry into the transaction with the following reason: %2$s. Please respond to this inquiry before %3$s, just like you would for a formal dispute.',
 			'woocommerce-payments'
