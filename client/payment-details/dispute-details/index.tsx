@@ -4,8 +4,17 @@
  * External dependencies
  */
 import React from 'react';
+/**
+ * Internal dependencies
+ */
+import { Dispute } from '../../types/disputes';
+import './style.scss';
 
-const DisputeDetails: React.FC< Record< string, never > > = () => {
+interface DisputeDetailsProps {
+	dispute: Dispute;
+}
+
+const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 	return <></>;
 };
 
