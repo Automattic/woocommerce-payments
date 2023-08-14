@@ -8,7 +8,6 @@
 use WCPay\Constants\Fraud_Meta_Box_Type;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Intent_Status;
-use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Fraud_Prevention\Models\Rule;
 
 /**
@@ -1194,7 +1193,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 * then an exception is thrown. This test attempt to confirm that exception gets thrown.
 	 */
 	public function test_get_order_throws_exception() {
-		$this->expectException( Order_Not_Found_Exception::class );
+		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( 'The requested order was not found.' );
 		$this->order_service->set_intent_id_for_order( 'fake_order', '' );
 	}

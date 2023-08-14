@@ -35,6 +35,7 @@ use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\WC_Payments_Checkout;
+use WC_Payments_Localization_Service;
 
 require_once dirname( __FILE__ ) . '/../helpers/class-wc-helper-site-currency.php';
 
@@ -161,6 +162,13 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	];
 
 	/**
+	 * WC_Payments_Localization_Service instance.
+	 *
+	 * @var WC_Payments_Localization_Service
+	 */
+	private $mock_localization_service;
+
+	/**
 	 * Mapping for payment ID to payment method.
 	 *
 	 * @var array
@@ -248,6 +256,8 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_dpps = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 
+		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
+
 		// Arrange: Define a $_POST array which includes the payment method,
 		// so that get_payment_method_from_request() does not throw error.
 		$_POST = [
@@ -274,6 +284,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 						$this->mock_rate_limiter,
 						$this->order_service,
 						$this->mock_dpps,
+						$this->mock_localization_service,
 					]
 				)
 				->setMethods(
@@ -1774,6 +1785,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 						$this->mock_rate_limiter,
 						$this->order_service,
 						$this->mock_dpps,
+						$this->mock_localization_service,
 					]
 				)
 				->setMethods(
@@ -1825,6 +1837,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_rate_limiter,
 					$this->order_service,
 					$this->mock_dpps,
+					$this->mock_localization_service,
 				]
 			)
 			->setMethods(
@@ -1889,6 +1902,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_rate_limiter,
 					$this->order_service,
 					$this->mock_dpps,
+					$this->mock_localization_service,
 				]
 			)
 			->setMethods(
@@ -1953,6 +1967,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_rate_limiter,
 					$this->order_service,
 					$this->mock_dpps,
+					$this->mock_localization_service,
 				]
 			)
 			->setMethods(
@@ -2017,6 +2032,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_rate_limiter,
 					$this->order_service,
 					$this->mock_dpps,
+					$this->mock_localization_service,
 				]
 			)
 			->setMethods(
@@ -2071,6 +2087,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_rate_limiter,
 					$this->order_service,
 					$this->mock_dpps,
+					$this->mock_localization_service,
 				]
 			)
 			->setMethods(
@@ -2181,6 +2198,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_rate_limiter,
 					$this->order_service,
 					$this->mock_dpps,
+					$this->mock_localization_service,
 				]
 			)
 			->setMethods( [ 'wc_payments_get_payment_method_map' ] )
