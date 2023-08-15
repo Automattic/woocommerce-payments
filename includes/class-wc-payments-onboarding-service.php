@@ -192,15 +192,31 @@ class WC_Payments_Onboarding_Service {
 		return $classes;
 	}
 
-	public static function get_onboarding_flow_state() {
-		return get_option( self::ONBOARDING_FLOW_STATE_OPTION );
+	/**
+	 * Get the onboarding flow state.
+	 *
+	 * @return ?array The onboarding flow state, or null if not set.
+	 */
+	public static function get_onboarding_flow_state(): ?array {
+		return get_option( self::ONBOARDING_FLOW_STATE_OPTION, null );
 	}
 
-	public static function set_onboarding_flow_state( array $value ) {
+	/**
+	 * Set the onboarding flow state.
+	 *
+	 * @param array $value The onboarding flow state.
+	 * @return bool Whether the option was updated successfully.
+	 */
+	public static function set_onboarding_flow_state( array $value ): bool {
 		return update_option( self::ONBOARDING_FLOW_STATE_OPTION, $value );
 	}
 
-	public static function clear_onboarding_flow_state() {
+	/**
+	 * Clear the onboarding flow state.
+	 *
+	 * @return boolean Whether the option was deleted successfully.
+	 */
+	public static function clear_onboarding_flow_state(): bool {
 		return delete_option( self::ONBOARDING_FLOW_STATE_OPTION );
 	}
 
