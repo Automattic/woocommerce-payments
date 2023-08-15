@@ -116,7 +116,7 @@ class WC_REST_Payments_Reports_Transactions_Controller extends WC_Payments_REST_
 	 * @param array           $item Item to prepare.
 	 * @param WP_REST_Request $request Request instance.
 	 *
-	 * @return WP_Error|WP_HTTP_Response|WP_REST_Response
+	 * @return WP_REST_Response
 	 */
 	public function prepare_item_for_response( $item, $request ) {
 
