@@ -72,30 +72,47 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WCPAY_UnitTestCase {
 		);
 
 	}
+
 	/**
 	 * Test that necessary filters are added when the WC_Payments_Webhook_Reliability_Service instance is created.
 	 *
 	 * @return void
 	 */
 	public function test_filters_registered_properly() {
-		$this->assertNotFalse( has_filter( 'woocommerce_payments_account_refreshed', [ $this->webhook_reliability_service, 'maybe_schedule_failed_webhook_events' ] ) );
+		$this->assertNotFalse(
+			has_filter(
+				'woocommerce_payments_account_refreshed',
+				[
+					$this->webhook_reliability_service,
+					'maybe_schedule_failed_webhook_events',
+				]
+			)
+		);
 		$this->assertNotFalse(
 			has_filter(
 				WC_Payments_Webhook_Reliability_Service::WEBHOOK_FETCH_EVENTS_ACTION,
 				[
 					$this->webhook_reliability_service,
-					'fetch_failed_webhook_events',
+					'schedule_processing_failed_webhook_events',
 				]
 			)
 		);
-		$this->assertNotFalse( has_filter( WC_Payments_Webhook_Reliability_Service::WEBHOOK_PROCESS_EVENT_ACTION, [ $this->webhook_reliability_service, 'process_event' ] ) );
+		$this->assertNotFalse(
+			has_filter(
+				WC_Payments_Webhook_Reliability_Service::WEBHOOK_PROCESS_EVENT_ACTION,
+				[
+					$this->webhook_reliability_service,
+					'process_event',
+				]
+			)
+		);
 	}
 
 	/**
 	 * Test properly scheduling fetch_events job.
 	 *
-	 * @param  mixed|array $account_data  Account data retrieved from WooCommerce Payments server.
-	 * @param  bool        $will_schedule Whether schedule fetch_events.
+	 * @param mixed|array $account_data Account data retrieved from WooCommerce Payments server.
+	 * @param bool $will_schedule Whether schedule fetch_events.
 	 *
 	 * @dataProvider provider_maybe_schedule_events
 	 * @return void
@@ -141,14 +158,14 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'schedule_job' );
 
 		// Act.
-		$this->webhook_reliability_service->fetch_failed_webhook_events();
+		$this->webhook_reliability_service->schedule_processing_failed_webhook_events();
 	}
 
 	/**
 	 * Test ensuring to schedule another fetch_events
 	 *
-	 * @param  array $payload       Payload from the API response.
-	 * @param  bool  $will_schedule Whether continue scheduling the next fetch_events.
+	 * @param array $payload Payload from the API response.
+	 * @param bool $will_schedule Whether continue scheduling the next fetch_events.
 	 *
 	 * @dataProvider provider_fetch_events_schedule_next_fetch_events
 	 * @return void
@@ -167,7 +184,7 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WCPAY_UnitTestCase {
 				WC_Payments_Webhook_Reliability_Service::WEBHOOK_FETCH_EVENTS_ACTION
 			);
 
-		$this->webhook_reliability_service->fetch_failed_webhook_events();
+		$this->webhook_reliability_service->schedule_processing_failed_webhook_events();
 	}
 
 	public function provider_fetch_events_schedule_next_fetch_events(): array {
@@ -181,50 +198,40 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Test each data is scheduled
 	 *
-	 * @param  array    $payload                     Payload from the API response.
-	 * @param  string[] $expected_schedule_event_ids Event IDs will be scheduled.
+	 * @param array $payload Payload from the API response.
+	 * @param string[] $expected_schedule_event_ids Event IDs will be scheduled.
 	 *
-	 * @dataProvider provider_fetch_events_save_data_and_schedule_jobs
+	 * @dataProvider provider_schedule_processing_failed_webhook_events_with_valid_data
 	 * @return void
 	 */
-	public function test_fetch_events_save_data_and_schedule_process_jobs( array $payload, array $expected_schedule_event_ids ) {
+	public function test_schedule_processing_failed_webhook_events_with_valid_data( array $payload, array $expected_schedule_event_ids ) {
 		// Prepare.
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_failed_webhook_events' )
 			->willReturn( $payload );
 
-		$this->mock_action_scheduler_service
-			->expects( $this->exactly( count( $expected_schedule_event_ids ) ) )
-			->method( 'schedule_job' )
-			->withConsecutive(
-				...array_map(
-					function ( $event_id ) {
-						return [
-							$this->greaterThanOrEqual( time() ),
-							WC_Payments_Webhook_Reliability_Service::WEBHOOK_PROCESS_EVENT_ACTION,
-							$this->callback(
-								function( $args ) use ( $event_id ) {
-									$this->assertSame( [ 'event_id' => $event_id ], $args );
-									return true;
-								}
-							),
-						];
-					},
-					$expected_schedule_event_ids
-				)
-			);
+		// Let's make sure that we don't have any stored events in the CPT.
+		$args = [
+			'post_type'      => WC_Payments_Webhook_Reliability_Service::POST_TYPE,
+			'post_status'    => 'any',
+			'posts_per_page' => 10,
+		];
 
+		$events = get_posts( $args );
+		$this->assertEquals( 0, count( $events ) );
 		// Act.
-		$this->webhook_reliability_service->fetch_failed_webhook_events();
+		$this->webhook_reliability_service->schedule_processing_failed_webhook_events();
 
-		// Assert save_event_data() is executed by checking the existence with get_event_data().
-		foreach ( $expected_schedule_event_ids as $event_id ) {
-			$this->assertNotNull( $this->webhook_reliability_service->get_event_data( $event_id ) );
-		}
+		$events = get_posts( $args );
+
+		$this->assertEquals( count( $expected_schedule_event_ids ), count( $events ) );
+
+		// Make sure that passed event IDs matched with ones in post table.
+		$this->assertEqualsCanonicalizing( array_column( $payload['data'] ?? [], 'id' ), array_column( $events, 'post_name' ) );
 	}
 
-	public function provider_fetch_events_save_data_and_schedule_jobs(): array {
+	public function provider_schedule_processing_failed_webhook_events_with_valid_data(): array {
 		$event_1 = $this->sample_event;
 
 		$event_2 = [
@@ -263,36 +270,29 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WCPAY_UnitTestCase {
 
 	}
 
-	/**
-	 * Tess processing event data.
-	 *
-	 * @param array  $event_data   Event data exists in the Db.
-	 * @param string $event_id     Event ID will be processed.
-	 * @param bool   $will_process Whether to dispatch to Webhook Processing Service.
-	 *
-	 * @dataProvider provider_process_event
-	 * @return void
-	 */
-	public function test_process_failed_webhook_event( $event_data, $event_id, $will_process ) {
-		// Prepare.
-		$this->webhook_reliability_service->store_event( $event_data );
+	public function test_load_and_process_events() {
 
-		$this->mock_webhook_processing_service
-			->expects( $this->exactly( $will_process ? 1 : 0 ) )
-			->method( 'process' )
-			->with( $event_data );
-
-		// Act.
-		$this->webhook_reliability_service->process_event( $event_id );
-
-		// Assert that the deletion action is always executed.
-		$this->assertNull( $this->webhook_reliability_service->get_event_data( $event_id ) );
-	}
-
-	public function provider_process_event() {
-		return [
-			'Provided event ID does not have data' => [ $this->sample_event, 'evt_not_exist', false ],
-			'Process event successfully'           => [ $this->sample_event, 'evt_111', true ],
+		// We want to be sure that there are no events stored.
+		$args   = [
+			'post_type'      => WC_Payments_Webhook_Reliability_Service::POST_TYPE,
+			'post_status'    => 'any',
+			'posts_per_page' => 10,
 		];
+		$events = get_posts( $args );
+		$this->assertEquals( 0, count( $events ) );
+		$this->webhook_reliability_service->store_event( $this->sample_event );
+		// Make sure that event is added.
+		$events = get_posts( $args );
+		$this->assertEquals( 1, count( $events ) );
+		$this->mock_webhook_processing_service
+			->expects( $this->once() )
+			->method( 'process' )
+			->with( $this->sample_event );
+
+		$this->webhook_reliability_service->load_and_process_events();
+
+		// Make sure that event is deleted from wp posts.
+		$events = get_posts( $args );
+		$this->assertEquals( 0, count( $events ) );
 	}
 }

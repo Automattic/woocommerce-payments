@@ -67,7 +67,7 @@ class WC_Payments_Webhook_Reliability_Service {
 		$this->webhook_processing_service = $webhook_processing_service;
 
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'maybe_schedule_failed_webhook_events' ] );
-		add_action( self::WEBHOOK_FETCH_EVENTS_ACTION, [ $this, 'fetch_failed_webhook_events' ] );
+		add_action( self::WEBHOOK_FETCH_EVENTS_ACTION, [ $this, 'schedule_processing_failed_webhook_events' ] );
 		add_action( self::WEBHOOK_PROCESS_EVENT_ACTION, [ $this, 'process_event' ] );
 
 		// Schedule the action if not already scheduled.
@@ -106,7 +106,7 @@ class WC_Payments_Webhook_Reliability_Service {
 	 *
 	 * @return void
 	 */
-	public function fetch_failed_webhook_events() {
+	public function schedule_processing_failed_webhook_events() {
 		try {
 			$payload = $this->payments_api_client->get_failed_webhook_events();
 		} catch ( API_Exception $e ) {
@@ -237,6 +237,11 @@ class WC_Payments_Webhook_Reliability_Service {
 		if ( ! empty( $existing ) ) {
 			return;
 		}
+		if ( isset( $event['livemode'] ) ) {
+			$livemode = $event['livemode'] ? 1 : 0;
+		} else {
+			$livemode = WC_Payments::mode()->is_live() ? 1 : 0;
+		}
 
 		$post_arr = [
 			'post_title'   => $event['id'] . ' (' . $event['type'] . ')',
@@ -247,7 +252,7 @@ class WC_Payments_Webhook_Reliability_Service {
 			'post_date'    => $this->get_event_processing_time_from_event_type( $event['type'] ?? '' ),
 			'tax_input'    => [
 				self::TYPE_TAXONOMY     => [ $event['type'] ],
-				self::LIVEMODE_TAXONOMY => [ $event['livemode'] ? 1 : 0 ],
+				self::LIVEMODE_TAXONOMY => [ $livemode ],
 			],
 		];
 
@@ -261,9 +266,10 @@ class WC_Payments_Webhook_Reliability_Service {
 	 * Loads and processes events.
 	 *
 	 * @param array $args Arguments for the `get_events` method.
+	 *
 	 * @return array[]    The processed events.
 	 */
-	public function load_and_process_events( $args ) {
+	public function load_and_process_events( array $args = [] ) {
 		$events = $this->get_events( $args );
 
 		foreach ( $events as $event ) {
@@ -287,7 +293,7 @@ class WC_Payments_Webhook_Reliability_Service {
 	 * }
 	 * @return array[] Stored events, which match the given criteria.
 	 */
-	protected function get_events( array $extra = [] ): array {
+	public function get_events( array $extra = [] ): array {
 		$live = $extra['live'] ?? WC_Payments::mode()->is_live();
 		$args = [
 			'post_type'      => self::POST_TYPE,
@@ -329,6 +335,7 @@ class WC_Payments_Webhook_Reliability_Service {
 		$posts        = get_posts( $args );
 		$events       = [];
 		$current_time = new DateTime();
+
 		foreach ( $posts as $post ) {
 
 			$post_date = new DateTime( $post->post_date );
