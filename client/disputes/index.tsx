@@ -35,12 +35,12 @@ import { reasons } from './strings';
 import { formatStringValue } from 'utils';
 import { formatExplicitCurrency } from 'utils/currency';
 import DisputesFilters from './filters';
-import { disputeAwaitingResponseStatuses } from './filters/config';
 import DownloadButton from 'components/download-button';
 import disputeStatusMapping from 'components/dispute-status-chip/mappings';
 import { CachedDispute, DisputesTableHeader } from 'wcpay/types/disputes';
 import { getDisputesCSV } from 'wcpay/data/disputes/resolvers';
 import { applyThousandSeparator } from 'wcpay/utils';
+import { isAwaitingResponse } from 'wcpay/disputes/utils';
 
 import './style.scss';
 
@@ -154,10 +154,7 @@ const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
  */
 const smartDueDate = ( dispute: CachedDispute ) => {
 	// if dispute is not awaiting response, return an empty string.
-	if (
-		dispute.due_by === '' ||
-		! disputeAwaitingResponseStatuses.includes( dispute.status )
-	) {
+	if ( dispute.due_by === '' || ! isAwaitingResponse( dispute ) ) {
 		return '';
 	}
 	// Get current time in UTC.
@@ -224,9 +221,7 @@ export const DisputesList = (): JSX.Element => {
 		const reasonDisplay = reasonMapping
 			? reasonMapping.display
 			: formatStringValue( dispute.reason );
-		const needsResponse = disputeAwaitingResponseStatuses.includes(
-			dispute.status
-		);
+		const needsResponse = isAwaitingResponse( dispute );
 		const data: {
 			[ key: string ]: {
 				value: number | string;

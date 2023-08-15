@@ -15,8 +15,8 @@ import CancelConfirmationModal from './cancel-confirm-modal';
 import BannerNotice from 'wcpay/components/banner-notice';
 import { formatExplicitCurrency } from 'utils/currency';
 import { reasons } from 'wcpay/disputes/strings';
+import { isAwaitingResponse } from 'wcpay/disputes/utils';
 import { getDetailsURL } from 'wcpay/components/details-link';
-import { disputeAwaitingResponseStatuses } from 'wcpay/disputes/filters/config';
 import { useCharge } from 'wcpay/data';
 import wcpayTracks from 'tracks';
 import './style.scss';
@@ -133,7 +133,7 @@ const DisputeNotice = ( { chargeId } ) => {
 		! charge?.dispute ||
 		! charge?.dispute?.evidence_details?.due_by ||
 		// Only show the notice if the dispute is awaiting a response.
-		! disputeAwaitingResponseStatuses.includes( charge?.dispute?.status )
+		! isAwaitingResponse( charge.dispute )
 	) {
 		return null;
 	}

@@ -12,6 +12,7 @@ import type { Dispute } from 'wcpay/types/disputes';
 import { Card, CardBody } from '@wordpress/components';
 import './style.scss';
 import DisputeNotice from './dispute-notice';
+import { isAwaitingResponse } from 'wcpay/disputes/utils';
 
 interface DisputeDetailsProps {
 	dispute: Dispute;
@@ -26,7 +27,7 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 		<div className="transaction-details-dispute-details-wrapper">
 			<Card>
 				<CardBody>
-					{ countdownDays >= 0 && (
+					{ isAwaitingResponse( dispute ) && countdownDays >= 0 && (
 						<DisputeNotice
 							dispute={ dispute }
 							urgent={ countdownDays <= 2 }
