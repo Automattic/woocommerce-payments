@@ -13,7 +13,6 @@ use WCPay\Logger;
 use WC_Payments;
 use WC_Payments_Features;
 use WCPay\Platform_Checkout\SessionHandler;
-use WP_REST_Request;
 
 /**
  * Class responsible for handling woopay sessions.
@@ -326,6 +325,11 @@ class WooPay_Session {
 	 * @return bool True if WooPay is enabled, false otherwise.
 	 */
 	private static function is_woopay_enabled(): bool {
+		// This method might be called too early in certain environments, so it's important to check if these are available.
+		if ( ! class_exists( WC_Payments_Features::class ) || ! class_exists( WC_Payments::class ) || is_null( WC_Payments::get_gateway() ) ) {
+			return false;
+		}
+
 		return WC_Payments_Features::is_woopay_eligible() && 'yes' === WC_Payments::get_gateway()->get_option( 'platform_checkout', 'no' );
 	}
 }
