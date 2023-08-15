@@ -26,7 +26,7 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 	return (
 		<div className="transaction-details-dispute-details-wrapper">
 			<Card>
-				<CardBody>
+				<CardBody className="transaction-details-dispute-details-body">
 					{ isAwaitingResponse( dispute ) && countdownDays >= 0 && (
 						<DisputeNotice
 							dispute={ dispute }
