@@ -179,6 +179,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 
 		$_POST = [
 			'wcpay-payment-method' => self::PAYMENT_METHOD_ID,
+			'payment_method'       => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 		];
 	}
 
