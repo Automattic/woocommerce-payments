@@ -197,7 +197,7 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * @return ?array The onboarding flow state, or null if not set.
 	 */
-	public static function get_onboarding_flow_state(): ?array {
+	public function get_onboarding_flow_state(): ?array {
 		return get_option( self::ONBOARDING_FLOW_STATE_OPTION, null );
 	}
 
@@ -207,7 +207,7 @@ class WC_Payments_Onboarding_Service {
 	 * @param array $value The onboarding flow state.
 	 * @return bool Whether the option was updated successfully.
 	 */
-	public static function set_onboarding_flow_state( array $value ): bool {
+	public function set_onboarding_flow_state( array $value ): bool {
 		return update_option( self::ONBOARDING_FLOW_STATE_OPTION, $value );
 	}
 

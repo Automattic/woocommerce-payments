@@ -218,6 +218,6 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	 * @return void
 	 */
 	public function update_flow_state( WP_REST_Request $request ) {
-		WC_Payments_Onboarding_Service::set_onboarding_flow_state( $request->get_json_params() );
+		$this->onboarding_service->set_onboarding_flow_state( $request->get_json_params() );
 	}
 }
