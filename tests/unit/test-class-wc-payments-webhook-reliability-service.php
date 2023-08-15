@@ -78,13 +78,13 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WCPAY_UnitTestCase {
 	 * @return void
 	 */
 	public function test_filters_registered_properly() {
-		$this->assertNotFalse( has_filter( 'woocommerce_payments_account_refreshed', [ $this->webhook_reliability_service, 'maybe_schedule_fetch_events' ] ) );
+		$this->assertNotFalse( has_filter( 'woocommerce_payments_account_refreshed', [ $this->webhook_reliability_service, 'maybe_schedule_failed_webhook_events' ] ) );
 		$this->assertNotFalse(
 			has_filter(
 				WC_Payments_Webhook_Reliability_Service::WEBHOOK_FETCH_EVENTS_ACTION,
 				[
 					$this->webhook_reliability_service,
-					'fetch_events_and_schedule_processing_jobs',
+					'fetch_failed_webhook_events',
 				]
 			)
 		);
@@ -100,7 +100,7 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WCPAY_UnitTestCase {
 	 * @dataProvider provider_maybe_schedule_events
 	 * @return void
 	 */
-	public function test_maybe_schedule_events( $account_data, $will_schedule ) {
+	public function test_maybe_schedule_failed_webhook_events( $account_data, $will_schedule ) {
 		// Set up.
 		$this->mock_action_scheduler_service
 			->expects( $this->exactly( $will_schedule ? 1 : 0 ) )
@@ -111,7 +111,7 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WCPAY_UnitTestCase {
 			);
 
 		// Act.
-		$this->webhook_reliability_service->maybe_schedule_fetch_events( $account_data );
+		$this->webhook_reliability_service->maybe_schedule_failed_webhook_events( $account_data );
 	}
 
 	public function provider_maybe_schedule_events(): array {
@@ -141,7 +141,7 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'schedule_job' );
 
 		// Act.
-		$this->webhook_reliability_service->fetch_events_and_schedule_processing_jobs();
+		$this->webhook_reliability_service->fetch_failed_webhook_events();
 	}
 
 	/**
@@ -167,7 +167,7 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WCPAY_UnitTestCase {
 				WC_Payments_Webhook_Reliability_Service::WEBHOOK_FETCH_EVENTS_ACTION
 			);
 
-		$this->webhook_reliability_service->fetch_events_and_schedule_processing_jobs();
+		$this->webhook_reliability_service->fetch_failed_webhook_events();
 	}
 
 	public function provider_fetch_events_schedule_next_fetch_events(): array {
@@ -216,7 +216,7 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WCPAY_UnitTestCase {
 			);
 
 		// Act.
-		$this->webhook_reliability_service->fetch_events_and_schedule_processing_jobs();
+		$this->webhook_reliability_service->fetch_failed_webhook_events();
 
 		// Assert save_event_data() is executed by checking the existence with get_event_data().
 		foreach ( $expected_schedule_event_ids as $event_id ) {
@@ -273,9 +273,9 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WCPAY_UnitTestCase {
 	 * @dataProvider provider_process_event
 	 * @return void
 	 */
-	public function test_process_event( $event_data, $event_id, $will_process ) {
+	public function test_process_failed_webhook_event( $event_data, $event_id, $will_process ) {
 		// Prepare.
-		$this->webhook_reliability_service->set_event_data( $event_data );
+		$this->webhook_reliability_service->store_event( $event_data );
 
 		$this->mock_webhook_processing_service
 			->expects( $this->exactly( $will_process ? 1 : 0 ) )
