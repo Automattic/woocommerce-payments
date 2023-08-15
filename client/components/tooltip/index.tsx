@@ -111,6 +111,7 @@ export const ClickTooltip: React.FC< TooltipProps > = ( {
 				parentElement={ tooltipParentRef.current || undefined }
 				onHide={ handleHide }
 				isVisible={ isVisible || isClicked }
+				className="wcpay-tooltip--click__tooltip"
 			/>
 		</button>
 	);

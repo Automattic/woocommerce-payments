@@ -1,10 +1,4 @@
 .wcpay-tooltip {
-	&--click {
-		&__content-wrapper {
-			cursor: pointer;
-		}
-	}
-
 	&__content-wrapper {
 		// ensures that the element needed for position calculations isn't included in the DOM layout
 		display: contents;
@@ -51,6 +45,30 @@
 
 		a {
 			color: $blue-medium;
+		}
+	}
+
+	&--click {
+		&__content-wrapper {
+			cursor: pointer;
+		}
+
+		&__tooltip {
+			// Specific styles for the click tooltip variant.
+			position: relative;
+			max-width: 292px;
+			padding: 12px;
+			color: inherit;
+			text-align: left;
+			border-radius: 2px;
+			border: 1px solid $gray-400;
+			background: $white;
+			box-shadow: 0 2px 6px 0 rgba( 0, 0, 0, 0.05 );
+
+			&::after {
+				// Remove the arrow from the click tooltip variant.
+				display: none;
+			}
 		}
 	}
 }
