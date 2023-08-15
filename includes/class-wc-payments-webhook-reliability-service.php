@@ -71,10 +71,14 @@ class WC_Payments_Webhook_Reliability_Service {
 		add_action( self::WEBHOOK_PROCESS_EVENT_ACTION, [ $this, 'process_event' ] );
 
 		// Schedule the action if not already scheduled.
-		if ( ! as_next_scheduled_action( self::WEBHOOK_PROCESS_EVENTS_ACTION ) ) {
-			as_schedule_recurring_action( time(), 60, self::WEBHOOK_PROCESS_EVENTS_ACTION );
-		}
-
+		add_action(
+			'plugins_loaded',
+			function() {
+				if ( ! as_next_scheduled_action( self::WEBHOOK_PROCESS_EVENTS_ACTION ) ) {
+					as_schedule_recurring_action( time(), 60, self::WEBHOOK_PROCESS_EVENTS_ACTION );
+				}
+			}
+		);
 		// Hook the scheduled action to the method.
 		add_action( self::WEBHOOK_PROCESS_EVENTS_ACTION, [ $this, 'load_and_process_events' ] );
 	}
