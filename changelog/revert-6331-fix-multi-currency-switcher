@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Revert fix WooPay Session Handler in Store API requests.
