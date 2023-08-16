@@ -250,14 +250,14 @@ class WC_Payments_Webhook_Reliability_Service {
 			'post_parent'  => $event['data']['object']['metadata']['order_id'] ?? 0,
 			'post_content' => maybe_serialize( $event['data'] ),
 			'post_date'    => $this->get_event_processing_time_from_event_type( $event['type'] ?? '' ),
-			'tax_input'    => [
-				self::TYPE_TAXONOMY     => [ $event['type'] ],
-				self::LIVEMODE_TAXONOMY => [ $livemode ],
-			],
 		];
 
 		$post_id = wp_insert_post( $post_arr );
-		if ( is_wp_error( $post_id ) || 0 <= $post_id ) {
+
+		wp_set_post_terms( $post_id, $event['type'], self::TYPE_TAXONOMY );
+		wp_set_post_terms( $post_id, $livemode, self::LIVEMODE_TAXONOMY );
+
+		if ( is_wp_error( $post_id ) || 0 === $post_id ) {
 			Logger::error( 'Could not store event in CPT. Event data: ' . var_export( $event, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
 		}
 	}
@@ -327,6 +327,8 @@ class WC_Payments_Webhook_Reliability_Service {
 					'field'    => 'name',
 				],
 			];
+
+			$args['tax_query']['relation'] = 'AND';
 		}
 
 		if ( isset( $extra['order'] ) ) {

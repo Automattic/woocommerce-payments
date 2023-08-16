@@ -272,27 +272,26 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_load_and_process_events() {
 
-		// We want to be sure that there are no events stored.
-		$args   = [
-			'post_type'      => WC_Payments_Webhook_Reliability_Service::POST_TYPE,
-			'post_status'    => 'any',
-			'posts_per_page' => 10,
-		];
-		$events = get_posts( $args );
-		$this->assertEquals( 0, count( $events ) );
+		// Make sure we don't have any scheduled events.
+		$this->assertEquals( 0, count( $this->webhook_reliability_service->get_events() ) );
 		$this->webhook_reliability_service->store_event( $this->sample_event );
 		// Make sure that event is added.
-		$events = get_posts( $args );
+		$events = $this->webhook_reliability_service->get_events();
 		$this->assertEquals( 1, count( $events ) );
 		$this->mock_webhook_processing_service
 			->expects( $this->once() )
 			->method( 'process' )
-			->with( $this->sample_event );
+			->with(
+				$this->callback(
+					function ( $arg ) {
+						return isset( $arg['_post_id'] ) && $arg['_post_id'] > 0 && $this->sample_event['id'] === $arg['id'] && $this->sample_event['data'] === $arg['data'] && $this->sample_event['type'] === $arg['type'] && ( WC_Payments::mode()->is_live() ? 1 : 0 ) === $arg['livemode'];
+					}
+				)
+			);
 
 		$this->webhook_reliability_service->load_and_process_events();
 
-		// Make sure that event is deleted from wp posts.
-		$events = get_posts( $args );
-		$this->assertEquals( 0, count( $events ) );
+		// Make sure that event is deleted.
+		$this->assertEquals( 0, count( $this->webhook_reliability_service->get_events() ) );
 	}
 }
