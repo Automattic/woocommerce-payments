@@ -39,6 +39,7 @@ export const getTasks = ( {
 		accountLink,
 		requirements,
 		progressiveOnboarding,
+		detailsSubmitted,
 	} = wcpaySettings.accountStatus;
 
 	const getErrorMessagesFromRequirements = (): any => {
@@ -77,7 +78,8 @@ export const getTasks = ( {
 				status ?? '',
 				accountLink,
 				Number( currentDeadline ) ?? null,
-				pastDue ?? false
+				pastDue ?? false,
+				detailsSubmitted ?? false
 			),
 		wpcomReconnectUrl && getReconnectWpcomTask( wpcomReconnectUrl ),
 		isDisputeTaskVisible && getDisputeResolutionTask( activeDisputes ),

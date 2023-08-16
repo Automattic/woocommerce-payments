@@ -34,6 +34,7 @@ declare global {
 			};
 			depositsStatus?: string;
 			currentDeadline?: bigint;
+			detailsSubmitted?: boolean;
 			pastDue?: boolean;
 			accountLink: string;
 			hasSubmittedVatData?: boolean;
