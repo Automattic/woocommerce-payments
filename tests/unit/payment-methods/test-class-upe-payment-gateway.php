@@ -291,6 +291,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		// so that get_payment_method_from_request() does not throw error.
 		$_POST = [
 			'wcpay-payment-method' => 'pm_mock',
+			'payment_method'       => UPE_Payment_Gateway::GATEWAY_ID,
 		];
 	}
 
@@ -845,7 +846,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 	public function test_process_payment_returns_correct_redirect_url() {
 		$order                         = WC_Helper_Order::create_order();
-		$order_id                      = $order->get_id();
 		$_POST['wc_payment_intent_id'] = 'pi_mock';
 
 		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::PROCESSING ] );
@@ -870,7 +870,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 	public function test_process_payment_passes_save_payment_method_to_store() {
 		$order                         = WC_Helper_Order::create_order();
-		$order_id                      = $order->get_id();
 		$gateway_id                    = UPE_Payment_Gateway::GATEWAY_ID;
 		$save_payment_param            = "wc-$gateway_id-new-payment-method";
 		$_POST[ $save_payment_param ]  = 'yes';
@@ -930,11 +929,12 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$this->set_cart_contains_subscription_items( false );
 
-		$result = $this->mock_upe_gateway->process_payment( $order->get_id() );
-
 		$this->mock_upe_gateway
 			->expects( $this->never() )
 			->method( 'manage_customer_details_for_order' );
+
+		$result = $this->mock_upe_gateway->process_payment( $order->get_id() );
+
 		$this->assertEquals( 'success', $result['result'] );
 		$this->assertMatchesRegularExpression( '/key=mock_order_key/', $result['redirect'] );
 	}
