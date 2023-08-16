@@ -7,7 +7,12 @@ import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import { TextField, SelectField, PhoneNumberField } from '../fields';
+import {
+	TextField,
+	SelectField,
+	PhoneNumberField,
+	GroupedSelectField,
+} from '../fields';
 
 describe( 'Form fields components', () => {
 	it( 'renders TextField component with provided props', () => {
@@ -43,6 +48,21 @@ describe( 'Form fields components', () => {
 			<PhoneNumberField
 				label="Test Label"
 				value="123"
+				onChange={ jest.fn() }
+			/>
+		);
+		expect( screen.getByText( 'Test Label' ) ).toBeInTheDocument();
+	} );
+
+	it( 'renders GroupedSelectField component with provided props', () => {
+		const options = [
+			{ key: 'option-1', name: 'Option 1', group: 'a' },
+			{ key: 'option-2', name: 'Option 2', group: 'b' },
+		];
+		render(
+			<GroupedSelectField
+				label="Test Label"
+				options={ options }
 				onChange={ jest.fn() }
 			/>
 		);
