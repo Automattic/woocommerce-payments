@@ -1094,7 +1094,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
 			}
 
-			$payment_methods = $this->get_payment_methods_from_request();
+			$payment_methods = $this->get_payment_method_types( $payment_information );
 			// The sanitize_user call here is deliberate: it seems the most appropriate sanitization function
 			// for a string that will only contain latin alphanumeric characters and underscores.
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -1241,7 +1241,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					Payment_Method::CARD === $this->get_selected_stripe_payment_type_id() &&
 					in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true )
 					) {
-					$request->set_payment_method_types( $this->get_payment_methods_from_request() );
+					$request->set_payment_method_types( $this->get_payment_method_types( $payment_information ) );
 					$request->set_mandate_data( $this->get_mandate_data() );
 				}
 
@@ -1385,28 +1385,63 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function get_payment_method_to_use_for_intent() {
 		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
-			return $this->get_payment_methods_from_request()[0];
+			$requested_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+			return $this->get_payment_methods_from_gateway_id( $requested_payment_method )[0];
 		}
+	}
+
+	/**
+	 * Get payment method types to attach to intention request.
+	 *
+	 * @param Payment_Information $payment_information Payment information object for transaction.
+	 * @return array List of payment methods.
+	 */
+	public function get_payment_method_types( $payment_information ) : array {
+		$requested_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		$token                    = $payment_information->get_payment_token();
+
+		if ( ! empty( $requested_payment_method ) ) {
+			// All checkout requests should contain $_POST context, so we check this first.
+			$payment_methods = $this->get_payment_methods_from_gateway_id( $requested_payment_method );
+		} elseif ( ! is_null( $token ) ) {
+			// If $_POST is empty, this may be a subscription renewal, where saved payment token will be present instead.
+			$order           = $payment_information->get_order();
+			$order_id        = $order instanceof WC_Order ? $order->get_id() : null;
+			$payment_methods = $this->get_payment_methods_from_gateway_id( $token->get_gateway_id(), $order_id );
+		} else {
+			// Final fallback case, if all else fails.
+			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
+		}
+
+		return $payment_methods;
 	}
 
 	/**
 	 * Get the payment methods used in the request.
 	 *
+	 * @param string $gateway_id ID of processing payment gateway.
+	 * @param int    $order_id ID of related order, if applicable.
 	 * @return array List of payment methods.
 	 */
-	private function get_payment_methods_from_request() {
-		$upe_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
-
-		if ( ! empty( $upe_payment_method ) && 'woocommerce_payments' !== $upe_payment_method ) {
-			$payment_methods = [ str_replace( 'woocommerce_payments_', '', $upe_payment_method ) ];
-		} elseif ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
-			$payment_methods = [ 'card' ];
-			if ( WC_Payments_Features::is_upe_deferred_intent_enabled() &&
-				in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true ) ) {
+	public function get_payment_methods_from_gateway_id( $gateway_id, $order_id = null ) {
+		$split_upe_gateway_prefix = self::GATEWAY_ID . '_';
+		// If $gateway_id begins with `woocommerce_payments_` payment method is a split UPE LPM.
+		// Otherwise $gateway_id must be `woocommerce_payments`.
+		if ( substr( $gateway_id, 0, strlen( $split_upe_gateway_prefix ) ) === $split_upe_gateway_prefix ) {
+			$payment_methods = [ str_replace( $split_upe_gateway_prefix, '', $gateway_id ) ];
+		} elseif ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+			// If split or deferred intent UPE is enabled and $gateway_id is `woocommerce_payments`, this must be the CC gateway.
+			// We only need to return single `card` payment method, adding `link` since deferred intent UPE gateway is compatible with Link.
+			$payment_methods = [ Payment_Method::CARD ];
+			if ( in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true ) ) {
 				$payment_methods[] = Payment_Method::LINK;
 			}
+		} elseif ( WC_Payments_Features::is_upe_split_enabled() ) {
+			$payment_methods = [ Payment_Method::CARD ];
 		} else {
-			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
+			// $gateway_id must be `woocommerce_payments` and gateway is either legacy UPE or legacy card.
+			// Find the relevant gateway and return all available payment methods.
+			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( $order_id, true );
 		}
 
 		return $payment_methods;
