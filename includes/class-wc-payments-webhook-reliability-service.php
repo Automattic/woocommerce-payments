@@ -70,17 +70,12 @@ class WC_Payments_Webhook_Reliability_Service {
 		add_action( self::WEBHOOK_FETCH_EVENTS_ACTION, [ $this, 'schedule_processing_failed_webhook_events' ] );
 		add_action( self::WEBHOOK_PROCESS_EVENT_ACTION, [ $this, 'process_event' ] );
 
-		// Schedule the action if not already scheduled.
-		add_action(
-			'plugins_loaded',
-			function() {
-				if ( ! as_next_scheduled_action( self::WEBHOOK_PROCESS_EVENTS_ACTION ) ) {
-					as_schedule_recurring_action( time(), 60, self::WEBHOOK_PROCESS_EVENTS_ACTION );
-				}
-			}
-		);
 		// Hook the scheduled action to the method.
 		add_action( self::WEBHOOK_PROCESS_EVENTS_ACTION, [ $this, 'load_and_process_events' ] );
+
+		// Add cleanup action.
+		add_action( 'action_scheduler_after_execute', [ $this, 'maybe_cleanup_logs_after_processing' ], 1, 2 );
+
 	}
 
 	/**
@@ -203,6 +198,10 @@ class WC_Payments_Webhook_Reliability_Service {
 				'show_in_rest' => false,
 			]
 		);
+
+		if ( ! as_next_scheduled_action( self::WEBHOOK_PROCESS_EVENTS_ACTION ) ) {
+			as_schedule_recurring_action( time(), 60, self::WEBHOOK_PROCESS_EVENTS_ACTION );
+		}
 	}
 
 	/**
@@ -396,8 +395,11 @@ class WC_Payments_Webhook_Reliability_Service {
 			$action = ActionScheduler::store()->fetch_action( $action_id );
 		}
 
-		// Check if the action's hook matches.
-		if ( $action->get_hook() === self::WEBHOOK_PROCESS_EVENTS_ACTION ) {
+		// Fetch the status of the action directly from the database.
+		$status = $wpdb->get_var( $wpdb->prepare( "SELECT status FROM {$wpdb->prefix}actionscheduler_actions WHERE action_id = %d", $action_id ) );
+
+		// Check if the action's hook matches and the status is "complete".
+		if ( $action->get_hook() === self::WEBHOOK_PROCESS_EVENTS_ACTION && 'complete' === $status ) {
 
 			// Delete logs associated with the action ID.
 			$wpdb->delete( "{$wpdb->prefix}actionscheduler_logs", [ 'action_id' => $action_id ] );
