@@ -62,13 +62,20 @@ class ExampleServiceWithDependencies {
 	 * @return bool
 	 */
 	public function is_in_test_mode() {
+		return $this->mode->is_test();
+	}
+
+	/**
+	 * Temporary method to test exceptions.
+	 *
+	 * @return bool
+	 */
+	public function handle_exception() {
 		try {
 			$this->example_service->do_something_with_exception();
 		} catch ( Exception $e ) {
 			// Do nothing, this is fine. We're just testing Psalm.
 			return false;
 		}
-
-		return $this->mode->is_test();
 	}
 }
