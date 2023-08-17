@@ -4,8 +4,17 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import type { ChipType } from 'components/chip';
 
-const transactionStatusMapping = {
+export type TransactionStatus = 'allow' | 'review' | 'block';
+type TransactionStatusMapping = Record<
+	TransactionStatus,
+	{
+		type: ChipType;
+		message: string;
+	}
+>;
+const transactionStatusMapping: TransactionStatusMapping = {
 	allow: {
 		type: 'primary',
 		message: __( 'Succeeded', 'woocommerce-payments' ),
@@ -19,7 +28,5 @@ const transactionStatusMapping = {
 		message: __( 'Payment blocked', 'woocommerce-payments' ),
 	},
 };
-
-export type TransactionStatus = keyof typeof transactionStatusMapping;
 
 export default transactionStatusMapping;

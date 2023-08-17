@@ -123,6 +123,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private $mock_charge_created = 1653076178;
 
 	/**
+	 * WC_Payments_Localization_Service instance.
+	 *
+	 * @var WC_Payments_Localization_Service
+	 */
+	private $mock_localization_service;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -166,6 +173,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_dpps = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 
+		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
+
 		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
 			$this->mock_wcpay_account,
@@ -174,7 +183,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->mock_action_scheduler_service,
 			$this->mock_rate_limiter,
 			$this->order_service,
-			$this->mock_dpps
+			$this->mock_dpps,
+			$this->mock_localization_service
 		);
 
 		$this->woopay_utilities = new WooPay_Utilities();
@@ -1871,10 +1881,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// There is no payment method data within the request. This is the case e.g. for the automatic subscription renewals.
 		$_POST['payment_method'] = '';
 
+		$token = WC_Helper_Token::create_token( 'pm_mock' );
+
 		$expected_upe_payment_method = 'card';
 		$order                       = WC_Helper_Order::create_order();
 		$order->set_currency( 'USD' );
 		$order->set_total( 100 );
+		$order->add_payment_token( $token );
 		$order->save();
 
 		$pi = new Payment_Information( 'pm_test', $order );
@@ -2288,6 +2301,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					$this->mock_rate_limiter,
 					$this->order_service,
 					$this->mock_dpps,
+					$this->mock_localization_service,
 				]
 			)
 			->setMethods( $methods )
