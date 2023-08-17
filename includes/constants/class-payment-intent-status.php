@@ -16,6 +16,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @deprecated 6.4.0
  * @see Intent_Status
+ *
+ * @psalm-immutable
  */
 class Payment_Intent_Status extends Intent_Status {
 
