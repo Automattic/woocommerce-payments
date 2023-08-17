@@ -141,9 +141,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
             data-wp-component="FlexItem"
           >
             <span
-              class="components-truncate components-text woocommerce-pill wcpay-pill__light css-1g4vivm-View-Text-sx-Base em57xhy0"
-              data-wp-c16t="true"
-              data-wp-component="Text"
+              class="chip chip-light"
             >
               Estimated
             </span>
@@ -265,9 +263,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
             data-wp-component="FlexItem"
           >
             <span
-              class="components-truncate components-text woocommerce-pill wcpay-pill__success css-1g4vivm-View-Text-sx-Base em57xhy0"
-              data-wp-c16t="true"
-              data-wp-component="Text"
+              class="chip chip-success"
             >
               Paid
             </span>
@@ -315,9 +311,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
             data-wp-component="FlexItem"
           >
             <span
-              class="components-truncate components-text woocommerce-pill wcpay-pill__alert css-1g4vivm-View-Text-sx-Base em57xhy0"
-              data-wp-c16t="true"
-              data-wp-component="Text"
+              class="chip chip-warning"
             >
               Pending
             </span>

@@ -98,7 +98,8 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 			$this->mock_action_scheduler_service,
 			$this->mock_rate_limiter,
 			$this->mock_order_service,
-			$mock_dpps
+			$mock_dpps,
+			$this->createMock( WC_Payments_Localization_Service::class )
 		);
 	}
 

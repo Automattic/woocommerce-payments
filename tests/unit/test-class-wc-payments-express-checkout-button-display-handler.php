@@ -146,7 +146,8 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			$mock_action_scheduler_service,
 			$mock_rate_limiter,
 			$mock_order_service,
-			$mock_dpps
+			$mock_dpps,
+			$this->createMock( WC_Payments_Localization_Service::class )
 		);
 	}
 

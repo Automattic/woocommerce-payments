@@ -156,6 +156,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 					$this->mock_rate_limiter,
 					$this->mock_order_service,
 					$this->mock_dpps,
+					$this->createMock( WC_Payments_Localization_Service::class ),
 				]
 			)
 			->setMethods(
@@ -180,6 +181,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// so that get_payment_method_from_request() does not throw error.
 		$_POST = [
 			'wcpay-payment-method' => 'pm_mock',
+			'payment_method'       => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 		];
 	}
 

@@ -69,7 +69,7 @@ exports[`AccountStatus renders normal status 1`] = `
           data-wp-component="FlexBlock"
         >
           <span
-            class="chip chip-success is-compact"
+            class="chip chip-success"
           >
             Complete
           </span>
@@ -200,7 +200,7 @@ exports[`AccountStatus renders normal status 1`] = `
 exports[`StatusChip renders complete status 1`] = `
 <div>
   <span
-    class="chip chip-success is-compact"
+    class="chip chip-success"
   >
     Complete
   </span>
@@ -210,7 +210,7 @@ exports[`StatusChip renders complete status 1`] = `
 exports[`StatusChip renders enabled status 1`] = `
 <div>
   <span
-    class="chip chip-primary is-compact"
+    class="chip chip-primary"
   >
     Enabled
   </span>
@@ -220,7 +220,7 @@ exports[`StatusChip renders enabled status 1`] = `
 exports[`StatusChip renders partially restricted status 1`] = `
 <div>
   <span
-    class="chip chip-warning is-compact"
+    class="chip chip-warning"
   >
     Restricted partially
   </span>
@@ -237,7 +237,7 @@ exports[`StatusChip renders pending verification status 1`] = `
       class="wcpay-tooltip__content-wrapper"
     >
       <span
-        class="chip chip-light is-compact"
+        class="chip chip-light"
       >
         Pending
       </span>
@@ -256,7 +256,7 @@ exports[`StatusChip renders pending verification status for po 1`] = `
       class="wcpay-tooltip__content-wrapper"
     >
       <span
-        class="chip chip-light is-compact"
+        class="chip chip-light"
       >
         Pending
       </span>
@@ -268,7 +268,7 @@ exports[`StatusChip renders pending verification status for po 1`] = `
 exports[`StatusChip renders rejected status 1`] = `
 <div>
   <span
-    class="chip chip-light is-compact"
+    class="chip chip-light"
   >
     Rejected
   </span>
@@ -278,7 +278,7 @@ exports[`StatusChip renders rejected status 1`] = `
 exports[`StatusChip renders restricted soon status 1`] = `
 <div>
   <span
-    class="chip chip-warning is-compact"
+    class="chip chip-warning"
   >
     Restricted soon
   </span>
@@ -288,7 +288,7 @@ exports[`StatusChip renders restricted soon status 1`] = `
 exports[`StatusChip renders restricted status 1`] = `
 <div>
   <span
-    class="chip chip-alert is-compact"
+    class="chip chip-alert"
   >
     Restricted
   </span>
@@ -298,7 +298,7 @@ exports[`StatusChip renders restricted status 1`] = `
 exports[`StatusChip renders unknown status 1`] = `
 <div>
   <span
-    class="chip chip-light is-compact"
+    class="chip chip-light"
   >
     Unknown
   </span>
