@@ -52,8 +52,9 @@
 		"fxString": "1 EUR → 159.13333 JPY: ¥4,774 JPY",
 		"feeString": "Fee (7.6% + ¥0): ¥-267",
 		"feeBreakdown": {
-			"base": "Base fee: 2.9% + $0.30",
-			"additional-fx": "Foreign exchange fee: 1%"
+			"base": "Base fee: 3.6%",
+			"additional-international": "International card fee: 2%",
+			"additional-fx": "Foreign exchange fee: 2%"
 		},
 		"netString": "Net deposit: ¥4,507 JPY"
 	}
