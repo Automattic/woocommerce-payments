@@ -1,5 +1,4 @@
 on:
-  push:
   workflow_run:
     workflows:
         - Compatibility - WC, WP and PHP
