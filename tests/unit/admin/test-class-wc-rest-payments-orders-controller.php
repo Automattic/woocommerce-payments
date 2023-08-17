@@ -554,7 +554,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->mock_gateway
 			->expects( $this->once() )
 			->method( 'capture_charge' )
-			->with( $this->isInstanceOf( WC_Order::class ) )
+			->with( $this->isInstanceOf( WC_Order::class ), false, $order->get_total() )
 			->willReturn(
 				[
 					'status' => Payment_Intent_Status::SUCCEEDED,
@@ -584,14 +584,93 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			],
 			$response_data
 		);
+	}
+	public function test_partial_capture_authorization_success() {
+		// Arrange: Create a mock order.
+		$order             = $this->create_mock_order();
+		$amount_to_capture = $order->get_total() - 10;
 
-		/**
-		 * This is commented out due to we are not able to accurately get the order status from this process.
-		 * This is due to the order status is updated in the capture_charge method, which is mocked. The capture_charge
-		 * method calls order_service->update_order_status_from_intent, which updates the status.
-		 * $result_order = wc_get_order( $order->get_id() );
-		 * $this->assertSame( 'processing', $result_order->get_status() );
-		*/
+		// Arrange: Create a mock intent to work with.
+		$mock_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'   => Payment_Intent_Status::REQUIRES_CAPTURE,
+				'metadata' => [
+					'order_id' => $order->get_id(),
+				],
+			]
+		);
+
+		// Arrange: Create a mock request for an intent.
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $this->mock_intent_id );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $mock_intent );
+
+		// Assert: We assert that capture_charge is called.
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'capture_charge' )
+			->with( $this->isInstanceOf( WC_Order::class ), false, $amount_to_capture )
+			->willReturn(
+				[
+					'status' => Payment_Intent_Status::SUCCEEDED,
+					'id'     => $this->mock_intent_id,
+				]
+			);
+
+		// Arrange: Create the request to capture the authorization.
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => $this->mock_intent_id,
+				'amount_to_capture' => $amount_to_capture,
+			]
+		);
+
+		// Act: Send the request to capture the authorization.
+		$response      = $this->controller->capture_authorization( $request );
+		$response_data = $response->get_data();
+
+		// Assert: Confirm we have a 200 response and our expected status info.
+		$this->assertSame( 200, $response->status );
+		$this->assertSame(
+			[
+				'status' => Payment_Intent_Status::SUCCEEDED,
+				'id'     => $this->mock_intent_id,
+			],
+			$response_data
+		);
+	}
+
+	public function test_partial_capture_exceeds_amount_fail() {
+		// Arrange: Create a mock order.
+		$order             = $this->create_mock_order();
+		$amount_to_capture = $order->get_total() + 10;
+
+		$this->mock_wcpay_request( Get_Intention::class, 0 );
+
+		// Assert: We assert that capture_charge is called.
+		$this->mock_gateway
+			->expects( $this->never() )
+			->method( 'capture_charge' );
+
+		// Arrange: Create the request to capture the authorization.
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => $this->mock_intent_id,
+				'amount_to_capture' => $amount_to_capture,
+			]
+		);
+
+		$response = $this->controller->capture_authorization( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertSame( 400, $data['status'] );
 	}
 
 	public function test_capture_authorization_succeeded_intent_throws_error() {
