@@ -68,7 +68,7 @@ class ExampleServiceWithDependencies {
 	/**
 	 * Temporary method to test exceptions.
 	 *
-	 * @return bool
+	 * @return bool|null
 	 */
 	public function handle_exception() {
 		try {
