@@ -106,6 +106,7 @@ class WC_Payment_Token_WCPay_Link extends WC_Payment_Token {
 		$shortened_length        = 4;
 		list( $handle, $domain ) = explode( '@', $email );
 		$redacted_handle         = strlen( $handle ) > $shortened_length ? substr( $handle, - $shortened_length ) : $handle;
+
 		return "$placeholder$redacted_handle@$domain";
 	}
 }
