@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Adds consistent payment token labels for saved Stripe Link payment methods across my account, shortcode checkout, and blocks checkout pages.
