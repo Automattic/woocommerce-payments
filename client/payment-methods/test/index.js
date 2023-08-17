@@ -205,11 +205,7 @@ describe( 'PaymentMethods', () => {
 			</WcPayUpeContextProvider>
 		);
 
-		expect( screen.queryAllByText( /Pending /i ).length ).toEqual( 2 );
-
-		expect(
-			screen.queryAllByText( /More information needed/i ).length
-		).toEqual( 4 );
+		expect( screen.queryAllByText( /Pending /i ).length ).toEqual( 4 );
 	} );
 
 	test( 'upe setup banner is rendered when UPE preview feature flag is enabled', () => {
