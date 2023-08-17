@@ -640,7 +640,7 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
                 usd
               </span>
               <span
-                class="chip chip-light"
+                class="chip chip-success"
               >
                 Paid
               </span>
@@ -900,7 +900,7 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
                 usd
               </span>
               <span
-                class="chip chip-light"
+                class="chip chip-success"
               >
                 Paid
               </span>
@@ -1946,7 +1946,7 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] 
                 usd
               </span>
               <span
-                class="chip chip-light"
+                class="chip chip-success"
               >
                 Paid
               </span>

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixes subscription renewals with the UPE enabled.

@@ -473,7 +473,7 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
                   usd
                 </span>
                 <span
-                  class="chip chip-light"
+                  class="chip chip-success"
                 >
                   Paid
                 </span>

@@ -38,7 +38,7 @@ export default {
 		message: __( 'Refunded', 'woocommerce-payments' ),
 	},
 	paid: {
-		type: 'light',
+		type: 'success',
 		message: __( 'Paid', 'woocommerce-payments' ),
 	},
 	authorized: {

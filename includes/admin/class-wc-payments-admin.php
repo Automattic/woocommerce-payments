@@ -692,10 +692,10 @@ class WC_Payments_Admin {
 		}
 
 		$screen = get_current_screen();
-		if ( 'shop_order' === $screen->id ) {
+		if ( in_array( $screen->id, [ 'shop_order', 'woocommerce_page_wc-orders' ], true ) ) {
 			$order = wc_get_order();
 
-			if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $order->get_payment_method() ) {
+			if ( $order && WC_Payment_Gateway_WCPay::GATEWAY_ID === $order->get_payment_method() ) {
 				$refund_amount = $order->get_remaining_refund_amount();
 				wp_localize_script(
 					'WCPAY_ADMIN_ORDER_ACTIONS',
