@@ -23,22 +23,7 @@ import Pill from '../pill';
 import PaymentMethodDisabledTooltip from '../payment-method-disabled-tooltip';
 import './payment-method.scss';
 
-const PaymentMethod = ( {
-	id,
-	label,
-	Icon = () => null,
-	description,
-	status,
-	checked,
-	onCheckClick,
-	onUncheckClick,
-	className,
-	isAllowingManualCapture,
-	isSetupRequired,
-	setupTooltip,
-	required,
-	locked,
-}: {
+interface PaymentMethodProps {
 	id: string;
 	label: string;
 	// eslint-disable-next-line @typescript-eslint/naming-convention
@@ -54,8 +39,32 @@ const PaymentMethod = ( {
 	setupTooltip?: string;
 	required: boolean;
 	locked: boolean;
-} ): React.ReactElement => {
-	const disabled = upeCapabilityStatuses.INACTIVE === status;
+	isPoEnabled: boolean;
+	isPoComplete: boolean;
+}
+
+const PaymentMethod = ( {
+	id,
+	label,
+	Icon = () => null,
+	description,
+	status,
+	checked,
+	onCheckClick,
+	onUncheckClick,
+	className,
+	isAllowingManualCapture,
+	isSetupRequired,
+	setupTooltip,
+	required,
+	locked,
+	isPoEnabled,
+	isPoComplete,
+}: PaymentMethodProps ): React.ReactElement => {
+	// APMs are disabled if they are inactive or if Progressive Onboarding is enabled and not yet complete.
+	const disabled =
+		upeCapabilityStatuses.INACTIVE === status ||
+		( id !== 'card' && isPoEnabled && ! isPoComplete );
 	const {
 		accountFees,
 	}: { accountFees: Record< string, FeeStructure > } = useContext(
