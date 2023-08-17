@@ -102,12 +102,12 @@ class WC_Payments_Captured_Event_Note {
 
 		$fee_rates      = $data['fee_rates'];
 		$percentage     = $fee_rates['percentage'];
-		$fixed          = WC_Payments_Utils::interpret_stripe_amount( (int) $fee_rates['fixed'] );
 		$fixed_currency = $fee_rates['fixed_currency'];
+		$fixed          = WC_Payments_Utils::interpret_stripe_amount( (int) $fee_rates['fixed'], $fixed_currency );
 		$history        = $fee_rates['history'];
 
-		$fee_amount   = WC_Payments_Utils::interpret_stripe_amount( (int) $data['transaction_details']['store_fee'] );
 		$fee_currency = $data['transaction_details']['store_currency'];
+		$fee_amount   = WC_Payments_Utils::interpret_stripe_amount( (int) $data['transaction_details']['store_fee'], $fee_currency );
 
 		$base_fee_label = $this->is_base_fee_only()
 			? __( 'Base fee', 'woocommerce-payments' )
@@ -173,7 +173,7 @@ class WC_Payments_Captured_Event_Note {
 	public function compose_net_string(): string {
 		$data = $this->captured_event['transaction_details'];
 
-		$net = WC_Payments_Utils::interpret_stripe_amount( (int) $data['store_amount'] - $data['store_fee'] );
+		$net = WC_Payments_Utils::interpret_stripe_amount( (int) $data['store_amount'] - $data['store_fee'], $data['store_currency'] );
 
 		return sprintf(
 			/* translators: %s is a monetary amount */
