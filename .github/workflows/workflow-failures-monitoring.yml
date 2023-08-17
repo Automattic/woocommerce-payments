@@ -1,0 +1,32 @@
+on:
+  push:
+  workflow_run:
+    workflows:
+        - Compatibility - WC, WP and PHP
+        - Code coverage
+        - E2E Tests - All
+        - I18N Weekly Release
+        - JS linting and tests
+        - PHP Compatibility
+        - PHP linting and tests
+    types: [ 'completed' ]
+    branches: [ 'develop' ]
+
+jobs:
+  monitor-failures:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+#          
+#      - name: "Checkout repository"
+#        uses: actions/checkout@v3
+        
+#  notify-failures:
+#    runs-on: ubuntu-latest
+#    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+#    steps:
+#      - run: echo 'The triggering workflow failed'
