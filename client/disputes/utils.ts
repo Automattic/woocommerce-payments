@@ -56,3 +56,8 @@ export const isAwaitingResponse = (
 ): boolean => {
 	return disputeAwaitingResponseStatuses.includes( dispute.status );
 };
+
+export const isInquiry = ( dispute: Dispute | CachedDispute ): boolean => {
+	// Inquiry dispute statuses are one of `warning_needs_response`, `warning_under_review` or `warning_closed`.
+	return dispute.status.startsWith( 'warning' );
+};
