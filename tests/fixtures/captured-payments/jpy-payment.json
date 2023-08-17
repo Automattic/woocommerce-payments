@@ -1,0 +1,60 @@
+{
+	"title": "Payment with zero-decimal currency",
+	"capturedEvent": {
+		"type": "captured",
+		"amount": 3000,
+		"fee": 168,
+		"fee_rates": {
+			"percentage": 0.076,
+			"fixed": 0,
+			"fixed_currency": "JPY",
+			"history": [
+				{
+					"type": "base",
+					"additional_type": "",
+					"fee_id": "base-jp-card-fee",
+					"percentage_rate": 0.036,
+					"fixed_rate": 0,
+					"currency": "jpy"
+				},
+				{
+					"type": "additional",
+					"additional_type": "international",
+					"fee_id": "additional-jp-card-intl-fee",
+					"percentage_rate": 0.02,
+					"fixed_rate": 0,
+					"currency": "jpy"
+				},
+				{
+					"type": "additional",
+					"additional_type": "fx",
+					"fee_id": "additional-jp-card-fx-fee",
+					"percentage_rate": 0.02,
+					"fixed_rate": 0,
+					"currency": "jpy"
+				}
+			]
+		},
+		"currency": "EUR",
+		"datetime": 1692261169,
+		"deposit": null,
+		"transaction_id": "txn_3Ng1bqR0ieYFF8cv0JLWiZWo",
+		"transaction_details": {
+			"customer_currency": "EUR",
+			"customer_amount": 3000,
+			"customer_fee": 168,
+			"store_currency": "JPY",
+			"store_amount": 4774,
+			"store_fee": 267
+		}
+	},
+	"expectation": {
+		"fxString": "1 EUR → 159.13333 JPY: ¥4,774 JPY",
+		"feeString": "Fee (7.6% + ¥0): ¥-267",
+		"feeBreakdown": {
+			"base": "Base fee: 2.9% + $0.30",
+			"additional-fx": "Foreign exchange fee: 1%"
+		},
+		"netString": "Net deposit: ¥4,507 JPY"
+	}
+}
