@@ -91,6 +91,13 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 					'payment_intent_id' => [
 						'required' => true,
 					],
+					'amount_to_capture' => [
+						'required'          => false,
+						'validate_callback' => function( $param, $request, $key ) {
+							return is_int( $param ) && $param > 0;
+						},
+						'description'       => 'The amount to capture, must be an integer greater than zero if provided. The amount should be in cents or the smallest unit of the currency.',
+					],
 				],
 			]
 		);
@@ -237,8 +244,9 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 */
 	public function capture_authorization( WP_REST_Request $request ) {
 		try {
-			$intent_id = $request['payment_intent_id'];
-			$order_id  = $request['order_id'];
+			$intent_id         = $request['payment_intent_id'];
+			$order_id          = $request['order_id'];
+			$amount_to_capture = (int) $request['amount_to_capture']; // In case this is null, it will be cased to 0 and validated later on.
 
 			// Do not process non-existing orders.
 			$order = wc_get_order( $order_id );
@@ -246,11 +254,18 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
 			}
 
-			// Do not process orders with refund(s).
-			if ( 0 < $order->get_total_refunded() ) {
+			$available_amount = $order->get_total() - $order->get_total_refunded();
+
+			if ( $amount_to_capture <= 0 ) {
+				// In case amount to capture is zero, we will use  order total to capture.
+				$amount_to_capture = $order->get_total();
+			}
+
+			// Throw error if amount to capture is larger than remaining amount.
+			if ( $amount_to_capture > $available_amount ) {
 				return new WP_Error(
 					'wcpay_refunded_order_uncapturable',
-					__( 'Payment cannot be captured for partially or fully refunded orders.', 'woocommerce-payments' ),
+					__( 'Unable to capture the payment because the requested amount exceeds the available balance.', 'woocommerce-payments' ),
 					[ 'status' => 400 ]
 				);
 			}
@@ -272,7 +287,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 			$this->add_fraud_outcome_manual_entry( $order, 'approve' );
 
-			$result = $this->gateway->capture_charge( $order, false );
+			$result = $this->gateway->capture_charge( $order, false, $amount_to_capture );
 
 			if ( Payment_Intent_Status::SUCCEEDED !== $result['status'] ) {
 				return new WP_Error(

@@ -116,6 +116,7 @@ Capture the funds of an existing uncaptured payment intent that was marked to be
 
 -   payment_intent_id: string
 -   order_id: string
+-   amount_to_capture: int (optional) The amount to capture, specified in cents or the smallest unit of the currency. If not provided, the entire total from the order will be captured. If provided, it must be an integer greater than zero.
 
 ### Error codes
 
@@ -139,7 +140,8 @@ curl -X POST https://example.com/wp-json/wc/v3/payments/orders/42/capture_author
   -u consumer_key:consumer_secret \
   -H "Content-Type: application/json" \
   -d '{
-    "payment_intent_id": "pi_ZZZZZZZZZZZZZZZZAAAAAAAA"
+    "payment_intent_id": "pi_ZZZZZZZZZZZZZZZZAAAAAAAA",
+    "amount_to_capture": 1000
 }'
 ```
 

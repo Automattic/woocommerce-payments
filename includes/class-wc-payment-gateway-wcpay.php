@@ -2507,11 +2507,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param WC_Order $order - Order to capture charge on.
 	 * @param bool     $include_level3 - Whether to include level 3 data in payment intent.
+	 * @param ?int     $amount_to_capture - Amount to capture.
 	 *
 	 * @return array An array containing the status (succeeded/failed), id (intent ID), message (error message if any), and http code
 	 */
-	public function capture_charge( $order, $include_level3 = true ) {
-		$amount                   = $order->get_total();
+	public function capture_charge( $order, $include_level3 = true, int $amount_to_capture = null ) {
+		$amount                   = $amount_to_capture ?? $order->get_total();
 		$is_authorization_expired = false;
 		$intent                   = null;
 		$status                   = null;
