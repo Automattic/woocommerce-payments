@@ -18,6 +18,7 @@ const filesToCopy = [
 	'i18n',
 	'languages',
 	'src',
+	'lib',
 	'templates',
 	'vendor',
 	'woocommerce-payments.php',
