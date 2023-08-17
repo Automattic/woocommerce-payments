@@ -254,11 +254,10 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
 			}
 
-			$available_amount = $order->get_total() - $order->get_total_refunded();
-
+			$available_amount = WC_Payments_Utils::prepare_amount( $order->get_total() - $order->get_total_refunded(), $order->get_currency() );
 			if ( $amount_to_capture <= 0 ) {
-				// In case amount to capture is zero, we will use  order total to capture.
-				$amount_to_capture = $order->get_total();
+				// In case amount to capture is zero, we will use order total to capture.
+				$amount_to_capture = WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() );
 			}
 
 			// Throw error if amount to capture is larger than remaining amount.

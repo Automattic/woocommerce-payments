@@ -554,7 +554,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->mock_gateway
 			->expects( $this->once() )
 			->method( 'capture_charge' )
-			->with( $this->isInstanceOf( WC_Order::class ), false, $order->get_total() )
+			->with( $this->isInstanceOf( WC_Order::class ), false, WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() ) )
 			->willReturn(
 				[
 					'status' => Payment_Intent_Status::SUCCEEDED,
@@ -588,7 +588,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 	public function test_partial_capture_authorization_success() {
 		// Arrange: Create a mock order.
 		$order             = $this->create_mock_order();
-		$amount_to_capture = $order->get_total() - 10;
+		$amount_to_capture = 100;
 
 		// Arrange: Create a mock intent to work with.
 		$mock_intent = WC_Helper_Intention::create_intention(
@@ -646,7 +646,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 	public function test_partial_capture_exceeds_amount_fail() {
 		// Arrange: Create a mock order.
 		$order             = $this->create_mock_order();
-		$amount_to_capture = $order->get_total() + 10;
+		$amount_to_capture = 100000;
 
 		$this->mock_wcpay_request( Get_Intention::class, 0 );
 

@@ -2507,20 +2507,32 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param WC_Order $order - Order to capture charge on.
 	 * @param bool     $include_level3 - Whether to include level 3 data in payment intent.
-	 * @param ?int     $amount_to_capture - Amount to capture.
+	 * @param ?int     $amount_to_capture - Amount to capture in cents.
 	 *
 	 * @return array An array containing the status (succeeded/failed), id (intent ID), message (error message if any), and http code
 	 */
 	public function capture_charge( $order, $include_level3 = true, int $amount_to_capture = null ) {
-		$amount                   = $amount_to_capture ?? $order->get_total();
 		$is_authorization_expired = false;
 		$intent                   = null;
 		$status                   = null;
 		$error_message            = null;
 		$http_code                = null;
-
 		try {
 			$intent_id = $order->get_transaction_id();
+			if ( null === $amount_to_capture ) {
+				$amount = WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() );
+
+			} else {
+				if ( $amount_to_capture > WC_Payments_Utils::prepare_amount( $order->get_total() - $order->get_total_refunded(), $order->get_currency() ) ) {
+					return [
+						'status'    => 'failed',
+						'id'        => ! empty( $intent ) ? $intent->get_id() : null,
+						'message'   => __( 'Unable to capture the charge because the requested amount exceeds the available balance.', 'woocommerce-payments' ),
+						'http_code' => 400,
+					];
+				}
+				$amount = $amount_to_capture;
+			}
 
 			$request = Get_Intention::create( $intent_id );
 			$intent  = $request->send( 'wcpay_get_intent_request', $order );
@@ -2536,7 +2548,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$wcpay_request->send( 'wcpay_prepare_intention_for_capture', $order );
 
 			$capture_intention_request = Capture_Intention::create( $intent_id );
-			$capture_intention_request->set_amount_to_capture( WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
+			$capture_intention_request->set_amount_to_capture( $amount );
 			if ( $include_level3 ) {
 				$capture_intention_request->set_level3( $this->get_level3_data_from_order( $order ) );
 			}
