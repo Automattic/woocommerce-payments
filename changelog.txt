@@ -1,6 +1,7 @@
 *** WooPayments Changelog ***
 
 = 6.3.2 - 2023-08-17 =
+* Fix - Revert fix WooPay Session Handler in Store API requests.
 
 = 6.3.1 - 2023-08-14 =
 * Fix - Fix AutomateWoo error on WooPay redirection.

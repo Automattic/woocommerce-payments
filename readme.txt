@@ -95,6 +95,7 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 6.3.2 - 2023-08-17 =
+* Fix - Revert fix WooPay Session Handler in Store API requests.
 
 
 = 6.3.1 - 2023-08-14 =
