@@ -11,7 +11,7 @@ import React from 'react';
 import Chip from '../chip';
 import displayStatus from './mappings';
 import { formatStringValue } from 'utils';
-import { isDueWithin } from 'wcpay/disputes/utils';
+import { isAwaitingResponse, isDueWithin } from 'wcpay/disputes/utils';
 import { disputeAwaitingResponseStatuses } from 'wcpay/disputes/filters/config';
 import type {
 	CachedDispute,
@@ -27,7 +27,7 @@ const DisputeStatusChip: React.FC< Props > = ( { status, dueBy } ) => {
 	const mapping = displayStatus[ status ] || {};
 	const message = mapping.message || formatStringValue( status );
 
-	const needsResponse = disputeAwaitingResponseStatuses.includes( status );
+	const needsResponse = isAwaitingResponse( status );
 	const isUrgent =
 		needsResponse && dueBy && isDueWithin( { dueBy, days: 3 } );
 

@@ -154,7 +154,7 @@ const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
  */
 const smartDueDate = ( dispute: CachedDispute ) => {
 	// if dispute is not awaiting response, return an empty string.
-	if ( dispute.due_by === '' || ! isAwaitingResponse( dispute ) ) {
+	if ( dispute.due_by === '' || ! isAwaitingResponse( dispute.status ) ) {
 		return '';
 	}
 	// Get current time in UTC.
@@ -221,7 +221,7 @@ export const DisputesList = (): JSX.Element => {
 		const reasonDisplay = reasonMapping
 			? reasonMapping.display
 			: formatStringValue( dispute.reason );
-		const needsResponse = isAwaitingResponse( dispute );
+		const needsResponse = isAwaitingResponse( dispute.status );
 		const data: {
 			[ key: string ]: {
 				value: number | string;

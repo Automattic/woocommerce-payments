@@ -27,12 +27,13 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 		<div className="transaction-details-dispute-details-wrapper">
 			<Card>
 				<CardBody className="transaction-details-dispute-details-body">
-					{ isAwaitingResponse( dispute ) && countdownDays >= 0 && (
-						<DisputeNotice
-							dispute={ dispute }
-							urgent={ countdownDays <= 2 }
-						/>
-					) }
+					{ isAwaitingResponse( dispute.status ) &&
+						countdownDays >= 0 && (
+							<DisputeNotice
+								dispute={ dispute }
+								urgent={ countdownDays <= 2 }
+							/>
+						) }
 					<div></div>
 				</CardBody>
 			</Card>

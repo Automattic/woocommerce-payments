@@ -133,7 +133,7 @@ const DisputeNotice = ( { chargeId } ) => {
 		! charge?.dispute ||
 		! charge?.dispute?.evidence_details?.due_by ||
 		// Only show the notice if the dispute is awaiting a response.
-		! isAwaitingResponse( charge.dispute )
+		! isAwaitingResponse( charge.dispute.status )
 	) {
 		return null;
 	}

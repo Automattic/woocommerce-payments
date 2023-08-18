@@ -10,6 +10,7 @@ import moment from 'moment';
 import type {
 	CachedDispute,
 	Dispute,
+	DisputeStatus,
 	EvidenceDetails,
 } from 'wcpay/types/disputes';
 import { disputeAwaitingResponseStatuses } from 'wcpay/disputes/filters/config';
@@ -52,9 +53,9 @@ export const isDueWithin = ( { dueBy, days }: IsDueWithinProps ): boolean => {
 };
 
 export const isAwaitingResponse = (
-	dispute: Dispute | CachedDispute
+	status: DisputeStatus | string
 ): boolean => {
-	return disputeAwaitingResponseStatuses.includes( dispute.status );
+	return disputeAwaitingResponseStatuses.includes( status );
 };
 
 export const isInquiry = ( dispute: Dispute | CachedDispute ): boolean => {
