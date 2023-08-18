@@ -58,13 +58,13 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 										/* eslint-disable jsx-a11y/anchor-has-content */
 										isPaymentRequestEnabled
 											? __(
-													'Apple Pay is an easy and secure way for customers to pay on your store. ',
+													'Apple Pay is an easy and secure way for customers to pay on your store.',
 													'woocommerce-payments'
 											  )
 											: interpolateComponents( {
 													mixedString: __(
 														/* eslint-disable-next-line max-len */
-														'Apple Pay is an easy and secure way for customers to pay on your store. {{br/}}' +
+														'Apple Pay is an easy and secure way for customers to pay on your store. ' +
 															/* eslint-disable-next-line max-len */
 															'By enabling this feature, you agree to {{stripeLink}}Stripe{{/stripeLink}} and' +
 															"{{appleLink}} Apple{{/appleLink}}'s terms of use.",
@@ -113,13 +113,13 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 										/* eslint-disable jsx-a11y/anchor-has-content */
 										isPaymentRequestEnabled
 											? __(
-													'Offer customers a fast, secure checkout experience with Google Pay. ',
+													'Offer customers a fast, secure checkout experience with Google Pay.',
 													'woocommerce-payments'
 											  )
 											: interpolateComponents( {
 													mixedString: __(
 														/* eslint-disable-next-line max-len */
-														'Offer customers a fast, secure checkout experience with Google Pay. {{br/}}' +
+														'Offer customers a fast, secure checkout experience with Google Pay. ' +
 															/* eslint-disable-next-line max-len */
 															'By enabling this feature, you agree to {{stripeLink}}Stripe{{/stripeLink}}, ' +
 															"and {{googleLink}}Google{{/googleLink}}'s terms of use.",
