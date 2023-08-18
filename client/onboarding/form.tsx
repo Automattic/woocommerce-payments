@@ -9,8 +9,11 @@ import { isEmpty, mapValues } from 'lodash';
  * Internal dependencies
  */
 import { useStepperContext } from 'components/stepper';
-import { Item } from 'components/custom-select-control';
+import { Item as SelectItem } from 'components/custom-select-control';
+import { ListItem as GroupedSelectItem } from 'components/grouped-select-control';
 import {
+	GroupedSelectField,
+	GroupedSelectFieldProps,
 	PhoneNumberField,
 	PhoneNumberFieldProps,
 	SelectField,
@@ -23,9 +26,6 @@ import { OnboardingFields } from './types';
 import { useValidation } from './validation';
 import { trackStepCompleted } from './tracking';
 import strings from './strings';
-import GroupedSelectControl, {
-	ListItem,
-} from 'components/grouped-select-control';
 
 export const OnboardingForm: React.FC = ( { children } ) => {
 	const { errors, touched, setTouched } = useOnboardingContext();
@@ -121,7 +121,7 @@ interface OnboardingSelectFieldProps< ItemType >
 	onChange?: ( name: keyof OnboardingFields, item?: ItemType | null ) => void;
 }
 
-export const OnboardingSelectField = < ItemType extends Item >( {
+export const OnboardingSelectField = < ItemType extends SelectItem >( {
 	name,
 	onChange,
 	...rest
@@ -154,11 +154,14 @@ export const OnboardingSelectField = < ItemType extends Item >( {
 };
 
 interface OnboardingGroupedSelectFieldProps< ItemType >
-	extends OnboardingSelectFieldProps< ItemType > {
-	searchable?: boolean;
+	extends Partial< Omit< GroupedSelectFieldProps< ItemType >, 'onChange' > > {
+	name: keyof OnboardingFields;
+	onChange?: ( name: keyof OnboardingFields, item?: ItemType | null ) => void;
 }
 
-export const OnboardingGroupedSelectField = < ListItemType extends ListItem >( {
+export const OnboardingGroupedSelectField = <
+	ListItemType extends GroupedSelectItem
+>( {
 	name,
 	onChange,
 	...rest
@@ -167,7 +170,7 @@ export const OnboardingGroupedSelectField = < ListItemType extends ListItem >( {
 	const { validate, error } = useValidation( name );
 
 	return (
-		<GroupedSelectControl
+		<GroupedSelectField
 			label={ strings.fields[ name ] }
 			value={ rest.options?.find(
 				( item ) => item.key === data[ name ]

@@ -120,7 +120,7 @@ const FraudProtectionDescription = () => {
 			<h2>{ __( 'Fraud protection', 'woocommerce-payments' ) }</h2>
 			<p>
 				{ __(
-					'Help avoid chargebacks by setting your security and fraud protection risk level.',
+					'Help avoid unauthorized transactions and disputes by setting your fraud protection level.',
 					'woocommerce-payments'
 				) }
 			</p>

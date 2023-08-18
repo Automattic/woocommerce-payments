@@ -128,6 +128,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 1, $token->get_user_id() );
 		$this->assertSame( 'pm_mock', $token->get_token() );
 		$this->assertSame( 'test@test.com', $token->get_email() );
+		$this->assertSame( '***test@test.com', $token->get_redacted_email() );
 		$this->assertInstanceOf( WC_Payment_Token_WCPay_Link::class, $token );
 	}
 
