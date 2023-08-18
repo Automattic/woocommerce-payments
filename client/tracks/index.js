@@ -21,6 +21,9 @@ function isEnabled() {
  * @param {Object} [eventProperties] Event properties (optional).
  */
 function recordEvent( eventName, eventProperties ) {
+	// Add `is_test_mode` property to every event.
+	eventProperties.is_test_mode = wcpaySettings?.testMode;
+
 	// Wc-admin track script is enqueued after ours, wrap in domReady
 	// to make sure we're not too early.
 	domReady( () => {

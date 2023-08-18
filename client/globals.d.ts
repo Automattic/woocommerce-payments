@@ -14,6 +14,7 @@ declare global {
 			isDisputeOnTransactionPageEnabled: boolean;
 		};
 		fraudServices: unknown[];
+		testMode: boolean;
 		isJetpackConnected: boolean;
 		isJetpackIdcActive: boolean;
 		accountStatus: {
