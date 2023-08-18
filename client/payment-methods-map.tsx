@@ -44,7 +44,7 @@ const PaymentMethodInformationObject: Record<
 > = {
 	card: {
 		id: 'card',
-		label: __( 'Credit card / debit card', 'woocommerce-payments' ),
+		label: __( 'Credit / Debit card', 'woocommerce-payments' ),
 		brandTitles: {
 			amex: __( 'American Express', 'woocommerce-payments' ),
 			diners: __( 'Diners Club', 'woocommerce-payments' ),
