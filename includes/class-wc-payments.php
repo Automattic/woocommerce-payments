@@ -1713,7 +1713,7 @@ class WC_Payments {
 	}
 
 	/**
-	 * Determins whether we should load WCPay Subscription related classes.
+	 * Determines whether we should load WCPay Subscription related classes.
 	 *
 	 * Return true when:
 	 *  - the WCPay Subscriptions feature flag is enabled, or
