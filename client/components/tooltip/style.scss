@@ -2,6 +2,24 @@
 	&__content-wrapper {
 		// ensures that the element needed for position calculations isn't included in the DOM layout
 		display: contents;
+
+		// Styles for buttonIcon
+		[role='button'] {
+			cursor: pointer;
+			display: inline-flex;
+			align-items: center;
+			color: $gray-600;
+			transition: all 0.3s ease;
+			fill: currentColor;
+			margin: 0 0.4em;
+
+			&:focus,
+			&:hover,
+			&:active {
+				outline: none;
+				color: var( --wp-admin-theme-color, $gutenberg-blue );
+			}
+		}
 	}
 
 	&__tooltip-wrapper {
@@ -44,7 +62,7 @@
 		}
 
 		a {
-			color: $blue-medium;
+			color: var( --wp-admin-theme-color, $gutenberg-blue );
 		}
 	}
 
