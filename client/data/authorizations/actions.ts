@@ -81,7 +81,8 @@ export function setIsRequestingAuthorization(
 
 export function* submitCaptureAuthorization(
 	paymentIntentId: string,
-	orderId: number
+	orderId: number,
+	amountToCapture: number | null = null
 ): Generator< unknown | Authorization > {
 	try {
 		yield controls.dispatch(
@@ -102,6 +103,7 @@ export function* submitCaptureAuthorization(
 			method: 'post',
 			data: {
 				payment_intent_id: paymentIntentId,
+				amount_to_capture: amountToCapture || null,
 			},
 		} );
 

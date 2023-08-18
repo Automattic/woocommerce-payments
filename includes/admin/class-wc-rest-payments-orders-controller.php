@@ -50,10 +50,10 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * WC_Payments_REST_Controller constructor.
 	 *
-	 * @param WC_Payments_API_Client       $api_client       WooCommerce Payments API client.
-	 * @param WC_Payment_Gateway_WCPay     $gateway          WooCommerce Payments payment gateway.
+	 * @param WC_Payments_API_Client       $api_client WooCommerce Payments API client.
+	 * @param WC_Payment_Gateway_WCPay     $gateway WooCommerce Payments payment gateway.
 	 * @param WC_Payments_Customer_Service $customer_service Customer class instance.
-	 * @param WC_Payments_Order_Service    $order_service    Order Service class instance.
+	 * @param WC_Payments_Order_Service    $order_service Order Service class instance.
 	 */
 	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $gateway, WC_Payments_Customer_Service $customer_service, WC_Payments_Order_Service $order_service ) {
 		parent::__construct( $api_client );
@@ -93,7 +93,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 					],
 					'amount_to_capture' => [
 						'required'          => false,
-						'validate_callback' => function( $param, $request, $key ) {
+						'validate_callback' => function ( $param, $request, $key ) {
 							return is_int( $param ) && $param > 0;
 						},
 						'description'       => 'The amount to capture, must be an integer greater than zero if provided. The amount should be in cents or the smallest unit of the currency.',
@@ -140,6 +140,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 * Use-cases: Mobile apps using it for `card_present` and `interac_present` payment types.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
+	 *
 	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function capture_terminal_payment( WP_REST_Request $request ) {
@@ -171,6 +172,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
 			if ( $intent_meta_order_id !== $order->get_id() ) {
 				Logger::error( 'Payment capture rejected due to failed validation: order id on intent is incorrect or missing.' );
+
 				return new WP_Error( 'wcpay_intent_order_mismatch', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
 			}
 			if ( ! in_array( $intent->get_status(), WC_Payment_Gateway_WCPay::SUCCESSFUL_INTENT_STATUS, true ) ) {
@@ -208,6 +210,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 			if ( Payment_Intent_Status::SUCCEEDED !== $result['status'] ) {
 				$http_code = $result['http_code'] ?? 502;
+
 				return new WP_Error(
 					'wcpay_capture_error',
 					sprintf(
@@ -231,6 +234,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			);
 		} catch ( \Throwable $e ) {
 			Logger::error( 'Failed to capture a terminal payment via REST API: ' . $e );
+
 			return new WP_Error( 'wcpay_server_error', __( 'Unexpected server error', 'woocommerce-payments' ), [ 'status' => 500 ] );
 		}
 	}
@@ -239,7 +243,8 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 * Captures an authorization.
 	 * Use-cases: Merchants manually capturing a payment when they enable "capture later" option.
 	 *
-	 * @param  WP_REST_Request $request Full data about the request.
+	 * @param WP_REST_Request $request Full data about the request.
+	 *
 	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function capture_authorization( WP_REST_Request $request ) {
@@ -254,14 +259,23 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
 			}
 
-			$available_amount = WC_Payments_Utils::prepare_amount( $order->get_total() - $order->get_total_refunded(), $order->get_currency() );
+			// Do not process orders with refund(s).
+			if ( 0 < $order->get_total_refunded() ) {
+				return new WP_Error(
+					'wcpay_refunded_order_uncapturable',
+					__( 'Payment cannot be captured for partially or fully refunded orders.', 'woocommerce-payments' ),
+					[ 'status' => 400 ]
+				);
+			}
+
+			$order_total = WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() );
 			if ( $amount_to_capture <= 0 ) {
 				// In case amount to capture is zero, we will use order total to capture.
-				$amount_to_capture = WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() );
+				$amount_to_capture = $order_total;
 			}
 
 			// Throw error if amount to capture is larger than remaining amount.
-			if ( $amount_to_capture > $available_amount ) {
+			if ( $amount_to_capture > $order_total ) {
 				return new WP_Error(
 					'wcpay_refunded_order_uncapturable',
 					__( 'Unable to capture the payment because the requested amount exceeds the available balance.', 'woocommerce-payments' ),
@@ -278,15 +292,34 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
 			if ( $intent_meta_order_id !== $order->get_id() ) {
 				Logger::error( 'Payment capture rejected due to failed validation: order id on intent is incorrect or missing.' );
+
 				return new WP_Error( 'wcpay_intent_order_mismatch', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
 			}
 			if ( ! in_array( $intent->get_status(), WC_Payment_Gateway_WCPay::SUCCESSFUL_INTENT_STATUS, true ) ) {
 				return new WP_Error( 'wcpay_payment_uncapturable', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
 			}
+			$is_partial = $amount_to_capture < $order_total;
+
+			if ( $is_partial ) {
+
+				// Create a new fee item that will deduct remaining amount from total.
+				$fee = new WC_Order_Item_Fee();
+				$fee->set_name( 'Partial capture fee' );
+				$fee->set_total( - WC_Payments_Utils::interpret_stripe_amount( $order_total - $amount_to_capture, $order->get_currency() ) ); // Negative value for the discount.
+				$fee->set_order_id( $order_id );
+				$fee->save();
+
+				// Add the fee (discount) to the order.
+				$order->add_item( $fee );
+
+				// Recalculate totals and save the order.
+				$order->calculate_totals();
+				$order->save();
+			}
 
 			$this->add_fraud_outcome_manual_entry( $order, 'approve' );
 
-			$result = $this->gateway->capture_charge( $order, false, $amount_to_capture );
+			$result = $this->gateway->capture_charge( $order, $is_partial );
 
 			if ( Payment_Intent_Status::SUCCEEDED !== $result['status'] ) {
 				return new WP_Error(
@@ -310,6 +343,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			);
 		} catch ( \Throwable $e ) {
 			Logger::error( 'Failed to capture an authorization via REST API: ' . $e );
+
 			return new WP_Error( 'wcpay_server_error', __( 'Unexpected server error', 'woocommerce-payments' ), [ 'status' => 500 ] );
 		}
 	}
@@ -318,10 +352,10 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 * Returns customer id from order. Create or update customer if needed.
 	 * Use-cases: It was used by older versions of our Mobile apps in their workflows.
 	 *
-	 * @deprecated 3.9.0
-	 *
 	 * @param WP_REST_Request $request Full data about the request.
+	 *
 	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 * @deprecated 3.9.0
 	 */
 	public function create_customer( $request ) {
 		wc_deprecated_function( __FUNCTION__, '3.9.0' );
@@ -372,6 +406,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			);
 		} catch ( \Throwable $e ) {
 			Logger::error( 'Failed to create / update customer from order via REST API: ' . $e );
+
 			return new WP_Error( 'wcpay_server_error', __( 'Unexpected server error', 'woocommerce-payments' ), [ 'status' => 500 ] );
 		}
 	}
@@ -381,6 +416,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 * Use-cases: Mobile apps using it for `card_present` payment types. (`interac_present` is handled by the apps via Stripe SDK).
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
+	 *
 	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function create_terminal_intent( $request ) {
@@ -413,6 +449,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			);
 		} catch ( \Throwable $e ) {
 			Logger::error( 'Failed to create an intention via REST API: ' . $e );
+
 			return new WP_Error( 'wcpay_server_error', __( 'Unexpected server error', 'woocommerce-payments' ), [ 'status' => 500 ] );
 		}
 	}
@@ -426,7 +463,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 * @return array|null
 	 * @throws \Exception
 	 */
-	public function get_terminal_intent_payment_method( $request, array $default_value = [ Payment_Method::CARD_PRESENT ] ) :array {
+	public function get_terminal_intent_payment_method( $request, array $default_value = [ Payment_Method::CARD_PRESENT ] ): array {
 		$payment_methods = $request->get_param( 'payment_methods' );
 		if ( null === $payment_methods ) {
 			return $default_value;
@@ -454,7 +491,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 * @return string|null
 	 * @throws \Exception
 	 */
-	public function get_terminal_intent_capture_method( $request, string $default_value = 'manual' ) : string {
+	public function get_terminal_intent_capture_method( $request, string $default_value = 'manual' ): string {
 		$capture_method = $request->get_param( 'capture_method' );
 		if ( null === $capture_method ) {
 			return $default_value;
@@ -471,7 +508,8 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 * Cancels an authorization.
 	 * Use-cases: Merchants manually canceling when blocking an on hold review by Fraud & Risk tools.
 	 *
-	 * @param  WP_REST_Request $request Full data about the request.
+	 * @param WP_REST_Request $request Full data about the request.
+	 *
 	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function cancel_authorization( WP_REST_Request $request ) {
@@ -503,6 +541,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
 			if ( $intent_meta_order_id !== $order->get_id() ) {
 				Logger::error( 'Payment cancelation rejected due to failed validation: order id on intent is incorrect or missing.' );
+
 				return new WP_Error( 'wcpay_intent_order_mismatch', __( 'The payment cannot be canceled', 'woocommerce-payments' ), [ 'status' => 409 ] );
 			}
 			if ( ! in_array( $intent->get_status(), [ Payment_Intent_Status::REQUIRES_CAPTURE ], true ) ) {
@@ -535,6 +574,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			);
 		} catch ( \Throwable $e ) {
 			Logger::error( 'Failed to cancel an authorization via REST API: ' . $e );
+
 			return new WP_Error( 'wcpay_server_error', __( 'Unexpected server error', 'woocommerce-payments' ), [ 'status' => 500 ] );
 		}
 	}
@@ -542,7 +582,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Adds the fraud_outcome_manual_entry meta to the order.
 	 *
-	 * @param \WC_Order $order  Order object.
+	 * @param \WC_Order $order Order object.
 	 * @param string    $action User action.
 	 */
 	private function add_fraud_outcome_manual_entry( $order, $action ) {

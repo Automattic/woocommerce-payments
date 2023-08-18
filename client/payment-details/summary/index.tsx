@@ -169,9 +169,13 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		charge.amount_refunded === 0 &&
 		isAuthAndCaptureEnabled;
 
+	const amountToCapture =
+		charge.amount - charge.amount_captured - charge.amount_refunded;
+
 	const { authorization } = useAuthorization(
 		charge.payment_intent as string,
 		charge.order?.number as number,
+		amountToCapture as number,
 		shouldFetchAuthorization
 	);
 
@@ -325,6 +329,12 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 									paymentIntentId={
 										charge.payment_intent || ''
 									}
+									capturableAmount={ Math.max(
+										0,
+										charge.amount -
+											charge.amount_captured -
+											charge.amount_refunded
+									) }
 									buttonIsSmall={ false }
 									onClick={ () => {
 										wcpayTracks.recordEvent(
@@ -430,6 +440,12 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											orderId={
 												charge.order?.number || 0
 											}
+											capturableAmount={ Math.max(
+												0,
+												charge.amount -
+													charge.amount_captured -
+													charge.amount_refunded
+											) }
 											paymentIntentId={
 												charge.payment_intent || ''
 											}

@@ -554,7 +554,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->mock_gateway
 			->expects( $this->once() )
 			->method( 'capture_charge' )
-			->with( $this->isInstanceOf( WC_Order::class ), false, WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() ) )
+			->with( $this->isInstanceOf( WC_Order::class ), false )
 			->willReturn(
 				[
 					'status' => Payment_Intent_Status::SUCCEEDED,
@@ -610,7 +610,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->mock_gateway
 			->expects( $this->once() )
 			->method( 'capture_charge' )
-			->with( $this->isInstanceOf( WC_Order::class ), false, $amount_to_capture )
+			->with( $this->isInstanceOf( WC_Order::class ), true )
 			->willReturn(
 				[
 					'status' => Payment_Intent_Status::SUCCEEDED,
@@ -629,7 +629,8 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		);
 
 		// Act: Send the request to capture the authorization.
-		$response      = $this->controller->capture_authorization( $request );
+		$response = $this->controller->capture_authorization( $request );
+
 		$response_data = $response->get_data();
 
 		// Assert: Confirm we have a 200 response and our expected status info.

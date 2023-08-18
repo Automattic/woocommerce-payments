@@ -24,12 +24,14 @@ const mockUseAuthorization = useAuthorization as jest.MockedFunction<
 function renderCaptureAuthorizationButton(
 	orderId: number,
 	paymentIntentId: string,
+	capturableAmount: number,
 	buttonIsPrimary: boolean,
 	buttonIsSmall: boolean
 ) {
 	return render(
 		<CaptureAuthorizationButton
 			orderId={ orderId }
+			capturableAmount={ capturableAmount }
 			paymentIntentId={ paymentIntentId }
 			buttonIsPrimary={ buttonIsPrimary }
 			buttonIsSmall={ buttonIsSmall }
@@ -55,6 +57,7 @@ describe( 'CaptureAuthorizationButton', () => {
 		const { container } = renderCaptureAuthorizationButton(
 			42,
 			'paymentIntentId',
+			1000,
 			false,
 			true
 		);
@@ -73,6 +76,7 @@ describe( 'CaptureAuthorizationButton', () => {
 		const { container, rerender } = renderCaptureAuthorizationButton(
 			42,
 			'paymentIntentId',
+			1000,
 			false,
 			true
 		);
@@ -93,6 +97,7 @@ describe( 'CaptureAuthorizationButton', () => {
 			<CaptureAuthorizationButton
 				orderId={ 42 }
 				paymentIntentId={ 'paymentIntentId' }
+				capturableAmount={ 1000 }
 			/>
 		);
 
@@ -110,6 +115,7 @@ describe( 'CaptureAuthorizationButton', () => {
 		const { container } = renderCaptureAuthorizationButton(
 			42,
 			'paymentIntentId',
+			1000,
 			false,
 			true
 		);

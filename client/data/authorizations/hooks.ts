@@ -72,6 +72,7 @@ export const useAuthorizationsSummary = (
 export const useAuthorization = (
 	paymentIntentId: string,
 	orderId: number,
+	amountToCapture?: number | null,
 	requiresCapture = true
 ): {
 	isLoading: boolean;
@@ -103,7 +104,7 @@ export const useAuthorization = (
 	} = useDispatch( STORE_NAME );
 
 	const doCaptureAuthorization = () =>
-		submitCaptureAuthorization( paymentIntentId, orderId );
+		submitCaptureAuthorization( paymentIntentId, orderId, amountToCapture );
 
 	const doCancelAuthorization = () =>
 		submitCancelAuthorization( paymentIntentId, orderId );

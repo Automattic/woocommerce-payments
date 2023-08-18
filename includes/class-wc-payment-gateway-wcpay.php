@@ -2507,38 +2507,25 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param WC_Order $order - Order to capture charge on.
 	 * @param bool     $include_level3 - Whether to include level 3 data in payment intent.
-	 * @param ?int     $amount_to_capture - Amount to capture in cents.
 	 *
 	 * @return array An array containing the status (succeeded/failed), id (intent ID), message (error message if any), and http code
 	 */
-	public function capture_charge( $order, $include_level3 = true, int $amount_to_capture = null ) {
+	public function capture_charge( $order, $include_level3 = true ) {
 		$is_authorization_expired = false;
 		$intent                   = null;
 		$status                   = null;
 		$error_message            = null;
 		$http_code                = null;
+
+		$amount = WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() );
+
 		try {
 			$intent_id = $order->get_transaction_id();
-			if ( null === $amount_to_capture ) {
-				$amount = WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() );
-
-			} else {
-				if ( $amount_to_capture > WC_Payments_Utils::prepare_amount( $order->get_total() - $order->get_total_refunded(), $order->get_currency() ) ) {
-					return [
-						'status'    => 'failed',
-						'id'        => ! empty( $intent ) ? $intent->get_id() : null,
-						'message'   => __( 'Unable to capture the charge because the requested amount exceeds the available balance.', 'woocommerce-payments' ),
-						'http_code' => 400,
-					];
-				}
-				$amount = $amount_to_capture;
-			}
 
 			$request = Get_Intention::create( $intent_id );
 			$intent  = $request->send( 'wcpay_get_intent_request', $order );
 
-			$payment_type = $this->is_payment_recurring( $order->get_id() ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
-
+			$payment_type         = $this->is_payment_recurring( $order->get_id() ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
 			$metadata_from_intent = $intent->get_metadata(); // mobile app may have set metadata.
 			$metadata_from_order  = $this->get_metadata_from_order( $order, $payment_type );
 			$merged_metadata      = array_merge( (array) $metadata_from_order, (array) $metadata_from_intent ); // prioritize metadata from mobile app.
