@@ -1212,9 +1212,12 @@ class MultiCurrency {
 	 */
 	public function set_client_format_and_rounding_precision() {
 		$screen = get_current_screen();
-		if ( 'post' === $screen->base && 'shop_order' === $screen->post_type ) :
-			global $post;
-			$currency                     = wc_get_order( $post->ID )->get_currency();
+		if ( in_array( $screen->id, [ 'shop_order', 'woocommerce_page_wc-orders' ], true ) ) :
+			$order = wc_get_order();
+			if ( ! $order ) {
+				return;
+			}
+			$currency                     = $order->get_currency();
 			$currency_format_num_decimals = $this->backend_currencies->get_price_decimals( $currency );
 			$currency_format_decimal_sep  = $this->backend_currencies->get_price_decimal_separator( $currency );
 			$currency_format_thousand_sep = $this->backend_currencies->get_price_thousand_separator( $currency );

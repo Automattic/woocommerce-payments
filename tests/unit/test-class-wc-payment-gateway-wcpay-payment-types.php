@@ -36,6 +36,13 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 	private $mock_token_service;
 
 	/**
+	 * Mock WC_Payments_Order_Service.
+	 *
+	 * @var WC_Payments_Order_Service|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_order_service;
+
+	/**
 	 * Mock WC_Payments_API_Client.
 	 *
 	 * @var WC_Payments_API_Client|PHPUnit_Framework_MockObject_MockObject
@@ -147,6 +154,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		// so that get_payment_method_from_request() does not throw error.
 		$_POST = [
 			'wcpay-payment-method' => 'pm_mock',
+			'payment_method'       => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 		];
 	}
 

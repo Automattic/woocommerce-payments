@@ -375,7 +375,9 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					/>
 				</LoadableBlock>
 			</CardBody>
-			{ isDisputeOnTransactionPageEnabled && <DisputeDetails /> }
+			{ isDisputeOnTransactionPageEnabled && charge.dispute && (
+				<DisputeDetails dispute={ charge.dispute } />
+			) }
 			{ isAuthAndCaptureEnabled &&
 				authorization &&
 				! authorization.captured && (
