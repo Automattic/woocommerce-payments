@@ -7,7 +7,7 @@
 
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Constants\Order_Status;
-use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Intent_Status;
 use WCPay\Core\Server\Request\List_Charge_Refunds;
 use WCPay\Core\Server\Request\Refund_Charge;
 use WCPay\Core\Server\Response;
@@ -124,7 +124,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 				'reason'                   => null,
 				'receipt_number'           => null,
 				'source_transfer_reversal' => null,
-				'status'                   => Payment_Intent_Status::SUCCEEDED,
+				'status'                   => Intent_Status::SUCCEEDED,
 				'transfer_reversal'        => null,
 				'currency'                 => 'usd',
 			]
@@ -216,7 +216,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 				'reason'                   => null,
 				'receipt_number'           => null,
 				'source_transfer_reversal' => null,
-				'status'                   => Payment_Intent_Status::SUCCEEDED,
+				'status'                   => Intent_Status::SUCCEEDED,
 				'transfer_reversal'        => null,
 				'currency'                 => 'usd',
 			]
@@ -275,7 +275,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 				'reason'                   => null,
 				'receipt_number'           => null,
 				'source_transfer_reversal' => null,
-				'status'                   => Payment_Intent_Status::SUCCEEDED,
+				'status'                   => Intent_Status::SUCCEEDED,
 				'transfer_reversal'        => null,
 				'currency'                 => 'eur',
 			]
@@ -333,7 +333,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 				'reason'                   => null,
 				'receipt_number'           => null,
 				'source_transfer_reversal' => null,
-				'status'                   => Payment_Intent_Status::SUCCEEDED,
+				'status'                   => Intent_Status::SUCCEEDED,
 				'transfer_reversal'        => null,
 				'currency'                 => 'eur',
 			]
@@ -425,7 +425,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 								'reason'                   => null,
 								'receipt_number'           => null,
 								'source_transfer_reversal' => null,
-								'status'                   => Payment_Intent_Status::SUCCEEDED,
+								'status'                   => Intent_Status::SUCCEEDED,
 								'transfer_reversal'        => null,
 								'currency'                 => 'eur',
 							],
@@ -498,7 +498,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 							'reason'                   => null,
 							'receipt_number'           => null,
 							'source_transfer_reversal' => null,
-							'status'                   => Payment_Intent_Status::SUCCEEDED,
+							'status'                   => Intent_Status::SUCCEEDED,
 							'transfer_reversal'        => null,
 							'currency'                 => 'usd',
 						],
@@ -698,7 +698,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 				'reason'                   => null,
 				'receipt_number'           => null,
 				'source_transfer_reversal' => null,
-				'status'                   => Payment_Intent_Status::SUCCEEDED,
+				'status'                   => Intent_Status::SUCCEEDED,
 				'transfer_reversal'        => null,
 				'currency'                 => 'eur',
 			]
@@ -737,7 +737,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$order = WC_Helper_Order::create_order();
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->update_meta_data( '_intention_status', Payment_Intent_Status::REQUIRES_CAPTURE );
+		$order->update_meta_data( '_intention_status', Intent_Status::REQUIRES_CAPTURE );
 		$order->update_status( Order_Status::ON_HOLD );
 		$order->save();
 
@@ -809,7 +809,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 				'reason'                   => null,
 				'receipt_number'           => null,
 				'source_transfer_reversal' => null,
-				'status'                   => Payment_Intent_Status::SUCCEEDED,
+				'status'                   => Intent_Status::SUCCEEDED,
 				'transfer_reversal'        => null,
 				'currency'                 => 'usd',
 			]
