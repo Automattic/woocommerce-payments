@@ -30,6 +30,10 @@ class WC_Payments_Tasks {
 	 * Adds a task to the WC 'Things to do next' task list the if disputes awaiting response.
 	 */
 	public static function add_task_disputes_need_response() {
+		if ( ! WC_Payments::get_account_service()->is_stripe_account_valid() ) {
+			return;
+		}
+
 		// 'extended' = 'Things to do next' task list on WooCommerce > Home.
 		TaskLists::add_task( 'extended', new WC_Payments_Task_Disputes() );
 	}
