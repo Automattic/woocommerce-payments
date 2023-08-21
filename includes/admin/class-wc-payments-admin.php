@@ -834,10 +834,7 @@ class WC_Payments_Admin {
 			'fraudProtection'               => [
 				'isWelcomeTourDismissed' => WC_Payments_Features::is_fraud_protection_welcome_tour_dismissed(),
 			],
-			'progressiveOnboarding'         => array_merge(
-				$this->account->get_progressive_onboarding_details(),
-				[ 'isNewFlowEnabled' => WC_Payments_Utils::should_use_progressive_onboarding_flow() ]
-			),
+			'progressiveOnboarding'         => $this->account->get_progressive_onboarding_details(),
 			'accountDefaultCurrency'        => $this->account->get_account_default_currency(),
 			'frtDiscoverBannerSettings'     => get_option( 'wcpay_frt_discover_banner_settings', '' ),
 			'storeCurrency'                 => get_option( 'woocommerce_currency' ),

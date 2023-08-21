@@ -457,8 +457,9 @@ class WC_Payments_Account {
 	public function get_progressive_onboarding_details(): array {
 		$account = $this->get_cached_account_data();
 		return [
-			'isEnabled'  => $account['progressive_onboarding']['is_enabled'] ?? false,
-			'isComplete' => $account['progressive_onboarding']['is_complete'] ?? false,
+			'isEnabled'        => $account['progressive_onboarding']['is_enabled'] ?? false,
+			'isComplete'       => $account['progressive_onboarding']['is_complete'] ?? false,
+			'isNewFlowEnabled' => WC_Payments_Utils::should_use_progressive_onboarding_flow(),
 		];
 	}
 
