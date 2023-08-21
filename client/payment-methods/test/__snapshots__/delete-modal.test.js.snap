@@ -55,7 +55,7 @@ exports[`Activation Modal matches the snapshot 1`] = `
               class="components-modal__header-heading"
               id="components-modal-header-0"
             >
-              Remove Credit card / debit card from checkout
+              Remove Credit / Debit card from checkout
             </h1>
           </div>
           <button
@@ -106,9 +106,9 @@ exports[`Activation Modal matches the snapshot 1`] = `
         <p>
           Are you sure you want to remove 
           <strong>
-            Credit card / debit card
+            Credit / Debit card
           </strong>
-          ? Your customers will no longer be able to pay using Credit card / debit card.
+          ? Your customers will no longer be able to pay using Credit / Debit card.
         </p>
         <p>
           You can add it again at any time in 
