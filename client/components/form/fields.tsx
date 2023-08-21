@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { TextControl } from '@wordpress/components';
 import classNames from 'classnames';
 
@@ -9,12 +9,16 @@ import classNames from 'classnames';
  * Internal dependencies
  */
 import CustomSelectControl, {
-	ControlProps,
-	Item,
-} from 'components/custom-select-control';
+	ControlProps as SelectControlProps,
+	Item as SelectItem,
+} from '../custom-select-control';
 import PhoneNumberControl, {
 	PhoneNumberControlProps,
 } from '../phone-number-control';
+import GroupedSelectControl, {
+	GroupedSelectControlProps,
+	ListItem as GroupedSelectItem,
+} from '../grouped-select-control';
 import './style.scss';
 
 interface CommonProps {
@@ -22,59 +26,54 @@ interface CommonProps {
 }
 
 export type TextFieldProps = TextControl.Props & CommonProps;
-export type SelectFieldProps< ItemType > = ControlProps< ItemType > &
+export type SelectFieldProps< ItemType > = SelectControlProps< ItemType > &
 	CommonProps;
 export type PhoneNumberFieldProps = PhoneNumberControlProps & CommonProps;
+export type GroupedSelectFieldProps< ItemType > = GroupedSelectControlProps<
+	ItemType
+> &
+	CommonProps;
 
-type FieldProps< ItemType > = {
-	component: 'text' | 'select' | 'phone';
-} & ( TextFieldProps | SelectFieldProps< ItemType > | PhoneNumberFieldProps );
-
-const Field = < ItemType extends Item >( {
-	component,
-	error,
-	...rest
-}: FieldProps< ItemType > ): JSX.Element => {
-	if ( error ) {
-		rest.className = classNames( rest.className, 'has-error' );
-	}
-
-	let props, field;
-	switch ( component ) {
-		case 'text':
-			props = rest as TextFieldProps;
-			field = <TextControl { ...props } />;
-			break;
-		case 'select':
-			props = rest as SelectFieldProps< ItemType >;
-			field = <CustomSelectControl { ...props } />;
-			break;
-		case 'phone':
-			props = rest as PhoneNumberFieldProps;
-			field = <PhoneNumberControl { ...props } />;
-			break;
-	}
-
+/**
+ * Creates a field component decorating a control to display validation errors.
+ *
+ * @param Control Control component to render.
+ * @param props Control props plus common field props – {error?: string}.
+ * @param ref Optional React reference.
+ * @return Form field.
+ */
+const makeField = (
+	Control: React.ElementType,
+	props: CommonProps & Record< any, any >,
+	ref?: React.Ref< any >
+) => {
+	const { error, ...rest } = props;
+	if ( ! error ) return <Control { ...rest } ref={ ref } />;
 	return (
 		<>
-			{ field }
-			{ error && (
-				<div className="components-form-field__error">{ error }</div>
-			) }
+			<Control
+				{ ...rest }
+				ref={ ref }
+				className={ classNames( rest.className, 'has-error' ) }
+			/>
+			{ <div className="components-form-field__error">{ error }</div> }
 		</>
 	);
 };
 
-export const TextField: React.FC< TextFieldProps > = ( props ) => (
-	<Field component={ 'text' } { ...props } />
+export const TextField = forwardRef< HTMLInputElement, TextFieldProps >(
+	( props, ref ) => {
+		return makeField( TextControl, props, ref );
+	}
 );
 
-export const SelectField = < ItemType extends Item >(
+export const SelectField = < ItemType extends SelectItem >(
 	props: SelectFieldProps< ItemType >
-): JSX.Element => <Field component={ 'select' } { ...props } />;
+): JSX.Element => makeField( CustomSelectControl, props );
 
-export const PhoneNumberField: React.FC< PhoneNumberControlProps > = (
-	props
-) => <Field component={ 'phone' } { ...props } />;
+export const PhoneNumberField: React.FC< PhoneNumberFieldProps > = ( props ) =>
+	makeField( PhoneNumberControl, props );
 
-export default Field;
+export const GroupedSelectField = < ItemType extends GroupedSelectItem >(
+	props: GroupedSelectControlProps< ItemType >
+): JSX.Element => makeField( GroupedSelectControl, props );
