@@ -1,5 +1,33 @@
 *** WooPayments Changelog ***
 
+= 6.4.0-test-2 - 2023-xx-xx =
+* Add - Added the Transactions reporting endpoint
+* Add - Combine Session Initialization with User Authentication on WooPay.
+* Fix - Adds consistent payment token labels for saved Stripe Link payment methods across my account, shortcode checkout, and blocks checkout pages.
+* Fix - Display onboarding MCC field validation error
+* Fix - Fixes subscription renewals with the UPE enabled.
+* Fix - Fix phone number input widget on checkout page
+* Fix - Fix the WooPay logo so that it stays scaled up and visible on the WooPay button.
+* Fix - JavaScript is now correctly loaded on admin order screens when HPOS is enabled.
+* Fix - Prevent displaying "Fraud protection" menu on half-onboarded stores
+* Fix - Prevent fetching disputes on WooCommerce home task when store is not connected to a WooPayments account.
+* Fix - Provide per active discount Terms and Conditions link in the Account details card.
+* Update - BNPLs: updated methods copy on settings page
+* Update - Change Payment_Intent_Status to Intent_Status
+* Update - Improve `Chip` component styles to with improved visual design and accessible contrast ratios.
+* Update - Set WooPay button default enabled for product/cart/checkout pages
+* Update - Updated copy for credit and debit card in settings
+* Update - Updated payment method tooltip in settings so that it is rendered correctly in mobile view
+* Update - Updated section "Payment Methods" in page "Settings" for mobile view
+* Dev - Adding dispute object to DisputeDetails component
+* Dev - Adding HooksProxy and LegacyProxy to src, used to access code outside of it (hooks, globals, functions, and static methods).
+* Dev - Adding Psalm checks to function calls within `src`.
+* Dev - Add LegacyContainer to `src` to allow loading classes from `includes`.
+* Dev - Fixing a mistake in the doc regarding the customer service.
+* Dev - Ignore updating currency precision if the country is Japan
+* Dev - Move Multi-Currency Order Meta Helper functionality behind url param.
+* Dev - Refactor the deposit status UI element to use the `Chip` component.
+
 = 6.3.2 - 2023-08-17 =
 * Fix - Revert fix WooPay Session Handler in Store API requests.
 
