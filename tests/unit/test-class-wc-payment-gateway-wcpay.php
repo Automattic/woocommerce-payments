@@ -16,7 +16,7 @@ use WCPay\Core\Server\Request\Get_Setup_Intention;
 use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Type;
-use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Intent_Status;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
@@ -846,10 +846,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->set_transaction_id( $intent_id );
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->update_meta_data( '_intention_status', Payment_Intent_Status::REQUIRES_CAPTURE );
+		$order->update_meta_data( '_intention_status', Intent_Status::REQUIRES_CAPTURE );
 		$order->update_status( Order_Status::ON_HOLD );
 
-		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_CAPTURE ] );
+		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_CAPTURE ] );
 
 		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
 
@@ -894,7 +894,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Assert the returned data contains fields required by the REST endpoint.
 		$this->assertEquals(
 			[
-				'status'    => Payment_Intent_Status::SUCCEEDED,
+				'status'    => Intent_Status::SUCCEEDED,
 				'id'        => $intent_id,
 				'message'   => null,
 				'http_code' => 200,
@@ -903,7 +903,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 		$this->assertStringContainsString( 'successfully captured', $latest_wcpay_note->content );
 		$this->assertStringContainsString( wc_price( $order->get_total() ), $latest_wcpay_note->content );
-		$this->assertEquals( Payment_Intent_Status::SUCCEEDED, $order->get_meta( '_intention_status', true ) );
+		$this->assertEquals( Intent_Status::SUCCEEDED, $order->get_meta( '_intention_status', true ) );
 		$this->assertEquals( Order_Status::PROCESSING, $order->get_status() );
 	}
 
@@ -915,12 +915,12 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->set_transaction_id( $intent_id );
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->update_meta_data( '_intention_status', Payment_Intent_Status::REQUIRES_CAPTURE );
+		$order->update_meta_data( '_intention_status', Intent_Status::REQUIRES_CAPTURE );
 		$order->update_status( Order_Status::ON_HOLD );
 
 		$mock_intent = WC_Helper_Intention::create_intention(
 			[
-				'status'   => Payment_Intent_Status::REQUIRES_CAPTURE,
+				'status'   => Intent_Status::REQUIRES_CAPTURE,
 				'currency' => 'eur',
 			]
 		);
@@ -968,7 +968,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Assert the returned data contains fields required by the REST endpoint.
 		$this->assertEquals(
 			[
-				'status'    => Payment_Intent_Status::SUCCEEDED,
+				'status'    => Intent_Status::SUCCEEDED,
 				'id'        => $intent_id,
 				'message'   => null,
 				'http_code' => 200,
@@ -977,7 +977,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 		$this->assertStringContainsString( 'successfully captured', $latest_wcpay_note->content );
 		$this->assertStringContainsString( $note_currency, $latest_wcpay_note->content );
-		$this->assertEquals( Payment_Intent_Status::SUCCEEDED, $order->get_meta( '_intention_status', true ) );
+		$this->assertEquals( Intent_Status::SUCCEEDED, $order->get_meta( '_intention_status', true ) );
 		$this->assertEquals( Order_Status::PROCESSING, $order->get_status() );
 	}
 
@@ -989,10 +989,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->set_transaction_id( $intent_id );
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->update_meta_data( '_intention_status', Payment_Intent_Status::REQUIRES_CAPTURE );
+		$order->update_meta_data( '_intention_status', Intent_Status::REQUIRES_CAPTURE );
 		$order->update_status( Order_Status::ON_HOLD );
 
-		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_CAPTURE ] );
+		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_CAPTURE ] );
 
 		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
 
@@ -1029,7 +1029,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Assert the returned data contains fields required by the REST endpoint.
 		$this->assertEquals(
 			[
-				'status'    => Payment_Intent_Status::REQUIRES_CAPTURE,
+				'status'    => Intent_Status::REQUIRES_CAPTURE,
 				'id'        => $intent_id,
 				'message'   => null,
 				'http_code' => 502,
@@ -1038,7 +1038,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 		$this->assertStringContainsString( 'failed', $note->content );
 		$this->assertStringContainsString( wc_price( $order->get_total() ), $note->content );
-		$this->assertEquals( Payment_Intent_Status::REQUIRES_CAPTURE, $order->get_meta( '_intention_status', true ) );
+		$this->assertEquals( Intent_Status::REQUIRES_CAPTURE, $order->get_meta( '_intention_status', true ) );
 		$this->assertEquals( Order_Status::ON_HOLD, $order->get_status() );
 	}
 
@@ -1050,13 +1050,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->set_transaction_id( $intent_id );
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->update_meta_data( '_intention_status', Payment_Intent_Status::REQUIRES_CAPTURE );
+		$order->update_meta_data( '_intention_status', Intent_Status::REQUIRES_CAPTURE );
 		$order->update_status( Order_Status::ON_HOLD );
 		$order->set_currency( 'EUR' );
 
 		$mock_intent = WC_Helper_Intention::create_intention(
 			[
-				'status'   => Payment_Intent_Status::REQUIRES_CAPTURE,
+				'status'   => Intent_Status::REQUIRES_CAPTURE,
 				'currency' => 'eur',
 			]
 		);
@@ -1098,7 +1098,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Assert the returned data contains fields required by the REST endpoint.
 		$this->assertEquals(
 			[
-				'status'    => Payment_Intent_Status::REQUIRES_CAPTURE,
+				'status'    => Intent_Status::REQUIRES_CAPTURE,
 				'id'        => $intent_id,
 				'message'   => null,
 				'http_code' => 502,
@@ -1107,7 +1107,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 		$this->assertStringContainsString( 'failed', $note->content );
 		$this->assertStringContainsString( $note_currency, $note->content );
-		$this->assertEquals( Payment_Intent_Status::REQUIRES_CAPTURE, $order->get_meta( '_intention_status', true ) );
+		$this->assertEquals( Intent_Status::REQUIRES_CAPTURE, $order->get_meta( '_intention_status', true ) );
 		$this->assertEquals( Order_Status::ON_HOLD, $order->get_status() );
 	}
 
@@ -1119,10 +1119,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->set_transaction_id( $intent_id );
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->update_meta_data( '_intention_status', Payment_Intent_Status::REQUIRES_CAPTURE );
+		$order->update_meta_data( '_intention_status', Intent_Status::REQUIRES_CAPTURE );
 		$order->update_status( Order_Status::ON_HOLD );
 
-		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_CAPTURE ] );
+		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_CAPTURE ] );
 
 		$request = $this->mock_wcpay_request( Get_Intention::class, 2, $intent_id );
 
@@ -1169,7 +1169,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( 'failed', $note->content );
 		$this->assertStringContainsString( 'test exception', $note->content );
 		$this->assertStringContainsString( wc_price( $order->get_total() ), $note->content );
-		$this->assertEquals( Payment_Intent_Status::REQUIRES_CAPTURE, $order->get_meta( '_intention_status', true ) );
+		$this->assertEquals( Intent_Status::REQUIRES_CAPTURE, $order->get_meta( '_intention_status', true ) );
 		$this->assertEquals( Order_Status::ON_HOLD, $order->get_status() );
 	}
 
@@ -1181,13 +1181,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->set_transaction_id( $intent_id );
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->update_meta_data( '_intention_status', Payment_Intent_Status::REQUIRES_CAPTURE );
+		$order->update_meta_data( '_intention_status', Intent_Status::REQUIRES_CAPTURE );
 		$order->update_status( Order_Status::ON_HOLD );
 		WC_Payments_Utils::set_order_intent_currency( $order, 'EUR' );
 
 		$mock_intent = WC_Helper_Intention::create_intention(
 			[
-				'status'   => Payment_Intent_Status::REQUIRES_CAPTURE,
+				'status'   => Intent_Status::REQUIRES_CAPTURE,
 				'currency' => 'jpy',
 			]
 		);
@@ -1244,7 +1244,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( 'failed', $note->content );
 		$this->assertStringContainsString( 'test exception', $note->content );
 		$this->assertStringContainsString( $note_currency, $note->content );
-		$this->assertEquals( Payment_Intent_Status::REQUIRES_CAPTURE, $order->get_meta( '_intention_status', true ) );
+		$this->assertEquals( Intent_Status::REQUIRES_CAPTURE, $order->get_meta( '_intention_status', true ) );
 		$this->assertEquals( Order_Status::ON_HOLD, $order->get_status() );
 	}
 
@@ -1256,10 +1256,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->set_transaction_id( $intent_id );
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->update_meta_data( '_intention_status', Payment_Intent_Status::REQUIRES_CAPTURE );
+		$order->update_meta_data( '_intention_status', Intent_Status::REQUIRES_CAPTURE );
 		$order->update_status( Order_Status::ON_HOLD );
 
-		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::CANCELED ] );
+		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::CANCELED ] );
 
 		$request = $this->mock_wcpay_request( Get_Intention::class, 2, $intent_id );
 
@@ -1304,7 +1304,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$result
 		);
 		$this->assertStringContainsString( 'expired', $note->content );
-		$this->assertSame( Payment_Intent_Status::CANCELED, $order->get_meta( '_intention_status', true ) );
+		$this->assertSame( Intent_Status::CANCELED, $order->get_meta( '_intention_status', true ) );
 		$this->assertSame( Order_Status::FAILED, $order->get_status() );
 	}
 
@@ -1316,14 +1316,14 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->set_transaction_id( $intent_id );
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->update_meta_data( '_intention_status', Payment_Intent_Status::REQUIRES_CAPTURE );
+		$order->update_meta_data( '_intention_status', Intent_Status::REQUIRES_CAPTURE );
 		$order->update_status( Order_Status::ON_HOLD );
 
 		$charge = $this->create_charge_object();
 
 		$mock_intent = WC_Helper_Intention::create_intention(
 			[
-				'status'   => Payment_Intent_Status::REQUIRES_CAPTURE,
+				'status'   => Intent_Status::REQUIRES_CAPTURE,
 				'metadata' => [
 					'customer_name' => 'Test',
 				],
@@ -1377,7 +1377,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Assert the returned data contains fields required by the REST endpoint.
 		$this->assertSame(
 			[
-				'status'    => Payment_Intent_Status::SUCCEEDED,
+				'status'    => Intent_Status::SUCCEEDED,
 				'id'        => $intent_id,
 				'message'   => null,
 				'http_code' => 200,
@@ -1386,7 +1386,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 		$this->assertStringContainsString( 'successfully captured', $note->content );
 		$this->assertStringContainsString( wc_price( $order->get_total() ), $note->content );
-		$this->assertSame( $order->get_meta( '_intention_status', true ), Payment_Intent_Status::SUCCEEDED );
+		$this->assertSame( $order->get_meta( '_intention_status', true ), Intent_Status::SUCCEEDED );
 		$this->assertSame( $order->get_status(), Order_Status::PROCESSING );
 	}
 
@@ -1398,10 +1398,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->set_transaction_id( $intent_id );
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->update_meta_data( '_intention_status', Payment_Intent_Status::REQUIRES_CAPTURE );
+		$order->update_meta_data( '_intention_status', Intent_Status::REQUIRES_CAPTURE );
 		$order->update_status( Order_Status::ON_HOLD );
 
-		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_CAPTURE ] );
+		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_CAPTURE ] );
 
 		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
 
@@ -1439,7 +1439,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Assert the returned data contains fields required by the REST endpoint.
 		$this->assertEquals(
 			[
-				'status'    => Payment_Intent_Status::SUCCEEDED,
+				'status'    => Intent_Status::SUCCEEDED,
 				'id'        => $intent_id,
 				'message'   => null,
 				'http_code' => 200,
@@ -1448,7 +1448,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 		$this->assertStringContainsString( 'successfully captured', $latest_wcpay_note->content );
 		$this->assertStringContainsString( wc_price( $order->get_total() ), $latest_wcpay_note->content );
-		$this->assertEquals( Payment_Intent_Status::SUCCEEDED, $order->get_meta( '_intention_status', true ) );
+		$this->assertEquals( Intent_Status::SUCCEEDED, $order->get_meta( '_intention_status', true ) );
 		$this->assertEquals( Order_Status::PROCESSING, $order->get_status() );
 	}
 
@@ -1460,7 +1460,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->set_transaction_id( $intent_id );
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->update_meta_data( '_intention_status', Payment_Intent_Status::REQUIRES_CAPTURE );
+		$order->update_meta_data( '_intention_status', Intent_Status::REQUIRES_CAPTURE );
 		$order->update_status( Order_Status::ON_HOLD );
 
 		$cancel_intent_request = $this->mock_wcpay_request( Cancel_Intention::class, 1, $intent_id );
@@ -1471,7 +1471,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
 		$request->expects( $this->once() )
 			->method( 'format_response' )
-			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::CANCELED ] ) );
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::CANCELED ] ) );
 
 		$this->wcpay_gateway->cancel_authorization( $order );
 
@@ -1494,7 +1494,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->set_transaction_id( $intent_id );
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->update_meta_data( '_intention_status', Payment_Intent_Status::REQUIRES_CAPTURE );
+		$order->update_meta_data( '_intention_status', Intent_Status::REQUIRES_CAPTURE );
 		$order->update_status( Order_Status::ON_HOLD );
 
 		$cancel_intent_request = $this->mock_wcpay_request( Cancel_Intention::class, 1, $intent_id );
@@ -1609,7 +1609,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_setup_intention(
 					[
-						'status'         => Payment_Intent_Status::SUCCEEDED,
+						'status'         => Intent_Status::SUCCEEDED,
 						'payment_method' => 'pm_mock',
 					]
 				)
@@ -1655,7 +1655,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$request = $this->mock_wcpay_request( Get_Setup_Intention::class, 1, 'sti_mock' );
 		$request->expects( $this->once() )
 			->method( 'format_response' )
-			->willReturn( WC_Helper_Intention::create_setup_intention( [ 'status' => Payment_Intent_Status::CANCELED ] ) );
+			->willReturn( WC_Helper_Intention::create_setup_intention( [ 'status' => Intent_Status::CANCELED ] ) );
 
 		$this->mock_token_service
 			->expects( $this->never() )

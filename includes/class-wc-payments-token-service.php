@@ -54,6 +54,7 @@ class WC_Payments_Token_Service {
 		add_filter( 'woocommerce_payment_methods_list_item', [ $this, 'get_account_saved_payment_methods_list_item_sepa' ], 10, 2 );
 		add_filter( 'woocommerce_payment_methods_list_item', [ $this, 'get_account_saved_payment_methods_list_item_link' ], 10, 2 );
 		add_filter( 'woocommerce_get_credit_card_type_label', [ $this, 'normalize_sepa_label' ] );
+		add_filter( 'woocommerce_get_credit_card_type_label', [ $this, 'normalize_stripe_link_label' ] );
 	}
 
 	/**
@@ -274,8 +275,8 @@ class WC_Payments_Token_Service {
 	 */
 	public function get_account_saved_payment_methods_list_item_link( $item, $payment_token ) {
 		if ( WC_Payment_Token_WCPay_Link::TYPE === strtolower( $payment_token->get_type() ) ) {
-			/* translators: %s is a registered Stripe Link email. */
-			$item['method']['brand'] = sprintf( esc_html__( 'Stripe Link email %s', 'woocommerce-payments' ), esc_html( $payment_token->get_email() ) );
+			$item['method']['last4'] = $payment_token->get_redacted_email();
+			$item['method']['brand'] = esc_html__( 'Stripe Link email', 'woocommerce-payments' );
 		}
 		return $item;
 	}
@@ -289,6 +290,20 @@ class WC_Payments_Token_Service {
 	public function normalize_sepa_label( $label ) {
 		if ( 'sepa iban' === strtolower( $label ) ) {
 			return 'SEPA IBAN';
+		}
+
+		return $label;
+	}
+
+	/**
+	 * Normalizes the Stripe Link label on My Account page.
+	 *
+	 * @param string $label Token label.
+	 * @return string $label Capitalized SEPA IBAN label.
+	 */
+	public function normalize_stripe_link_label( $label ) {
+		if ( 'stripe link email' === strtolower( $label ) ) {
+			return 'Stripe Link email';
 		}
 
 		return $label;
