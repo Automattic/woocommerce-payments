@@ -37,6 +37,7 @@ import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import { FraudOutcome } from '../../types/fraud-outcome';
 import CancelAuthorizationButton from '../../components/cancel-authorization-button';
 import { PaymentIntent } from '../../types/payment-intents';
+import MissingOrderNotice from 'wcpay/payment-details/summary/missing-order-notice';
 
 declare const window: any;
 
@@ -187,6 +188,12 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		},
 	} );
 
+	const formattedAmount = formatCurrency(
+		charge.amount,
+		charge.currency,
+		balance.currency
+	);
+
 	return (
 		<Card>
 			<CardBody>
@@ -197,11 +204,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								isLoading={ isLoading }
 								placeholder="Amount placeholder"
 							>
-								{ formatCurrency(
-									charge.amount,
-									charge.currency,
-									balance.currency
-								) }
+								{ formattedAmount }
 								<span className="payment-details-summary__amount-currency">
 									{ charge.currency || 'USD' }
 								</span>
@@ -371,6 +374,10 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					/>
 				</LoadableBlock>
 			</CardBody>
+			<MissingOrderNotice
+				isLoading={ isLoading }
+				amount={ formattedAmount }
+			/>
 			{ isAuthAndCaptureEnabled &&
 				authorization &&
 				! authorization.captured && (
