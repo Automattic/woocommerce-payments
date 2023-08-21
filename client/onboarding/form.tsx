@@ -64,14 +64,21 @@ export const OnboardingTextField: React.FC< OnboardingTextFieldProps > = ( {
 } ) => {
 	const { data, setData, touched } = useOnboardingContext();
 	const { validate, error } = useValidation( name );
+	const inputRef = React.useRef< HTMLInputElement >( null );
 
 	return (
 		<TextField
+			ref={ inputRef as any }
 			label={ strings.fields[ name ] }
 			value={ data[ name ] || '' }
 			onChange={ ( value: string ) => {
 				setData( { [ name ]: value } );
-				if ( touched[ name ] ) validate( value );
+				if (
+					touched[ name ] ||
+					inputRef.current !==
+						inputRef.current?.ownerDocument.activeElement
+				)
+					validate( value );
 			} }
 			onBlur={ () => validate() }
 			onKeyDown={ ( event: React.KeyboardEvent< HTMLInputElement > ) => {
