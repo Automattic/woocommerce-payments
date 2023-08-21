@@ -21,6 +21,9 @@ use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
+use WCPay\Internal\Payment\Factor;
+use WCPay\Internal\Payment\Feature;
+use WCPay\Internal\Service\PaymentProcessingService;
 use WCPay\Payment_Information;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
@@ -211,6 +214,20 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Fall back to an US store.
 		update_option( 'woocommerce_store_postcode', '94110' );
 		$this->wcpay_gateway->update_option( 'saved_cards', 'yes' );
+
+		// Some tests simulate payment method parameters.
+		$payment_method_keys = [
+			'payment_method',
+			'wc-woocommerce_payments-payment-token',
+			'wc-woocommerce_payments-new-payment-method',
+		];
+		foreach ( $payment_method_keys as $key ) {
+			// phpcs:disable WordPress.Security.NonceVerification.Missing
+			if ( isset( $_POST[ $key ] ) ) {
+				unset( $_POST[ $key ] );
+			}
+			// phpcs:enable WordPress.Security.NonceVerification.Missing
+		}
 	}
 
 	public function test_attach_exchange_info_to_order_with_no_conversion() {
@@ -2332,6 +2349,201 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		// Act: process payment.
 		$response = $mock_wcpay_gateway->process_payment( $order->get_id() );
+	}
+
+	public function test_new_process_payment_returns_null_if_feature_unavailable() {
+		$mock_feature = $this->createMock( Feature::class );
+		wcpay_get_test_container()->replace( Feature::class, $mock_feature );
+
+		$order = WC_Helper_Order::create_order();
+
+		// Assert: Feature returns false.
+		$mock_feature->expects( $this->once() )
+			->method( 'should_use_new_payment_process' )
+			->willReturn( false );
+
+		// Act: Call the method.
+		$result = $this->wcpay_gateway->new_process_payment( $order );
+		$this->assertNull( $result );
+	}
+
+	public function test_new_process_payment_uses_the_new_process() {
+		$mock_feature  = $this->createMock( Feature::class );
+		$mock_service  = $this->createMock( PaymentProcessingService::class );
+		$order         = WC_Helper_Order::create_order();
+		$mock_response = [ 'success' => true ];
+
+		wcpay_get_test_container()->replace( Feature::class, $mock_feature );
+		wcpay_get_test_container()->replace( PaymentProcessingService::class, $mock_service );
+
+		// Assert: Feature returns false.
+		$mock_feature->expects( $this->once() )
+			->method( 'should_use_new_payment_process' )
+			->willReturn( true );
+
+		// Assert: The new service is called.
+		$mock_service->expects( $this->once() )
+			->method( 'process_payment' )
+			->with( $order->get_id() )
+			->willReturn( $mock_response );
+
+		// Act: Call the method.
+		$result = $this->wcpay_gateway->new_process_payment( $order );
+		$this->assertEquals( $mock_response, $result );
+	}
+
+	public function test_new_process_payment_determines_positive_no_payment() {
+		$order = WC_Helper_Order::create_order( 1, 0 );
+
+		$this->expect_new_payment_process_factor( Factor::NO_PAYMENT, true );
+		$this->wcpay_gateway->new_process_payment( $order );
+	}
+
+	public function test_new_process_payment_determines_negative_no_payment() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 10 );
+		$order->save();
+
+		$this->expect_new_payment_process_factor( Factor::NO_PAYMENT, false );
+		$this->wcpay_gateway->new_process_payment( $order );
+	}
+
+	public function test_new_process_payment_determines_negative_no_payment_when_saving_pm() {
+		$order = WC_Helper_Order::create_order( 1, 0 );
+
+		// Simulate a payment method being saved to force payment processing.
+		$_POST['wc-woocommerce_payments-new-payment-method'] = 'pm_XYZ';
+
+		$this->expect_new_payment_process_factor( Factor::NO_PAYMENT, false );
+		$this->wcpay_gateway->new_process_payment( $order );
+	}
+
+	public function test_new_process_payment_determines_positive_use_saved_pm() {
+		$order = WC_Helper_Order::create_order();
+		$token = WC_Helper_Token::create_token( 'pm_XYZ' );
+
+		// Simulate that a saved token is being used.
+		$_POST['payment_method']                        = 'woocommerce_payments';
+		$_POST['wc-woocommerce_payments-payment-token'] = $token->get_id();
+
+		$this->expect_new_payment_process_factor( Factor::USE_SAVED_PM, true );
+		$this->wcpay_gateway->new_process_payment( $order );
+	}
+
+	public function test_new_process_payment_determines_negative_use_saved_pm() {
+		$order = WC_Helper_Order::create_order();
+
+		// Simulate that a saved token is being used.
+		$_POST['payment_method']                        = 'woocommerce_payments';
+		$_POST['wc-woocommerce_payments-payment-token'] = 'new';
+
+		$this->expect_new_payment_process_factor( Factor::USE_SAVED_PM, false );
+		$this->wcpay_gateway->new_process_payment( $order );
+	}
+
+	public function test_new_process_payment_determines_positive_save_pm() {
+		$order = WC_Helper_Order::create_order();
+
+		$_POST['wc-woocommerce_payments-new-payment-method'] = '1';
+
+		$this->expect_new_payment_process_factor( Factor::SAVE_PM, true );
+		$this->wcpay_gateway->new_process_payment( $order );
+	}
+
+	public function test_new_process_payment_determines_positive_save_pm_for_subscription() {
+		$order = WC_Helper_Order::create_order();
+
+		WC_Subscriptions::$wcs_order_contains_subscription = '__return_true';
+
+		$this->expect_new_payment_process_factor( Factor::SAVE_PM, true );
+		$this->wcpay_gateway->new_process_payment( $order );
+	}
+
+	public function test_new_process_payment_determines_negative_save_pm() {
+		$order = WC_Helper_Order::create_order();
+		$token = WC_Helper_Token::create_token( 'pm_XYZ' );
+
+		// Simulate that a saved token is being used.
+		$_POST['wc-woocommerce_payments-new-payment-method'] = '1';
+		$_POST['payment_method']                             = 'woocommerce_payments';
+		$_POST['wc-woocommerce_payments-payment-token']      = $token->get_id();
+
+		$this->expect_new_payment_process_factor( Factor::SAVE_PM, false );
+		$this->wcpay_gateway->new_process_payment( $order );
+	}
+
+	public function test_new_process_payment_determines_positive_subscription_signup() {
+		$order = WC_Helper_Order::create_order();
+
+		WC_Subscriptions::$wcs_order_contains_subscription = '__return_true';
+
+		$this->expect_new_payment_process_factor( Factor::SUBSCRIPTION_SIGNUP, true );
+		$this->wcpay_gateway->new_process_payment( $order );
+	}
+
+	public function test_new_process_payment_determines_negative_subscription_signup() {
+		$order = WC_Helper_Order::create_order();
+
+		WC_Subscriptions::$wcs_order_contains_subscription = '__return_false';
+
+		$this->expect_new_payment_process_factor( Factor::SUBSCRIPTION_SIGNUP, false );
+		$this->wcpay_gateway->new_process_payment( $order );
+	}
+
+	public function test_new_process_payment_determines_positive_woopay_payment() {
+		$order = WC_Helper_Order::create_order();
+
+		$_POST['platform-checkout-intent'] = 'pi_ZYX';
+
+		$this->expect_new_payment_process_factor( Factor::WOOPAY_PAYMENT, true );
+		$this->wcpay_gateway->new_process_payment( $order );
+	}
+
+	public function test_new_process_payment_determines_negative_woopay_payment() {
+		$order = WC_Helper_Order::create_order();
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		unset( $_POST['platform-checkout-intent'] );
+
+		$this->expect_new_payment_process_factor( Factor::WOOPAY_PAYMENT, false );
+		$this->wcpay_gateway->new_process_payment( $order );
+	}
+
+	/**
+	 * Testing the positive WCPay subscription signup factor is not possible,
+	 * as the check relies on the existence of the `WC_Subscriptions` class
+	 * through an un-mockable method, and the class simply exists.
+	 */
+	public function test_new_process_payment_determines_negative_wcpay_subscription_signup() {
+		$order = WC_Helper_Order::create_order();
+
+		WC_Subscriptions::$wcs_order_contains_subscription = '__return_true';
+		add_filter( 'wcpay_is_wcpay_subscriptions_enabled', '__return_true' );
+
+		$this->expect_new_payment_process_factor( Factor::WCPAY_SUBSCRIPTION_SIGNUP, false );
+		$this->wcpay_gateway->new_process_payment( $order );
+	}
+
+	/**
+	 * Sets up the expectation for a certain factor for the new payment
+	 * process to be either set or unset.
+	 *
+	 * @param string $factor_name Name of the factor.
+	 * @param bool   $value       Expected value.
+	 */
+	private function expect_new_payment_process_factor( $factor_name, $value ) {
+		$mock_feature = $this->createMock( Feature::class );
+		wcpay_get_test_container()->replace( Feature::class, $mock_feature );
+
+		$checker = function( $factors ) use ( $factor_name, $value ) {
+			return is_array( $factors )
+				&& isset( $factors[ $factor_name ] )
+				&& $factors[ $factor_name ] === $value;
+		};
+
+		$mock_feature->expects( $this->once() )
+			->method( 'should_use_new_payment_process' )
+			->with( $this->callback( $checker ) );
 	}
 
 	/**

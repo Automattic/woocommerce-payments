@@ -42,6 +42,8 @@ use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Tracker;
 use WCPay\Internal\Service\PaymentProcessingService;
+use WCPay\Internal\Payment\Factor;
+use WCPay\Internal\Payment\Feature;
 
 /**
  * Gateway class for WooPayments
@@ -704,6 +706,73 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Checks whether the new payment process should be entered,
+	 * and if the answer is yes, uses it and returns the result.
+	 *
+	 * @param WC_Order $order Order that needs payment.
+	 * @return array|null     Array if processed, null if the new process is not supported.
+	 */
+	public function new_process_payment( WC_Order $order ) {
+		$order_id = $order->get_id();
+
+		// If there is a token in the request, we're using a saved PM.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$using_saved_payment_method = ! empty( Payment_Information::get_token_from_request( $_POST ) );
+
+		// The PM should be saved when chosen, or when it's a recurrent payment, but not if already saved.
+		$save_payment_method = ! $using_saved_payment_method && (
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
+			! empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-payment-method' ] )
+			|| $this->is_payment_recurring( $order_id )
+		);
+
+		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
+		$confirm_without_payment = apply_filters(
+			'wcpay_confirm_without_payment_intent',
+			$order->get_total() <= 0 && ! $save_payment_method
+		);
+
+		// Subscription (both WCPay and WCSubs) if when the order contains one.
+		$subscription_signup = function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order_id );
+
+		// WooPay might change how payment fields were loaded.
+		$woopay_enabled = $this->woopay_util->should_enable_woopay( $this ) &&
+			$this->woopay_util->should_enable_woopay_on_cart_or_checkout();
+
+		// WooPay payments are indicated by the platform checkout intent.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$woopay_payment = isset( $_POST['platform-checkout-intent'] );
+
+		// Check whether the customer is signining up for a WCPay subscription.
+		$wcpay_subscription_signup = function_exists( 'wcs_order_contains_subscription' )
+			&& wcs_order_contains_subscription( $order_id )
+			&& WC_Payments_Features::is_wcpay_subscriptions_enabled()
+			&& ! $this->is_subscriptions_plugin_active();
+
+		// The new payment process is hidden behind flags, like a feature.
+		$factors = [
+			Factor::NO_PAYMENT                => $confirm_without_payment,
+			Factor::USE_SAVED_PM              => $using_saved_payment_method,
+			Factor::SAVE_PM                   => $save_payment_method,
+			Factor::SUBSCRIPTION_SIGNUP       => $subscription_signup,
+			Factor::WOOPAY_ENABLED            => $woopay_enabled,
+			Factor::WOOPAY_PAYMENT            => $woopay_payment,
+			Factor::WCPAY_SUBSCRIPTION_SIGNUP => $wcpay_subscription_signup,
+			Factor::DEFERRED_INTENT_SPLIT_UPE => $this instanceof UPE_Split_Payment_Gateway, // 1,
+			Factor::PAYMENT_REQUEST           => defined( 'WCPAY_PAYMENT_REQUEST_CHECKOUT' ) && WCPAY_PAYMENT_REQUEST_CHECKOUT,
+		];
+
+		$feature = wcpay_get_container()->get( Feature::class );
+		if ( ! $feature->should_use_new_payment_process( $factors ) ) {
+			return null;
+		}
+
+		// Important: No factors are provided here, they were meant just for `Feature`.
+		$service = wcpay_get_container()->get( PaymentProcessingService::class );
+		return $service->process_payment( $order_id );
+	}
+
+	/**
 	 * Process the payment for a given order.
 	 *
 	 * @param int $order_id Order ID to process the payment for.
@@ -713,13 +782,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @throws Exception Error processing the payment.
 	 */
 	public function process_payment( $order_id ) {
-
-		if ( defined( 'WCPAY_NEW_PROCESS' ) && true === WCPAY_NEW_PROCESS ) {
-			$new_process = wcpay_get_container()->get( PaymentProcessingService::class );
-			return $new_process->process_payment( $order_id );
-		}
-
 		$order = wc_get_order( $order_id );
+
+		// If the new payment process was entered, use the result.
+		$new_process_result = $this->new_process_payment( $order );
+		if ( ! is_null( $new_process_result ) ) {
+			return $new_process_result;
+		}
 
 		try {
 			if ( 20 < strlen( $order->get_billing_phone() ) ) {
