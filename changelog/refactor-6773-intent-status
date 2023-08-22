@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Change Payment_Intent_Status to Intent_Status
