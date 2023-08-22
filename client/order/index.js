@@ -151,6 +151,7 @@ const DisputeNotice = ( { chargeId } ) => {
 		}
 	}
 
+	const showWarning = false;
 	if (
 		! charge?.dispute?.evidence_details?.due_by ||
 		// Only show the notice if the dispute is awaiting a response.
@@ -261,9 +262,11 @@ const DisputeNotice = ( { chargeId } ) => {
 			isDismissible={ false }
 			actions={ actions }
 		>
-			<strong>
-				{ title } { suffix }
-			</strong>
+			{ showWarning && (
+				<strong>
+					{ title } { suffix }
+				</strong>
+			) }
 
 			{ disableRefund && (
 				<div>
