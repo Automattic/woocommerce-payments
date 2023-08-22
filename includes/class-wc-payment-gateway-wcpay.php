@@ -375,6 +375,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					'large'   => __( 'Large', 'woocommerce-payments' ),
 				],
 			],
+			'platform_checkout_custom_message' => [ 'default' => 'By placing this order, you agree to our [terms_of_service_link] and understand our [privacy_policy_link].' ],
 		];
 
 		// Capabilities have different keys than the payment method ID's,
