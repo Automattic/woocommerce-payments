@@ -136,6 +136,7 @@ const DisputeNotice = ( { chargeId } ) => {
 
 	const { dispute } = charge;
 
+	let urgency = 'warning';
 	if (
 		! charge?.dispute?.evidence_details?.due_by ||
 		// Only show the notice if the dispute is awaiting a response.
@@ -182,7 +183,6 @@ const DisputeNotice = ( { chargeId } ) => {
 		dispute.currency
 	);
 
-	let urgency = 'warning';
 	let buttonLabel = __( 'Respond now', 'woocommerce-payments' );
 	let suffix = '';
 
