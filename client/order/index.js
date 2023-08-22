@@ -134,6 +134,8 @@ const DisputeNotice = ( { chargeId } ) => {
 		return null;
 	}
 
+	const { dispute } = charge;
+
 	if (
 		! charge?.dispute?.evidence_details?.due_by ||
 		// Only show the notice if the dispute is awaiting a response.
@@ -141,8 +143,6 @@ const DisputeNotice = ( { chargeId } ) => {
 	) {
 		return null;
 	}
-
-	const { dispute } = charge;
 
 	const now = moment();
 	const dueBy = moment.unix( dispute.evidence_details?.due_by );
