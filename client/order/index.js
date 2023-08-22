@@ -130,8 +130,11 @@ jQuery( function ( $ ) {
 const DisputeNotice = ( { chargeId } ) => {
 	const { data: charge } = useCharge( chargeId );
 
+	if ( ! charge?.dispute ) {
+		return null;
+	}
+
 	if (
-		! charge?.dispute ||
 		! charge?.dispute?.evidence_details?.due_by ||
 		// Only show the notice if the dispute is awaiting a response.
 		! disputeAwaitingResponseStatuses.includes( charge?.dispute?.status )
