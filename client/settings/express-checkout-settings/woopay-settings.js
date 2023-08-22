@@ -6,6 +6,7 @@ import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card, CheckboxControl, TextareaControl } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
+import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -22,7 +23,6 @@ import {
 } from 'wcpay/data';
 import GeneralPaymentRequestButtonSettings from './general-payment-request-button-settings';
 import WooPayIncompatibilityNotice from '../settings-warnings/incompatibility-notice';
-import { Link } from '@woocommerce/components';
 
 const WooPaySettings = ( { section } ) => {
 	const [
