@@ -262,6 +262,10 @@ const DisputeNotice = ( { chargeId } ) => {
 		}
 	}
 
+	if ( ! showWarning && ! disableRefund ) {
+		return null;
+	}
+
 	return (
 		<BannerNotice
 			status={ urgency }
