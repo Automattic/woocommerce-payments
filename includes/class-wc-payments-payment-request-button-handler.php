@@ -761,7 +761,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_PAYMENT_REQUEST', 'dist/payment-request', [ 'jquery', 'stripe' ] );
 
-		WC_Payments_Utils::register_style(
+		WC_Payments_Utils::enqueue_style(
 			'WCPAY_PAYMENT_REQUEST',
 			plugins_url( 'dist/payment-request.css', WCPAY_PLUGIN_FILE ),
 			[],
