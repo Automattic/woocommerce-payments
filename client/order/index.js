@@ -139,6 +139,18 @@ const DisputeNotice = ( { chargeId } ) => {
 	let urgency = 'warning';
 	let actions = [];
 
+	// Disable refunds if the dispute is closed or won.
+	const disableRefund = ! [ 'warning_closed', 'won' ].includes(
+		dispute.status
+	);
+
+	if ( disableRefund ) {
+		const refundButton = document.querySelector( 'button.refund-items' );
+		if ( refundButton ) {
+			refundButton.disabled = true;
+		}
+	}
+
 	if (
 		! charge?.dispute?.evidence_details?.due_by ||
 		// Only show the notice if the dispute is awaiting a response.
@@ -252,6 +264,15 @@ const DisputeNotice = ( { chargeId } ) => {
 			<strong>
 				{ title } { suffix }
 			</strong>
+
+			{ disableRefund && (
+				<div>
+					{ __(
+						'Refunding and order editing are disabled during disputes to maintain record integrity.',
+						'woocommerce-payments'
+					) }
+				</div>
+			) }
 		</BannerNotice>
 	);
 };
