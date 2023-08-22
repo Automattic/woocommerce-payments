@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Ensures that Stripe Link and SEPA Debit saved payment tokens are stored and validated with correct gateway IDs for relevant feature flags enabled.
