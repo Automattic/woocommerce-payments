@@ -200,6 +200,21 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Checks if the account has not completed onboarding due to users abandoning the process half way.
+	 * Returns true if the onboarding is started but did not finish.
+	 *
+	 * @return bool True if the account is connected and details are not submitted, false otherwise.
+	 */
+	public function is_account_partially_onboarded(): bool {
+		if ( ! $this->is_stripe_connected() ) {
+			return false;
+		}
+
+		$account = $this->get_cached_account_data();
+		return false === $account['details_submitted'];
+	}
+
+	/**
 	 * Gets the account status data for rendering on the settings page.
 	 *
 	 * @return array An array containing the status data, or [ 'error' => true ] on error or no connected account.
@@ -585,11 +600,21 @@ class WC_Payments_Account {
 		$args = $_GET;
 		unset( $args['wcpay-link-handler'] );
 
+		$this->redirect_to_account_link();
+	}
+
+	/**
+	 * Function to immediately redirect to the account link.
+	 *
+	 * @param bool $is_complete_kyc_link Optional indicates if is a link to continue kyc process.
+	 */
+	private function redirect_to_account_link( bool $is_complete_kyc_link = false ) {
 		try {
-			$link = $this->payments_api_client->get_link( $args );
-			if ( isset( $args['type'] ) && 'complete_kyc_link' === $args['type'] && isset( $link['state'] ) ) {
-				set_transient( 'wcpay_stripe_onboarding_state', $link['state'], DAY_IN_SECONDS );
-			}
+
+			$type         = $is_complete_kyc_link ? 'complete_kyc_link' : 'login_link';
+			$args         = [];
+			$args['type'] = $type;
+			$link         = $this->payments_api_client->get_link( $args );
 
 			$this->redirect_to( $link['url'] );
 		} catch ( API_Exception $e ) {
@@ -764,6 +789,10 @@ class WC_Payments_Account {
 
 		if ( isset( $_GET['wcpay-login'] ) && check_admin_referer( 'wcpay-login' ) ) {
 			try {
+				if ( $this->is_account_partially_onboarded() ) {
+					$this->redirect_to_account_link( true );
+				}
+
 				$this->redirect_to_login();
 			} catch ( Exception $e ) {
 				Logger::error( 'Failed redirect_to_login: ' . $e );
