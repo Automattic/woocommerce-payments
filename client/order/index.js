@@ -137,6 +137,8 @@ const DisputeNotice = ( { chargeId } ) => {
 	const { dispute } = charge;
 
 	let urgency = 'warning';
+	let actions = [];
+
 	if (
 		! charge?.dispute?.evidence_details?.due_by ||
 		// Only show the notice if the dispute is awaiting a response.
@@ -224,29 +226,28 @@ const DisputeNotice = ( { chargeId } ) => {
 		buttonLabel = __( 'Respond today', 'woocommerce-payments' );
 		suffix = __( '(Last day today)', 'woocommerce-payments' );
 	}
+
+	actions = [
+		{
+			label: buttonLabel,
+			variant: 'secondary',
+			onClick: () => {
+				wcpayTracks.recordEvent(
+					wcpayTracks.events.ORDER_DISPUTE_NOTICE_BUTTON_CLICK,
+					{
+						due_by_days: parseInt( countdownDays, 10 ),
+					}
+				);
+				window.location = getDetailsURL( dispute.id, 'disputes' );
+			},
+		},
+	];
+
 	return (
 		<BannerNotice
 			status={ urgency }
 			isDismissible={ false }
-			actions={ [
-				{
-					label: buttonLabel,
-					variant: 'secondary',
-					onClick: () => {
-						wcpayTracks.recordEvent(
-							wcpayTracks.events
-								.ORDER_DISPUTE_NOTICE_BUTTON_CLICK,
-							{
-								due_by_days: parseInt( countdownDays, 10 ),
-							}
-						);
-						window.location = getDetailsURL(
-							dispute.id,
-							'disputes'
-						);
-					},
-				},
-			] }
+			actions={ actions }
 		>
 			<strong>
 				{ title } { suffix }
