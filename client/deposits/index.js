@@ -12,7 +12,6 @@ import { TestModeNotice, topics } from 'components/test-mode-notice';
 import DepositsList from './list';
 
 const DepositsPage = () => {
-
 	return (
 		<Page>
 			<TestModeNotice topic={ topics.deposits } />

@@ -53,7 +53,7 @@ export const TransactionsPage: React.FC = () => {
 			<>
 				<TestModeNotice topic={ topics.transactions } />
 				<TransactionsList />
-			</>	
+			</>
 		),
 		'uncaptured-page': (
 			<>
