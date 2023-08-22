@@ -155,9 +155,9 @@ const DisputeNotice = ( { chargeId } ) => {
 	let warningText = '';
 
 	if (
-		charge?.dispute?.evidence_details?.due_by &&
+		dispute.evidence_details?.due_by &&
 		// Only show the notice if the dispute is awaiting a response.
-		disputeAwaitingResponseStatuses.includes( charge?.dispute?.status )
+		disputeAwaitingResponseStatuses.includes( dispute.status )
 	) {
 		const now = moment();
 		const dueBy = moment.unix( dispute.evidence_details?.due_by );
