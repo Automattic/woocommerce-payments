@@ -329,22 +329,12 @@ const PaymentMethods = () => {
 										handleCheckClick( id );
 									} }
 									isPoEnabled={
-										wcpaySettings.hasOwnProperty(
-											'progressiveOnboarding'
-										)
-											? wcpaySettings
-													.progressiveOnboarding
-													.isEnabled ?? false
-											: false
+										wcpaySettings?.progressiveOnboarding
+											?.isComplete
 									}
 									isPoComplete={
-										wcpaySettings.hasOwnProperty(
-											'progressiveOnboarding'
-										)
-											? wcpaySettings
-													.progressiveOnboarding
-													.isComplete ?? false
-											: false
+										wcpaySettings?.progressiveOnboarding
+											?.isComplete
 									}
 								/>
 							)
