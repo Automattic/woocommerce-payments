@@ -216,34 +216,17 @@ const WooPaySettings = ( { section } ) => {
 										' and {{termsLink}}terms of service{{/termsLink}}, or add custom text to WooPay checkout.',
 									'woocommerce-payments'
 								),
+								// prettier-ignore
 								components: {
 									/* eslint-disable prettier/prettier */
-									privacyLink: window.wcSettings?.storePages
-										?.privacy?.permalink ? (
-										<Link
-											href={
-												window.wcSettings?.storePages
-													?.privacy?.permalink
-											}
-											type="external"
-										/>
-									) : (
-										<span />
-									),
-									termsLink: window.wcSettings?.storePages
-										?.terms?.permalink ? (
-										<Link
-											href={
-												window.wcSettings?.storePages
-													?.terms?.permalink
-											}
-											type="external"
-										/>
-									) : (
-										<span />
-									),
+									privacyLink: window.wcSettings?.storePages?.privacy?.permalink ?
+										<Link href={ window.wcSettings?.storePages?.privacy?.permalink } type="external" /> :
+										<span />,
+									termsLink: window.wcSettings?.storePages?.terms?.permalink ?
+										<Link href={ window.wcSettings?.storePages?.terms?.permalink } type="external" /> :
+										<span />,
 									/* eslint-enable prettier/prettier */
-								},
+								}
 							} ) }
 							value={ woopayCustomMessage }
 							onChange={ setWooPayCustomMessage }
