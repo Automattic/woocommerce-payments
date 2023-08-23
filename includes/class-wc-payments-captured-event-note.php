@@ -206,7 +206,7 @@ class WC_Payments_Captured_Event_Note {
 
 		foreach ( $history as $fee ) {
 			$label_type = $fee['type'];
-			if ( isset( $fee['additional_type'] ) && ! empty( $fee['additional_type'] ) ) {
+			if ( $fee['additional_type'] ?? '' ) {
 				$label_type .= '-' . $fee['additional_type'];
 			}
 
