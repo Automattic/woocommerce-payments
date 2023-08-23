@@ -421,9 +421,8 @@ class WC_Payments_Captured_Event_Note {
 		$custom_format = WC_Payments_Utils::get_currency_format_for_wc_price( $base_currency );
 		unset( $custom_format['currency'] );
 
-		if ( 0 === WC_Payments_Utils::get_currency_format_for_wc_price( $currency )['decimals'] ) {
-			unset( $custom_format['decimals'] );
-		}
+		// Given this is used to display the $amount, the decimals for $base_currency shouldn't interfere with decimals for $currency.
+		$custom_format['decimals'] = WC_Payments_Utils::get_currency_format_for_wc_price( $currency )['decimals'];
 
 		return WC_Payments_Utils::format_explicit_currency( $amount, $currency, $skip_symbol, $custom_format );
 	}
