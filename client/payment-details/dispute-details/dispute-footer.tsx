@@ -49,12 +49,12 @@ const DisputeFooter: React.FC< DisputeFooterProps > = ( { dispute } ) => {
 		<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/" />
 	);
 
-	let description = null;
+	let message = null;
 	let buttonLabel = __( 'View dispute details', 'woocommerce-payments' );
 
 	switch ( dispute.status ) {
 		case 'won':
-			description = createInterpolateElement(
+			message = createInterpolateElement(
 				sprintf(
 					/* Translators: %s - formatted date, <a> - link to documentation page */
 					__(
@@ -71,7 +71,7 @@ const DisputeFooter: React.FC< DisputeFooterProps > = ( { dispute } ) => {
 				'View submitted evidence',
 				'woocommerce-payments'
 			);
-			description = createInterpolateElement(
+			message = createInterpolateElement(
 				sprintf(
 					/* Translators: %s - formatted date, <a> - link to documentation page */
 					__(
@@ -86,7 +86,7 @@ const DisputeFooter: React.FC< DisputeFooterProps > = ( { dispute } ) => {
 		case 'lost':
 			if ( isAccepted ) {
 				// Lost accepted
-				description = createInterpolateElement(
+				message = createInterpolateElement(
 					sprintf(
 						/* Translators: %1$s - formatted date, %2$s – the formatted dispute fee amount, <a> - link to documentation page */
 						__(
@@ -101,7 +101,7 @@ const DisputeFooter: React.FC< DisputeFooterProps > = ( { dispute } ) => {
 			}
 			if ( isSubmitted ) {
 				// Lost
-				description = createInterpolateElement(
+				message = createInterpolateElement(
 					sprintf(
 						/* Translators: %1$s - formatted date, %2$s – the formatted dispute fee amount, <a> - link to documentation page */
 						__(
@@ -115,7 +115,7 @@ const DisputeFooter: React.FC< DisputeFooterProps > = ( { dispute } ) => {
 				);
 			}
 			// Lost no response
-			description = createInterpolateElement(
+			message = createInterpolateElement(
 				sprintf(
 					/* Translators: %1$s - formatted date, %2$s – the formatted dispute fee amount, <a> - link to documentation page */
 					__(
@@ -151,7 +151,7 @@ const DisputeFooter: React.FC< DisputeFooterProps > = ( { dispute } ) => {
 	return (
 		<CardFooter>
 			<Flex justify="space-between">
-				<FlexItem>{ description }</FlexItem>
+				<FlexItem>{ message }</FlexItem>
 				<FlexItem>
 					<Button variant="secondary" onClick={ handleClick }>
 						{ buttonLabel }
