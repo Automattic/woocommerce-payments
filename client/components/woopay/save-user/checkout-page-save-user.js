@@ -23,6 +23,7 @@ import useWooPayUser from '../hooks/use-woopay-user';
 import useSelectedPaymentMethod from '../hooks/use-selected-payment-method';
 import { WC_STORE_CART } from '../../../checkout/constants';
 import WooPayIcon from 'assets/images/woopay.svg?asset';
+import wcpayTracks from 'tracks';
 import './style.scss';
 
 const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
@@ -122,6 +123,13 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 			}
 		}
 		setIsSaveDetailsChecked( isChecked );
+
+		wcpayTracks.recordUserEvent(
+			wcpayTracks.events.WOOPAY_SAVE_MY_INFO_CLICK,
+			{
+				status: isChecked ? 'checked' : 'unchecked',
+			}
+		);
 	};
 
 	useEffect( () => {
