@@ -22,6 +22,8 @@ class WooPay_Utilities {
 	const AVAILABLE_COUNTRIES_OPTION_NAME = 'woocommerce_woocommerce_payments_woopay_available_countries';
 	const AVAILABLE_COUNTRIES_DEFAULT     = '["US"]';
 
+	const DEFAULT_WOOPAY_URL = 'https://pay.woo.com';
+
 	/**
 	 * Check various conditions to determine if we should enable woopay.
 	 *
@@ -221,7 +223,7 @@ class WooPay_Utilities {
 	 * @return string the WooPay url.
 	 */
 	public static function get_woopay_url() {
-		return defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'https://pay.woo.com';
+		return defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : self::DEFAULT_WOOPAY_URL;
 	}
 
 	/**

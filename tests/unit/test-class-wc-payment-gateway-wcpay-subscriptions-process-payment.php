@@ -9,7 +9,7 @@ use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
 use WCPay\Core\Server\Response;
 use WCPay\Constants\Order_Status;
-use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Intent_Status;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Session_Rate_Limiter;
 
@@ -110,7 +110,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$this->setup_intent   = WC_Helper_Intention::create_setup_intention(
 			[
 				'id'             => self::SETUP_INTENT_ID,
-				'status'         => Payment_Intent_Status::SUCCEEDED,
+				'status'         => Intent_Status::SUCCEEDED,
 				'client_secret'  => 'test_client_secret',
 				'next_action'    => [],
 				'payment_method' => self::PAYMENT_METHOD_ID,
@@ -179,6 +179,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 
 		$_POST = [
 			'wcpay-payment-method' => self::PAYMENT_METHOD_ID,
+			'payment_method'       => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 		];
 	}
 

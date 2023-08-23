@@ -31,14 +31,14 @@ class Payment_Information {
 	/**
 	 * The order object.
 	 *
-	 * @var \WC_Order/NULL
+	 * @var ?\WC_Order
 	 */
 	private $order;
 
 	/**
 	 * The payment token used for this payment.
 	 *
-	 * @var \WC_Payment_Token/NULL
+	 * @var ?\WC_Payment_Token
 	 */
 	private $token;
 
@@ -52,14 +52,14 @@ class Payment_Information {
 	/**
 	 * Indicates whether the payment is merchant-initiated (true) or customer-initiated (false).
 	 *
-	 * @var Payment_Initiated_By
+	 * @var ?Payment_Initiated_By
 	 */
 	private $payment_initiated_by;
 
 	/**
 	 * Indicates whether the payment will be only authorized (true) or captured immediately (false).
 	 *
-	 * @var Payment_Capture_Type
+	 * @var ?Payment_Capture_Type
 	 */
 	private $manual_capture;
 
@@ -175,9 +175,9 @@ class Payment_Information {
 	/**
 	 * Returns the order object.
 	 *
-	 * @return \WC_Order The order object.
+	 * @return ?\WC_Order The order object.
 	 */
-	public function get_order(): \WC_Order {
+	public function get_order(): ?\WC_Order {
 		return $this->order;
 	}
 
@@ -188,9 +188,9 @@ class Payment_Information {
 	 * since the return type is nullable, as per
 	 * https://www.php.net/manual/en/functions.returning-values.php#functions.returning-values.type-declaration
 	 *
-	 * @return \WC_Payment_Token/NULL The payment token.
+	 * @return ?\WC_Payment_Token The payment token.
 	 */
-	public function get_payment_token(): \WC_Payment_Token {
+	public function get_payment_token(): ?\WC_Payment_Token {
 		return $this->token;
 	}
 

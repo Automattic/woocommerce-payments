@@ -11,6 +11,7 @@ use WCPAY_UnitTestCase;
 use WCPay\Core\Mode;
 use WCPay\Database_Cache;
 use WCPay\Internal\DependencyManagement\DelegateContainer\LegacyContainer;
+use WCPay\Internal\DependencyManagement\ContainerException;
 
 /**
  * Tests for the legacy container.
@@ -60,5 +61,13 @@ class LegacyContainerTest extends WCPAY_UnitTestCase {
 	public function test_retrieval( $class_name ) {
 		$this->assertTrue( $this->sut->has( $class_name ) );
 		$this->assertInstanceOf( $class_name, $this->sut->get( $class_name ) );
+	}
+
+	/**
+	 * Ensure that an exception is thrown whenever a class has not been found.
+	 */
+	public function test_container_throws_exception_if_class_not_found() {
+		$this->expectException( ContainerException::class );
+		$this->sut->get( 'SomeRandomClassName' );
 	}
 }
