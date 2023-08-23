@@ -6,19 +6,16 @@
 interface Props {
   /**
    * Set the loading state of the component. Provide `true` if the component should show a loading state.
-   * @type boolean
    */
   isLoading: boolean;
   
   /**
    * The first name to display.
-   * @type string
    */
   firstName: string;
   
   /**
    * The last name to display.
-   * @type string
    */
   lastName: string;
 };
@@ -77,19 +74,16 @@ import React from 'react';
 interface Props {
   /**
    * Set the loading state of the component. Provide `true` if the component should show a loading state.
-   * @type boolean
    */
   isLoading: boolean;
   
   /**
    * The first name to display.
-   * @type string
    */
   firstName: string;
   
   /**
    * The last name to display.
-   * @type string
    */
   lastName: string;
 };
@@ -111,19 +105,16 @@ The easiest way to accomplish this is to have use the `React.PropsWithChildren` 
 interface Props {
   /**
    * Set the loading state of the component. Provide `true` if the component should show a loading state.
-   * @type boolean
    */
   isLoading: boolean;
   
   /**
    * The first name to display.
-   * @type string
    */
   firstName: string;
   
   /**
    * The last name to display.
-   * @type string
    */
   lastName: string;
 }
