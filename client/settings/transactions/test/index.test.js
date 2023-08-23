@@ -10,15 +10,31 @@ import Transactions from '..';
 import {
 	useGetSavingError,
 	useAccountStatementDescriptor,
+	useAccountStatementDescriptorKanji,
+	useAccountStatementDescriptorKana,
 	useAccountBusinessSupportEmail,
 	useAccountBusinessSupportPhone,
 	useManualCapture,
 	useSavedCards,
 	useCardPresentEligible,
 } from '../../../data';
+import { select } from '@wordpress/data';
+
+jest.mock( '@wordpress/data', () => ( {
+	select: jest.fn(),
+} ) );
+const settingsMock = {
+	account_country: 'US',
+};
+
+select.mockReturnValue( {
+	getSettings: () => settingsMock,
+} );
 
 jest.mock( 'wcpay/data', () => ( {
 	useAccountStatementDescriptor: jest.fn(),
+	useAccountStatementDescriptorKanji: jest.fn(),
+	useAccountStatementDescriptorKana: jest.fn(),
 	useAccountBusinessSupportEmail: jest.fn(),
 	useAccountBusinessSupportPhone: jest.fn(),
 	useManualCapture: jest.fn(),
@@ -30,6 +46,8 @@ jest.mock( 'wcpay/data', () => ( {
 describe( 'Settings - Transactions', () => {
 	beforeEach( () => {
 		useAccountStatementDescriptor.mockReturnValue( [ '', jest.fn() ] );
+		useAccountStatementDescriptorKanji.mockReturnValue( [ '', jest.fn() ] );
+		useAccountStatementDescriptorKana.mockReturnValue( [ '', jest.fn() ] );
 		useAccountBusinessSupportEmail.mockReturnValue( [
 			'test@test.com',
 			jest.fn(),
@@ -119,5 +137,26 @@ describe( 'Settings - Transactions', () => {
 			screen.getByLabelText( 'Support phone number' )
 		).toBeInTheDocument();
 		expect( screen.getByLabelText( 'Support email' ) ).toBeInTheDocument();
+	} );
+
+	it( 'display customer bank statements for JP', async () => {
+		const settingsMockCountryJP = {
+			account_country: 'JP',
+		};
+
+		select.mockReturnValue( {
+			getSettings: () => settingsMockCountryJP,
+		} );
+		render( <Transactions /> );
+
+		expect(
+			await screen.findByText( 'Customer bank statement (Latin)' )
+		).toBeInTheDocument();
+		expect(
+			await screen.findByText( 'Customer bank statement (Kana)' )
+		).toBeInTheDocument();
+		expect(
+			await screen.findByText( 'Customer bank statement (Kanji)' )
+		).toBeInTheDocument();
 	} );
 } );
