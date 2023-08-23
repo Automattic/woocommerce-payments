@@ -10,10 +10,9 @@ namespace WCPay\Internal\Service;
 use Exception; // Temporary exception! This service would have its own exception when more business logics are added.
 
 /**
- *  Payment Processing Service.
+ * Payment Processing Service.
  */
 class PaymentProcessingService {
-
 	/**
 	 * Process payment.
 	 *

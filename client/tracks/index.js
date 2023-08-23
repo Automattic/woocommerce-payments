@@ -101,6 +101,7 @@ const events = {
 	WOOPAY_SKIPPED: 'woopay_skipped',
 	WOOPAY_BUTTON_LOAD: 'woopay_button_load',
 	WOOPAY_BUTTON_CLICK: 'woopay_button_click',
+	WOOPAY_SAVE_MY_INFO_CLICK: 'checkout_save_my_info_click',
 	// Onboarding flow.
 	ONBOARDING_FLOW_STARTED: 'wcpay_onboarding_flow_started',
 	ONBOARDING_FLOW_MODE_SELECTED: 'wcpay_onboarding_flow_mode_selected',
