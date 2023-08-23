@@ -67,6 +67,20 @@ const DisputeFooter: React.FC< DisputeFooterProps > = ( { dispute } ) => {
 			);
 			break;
 		case 'under_review':
+			const submissionDateFormatted =
+				dispute.metadata.__evidence_submitted_at &&
+				dateI18n(
+					'M j, Y',
+					moment
+						.unix(
+							parseInt(
+								dispute.metadata.__evidence_submitted_at,
+								10
+							)
+						)
+						.toISOString()
+				);
+
 			buttonLabel = __(
 				'View submitted evidence',
 				'woocommerce-payments'
@@ -78,7 +92,7 @@ const DisputeFooter: React.FC< DisputeFooterProps > = ( { dispute } ) => {
 						'You submitted evidence for this dispute on %s. The cardholder’s bank is reviewing the case, which can take 60 days or more. You will be alerted when they make their final decision. <a>Learn more about the dispute process</a>.',
 						'woocommerce-payments'
 					),
-					closedDateFormatted
+					submissionDateFormatted
 				),
 				{ a: disputeDocsLinkElement }
 			);
