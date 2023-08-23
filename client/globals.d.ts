@@ -1,7 +1,11 @@
 /**
  * Internal dependencies
  */
-import { MccsDisplayTreeItem, Country } from 'onboarding/types';
+import {
+	MccsDisplayTreeItem,
+	Country,
+	OnboardingFields,
+} from 'onboarding/types';
 
 declare global {
 	const wcpaySettings: {
@@ -83,6 +87,10 @@ declare global {
 		onboardingFieldsData?: {
 			business_types: Country[];
 			mccs_display_tree: MccsDisplayTreeItem[];
+		};
+		onboardingFlowState?: {
+			current_step: string;
+			data: OnboardingFields;
 		};
 		storeCurrency: string;
 		isMultiCurrencyEnabled: string;
