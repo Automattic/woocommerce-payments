@@ -9,6 +9,19 @@
 		padding: 16px;
 	}
 }
+
+.transaction-details-dispute-footer {
+	background-color: #f2f4f5;
+
+	&__actions {
+		flex-shrink: 0;
+	}
+
+	&--primary {
+		background-color: $wp-blue-0;
+	}
+}
+
 .wcpay-banner-notice.dispute-notice {
 	margin: 0;
 }

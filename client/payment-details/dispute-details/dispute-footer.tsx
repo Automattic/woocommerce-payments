@@ -5,10 +5,11 @@
  */
 import React from 'react';
 import moment from 'moment';
-import { __, sprintf } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
+import classNames from 'classnames';
 import { dateI18n } from '@wordpress/date';
 import { getHistory } from '@woocommerce/navigation';
+import { __, sprintf } from '@wordpress/i18n';
+import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -163,10 +164,15 @@ const DisputeFooter: React.FC< DisputeFooterProps > = ( { dispute } ) => {
 	};
 
 	return (
-		<CardFooter>
+		<CardFooter
+			className={ classNames( 'transaction-details-dispute-footer', {
+				'transaction-details-dispute-footer--primary':
+					dispute.status === 'under_review',
+			} ) }
+		>
 			<Flex justify="space-between">
 				<FlexItem>{ message }</FlexItem>
-				<FlexItem>
+				<FlexItem className="transaction-details-dispute-footer__actions">
 					<Button variant="secondary" onClick={ handleClick }>
 						{ buttonLabel }
 					</Button>
