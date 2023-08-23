@@ -89,7 +89,7 @@ class Feature {
 	/**
 	 * Refetches payment factors and returns the fresh data.
 	 *
-	 * @return array|null Either the new arrayh of factors, or null if unavailable.
+	 * @return array Either the new arrayh of factors, or false if unavailable.
 	 */
 	public function refresh_factors() {
 		return $this->get_cached_factors( true );
@@ -101,7 +101,7 @@ class Feature {
 	 * the payment should fall back to the legacy process.
 	 *
 	 * @param bool $force_refresh Forces data to be fetched from the server, rather than using the cache.
-	 * @return array|bool Account data or false if failed to retrieve account data.
+	 * @return array Factors, or an empty array.
 	 */
 	private function get_cached_factors( bool $force_refresh = false ) {
 		$factors = $this->database_cache->get_or_add(
@@ -120,6 +120,6 @@ class Feature {
 			$force_refresh
 		);
 
-		return $factors;
+		return $factors ?? [];
 	}
 }
