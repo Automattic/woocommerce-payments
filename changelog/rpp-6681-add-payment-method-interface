@@ -1,4 +1,4 @@
 Significance: major
 Type: dev
 
-Add payment method interface (project reengineering payment process).
+Add interface and concrete classes for Payment Method (project reengineering payment process).
