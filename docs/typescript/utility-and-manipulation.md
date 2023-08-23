@@ -38,7 +38,7 @@ interface TodoPreview {
   completed: string;
 }
 ```
-### `Return<Type>` – Constructs a type consisting of the return type of function `Type`.
+### `ReturnType<Type>` – Constructs a type consisting of the return type of function `Type`.
 ```ts
 function updateTodo(todo: Todo, fieldsToUpdate: Partial<Todo>) {
   return { ...todo, ...fieldsToUpdate };
@@ -75,7 +75,7 @@ type Title = Todo['title'];
 type Title = string;
 
 // Array number access
-type TodoList = Todo[];
+type TodoList = Array<Todo>;
 type ListItem = TodoList[number];
 // Equals to
 type ListItem = Todo;

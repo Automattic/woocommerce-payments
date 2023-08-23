@@ -103,7 +103,7 @@ You should use use the `React.PropsWithChildren` utility type.
 Say you have the following interface to describe the properties for your component:
 
 ```ts
-interface Props {
+interface Props extends React.PropsWithChildren {
   /**
    * Set the loading state of the component. Provide `true` if the component should show a loading state.
    */
@@ -124,7 +124,7 @@ interface Props {
 You will then use `React.PropsWithChildren` like so:
 
 ```ts
-export const DisplayName: React.FunctionComponent< React.PropsWithChildren< Props > > = ( { isLoading, numRows, numColumns, children } ) => {
+export const DisplayName: React.FunctionComponent< Props > = ( { isLoading, numRows, numColumns, children } ) => {
   if ( isLoading ) {
     return <p>Loading...</p>;
   }
