@@ -85,18 +85,4 @@ class ExtendedContainer extends Container {
 
 		return parent::get( $id );
 	}
-
-	/**
-	 * Checks whether a definition is available.
-	 *
-	 * @param string $id ID/name of the class.
-	 * @return bool
-	 */
-	public function has( $id ): bool {
-		if ( isset( $this->replacements[ $id ] ) ) {
-			return true;
-		}
-
-		return parent::has( $id );
-	}
 }
