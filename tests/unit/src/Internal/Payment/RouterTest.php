@@ -1,6 +1,6 @@
 <?php
 /**
- * Class FeatureTest
+ * Class RouterTest
  *
  * @package WooCommerce\Payments
  */
@@ -13,16 +13,16 @@ use WCPay\Core\Server\Request\Get_Payment_Process_Factors;
 use WCPay\Database_Cache;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Internal\Payment\Factor;
-use WCPay\Internal\Payment\Feature;
+use WCPay\Internal\Payment\Router;
 
 /**
- * New payment process as a feature class test.
+ * New payment process as a router router test.
  */
-class FeatureTest extends WCPAY_UnitTestCase {
+class RouterTest extends WCPAY_UnitTestCase {
 	/**
 	 * Service under test.
 	 *
-	 * @var Feature
+	 * @var Router
 	 */
 	private $sut;
 
@@ -40,7 +40,7 @@ class FeatureTest extends WCPAY_UnitTestCase {
 		parent::setUp();
 
 		$this->mock_db_cache = $this->createMock( Database_Cache::class );
-		$this->sut           = new Feature( $this->mock_db_cache );
+		$this->sut           = new Router( $this->mock_db_cache );
 	}
 
 	/**
@@ -73,7 +73,7 @@ class FeatureTest extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Tests that the feature returns false if a factor is **not present** in the account cache.
+	 * Tests that the router returns false if a factor is **not present** in the account cache.
 	 */
 	public function test_should_use_new_payment_process_returns_false_with_missing_factor() {
 		$this->mock_db_cache_factors( [] );
@@ -83,7 +83,7 @@ class FeatureTest extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Tests that the feature returns false if a factor is **false** in the account cache.
+	 * Tests that the router returns false if a factor is **false** in the account cache.
 	 */
 	public function test_should_use_new_payment_process_returns_false_with_unavailable_factor() {
 		$this->mock_db_cache_factors( [ Factor::USE_SAVED_PM => false ] );
@@ -93,7 +93,7 @@ class FeatureTest extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Tests that the feature returns true when a factor is both present, and true in the account cache.
+	 * Tests that the router returns true when a factor is both present, and true in the account cache.
 	 */
 	public function test_should_use_new_payment_process_returns_true_with_available_factor() {
 		$this->mock_db_cache_factors( [ Factor::USE_SAVED_PM => true ] );
@@ -103,7 +103,7 @@ class FeatureTest extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Tests that the feature handles multiple flags properly,
+	 * Tests that the router handles multiple flags properly,
 	 * and returns false in case any of them is not available.
 	 */
 	public function test_should_use_new_payment_process_with_multiple_factors_returns_false() {
@@ -128,7 +128,7 @@ class FeatureTest extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Tests that the feature handles multiple flags properly,
+	 * Tests that the router handles multiple flags properly,
 	 * and returns true when all factors are present.
 	 */
 	public function test_should_use_new_payment_process_with_multiple_factors_returns_true() {

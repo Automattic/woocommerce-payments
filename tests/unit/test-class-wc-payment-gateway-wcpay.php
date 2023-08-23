@@ -22,7 +22,7 @@ use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Internal\Payment\Factor;
-use WCPay\Internal\Payment\Feature;
+use WCPay\Internal\Payment\Router;
 use WCPay\Internal\Service\PaymentProcessingService;
 use WCPay\Payment_Information;
 use WCPay\WooPay\WooPay_Utilities;
@@ -2352,13 +2352,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_new_process_payment_returns_null_if_feature_unavailable() {
-		$mock_feature = $this->createMock( Feature::class );
-		wcpay_get_test_container()->replace( Feature::class, $mock_feature );
+		$mock_router = $this->createMock( Router::class );
+		wcpay_get_test_container()->replace( Router::class, $mock_router );
 
 		$order = WC_Helper_Order::create_order();
 
 		// Assert: Feature returns false.
-		$mock_feature->expects( $this->once() )
+		$mock_router->expects( $this->once() )
 			->method( 'should_use_new_payment_process' )
 			->willReturn( false );
 
@@ -2368,16 +2368,16 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_new_process_payment_uses_the_new_process() {
-		$mock_feature  = $this->createMock( Feature::class );
+		$mock_router   = $this->createMock( Router::class );
 		$mock_service  = $this->createMock( PaymentProcessingService::class );
 		$order         = WC_Helper_Order::create_order();
 		$mock_response = [ 'success' => true ];
 
-		wcpay_get_test_container()->replace( Feature::class, $mock_feature );
+		wcpay_get_test_container()->replace( Router::class, $mock_router );
 		wcpay_get_test_container()->replace( PaymentProcessingService::class, $mock_service );
 
 		// Assert: Feature returns false.
-		$mock_feature->expects( $this->once() )
+		$mock_router->expects( $this->once() )
 			->method( 'should_use_new_payment_process' )
 			->willReturn( true );
 
@@ -2532,8 +2532,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	 * @param bool   $value       Expected value.
 	 */
 	private function expect_new_payment_process_factor( $factor_name, $value ) {
-		$mock_feature = $this->createMock( Feature::class );
-		wcpay_get_test_container()->replace( Feature::class, $mock_feature );
+		$mock_router = $this->createMock( Router::class );
+		wcpay_get_test_container()->replace( Router::class, $mock_router );
 
 		$checker = function( $factors ) use ( $factor_name, $value ) {
 			return is_array( $factors )
@@ -2541,7 +2541,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				&& $factors[ $factor_name ] === $value;
 		};
 
-		$mock_feature->expects( $this->once() )
+		$mock_router->expects( $this->once() )
 			->method( 'should_use_new_payment_process' )
 			->with( $this->callback( $checker ) );
 	}

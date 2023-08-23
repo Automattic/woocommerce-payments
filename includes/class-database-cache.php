@@ -344,6 +344,9 @@ class Database_Cache {
 			case self::CONNECT_INCENTIVE_KEY:
 				$ttl = $cache_contents['data']['ttl'] ?? HOUR_IN_SECONDS * 6;
 				break;
+			case self::PAYMENT_PROCESS_FACTORS_KEY:
+				$ttl = 2 * HOUR_IN_SECONDS;
+				break;
 			default:
 				// Default to 24h.
 				$ttl = DAY_IN_SECONDS;

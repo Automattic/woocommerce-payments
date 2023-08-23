@@ -1,6 +1,6 @@
 <?php
 /**
- * Class Feature
+ * Class Router
  *
  * @package WooCommerce\Payments
  */
@@ -14,12 +14,12 @@ use WCPay\Internal\Payment\Factor;
 
 /**
  * Until the new payment process is fully developed, and the legacy
- * process is gone, the new process is managed as a feature.
+ * process is gone, the new process is managed as a feature behind a router.
  *
  * This class will be removed once the new process is the default
  * option for all payments.
  */
-class Feature {
+class Router {
 	/**
 	 * Database cache.
 	 *

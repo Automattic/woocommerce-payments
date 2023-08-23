@@ -43,7 +43,7 @@ use WCPay\Session_Rate_Limiter;
 use WCPay\Tracker;
 use WCPay\Internal\Service\PaymentProcessingService;
 use WCPay\Internal\Payment\Factor;
-use WCPay\Internal\Payment\Feature;
+use WCPay\Internal\Payment\Router;
 
 /**
  * Gateway class for WooPayments
@@ -762,8 +762,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			Factor::PAYMENT_REQUEST           => defined( 'WCPAY_PAYMENT_REQUEST_CHECKOUT' ) && WCPAY_PAYMENT_REQUEST_CHECKOUT,
 		];
 
-		$feature = wcpay_get_container()->get( Feature::class );
-		if ( ! $feature->should_use_new_payment_process( $factors ) ) {
+		$router = wcpay_get_container()->get( Router::class );
+		if ( ! $router->should_use_new_payment_process( $factors ) ) {
 			return null;
 		}
 
