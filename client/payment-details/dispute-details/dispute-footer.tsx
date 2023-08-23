@@ -98,8 +98,7 @@ const DisputeFooter: React.FC< DisputeFooterProps > = ( { dispute } ) => {
 					),
 					{ a: disputeDocsLinkElement }
 				);
-			}
-			if ( isSubmitted ) {
+			} else if ( isSubmitted ) {
 				// Lost
 				message = createInterpolateElement(
 					sprintf(
@@ -113,20 +112,21 @@ const DisputeFooter: React.FC< DisputeFooterProps > = ( { dispute } ) => {
 					),
 					{ a: disputeDocsLinkElement }
 				);
-			}
-			// Lost no response
-			message = createInterpolateElement(
-				sprintf(
-					/* Translators: %1$s - formatted date, %2$s – the formatted dispute fee amount, <a> - link to documentation page */
-					__(
-						'This dispute was lost on %1$s due to non-response. The %2$s fee has been deducted from your account, and the disputed amount returned to the cardholder. <a>Learn more about preventing disputes</a>.',
-						'woocommerce-payments'
+			} else {
+				// Lost no response
+				message = createInterpolateElement(
+					sprintf(
+						/* Translators: %1$s - formatted date, %2$s – the formatted dispute fee amount, <a> - link to documentation page */
+						__(
+							'This dispute was lost on %1$s due to non-response. The %2$s fee has been deducted from your account, and the disputed amount returned to the cardholder. <a>Learn more about preventing disputes</a>.',
+							'woocommerce-payments'
+						),
+						closedDateFormatted,
+						disputeFeeFormatted
 					),
-					closedDateFormatted,
-					disputeFeeFormatted
-				),
-				{ a: disputeDocsLinkElement }
-			);
+					{ a: disputeDocsLinkElement }
+				);
+			}
 			break;
 	}
 
