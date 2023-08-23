@@ -7,7 +7,9 @@
 
 namespace WCPay\Internal\Payment;
 
-use WC_Payments_Account;
+use WCPay\Core\Server\Request\Get_Payment_Process_Factors;
+use WCPay\Database_Cache;
+use WCPay\Exceptions\API_Exception;
 use WCPay\Internal\Payment\Factor;
 
 /**
@@ -19,19 +21,19 @@ use WCPay\Internal\Payment\Factor;
  */
 class Feature {
 	/**
-	 * Remote account.
+	 * Database cache.
 	 *
-	 * @var WC_Payments_Account
+	 * @var Database_Cache
 	 */
-	protected $account;
+	protected $database_cache;
 
 	/**
 	 * Class constructor, receiving dependencies.
 	 *
-	 * @param WC_Payments_Account $account The currently active account.
+	 * @param Database_Cache $database_cache Database cache.
 	 */
-	public function __construct( WC_Payments_Account $account ) {
-		$this->account = $account;
+	public function __construct( Database_Cache $database_cache ) {
+		$this->database_cache = $database_cache;
 	}
 
 	/**
@@ -41,7 +43,7 @@ class Feature {
 	 * @return bool
 	 */
 	public function should_use_new_payment_process( array $factors ): bool {
-		$allowed_factors = $this->account->get_new_payment_process_enabled_factors();
+		$allowed = $this->get_enabled_factors();
 
 		// This would make sure that the payment process is a factor as well.
 		$factors[ Factor::NEW_PAYMENT_PROCESS ] = true;
@@ -53,11 +55,71 @@ class Feature {
 			}
 
 			// The factor should exist, and be allowed.
-			if ( ! isset( $allowed_factors[ $key ] ) || ! $allowed_factors[ $key ] ) {
+			if ( ! isset( $allowed[ $key ] ) || ! $allowed[ $key ] ) {
 				return false;
 			}
 		}
 
 		return true;
+	}
+
+	/**
+	 * Returns all factors, which can be handled by the new payment process.
+	 * If any factor, not enabled in the returned array, is present while paying,
+	 * the payment should fall back to the legacy process.
+	 *
+	 * @return array
+	 */
+	public function get_enabled_factors() {
+		$factors = $this->get_cached_factors() ?? [];
+		$factors = apply_filters( 'wcpay_new_payment_process_enabled_factors', $factors );
+		return $factors;
+	}
+
+	/**
+	 * Checks if cached data is valid.
+	 *
+	 * @param mixed $cache The cached data.
+	 * @return bool
+	 */
+	public function is_valid_cache( $cache ): bool {
+		return is_array( $cache ) && isset( $cache[ Factor::NEW_PAYMENT_PROCESS ] );
+	}
+
+	/**
+	 * Refetches payment factors and returns the fresh data.
+	 *
+	 * @return array|null Either the new arrayh of factors, or null if unavailable.
+	 */
+	public function refresh_factors() {
+		return $this->get_cached_factors( true );
+	}
+
+	/**
+	 * Gets and chaches all factors, which can be handled by the new payment process.
+	 * If any factor, not enabled in the returned array, is present while paying,
+	 * the payment should fall back to the legacy process.
+	 *
+	 * @param bool $force_refresh Forces data to be fetched from the server, rather than using the cache.
+	 * @return array|bool Account data or false if failed to retrieve account data.
+	 */
+	private function get_cached_factors( bool $force_refresh = false ) {
+		$factors = $this->database_cache->get_or_add(
+			Database_Cache::PAYMENT_PROCESS_FACTORS_KEY,
+			function () {
+				try {
+					$request  = Get_Payment_Process_Factors::create();
+					$response = $request->send( 'wcpay_Get_Payment_Process_Factors' );
+					return $response->to_array();
+				} catch ( API_Exception $e ) {
+					// Return false to signal retrieval error.
+					return false;
+				}
+			},
+			[ $this, 'is_valid_cache' ],
+			$force_refresh
+		);
+
+		return $factors;
 	}
 }

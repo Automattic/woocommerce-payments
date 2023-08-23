@@ -1679,22 +1679,6 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Temporary; Returns all factors, which can be handled by the new payment process.
-	 * If any factor, not enabled in the returned array, is present while paying,
-	 * the payment should fall back to the legacy process.
-	 *
-	 * @return array
-	 */
-	public function get_new_payment_process_enabled_factors(): array {
-		$account = $this->get_cached_account_data();
-		$factors = $account['new_payment_process_factors'] ?? [];
-
-		$factors = apply_filters( 'wcpay_new_payment_process_enabled_factors', $factors );
-
-		return $factors;
-	}
-
-	/**
 	 * Redirects to the onboarding flow page if the Progressive Onboarding feature flag is enabled or in the experiment treatment mode.
 	 * Also checks if the server is connected and try to connect it otherwise.
 	 *

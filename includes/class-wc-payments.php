@@ -336,6 +336,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/trait-use-test-mode-only-when-dev-mode.php';
 		include_once __DIR__ . '/core/server/request/class-generic.php';
 		include_once __DIR__ . '/core/server/request/class-get-intention.php';
+		include_once __DIR__ . '/core/server/request/class-get-payment-process-factors.php';
 		include_once __DIR__ . '/core/server/request/class-create-intention.php';
 		include_once __DIR__ . '/core/server/request/class-update-intention.php';
 		include_once __DIR__ . '/core/server/request/class-capture-intention.php';

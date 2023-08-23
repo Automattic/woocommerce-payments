@@ -1128,53 +1128,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( $formatted_advance_amount, $note->get_content() );
 	}
 
-	public function test_get_new_payment_process_enabled_factors_returns_factors() {
-		$factors = [
-			'SAMPLE_FLAG' => true,
-			'OTHER_FLAG'  => false,
-		];
-
-		$this->cache_account_details( [ 'new_payment_process_factors' => $factors ] );
-
-		$result = $this->wcpay_account->get_new_payment_process_enabled_factors();
-
-		$this->assertIsArray( $result );
-		$this->assertEquals( $factors, $result );
-	}
-
-	public function test_get_new_payment_process_enabled_factors_returns_empty_array() {
-		// Return nothing to force an empty array.
-		$this->cache_account_details( [] );
-
-		$result = $this->wcpay_account->get_new_payment_process_enabled_factors();
-
-		$this->assertIsArray( $result );
-		$this->assertEmpty( $result );
-	}
-
-	public function test_get_new_payment_process_enabled_factors_allows_filters() {
-		$factors          = [
-			'SAMPLE_FLAG' => true,
-			'OTHER_FLAG'  => false,
-		];
-		$replaced_factors = [
-			'THIRD_FLAG',
-		];
-		$this->cache_account_details( [ 'new_payment_process_factors' => $factors ] );
-
-		$filter_cb = function() use ( $replaced_factors ) {
-			return $replaced_factors;
-		};
-		add_filter( 'wcpay_new_payment_process_enabled_factors', $filter_cb );
-
-		$result = $this->wcpay_account->get_new_payment_process_enabled_factors();
-
-		$this->assertIsArray( $result );
-		$this->assertEquals( $replaced_factors, $result );
-
-		remove_filter( 'wcpay_new_payment_process_enabled_factors', $filter_cb );
-	}
-
 	/**
 	 * Sets up the mocked cache to simulate that its empty and call the generator.
 	 */
@@ -1195,10 +1148,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	 * @param $account
 	 */
 	private function cache_account_details( $account ) {
-		if ( ! isset( $account['is_live'] ) ) {
-			$account['is_live'] = true;
-		}
-
 		$this->mock_database_cache
 			->method( 'get_or_add' )
 			->willReturnCallback(
