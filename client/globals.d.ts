@@ -79,6 +79,8 @@ declare global {
 		};
 		progressiveOnboarding?: {
 			isNewFlowEnabled: boolean;
+			isEnabled: boolean;
+			isComplete: boolean;
 		};
 		accountDefaultCurrency: string;
 		isFRTReviewFeatureActive: boolean;
