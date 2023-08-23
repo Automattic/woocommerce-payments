@@ -58,13 +58,8 @@ type TodoProps = `title` | 'description' | 'completed'
 
 ### [Typeof Type Operator](https://www.typescriptlang.org/docs/handbook/2/typeof-types.html) – Refers to the type of a variable or property.
 ```ts
-typeof updateTodo
-// Equals to
-declare function updateTodo(todo: Todo, fieldsToUpdate: Partial<Todo>): {
-    title: string;
-    description: string;
-    completed: boolean;
-};
+ReturnType<updateTodo> // `updateTodo` refers to a value here, but we need to use its type instead.
+ReturnType<typeof updateTodo> // `typeof` allow us to get the function type.
 ```
 
 ### [Indexed Access Types](https://www.typescriptlang.org/docs/handbook/2/indexed-access-types.html) – Looks up a specific property on another type.
