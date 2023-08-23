@@ -45,7 +45,7 @@ class SavedPaymentMethod implements PaymentMethodInterface {
 	 */
 	public function get_data(): array {
 		return [
-			'type' => 'new',
+			'type' => 'saved',
 			'id'   => $this->get_id(),
 		];
 	}
