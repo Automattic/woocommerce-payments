@@ -38,6 +38,18 @@ class Track_Upe_Status_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Cleanup after all tests.
+	 *
+	 * @return void
+	 */
+	public static function tear_down_after_class() {
+		delete_option( Track_Upe_Status::IS_TRACKED_OPTION );
+		delete_option( WC_Payments_Features::UPE_FLAG_NAME );
+		delete_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME );
+		parent::tear_down_after_class();
+	}
+
+	/**
 	 * Make sure the 'wcpay_upe_enabled' event is registered when upe is enabled.
 	 */
 	public function test_track_enabled_on_upgrade() {

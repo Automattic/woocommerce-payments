@@ -295,6 +295,17 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		];
 	}
 
+	/**
+	 * Cleanup after tests.
+	 *
+	 * @return void
+	 */
+	public function tear_down() {
+		parent::tear_down();
+		update_option( '_wcpay_feature_upe', '0' );
+		update_option( '_wcpay_feature_upe_split', '0' );
+	}
+
 	public function test_payment_fields_outputs_fields() {
 		$this->set_cart_contains_subscription_items( false );
 		$this->set_get_upe_enabled_payment_method_statuses_return_value();
