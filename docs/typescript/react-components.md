@@ -99,7 +99,8 @@ export const DisplayName: React.FC< Props > = ( { isLoading, numRows, numColumns
 
 ## What type do I use to represent children for my component?
 
-The easiest way to accomplish this is to have use the `React.PropsWithChildren` interface:
+You should use use the `React.PropsWithChildren` utility type.
+Say you have the following interface to describe the properties for your component:
 
 ```ts
 interface Props {
@@ -120,7 +121,7 @@ interface Props {
 }
 ```
 
-You can then use this props declaration like so:
+You will then use `React.PropsWithChildren` like so:
 
 ```ts
 export const DisplayName: React.FunctionComponent< React.PropsWithChildren< Props > > = ( { isLoading, numRows, numColumns, children } ) => {
@@ -134,3 +135,5 @@ export const DisplayName: React.FunctionComponent< React.PropsWithChildren< Prop
   );
 }
 ```
+
+It is _technically_ possible to do declare the child components manually, but we heavily discourage that and recommend `React.PropsWithChildren` instead.
