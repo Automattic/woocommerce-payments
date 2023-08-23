@@ -330,7 +330,7 @@ const PaymentMethods = () => {
 									} }
 									isPoEnabled={
 										wcpaySettings?.progressiveOnboarding
-											?.isComplete
+											?.isEnabled
 									}
 									isPoComplete={
 										wcpaySettings?.progressiveOnboarding
