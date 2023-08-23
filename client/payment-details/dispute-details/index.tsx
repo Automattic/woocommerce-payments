@@ -5,6 +5,7 @@
  */
 import React from 'react';
 import moment from 'moment';
+
 /**
  * Internal dependencies
  */
@@ -12,6 +13,7 @@ import type { Dispute } from 'wcpay/types/disputes';
 import { Card, CardBody } from '@wordpress/components';
 import './style.scss';
 import DisputeNotice from './dispute-notice';
+import DisputeFooter from './dispute-footer';
 import { isAwaitingResponse } from 'wcpay/disputes/utils';
 
 interface DisputeDetailsProps {
@@ -23,7 +25,7 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 	const dueBy = moment.unix( dispute.evidence_details?.due_by ?? 0 );
 	const countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
 
-	return (
+	return isAwaitingResponse( dispute.status ) ? (
 		<div className="transaction-details-dispute-details-wrapper">
 			<Card>
 				<CardBody className="transaction-details-dispute-details-body">
@@ -38,6 +40,8 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 				</CardBody>
 			</Card>
 		</div>
+	) : (
+		<DisputeFooter dispute={ dispute } />
 	);
 };
 
