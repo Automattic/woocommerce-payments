@@ -7,12 +7,14 @@ import React from 'react';
 import moment from 'moment';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
+import { dateI18n } from '@wordpress/date';
+import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
 import './style.scss';
-import { Dispute } from 'wcpay/types/disputes';
+import type { Dispute } from 'wcpay/types/disputes';
 import {
 	Button,
 	CardFooter,
@@ -20,7 +22,7 @@ import {
 	Flex,
 	FlexItem,
 } from '@wordpress/components';
-import { dateI18n } from '@wordpress/date';
+import { getAdminUrl } from 'wcpay/utils';
 import { formatExplicitCurrency } from 'wcpay/utils/currency';
 
 interface DisputeFooterProps {
@@ -48,6 +50,8 @@ const DisputeFooter: React.FC< DisputeFooterProps > = ( { dispute } ) => {
 	);
 
 	let description = null;
+	let buttonLabel = __( 'View dispute details', 'woocommerce-payments' );
+
 	switch ( dispute.status ) {
 		case 'won':
 			description = createInterpolateElement(
@@ -63,6 +67,10 @@ const DisputeFooter: React.FC< DisputeFooterProps > = ( { dispute } ) => {
 			);
 			break;
 		case 'under_review':
+			buttonLabel = __(
+				'View submitted evidence',
+				'woocommerce-payments'
+			);
 			description = createInterpolateElement(
 				sprintf(
 					/* Translators: %s - formatted date, <a> - link to documentation page */
@@ -122,26 +130,33 @@ const DisputeFooter: React.FC< DisputeFooterProps > = ( { dispute } ) => {
 			break;
 	}
 
+	const handleClick = () => {
+		// wcpayTracks.recordEvent(
+		// 	wcpayTracks.events
+		// 		.___
+		// )
+		if ( isSubmitted ) {
+			const challengeUrl = getAdminUrl( {
+				page: 'wc-admin',
+				path: '/payments/disputes/challenge',
+				id: dispute.id,
+			} );
+			const history = getHistory();
+			history.push( challengeUrl );
+		} else {
+			// TODO: Open issuer_evidence PDF in a new window
+		}
+	};
+
 	return (
 		<CardFooter>
 			<Flex justify="space-between">
 				<FlexItem>{ description }</FlexItem>
-				{ dispute.issuer_evidence && (
-					<FlexItem>
-						<Button
-							variant="secondary"
-							href={ '/' }
-							onClick={ () => {
-								// wcpayTracks.recordEvent(
-								// 	wcpayTracks.events
-								// 		.___
-								// )
-							} }
-						>
-							View dispute details
-						</Button>
-					</FlexItem>
-				) }
+				<FlexItem>
+					<Button variant="secondary" onClick={ handleClick }>
+						{ buttonLabel }
+					</Button>
+				</FlexItem>
 			</Flex>
 		</CardFooter>
 	);
