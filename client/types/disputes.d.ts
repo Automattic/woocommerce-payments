@@ -64,7 +64,22 @@ export interface Dispute {
 	status: DisputeStatus;
 	id: string;
 	evidence_details?: EvidenceDetails;
-	metadata: Record< string, any >;
+	metadata: {
+		/* eslint-disable @typescript-eslint/naming-convention */
+		/**
+		 * '1' if the dispute was closed/accepted by the merchant, '0' if the dispute was closed by Stripe.
+		 */
+		__closed_by_merchant?: '1' | '0';
+		/**
+		 * Unix timestamp of when the dispute was closed.
+		 */
+		__dispute_closed_at?: string;
+		/**
+		 * Unix timestamp of when dispute evidence was submitted.
+		 */
+		__evidence_submitted_at?: string;
+		/* eslint-enable @typescript-eslint/naming-convention */
+	};
 	order: null | OrderDetails;
 	evidence: Evidence;
 	issuer_evidence: IssuerEvidence | null;
