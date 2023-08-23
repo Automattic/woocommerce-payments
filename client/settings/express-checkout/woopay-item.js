@@ -84,71 +84,97 @@ const WooPayExpressCheckoutItem = () => {
 								/>
 							) }
 						</div>
-						<div className="express-checkout__icon">
-							<img src={ WooIcon } alt="WooPay" />
-						</div>
-						<div className="express-checkout__label-container">
-							<div className="express-checkout__label">
-								{ __( 'WooPay', 'woocommerce-payments' ) }
-							</div>
-							<div className="express-checkout__description">
-								{
-									/* eslint-disable jsx-a11y/anchor-has-content */
-									isWooPayEnabled
-										? __(
-												'Boost conversion and customer loyalty by offering a single click, secure way to pay.',
+						<div className="express-checkout__text-container">
+							<div>
+								<div className="express-checkout__subgroup">
+									<div className="express-checkout__icon">
+										<img src={ WooIcon } alt="WooPay" />
+									</div>
+									<div className="express-checkout__label express-checkout__label-mobile">
+										{ __(
+											'WooPay',
+											'woocommerce-payments'
+										) }
+									</div>
+									<div className="express-checkout__label-container">
+										<div className="express-checkout__label express-checkout__label-desktop">
+											{ __(
+												'WooPay',
 												'woocommerce-payments'
-										  )
-										: interpolateComponents( {
-												mixedString: __(
-													/* eslint-disable-next-line max-len */
-													'Boost conversion and customer loyalty by offering a single click, secure way to pay. ' +
-														'In order to use {{wooPayLink}}WooPay{{/wooPayLink}}, you must agree to our ' +
-														'{{tosLink}}WooCommerce Terms of Service{{/tosLink}} ' +
-														'and {{privacyLink}}Privacy Policy{{/privacyLink}}. ' +
-														'{{trackingLink}}Click here{{/trackingLink}} to learn more about the ' +
-														'data you will be sharing and opt-out options.',
-													'woocommerce-payments'
-												),
-												components: {
-													wooPayLink: (
-														<a
-															target="_blank"
-															rel="noreferrer"
-															href="https://woocommerce.com/document/woopay-merchant-documentation/"
-														/>
-													),
-													tosLink: (
-														<a
-															target="_blank"
-															rel="noreferrer"
-															href="https://wordpress.com/tos/"
-														/>
-													),
-													privacyLink: (
-														<a
-															target="_blank"
-															rel="noreferrer"
-															href="https://automattic.com/privacy/"
-														/>
-													),
-													trackingLink: (
-														<a
-															target="_blank"
-															rel="noreferrer"
-															href="https://woocommerce.com/usage-tracking/"
-														/>
-													),
-												},
-										  } )
-									/* eslint-enable jsx-a11y/anchor-has-content */
-								}
+											) }
+										</div>
+										<div className="express-checkout__description">
+											{
+												/* eslint-disable jsx-a11y/anchor-has-content */
+												isWooPayEnabled
+													? __(
+															'Boost conversion and customer loyalty by' +
+																' offering a single click, secure way to pay.',
+															'woocommerce-payments'
+													  )
+													: interpolateComponents( {
+															mixedString: __(
+																/* eslint-disable-next-line max-len */
+																'Boost conversion and customer loyalty by offering a single click, secure way to pay. ' +
+																	'In order to use {{wooPayLink}}WooPay{{/wooPayLink}},' +
+																	' you must agree to our ' +
+																	'{{tosLink}}WooCommerce Terms of Service{{/tosLink}} ' +
+																	'and {{privacyLink}}Privacy Policy{{/privacyLink}}. ' +
+																	'{{trackingLink}}Click here{{/trackingLink}} to learn more about the ' +
+																	'data you will be sharing and opt-out options.',
+																'woocommerce-payments'
+															),
+															components: {
+																wooPayLink: (
+																	<a
+																		target="_blank"
+																		rel="noreferrer"
+																		// eslint-disable-next-line max-len
+																		href="https://woocommerce.com/document/woopay-merchant-documentation/"
+																	/>
+																),
+																tosLink: (
+																	<a
+																		target="_blank"
+																		rel="noreferrer"
+																		href="https://wordpress.com/tos/"
+																	/>
+																),
+																privacyLink: (
+																	<a
+																		target="_blank"
+																		rel="noreferrer"
+																		href="https://automattic.com/privacy/"
+																	/>
+																),
+																trackingLink: (
+																	<a
+																		target="_blank"
+																		rel="noreferrer"
+																		href="https://woocommerce.com/usage-tracking/"
+																	/>
+																),
+															},
+													  } )
+												/* eslint-enable jsx-a11y/anchor-has-content */
+											}
+										</div>
+									</div>
+								</div>
 							</div>
-						</div>
-						<div className="express-checkout__link">
-							<a href={ getPaymentMethodSettingsUrl( 'woopay' ) }>
-								{ __( 'Customize', 'woocommerce-payments' ) }
-							</a>
+
+							<div className="express-checkout__link">
+								<a
+									href={ getPaymentMethodSettingsUrl(
+										'woopay'
+									) }
+								>
+									{ __(
+										'Customize',
+										'woocommerce-payments'
+									) }
+								</a>
+							</div>
 						</div>
 					</div>
 					{ showIncompatibilityNotice && (
