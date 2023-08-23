@@ -95,78 +95,90 @@ const LinkExpressCheckoutItem = () => {
 								/>
 							) }
 						</div>
-						<div className="express-checkout__icon">
-							<img src={ LinkIcon } alt="Link" />
-						</div>
-						<div className="express-checkout__label-container">
-							<div className="express-checkout__label">
-								{ __(
-									'Link by Stripe',
-									'woocommerce-payments'
-								) }
+						<div className="express-checkout__text-container">
+							<div>
+								<div className="express-checkout__subgroup">
+									<div className="express-checkout__icon">
+										<img src={ LinkIcon } alt="Link" />
+									</div>
+									<div className="express-checkout__label express-checkout__label-mobile">
+										{ __(
+											'Link by Stripe',
+											'woocommerce-payments'
+										) }
+									</div>
+									<div className="express-checkout__label-container">
+										<div className="express-checkout__label express-checkout__label-desktop">
+											{ __(
+												'Link by Stripe',
+												'woocommerce-payments'
+											) }
+										</div>
+										<div className="express-checkout__description">
+											{
+												/* eslint-disable jsx-a11y/anchor-has-content */
+												isStripeLinkEnabled
+													? /* eslint-disable max-len */
+													  __(
+															'Link autofills your customers’ payment and shipping details to deliver an easy and seamless checkout experience.',
+															'woocommerce-payments'
+													  )
+													: interpolateComponents( {
+															mixedString: __(
+																'Link autofills your customers’ payment and shipping details to ' +
+																	'deliver an easy and seamless checkout experience. ' +
+																	'New payment experience (UPE) needs to be enabled for Link. ' +
+																	'By enabling this feature, you agree to the ' +
+																	'{{stripeLinkTerms}}Link by Stripe terms{{/stripeLinkTerms}}, ' +
+																	'and {{privacyPolicy}}Privacy Policy{{/privacyPolicy}}.',
+																'woocommerce-payments'
+															),
+															components: {
+																stripeLinkTerms: (
+																	<a
+																		target="_blank"
+																		rel="noreferrer"
+																		href="https://link.co/terms"
+																	/>
+																),
+																privacyPolicy: (
+																	<a
+																		target="_blank"
+																		rel="noreferrer"
+																		href="https://link.co/privacy"
+																	/>
+																),
+															},
+													  } )
+												/* eslint-enable jsx-a11y/anchor-has-content */
+												/* eslint-enable max-len */
+											}
+										</div>
+									</div>
+								</div>
 							</div>
-							<div className="express-checkout__description">
+							<div className="express-checkout__link">
 								{
 									/* eslint-disable jsx-a11y/anchor-has-content */
-									isStripeLinkEnabled
-										? /* eslint-disable max-len */
-										  __(
-												'Link autofills your customers’ payment and shipping details to deliver an easy and seamless checkout experience.',
-												'woocommerce-payments'
-										  )
-										: interpolateComponents( {
-												mixedString: __(
-													'Link autofills your customers’ payment and shipping details to ' +
-														'deliver an easy and seamless checkout experience. ' +
-														'New payment experience (UPE) needs to be enabled for Link. ' +
-														'By enabling this feature, you agree to the ' +
-														'{{stripeLinkTerms}}Link by Stripe terms{{/stripeLinkTerms}}, ' +
-														'and {{privacyPolicy}}Privacy Policy{{/privacyPolicy}}.',
-													'woocommerce-payments'
-												),
-												components: {
-													stripeLinkTerms: (
-														<a
-															target="_blank"
-															rel="noreferrer"
-															href="https://link.co/terms"
-														/>
-													),
-													privacyPolicy: (
-														<a
-															target="_blank"
-															rel="noreferrer"
-															href="https://link.co/privacy"
-														/>
-													),
-												},
-										  } )
+									interpolateComponents( {
+										mixedString: __(
+											'{{linkDocs}}Read more{{/linkDocs}}',
+											'woocommerce-payments'
+										),
+										components: {
+											linkDocs: (
+												<a
+													target="_blank"
+													rel="noreferrer"
+													/* eslint-disable-next-line max-len */
+													href="https://woocommerce.com/document/woocommerce-payments/payment-methods/link-by-stripe/"
+												/>
+											),
+										},
+									} )
 									/* eslint-enable jsx-a11y/anchor-has-content */
-									/* eslint-enable max-len */
 								}
 							</div>
-						</div>
-						<div className="express-checkout__link">
-							{
-								/* eslint-disable jsx-a11y/anchor-has-content */
-								interpolateComponents( {
-									mixedString: __(
-										'{{linkDocs}}Read more{{/linkDocs}}',
-										'woocommerce-payments'
-									),
-									components: {
-										linkDocs: (
-											<a
-												target="_blank"
-												rel="noreferrer"
-												/* eslint-disable-next-line max-len */
-												href="https://woocommerce.com/document/woocommerce-payments/payment-methods/link-by-stripe/"
-											/>
-										),
-									},
-								} )
-								/* eslint-enable jsx-a11y/anchor-has-content */
-							}
 						</div>
 					</div>
 				</li>
