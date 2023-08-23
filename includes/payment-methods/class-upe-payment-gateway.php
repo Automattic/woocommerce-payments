@@ -10,7 +10,7 @@ namespace WCPay\Payment_Methods;
 use WC_Payments_API_Payment_Intention;
 use WC_Payments_API_Setup_Intention;
 use WCPay\Constants\Order_Status;
-use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Payment_Method;
 use WCPay\Constants\Payment_Type;
 use WCPay\Core\Server\Request\Create_Intention;
@@ -44,6 +44,7 @@ use WC_Payments_Utils;
 use WC_Payments_Features;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WP_User;
+use WC_Payments_Localization_Service;
 
 
 /**
@@ -95,6 +96,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter      - Session Rate Limiter instance.
 	 * @param WC_Payments_Order_Service            $order_service                        - Order class instance.
 	 * @param Duplicate_Payment_Prevention_Service $duplicate_payment_prevention_service - Service for preventing duplicate payments.
+	 * @param WC_Payments_Localization_Service     $localization_service                 - Localization service instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
@@ -105,9 +107,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		array $payment_methods,
 		Session_Rate_Limiter $failed_transaction_rate_limiter,
 		WC_Payments_Order_Service $order_service,
-		Duplicate_Payment_Prevention_Service $duplicate_payment_prevention_service
+		Duplicate_Payment_Prevention_Service $duplicate_payment_prevention_service,
+		WC_Payments_Localization_Service $localization_service
 	) {
-		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $failed_transaction_rate_limiter, $order_service, $duplicate_payment_prevention_service );
+		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $failed_transaction_rate_limiter, $order_service, $duplicate_payment_prevention_service, $localization_service );
 		$this->title           = 'WooPayments';
 		$this->description     = '';
 		$this->checkout_title  = __( 'Popular payment methods', 'woocommerce-payments' );
@@ -562,7 +565,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
 				} catch ( API_Exception $e ) {
 					if ( 'wcpay_blocked_by_fraud_rule' === $e->get_error_code() ) {
-						$this->order_service->mark_order_blocked_for_fraud( $order, $payment_intent_id, Payment_Intent_Status::CANCELED );
+						$this->order_service->mark_order_blocked_for_fraud( $order, $payment_intent_id, Intent_Status::CANCELED );
 					}
 					throw $e;
 				}
@@ -583,7 +586,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$this->order_service->attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency );
 				$this->attach_exchange_info_to_order( $order, $charge_id );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
-				if ( Payment_Intent_Status::SUCCEEDED === $intent_status ) {
+				if ( Intent_Status::SUCCEEDED === $intent_status ) {
 					$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 				}
 				$this->order_service->update_order_status_from_intent( $order, $updated_payment_intent );
@@ -637,7 +640,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 *
 	 * @return array
 	 */
-	private function get_selected_upe_payment_methods( string $selected_upe_payment_type, array $enabled_payment_methods ) {
+	protected function get_selected_upe_payment_methods( string $selected_upe_payment_type, array $enabled_payment_methods ) {
 		$payment_methods = [];
 		if ( '' !== $selected_upe_payment_type ) {
 			// Only update the payment_method_types if we have a reference to the payment type the customer selected.
@@ -809,16 +812,16 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 				$this->order_service->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method_id, $customer_id, $charge_id, $currency );
 				$this->attach_exchange_info_to_order( $order, $charge_id );
-				if ( Payment_Intent_Status::SUCCEEDED === $status ) {
+				if ( Intent_Status::SUCCEEDED === $status ) {
 					$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 				}
 				$this->order_service->update_order_status_from_intent( $order, $intent );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 				$this->order_service->attach_transaction_fee_to_order( $order, $charge );
 
-				self::remove_upe_payment_intent_from_session();
+				static::remove_upe_payment_intent_from_session();
 
-				if ( Payment_Intent_Status::REQUIRES_ACTION === $status ) {
+				if ( Intent_Status::REQUIRES_ACTION === $status ) {
 					// I don't think this case should be possible, but just in case...
 					$next_action = $intent->get_next_action();
 					if ( isset( $next_action['type'] ) && 'redirect_to_url' === $next_action['type'] && ! empty( $next_action['redirect_to_url']['url'] ) ) {
@@ -856,7 +859,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id, $message );
 			}
 
-			self::remove_upe_payment_intent_from_session();
+			static::remove_upe_payment_intent_from_session();
 
 			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
 
@@ -1061,15 +1064,33 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$available_methods[] = Affirm_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 
+		// List JCB method for Japanese account only.
+		if ( 'JP' === $this->account->get_account_country() ) {
+			$available_methods[] = JCB_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		}
+
 		$available_methods = array_values(
 			apply_filters(
 				'wcpay_upe_available_payment_methods',
 				$available_methods
 			)
 		);
-		$methods_with_fees = array_keys( $this->account->get_fees() );
 
-		return array_values( array_intersect( $available_methods, $methods_with_fees ) );
+		$methods_with_fees           = array_keys( $this->account->get_fees() );
+		$available_methods_with_fees = array_intersect( $available_methods, $methods_with_fees );
+
+		// As the JCB is not a real payment method it doesn't have fees.
+		// If JCB is still available after the filter, bypass it to the available payment methods with fees.
+		if ( in_array(
+			JCB_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			$available_methods,
+			true
+		)
+		) {
+			$available_methods_with_fees[] = JCB_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		}
+
+		return array_values( $available_methods_with_fees );
 	}
 
 	/**
@@ -1260,11 +1281,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			$this->order_service->mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $error_message );
 
-			self::remove_upe_payment_intent_from_session();
+			static::remove_upe_payment_intent_from_session();
 
 			wp_send_json_success();
 		} catch ( Exception $e ) {
-			self::remove_upe_payment_intent_from_session();
+			static::remove_upe_payment_intent_from_session();
 
 			wp_send_json_error(
 				[

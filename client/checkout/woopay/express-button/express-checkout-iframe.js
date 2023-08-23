@@ -3,6 +3,8 @@
  */
 import { __ } from '@wordpress/i18n';
 import { getConfig } from 'utils/checkout';
+import request from 'wcpay/checkout/utils/request';
+import { buildAjaxURL } from 'wcpay/payment-request/utils';
 import { getTargetElement, validateEmail } from '../utils';
 import wcpayTracks from 'tracks';
 
@@ -86,6 +88,23 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		// Set the initial value.
 		iframeHeaderValue = true;
 
+		request(
+			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_session' ),
+			{
+				_ajax_nonce: getConfig( 'woopaySessionNonce' ),
+			}
+		).then( ( response ) => {
+			if ( response?.data?.session ) {
+				iframe.contentWindow.postMessage(
+					{
+						action: 'setSessionData',
+						value: response,
+					},
+					getConfig( 'woopayHost' )
+				);
+			}
+		} );
+
 		getWindowSize();
 		window.addEventListener( 'resize', getWindowSize );
 
@@ -152,6 +171,9 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 	const closeIframe = () => {
 		window.removeEventListener( 'resize', getWindowSize );
 		window.removeEventListener( 'resize', setPopoverPosition );
+		window.removeEventListener( 'pageshow', onPageShow );
+		window.removeEventListener( 'message', onMessage );
+		document.removeEventListener( 'keyup', onKeyUp );
 
 		iframeWrapper.remove();
 		iframe.classList.remove( 'open' );
@@ -166,6 +188,10 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		if ( document.querySelector( '.woopay-otp-iframe' ) ) {
 			return;
 		}
+
+		window.addEventListener( 'pageshow', onPageShow );
+		window.addEventListener( 'message', onMessage );
+		document.addEventListener( 'keyup', onKeyUp );
 
 		const viewportWidth = window.document.documentElement.clientWidth;
 		const viewportHeight = window.document.documentElement.clientHeight;
@@ -190,6 +216,10 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 			'viewport',
 			`${ viewportWidth }x${ viewportHeight }`
 		);
+		urlParams.append(
+			'tracksUserIdentity',
+			JSON.stringify( getConfig( 'tracksUserIdentity' ) )
+		);
 
 		iframe.src = `${ getConfig(
 			'woopayHost'
@@ -204,13 +234,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		iframe.focus();
 	};
 
-	document.addEventListener( 'keyup', ( event ) => {
-		if ( event.key === 'Escape' && closeIframe() ) {
-			event.stopPropagation();
-		}
-	} );
-
-	window.addEventListener( 'message', ( e ) => {
+	function onMessage( e ) {
 		if ( ! getConfig( 'woopayHost' ).startsWith( e.origin ) ) {
 			return;
 		}
@@ -218,6 +242,16 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		switch ( e.data.action ) {
 			case 'otp_email_submitted':
 				userEmail = e.data.userEmail;
+				break;
+			case 'redirect_to_woopay_skip_session_init':
+				wcpayTracks.recordUserEvent(
+					wcpayTracks.events.WOOPAY_OTP_COMPLETE,
+					[],
+					true
+				);
+				if ( e.data.redirectUrl ) {
+					window.location = e.data.redirectUrl;
+				}
 				break;
 			case 'redirect_to_platform_checkout':
 			case 'redirect_to_woopay':
@@ -272,14 +306,20 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 			default:
 			// do nothing, only respond to expected actions.
 		}
-	} );
+	}
 
-	window.addEventListener( 'pageshow', function ( event ) {
+	function onPageShow( event ) {
 		if ( event.persisted ) {
 			// Safari needs to close iframe with this.
 			closeIframe( false );
 		}
-	} );
+	}
+
+	function onKeyUp( event ) {
+		if ( event.key === 'Escape' && closeIframe() ) {
+			event.stopPropagation();
+		}
+	}
 
 	openIframe( woopayEmailInput?.value );
 };

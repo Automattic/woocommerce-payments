@@ -790,10 +790,12 @@ class WC_Payments_Account {
 			// Track connection start.
 			if ( ! isset( $_GET['wcpay-connect-jetpack-success'] ) ) {
 
+				$test_mode        = isset( $_GET['test_mode'] ) ? boolval( wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) : false;
 				$event_properties = [
 					'incentive'              => $incentive,
 					'is_new_onboarding_flow' => $progressive,
 					'woo_country_code'       => WC()->countries->get_base_country(),
+					'mode'                   => $test_mode || WC_Payments::mode()->is_test() ? 'test' : 'live',
 				];
 				$this->tracks_event(
 					self::TRACKS_EVENT_ACCOUNT_CONNECT_START,
@@ -832,10 +834,12 @@ class WC_Payments_Account {
 				}
 
 				// Track successful Jetpack connection.
+				$test_mode        = isset( $_GET['test_mode'] ) ? boolval( wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) : false;
 				$event_properties = [
 					'incentive'              => $incentive,
 					'is_new_onboarding_flow' => $progressive,
 					'woo_country_code'       => WC()->countries->get_base_country(),
+					'mode'                   => $test_mode || WC_Payments::mode()->is_test() ? 'test' : 'live',
 				];
 				$this->tracks_event(
 					self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_SUCCESS,
@@ -1256,6 +1260,7 @@ class WC_Payments_Account {
 			'incentive'              => $incentive,
 			'is_new_onboarding_flow' => $progressive,
 			'woo_country_code'       => WC()->countries->get_base_country(),
+			'mode'                   => 'test' === $mode ? 'test' : 'live',
 		];
 		$this->tracks_event(
 			self::TRACKS_EVENT_ACCOUNT_CONNECT_FINISHED,

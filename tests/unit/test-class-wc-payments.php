@@ -6,6 +6,7 @@
  */
 
 use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
+use WCPay\WooPay\WooPay_Session;
 
 /**
  * WC_Payments unit tests.
@@ -13,7 +14,8 @@ use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
 class WC_Payments_Test extends WCPAY_UnitTestCase {
 
 	const EXPECTED_WOOPAY_HOOKS = [
-		'wc_ajax_wcpay_init_woopay' => [ WC_Payments::class, 'ajax_init_woopay' ],
+		'wc_ajax_wcpay_init_woopay'        => [ WooPay_Session::class, 'ajax_init_woopay' ],
+		'wc_ajax_wcpay_get_woopay_session' => [ WooPay_Session::class, 'ajax_get_woopay_session' ],
 	];
 
 	public function set_up() {
@@ -115,51 +117,6 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 
 		$this->assertEquals( 401, $response->get_status() );
 		$this->assertEquals( 'woocommerce_rest_missing_nonce', $response->get_data()['code'] );
-	}
-
-	public function test_ajax_init_woopay_sends_correct_customer_id() {
-		// Necessary in order to prevent die from being called.
-		define( 'DOING_AJAX', true );
-
-		$customer_id = 'cus_123456789';
-
-		$pre_http_dispatch = function ( $result, $server, $request ) {
-			if ( in_array( $request->get_route(), [ '/wc/store/v1/checkout', '/wc/store/v1/cart' ], true ) ) {
-				return new WP_REST_Response( [ 'body' => wp_json_encode( [] ) ], 200 );
-			}
-
-			return $result;
-		};
-
-		$pre_http_request_cb = function ( $preempt, $parsed_args, $url ) use ( $customer_id ) {
-			$body = json_decode( $parsed_args['body'] );
-			$this->assertEquals( $customer_id, $body->customer_id );
-			return [ 'body' => wp_json_encode( [] ) ];
-		};
-
-		$wp_die_ajax_handler_cb = function () {
-			return function ( $message, $title, $args ) {};
-		};
-
-		add_filter( 'rest_pre_dispatch', $pre_http_dispatch, 10, 3 );
-		add_filter( 'pre_http_request', $pre_http_request_cb, 10, 3 );
-		add_filter( 'wp_die_ajax_handler', $wp_die_ajax_handler_cb );
-
-		$mock_customer_service = $this->getMockBuilder( 'WC_Payments_Customer_Service' )
-			->disableOriginalConstructor()
-			->getMock();
-		$mock_customer_service
-			->expects( $this->once() )
-			->method( 'create_customer_for_user' )
-			->with( $this->anything(), $this->anything() )
-			->will( $this->returnValue( $customer_id ) );
-
-		WC_Payments::set_customer_service( $mock_customer_service );
-		$this->set_woopay_feature_flag_enabled( true );
-
-		ob_start();
-		WC_Payments::ajax_init_woopay();
-		ob_get_clean();
 	}
 
 	/**

@@ -42,6 +42,11 @@ describe( 'Settings - Transactions', () => {
 		useGetSavingError.mockReturnValue( null );
 		useSavedCards.mockReturnValue( [ false, jest.fn() ] );
 		useCardPresentEligible.mockReturnValue( [ false ] );
+		window.wcpaySettings = {
+			accountStatus: {
+				country: 'US',
+			},
+		};
 	} );
 
 	it( 'displays the length of the bank statement input', async () => {

@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Migrate Chip component to TypeScript to improve code quality.

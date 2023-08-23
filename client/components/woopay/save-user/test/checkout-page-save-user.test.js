@@ -6,6 +6,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 // eslint-disable-next-line import/no-unresolved
 import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
+import wcpayTracks from 'tracks';
 
 /**
  * Internal dependencies
@@ -34,6 +35,10 @@ jest.mock( '@wordpress/data', () => ( {
 	} ),
 } ) );
 
+jest.mock( 'tracks', () => ( {
+	recordUserEvent: jest.fn(),
+} ) );
+
 describe( 'CheckoutPageSaveUser', () => {
 	beforeEach( () => {
 		useWooPayUser.mockImplementation( () => false );
@@ -46,6 +51,17 @@ describe( 'CheckoutPageSaveUser', () => {
 		getConfig.mockImplementation(
 			( setting ) => setting === 'forceNetworkSavedCards'
 		);
+
+		wcpayTracks.recordUserEvent.mockReturnValue( true );
+		wcpayTracks.events = {
+			WOOPAY_SAVE_MY_INFO_CLICK: 'woopay_express_button_offered',
+		};
+
+		window.wcpaySettings = {
+			accountStatus: {
+				country: 'US',
+			},
+		};
 	} );
 
 	afterEach( () => {

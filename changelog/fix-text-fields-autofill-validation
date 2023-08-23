@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: Tiny fix to avoid showing a validation error when fields are filled using autofill
+
+
