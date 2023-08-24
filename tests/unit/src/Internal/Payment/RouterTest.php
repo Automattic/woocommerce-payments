@@ -153,9 +153,9 @@ class RouterTest extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Check that `get_enabled_factors` returns the factors, provided by the cache.
+	 * Check that `get_allowed_factors` returns the factors, provided by the cache.
 	 */
-	public function test_get_enabled_factors_returns_factors() {
+	public function test_get_allowed_factors_returns_factors() {
 		$factors = [
 			'SAMPLE_FLAG' => true,
 			'OTHER_FLAG'  => false,
@@ -163,29 +163,29 @@ class RouterTest extends WCPAY_UnitTestCase {
 
 		$this->mock_db_cache_factors( $factors, false );
 
-		$result = $this->sut->get_enabled_factors();
+		$result = $this->sut->get_allowed_factors();
 
 		$this->assertIsArray( $result );
 		$this->assertEquals( $factors, $result );
 	}
 
 	/**
-	 * Ensures that `get_enabled_factors` returns an array, even with broken cache.
+	 * Ensures that `get_allowed_factors` returns an array, even with broken cache.
 	 */
-	public function test_get_enabled_factors_returns_empty_array() {
+	public function test_get_allowed_factors_returns_empty_array() {
 		// Return nothing to force an empty array.
 		$this->mock_db_cache_factors( null, false );
 
-		$result = $this->sut->get_enabled_factors();
+		$result = $this->sut->get_allowed_factors();
 
 		$this->assertIsArray( $result );
 		$this->assertEmpty( $result );
 	}
 
 	/**
-	 * Confirms that `get_enabled_factors` allows filters to work.
+	 * Confirms that `get_allowed_factors` allows filters to work.
 	 */
-	public function test_get_enabled_factors_allows_filters() {
+	public function test_get_allowed_factors_allows_filters() {
 		$factors          = [
 			'SAMPLE_FLAG' => true,
 			'OTHER_FLAG'  => false,
@@ -200,7 +200,7 @@ class RouterTest extends WCPAY_UnitTestCase {
 		};
 		add_filter( 'wcpay_new_payment_process_enabled_factors', $filter_cb );
 
-		$result = $this->sut->get_enabled_factors();
+		$result = $this->sut->get_allowed_factors();
 
 		$this->assertIsArray( $result );
 		$this->assertEquals( $replaced_factors, $result );
@@ -255,7 +255,7 @@ class RouterTest extends WCPAY_UnitTestCase {
 			)
 			->willReturn( $response );
 
-		$result = $this->sut->get_enabled_factors();
+		$result = $this->sut->get_allowed_factors();
 		$this->assertSame( $response, $result );
 	}
 
@@ -281,7 +281,7 @@ class RouterTest extends WCPAY_UnitTestCase {
 			)
 			->willReturn( false );
 
-		$this->assertEmpty( $this->sut->get_enabled_factors() );
+		$this->assertEmpty( $this->sut->get_allowed_factors() );
 	}
 
 	/**

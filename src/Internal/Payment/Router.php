@@ -43,19 +43,19 @@ class Router {
 	 * @return bool
 	 */
 	public function should_use_new_payment_process( array $factors ): bool {
-		$allowed = $this->get_enabled_factors();
+		$allowed_factors = $this->get_allowed_factors();
 
 		// This would make sure that the payment process is a factor as well.
 		$factors[ Factor::NEW_PAYMENT_PROCESS ] = true;
 
-		foreach ( $factors as $key => $enabled ) {
+		foreach ( $factors as $key => $present ) {
 			// If a factor is not present, there is no need to check for it.
-			if ( ! $enabled ) {
+			if ( ! $present ) {
 				continue;
 			}
 
 			// The factor should exist, and be allowed.
-			if ( ! isset( $allowed[ $key ] ) || ! $allowed[ $key ] ) {
+			if ( ! isset( $allowed_factors[ $key ] ) || ! $allowed_factors[ $key ] ) {
 				return false;
 			}
 		}
@@ -68,7 +68,7 @@ class Router {
 	 *
 	 * @return array
 	 */
-	public function get_enabled_factors() {
+	public function get_allowed_factors() {
 		$factors = $this->get_cached_factors() ?? [];
 		$factors = apply_filters( 'wcpay_new_payment_process_enabled_factors', $factors );
 		return $factors;
@@ -86,8 +86,6 @@ class Router {
 
 	/**
 	 * Gets and chaches all factors, which can be handled by the new payment process.
-	 * If any factor, not enabled in the returned array, is present while paying,
-	 * the payment should fall back to the legacy process.
 	 *
 	 * @param bool $force_refresh Forces data to be fetched from the server, rather than using the cache.
 	 * @return array Factors, or an empty array.
