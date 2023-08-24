@@ -466,6 +466,20 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Get the progressive onboarding details needed on the frontend.
+	 *
+	 * @return array Progressive Onboarding details.
+	 */
+	public function get_progressive_onboarding_details(): array {
+		$account = $this->get_cached_account_data();
+		return [
+			'isEnabled'        => $account['progressive_onboarding']['is_enabled'] ?? false,
+			'isComplete'       => $account['progressive_onboarding']['is_complete'] ?? false,
+			'isNewFlowEnabled' => WC_Payments_Utils::should_use_progressive_onboarding_flow(),
+		];
+	}
+
+	/**
 	 * Gets the current account loan data for rendering on the settings pages.
 	 *
 	 * @return array loan data.
@@ -1131,6 +1145,9 @@ class WC_Payments_Account {
 		if ( $test_mode ) {
 			WC_Payments_Onboarding_Service::set_test_mode( true );
 		}
+
+		// Clear persisted onboarding flow state.
+		WC_Payments_Onboarding_Service::clear_onboarding_flow_state();
 
 		$current_user = wp_get_current_user();
 		$return_url   = $this->get_onboarding_return_url( $wcpay_connect_from );
