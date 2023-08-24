@@ -804,7 +804,8 @@ class WC_Payments_Account {
 		if ( isset( $_GET['wcpay-login'] ) && check_admin_referer( 'wcpay-login' ) ) {
 			try {
 				if ( $this->is_account_partially_onboarded() ) {
-					$args = $_GET;
+					$args         = $_GET;
+					$args['type'] = 'complete_kyc_link';
 					$this->redirect_to_account_link( $args );
 				}
 
