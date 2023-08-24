@@ -124,7 +124,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 			$script_dependencies[] = 'woocommerce-tokenization-form';
 		}
 
-		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() || WC_Payments_Features::is_upe_split_enabled() ) {
+		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 			$script = 'dist/upe_with_deferred_intent_creation_checkout';
 		} else {
 			$script = 'dist/upe_checkout';
@@ -245,7 +245,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 				'countries'      => $payment_method->get_countries(),
 			];
 
-			if ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+			if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 				$gateway_for_payment_method                             = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
 				$settings[ $payment_method_id ]['upePaymentIntentData'] = $this->gateway->get_payment_intent_data_from_session( $payment_method_id );
 				$settings[ $payment_method_id ]['upeSetupIntentData']   = $this->gateway->get_setup_intent_data_from_session( $payment_method_id );
@@ -292,7 +292,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 			 * before `$this->saved_payment_methods()`.
 			 */
 			$payment_fields  = $this->get_payment_fields_js_config();
-			$upe_object_name = ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) ? 'wcpay_upe_config' : 'wcpayConfig';
+			$upe_object_name = WC_Payments_Features::is_upe_deferred_intent_enabled() ? 'wcpay_upe_config' : 'wcpayConfig';
 			wp_enqueue_script( 'wcpay-upe-checkout' );
 			add_action(
 				'wp_footer',
