@@ -30,6 +30,18 @@ interface DisputeFooterProps {
 	dispute: Dispute;
 }
 const DisputeFooter: React.FC< DisputeFooterProps > = ( { dispute } ) => {
+	const isValidStatus = [
+		'won',
+		'lost',
+		'under_review',
+		// TODO: confirm if the following should render:
+		// 'charge_refunded', 'warning_under_review', 'warning_closed'
+	].includes( dispute.status );
+
+	if ( ! isValidStatus ) {
+		return null;
+	}
+
 	const isSubmitted = !! dispute.metadata.__evidence_submitted_at;
 	const isAccepted = dispute.metadata.__closed_by_merchant === '1';
 	const closedDateFormatted =

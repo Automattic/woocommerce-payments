@@ -25,35 +25,26 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 	const dueBy = moment.unix( dispute.evidence_details?.due_by ?? 0 );
 	const countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
 
-	const showDetails = isAwaitingResponse( dispute.status );
-	const showFooter = [
-		'won',
-		'lost',
-		'under_review',
-		// TODO: confirm if the following should render:
-		// 'charge_refunded', 'warning_under_review', 'warning_closed'
-	].includes( dispute.status );
+	if ( isAwaitingResponse( dispute.status ) ) {
+		return (
+			<div className="transaction-details-dispute-details-wrapper">
+				<Card>
+					<CardBody className="transaction-details-dispute-details-body">
+						{ countdownDays >= 0 && (
+							<DisputeNotice
+								dispute={ dispute }
+								urgent={ countdownDays <= 2 }
+							/>
+						) }
+						<div></div>
+					</CardBody>
+				</Card>
+			</div>
+		);
+	}
 
-	return (
-		<>
-			{ showDetails && (
-				<div className="transaction-details-dispute-details-wrapper">
-					<Card>
-						<CardBody className="transaction-details-dispute-details-body">
-							{ countdownDays >= 0 && (
-								<DisputeNotice
-									dispute={ dispute }
-									urgent={ countdownDays <= 2 }
-								/>
-							) }
-							<div></div>
-						</CardBody>
-					</Card>
-				</div>
-			) }
-			{ showFooter && <DisputeFooter dispute={ dispute } /> }
-		</>
-	);
+	// Not actionable
+	return <DisputeFooter dispute={ dispute } />;
 };
 
 export default DisputeDetails;
