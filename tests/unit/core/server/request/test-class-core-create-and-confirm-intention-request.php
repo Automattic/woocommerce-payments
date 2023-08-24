@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
 use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
@@ -164,6 +165,87 @@ class Create_And_Confirm_Intention_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $return_url, $params['return_url'] );
 		$this->assertSame( 'POST', $request->get_method() );
 		$this->assertSame( WC_Payments_API_Client::INTENTIONS_API, $request->get_api() );
+	}
+
+	public function test_request_will_be_created_by_extend_function() {
+		$request = new Create_And_Confirm_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		add_filter(
+			'cac_test_extend_function_will_create_new_request',
+			function( $request ) {
+				return WooPay_Create_And_Confirm_Intention::extend( $request );
+			}
+		);
+		$request = $request->apply_filters( 'cac_test_extend_function_will_create_new_request' );
+		$this->assertInstanceOf( WooPay_Create_And_Confirm_Intention::class, $request );
+	}
+	public function test_request_will_be_created_by_extend_function_by_already_extended_request() {
+		$request = new Create_And_Confirm_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_amount( 1 );
+		$request->set_customer( 'cus_1' );
+		$request->set_metadata( [ 'order_number' => 1 ] );
+		$request->set_payment_method( 'pm_1' );
+		$request->set_cvc_confirmation( 'foo' );
+
+		add_filter(
+			'cac_test_extend_function_will_create_new_request',
+			function( $request ) {
+				return WooPay_Create_And_Confirm_Intention::extend( $request );
+			}
+		);
+		add_filter(
+			'cac_test_second_extend_function_will_create_new_request',
+			function( $request ) {
+				$new_class = new class( $this->mock_api_client, $this->mock_wc_payments_http_client) extends Create_And_Confirm_Intention{
+
+				};
+				$request   = $new_class::extend( $request );
+				$request->set_cvc_confirmation( 'bar' );
+				return $request;
+			}
+		);
+		$request = $request->apply_filters( 'cac_test_extend_function_will_create_new_request' );
+		$this->assertInstanceOf( WooPay_Create_And_Confirm_Intention::class, $request );
+		$request = $request->apply_filters( 'cac_test_second_extend_function_will_create_new_request' );
+		$this->assertNotInstanceOf( WooPay_Create_And_Confirm_Intention::class, $request );
+
+		$this->assertSame( 'bar', $request->get_param( 'cvc_confirmation' ) );
+	}
+
+	public function test_request_will_not_be_created_by_extend_function_for_invalid_request() {
+		$request = new Create_And_Confirm_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_amount( 1 );
+		$request->set_customer( 'cus_1' );
+		$request->set_metadata( [ 'order_number' => 1 ] );
+		$request->set_payment_method( 'pm_1' );
+		$request->set_cvc_confirmation( 'foo' );
+
+		add_filter(
+			'cac_test_extend_function_will_create_new_request',
+			function( $request ) {
+				return WooPay_Create_And_Confirm_Intention::extend( $request );
+			}
+		);
+		add_filter(
+			'cac_test_second_extend_function_will_not_create_new_request',
+			function( $request ) {
+				$new_class = new class( $this->mock_api_client, $this->mock_wc_payments_http_client) extends WCPay\Core\Server\Request{
+
+					public function get_api(): string {
+						return '';
+					}
+
+					public function get_method(): string {
+						return 'GET';
+					}
+				};
+				return $new_class::extend( $request );
+			}
+		);
+		$request = $request->apply_filters( 'cac_test_extend_function_will_create_new_request' );
+		$this->assertInstanceOf( WooPay_Create_And_Confirm_Intention::class, $request );
+		$this->expectException( Extend_Request_Exception::class );
+		$request->apply_filters( 'cac_test_second_extend_function_will_not_create_new_request' );
+
 	}
 
 	public function create_intent_request_provider() {

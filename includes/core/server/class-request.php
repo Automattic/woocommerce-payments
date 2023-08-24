@@ -675,17 +675,27 @@ abstract class Request {
 	 */
 	public function validate_extended_class( $child_class, string $parent_class ) {
 
-		if ( ! is_subclass_of( $child_class, $parent_class ) ) {
-			throw new Extend_Request_Exception(
-				sprintf(
-					'Failed to extend request. %s is not a subclass of %s',
-					is_string( $child_class ) ? $child_class : get_class( $child_class ),
-					$parent_class
-				),
-				'wcpay_core_extend_class_not_subclass'
-			);
+		// Check if the child class directly extends the parent class.
+		if ( is_subclass_of( $child_class, $parent_class ) ) {
+			return;
 		}
 
+		// Retrieve the immediate parent (grandparent) of the specified parent class.
+		$grandparent_class = get_parent_class( $parent_class );
+
+		// Check if the child class extends the grandparent class, ensuring that the grandparent class exists
+		// and is not the same as the class where this method is defined.
+		if ( $grandparent_class && self::class !== $grandparent_class && is_subclass_of( $child_class, $grandparent_class ) ) {
+			return;
+		}
+		throw new Extend_Request_Exception(
+			sprintf(
+				'Failed to extend request. %s is not a subclass of %s',
+				is_string( $child_class ) ? $child_class : get_class( $child_class ),
+				$parent_class
+			),
+			'wcpay_core_extend_class_not_subclass'
+		);
 	}
 
 	/**
