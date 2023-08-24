@@ -2552,9 +2552,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		wcpay_get_test_container()->replace( Router::class, $mock_router );
 
 		$checker = function( $factors ) use ( $factor_name, $value ) {
-			return is_array( $factors )
-				&& isset( $factors[ $factor_name ] )
-				&& $factors[ $factor_name ] === $value;
+			$is_in_array = in_array( $factor_name, $factors, true );
+			return $value ? $is_in_array : ! $is_in_array;
 		};
 
 		$mock_router->expects( $this->once() )

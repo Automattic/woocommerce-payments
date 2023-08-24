@@ -713,10 +713,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function should_use_new_process( WC_Order $order ) {
 		$order_id = $order->get_id();
+		$factors  = []; // To contain all present factors.
 
 		// If there is a token in the request, we're using a saved PM.
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$using_saved_payment_method = ! empty( Payment_Information::get_token_from_request( $_POST ) );
+		if ( $using_saved_payment_method ) {
+			$factors[] = Factor::USE_SAVED_PM;
+		}
 
 		// The PM should be saved when chosen, or when it's a recurrent payment, but not if already saved.
 		$save_payment_method = ! $using_saved_payment_method && (
@@ -724,42 +728,56 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			! empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-payment-method' ] )
 			|| $this->is_payment_recurring( $order_id )
 		);
+		if ( $save_payment_method ) {
+			$factors[] = Factor::SAVE_PM;
+		}
 
 		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
-		$confirm_without_payment = apply_filters(
-			'wcpay_confirm_without_payment_intent',
-			$order->get_total() <= 0 && ! $save_payment_method
-		);
+		if (
+			apply_filters(
+				'wcpay_confirm_without_payment_intent',
+				$order->get_total() <= 0 && ! $save_payment_method
+			)
+		) {
+			$factors[] = Factor::NO_PAYMENT;
+		}
 
 		// Subscription (both WCPay and WCSubs) if when the order contains one.
-		$subscription_signup = function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order_id );
+		if ( function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order_id ) ) {
+			$factors[] = Factor::SUBSCRIPTION_SIGNUP;
+		}
 
 		// WooPay might change how payment fields were loaded.
-		$woopay_enabled = $this->woopay_util->should_enable_woopay( $this ) &&
-			$this->woopay_util->should_enable_woopay_on_cart_or_checkout();
+		if (
+			$this->woopay_util->should_enable_woopay( $this )
+			&& $this->woopay_util->should_enable_woopay_on_cart_or_checkout()
+		) {
+			$factors[] = Factor::WOOPAY_ENABLED;
+		}
 
 		// WooPay payments are indicated by the platform checkout intent.
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$woopay_payment = isset( $_POST['platform-checkout-intent'] );
+		if ( isset( $_POST['platform-checkout-intent'] ) ) {
+			$factors[] = Factor::WOOPAY_PAYMENT;
+		}
 
 		// Check whether the customer is signining up for a WCPay subscription.
-		$wcpay_subscription_signup = function_exists( 'wcs_order_contains_subscription' )
+		if (
+			function_exists( 'wcs_order_contains_subscription' )
 			&& wcs_order_contains_subscription( $order_id )
 			&& WC_Payments_Features::is_wcpay_subscriptions_enabled()
-			&& ! $this->is_subscriptions_plugin_active();
+			&& ! $this->is_subscriptions_plugin_active()
+		) {
+			$factors[] = Factor::WCPAY_SUBSCRIPTION_SIGNUP;
+		}
 
-		// The new payment process is hidden behind flags, like a feature.
-		$factors = [
-			Factor::NO_PAYMENT                => $confirm_without_payment,
-			Factor::USE_SAVED_PM              => $using_saved_payment_method,
-			Factor::SAVE_PM                   => $save_payment_method,
-			Factor::SUBSCRIPTION_SIGNUP       => $subscription_signup,
-			Factor::WOOPAY_ENABLED            => $woopay_enabled,
-			Factor::WOOPAY_PAYMENT            => $woopay_payment,
-			Factor::WCPAY_SUBSCRIPTION_SIGNUP => $wcpay_subscription_signup,
-			Factor::DEFERRED_INTENT_SPLIT_UPE => $this instanceof UPE_Split_Payment_Gateway, // 1,
-			Factor::PAYMENT_REQUEST           => defined( 'WCPAY_PAYMENT_REQUEST_CHECKOUT' ) && WCPAY_PAYMENT_REQUEST_CHECKOUT,
-		];
+		if ( $this instanceof UPE_Split_Payment_Gateway ) {
+			$factors[] = Factor::DEFERRED_INTENT_SPLIT_UPE;
+		}
+
+		if ( defined( 'WCPAY_PAYMENT_REQUEST_CHECKOUT' ) && WCPAY_PAYMENT_REQUEST_CHECKOUT ) {
+			$factors[] = Factor::PAYMENT_REQUEST;
+		}
 
 		$router = wcpay_get_container()->get( Router::class );
 		return $router->should_use_new_payment_process( $factors );

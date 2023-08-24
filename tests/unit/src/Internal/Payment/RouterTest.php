@@ -78,7 +78,7 @@ class RouterTest extends WCPAY_UnitTestCase {
 	public function test_should_use_new_payment_process_returns_false_with_missing_factor() {
 		$this->mock_db_cache_factors( [] );
 
-		$result = $this->sut->should_use_new_payment_process( [ Factor::USE_SAVED_PM => true ] );
+		$result = $this->sut->should_use_new_payment_process( [ Factor::USE_SAVED_PM ] );
 		$this->assertFalse( $result );
 	}
 
@@ -88,7 +88,7 @@ class RouterTest extends WCPAY_UnitTestCase {
 	public function test_should_use_new_payment_process_returns_false_with_unavailable_factor() {
 		$this->mock_db_cache_factors( [ Factor::USE_SAVED_PM => false ] );
 
-		$result = $this->sut->should_use_new_payment_process( [ Factor::USE_SAVED_PM => true ] );
+		$result = $this->sut->should_use_new_payment_process( [ Factor::USE_SAVED_PM ] );
 		$this->assertFalse( $result );
 	}
 
@@ -98,7 +98,7 @@ class RouterTest extends WCPAY_UnitTestCase {
 	public function test_should_use_new_payment_process_returns_true_with_available_factor() {
 		$this->mock_db_cache_factors( [ Factor::USE_SAVED_PM => true ] );
 
-		$result = $this->sut->should_use_new_payment_process( [ Factor::USE_SAVED_PM => true ] );
+		$result = $this->sut->should_use_new_payment_process( [ Factor::USE_SAVED_PM ] );
 		$this->assertTrue( $result );
 	}
 
@@ -118,10 +118,9 @@ class RouterTest extends WCPAY_UnitTestCase {
 
 		$result = $this->sut->should_use_new_payment_process(
 			[
-				Factor::NO_PAYMENT          => false,
-				Factor::USE_SAVED_PM        => true,
-				Factor::SUBSCRIPTION_SIGNUP => true,
-				Factor::WOOPAY_ENABLED      => true,
+				Factor::USE_SAVED_PM,
+				Factor::SUBSCRIPTION_SIGNUP,
+				Factor::WOOPAY_ENABLED,
 			]
 		);
 		$this->assertFalse( $result );
@@ -143,10 +142,9 @@ class RouterTest extends WCPAY_UnitTestCase {
 
 		$result = $this->sut->should_use_new_payment_process(
 			[
-				Factor::NO_PAYMENT          => false,
-				Factor::USE_SAVED_PM        => true,
-				Factor::SUBSCRIPTION_SIGNUP => true,
-				Factor::WOOPAY_ENABLED      => true,
+				Factor::USE_SAVED_PM,
+				Factor::SUBSCRIPTION_SIGNUP,
+				Factor::WOOPAY_ENABLED,
 			]
 		);
 		$this->assertTrue( $result );

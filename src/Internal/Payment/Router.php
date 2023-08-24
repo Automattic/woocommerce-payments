@@ -39,23 +39,18 @@ class Router {
 	/**
 	 * Checks whether a given payment should use the new payment process.
 	 *
-	 * @param array $factors Factors, describing the type and conditions of the payment.
+	 * @param string[] $factors Factors, describing the type and conditions of the payment.
 	 * @return bool
 	 */
 	public function should_use_new_payment_process( array $factors ): bool {
 		$allowed_factors = $this->get_allowed_factors();
 
 		// This would make sure that the payment process is a factor as well.
-		$factors[ Factor::NEW_PAYMENT_PROCESS ] = true;
+		$factors[] = Factor::NEW_PAYMENT_PROCESS;
 
-		foreach ( $factors as $key => $present ) {
-			// If a factor is not present, there is no need to check for it.
-			if ( ! $present ) {
-				continue;
-			}
-
+		foreach ( $factors as $present_factor ) {
 			// The factor should exist, and be allowed.
-			if ( ! in_array( $key, $allowed_factors, true ) ) {
+			if ( ! in_array( $present_factor, $allowed_factors, true ) ) {
 				return false;
 			}
 		}
