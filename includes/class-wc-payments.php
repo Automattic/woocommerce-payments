@@ -524,11 +524,7 @@ class WC_Payments {
 				self::$upe_payment_gateway_map[ $payment_method->get_id() ] = $split_gateway;
 			}
 
-			self::$card_gateway = self::get_payment_gateway_by_id( 'card' );
-
-			$card_payments_checkout = new WC_Payments_Checkout( self::$legacy_card_gateway, self::$woopay_util, self::$account, self::$customer_service );
-			$card_payments_checkout->init_hooks();
-
+			self::$card_gateway         = self::get_payment_gateway_by_id( 'card' );
 			self::$wc_payments_checkout = new WC_Payments_UPE_Checkout( self::get_gateway(), self::$woopay_util, self::$account, self::$customer_service );
 		} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
 			$payment_methods = [];
