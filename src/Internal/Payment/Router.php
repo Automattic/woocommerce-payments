@@ -109,7 +109,7 @@ class Router {
 			function () {
 				try {
 					$request  = Get_Payment_Process_Factors::create();
-					$response = $request->send( 'wcpay_Get_Payment_Process_Factors' );
+					$response = $request->send( 'wcpay_get_payment_process_factors' );
 					return $response->to_array();
 				} catch ( API_Exception $e ) {
 					// Return false to signal retrieval error.
