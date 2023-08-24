@@ -15,6 +15,7 @@ import { createInterpolateElement } from '@wordpress/element';
  * Internal dependencies
  */
 import './style.scss';
+import wcpayTracks from 'tracks';
 import type { Dispute } from 'wcpay/types/disputes';
 import {
 	Button,
@@ -158,10 +159,14 @@ const DisputeFooter: React.FC< DisputeFooterProps > = ( { dispute } ) => {
 	}
 
 	const handleClick = () => {
-		// wcpayTracks.recordEvent(
-		// 	wcpayTracks.events
-		// 		.___
-		// )
+		wcpayTracks.recordEvent(
+			wcpayTracks.events.TRANSACTION_DETAILS_DISPUTE_FOOTER_BUTTON_CLICK,
+			{
+				dispute_status: dispute.status,
+				dispute_submitted: isSubmitted,
+				dispute_accepted: isAccepted,
+			}
+		);
 		if ( isSubmitted ) {
 			const challengeUrl = getAdminUrl( {
 				page: 'wc-admin',
