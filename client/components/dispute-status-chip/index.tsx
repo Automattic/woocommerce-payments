@@ -12,7 +12,6 @@ import Chip from '../chip';
 import displayStatus from './mappings';
 import { formatStringValue } from 'utils';
 import { isAwaitingResponse, isDueWithin } from 'wcpay/disputes/utils';
-import { disputeAwaitingResponseStatuses } from 'wcpay/disputes/filters/config';
 import type {
 	CachedDispute,
 	DisputeStatus,
