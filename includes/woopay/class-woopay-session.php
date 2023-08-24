@@ -593,10 +593,10 @@ class WooPay_Session {
 
 		$replacement_map = [
 			'[terms_of_service_link]' => wc_terms_and_conditions_page_id() ?
-				'<a href="' . get_permalink( wc_terms_and_conditions_page_id() ) . '">' . __( 'Terms of Service', 'woocommerce-payments' ) . '</a>' :
+				'<a href="' . get_permalink( wc_terms_and_conditions_page_id() ) . '" target="_blank" rel="noopener noreferrer">' . __( 'Terms of Service', 'woocommerce-payments' ) . '</a>' :
 				__( 'Terms of Service', 'woocommerce-payments' ),
 			'[privacy_policy_link]'   => wc_privacy_policy_page_id() ?
-				'<a href="' . get_permalink( wc_privacy_policy_page_id() ) . '">' . __( 'Privacy Policy', 'woocommerce-payments' ) . '</a>' :
+				'<a href="' . get_permalink( wc_privacy_policy_page_id() ) . '" target="_blank" rel="noopener noreferrer">' . __( 'Privacy Policy', 'woocommerce-payments' ) . '</a>' :
 				__( 'Privacy Policy', 'woocommerce-payments' ),
 		];
 
