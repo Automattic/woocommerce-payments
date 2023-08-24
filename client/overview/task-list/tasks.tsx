@@ -79,7 +79,7 @@ export const getTasks = ( {
 				accountLink,
 				Number( currentDeadline ) ?? null,
 				pastDue ?? false,
-				detailsSubmitted ?? false
+				detailsSubmitted ?? true
 			),
 		wpcomReconnectUrl && getReconnectWpcomTask( wpcomReconnectUrl ),
 		isDisputeTaskVisible && getDisputeResolutionTask( activeDisputes ),
