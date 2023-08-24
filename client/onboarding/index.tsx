@@ -6,7 +6,7 @@ import React, { useEffect } from 'react';
 /**
  * Internal dependencies
  */
-import { OnboardingContextProvider } from './context';
+import { OnboardingContextProvider, useOnboardingContext } from './context';
 import { Stepper } from 'components/stepper';
 import { OnboardingForm } from './form';
 import Step from './step';
@@ -17,8 +17,11 @@ import StoreDetails from './steps/store-details';
 import LoadingStep from './steps/loading';
 import { trackStarted } from './tracking';
 import './style.scss';
+import { persistFlowState } from './utils';
 
 const OnboardingStepper = () => {
+	const { data } = useOnboardingContext();
+
 	const handleExit = () => {
 		if (
 			window.history.length > 1 &&
@@ -28,10 +31,17 @@ const OnboardingStepper = () => {
 		window.location.href = wcSettings.adminUrl;
 	};
 
-	const handleStepChange = () => window.scroll( 0, 0 );
+	const handleStepChange = ( step: string ) => {
+		window.scroll( 0, 0 );
+		persistFlowState( step, data );
+	};
 
 	return (
-		<Stepper onStepChange={ handleStepChange } onExit={ handleExit }>
+		<Stepper
+			initialStep={ wcpaySettings.onboardingFlowState?.current_step }
+			onStepChange={ handleStepChange }
+			onExit={ handleExit }
+		>
 			<Step name="mode">
 				<ModeChoice />
 			</Step>
@@ -55,14 +65,16 @@ const OnboardingStepper = () => {
 	);
 };
 
-const OnboardingPage: React.FC = () => {
-	const isLocalhost = location.hostname === 'localhost';
-	const businessUrl = isLocalhost
-		? 'https://wcpay.test'
-		: wcSettings?.homeUrl ?? '';
-	const businessName = wcSettings?.siteTitle ?? '';
-	const country = wcpaySettings?.connect?.country ?? '';
+const initialData = wcpaySettings.onboardingFlowState?.data ?? {
+	business_name: wcSettings?.siteTitle,
+	url:
+		location.hostname === 'localhost'
+			? 'https://wcpay.test'
+			: wcSettings?.homeUrl,
+	country: wcpaySettings?.connect?.country,
+};
 
+const OnboardingPage: React.FC = () => {
 	useEffect( () => {
 		trackStarted();
 
@@ -82,13 +94,7 @@ const OnboardingPage: React.FC = () => {
 
 	return (
 		<div className="wcpay-onboarding-prototype">
-			<OnboardingContextProvider
-				initialData={ {
-					business_name: businessName,
-					url: businessUrl,
-					country: country,
-				} }
-			>
+			<OnboardingContextProvider initialData={ initialData }>
 				<OnboardingStepper />
 			</OnboardingContextProvider>
 		</div>
