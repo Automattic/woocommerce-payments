@@ -6,12 +6,12 @@ Component props should be declared in the same file you implement the component:
 
 ```ts
 interface Props {
-  // ...
+	// ...
 }
 
 const MyAwesomeComponent: React.FunctionComponent< Props > = ( props ) => {
-  // ...
-}
+	// ...
+};
 ```
 
 ## Shared types
@@ -25,9 +25,9 @@ For example:
 // client/types/stripe/payment-intent.d.ts
 
 export interface PaymentIntent {
-  id: string;
-  object: 'payment_intent';
-  // ...
+	id: string;
+	object: 'payment_intent';
+	// ...
 }
 ```
 
@@ -38,11 +38,11 @@ For example, `wcpaySettings` is declared there:
 
 ```ts
 declare global {
-  const wcpaySettings: {
-    connectUrl: string;
-    isSubscriptionsActive: boolean;
-    //...
-  }
+	const wcpaySettings: {
+		connectUrl: string;
+		isSubscriptionsActive: boolean;
+		//...
+	};
 }
 ```
 
@@ -65,13 +65,13 @@ and this is how we declare types for Gridicons:
 
 ```ts
 declare module 'gridicons/dist/*' {
-  type GridiconParams = {
-    size?: number;
-    className?: string;
-  };
-  const Gridicon: ( props: GridiconParams ) => JSX.Element;
+	type GridiconParams = {
+		size?: number;
+		className?: string;
+	};
+	const Gridicon: ( props: GridiconParams ) => JSX.Element;
 
-  export = Gridicon;
+	export = Gridicon;
 }
 ```
 
@@ -81,15 +81,16 @@ Generally speaking, we add types to any external libraries using the following "
 import '<external_or_npm_package_name>';
 
 declare module '<external_or_npm_package_name>' {
-  // Declare types, functions, globals, etc.
+	// Declare types, functions, globals, etc.
 }
 ```
 
 Notice how we’re importing the external library at the top, even though we're not using it. If we don’t import it first, our module declaration overrides the module declared in the external library’s index.d.ts definitions file, whereas we generally want to build on top of the definitions (when they exist).
 
 Why does it work that way? ([reference](https://www.typescriptlang.org/docs/handbook/2/modules.html#how-javascript-modules-are-defined))
-- In TypeScript, a file without any top-level import or export declarations is treated as a script, and so what is declared in such file is added to the global scope, thus overriding any existing declaration.
-- When you add an import, the script becomes a module, and what you define inside the file is now scoped to that module.
+
+-   In TypeScript, a file without any top-level import or export declarations is treated as a script, and so what is declared in such file is added to the global scope, thus overriding any existing declaration.
+-   When you add an import, the script becomes a module, and what you define inside the file is now scoped to that module.
 
 Taking a theoretical currency formatting npm package called `woo-currency-formatter` that has a method `formatAmountWithCurrency` we would declare the types as follows:
 
@@ -97,11 +98,14 @@ Taking a theoretical currency formatting npm package called `woo-currency-format
 import 'woo-currency-formatter';
 
 declare module 'woo-currency-formatter' {
-  /**
-   * Used to make sure we only accept known currencies when formatting amounts.
-   */
-  type Currency = 'usd' | 'cad' | 'isk' | 'eur' /* ... */;
-  
-  const formatAmountWithCurrency: (amount: number, currency: Currency) => string;
+	/**
+	 * Used to make sure we only accept known currencies when formatting amounts.
+	 */
+	type Currency = 'usd' | 'cad' | 'isk' | 'eur' /* ... */;
+
+	const formatAmountWithCurrency: (
+		amount: number,
+		currency: Currency
+	) => string;
 }
 ```

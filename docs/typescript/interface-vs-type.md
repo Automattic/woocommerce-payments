@@ -22,7 +22,6 @@ The TypeScript Handbook itself [recommends](https://www.typescriptlang.org/docs/
 
 > For the most part, you can choose based on personal preference, and TypeScript will tell you if it needs something to be the other kind of declaration. If you would like a heuristic, use interface until you need to use features from type.
 
-
 ## What might be a case where I need to use `type` instead of `interface`?
 
 The one useful case for this is aliasing a primitive type such as `string` or `number`.

@@ -4,21 +4,21 @@
 
 ```ts
 interface Props {
-  /**
-   * Set the loading state of the component. Provide `true` if the component should show a loading state.
-   */
-  isLoading: boolean;
-  
-  /**
-   * The first name to display.
-   */
-  firstName: string;
-  
-  /**
-   * The last name to display.
-   */
-  lastName: string;
-};
+	/**
+	 * Set the loading state of the component. Provide `true` if the component should show a loading state.
+	 */
+	isLoading: boolean;
+
+	/**
+	 * The first name to display.
+	 */
+	firstName: string;
+
+	/**
+	 * The last name to display.
+	 */
+	lastName: string;
+}
 ```
 
 We provide JSDoc comments to further describe what each attribute does.
@@ -28,13 +28,13 @@ This information will be available in an editor's autocomplete when you're using
 
 ```ts
 const DisplayName: React.FunctionComponent< Props > = ( props ) => {
-  // TypeScript knows props.isLoading is a boolean.
-  if ( props.isLoading ) {
-      // ...
-  }
+	// TypeScript knows props.isLoading is a boolean.
+	if ( props.isLoading ) {
+		// ...
+	}
 
-  // ...
-}
+	// ...
+};
 ```
 
 You may notice something weird with the declaration.
@@ -48,8 +48,8 @@ For example, if you try to return `true` in the component you'll get an error:
 ```ts
 // ERROR: Type 'boolean' is not assignable to type 'ReactElement<any, any>'.
 const DisplayName: React.FunctionComponent< Props > = ( props ) => {
-  return true;
-}
+	return true;
+};
 ```
 
 So the `React.FunctionComponent` type helps keep us honest when writing a component, and makes sure we return something that makes sense for a React component.
@@ -57,9 +57,13 @@ So the `React.FunctionComponent` type helps keep us honest when writing a compon
 If you prefer to destructure the attributes provided to the component you can do that as well:
 
 ```ts
-const DisplayName: React.FC< Props > = ( { isLoading, numRows, numColumns } ) => {
-  // ...
-}
+const DisplayName: React.FC< Props > = ( {
+	isLoading,
+	numRows,
+	numColumns,
+} ) => {
+	// ...
+};
 ```
 
 ## Implement the rest of the component
@@ -72,29 +76,37 @@ A complete example might look something like this:
 import React from 'react';
 
 interface Props {
-  /**
-   * Set the loading state of the component. Provide `true` if the component should show a loading state.
-   */
-  isLoading: boolean;
-  
-  /**
-   * The first name to display.
-   */
-  firstName: string;
-  
-  /**
-   * The last name to display.
-   */
-  lastName: string;
-};
+	/**
+	 * Set the loading state of the component. Provide `true` if the component should show a loading state.
+	 */
+	isLoading: boolean;
 
-export const DisplayName: React.FC< Props > = ( { isLoading, numRows, numColumns } ) => {
-  if ( isLoading ) {
-    return <p>Loading...</p>;
-  }
+	/**
+	 * The first name to display.
+	 */
+	firstName: string;
 
-  return <p>{ firstName } { lastName }</p>;
+	/**
+	 * The last name to display.
+	 */
+	lastName: string;
 }
+
+export const DisplayName: React.FC< Props > = ( {
+	isLoading,
+	numRows,
+	numColumns,
+} ) => {
+	if ( isLoading ) {
+		return <p>Loading...</p>;
+	}
+
+	return (
+		<p>
+			{ firstName } { lastName }
+		</p>
+	);
+};
 ```
 
 ## What type do I use to represent children for my component?
@@ -104,20 +116,20 @@ Say you have the following interface to describe the properties for your compone
 
 ```ts
 interface Props extends React.PropsWithChildren {
-  /**
-   * Set the loading state of the component. Provide `true` if the component should show a loading state.
-   */
-  isLoading: boolean;
-  
-  /**
-   * The first name to display.
-   */
-  firstName: string;
-  
-  /**
-   * The last name to display.
-   */
-  lastName: string;
+	/**
+	 * Set the loading state of the component. Provide `true` if the component should show a loading state.
+	 */
+	isLoading: boolean;
+
+	/**
+	 * The first name to display.
+	 */
+	firstName: string;
+
+	/**
+	 * The last name to display.
+	 */
+	lastName: string;
 }
 ```
 
