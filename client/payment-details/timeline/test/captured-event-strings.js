@@ -32,6 +32,14 @@ describe( 'Strings in captured events', () => {
 					decimalSeparator: '.',
 					precision: 2,
 				},
+				JP: {
+					code: 'JPY',
+					symbol: '¥',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 0,
+				},
 			},
 		};
 	} );
