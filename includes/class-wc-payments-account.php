@@ -790,7 +790,8 @@ class WC_Payments_Account {
 		if ( isset( $_GET['wcpay-login'] ) && check_admin_referer( 'wcpay-login' ) ) {
 			try {
 				if ( $this->is_account_partially_onboarded() ) {
-					$this->redirect_to_account_link( true );
+					$args = $_GET;
+					$this->redirect_to_account_link( $args );
 				}
 
 				$this->redirect_to_login();
