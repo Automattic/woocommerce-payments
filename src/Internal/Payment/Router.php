@@ -65,8 +65,6 @@ class Router {
 
 	/**
 	 * Returns all factors, which can be handled by the new payment process.
-	 * If any factor, not enabled in the returned array, is present while paying,
-	 * the payment should fall back to the legacy process.
 	 *
 	 * @return array
 	 */
