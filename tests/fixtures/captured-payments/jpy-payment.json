@@ -1,5 +1,5 @@
 {
-	"title": "Payment with zero-decimal currency",
+	"title": "FX Payment with a foreign card and zero-decimal store currency (JPY)",
 	"capturedEvent": {
 		"type": "captured",
 		"amount": 3000,
