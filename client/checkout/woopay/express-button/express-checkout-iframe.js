@@ -168,6 +168,23 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		}
 	};
 
+	const appendParamsToWooPayUrl = ( woopayUrl ) => {
+		const isPayForOrder = window.wcpayConfig.pay_for_order;
+		const orderId = window.wcpayConfig.order_id;
+		const key = window.wcpayConfig.key;
+
+		if ( ! isPayForOrder || ! orderId || ! key ) {
+			return woopayUrl;
+		}
+
+		const url = new URL( woopayUrl );
+		url.searchParams.append( 'pay_for_order', isPayForOrder );
+		url.searchParams.append( 'order_id', orderId );
+		url.searchParams.append( 'key', key );
+
+		return url.href;
+	};
+
 	const closeIframe = () => {
 		window.removeEventListener( 'resize', getWindowSize );
 		window.removeEventListener( 'resize', setPopoverPosition );
@@ -269,7 +286,9 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 						return;
 					}
 					if ( response.result === 'success' ) {
-						window.location = response.url;
+						window.location = appendParamsToWooPayUrl(
+							response.url
+						);
 					} else {
 						showErrorMessage();
 						closeIframe( false );
