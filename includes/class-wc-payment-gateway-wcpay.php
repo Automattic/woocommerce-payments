@@ -706,13 +706,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Checks whether the new payment process should be entered,
-	 * and if the answer is yes, uses it and returns the result.
+	 * Checks whether the new payment process should be used to pay for a given order.
 	 *
-	 * @param WC_Order $order Order that needs payment.
-	 * @return array|null     Array if processed, null if the new process is not supported.
+	 * @param WC_Order $order Order that's being paid.
+	 * @return bool
 	 */
-	public function new_process_payment( WC_Order $order ) {
+	public function should_use_new_process( WC_Order $order ) {
 		$order_id = $order->get_id();
 
 		// If there is a token in the request, we're using a saved PM.
@@ -763,13 +762,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		];
 
 		$router = wcpay_get_container()->get( Router::class );
-		if ( ! $router->should_use_new_payment_process( $factors ) ) {
-			return null;
-		}
+		return $router->should_use_new_payment_process( $factors );
+	}
 
+	/**
+	 * Checks whether the new payment process should be entered,
+	 * and if the answer is yes, uses it and returns the result.
+	 *
+	 * @param WC_Order $order Order that needs payment.
+	 * @return array|null     Array if processed, null if the new process is not supported.
+	 */
+	public function new_process_payment( WC_Order $order ) {
 		// Important: No factors are provided here, they were meant just for `Feature`.
 		$service = wcpay_get_container()->get( PaymentProcessingService::class );
-		return $service->process_payment( $order_id );
+		return $service->process_payment( $order->get_id() );
 	}
 
 	/**
@@ -784,10 +790,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function process_payment( $order_id ) {
 		$order = wc_get_order( $order_id );
 
-		// If the new payment process was entered, use the result.
-		$new_process_result = $this->new_process_payment( $order );
-		if ( ! is_null( $new_process_result ) ) {
-			return $new_process_result;
+		// Use the new payment process if allowed.
+		if ( $this->should_use_new_process( $order ) ) {
+			return $this->new_process_payment( $order );
 		}
 
 		try {
