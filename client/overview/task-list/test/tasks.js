@@ -122,6 +122,7 @@ describe( 'getTasks()', () => {
 				progressiveOnboarding: {
 					isEnabled: false,
 				},
+				detailsSubmitted: true,
 			},
 			zeroDecimalCurrencies: [],
 			connect: {
@@ -155,6 +156,25 @@ describe( 'getTasks()', () => {
 				expect.objectContaining( {
 					key: 'update-business-details',
 					completed: false,
+				} ),
+			] )
+		);
+	} );
+
+	it( 'should include complete registration when flag is set and details submitted as false', () => {
+		global.wcpaySettings.accountStatus.status = 'restricted';
+		global.wcpaySettings.accountStatus.detailsSubmitted = false;
+		const actual = getTasks( {
+			showUpdateDetailsTask: true,
+		} );
+
+		expect( actual ).toEqual(
+			expect.arrayContaining( [
+				expect.objectContaining( {
+					key: 'complete-registration',
+					completed: false,
+					title: 'Complete the registration in WooPayments',
+					actionLabel: 'Complete registration',
 				} ),
 			] )
 		);
