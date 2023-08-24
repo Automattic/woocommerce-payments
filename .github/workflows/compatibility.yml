@@ -4,9 +4,10 @@ on:
   pull_request
 
 env:
-  WC_MIN_SUPPORTED_VERSION: '7.6.0'
-  WP_MIN_SUPPORTED_VERSION: '6.0'
+  WC_MIN_SUPPORTED_VERSION: '7.8.0'
+  WP_MIN_SUPPORTED_VERSION: '6.1'
   PHP_MIN_SUPPORTED_VERSION: '7.3'
+  GUTENBERG_VERSION_FOR_WP_MIN: '15.7.0'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -23,7 +24,7 @@ jobs:
         id: generate_matrix
         run: |
           WC_VERSIONS=$( echo "[\"$WC_MIN_SUPPORTED_VERSION\", \"latest\", \"beta\"]" )
-          MATRIX_INCLUDE=$( echo "[{\"woocommerce\":\"$WC_MIN_SUPPORTED_VERSION\",\"wordpress\":\"$WP_MIN_SUPPORTED_VERSION\",\"gutenberg\":\"13.6.0\",\"php\":\"$PHP_MIN_SUPPORTED_VERSION\"}]" )
+          MATRIX_INCLUDE=$( echo "[{\"woocommerce\":\"$WC_MIN_SUPPORTED_VERSION\",\"wordpress\":\"$WP_MIN_SUPPORTED_VERSION\",\"gutenberg\":\"$GUTENBERG_VERSION_FOR_WP_MIN\",\"php\":\"$PHP_MIN_SUPPORTED_VERSION\"}]" )
           echo "matrix={\"woocommerce\":$WC_VERSIONS,\"wordpress\":[\"latest\"],\"gutenberg\":[\"latest\"],\"php\":[\"7.4\"], \"include\":$MATRIX_INCLUDE}" >> $GITHUB_OUTPUT
 
   woocommerce-compatibility:

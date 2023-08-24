@@ -192,4 +192,23 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 			$response->get_data()
 		);
 	}
+
+	public function test_update_flow_state() {
+		$state = [
+			'current_step' => 'personal',
+			'data'         => [],
+		];
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_body( wp_json_encode( $state ) );
+
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'set_onboarding_flow_state' )
+			->with( $state )
+			->willReturn( true );
+
+		$this->controller->update_flow_state( $request );
+	}
 }

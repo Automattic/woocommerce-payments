@@ -27,7 +27,7 @@ describe( 'PaymentMethod', () => {
 		jest.clearAllMocks();
 	} );
 
-	const getComponent = () => {
+	const getComponent = ( required = false ) => {
 		return (
 			<PaymentMethod
 				label="Foo"
@@ -39,8 +39,10 @@ describe( 'PaymentMethod', () => {
 				Icon={ (): null => null }
 				status={ '' }
 				isAllowingManualCapture={ false }
-				required={ false }
+				required={ required }
 				locked={ false }
+				isPoEnabled={ false }
+				isPoComplete={ false }
 			/>
 		);
 	};
@@ -77,22 +79,7 @@ describe( 'PaymentMethod', () => {
 	} );
 
 	it( 'shows the required label on payment methods which are required', () => {
-		const component = render(
-			<PaymentMethod
-				label="Foo"
-				id="foo"
-				checked={ checked }
-				onCheckClick={ handleOnCheckClickMock }
-				onUncheckClick={ handleOnUnCheckClickMock }
-				description="Bar"
-				required={ true }
-				Icon={ (): null => null }
-				status={ '' }
-				isAllowingManualCapture={ false }
-				locked={ false }
-			/>
-		);
-
+		const component = render( getComponent( true ) );
 		expect( component.container ).toContainHTML(
 			'<span class="payment-method__required-label">(Required)</span>'
 		);
@@ -112,6 +99,8 @@ describe( 'PaymentMethod', () => {
 				status={ '' }
 				isAllowingManualCapture={ false }
 				required={ false }
+				isPoEnabled={ false }
+				isPoComplete={ false }
 			/>
 		);
 	};
