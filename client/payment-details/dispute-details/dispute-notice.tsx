@@ -36,7 +36,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 		? /* translators: %s is the clients claim for the dispute, eg "The cardholder claims this is an unrecognized charge." */
 		  __(
 				// eslint-disable-next-line max-len
-				'<strong>%s</strong> Challenge the inquiry if you believe the claim is invalid. Non-response will result in an automatic loss. <a>Learn more about responding to disputes and inquiries</a>',
+				'<strong>%s</strong> You can challenge their claim if you believe it’s invalid. Not responding will result in an automatic loss. <a>Learn more</a>',
 				'woocommerce-payments'
 		  )
 		: /* translators: %s is the clients claim for the dispute, eg "The cardholder claims this is an unrecognized charge." */
