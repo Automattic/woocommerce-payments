@@ -111,7 +111,7 @@ export const DisplayName: React.FC< Props > = ( {
 
 ## What type do I use to represent children for my component?
 
-You should use use the `React.PropsWithChildren` utility type.
+You should extend the `React.PropsWithChildren` [utility type](./utility-and-manipulation.md).
 Say you have the following interface to describe the properties for your component:
 
 ```ts
@@ -133,7 +133,7 @@ interface Props extends React.PropsWithChildren {
 }
 ```
 
-You will then use `React.PropsWithChildren` like so:
+You can then use the interface for the component props like you normally would:
 
 ```ts
 export const DisplayName: React.FunctionComponent< Props > = ( { isLoading, numRows, numColumns, children } ) => {
