@@ -39,6 +39,7 @@ import CancelAuthorizationButton from '../../components/cancel-authorization-but
 import { PaymentIntent } from '../../types/payment-intents';
 import MissingOrderNotice from 'wcpay/payment-details/summary/missing-order-notice';
 import CardNotice from 'wcpay/components/card-notice';
+import { chevronRight } from '@wordpress/icons';
 
 declare const window: any;
 
@@ -375,10 +376,12 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					/>
 				</LoadableBlock>
 			</CardBody>
-			<MissingOrderNotice
-				isLoading={ isLoading }
-				amount={ formattedAmount }
-			/>
+			{ Object.keys( charge ).length > 0 && ! charge.order && (
+				<MissingOrderNotice
+					isLoading={ isLoading }
+					amount={ formattedAmount }
+				/>
+			) }
 			{ isAuthAndCaptureEnabled &&
 				authorization &&
 				! authorization.captured && (
