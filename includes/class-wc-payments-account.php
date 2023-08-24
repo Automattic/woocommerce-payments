@@ -600,23 +600,19 @@ class WC_Payments_Account {
 		$args = $_GET;
 		unset( $args['wcpay-link-handler'] );
 
-		$this->redirect_to_account_link();
+		$this->redirect_to_account_link( $args );
 	}
 
 	/**
 	 * Function to immediately redirect to the account link.
 	 *
-	 * @param bool $is_complete_kyc_link Optional indicates if is a link to continue kyc process.
+	 * @param array $args The arguments to be sent with the link request.
 	 */
-	private function redirect_to_account_link( bool $is_complete_kyc_link = false ) {
+	private function redirect_to_account_link( array $args ) {
 		try {
+			$link = $this->payments_api_client->get_link( $args );
 
-			$type         = $is_complete_kyc_link ? 'complete_kyc_link' : 'login_link';
-			$args         = [];
-			$args['type'] = $type;
-			$link         = $this->payments_api_client->get_link( $args );
-
-			if ( $is_complete_kyc_link && isset( $link['state'] ) ) {
+			if ( isset( $args['type'] ) && 'complete_kyc_link' === $args['type'] && isset( $link['state'] ) ) {
 				set_transient( 'wcpay_stripe_onboarding_state', $link['state'], DAY_IN_SECONDS );
 			}
 
