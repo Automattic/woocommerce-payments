@@ -1265,7 +1265,7 @@ class WC_Payments_Account {
 		update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => false ] );
 
 		// Automatically enable split UPE for new stores.
-		update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '1' );
+		update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '1' );
 
 		// Track account connection finish.
 		$incentive        = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
