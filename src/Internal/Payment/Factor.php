@@ -7,13 +7,15 @@
 
 namespace WCPay\Internal\Payment;
 
+use WCPay\Constants\Base_Constant;
+
 /**
  * A class for payment factors.
  *
  * These factors will be used to determine whether to enter the new
  * payment process until it is fully developed and this class gets removed.
  */
-class Factor {
+class Factor extends Base_Constant {
 	/**
 	 * Base flag, used to determine whether the new payment process
 	 * can be entered at all, even if no other factors are present.
@@ -108,24 +110,25 @@ class Factor {
 	/**
 	 * Returns all possible factors.
 	 *
+	 * @psalm-suppress MissingThrowsDocblock
 	 * @return string[]
 	 */
 	public static function get_all_factors() {
 		return [
-			self::NEW_PAYMENT_PROCESS,
-			self::NO_PAYMENT,
-			self::USE_SAVED_PM,
-			self::SAVE_PM,
-			self::SUBSCRIPTION_SIGNUP,
-			self::SUBSCRIPTION_RENEWAL,
-			self::POST_AUTHENTICATION,
-			self::WOOPAY_ENABLED,
-			self::WOOPAY_PAYMENT,
-			self::WCPAY_SUBSCRIPTION_SIGNUP,
-			self::IPP_CAPTURE,
-			self::STRIPE_LINK,
-			self::DEFERRED_INTENT_SPLIT_UPE,
-			self::PAYMENT_REQUEST,
+			static::NEW_PAYMENT_PROCESS(),
+			static::NO_PAYMENT(),
+			static::USE_SAVED_PM(),
+			static::SAVE_PM(),
+			static::SUBSCRIPTION_SIGNUP(),
+			static::SUBSCRIPTION_RENEWAL(),
+			static::POST_AUTHENTICATION(),
+			static::WOOPAY_ENABLED(),
+			static::WOOPAY_PAYMENT(),
+			static::WCPAY_SUBSCRIPTION_SIGNUP(),
+			static::IPP_CAPTURE(),
+			static::STRIPE_LINK(),
+			static::DEFERRED_INTENT_SPLIT_UPE(),
+			static::PAYMENT_REQUEST(),
 		];
 	}
 }

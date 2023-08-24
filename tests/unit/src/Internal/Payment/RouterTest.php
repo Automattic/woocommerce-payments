@@ -78,7 +78,7 @@ class RouterTest extends WCPAY_UnitTestCase {
 	public function test_should_use_new_payment_process_returns_false_with_missing_factor() {
 		$this->mock_db_cache_factors( [] );
 
-		$result = $this->sut->should_use_new_payment_process( [ Factor::USE_SAVED_PM ] );
+		$result = $this->sut->should_use_new_payment_process( [ Factor::USE_SAVED_PM() ] );
 		$this->assertFalse( $result );
 	}
 
@@ -88,7 +88,7 @@ class RouterTest extends WCPAY_UnitTestCase {
 	public function test_should_use_new_payment_process_returns_false_with_unavailable_factor() {
 		$this->mock_db_cache_factors( [ Factor::USE_SAVED_PM => false ] );
 
-		$result = $this->sut->should_use_new_payment_process( [ Factor::USE_SAVED_PM ] );
+		$result = $this->sut->should_use_new_payment_process( [ Factor::USE_SAVED_PM() ] );
 		$this->assertFalse( $result );
 	}
 
@@ -98,7 +98,7 @@ class RouterTest extends WCPAY_UnitTestCase {
 	public function test_should_use_new_payment_process_returns_true_with_available_factor() {
 		$this->mock_db_cache_factors( [ Factor::USE_SAVED_PM => true ] );
 
-		$result = $this->sut->should_use_new_payment_process( [ Factor::USE_SAVED_PM ] );
+		$result = $this->sut->should_use_new_payment_process( [ Factor::USE_SAVED_PM() ] );
 		$this->assertTrue( $result );
 	}
 
@@ -118,9 +118,9 @@ class RouterTest extends WCPAY_UnitTestCase {
 
 		$result = $this->sut->should_use_new_payment_process(
 			[
-				Factor::USE_SAVED_PM,
-				Factor::SUBSCRIPTION_SIGNUP,
-				Factor::WOOPAY_ENABLED,
+				Factor::USE_SAVED_PM(),
+				Factor::SUBSCRIPTION_SIGNUP(),
+				Factor::WOOPAY_ENABLED(),
 			]
 		);
 		$this->assertFalse( $result );
@@ -142,9 +142,9 @@ class RouterTest extends WCPAY_UnitTestCase {
 
 		$result = $this->sut->should_use_new_payment_process(
 			[
-				Factor::USE_SAVED_PM,
-				Factor::SUBSCRIPTION_SIGNUP,
-				Factor::WOOPAY_ENABLED,
+				Factor::USE_SAVED_PM(),
+				Factor::SUBSCRIPTION_SIGNUP(),
+				Factor::WOOPAY_ENABLED(),
 			]
 		);
 		$this->assertTrue( $result );
@@ -155,10 +155,10 @@ class RouterTest extends WCPAY_UnitTestCase {
 	 */
 	public function test_get_allowed_factors_returns_factors() {
 		$cached_factors    = [
-			'SAMPLE_FLAG' => true,
-			'OTHER_FLAG'  => false,
+			Factor::SAVE_PM             => true,
+			Factor::SUBSCRIPTION_SIGNUP => false,
 		];
-		$processed_factors = [ 'SAMPLE_FLAG' ];
+		$processed_factors = [ Factor::SAVE_PM() ];
 
 		$this->mock_db_cache_factors( $cached_factors, false );
 
@@ -186,11 +186,11 @@ class RouterTest extends WCPAY_UnitTestCase {
 	 */
 	public function test_get_allowed_factors_allows_filters() {
 		$cached_factors   = [
-			'SAMPLE_FLAG' => true,
-			'OTHER_FLAG'  => false,
+			Factor::SAVE_PM             => true,
+			Factor::SUBSCRIPTION_SIGNUP => false,
 		];
 		$replaced_factors = [
-			'THIRD_FLAG',
+			Factor::NO_PAYMENT(),
 		];
 		$this->mock_db_cache_factors( $cached_factors, false );
 
@@ -218,7 +218,7 @@ class RouterTest extends WCPAY_UnitTestCase {
 	 * Verify that `is_valid_cache` returns false with incorrect arrays.
 	 */
 	public function test_is_valid_cache_requires_base_factor() {
-		$cache = [ 'SOME_FACTOR' => true ];
+		$cache = [ Factor::NO_PAYMENT => true ];
 		$this->assertFalse( $this->sut->is_valid_cache( $cache ) );
 	}
 
@@ -237,7 +237,7 @@ class RouterTest extends WCPAY_UnitTestCase {
 		$request_response  = [
 			Factor::NEW_PAYMENT_PROCESS => true,
 		];
-		$processed_factors = [ Factor::NEW_PAYMENT_PROCESS ];
+		$processed_factors = [ Factor::NEW_PAYMENT_PROCESS() ];
 
 		$this->mock_wcpay_request( Get_Payment_Process_Factors::class, 1, null, $request_response );
 
@@ -256,7 +256,7 @@ class RouterTest extends WCPAY_UnitTestCase {
 			->willReturn( $request_response );
 
 		$result = $this->sut->get_allowed_factors();
-		$this->assertSame( $processed_factors, $result );
+		$this->assertEquals( $processed_factors, $result );
 	}
 
 	/**

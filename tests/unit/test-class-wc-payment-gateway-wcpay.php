@@ -2552,7 +2552,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		wcpay_get_test_container()->replace( Router::class, $mock_router );
 
 		$checker = function( $factors ) use ( $factor_name, $value ) {
-			$is_in_array = in_array( $factor_name, $factors, true );
+			// phpcs:ignore WordPress.PHP.StrictInArray.FoundNonStrictFalse
+			$is_in_array = in_array( $factor_name, $factors, false );
 			return $value ? $is_in_array : ! $is_in_array;
 		};
 

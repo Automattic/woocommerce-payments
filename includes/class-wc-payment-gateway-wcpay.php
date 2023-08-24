@@ -719,7 +719,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$using_saved_payment_method = ! empty( Payment_Information::get_token_from_request( $_POST ) );
 		if ( $using_saved_payment_method ) {
-			$factors[] = Factor::USE_SAVED_PM;
+			$factors[] = Factor::USE_SAVED_PM();
 		}
 
 		// The PM should be saved when chosen, or when it's a recurrent payment, but not if already saved.
@@ -729,7 +729,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			|| $this->is_payment_recurring( $order_id )
 		);
 		if ( $save_payment_method ) {
-			$factors[] = Factor::SAVE_PM;
+			$factors[] = Factor::SAVE_PM();
 		}
 
 		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
@@ -739,12 +739,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$order->get_total() <= 0 && ! $save_payment_method
 			)
 		) {
-			$factors[] = Factor::NO_PAYMENT;
+			$factors[] = Factor::NO_PAYMENT();
 		}
 
 		// Subscription (both WCPay and WCSubs) if when the order contains one.
 		if ( function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order_id ) ) {
-			$factors[] = Factor::SUBSCRIPTION_SIGNUP;
+			$factors[] = Factor::SUBSCRIPTION_SIGNUP();
 		}
 
 		// WooPay might change how payment fields were loaded.
@@ -752,13 +752,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$this->woopay_util->should_enable_woopay( $this )
 			&& $this->woopay_util->should_enable_woopay_on_cart_or_checkout()
 		) {
-			$factors[] = Factor::WOOPAY_ENABLED;
+			$factors[] = Factor::WOOPAY_ENABLED();
 		}
 
 		// WooPay payments are indicated by the platform checkout intent.
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		if ( isset( $_POST['platform-checkout-intent'] ) ) {
-			$factors[] = Factor::WOOPAY_PAYMENT;
+			$factors[] = Factor::WOOPAY_PAYMENT();
 		}
 
 		// Check whether the customer is signining up for a WCPay subscription.
@@ -768,15 +768,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			&& WC_Payments_Features::is_wcpay_subscriptions_enabled()
 			&& ! $this->is_subscriptions_plugin_active()
 		) {
-			$factors[] = Factor::WCPAY_SUBSCRIPTION_SIGNUP;
+			$factors[] = Factor::WCPAY_SUBSCRIPTION_SIGNUP();
 		}
 
 		if ( $this instanceof UPE_Split_Payment_Gateway ) {
-			$factors[] = Factor::DEFERRED_INTENT_SPLIT_UPE;
+			$factors[] = Factor::DEFERRED_INTENT_SPLIT_UPE();
 		}
 
 		if ( defined( 'WCPAY_PAYMENT_REQUEST_CHECKOUT' ) && WCPAY_PAYMENT_REQUEST_CHECKOUT ) {
-			$factors[] = Factor::PAYMENT_REQUEST;
+			$factors[] = Factor::PAYMENT_REQUEST();
 		}
 
 		$router = wcpay_get_container()->get( Router::class );

@@ -39,18 +39,19 @@ class Router {
 	/**
 	 * Checks whether a given payment should use the new payment process.
 	 *
-	 * @param string[] $factors Factors, describing the type and conditions of the payment.
+	 * @param Factor[] $factors Factors, describing the type and conditions of the payment.
 	 * @return bool
+	 * @psalm-suppress MissingThrowsDocblock
 	 */
 	public function should_use_new_payment_process( array $factors ): bool {
 		$allowed_factors = $this->get_allowed_factors();
 
 		// This would make sure that the payment process is a factor as well.
-		$factors[] = Factor::NEW_PAYMENT_PROCESS;
+		$factors[] = Factor::NEW_PAYMENT_PROCESS();
 
 		foreach ( $factors as $present_factor ) {
-			// The factor should exist, and be allowed.
-			if ( ! in_array( $present_factor, $allowed_factors, true ) ) {
+			// phpcs:ignore WordPress.PHP.StrictInArray.FoundNonStrictFalse
+			if ( ! in_array( $present_factor, $allowed_factors, false ) ) {
 				return false;
 			}
 		}
@@ -61,7 +62,7 @@ class Router {
 	/**
 	 * Returns all factors, which can be handled by the new payment process.
 	 *
-	 * @return string[]
+	 * @return Factor[]
 	 */
 	public function get_allowed_factors() {
 		// Might be false if loading failed.
@@ -71,7 +72,7 @@ class Router {
 
 		foreach ( ( $all_factors ?? [] ) as $key => $enabled ) {
 			if ( $enabled ) {
-				$allowed[] = $key;
+				$allowed[] = Factor::$key();
 			}
 		}
 
@@ -82,11 +83,12 @@ class Router {
 	/**
 	 * Checks if cached data is valid.
 	 *
+	 * @psalm-suppress MissingThrowsDocblock
 	 * @param mixed $cache The cached data.
 	 * @return bool
 	 */
 	public function is_valid_cache( $cache ): bool {
-		return is_array( $cache ) && isset( $cache[ Factor::NEW_PAYMENT_PROCESS ] );
+		return is_array( $cache ) && isset( $cache[ Factor::NEW_PAYMENT_PROCESS()->get_value() ] );
 	}
 
 	/**
