@@ -1,0 +1,14 @@
+.card-notice {
+	background-color: #fff8ee;
+}
+
+.card-notice__section {
+	display: flex;
+	justify-content: space-between;
+	width: 100%;
+	align-items: center;
+	@include breakpoint( '<660px' ) {
+		flex-direction: column;
+		gap: 10px;
+	}
+}

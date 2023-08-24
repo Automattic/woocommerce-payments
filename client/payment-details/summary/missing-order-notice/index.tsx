@@ -10,6 +10,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import Loadable from 'wcpay/components/loadable';
 import { useState } from '@wordpress/element';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
+import CardNotice from 'wcpay/components/card-notice';
 
 /**
  * Internal dependencies.
@@ -43,26 +44,22 @@ const MissingOrderNotice: React.FC< MissingOrderNoticeProps > = ( {
 	return (
 		<>
 			<Loadable isLoading={ isLoading } placeholder="">
-				<CardFooter className="payment-details-capture-notice">
-					<div className="payment-details-capture-notice__section">
-						<div className="payment-details-capture-notice__text">
-							{ __(
-								'This transaction is not connected to order. Investigate this purchase and refund the transaction as needed.',
-								'woocommerce-payments'
-							) }
-						</div>
-
-						<div className="payment-details-capture-notice__button">
-							<Button
-								isPrimary={ true }
-								isSmall={ false }
-								onClick={ handleOnButtonClick }
-							>
-								{ __( 'Refund', 'woocommerce-payments' ) }
-							</Button>
-						</div>
-					</div>
-				</CardFooter>
+				<CardNotice
+					actions={
+						<Button
+							isPrimary={ true }
+							isSmall={ false }
+							onClick={ handleOnButtonClick }
+						>
+							{ __( 'Refund', 'woocommerce-payments' ) }
+						</Button>
+					}
+				>
+					{ __(
+						'This transaction is not connected to order. Investigate this purchase and refund the transaction as needed.',
+						'woocommerce-payments'
+					) }
+				</CardNotice>
 			</Loadable>
 			{ isModalOpen && (
 				<ConfirmationModal

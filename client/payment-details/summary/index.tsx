@@ -38,6 +38,7 @@ import { FraudOutcome } from '../../types/fraud-outcome';
 import CancelAuthorizationButton from '../../components/cancel-authorization-button';
 import { PaymentIntent } from '../../types/payment-intents';
 import MissingOrderNotice from 'wcpay/payment-details/summary/missing-order-notice';
+import CardNotice from 'wcpay/components/card-notice';
 
 declare const window: any;
 
@@ -382,73 +383,69 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 				authorization &&
 				! authorization.captured && (
 					<Loadable isLoading={ isLoading } placeholder="">
-						<CardFooter className="payment-details-capture-notice">
-							<div className="payment-details-capture-notice__section">
-								<div className="payment-details-capture-notice__text">
-									{ createInterpolateElement(
-										__(
-											'You must <a>capture</a> this charge within the next',
-											'woocommerce-payments'
-										),
-										{
-											a: (
-												// eslint-disable-next-line jsx-a11y/anchor-has-content, react/jsx-no-target-blank
-												<a
-													href="https://woocommerce.com/document/woocommerce-payments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
-													target="_blank"
-													rel="noreferer"
-												/>
-											),
+						<CardNotice
+							actions={
+								<>
+									! isFraudOutcomeReview && (
+									<CaptureAuthorizationButton
+										orderId={ charge.order?.number || 0 }
+										paymentIntentId={
+											charge.payment_intent || ''
 										}
-									) }{ ' ' }
-									<abbr
-										title={ dateI18n(
-											'M j, Y / g:iA',
-											moment
-												.utc( authorization.created )
-												.add( 7, 'days' ),
-											'UTC'
-										) }
-									>
-										<b>
-											{ moment
-												.utc( authorization.created )
-												.add( 7, 'days' )
-												.fromNow( true ) }
-										</b>
-									</abbr>
-									{ isFraudOutcomeReview &&
-										`. ${ __(
-											'Approving this transaction will capture the charge.',
-											'woocommerce-payments'
-										) }` }
-								</div>
-
-								{ ! isFraudOutcomeReview && (
-									<div className="payment-details-capture-notice__button">
-										<CaptureAuthorizationButton
-											orderId={
-												charge.order?.number || 0
-											}
-											paymentIntentId={
-												charge.payment_intent || ''
-											}
-											buttonIsPrimary={ true }
-											buttonIsSmall={ false }
-											onClick={ () => {
-												wcpayTracks.recordEvent(
-													'payments_transactions_details_capture_charge_button_click',
-													{
-														payment_intent_id:
-															charge.payment_intent,
-													}
-												);
-											} }
+										buttonIsPrimary={ true }
+										buttonIsSmall={ false }
+										onClick={ () => {
+											wcpayTracks.recordEvent(
+												'payments_transactions_details_capture_charge_button_click',
+												{
+													payment_intent_id:
+														charge.payment_intent,
+												}
+											);
+										} }
+									/>
+									)
+								</>
+							}
+						>
+							{ createInterpolateElement(
+								__(
+									'You must <a>capture</a> this charge within the next',
+									'woocommerce-payments'
+								),
+								{
+									a: (
+										// eslint-disable-next-line jsx-a11y/anchor-has-content, react/jsx-no-target-blank
+										<a
+											href="https://woocommerce.com/document/woocommerce-payments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
+											target="_blank"
+											rel="noreferer"
 										/>
-									</div>
+									),
+								}
+							) }{ ' ' }
+							<abbr
+								title={ dateI18n(
+									'M j, Y / g:iA',
+									moment
+										.utc( authorization.created )
+										.add( 7, 'days' ),
+									'UTC'
 								) }
-							</div>
-						</CardFooter>
+							>
+								<b>
+									{ moment
+										.utc( authorization.created )
+										.add( 7, 'days' )
+										.fromNow( true ) }
+								</b>
+							</abbr>
+							{ isFraudOutcomeReview &&
+								`. ${ __(
+									'Approving this transaction will capture the charge.',
+									'woocommerce-payments'
+								) }` }
+						</CardNotice>
 					</Loadable>
 				) }
 		</Card>
