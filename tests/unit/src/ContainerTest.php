@@ -74,6 +74,14 @@ class ContainerTest extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Tests the `wcpay_get_container` function.
+	 */
+	public function test_function() {
+		unset( $GLOBALS['wcpay_container'] );
+		$this->assertInstanceOf( Container::class, wcpay_get_container() );
+	}
+
+	/**
 	 * Verifies that the global function returns a container.
 	 */
 	public function test_wcpay_get_container_returns_container() {
@@ -85,6 +93,13 @@ class ContainerTest extends WCPAY_UnitTestCase {
 	 */
 	public function test_container_contains_itself() {
 		$this->assertInstanceOf( Container::class, $this->sut->get( Container::class ) );
+	}
+
+	/**
+	 * Checks if a service is available through the container.
+	 */
+	public function test_container_has_service() {
+		$this->assertTrue( $this->sut->has( ExampleService::class ) );
 	}
 
 	/**

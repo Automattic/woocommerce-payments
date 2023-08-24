@@ -111,12 +111,17 @@ body.wcpay-onboarding__body {
 		}
 
 		.components-base-control,
-		.components-custom-select-control {
+		.components-custom-select-control,
+		.wcpay-component-grouped-select-control {
 			margin-bottom: $gap-large;
 		}
 
 		.components-form-field__error {
 			margin: -$gap 0 $gap;
+		}
+
+		.restored-state-banner {
+			margin: $gap 0;
 		}
 	}
 }

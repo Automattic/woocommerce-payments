@@ -12,17 +12,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * This class gives a list of all Payment Intent status name constants.
- * ref: https://stripe.com/docs/api/payment_intents/object#payment_intent_object-status
+ * Payment_Intent_Status was deprecated in favor of Intent_Status.
+ *
+ * @deprecated 6.4.0
+ * @see Intent_Status
  *
  * @psalm-immutable
  */
-class Payment_Intent_Status extends Base_Constant {
-	const REQUIRES_PAYMENT_METHOD = 'requires_payment_method';
-	const REQUIRES_CONFIRMATION   = 'requires_confirmation';
-	const REQUIRES_ACTION         = 'requires_action';
-	const PROCESSING              = 'processing';
-	const REQUIRES_CAPTURE        = 'requires_capture';
-	const CANCELED                = 'canceled';
-	const SUCCEEDED               = 'succeeded';
+class Payment_Intent_Status extends Intent_Status {
+
 }
