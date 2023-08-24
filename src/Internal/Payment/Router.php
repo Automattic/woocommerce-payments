@@ -55,7 +55,7 @@ class Router {
 			}
 
 			// The factor should exist, and be allowed.
-			if ( ! isset( $allowed_factors[ $key ] ) || ! $allowed_factors[ $key ] ) {
+			if ( ! in_array( $key, $allowed_factors, true ) ) {
 				return false;
 			}
 		}
@@ -66,12 +66,22 @@ class Router {
 	/**
 	 * Returns all factors, which can be handled by the new payment process.
 	 *
-	 * @return array
+	 * @return string[]
 	 */
 	public function get_allowed_factors() {
-		$factors = $this->get_cached_factors() ?? [];
-		$factors = apply_filters( 'wcpay_new_payment_process_enabled_factors', $factors );
-		return $factors;
+		// Might be false if loading failed.
+		$cached      = $this->get_cached_factors();
+		$all_factors = is_array( $cached ) ? $cached : [];
+		$allowed     = [];
+
+		foreach ( ( $all_factors ?? [] ) as $key => $enabled ) {
+			if ( $enabled ) {
+				$allowed[] = $key;
+			}
+		}
+
+		$allowed = apply_filters( 'wcpay_new_payment_process_enabled_factors', $allowed );
+		return $allowed;
 	}
 
 	/**

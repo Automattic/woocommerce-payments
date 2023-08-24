@@ -156,17 +156,18 @@ class RouterTest extends WCPAY_UnitTestCase {
 	 * Check that `get_allowed_factors` returns the factors, provided by the cache.
 	 */
 	public function test_get_allowed_factors_returns_factors() {
-		$factors = [
+		$cached_factors    = [
 			'SAMPLE_FLAG' => true,
 			'OTHER_FLAG'  => false,
 		];
+		$processed_factors = [ 'SAMPLE_FLAG' ];
 
-		$this->mock_db_cache_factors( $factors, false );
+		$this->mock_db_cache_factors( $cached_factors, false );
 
 		$result = $this->sut->get_allowed_factors();
 
 		$this->assertIsArray( $result );
-		$this->assertEquals( $factors, $result );
+		$this->assertEquals( $processed_factors, $result );
 	}
 
 	/**
@@ -186,14 +187,14 @@ class RouterTest extends WCPAY_UnitTestCase {
 	 * Confirms that `get_allowed_factors` allows filters to work.
 	 */
 	public function test_get_allowed_factors_allows_filters() {
-		$factors          = [
+		$cached_factors   = [
 			'SAMPLE_FLAG' => true,
 			'OTHER_FLAG'  => false,
 		];
 		$replaced_factors = [
 			'THIRD_FLAG',
 		];
-		$this->mock_db_cache_factors( $factors, false );
+		$this->mock_db_cache_factors( $cached_factors, false );
 
 		$filter_cb = function() use ( $replaced_factors ) {
 			return $replaced_factors;
@@ -235,28 +236,29 @@ class RouterTest extends WCPAY_UnitTestCase {
 	 *
 	 */
 	public function test_get_cached_factors_populates_cache() {
-		$response = [
+		$request_response  = [
 			Factor::NEW_PAYMENT_PROCESS => true,
 		];
+		$processed_factors = [ Factor::NEW_PAYMENT_PROCESS ];
 
-		$this->mock_wcpay_request( Get_Payment_Process_Factors::class, 1, null, $response );
+		$this->mock_wcpay_request( Get_Payment_Process_Factors::class, 1, null, $request_response );
 
 		$this->mock_db_cache->expects( $this->once() )
 			->method( 'get_or_add' )
 			->with(
 				Database_Cache::PAYMENT_PROCESS_FACTORS_KEY,
 				$this->callback(
-					function ( $cb ) use ( $response ) {
-						return $response === $cb();
+					function ( $cb ) use ( $request_response ) {
+						return $request_response === $cb();
 					}
 				),
 				[ $this->sut, 'is_valid_cache' ],
 				false
 			)
-			->willReturn( $response );
+			->willReturn( $request_response );
 
 		$result = $this->sut->get_allowed_factors();
-		$this->assertSame( $response, $result );
+		$this->assertSame( $processed_factors, $result );
 	}
 
 	/**
