@@ -285,17 +285,6 @@ class RouterTest extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Makes sure that `_refresh_factors` sets the flag to clear the cache.
-	 */
-	public function test_refresh_factors_forces_refresh() {
-		$this->mock_db_cache->expects( $this->once() )
-			->method( 'get_or_add' )
-			->with( $this->anything(), $this->anything(), $this->anything(), true );
-
-		$this->sut->refresh_factors();
-	}
-
-	/**
 	 * Simulates specific factors, being returned by `Database_Cache`.
 	 *
 	 * @param array|null $factors  The factors to simulate.

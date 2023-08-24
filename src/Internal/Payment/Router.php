@@ -85,15 +85,6 @@ class Router {
 	}
 
 	/**
-	 * Refetches payment factors and returns the fresh data.
-	 *
-	 * @return array Either the new arrayh of factors, or false if unavailable.
-	 */
-	public function refresh_factors() {
-		return $this->get_cached_factors( true );
-	}
-
-	/**
 	 * Gets and chaches all factors, which can be handled by the new payment process.
 	 * If any factor, not enabled in the returned array, is present while paying,
 	 * the payment should fall back to the legacy process.
