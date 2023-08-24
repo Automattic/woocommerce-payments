@@ -108,7 +108,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	}
 
 	/**
-	 * Generic method to track user events.
+	 * Generic method to track user events on WooPay enabled stores.
 	 *
 	 * @param string  $event name of the event.
 	 * @param array   $data array of event properties.
@@ -126,6 +126,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 
 	/**
 	 * Track shopper events with the wcpay_prefix.
+	 * This method will track the event on all WCPay stores.
 	 *
 	 * @param string $event name of the event.
 	 * @param array  $data array of event properties.
@@ -143,7 +144,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	}
 
 	/**
-	 * Generic method to track admin events.
+	 * Generic method to track admin events on all WCPay stores.
 	 *
 	 * @param string $event name of the event.
 	 * @param array  $data array of event properties.
