@@ -4,8 +4,9 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card, CheckboxControl, TextControl } from '@wordpress/components';
+import { Card, CheckboxControl, TextareaControl } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
+import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -22,8 +23,6 @@ import {
 } from 'wcpay/data';
 import GeneralPaymentRequestButtonSettings from './general-payment-request-button-settings';
 import WooPayIncompatibilityNotice from '../settings-warnings/incompatibility-notice';
-
-const CUSTOM_MESSAGE_MAX_LENGTH = 100;
 
 const WooPaySettings = ( { section } ) => {
 	const [
@@ -205,24 +204,33 @@ const WooPaySettings = ( { section } ) => {
 					</div>
 					<div className="woopay-settings__custom-message-wrapper">
 						<h4>
-							{ __( 'Custom message', 'woocommerce-payments' ) }
-						</h4>
-						<TextControl
-							help={ __(
-								'Inform your customers about the return, refund, and exchange policy, or include any other useful' +
-									' message. Note that you can add plain text and links, but not images.',
+							{ __(
+								'Policies and custom text',
 								'woocommerce-payments'
 							) }
+						</h4>
+						<TextareaControl
+							help={ interpolateComponents( {
+								mixedString: __(
+									'Override the default {{privacyLink}}privacy policy{{/privacyLink}}' +
+										' and {{termsLink}}terms of service{{/termsLink}}, or add custom text to WooPay checkout.',
+									'woocommerce-payments'
+								),
+								// prettier-ignore
+								components: {
+									/* eslint-disable prettier/prettier */
+									privacyLink: window.wcSettings?.storePages?.privacy?.permalink ?
+										<Link href={ window.wcSettings?.storePages?.privacy?.permalink } type="external" /> :
+										<span />,
+									termsLink: window.wcSettings?.storePages?.terms?.permalink ?
+										<Link href={ window.wcSettings?.storePages?.terms?.permalink } type="external" /> :
+										<span />,
+									/* eslint-enable prettier/prettier */
+								}
+							} ) }
 							value={ woopayCustomMessage }
 							onChange={ setWooPayCustomMessage }
-							maxLength={ CUSTOM_MESSAGE_MAX_LENGTH }
 						/>
-						<span
-							className="input-help-text light-text"
-							aria-hidden="true"
-						>
-							{ `${ woopayCustomMessage.length } / ${ CUSTOM_MESSAGE_MAX_LENGTH }` }
-						</span>
 					</div>
 				</CardBody>
 			) }
