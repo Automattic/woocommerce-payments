@@ -354,7 +354,9 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 
 	public function test_is_zero_decimal_currency() {
 		$this->assertEquals( false, WC_Payments_Utils::is_zero_decimal_currency( 'usd' ) );
+		$this->assertEquals( false, WC_Payments_Utils::is_zero_decimal_currency( 'USD' ) );
 		$this->assertEquals( true, WC_Payments_Utils::is_zero_decimal_currency( 'jpy' ) );
+		$this->assertEquals( true, WC_Payments_Utils::is_zero_decimal_currency( 'JPY' ) );
 	}
 
 	public function test_it_returns_is_payment_settings_page_for_main_settings_page() {

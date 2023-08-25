@@ -761,6 +761,13 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_PAYMENT_REQUEST', 'dist/payment-request', [ 'jquery', 'stripe' ] );
 
+		WC_Payments_Utils::enqueue_style(
+			'WCPAY_PAYMENT_REQUEST',
+			plugins_url( 'dist/payment-request.css', WCPAY_PLUGIN_FILE ),
+			[],
+			WC_Payments::get_file_version( 'dist/payment-request.css' )
+		);
+
 		wp_localize_script( 'WCPAY_PAYMENT_REQUEST', 'wcpayPaymentRequestParams', $payment_request_params );
 
 		wp_set_script_translations( 'WCPAY_PAYMENT_REQUEST', 'woocommerce-payments' );
@@ -783,10 +790,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if ( WC()->session && Fraud_Prevention_Service::get_instance()->is_enabled() ) : ?>
 			<input type="hidden" name="wcpay-fraud-prevention-token" value="<?php echo esc_attr( Fraud_Prevention_Service::get_instance()->get_token() ); ?>">
 		<?php endif; ?>
-		<div class="wcpay-payment-request-wrapper" style="clear:both;padding-top:1.5em;display:none;">
-			<div id="wcpay-payment-request-button">
-				<!-- A Stripe Element will be inserted here. -->
-			</div>
+		<div id="wcpay-payment-request-button">
+			<!-- A Stripe Element will be inserted here. -->
 		</div>
 		<?php
 	}
