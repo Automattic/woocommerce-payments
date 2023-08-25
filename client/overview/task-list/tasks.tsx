@@ -72,7 +72,6 @@ export const getTasks = ( {
 
 	return [
 		showUpdateDetailsTask &&
-			! isPoEnabled &&
 			getUpdateBusinessDetailsTask(
 				errorMessages,
 				status ?? '',
