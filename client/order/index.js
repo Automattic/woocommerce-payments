@@ -21,6 +21,7 @@ import { isInquiry } from 'wcpay/disputes/utils';
 import { useCharge } from 'wcpay/data';
 import wcpayTracks from 'tracks';
 import './style.scss';
+import { createInterpolateElement } from '@wordpress/element';
 
 jQuery( function ( $ ) {
 	const disableManualRefunds = getConfig( 'disableManualRefunds' ) ?? false;
@@ -144,10 +145,30 @@ const DisputeNotice = ( { chargeId } ) => {
 		isInquiry( dispute ) || [ 'won' ].includes( dispute.status );
 	const disableRefund = ! isRefundable;
 
+	let refundDisabledNotice = '';
 	if ( disableRefund ) {
 		const refundButton = document.querySelector( 'button.refund-items' );
 		if ( refundButton ) {
 			refundButton.disabled = true;
+		}
+		const disputeDetailsLink = getDetailsURL( dispute.id, 'disputes' );
+		refundDisabledNotice = createInterpolateElement(
+			__(
+				'This order has a payment dispute. Refunds and order editing are disabled during disputes. <a>View dispute</a>',
+				'woocommerce-payments'
+			),
+			{
+				// eslint-disable-next-line jsx-a11y/anchor-has-content
+				a: <a href={ disputeDetailsLink } />,
+			}
+		);
+
+		// TODO: use isAwaitingResponse() from https://github.com/Automattic/woocommerce-payments/pull/6998.
+		if ( disputeAwaitingResponseStatuses.includes( dispute.status ) ) {
+			refundDisabledNotice = __(
+				'Refunds and order editing are disabled during disputes.',
+				'woocommerce-payments'
+			);
 		}
 	}
 
@@ -274,14 +295,7 @@ const DisputeNotice = ( { chargeId } ) => {
 		>
 			{ showWarning && <strong>{ warningText }</strong> }
 
-			{ disableRefund && (
-				<div>
-					{ __(
-						'Refunding and order editing are disabled during disputes to maintain record integrity.',
-						'woocommerce-payments'
-					) }
-				</div>
-			) }
+			{ disableRefund && <div>{ refundDisabledNotice }</div> }
 		</BannerNotice>
 	);
 };
