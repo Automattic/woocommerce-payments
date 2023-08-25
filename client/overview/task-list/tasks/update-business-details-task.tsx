@@ -59,7 +59,7 @@ export const getUpdateBusinessDetailsTask = (
 			accountDetailsTaskDescription =
 				/* translators: <a> - dashboard login URL */
 				__(
-					'Payments and deposits are disabled for this account until the registration of the account is completed.',
+					'Payments and deposits are disabled for this account until setup is completed.',
 					'woocommerce-payments'
 				);
 		} else {
@@ -112,7 +112,7 @@ export const getUpdateBusinessDetailsTask = (
 	if ( hasMultipleErrors ) {
 		actionLabel = __( 'More details', 'woocommerce-payments' );
 	} else if ( ! detailsSubmitted ) {
-		actionLabel = __( 'Complete registration', 'woocommerce-payments' );
+		actionLabel = __( 'Finish setup', 'woocommerce-payments' );
 	} else {
 		actionLabel = __( 'Update', 'woocommerce-payments' );
 	}
@@ -125,10 +125,7 @@ export const getUpdateBusinessDetailsTask = (
 		title: ! detailsSubmitted
 			? sprintf(
 					/* translators: %s: WooPayments */
-					__(
-						'Complete the registration in %s',
-						'woocommerce-payments'
-					),
+					__( 'Set up %s', 'woocommerce-payments' ),
 					'WooPayments'
 			  )
 			: sprintf(
