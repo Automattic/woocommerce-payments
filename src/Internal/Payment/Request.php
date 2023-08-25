@@ -34,10 +34,9 @@ class Request {
 	 * @return string|null
 	 */
 	public function get_fraud_prevention_token(): ?string {
-		$res = $this->request['wcpay-fraud-prevention-token'] ?? null;
-		return is_null( $res )
-			? null
-			: sanitize_key( $res );
+		return isset( $this->request['wcpay-fraud-prevention-token'] )
+			? wc_clean( wp_unslash( $this->request['wcpay-fraud-prevention-token'] ) )
+			: null;
 	}
 
 	/**
@@ -47,5 +46,47 @@ class Request {
 	 */
 	public function is_woopay_preflight_check(): bool {
 		return ! empty( $this->request['is-woopay-preflight-check'] );
+	}
+
+	/**
+	 * Gets the provided WooPay intent ID from POST, if any.
+	 *
+	 * @return ?string
+	 */
+	public function get_woopay_intent_id(): ?string {
+		return isset( $this->request['platform-checkout-intent'] )
+			? wc_clean( wp_unslash( $this->request['platform-checkout-intent'] ) )
+			: null;
+	}
+
+	/**
+	 * Gets the ID of an order from the request.
+	 *
+	 * @return int|null
+	 */
+	public function get_order_id(): ?int {
+		return isset( $this->request['order_id'] ) ? absint( $this->request['order_id'] ) : null;
+	}
+
+	/**
+	 * Gets intent ID if any.
+	 *
+	 * @return string|null
+	 */
+	public function get_intent_id(): ?string {
+		return isset( $this->request['intent_id'] )
+			? wc_clean( wp_unslash( $this->request['intent_id'] ) )
+			: null;
+	}
+
+	/**
+	 * Gets the ID of the provided payment method.
+	 *
+	 * @return string|null
+	 */
+	public function get_payment_method_id() {
+		return isset( $this->request['payment_method_id'] )
+			? wc_clean( wp_unslash( $this->request['payment_method_id'] ) )
+			: null;
 	}
 }
