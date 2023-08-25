@@ -39,6 +39,7 @@ export const getTasks = ( {
 		accountLink,
 		requirements,
 		progressiveOnboarding,
+		detailsSubmitted,
 	} = wcpaySettings.accountStatus;
 
 	const getErrorMessagesFromRequirements = (): any => {
@@ -77,11 +78,23 @@ export const getTasks = ( {
 				status ?? '',
 				accountLink,
 				Number( currentDeadline ) ?? null,
-				pastDue ?? false
+				pastDue ?? false,
+				detailsSubmitted ?? true
+			),
+		showUpdateDetailsTask &&
+			isPoEnabled &&
+			! detailsSubmitted &&
+			getUpdateBusinessDetailsTask(
+				errorMessages,
+				status ?? '',
+				accountLink,
+				Number( currentDeadline ) ?? null,
+				pastDue ?? false,
+				detailsSubmitted ?? true
 			),
 		wpcomReconnectUrl && getReconnectWpcomTask( wpcomReconnectUrl ),
 		isDisputeTaskVisible && getDisputeResolutionTask( activeDisputes ),
-		isPoEnabled && getVerifyBankAccountTask(),
+		isPoEnabled && detailsSubmitted && getVerifyBankAccountTask(),
 	].filter( Boolean );
 };
 
