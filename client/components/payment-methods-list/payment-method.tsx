@@ -4,6 +4,7 @@
  */
 import classNames from 'classnames';
 import React, { useContext } from 'react';
+import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies
@@ -21,7 +22,7 @@ import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import LoadableCheckboxControl from '../loadable-checkbox';
 import Pill from '../pill';
 import Chip from '../chip';
-import PaymentMethodDisabledTooltip from '../payment-method-disabled-tooltip';
+import PAYMENT_METHOD_IDS from 'wcpay/payment-methods/constants';
 import './payment-method.scss';
 
 interface PaymentMethodProps {
@@ -44,18 +45,28 @@ interface PaymentMethodProps {
 	isPoComplete: boolean;
 }
 
+// Utility function to calculate the chip message based on status of the payment method.
+const getChipMessage = ( status: string ): string => {
+	switch ( status ) {
+		case upeCapabilityStatuses.PENDING_APPROVAL:
+			return __( 'Pending approval', 'woocommerce-payments' );
+		case upeCapabilityStatuses.PENDING_VERIFICATION:
+			return __( 'Pending activation', 'woocommerce-payments' );
+		case upeCapabilityStatuses.INACTIVE:
+			return __( 'More information needed', 'woocommerce-payments' );
+		default:
+			return '';
+	}
+};
+
 const PaymentMethodLabel = ( {
 	label,
 	required,
 	status,
-	disabled,
-	id,
 }: {
 	label: string;
 	required: boolean;
 	status: string;
-	disabled: boolean;
-	id: string;
 } ): React.ReactElement => {
 	return (
 		<>
@@ -65,55 +76,7 @@ const PaymentMethodLabel = ( {
 					{ '(' + __( 'Required', 'woocommerce-payments' ) + ')' }
 				</span>
 			) }
-			{ upeCapabilityStatuses.PENDING_APPROVAL === status && (
-				<HoverTooltip
-					content={ __(
-						'This payment method is pending approval. Once approved, you will be able to use it.',
-						'woocommerce-payments'
-					) }
-				>
-					<Chip
-						message={ __(
-							'Pending approval',
-							'woocommerce-payments'
-						) }
-						type="warning"
-					/>
-				</HoverTooltip>
-			) }
-			{ upeCapabilityStatuses.PENDING_VERIFICATION === status && (
-				<HoverTooltip
-					content={ sprintf(
-						__(
-							"%s won't be visible to your customers until you provide the required " +
-								'information. Follow the instructions sent by our partner Stripe to %s.',
-							'woocommerce-payments'
-						),
-						label,
-						wcpaySettings?.accountEmail ?? ''
-					) }
-				>
-					<Chip
-						message={ __(
-							'Pending activation',
-							'woocommerce-payments'
-						) }
-						type="warning"
-					/>
-				</HoverTooltip>
-			) }
-			{ disabled && upeCapabilityStatuses.INACTIVE === status && (
-				<PaymentMethodDisabledTooltip id={ id }>
-					<Chip
-						className={ 'payment-status-' + status } // TODO remove.
-						message={ __(
-							'More information needed',
-							'woocommerce-payments'
-						) }
-						type="warning"
-					/>
-				</PaymentMethodDisabledTooltip>
-			) }
+			{ <Chip message={ getChipMessage( status ) } type="warning" /> }
 		</>
 	);
 };
@@ -140,6 +103,8 @@ const PaymentMethod = ( {
 	// APMs are disabled if they are inactive or if Progressive Onboarding is enabled and not yet complete.
 	const disabled =
 		upeCapabilityStatuses.INACTIVE === status ||
+		upeCapabilityStatuses.PENDING_APPROVAL === status ||
+		upeCapabilityStatuses.PENDING_VERIFICATION === status ||
 		( id !== 'card' && isPoEnabled && ! isPoComplete ) ||
 		( isManualCaptureEnabled && ! isAllowingManualCapture );
 	const {
@@ -148,9 +113,7 @@ const PaymentMethod = ( {
 		WCPaySettingsContext
 	);
 
-	const needsOverlay =
-		( isManualCaptureEnabled && ! isAllowingManualCapture ) ||
-		isSetupRequired;
+	const needsOverlay = isSetupRequired || disabled;
 
 	// As the JCB is not a separate payment method we fallback to card.
 	if ( id === 'jcb' ) {
@@ -169,6 +132,27 @@ const PaymentMethod = ( {
 		return onUncheckClick( id );
 	};
 
+	const getDocumentationUrlForDisabledPaymentMethod = (
+		paymentMethodId: string
+	): string => {
+		const DocumentationUrlForDisabledPaymentMethod = {
+			DEFAULT:
+				'https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/#method-cant-be-enabled',
+			BNPLS:
+				'https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#contact-support',
+		};
+		let url;
+		switch ( paymentMethodId ) {
+			case PAYMENT_METHOD_IDS.AFTERPAY_CLEARPAY:
+			case PAYMENT_METHOD_IDS.AFFIRM:
+				url = DocumentationUrlForDisabledPaymentMethod.BNPLS;
+				break;
+			default:
+				url = DocumentationUrlForDisabledPaymentMethod.DEFAULT;
+		}
+		return url;
+	};
+
 	const getDisabledTooltipContent = () => {
 		if ( isSetupRequired ) {
 			return setupTooltip;
@@ -182,6 +166,53 @@ const PaymentMethod = ( {
 				),
 				label
 			);
+		}
+
+		if ( upeCapabilityStatuses.PENDING_APPROVAL === status ) {
+			return __(
+				'This payment method is pending approval. Once approved, you will be able to use it.',
+				'woocommerce-payments'
+			);
+		}
+
+		if ( upeCapabilityStatuses.PENDING_VERIFICATION === status ) {
+			return sprintf(
+				__(
+					"%s won't be visible to your customers until you provide the required " +
+						'information. Follow the instructions sent by our partner Stripe to %s.',
+					'woocommerce-payments'
+				),
+				label,
+				wcpaySettings?.accountEmail ?? ''
+			);
+		}
+
+		if ( disabled && upeCapabilityStatuses.INACTIVE === status ) {
+			return interpolateComponents( {
+				// translators: {{learnMoreLink}}: placeholders are opening and closing anchor tags.
+				mixedString: __(
+					'We need more information from you to enable this method. ' +
+						'{{learnMoreLink}}Learn more.{{/learnMoreLink}}',
+					'woocommerce-payments'
+				),
+				components: {
+					learnMoreLink: (
+						// eslint-disable-next-line jsx-a11y/anchor-has-content
+						<a
+							target="_blank"
+							rel="noreferrer"
+							title={ __(
+								'Learn more about enabling payment methods',
+								'woocommerce-payments'
+							) }
+							/* eslint-disable-next-line max-len */
+							href={ getDocumentationUrlForDisabledPaymentMethod(
+								id
+							) }
+						/>
+					),
+				},
+			} );
 		}
 
 		return __( 'Disabled', 'woocommerce-payments' );
@@ -205,7 +236,7 @@ const PaymentMethod = ( {
 					delayMsOnCheck={ 1500 }
 					delayMsOnUncheck={ 0 }
 					hideLabel
-					disabledTooltip={ getDisabledTooltipContent() }
+					disabledTooltip={ getDisabledTooltipContent() as string }
 				/>
 			</div>
 			<div className="payment-method__text-container">
@@ -217,8 +248,6 @@ const PaymentMethod = ( {
 						label={ label }
 						required={ required }
 						status={ status }
-						disabled={ disabled as boolean }
-						id={ id }
 					/>
 				</div>
 				<div className="payment-method__text">
@@ -228,8 +257,6 @@ const PaymentMethod = ( {
 								label={ label }
 								required={ required }
 								status={ status }
-								disabled={ disabled as boolean }
-								id={ id }
 							/>
 						</div>
 						<div className="payment-method__description">
