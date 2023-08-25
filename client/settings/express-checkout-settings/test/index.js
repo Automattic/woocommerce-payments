@@ -53,6 +53,14 @@ jest.mock( 'payment-request/utils', () => ( {
 	} ),
 } ) );
 
+jest.mock( '@woocommerce/components', () => ( {
+	Link: jest
+		.fn()
+		.mockImplementation( ( { href, children } ) => (
+			<a href={ href }>{ children }</a>
+		) ),
+} ) );
+
 describe( 'ExpressCheckoutSettings', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
