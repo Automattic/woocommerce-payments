@@ -5,7 +5,11 @@ import { __ } from '@wordpress/i18n';
 import { getConfig } from 'utils/checkout';
 import request from 'wcpay/checkout/utils/request';
 import { buildAjaxURL } from 'wcpay/payment-request/utils';
-import { getTargetElement, validateEmail } from '../utils';
+import {
+	getTargetElement,
+	validateEmail,
+	appendRedirectionParams,
+} from '../utils';
 import wcpayTracks from 'tracks';
 
 export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
@@ -168,23 +172,6 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		}
 	};
 
-	const appendParamsToWooPayUrl = ( woopayUrl ) => {
-		const isPayForOrder = window.wcpayConfig.pay_for_order;
-		const orderId = window.wcpayConfig.order_id;
-		const key = window.wcpayConfig.key;
-
-		if ( ! isPayForOrder || ! orderId || ! key ) {
-			return woopayUrl;
-		}
-
-		const url = new URL( woopayUrl );
-		url.searchParams.append( 'pay_for_order', isPayForOrder );
-		url.searchParams.append( 'order_id', orderId );
-		url.searchParams.append( 'key', key );
-
-		return url.href;
-	};
-
 	const closeIframe = () => {
 		window.removeEventListener( 'resize', getWindowSize );
 		window.removeEventListener( 'resize', setPopoverPosition );
@@ -267,7 +254,9 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 					true
 				);
 				if ( e.data.redirectUrl ) {
-					window.location = e.data.redirectUrl;
+					window.location = appendRedirectionParams(
+						e.data.redirectUrl
+					);
 				}
 				break;
 			case 'redirect_to_platform_checkout':
@@ -286,7 +275,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 						return;
 					}
 					if ( response.result === 'success' ) {
-						window.location = appendParamsToWooPayUrl(
+						window.location = appendRedirectionParams(
 							response.url
 						);
 					} else {
