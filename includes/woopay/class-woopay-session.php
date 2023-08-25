@@ -524,7 +524,13 @@ class WooPay_Session {
 	 * @return bool True if WooPay is enabled, false otherwise.
 	 */
 	private static function is_woopay_enabled(): bool {
-		return WC_Payments_Features::is_woopay_eligible() && 'yes' === get_option( 'platform_checkout', 'no' );
+		$payment_settings = get_option( 'woocommerce_woocommerce_payments_settings', [] );
+		$woopay_enabled   = 'no';
+		if ( is_array( $payment_settings ) && ! empty( $payment_settings['platform_checkout'] ) ) {
+			$woopay_enabled = $payment_settings['platform_checkout'];
+		}
+
+		return self::is_woopay_eligible() && 'yes' === $woopay_enabled;
 	}
 
 	/**
@@ -572,4 +578,25 @@ class WooPay_Session {
 		return substr( wp_hash( $i . '|' . $action . '|' . $uid . '|' . $token, 'nonce' ), -12, 10 );
 	}
 
+	/**
+	 * Checks whether woopay is enabled. This is a duplicate of
+	 * WC_Payments_Features::is_woopay_eligible() except it doesn't rely on WC_Payments being initialized.
+	 *
+	 * @return bool
+	 */
+	private static function is_woopay_eligible() {
+		// Checks for the dependency on Store API AbstractCartRoute.
+		if ( ! class_exists( 'Automattic\WooCommerce\StoreApi\Routes\V1\AbstractCartRoute' ) ) {
+			return false;
+		}
+
+		// read directly from options to avoid loading WC_Payments.
+		$account      = get_option( 'wcpay_account_data', [] );
+		$account_data = [];
+		if ( is_array( $account ) && array_key_exists( 'data', $account ) ) {
+			$account_data = $account['data'];
+		}
+
+		return is_array( $account_data ) && ( $account_data['platform_checkout_eligible'] ?? false );
+	}
 }
