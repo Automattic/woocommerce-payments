@@ -22,6 +22,10 @@ import { formatExplicitCurrency } from 'wcpay/utils/currency';
 import { isInquiry } from 'wcpay/disputes/utils';
 import './style.scss';
 
+const formatUnixTimestamp = ( date: string | undefined, format: string ) =>
+	date &&
+	dateI18n( format, moment.unix( parseInt( date, 10 ) ).toISOString() );
+
 interface DisputeFooterProps {
 	dispute: Dispute;
 }
@@ -42,14 +46,11 @@ const DisputeFooter: React.FC< DisputeFooterProps > = ( { dispute } ) => {
 
 	const isSubmitted = !! dispute.metadata.__evidence_submitted_at;
 	const isAccepted = dispute.metadata.__closed_by_merchant === '1';
-	const closedDateFormatted =
-		dispute.metadata.__dispute_closed_at &&
-		dateI18n(
-			'M j, Y',
-			moment
-				.unix( parseInt( dispute.metadata.__dispute_closed_at, 10 ) )
-				.toISOString()
-		);
+	const closedDateFormatted = formatUnixTimestamp(
+		dispute.metadata.__dispute_closed_at,
+		'M j, Y'
+	);
+
 	const disputeFee = dispute.balance_transactions.find(
 		( transaction ) => transaction.reporting_category === 'dispute'
 	);
@@ -84,19 +85,10 @@ const DisputeFooter: React.FC< DisputeFooterProps > = ( { dispute } ) => {
 			break;
 		case 'under_review':
 		case 'warning_under_review':
-			const submissionDateFormatted =
-				dispute.metadata.__evidence_submitted_at &&
-				dateI18n(
-					'M j, Y',
-					moment
-						.unix(
-							parseInt(
-								dispute.metadata.__evidence_submitted_at,
-								10
-							)
-						)
-						.toISOString()
-				);
+			const submissionDateFormatted = formatUnixTimestamp(
+				dispute.metadata.__evidence_submitted_at,
+				'M j, Y'
+			);
 
 			buttonLabel = __(
 				'View submitted evidence',
