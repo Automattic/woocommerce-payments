@@ -50,8 +50,7 @@ class Router {
 		$factors[] = Factor::NEW_PAYMENT_PROCESS();
 
 		foreach ( $factors as $present_factor ) {
-			// phpcs:ignore WordPress.PHP.StrictInArray.FoundNonStrictFalse
-			if ( ! in_array( $present_factor, $allowed_factors, false ) ) {
+			if ( ! in_array( $present_factor, $allowed_factors, true ) ) {
 				return false;
 			}
 		}
