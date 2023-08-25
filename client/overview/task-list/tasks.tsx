@@ -94,7 +94,7 @@ export const getTasks = ( {
 			),
 		wpcomReconnectUrl && getReconnectWpcomTask( wpcomReconnectUrl ),
 		isDisputeTaskVisible && getDisputeResolutionTask( activeDisputes ),
-		isPoEnabled && getVerifyBankAccountTask(),
+		isPoEnabled && detailsSubmitted && getVerifyBankAccountTask(),
 	].filter( Boolean );
 };
 
