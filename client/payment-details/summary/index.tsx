@@ -376,6 +376,10 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					/>
 				</LoadableBlock>
 			</CardBody>
+			<MissingOrderNotice
+				isLoading={ isLoading }
+				amount={ formattedAmount }
+			/>
 			{ Object.keys( charge ).length > 0 && ! charge.order && (
 				<MissingOrderNotice
 					isLoading={ isLoading }

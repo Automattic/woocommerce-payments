@@ -7,7 +7,7 @@ import React from 'react';
  * Internal dependencies
  */
 import './styles.scss';
-import { Button, CardFooter } from '@wordpress/components';
+import { CardFooter } from '@wordpress/components';
 
 interface CardNoticeProps {
 	actions: JSX.Element;

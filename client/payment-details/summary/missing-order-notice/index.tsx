@@ -5,16 +5,19 @@
  */
 
 import React from 'react';
-import { Button, CardFooter } from '@wordpress/components';
+import { Button, RadioControl } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import Loadable from 'wcpay/components/loadable';
 import { useState } from '@wordpress/element';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
-import CardNotice from 'wcpay/components/card-notice';
+import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies.
  */
+
+import './style.scss';
+import CardNotice from 'wcpay/components/card-notice';
 
 declare const window: any;
 
@@ -28,6 +31,8 @@ const MissingOrderNotice: React.FC< MissingOrderNoticeProps > = ( {
 	amount,
 } ) => {
 	const [ isModalOpen, setIsModalOpen ] = useState( false );
+
+	const [ reason, setReason ] = useState< string | null >( null );
 
 	const handleOnButtonClick = () => {
 		setIsModalOpen( true );
@@ -83,20 +88,60 @@ const MissingOrderNotice: React.FC< MissingOrderNoticeProps > = ( {
 					onRequestClose={ handleModalCancel }
 				>
 					<p>
-						{ sprintf(
-							__(
-								'This will issue a full refund of %s to the customer.',
+						{ interpolateComponents( {
+							mixedString: sprintf(
+								__(
+									'This will issue a full refund of {{strong}}%s{{/strong}} to the customer.',
+									'woocommerce-payments'
+								),
+								amount
+							),
+							components: {
+								strong: <strong />,
+							},
+						} ) }
+					</p>
+					<RadioControl
+						className="missing-order-notice__modal__reason"
+						label={ interpolateComponents( {
+							mixedString: __(
+								'{{strong}}Select a reason (Optional){{/strong}}',
 								'woocommerce-payments'
 							),
-							amount
-						) }
-					</p>
-					<strong>
-						{ __(
-							'Select a reason (Optional)',
-							'woocommerce-payments'
-						) }
-					</strong>
+							components: {
+								strong: <strong />,
+							},
+						} ) }
+						selected={ reason }
+						options={ [
+							{
+								label: __(
+									'Duplicate order',
+									'woocommerce-payments'
+								),
+								value: 'duplicate_order',
+							},
+							{
+								label: __(
+									'Fraudulent',
+									'woocommerce-payments'
+								),
+								value: 'fraudulent',
+							},
+							{
+								label: __(
+									'Requested by customer',
+									'woocommerce-payments'
+								),
+								value: 'requested_by_customer',
+							},
+							{
+								label: __( 'Other', 'woocommerce-payments' ),
+								value: 'other',
+							},
+						] }
+						onChange={ ( value: string ) => setReason( value ) }
+					/>
 				</ConfirmationModal>
 			) }
 		</>
