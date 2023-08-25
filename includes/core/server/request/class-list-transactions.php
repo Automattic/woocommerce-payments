@@ -7,12 +7,11 @@
 
 namespace WCPay\Core\Server\Request;
 
-use DateTime;
-use DateTimeZone;
 use WC_Payments_API_Client;
 use WC_Payments_DB;
 use WC_Payments_Utils;
 use WCPay\Core\Server\Response;
+use WCPay\Core\Server\Request\Request_Utils;
 use WP_REST_Request;
 
 /**
@@ -62,7 +61,7 @@ class List_Transactions extends Paginated {
 		if ( ! is_null( $date_between_filter ) ) {
 			$date_between_filter = array_map(
 				function ( $transaction_date ) use ( $user_timezone ) {
-					return List_Transactions::format_transaction_date_with_timestamp( $transaction_date, $user_timezone );
+					return WC_Request_Utils::format_transaction_date_by_timezone( $transaction_date, $user_timezone );
 				},
 				$date_between_filter
 			);
@@ -70,8 +69,8 @@ class List_Transactions extends Paginated {
 
 		$filters = [
 			'match'                    => $request->get_param( 'match' ),
-			'date_before'              => self::format_transaction_date_with_timestamp( $request->get_param( 'date_before' ), $user_timezone ),
-			'date_after'               => self::format_transaction_date_with_timestamp( $request->get_param( 'date_after' ), $user_timezone ),
+			'date_before'              => WC_Request_Utils::format_transaction_date_by_timezone( $request->get_param( 'date_before' ), $user_timezone ),
+			'date_after'               => WC_Request_Utils::format_transaction_date_by_timezone( $request->get_param( 'date_after' ), $user_timezone ),
 			'date_between'             => $date_between_filter,
 			'type_is'                  => $request->get_param( 'type_is' ),
 			'type_is_not'              => $request->get_param( 'type_is_not' ),

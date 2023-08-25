@@ -364,6 +364,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/class-refund-charge.php';
 		include_once __DIR__ . '/core/server/request/class-list-charge-refunds.php';
 		include_once __DIR__ . '/core/server/request/class-get-request.php';
+		include_once __DIR__ . '/core/server/request/class-request-utils.php';
 
 		include_once __DIR__ . '/woopay/services/class-checkout-service.php';
 
@@ -1067,6 +1068,10 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-transactions-controller.php';
 		$reports_transactions_controller = new WC_REST_Payments_Reports_Transactions_Controller( self::$api_client );
 		$reports_transactions_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-authorizations-controller.php';
+		$reports_authorizations_controller = new WC_REST_Payments_Reports_Authorizations_Controller( self::$api_client );
+		$reports_authorizations_controller->register_routes();
 
 	}
 
