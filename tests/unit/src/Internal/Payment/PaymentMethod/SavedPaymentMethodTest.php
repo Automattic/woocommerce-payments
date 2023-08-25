@@ -7,8 +7,10 @@
 
 namespace WCPay\Tests\Internal\Payment\PaymentMethod;
 
-use WCPay\Internal\Payment\PaymentMethod\SavedPaymentMethod;
+use WC_Helper_Token;
+use WC_Payment_Token;
 use WCPAY_UnitTestCase;
+use WCPay\Internal\Payment\PaymentMethod\SavedPaymentMethod;
 
 /**
  * Tests for the saved payment method class
@@ -21,10 +23,16 @@ class SavedPaymentMethodTest extends WCPAY_UnitTestCase {
 	 */
 	private $sut;
 
+	/**
+	 * Saved token including the payment method.
+	 *
+	 * @var WC_Payment_Token
+	 */
+	private $saved_token;
 	protected function setUp(): void {
 		parent::setUp();
-		$saved_token = \WC_Helper_Token::create_token( 'pm_saved_as_woo_token' );
-		$this->sut   = new SavedPaymentMethod( $saved_token );
+		$this->saved_token = WC_Helper_Token::create_token( 'pm_saved_as_woo_token' );
+		$this->sut         = new SavedPaymentMethod( $this->saved_token );
 	}
 
 	public function test_get_id() {
@@ -35,7 +43,7 @@ class SavedPaymentMethodTest extends WCPAY_UnitTestCase {
 		$this->assertSame(
 			[
 				'type' => 'saved',
-				'id'   => 'pm_saved_as_woo_token',
+				'id'   => $this->saved_token->get_id(),
 			],
 			$this->sut->get_data()
 		);
