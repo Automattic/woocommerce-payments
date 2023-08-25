@@ -524,7 +524,7 @@ class WooPay_Session {
 	 * @return bool True if WooPay is enabled, false otherwise.
 	 */
 	private static function is_woopay_enabled(): bool {
-		return WC_Payments_Features::is_woopay_eligible() && 'yes' === WC_Payments::get_gateway()->get_option( 'platform_checkout', 'no' );
+		return WC_Payments_Features::is_woopay_eligible() && 'yes' === get_option( 'platform_checkout', 'no' );
 	}
 
 	/**
