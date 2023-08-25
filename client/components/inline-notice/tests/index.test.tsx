@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
+import AddIcon from 'gridicons/dist/add';
 
 /**
  * Internal dependencies
@@ -38,6 +39,7 @@ describe( 'Info InlineNotices renders', () => {
 		const { container } = render(
 			<InlineNotice
 				status="info"
+				icon
 				children={ 'Test notice content' }
 				isDismissible={ true }
 				actions={ [
@@ -62,6 +64,16 @@ describe( 'Info InlineNotices renders', () => {
 				status="info"
 				children={ 'Test notice content' }
 				isDismissible={ false }
+			/>
+		);
+		expect( container ).toMatchSnapshot();
+	} );
+
+	test( 'with no status and custom icon', () => {
+		const { container } = render(
+			<InlineNotice
+				icon={ <AddIcon /> }
+				children={ 'Test notice content' }
 			/>
 		);
 		expect( container ).toMatchSnapshot();

@@ -127,6 +127,25 @@ exports[`Info InlineNotices renders with dismiss and icon and actions 1`] = `
         data-wp-component="Flex"
       >
         <div
+          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="FlexItem"
+        >
+          <svg
+            class="gridicon gridicons-info-outline"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g>
+              <path
+                d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.411 0-8 3.589-8 8s3.589 8 8 8 8-3.589 8-8-3.589-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+              />
+            </g>
+          </svg>
+        </div>
+        <div
           class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
@@ -150,6 +169,72 @@ exports[`Info InlineNotices renders with dismiss and icon and actions 1`] = `
               URL
             </a>
           </div>
+        </div>
+      </div>
+      <div
+        class="components-notice__actions"
+      />
+    </div>
+    <button
+      aria-label="Dismiss this notice"
+      class="components-button components-notice__dismiss has-icon"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        focusable="false"
+        height="24"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M13 11.8l6.1-6.3-1-1-6.1 6.2-6.1-6.2-1 1 6.1 6.3-6.5 6.7 1 1 6.5-6.6 6.5 6.6 1-1z"
+        />
+      </svg>
+    </button>
+  </div>
+</div>
+`;
+
+exports[`Info InlineNotices renders with no status and custom icon 1`] = `
+<div>
+  <div
+    class="wcpay-inline-notice wcpay-inline-undefined-notice components-notice is-info is-dismissible"
+  >
+    <div
+      class="components-notice__content"
+    >
+      <div
+        class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Flex"
+      >
+        <div
+          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-undefined-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="FlexItem"
+        >
+          <svg
+            class="gridicon gridicons-add"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g>
+              <path
+                d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"
+              />
+            </g>
+          </svg>
+        </div>
+        <div
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-undefined-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="FlexItem"
+        >
+          Test notice content
         </div>
       </div>
       <div
