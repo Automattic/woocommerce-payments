@@ -20,7 +20,10 @@ function isEnabled() {
  * @param {string}  eventName        Name of the event.
  * @param {Object} [eventProperties] Event properties (optional).
  */
-function recordEvent( eventName, eventProperties ) {
+function recordEvent( eventName, eventProperties = {} ) {
+	// Add `is_test_mode` property to every event.
+	eventProperties.is_test_mode = window.wcpaySettings?.testMode;
+
 	// Wc-admin track script is enqueued after ours, wrap in domReady
 	// to make sure we're not too early.
 	domReady( () => {
@@ -103,6 +106,7 @@ const events = {
 	WOOPAY_SKIPPED: 'woopay_skipped',
 	WOOPAY_BUTTON_LOAD: 'woopay_button_load',
 	WOOPAY_BUTTON_CLICK: 'woopay_button_click',
+	WOOPAY_SAVE_MY_INFO_CLICK: 'checkout_save_my_info_click',
 	// Onboarding flow.
 	ONBOARDING_FLOW_STARTED: 'wcpay_onboarding_flow_started',
 	ONBOARDING_FLOW_MODE_SELECTED: 'wcpay_onboarding_flow_mode_selected',
