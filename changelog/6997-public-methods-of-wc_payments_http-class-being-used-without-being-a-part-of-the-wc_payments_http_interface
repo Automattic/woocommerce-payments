@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Add `is_user_connected()` and `get_connected_user_data()` methods to `WC_Payments_Http_Interface`
