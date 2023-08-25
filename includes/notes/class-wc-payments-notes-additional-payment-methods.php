@@ -131,7 +131,7 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 		}
 
 		// Enable UPE, deletes the note and redirect to onboarding task.
-		update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '1' );
+		update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '1' );
 		self::possibly_delete_note();
 
 		$wcpay_settings_url = admin_url( 'admin.php?page=wc-admin&path=/payments/additional-payment-methods' );
