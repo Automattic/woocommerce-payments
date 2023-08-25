@@ -12,7 +12,7 @@ namespace WCPay\Internal\Payment\PaymentMethod;
  */
 class NewPaymentMethod implements PaymentMethodInterface {
 	/**
-	 * Contains the payment provider payment method ID.
+	 * External ID of the payment method.
 	 *
 	 * @var string
 	 */
@@ -21,7 +21,7 @@ class NewPaymentMethod implements PaymentMethodInterface {
 	/**
 	 * Class constructor.
 	 *
-	 * @param string $id The external ID of the payment method.
+	 * @param string $id External ID of the payment method.
 	 */
 	public function __construct( string $id ) {
 		$this->id = $id;
