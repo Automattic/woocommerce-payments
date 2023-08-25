@@ -2388,7 +2388,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function test_should_use_new_process_determines_positive_no_payment() {
 		$order = WC_Helper_Order::create_order( 1, 0 );
 
-		$this->expect_new_payment_process_factor( Factor::NO_PAYMENT, true );
+		$this->expect_new_payment_process_factor( Factor::NO_PAYMENT(), true );
 		$this->wcpay_gateway->should_use_new_process( $order );
 	}
 
@@ -2397,7 +2397,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->set_total( 10 );
 		$order->save();
 
-		$this->expect_new_payment_process_factor( Factor::NO_PAYMENT, false );
+		$this->expect_new_payment_process_factor( Factor::NO_PAYMENT(), false );
 		$this->wcpay_gateway->should_use_new_process( $order );
 	}
 
@@ -2407,7 +2407,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Simulate a payment method being saved to force payment processing.
 		$_POST['wc-woocommerce_payments-new-payment-method'] = 'pm_XYZ';
 
-		$this->expect_new_payment_process_factor( Factor::NO_PAYMENT, false );
+		$this->expect_new_payment_process_factor( Factor::NO_PAYMENT(), false );
 		$this->wcpay_gateway->should_use_new_process( $order );
 	}
 
@@ -2419,7 +2419,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$_POST['payment_method']                        = 'woocommerce_payments';
 		$_POST['wc-woocommerce_payments-payment-token'] = $token->get_id();
 
-		$this->expect_new_payment_process_factor( Factor::USE_SAVED_PM, true );
+		$this->expect_new_payment_process_factor( Factor::USE_SAVED_PM(), true );
 		$this->wcpay_gateway->should_use_new_process( $order );
 	}
 
@@ -2430,7 +2430,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$_POST['payment_method']                        = 'woocommerce_payments';
 		$_POST['wc-woocommerce_payments-payment-token'] = 'new';
 
-		$this->expect_new_payment_process_factor( Factor::USE_SAVED_PM, false );
+		$this->expect_new_payment_process_factor( Factor::USE_SAVED_PM(), false );
 		$this->wcpay_gateway->should_use_new_process( $order );
 	}
 
@@ -2439,7 +2439,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$_POST['wc-woocommerce_payments-new-payment-method'] = '1';
 
-		$this->expect_new_payment_process_factor( Factor::SAVE_PM, true );
+		$this->expect_new_payment_process_factor( Factor::SAVE_PM(), true );
 		$this->wcpay_gateway->should_use_new_process( $order );
 	}
 
@@ -2448,7 +2448,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		WC_Subscriptions::$wcs_order_contains_subscription = '__return_true';
 
-		$this->expect_new_payment_process_factor( Factor::SAVE_PM, true );
+		$this->expect_new_payment_process_factor( Factor::SAVE_PM(), true );
 		$this->wcpay_gateway->should_use_new_process( $order );
 	}
 
@@ -2461,7 +2461,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$_POST['payment_method']                             = 'woocommerce_payments';
 		$_POST['wc-woocommerce_payments-payment-token']      = $token->get_id();
 
-		$this->expect_new_payment_process_factor( Factor::SAVE_PM, false );
+		$this->expect_new_payment_process_factor( Factor::SAVE_PM(), false );
 		$this->wcpay_gateway->should_use_new_process( $order );
 	}
 
@@ -2470,7 +2470,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		WC_Subscriptions::$wcs_order_contains_subscription = '__return_true';
 
-		$this->expect_new_payment_process_factor( Factor::SUBSCRIPTION_SIGNUP, true );
+		$this->expect_new_payment_process_factor( Factor::SUBSCRIPTION_SIGNUP(), true );
 		$this->wcpay_gateway->should_use_new_process( $order );
 	}
 
@@ -2479,7 +2479,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		WC_Subscriptions::$wcs_order_contains_subscription = '__return_false';
 
-		$this->expect_new_payment_process_factor( Factor::SUBSCRIPTION_SIGNUP, false );
+		$this->expect_new_payment_process_factor( Factor::SUBSCRIPTION_SIGNUP(), false );
 		$this->wcpay_gateway->should_use_new_process( $order );
 	}
 
@@ -2488,7 +2488,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$_POST['platform-checkout-intent'] = 'pi_ZYX';
 
-		$this->expect_new_payment_process_factor( Factor::WOOPAY_PAYMENT, true );
+		$this->expect_new_payment_process_factor( Factor::WOOPAY_PAYMENT(), true );
 		$this->wcpay_gateway->should_use_new_process( $order );
 	}
 
@@ -2498,7 +2498,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		unset( $_POST['platform-checkout-intent'] );
 
-		$this->expect_new_payment_process_factor( Factor::WOOPAY_PAYMENT, false );
+		$this->expect_new_payment_process_factor( Factor::WOOPAY_PAYMENT(), false );
 		$this->wcpay_gateway->should_use_new_process( $order );
 	}
 
@@ -2513,7 +2513,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		WC_Subscriptions::$wcs_order_contains_subscription = '__return_true';
 		add_filter( 'wcpay_is_wcpay_subscriptions_enabled', '__return_true' );
 
-		$this->expect_new_payment_process_factor( Factor::WCPAY_SUBSCRIPTION_SIGNUP, false );
+		$this->expect_new_payment_process_factor( Factor::WCPAY_SUBSCRIPTION_SIGNUP(), false );
 		$this->wcpay_gateway->should_use_new_process( $order );
 	}
 
@@ -2544,7 +2544,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	 * Sets up the expectation for a certain factor for the new payment
 	 * process to be either set or unset.
 	 *
-	 * @param string $factor_name Name of the factor.
+	 * @param Factor $factor_name Name of the factor.
 	 * @param bool   $value       Expected value.
 	 */
 	private function expect_new_payment_process_factor( $factor_name, $value ) {
