@@ -72,6 +72,18 @@ export const getTasks = ( {
 
 	return [
 		showUpdateDetailsTask &&
+			! isPoEnabled &&
+			getUpdateBusinessDetailsTask(
+				errorMessages,
+				status ?? '',
+				accountLink,
+				Number( currentDeadline ) ?? null,
+				pastDue ?? false,
+				detailsSubmitted ?? true
+			),
+		showUpdateDetailsTask &&
+			isPoEnabled &&
+			! detailsSubmitted &&
 			getUpdateBusinessDetailsTask(
 				errorMessages,
 				status ?? '',
