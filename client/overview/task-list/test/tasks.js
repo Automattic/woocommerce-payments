@@ -520,6 +520,7 @@ describe( 'taskSort()', () => {
 		global.wcpaySettings = {
 			accountStatus: {
 				status: 'restricted_soon',
+				detailsSubmitted: true,
 				progressiveOnboarding: {
 					isEnabled: true,
 					isComplete: false,
