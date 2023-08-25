@@ -139,10 +139,10 @@ const DisputeNotice = ( { chargeId } ) => {
 	let urgency = 'warning';
 	let actions = [];
 
-	// Disable refunds if the dispute is closed or won.
-	const disableRefund = ! [ 'warning_closed', 'won' ].includes(
-		dispute.status
-	);
+	// Refunds are only allowed if the dispute is won or it's only an inquiry.
+	const isRefundable =
+		isInquiry( dispute ) || [ 'won' ].includes( dispute.status );
+	const disableRefund = ! isRefundable;
 
 	if ( disableRefund ) {
 		const refundButton = document.querySelector( 'button.refund-items' );
