@@ -21,20 +21,12 @@ class RequestTest extends WCPAY_UnitTestCase {
 	 */
 	private $sut;
 
-	protected function setUp(): void {
-		parent::setUp();
-		$this->sut = new PaymentRequest();
-	}
-
 	/**
 	 * @dataProvider provider_get_fraud_prevention_token
 	 */
 	public function test_get_fraud_prevention_token( ?string $value, ?string $expected ) {
-		if ( is_null( $value ) ) {
-			unset( $_POST['wcpay-fraud-prevention-token'] );
-		} else {
-			$_POST['wcpay-fraud-prevention-token'] = $value;
-		}
+		$request   = is_null( $value ) ? [] : [ 'wcpay-fraud-prevention-token' => $value ];
+		$this->sut = new PaymentRequest( $request );
 		$this->assertSame( $expected, $this->sut->get_fraud_prevention_token() );
 	}
 
@@ -63,11 +55,8 @@ class RequestTest extends WCPAY_UnitTestCase {
 	 * @dataProvider provider_is_woopay_preflight_check
 	 */
 	public function test_is_woopay_preflight_check( ?string $value, bool $expected ) {
-		if ( is_null( $value ) ) {
-			unset( $_POST['is-woopay-preflight-check'] );
-		} else {
-			$_POST['is-woopay-preflight-check'] = $value;
-		}
+		$request   = is_null( $value ) ? [] : [ 'is-woopay-preflight-check' => $value ];
+		$this->sut = new PaymentRequest( $request );
 		$this->assertSame( $expected, $this->sut->is_woopay_preflight_check() );
 	}
 
