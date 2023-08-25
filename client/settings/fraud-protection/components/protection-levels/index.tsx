@@ -17,7 +17,7 @@ import {
 import { FraudProtectionHelpText, BasicFraudProtectionModal } from '../index';
 import { getAdminUrl } from 'wcpay/utils';
 import { ProtectionLevel } from '../../advanced-settings/constants';
-import BannerNotice from 'components/banner-notice';
+import InlineNotice from 'components/inline-notice';
 import wcpayTracks from 'tracks';
 import { CurrentProtectionLevelHook } from '../../interfaces';
 
@@ -56,7 +56,7 @@ const ProtectionLevels: React.FC = () => {
 	return (
 		<>
 			{ 'error' === advancedFraudProtectionSettings && (
-				<BannerNotice
+				<InlineNotice
 					icon
 					status="error"
 					isDismissible={ false }
@@ -66,7 +66,7 @@ const ProtectionLevels: React.FC = () => {
 						'There was an error retrieving your fraud protection settings. Please refresh the page to try again.',
 						'woocommerce-payments'
 					) }
-				</BannerNotice>
+				</InlineNotice>
 			) }
 			<fieldset disabled={ 'error' === advancedFraudProtectionSettings }>
 				<ul>

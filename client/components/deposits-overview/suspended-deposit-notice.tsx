@@ -9,7 +9,7 @@ import { Link } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-import BannerNotice from 'components/banner-notice';
+import InlineNotice from 'components/inline-notice';
 
 /**
  * Renders a notice informing the user that their deposits are suspended.
@@ -18,7 +18,7 @@ import BannerNotice from 'components/banner-notice';
  */
 function SuspendedDepositNotice(): JSX.Element {
 	return (
-		<BannerNotice
+		<InlineNotice
 			className="wcpay-deposits-overview__suspended-notice"
 			icon
 			isDismissible={ false }
@@ -41,7 +41,7 @@ function SuspendedDepositNotice(): JSX.Element {
 					),
 				},
 			} ) }
-		</BannerNotice>
+		</InlineNotice>
 	);
 }
 

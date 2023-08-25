@@ -8,7 +8,7 @@ import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
  * Internal dependencies
  */
 import './../style.scss';
-import BannerNotice from 'wcpay/components/banner-notice';
+import InlineNotice from 'components/inline-notice';
 import { TipIcon } from 'wcpay/icons';
 
 const supportedTypes = [ 'error', 'warning', 'info' ] as const;
@@ -31,7 +31,7 @@ const FraudProtectionRuleCardNotice: React.FC< FraudProtectionRuleCardNoticeProp
 	const icon = 'info' === type ? <TipIcon /> : <NoticeOutlineIcon />;
 
 	return (
-		<BannerNotice
+		<InlineNotice
 			status={ type }
 			icon={ icon }
 			className={

@@ -22,7 +22,7 @@ import { getNextDeposit } from './utils';
 import DepositStatusChip from 'components/deposit-status-chip';
 import { getDepositDate } from 'deposits/utils';
 import { useAllDepositsOverviews, useDepositIncludesLoan } from 'wcpay/data';
-import BannerNotice from 'wcpay/components/banner-notice';
+import InlineNotice from 'components/inline-notice';
 import { useSelectedCurrency } from 'wcpay/overview/hooks';
 import type * as AccountOverview from 'wcpay/types/account-overview';
 
@@ -32,7 +32,7 @@ type NextDepositProps = {
 };
 
 const DepositIncludesLoanPayoutNotice = () => (
-	<BannerNotice icon status="warning" isDismissible={ false }>
+	<InlineNotice icon status="warning" isDismissible={ false }>
 		{ interpolateComponents( {
 			mixedString: __(
 				'This deposit will include funds from your WooCommerce Capital loan. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
@@ -52,11 +52,11 @@ const DepositIncludesLoanPayoutNotice = () => (
 				),
 			},
 		} ) }
-	</BannerNotice>
+	</InlineNotice>
 );
 
 const NewAccountWaitingPeriodNotice = () => (
-	<BannerNotice
+	<InlineNotice
 		status="warning"
 		icon
 		className="new-account-waiting-period-notice"
@@ -79,11 +79,11 @@ const NewAccountWaitingPeriodNotice = () => (
 				),
 			},
 		} ) }
-	</BannerNotice>
+	</InlineNotice>
 );
 
 const NegativeBalanceDepositsPausedNotice = () => (
-	<BannerNotice
+	<InlineNotice
 		status="warning"
 		icon
 		className="negative-balance-deposits-paused-notice"
@@ -110,7 +110,7 @@ const NegativeBalanceDepositsPausedNotice = () => (
 				),
 			},
 		} ) }
-	</BannerNotice>
+	</InlineNotice>
 );
 
 /**

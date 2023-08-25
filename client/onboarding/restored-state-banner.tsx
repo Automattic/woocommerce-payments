@@ -7,13 +7,13 @@ import React from 'react';
  * Internal dependencies
  */
 import strings from './strings';
-import BannerNotice from 'components/banner-notice';
+import InlineNotice from 'components/inline-notice';
 
 const RestoredStateBanner: React.FC = () => {
 	const [ hidden, setHidden ] = React.useState( false );
 	if ( hidden || ! wcpaySettings.onboardingFlowState ) return null;
 	return (
-		<BannerNotice
+		<InlineNotice
 			className="restored-state-banner"
 			status="info"
 			icon
@@ -21,7 +21,7 @@ const RestoredStateBanner: React.FC = () => {
 			onRemove={ () => setHidden( true ) }
 		>
 			{ strings.restoredState }
-		</BannerNotice>
+		</InlineNotice>
 	);
 };
 

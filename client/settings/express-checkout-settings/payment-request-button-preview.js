@@ -14,7 +14,7 @@ import {
  * Internal dependencies
  */
 import { shouldUseGooglePayBrand } from 'payment-request/utils';
-import BannerNotice from 'components/banner-notice';
+import InlineNotice from 'components/inline-notice';
 import { WoopayExpressCheckoutButton } from 'wcpay/checkout/woopay/express-button/woopay-express-checkout-button';
 import {
 	usePaymentRequestButtonSize,
@@ -152,23 +152,23 @@ const PaymentRequestButtonPreview = () => {
 				</div>
 			) }
 			{ ! isWooPayEnabled && ! isPaymentRequestEnabled && (
-				<BannerNotice icon status="info" isDismissible={ false }>
+				<InlineNotice icon status="info" isDismissible={ false }>
 					{ __(
 						'To preview the express checkout buttons, ' +
 							'activate at least one express checkout.',
 						'woocommerce-payments'
 					) }
-				</BannerNotice>
+				</InlineNotice>
 			) }
 			{ isPaymentRequestEnabled && ! isLoading && ! paymentRequest && (
-				<BannerNotice icon status="info" isDismissible={ false }>
+				<InlineNotice icon status="info" isDismissible={ false }>
 					{ __(
 						'To preview the Apple Pay and Google Pay buttons, ' +
 							'ensure your device is configured to accept Apple Pay or Google Pay, ' +
 							'and view this page using the Safari or Chrome browsers.',
 						'woocommerce-payments'
 					) }
-				</BannerNotice>
+				</InlineNotice>
 			) }
 			<BrowserHelpText />
 		</>

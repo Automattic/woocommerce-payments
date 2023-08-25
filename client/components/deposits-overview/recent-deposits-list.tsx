@@ -23,7 +23,7 @@ import { getDepositDate } from 'deposits/utils';
 import { CachedDeposit } from 'wcpay/types/deposits';
 import { formatCurrency } from 'wcpay/utils/currency';
 import { getDetailsURL } from 'wcpay/components/details-link';
-import BannerNotice from '../banner-notice';
+import InlineNotice from '../inline-notice';
 
 interface DepositRowProps {
 	deposit: CachedDeposit;
@@ -88,7 +88,7 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 		<Fragment key={ deposit.id }>
 			<DepositTableRow deposit={ deposit } />
 			{ deposit.id === oldestPendingDepositId && (
-				<BannerNotice
+				<InlineNotice
 					className="wcpay-deposits-overview__business-day-delay-notice"
 					status="info"
 					icon
