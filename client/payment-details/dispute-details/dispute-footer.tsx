@@ -10,27 +10,30 @@ import { dateI18n } from '@wordpress/date';
 import { getHistory } from '@woocommerce/navigation';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
+import { Button, CardFooter, Flex, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import './style.scss';
 import wcpayTracks from 'tracks';
 import type { Dispute } from 'wcpay/types/disputes';
-import { Button, CardFooter, Flex, FlexItem } from '@wordpress/components';
 import { getAdminUrl } from 'wcpay/utils';
 import { formatExplicitCurrency } from 'wcpay/utils/currency';
+import { isInquiry } from 'wcpay/disputes/utils';
+import './style.scss';
 
 interface DisputeFooterProps {
 	dispute: Dispute;
 }
+
 const DisputeFooter: React.FC< DisputeFooterProps > = ( { dispute } ) => {
 	const isValidStatus = [
 		'won',
 		'lost',
 		'under_review',
+		'warning_under_review',
 		// TODO: confirm if the following should render:
-		// 'charge_refunded', 'warning_under_review', 'warning_closed'
+		// 'charge_refunded', 'warning_closed'
 	].includes( dispute.status );
 
 	if ( ! isValidStatus ) {
@@ -80,6 +83,7 @@ const DisputeFooter: React.FC< DisputeFooterProps > = ( { dispute } ) => {
 			);
 			break;
 		case 'under_review':
+		case 'warning_under_review':
 			const submissionDateFormatted =
 				dispute.metadata.__evidence_submitted_at &&
 				dateI18n(
@@ -100,11 +104,17 @@ const DisputeFooter: React.FC< DisputeFooterProps > = ( { dispute } ) => {
 			);
 			message = createInterpolateElement(
 				sprintf(
-					/* Translators: %s - formatted date, <a> - link to documentation page */
-					__(
-						'You submitted evidence for this dispute on %s. The cardholder’s bank is reviewing the case, which can take 60 days or more. You will be alerted when they make their final decision. <a>Learn more about the dispute process</a>.',
-						'woocommerce-payments'
-					),
+					isInquiry( dispute )
+						? /* Translators: %s - formatted date, <a> - link to documentation page */
+						  __(
+								'You submitted evidence for this inquiry on %s. The cardholder’s bank is reviewing the case, which can take 120 days or more. You will be alerted when they make their final decision. <a>Learn more</a>.',
+								'woocommerce-payments'
+						  )
+						: /* Translators: %s - formatted date, <a> - link to documentation page */
+						  __(
+								'You submitted evidence for this dispute on %s. The cardholder’s bank is reviewing the case, which can take 60 days or more. You will be alerted when they make their final decision. <a>Learn more about the dispute process</a>.',
+								'woocommerce-payments'
+						  ),
 					submissionDateFormatted
 				),
 				{ a: disputeDocsLinkElement }
