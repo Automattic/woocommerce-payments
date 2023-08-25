@@ -182,7 +182,7 @@
 			pointer-events: none;
 		}
 	}
-
+	// TODO remove after check all scenarios
 	.wcpay-pill {
 		margin-left: $gap-smaller;
 		padding: 2px $gap-smaller;
@@ -202,6 +202,15 @@
 			border: 0 solid transparent;
 			background: $studio-yellow-5;
 			color: $studio-yellow-50;
+		}
+	}
+
+	.chip {
+		margin-left: $gap-smaller;
+		padding: 2px $gap-smaller;
+
+		@include breakpoint( '<660px' ) {
+			margin-left: 0;
 		}
 	}
 }

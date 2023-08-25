@@ -20,6 +20,7 @@ import {
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import LoadableCheckboxControl from '../loadable-checkbox';
 import Pill from '../pill';
+import Chip from '../chip';
 import PaymentMethodDisabledTooltip from '../payment-method-disabled-tooltip';
 import './payment-method.scss';
 
@@ -71,9 +72,13 @@ const PaymentMethodLabel = ( {
 						'woocommerce-payments'
 					) }
 				>
-					<Pill className={ 'payment-status-pending-approval' }>
-						{ __( 'Pending approval', 'woocommerce-payments' ) }
-					</Pill>
+					<Chip
+						message={ __(
+							'Pending approval',
+							'woocommerce-payments'
+						) }
+						type="warning"
+					/>
 				</HoverTooltip>
 			) }
 			{ upeCapabilityStatuses.PENDING_VERIFICATION === status && (
@@ -88,19 +93,25 @@ const PaymentMethodLabel = ( {
 						wcpaySettings?.accountEmail ?? ''
 					) }
 				>
-					<Pill className={ 'payment-status-pending-verification' }>
-						{ __( 'Pending activation', 'woocommerce-payments' ) }
-					</Pill>
+					<Chip
+						message={ __(
+							'Pending activation',
+							'woocommerce-payments'
+						) }
+						type="warning"
+					/>
 				</HoverTooltip>
 			) }
-			{ disabled && (
+			{ disabled && upeCapabilityStatuses.INACTIVE === status && (
 				<PaymentMethodDisabledTooltip id={ id }>
-					<Pill className={ 'payment-status-' + status }>
-						{ __(
+					<Chip
+						className={ 'payment-status-' + status } // TODO remove.
+						message={ __(
 							'More information needed',
 							'woocommerce-payments'
 						) }
-					</Pill>
+						type="warning"
+					/>
 				</PaymentMethodDisabledTooltip>
 			) }
 		</>
@@ -125,16 +136,17 @@ const PaymentMethod = ( {
 	isPoEnabled,
 	isPoComplete,
 }: PaymentMethodProps ): React.ReactElement => {
+	const [ isManualCaptureEnabled ] = useManualCapture();
 	// APMs are disabled if they are inactive or if Progressive Onboarding is enabled and not yet complete.
 	const disabled =
 		upeCapabilityStatuses.INACTIVE === status ||
-		( id !== 'card' && isPoEnabled && ! isPoComplete );
+		( id !== 'card' && isPoEnabled && ! isPoComplete ) ||
+		( isManualCaptureEnabled && ! isAllowingManualCapture );
 	const {
 		accountFees,
 	}: { accountFees: Record< string, FeeStructure > } = useContext(
 		WCPaySettingsContext
 	);
-	const [ isManualCaptureEnabled ] = useManualCapture();
 
 	const needsOverlay =
 		( isManualCaptureEnabled && ! isAllowingManualCapture ) ||
@@ -157,6 +169,24 @@ const PaymentMethod = ( {
 		return onUncheckClick( id );
 	};
 
+	const getDisabledTooltipContent = () => {
+		if ( isSetupRequired ) {
+			return setupTooltip;
+		}
+
+		if ( isManualCaptureEnabled && ! isAllowingManualCapture ) {
+			return sprintf(
+				__(
+					'%s is not available to your customers when the "manual capture" setting is enabled.',
+					'woocommerce-payments'
+				),
+				label
+			);
+		}
+
+		return __( 'Disabled', 'woocommerce-payments' );
+	};
+
 	return (
 		<li
 			className={ classNames(
@@ -170,14 +200,12 @@ const PaymentMethod = ( {
 				<LoadableCheckboxControl
 					label={ label }
 					checked={ checked }
-					disabled={ disabled || locked }
+					disabled={ disabled as boolean }
 					onChange={ handleChange }
 					delayMsOnCheck={ 1500 }
 					delayMsOnUncheck={ 0 }
 					hideLabel
-					isAllowingManualCapture={ isAllowingManualCapture }
-					isSetupRequired={ isSetupRequired }
-					setupTooltip={ setupTooltip }
+					disabledTooltip={ getDisabledTooltipContent() }
 				/>
 			</div>
 			<div className="payment-method__text-container">
@@ -189,7 +217,7 @@ const PaymentMethod = ( {
 						label={ label }
 						required={ required }
 						status={ status }
-						disabled={ disabled }
+						disabled={ disabled as boolean }
 						id={ id }
 					/>
 				</div>
@@ -200,7 +228,7 @@ const PaymentMethod = ( {
 								label={ label }
 								required={ required }
 								status={ status }
-								disabled={ disabled }
+								disabled={ disabled as boolean }
 								id={ id }
 							/>
 						</div>

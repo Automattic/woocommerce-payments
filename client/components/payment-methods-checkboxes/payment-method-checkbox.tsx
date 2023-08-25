@@ -124,7 +124,6 @@ const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
 				delayMsOnCheck={ 1500 }
 				delayMsOnUncheck={ 0 }
 				hideLabel={ true }
-				isAllowingManualCapture={ paymentMethod.allows_manual_capture }
 			/>
 			<div className={ 'woocommerce-payments__payment-method-icon' }>
 				{ paymentMethod.icon( {} ) }
