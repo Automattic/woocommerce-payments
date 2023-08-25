@@ -68,9 +68,6 @@
 	<rule ref="WordPress.Security.NonceVerification.Recommended">
 		<exclude-pattern>tests/</exclude-pattern>
 	</rule>
-	<rule ref="WordPress.Security.NonceVerification.Missing">
-		<exclude-pattern>tests/</exclude-pattern>
-	</rule>
 
 	<rule ref="PEAR.WhiteSpace.ObjectOperatorIndent" />
 </ruleset>
