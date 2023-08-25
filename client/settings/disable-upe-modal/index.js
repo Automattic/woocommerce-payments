@@ -20,7 +20,7 @@ import PaymentMethodIcon from '../payment-method-icon';
 
 const NeedHelpBarSection = () => {
 	return (
-		<BannerNotice status="info" isDismissible={ false }>
+		<BannerNotice icon status="info" isDismissible={ false }>
 			{ interpolateComponents( {
 				mixedString: __(
 					'Need help? Visit {{ docsLink /}} or {{supportLink /}}.',

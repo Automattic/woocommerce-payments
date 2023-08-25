@@ -3,7 +3,6 @@
  */
 import React from 'react';
 import { Flex, FlexBlock } from '@wordpress/components';
-import { info } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -25,7 +24,7 @@ const PersonalDetails: React.FC = () => {
 			</Flex>
 			<OnboardingTextField name="email" />
 			<OnboardingPhoneNumberField name="phone" />
-			<BannerNotice status="info" icon={ info } isDismissible={ false }>
+			<BannerNotice status="info" icon isDismissible={ false }>
 				{ strings.steps.personal.notice }
 			</BannerNotice>
 		</>

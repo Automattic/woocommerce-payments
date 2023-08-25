@@ -90,7 +90,7 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 
 	if ( missingCurrencyLabels.length > 0 ) {
 		return (
-			<BannerNotice status="info" isDismissible={ false }>
+			<BannerNotice icon status="info" isDismissible={ false }>
 				{ interpolateComponents( {
 					mixedString: sprintf(
 						__(

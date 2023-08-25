@@ -11,7 +11,6 @@ import {
 } from '@wordpress/components';
 import { calendar } from '@wordpress/icons';
 import { Link } from '@woocommerce/components';
-import InfoOutlineIcon from 'gridicons/dist/info-outline';
 import { Fragment } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
@@ -92,7 +91,7 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 				<BannerNotice
 					className="wcpay-deposits-overview__business-day-delay-notice"
 					status="info"
-					icon={ <InfoOutlineIcon /> }
+					icon
 					children={
 						'Deposits pending or in-transit may take 1-2 business days to appear in your bank account once dispatched'
 					}

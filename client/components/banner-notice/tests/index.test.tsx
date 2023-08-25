@@ -26,7 +26,7 @@ describe( 'Info BannerNotices renders', () => {
 		const { container } = render(
 			<BannerNotice
 				status="info"
-				icon={ 'info' }
+				icon
 				children={ 'Test notice content' }
 				isDismissible={ true }
 			/>

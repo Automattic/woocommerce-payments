@@ -57,6 +57,7 @@ const ProtectionLevels: React.FC = () => {
 		<>
 			{ 'error' === advancedFraudProtectionSettings && (
 				<BannerNotice
+					icon
 					status="error"
 					isDismissible={ false }
 					className={ '' }

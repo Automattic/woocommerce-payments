@@ -10,7 +10,6 @@ import { Link } from '@woocommerce/components';
  * Internal dependencies
  */
 import BannerNotice from 'components/banner-notice';
-import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 
 /**
  * Renders a notice informing the user that their deposits are suspended.
@@ -21,7 +20,7 @@ function SuspendedDepositNotice(): JSX.Element {
 	return (
 		<BannerNotice
 			className="wcpay-deposits-overview__suspended-notice"
-			icon={ <NoticeOutlineIcon /> }
+			icon
 			isDismissible={ false }
 			status="warning"
 		>

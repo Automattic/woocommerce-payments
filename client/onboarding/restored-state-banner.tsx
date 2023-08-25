@@ -2,7 +2,6 @@
  * External dependencies
  */
 import React from 'react';
-import { info } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -17,7 +16,7 @@ const RestoredStateBanner: React.FC = () => {
 		<BannerNotice
 			className="restored-state-banner"
 			status="info"
-			icon={ info }
+			icon
 			isDismissible={ true }
 			onRemove={ () => setHidden( true ) }
 		>

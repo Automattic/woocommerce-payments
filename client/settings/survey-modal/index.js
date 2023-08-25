@@ -26,7 +26,7 @@ const SurveyModalBody = ( { options, surveyQuestion } ) => {
 	return (
 		<>
 			{ ! isUpeEnabled && (
-				<BannerNotice status="success" isDismissible={ false }>
+				<BannerNotice icon status="success" isDismissible={ false }>
 					{ __(
 						"You've disabled the new payments experience in your store.",
 						'woocommerce-payments'

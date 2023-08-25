@@ -30,7 +30,7 @@ class ErrorBoundary extends Component {
 		}
 
 		return (
-			<BannerNotice status="error" isDismissible={ false }>
+			<BannerNotice icon status="error" isDismissible={ false }>
 				{ __(
 					'There was an error rendering this view. Please contact support for assistance if the problem persists.',
 					'woocommerce-payments'
