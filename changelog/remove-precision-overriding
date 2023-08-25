@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Remove precision overriding in multi-currency scenarios
