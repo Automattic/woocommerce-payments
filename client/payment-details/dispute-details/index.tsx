@@ -5,16 +5,16 @@
  */
 import React from 'react';
 import moment from 'moment';
+import { Card, CardBody } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import type { Dispute } from 'wcpay/types/disputes';
-import { Card, CardBody } from '@wordpress/components';
-import './style.scss';
+import { isAwaitingResponse } from 'wcpay/disputes/utils';
 import DisputeNotice from './dispute-notice';
 import DisputeFooter from './dispute-footer';
-import { isAwaitingResponse } from 'wcpay/disputes/utils';
+import './style.scss';
 
 interface DisputeDetailsProps {
 	dispute: Dispute;
