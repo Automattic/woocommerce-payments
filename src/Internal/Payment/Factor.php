@@ -111,7 +111,7 @@ class Factor extends Base_Constant {
 	 * Returns all possible factors.
 	 *
 	 * @psalm-suppress MissingThrowsDocblock
-	 * @return string[]
+	 * @return Factor[]
 	 */
 	public static function get_all_factors() {
 		return [
