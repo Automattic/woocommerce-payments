@@ -17,13 +17,7 @@ import { createInterpolateElement } from '@wordpress/element';
 import './style.scss';
 import wcpayTracks from 'tracks';
 import type { Dispute } from 'wcpay/types/disputes';
-import {
-	Button,
-	CardFooter,
-	ExternalLink,
-	Flex,
-	FlexItem,
-} from '@wordpress/components';
+import { Button, CardFooter, Flex, FlexItem } from '@wordpress/components';
 import { getAdminUrl } from 'wcpay/utils';
 import { formatExplicitCurrency } from 'wcpay/utils/currency';
 
@@ -60,7 +54,12 @@ const DisputeFooter: React.FC< DisputeFooterProps > = ( { dispute } ) => {
 		disputeFee &&
 		formatExplicitCurrency( disputeFee.fee, disputeFee.currency );
 	const disputeDocsLinkElement = (
-		<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/" />
+		// eslint-disable-next-line jsx-a11y/anchor-has-content
+		<a
+			target="_blank"
+			rel="noopener noreferrer"
+			href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
+		/>
 	);
 
 	let message = null;
