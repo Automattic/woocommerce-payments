@@ -577,3 +577,25 @@ export const useWooPayShowIncompatibilityNotice = () => {
 		return getShowWooPayIncompatibilityNotice();
 	} );
 };
+
+export const useStripeBilling = () => {
+	const { updateIsStripeBillingEnabled } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getIsStripeBillingEnabled } = select( STORE_NAME );
+			const { getStripeBillingSubscriptionCount } = select( STORE_NAME );
+			const { getIsStripeBillingMigrationInProcess } = select(
+				STORE_NAME
+			);
+
+			return [
+				getIsStripeBillingEnabled(),
+				getIsStripeBillingMigrationInProcess(),
+				getStripeBillingSubscriptionCount(),
+				updateIsStripeBillingEnabled,
+			];
+		},
+		[ updateIsStripeBillingEnabled ]
+	);
+};

@@ -95,6 +95,7 @@ declare global {
 			tc_url: string;
 		};
 		isWooPayStoreCountryAvailable: boolean;
+		isSubscriptionsPluginActive: boolean;
 	};
 
 	const wcTracks: any;

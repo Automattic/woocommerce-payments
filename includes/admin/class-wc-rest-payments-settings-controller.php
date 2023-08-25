@@ -271,6 +271,33 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'default'           => array_keys( $wcpay_form_fields['payment_request_button_locations']['options'] ),
 						'validate_callback' => 'rest_validate_request_arg',
 					],
+					'is_stripe_billing_enabled'         => [
+						'description'       => sprintf(
+						/* translators: %s: WooPayments */
+							__( 'If %s manual capture of charges should be enabled.', 'woocommerce-payments' ),
+							'WooPayments'
+						),
+						'type'              => 'boolean',
+						'validate_callback' => 'rest_validate_request_arg',
+					],
+					'is_migrating_stripe_billing'       => [
+						'description'       => sprintf(
+						/* translators: %s: WooPayments */
+							__( 'If %s manual capture of charges should be enabled.', 'woocommerce-payments' ),
+							'WooPayments'
+						),
+						'type'              => 'boolean',
+						'validate_callback' => 'rest_validate_request_arg',
+					],
+					'stripe_billing_subscription_count' => [
+						'description'       => sprintf(
+						/* translators: %s: WooPayments */
+							__( 'If %s manual capture of charges should be enabled.', 'woocommerce-payments' ),
+							'WooPayments'
+						),
+						'type'              => 'int',
+						'validate_callback' => 'rest_validate_request_arg',
+					],
 				],
 			]
 		);
@@ -422,6 +449,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'is_multi_currency_enabled'           => WC_Payments_Features::is_customer_multi_currency_enabled(),
 				'is_client_secret_encryption_enabled' => WC_Payments_Features::is_client_secret_encryption_enabled(),
 				'is_wcpay_subscriptions_enabled'      => WC_Payments_Features::is_wcpay_subscriptions_enabled(),
+				'is_stripe_billing_enabled'           => WC_Payments_Features::is_stripe_billing_enabled(),
 				'is_wcpay_subscriptions_eligible'     => WC_Payments_Features::is_wcpay_subscriptions_eligible(),
 				'is_subscriptions_plugin_active'      => $this->wcpay_gateway->is_subscriptions_plugin_active(),
 				'account_country'                     => $this->wcpay_gateway->get_option( 'account_country' ),
@@ -458,6 +486,8 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'deposit_completed_waiting_period'    => $this->wcpay_gateway->get_option( 'deposit_completed_waiting_period' ),
 				'current_protection_level'            => $this->wcpay_gateway->get_option( 'current_protection_level' ),
 				'advanced_fraud_protection_settings'  => $this->wcpay_gateway->get_option( 'advanced_fraud_protection_settings' ),
+				'is_migrating_stripe_billing'         => true,
+				'stripe_billing_subscription_count'   => 10,
 			]
 		);
 	}
@@ -488,6 +518,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		// Note: Both "current_protection_level" and "advanced_fraud_protection_settings"
 		// are handled in the below method.
 		$this->update_fraud_protection_settings( $request );
+		$this->update_is_stripe_billing_enabled( $request );
 
 		return new WP_REST_Response( [], 200 );
 	}
@@ -893,6 +924,21 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 
 		// Update the option only when server update succeeds.
 		update_option( 'current_protection_level', $protection_level );
+	}
+
+	/**
+	 * Updates the Stripe Billing Subscriptions feature status.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_is_stripe_billing_enabled( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'is_stripe_billing_enabled' ) ) {
+			return;
+		}
+
+		$is_stripe_billing_enabled = $request->get_param( 'is_stripe_billing_enabled' );
+
+		update_option( WC_Payments_Features::STRIPE_BILLING_FLAG_NAME, $is_stripe_billing_enabled ? '1' : '0' );
 	}
 
 	/**

@@ -842,6 +842,7 @@ class WC_Payments_Admin {
 			'storeCurrency'                 => get_option( 'woocommerce_currency' ),
 			'isBnplAffirmAfterpayEnabled'   => WC_Payments_Features::is_bnpl_affirm_afterpay_enabled(),
 			'isWooPayStoreCountryAvailable' => WooPay_Utilities::is_store_country_available(),
+			'isStripeBillingEnabled'        => WC_Payments_Features::is_stripe_billing_enabled(),
 		];
 
 		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );

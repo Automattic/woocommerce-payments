@@ -253,3 +253,7 @@ export function updateAdvancedFraudProtectionSettings( settings ) {
 		advanced_fraud_protection_settings: settings,
 	} );
 }
+
+export function updateIsStripeBillingEnabled( isEnabled ) {
+	return updateSettingsValues( { is_stripe_billing_enabled: isEnabled } );
+}

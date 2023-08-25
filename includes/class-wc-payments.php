@@ -1723,7 +1723,7 @@ class WC_Payments {
 	 * @return bool
 	 */
 	private static function should_load_wcpay_subscriptions() {
-		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
+		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() || ! WC_Payments_Features::is_stripe_billing_enabled() ) {
 			return true;
 		}
 
