@@ -1,16 +1,16 @@
 <?php
 /**
- * Class PaymentRequestUtil
+ * Class Request
  *
  * @package WooCommerce\Payments
  */
 
-namespace WCPay\Util;
+namespace WCPay\Internal\Payment;
 
 /**
  * Util class for loading, sanitizing, and escaping data from payment requests.
  */
-class PaymentRequestUtil {
+class Request {
 
 	/**
 	 * Get the fraud prevention token from the request.

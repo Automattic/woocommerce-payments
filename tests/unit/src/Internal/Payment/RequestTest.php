@@ -1,29 +1,29 @@
 <?php
 /**
- * Class PaymentRequestUtilTest
+ * Class RequestTest
  *
  * @package WooCommerce\Payments
  */
 
 namespace WCPay\Tests\Util;
 
-use WCPay\Util\PaymentRequestUtil;
+use WCPay\Internal\Payment\Request as PaymentRequest;
 use WCPAY_UnitTestCase;
 
 /**
  * Tests for class PaymentRequestUtilTest
  */
-class PaymentRequestUtilTest extends WCPAY_UnitTestCase {
+class RequestTest extends WCPAY_UnitTestCase {
 	/**
 	 * System under test.
 	 *
-	 * @var PaymentRequestUtil
+	 * @var PaymentRequest
 	 */
 	private $sut;
 
 	protected function setUp(): void {
 		parent::setUp();
-		$this->sut = new PaymentRequestUtil();
+		$this->sut = new PaymentRequest();
 	}
 
 	/**
