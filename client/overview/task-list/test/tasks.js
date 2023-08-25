@@ -161,7 +161,7 @@ describe( 'getTasks()', () => {
 		);
 	} );
 
-	it( 'should include complete registration when flag is set and details submitted as false', () => {
+	it( 'should include complete setup when flag is set and details submitted as false', () => {
 		global.wcpaySettings.accountStatus.status = 'restricted';
 		global.wcpaySettings.accountStatus.detailsSubmitted = false;
 		const actual = getTasks( {
@@ -171,10 +171,10 @@ describe( 'getTasks()', () => {
 		expect( actual ).toEqual(
 			expect.arrayContaining( [
 				expect.objectContaining( {
-					key: 'complete-registration',
+					key: 'complete-setup',
 					completed: false,
-					title: 'Complete the registration in WooPayments',
-					actionLabel: 'Complete registration',
+					title: 'Set up WooPayments',
+					actionLabel: 'Finish setup',
 				} ),
 			] )
 		);
@@ -428,6 +428,7 @@ describe( 'getTasks()', () => {
 		global.wcpaySettings = {
 			accountStatus: {
 				status: 'restricted_soon',
+				detailsSubmitted: true,
 				progressiveOnboarding: {
 					isEnabled: true,
 					isComplete: false,

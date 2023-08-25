@@ -118,9 +118,7 @@ export const getUpdateBusinessDetailsTask = (
 	}
 
 	return {
-		key: ! detailsSubmitted
-			? 'complete-registration'
-			: 'update-business-details',
+		key: ! detailsSubmitted ? 'complete-setup' : 'update-business-details',
 		level: 1,
 		title: ! detailsSubmitted
 			? sprintf(
