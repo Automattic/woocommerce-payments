@@ -3,7 +3,7 @@
  */
 import { Component } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import InlineNotice from '../inline-notice';
+import BannerNotice from 'components/banner-notice';
 
 class ErrorBoundary extends Component {
 	constructor() {
@@ -30,14 +30,14 @@ class ErrorBoundary extends Component {
 		}
 
 		return (
-			<InlineNotice status="error" isDismissible={ false }>
+			<BannerNotice status="error" isDismissible={ false }>
 				{ __(
 					'There was an error rendering this view. Please contact support for assistance if the problem persists.',
 					'woocommerce-payments'
 				) }
 				<br />
 				{ this.state.error.toString() }
-			</InlineNotice>
+			</BannerNotice>
 		);
 	}
 }

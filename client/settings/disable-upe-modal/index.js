@@ -14,13 +14,13 @@ import './style.scss';
 import ConfirmationModal from 'components/confirmation-modal';
 import useIsUpeEnabled from 'settings/wcpay-upe-toggle/hook';
 import WcPayUpeContext from 'settings/wcpay-upe-toggle/context';
-import InlineNotice from '../../components/inline-notice';
+import BannerNotice from 'components/banner-notice';
 import { useEnabledPaymentMethodIds } from '../../data';
 import PaymentMethodIcon from '../payment-method-icon';
 
 const NeedHelpBarSection = () => {
 	return (
-		<InlineNotice status="info" isDismissible={ false }>
+		<BannerNotice status="info" isDismissible={ false }>
 			{ interpolateComponents( {
 				mixedString: __(
 					'Need help? Visit {{ docsLink /}} or {{supportLink /}}.',
@@ -45,7 +45,7 @@ const NeedHelpBarSection = () => {
 					),
 				},
 			} ) }
-		</InlineNotice>
+		</BannerNotice>
 	);
 };
 
