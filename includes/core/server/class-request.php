@@ -122,7 +122,7 @@ abstract class Request {
 		WC_Payments_API_Client::PAYMENT_METHODS_API        => 'payment_methods',
 		WC_Payments_API_Client::SETUP_INTENTS_API          => 'setup_intents',
 		WC_Payments_API_Client::TRACKING_API               => 'tracking',
-		WC_Payments_API_Client::PAYMENT_PROCESS_CONFIG_API => 'payment-process-config',
+		WC_Payments_API_Client::PAYMENT_PROCESS_CONFIG_API => 'payment_process_config',
 		WC_Payments_API_Client::PRODUCTS_API               => 'products',
 		WC_Payments_API_Client::PRICES_API                 => 'products/prices',
 		WC_Payments_API_Client::INVOICES_API               => 'invoices',
