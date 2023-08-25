@@ -8,9 +8,16 @@
 namespace WCPay\Internal\Payment;
 
 /**
- * Util class for loading, sanitizing, and escaping data from payment requests.
+ * Class for loading, sanitizing, and escaping data from payment requests.
  */
 class Request {
+	/**
+	 * Request data.
+	 *
+	 * @var array
+	 */
+	private $request;
+
 	/**
 	 * The request array.
 	 *
