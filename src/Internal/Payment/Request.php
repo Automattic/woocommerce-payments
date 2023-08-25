@@ -35,7 +35,7 @@ class Request {
 	 */
 	public function get_fraud_prevention_token(): ?string {
 		return isset( $this->request['wcpay-fraud-prevention-token'] )
-			? wc_clean( wp_unslash( $this->request['wcpay-fraud-prevention-token'] ) )
+			? sanitize_text_field( $this->request['wcpay-fraud-prevention-token'] )
 			: null;
 	}
 
@@ -55,7 +55,7 @@ class Request {
 	 */
 	public function get_woopay_intent_id(): ?string {
 		return isset( $this->request['platform-checkout-intent'] )
-			? wc_clean( wp_unslash( $this->request['platform-checkout-intent'] ) )
+			? sanitize_text_field( $this->request['platform-checkout-intent'] )
 			: null;
 	}
 
@@ -75,7 +75,7 @@ class Request {
 	 */
 	public function get_intent_id(): ?string {
 		return isset( $this->request['intent_id'] )
-			? wc_clean( wp_unslash( $this->request['intent_id'] ) )
+			? sanitize_text_field( $this->request['intent_id'] )
 			: null;
 	}
 
@@ -84,9 +84,9 @@ class Request {
 	 *
 	 * @return string|null
 	 */
-	public function get_payment_method_id() {
+	public function get_payment_method_id(): ?string {
 		return isset( $this->request['payment_method_id'] )
-			? wc_clean( wp_unslash( $this->request['payment_method_id'] ) )
+			? sanitize_text_field( $this->request['payment_method_id'] )
 			: null;
 	}
 }
