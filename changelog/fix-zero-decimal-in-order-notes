@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Fix zero decimal currency display in order notes

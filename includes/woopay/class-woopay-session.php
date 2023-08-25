@@ -355,7 +355,7 @@ class WooPay_Session {
 			'store_data'           => [
 				'store_name'                     => get_bloginfo( 'name' ),
 				'store_logo'                     => ! empty( $store_logo ) ? get_rest_url( null, 'wc/v3/payments/file/' . $store_logo ) : '',
-				'custom_message'                 => WC_Payments::get_gateway()->get_option( 'platform_checkout_custom_message' ),
+				'custom_message'                 => self::get_formatted_custom_message(),
 				'blog_id'                        => Jetpack_Options::get_option( 'id' ),
 				'blog_url'                       => get_site_url(),
 				'blog_checkout_url'              => wc_get_checkout_url(),
@@ -598,5 +598,25 @@ class WooPay_Session {
 		}
 
 		return is_array( $account_data ) && ( $account_data['platform_checkout_eligible'] ?? false );
+	}
+
+	/**
+	 * Gets the custom message from the settings and replaces the placeholders with the correct links.
+	 *
+	 * @return string The custom message with the placeholders replaced.
+	 */
+	private static function get_formatted_custom_message() {
+		$custom_message = WC_Payments::get_gateway()->get_option( 'platform_checkout_custom_message' );
+
+		$replacement_map = [
+			'[terms_of_service_link]' => wc_terms_and_conditions_page_id() ?
+				'<a href="' . get_permalink( wc_terms_and_conditions_page_id() ) . '">' . __( 'Terms of Service', 'woocommerce-payments' ) . '</a>' :
+				__( 'Terms of Service', 'woocommerce-payments' ),
+			'[privacy_policy_link]'   => wc_privacy_policy_page_id() ?
+				'<a href="' . get_permalink( wc_privacy_policy_page_id() ) . '">' . __( 'Privacy Policy', 'woocommerce-payments' ) . '</a>' :
+				__( 'Privacy Policy', 'woocommerce-payments' ),
+		];
+
+		return str_replace( array_keys( $replacement_map ), array_values( $replacement_map ), $custom_message );
 	}
 }
