@@ -86,7 +86,7 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 			],
 			'empty string'     => [
 				'value'    => '',
-				'expected' => false,
+				'expected' => true,
 			],
 			'any string'       => [
 				'value'    => 'any string',

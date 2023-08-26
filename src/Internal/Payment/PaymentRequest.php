@@ -45,7 +45,7 @@ class PaymentRequest {
 	 * @return bool
 	 */
 	public function is_woopay_preflight_check(): bool {
-		return ! empty( $this->request['is-woopay-preflight-check'] );
+		return isset( $this->request['is-woopay-preflight-check'] );
 	}
 
 	/**
