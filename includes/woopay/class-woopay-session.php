@@ -524,11 +524,7 @@ class WooPay_Session {
 	 * @return bool True if WooPay is enabled, false otherwise.
 	 */
 	private static function is_woopay_enabled(): bool {
-		$payment_settings = get_option( 'woocommerce_woocommerce_payments_settings', [] );
-		$woopay_enabled   = 'no';
-		if ( is_array( $payment_settings ) && ! empty( $payment_settings['platform_checkout'] ) ) {
-			$woopay_enabled = $payment_settings['platform_checkout'];
-		}
+		$woopay_enabled = get_option( 'woocommerce_woocommerce_payments_settings', [] )['platform_checkout'] ?? 'no';
 
 		return self::is_woopay_eligible() && 'yes' === $woopay_enabled;
 	}
@@ -591,13 +587,7 @@ class WooPay_Session {
 		}
 
 		// read directly from options to avoid loading WC_Payments.
-		$account      = get_option( 'wcpay_account_data', [] );
-		$account_data = [];
-		if ( is_array( $account ) && array_key_exists( 'data', $account ) ) {
-			$account_data = $account['data'];
-		}
-
-		return is_array( $account_data ) && ( $account_data['platform_checkout_eligible'] ?? false );
+		return get_option( 'wcpay_account_data', [] )['data']['platform_checkout_eligible'] ?? false;
 	}
 
 	/**
