@@ -1,19 +1,19 @@
 <?php
 /**
- * Class RequestTest
+ * Class PaymentRequestTest
  *
  * @package WooCommerce\Payments
  */
 
-namespace WCPay\Tests\Util;
+namespace WCPay\Tests\Internal\Payment;
 
-use WCPay\Internal\Payment\Request as PaymentRequest;
+use WCPay\Internal\Payment\PaymentRequest;
 use WCPAY_UnitTestCase;
 
 /**
  * Tests for class PaymentRequestUtilTest
  */
-class RequestTest extends WCPAY_UnitTestCase {
+class PaymentRequestTest extends WCPAY_UnitTestCase {
 	/**
 	 * System under test.
 	 *

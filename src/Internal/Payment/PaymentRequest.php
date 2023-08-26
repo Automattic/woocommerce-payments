@@ -1,6 +1,6 @@
 <?php
 /**
- * Class Request
+ * Class PaymentRequest
  *
  * @package WooCommerce\Payments
  */
@@ -10,7 +10,7 @@ namespace WCPay\Internal\Payment;
 /**
  * Class for loading, sanitizing, and escaping data from payment requests.
  */
-class Request {
+class PaymentRequest {
 	/**
 	 * Request data.
 	 *
