@@ -108,7 +108,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	}
 
 	/**
-	 * Generic method to track user events.
+	 * Generic method to track user events on WooPay enabled stores.
 	 *
 	 * @param string  $event name of the event.
 	 * @param array   $data array of event properties.
@@ -126,6 +126,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 
 	/**
 	 * Track shopper events with the wcpay_prefix.
+	 * This method will track the event on all WCPay stores.
 	 *
 	 * @param string $event name of the event.
 	 * @param array  $data array of event properties.
@@ -143,7 +144,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	}
 
 	/**
-	 * Generic method to track admin events.
+	 * Generic method to track admin events on all WCPay stores.
 	 *
 	 * @param string $event name of the event.
 	 * @param array  $data array of event properties.
@@ -216,10 +217,11 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 * @param string $event_name             The name of the event.
 	 * @param array  $properties             Custom properties to send with the event.
 	 * @param bool   $is_admin_event         Indicate whether the event is emitted from admin area.
+	 * @param bool   $track_on_all_stores    Indicate whether the event is tracked on all WCPay stores.
 	 *
 	 * @return bool|array|\WP_Error|\Jetpack_Tracks_Event
 	 */
-	public function tracks_record_event( $event_name, $properties = [], $is_admin_event = false ) {
+	public function tracks_record_event( $event_name, $properties = [], $is_admin_event = false, $track_on_all_stores = false ) {
 
 		$user = wp_get_current_user();
 
@@ -228,7 +230,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 			return false;
 		}
 
-		if ( ! $this->should_enable_tracking( $is_admin_event ) ) {
+		if ( ! $this->should_enable_tracking( $is_admin_event, $track_on_all_stores ) ) {
 			return false;
 		}
 
