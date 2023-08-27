@@ -331,6 +331,17 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Cleanup after tests.
+	 *
+	 * @return void
+	 */
+	public function tear_down() {
+		parent::tear_down();
+		update_option( '_wcpay_feature_upe_split', '0' );
+		update_option( '_wcpay_feature_upe_deferred_intent', '0' );
+	}
+
+	/**
 	 * Test the UI <div> container that will hold the payment method.
 	 *
 	 * @return void
@@ -1590,32 +1601,32 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$becs_method       = $this->mock_payment_methods['au_becs_debit'];
 
 		WC_Helper_Site_Currency::$mock_site_currency = 'EUR';
-		$account_default_currency                    = 'USD';
+		$account_domestic_currency                   = 'USD';
 
-		$this->assertTrue( $card_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $giropay_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $sofort_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $bancontact_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $eps_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $sepa_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $p24_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $ideal_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $becs_method->is_currency_valid( $account_default_currency ) );
+		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $giropay_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $sofort_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $eps_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $sepa_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $p24_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $ideal_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $becs_method->is_currency_valid( $account_domestic_currency ) );
 
 		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
 
-		$this->assertTrue( $card_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $giropay_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $sofort_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $bancontact_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $eps_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $sepa_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $p24_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $ideal_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $becs_method->is_currency_valid( $account_default_currency ) );
+		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $giropay_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $sofort_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $eps_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $sepa_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $p24_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $ideal_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $becs_method->is_currency_valid( $account_domestic_currency ) );
 
 		WC_Helper_Site_Currency::$mock_site_currency = 'AUD';
-		$this->assertTrue( $becs_method->is_currency_valid( $account_default_currency ) );
+		$this->assertTrue( $becs_method->is_currency_valid( $account_domestic_currency ) );
 
 		WC_Helper_Site_Currency::$mock_site_currency = '';
 	}
@@ -2406,21 +2417,21 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$gateway = WC_Payments::get_gateway();
 		WC_Payments::set_gateway( $mock_upe_gateway );
 
+		$mock_upe_gateway->expects( $this->any() )
+			->method( 'get_upe_enabled_payment_method_ids' )
+			->will(
+				$this->returnValue( [ Payment_Method::CARD, Payment_Method::LINK ] )
+			);
+
 		$payment_methods = $mock_upe_gateway->get_payment_methods_from_gateway_id( UPE_Split_Payment_Gateway::GATEWAY_ID );
 
-		$this->assertSame( [ Payment_Method::CARD ], $payment_methods );
+		$this->assertSame( [ Payment_Method::CARD, Payment_Method::LINK ], $payment_methods );
 
 		$payment_methods = $mock_upe_gateway->get_payment_methods_from_gateway_id( UPE_Split_Payment_Gateway::GATEWAY_ID . '_' . Payment_Method::BANCONTACT );
 
 		$this->assertSame( [ Payment_Method::BANCONTACT ], $payment_methods );
 
 		update_option( '_wcpay_feature_upe_deferred_intent', '1' );
-
-		$mock_upe_gateway->expects( $this->once() )
-			->method( 'get_upe_enabled_payment_method_ids' )
-			->will(
-				$this->returnValue( [ Payment_Method::CARD, Payment_Method::LINK ] )
-			);
 
 		$payment_methods = $mock_upe_gateway->get_payment_methods_from_gateway_id( UPE_Split_Payment_Gateway::GATEWAY_ID );
 

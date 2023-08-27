@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Use domestic currency, instead of default deposit currency, to check if a payment method is compatible with the presentment currency in the checkout form.
