@@ -17,7 +17,7 @@ import { formatExplicitCurrency } from 'utils/currency';
 import { reasons } from 'wcpay/disputes/strings';
 import { getDetailsURL } from 'wcpay/components/details-link';
 import { disputeAwaitingResponseStatuses } from 'wcpay/disputes/filters/config';
-import { isInquiry } from 'wcpay/disputes/utils';
+import { isInquiry, isUnderReview } from 'wcpay/disputes/utils';
 import { useCharge } from 'wcpay/data';
 import wcpayTracks from 'tracks';
 import './style.scss';
@@ -143,32 +143,72 @@ const DisputeNotice = ( { chargeId } ) => {
 	// Refunds are only allowed if the dispute is won or it's only an inquiry.
 	const isRefundable =
 		isInquiry( dispute ) || [ 'won' ].includes( dispute.status );
-	const disableRefund = ! isRefundable;
+	const shouldDisableRefund = ! isRefundable;
+	let disableRefund = false;
 
 	let refundDisabledNotice = '';
-	if ( disableRefund ) {
+	if ( shouldDisableRefund ) {
 		const refundButton = document.querySelector( 'button.refund-items' );
 		if ( refundButton ) {
-			refundButton.disabled = true;
-		}
-		const disputeDetailsLink = getDetailsURL( dispute.id, 'disputes' );
-		refundDisabledNotice = createInterpolateElement(
-			__(
-				'This order has a payment dispute. Refunds and order editing are disabled during disputes. <a>View dispute</a>',
-				'woocommerce-payments'
-			),
-			{
-				// eslint-disable-next-line jsx-a11y/anchor-has-content
-				a: <a href={ disputeDetailsLink } />,
-			}
-		);
+			disableRefund = true;
 
-		// TODO: use isAwaitingResponse() from https://github.com/Automattic/woocommerce-payments/pull/6998.
-		if ( disputeAwaitingResponseStatuses.includes( dispute.status ) ) {
-			refundDisabledNotice = __(
-				'Refunds and order editing are disabled during disputes.',
+			// Disable the refund button.
+			refundButton.disabled = true;
+
+			const disputeDetailsLink = getDetailsURL( dispute.id, 'disputes' );
+			// TODO: finalize text copy after we come up with the final decision.
+			refundDisabledNotice = createInterpolateElement(
+				__(
+					'Refunds and order editing are disabled because this order was disputed. <a>View dispute</a>',
+					'woocommerce-payments'
+				),
+				{
+					// eslint-disable-next-line jsx-a11y/anchor-has-content
+					a: <a href={ disputeDetailsLink } />,
+				}
+			);
+			let tooltipText = __(
+				'Refunds and order editing are disabled because this order was disputed.',
 				'woocommerce-payments'
 			);
+
+			// TODO: use isAwaitingResponse() from https://github.com/Automattic/woocommerce-payments/pull/6998.
+			if ( disputeAwaitingResponseStatuses.includes( dispute.status ) ) {
+				refundDisabledNotice = __(
+					'Refunds and order editing are disabled during disputes.',
+					'woocommerce-payments'
+				);
+				tooltipText = refundDisabledNotice;
+			} else if ( isUnderReview( dispute.status ) ) {
+				refundDisabledNotice = createInterpolateElement(
+					__(
+						'This order has a payment dispute. Refunds and order editing are disabled during disputes. <a>View dispute</a>',
+						'woocommerce-payments'
+					),
+					{
+						// eslint-disable-next-line jsx-a11y/anchor-has-content
+						a: <a href={ disputeDetailsLink } />,
+					}
+				);
+				tooltipText = __(
+					'Refunds and order editing are disabled during disputes.',
+					'woocommerce-payments'
+				);
+			}
+
+			// Change refund tooltip's text copy.
+			for ( const maybeSibling of refundButton.parentNode.children ) {
+				if ( maybeSibling === refundButton ) {
+					continue;
+				}
+				const tooltip = maybeSibling.querySelector(
+					'.woocommerce-help-tip'
+				);
+				if ( ! tooltip ) {
+					continue;
+				}
+				jQuery( tooltip ).tipTip( { content: tooltipText } );
+			}
 		}
 	}
 
