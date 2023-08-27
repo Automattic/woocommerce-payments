@@ -102,6 +102,8 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		$this->assertCount( 1, $registered_gateways );
 		$this->assertInstanceOf( UPE_Split_Payment_Gateway::class, $registered_gateways[0] );
 		$this->assertEquals( $registered_gateways[0]->get_stripe_id(), 'card' );
+
+		update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '0' );
 	}
 
 	public function test_rest_endpoints_validate_nonce() {

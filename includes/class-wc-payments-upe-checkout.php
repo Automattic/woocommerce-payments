@@ -126,8 +126,6 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 
 		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 			$script = 'dist/upe_with_deferred_intent_creation_checkout';
-		} elseif ( WC_Payments_Features::is_upe_split_enabled() ) {
-			$script = 'dist/upe_split_checkout';
 		} else {
 			$script = 'dist/upe_checkout';
 		}
@@ -231,9 +229,6 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		$enabled_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
 
 		foreach ( $enabled_payment_methods as $payment_method_id ) {
-			if ( 'card' === $payment_method_id && WC_Payments_Features::is_upe_split_enabled() && $this->is_woopay_enabled() ) {
-				continue;
-			}
 			// Link by Stripe should be validated with available fees.
 			if ( Payment_Method::LINK === $payment_method_id ) {
 				if ( ! in_array( Payment_Method::LINK, array_keys( $this->account->get_fees() ), true ) ) {
@@ -250,7 +245,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 				'countries'      => $payment_method->get_countries(),
 			];
 
-			if ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+			if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 				$gateway_for_payment_method                             = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
 				$settings[ $payment_method_id ]['upePaymentIntentData'] = $this->gateway->get_payment_intent_data_from_session( $payment_method_id );
 				$settings[ $payment_method_id ]['upeSetupIntentData']   = $this->gateway->get_setup_intent_data_from_session( $payment_method_id );
@@ -297,7 +292,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 			 * before `$this->saved_payment_methods()`.
 			 */
 			$payment_fields  = $this->get_payment_fields_js_config();
-			$upe_object_name = ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) ? 'wcpay_upe_config' : 'wcpayConfig';
+			$upe_object_name = WC_Payments_Features::is_upe_deferred_intent_enabled() ? 'wcpay_upe_config' : 'wcpayConfig';
 			wp_enqueue_script( 'wcpay-upe-checkout' );
 			add_action(
 				'wp_footer',
