@@ -16,8 +16,11 @@ import BannerNotice from 'wcpay/components/banner-notice';
 import { formatExplicitCurrency } from 'utils/currency';
 import { reasons } from 'wcpay/disputes/strings';
 import { getDetailsURL } from 'wcpay/components/details-link';
-import { disputeAwaitingResponseStatuses } from 'wcpay/disputes/filters/config';
-import { isInquiry, isUnderReview } from 'wcpay/disputes/utils';
+import {
+	isAwaitingResponse,
+	isInquiry,
+	isUnderReview,
+} from 'wcpay/disputes/utils';
 import { useCharge } from 'wcpay/data';
 import wcpayTracks from 'tracks';
 import './style.scss';
@@ -174,8 +177,7 @@ const DisputeNotice = ( { chargeId } ) => {
 				'woocommerce-payments'
 			);
 
-			// TODO: use isAwaitingResponse() from https://github.com/Automattic/woocommerce-payments/pull/6998.
-			if ( disputeAwaitingResponseStatuses.includes( dispute.status ) ) {
+			if ( isAwaitingResponse( dispute.status ) ) {
 				refundDisabledNotice = __(
 					'Refunds and order editing are disabled during disputes.',
 					'woocommerce-payments'
@@ -220,7 +222,7 @@ const DisputeNotice = ( { chargeId } ) => {
 	if (
 		dispute.evidence_details?.due_by &&
 		// Only show the notice if the dispute is awaiting a response.
-		disputeAwaitingResponseStatuses.includes( dispute.status )
+		isAwaitingResponse( dispute.status )
 	) {
 		const now = moment();
 		const dueBy = moment.unix( dispute.evidence_details?.due_by );
