@@ -15,8 +15,13 @@ $is-success-hover: #00982a;
 	justify-content: flex-start;
 
 	/* Margin exceptions */
-	@at-root .components-modal__header + & {
+	@at-root .components-modal__header + &,
+		&:first-child {
 		margin-top: 0;
+	}
+
+	&:last-child {
+		margin-bottom: 0;
 	}
 
 	/* Shared styles for all variants */
