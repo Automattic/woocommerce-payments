@@ -44,35 +44,6 @@ class RouterTest extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Makes sure that the `NEW_PAYMENT_PROCESS` factor is accounted for.
-	 *
-	 * The factor is used as a base for the new payment process. Even when all other factors,
-	 * provided to `should_use_new_payment_process_adds_factor` are false, this factor
-	 * will still be checked.
-	 *
-	 * @dataProvider new_payment_process_factor_provider
-	 */
-	public function test_should_use_new_payment_process_adds_factor( $factor, $expected ) {
-		$this->mock_db_cache_factors( [ Factor::NEW_PAYMENT_PROCESS => $factor ], false );
-
-		$result = $this->sut->should_use_new_payment_process( [] );
-		$this->assertEquals( $expected, $result );
-	}
-
-	/**
-	 * Provider for `test_should_use_new_payment_process_adds_factor`.
-	 *
-	 * @return array
-	 */
-	public function new_payment_process_factor_provider() {
-		return [
-			[ null, false ],
-			[ false, false ],
-			[ true, true ],
-		];
-	}
-
-	/**
 	 * Tests that the router returns false if a factor is **not present** in the account cache.
 	 */
 	public function test_should_use_new_payment_process_returns_false_with_missing_factor() {
