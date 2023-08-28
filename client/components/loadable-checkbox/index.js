@@ -24,6 +24,7 @@ const LoadableCheckboxControl = ( {
 	delayMsOnCheck = 0,
 	delayMsOnUncheck = 0,
 	disabledTooltip = '',
+	locked = false,
 } ) => {
 	const [ isLoading, setLoading ] = useState( false );
 	const [ checkedState, setCheckedState ] = useState( checked );
@@ -82,7 +83,7 @@ const LoadableCheckboxControl = ( {
 					</svg>
 				</div>
 			) }
-			{ disabled ? (
+			{ disabled && ! locked ? (
 				<div
 					className="loadable-checkbox__icon"
 					style={ { marginRight: '16px' } }
@@ -119,7 +120,7 @@ const LoadableCheckboxControl = ( {
 				<CheckboxControl
 					label={ label }
 					checked={ checkedState }
-					disabled={ disabled }
+					disabled={ disabled || locked }
 					onChange={ ( status ) => handleOnChange( status ) }
 				/>
 			) }

@@ -232,6 +232,7 @@ const PaymentMethod = ( {
 					label={ label }
 					checked={ checked }
 					disabled={ disabled as boolean }
+					locked={ locked }
 					onChange={ handleChange }
 					delayMsOnCheck={ 1500 }
 					delayMsOnUncheck={ 0 }
