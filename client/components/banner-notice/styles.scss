@@ -1,10 +1,6 @@
-$is-info: #007cba;
 $is-info-hover: #006ba1;
-$is-warning: #f0b849;
 $is-warning-hover: #a16f00;
-$is-error: #cc1818;
 $is-error-hover: #b30f0f;
-$is-success: #00a32a;
 $is-success-hover: #00982a;
 
 .wcpay-banner-notice.components-notice {
@@ -51,74 +47,74 @@ $is-success-hover: #00982a;
 
 	/* Specific styles for each variant */
 	&.is-info {
-		background-color: #f0f6fc;
+		background-color: $wp-blue-0;
 		.wcpay-banner-notice__icon svg {
-			fill: $is-info;
+			fill: $wp-blue-70;
 		}
 		button.wcpay-banner-notice__action {
-			box-shadow: inset 0 0 0 1px $is-info;
+			box-shadow: inset 0 0 0 1px $wp-blue-70;
 			&:hover {
-				box-shadow: inset 0 0 0 1px $is-info-hover;
+				//box-shadow: inset 0 0 0 1px $is-info-hover;
 			}
 		}
 		.wcpay-banner-notice__action {
-			color: $is-info;
+			color: $wp-blue-70;
 			&:hover {
-				color: $is-info-hover;
+				// color: $is-info-hover;
 			}
 		}
 	}
 	&.is-warning {
 		background-color: #fcf9e8;
 		.wcpay-banner-notice__icon svg {
-			fill: $is-warning;
+			fill: $wp-yellow-70;
 		}
 		button.wcpay-banner-notice__action {
-			box-shadow: inset 0 0 0 1px $is-warning;
+			box-shadow: inset 0 0 0 1px $wp-yellow-70;
 			&:hover {
-				box-shadow: inset 0 0 0 1px $is-warning-hover;
+				// box-shadow: inset 0 0 0 1px $is-warning-hover;
 			}
 		}
 		.wcpay-banner-notice__action {
-			color: $is-warning;
+			color: $wp-yellow-70;
 			&:hover {
-				color: $is-warning-hover;
+				// color: $is-warning-hover;
 			}
 		}
 	}
 	&.is-error {
-		background-color: #fcf0f1;
+		background-color: $wp-red-0;
 		.wcpay-banner-notice__icon svg {
-			fill: $is-error;
+			fill: $wp-red-70;
 		}
 		button.wcpay-banner-notice__action {
-			box-shadow: inset 0 0 0 1px $is-error;
+			box-shadow: inset 0 0 0 1px $wp-red-70;
 			&:hover {
-				box-shadow: inset 0 0 0 1px $is-error-hover;
+				// box-shadow: inset 0 0 0 1px $is-error-hover;
 			}
 		}
 		.wcpay-banner-notice__action {
-			color: $is-error;
+			color: $wp-red-70;
 			&:hover {
-				color: $is-error-hover;
+				// color: $is-error-hover;
 			}
 		}
 	}
 	&.is-success {
 		background-color: #edfaef;
 		.wcpay-banner-notice__icon svg {
-			fill: $is-success;
+			fill: $wp-green-70;
 		}
 		button.wcpay-banner-notice__action {
-			box-shadow: inset 0 0 0 1px $is-success;
+			box-shadow: inset 0 0 0 1px $wp-green-70;
 			&:hover {
-				box-shadow: inset 0 0 0 1px $is-success-hover;
+				// box-shadow: inset 0 0 0 1px $is-success-hover;
 			}
 		}
 		.wcpay-banner-notice__action {
-			color: $is-success;
+			color: $wp-green-70;
 			&:hover {
-				color: $is-success-hover;
+				// color: $is-success-hover;
 			}
 		}
 	}

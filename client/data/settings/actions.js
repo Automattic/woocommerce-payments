@@ -257,3 +257,58 @@ export function updateAdvancedFraudProtectionSettings( settings ) {
 export function updateIsStripeBillingEnabled( isEnabled ) {
 	return updateSettingsValues( { is_stripe_billing_enabled: isEnabled } );
 }
+
+export function updateIsSchedulingMigration( isScheduling ) {
+	return {
+		type: ACTION_TYPES.SCHEDULING_SUBSCRIPTION_MIGRATION,
+		isScheduling,
+	};
+}
+
+export function* submitStripeBillingSubscriptionMigration() {
+	try {
+		yield dispatch( STORE_NAME ).startResolution(
+			'scheduleStripeBillingMigration'
+		);
+
+		yield apiFetch( {
+			path: `${ NAMESPACE }/settings/schedule-stripe-billing-migration`,
+			method: 'post',
+		} );
+	} catch ( e ) {
+		yield dispatch( 'core/notices' ).createErrorNotice(
+			__(
+				'Error starting the Stripe Billing migration.',
+				'woocommerce-payments'
+			)
+		);
+	}
+
+	yield dispatch( STORE_NAME ).finishResolution(
+		'scheduleStripeBillingMigration'
+	);
+}
+
+export function* getStripeBillingSubscriptionContext() {
+	try {
+		yield dispatch( STORE_NAME ).startResolution(
+			'getStripeBillingMigrationStatus'
+		);
+
+		yield apiFetch( {
+			path: `${ NAMESPACE }/settings/stripe-billing-status`,
+			method: 'GET',
+		} );
+	} catch ( e ) {
+		yield dispatch( 'core/notices' ).createErrorNotice(
+			__(
+				'Error fetching the status of Stripe Billing.',
+				'woocommerce-payments'
+			)
+		);
+	}
+
+	yield dispatch( STORE_NAME ).finishResolution(
+		'getStripeBillingMigrationStatus'
+	);
+}

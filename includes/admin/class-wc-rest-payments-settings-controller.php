@@ -301,6 +301,15 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				],
 			]
 		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/schedule-stripe-billing-migration',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'schedule_stripe_billing_migration' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
 	}
 
 	/**
@@ -437,6 +446,17 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			)
 		);
 
+		// Gather status of Stripe Billing migration for use in the settings page.
+		if ( class_exists( 'WC_Payments_Subscriptions' ) ) {
+			$stripe_billing_migrator = WC_Payments_Subscriptions::get_stripe_billing_migrator();
+
+			if ( $stripe_billing_migrator ) {
+				$is_migrating_stripe_billing       = $stripe_billing_migrator->is_migrating();
+				$stripe_billing_subscription_count = $stripe_billing_migrator->get_stripe_billing_subscription_count();
+				$stripe_billing_migrated_count     = $stripe_billing_migrator->get_subscription_migrated_count();
+			}
+		}
+
 		return new WP_REST_Response(
 			[
 				'enabled_payment_method_ids'          => $enabled_payment_methods,
@@ -486,8 +506,9 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'deposit_completed_waiting_period'    => $this->wcpay_gateway->get_option( 'deposit_completed_waiting_period' ),
 				'current_protection_level'            => $this->wcpay_gateway->get_option( 'current_protection_level' ),
 				'advanced_fraud_protection_settings'  => $this->wcpay_gateway->get_option( 'advanced_fraud_protection_settings' ),
-				'is_migrating_stripe_billing'         => true,
-				'stripe_billing_subscription_count'   => 10,
+				'is_migrating_stripe_billing'         => $is_migrating_stripe_billing ?? false,
+				'stripe_billing_subscription_count'   => $stripe_billing_subscription_count ?? 0,
+				'stripe_billing_migrated_count'       => $stripe_billing_migrated_count ?? 0,
 			]
 		);
 	}
@@ -939,6 +960,34 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$is_stripe_billing_enabled = $request->get_param( 'is_stripe_billing_enabled' );
 
 		update_option( WC_Payments_Features::STRIPE_BILLING_FLAG_NAME, $is_stripe_billing_enabled ? '1' : '0' );
+
+		// Schedule a migration if Stripe Billing was disabled and there are subscriptions to migrate.
+		if ( ! $is_stripe_billing_enabled ) {
+			$this->schedule_stripe_billing_migration();
+		}
+	}
+
+	/**
+	 * Schedule a migration of Stripe Billing subscriptions.
+	 *
+	 * @param WP_REST_Request $request The request object. Optional. If not passed, the function will return a response.
+	 *
+	 * @return WP_REST_Response|null The response object, if this is a REST request.
+	 */
+	public function schedule_stripe_billing_migration( WP_REST_Request $request = null ) {
+
+		if ( class_exists( 'WC_Payments_Subscriptions' ) ) {
+			$stripe_billing_migrator = WC_Payments_Subscriptions::get_stripe_billing_migrator();
+
+			if ( $stripe_billing_migrator && ! $stripe_billing_migrator->is_migrating() && $stripe_billing_migrator->get_stripe_billing_subscription_count() > 0 ) {
+				$stripe_billing_migrator->schedule_migrate_wcpay_subscriptions_action();
+			}
+		}
+
+		// Return a response if this is a REST request.
+		if ( $request ) {
+			return new WP_REST_Response( [], 200 );
+		}
 	}
 
 	/**

@@ -580,6 +580,10 @@ export const useWooPayShowIncompatibilityNotice = () => {
 
 export const useStripeBilling = () => {
 	const { updateIsStripeBillingEnabled } = useDispatch( STORE_NAME );
+	const { submitStripeBillingSubscriptionMigration } = useDispatch(
+		STORE_NAME
+	);
+	//const { getStripeBillingSubscriptionContext } = useDispatch( STORE_NAME );
 
 	return useSelect(
 		( select ) => {
@@ -588,12 +592,19 @@ export const useStripeBilling = () => {
 			const { getIsStripeBillingMigrationInProcess } = select(
 				STORE_NAME
 			);
+			const { isResolving } = select( STORE_NAME );
+			const hasResolved = select( STORE_NAME ).hasFinishedResolution(
+				'scheduleStripeBillingMigration'
+			);
 
 			return [
 				getIsStripeBillingEnabled(),
 				getIsStripeBillingMigrationInProcess(),
 				getStripeBillingSubscriptionCount(),
 				updateIsStripeBillingEnabled,
+				submitStripeBillingSubscriptionMigration,
+				isResolving( 'scheduleStripeBillingMigration' ),
+				hasResolved,
 			];
 		},
 		[ updateIsStripeBillingEnabled ]

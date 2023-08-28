@@ -50,6 +50,13 @@ class WC_Payments_Subscriptions {
 	private static $event_handler;
 
 	/**
+	 * Undocumented variable
+	 *
+	 * @var WC_Payments_Subscriptions_Migrator
+	 */
+	private static $stripe_billing_migrator;
+
+	/**
 	 * Initialize WooCommerce Payments subscriptions. (Stripe Billing)
 	 *
 	 * @param WC_Payments_API_Client       $api_client       WCPay API client.
@@ -86,7 +93,7 @@ class WC_Payments_Subscriptions {
 
 		if ( WC_Payments_Features::is_subscription_migration_enabled() && class_exists( 'WCS_Background_Repairer' ) ) {
 			include_once __DIR__ . '/class-wc-payments-subscriptions-migrator.php';
-			new WC_Payments_Subscriptions_Migrator( $api_client );
+			self::$stripe_billing_migrator = new WC_Payments_Subscriptions_Migrator( $api_client );
 		}
 	}
 
@@ -124,6 +131,15 @@ class WC_Payments_Subscriptions {
 	 */
 	public static function get_subscription_service() {
 		return self::$subscription_service;
+	}
+
+	/**
+	 * Undocumented function
+	 *
+	 * @return WC_Payments_Subscriptions_Migrator
+	 */
+	public static function get_stripe_billing_migrator() {
+		return self::$stripe_billing_migrator;
 	}
 
 	/**
