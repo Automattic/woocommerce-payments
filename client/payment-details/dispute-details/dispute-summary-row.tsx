@@ -29,20 +29,9 @@ import { smartDueDate } from 'wcpay/disputes';
 
 interface Props {
 	dispute: Dispute;
-	daysLeft: number;
 }
 
-/**
- * const composePaymentSummaryItems = ( {
- *    charge = {} as Charge,
- *    metadata = {},
- * }: {
- *    charge: Charge;
- *    metadata: Record< string, any >;
- * } ): HorizontalListItem[] =>
- */
-
-const DisputeSummaryRow: React.FC< Props > = ( { dispute, daysLeft } ) => {
+const DisputeSummaryRow: React.FC< Props > = ( { dispute } ) => {
 	const columns = [
 		{
 			title: __( 'Dispute Amount', 'woocommerce-payments' ),
