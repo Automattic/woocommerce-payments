@@ -70,6 +70,13 @@
 			margin: 0;
 		}
 
+		.payment-method__required-label {
+			display: block;
+			font-size: 11px;
+			line-height: 1em;
+			color: $gray-700;
+		}
+
 		@include breakpoint( '<660px' ) {
 			margin-left: 40px;
 			flex-wrap: wrap;
@@ -78,13 +85,6 @@
 
 	&__label {
 		text-transform: initial;
-	}
-
-	&__required-label {
-		display: block;
-		font-size: 11px;
-		line-height: 1em;
-		color: $gray-700;
 	}
 
 	&__info {

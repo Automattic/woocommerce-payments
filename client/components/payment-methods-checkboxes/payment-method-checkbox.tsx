@@ -77,7 +77,6 @@ const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
 	required,
 	locked,
 } ) => {
-	// TODO remove PaymentMethodDisabledTooltip component.
 	// TODO margin of the chip.
 	// TODO check nofitication for BNPL.
 	// TODO required label.
