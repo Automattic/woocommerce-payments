@@ -13,6 +13,7 @@ import { Card, CardBody } from '@wordpress/components';
 import './style.scss';
 import DisputeNotice from './dispute-notice';
 import { isAwaitingResponse } from 'wcpay/disputes/utils';
+import DisputeSummaryRow from './dispute-summary-row';
 
 interface DisputeDetailsProps {
 	dispute: Dispute;
@@ -34,6 +35,10 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 								urgent={ countdownDays <= 2 }
 							/>
 						) }
+					<DisputeSummaryRow
+						dispute={ dispute }
+						daysLeft={ countdownDays }
+					/>
 					<div></div>
 				</CardBody>
 			</Card>

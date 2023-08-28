@@ -37,7 +37,11 @@ import { formatExplicitCurrency } from 'utils/currency';
 import DisputesFilters from './filters';
 import DownloadButton from 'components/download-button';
 import disputeStatusMapping from 'components/dispute-status-chip/mappings';
-import { CachedDispute, DisputesTableHeader } from 'wcpay/types/disputes';
+import {
+	Dispute,
+	CachedDispute,
+	DisputesTableHeader,
+} from 'wcpay/types/disputes';
 import { getDisputesCSV } from 'wcpay/data/disputes/resolvers';
 import { applyThousandSeparator } from 'wcpay/utils';
 import { isAwaitingResponse } from 'wcpay/disputes/utils';
@@ -148,21 +152,26 @@ const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
  * Returns a smart date if dispute's due date is within 72 hours.
  * Otherwise, returns a date string.
  *
- * @param {CachedDispute} dispute The dispute to check.
+ * @param {Dispute | CachedDispute} dispute The dispute to check.
  *
  * @return {JSX.Element | string} If dispute is due within 72 hours, return the element that display smart date. Otherwise, a date string.
  */
-const smartDueDate = ( dispute: CachedDispute ) => {
+export const smartDueDate = ( dispute: Dispute | CachedDispute ) => {
+	// Dispute uses dispute.evidence_details.due_by, CachedDispute uses dispute.due_by for the due date
+	const now = moment().utc();
+
+	const dueBy =
+		'due_by' in dispute
+			? moment.utc( dispute.due_by )
+			: moment.unix( dispute.evidence_details?.due_by ?? 0 );
+
 	// if dispute is not awaiting response, return an empty string.
-	if ( dispute.due_by === '' || ! isAwaitingResponse( dispute.status ) ) {
+	if ( ! isAwaitingResponse( dispute.status ) ) {
 		return '';
 	}
 	// Get current time in UTC.
-	const now = moment().utc();
-	const dueBy = moment.utc( dispute.due_by );
 	const diffHours = dueBy.diff( now, 'hours', false );
 	const diffDays = dueBy.diff( now, 'days', false );
-
 	// if the dispute is past due, return an empty string.
 	if ( diffHours <= 0 ) {
 		return '';
@@ -186,10 +195,7 @@ const smartDueDate = ( dispute: CachedDispute ) => {
 			</span>
 		);
 	}
-	return dateI18n(
-		'M j, Y / g:iA',
-		moment.utc( dispute.due_by ).local().toISOString()
-	);
+	return dateI18n( 'M j, Y / g:iA', dueBy.local().toISOString() );
 };
 
 export const DisputesList = (): JSX.Element => {

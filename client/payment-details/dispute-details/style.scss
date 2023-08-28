@@ -7,6 +7,22 @@
 
 	.transaction-details-dispute-details-body {
 		padding: $grid-unit-20;
+
+		.woocommerce-list--horizontal {
+			.woocommerce-list__item-title {
+				text-transform: uppercase;
+			}
+			.due-soon {
+				display: flex;
+				align-items: center;
+				color: $alert-red;
+				font-weight: 700;
+				.due-soon-icon {
+					fill: $alert-red;
+					margin-left: 5px;
+				}
+			}
+		}
 	}
 }
 .wcpay-banner-notice.dispute-notice {
