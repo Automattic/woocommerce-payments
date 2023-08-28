@@ -61,7 +61,7 @@ class List_Transactions extends Paginated {
 		if ( ! is_null( $date_between_filter ) ) {
 			$date_between_filter = array_map(
 				function ( $transaction_date ) use ( $user_timezone ) {
-					return WC_Request_Utils::format_transaction_date_by_timezone( $transaction_date, $user_timezone );
+					return Request_Utils::format_transaction_date_by_timezone( $transaction_date, $user_timezone );
 				},
 				$date_between_filter
 			);
@@ -69,8 +69,8 @@ class List_Transactions extends Paginated {
 
 		$filters = [
 			'match'                    => $request->get_param( 'match' ),
-			'date_before'              => WC_Request_Utils::format_transaction_date_by_timezone( $request->get_param( 'date_before' ), $user_timezone ),
-			'date_after'               => WC_Request_Utils::format_transaction_date_by_timezone( $request->get_param( 'date_after' ), $user_timezone ),
+			'date_before'              => Request_Utils::format_transaction_date_by_timezone( $request->get_param( 'date_before' ), $user_timezone ),
+			'date_after'               => Request_Utils::format_transaction_date_by_timezone( $request->get_param( 'date_after' ), $user_timezone ),
 			'date_between'             => $date_between_filter,
 			'type_is'                  => $request->get_param( 'type_is' ),
 			'type_is_not'              => $request->get_param( 'type_is_not' ),
@@ -231,34 +231,4 @@ class List_Transactions extends Paginated {
 		return new Response( $response );
 	}
 
-	/**
-	 * Formats the incoming transaction date as per the blog's timezone.
-	 *
-	 * @param string|null $transaction_date Transaction date to format.
-	 * @param string|null $user_timezone         User's timezone passed from client.
-	 *
-	 * @return string|null The formatted transaction date as per timezone.
-	 */
-	public static function format_transaction_date_with_timestamp( $transaction_date, $user_timezone ) {
-		if ( is_null( $transaction_date ) || is_null( $user_timezone ) ) {
-			return $transaction_date;
-		}
-
-		// Get blog timezone.
-		$blog_time = new DateTime( $transaction_date );
-		$blog_time->setTimezone( new DateTimeZone( wp_timezone_string() ) );
-
-		// Get local timezone.
-		$local_time = new DateTime( $transaction_date );
-		$local_time->setTimezone( new DateTimeZone( $user_timezone ) );
-
-		// Compute time difference in minutes.
-		$time_difference = ( strtotime( $local_time->format( 'Y-m-d H:i:s' ) ) - strtotime( $blog_time->format( 'Y-m-d H:i:s' ) ) ) / 60;
-
-		// Shift date by time difference.
-		$formatted_date = new DateTime( $transaction_date );
-		date_modify( $formatted_date, $time_difference . 'minutes' );
-
-		return $formatted_date->format( 'Y-m-d H:i:s' );
-	}
 }
