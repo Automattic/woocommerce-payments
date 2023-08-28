@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix Multi-currency date format when using custom date or time settings.
