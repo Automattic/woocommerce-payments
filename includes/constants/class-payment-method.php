@@ -45,4 +45,11 @@ class Payment_Method extends Base_Constant {
 		self::AFFIRM,
 		self::AFTERPAY,
 	];
+
+	/**
+	 * Payment methods that needs to be hidden on checkout.
+	 *
+	 * @var string[]
+	 */
+	const FILTER_PAYMENT_METHOD_TYPES_ON_CHECKOUT = [ self::JCB ];
 }

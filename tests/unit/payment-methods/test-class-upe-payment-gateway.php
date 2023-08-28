@@ -2192,6 +2192,12 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		return $return_data;
 	}
 
+	public function test_get_payment_method_ids_enabled_at_checkout_jp() {
+		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::JCB ] );
+		$this->set_get_upe_enabled_payment_method_statuses_return_value();
+		$this->assertSame( [ 'card' ], $this->mock_upe_gateway->get_payment_method_ids_enabled_at_checkout() );
+	}
+
 	/**
 	 * Helper function to mock subscriptions for internal UPE payment methods.
 	 */

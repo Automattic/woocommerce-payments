@@ -986,8 +986,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$force_currency_check = true;
 		}
 
-		$enabled_payment_methods = [];
-		$active_payment_methods  = $this->get_upe_enabled_payment_method_statuses();
+		$enabled_payment_methods     = [];
+		$active_payment_methods      = $this->get_upe_enabled_payment_method_statuses();
+		$upe_enabled_payment_methods = $this->filter_payment_method_types_on_checkout( $upe_enabled_payment_methods );
+
 		foreach ( $upe_enabled_payment_methods as $payment_method_id ) {
 			$payment_method_capability_key = $this->payment_method_capability_key_map[ $payment_method_id ] ?? 'undefined_capability_key';
 			if ( isset( $this->payment_methods[ $payment_method_id ] ) ) {
@@ -1421,5 +1423,23 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 */
 	public function wc_payments_get_payment_method_by_id( $payment_method_id ) {
 		return $this->payment_methods[ $payment_method_id ];
+	}
+
+	/**
+	 * Filter payment method types on checkout.
+	 *
+	 * @param string[] $enabled_payment_methods - payment methods to filter.
+	 *
+	 * @return string[]
+	 */
+	private function filter_payment_method_types_on_checkout( array $enabled_payment_methods ):array {
+		foreach ( Payment_Method::FILTER_PAYMENT_METHOD_TYPES_ON_CHECKOUT as $payment_method ) {
+			$key = array_search( $payment_method, $enabled_payment_methods, true );
+			if ( false !== $key ) {
+				unset( $enabled_payment_methods[ $key ] );
+			}
+		}
+
+		return $enabled_payment_methods;
 	}
 }
