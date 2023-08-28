@@ -310,7 +310,7 @@ export const reasons: Record<
 			),
 		],
 		claim: __(
-			'The cardholder claims a subscription was cancelled.',
+			'The cardholder claims a subscription was canceled.',
 			'woocommerce-payments'
 		),
 	},
