@@ -2389,6 +2389,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $result );
 	}
 
+	public function test_should_use_new_process_adds_base_factor() {
+		$order = WC_Helper_Order::create_order( 1, 0 );
+
+		$this->expect_new_payment_process_factor( Factor::NEW_PAYMENT_PROCESS, true );
+		$this->wcpay_gateway->should_use_new_process( $order );
+	}
+
 	public function test_should_use_new_process_determines_positive_no_payment() {
 		$order = WC_Helper_Order::create_order( 1, 0 );
 

@@ -47,7 +47,10 @@ class Router {
 		$allowed_factors = $this->get_allowed_factors();
 
 		// This would make sure that the payment process is a factor as well.
-		$factors[] = Factor::NEW_PAYMENT_PROCESS();
+		// phpcs:ignore WordPress.PHP.StrictInArray.FoundNonStrictFalse
+		if ( ! in_array( Factor::NEW_PAYMENT_PROCESS(), $factors, false ) ) {
+			$factors[] = Factor::NEW_PAYMENT_PROCESS();
+		}
 
 		foreach ( $factors as $present_factor ) {
 			// phpcs:ignore WordPress.PHP.StrictInArray.FoundNonStrictFalse

@@ -714,7 +714,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function should_use_new_process( WC_Order $order ) {
 		$order_id = $order->get_id();
-		$factors  = []; // To contain all present factors.
+
+		// This array will contain all factors, present during checkout.
+		$factors = [
+			/**
+			 * The new payment process is a factor itself.
+			 * Even if no other factors are present, this will make entering
+			 * the new payment process possible only if this factor is allowed.
+			 */
+			Factor::NEW_PAYMENT_PROCESS(),
+		];
 
 		// If there is a token in the request, we're using a saved PM.
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
