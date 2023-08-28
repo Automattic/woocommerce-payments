@@ -694,7 +694,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * $return bool - true if UPE is incompatible with WooPay, false otherwise.
 	 */
 	private function is_upe_incompatible_with_woopay() {
-		return WC_Payments_Features::is_upe_legacy_enabled() && ! ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() );
+		return WC_Payments_Features::is_upe_legacy_enabled() && ! WC_Payments_Features::is_upe_deferred_intent_enabled();
 	}
 
 	/**
@@ -854,9 +854,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				];
 			}
 
-			if ( WC_Payments_Features::is_upe_split_enabled() ) {
-				UPE_Split_Payment_Gateway::remove_upe_payment_intent_from_session();
-			} else {
+			if ( WC_Payments_Features::is_upe_legacy_enabled() ) {
 				UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
 			}
 
@@ -960,9 +958,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$order->add_order_note( $note );
 			}
 
-			if ( WC_Payments_Features::is_upe_split_enabled() ) {
-				UPE_Split_Payment_Gateway::remove_upe_payment_intent_from_session();
-			} else {
+			if ( WC_Payments_Features::is_upe_legacy_enabled() ) {
 				UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
 			}
 
@@ -1529,8 +1525,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true ) ) {
 				$payment_methods[] = Payment_Method::LINK;
 			}
-		} elseif ( WC_Payments_Features::is_upe_split_enabled() ) {
-			$payment_methods = [ Payment_Method::CARD ];
 		} else {
 			// $gateway_id must be `woocommerce_payments` and gateway is either legacy UPE or legacy card.
 			// Find the relevant gateway and return all available payment methods.
@@ -2004,10 +1998,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				WooPay_Order_Status_Sync::remove_webhook();
 			} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
 				update_option( WC_Payments_Features::UPE_FLAG_NAME, '0' );
-				update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '1' );
+				update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '1' );
 
 				if ( function_exists( 'wc_admin_record_tracks_event' ) ) {
-					wc_admin_record_tracks_event( 'wcpay_split_upe_enabled' );
+					wc_admin_record_tracks_event( 'wcpay_deferred_intent_upe_enabled' );
 				}
 			}
 		}

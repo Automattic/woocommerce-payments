@@ -122,6 +122,7 @@ describe( 'getTasks()', () => {
 				progressiveOnboarding: {
 					isEnabled: false,
 				},
+				detailsSubmitted: true,
 			},
 			zeroDecimalCurrencies: [],
 			connect: {
@@ -155,6 +156,25 @@ describe( 'getTasks()', () => {
 				expect.objectContaining( {
 					key: 'update-business-details',
 					completed: false,
+				} ),
+			] )
+		);
+	} );
+
+	it( 'should include complete setup when flag is set and details submitted as false', () => {
+		global.wcpaySettings.accountStatus.status = 'restricted';
+		global.wcpaySettings.accountStatus.detailsSubmitted = false;
+		const actual = getTasks( {
+			showUpdateDetailsTask: true,
+		} );
+
+		expect( actual ).toEqual(
+			expect.arrayContaining( [
+				expect.objectContaining( {
+					key: 'complete-setup',
+					completed: false,
+					title: 'Set up WooPayments',
+					actionLabel: 'Finish setup',
 				} ),
 			] )
 		);
@@ -408,6 +428,7 @@ describe( 'getTasks()', () => {
 		global.wcpaySettings = {
 			accountStatus: {
 				status: 'restricted_soon',
+				detailsSubmitted: true,
 				progressiveOnboarding: {
 					isEnabled: true,
 					isComplete: false,
@@ -499,6 +520,7 @@ describe( 'taskSort()', () => {
 		global.wcpaySettings = {
 			accountStatus: {
 				status: 'restricted_soon',
+				detailsSubmitted: true,
 				progressiveOnboarding: {
 					isEnabled: true,
 					isComplete: false,
