@@ -16,6 +16,7 @@ export const reasons: Record<
 		summary?: string[];
 		required?: string[];
 		respond?: string[];
+		claim?: string;
 	}
 > = {
 	bank_cannot_process: {
@@ -58,6 +59,10 @@ export const reasons: Record<
 				'woocommerce-payments'
 			),
 		],
+		claim: __(
+			'The cardholder claims a credit was not processed.',
+			'woocommerce-payments'
+		),
 	},
 	customer_initiated: {
 		display: __( 'Customer initiated', 'woocommerce-payments' ),
@@ -107,6 +112,10 @@ export const reasons: Record<
 				'woocommerce-payments'
 			),
 		],
+		claim: __(
+			'The cardholder claims this is a duplicate transaction.',
+			'woocommerce-payments'
+		),
 	},
 	fraudulent: {
 		display: __( 'Transaction unauthorized', 'woocommerce-payments' ),
@@ -146,6 +155,10 @@ export const reasons: Record<
 				'woocommerce-payments'
 			),
 		],
+		claim: __(
+			'The cardholder claims this is an unauthorized transaction.',
+			'woocommerce-payments'
+		),
 	},
 	general: {
 		display: __( 'General', 'woocommerce-payments' ),
@@ -202,6 +215,10 @@ export const reasons: Record<
 				'woocommerce-payments'
 			),
 		],
+		claim: __(
+			'The cardholder claims the product was not received.',
+			'woocommerce-payments'
+		),
 	},
 	product_unacceptable: {
 		display: __( 'Product unacceptable', 'woocommerce-payments' ),
@@ -249,6 +266,10 @@ export const reasons: Record<
 				'woocommerce-payments'
 			),
 		],
+		claim: __(
+			'The cardholder claims the product was unacceptable.',
+			'woocommerce-payments'
+		),
 	},
 	subscription_canceled: {
 		display: __( 'Subscription canceled', 'woocommerce-payments' ),
@@ -288,6 +309,10 @@ export const reasons: Record<
 				'woocommerce-payments'
 			),
 		],
+		claim: __(
+			'The cardholder claims a subscription was canceled.',
+			'woocommerce-payments'
+		),
 	},
 	unrecognized: {
 		display: __( 'Unrecognized', 'woocommerce-payments' ),
