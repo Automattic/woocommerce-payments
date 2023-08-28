@@ -177,7 +177,7 @@ class WC_Payments_Utils {
 	 * @return bool
 	 */
 	public static function is_zero_decimal_currency( string $currency ): bool {
-		if ( in_array( $currency, self::zero_decimal_currencies(), true ) ) {
+		if ( in_array( strtolower( $currency ), self::zero_decimal_currencies(), true ) ) {
 			return true;
 		}
 

@@ -328,6 +328,14 @@ const PaymentMethods = () => {
 									onCheckClick={ () => {
 										handleCheckClick( id );
 									} }
+									isPoEnabled={
+										wcpaySettings?.progressiveOnboarding
+											?.isEnabled
+									}
+									isPoComplete={
+										wcpaySettings?.progressiveOnboarding
+											?.isComplete
+									}
 								/>
 							)
 						) }

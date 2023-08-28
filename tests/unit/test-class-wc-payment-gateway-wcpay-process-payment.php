@@ -11,13 +11,14 @@ use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Response;
 use WCPay\Constants\Order_Status;
-use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Intent_Status;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Session_Rate_Limiter;
+use WCPay\Constants\Payment_Method;
 // Need to use WC_Mock_Data_Store.
 require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
 
@@ -26,6 +27,13 @@ require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
  */
 class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	const CUSTOMER_ID = 'cus_mock';
+
+	/**
+	 * Original WCPay gateway.
+	 *
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private $wcpay_gateway;
 
 	/**
 	 * System under test.
@@ -165,6 +173,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 					'mark_payment_complete_for_order',
 					'get_level3_data_from_order', // To avoid needing to mock the order items.
 					'should_use_stripe_platform_on_checkout_page',
+					'get_payment_method_ids_enabled_at_checkout',
 				]
 			)
 			->getMock();
@@ -177,12 +186,30 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 				$this->returnValue( $this->return_url )
 			);
 
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [ Payment_Method::CARD ] );
+
+		$this->wcpay_gateway = WC_Payments::get_gateway();
+		WC_Payments::set_gateway( $this->mock_wcpay_gateway );
+
 		// Arrange: Define a $_POST array which includes the payment method,
 		// so that get_payment_method_from_request() does not throw error.
 		$_POST = [
 			'wcpay-payment-method' => 'pm_mock',
 			'payment_method'       => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 		];
+	}
+
+	/**
+	 * Cleanup after each test.
+	 *
+	 * @return void
+	 */
+	public function tear_down() {
+		parent::tear_down();
+		WC_Payments::set_gateway( $this->wcpay_gateway );
 	}
 
 	/**
@@ -193,7 +220,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$intent_id   = 'pi_mock';
 		$charge_id   = 'ch_mock';
 		$customer_id = 'cus_mock';
-		$status      = Payment_Intent_Status::SUCCEEDED;
+		$status      = Intent_Status::SUCCEEDED;
 		$order_id    = 123;
 		$total       = 12.23;
 
@@ -366,7 +393,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$intent_id   = 'pi_mock';
 		$charge_id   = 'ch_mock';
 		$customer_id = 'cus_mock';
-		$status      = Payment_Intent_Status::REQUIRES_CAPTURE;
+		$status      = Intent_Status::REQUIRES_CAPTURE;
 		$order_id    = 123;
 		$total       = 12.23;
 
@@ -813,7 +840,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$intent_id   = 'pi_mock';
 		$charge_id   = 'ch_mock';
 		$customer_id = 'cus_mock';
-		$status      = Payment_Intent_Status::REQUIRES_ACTION;
+		$status      = Intent_Status::REQUIRES_ACTION;
 		$secret      = 'cs_mock';
 		$order_id    = 123;
 		$total       = 12.23;
@@ -922,7 +949,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// Arrange: Reusable data.
 		$intent_id   = 'pi_mock';
 		$customer_id = 'cus_mock';
-		$status      = Payment_Intent_Status::REQUIRES_ACTION;
+		$status      = Intent_Status::REQUIRES_ACTION;
 		$secret      = 'cs_mock';
 		$order_id    = 123;
 		$total       = 0;

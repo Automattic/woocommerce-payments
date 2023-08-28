@@ -142,6 +142,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order( null );
 		WC_Subscriptions::set_wcs_is_subscription( null );
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order( null );
+		parent::tear_down_after_class();
 	}
 
 	public function test_add_token_to_order_should_add_token_to_subscriptions() {
