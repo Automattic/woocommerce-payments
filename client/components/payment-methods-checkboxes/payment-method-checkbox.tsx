@@ -22,10 +22,11 @@ import {
 	formatMethodFeesDescription,
 	formatMethodFeesTooltip,
 } from '../../utils/account-fees';
-import PaymentMethodDisabledTooltip from '../payment-method-disabled-tooltip';
+import { getDisabledTooltipContent } from 'components/payment-methods-list/utils';
 import Pill from '../pill';
 import { getPaymentMethodDescription } from 'wcpay/utils/payment-methods';
 import './payment-method-checkbox.scss';
+import PaymentMethodLabel from '../payment-methods-list/payment-method-label';
 
 type PaymentMethodProps = {
 	name: string;
@@ -76,6 +77,10 @@ const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
 	required,
 	locked,
 } ) => {
+	// TODO remove PaymentMethodDisabledTooltip component.
+	// TODO margin of the chip.
+	// TODO check nofitication for BNPL.
+	// TODO required label.
 	const {
 		accountFees,
 	}: { accountFees: Record< string, FeeStructure > } = useContext(
@@ -94,8 +99,16 @@ const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
 		[ locked, name, onChange ]
 	);
 
-	const disabled = upeCapabilityStatuses.INACTIVE === status;
+	const [ isManualCaptureEnabled ] = useManualCapture();
+	const paymentMethod = PaymentMethodsMap[ name ];
 
+	const disabled =
+		[
+			upeCapabilityStatuses.INACTIVE,
+			upeCapabilityStatuses.PENDING_APPROVAL,
+			upeCapabilityStatuses.PENDING_VERIFICATION,
+		].includes( status ) ||
+		( isManualCaptureEnabled && ! paymentMethod.allows_manual_capture );
 	// Force uncheck payment method checkbox if it's checked and the payment method is disabled.
 	useEffect( () => {
 		if ( disabled && checked ) {
@@ -103,27 +116,35 @@ const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
 		}
 	}, [ disabled, checked, handleChange ] );
 
-	const [ isManualCaptureEnabled ] = useManualCapture();
-	const paymentMethod = PaymentMethodsMap[ name ];
-	const needsOverlay =
-		isManualCaptureEnabled && ! paymentMethod.allows_manual_capture;
-
 	return (
 		<li
 			className={ classNames( 'payment-method-checkbox', {
-				overlay: needsOverlay,
+				overlay: disabled,
 			} ) }
 		>
 			<LoadableCheckboxControl
 				label={ paymentMethod.label }
 				checked={ checked }
-				disabled={ disabled || locked }
+				disabled={ disabled as boolean }
+				locked={ locked }
 				onChange={ ( state: boolean ) => {
 					handleChange( state );
 				} }
 				delayMsOnCheck={ 1500 }
 				delayMsOnUncheck={ 0 }
 				hideLabel={ true }
+				disabledTooltip={
+					getDisabledTooltipContent(
+						false, // TODO check what this is coming from (isSetupRequired as boolean)
+						'',
+						isManualCaptureEnabled as boolean, // TODO: manually test this
+						paymentMethod.allows_manual_capture,
+						status,
+						paymentMethod.label,
+						name,
+						wcpaySettings?.accountEmail ?? ''
+					) as string
+				}
 			/>
 			<div className={ 'woocommerce-payments__payment-method-icon' }>
 				{ paymentMethod.icon( {} ) }
@@ -131,64 +152,12 @@ const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
 			<div className={ 'payment-method-checkbox__pills' }>
 				<div className={ 'payment-method-checkbox__pills-left' }>
 					<span className="payment-method-checkbox__label">
-						{ paymentMethod.label }
-						{ required && (
-							<span className="payment-method-checkbox__required-label">
-								{ __( 'Required', 'woocommerce-payments' ) }
-							</span>
-						) }
+						<PaymentMethodLabel
+							label={ paymentMethod.label }
+							required={ required }
+							status={ status }
+						/>
 					</span>
-					{ upeCapabilityStatuses.PENDING_APPROVAL === status && (
-						<HoverTooltip
-							content={ __(
-								'This payment method is pending approval. Once approved, you will be able to use it.',
-								'woocommerce-payments'
-							) }
-						>
-							<Pill
-								className={ 'payment-status-pending-approval' }
-							>
-								{ __(
-									'Pending approval',
-									'woocommerce-payments'
-								) }
-							</Pill>
-						</HoverTooltip>
-					) }
-					{ upeCapabilityStatuses.PENDING_VERIFICATION === status && (
-						<HoverTooltip
-							content={ sprintf(
-								__(
-									"%s won't be visible to your customers until you provide the required " +
-										'information. Follow the instructions sent by our partner Stripe to %s.',
-									'woocommerce-payments'
-								),
-								paymentMethod.label,
-								wcpaySettings?.accountEmail ?? ''
-							) }
-						>
-							<Pill
-								className={
-									'payment-status-pending-verification'
-								}
-							>
-								{ __(
-									'Pending activation',
-									'woocommerce-payments'
-								) }
-							</Pill>
-						</HoverTooltip>
-					) }
-					{ disabled && (
-						<PaymentMethodDisabledTooltip id={ name }>
-							<Pill className={ 'payment-status-' + status }>
-								{ __(
-									'More information needed',
-									'woocommerce-payments'
-								) }
-							</Pill>
-						</PaymentMethodDisabledTooltip>
-					) }
 				</div>
 				<div className={ 'payment-method-checkbox__pills-right' }>
 					<HoverTooltip
