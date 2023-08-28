@@ -64,17 +64,8 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 
 		$date_between_filter = $request->get_param( 'date_between' );
 		$user_timezone       = $request->get_param( 'user_timezone' );
-		if ( ! is_null( $date_between_filter ) ) {
-			$date_between_filter = array_map(
-				function ( $transaction_date ) use ( $user_timezone ) {
-					return Request_Utils::format_transaction_date_by_timezone( $transaction_date, $user_timezone );
-				},
-				$date_between_filter
-			);
-		}
-		$filters = [
+		$filters             = [
 			'match'             => $request->get_param( 'match' ),
-			'created_between'   => $date_between_filter,
 			'order_id_is'       => $request->get_param( 'order_id' ),
 			'customer_email_is' => $request->get_param( 'customer_email' ),
 			'source_is'         => $request->get_param( 'payment_method_type' ),

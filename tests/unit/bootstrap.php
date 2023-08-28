@@ -94,6 +94,7 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-reader-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-files-controller.php';
 	require_once $_plugin_dir . 'includes/reports/class-wc-rest-payments-reports-transactions-controller.php';
+	require_once $_plugin_dir . 'includes/reports/class-wc-rest-payments-reports-authorizations-controller.php';
 	require_once $_plugin_dir . 'includes/class-woopay-tracker.php';
 }
 

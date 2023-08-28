@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WC_REST_Payments_Reader_Controller_Test
+ * Class WC_REST_Payments_Reports_Transactions_Controller_Test
  *
  * @package WooCommerce\Payments\Tests
  */
