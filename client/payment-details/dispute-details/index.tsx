@@ -15,8 +15,6 @@ import { isAwaitingResponse } from 'wcpay/disputes/utils';
 import DisputeNotice from './dispute-notice';
 import DisputeFooter from './dispute-footer';
 import './style.scss';
-import DisputeNotice from './dispute-notice';
-import { isAwaitingResponse } from 'wcpay/disputes/utils';
 
 interface DisputeDetailsProps {
 	dispute: Dispute;
