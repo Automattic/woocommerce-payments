@@ -225,7 +225,7 @@ const DisputeNotice = ( { chargeId } ) => {
 		const countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
 
 		// If the dispute is due in the past, we don't want to show the notice.
-		if ( ! now.isAfter( dueBy ) ) {
+		if ( now.isBefore( dueBy ) ) {
 			showWarning = true;
 
 			const titleStrings = {
