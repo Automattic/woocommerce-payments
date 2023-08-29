@@ -4,4 +4,11 @@
 	padding-left: 24px;
 	padding-right: 24px;
 	padding-bottom: 5px;
+
+	.transaction-details-dispute-details-body {
+		padding: $grid-unit-20;
+	}
+}
+.wcpay-banner-notice.dispute-notice {
+	margin: 0;
 }
