@@ -199,18 +199,16 @@ const DisputeNotice = ( { chargeId } ) => {
 			}
 
 			// Change refund tooltip's text copy.
-			for ( const maybeSibling of refundButton.parentNode.children ) {
-				if ( maybeSibling === refundButton ) {
-					continue;
-				}
-				const tooltip = maybeSibling.querySelector(
-					'.woocommerce-help-tip'
-				);
-				if ( ! tooltip ) {
-					continue;
-				}
-				jQuery( tooltip ).tipTip( { content: tooltipText } );
-			}
+			jQuery( refundButton )
+				.parent()
+				.find( '.woocommerce-help-tip' )
+				.attr( {
+					// jQuery.tipTip uses the title attribute to generate the tooltip.
+					title: tooltipText,
+					'aria-label': tooltipText,
+				} )
+				// Regenerate the tipTip tooltip.
+				.tipTip();
 		}
 	}
 
