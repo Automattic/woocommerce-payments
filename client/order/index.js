@@ -5,6 +5,7 @@ import { dateI18n } from '@wordpress/date';
 import ReactDOM from 'react-dom';
 import { dispatch } from '@wordpress/data';
 import moment from 'moment';
+import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -24,7 +25,6 @@ import {
 import { useCharge } from 'wcpay/data';
 import wcpayTracks from 'tracks';
 import './style.scss';
-import { createInterpolateElement } from '@wordpress/element';
 
 jQuery( function ( $ ) {
 	const disableManualRefunds = getConfig( 'disableManualRefunds' ) ?? false;
