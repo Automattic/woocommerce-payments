@@ -295,6 +295,17 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		];
 	}
 
+	/**
+	 * Cleanup after tests.
+	 *
+	 * @return void
+	 */
+	public function tear_down() {
+		parent::tear_down();
+		update_option( '_wcpay_feature_upe', '0' );
+		update_option( '_wcpay_feature_upe_split', '0' );
+	}
+
 	public function test_payment_fields_outputs_fields() {
 		$this->set_cart_contains_subscription_items( false );
 		$this->set_get_upe_enabled_payment_method_statuses_return_value();
@@ -1602,42 +1613,42 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		WC_Helper_Site_Currency::$mock_site_currency = 'EUR';
 
-		$account_default_currency = 'USD';
-		$this->assertTrue( $card_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $giropay_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $sofort_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $bancontact_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $eps_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $sepa_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $p24_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $ideal_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $becs_method->is_currency_valid( $account_default_currency ) );
+		$account_domestic_currency = 'USD';
+		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $giropay_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $sofort_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $eps_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $sepa_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $p24_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $ideal_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $becs_method->is_currency_valid( $account_domestic_currency ) );
 		// BNPLs can accept only domestic payments.
-		$this->assertFalse( $affirm_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $afterpay_method->is_currency_valid( $account_default_currency ) );
+		$this->assertFalse( $affirm_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $afterpay_method->is_currency_valid( $account_domestic_currency ) );
 
 		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
 
-		$this->assertTrue( $card_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $giropay_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $sofort_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $bancontact_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $eps_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $sepa_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $p24_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $ideal_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $becs_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $affirm_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $afterpay_method->is_currency_valid( $account_default_currency ) );
+		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $giropay_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $sofort_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $eps_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $sepa_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $p24_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $ideal_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $becs_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $affirm_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $afterpay_method->is_currency_valid( $account_domestic_currency ) );
 
 		WC_Helper_Site_Currency::$mock_site_currency = 'AUD';
-		$this->assertTrue( $becs_method->is_currency_valid( $account_default_currency ) );
+		$this->assertTrue( $becs_method->is_currency_valid( $account_domestic_currency ) );
 
 		// BNPLs can accept only domestic payments.
 		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
-		$account_default_currency                    = 'CAD';
-		$this->assertFalse( $affirm_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $afterpay_method->is_currency_valid( $account_default_currency ) );
+		$account_domestic_currency                   = 'CAD';
+		$this->assertFalse( $affirm_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $afterpay_method->is_currency_valid( $account_domestic_currency ) );
 
 		WC_Helper_Site_Currency::$mock_site_currency = '';
 	}
@@ -1656,17 +1667,17 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$afterpay_method   = $this->mock_payment_methods['afterpay_clearpay'];
 
 		WC_Helper_Site_Currency::$mock_site_currency = 'EUR';
-		$account_default_currency                    = 'USD';
+		$account_domestic_currency                   = 'USD';
 
-		$this->assertTrue( $card_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $giropay_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $sofort_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $bancontact_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $eps_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $sepa_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $p24_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $ideal_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $becs_method->is_currency_valid( $account_default_currency ) );
+		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $giropay_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $sofort_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $eps_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $sepa_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $p24_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $ideal_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $becs_method->is_currency_valid( $account_domestic_currency ) );
 
 		global $wp;
 		$order          = WC_Helper_Order::create_order();
@@ -1674,17 +1685,17 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$wp->query_vars = [ 'order-pay' => strval( $order_id ) ];
 		$order->set_currency( 'USD' );
 
-		$this->assertTrue( $card_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $giropay_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $sofort_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $bancontact_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $eps_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $sepa_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $p24_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $ideal_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $becs_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $affirm_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $afterpay_method->is_currency_valid( $account_default_currency ) );
+		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $giropay_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $sofort_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $eps_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $sepa_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $p24_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $ideal_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $becs_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $affirm_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $afterpay_method->is_currency_valid( $account_domestic_currency ) );
 
 		$wp->query_vars = [];
 	}

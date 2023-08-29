@@ -18,6 +18,7 @@ declare global {
 			isDisputeOnTransactionPageEnabled: boolean;
 		};
 		fraudServices: unknown[];
+		testMode: boolean;
 		isJetpackConnected: boolean;
 		isJetpackIdcActive: boolean;
 		accountStatus: {
@@ -38,6 +39,7 @@ declare global {
 			};
 			depositsStatus?: string;
 			currentDeadline?: bigint;
+			detailsSubmitted?: boolean;
 			pastDue?: boolean;
 			accountLink: string;
 			hasSubmittedVatData?: boolean;
@@ -79,6 +81,8 @@ declare global {
 		};
 		progressiveOnboarding?: {
 			isNewFlowEnabled: boolean;
+			isEnabled: boolean;
+			isComplete: boolean;
 		};
 		accountDefaultCurrency: string;
 		isFRTReviewFeatureActive: boolean;
