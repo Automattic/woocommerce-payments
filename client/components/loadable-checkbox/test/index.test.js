@@ -82,16 +82,17 @@ describe( 'Loadable checkbox', () => {
 		expect( mockOnChangeEvent ).toHaveBeenCalledWith( false );
 		expect( container.queryByLabelText( 'Foo' ) ).not.toBeChecked();
 	} );
-	test( 'clicking an disabled checkbox doesnt change the state', () => {
+	test( "clicking a disabled checkbox doesn't change the state", () => {
 		checked = false;
-		const container = render( getLoadableCheckbox( true ) );
-		expect( container.queryByLabelText( 'Foo' ) ).not.toBeChecked();
+		const { getByRole, rerender } = render( getLoadableCheckbox( true ) );
+		const button = getByRole( 'button' );
+
+		expect( button ).toBeInTheDocument();
 		act( () => {
-			userEvent.click( container.queryByLabelText( 'Foo' ) );
-			container.rerender( getLoadableCheckbox( true ) );
+			userEvent.click( button );
+			rerender( getLoadableCheckbox( true ) );
 		} );
 		expect( mockOnChangeEvent ).not.toHaveBeenCalled();
-		expect( container.queryByLabelText( 'Foo' ) ).not.toBeChecked();
 	} );
 	test( 'clicking a checkbox with delay waits before checking the input', () => {
 		const container = render( getLoadableCheckbox( false, 1500, 0 ) );

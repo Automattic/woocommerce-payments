@@ -13,6 +13,12 @@ import { act } from 'react-dom/test-utils';
  */
 import PaymentMethod from '../payment-method';
 
+declare const global: {
+	wcpaySettings: {
+		accountEmail: string;
+	};
+};
+
 describe( 'PaymentMethod', () => {
 	let checked = false;
 	const handleOnCheckClickMock = jest.fn( () => {
@@ -21,6 +27,10 @@ describe( 'PaymentMethod', () => {
 	const handleOnUnCheckClickMock = jest.fn( () => {
 		checked = false;
 	} );
+
+	global.wcpaySettings = {
+		accountEmail: '',
+	};
 
 	// Clear the mocks (including the mock call count) after each test.
 	afterEach( () => {

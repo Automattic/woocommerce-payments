@@ -4,7 +4,7 @@
  */
 import React, { ReactNode } from 'react';
 import { render, screen, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import userEvent, { TargetElement } from '@testing-library/user-event';
 
 /**
  * Internal dependencies
@@ -28,7 +28,17 @@ jest.mock( '@woocommerce/components', () => {
 	};
 } );
 
+declare const global: {
+	wcpaySettings: {
+		accountEmail: string;
+	};
+};
+
 describe( 'PaymentMethodsCheckboxes', () => {
+	global.wcpaySettings = {
+		accountEmail: '',
+	};
+
 	it( 'triggers the onChange when clicking the checkbox', () => {
 		const handleChange = jest.fn();
 
@@ -105,7 +115,7 @@ describe( 'PaymentMethodsCheckboxes', () => {
 		jest.useRealTimers();
 	} );
 
-	it( 'can click the checkbox on payment methods with pending statuses', () => {
+	it( 'cannot click the checkbox on payment methods with pending statuses', () => {
 		const handleChange = jest.fn();
 		render(
 			<PaymentMethodsCheckboxes>
@@ -124,18 +134,19 @@ describe( 'PaymentMethodsCheckboxes', () => {
 			</PaymentMethodsCheckboxes>
 		);
 
-		const sofortCheckbox = screen.getByRole( 'checkbox', {
+		const sofortCheckbox = screen.queryByRole( 'checkbox', {
 			name: 'Sofort',
 		} );
-		expect( sofortCheckbox ).not.toBeChecked();
-		jest.useFakeTimers();
-		act( () => {
-			userEvent.click( sofortCheckbox );
-			jest.runOnlyPendingTimers();
-		} );
-		expect( handleChange ).toHaveBeenCalledTimes( 1 );
-		expect( handleChange ).toHaveBeenNthCalledWith( 1, 'sofort', true );
-		jest.useRealTimers();
+		const buttons = screen.getAllByRole( 'button' );
+		const disabledButton = buttons.find(
+			( button ) => button.querySelector( 'svg' ) // The button with the svg is the disabled one.
+		);
+		expect( sofortCheckbox ).not.toBeInTheDocument();
+		expect(
+			screen.queryByTestId( 'loadable-checkbox-icon-warning' )
+		).toBeInTheDocument();
+		userEvent.click( disabledButton as TargetElement );
+		expect( handleChange ).not.toHaveBeenCalled();
 	} );
 
 	it( 'shows the required label on payment methods which are required', () => {
@@ -158,7 +169,7 @@ describe( 'PaymentMethodsCheckboxes', () => {
 		);
 
 		expect( page.container ).toContainHTML(
-			'<span class="payment-method-checkbox__required-label">Required</span>'
+			'<span class="payment-method__required-label">(Required)</span>'
 		);
 	} );
 
@@ -182,7 +193,7 @@ describe( 'PaymentMethodsCheckboxes', () => {
 		);
 
 		expect( page.container ).toContainHTML(
-			'<span class="wcpay-pill payment-status-inactive">More information needed</span>'
+			'<span class="chip chip-warning">More information needed</span>'
 		);
 	} );
 
@@ -231,13 +242,13 @@ describe( 'PaymentMethodsCheckboxes', () => {
 				/>
 			</PaymentMethodsCheckboxes>
 		);
-		const sofortCheckbox = screen.getByRole( 'checkbox', {
+		const sofortCheckbox = screen.queryByRole( 'checkbox', {
 			name: 'Sofort',
 		} );
-		expect( sofortCheckbox ).not.toBeChecked();
-		userEvent.click( sofortCheckbox );
-		expect( handleChange ).toHaveBeenCalledTimes( 0 ); // Because the input is disabled.
-		expect( sofortCheckbox ).not.toBeChecked();
+		expect( sofortCheckbox ).not.toBeInTheDocument();
+		expect(
+			screen.queryByTestId( 'loadable-checkbox-icon-warning' )
+		).toBeInTheDocument();
 	} );
 
 	it( "doesn't show the disabled notice pill on payment methods with active and unrequested statuses", () => {

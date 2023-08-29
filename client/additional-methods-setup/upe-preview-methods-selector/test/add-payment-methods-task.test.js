@@ -343,7 +343,7 @@ describe( 'AddPaymentMethodsTask', () => {
 		);
 	} );
 
-	it( 'should not allow the inactive ones to be selected', async () => {
+	it( 'should not allow the disabled ones to be selected', async () => {
 		useGetPaymentMethodStatuses.mockReturnValue( {
 			card_payments: {
 				status: upeCapabilityStatuses.ACTIVE,
@@ -379,7 +379,7 @@ describe( 'AddPaymentMethodsTask', () => {
 			},
 		} );
 
-		render(
+		const { queryByRole, getByText, queryAllByTestId } = render(
 			<SettingsContextProvider>
 				<WizardTaskContext.Provider
 					value={ { setCompleted: () => null, isActive: true } }
@@ -389,14 +389,25 @@ describe( 'AddPaymentMethodsTask', () => {
 			</SettingsContextProvider>
 		);
 
-		const expectedToBeDisabled = [ 'Bancontact', 'Przelewy24 (P24)' ];
+		const expectedToBeDisabled = [
+			'Bancontact',
+			'Przelewy24 (P24)',
+			'giropay',
+			'SEPA Direct Debit',
+		];
 
 		expectedToBeDisabled.forEach( function ( checkboxName ) {
-			expect( screen.getByLabelText( checkboxName ) ).not.toBeChecked();
-			expect( screen.getByLabelText( checkboxName ) ).toBeDisabled();
-			// Click the inactive checkbox, to see if it gets enabled.
-			userEvent.click( screen.getByLabelText( checkboxName ) );
-			expect( screen.getByLabelText( checkboxName ) ).not.toBeChecked();
+			expect(
+				queryByRole( 'checkbox', { name: checkboxName } )
+			).not.toBeInTheDocument();
+			expect(
+				getByText(
+					`${ checkboxName } cannot be enabled at checkout. Click to expand.`
+				)
+			).toBeInTheDocument();
+			expect(
+				queryAllByTestId( 'loadable-checkbox-icon-warning' )
+			).toHaveLength( expectedToBeDisabled.length );
 		} );
 	} );
 
