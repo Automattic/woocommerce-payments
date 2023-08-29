@@ -207,14 +207,17 @@ export const DisputesList = (): JSX.Element => {
 	const rows = disputes.map( ( dispute ) => {
 		const clickable = ( children: React.ReactNode ): JSX.Element => (
 			<ClickableCell
-				href={ getDetailsURL( dispute.dispute_id, 'disputes' ) }
+				href={ getDetailsURL( dispute.charge_id, 'transactions' ) }
 			>
 				{ children }
 			</ClickableCell>
 		);
 
 		const detailsLink = (
-			<DetailsLink id={ dispute.dispute_id } parentSegment="disputes" />
+			<DetailsLink
+				id={ dispute.charge_id }
+				parentSegment="transactions"
+			/>
 		);
 
 		const reasonMapping = reasons[ dispute.reason ];
@@ -303,7 +306,10 @@ export const DisputesList = (): JSX.Element => {
 				display: (
 					<Button
 						variant={ needsResponse ? 'secondary' : 'tertiary' }
-						href={ getDetailsURL( dispute.dispute_id, 'disputes' ) }
+						href={ getDetailsURL(
+							dispute.charge_id,
+							'transactions'
+						) }
 						onClick={ (
 							e: React.MouseEvent< HTMLAnchorElement >
 						) => {
@@ -314,7 +320,10 @@ export const DisputesList = (): JSX.Element => {
 							);
 							const history = getHistory();
 							history.push(
-								getDetailsURL( dispute.dispute_id, 'disputes' )
+								getDetailsURL(
+									dispute.charge_id,
+									'transactions'
+								)
 							);
 						} }
 					>
