@@ -417,7 +417,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			'payment_type'         => Payment_Type::SINGLE(),
 			'gateway_type'         => 'classic', // This won't show split UPE as gateway since the mocked class is used.
 			'checkout_type'        => 'unknown',
-			'client_version'       => '6.3.2',
+			'client_version'       => WCPAY_VERSION_NUMBER,
 			'subscription_payment' => 'no',
 		];
 
