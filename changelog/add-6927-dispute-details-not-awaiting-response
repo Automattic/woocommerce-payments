@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Behind a feature flag: dispute message added to transactions screen for disputes not needing a response.
