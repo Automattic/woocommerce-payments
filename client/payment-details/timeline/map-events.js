@@ -782,12 +782,6 @@ const mapEventToTimelineItems = ( event ) => {
 				);
 			}
 
-			const disputeUrl = getAdminUrl( {
-				page: 'wc-admin',
-				path: '/payments/disputes/details',
-				id: event.dispute_id,
-			} );
-
 			let depositTimelineItem;
 			if ( event.amount === null ) {
 				depositTimelineItem = {
@@ -845,16 +839,7 @@ const mapEventToTimelineItems = ( event ) => {
 				getMainTimelineItem(
 					event,
 					reasonHeadline,
-					<CrossIcon className="is-error" />,
-					[
-						// eslint-disable-next-line react/jsx-key
-						<Link
-							href={ disputeUrl }
-							data-testid={ 'view-dispute-button' }
-						>
-							{ __( 'View dispute', 'woocommerce-payments' ) }
-						</Link>,
-					]
+					<CrossIcon className="is-error" />
 				),
 			];
 		case 'dispute_in_review':

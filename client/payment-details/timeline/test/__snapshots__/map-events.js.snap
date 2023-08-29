@@ -97,15 +97,7 @@ Array [
     "icon": <MinusIcon />,
   },
   Object {
-    "body": Array [
-      <Link
-        data-testid="view-dispute-button"
-        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=some_id"
-        type="wc-admin"
-      >
-        View dispute
-      </Link>,
-    ],
+    "body": Array [],
     "date": 2020-04-02T02:06:14.000Z,
     "headline": "Payment disputed as Transaction unauthorized.",
     "icon": <CrossIcon
@@ -333,15 +325,7 @@ Array [
     "icon": <InfoOutlineIcon />,
   },
   Object {
-    "body": Array [
-      <Link
-        data-testid="view-dispute-button"
-        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=some_id"
-        type="wc-admin"
-      >
-        View dispute
-      </Link>,
-    ],
+    "body": Array [],
     "date": 2020-04-02T02:06:14.000Z,
     "headline": "Payment disputed as Transaction unauthorized.",
     "icon": <CrossIcon
@@ -561,15 +545,7 @@ Array [
     "icon": <MinusIcon />,
   },
   Object {
-    "body": Array [
-      <Link
-        data-testid="view-dispute-button"
-        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=some_id"
-        type="wc-admin"
-      >
-        View dispute
-      </Link>,
-    ],
+    "body": Array [],
     "date": 2020-04-02T02:06:14.000Z,
     "headline": "Payment disputed as Transaction unauthorized.",
     "icon": <CrossIcon
