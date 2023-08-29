@@ -141,7 +141,7 @@ const DisputeNotice = ( { chargeId } ) => {
 	const { dispute } = charge;
 
 	let urgency = 'warning';
-	let actions = [];
+	let actions;
 
 	// Refunds are only allowed if the dispute is an inquiry but not warning_closed, or if it's won.
 	const isRefundable =
