@@ -321,7 +321,9 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 *
 	 * @param  mixed $the_subscription Post object or post ID of the order.
 	 *
-	 * @return WC_Subscription|bool The subscription object, or false if it cannot be found.
+	 * @return mixed The subscription object, or false if it cannot be found.
+	 *               Note: This should be WC_Subscription|bool, but Psalm throws errors like:
+	 *                     Docblock-defined class, interface or enum named WC_Subscription does not exist (see https://psalm.dev/200)
 	 */
 	private function get_subscription( $the_subscription ) {
 		if ( ! function_exists( 'wcs_get_subscription' ) ) {
@@ -335,7 +337,9 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 * This `switch-subscription` param is added to the URL when a customer
 	 * has initiated a switch from the My Account → Subscription page.
 	 *
-	 * @return WC_Subscription|bool The subscription being switched, or false if it cannot be found.
+	 * @return mixed The subscription object, or false if it cannot be found.
+	 *               Note: This should be WC_Subscription|bool, but Psalm throws errors like:
+	 *                     Docblock-defined class, interface or enum named WC_Subscription does not exist (see https://psalm.dev/200)
 	 */
 	private function get_subscription_from_superglobal_switch_id() {
 		// Return false if there's no nonce, or if it fails.
