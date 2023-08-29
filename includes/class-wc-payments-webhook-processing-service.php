@@ -523,7 +523,6 @@ class WC_Payments_Webhook_Processing_Service {
 		$event_type   = $this->read_webhook_property( $event_body, 'type' );
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
-		$dispute_id   = $this->read_webhook_property( $event_object, 'id' );
 		$charge_id    = $this->read_webhook_property( $event_object, 'charge' );
 		$reason       = $this->read_webhook_property( $event_object, 'reason' );
 		$amount_raw   = $this->read_webhook_property( $event_object, 'amount' );
@@ -551,7 +550,7 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
-		$this->order_service->mark_payment_dispute_created( $order, $dispute_id, $amount, $reason, $due_by );
+		$this->order_service->mark_payment_dispute_created( $order, $charge_id, $amount, $reason, $due_by );
 
 		// Clear dispute caches to trigger a fetch of new data.
 		$this->database_cache->delete( DATABASE_CACHE::DISPUTE_STATUS_COUNTS_KEY );
@@ -569,7 +568,6 @@ class WC_Payments_Webhook_Processing_Service {
 		$event_type   = $this->read_webhook_property( $event_body, 'type' );
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
-		$dispute_id   = $this->read_webhook_property( $event_object, 'id' );
 		$charge_id    = $this->read_webhook_property( $event_object, 'charge' );
 		$status       = $this->read_webhook_property( $event_object, 'status' );
 		$order        = $this->wcpay_db->order_from_charge_id( $charge_id );
@@ -584,7 +582,7 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
-		$this->order_service->mark_payment_dispute_closed( $order, $dispute_id, $status );
+		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status );
 
 		// Clear dispute caches to trigger a fetch of new data.
 		$this->database_cache->delete( DATABASE_CACHE::DISPUTE_STATUS_COUNTS_KEY );
@@ -602,7 +600,6 @@ class WC_Payments_Webhook_Processing_Service {
 		$event_type   = $this->read_webhook_property( $event_body, 'type' );
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
-		$dispute_id   = $this->read_webhook_property( $event_object, 'id' );
 		$charge_id    = $this->read_webhook_property( $event_object, 'charge' );
 		$order        = $this->wcpay_db->order_from_charge_id( $charge_id );
 
@@ -632,8 +629,8 @@ class WC_Payments_Webhook_Processing_Service {
 			__( '%1$s. See <a href="%2$s">dispute overview</a> for more details.', 'woocommerce-payments' ),
 			$message,
 			add_query_arg(
-				[ 'id' => $dispute_id ],
-				admin_url( 'admin.php?page=wc-admin&path=/payments/disputes/details' )
+				[ 'id' => $charge_id ],
+				admin_url( 'admin.php?page=wc-admin&path=/payments/transactions/details' )
 			)
 		);
 
