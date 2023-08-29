@@ -18,7 +18,13 @@ import { getAdminUrl } from 'wcpay/utils';
 type ParentSegment = 'deposits' | 'transactions' | 'disputes';
 
 export const getDetailsURL = (
+	/**
+	 * The ID of the object to link to.
+	 */
 	id: string,
+	/**
+	 * The parent segment is the first part of the URL after the /payments/ path.
+	 */
 	parentSegment: ParentSegment
 ): string =>
 	getAdminUrl( {
