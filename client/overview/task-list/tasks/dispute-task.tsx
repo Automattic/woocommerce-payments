@@ -15,6 +15,7 @@ import { formatCurrency } from 'wcpay/utils/currency';
 import { getAdminUrl } from 'wcpay/utils';
 import wcpayTracks from 'wcpay/tracks';
 import { isDueWithin } from 'wcpay/disputes/utils';
+import { getDetailsURL } from 'wcpay/components/details-link';
 
 /**
  * Returns an array of disputes that are due within the specified number of days.
@@ -56,15 +57,9 @@ export const getDisputeResolutionTask = (
 		} );
 		const history = getHistory();
 		if ( activeDisputeCount === 1 ) {
-			// Redirect to the dispute details page if there is only one dispute.
-			const disputeId = activeDisputes[ 0 ].dispute_id;
-			history.push(
-				getAdminUrl( {
-					page: 'wc-admin',
-					path: '/payments/disputes/details',
-					id: disputeId,
-				} )
-			);
+			// Redirect to the transaction details page if there is only one dispute.
+			const chargeId = activeDisputes[ 0 ].charge_id;
+			history.push( getDetailsURL( chargeId, 'transactions' ) );
 		} else {
 			history.push(
 				getAdminUrl( {
