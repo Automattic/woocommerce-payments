@@ -28,9 +28,9 @@ import { getPaymentMethodDescription } from 'wcpay/utils/payment-methods';
 import './payment-method-checkbox.scss';
 import PaymentMethodLabel from '../payment-methods-list/payment-method-label';
 
-type PaymentMethodProps = {
+interface PaymentMethodProps {
 	name: string;
-};
+}
 
 const PaymentMethodDescription: React.FC< PaymentMethodProps > = ( {
 	name,
@@ -58,7 +58,7 @@ const PaymentMethodDescription: React.FC< PaymentMethodProps > = ( {
 	);
 };
 
-type PaymentMethodCheckboxProps = {
+interface PaymentMethodCheckboxProps {
 	onChange: ( name: string, enabled: boolean ) => void;
 	name: string;
 	checked: boolean;
@@ -66,7 +66,7 @@ type PaymentMethodCheckboxProps = {
 	status: string;
 	required: boolean;
 	locked: boolean;
-};
+}
 
 const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
 	onChange,
@@ -80,6 +80,8 @@ const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
 	// TODO margin of the chip.
 	// TODO check nofitication for BNPL.
 	// TODO required label.
+	// TODO check isSetupRequired. Does it apply?
+	// TODO mobile view.
 	const {
 		accountFees,
 	}: { accountFees: Record< string, FeeStructure > } = useContext(
@@ -99,7 +101,13 @@ const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
 	);
 
 	const [ isManualCaptureEnabled ] = useManualCapture();
-	const paymentMethod = PaymentMethodsMap[ name ];
+	const {
+		label,
+		icon,
+		allows_manual_capture: allowsManualCapture,
+		setup_required: isSetupRequired = false,
+		setup_tooltip: setupTooltip = '',
+	} = PaymentMethodsMap[ name ];
 
 	const disabled =
 		[
@@ -107,7 +115,9 @@ const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
 			upeCapabilityStatuses.PENDING_APPROVAL,
 			upeCapabilityStatuses.PENDING_VERIFICATION,
 		].includes( status ) ||
-		( isManualCaptureEnabled && ! paymentMethod.allows_manual_capture );
+		( isManualCaptureEnabled && ! allowsManualCapture ) ||
+		isSetupRequired;
+
 	// Force uncheck payment method checkbox if it's checked and the payment method is disabled.
 	useEffect( () => {
 		if ( disabled && checked ) {
@@ -118,11 +128,11 @@ const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
 	return (
 		<li
 			className={ classNames( 'payment-method-checkbox', {
-				overlay: disabled,
+				overlay: disabled || isSetupRequired,
 			} ) }
 		>
 			<LoadableCheckboxControl
-				label={ paymentMethod.label }
+				label={ label }
 				checked={ checked }
 				disabled={ disabled as boolean }
 				locked={ locked }
@@ -134,25 +144,25 @@ const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
 				hideLabel={ true }
 				disabledTooltip={
 					getDisabledTooltipContent(
-						false, // TODO check what this is coming from (isSetupRequired as boolean)
-						'',
-						isManualCaptureEnabled as boolean, // TODO: manually test this
-						paymentMethod.allows_manual_capture,
+						isSetupRequired,
+						setupTooltip,
+						isManualCaptureEnabled as boolean,
+						allowsManualCapture,
 						status,
-						paymentMethod.label,
+						label,
 						name,
 						wcpaySettings?.accountEmail ?? ''
 					) as string
 				}
 			/>
 			<div className={ 'woocommerce-payments__payment-method-icon' }>
-				{ paymentMethod.icon( {} ) }
+				{ icon( {} ) }
 			</div>
 			<div className={ 'payment-method-checkbox__pills' }>
 				<div className={ 'payment-method-checkbox__pills-left' }>
 					<span className="payment-method-checkbox__label">
 						<PaymentMethodLabel
-							label={ paymentMethod.label }
+							label={ label }
 							required={ required }
 							status={ status }
 						/>
