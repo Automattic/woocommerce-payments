@@ -1482,16 +1482,42 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array Array of keyed metadata values.
 	 */
 	protected function get_metadata_from_order( $order, $payment_type ) {
+		switch ( static::class ) {
+			case UPE_Split_Payment_Gateway::class:
+				$gateway_type = 'split_upe';
+				break;
+			case UPE_Payment_Gateway::class:
+				$gateway_type = 'upe';
+				break;
+			default:
+				$gateway_type = 'classic';
+		}
+
+		switch ( $order->get_created_via() ) {
+			case 'checkout':
+				$checkout_type = 'shortcode';
+				break;
+			case 'store-api': // For block based orders, the created-via field is set to this value.
+				$checkout_type = 'block';
+				break;
+			default:
+				$checkout_type = 'unknown';
+		}
+
 		$name     = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
 		$email    = sanitize_email( $order->get_billing_email() );
 		$metadata = [
-			'customer_name'  => $name,
-			'customer_email' => $email,
-			'site_url'       => esc_url( get_site_url() ),
-			'order_id'       => $order->get_id(),
-			'order_number'   => $order->get_order_number(),
-			'order_key'      => $order->get_order_key(),
-			'payment_type'   => $payment_type,
+			'customer_name'        => $name,
+			'customer_email'       => $email,
+			'site_url'             => esc_url( get_site_url() ),
+			'order_id'             => $order->get_id(),
+			'order_number'         => $order->get_order_number(),
+			'order_key'            => $order->get_order_key(),
+			'payment_type'         => $payment_type,
+			'gateway_type'         => $gateway_type,
+			'checkout_type'        => $checkout_type,
+			'client_version'       => WCPAY_VERSION_NUMBER,
+			'subscription_payment' => 'no',
 		];
 
 		// If the order belongs to a WCPay Subscription, set the payment context to 'wcpay_subscription' (this helps with associating which fees belong to orders).
@@ -1500,12 +1526,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			foreach ( $subscriptions as $subscription ) {
 				if ( WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ) {
-					$metadata['payment_context'] = 'wcpay_subscription';
+					$metadata['payment_context']      = 'wcpay_subscription';
+					$metadata['subscription_payment'] = count( $subscriptions ) > 1 ? 'renewal' : 'initial';
 					break;
 				}
 			}
 		}
-
 		return apply_filters( 'wcpay_metadata_from_order', $metadata, $order, $payment_type );
 	}
 
