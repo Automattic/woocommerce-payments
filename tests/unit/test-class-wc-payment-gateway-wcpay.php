@@ -2355,6 +2355,19 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$response = $mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
+	public function test_should_use_new_process_requires_dev_mode() {
+		$mock_router = $this->createMock( Router::class );
+		wcpay_get_test_container()->replace( Router::class, $mock_router );
+
+		$order = WC_Helper_Order::create_order();
+
+		// Assert: The router is never called.
+		$mock_router->expects( $this->never() )
+			->method( 'should_use_new_payment_process' );
+
+		$this->assertFalse( $this->wcpay_gateway->should_use_new_process( $order ) );
+	}
+
 	public function test_should_use_new_process_returns_null_if_feature_unavailable() {
 		// The new payment process is only accessible in dev mode.
 		WC_Payments::mode()->dev();
