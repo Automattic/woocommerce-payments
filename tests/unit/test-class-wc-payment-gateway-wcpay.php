@@ -1314,13 +1314,17 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 
 		$merged_metadata = [
-			'customer_name'  => 'Test',
-			'customer_email' => $order->get_billing_email(),
-			'site_url'       => esc_url( get_site_url() ),
-			'order_id'       => $order->get_id(),
-			'order_number'   => $order->get_order_number(),
-			'order_key'      => $order->get_order_key(),
-			'payment_type'   => Payment_Type::SINGLE(),
+			'customer_name'        => 'Test',
+			'customer_email'       => $order->get_billing_email(),
+			'site_url'             => esc_url( get_site_url() ),
+			'order_id'             => $order->get_id(),
+			'order_number'         => $order->get_order_number(),
+			'order_key'            => $order->get_order_key(),
+			'payment_type'         => Payment_Type::SINGLE(),
+			'gateway_type'         => 'classic',
+			'checkout_type'        => 'unknown',
+			'client_version'       => WCPAY_VERSION_NUMBER,
+			'subscription_payment' => 'no',
 		];
 
 		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );

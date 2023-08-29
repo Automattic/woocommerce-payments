@@ -374,13 +374,17 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'set_metadata' )
 			->with(
 				[
-					'customer_name'  => 'Jeroen Sormani',
-					'customer_email' => 'admin@example.org',
-					'site_url'       => 'http://example.org',
-					'order_id'       => $order_id,
-					'order_number'   => $order_number,
-					'order_key'      => $order->get_order_key(),
-					'payment_type'   => Payment_Type::SINGLE(),
+					'customer_name'        => 'Jeroen Sormani',
+					'customer_email'       => 'admin@example.org',
+					'site_url'             => 'http://example.org',
+					'order_id'             => $order_id,
+					'order_number'         => $order_number,
+					'order_key'            => $order->get_order_key(),
+					'payment_type'         => Payment_Type::SINGLE(),
+					'gateway_type'         => 'classic', // This won't show UPE as gateway since the mocked class is used.
+					'checkout_type'        => 'unknown',
+					'client_version'       => WCPAY_VERSION_NUMBER,
+					'subscription_payment' => 'no',
 				]
 			);
 
@@ -472,13 +476,17 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'set_metadata' )
 			->with(
 				[
-					'customer_name'  => 'Jeroen Sormani',
-					'customer_email' => 'admin@example.org',
-					'site_url'       => 'http://example.org',
-					'order_id'       => $order_id,
-					'order_number'   => $order_number,
-					'order_key'      => $order->get_order_key(),
-					'payment_type'   => Payment_Type::SINGLE(),
+					'customer_name'        => 'Jeroen Sormani',
+					'customer_email'       => 'admin@example.org',
+					'site_url'             => 'http://example.org',
+					'order_id'             => $order_id,
+					'order_number'         => $order_number,
+					'order_key'            => $order->get_order_key(),
+					'payment_type'         => Payment_Type::SINGLE(),
+					'gateway_type'         => 'classic', // This won't show UPE as gateway since the mocked class is used.
+					'checkout_type'        => 'unknown',
+					'client_version'       => WCPAY_VERSION_NUMBER,
+					'subscription_payment' => 'no',
 				]
 			);
 
@@ -566,13 +574,17 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'set_metadata' )
 			->with(
 				[
-					'customer_name'  => 'Jeroen Sormani',
-					'customer_email' => 'admin@example.org',
-					'site_url'       => 'http://example.org',
-					'order_id'       => $order_id,
-					'order_number'   => $order_number,
-					'order_key'      => $order->get_order_key(),
-					'payment_type'   => Payment_Type::SINGLE(),
+					'customer_name'        => 'Jeroen Sormani',
+					'customer_email'       => 'admin@example.org',
+					'site_url'             => 'http://example.org',
+					'order_id'             => $order_id,
+					'order_number'         => $order_number,
+					'order_key'            => $order->get_order_key(),
+					'payment_type'         => Payment_Type::SINGLE(),
+					'gateway_type'         => 'classic', // This won't show UPE as gateway since the mocked class is used.
+					'checkout_type'        => 'unknown',
+					'client_version'       => WCPAY_VERSION_NUMBER,
+					'subscription_payment' => 'no',
 				]
 			);
 
