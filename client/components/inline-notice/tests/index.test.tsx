@@ -3,16 +3,17 @@
  */
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
+import AddIcon from 'gridicons/dist/add';
 
 /**
  * Internal dependencies
  */
-import BannerNotice from '../';
+import InlineNotice from '..';
 
-describe( 'Info BannerNotices renders', () => {
+describe( 'Info InlineNotices renders', () => {
 	test( 'with dismiss', () => {
 		const { container } = render(
-			<BannerNotice
+			<InlineNotice
 				status="info"
 				className="wcpaytest-notice"
 				children={ 'Test notice content' }
@@ -24,9 +25,9 @@ describe( 'Info BannerNotices renders', () => {
 
 	test( 'with dismiss and icon', () => {
 		const { container } = render(
-			<BannerNotice
+			<InlineNotice
 				status="info"
-				icon={ 'info' }
+				icon
 				children={ 'Test notice content' }
 				isDismissible={ true }
 			/>
@@ -36,8 +37,9 @@ describe( 'Info BannerNotices renders', () => {
 
 	test( 'with dismiss and icon and actions', () => {
 		const { container } = render(
-			<BannerNotice
+			<InlineNotice
 				status="info"
+				icon
 				children={ 'Test notice content' }
 				isDismissible={ true }
 				actions={ [
@@ -58,10 +60,20 @@ describe( 'Info BannerNotices renders', () => {
 
 	test( 'without dismiss and icon', () => {
 		const { container } = render(
-			<BannerNotice
+			<InlineNotice
 				status="info"
 				children={ 'Test notice content' }
 				isDismissible={ false }
+			/>
+		);
+		expect( container ).toMatchSnapshot();
+	} );
+
+	test( 'with no status and custom icon', () => {
+		const { container } = render(
+			<InlineNotice
+				icon={ <AddIcon /> }
+				children={ 'Test notice content' }
 			/>
 		);
 		expect( container ).toMatchSnapshot();
@@ -72,7 +84,7 @@ describe( 'Action click triggers callback', () => {
 	test( 'with dismiss and icon and actions', () => {
 		const onClickMock = jest.fn();
 		const { getByText } = render(
-			<BannerNotice
+			<InlineNotice
 				status="warning"
 				children={ 'Test notice content' }
 				isDismissible={ true }
@@ -97,7 +109,7 @@ describe( 'Action click triggers callback', () => {
 		const onButtonClickOne = jest.fn();
 		const onButtonClickTwo = jest.fn();
 		const { getByText } = render(
-			<BannerNotice
+			<InlineNotice
 				status="warning"
 				children={ 'Test notice content' }
 				isDismissible={ true }
@@ -132,7 +144,7 @@ describe( 'Dismiss click triggers callback', () => {
 	test( 'with dismiss and icon and actions', () => {
 		const onDismissMock = jest.fn();
 		const { getByLabelText } = render(
-			<BannerNotice
+			<InlineNotice
 				status="error"
 				children={ 'Test notice content' }
 				isDismissible={ true }
