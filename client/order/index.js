@@ -143,11 +143,9 @@ const DisputeNotice = ( { chargeId } ) => {
 	let urgency = 'warning';
 	let actions;
 
-	// Refunds are only allowed if the dispute is an inquiry but not warning_closed, or if it's won.
+	// Refunds are only allowed if the dispute is an inquiry or if it's won.
 	const isRefundable =
-		( isInquiry( dispute ) &&
-			! [ 'warning_closed' ].includes( dispute.status ) ) ||
-		[ 'won' ].includes( dispute.status );
+		isInquiry( dispute ) || [ 'won' ].includes( dispute.status );
 	const shouldDisableRefund = ! isRefundable;
 	let disableRefund = false;
 
