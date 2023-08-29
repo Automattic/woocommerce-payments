@@ -46,7 +46,7 @@ exports[`CVC verification card renders correctly when CVC check is disabled 1`] 
           </p>
         </div>
         <div
-          class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+          class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
         >
           <div
             class="components-notice__content"
@@ -57,7 +57,7 @@ exports[`CVC verification card renders correctly when CVC check is disabled 1`] 
               data-wp-component="Flex"
             >
               <div
-                class="components-flex-item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+                class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
@@ -76,7 +76,7 @@ exports[`CVC verification card renders correctly when CVC check is disabled 1`] 
                 </svg>
               </div>
               <div
-                class="components-flex-item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+                class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
@@ -152,7 +152,7 @@ exports[`CVC verification card renders correctly when CVC check is enabled 1`] =
           </p>
         </div>
         <div
-          class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+          class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
         >
           <div
             class="components-notice__content"
@@ -163,7 +163,7 @@ exports[`CVC verification card renders correctly when CVC check is enabled 1`] =
               data-wp-component="Flex"
             >
               <div
-                class="components-flex-item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+                class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
@@ -182,7 +182,7 @@ exports[`CVC verification card renders correctly when CVC check is enabled 1`] =
                 </svg>
               </div>
               <div
-                class="components-flex-item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+                class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
