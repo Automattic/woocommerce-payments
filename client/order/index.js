@@ -237,8 +237,8 @@ const DisputeNotice = ( { chargeId } ) => {
 							}
 						);
 						window.location = getDetailsURL(
-							dispute.id,
-							'disputes'
+							chargeId,
+							'transactions'
 						);
 					},
 				},
