@@ -3,6 +3,7 @@
  * External dependencies
  */
 import React, { useContext, useEffect, useState } from 'react';
+import { dateI18n } from '@wordpress/date';
 import { sprintf, __ } from '@wordpress/i18n';
 import SettingsLayout from 'wcpay/settings/settings-layout';
 import SettingsSection from 'wcpay/settings/settings-section';
@@ -20,7 +21,6 @@ import {
 	decimalCurrencyRoundingOptions,
 	zeroDecimalCurrencyCharmOptions,
 	zeroDecimalCurrencyRoundingOptions,
-	toMoment,
 } from './constants';
 import {
 	useCurrencies,
@@ -101,14 +101,14 @@ const SingleCurrencySettings = () => {
 		}
 	}, [ currencySettings, currency, initialPriceRoundingType ] );
 
+	const dateFormat = storeSettings.date_format ?? 'M j, Y';
+	const timeFormat = storeSettings.time_format ?? 'g:iA';
+
 	const formattedLastUpdatedDateTime = targetCurrency
-		? moment
-				.unix( targetCurrency.last_updated )
-				.format(
-					toMoment( storeSettings.date_format ?? 'F j, Y' ) +
-						' ' +
-						toMoment( storeSettings.time_format ?? 'HH:mm' )
-				)
+		? dateI18n(
+				`${ dateFormat } ${ timeFormat }`,
+				moment.unix( targetCurrency.last_updated ).toISOString()
+		  )
 		: '';
 
 	const CurrencySettingsDescription = () => (
@@ -412,7 +412,7 @@ const SingleCurrencySettings = () => {
 													onClick={ () => {
 														open(
 															/* eslint-disable-next-line max-len */
-															'https://woocommerce.com/document/woocommerce-payments/currencies/multi-currency-setup/#price-rounding',
+															'https://woocommerce.com/document/woopayments/currencies/multi-currency-setup/#price-rounding',
 															'_blank'
 														);
 													} }
@@ -477,7 +477,7 @@ const SingleCurrencySettings = () => {
 													onClick={ () => {
 														open(
 															/* eslint-disable-next-line max-len */
-															'https://woocommerce.com/document/woocommerce-payments/currencies/multi-currency-setup/#charm-pricing',
+															'https://woocommerce.com/document/woopayments/currencies/multi-currency-setup/#charm-pricing',
 															'_blank'
 														);
 													} }

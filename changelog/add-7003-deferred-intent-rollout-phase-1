@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Enables deferred intent UPE for existing split UPE stores and newly onboarded stores.
