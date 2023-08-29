@@ -227,6 +227,12 @@ const AddPaymentMethodsTask = () => {
 							handleCheckClick( name, status );
 						} }
 						name={ key }
+						isPoEnabled={
+							wcpaySettings?.progressiveOnboarding?.isEnabled
+						}
+						isPoComplete={
+							wcpaySettings?.progressiveOnboarding?.isComplete
+						}
 					/>
 				)
 		);

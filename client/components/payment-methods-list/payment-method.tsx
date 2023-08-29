@@ -72,6 +72,7 @@ const PaymentMethod = ( {
 		].includes( status ) ||
 		( id !== 'card' && isPoEnabled && ! isPoComplete ) ||
 		( isManualCaptureEnabled && ! isAllowingManualCapture );
+
 	const {
 		accountFees,
 	}: { accountFees: Record< string, FeeStructure > } = useContext(

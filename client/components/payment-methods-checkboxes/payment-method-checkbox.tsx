@@ -66,6 +66,8 @@ interface PaymentMethodCheckboxProps {
 	status: string;
 	required: boolean;
 	locked: boolean;
+	isPoEnabled: boolean;
+	isPoComplete: boolean;
 }
 
 const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
@@ -76,6 +78,8 @@ const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
 	status,
 	required,
 	locked,
+	isPoEnabled,
+	isPoComplete,
 } ) => {
 	// TODO margin of the chip.
 	// TODO check nofitication for BNPL.
@@ -116,6 +120,7 @@ const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
 			upeCapabilityStatuses.PENDING_VERIFICATION,
 		].includes( status ) ||
 		( isManualCaptureEnabled && ! allowsManualCapture ) ||
+		( name !== 'card' && isPoEnabled && ! isPoComplete ) ||
 		isSetupRequired;
 
 	// Force uncheck payment method checkbox if it's checked and the payment method is disabled.

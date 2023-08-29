@@ -54,6 +54,8 @@ describe( 'PaymentMethodsCheckboxes', () => {
 						fees={ '' }
 						required={ false }
 						locked={ false }
+						isPoComplete={ false }
+						isPoEnabled={ false }
 					/>
 				) ) }
 			</PaymentMethodsCheckboxes>
@@ -116,6 +118,8 @@ describe( 'PaymentMethodsCheckboxes', () => {
 					fees={ '' }
 					required={ false }
 					locked={ false }
+					isPoComplete={ false }
+					isPoEnabled={ false }
 				/>
 			</PaymentMethodsCheckboxes>
 		);
@@ -147,6 +151,8 @@ describe( 'PaymentMethodsCheckboxes', () => {
 					status={ upeCapabilityStatuses.ACTIVE }
 					fees={ '' }
 					locked={ false }
+					isPoComplete={ false }
+					isPoEnabled={ false }
 				/>
 			</PaymentMethodsCheckboxes>
 		);
@@ -169,6 +175,8 @@ describe( 'PaymentMethodsCheckboxes', () => {
 					fees={ '' }
 					required={ false }
 					locked={ false }
+					isPoComplete={ false }
+					isPoEnabled={ false }
 				/>
 			</PaymentMethodsCheckboxes>
 		);
@@ -191,6 +199,8 @@ describe( 'PaymentMethodsCheckboxes', () => {
 					status={ upeCapabilityStatuses.ACTIVE }
 					fees={ '' }
 					required={ false }
+					isPoComplete={ false }
+					isPoEnabled={ false }
 				/>
 			</PaymentMethodsCheckboxes>
 		);
@@ -216,6 +226,8 @@ describe( 'PaymentMethodsCheckboxes', () => {
 					fees={ '' }
 					required={ false }
 					locked={ false }
+					isPoComplete={ false }
+					isPoEnabled={ false }
 				/>
 			</PaymentMethodsCheckboxes>
 		);
@@ -241,6 +253,8 @@ describe( 'PaymentMethodsCheckboxes', () => {
 					fees={ '' }
 					required={ false }
 					locked={ false }
+					isPoComplete={ false }
+					isPoEnabled={ false }
 				/>
 				<PaymentMethodsCheckbox
 					key={ 'giropay' }
@@ -251,6 +265,8 @@ describe( 'PaymentMethodsCheckboxes', () => {
 					fees={ '' }
 					required={ false }
 					locked={ false }
+					isPoComplete={ false }
+					isPoEnabled={ false }
 				/>
 			</PaymentMethodsCheckboxes>
 		);
