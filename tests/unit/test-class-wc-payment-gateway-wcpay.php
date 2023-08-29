@@ -2356,6 +2356,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_should_use_new_process_returns_null_if_feature_unavailable() {
+		// The new payment process is only accessible in dev mode.
+		WC_Payments::mode()->dev();
+
 		$mock_router = $this->createMock( Router::class );
 		wcpay_get_test_container()->replace( Router::class, $mock_router );
 
@@ -2372,6 +2375,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_should_use_new_process_uses_the_new_process() {
+		// The new payment process is only accessible in dev mode.
+		WC_Payments::mode()->dev();
+
 		$mock_router  = $this->createMock( Router::class );
 		$mock_service = $this->createMock( PaymentProcessingService::class );
 		$order        = WC_Helper_Order::create_order();
@@ -2390,6 +2396,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_should_use_new_process_adds_base_factor() {
+		// The new payment process is only accessible in dev mode.
+		WC_Payments::mode()->dev();
+
 		$order = WC_Helper_Order::create_order( 1, 0 );
 
 		$this->expect_new_payment_process_factor( Factor::NEW_PAYMENT_PROCESS(), true );
@@ -2397,6 +2406,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_should_use_new_process_determines_positive_no_payment() {
+		// The new payment process is only accessible in dev mode.
+		WC_Payments::mode()->dev();
+
 		$order = WC_Helper_Order::create_order( 1, 0 );
 
 		$this->expect_new_payment_process_factor( Factor::NO_PAYMENT(), true );
@@ -2404,6 +2416,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_should_use_new_process_determines_negative_no_payment() {
+		// The new payment process is only accessible in dev mode.
+		WC_Payments::mode()->dev();
+
 		$order = WC_Helper_Order::create_order();
 		$order->set_total( 10 );
 		$order->save();
@@ -2413,6 +2428,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_should_use_new_process_determines_negative_no_payment_when_saving_pm() {
+		// The new payment process is only accessible in dev mode.
+		WC_Payments::mode()->dev();
+
 		$order = WC_Helper_Order::create_order( 1, 0 );
 
 		// Simulate a payment method being saved to force payment processing.
@@ -2423,6 +2441,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_should_use_new_process_determines_positive_use_saved_pm() {
+		// The new payment process is only accessible in dev mode.
+		WC_Payments::mode()->dev();
+
 		$order = WC_Helper_Order::create_order();
 		$token = WC_Helper_Token::create_token( 'pm_XYZ' );
 
@@ -2435,6 +2456,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_should_use_new_process_determines_negative_use_saved_pm() {
+		// The new payment process is only accessible in dev mode.
+		WC_Payments::mode()->dev();
+
 		$order = WC_Helper_Order::create_order();
 
 		// Simulate that a saved token is being used.
@@ -2446,6 +2470,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_should_use_new_process_determines_positive_save_pm() {
+		// The new payment process is only accessible in dev mode.
+		WC_Payments::mode()->dev();
+
 		$order = WC_Helper_Order::create_order();
 
 		$_POST['wc-woocommerce_payments-new-payment-method'] = '1';
@@ -2455,6 +2482,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_should_use_new_process_determines_positive_save_pm_for_subscription() {
+		// The new payment process is only accessible in dev mode.
+		WC_Payments::mode()->dev();
+
 		$order = WC_Helper_Order::create_order();
 
 		WC_Subscriptions::$wcs_order_contains_subscription = '__return_true';
@@ -2464,6 +2494,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_should_use_new_process_determines_negative_save_pm() {
+		// The new payment process is only accessible in dev mode.
+		WC_Payments::mode()->dev();
+
 		$order = WC_Helper_Order::create_order();
 		$token = WC_Helper_Token::create_token( 'pm_XYZ' );
 
@@ -2477,6 +2510,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_should_use_new_process_determines_positive_subscription_signup() {
+		// The new payment process is only accessible in dev mode.
+		WC_Payments::mode()->dev();
+
 		$order = WC_Helper_Order::create_order();
 
 		WC_Subscriptions::$wcs_order_contains_subscription = '__return_true';
@@ -2486,6 +2522,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_should_use_new_process_determines_negative_subscription_signup() {
+		// The new payment process is only accessible in dev mode.
+		WC_Payments::mode()->dev();
+
 		$order = WC_Helper_Order::create_order();
 
 		WC_Subscriptions::$wcs_order_contains_subscription = '__return_false';
@@ -2495,6 +2534,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_should_use_new_process_determines_positive_woopay_payment() {
+		// The new payment process is only accessible in dev mode.
+		WC_Payments::mode()->dev();
+
 		$order = WC_Helper_Order::create_order();
 
 		$_POST['platform-checkout-intent'] = 'pi_ZYX';
@@ -2504,6 +2546,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_should_use_new_process_determines_negative_woopay_payment() {
+		// The new payment process is only accessible in dev mode.
+		WC_Payments::mode()->dev();
+
 		$order = WC_Helper_Order::create_order();
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -2519,6 +2564,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	 * through an un-mockable method, and the class simply exists.
 	 */
 	public function test_should_use_new_process_determines_negative_wcpay_subscription_signup() {
+		// The new payment process is only accessible in dev mode.
+		WC_Payments::mode()->dev();
+
 		$order = WC_Helper_Order::create_order();
 
 		WC_Subscriptions::$wcs_order_contains_subscription = '__return_true';
@@ -2529,6 +2577,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_new_process_payment() {
+		// The new payment process is only accessible in dev mode.
+		WC_Payments::mode()->dev();
+
 		$mock_service  = $this->createMock( PaymentProcessingService::class );
 		$mock_router   = $this->createMock( Router::class );
 		$order         = WC_Helper_Order::create_order();

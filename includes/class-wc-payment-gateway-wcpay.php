@@ -715,6 +715,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function should_use_new_process( WC_Order $order ) {
 		$order_id = $order->get_id();
 
+		// The new process us under active development, and not ready for production yet.
+		if ( ! WC_Payments::mode()->is_dev() ) {
+			return false;
+		}
+
 		// This array will contain all factors, present during checkout.
 		$factors = [
 			/**
