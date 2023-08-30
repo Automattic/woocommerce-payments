@@ -69,6 +69,7 @@ export interface Dispute {
 	currency: string;
 	created: number;
 	balance_transactions: BalanceTransaction[];
+	payment_intent: string;
 }
 
 export interface CachedDispute {
