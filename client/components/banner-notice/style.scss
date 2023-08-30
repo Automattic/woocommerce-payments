@@ -29,6 +29,10 @@
 		margin-right: $gap-small;
 	}
 
+	&__content {
+		flex-grow: 1;
+	}
+
 	&__actions {
 		display: grid;
 		grid-auto-flow: column;

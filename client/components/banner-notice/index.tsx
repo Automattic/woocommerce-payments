@@ -140,7 +140,7 @@ const BannerNotice: React.FC< Props > = ( {
 					className="wcpay-banner-notice__icon"
 				/>
 			) }
-			<div>
+			<div className="wcpay-banner-notice__content">
 				{ children }
 				{ actions.length > 0 && (
 					<div className="wcpay-banner-notice__actions">
