@@ -11,8 +11,21 @@ interface Evidence {
 }
 
 interface EvidenceDetails {
+	/**
+	 * Whether evidence has been staged for this dispute.
+	 */
 	has_evidence: boolean;
+	/**
+	 * Date by which evidence must be submitted in order to successfully challenge dispute.
+	 */
 	due_by: number;
+	/**
+	 * Whether the last evidence submission was submitted past the due date. Defaults to false if no evidence submissions have occurred. If true, then delivery of the latest evidence is not guaranteed.
+	 */
+	past_due: boolean;
+	/**
+	 * The number of times evidence has been submitted. Typically, the merchant may only submit evidence once.
+	 */
 	submission_count: number;
 }
 
