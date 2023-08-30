@@ -156,7 +156,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		charge.currency && balance.currency !== charge.currency;
 
 	const {
-		featureFlags: { isAuthAndCaptureEnabled },
+		featureFlags: { isAuthAndCaptureEnabled, isRefundControlsEnabled },
 	} = useContext( WCPaySettingsContext );
 
 	// We should only fetch the authorization data if the payment is marked for manual capture and it is not already captured.
@@ -376,12 +376,14 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					/>
 				</LoadableBlock>
 			</CardBody>
-			{ Object.keys( charge ).length > 0 && ! charge.order && (
-				<MissingOrderNotice
-					isLoading={ isLoading }
-					amount={ formattedAmount }
-				/>
-			) }
+			{ isRefundControlsEnabled &&
+				Object.keys( charge ).length > 0 &&
+				! charge.order && (
+					<MissingOrderNotice
+						isLoading={ isLoading }
+						amount={ formattedAmount }
+					/>
+				) }
 			{ isAuthAndCaptureEnabled &&
 				authorization &&
 				! authorization.captured && (
