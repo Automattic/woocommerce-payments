@@ -12,6 +12,7 @@ import type { Dispute } from 'wcpay/types/disputes';
 import { Card, CardBody } from '@wordpress/components';
 import './style.scss';
 import DisputeNotice from './dispute-notice';
+import DisputeActions from './dispute-actions';
 import { isAwaitingResponse } from 'wcpay/disputes/utils';
 
 interface DisputeDetailsProps {
@@ -35,6 +36,7 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 							/>
 						) }
 						<div></div>
+						<DisputeActions dispute={ dispute } />
 					</CardBody>
 				</Card>
 			</div>
