@@ -3,9 +3,9 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Button, Flex } from '@wordpress/components';
+import { Button, Flex, Modal } from '@wordpress/components';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { getHistory } from '@woocommerce/navigation';
 
@@ -42,14 +42,27 @@ export const useDisputeAccept = (
 };
 
 interface Props {
-	/**
-	 * The dispute ID.
-	 */
 	dispute: Dispute;
 }
 const DisputeActions: React.FC< Props > = ( { dispute } ) => {
 	const hasStagedEvidence = dispute.evidence_details?.has_evidence;
 	const { doAccept, isLoading } = useDisputeAccept( dispute );
+	const [ isModalOpen, setModalOpen ] = useState( false );
+
+	const onClose = () => {
+		setModalOpen( false );
+	};
+
+	const onSubmit = () => {
+		// TODO: Tracks event
+		// wcpayTracks.recordEvent(
+		// 	'wcpay_dispute_challenge_clicked',
+		// 	{}
+		// );
+		setModalOpen( false );
+		doAccept();
+	};
+
 	return (
 		<Flex justify="start">
 			<Button
@@ -78,11 +91,49 @@ const DisputeActions: React.FC< Props > = ( { dispute } ) => {
 				variant="tertiary"
 				disabled={ isLoading }
 				onClick={ () => {
-					// Open modal
+					// TODO: Tracks event
+					// wcpayTracks.recordEvent(
+					// 	'wcpay_dispute_challenge_clicked',
+					// 	{}
+					// );
+					setModalOpen( true );
 				} }
 			>
 				{ __( 'Accept dispute', 'woocommerce-payments' ) }
 			</Button>
+
+			{ isModalOpen && (
+				<Modal title="Accept the dispute?" onRequestClose={ onClose }>
+					<p>
+						<strong>
+							{ __(
+								'Before proceeding, please take note of the following:',
+								'woocommerce-payments'
+							) }
+						</strong>
+					</p>
+					<p>
+						{ __(
+							'Accepting the dispute marks it as Lost. The disputed amount will be returned to the cardholder, with a $15 dispute fee deducted from your account',
+							'woocommerce-payments'
+						) }
+					</p>
+					<p>
+						{ __(
+							'Accepting the dispute is final and cannot be undone.',
+							'woocommerce-payments'
+						) }
+					</p>
+					<Flex justify="end">
+						<Button variant="tertiary" onClick={ onClose }>
+							{ __( 'Cancel', 'woocommerce-payments' ) }
+						</Button>
+						<Button variant="primary" onClick={ onSubmit }>
+							{ __( 'Accept dispute', 'woocommerce-payments' ) }
+						</Button>
+					</Flex>
+				</Modal>
+			) }
 		</Flex>
 	);
 };
