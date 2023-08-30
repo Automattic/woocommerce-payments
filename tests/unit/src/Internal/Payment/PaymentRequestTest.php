@@ -8,6 +8,7 @@
 namespace WCPay\Tests\Internal\Payment;
 
 use WCPay\Internal\Payment\PaymentRequest;
+use WCPay\Internal\Proxy\LegacyProxy;
 use WCPAY_UnitTestCase;
 
 /**
@@ -21,12 +22,18 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 	 */
 	private $sut;
 
+	public function setUp(): void {
+		parent::setUp();
+		$this->mock_legacy_proxy = $this->createMock( LegacyProxy::class );
+
+	}
+
 	/**
 	 * @dataProvider provider_text_string_param
 	 */
 	public function test_get_fraud_prevention_token( ?string $value, ?string $expected ) {
 		$request   = is_null( $value ) ? [] : [ 'wcpay-fraud-prevention-token' => $value ];
-		$this->sut = new PaymentRequest( $request );
+		$this->sut = new PaymentRequest( $this->mock_legacy_proxy, $request );
 		$this->assertSame( $expected, $this->sut->get_fraud_prevention_token() );
 	}
 
@@ -35,7 +42,7 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 	 */
 	public function test_get_woopay_intent_id( ?string $value, ?string $expected ) {
 		$request   = is_null( $value ) ? [] : [ 'platform-checkout-intent' => $value ];
-		$this->sut = new PaymentRequest( $request );
+		$this->sut = new PaymentRequest( $this->mock_legacy_proxy, $request );
 		$this->assertSame( $expected, $this->sut->get_woopay_intent_id() );
 	}
 
@@ -44,7 +51,7 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 	 */
 	public function test_get_intent_id( ?string $value, ?string $expected ) {
 		$request   = is_null( $value ) ? [] : [ 'intent_id' => $value ];
-		$this->sut = new PaymentRequest( $request );
+		$this->sut = new PaymentRequest( $this->mock_legacy_proxy, $request );
 		$this->assertSame( $expected, $this->sut->get_intent_id() );
 	}
 
@@ -53,7 +60,7 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 	 */
 	public function test_get_payment_method_id( ?string $value, ?string $expected ) {
 		$request   = is_null( $value ) ? [] : [ 'payment_method_id' => $value ];
-		$this->sut = new PaymentRequest( $request );
+		$this->sut = new PaymentRequest( $this->mock_legacy_proxy, $request );
 		$this->assertSame( $expected, $this->sut->get_payment_method_id() );
 	}
 
@@ -100,7 +107,7 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 	 */
 	public function test_is_woopay_preflight_check( ?string $value, bool $expected ) {
 		$request   = is_null( $value ) ? [] : [ 'is-woopay-preflight-check' => $value ];
-		$this->sut = new PaymentRequest( $request );
+		$this->sut = new PaymentRequest( $this->mock_legacy_proxy, $request );
 		$this->assertSame( $expected, $this->sut->is_woopay_preflight_check() );
 	}
 
@@ -109,7 +116,7 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 	 */
 	public function test_get_order_id( ?string $value, ?int $expected ) {
 		$request   = is_null( $value ) ? [] : [ 'order_id' => $value ];
-		$this->sut = new PaymentRequest( $request );
+		$this->sut = new PaymentRequest( $this->mock_legacy_proxy, $request );
 		$this->assertSame( $expected, $this->sut->get_order_id() );
 	}
 

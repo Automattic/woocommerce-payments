@@ -8,10 +8,12 @@
 namespace WCPay\Internal\Payment;
 
 use WC_Payment_Gateway_WCPay;
+use WC_Payment_Token;
 use WC_Payment_Tokens;
 use WCPay\Internal\Payment\PaymentMethod\NewPaymentMethod;
 use WCPay\Internal\Payment\PaymentMethod\PaymentMethodInterface;
 use WCPay\Internal\Payment\PaymentMethod\SavedPaymentMethod;
+use WCPay\Internal\Proxy\LegacyProxy;
 
 /**
  * Class for loading, sanitizing, and escaping data from payment requests.
@@ -25,11 +27,20 @@ class PaymentRequest {
 	private $request;
 
 	/**
-	 * The request array.
+	 * Legacy proxy.
 	 *
-	 * @param  array|null $request  Request data, this can be $_POST, or WP_REST_Request::get_params().
+	 * @var LegacyProxy
 	 */
-	public function __construct( array $request = null ) {
+	private $legacy_proxy;
+
+	/**
+	 * Extract information from request data.
+	 *
+	 * @param  LegacyProxy $legacy_proxy Legacy proxy.
+	 * @param  array|null  $request      Request data, this can be $_POST, or WP_REST_Request::get_params().
+	 */
+	public function __construct( LegacyProxy $legacy_proxy, array $request = null ) {
+		$this->legacy_proxy = $legacy_proxy;
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$this->request = $request ?? $_POST;
 	}
@@ -117,7 +128,14 @@ class PaymentRequest {
 		$token_param = 'wc-' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token';
 		if ( ! empty( $request[ $token_param ] ) ) {
 			$token_id = absint( wp_unslash( $request [ $token_param ] ) );
-			$token    = WC_Payment_Tokens::get( $token_id );
+
+			/**
+			 * Retrieved token object.
+			 *
+			 * @var null| WC_Payment_Token $token
+			 */
+			$token = $this->legacy_proxy->call_static( WC_Payment_Tokens::class, 'get', $token_id );
+
 			if ( is_null( $token ) ) {
 				throw new PaymentRequestException( __( 'Invalid saved payment method (token) ID', 'woocommerce-payments' ) );
 			}
