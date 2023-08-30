@@ -27,11 +27,7 @@ export const useDisputeAccept = (
 			const { isResolving } = select( STORE_NAME );
 
 			return {
-				isLoading:
-					isResolving( 'getDispute', [ dispute.id ] ) ||
-					isResolving( 'getPaymentIntent', [
-						dispute.payment_intent,
-					] ),
+				isLoading: isResolving( 'getDispute', [ dispute.id ] ),
 			};
 		},
 		[ dispute.id ]

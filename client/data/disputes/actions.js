@@ -108,13 +108,13 @@ export function* acceptTransactionDetailsDispute( dispute ) {
 
 		yield updateDispute( updatedDispute );
 
-		yield controls.dispatch( STORE_NAME, 'finishResolution', 'getDispute', [
-			id,
-		] );
-
 		// Fetch and update the payment intent associated with the dispute
 		// to reflect changes to the dispute on the Transaction Details screen.
 		yield getPaymentIntent( paymentIntent );
+
+		yield controls.dispatch( STORE_NAME, 'finishResolution', 'getDispute', [
+			id,
+		] );
 
 		wcpayTracks.recordEvent( 'wcpay_dispute_accept_success' );
 		const message = updatedDispute.order
@@ -139,5 +139,8 @@ export function* acceptTransactionDetailsDispute( dispute ) {
 		);
 		wcpayTracks.recordEvent( 'wcpay_dispute_accept_failed' );
 		yield controls.dispatch( 'core/notices', 'createErrorNotice', message );
+		yield controls.dispatch( STORE_NAME, 'finishResolution', 'getDispute', [
+			id,
+		] );
 	}
 }
