@@ -537,24 +537,18 @@ abstract class Request {
 	 * @return string[] The unique combined values from the arrays.
 	 */
 	public static function traverse_class_constants( string $constant_name, bool $unique = false ) {
-		// Generate a class tree first, in order to reverse it later.
-		$class_tree = [];
+		$keys       = [];
 		$class_name = static::class;
-		do {
-			$class_tree[] = $class_name;
-			$class_name   = get_parent_class( $class_name );
-		} while ( $class_name );
-		$class_tree = array_reverse( $class_tree );
 
-		// Go from parent to child class, and load the constants.
-		$keys = [];
-		foreach ( $class_tree as $class_name ) {
+		do {
 			$constant = "$class_name::$constant_name";
 
 			if ( defined( $constant ) ) {
-				$keys = array_merge( $keys, constant( $constant ) );
+				$keys = array_merge( constant( $constant ), $keys );
 			}
-		}
+
+			$class_name = get_parent_class( $class_name );
+		} while ( $class_name );
 
 		if ( $unique ) {
 			$keys = array_unique( $keys );
