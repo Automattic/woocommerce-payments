@@ -64,6 +64,8 @@ class WC_Payments_Onboarding_Service {
 			return $this->database_cache->get( Database_Cache::ONBOARDING_FIELDS_DATA_KEY, true );
 		}
 
+		$force_refresh = true;
+
 		$cache_key = Database_Cache::ONBOARDING_FIELDS_DATA_KEY;
 		if ( ! empty( $locale ) ) {
 			$cache_key .= '__' . $locale;
