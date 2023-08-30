@@ -1509,15 +1509,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'subscription_payment' => 'no',
 		];
 
-		// If the order belongs to a WCPay Subscription, set the payment context to 'wcpay_subscription' (this helps with associating which fees belong to orders).
-		if ( 'recurring' === (string) $payment_type && ! $this->is_subscriptions_plugin_active() ) {
-			$subscriptions = wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] );
+		if ( 'recurring' === (string) $payment_type ) {
+			$subscriptions                    = wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] );
+			$metadata['subscription_payment'] = count( $subscriptions ) > 1 ? 'renewal' : 'initial';
+			$metadata['payment_context']      = 'regular_subscription';
 
-			foreach ( $subscriptions as $subscription ) {
-				if ( WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ) {
-					$metadata['payment_context']      = 'wcpay_subscription';
-					$metadata['subscription_payment'] = count( $subscriptions ) > 1 ? 'renewal' : 'initial';
-					break;
+			// If the order belongs to a WCPay Subscription, set the payment context to 'wcpay_subscription' (this helps with associating which fees belong to orders).
+			if ( $this->is_subscriptions_plugin_active() ) {
+				foreach ( $subscriptions as $subscription ) {
+					if ( WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ) {
+						$metadata['payment_context'] = 'wcpay_subscription';
+						break;
+					}
 				}
 			}
 		}

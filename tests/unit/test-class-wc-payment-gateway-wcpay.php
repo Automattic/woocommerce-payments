@@ -1322,7 +1322,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			'order_key'            => $order->get_order_key(),
 			'payment_type'         => Payment_Type::SINGLE(),
 			'gateway_type'         => 'classic',
-			'checkout_type'        => 'unknown',
+			'checkout_type'        => '',
 			'client_version'       => WCPAY_VERSION_NUMBER,
 			'subscription_payment' => 'no',
 		];
