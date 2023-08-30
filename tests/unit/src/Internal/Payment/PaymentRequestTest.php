@@ -7,7 +7,12 @@
 
 namespace WCPay\Tests\Internal\Payment;
 
+use WC_Payment_Token;
+use WC_Payment_Tokens;
+use WCPay\Internal\Payment\PaymentMethod\NewPaymentMethod;
+use WCPay\Internal\Payment\PaymentMethod\SavedPaymentMethod;
 use WCPay\Internal\Payment\PaymentRequest;
+use WCPay\Internal\Payment\PaymentRequestException;
 use WCPay\Internal\Proxy\LegacyProxy;
 use WCPAY_UnitTestCase;
 
@@ -25,7 +30,6 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 	public function setUp(): void {
 		parent::setUp();
 		$this->mock_legacy_proxy = $this->createMock( LegacyProxy::class );
-
 	}
 
 	/**
@@ -135,5 +139,88 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 				'expected' => 123,
 			],
 		];
+	}
+
+	/**
+	 * @dataProvider provider_get_payment_method_throw_exception_due_to_miss_payment_method_param
+	 */
+	public function test_get_payment_method_throw_exception_due_to_miss_payment_method_param( array $request ) {
+		$this->expectException( PaymentRequestException::class );
+		$this->expectExceptionMessage( 'WooPayments is not used during checkout.' );
+		$this->sut = new PaymentRequest( $this->mock_legacy_proxy, $request );
+		$this->sut->get_payment_method();
+	}
+
+	public function provider_get_payment_method_throw_exception_due_to_miss_payment_method_param(): array {
+		return [
+			'empty payment_method param' => [ [ 'payment_method' => '' ] ],
+			'not WooPayments method'     => [
+				[ 'payment_method' => 'NOT_woocommerce_payments' ],
+			],
+		];
+	}
+
+	public function test_get_payment_return_new_payment_method() {
+		$request   = [
+			'payment_method'       => 'woocommerce_payments',
+			'wcpay-payment-method' => 'pm_mock',
+		];
+		$this->sut = new PaymentRequest(
+			$this->mock_legacy_proxy,
+			$request
+		);
+
+		$this->assertInstanceOf( NewPaymentMethod::class, $this->sut->get_payment_method() );
+	}
+
+	public function test_get_payment_throw_exception_due_to_invalid_token_id() {
+		$request   = [
+			'payment_method'                        => 'woocommerce_payments',
+			'wc-woocommerce_payments-payment-token' => 123456,
+		];
+		$this->sut = new PaymentRequest(
+			$this->mock_legacy_proxy,
+			$request
+		);
+
+		$this->mock_legacy_proxy->expects( $this->once() )
+			->method( 'call_static' )
+			->with( WC_Payment_Tokens::class, 'get', 123456 )
+			->willReturn( null );
+		$this->expectException( PaymentRequestException::class );
+		$this->expectExceptionMessage( 'Invalid saved payment method (token) ID' );
+
+		$this->sut->get_payment_method();
+	}
+
+	public function test_get_payment_return_saved_payment_method() {
+		$request   = [
+			'payment_method'                        => 'woocommerce_payments',
+			'wc-woocommerce_payments-payment-token' => 123456,
+		];
+		$this->sut = new PaymentRequest(
+			$this->mock_legacy_proxy,
+			$request
+		);
+
+		$this->mock_legacy_proxy->expects( $this->once() )
+			->method( 'call_static' )
+			->with( WC_Payment_Tokens::class, 'get', 123456 )
+			->willReturn( $this->createMock( WC_Payment_Token::class ) );
+
+		$this->assertInstanceOf( SavedPaymentMethod::class, $this->sut->get_payment_method() );
+	}
+
+	public function test_get_payment_method_throw_exception_due_to_no_payment_method_attached() {
+		$request   = [ 'payment_method' => 'woocommerce_payments' ];
+		$this->sut = new PaymentRequest(
+			$this->mock_legacy_proxy,
+			$request
+		);
+
+		$this->expectException( PaymentRequestException::class );
+		$this->expectExceptionMessage( 'No valid payment method attached to the request.' );
+
+		$this->sut->get_payment_method();
 	}
 }

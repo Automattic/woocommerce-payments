@@ -117,7 +117,7 @@ class PaymentRequest {
 
 		$is_woopayment_selected = isset( $request['payment_method'] ) && WC_Payment_Gateway_WCPay::GATEWAY_ID === $request['payment_method'];
 		if ( ! $is_woopayment_selected ) {
-			throw new PaymentRequestException( __( 'WooPayments is not used during checkout, cannot retrieve payment method.', 'woocommerce-payments' ) );
+			throw new PaymentRequestException( __( 'WooPayments is not used during checkout.', 'woocommerce-payments' ) );
 		}
 
 		if ( ! empty( $request['wcpay-payment-method'] ) ) {
@@ -142,6 +142,6 @@ class PaymentRequest {
 			return new SavedPaymentMethod( $token );
 		}
 
-		throw new PaymentRequestException( __( 'Payment method not attached for the request.', 'woocommerce-payments' ) );
+		throw new PaymentRequestException( __( 'No valid payment method attached to the request.', 'woocommerce-payments' ) );
 	}
 }
