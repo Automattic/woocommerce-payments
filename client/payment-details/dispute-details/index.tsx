@@ -23,21 +23,25 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 	const dueBy = moment.unix( dispute.evidence_details?.due_by ?? 0 );
 	const countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
 
-	return (
-		<div className="transaction-details-dispute-details-wrapper">
-			<Card>
-				<CardBody className="transaction-details-dispute-details-body">
-					{ isAwaitingResponse( dispute.status ) &&
-						countdownDays >= 0 && (
+	if ( isAwaitingResponse( dispute.status ) ) {
+		return (
+			<div className="transaction-details-dispute-details-wrapper">
+				<Card>
+					<CardBody className="transaction-details-dispute-details-body">
+						{ countdownDays >= 0 && (
 							<DisputeNotice
 								dispute={ dispute }
 								urgent={ countdownDays <= 2 }
 							/>
 						) }
-				</CardBody>
-			</Card>
-		</div>
-	);
+						<div></div>
+					</CardBody>
+				</Card>
+			</div>
+		);
+	}
+
+	return null;
 };
 
 export default DisputeDetails;
