@@ -7,6 +7,12 @@
 
 namespace WCPay\Internal\Payment;
 
+use WC_Payment_Gateway_WCPay;
+use WC_Payment_Tokens;
+use WCPay\Internal\Payment\PaymentMethod\NewPaymentMethod;
+use WCPay\Internal\Payment\PaymentMethod\PaymentMethodInterface;
+use WCPay\Internal\Payment\PaymentMethod\SavedPaymentMethod;
+
 /**
  * Class for loading, sanitizing, and escaping data from payment requests.
  */
@@ -88,5 +94,36 @@ class PaymentRequest {
 		return isset( $this->request['payment_method_id'] )
 			? sanitize_text_field( wp_unslash( ( $this->request['payment_method_id'] ) ) )
 			: null;
+	}
+
+	/**
+	 * Gets payment method object from request.
+	 *
+	 * @throws PaymentRequestException
+	 */
+	public function get_payment_method(): PaymentMethodInterface {
+		$request = $this->request;
+
+		$is_woopayment_selected = isset( $request['payment_method'] ) || WC_Payment_Gateway_WCPay::GATEWAY_ID === $request['payment_method'];
+		if ( ! $is_woopayment_selected ) {
+			throw new PaymentRequestException( __( 'WooPayments is not used during checkout, cannot retrieve payment method.', 'woocommerce-payments' ) );
+		}
+
+		if ( ! empty( $request['wcpay-payment-method'] ) ) {
+			$payment_method = sanitize_text_field( wp_unslash( $request['wcpay-payment-method'] ) );
+			return new NewPaymentMethod( $payment_method );
+		}
+
+		$token_param = 'wc-' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token';
+		if ( ! empty( $request[ $token_param ] ) ) {
+			$token_id = absint( wp_unslash( $request [ $token_param ] ) );
+			$token    = WC_Payment_Tokens::get( $token_id );
+			if ( is_null( $token ) ) {
+				throw new PaymentRequestException( __( 'Invalid saved payment method (token) ID', 'woocommerce-payments' ) );
+			}
+			return new SavedPaymentMethod( $token );
+		}
+
+		throw new PaymentRequestException( __( 'Payment method not attached for the request.', 'woocommerce-payments' ) );
 	}
 }
