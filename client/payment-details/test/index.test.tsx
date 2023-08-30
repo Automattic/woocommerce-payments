@@ -155,6 +155,7 @@ describe( 'Payment details page', () => {
 		Object.defineProperty( window, 'location', {
 			value: { href: 'http://example.com' },
 		} );
+		mockHistoryReplace.mockReset();
 	} );
 
 	afterAll( () => {
@@ -190,10 +191,8 @@ describe( 'Payment details page', () => {
 	} );
 
 	it( 'should not redirect with a payment intent ID as query param', () => {
-		const { href } = window.location;
-
 		render( <PaymentDetailsPage query={ paymentIntentQuery } /> );
 
-		expect( window.location.href ).toEqual( href );
+		expect( mockHistoryReplace ).not.toHaveBeenCalled();
 	} );
 } );
