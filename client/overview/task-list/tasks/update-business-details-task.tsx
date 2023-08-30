@@ -18,7 +18,8 @@ export const getUpdateBusinessDetailsTask = (
 	status: string,
 	accountLink: string,
 	currentDeadline: number | null,
-	pastDue: boolean
+	pastDue: boolean,
+	detailsSubmitted: boolean
 ): TaskItemProps | null => {
 	const accountRestrictedSoon = 'restricted_soon' === status;
 	const accountDetailsPastDue = 'restricted' === status && pastDue;
@@ -54,6 +55,13 @@ export const getUpdateBusinessDetailsTask = (
 	} else if ( accountDetailsPastDue ) {
 		if ( hasSingleError ) {
 			accountDetailsTaskDescription = errorMessages[ 0 ];
+		} else if ( ! detailsSubmitted ) {
+			accountDetailsTaskDescription =
+				/* translators: <a> - dashboard login URL */
+				__(
+					'Payments and deposits are disabled for this account until setup is completed.',
+					'woocommerce-payments'
+				);
 		} else {
 			accountDetailsTaskDescription =
 				/* translators: <a> - dashboard login URL */
@@ -99,21 +107,35 @@ export const getUpdateBusinessDetailsTask = (
 		}
 	};
 
+	let actionLabel;
+
+	if ( hasMultipleErrors ) {
+		actionLabel = __( 'More details', 'woocommerce-payments' );
+	} else if ( ! detailsSubmitted ) {
+		actionLabel = __( 'Finish setup', 'woocommerce-payments' );
+	} else {
+		actionLabel = __( 'Update', 'woocommerce-payments' );
+	}
+
 	return {
-		key: 'update-business-details',
+		key: ! detailsSubmitted ? 'complete-setup' : 'update-business-details',
 		level: 1,
-		title: sprintf(
-			/* translators: %s: WooPayments */
-			__( 'Update %s business details', 'woocommerce-payments' ),
-			'WooPayments'
-		),
+		title: ! detailsSubmitted
+			? sprintf(
+					/* translators: %s: WooPayments */
+					__( 'Set up %s', 'woocommerce-payments' ),
+					'WooPayments'
+			  )
+			: sprintf(
+					/* translators: %s: WooPayments */
+					__( 'Update %s business details', 'woocommerce-payments' ),
+					'WooPayments'
+			  ),
 		content: accountDetailsTaskDescription,
 		completed: 'complete' === status || 'enabled' === status,
 		onClick: handleClick,
 		action: handleClick,
-		actionLabel: hasMultipleErrors
-			? __( 'More details', 'woocommerce-payments' )
-			: __( 'Update', 'woocommerce-payments' ),
+		actionLabel: actionLabel,
 		expandable: true,
 		expanded: true,
 		showActionButton: true,

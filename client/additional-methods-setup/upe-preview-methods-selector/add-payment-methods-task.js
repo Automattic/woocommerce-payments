@@ -15,6 +15,7 @@ import {
 	CardBody,
 	ExternalLink,
 	CardDivider,
+	Notice,
 } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 
@@ -38,6 +39,7 @@ import CurrencyInformationForMethods from '../../components/currency-information
 import { upeCapabilityStatuses, upeMethods } from '../constants';
 import paymentMethodsMap from '../../payment-methods-map';
 import ConfirmPaymentMethodActivationModal from 'wcpay/payment-methods/activation-modal';
+import './add-payment-methods-task.scss';
 
 const usePaymentMethodsCheckboxState = () => {
 	// For UPE, the card payment method is required and always active.
@@ -136,6 +138,9 @@ const AddPaymentMethodsTask = () => {
 	const availablePaymentMethods = useGetAvailablePaymentMethodIds();
 	const paymentMethodStatuses = useGetPaymentMethodStatuses();
 	const { isActive } = useContext( WizardTaskContext );
+	const isPoEnabled = wcpaySettings?.progressiveOnboarding?.isEnabled;
+	const isPoComplete = wcpaySettings?.progressiveOnboarding?.isComplete;
+	const isPoInProgress = isPoEnabled && ! isPoComplete;
 
 	// I am using internal state in this component
 	// and committing the changes on `initialEnabledPaymentMethodIds` only when the "continue" button is clicked.
@@ -217,6 +222,7 @@ const AddPaymentMethodsTask = () => {
 								getStatusAndRequirements( key ).status
 						}
 						status={ getStatusAndRequirements( key ).status }
+						locked={ isPoInProgress }
 						onChange={ ( name, status ) => {
 							handleCheckClick( name, status );
 						} }
@@ -257,6 +263,31 @@ const AddPaymentMethodsTask = () => {
 						},
 					} ) }
 				</p>
+
+				<Notice
+					status="warning"
+					isDismissible={ false }
+					className="po__notice"
+				>
+					<span>
+						{ __(
+							'Some payment methods cannot be enabled because more information is needed about your account. ',
+							'woocommerce-payments'
+						) }
+					</span>
+					<a
+						// eslint-disable-next-line max-len
+						href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/#method-cant-be-enabled"
+						target="_blank"
+						rel="external noreferrer noopener"
+					>
+						{ __(
+							'Learn more about enabling additional payment methods.',
+							'woocommerce-payments'
+						) }
+					</a>
+				</Notice>
+
 				<Card
 					className="add-payment-methods-task__payment-selector-wrapper"
 					size="small"

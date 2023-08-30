@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Intent_Status;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\Connection_Exception;
@@ -952,9 +952,16 @@ class WC_Payments_API_Client {
 	 *
 	 * @return array The link object with an url field.
 	 *
-	 * @throws API_Exception When something goes wrong with the request, or the link is not valid.
+	 * @throws API_Exception When something goes wrong with the request, when type is not defined or valid, or the link is not valid.
 	 */
 	public function get_link( array $args ) {
+		if ( ! isset( $args['type'] ) && ! in_array( $args['type'], [ 'login_link', 'complete_kyc_link' ], true ) ) {
+			throw new API_Exception(
+				__( 'Link type is required', 'woocommerce-payments' ),
+				'wcpay_unknown_link_type',
+				400
+			);
+		}
 		return $this->request(
 			$args,
 			self::LINKS_API,
@@ -2149,7 +2156,7 @@ class WC_Payments_API_Client {
 		$last_payment_error     = $intention_array['last_payment_error'] ?? [];
 		$customer               = $intention_array['customer'] ?? $charge_array['customer'] ?? null;
 		$payment_method         = $intention_array['payment_method'] ?? $intention_array['source'] ?? null;
-		$processing             = $intention_array[ Payment_Intent_Status::PROCESSING ] ?? [];
+		$processing             = $intention_array[ Intent_Status::PROCESSING ] ?? [];
 		$payment_method_types   = $intention_array['payment_method_types'] ?? [];
 		$payment_method_options = $intention_array['payment_method_options'] ?? [];
 
