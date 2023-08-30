@@ -21,6 +21,7 @@ interface Props {
 	dispute: Dispute;
 }
 const DisputeActions: React.FC< Props > = ( { dispute } ) => {
+	const hasStagedEvidence = dispute.evidence_details?.has_evidence;
 	return (
 		<Flex justify="start">
 			<Button
@@ -39,7 +40,9 @@ const DisputeActions: React.FC< Props > = ( { dispute } ) => {
 					getHistory().push( challengeUrl );
 				} }
 			>
-				{ __( 'Challenge dispute', 'woocommerce-payments' ) }
+				{ hasStagedEvidence
+					? __( 'Continue with challenge', 'woocommerce-payments' )
+					: __( 'Challenge dispute', 'woocommerce-payments' ) }
 			</Button>
 
 			<Button
