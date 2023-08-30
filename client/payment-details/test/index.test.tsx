@@ -40,6 +40,7 @@ jest.mock( '@wordpress/data', () => ( {
 	useSelect: jest.fn(),
 } ) );
 
+const mockHistoryReplace = jest.fn();
 jest.mock( '@woocommerce/navigation', () => ( {
 	getQuery: () => {
 		return {
@@ -47,6 +48,9 @@ jest.mock( '@woocommerce/navigation', () => ( {
 			type_is: '',
 		};
 	},
+	getHistory: () => ( {
+		replace: mockHistoryReplace,
+	} ),
 	addHistoryListener: jest.fn(),
 } ) );
 
@@ -182,7 +186,7 @@ describe( 'Payment details page', () => {
 	it( 'should redirect from ch_mock to pi_mock', () => {
 		render( <PaymentDetailsPage query={ chargeQuery } /> );
 
-		expect( window.location.href ).toEqual( redirectUrl );
+		expect( mockHistoryReplace ).toHaveBeenCalledWith( redirectUrl );
 	} );
 
 	it( 'should not redirect with a payment intent ID as query param', () => {
