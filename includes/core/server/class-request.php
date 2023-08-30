@@ -544,7 +544,7 @@ abstract class Request {
 			$constant = "$class_name::$constant_name";
 
 			if ( defined( $constant ) ) {
-				$keys = array_merge( $keys, constant( $constant ) );
+				$keys = array_merge( constant( $constant ), $keys );
 			}
 
 			$class_name = get_parent_class( $class_name );

@@ -173,7 +173,7 @@ describe( 'getTasks()', () => {
 				expect.objectContaining( {
 					key: 'complete-setup',
 					completed: false,
-					title: 'Set up WooPayments',
+					title: 'Finish setting up WooPayments',
 					actionLabel: 'Finish setup',
 				} ),
 			] )
