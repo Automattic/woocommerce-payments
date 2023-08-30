@@ -1493,17 +1493,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$gateway_type = 'classic';
 		}
 
-		switch ( $order->get_created_via() ) {
-			case 'checkout':
-				$checkout_type = 'shortcode';
-				break;
-			case 'store-api': // For block based orders, the created-via field is set to this value.
-				$checkout_type = 'block';
-				break;
-			default:
-				$checkout_type = 'unknown';
-		}
-
 		$name     = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
 		$email    = sanitize_email( $order->get_billing_email() );
 		$metadata = [
@@ -1515,7 +1504,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'order_key'            => $order->get_order_key(),
 			'payment_type'         => $payment_type,
 			'gateway_type'         => $gateway_type,
-			'checkout_type'        => $checkout_type,
+			'checkout_type'        => $order->get_created_via(),
 			'client_version'       => WCPAY_VERSION_NUMBER,
 			'subscription_payment' => 'no',
 		];
