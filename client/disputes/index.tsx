@@ -156,7 +156,9 @@ const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
  *
  * @return {JSX.Element | string} If dispute is due within 72 hours, return the element that display smart date. Otherwise, a date string.
  */
-export const smartDueDate = ( dispute: Dispute | CachedDispute ) => {
+export const smartDueDate = (
+	dispute: Dispute | CachedDispute
+): JSX.Element | string => {
 	// Dispute uses dispute.evidence_details.due_by, CachedDispute uses dispute.due_by for the due date
 	const now = moment().utc();
 

@@ -8,20 +8,10 @@ import React from 'react';
  * Internal dependencies
  */
 import type { Dispute } from 'wcpay/types/disputes';
-import {
-	HorizontalList,
-	HorizontalListItem,
-} from 'wcpay/components/horizontal-list';
-import { Charge } from 'wcpay/types/charges';
+import { HorizontalList } from 'wcpay/components/horizontal-list';
 import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
-import moment from 'moment/moment';
-import { getChargeChannel } from 'wcpay/utils/charge';
-import CustomerLink from 'wcpay/components/customer-link';
-import OrderLink from 'wcpay/components/order-link';
-import PaymentMethodDetails from 'wcpay/components/payment-method-details';
-import riskMappings from 'wcpay/components/risk-level/strings';
-import isValueTruthy from 'wcpay/utils/is-value-truthy';
+import moment from 'moment';
 import { formatCurrency } from 'wcpay/utils/currency';
 import { reasons } from 'wcpay/disputes/strings';
 import { formatStringValue } from 'wcpay/utils';
