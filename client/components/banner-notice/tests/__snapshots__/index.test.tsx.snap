@@ -1,0 +1,60 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`BannerNotice should match snapshot 1`] = `
+<div>
+  <div
+    class="wcpay-banner-notice is-success"
+  >
+    <span
+      class="wcpay-banner-notice__icon"
+      size="24"
+    >
+      Custom Icon
+    </span>
+    <div>
+      Example
+      <div
+        class="wcpay-banner-notice__actions"
+      >
+        <a
+          class="components-button is-link"
+          href="https://example.com"
+        >
+          More information
+        </a>
+        <button
+          class="components-button is-secondary"
+          type="button"
+        >
+          Cancel
+        </button>
+        <button
+          class="components-button is-primary"
+          type="button"
+        >
+          Submit
+        </button>
+      </div>
+    </div>
+    <button
+      aria-label="Dismiss this notice"
+      class="components-button wcpay-banner-notice__dismiss has-icon"
+      type="button"
+    >
+      <svg
+        class="gridicon gridicons-cross-small"
+        height="24"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <g>
+          <path
+            d="M17.705 7.705l-1.41-1.41L12 10.59 7.705 6.295l-1.41 1.41L10.59 12l-4.295 4.295 1.41 1.41L12 13.41l4.295 4.295 1.41-1.41L13.41 12l4.295-4.295z"
+          />
+        </g>
+      </svg>
+    </button>
+  </div>
+</div>
+`;
