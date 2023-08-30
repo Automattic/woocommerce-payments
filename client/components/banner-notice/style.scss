@@ -24,6 +24,11 @@
 		fill: $alert-red;
 	}
 
+	&.is-warning &__icon,
+	&.is-error &__icon {
+		height: 21px; // Adjust gridicon height to match other icons
+	}
+
 	&__icon {
 		flex-shrink: 0;
 		margin-right: $gap-small;
