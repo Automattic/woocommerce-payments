@@ -376,10 +376,6 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					/>
 				</LoadableBlock>
 			</CardBody>
-			<MissingOrderNotice
-				isLoading={ isLoading }
-				amount={ formattedAmount }
-			/>
 			{ Object.keys( charge ).length > 0 && ! charge.order && (
 				<MissingOrderNotice
 					isLoading={ isLoading }
@@ -392,8 +388,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					<Loadable isLoading={ isLoading } placeholder="">
 						<CardNotice
 							actions={
-								<>
-									! isFraudOutcomeReview && (
+								! isFraudOutcomeReview ? (
 									<CaptureAuthorizationButton
 										orderId={ charge.order?.number || 0 }
 										paymentIntentId={
@@ -411,8 +406,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											);
 										} }
 									/>
-									)
-								</>
+								) : undefined
 							}
 						>
 							{ createInterpolateElement(
