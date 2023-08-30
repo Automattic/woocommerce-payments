@@ -55,8 +55,7 @@ const PaymentChargeDetails: React.FC< PaymentChargeDetailsProps > = ( {
 				id: data.payment_intent,
 			} );
 
-			const history = getHistory();
-			history.replace( url );
+			getHistory().replace( url );
 		}
 	}, [ data, isChargeId ] );
 
