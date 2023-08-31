@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Update Base_Constant to return the singleton object for same static calls.
