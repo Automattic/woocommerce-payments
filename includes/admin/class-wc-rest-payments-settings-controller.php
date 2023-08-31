@@ -446,7 +446,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			)
 		);
 
-		// Gather status of Stripe Billing migration for use in the settings page.
+		// Gather the status of the Stripe Billing migration for use on the settings page.
 		if ( class_exists( 'WC_Payments_Subscriptions' ) ) {
 			$stripe_billing_migrator = WC_Payments_Subscriptions::get_stripe_billing_migrator();
 

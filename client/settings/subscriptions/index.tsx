@@ -16,6 +16,7 @@ import { useStripeBilling, useSettings } from 'wcpay/data';
 import MigrationInProgressNotice from './migration-progress-notice';
 import MigrateOptionNotice from './migrate-option-notice';
 import MigrateAutomaticallyNotice from './migrate-automatically-notice';
+import MigrationCompletedNotice from './migrate-completed-notice';
 
 /**
  * Renders a WooPayments subscriptions settings card.
@@ -31,6 +32,7 @@ const Subscriptions: React.FC = () => {
 		submitStripeBillingSubscriptionMigration,
 		isProcessingMigrateRequest,
 		hasScheduledMigration,
+		completedMigrationCount,
 	] = useStripeBilling() as [
 		boolean,
 		boolean,
@@ -38,7 +40,8 @@ const Subscriptions: React.FC = () => {
 		( value: boolean ) => void,
 		() => void,
 		boolean,
-		boolean
+		boolean,
+		number
 	];
 
 	/**
@@ -155,6 +158,20 @@ const Subscriptions: React.FC = () => {
 	] );
 
 	/**
+	 * The notice which contains information about a completed migration is shown when:
+	 *  - A migration is not in progress.
+	 *  - There are completed subscription migrated.
+	 */
+	const [
+		displayCompletedMigrationNotice,
+		setDisplayCompletedMigrationNotice,
+	] = useState(
+		! isMigratingStripeBilling &&
+			completedMigrationCount > 0 &&
+			! isStripeBillingEnabled
+	);
+
+	/**
 	 * Handle the Stripe Billing setting checkbox click.
 	 *
 	 * @param {boolean} checked Whether the checkbox is checked.
@@ -201,25 +218,34 @@ const Subscriptions: React.FC = () => {
 							}
 						/>
 					) }
+				{ displayCompletedMigrationNotice &&
+					! displayMigrationInProgressNotice && (
+						<MigrationCompletedNotice
+							completedMigrationCount={ completedMigrationCount }
+							onRemove={ () => {
+								setDisplayCompletedMigrationNotice( false );
+							} }
+						/>
+					) }
 				<CheckboxControl
 					checked={ isStripeBillingEnabled }
 					onChange={ handleCheckboxClick }
 					label={ __(
-						'Enable off-site billing with Stripe Billing',
+						'Enable Stripe Billing for future subscriptions',
 						'woocommerce-payments'
 					) }
 					help={ interpolateComponents( {
 						mixedString: sprintf(
 							displayMigrationOptionNotice
 								? __(
-										'Alternatively, you can enable this setting and %s subscription purchases will utilize' +
+										'Alternatively, you can enable this setting and future %s subscription purchases will also utilize' +
 											' Stripe Billing for payment processing. Note: This feature supports card payments only and' +
 											' may lack support for key subscription features.' +
 											' {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 										'woocommerce-payments'
 								  )
 								: __(
-										'By enabling this setting, %s subscription purchases will utilize Stripe Billing for payment' +
+										'By enabling this setting, future %s subscription purchases will utilize Stripe Billing for payment' +
 											' processing. Note: This feature supports card payments only and may lack support for key' +
 											' subscription features. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 										'woocommerce-payments'

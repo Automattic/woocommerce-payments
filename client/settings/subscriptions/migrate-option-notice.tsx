@@ -5,18 +5,18 @@
 import React from 'react';
 import BannerNotice from 'wcpay/components/banner-notice';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import { ExternalLink } from '@wordpress/components';
+import { ExternalLink, CardDivider } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 import { useEffect } from '@wordpress/element';
 
 interface Props {
 	/**
-	 * The number of subscriptions that are being migrated.
+	 * The number of subscriptions that will be migrated if a migration is started.
 	 */
 	stripeBillingSubscriptionCount: number;
 
 	/**
-	 * The function to call to start a migration
+	 * The function to call to start a migration.
 	 */
 	startMigration: () => void;
 
@@ -34,7 +34,7 @@ const MigrateOptionNotice: React.FC< Props > = ( {
 	// The class name of the action which sends the request to migrate.
 	const noticeClassName = 'woopayments-migrate-stripe-billing-action';
 
-	// Add the `is-busy` class to the button while we process the optional migrate request.
+	// Add the `is-busy` class to the button while we process the migrate request.
 	useEffect( () => {
 		const button = document.querySelector(
 			`.${ noticeClassName } .wcpay-banner-notice__action`
@@ -64,18 +64,17 @@ const MigrateOptionNotice: React.FC< Props > = ( {
 			{ interpolateComponents( {
 				mixedString: sprintf(
 					_n(
-						'There is %d customer subscriptions using Stripe Billing for payment processing.' +
-							' You can switch and migrate to on-site billing powered by %s and %s.' +
+						'There is %d customer subscription using Stripe Billing for subscription renewals.' +
+							' We suggest migrating it to on-site billing powered by the %s plugin.' +
 							' {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 						'There are %d customer subscriptions using Stripe Billing for payment processing.' +
-							' You can switch and migrate to on-site billing powered by %s and %s.' +
+							' We suggest migrating them to on-site billing powered by the %s plugin.' +
 							' {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 						stripeBillingSubscriptionCount,
 						'woocommerce-payments'
 					),
 					stripeBillingSubscriptionCount,
-					'Woo Subscriptions',
-					'WooPayments'
+					'Woo Subscriptions'
 				),
 				components: {
 					learnMoreLink: (

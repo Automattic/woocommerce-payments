@@ -596,6 +596,7 @@ export const useStripeBilling = () => {
 			const hasResolved = select( STORE_NAME ).hasFinishedResolution(
 				'scheduleStripeBillingMigration'
 			);
+			const { getStripeBillingMigratedCount } = select( STORE_NAME );
 
 			return [
 				getIsStripeBillingEnabled(),
@@ -605,6 +606,7 @@ export const useStripeBilling = () => {
 				submitStripeBillingSubscriptionMigration,
 				isResolving( 'scheduleStripeBillingMigration' ),
 				hasResolved,
+				getStripeBillingMigratedCount(),
 			];
 		},
 		[ updateIsStripeBillingEnabled ]

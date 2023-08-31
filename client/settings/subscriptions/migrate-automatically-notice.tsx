@@ -10,7 +10,7 @@ import interpolateComponents from '@automattic/interpolate-components';
 
 interface Props {
 	/**
-	 * The number of subscriptions that are being migrated.
+	 * The number of subscriptions that will be automatically migrated.
 	 */
 	stripeBillingSubscriptionCount: number;
 }
@@ -27,16 +27,19 @@ const MigrateAutomaticallyNotice: React.FC< Props > = ( {
 			{ interpolateComponents( {
 				mixedString: sprintf(
 					_n(
-						'There is currently %d customer subscriptions using Stripe Billing for payment processing.' +
-							' This subscription will be automatically migrated once Stripe Billing is disabled.' +
+						'There is currently %d customer subscription using Stripe Billing for payment processing.' +
+							' This subscription will be automatically migrated to use the on-site billing engine' +
+							' built into %s once Stripe Billing is disabled.' +
 							' {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 						'There are currently %d customer subscriptions using Stripe Billing for payment processing.' +
-							' These subscriptions will be automatically migrated once Stripe Billing is disabled.' +
+							' These subscriptions will be automatically migrated to use the on-site billing engine' +
+							' built into %s once Stripe Billing is disabled.' +
 							' {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 						stripeBillingSubscriptionCount,
 						'woocommerce-payments'
 					),
-					stripeBillingSubscriptionCount
+					stripeBillingSubscriptionCount,
+					'Woo Subscriptions'
 				),
 				components: {
 					learnMoreLink: (

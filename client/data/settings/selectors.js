@@ -237,3 +237,7 @@ export const getIsStripeBillingMigrationInProcess = ( state ) => {
 export const getStripeBillingSubscriptionCount = ( state ) => {
 	return getSettings( state ).stripe_billing_subscription_count || false;
 };
+
+export const getStripeBillingMigratedCount = ( state ) => {
+	return getSettings( state ).stripe_billing_migrated_count || false;
+};
