@@ -120,14 +120,9 @@ class PaymentRequest {
 			throw new PaymentRequestException( __( 'WooPayments is not used during checkout.', 'woocommerce-payments' ) );
 		}
 
-		if ( ! empty( $request['wcpay-payment-method'] ) ) {
-			$payment_method = sanitize_text_field( wp_unslash( $request['wcpay-payment-method'] ) );
-			return new NewPaymentMethod( $payment_method );
-		}
-
-		$token_param = 'wc-' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token';
-		if ( ! empty( $request[ $token_param ] ) ) {
-			$token_id = absint( wp_unslash( $request [ $token_param ] ) );
+		$token_request_key = 'wc-' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token';
+		if ( isset( $request[ $token_request_key ] ) && 'new' !== $request[ $token_request_key ] ) {
+			$token_id = absint( wp_unslash( $request [ $token_request_key ] ) );
 
 			/**
 			 * Retrieved token object.
@@ -137,9 +132,14 @@ class PaymentRequest {
 			$token = $this->legacy_proxy->call_static( WC_Payment_Tokens::class, 'get', $token_id );
 
 			if ( is_null( $token ) ) {
-				throw new PaymentRequestException( __( 'Invalid saved payment method (token) ID', 'woocommerce-payments' ) );
+				throw new PaymentRequestException( __( 'Invalid saved payment method (token) ID.', 'woocommerce-payments' ) );
 			}
 			return new SavedPaymentMethod( $token );
+		}
+
+		if ( ! empty( $request['wcpay-payment-method'] ) ) {
+			$payment_method = sanitize_text_field( wp_unslash( $request['wcpay-payment-method'] ) );
+			return new NewPaymentMethod( $payment_method );
 		}
 
 		throw new PaymentRequestException( __( 'No valid payment method was selected.', 'woocommerce-payments' ) );
