@@ -137,7 +137,7 @@ class WC_Payments_Checkout {
 			WC_Payments::get_gateway()->tokenization_script();
 			$script_handle = 'WCPAY_CHECKOUT';
 			$js_object     = 'wcpayConfig';
-			if ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+			if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 				$script_handle = 'wcpay-upe-checkout';
 				$js_object     = 'wcpay_upe_config';
 			} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {

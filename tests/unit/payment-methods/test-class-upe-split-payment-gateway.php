@@ -10,7 +10,7 @@ namespace WCPay\Payment_Methods;
 use Exception;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Type;
-use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Intent_Status;
 use WCPay\Core\Server\Request\Get_Request;
 use WCPay\Core\Server\Request\Get_Setup_Intention;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
@@ -331,6 +331,17 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Cleanup after tests.
+	 *
+	 * @return void
+	 */
+	public function tear_down() {
+		parent::tear_down();
+		update_option( '_wcpay_feature_upe_split', '0' );
+		update_option( '_wcpay_feature_upe_deferred_intent', '0' );
+	}
+
+	/**
 	 * Test the UI <div> container that will hold the payment method.
 	 *
 	 * @return void
@@ -388,7 +399,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$user                = '';
 		$customer_id         = 'cus_mock';
 		$save_payment_method = true;
-		$intent              = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$intent              = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
 
 		$this->set_cart_contains_subscription_items( false );
 
@@ -397,13 +408,17 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'create_customer_for_user' );
 
 		$metadata = [
-			'customer_name'  => 'Jeroen Sormani',
-			'customer_email' => 'admin@example.org',
-			'site_url'       => 'http://example.org',
-			'order_id'       => $order_id,
-			'order_number'   => $order_number,
-			'order_key'      => $order->get_order_key(),
-			'payment_type'   => Payment_Type::SINGLE(),
+			'customer_name'        => 'Jeroen Sormani',
+			'customer_email'       => 'admin@example.org',
+			'site_url'             => 'http://example.org',
+			'order_id'             => $order_id,
+			'order_number'         => $order_number,
+			'order_key'            => $order->get_order_key(),
+			'payment_type'         => Payment_Type::SINGLE(),
+			'gateway_type'         => 'split_upe',
+			'checkout_type'        => '',
+			'client_version'       => WCPAY_VERSION_NUMBER,
+			'subscription_payment' => 'no',
 		];
 
 		$level3 = [
@@ -459,7 +474,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$user                = '';
 		$customer_id         = 'cus_mock';
 		$save_payment_method = true;
-		$intent              = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$intent              = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
 
 		$this->set_cart_contains_subscription_items( false );
 
@@ -468,13 +483,18 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'create_customer_for_user' );
 
 		$metadata = [
-			'customer_name'  => 'Jeroen Sormani',
-			'customer_email' => 'admin@example.org',
-			'site_url'       => 'http://example.org',
-			'order_id'       => $order_id,
-			'order_number'   => $order_number,
-			'order_key'      => $order->get_order_key(),
-			'payment_type'   => Payment_Type::SINGLE(),
+			'customer_name'        => 'Jeroen Sormani',
+			'customer_email'       => 'admin@example.org',
+			'site_url'             => 'http://example.org',
+			'order_id'             => $order_id,
+			'order_number'         => $order_number,
+			'order_key'            => $order->get_order_key(),
+			'payment_type'         => Payment_Type::SINGLE(),
+			'gateway_type'         => 'split_upe',
+			'checkout_type'        => '',
+			'client_version'       => WCPAY_VERSION_NUMBER,
+			'subscription_payment' => 'no',
+
 		];
 
 		$level3 = [
@@ -533,7 +553,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order_id     = $order->get_id();
 		$order_number = $order->get_order_number();
 		$product_item = current( $order->get_items( 'line_item' ) );
-		$intent       = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$intent       = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
 
 		$this->set_cart_contains_subscription_items( false );
 
@@ -542,13 +562,17 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'create_customer_for_user' );
 
 		$metadata = [
-			'customer_name'  => 'Jeroen Sormani',
-			'customer_email' => 'admin@example.org',
-			'site_url'       => 'http://example.org',
-			'order_id'       => $order_id,
-			'order_number'   => $order_number,
-			'order_key'      => $order->get_order_key(),
-			'payment_type'   => Payment_Type::SINGLE(),
+			'customer_name'        => 'Jeroen Sormani',
+			'customer_email'       => 'admin@example.org',
+			'site_url'             => 'http://example.org',
+			'order_id'             => $order_id,
+			'order_number'         => $order_number,
+			'order_key'            => $order->get_order_key(),
+			'payment_type'         => Payment_Type::SINGLE(),
+			'gateway_type'         => 'split_upe',
+			'checkout_type'        => '',
+			'client_version'       => WCPAY_VERSION_NUMBER,
+			'subscription_payment' => 'no',
 		];
 
 		$level3 = [
@@ -601,7 +625,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$order    = WC_Helper_Order::create_order();
 		$order_id = $order->get_id();
-		$intent   = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$intent   = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
 
 		$request = $this->mock_wcpay_request( Create_Intention::class );
 		$request->expects( $this->once() )
@@ -625,7 +649,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$order    = WC_Helper_Order::create_order();
 		$order_id = $order->get_id();
-		$intent   = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$intent   = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
 
 		$request = $this->mock_wcpay_request( Create_Intention::class );
 		$request->expects( $this->once() )->method( 'set_capture_method' )->with( false );
@@ -646,7 +670,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$order    = WC_Helper_Order::create_order();
 		$order_id = $order->get_id();
-		$intent   = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$intent   = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
 		$mock_payment_gateway->settings['manual_capture'] = 'no';
 		$request = $this->mock_wcpay_request( Create_Intention::class );
 		$request->expects( $this->once() )->method( 'set_capture_method' )->with( false );
@@ -667,7 +691,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$order    = WC_Helper_Order::create_order();
 		$order_id = $order->get_id();
-		$intent   = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$intent   = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
 		$mock_payment_gateway->settings['manual_capture'] = 'yes';
 
 		$request = $this->mock_wcpay_request( Create_Intention::class );
@@ -803,7 +827,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order_id                      = $order->get_id();
 		$_POST['wc_payment_intent_id'] = 'pi_mock';
 
-		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::PROCESSING ] );
+		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::PROCESSING ] );
 
 		$this->set_cart_contains_subscription_items( false );
 
@@ -832,7 +856,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$_POST[ $save_payment_param ]  = 'yes';
 		$_POST['wc_payment_intent_id'] = 'pi_mock';
 
-		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::PROCESSING ] );
+		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::PROCESSING ] );
 
 		$this->mock_wcpay_request( Update_Intention::class, 1, $payment_intent->get_id() )
 			->expects( $this->once() )
@@ -860,7 +884,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order                         = WC_Helper_Order::create_order();
 		$_POST['wc_payment_intent_id'] = 'pi_mock';
 
-		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::PROCESSING ] );
+		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::PROCESSING ] );
 
 		// Test card.
 		$this->mock_wcpay_request( Update_Intention::class, 1, $payment_intent->get_id() )
@@ -1075,7 +1099,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order_id            = $order->get_id();
 		$save_payment_method = false;
 		$user                = wp_get_current_user();
-		$intent_status       = Payment_Intent_Status::PROCESSING;
+		$intent_status       = Intent_Status::PROCESSING;
 		$intent_metadata     = [ 'order_id' => (string) $order_id ];
 		$charge_id           = 'ch_mock';
 		$customer_id         = 'cus_mock';
@@ -1139,7 +1163,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order_id            = $order->get_id();
 		$save_payment_method = false;
 		$user                = wp_get_current_user();
-		$intent_status       = Payment_Intent_Status::SUCCEEDED;
+		$intent_status       = Intent_Status::SUCCEEDED;
 		$intent_metadata     = [ 'order_id' => (string) $order_id ];
 		$charge_id           = 'ch_mock';
 		$customer_id         = 'cus_mock';
@@ -1200,7 +1224,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order_id            = $order->get_id();
 		$save_payment_method = true;
 		$user                = wp_get_current_user();
-		$intent_status       = Payment_Intent_Status::SUCCEEDED;
+		$intent_status       = Intent_Status::SUCCEEDED;
 		$intent_metadata     = [ 'order_id' => (string) $order_id ];
 		$client_secret       = 'cs_mock';
 		$customer_id         = 'cus_mock';
@@ -1279,7 +1303,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order_id            = $order->get_id();
 		$save_payment_method = true;
 		$user                = wp_get_current_user();
-		$intent_status       = Payment_Intent_Status::PROCESSING;
+		$intent_status       = Intent_Status::PROCESSING;
 		$intent_metadata     = [ 'order_id' => (string) $order_id ];
 		$charge_id           = 'ch_mock';
 		$customer_id         = 'cus_mock';
@@ -1590,32 +1614,32 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$becs_method       = $this->mock_payment_methods['au_becs_debit'];
 
 		WC_Helper_Site_Currency::$mock_site_currency = 'EUR';
-		$account_default_currency                    = 'USD';
+		$account_domestic_currency                   = 'USD';
 
-		$this->assertTrue( $card_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $giropay_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $sofort_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $bancontact_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $eps_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $sepa_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $p24_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $ideal_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $becs_method->is_currency_valid( $account_default_currency ) );
+		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $giropay_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $sofort_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $eps_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $sepa_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $p24_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $ideal_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $becs_method->is_currency_valid( $account_domestic_currency ) );
 
 		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
 
-		$this->assertTrue( $card_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $giropay_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $sofort_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $bancontact_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $eps_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $sepa_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $p24_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $ideal_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $becs_method->is_currency_valid( $account_default_currency ) );
+		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $giropay_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $sofort_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $eps_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $sepa_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $p24_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $ideal_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $becs_method->is_currency_valid( $account_domestic_currency ) );
 
 		WC_Helper_Site_Currency::$mock_site_currency = 'AUD';
-		$this->assertTrue( $becs_method->is_currency_valid( $account_default_currency ) );
+		$this->assertTrue( $becs_method->is_currency_valid( $account_domestic_currency ) );
 
 		WC_Helper_Site_Currency::$mock_site_currency = '';
 	}
@@ -1661,7 +1685,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$intent = WC_Helper_Intention::create_intention(
 			[
-				'status' => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD,
+				'status' => Intent_Status::REQUIRES_PAYMENT_METHOD,
 				'amount' => 50,
 			]
 		);
@@ -1690,7 +1714,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$intent = WC_Helper_Intention::create_intention(
 			[
-				'status' => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD,
+				'status' => Intent_Status::REQUIRES_PAYMENT_METHOD,
 				'amount' => 50,
 			]
 		);
@@ -2406,21 +2430,21 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$gateway = WC_Payments::get_gateway();
 		WC_Payments::set_gateway( $mock_upe_gateway );
 
+		$mock_upe_gateway->expects( $this->any() )
+			->method( 'get_upe_enabled_payment_method_ids' )
+			->will(
+				$this->returnValue( [ Payment_Method::CARD, Payment_Method::LINK ] )
+			);
+
 		$payment_methods = $mock_upe_gateway->get_payment_methods_from_gateway_id( UPE_Split_Payment_Gateway::GATEWAY_ID );
 
-		$this->assertSame( [ Payment_Method::CARD ], $payment_methods );
+		$this->assertSame( [ Payment_Method::CARD, Payment_Method::LINK ], $payment_methods );
 
 		$payment_methods = $mock_upe_gateway->get_payment_methods_from_gateway_id( UPE_Split_Payment_Gateway::GATEWAY_ID . '_' . Payment_Method::BANCONTACT );
 
 		$this->assertSame( [ Payment_Method::BANCONTACT ], $payment_methods );
 
 		update_option( '_wcpay_feature_upe_deferred_intent', '1' );
-
-		$mock_upe_gateway->expects( $this->once() )
-			->method( 'get_upe_enabled_payment_method_ids' )
-			->will(
-				$this->returnValue( [ Payment_Method::CARD, Payment_Method::LINK ] )
-			);
 
 		$payment_methods = $mock_upe_gateway->get_payment_methods_from_gateway_id( UPE_Split_Payment_Gateway::GATEWAY_ID );
 

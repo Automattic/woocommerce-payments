@@ -59,7 +59,7 @@ const PaymentProcessor = ( {
 	api,
 	activePaymentMethod,
 	testingInstructions,
-	eventRegistration: { onPaymentSetup, onCheckoutAfterProcessingWithSuccess },
+	eventRegistration: { onPaymentSetup, onCheckoutSuccess },
 	emitResponse,
 	paymentMethodId,
 	upeMethods,
@@ -228,7 +228,7 @@ const PaymentProcessor = ( {
 		api,
 		stripe,
 		elements,
-		onCheckoutAfterProcessingWithSuccess,
+		onCheckoutSuccess,
 		emitResponse,
 		shouldSavePayment
 	);

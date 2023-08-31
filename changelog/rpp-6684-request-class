@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Add payment request class for loading, sanitizing, and escaping data (reengineering payment process)

@@ -46,6 +46,20 @@ interface WC_Payments_Http_Interface {
 	public function has_connection_owner();
 
 	/**
+	 * Checks if the current user is connected to WordPress.com.
+	 *
+	 * @return bool true if the current user is connected.
+	 */
+	public function is_user_connected();
+
+	/**
+	 * Get the wpcom user data of the current connected user.
+	 *
+	 * @return bool|array An array with the WPCOM user data on success, false otherwise.
+	 */
+	public function get_connected_user_data();
+
+	/**
 	 * Gets the current WP.com blog ID.
 	 *
 	 * @return integer Current WPCOM blog ID.
