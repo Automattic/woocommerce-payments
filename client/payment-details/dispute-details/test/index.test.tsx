@@ -198,6 +198,42 @@ describe( 'DisputeDetails', () => {
 		} );
 	} );
 
+	test( 'correctly renders the accept dispute (inquiry) modal and accepts', () => {
+		const charge = getBaseCharge();
+		charge.dispute.status = 'warning_needs_response';
+		// Inquiry disputes are not expected to have balance transactions
+		// as the dispute fee has not been charged yet.
+		charge.dispute.balance_transactions = [];
+
+		render( <DisputeDetails dispute={ charge.dispute } /> );
+
+		const openModalButton = screen.getByRole( 'button', {
+			name: /Accept dispute/,
+		} );
+
+		// Open the modal
+		openModalButton.click();
+
+		screen.getByRole( 'heading', {
+			name: /Accept the dispute?/,
+		} );
+		screen.getByText( /\$15.00 dispute fee/, {
+			ignore: '.a11y-speak-region',
+		} );
+
+		screen.getByRole( 'button', {
+			name: /Cancel/,
+		} );
+		const acceptButton = screen.getByRole( 'button', {
+			name: /Accept dispute/,
+		} );
+
+		// Accept the dispute
+		acceptButton.click();
+
+		expect( mockDoAccept ).toHaveBeenCalledTimes( 1 );
+	} );
+
 	test( 'correctly renders the accept dispute modal and accepts', () => {
 		const charge = getBaseCharge();
 		charge.dispute.status = 'needs_response';
