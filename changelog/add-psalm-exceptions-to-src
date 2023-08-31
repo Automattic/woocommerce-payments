@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Adding Psalm checks to function calls within `src`.
