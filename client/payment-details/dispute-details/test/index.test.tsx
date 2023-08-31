@@ -200,6 +200,8 @@ describe( 'DisputeDetails', () => {
 
 	test( 'correctly renders the accept dispute modal and accepts', () => {
 		const charge = getBaseCharge();
+		charge.dispute.status = 'needs_response';
+
 		render( <DisputeDetails dispute={ charge.dispute } /> );
 
 		const openModalButton = screen.getByRole( 'button', {
@@ -209,7 +211,13 @@ describe( 'DisputeDetails', () => {
 		// Open the modal
 		openModalButton.click();
 
-		screen.getByText( /Accept the dispute?/ );
+		screen.getByRole( 'heading', {
+			name: /Accept the dispute?/,
+		} );
+		screen.getByText( /\$15.00 dispute fee/, {
+			ignore: '.a11y-speak-region',
+		} );
+
 		screen.getByRole( 'button', {
 			name: /Cancel/,
 		} );
