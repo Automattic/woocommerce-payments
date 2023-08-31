@@ -127,6 +127,14 @@ const mockUseDisputeAccept = useDisputeAccept as jest.MockedFunction<
 >;
 const mockDoAccept = jest.fn();
 
+// mock the history push function
+const mockHistoryPush = jest.fn();
+jest.mock( '@woocommerce/navigation', () => ( {
+	getHistory: () => ( {
+		push: mockHistoryPush,
+	} ),
+} ) );
+
 describe( 'DisputeDetails', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
@@ -175,5 +183,19 @@ describe( 'DisputeDetails', () => {
 		acceptButton.click();
 
 		expect( mockDoAccept ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	test( 'correctly navigates to the challenge screen', () => {
+		render( <DisputeDetails dispute={ charge.dispute } /> );
+
+		const challengeButton = screen.getByRole( 'button', {
+			name: /Challenge dispute/,
+		} );
+		challengeButton.click();
+
+		expect( mockHistoryPush ).toHaveBeenNthCalledWith(
+			1,
+			expect.stringContaining( `challenge&id=${ charge.dispute.id }` )
+		);
 	} );
 } );
