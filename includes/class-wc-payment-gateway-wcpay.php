@@ -1482,17 +1482,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array Array of keyed metadata values.
 	 */
 	protected function get_metadata_from_order( $order, $payment_type ) {
-		switch ( get_class( $this ) ) {
-			case UPE_Split_Payment_Gateway::class:
-				$gateway_type = 'split_upe';
-				break;
-			case UPE_Payment_Gateway::class:
-				$gateway_type = 'upe';
-				break;
-			default:
-				$gateway_type = 'classic';
+		if ( $this instanceof UPE_Split_Payment_Gateway ) {
+			$gateway_type = 'split_upe';
+		} else if ( $this instanceof UPE_Payment_Gateway ) {
+			$gateway_type = 'upe';
+		} else {
+			$gateway_type = 'classic';
 		}
-
 		$name     = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
 		$email    = sanitize_email( $order->get_billing_email() );
 		$metadata = [
