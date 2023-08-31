@@ -7,6 +7,7 @@
 
 namespace WCPay\Tests\Internal\Payment;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use WC_Payment_Token;
 use WC_Payment_Tokens;
 use WCPay\Internal\Payment\PaymentMethod\NewPaymentMethod;
@@ -26,6 +27,13 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 	 * @var PaymentRequest
 	 */
 	private $sut;
+
+	/**
+	 * Mock legacy proxy.
+	 *
+	 * @var LegacyProxy|MockObject
+	 */
+	private $mock_legacy_proxy;
 
 	public function setUp(): void {
 		parent::setUp();
