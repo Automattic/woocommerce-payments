@@ -136,7 +136,7 @@ class RouterTest extends WCPAY_UnitTestCase {
 		$result = $this->sut->get_allowed_factors();
 
 		$this->assertIsArray( $result );
-		$this->assertEquals( $processed_factors, $result );
+		$this->assertSame( $processed_factors, $result );
 	}
 
 	/**
@@ -173,13 +173,13 @@ class RouterTest extends WCPAY_UnitTestCase {
 		$result = $this->sut->get_allowed_factors();
 
 		$this->assertIsArray( $result );
-		$this->assertEquals( $replaced_factors, $result );
+		$this->assertSame( $replaced_factors, $result );
 
 		remove_filter( 'wcpay_new_payment_process_enabled_factors', $filter_cb );
 	}
 
 	/**
-	 * Verify that `is_valid_cache` returns false win a non-array.
+	 * Verify that `is_valid_cache` returns false with a non-array.
 	 */
 	public function test_is_valid_cache_requires_array() {
 		$this->assertFalse( $this->sut->is_valid_cache( false ) );
@@ -227,7 +227,7 @@ class RouterTest extends WCPAY_UnitTestCase {
 			->willReturn( $request_response );
 
 		$result = $this->sut->get_allowed_factors();
-		$this->assertEquals( $processed_factors, $result );
+		$this->assertSame( $processed_factors, $result );
 	}
 
 	/**
