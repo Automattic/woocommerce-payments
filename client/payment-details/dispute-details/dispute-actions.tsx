@@ -119,12 +119,8 @@ const DisputeActions: React.FC< Props > = ( { dispute } ) => {
 						</strong>
 					</p>
 					<Flex justify="start">
-						<FlexItem>
-							<Icon
-								icon={ backup }
-								size={ 24 }
-								className="transaction-details-dispute-accept-modal__icon"
-							/>
+						<FlexItem className="transaction-details-dispute-accept-modal__icon">
+							<Icon icon={ backup } size={ 24 } />
 						</FlexItem>
 						<FlexItem>
 							{ createInterpolateElement(
@@ -148,12 +144,8 @@ const DisputeActions: React.FC< Props > = ( { dispute } ) => {
 						</FlexItem>
 					</Flex>
 					<Flex justify="start">
-						<FlexItem>
-							<Icon
-								icon={ lock }
-								size={ 24 }
-								className="transaction-details-dispute-accept-modal__icon"
-							/>
+						<FlexItem className="transaction-details-dispute-accept-modal__icon">
+							<Icon icon={ lock } size={ 24 } />
 						</FlexItem>
 						<FlexItem>
 							{ __(
