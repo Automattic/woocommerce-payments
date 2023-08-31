@@ -59,11 +59,6 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 		}
 	}, [ isEmailInputValid, isPhoneInputValid, setTransactionInputsValid ] );
 
-	let labelCustomerStatement = __( 'Customer bank statement' );
-	if ( settings.account_country === 'JP' ) {
-		labelCustomerStatement = __( 'Customer bank statement (Latin)' );
-	}
-
 	return (
 		<Card className="transactions">
 			<CardBody>
@@ -84,9 +79,15 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 					) }
 				/>
 				<ManualCaptureControl></ManualCaptureControl>
-				<h4>{ __( 'Customer support', 'woocommerce-payments' ) }</h4>
+				<h4>{ __( 'Customer statements', 'woocommerce-payments' ) }</h4>
+				<p className="transactions-customer-details">
+					{ __(
+						"Edit the way your store name appears on your customers' bank statements.",
+						'woocommerce-payments'
+					) }
+				</p>
 
-				<div className="transactions__customer-support">
+				<div className="transactions__customer-statements">
 					{ customerBankStatementErrorMessage && (
 						<Notice status="error" isDismissible={ false }>
 							<span
@@ -98,11 +99,17 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 					) }
 					<TextControl
 						className="transactions__account-statement-input"
-						help={ __(
-							"Edit the way your store name appears on your customers' bank statements.",
+						help={
+							settings.account_country === 'JP' &&
+							__(
+								'Use only latin characters.',
+								'woocommerce-payments'
+							)
+						}
+						label={ __(
+							'Customer bank statement',
 							'woocommerce-payments'
 						) }
-						label={ labelCustomerStatement }
 						value={ accountStatementDescriptor }
 						onChange={ setAccountStatementDescriptor }
 						maxLength={ ACCOUNT_STATEMENT_MAX_LENGTH }
@@ -117,11 +124,11 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 								<TextControl
 									className="transactions__account-statement-input"
 									help={ __(
-										"Edit the way your store name appears on your customers' bank statements.",
+										'Use only kanji characters.',
 										'woocommerce-payments'
 									) }
 									label={ __(
-										'Customer bank statement (Kanji)',
+										'Customer bank statement',
 										'woocommerce-payments'
 									) }
 									value={ accountStatementDescriptorKanji }
@@ -131,7 +138,9 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 									maxLength={
 										ACCOUNT_STATEMENT_MAX_LENGTH_KANJI
 									}
-									data-testid={ 'store-name-bank-statement' }
+									data-testid={
+										'store-name-bank-statement-kanji'
+									}
 								/>
 								<span
 									className="input-help-text"
@@ -144,11 +153,11 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 								<TextControl
 									className="transactions__account-statement-input"
 									help={ __(
-										"Edit the way your store name appears on your customers' bank statements.",
+										'Use only kana characters.',
 										'woocommerce-payments'
 									) }
 									label={ __(
-										'Customer bank statement (Kana)',
+										'Customer bank statement',
 										'woocommerce-payments'
 									) }
 									value={ accountStatementDescriptorKana }
@@ -158,7 +167,9 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 									maxLength={
 										ACCOUNT_STATEMENT_MAX_LENGTH_KANA
 									}
-									data-testid={ 'store-name-bank-statement' }
+									data-testid={
+										'store-name-bank-statement-kana'
+									}
 								/>
 								<span
 									className="input-help-text"
@@ -169,6 +180,17 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 							</div>
 						</>
 					) }
+				</div>
+
+				<h4>{ __( 'Customer support', 'woocommerce-payments' ) }</h4>
+
+				<p className="transactions-customer-details">
+					{ __(
+						'Provide contact information where customers can reach you for support.',
+						'woocommerce-payments'
+					) }
+				</p>
+				<div className="transactions__customer-support">
 					<SupportEmailInput setInputVallid={ setEmailInputValid } />
 					<SupportPhoneInput setInputVallid={ setPhoneInputValid } />
 				</div>

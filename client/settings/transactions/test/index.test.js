@@ -150,13 +150,13 @@ describe( 'Settings - Transactions', () => {
 		render( <Transactions /> );
 
 		expect(
-			await screen.findByText( 'Customer bank statement (Latin)' )
+			await screen.findByText( 'Use only latin characters.' )
 		).toBeInTheDocument();
 		expect(
-			await screen.findByText( 'Customer bank statement (Kana)' )
+			await screen.findByText( 'Use only kanji characters.' )
 		).toBeInTheDocument();
 		expect(
-			await screen.findByText( 'Customer bank statement (Kanji)' )
+			await screen.findByText( 'Use only kana characters.' )
 		).toBeInTheDocument();
 	} );
 } );
