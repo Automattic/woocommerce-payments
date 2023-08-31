@@ -142,6 +142,6 @@ class PaymentRequest {
 			return new SavedPaymentMethod( $token );
 		}
 
-		throw new PaymentRequestException( __( 'No valid payment method attached to the request.', 'woocommerce-payments' ) );
+		throw new PaymentRequestException( __( 'No valid payment method was selected.', 'woocommerce-payments' ) );
 	}
 }
