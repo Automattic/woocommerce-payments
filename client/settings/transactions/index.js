@@ -15,6 +15,8 @@ import {
 import CardBody from '../card-body';
 import {
 	useAccountStatementDescriptor,
+	useAccountStatementDescriptorKanji,
+	useAccountStatementDescriptorKana,
 	useGetSavingError,
 	useSavedCards,
 } from '../../data';
@@ -23,8 +25,12 @@ import ManualCaptureControl from 'wcpay/settings/transactions/manual-capture-con
 import SupportPhoneInput from 'wcpay/settings/support-phone-input';
 import SupportEmailInput from 'wcpay/settings/support-email-input';
 import React, { useEffect, useState } from 'react';
+import { select } from '@wordpress/data';
+import { STORE_NAME } from 'wcpay/data/constants';
 
 const ACCOUNT_STATEMENT_MAX_LENGTH = 22;
+const ACCOUNT_STATEMENT_MAX_LENGTH_KANJI = 17;
+const ACCOUNT_STATEMENT_MAX_LENGTH_KANA = 22;
 
 const Transactions = ( { setTransactionInputsValid } ) => {
 	const [ isSavedCardsEnabled, setIsSavedCardsEnabled ] = useSavedCards();
@@ -32,11 +38,20 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 		accountStatementDescriptor,
 		setAccountStatementDescriptor,
 	] = useAccountStatementDescriptor();
+	const [
+		accountStatementDescriptorKanji,
+		setAccountStatementDescriptorKanji,
+	] = useAccountStatementDescriptorKanji();
+	const [
+		accountStatementDescriptorKana,
+		setAccountStatementDescriptorKana,
+	] = useAccountStatementDescriptorKana();
 	const customerBankStatementErrorMessage = useGetSavingError()?.data?.details
 		?.account_statement_descriptor?.message;
 
 	const [ isEmailInputValid, setEmailInputValid ] = useState( true );
 	const [ isPhoneInputValid, setPhoneInputValid ] = useState( true );
+	const settings = select( STORE_NAME ).getSettings();
 
 	useEffect( () => {
 		if ( setTransactionInputsValid ) {
@@ -64,9 +79,15 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 					) }
 				/>
 				<ManualCaptureControl></ManualCaptureControl>
-				<h4>{ __( 'Customer support', 'woocommerce-payments' ) }</h4>
+				<h4>{ __( 'Customer statements', 'woocommerce-payments' ) }</h4>
+				<p className="transactions-customer-details">
+					{ __(
+						"Edit the way your store name appears on your customers' bank statements.",
+						'woocommerce-payments'
+					) }
+				</p>
 
-				<div className="transactions__customer-support">
+				<div className="transactions__customer-statements">
 					{ customerBankStatementErrorMessage && (
 						<Notice status="error" isDismissible={ false }>
 							<span
@@ -78,10 +99,13 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 					) }
 					<TextControl
 						className="transactions__account-statement-input"
-						help={ __(
-							"Edit the way your store name appears on your customers' bank statements.",
-							'woocommerce-payments'
-						) }
+						help={
+							settings.account_country === 'JP' &&
+							__(
+								'Use only latin characters.',
+								'woocommerce-payments'
+							)
+						}
 						label={ __(
 							'Customer bank statement',
 							'woocommerce-payments'
@@ -94,7 +118,79 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 					<span className="input-help-text" aria-hidden="true">
 						{ `${ accountStatementDescriptor.length } / ${ ACCOUNT_STATEMENT_MAX_LENGTH }` }
 					</span>
+					{ settings.account_country === 'JP' && (
+						<>
+							<div className="transactions__customer-support">
+								<TextControl
+									className="transactions__account-statement-input"
+									help={ __(
+										'Use only kanji characters.',
+										'woocommerce-payments'
+									) }
+									label={ __(
+										'Customer bank statement (kanji)',
+										'woocommerce-payments'
+									) }
+									value={ accountStatementDescriptorKanji }
+									onChange={
+										setAccountStatementDescriptorKanji
+									}
+									maxLength={
+										ACCOUNT_STATEMENT_MAX_LENGTH_KANJI
+									}
+									data-testid={
+										'store-name-bank-statement-kanji'
+									}
+								/>
+								<span
+									className="input-help-text"
+									aria-hidden="true"
+								>
+									{ `${ accountStatementDescriptorKanji.length } / ${ ACCOUNT_STATEMENT_MAX_LENGTH_KANJI }` }
+								</span>
+							</div>
+							<div className="transactions__customer-support">
+								<TextControl
+									className="transactions__account-statement-input"
+									help={ __(
+										'Use only kana characters.',
+										'woocommerce-payments'
+									) }
+									label={ __(
+										'Customer bank statement (kana)',
+										'woocommerce-payments'
+									) }
+									value={ accountStatementDescriptorKana }
+									onChange={
+										setAccountStatementDescriptorKana
+									}
+									maxLength={
+										ACCOUNT_STATEMENT_MAX_LENGTH_KANA
+									}
+									data-testid={
+										'store-name-bank-statement-kana'
+									}
+								/>
+								<span
+									className="input-help-text"
+									aria-hidden="true"
+								>
+									{ `${ accountStatementDescriptorKana.length } / ${ ACCOUNT_STATEMENT_MAX_LENGTH_KANA }` }
+								</span>
+							</div>
+						</>
+					) }
+				</div>
 
+				<h4>{ __( 'Customer support', 'woocommerce-payments' ) }</h4>
+
+				<p className="transactions-customer-details">
+					{ __(
+						'Provide contact information where customers can reach you for support.',
+						'woocommerce-payments'
+					) }
+				</p>
+				<div className="transactions__customer-support">
 					<SupportEmailInput setInputVallid={ setEmailInputValid } />
 					<SupportPhoneInput setInputVallid={ setPhoneInputValid } />
 				</div>
