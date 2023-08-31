@@ -276,6 +276,26 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Gets the account statement descriptor for rendering on the settings page.
+	 *
+	 * @return string Account statement descriptor.
+	 */
+	public function get_statement_descriptor_kanji() : string {
+		$account = $this->get_cached_account_data();
+		return ! empty( $account ) && isset( $account['statement_descriptor_kanji'] ) ? $account['statement_descriptor_kanji'] : '';
+	}
+
+	/**
+	 * Gets the account statement descriptor for rendering on the settings page.
+	 *
+	 * @return string Account statement descriptor.
+	 */
+	public function get_statement_descriptor_kana() : string {
+		$account = $this->get_cached_account_data();
+		return ! empty( $account ) && isset( $account['statement_descriptor_kana'] ) ? $account['statement_descriptor_kana'] : '';
+	}
+
+	/**
 	 * Gets the business name.
 	 *
 	 * @return string Business profile name.

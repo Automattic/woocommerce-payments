@@ -67,20 +67,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @type array
 	 */
 	const ACCOUNT_SETTINGS_MAPPING = [
-		'account_statement_descriptor'     => 'statement_descriptor',
-		'account_business_name'            => 'business_name',
-		'account_business_url'             => 'business_url',
-		'account_business_support_address' => 'business_support_address',
-		'account_business_support_email'   => 'business_support_email',
-		'account_business_support_phone'   => 'business_support_phone',
-		'account_branding_logo'            => 'branding_logo',
-		'account_branding_icon'            => 'branding_icon',
-		'account_branding_primary_color'   => 'branding_primary_color',
-		'account_branding_secondary_color' => 'branding_secondary_color',
+		'account_statement_descriptor'       => 'statement_descriptor',
+		'account_statement_descriptor_kanji' => 'statement_descriptor_kanji',
+		'account_statement_descriptor_kana'  => 'statement_descriptor_kana',
+		'account_business_name'              => 'business_name',
+		'account_business_url'               => 'business_url',
+		'account_business_support_address'   => 'business_support_address',
+		'account_business_support_email'     => 'business_support_email',
+		'account_business_support_phone'     => 'business_support_phone',
+		'account_branding_logo'              => 'branding_logo',
+		'account_branding_icon'              => 'branding_icon',
+		'account_branding_primary_color'     => 'branding_primary_color',
+		'account_branding_secondary_color'   => 'branding_secondary_color',
 
-		'deposit_schedule_interval'        => 'deposit_schedule_interval',
-		'deposit_schedule_weekly_anchor'   => 'deposit_schedule_weekly_anchor',
-		'deposit_schedule_monthly_anchor'  => 'deposit_schedule_monthly_anchor',
+		'deposit_schedule_interval'          => 'deposit_schedule_interval',
+		'deposit_schedule_weekly_anchor'     => 'deposit_schedule_weekly_anchor',
+		'deposit_schedule_monthly_anchor'    => 'deposit_schedule_monthly_anchor',
 	];
 
 	/**
@@ -1482,30 +1484,33 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array Array of keyed metadata values.
 	 */
 	protected function get_metadata_from_order( $order, $payment_type ) {
+		if ( $this instanceof UPE_Split_Payment_Gateway ) {
+			$gateway_type = 'split_upe';
+		} elseif ( $this instanceof UPE_Payment_Gateway ) {
+			$gateway_type = 'upe';
+		} else {
+			$gateway_type = 'classic';
+		}
 		$name     = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
 		$email    = sanitize_email( $order->get_billing_email() );
 		$metadata = [
-			'customer_name'  => $name,
-			'customer_email' => $email,
-			'site_url'       => esc_url( get_site_url() ),
-			'order_id'       => $order->get_id(),
-			'order_number'   => $order->get_order_number(),
-			'order_key'      => $order->get_order_key(),
-			'payment_type'   => $payment_type,
+			'customer_name'        => $name,
+			'customer_email'       => $email,
+			'site_url'             => esc_url( get_site_url() ),
+			'order_id'             => $order->get_id(),
+			'order_number'         => $order->get_order_number(),
+			'order_key'            => $order->get_order_key(),
+			'payment_type'         => $payment_type,
+			'gateway_type'         => $gateway_type,
+			'checkout_type'        => $order->get_created_via(),
+			'client_version'       => WCPAY_VERSION_NUMBER,
+			'subscription_payment' => 'no',
 		];
 
-		// If the order belongs to a WCPay Subscription, set the payment context to 'wcpay_subscription' (this helps with associating which fees belong to orders).
-		if ( 'recurring' === (string) $payment_type && ! $this->is_subscriptions_plugin_active() ) {
-			$subscriptions = wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] );
-
-			foreach ( $subscriptions as $subscription ) {
-				if ( WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ) {
-					$metadata['payment_context'] = 'wcpay_subscription';
-					break;
-				}
-			}
+		if ( 'recurring' === (string) $payment_type && function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order ) ) {
+			$metadata['subscription_payment'] = wcs_order_contains_renewal( $order ) ? 'renewal' : 'initial';
+			$metadata['payment_context']      = $this->is_subscriptions_plugin_active() ? 'regular_subscription' : 'wcpay_subscription';
 		}
-
 		return apply_filters( 'wcpay_metadata_from_order', $metadata, $order, $payment_type );
 	}
 
@@ -1817,6 +1822,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->get_account_country();
 			case 'account_statement_descriptor':
 				return $this->get_account_statement_descriptor();
+			case 'account_statement_descriptor_kanji':
+				return $this->get_account_statement_descriptor_kanji();
+			case 'account_statement_descriptor_kana':
+				return $this->get_account_statement_descriptor_kana();
 			case 'account_business_name':
 				return $this->get_account_business_name();
 			case 'account_business_url':
@@ -1968,6 +1977,41 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return $empty_value;
 	}
 
+	/**
+	 * Gets connected account statement descriptor.
+	 *
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch account descriptor.
+	 *
+	 * @return string Statement descriptor of default value.
+	 */
+	public function get_account_statement_descriptor_kanji( string $empty_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_statement_descriptor_kanji();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account statement descriptor.' . $e );
+		}
+		return $empty_value;
+	}
+
+	/**
+	 * Gets connected account statement descriptor.
+	 *
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch account descriptor.
+	 *
+	 * @return string Statement descriptor of default value.
+	 */
+	public function get_account_statement_descriptor_kana( string $empty_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_statement_descriptor_kana();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account statement descriptor.' . $e );
+		}
+		return $empty_value;
+	}
 
 	/**
 	 * Gets account default currency.
