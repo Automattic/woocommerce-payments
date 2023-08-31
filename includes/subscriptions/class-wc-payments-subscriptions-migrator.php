@@ -85,6 +85,9 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 		// Add manual migration tool to WooCommerce > Status > Tools.
 		add_filter( 'woocommerce_debug_tools', [ $this, 'add_manual_migration_tool' ] );
 
+		// Schedule the single migration action with two args. This is needed because the WCS_Background_Repairer parent class only hooks on with one arg.
+		add_action( $this->migrate_hook, [ $this, 'migrate_wcpay_subscription' ], 10, 2 );
+
 		$this->init();
 	}
 
@@ -439,15 +442,14 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	}
 
 	/**
-	 * Migrates an individual subscription.
+	 * Overrides the parent repair_item() function and returns immediately.
 	 *
-	 * The repair_item() function is called by the parent class when the individual scheduled action is run.
-	 * This acts as a wrapper for the migrate_wcpay_subscription() function.
+	 * Because our scheduled migration action uses two args instead of one, we cannot use
+	 * this function and need to hook onto the repair/migrate action hook manually.
 	 *
 	 * @param int $item The ID of the subscription to migrate.
 	 */
 	public function repair_item( $item ) {
-		$this->migrate_wcpay_subscription( $item );
 	}
 
 	/**
