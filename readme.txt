@@ -94,7 +94,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 6.4.0 - 2023-08-30 =
+= 6.4.0 - 2023-08-31 =
 * Add - Added the Transactions reporting endpoint
 * Add - Adjust WooPay "custom message" to be reused for T&C and privacy policy
 * Add - Combine Session Initialization with User Authentication on WooPay.
