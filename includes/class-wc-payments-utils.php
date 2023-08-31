@@ -727,8 +727,7 @@ class WC_Payments_Utils {
 			'yes' === get_option( 'woocommerce_allow_tracking' )
 		);
 
-		return 'treatment' === $abtest->get_variation( 'woocommerce_payments_onboarding_progressive_express_2023_v1' )
-			|| 'treatment' === $abtest->get_variation( 'woocommerce_payments_onboarding_progressive_express_2023_v2' );
+		return 'treatment' === $abtest->get_variation( 'woocommerce_payments_onboarding_progressive_express_2023_v2' );
 	}
 
 	/**
