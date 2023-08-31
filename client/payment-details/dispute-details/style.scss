@@ -9,3 +9,25 @@
 		padding: $grid-unit-20;
 	}
 }
+
+.transaction-details-dispute-accept-modal {
+	max-width: 600px;
+
+	.components-modal__content {
+		padding-top: $grid-unit-30;
+	}
+
+	.components-flex-item {
+		flex-shrink: 0;
+	}
+
+	&__icon {
+		flex-shrink: 0;
+		padding: 6px;
+		margin-right: $grid-unit-10;
+	}
+
+	&__actions {
+		margin-top: $grid-unit-30;
+	}
+}
