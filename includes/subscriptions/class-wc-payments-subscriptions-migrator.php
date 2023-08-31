@@ -109,10 +109,10 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 			add_action( 'action_scheduler_unexpected_shutdown', [ $this, 'handle_unexpected_shutdown' ], 10, 2 );
 			add_action( 'action_scheduler_failed_execution', [ $this, 'handle_unexpected_action_failure' ], 10, 2 );
 
+			$this->logger->log( sprintf( 'Migrating subscription #%1$d.%2$s', $subscription_id, ( $attempt > 0 ? ' Attempt: ' . ( (int) $attempt + 1 ) : '' ) ) );
+
 			$subscription       = $this->validate_subscription_to_migrate( $subscription_id );
 			$wcpay_subscription = $this->fetch_wcpay_subscription( $subscription );
-
-			$this->logger->log( sprintf( 'Migrating subscription #%d (%s)', $subscription_id, $wcpay_subscription['id'] ) );
 
 			$this->maybe_cancel_wcpay_subscription( $wcpay_subscription );
 
@@ -127,14 +127,14 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 				$new_next_payment = gmdate( 'Y-m-d H:i:s', $subscription->get_time( 'next_payment' ) + 1 );
 				$subscription->update_dates( [ 'next_payment' => $new_next_payment ] );
 
-				$this->logger->log( sprintf( '---- Next payment date updated to %s to ensure active subscription has a pending scheduled payment.', $new_next_payment ) );
+				$this->logger->log( sprintf( '---- Next payment date updated to %1$s to ensure subscription #%2$d has a pending scheduled payment.', $new_next_payment, $subscription_id ) );
 			}
 
 			$this->update_wcpay_subscription_meta( $subscription );
 
 			$subscription->add_order_note( __( 'This subscription has been successfully migrated to a WooPayments tokenized subscription.', 'woocommerce-payments' ) );
 
-			$this->logger->log( '---- SUCCESS: Subscription migrated.' );
+			$this->logger->log( sprintf( '---- SUCCESS: Subscription #%d migrated.', $subscription_id ) );
 		} catch ( \Exception $e ) {
 			$this->logger->log( $e->getMessage() );
 
@@ -160,23 +160,23 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	 */
 	private function validate_subscription_to_migrate( $subscription_id ) {
 		if ( ! class_exists( 'WC_Subscriptions' ) ) {
-			throw new \Exception( sprintf( 'Skipping migration of subscription #%d. The WooCommerce Subscriptions extension is not active.', $subscription_id ) );
+			throw new \Exception( sprintf( '---- Skipping migration of subscription #%d. The WooCommerce Subscriptions extension is not active.', $subscription_id ) );
 		}
 
 		if ( WC_Payments_Subscriptions::is_duplicate_site() ) {
-			throw new \Exception( sprintf( 'Skipping migration of subscription #%d. Site is in staging mode.', $subscription_id ) );
+			throw new \Exception( sprintf( '---- Skipping migration of subscription #%d. Site is in staging mode.', $subscription_id ) );
 		}
 
 		$subscription = wcs_get_subscription( $subscription_id );
 
 		if ( ! $subscription ) {
-			throw new \Exception( sprintf( 'Skipping migration of subscription #%d. Subscription not found.', $subscription_id ) );
+			throw new \Exception( sprintf( '---- Skipping migration of subscription #%d. Subscription not found.', $subscription_id ) );
 		}
 
 		$migrated_wcpay_subscription_id = $subscription->get_meta( '_migrated_wcpay_subscription_id', true );
 
 		if ( ! empty( $migrated_wcpay_subscription_id ) ) {
-			throw new \Exception( sprintf( 'Skipping migration of subscription #%d (%s). Subscription has already been migrated.', $subscription_id, $migrated_wcpay_subscription_id ) );
+			throw new \Exception( sprintf( '---- Skipping migration of subscription #%1$d (%2$s). Subscription has already been migrated.', $subscription_id, $migrated_wcpay_subscription_id ) );
 		}
 
 		return $subscription;
@@ -197,18 +197,18 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 		$wcpay_subscription_id = WC_Payments_Subscription_Service::get_wcpay_subscription_id( $subscription );
 
 		if ( ! $wcpay_subscription_id ) {
-			throw new \Exception( sprintf( 'Skipping migration of subscription #%d. Subscription is not a WCPay Subscription.', $subscription->get_id() ) );
+			throw new \Exception( sprintf( '---- Skipping migration of subscription #%d. Subscription is not a WCPay Subscription.', $subscription->get_id() ) );
 		}
 
 		try {
 			// Fetch the subscription from Stripe.
 			$wcpay_subscription = $this->api_client->get_subscription( $wcpay_subscription_id );
 		} catch ( API_Exception $e ) {
-			throw new \Exception( sprintf( 'Error migrating subscription #%d (%s). Failed to fetch the subscription. %s', $subscription->get_id(), $wcpay_subscription_id, $e->getMessage() ) );
+			throw new \Exception( sprintf( '---- ERROR: Failed to fetch subscription #%1$d (%2$s) from Stripe. %3$s', $subscription->get_id(), $wcpay_subscription_id, $e->getMessage() ) );
 		}
 
 		if ( empty( $wcpay_subscription['id'] ) || empty( $wcpay_subscription['status'] ) ) {
-			throw new \Exception( sprintf( 'Error migrating subscription #%d (%s). Invalid subscription data from Stripe: %s', $subscription->get_id(), $wcpay_subscription_id, var_export( $wcpay_subscription, true ) ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+			throw new \Exception( sprintf( '---- ERROR: Cannot migrate subscription #%1$d (%2$s). Invalid data fetched from Stripe: %3$s', $subscription->get_id(), $wcpay_subscription_id, var_export( $wcpay_subscription, true ) ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
 		}
 
 		return $wcpay_subscription;
@@ -232,19 +232,19 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	private function maybe_cancel_wcpay_subscription( $wcpay_subscription ) {
 		// Valid statuses to cancel subscription at Stripe: active, past_due, trialing, paused.
 		if ( in_array( $wcpay_subscription['status'], $this->active_statuses, true ) ) {
-			$this->logger->log( sprintf( '---- Subscription at Stripe has "%s" status. Canceling the subscription.', $this->get_wcpay_subscription_status( $wcpay_subscription ) ) );
+			$this->logger->log( sprintf( '---- Stripe subscription (%1$s) has "%2$s" status. Canceling the subscription.', $wcpay_subscription['id'], $this->get_wcpay_subscription_status( $wcpay_subscription ) ) );
 
 			try {
 				// Cancel the subscription in Stripe.
 				$wcpay_subscription = $this->api_client->cancel_subscription( $wcpay_subscription['id'] );
 			} catch ( API_Exception $e ) {
-				throw new \Exception( sprintf( '---- ERROR: Failed to cancel the subscription at Stripe. %s', $e->getMessage() ) );
+				throw new \Exception( sprintf( '---- ERROR: Failed to cancel the Stripe subscription (%1$s). %2$s', $wcpay_subscription['id'], $e->getMessage() ) );
 			}
 
-			$this->logger->log( '---- Subscription successfully canceled at Stripe.' );
+			$this->logger->log( sprintf( '---- Stripe subscription (%1$s) successfully canceled.', $wcpay_subscription['id'] ) );
 		} else {
 			// Statuses that don't need to be canceled: incomplete, incomplete_expired, canceled, unpaid.
-			$this->logger->log( sprintf( '---- Subscription has "%s" status. Skipping canceling the subscription at Stripe.', $this->get_wcpay_subscription_status( $wcpay_subscription ) ) );
+			$this->logger->log( sprintf( '---- Stripe subscription (%1$s) has "%2$s" status. Skipping canceling the subscription at Stripe.', $wcpay_subscription['id'], $this->get_wcpay_subscription_status( $wcpay_subscription ) ) );
 		}
 	}
 
