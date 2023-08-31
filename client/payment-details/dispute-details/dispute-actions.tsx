@@ -98,7 +98,7 @@ const DisputeActions: React.FC< Props > = ( { dispute } ) => {
 								sprintf(
 									/* translators: %s: dispute fee, <em>: emphasis HTML element. */
 									__(
-										'Accepting the dispute marks it as <em>Lost</em>. The disputed amount will be returned to the cardholder, with a %s dispute fee deducted from your account',
+										'Accepting the dispute marks it as <em>Lost</em>. The disputed amount will be returned to the cardholder, with a %s dispute fee deducted from your account.',
 										'woocommerce-payments'
 									),
 									disputeFee &&
