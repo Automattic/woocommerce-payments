@@ -30,8 +30,8 @@ return [
 	'AE' => [
 		'currency_code'  => 'AED',
 		'currency_pos'   => 'right_space',
-		'thousand_sep'   => '.',
-		'decimal_sep'    => ',',
+		'thousand_sep'   => ',',
+		'decimal_sep'    => '.',
 		'num_decimals'   => 2,
 		'weight_unit'    => 'kg',
 		'dimension_unit' => 'cm',
@@ -3070,8 +3070,8 @@ return [
 	'SA' => [
 		'currency_code'  => 'SAR',
 		'currency_pos'   => 'right_space',
-		'thousand_sep'   => '.',
-		'decimal_sep'    => ',',
+		'thousand_sep'   => ',',
+		'decimal_sep'    => '.',
 		'num_decimals'   => 2,
 		'weight_unit'    => 'kg',
 		'dimension_unit' => 'cm',
