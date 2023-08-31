@@ -10,7 +10,7 @@ import './styles.scss';
 import { CardFooter } from '@wordpress/components';
 
 interface CardNoticeProps {
-	actions: JSX.Element | undefined;
+	actions?: JSX.Element;
 }
 
 const CardNotice: React.FC< CardNoticeProps > = ( { children, actions } ) => {
