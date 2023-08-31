@@ -14,6 +14,7 @@ import { getHistory } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import type { Dispute } from 'wcpay/types/disputes';
+import wcpayTracks from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
 import { useDisputeAccept } from 'wcpay/data';
 import { getDisputeFee } from 'wcpay/disputes/utils';
@@ -34,11 +35,7 @@ const DisputeActions: React.FC< Props > = ( { dispute } ) => {
 	};
 
 	const onSubmit = () => {
-		// TODO: Tracks event
-		// wcpayTracks.recordEvent(
-		// 	'wcpay_dispute_challenge_clicked',
-		// 	{}
-		// );
+		wcpayTracks.recordEvent( wcpayTracks.events.DISPUTE_ACCEPT_CLICK );
 		setModalOpen( false );
 		doAccept();
 	};
@@ -49,11 +46,9 @@ const DisputeActions: React.FC< Props > = ( { dispute } ) => {
 				variant="primary"
 				disabled={ isLoading }
 				onClick={ () => {
-					// TODO: Tracks event
-					// wcpayTracks.recordEvent(
-					// 	'wcpay_dispute_challenge_clicked',
-					// 	{}
-					// );
+					wcpayTracks.recordEvent(
+						wcpayTracks.events.DISPUTE_CHALLENGE_CLICK
+					);
 					const challengeUrl = getAdminUrl( {
 						page: 'wc-admin',
 						path: '/payments/disputes/challenge',
@@ -71,11 +66,9 @@ const DisputeActions: React.FC< Props > = ( { dispute } ) => {
 				variant="tertiary"
 				disabled={ isLoading }
 				onClick={ () => {
-					// TODO: Tracks event
-					// wcpayTracks.recordEvent(
-					// 	'wcpay_dispute_challenge_clicked',
-					// 	{}
-					// );
+					wcpayTracks.recordEvent(
+						wcpayTracks.events.DISPUTE_ACCEPT_MODAL_VIEW
+					);
 					setModalOpen( true );
 				} }
 			>
