@@ -181,21 +181,32 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_payment_return_saved_payment_method() {
-		$request   = [
+		// Prepare.
+		$request    = [
 			'payment_method'                        => 'woocommerce_payments',
 			'wc-woocommerce_payments-payment-token' => 123456,
 		];
-		$this->sut = new PaymentRequest(
+		$this->sut  = new PaymentRequest(
 			$this->mock_legacy_proxy,
 			$request
 		);
-
+		$mock_token = $this->createMock( WC_Payment_Token::class );
 		$this->mock_legacy_proxy->expects( $this->once() )
 			->method( 'call_static' )
 			->with( WC_Payment_Tokens::class, 'get', 123456 )
-			->willReturn( $this->createMock( WC_Payment_Token::class ) );
+			->willReturn( $mock_token );
 
-		$this->assertInstanceOf( SavedPaymentMethod::class, $this->sut->get_payment_method() );
+		// Act.
+		$pm = $this->sut->get_payment_method();
+
+		// Assert: correct type of instance.
+		$this->assertInstanceOf( SavedPaymentMethod::class, $pm );
+
+		// Assert: the same payment method string saved in the token object.
+		$mock_token->expects( $this->once() )
+			->method( 'get_token' )
+			->willReturn( 'pm_saved_method' );
+		$this->assertSame( $pm->get_id(), 'pm_saved_method' );
 	}
 
 	public function test_get_payment_return_new_payment_method() {
@@ -207,8 +218,10 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 			$this->mock_legacy_proxy,
 			$request
 		);
+		$pm        = $this->sut->get_payment_method();
 
-		$this->assertInstanceOf( NewPaymentMethod::class, $this->sut->get_payment_method() );
+		$this->assertInstanceOf( NewPaymentMethod::class, $pm );
+		$this->assertSame( 'pm_mock', $pm->get_id() );
 	}
 
 	public function test_get_payment_method_throw_exception_due_to_no_payment_method_attached() {
