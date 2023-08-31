@@ -31,6 +31,7 @@ export const WoopayExpressCheckoutButton = ( {
 	};
 	const initWoopayRef = useRef();
 	const buttonRef = useRef();
+	const sessionDataPromiseRef = useRef( null );
 	const { type: buttonType, height, size, theme, context } = buttonSettings;
 	const [ buttonWidthType, setButtonWidthType ] = useState(
 		buttonWidthTypes.wide
@@ -52,20 +53,6 @@ export const WoopayExpressCheckoutButton = ( {
 		getProductData,
 		isAddToCartDisabled,
 	} = useExpressCheckoutProductHandler( api, isProductPage );
-
-	let sessionDataPromise = null;
-	if ( ! isProductPage ) {
-		sessionDataPromise = request(
-			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_session' ),
-			{
-				_ajax_nonce: getConfig( 'woopaySessionNonce' ),
-			}
-		).then( ( response ) => {
-			return new Promise( ( resolve ) => {
-				resolve( response );
-			} );
-		} );
-	}
 
 	useEffect( () => {
 		if ( ! buttonRef.current ) {
@@ -121,7 +108,7 @@ export const WoopayExpressCheckoutButton = ( {
 					return;
 				}
 
-				sessionDataPromise.then( ( response ) => {
+				sessionDataPromiseRef.current.then( ( response ) => {
 					iframe.contentWindow.postMessage(
 						{
 							action: 'setPreemptiveSessionData',
@@ -134,12 +121,19 @@ export const WoopayExpressCheckoutButton = ( {
 		} );
 
 		return iframe;
-	}, [ isPreview, sessionDataPromise ] );
+	}, [ isPreview ] );
 
 	useEffect( () => {
 		if ( isPreview || isProductPage ) {
 			return;
 		}
+
+		sessionDataPromiseRef.current = request(
+			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_session' ),
+			{
+				_ajax_nonce: getConfig( 'woopaySessionNonce' ),
+			}
+		).then( ( response ) => response );
 
 		buttonRef.current.parentElement.style.position = 'relative';
 		buttonRef.current.parentElement.appendChild( newIframe() );
