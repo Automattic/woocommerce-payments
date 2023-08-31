@@ -88,7 +88,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 
 		try {
 			if ( $this->webhook_reliability_service->should_delay_event( $body ) ) {
-				$this->webhook_reliability_service->store_event( $body );
+				$this->webhook_reliability_service->schedule_process_event( $body );
 			} else {
 				$this->webhook_processing_service->process( $body );
 			}

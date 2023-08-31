@@ -785,6 +785,26 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// We set this variable to be used in following checks.
 			$blocked_due_to_fraud_rules = $e instanceof API_Exception && 'wcpay_blocked_by_fraud_rule' === $e->get_error_code();
 
+			if ( ! $blocked_due_to_fraud_rules ) {
+				$delayed_webhook_event = get_posts(
+					[
+						'post_parent' => $order_id,
+						'post_type'   => WC_Payments_Webhook_Reliability_Service::POST_TYPE,
+						'numberposts' => 1,
+					]
+				);
+
+				if ( ! empty( $delayed_webhook_event ) ) {
+					do_action( WC_Payments_Webhook_Reliability_Service::WEBHOOK_PROCESS_EVENT_ACTION, [ 'post_id' => $delayed_webhook_event[0]->ID ] );
+					$order = wc_get_order( $order_id ); // Refresh order data.
+					if ( 'completed' === $order->get_status() ) {
+						return [
+							'result'   => 'success',
+							'redirect' => $this->get_return_url( $order ),
+						];
+					}
+				}
+			}
 			do_action( 'woocommerce_payments_order_failed', $order, $e );
 
 			/**
