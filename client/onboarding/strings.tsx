@@ -187,6 +187,10 @@ export default {
 		from_3_to_6months: __( '3 – 6 months', 'woocommerce-payments' ),
 		more_than_6months: __( '6+ months', 'woocommerce-payments' ),
 	},
+	restoredState: __(
+		'We have restored your previous session. You can pick up where you left off, or go back to a previous step to make changes. ',
+		'woocommerce-payments'
+	),
 	continue: __( 'Continue', 'woocommerce-payments' ),
 	back: __( 'Back', 'woocommerce-payments' ),
 };

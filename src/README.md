@@ -128,6 +128,7 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		$container->addShared( SimpleServiceWithDependencies::class )
 			->addArgument( SimpleService::class);
 
+		// See the "Loading legacy classes" section.
 		$container->add( Request::class )
 			->addArgument( WC_Payments_API_Client::class );
 	}
@@ -141,6 +142,44 @@ Highlights:
 - `addShared()` is used to register shared classes. This is similar to singletons, meaning that only one instance will be ever created.
 - `add()` registers a class, which will be instantiated every time it gets resolved.
 - Both `add()` and `addShared()` return a definition, which can be further used to add the necessary constructor arguments through `addArgument()`. `addArgument()` returns the definition, so multiple calls can be chained.
+
+### Loading legacy classes
+
+Some (not all) instances from includes are available for immediate use as dependencies within `src`.
+
+This is achieved through the [`WCPay\Internal\DependencyManagement\DelegateContainer\LegacyContainer`](Internal/DependencyManagement/DelegateContainer/LegacyContainer.php). Please check [the `DelegateContainer` directory](Internal/DependencyManagement/DelegateContainer/REAMDE.md) for more details, and a list of available classes.
+
+
+One of those classes is `WCPay\Core\Mode`. Here is an example service provider, and a class, which uses `Mode`:
+
+__Service provider__
+```php
+use WCPay\Core\Mode;
+
+class PaymentsServiceProvider extends AbstractServiceProvider {
+	protected $provides = [
+		PaymentProcessingService::class,
+	];
+
+	public function register(): void {
+		$this->getContainer()
+			->addShared( PaymentProcessingService::class )
+			->addArgument( Mode::class );
+	}
+}
+
+// ---
+
+use WCPay\Core\Mode;
+
+class PaymentProcessingService {
+	public function __construct( Mode $mode ) {
+		$this->mode = $mode;
+	}
+}
+```
+
+Keep in mind that all legacy classes are only available as shared instances, meaning that a single instance of the class will be provided whenever needed.
 
 ### Loading Woo classes
 
@@ -178,3 +217,61 @@ class ContainerTest extends \WCPAY_UnitTestCase {
 ```
 
 Also, tests for `src` should be placed within the `tests/unit/src` directory, and use namespaces like in the example.
+
+## Proxies
+
+WooPayments code (especially within `src`) should interact with the outside world with caution. To help with that, as well as good and reliable tests, some proxies are available.
+
+### Hooks Proxy
+
+`WCPay\Internal\Proxy\HooksProxy` provides access to WordPress actions and filters. Using this proxy instead of directly accessing WP functions will allow hooks to be mocked while testing.
+
+Currently the proxy has two available methods. Both of them have the same signatures as their WordPress counterparts. Please use the methods of the proxy instead of the native functions.
+
+| Proxy Method | WordPress Function |
+|---------------------|------------------|
+| `HooksProxy::add_action` | [`add_action`](https://developer.wordpress.org/reference/functions/add_action/) |
+| `HooksProxy::add_filter` | [`add_filter`](https://developer.wordpress.org/reference/functions/add_filter/) |
+
+All other [hook-related functions](https://codex.wordpress.org/Plugin_API/Hooks) can be implemented as soon as they are needed.
+
+### Legacy Proxy
+
+Similarly to the hooks proxy, `WCPay\Internal\Proxy\LegacyProxy` provides structured acccess to code, which lives outside of this directory, which also happens to allow for proper tests.
+
+Here are the available methods, as well as some examples:
+
+```php
+/**
+ * Calls a function outside of `src`.
+ * Use this for WP, WC, and other generic non-native PHP functions.
+ *
+ * @param string $name          Name of the function.
+ * @param mixed  ...$parameters Parameters to pass to the function.
+ * @return mixed The response from the function.
+ */
+$function_result = $legacy_proxy->call_function( string $name, ...$parameters );
+
+/**
+ * Calls the static method of a class outside of `src`.
+ * Use this for non-`src` classes. `src` classes should only have pure static methods.
+ *
+ * @param string $class_name    Name of the class.
+ * @param string $method_name   Name of the method.
+ * @param mixed  ...$parameters Parameters to pass to the method.
+ * @return mixed The response from the method.
+ */
+$method_result = $legacy_proxy->call_static( string $class_name, string $method_name, ...$parameters );
+
+/**
+ * `has_global` checks whether a global variable is defined,
+ * and `get_global` retrieves it. Calling `get_global` directly
+ * might result in an exception.
+ *
+ * @param string $name Name of the variable.
+ * @return bool
+ * @throws Exception In case get_global() was called without has_global().
+ */
+if ( $legacy_proxy->has_global( $name ) ) {
+	$global_var = $legacy_proxy->get_global( $name );
+}

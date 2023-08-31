@@ -13,11 +13,12 @@ use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
+use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
-use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Intent_Status;
 
 /**
  * Gateway class for WooPayments, with added compatibility with WooCommerce Subscriptions.
@@ -257,7 +258,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		$request = Get_Intention::create( $order->get_transaction_id() );
 		$intent  = $request->send( 'wcpay_get_intent_request', $order );
 
-		if ( ! $intent || Payment_Intent_Status::REQUIRES_ACTION !== $intent->get_status() ) {
+		if ( ! $intent || Intent_Status::REQUIRES_ACTION !== $intent->get_status() ) {
 			return false;
 		}
 

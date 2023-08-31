@@ -8,9 +8,10 @@
 namespace WCPay;
 
 use Psr\Container\ContainerInterface;
-use WCPay\Internal\DependencyManagement\DelegateContainer\WooContainer;
 use WCPay\Internal\DependencyManagement\ExtendedContainer;
 use WCPay\Internal\DependencyManagement\ServiceProvider\PaymentsServiceProvider;
+use WCPay\Internal\DependencyManagement\DelegateContainer\LegacyContainer;
+use WCPay\Internal\DependencyManagement\DelegateContainer\WooContainer;
 
 /**
  * WCPay Dependency Injection Container.
@@ -35,12 +36,16 @@ class Container implements ContainerInterface {
 	/**
 	 * Initializes the container.
 	 *
-	 * Dependencies should not be provided during runtime, but will allow
-	 * mocking during tests. This is only needed for the container.
+	 * Dependencies should not be provided during runtime,
+	 * but are useful while testing the container.
 	 *
-	 * @param WooContainer $woo_container The delegate container for WooCommerce (Optional).
+	 * @param LegacyContainer $legacy_container Delegate container for classes in `includes` (Optional).
+	 * @param WooContainer    $woo_container    Delegate container for WooCommerce (Optional).
 	 */
-	public function __construct( WooContainer $woo_container = null ) {
+	public function __construct(
+		LegacyContainer $legacy_container = null,
+		WooContainer $woo_container = null
+	) {
 		$this->container = new ExtendedContainer();
 
 		// Allow the container to be used as a dependency.
@@ -48,6 +53,9 @@ class Container implements ContainerInterface {
 
 		// Add shared services.
 		$this->load_providers();
+
+		// Allow delegating unresolved queries to classes from `includes`.
+		$this->container->delegate( $legacy_container ?? new LegacyContainer() );
 
 		// Allow delegating unresolved queries to the WooCommerce container.
 		$this->container->delegate( $woo_container ?? new WooContainer() );
@@ -59,6 +67,9 @@ class Container implements ContainerInterface {
 	 * @template ID
 	 * @param class-string<ID> $id The ID of the class to retrieve.
 	 * @return ID
+	 *
+	 * Psalm expects $id to be a string, based on ContainerInterface.
+	 * @psalm-suppress MoreSpecificImplementedParamType
 	 */
 	public function get( $id ) {
 		return $this->container->get( $id );

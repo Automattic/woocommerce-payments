@@ -20,7 +20,7 @@ class WC_Payments_Features {
 	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME = '_wcpay_feature_woopay_express_checkout';
 	const AUTH_AND_CAPTURE_FLAG_NAME        = '_wcpay_feature_auth_and_capture';
 	const PROGRESSIVE_ONBOARDING_FLAG_NAME  = '_wcpay_feature_progressive_onboarding';
-	const MC_ORDER_META_HELPER_FLAG_NAME    = '_wcpay_feature_mc_order_meta_helper';
+	const DISPUTE_ON_TRANSACTION_PAGE       = '_wcpay_feature_dispute_on_transaction_page';
 
 	/**
 	 * Checks whether any UPE gateway is enabled.
@@ -78,7 +78,7 @@ class WC_Payments_Features {
 	 * Checks whether the Split UPE with deferred intent is enabled
 	 */
 	public static function is_upe_deferred_intent_enabled() {
-		return '1' === get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, '0' ) && self::is_upe_split_eligible();
+		return ( '1' === get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, '0' ) && self::is_upe_split_eligible() ) || self::is_upe_split_enabled();
 	}
 
 	/**
@@ -201,6 +201,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether Deposits details UI on Transaction Details page is enabled. Disabled by default.
+	 *
+	 * @return bool
+	 */
+	public static function is_dispute_on_transaction_page_enabled(): bool {
+		return '1' === get_option( self::DISPUTE_ON_TRANSACTION_PAGE, '0' );
+	}
+
+	/**
 	 * Checks whether the merchant has chosen Subscription product types during onboarding
 	 * WooCommerce and is elible for WCPay Subscriptions, if so, enables the feature flag.
 	 *
@@ -314,15 +323,6 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether Multi-Currency Order Meta Helper is enabled.
-	 *
-	 * @return bool
-	 */
-	public static function is_mc_order_meta_helper_enabled(): bool {
-		return '1' === get_option( self::MC_ORDER_META_HELPER_FLAG_NAME, '0' );
-	}
-
-	/**
 	 * Returns feature flags as an array suitable for display on the front-end.
 	 *
 	 * @return bool[]
@@ -330,18 +330,18 @@ class WC_Payments_Features {
 	public static function to_array() {
 		return array_filter(
 			[
-				'upe'                     => self::is_upe_enabled(),
-				'upeSplit'                => self::is_upe_split_enabled(),
-				'upeDeferred'             => self::is_upe_deferred_intent_enabled(),
-				'upeSettingsPreview'      => self::is_upe_settings_preview_enabled(),
-				'multiCurrency'           => self::is_customer_multi_currency_enabled(),
-				'woopay'                  => self::is_woopay_eligible(),
-				'documents'               => self::is_documents_section_enabled(),
-				'clientSecretEncryption'  => self::is_client_secret_encryption_enabled(),
-				'woopayExpressCheckout'   => self::is_woopay_express_checkout_enabled(),
-				'isAuthAndCaptureEnabled' => self::is_auth_and_capture_enabled(),
-				'progressiveOnboarding'   => self::is_progressive_onboarding_enabled(),
-				'mcOrderMetaHelper'       => self::is_mc_order_meta_helper_enabled(),
+				'upe'                               => self::is_upe_enabled(),
+				'upeSplit'                          => self::is_upe_split_enabled(),
+				'upeDeferred'                       => self::is_upe_deferred_intent_enabled(),
+				'upeSettingsPreview'                => self::is_upe_settings_preview_enabled(),
+				'multiCurrency'                     => self::is_customer_multi_currency_enabled(),
+				'woopay'                            => self::is_woopay_eligible(),
+				'documents'                         => self::is_documents_section_enabled(),
+				'clientSecretEncryption'            => self::is_client_secret_encryption_enabled(),
+				'woopayExpressCheckout'             => self::is_woopay_express_checkout_enabled(),
+				'isAuthAndCaptureEnabled'           => self::is_auth_and_capture_enabled(),
+				'progressiveOnboarding'             => self::is_progressive_onboarding_enabled(),
+				'isDisputeOnTransactionPageEnabled' => self::is_dispute_on_transaction_page_enabled(),
 			]
 		);
 	}

@@ -200,6 +200,21 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Checks if the account has not completed onboarding due to users abandoning the process half way.
+	 * Returns true if the onboarding is started but did not finish.
+	 *
+	 * @return bool True if the account is connected and details are not submitted, false otherwise.
+	 */
+	public function is_account_partially_onboarded(): bool {
+		if ( ! $this->is_stripe_connected() ) {
+			return false;
+		}
+
+		$account = $this->get_cached_account_data();
+		return false === $account['details_submitted'];
+	}
+
+	/**
 	 * Gets the account status data for rendering on the settings page.
 	 *
 	 * @return array An array containing the status data, or [ 'error' => true ] on error or no connected account.
@@ -227,6 +242,7 @@ class WC_Payments_Account {
 			'status'                => $account['status'],
 			'created'               => $account['created'] ?? '',
 			'paymentsEnabled'       => $account['payments_enabled'],
+			'detailsSubmitted'      => $account['details_submitted'] ?? true,
 			'deposits'              => $account['deposits'] ?? [],
 			'depositsStatus'        => $account['deposits']['status'] ?? $account['deposits_status'] ?? '',
 			'currentDeadline'       => $account['current_deadline'] ?? false,
@@ -450,6 +466,20 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Get the progressive onboarding details needed on the frontend.
+	 *
+	 * @return array Progressive Onboarding details.
+	 */
+	public function get_progressive_onboarding_details(): array {
+		$account = $this->get_cached_account_data();
+		return [
+			'isEnabled'        => $account['progressive_onboarding']['is_enabled'] ?? false,
+			'isComplete'       => $account['progressive_onboarding']['is_complete'] ?? false,
+			'isNewFlowEnabled' => WC_Payments_Utils::should_use_progressive_onboarding_flow(),
+		];
+	}
+
+	/**
 	 * Gets the current account loan data for rendering on the settings pages.
 	 *
 	 * @return array loan data.
@@ -584,8 +614,18 @@ class WC_Payments_Account {
 		$args = $_GET;
 		unset( $args['wcpay-link-handler'] );
 
+		$this->redirect_to_account_link( $args );
+	}
+
+	/**
+	 * Function to immediately redirect to the account link.
+	 *
+	 * @param array $args The arguments to be sent with the link request.
+	 */
+	private function redirect_to_account_link( array $args ) {
 		try {
 			$link = $this->payments_api_client->get_link( $args );
+
 			if ( isset( $args['type'] ) && 'complete_kyc_link' === $args['type'] && isset( $link['state'] ) ) {
 				set_transient( 'wcpay_stripe_onboarding_state', $link['state'], DAY_IN_SECONDS );
 			}
@@ -763,6 +803,12 @@ class WC_Payments_Account {
 
 		if ( isset( $_GET['wcpay-login'] ) && check_admin_referer( 'wcpay-login' ) ) {
 			try {
+				if ( $this->is_account_partially_onboarded() ) {
+					$args         = $_GET;
+					$args['type'] = 'complete_kyc_link';
+					$this->redirect_to_account_link( $args );
+				}
+
 				$this->redirect_to_login();
 			} catch ( Exception $e ) {
 				Logger::error( 'Failed redirect_to_login: ' . $e );
@@ -790,10 +836,12 @@ class WC_Payments_Account {
 			// Track connection start.
 			if ( ! isset( $_GET['wcpay-connect-jetpack-success'] ) ) {
 
+				$test_mode        = isset( $_GET['test_mode'] ) ? boolval( wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) : false;
 				$event_properties = [
 					'incentive'              => $incentive,
 					'is_new_onboarding_flow' => $progressive,
 					'woo_country_code'       => WC()->countries->get_base_country(),
+					'mode'                   => $test_mode || WC_Payments::mode()->is_test() ? 'test' : 'live',
 				];
 				$this->tracks_event(
 					self::TRACKS_EVENT_ACCOUNT_CONNECT_START,
@@ -832,10 +880,12 @@ class WC_Payments_Account {
 				}
 
 				// Track successful Jetpack connection.
+				$test_mode        = isset( $_GET['test_mode'] ) ? boolval( wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) : false;
 				$event_properties = [
 					'incentive'              => $incentive,
 					'is_new_onboarding_flow' => $progressive,
 					'woo_country_code'       => WC()->countries->get_base_country(),
+					'mode'                   => $test_mode || WC_Payments::mode()->is_test() ? 'test' : 'live',
 				];
 				$this->tracks_event(
 					self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_SUCCESS,
@@ -1097,6 +1147,9 @@ class WC_Payments_Account {
 			WC_Payments_Onboarding_Service::set_test_mode( true );
 		}
 
+		// Clear persisted onboarding flow state.
+		WC_Payments_Onboarding_Service::clear_onboarding_flow_state();
+
 		$current_user = wp_get_current_user();
 		$return_url   = $this->get_onboarding_return_url( $wcpay_connect_from );
 		if ( ! empty( $additional_args ) ) {
@@ -1243,8 +1296,8 @@ class WC_Payments_Account {
 		// user might not have agreed to TOS yet.
 		update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => false ] );
 
-		// Automatically enable split UPE for new stores.
-		update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '1' );
+		// Automatically enable deferred intent UPE for new stores.
+		update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '1' );
 
 		// Track account connection finish.
 		$incentive        = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
@@ -1253,6 +1306,7 @@ class WC_Payments_Account {
 			'incentive'              => $incentive,
 			'is_new_onboarding_flow' => $progressive,
 			'woo_country_code'       => WC()->countries->get_base_country(),
+			'mode'                   => 'test' === $mode ? 'test' : 'live',
 		];
 		$this->tracks_event(
 			self::TRACKS_EVENT_ACCOUNT_CONNECT_FINISHED,

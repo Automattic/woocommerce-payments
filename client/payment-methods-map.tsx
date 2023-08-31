@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -44,7 +44,7 @@ const PaymentMethodInformationObject: Record<
 > = {
 	card: {
 		id: 'card',
-		label: __( 'Credit card / debit card', 'woocommerce-payments' ),
+		label: __( 'Credit / Debit card', 'woocommerce-payments' ),
 		brandTitles: {
 			amex: __( 'American Express', 'woocommerce-payments' ),
 			diners: __( 'Diners Club', 'woocommerce-payments' ),
@@ -199,7 +199,8 @@ const PaymentMethodInformationObject: Record<
 			affirm: __( 'Affirm', 'woocommerce-payments' ),
 		},
 		description: __(
-			'Expand your business with Affirm',
+			// translators: %s is the store currency.
+			'Allow customers to pay over time with Affirm. Available to all customers paying in %s.',
 			'woocommerce-payments'
 		),
 		icon: iconComponent( AffirmIcon, 'Affirm' ),
@@ -215,7 +216,8 @@ const PaymentMethodInformationObject: Record<
 			afterpay_clearpay: __( 'Afterpay', 'woocommerce-payments' ),
 		},
 		description: __(
-			'Expand your business with Afterpay',
+			// translators: %s is the store currency.
+			'Allow customers to pay over time with Afterpay. Available to all customers paying in %s.',
 			'woocommerce-payments'
 		),
 		icon: iconComponent( AfterpayIcon, 'Afterpay' ),

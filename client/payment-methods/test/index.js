@@ -12,6 +12,7 @@ import user from '@testing-library/user-event';
  */
 import PaymentMethods from '..';
 import {
+	useAccountDomesticCurrency,
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
 	useGetPaymentMethodStatuses,
@@ -41,6 +42,7 @@ jest.mock( '../../data', () => ( {
 	useManualCapture: jest.fn(),
 	useSelectedPaymentMethod: jest.fn(),
 	useUnselectedPaymentMethod: jest.fn(),
+	useAccountDomesticCurrency: jest.fn(),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
@@ -80,6 +82,7 @@ describe( 'PaymentMethods', () => {
 		global.wcpaySettings = {
 			accountEmail: 'admin@example.com',
 		};
+		useAccountDomesticCurrency.mockReturnValue( 'usd' );
 	} );
 
 	test( 'payment methods are rendered correctly', () => {
@@ -94,7 +97,7 @@ describe( 'PaymentMethods', () => {
 		);
 
 		const cc = screen.getByRole( 'checkbox', {
-			name: 'Credit card / debit card',
+			name: 'Credit / Debit card',
 		} );
 		const becs = screen.getByRole( 'checkbox', {
 			name: 'BECS Direct Debit',
@@ -145,7 +148,7 @@ describe( 'PaymentMethods', () => {
 		const updateEnabledMethodsMock = jest.fn( () => {} );
 		useSelectedPaymentMethod.mockReturnValue( [
 			[
-				'Credit card / debit card',
+				'Credit / Debit card',
 				'BECS Direct Debit',
 				'Bancontact',
 				'EPS',
@@ -202,11 +205,7 @@ describe( 'PaymentMethods', () => {
 			</WcPayUpeContextProvider>
 		);
 
-		expect( screen.queryAllByText( /Pending /i ).length ).toEqual( 2 );
-
-		expect(
-			screen.queryAllByText( /More information needed/i ).length
-		).toEqual( 4 );
+		expect( screen.queryAllByText( /Pending /i ).length ).toEqual( 4 );
 	} );
 
 	test( 'upe setup banner is rendered when UPE preview feature flag is enabled', () => {

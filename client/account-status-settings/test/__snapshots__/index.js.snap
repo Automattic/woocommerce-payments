@@ -5,7 +5,7 @@ exports[`AccountStatus renders connected account 1`] = `
   <div>
     <div>
       <span
-        class="chip chip-success is-compact"
+        class="chip chip-success"
       >
         Complete
       </span>
@@ -66,7 +66,7 @@ exports[`AccountStatus renders manual deposits 1`] = `
   <div>
     <div>
       <span
-        class="chip chip-success is-compact"
+        class="chip chip-success"
       >
         Complete
       </span>
@@ -126,11 +126,35 @@ exports[`AccountStatus renders partially restricted account 1`] = `
 Object {
   "asFragment": [Function],
   "baseElement": <body>
+    <p
+      class="a11y-speak-intro-text"
+      hidden="hidden"
+      id="a11y-speak-intro-text"
+      style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
+    >
+      Notifications
+    </p>
+    <div
+      aria-atomic="true"
+      aria-live="assertive"
+      aria-relevant="additions text"
+      class="a11y-speak-region"
+      id="a11y-speak-assertive"
+      style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
+    />
+    <div
+      aria-atomic="true"
+      aria-live="polite"
+      aria-relevant="additions text"
+      class="a11y-speak-region"
+      id="a11y-speak-polite"
+      style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
+    />
     <div>
       <div>
         <div>
           <span
-            class="chip chip-light is-compact"
+            class="chip chip-light"
           >
             Unknown
           </span>
@@ -188,7 +212,7 @@ Object {
     <div>
       <div>
         <span
-          class="chip chip-light is-compact"
+          class="chip chip-light"
         >
           Unknown
         </span>
@@ -300,7 +324,7 @@ exports[`AccountStatus renders rejected.fraud account 1`] = `
   <div>
     <div>
       <span
-        class="chip chip-light is-compact"
+        class="chip chip-light"
       >
         Rejected
       </span>
@@ -365,7 +389,7 @@ exports[`AccountStatus renders rejected.other account 1`] = `
   <div>
     <div>
       <span
-        class="chip chip-light is-compact"
+        class="chip chip-light"
       >
         Rejected
       </span>
@@ -430,7 +454,7 @@ exports[`AccountStatus renders rejected.terms_of_service account 1`] = `
   <div>
     <div>
       <span
-        class="chip chip-light is-compact"
+        class="chip chip-light"
       >
         Rejected
       </span>
@@ -494,11 +518,35 @@ exports[`AccountStatus renders restricted account 1`] = `
 Object {
   "asFragment": [Function],
   "baseElement": <body>
+    <p
+      class="a11y-speak-intro-text"
+      hidden="hidden"
+      id="a11y-speak-intro-text"
+      style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
+    >
+      Notifications
+    </p>
+    <div
+      aria-atomic="true"
+      aria-live="assertive"
+      aria-relevant="additions text"
+      class="a11y-speak-region"
+      id="a11y-speak-assertive"
+      style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
+    />
+    <div
+      aria-atomic="true"
+      aria-live="polite"
+      aria-relevant="additions text"
+      class="a11y-speak-region"
+      id="a11y-speak-polite"
+      style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
+    />
     <div>
       <div>
         <div>
           <span
-            class="chip chip-alert is-compact"
+            class="chip chip-alert"
           >
             Restricted
           </span>
@@ -561,7 +609,7 @@ Object {
     <div>
       <div>
         <span
-          class="chip chip-alert is-compact"
+          class="chip chip-alert"
         >
           Restricted
         </span>
@@ -677,11 +725,35 @@ exports[`AccountStatus renders restricted account with overdue requirements 1`] 
 Object {
   "asFragment": [Function],
   "baseElement": <body>
+    <p
+      class="a11y-speak-intro-text"
+      hidden="hidden"
+      id="a11y-speak-intro-text"
+      style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
+    >
+      Notifications
+    </p>
+    <div
+      aria-atomic="true"
+      aria-live="assertive"
+      aria-relevant="additions text"
+      class="a11y-speak-region"
+      id="a11y-speak-assertive"
+      style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
+    />
+    <div
+      aria-atomic="true"
+      aria-live="polite"
+      aria-relevant="additions text"
+      class="a11y-speak-region"
+      id="a11y-speak-polite"
+      style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
+    />
     <div>
       <div>
         <div>
           <span
-            class="chip chip-alert is-compact"
+            class="chip chip-alert"
           >
             Restricted
           </span>
@@ -749,7 +821,7 @@ Object {
     <div>
       <div>
         <span
-          class="chip chip-alert is-compact"
+          class="chip chip-alert"
         >
           Restricted
         </span>
@@ -871,7 +943,7 @@ exports[`AccountStatus renders restricted soon account 1`] = `
   <div>
     <div>
       <span
-        class="chip chip-warning is-compact"
+        class="chip chip-warning"
       >
         Restricted soon
       </span>
