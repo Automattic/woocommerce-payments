@@ -20,7 +20,6 @@ class WC_Payments_Features {
 	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME = '_wcpay_feature_woopay_express_checkout';
 	const AUTH_AND_CAPTURE_FLAG_NAME        = '_wcpay_feature_auth_and_capture';
 	const PROGRESSIVE_ONBOARDING_FLAG_NAME  = '_wcpay_feature_progressive_onboarding';
-	const MC_ORDER_META_HELPER_FLAG_NAME    = '_wcpay_feature_mc_order_meta_helper';
 	const DISPUTE_ON_TRANSACTION_PAGE       = '_wcpay_feature_dispute_on_transaction_page';
 
 	/**
@@ -79,7 +78,7 @@ class WC_Payments_Features {
 	 * Checks whether the Split UPE with deferred intent is enabled
 	 */
 	public static function is_upe_deferred_intent_enabled() {
-		return '1' === get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, '0' ) && self::is_upe_split_eligible();
+		return ( '1' === get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, '0' ) && self::is_upe_split_eligible() ) || self::is_upe_split_enabled();
 	}
 
 	/**
@@ -324,15 +323,6 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether Multi-Currency Order Meta Helper is enabled.
-	 *
-	 * @return bool
-	 */
-	public static function is_mc_order_meta_helper_enabled(): bool {
-		return '1' === get_option( self::MC_ORDER_META_HELPER_FLAG_NAME, '0' );
-	}
-
-	/**
 	 * Returns feature flags as an array suitable for display on the front-end.
 	 *
 	 * @return bool[]
@@ -351,7 +341,6 @@ class WC_Payments_Features {
 				'woopayExpressCheckout'             => self::is_woopay_express_checkout_enabled(),
 				'isAuthAndCaptureEnabled'           => self::is_auth_and_capture_enabled(),
 				'progressiveOnboarding'             => self::is_progressive_onboarding_enabled(),
-				'mcOrderMetaHelper'                 => self::is_mc_order_meta_helper_enabled(),
 				'isDisputeOnTransactionPageEnabled' => self::is_dispute_on_transaction_page_enabled(),
 			]
 		);

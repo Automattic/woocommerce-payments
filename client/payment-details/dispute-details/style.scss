@@ -1,1 +1,11 @@
 /** @format */
+
+.transaction-details-dispute-details-wrapper {
+	padding-left: 24px;
+	padding-right: 24px;
+	padding-bottom: 5px;
+
+	.transaction-details-dispute-details-body {
+		padding: $grid-unit-20;
+	}
+}

@@ -12,11 +12,11 @@ import moment from 'moment';
 import { getConfig } from 'utils/order';
 import RefundConfirmationModal from './refund-confirm-modal';
 import CancelConfirmationModal from './cancel-confirm-modal';
-import BannerNotice from 'wcpay/components/banner-notice';
+import InlineNotice from 'components/inline-notice';
 import { formatExplicitCurrency } from 'utils/currency';
 import { reasons } from 'wcpay/disputes/strings';
 import { getDetailsURL } from 'wcpay/components/details-link';
-import { disputeAwaitingResponseStatuses } from 'wcpay/disputes/filters/config';
+import { isAwaitingResponse, isInquiry } from 'wcpay/disputes/utils';
 import { useCharge } from 'wcpay/data';
 import wcpayTracks from 'tracks';
 import './style.scss';
@@ -133,7 +133,7 @@ const DisputeNotice = ( { chargeId } ) => {
 		! charge?.dispute ||
 		! charge?.dispute?.evidence_details?.due_by ||
 		// Only show the notice if the dispute is awaiting a response.
-		! disputeAwaitingResponseStatuses.includes( charge?.dispute?.status )
+		! isAwaitingResponse( charge.dispute.status )
 	) {
 		return null;
 	}
@@ -149,6 +149,30 @@ const DisputeNotice = ( { chargeId } ) => {
 		return;
 	}
 
+	const titleStrings = {
+		// Translators: %1$s is the formatted dispute amount, %2$s is the dispute reason, %3$s is the due date.
+		dispute_default: __(
+			// eslint-disable-next-line max-len
+			'This order has been disputed in the amount of %1$s. The customer provided the following reason: %2$s. Please respond to this dispute before %3$s.',
+			'woocommerce-payments'
+		),
+		// Translators: %1$s is the formatted dispute amount, %2$s is the dispute reason, %3$s is the due date.
+		inquiry_default: __(
+			// eslint-disable-next-line max-len
+			'The card network involved in this order has opened an inquiry into the transaction with the following reason: %2$s. Please respond to this inquiry before %3$s, just like you would for a formal dispute.',
+			'woocommerce-payments'
+		),
+		// Translators: %1$s is the formatted dispute amount, %2$s is the dispute reason, %3$s is the due date.
+		dispute_urgent: __(
+			'Please resolve the dispute on this order for %1$s labeled "%2$s" by %3$s.',
+			'woocommerce-payments'
+		),
+		// Translators: %1$s is the formatted dispute amount, %2$s is the dispute reason, %3$s is the due date.
+		inquiry_urgent: __(
+			'Please resolve the inquiry on this order for %1$s labeled "%2$s" by %3$s.',
+			'woocommerce-payments'
+		),
+	};
 	const amountFormatted = formatExplicitCurrency(
 		dispute.amount,
 		dispute.currency
@@ -156,30 +180,18 @@ const DisputeNotice = ( { chargeId } ) => {
 
 	let urgency = 'warning';
 	let buttonLabel = __( 'Respond now', 'woocommerce-payments' );
-	let title = sprintf(
-		// Translators: %1$s is the formatted dispute amount, %2$s is the dispute reason, %3$s is the due date.
-		__(
-			'This order has a chargeback dispute of %1$s labeled as "%2$s". Please respond to this dispute before %3$s.',
-			'woocommerce-payments'
-		),
-		amountFormatted,
-		reasons[ dispute.reason ].display,
-		dateI18n( 'M j, Y', dueBy.local().toISOString() )
-	);
 	let suffix = '';
+
+	let titleText = isInquiry( dispute )
+		? titleStrings.inquiry_default
+		: titleStrings.dispute_default;
 
 	// If the dispute is due within 7 days, use different wording.
 	if ( countdownDays < 7 ) {
-		title = sprintf(
-			// Translators: %1$s is the formatted dispute amount, %2$s is the dispute reason, %3$s is the due date.
-			__(
-				'Please resolve the dispute on this order for %1$s labeled "%2$s" by %3$s.',
-				'woocommerce-payments'
-			),
-			amountFormatted,
-			reasons[ dispute.reason ].display,
-			dateI18n( 'M j, Y', dueBy.local().toISOString() )
-		);
+		titleText = isInquiry( dispute )
+			? titleStrings.inquiry_urgent
+			: titleStrings.dispute_urgent;
+
 		suffix = sprintf(
 			// Translators: %s is the number of days left to respond to the dispute.
 			_n(
@@ -192,18 +204,24 @@ const DisputeNotice = ( { chargeId } ) => {
 		);
 	}
 
+	const title = sprintf(
+		titleText,
+		amountFormatted,
+		reasons[ dispute.reason ].display,
+		dateI18n( 'M j, Y', dueBy.local().toISOString() )
+	);
+
 	// If the dispute is due within 72 hours, we want to highlight it as urgent/red.
 	if ( countdownDays < 3 ) {
 		urgency = 'error';
 	}
 
 	if ( countdownDays < 1 ) {
-		urgency = 'error';
 		buttonLabel = __( 'Respond today', 'woocommerce-payments' );
 		suffix = __( '(Last day today)', 'woocommerce-payments' );
 	}
 	return (
-		<BannerNotice
+		<InlineNotice
 			status={ urgency }
 			isDismissible={ false }
 			actions={ [
@@ -229,6 +247,6 @@ const DisputeNotice = ( { chargeId } ) => {
 			<strong>
 				{ title } { suffix }
 			</strong>
-		</BannerNotice>
+		</InlineNotice>
 	);
 };

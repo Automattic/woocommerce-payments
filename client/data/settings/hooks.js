@@ -59,6 +59,14 @@ export const useEnabledPaymentMethodIds = () => {
 	);
 };
 
+export const useAccountDomesticCurrency = () => {
+	return useSelect( ( select ) => {
+		const { getAccountDomesticCurrency } = select( STORE_NAME );
+
+		return [ getAccountDomesticCurrency() ];
+	}, [] );
+};
+
 export const useSelectedPaymentMethod = () => {
 	const { updateSelectedPaymentMethod } = useDispatch( STORE_NAME );
 
@@ -177,6 +185,38 @@ export const useAccountStatementDescriptor = () => {
 			];
 		},
 		[ updateAccountStatementDescriptor ]
+	);
+};
+
+export const useAccountStatementDescriptorKanji = () => {
+	const { updateAccountStatementDescriptorKanji } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getAccountStatementDescriptorKanji } = select( STORE_NAME );
+
+			return [
+				getAccountStatementDescriptorKanji(),
+				updateAccountStatementDescriptorKanji,
+			];
+		},
+		[ updateAccountStatementDescriptorKanji ]
+	);
+};
+
+export const useAccountStatementDescriptorKana = () => {
+	const { updateAccountStatementDescriptorKana } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getAccountStatementDescriptorKana } = select( STORE_NAME );
+
+			return [
+				getAccountStatementDescriptorKana(),
+				updateAccountStatementDescriptorKana,
+			];
+		},
+		[ updateAccountStatementDescriptorKana ]
 	);
 };
 

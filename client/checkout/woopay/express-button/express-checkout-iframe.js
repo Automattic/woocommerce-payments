@@ -3,6 +3,8 @@
  */
 import { __ } from '@wordpress/i18n';
 import { getConfig } from 'utils/checkout';
+import request from 'wcpay/checkout/utils/request';
+import { buildAjaxURL } from 'wcpay/payment-request/utils';
 import { getTargetElement, validateEmail } from '../utils';
 import wcpayTracks from 'tracks';
 
@@ -85,6 +87,23 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 	iframe.addEventListener( 'load', () => {
 		// Set the initial value.
 		iframeHeaderValue = true;
+
+		request(
+			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_session' ),
+			{
+				_ajax_nonce: getConfig( 'woopaySessionNonce' ),
+			}
+		).then( ( response ) => {
+			if ( response?.data?.session ) {
+				iframe.contentWindow.postMessage(
+					{
+						action: 'setSessionData',
+						value: response,
+					},
+					getConfig( 'woopayHost' )
+				);
+			}
+		} );
 
 		getWindowSize();
 		window.addEventListener( 'resize', getWindowSize );
@@ -223,6 +242,16 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		switch ( e.data.action ) {
 			case 'otp_email_submitted':
 				userEmail = e.data.userEmail;
+				break;
+			case 'redirect_to_woopay_skip_session_init':
+				wcpayTracks.recordUserEvent(
+					wcpayTracks.events.WOOPAY_OTP_COMPLETE,
+					[],
+					true
+				);
+				if ( e.data.redirectUrl ) {
+					window.location = e.data.redirectUrl;
+				}
 				break;
 			case 'redirect_to_platform_checkout':
 			case 'redirect_to_woopay':

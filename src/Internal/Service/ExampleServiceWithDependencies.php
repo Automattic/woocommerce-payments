@@ -8,6 +8,7 @@
 namespace WCPay\Internal\Service;
 
 use Automattic\WooCommerce\Utilities\PluginUtil;
+use Exception;
 use WCPay\Core\Mode;
 
 /**
@@ -57,9 +58,24 @@ class ExampleServiceWithDependencies {
 	/**
 	 * Temporary method to test the Mode.
 	 *
+	 * @throws Exception In case mode is not initialized yet.
 	 * @return bool
 	 */
 	public function is_in_test_mode() {
 		return $this->mode->is_test();
+	}
+
+	/**
+	 * Temporary method to test exceptions.
+	 *
+	 * @return bool|null
+	 */
+	public function handle_exception() {
+		try {
+			$this->example_service->do_something_with_exception();
+		} catch ( Exception $e ) {
+			// Do nothing, this is fine. We're just testing Psalm.
+			return false;
+		}
 	}
 }

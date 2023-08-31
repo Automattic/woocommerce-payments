@@ -7,6 +7,7 @@
 
 namespace WCPay\Internal\Service;
 
+use Exception;
 use WCPay\Core\Mode;
 
 /**
@@ -15,5 +16,12 @@ use WCPay\Core\Mode;
  * to test with.
  */
 class ExampleService {
-
+	/**
+	 * Does something.
+	 *
+	 * @throws Exception Whenever Huell is not happy.
+	 */
+	public function do_something_with_exception() {
+		throw new Exception( 'Huell is not happy.' );
+	}
 }

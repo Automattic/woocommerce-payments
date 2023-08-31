@@ -137,7 +137,7 @@ class WC_Payments_Checkout {
 			WC_Payments::get_gateway()->tokenization_script();
 			$script_handle = 'WCPAY_CHECKOUT';
 			$js_object     = 'wcpayConfig';
-			if ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+			if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 				$script_handle = 'wcpay-upe-checkout';
 				$js_object     = 'wcpay_upe_config';
 			} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
@@ -191,6 +191,7 @@ class WC_Payments_Checkout {
 			'accountIdForIntentConfirmation' => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
 			'wcpayVersionNumber'             => WCPAY_VERSION_NUMBER,
 			'woopaySignatureNonce'           => wp_create_nonce( 'woopay_signature_nonce' ),
+			'woopaySessionNonce'             => wp_create_nonce( 'woopay_session_nonce' ),
 			'woopayMerchantId'               => Jetpack_Options::get_option( 'id' ),
 			'icon'                           => $this->gateway->get_icon_url(),
 			'tracksUserIdentity'             => WC_Payments::woopay_tracker()->tracks_get_identity( get_current_user_id() ),

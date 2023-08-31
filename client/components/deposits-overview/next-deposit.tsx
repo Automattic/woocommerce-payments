@@ -10,7 +10,6 @@ import {
 	Icon,
 } from '@wordpress/components';
 import { calendar } from '@wordpress/icons';
-import InfoOutlineIcon from 'gridicons/dist/info-outline';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import interpolateComponents from '@automattic/interpolate-components';
 import { __, sprintf } from '@wordpress/i18n';
@@ -20,10 +19,10 @@ import { __, sprintf } from '@wordpress/i18n';
  */
 import Loadable from 'components/loadable';
 import { getNextDeposit } from './utils';
-import DepositStatusPill from 'components/deposit-status-pill';
+import DepositStatusChip from 'components/deposit-status-chip';
 import { getDepositDate } from 'deposits/utils';
 import { useAllDepositsOverviews, useDepositIncludesLoan } from 'wcpay/data';
-import BannerNotice from 'wcpay/components/banner-notice';
+import InlineNotice from 'components/inline-notice';
 import { useSelectedCurrency } from 'wcpay/overview/hooks';
 import type * as AccountOverview from 'wcpay/types/account-overview';
 
@@ -33,11 +32,7 @@ type NextDepositProps = {
 };
 
 const DepositIncludesLoanPayoutNotice = () => (
-	<BannerNotice
-		status="warning"
-		icon={ <InfoOutlineIcon /> }
-		isDismissible={ false }
-	>
+	<InlineNotice icon status="warning" isDismissible={ false }>
 		{ interpolateComponents( {
 			mixedString: __(
 				'This deposit will include funds from your WooCommerce Capital loan. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
@@ -57,13 +52,13 @@ const DepositIncludesLoanPayoutNotice = () => (
 				),
 			},
 		} ) }
-	</BannerNotice>
+	</InlineNotice>
 );
 
 const NewAccountWaitingPeriodNotice = () => (
-	<BannerNotice
+	<InlineNotice
 		status="warning"
-		icon={ <NoticeOutlineIcon /> }
+		icon
 		className="new-account-waiting-period-notice"
 		isDismissible={ false }
 	>
@@ -84,13 +79,13 @@ const NewAccountWaitingPeriodNotice = () => (
 				),
 			},
 		} ) }
-	</BannerNotice>
+	</InlineNotice>
 );
 
 const NegativeBalanceDepositsPausedNotice = () => (
-	<BannerNotice
+	<InlineNotice
 		status="warning"
-		icon={ <NoticeOutlineIcon /> }
+		icon
 		className="negative-balance-deposits-paused-notice"
 		isDismissible={ false }
 	>
@@ -115,7 +110,7 @@ const NegativeBalanceDepositsPausedNotice = () => (
 				),
 			},
 		} ) }
-	</BannerNotice>
+	</InlineNotice>
 );
 
 /**
@@ -202,7 +197,7 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 							isLoading={ isLoading }
 							placeholder="Estimated"
 							children={
-								<DepositStatusPill
+								<DepositStatusChip
 									status={ nextDeposit.status }
 								/>
 							}

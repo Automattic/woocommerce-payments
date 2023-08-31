@@ -113,7 +113,7 @@ exports[`PaymentStatusChip renders failed status 1`] = `
 exports[`PaymentStatusChip renders paid status 1`] = `
 <div>
   <span
-    class="chip chip-light"
+    class="chip chip-success"
   >
     Paid
   </span>

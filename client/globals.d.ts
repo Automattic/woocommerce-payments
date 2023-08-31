@@ -1,7 +1,11 @@
 /**
  * Internal dependencies
  */
-import { MccsDisplayTreeItem, Country } from 'onboarding/types';
+import {
+	MccsDisplayTreeItem,
+	Country,
+	OnboardingFields,
+} from 'onboarding/types';
 
 declare global {
 	const wcpaySettings: {
@@ -14,6 +18,7 @@ declare global {
 			isDisputeOnTransactionPageEnabled: boolean;
 		};
 		fraudServices: unknown[];
+		testMode: boolean;
 		isJetpackConnected: boolean;
 		isJetpackIdcActive: boolean;
 		accountStatus: {
@@ -34,6 +39,7 @@ declare global {
 			};
 			depositsStatus?: string;
 			currentDeadline?: bigint;
+			detailsSubmitted?: boolean;
 			pastDue?: boolean;
 			accountLink: string;
 			hasSubmittedVatData?: boolean;
@@ -75,6 +81,8 @@ declare global {
 		};
 		progressiveOnboarding?: {
 			isNewFlowEnabled: boolean;
+			isEnabled: boolean;
+			isComplete: boolean;
 		};
 		accountDefaultCurrency: string;
 		isFRTReviewFeatureActive: boolean;
@@ -83,6 +91,10 @@ declare global {
 		onboardingFieldsData?: {
 			business_types: Country[];
 			mccs_display_tree: MccsDisplayTreeItem[];
+		};
+		onboardingFlowState?: {
+			current_step: string;
+			data: OnboardingFields;
 		};
 		storeCurrency: string;
 		isMultiCurrencyEnabled: string;

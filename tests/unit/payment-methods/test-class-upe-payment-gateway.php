@@ -9,7 +9,7 @@ namespace WCPay\Payment_Methods;
 
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Type;
-use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Intent_Status;
 use WCPay\Core\Server\Request\Create_Intention;
 use WCPay\Core\Server\Request\Create_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Intention;
@@ -34,6 +34,7 @@ use WC_Payments_Order_Service;
 use WC_Payments_Token_Service;
 use Exception;
 use WCPay\Duplicate_Payment_Prevention_Service;
+use WC_Payments_Localization_Service;
 
 require_once dirname( __FILE__ ) . '/../helpers/class-wc-helper-site-currency.php';
 
@@ -151,6 +152,13 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	];
 
 	/**
+	 * WC_Payments_Localization_Service instance.
+	 *
+	 * @var WC_Payments_Localization_Service
+	 */
+	private $mock_localization_service;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -205,6 +213,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_dpps = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 
+		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
+
 		$this->mock_payment_methods = [];
 		$payment_method_classes     = [
 			CC_Payment_Method::class,
@@ -246,6 +256,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_rate_limiter,
 					$this->order_service,
 					$this->mock_dpps,
+					$this->mock_localization_service,
 				]
 			)
 			->setMethods(
@@ -280,7 +291,19 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		// so that get_payment_method_from_request() does not throw error.
 		$_POST = [
 			'wcpay-payment-method' => 'pm_mock',
+			'payment_method'       => UPE_Payment_Gateway::GATEWAY_ID,
 		];
+	}
+
+	/**
+	 * Cleanup after tests.
+	 *
+	 * @return void
+	 */
+	public function tear_down() {
+		parent::tear_down();
+		update_option( '_wcpay_feature_upe', '0' );
+		update_option( '_wcpay_feature_upe_split', '0' );
 	}
 
 	public function test_payment_fields_outputs_fields() {
@@ -589,7 +612,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	public function test_create_payment_intent_uses_order_amount_if_order() {
 		$order    = WC_Helper_Order::create_order();
 		$order_id = $order->get_id();
-		$intent   = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$intent   = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
 		$request  = $this->mock_wcpay_request( Create_Intention::class );
 		$request->expects( $this->once() )
 			->method( 'set_amount' )
@@ -629,7 +652,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	public function test_create_payment_intent_defaults_to_automatic_capture() {
 		$order    = WC_Helper_Order::create_order();
 		$order_id = $order->get_id();
-		$intent   = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$intent   = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
 		$request  = $this->mock_wcpay_request( Create_Intention::class );
 		$request->expects( $this->once() )
 			->method( 'set_amount' )
@@ -651,7 +674,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	public function test_create_payment_intent_with_automatic_capture() {
 		$order    = WC_Helper_Order::create_order();
 		$order_id = $order->get_id();
-		$intent   = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$intent   = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
 		$this->mock_upe_gateway->settings['manual_capture'] = 'no';
 		$request = $this->mock_wcpay_request( Create_Intention::class );
 		$request->expects( $this->once() )
@@ -674,7 +697,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	public function test_create_payment_intent_with_manual_capture() {
 		$order    = WC_Helper_Order::create_order();
 		$order_id = $order->get_id();
-		$intent   = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$intent   = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
 		$this->mock_upe_gateway->settings['manual_capture'] = 'yes';
 		$request = $this->mock_wcpay_request( Create_Intention::class );
 
@@ -834,10 +857,9 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 	public function test_process_payment_returns_correct_redirect_url() {
 		$order                         = WC_Helper_Order::create_order();
-		$order_id                      = $order->get_id();
 		$_POST['wc_payment_intent_id'] = 'pi_mock';
 
-		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::PROCESSING ] );
+		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::PROCESSING ] );
 
 		$request = $this->mock_wcpay_request( Update_Intention::class, 1, 'pi_mock' );
 
@@ -859,13 +881,12 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 	public function test_process_payment_passes_save_payment_method_to_store() {
 		$order                         = WC_Helper_Order::create_order();
-		$order_id                      = $order->get_id();
 		$gateway_id                    = UPE_Payment_Gateway::GATEWAY_ID;
 		$save_payment_param            = "wc-$gateway_id-new-payment-method";
 		$_POST[ $save_payment_param ]  = 'yes';
 		$_POST['wc_payment_intent_id'] = 'pi_mock';
 
-		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::PROCESSING ] );
+		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::PROCESSING ] );
 
 		$request = $this->mock_wcpay_request( Update_Intention::class, 1, 'pi_mock' );
 
@@ -890,7 +911,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order_id                      = $order->get_id();
 		$_POST['wc_payment_intent_id'] = 'pi_mock';
 
-		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::PROCESSING ] );
+		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::PROCESSING ] );
 
 		$request = $this->mock_wcpay_request( Update_Intention::class, 1, 'pi_mock' );
 
@@ -919,11 +940,12 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$this->set_cart_contains_subscription_items( false );
 
-		$result = $this->mock_upe_gateway->process_payment( $order->get_id() );
-
 		$this->mock_upe_gateway
 			->expects( $this->never() )
 			->method( 'manage_customer_details_for_order' );
+
+		$result = $this->mock_upe_gateway->process_payment( $order->get_id() );
+
 		$this->assertEquals( 'success', $result['result'] );
 		$this->assertMatchesRegularExpression( '/key=mock_order_key/', $result['redirect'] );
 	}
@@ -1068,7 +1090,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order_id            = $order->get_id();
 		$save_payment_method = false;
 		$user                = wp_get_current_user();
-		$intent_status       = Payment_Intent_Status::PROCESSING;
+		$intent_status       = Intent_Status::PROCESSING;
 		$intent_metadata     = [ 'order_id' => (string) $order_id ];
 		$charge_id           = 'ch_mock';
 		$customer_id         = 'cus_mock';
@@ -1124,7 +1146,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order_id            = $order->get_id();
 		$save_payment_method = false;
 		$user                = wp_get_current_user();
-		$intent_status       = Payment_Intent_Status::SUCCEEDED;
+		$intent_status       = Intent_Status::SUCCEEDED;
 		$intent_metadata     = [ 'order_id' => (string) $order_id ];
 		$charge_id           = 'ch_mock';
 		$customer_id         = 'cus_mock';
@@ -1199,7 +1221,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order_id            = $order->get_id();
 		$save_payment_method = true;
 		$user                = wp_get_current_user();
-		$intent_status       = Payment_Intent_Status::SUCCEEDED;
+		$intent_status       = Intent_Status::SUCCEEDED;
 		$client_secret       = 'cs_mock';
 		$customer_id         = 'cus_mock';
 		$intent_id           = 'si_mock';
@@ -1268,7 +1290,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order_id            = $order->get_id();
 		$save_payment_method = true;
 		$user                = wp_get_current_user();
-		$intent_status       = Payment_Intent_Status::PROCESSING;
+		$intent_status       = Intent_Status::PROCESSING;
 		$intent_metadata     = [ 'order_id' => (string) $order_id ];
 		$charge_id           = 'ch_mock';
 		$customer_id         = 'cus_mock';
@@ -1591,42 +1613,42 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		WC_Helper_Site_Currency::$mock_site_currency = 'EUR';
 
-		$account_default_currency = 'USD';
-		$this->assertTrue( $card_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $giropay_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $sofort_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $bancontact_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $eps_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $sepa_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $p24_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $ideal_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $becs_method->is_currency_valid( $account_default_currency ) );
+		$account_domestic_currency = 'USD';
+		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $giropay_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $sofort_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $eps_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $sepa_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $p24_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $ideal_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $becs_method->is_currency_valid( $account_domestic_currency ) );
 		// BNPLs can accept only domestic payments.
-		$this->assertFalse( $affirm_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $afterpay_method->is_currency_valid( $account_default_currency ) );
+		$this->assertFalse( $affirm_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $afterpay_method->is_currency_valid( $account_domestic_currency ) );
 
 		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
 
-		$this->assertTrue( $card_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $giropay_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $sofort_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $bancontact_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $eps_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $sepa_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $p24_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $ideal_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $becs_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $affirm_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $afterpay_method->is_currency_valid( $account_default_currency ) );
+		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $giropay_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $sofort_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $eps_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $sepa_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $p24_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $ideal_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $becs_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $affirm_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $afterpay_method->is_currency_valid( $account_domestic_currency ) );
 
 		WC_Helper_Site_Currency::$mock_site_currency = 'AUD';
-		$this->assertTrue( $becs_method->is_currency_valid( $account_default_currency ) );
+		$this->assertTrue( $becs_method->is_currency_valid( $account_domestic_currency ) );
 
 		// BNPLs can accept only domestic payments.
 		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
-		$account_default_currency                    = 'CAD';
-		$this->assertFalse( $affirm_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $afterpay_method->is_currency_valid( $account_default_currency ) );
+		$account_domestic_currency                   = 'CAD';
+		$this->assertFalse( $affirm_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $afterpay_method->is_currency_valid( $account_domestic_currency ) );
 
 		WC_Helper_Site_Currency::$mock_site_currency = '';
 	}
@@ -1645,17 +1667,17 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$afterpay_method   = $this->mock_payment_methods['afterpay_clearpay'];
 
 		WC_Helper_Site_Currency::$mock_site_currency = 'EUR';
-		$account_default_currency                    = 'USD';
+		$account_domestic_currency                   = 'USD';
 
-		$this->assertTrue( $card_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $giropay_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $sofort_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $bancontact_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $eps_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $sepa_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $p24_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $ideal_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $becs_method->is_currency_valid( $account_default_currency ) );
+		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $giropay_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $sofort_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $eps_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $sepa_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $p24_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $ideal_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $becs_method->is_currency_valid( $account_domestic_currency ) );
 
 		global $wp;
 		$order          = WC_Helper_Order::create_order();
@@ -1663,17 +1685,17 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$wp->query_vars = [ 'order-pay' => strval( $order_id ) ];
 		$order->set_currency( 'USD' );
 
-		$this->assertTrue( $card_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $giropay_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $sofort_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $bancontact_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $eps_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $sepa_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $p24_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $ideal_method->is_currency_valid( $account_default_currency ) );
-		$this->assertFalse( $becs_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $affirm_method->is_currency_valid( $account_default_currency ) );
-		$this->assertTrue( $afterpay_method->is_currency_valid( $account_default_currency ) );
+		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $giropay_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $sofort_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $eps_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $sepa_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $p24_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $ideal_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $becs_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $affirm_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $afterpay_method->is_currency_valid( $account_domestic_currency ) );
 
 		$wp->query_vars = [];
 	}
@@ -1718,7 +1740,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$intent = WC_Helper_Intention::create_intention(
 			[
-				'status' => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD,
+				'status' => Intent_Status::REQUIRES_PAYMENT_METHOD,
 				'amount' => 50,
 			]
 		);
@@ -1745,7 +1767,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$intent = WC_Helper_Intention::create_intention(
 			[
-				'status' => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD,
+				'status' => Intent_Status::REQUIRES_PAYMENT_METHOD,
 				'amount' => 50,
 			]
 		);
@@ -1946,6 +1968,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_rate_limiter,
 					$this->order_service,
 					$this->mock_dpps,
+					$this->mock_localization_service,
 				]
 			)
 			->setMethods(
@@ -1994,6 +2017,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_rate_limiter,
 					$this->order_service,
 					$this->mock_dpps,
+					$this->mock_localization_service,
 				]
 			)
 			->setMethods(

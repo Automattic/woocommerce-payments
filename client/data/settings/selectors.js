@@ -52,6 +52,14 @@ export const getAccountStatementDescriptor = ( state ) => {
 	return getSettings( state ).account_statement_descriptor || '';
 };
 
+export const getAccountStatementDescriptorKanji = ( state ) => {
+	return getSettings( state ).account_statement_descriptor_kanji || '';
+};
+
+export const getAccountStatementDescriptorKana = ( state ) => {
+	return getSettings( state ).account_statement_descriptor_kana || '';
+};
+
 export const getAccountBusinessName = ( state ) => {
 	return getSettings( state ).account_business_name || '';
 };
@@ -98,6 +106,10 @@ export const getAccountBusinessSupportPhone = ( state ) => {
 
 export const getAccountBrandingLogo = ( state ) => {
 	return getSettings( state ).account_branding_logo || '';
+};
+
+export const getAccountDomesticCurrency = ( state ) => {
+	return getSettings( state ).account_domestic_currency || '';
 };
 
 export const getDepositScheduleInterval = ( state ) => {
