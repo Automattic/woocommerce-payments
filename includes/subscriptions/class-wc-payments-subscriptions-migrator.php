@@ -102,8 +102,9 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	 *   5. Add an order note on the subscription
 	 *
 	 * @param int $subscription_id The ID of the subscription to migrate.
+	 * @param int $attempt         The number of times migration has been attempted.
 	 */
-	public function migrate_wcpay_subscription( $subscription_id ) {
+	public function migrate_wcpay_subscription( $subscription_id, $attempt = 0 ) {
 		try {
 			add_action( 'action_scheduler_unexpected_shutdown', [ $this, 'log_unexpected_shutdown' ], 10, 2 );
 			add_action( 'action_scheduler_failed_execution', [ $this, 'log_unexpected_action_failure' ], 10, 2 );
@@ -136,6 +137,8 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 			$this->logger->log( '---- SUCCESS: Subscription migrated.' );
 		} catch ( \Exception $e ) {
 			$this->logger->log( $e->getMessage() );
+
+			$this->maybe_reschedule_migration( $subscription_id, $attempt, $e );
 		}
 
 		remove_action( 'action_scheduler_unexpected_shutdown', [ $this, 'log_unexpected_shutdown' ] );
@@ -409,6 +412,49 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 
 		$this->logger->log( 'Started scheduling subscription migrations.' );
 		$this->schedule_repair();
+	}
+
+	/**
+	 * Reschedules a subscription migration with increasing delays depending on number of attempts.
+	 *
+	 * After max retries, an exception is thrown if one was passed.
+	 *
+	 * @param int             $subscription_id The ID of the subscription to retry.
+	 * @param int             $attempt         The number of times migration has been attempted.
+	 * @param \Exception|null $exception       The exception thrown during migration.
+	 *
+	 * @throws \Exception If max attempts and exception passed is not null.
+	 */
+	public function maybe_reschedule_migration( $subscription_id, $attempt = 0, $exception = null ) {
+		// Number of seconds to wait before retrying the migration, increasing with each attempt up to 7 attempts (12 hours).
+		$retry_schedule = [ 60, 300, 600, 1800, HOUR_IN_SECONDS, 6 * HOUR_IN_SECONDS, 12 * HOUR_IN_SECONDS ];
+
+		// If the exception thrown contains "Skipping migration", don't reschedule the migration.
+		if ( $exception && false !== strpos( $exception->getMessage(), 'Skipping migration' ) ) {
+			return;
+		}
+
+		if ( isset( $retry_schedule[ $attempt ] ) && $attempt < 7 ) {
+			$this->logger->log( sprintf( '---- Rescheduling migration of subscription #%1$d.', $subscription_id ) );
+
+			as_schedule_single_action(
+				gmdate( 'U' ) + $retry_schedule[ $attempt ],
+				$this->migrate_hook,
+				[
+					'migrate_subscription' => $subscription_id,
+					'attempt'              => $attempt + 1,
+				]
+			);
+		} else {
+			$this->logger->log( sprintf( '---- FAILED: Subscription #%d could not be migrated.', $subscription_id ) );
+
+			if ( $exception ) {
+				// Before throwing the exception, remove the action_scheduler failure hook to prevent the exception being logged again.
+				remove_action( 'action_scheduler_failed_execution', [ $this, 'handle_unexpected_action_failure' ] );
+
+				throw $exception;
+			}
+		}
 	}
 
 	/**
