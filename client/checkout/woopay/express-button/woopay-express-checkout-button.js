@@ -16,6 +16,8 @@ import { getConfig } from 'wcpay/utils/checkout';
 import request from 'wcpay/checkout/utils/request';
 import { buildAjaxURL } from 'wcpay/payment-request/utils';
 
+const BUTTON_WIDTH_THRESHOLD = 140;
+
 export const WoopayExpressCheckoutButton = ( {
 	isPreview = false,
 	buttonSettings,
@@ -71,7 +73,7 @@ export const WoopayExpressCheckoutButton = ( {
 		}
 
 		const buttonWidth = buttonRef.current.getBoundingClientRect().width;
-		const isButtonWide = buttonWidth > 140;
+		const isButtonWide = buttonWidth > BUTTON_WIDTH_THRESHOLD;
 		setButtonWidthType(
 			isButtonWide ? buttonWidthTypes.wide : buttonWidthTypes.narrow
 		);
