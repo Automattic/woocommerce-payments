@@ -13,7 +13,7 @@ import { createInterpolateElement } from '@wordpress/element';
 import { getConfig } from 'utils/order';
 import RefundConfirmationModal from './refund-confirm-modal';
 import CancelConfirmationModal from './cancel-confirm-modal';
-import BannerNotice from 'wcpay/components/banner-notice';
+import InlineNotice from 'wcpay/components/inline-notice';
 import { formatExplicitCurrency } from 'utils/currency';
 import { reasons } from 'wcpay/disputes/strings';
 import { getDetailsURL } from 'wcpay/components/details-link';
@@ -328,7 +328,7 @@ const DisputeNotice = ( { chargeId } ) => {
 	}
 
 	return (
-		<BannerNotice
+		<InlineNotice
 			status={ urgency }
 			isDismissible={ false }
 			actions={ actions }
@@ -336,6 +336,6 @@ const DisputeNotice = ( { chargeId } ) => {
 			{ showWarning && <strong>{ warningText }</strong> }
 
 			{ disableRefund && <div>{ refundDisabledNotice }</div> }
-		</BannerNotice>
+		</InlineNotice>
 	);
 };
