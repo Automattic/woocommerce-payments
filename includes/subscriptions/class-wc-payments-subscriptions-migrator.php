@@ -106,8 +106,8 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	 */
 	public function migrate_wcpay_subscription( $subscription_id, $attempt = 0 ) {
 		try {
-			add_action( 'action_scheduler_unexpected_shutdown', [ $this, 'log_unexpected_shutdown' ], 10, 2 );
-			add_action( 'action_scheduler_failed_execution', [ $this, 'log_unexpected_action_failure' ], 10, 2 );
+			add_action( 'action_scheduler_unexpected_shutdown', [ $this, 'handle_unexpected_shutdown' ], 10, 2 );
+			add_action( 'action_scheduler_failed_execution', [ $this, 'handle_unexpected_action_failure' ], 10, 2 );
 
 			$subscription       = $this->validate_subscription_to_migrate( $subscription_id );
 			$wcpay_subscription = $this->fetch_wcpay_subscription( $subscription );
@@ -141,8 +141,8 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 			$this->maybe_reschedule_migration( $subscription_id, $attempt, $e );
 		}
 
-		remove_action( 'action_scheduler_unexpected_shutdown', [ $this, 'log_unexpected_shutdown' ] );
-		remove_action( 'action_scheduler_failed_execution', [ $this, 'log_unexpected_action_failure' ] );
+		remove_action( 'action_scheduler_unexpected_shutdown', [ $this, 'handle_unexpected_shutdown' ] );
+		remove_action( 'action_scheduler_failed_execution', [ $this, 'handle_unexpected_action_failure' ] );
 	}
 
 	/**
@@ -326,20 +326,36 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	 * @param string $action_id The Action Scheduler action ID.
 	 * @param array  $error     The error data.
 	 */
-	public function log_unexpected_shutdown( $action_id, $error = null ) {
-		if ( ! empty( $error['type'] ) && in_array( $error['type'], [ E_ERROR, E_PARSE, E_COMPILE_ERROR, E_USER_ERROR, E_RECOVERABLE_ERROR ], true ) ) {
-			$this->logger->log( sprintf( '---- ERROR: %s in %s on line %s.', $error['message'] ?? 'No message', $error['file'] ?? 'no file found', $error['line'] ?? '0' ) );
+	public function handle_unexpected_shutdown( $action_id, $error = null ) {
+		$migration_args = $this->get_migration_action_args( $action_id );
+
+		if ( ! isset( $migration_args['migrate_subscription'], $migration_args['attempt'] ) ) {
+			return;
 		}
+
+		if ( ! empty( $error['type'] ) && in_array( $error['type'], [ E_ERROR, E_PARSE, E_COMPILE_ERROR, E_USER_ERROR, E_RECOVERABLE_ERROR ], true ) ) {
+			$this->logger->log( sprintf( '---- ERROR: Unexpected shutdown while migrating subscription #%1$d: %2$s in %3$s on line %4$s.', $migration_args['migrate_subscription'], $error['message'] ?? 'No message', $error['file'] ?? 'no file found', $error['line'] ?? '0' ) );
+		}
+
+		$this->maybe_reschedule_migration( $migration_args['migrate_subscription'], $migration_args['attempt'] );
 	}
 
 	/**
-	 * Logs any unexpected failures that occur while processing a scheduled migrate WCPay Subscription action.
+	 * Handles any unexpected failures that occur while processing a single migration action
+	 * by logging an error message and rescheduling the action to retry.
 	 *
 	 * @param string    $action_id The Action Scheduler action ID.
 	 * @param Exception $exception The exception thrown during action processing.
 	 */
-	public function log_unexpected_action_failure( $action_id, $exception ) {
-		$this->logger->log( sprintf( '---- ERROR: %s', $exception->getMessage() ) );
+	public function handle_unexpected_action_failure( $action_id, $exception ) {
+		$migration_args = $this->get_migration_action_args( $action_id );
+
+		if ( ! isset( $migration_args['migrate_subscription'], $migration_args['attempt'] ) ) {
+			return;
+		}
+
+		$this->logger->log( sprintf( '---- ERROR: Unexpected failure while migrating subscription #%1$d: %2$s', $migration_args['migrate_subscription'], $exception->getMessage() ) );
+		$this->maybe_reschedule_migration( $migration_args['migrate_subscription'], $migration_args['attempt'] );
 	}
 
 	/**
@@ -412,6 +428,35 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 
 		$this->logger->log( 'Started scheduling subscription migrations.' );
 		$this->schedule_repair();
+	}
+
+	/**
+	 * Gets the subscription ID and number of attempts from the action args.
+	 *
+	 * @param int $action_id The action ID to get data from.
+	 *
+	 * @return array
+	 */
+	private function get_migration_action_args( $action_id ) {
+		$action = ActionScheduler_Store::instance()->fetch_action( $action_id );
+
+		if ( ! $action || $this->migrate_hook !== $action->get_hook() ) {
+			return [];
+		}
+
+		$action_args = $action->get_args();
+
+		if ( ! isset( $action_args['migrate_subscription'] ) ) {
+			return [];
+		}
+
+		return array_merge(
+			[
+				'migrate_subscription' => 0,
+				'attempt'              => 0,
+			],
+			$action_args
+		);
 	}
 
 	/**
