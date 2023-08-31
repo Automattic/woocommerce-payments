@@ -14,8 +14,8 @@ import ConfirmationModal from 'components/confirmation-modal';
 import useIsUpeEnabled from 'settings/wcpay-upe-toggle/hook';
 import { wcPaySurveys } from './questions';
 import WcPaySurveyContext from './context';
-import InlineNotice from '../../components/inline-notice';
-import { LoadableBlock } from '../../components/loadable';
+import InlineNotice from 'components/inline-notice';
+import { LoadableBlock } from 'components/loadable';
 
 const SurveyModalBody = ( { options, surveyQuestion } ) => {
 	const [ isUpeEnabled ] = useIsUpeEnabled();
@@ -26,7 +26,7 @@ const SurveyModalBody = ( { options, surveyQuestion } ) => {
 	return (
 		<>
 			{ ! isUpeEnabled && (
-				<InlineNotice status="success" isDismissible={ false }>
+				<InlineNotice icon status="success" isDismissible={ false }>
 					{ __(
 						"You've disabled the new payments experience in your store.",
 						'woocommerce-payments'
