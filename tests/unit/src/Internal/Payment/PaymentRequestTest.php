@@ -160,19 +160,6 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 		];
 	}
 
-	public function test_get_payment_return_new_payment_method() {
-		$request   = [
-			'payment_method'       => 'woocommerce_payments',
-			'wcpay-payment-method' => 'pm_mock',
-		];
-		$this->sut = new PaymentRequest(
-			$this->mock_legacy_proxy,
-			$request
-		);
-
-		$this->assertInstanceOf( NewPaymentMethod::class, $this->sut->get_payment_method() );
-	}
-
 	public function test_get_payment_throw_exception_due_to_invalid_token_id() {
 		$request   = [
 			'payment_method'                        => 'woocommerce_payments',
@@ -211,6 +198,19 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 		$this->assertInstanceOf( SavedPaymentMethod::class, $this->sut->get_payment_method() );
 	}
 
+	public function test_get_payment_return_new_payment_method() {
+		$request   = [
+			'payment_method'       => 'woocommerce_payments',
+			'wcpay-payment-method' => 'pm_mock',
+		];
+		$this->sut = new PaymentRequest(
+			$this->mock_legacy_proxy,
+			$request
+		);
+
+		$this->assertInstanceOf( NewPaymentMethod::class, $this->sut->get_payment_method() );
+	}
+
 	public function test_get_payment_method_throw_exception_due_to_no_payment_method_attached() {
 		$request   = [ 'payment_method' => 'woocommerce_payments' ];
 		$this->sut = new PaymentRequest(
@@ -219,7 +219,7 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 		);
 
 		$this->expectException( PaymentRequestException::class );
-		$this->expectExceptionMessage( 'No valid payment method attached to the request.' );
+		$this->expectExceptionMessage( 'No valid payment method was selected.' );
 
 		$this->sut->get_payment_method();
 	}
