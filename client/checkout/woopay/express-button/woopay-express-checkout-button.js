@@ -33,6 +33,7 @@ export const WoopayExpressCheckoutButton = ( {
 	const [ buttonWidthType, setButtonWidthType ] = useState(
 		buttonWidthTypes.wide
 	);
+	const [ isDisabled, setIsDisabled ] = useState( true );
 
 	const text =
 		buttonType !== 'default'
@@ -109,6 +110,8 @@ export const WoopayExpressCheckoutButton = ( {
 		iframe.style.top = '0';
 
 		iframe.addEventListener( 'load', () => {
+			setIsDisabled( false );
+
 			initWoopayRef.current = ( e ) => {
 				e.preventDefault();
 
@@ -198,7 +201,7 @@ export const WoopayExpressCheckoutButton = ( {
 			aria-label={ buttonType !== 'default' ? text : __( 'WooPay' ) }
 			onClick={ ( e ) => initWoopayRef.current( e ) }
 			className="woopay-express-button"
-			disabled={ isAddToCartDisabled }
+			disabled={ isAddToCartDisabled || isDisabled }
 			data-type={ buttonType }
 			data-size={ size }
 			data-theme={ theme }
