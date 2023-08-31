@@ -381,7 +381,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					'order_number'         => $order_number,
 					'order_key'            => $order->get_order_key(),
 					'payment_type'         => Payment_Type::SINGLE(),
-					'gateway_type'         => 'classic', // This won't show UPE as gateway since the mocked class is used.
+					'gateway_type'         => 'upe',
 					'checkout_type'        => '',
 					'client_version'       => WCPAY_VERSION_NUMBER,
 					'subscription_payment' => 'no',
@@ -483,7 +483,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					'order_number'         => $order_number,
 					'order_key'            => $order->get_order_key(),
 					'payment_type'         => Payment_Type::SINGLE(),
-					'gateway_type'         => 'classic', // This won't show UPE as gateway since the mocked class is used.
+					'gateway_type'         => 'upe',
 					'checkout_type'        => '',
 					'client_version'       => WCPAY_VERSION_NUMBER,
 					'subscription_payment' => 'no',
@@ -581,7 +581,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					'order_number'         => $order_number,
 					'order_key'            => $order->get_order_key(),
 					'payment_type'         => Payment_Type::SINGLE(),
-					'gateway_type'         => 'classic', // This won't show UPE as gateway since the mocked class is used.
+					'gateway_type'         => 'upe',
 					'checkout_type'        => '',
 					'client_version'       => WCPAY_VERSION_NUMBER,
 					'subscription_payment' => 'no',

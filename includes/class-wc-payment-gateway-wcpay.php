@@ -1484,7 +1484,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected function get_metadata_from_order( $order, $payment_type ) {
 		if ( $this instanceof UPE_Split_Payment_Gateway ) {
 			$gateway_type = 'split_upe';
-		} else if ( $this instanceof UPE_Payment_Gateway ) {
+		} elseif ( $this instanceof UPE_Payment_Gateway ) {
 			$gateway_type = 'upe';
 		} else {
 			$gateway_type = 'classic';
@@ -1505,20 +1505,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'subscription_payment' => 'no',
 		];
 
-		if ( 'recurring' === (string) $payment_type ) {
-			$subscriptions                    = wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] );
-			$metadata['subscription_payment'] = count( $subscriptions ) > 1 ? 'renewal' : 'initial';
-			$metadata['payment_context']      = 'regular_subscription';
-
-			// If the order belongs to a WCPay Subscription, set the payment context to 'wcpay_subscription' (this helps with associating which fees belong to orders).
-			if ( $this->is_subscriptions_plugin_active() ) {
-				foreach ( $subscriptions as $subscription ) {
-					if ( WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ) {
-						$metadata['payment_context'] = 'wcpay_subscription';
-						break;
-					}
-				}
-			}
+		if ( 'recurring' === (string) $payment_type && function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order ) ) {
+			$metadata['subscription_payment'] = wcs_order_contains_renewal( $order ) ? 'renewal' : 'initial';
+			$metadata['payment_context']      = $this->is_subscriptions_plugin_active() ? 'regular_subscription' : 'wcpay_subscription';
 		}
 		return apply_filters( 'wcpay_metadata_from_order', $metadata, $order, $payment_type );
 	}
