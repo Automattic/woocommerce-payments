@@ -29,9 +29,9 @@ export const WoopayExpressCheckoutButton = ( {
 		narrow: 'narrow',
 		wide: 'wide',
 	};
-	const initWoopayRef = useRef();
-	const buttonRef = useRef();
 	const sessionDataPromiseRef = useRef( null );
+	const initWoopayRef = useRef( null );
+	const buttonRef = useRef( null );
 	const { type: buttonType, height, size, theme, context } = buttonSettings;
 	const [ buttonWidthType, setButtonWidthType ] = useState(
 		buttonWidthTypes.wide
