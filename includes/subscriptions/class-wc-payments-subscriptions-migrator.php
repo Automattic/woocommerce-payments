@@ -442,7 +442,7 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	}
 
 	/**
-	 * Overrides the parent repair_item() function and returns immediately.
+	 * Overrides the parent repair_item() function without adding any functionality.
 	 *
 	 * Because our scheduled migration action uses two args instead of one, we cannot use
 	 * this function and need to hook onto the repair/migrate action hook manually.
