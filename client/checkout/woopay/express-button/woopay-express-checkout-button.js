@@ -139,14 +139,12 @@ export const WoopayExpressCheckoutButton = ( {
 		buttonRef.current.parentElement.appendChild( newIframe() );
 
 		const onMessage = ( event ) => {
-			if (
-				! getConfig( 'woopayHost' ).startsWith( event.origin ) ||
-				event.data.action !== 'confirmSetPreemptiveSessionData'
-			) {
-				return;
-			}
-
-			if ( isPreview ) {
+			const isFromWoopayHost = getConfig( 'woopayHost' ).startsWith(
+				event.origin
+			);
+			const isConfirmSessionData =
+				event.data.action === 'confirmSetPreemptiveSessionData';
+			if ( ! isFromWoopayHost || ! isConfirmSessionData || isPreview ) {
 				return;
 			}
 
