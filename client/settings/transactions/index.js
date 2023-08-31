@@ -128,7 +128,7 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 										'woocommerce-payments'
 									) }
 									label={ __(
-										'Customer bank statement',
+										'Customer bank statement (kanji)',
 										'woocommerce-payments'
 									) }
 									value={ accountStatementDescriptorKanji }
@@ -157,7 +157,7 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 										'woocommerce-payments'
 									) }
 									label={ __(
-										'Customer bank statement',
+										'Customer bank statement (kana)',
 										'woocommerce-payments'
 									) }
 									value={ accountStatementDescriptorKana }
