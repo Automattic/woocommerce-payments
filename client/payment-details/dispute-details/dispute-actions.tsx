@@ -4,18 +4,21 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import { __ } from '@wordpress/i18n';
-import { Button, Flex, FlexItem, Icon, Modal } from '@wordpress/components';
+import { __, sprintf } from '@wordpress/i18n';
 import { backup, lock } from '@wordpress/icons';
 import { useDispatch, useSelect } from '@wordpress/data';
+import { createInterpolateElement } from '@wordpress/element';
+import { Button, Flex, FlexItem, Icon, Modal } from '@wordpress/components';
 import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
-import { getAdminUrl } from 'wcpay/utils';
 import type { Dispute } from 'wcpay/types/disputes';
+import { getAdminUrl } from 'wcpay/utils';
 import { STORE_NAME } from 'wcpay/data/constants';
+import { getDisputeFee } from 'wcpay/disputes/utils';
+import { formatCurrency } from 'wcpay/utils/currency';
 
 export const useDisputeAccept = (
 	dispute: Dispute
@@ -42,9 +45,11 @@ interface Props {
 	dispute: Dispute;
 }
 const DisputeActions: React.FC< Props > = ( { dispute } ) => {
-	const hasStagedEvidence = dispute.evidence_details?.has_evidence;
 	const { doAccept, isLoading } = useDisputeAccept( dispute );
 	const [ isModalOpen, setModalOpen ] = useState( false );
+
+	const hasStagedEvidence = dispute.evidence_details?.has_evidence;
+	const disputeFee = getDisputeFee( dispute );
 
 	const onClose = () => {
 		setModalOpen( false );
@@ -122,9 +127,23 @@ const DisputeActions: React.FC< Props > = ( { dispute } ) => {
 							/>
 						</FlexItem>
 						<FlexItem>
-							{ __(
-								'Accepting the dispute marks it as Lost. The disputed amount will be returned to the cardholder, with a $15 dispute fee deducted from your account',
-								'woocommerce-payments'
+							{ createInterpolateElement(
+								sprintf(
+									/* translators: %s: dispute fee */
+
+									__(
+										'Accepting the dispute marks it as <em>Lost</em>. The disputed amount will be returned to the cardholder, with a %s dispute fee deducted from your account',
+										'woocommerce-payments'
+									),
+									disputeFee &&
+										formatCurrency(
+											disputeFee.fee,
+											disputeFee.currency
+										)
+								),
+								{
+									em: <em />,
+								}
 							) }
 						</FlexItem>
 					</Flex>
