@@ -184,7 +184,8 @@ const DisputeNotice = ( { chargeId } ) => {
 			} else if ( isUnderReview( dispute.status ) ) {
 				refundDisabledNotice = createInterpolateElement(
 					__(
-						'This order has a payment dispute. Refunds and order editing are disabled during disputes. <a>View dispute</a>',
+						// eslint-disable-next-line max-len
+						'This order has an active payment dispute. Refunds and order editing are disabled during this time. <a>View details</a>',
 						'woocommerce-payments'
 					),
 					{
@@ -193,7 +194,22 @@ const DisputeNotice = ( { chargeId } ) => {
 					}
 				);
 				tooltipText = __(
-					'Refunds and order editing are disabled during disputes.',
+					'Refunds and order editing are disabled during an active dispute.',
+					'woocommerce-payments'
+				);
+			} else if ( dispute.status === 'lost' ) {
+				refundDisabledNotice = createInterpolateElement(
+					__(
+						'Refunds and order editing have been disabled as a result of a lost dispute. <a>View details</a>',
+						'woocommerce-payments'
+					),
+					{
+						// eslint-disable-next-line jsx-a11y/anchor-has-content
+						a: <a href={ disputeDetailsLink } />,
+					}
+				);
+				tooltipText = __(
+					'Refunds and order editing have been disabled as a result of a lost dispute.',
 					'woocommerce-payments'
 				);
 			}
