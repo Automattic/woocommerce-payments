@@ -43,6 +43,27 @@ export const useDispute = (
 	return { dispute, isLoading, doAccept };
 };
 
+export const useDisputeAccept = (
+	dispute: Dispute
+): {
+	doAccept: () => void;
+	isLoading: boolean;
+} => {
+	const { isLoading } = useSelect(
+		( select ) => {
+			const { isResolving } = select( STORE_NAME );
+
+			return {
+				isLoading: isResolving( 'getDispute', [ dispute.id ] ),
+			};
+		},
+		[ dispute.id ]
+	);
+	const { acceptTransactionDetailsDispute } = useDispatch( STORE_NAME );
+	const doAccept = () => acceptTransactionDetailsDispute( dispute );
+	return { doAccept, isLoading };
+};
+
 export const useDisputeEvidence = (): {
 	updateDispute: ( data: Dispute ) => void;
 } => {

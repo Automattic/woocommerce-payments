@@ -6,7 +6,6 @@
 import React, { useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { backup, lock } from '@wordpress/icons';
-import { useDispatch, useSelect } from '@wordpress/data';
 import { createInterpolateElement } from '@wordpress/element';
 import { Button, Flex, FlexItem, Icon, Modal } from '@wordpress/components';
 import { getHistory } from '@woocommerce/navigation';
@@ -16,30 +15,9 @@ import { getHistory } from '@woocommerce/navigation';
  */
 import type { Dispute } from 'wcpay/types/disputes';
 import { getAdminUrl } from 'wcpay/utils';
-import { STORE_NAME } from 'wcpay/data/constants';
+import { useDisputeAccept } from 'wcpay/data';
 import { getDisputeFee } from 'wcpay/disputes/utils';
 import { formatCurrency } from 'wcpay/utils/currency';
-
-export const useDisputeAccept = (
-	dispute: Dispute
-): {
-	doAccept: () => void;
-	isLoading: boolean;
-} => {
-	const { isLoading } = useSelect(
-		( select ) => {
-			const { isResolving } = select( STORE_NAME );
-
-			return {
-				isLoading: isResolving( 'getDispute', [ dispute.id ] ),
-			};
-		},
-		[ dispute.id ]
-	);
-	const { acceptTransactionDetailsDispute } = useDispatch( STORE_NAME );
-	const doAccept = () => acceptTransactionDetailsDispute( dispute );
-	return { doAccept, isLoading };
-};
 
 interface Props {
 	dispute: Dispute;
