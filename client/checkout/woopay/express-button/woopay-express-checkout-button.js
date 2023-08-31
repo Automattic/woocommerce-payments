@@ -101,20 +101,6 @@ export const WoopayExpressCheckoutButton = ( {
 			return getConfig( 'woopayHost' ) + '/otp/?' + urlParams.toString();
 		};
 
-		const addEventListeners = ( iframe ) => {
-			iframe.addEventListener( 'load', () => {
-				sessionDataPromise.then( ( response ) => {
-					iframe.contentWindow.postMessage(
-						{
-							action: 'setPreemptiveSessionData',
-							value: response,
-						},
-						getConfig( 'woopayHost' )
-					);
-				} );
-			} );
-		};
-
 		const iframe = document.createElement( 'iframe' );
 		iframe.src = getWoopayOtpUrl();
 		iframe.height = 0;
@@ -122,7 +108,17 @@ export const WoopayExpressCheckoutButton = ( {
 		iframe.style.position = 'absolute';
 		iframe.style.top = '0';
 
-		addEventListeners( iframe );
+		iframe.addEventListener( 'load', () => {
+			sessionDataPromise.then( ( response ) => {
+				iframe.contentWindow.postMessage(
+					{
+						action: 'setPreemptiveSessionData',
+						value: response,
+					},
+					getConfig( 'woopayHost' )
+				);
+			} );
+		} );
 
 		return iframe;
 	}, [ sessionDataPromise ] );
