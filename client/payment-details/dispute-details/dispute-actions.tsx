@@ -103,8 +103,7 @@ const DisputeActions: React.FC< Props > = ( { dispute } ) => {
 						<FlexItem>
 							{ createInterpolateElement(
 								sprintf(
-									/* translators: %s: dispute fee */
-
+									/* translators: %s: dispute fee, <em>: emphasis HTML element. */
 									__(
 										'Accepting the dispute marks it as <em>Lost</em>. The disputed amount will be returned to the cardholder, with a %s dispute fee deducted from your account',
 										'woocommerce-payments'
