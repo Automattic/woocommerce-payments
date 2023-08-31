@@ -35,7 +35,6 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 								urgent={ countdownDays <= 2 }
 							/>
 						) }
-						<div></div>
 						<DisputeActions dispute={ dispute } />
 					</CardBody>
 				</Card>
