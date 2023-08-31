@@ -2368,7 +2368,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->wcpay_gateway->should_use_new_process( $order ) );
 	}
 
-	public function test_should_use_new_process_returns_null_if_feature_unavailable() {
+	public function test_should_use_new_process_returns_false_if_feature_unavailable() {
 		// The new payment process is only accessible in dev mode.
 		WC_Payments::mode()->dev();
 
@@ -2619,7 +2619,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	 * Sets up the expectation for a certain factor for the new payment
 	 * process to be either set or unset.
 	 *
-	 * @param string $factor_name Name of the factor.
+	 * @param Factor $factor_name Factor constant.
 	 * @param bool   $value       Expected value.
 	 */
 	private function expect_new_payment_process_factor( $factor_name, $value ) {
