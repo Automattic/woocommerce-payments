@@ -53,6 +53,8 @@ export const WoopayExpressCheckoutButton = ( {
 		getProductData,
 		isAddToCartDisabled,
 	} = useExpressCheckoutProductHandler( api, isProductPage );
+	const getProductDataRef = useRef( getProductData );
+	const addToCartRef = useRef( addToCart );
 
 	useEffect( () => {
 		if ( ! buttonRef.current ) {
@@ -118,13 +120,13 @@ export const WoopayExpressCheckoutButton = ( {
 				);
 
 				if ( isProductPage ) {
-					const productData = getProductData();
+					const productData = getProductDataRef.current();
 
 					if ( ! productData ) {
 						return;
 					}
 
-					addToCart( productData ).then( () => {
+					addToCartRef.current( productData ).then( () => {
 						request(
 							buildAjaxURL(
 								getConfig( 'wcAjaxUrl' ),
@@ -158,7 +160,7 @@ export const WoopayExpressCheckoutButton = ( {
 		} );
 
 		return iframe;
-	}, [ addToCart, getProductData, isProductPage, context, isPreview ] );
+	}, [ isProductPage, context, isPreview ] );
 
 	useEffect( () => {
 		if ( isPreview ) {
