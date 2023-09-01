@@ -21,6 +21,7 @@ use WC_Customer;
 use WC_Payments;
 use WC_Payments_Customer_Service;
 use WC_Payments_Features;
+use WCPay\MultiCurrency\MultiCurrency;
 use WP_REST_Request;
 
 /**
@@ -329,6 +330,15 @@ class WooPay_Session {
 			// create customer.
 			$customer_data = WC_Payments_Customer_Service::map_customer_data( null, new WC_Customer( $user->ID ) );
 			$customer_id   = WC_Payments::get_customer_service()->create_customer_for_user( $user, $customer_data );
+		}
+
+		if ( 0 !== $user->ID ) {
+			$currency      = get_user_meta( $user->ID, MultiCurrency::CURRENCY_META_KEY, true );
+			$currency_code = strtoupper( $currency );
+
+			if ( ! empty( $currency_code ) && WC()->session ) {
+				WC()->session->set( MultiCurrency::CURRENCY_SESSION_KEY, $currency_code );
+			}
 		}
 
 		$account_id = WC_Payments::get_account_service()->get_stripe_account_id();
