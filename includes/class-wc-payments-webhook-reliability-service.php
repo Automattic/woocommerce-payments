@@ -148,7 +148,6 @@ class WC_Payments_Webhook_Reliability_Service {
 		Logger::info( 'Start processing event: ' . $post_id );
 
 		$post = get_post( $post_id );
-
 		if ( ! $post ) {
 			return; // Something deleted this post. Bail out.
 		}
@@ -175,6 +174,7 @@ class WC_Payments_Webhook_Reliability_Service {
 				'name'        => $event['id'],
 				'post_type'   => self::POST_TYPE,
 				'numberposts' => 1,
+				'post_status' => 'any',
 			]
 		);
 

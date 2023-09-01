@@ -791,11 +791,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						'post_parent' => $order_id,
 						'post_type'   => WC_Payments_Webhook_Reliability_Service::POST_TYPE,
 						'numberposts' => 1,
+						'post_status' => 'any',
 					]
 				);
 
 				if ( ! empty( $delayed_webhook_event ) ) {
-					do_action( WC_Payments_Webhook_Reliability_Service::WEBHOOK_PROCESS_EVENT_ACTION, [ 'post_id' => $delayed_webhook_event[0]->ID ] );
+					do_action( WC_Payments_Webhook_Reliability_Service::WEBHOOK_PROCESS_EVENT_ACTION, $delayed_webhook_event[0]->ID );
 					$order = wc_get_order( $order_id ); // Refresh order data.
 					if ( 'completed' === $order->get_status() ) {
 						return [
