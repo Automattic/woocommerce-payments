@@ -367,10 +367,9 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 			'name'             => __( 'Migrate Stripe Billing subscriptions', 'woocommerce-payments' ),
 			'button'           => $disabled ? __( 'Migration in progress', 'woocommerce-payments' ) . '&#8230;' : __( 'Migrate Subscriptions', 'woocommerce-payments' ),
 			'desc'             => sprintf(
-				// translators: %1$s and %2$s are <a> tags, %3$d is the number of subscriptions.
-				__( 'This tool will migrate all Stripe Billing subscriptions to tokenized subscriptions with WooPayments. %1$sRead more.%2$sNumber of Stripe Billing subscriptions found: %3$d', 'woocommerce-payments' ),
-				'<a href="" target="_blank">',
-				'</a><br>',
+				// translators: %1$s is a new line character and %2$d is the number of subscriptions.
+				__( 'This tool will migrate all Stripe Billing subscriptions to tokenized subscriptions with WooPayments.%1$sNumber of Stripe Billing subscriptions found: %2$d', 'woocommerce-payments' ),
+				'<br>',
 				$wcpay_subscriptions_count,
 			),
 			'callback'         => [ $this, 'schedule_migrate_wcpay_subscriptions_action' ],

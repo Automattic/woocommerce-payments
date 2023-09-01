@@ -188,6 +188,38 @@ export const useAccountStatementDescriptor = () => {
 	);
 };
 
+export const useAccountStatementDescriptorKanji = () => {
+	const { updateAccountStatementDescriptorKanji } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getAccountStatementDescriptorKanji } = select( STORE_NAME );
+
+			return [
+				getAccountStatementDescriptorKanji(),
+				updateAccountStatementDescriptorKanji,
+			];
+		},
+		[ updateAccountStatementDescriptorKanji ]
+	);
+};
+
+export const useAccountStatementDescriptorKana = () => {
+	const { updateAccountStatementDescriptorKana } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getAccountStatementDescriptorKana } = select( STORE_NAME );
+
+			return [
+				getAccountStatementDescriptorKana(),
+				updateAccountStatementDescriptorKana,
+			];
+		},
+		[ updateAccountStatementDescriptorKana ]
+	);
+};
+
 export const useAccountBusinessName = () => {
 	const { updateAccountBusinessName } = useDispatch( STORE_NAME );
 

@@ -123,6 +123,22 @@ export function updateAccountStatementDescriptor( accountStatementDescriptor ) {
 	} );
 }
 
+export function updateAccountStatementDescriptorKanji(
+	accountStatementDescriptorKanji
+) {
+	return updateSettingsValues( {
+		account_statement_descriptor_kanji: accountStatementDescriptorKanji,
+	} );
+}
+
+export function updateAccountStatementDescriptorKana(
+	accountStatementDescriptorKana
+) {
+	return updateSettingsValues( {
+		account_statement_descriptor_kana: accountStatementDescriptorKana,
+	} );
+}
+
 export function updateAccountBusinessName( accountBusinessName ) {
 	return updateSettingsValues( {
 		account_business_name: accountBusinessName,

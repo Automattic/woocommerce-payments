@@ -3,9 +3,9 @@
  * External dependencies
  */
 import React from 'react';
-import BannerNotice from 'wcpay/components/banner-notice';
+import InlineNotice from 'wcpay/components/inline-notice';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import { ExternalLink, CardDivider } from '@wordpress/components';
+import { ExternalLink } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 import { useEffect } from '@wordpress/element';
 
@@ -50,7 +50,7 @@ const MigrateOptionNotice: React.FC< Props > = ( {
 	}, [ isLoading ] );
 
 	return (
-		<BannerNotice
+		<InlineNotice
 			status="warning"
 			isDismissible={ false }
 			className={ `woopayments-stripe-billing-notice ${ noticeClassName }` }
@@ -83,7 +83,7 @@ const MigrateOptionNotice: React.FC< Props > = ( {
 					),
 				},
 			} ) }
-		</BannerNotice>
+		</InlineNotice>
 	);
 };
 

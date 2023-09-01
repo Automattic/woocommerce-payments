@@ -106,7 +106,7 @@ body.wcpay-onboarding__body {
 			padding: $gap-small $gap;
 		}
 
-		.wcpay-banner-notice {
+		.wcpay-inline-notice {
 			margin: 0;
 		}
 
@@ -118,6 +118,10 @@ body.wcpay-onboarding__body {
 
 		.components-form-field__error {
 			margin: -$gap 0 $gap;
+		}
+
+		.restored-state-banner {
+			margin: $gap 0;
 		}
 	}
 }

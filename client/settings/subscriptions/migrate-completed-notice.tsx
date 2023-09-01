@@ -3,7 +3,7 @@
  * External dependencies
  */
 import React from 'react';
-import BannerNotice from 'wcpay/components/banner-notice';
+import InlineNotice from 'wcpay/components/inline-notice';
 import { _n, sprintf } from '@wordpress/i18n';
 
 interface Props {
@@ -23,7 +23,7 @@ const MigrationCompletedNotice: React.FC< Props > = ( {
 	onRemove,
 } ) => {
 	return (
-		<BannerNotice
+		<InlineNotice
 			status="info"
 			isDismissible={ true }
 			onRemove={ onRemove }
@@ -42,7 +42,7 @@ const MigrationCompletedNotice: React.FC< Props > = ( {
 				'Woo Subscriptions',
 				'WooPayments'
 			) }
-		</BannerNotice>
+		</InlineNotice>
 	);
 };
 

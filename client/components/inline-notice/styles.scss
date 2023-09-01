@@ -1,0 +1,103 @@
+.wcpay-inline-notice.components-notice {
+	margin: $gap-large 0;
+	padding: 11px 0 11px 17px;
+	border-left: none;
+	border-radius: 2px;
+	justify-content: flex-start;
+
+	/* Margin exceptions */
+	@at-root .components-modal__header + &,
+		&:first-child {
+		margin-top: 0;
+	}
+
+	&:last-child {
+		margin-bottom: 0;
+	}
+
+	/* Shared styles for all variants */
+	.wcpay-inline-notice__icon {
+		display: flex;
+		align-items: center;
+		align-self: flex-start;
+		min-height: auto;
+		min-width: auto;
+		margin-right: 5px;
+		svg {
+			width: 22px;
+			height: 22px;
+		}
+	}
+	.components-notice__content {
+		margin-top: 2px;
+		margin-bottom: 2px;
+	}
+	.wcpay-inline-notice__content__actions {
+		padding-top: 12px;
+	}
+	a.wcpay-inline-notice__action {
+		text-decoration: none;
+	}
+	&.is-dismissible {
+		padding-right: 12px;
+	}
+	.components-notice__dismiss {
+		height: 24px;
+		width: 24px;
+		svg {
+			width: 15px;
+			height: 15px;
+			fill: $gray-900;
+		}
+	}
+
+	/* Specific styles for each variant */
+	&.is-info {
+		background-color: $wp-blue-0;
+		.wcpay-banner-notice__icon svg {
+			fill: $wp-blue-70;
+		}
+		button.wcpay-banner-notice__action {
+			box-shadow: inset 0 0 0 1px $wp-blue-70;
+		}
+		.wcpay-banner-notice__action {
+			color: $wp-blue-70;
+		}
+	}
+	&.is-warning {
+		background-color: #fcf9e8;
+		.wcpay-banner-notice__icon svg {
+			fill: $wp-yellow-70;
+		}
+		button.wcpay-banner-notice__action {
+			box-shadow: inset 0 0 0 1px $wp-yellow-70;
+		}
+		.wcpay-banner-notice__action {
+			color: $wp-yellow-70;
+		}
+	}
+	&.is-error {
+		background-color: $wp-red-0;
+		.wcpay-banner-notice__icon svg {
+			fill: $wp-red-70;
+		}
+		button.wcpay-banner-notice__action {
+			box-shadow: inset 0 0 0 1px $wp-red-70;
+		}
+		.wcpay-banner-notice__action {
+			color: $wp-red-70;
+		}
+	}
+	&.is-success {
+		background-color: #edfaef;
+		.wcpay-banner-notice__icon svg {
+			fill: $wp-green-70;
+		}
+		button.wcpay-banner-notice__action {
+			box-shadow: inset 0 0 0 1px $wp-green-70;
+		}
+		.wcpay-banner-notice__action {
+			color: $wp-green-70;
+		}
+	}
+}

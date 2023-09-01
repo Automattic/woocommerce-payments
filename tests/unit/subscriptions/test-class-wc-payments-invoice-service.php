@@ -137,6 +137,7 @@ class WC_Payments_Invoice_Service_Test extends WCPAY_UnitTestCase {
 		$mock_order        = WC_Helper_Order::create_order();
 		$mock_subscription = new WC_Subscription();
 
+		$mock_subscription->payment_method = 'woocommerce_payments';
 		$mock_subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, 'sub_123abc' );
 		$mock_subscription->save();
 

@@ -1314,13 +1314,17 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 
 		$merged_metadata = [
-			'customer_name'  => 'Test',
-			'customer_email' => $order->get_billing_email(),
-			'site_url'       => esc_url( get_site_url() ),
-			'order_id'       => $order->get_id(),
-			'order_number'   => $order->get_order_number(),
-			'order_key'      => $order->get_order_key(),
-			'payment_type'   => Payment_Type::SINGLE(),
+			'customer_name'        => 'Test',
+			'customer_email'       => $order->get_billing_email(),
+			'site_url'             => esc_url( get_site_url() ),
+			'order_id'             => $order->get_id(),
+			'order_number'         => $order->get_order_number(),
+			'order_key'            => $order->get_order_key(),
+			'payment_type'         => Payment_Type::SINGLE(),
+			'gateway_type'         => 'classic',
+			'checkout_type'        => '',
+			'client_version'       => WCPAY_VERSION_NUMBER,
+			'subscription_payment' => 'no',
 		];
 
 		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
@@ -2191,6 +2195,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'should_use_stripe_platform_on_checkout_page' )
 			->willReturn( true );
 
+		$registered_card_gateway = WC_Payments::get_registered_card_gateway();
 		WC_Payments::set_registered_card_gateway( $mock_wcpay_gateway );
 
 		$payments_checkout = new WC_Payments_Checkout(
@@ -2201,6 +2206,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->assertTrue( $payments_checkout->get_payment_fields_js_config()['forceNetworkSavedCards'] );
+		WC_Payments::set_registered_card_gateway( $registered_card_gateway );
 	}
 
 	public function test_force_network_saved_cards_is_returned_as_false_if_should_not_use_stripe_platform() {
@@ -2211,6 +2217,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'should_use_stripe_platform_on_checkout_page' )
 			->willReturn( false );
 
+		$registered_card_gateway = WC_Payments::get_registered_card_gateway();
 		WC_Payments::set_registered_card_gateway( $mock_wcpay_gateway );
 
 		$payments_checkout = new WC_Payments_Checkout(
@@ -2221,6 +2228,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->assertFalse( $payments_checkout->get_payment_fields_js_config()['forceNetworkSavedCards'] );
+		WC_Payments::set_registered_card_gateway( $registered_card_gateway );
 	}
 
 	public function test_is_woopay_enabled_returns_false_if_ineligible() {

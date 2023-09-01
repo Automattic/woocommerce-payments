@@ -134,7 +134,7 @@ class WC_Payments_Subscriptions {
 	}
 
 	/**
-	 * Undocumented function
+	 * Returns the the Stripe Billing migrator instance.
 	 *
 	 * @return WC_Payments_Subscriptions_Migrator
 	 */

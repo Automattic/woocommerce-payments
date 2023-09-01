@@ -340,7 +340,14 @@ class WooPay_Session {
 
 		$account_id = WC_Payments::get_account_service()->get_stripe_account_id();
 
-		$store_logo = WC_Payments::get_gateway()->get_option( 'platform_checkout_store_logo' );
+		$site_logo_id      = get_theme_mod( 'custom_logo' );
+		$site_logo_url     = $site_logo_id ? ( wp_get_attachment_image_src( $site_logo_id, 'full' )[0] ?? '' ) : '';
+		$woopay_store_logo = WC_Payments::get_gateway()->get_option( 'platform_checkout_store_logo' );
+
+		$store_logo = $site_logo_url;
+		if ( ! empty( $woopay_store_logo ) ) {
+			$store_logo = get_rest_url( null, 'wc/v3/payments/file/' . $woopay_store_logo );
+		}
 
 		include_once WCPAY_ABSPATH . 'includes/compat/blocks/class-blocks-data-extractor.php';
 		$blocks_data_extractor = new Blocks_Data_Extractor();
@@ -361,8 +368,8 @@ class WooPay_Session {
 			'email'                => '',
 			'store_data'           => [
 				'store_name'                     => get_bloginfo( 'name' ),
-				'store_logo'                     => ! empty( $store_logo ) ? get_rest_url( null, 'wc/v3/payments/file/' . $store_logo ) : '',
-				'custom_message'                 => WC_Payments::get_gateway()->get_option( 'platform_checkout_custom_message' ),
+				'store_logo'                     => $store_logo,
+				'custom_message'                 => self::get_formatted_custom_message(),
 				'blog_id'                        => Jetpack_Options::get_option( 'id' ),
 				'blog_url'                       => get_site_url(),
 				'blog_checkout_url'              => wc_get_checkout_url(),
@@ -581,6 +588,26 @@ class WooPay_Session {
 		$i      = wp_nonce_tick( $action );
 
 		return substr( wp_hash( $i . '|' . $action . '|' . $uid . '|' . $token, 'nonce' ), -12, 10 );
+	}
+
+	/**
+	 * Gets the custom message from the settings and replaces the placeholders with the correct links.
+	 *
+	 * @return string The custom message with the placeholders replaced.
+	 */
+	private static function get_formatted_custom_message() {
+		$custom_message = WC_Payments::get_gateway()->get_option( 'platform_checkout_custom_message' );
+
+		$replacement_map = [
+			'[terms_of_service_link]' => wc_terms_and_conditions_page_id() ?
+				'<a href="' . get_permalink( wc_terms_and_conditions_page_id() ) . '">' . __( 'Terms of Service', 'woocommerce-payments' ) . '</a>' :
+				__( 'Terms of Service', 'woocommerce-payments' ),
+			'[privacy_policy_link]'   => wc_privacy_policy_page_id() ?
+				'<a href="' . get_permalink( wc_privacy_policy_page_id() ) . '">' . __( 'Privacy Policy', 'woocommerce-payments' ) . '</a>' :
+				__( 'Privacy Policy', 'woocommerce-payments' ),
+		];
+
+		return str_replace( array_keys( $replacement_map ), array_values( $replacement_map ), $custom_message );
 	}
 
 }
