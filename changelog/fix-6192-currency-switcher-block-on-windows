@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix Currency Switcher Block flag rendering on Windows platform.

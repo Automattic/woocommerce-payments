@@ -6,12 +6,12 @@
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
-import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
+
 /**
  * Internal dependencies
  */
 import './style.scss';
-import BannerNotice from 'components/banner-notice';
+import InlineNotice from 'components/inline-notice';
 import { reasons } from 'wcpay/disputes/strings';
 import { Dispute } from 'wcpay/types/disputes';
 import { isInquiry } from 'wcpay/disputes/utils';
@@ -47,9 +47,9 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 		  );
 
 	return (
-		<BannerNotice
+		<InlineNotice
+			icon
 			status={ urgent ? 'error' : 'warning' }
-			icon={ <NoticeOutlineIcon /> }
 			className="dispute-notice"
 			isDismissible={ false }
 		>
@@ -64,7 +64,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 				),
 				strong: <strong />,
 			} ) }
-		</BannerNotice>
+		</InlineNotice>
 	);
 };
 
