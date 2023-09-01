@@ -142,7 +142,11 @@ function wcpay_get_test_container() {
 
 	$container = $GLOBALS['wcpay_container'] ?? null;
 	if ( ! $container instanceof Container ) {
-		throw new Exception( 'Tests require the WCPay dependency container to be set up.' );
+		if ( is_null( $container ) ) {
+			$container = wcpay_get_container();
+		} else {
+			throw new Exception( 'Tests require the WCPay dependency container to be set up.' );
+		}
 	}
 
 	// Load the property through reflection.
