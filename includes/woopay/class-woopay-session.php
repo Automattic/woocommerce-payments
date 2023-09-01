@@ -416,7 +416,7 @@ class WooPay_Session {
 		}
 
 		$email            = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : '';
-		$is_pay_for_order = ! empty( $_POST['pay_for_order'] ) ? wc_clean( wp_unslash( $_POST['pay_for_order'] ) ) : '';
+		$is_pay_for_order = ! empty( $_POST['pay_for_order'] ) ? filter_var( wp_unslash( $_POST['pay_for_order'] ), FILTER_VALIDATE_BOOLEAN ) : false;
 
 		$body                 = self::get_init_session_request( $is_pay_for_order );
 		$body['email']        = $email;
