@@ -66,20 +66,21 @@ const Subscriptions: React.FC = () => {
 		false
 	);
 
+	// Tracks whether the user has started a migration.
+	const [ hasStartedMigration, setHasStartedMigration ] = useState( false );
+
 	/**
 	 * The notice which contains the option to migrate to on-site billing is shown when:
+	 *  - A migration is not in progress.
+	 * - There are subscriptions using Stripe Billing.
 	 *  - Stripe Billing is not enabled.
-	 *  - There are subscriptions using Stripe Billing.
 	 *  - The user has not started a migration.
 	 */
-	const [
-		displayMigrationOptionNotice,
-		setDisplayMigrationNotice,
-	] = useState(
+	const displayMigrationOptionNotice =
 		! isMigratingStripeBilling &&
-			stripeBillingSubscriptionCount > 0 &&
-			! isStripeBillingEnabled
-	);
+		stripeBillingSubscriptionCount > 0 &&
+		! isStripeBillingEnabled &&
+		! hasStartedMigration;
 
 	/**
 	 * The notice which contains a warning about migrating to on-site billing is shown when:
@@ -94,6 +95,7 @@ const Subscriptions: React.FC = () => {
 		! isMigratingStripeBilling &&
 		stripeBillingSubscriptionCount > 0 &&
 		! displayMigrationOptionNotice &&
+		hasFinishedSavingSettings &&
 		! migrationInProgressNoticeDismissed;
 
 	/**
@@ -132,30 +134,10 @@ const Subscriptions: React.FC = () => {
 	// Hide the migration option notice when the user has started a migration.
 	useEffect( () => {
 		if ( hasScheduledMigration ) {
-			setDisplayMigrationNotice( false );
+			setHasStartedMigration( true );
 			setDisplayMigrationInProgressNotice( true );
 		}
 	}, [ hasScheduledMigration ] );
-
-	/**
-	 * Hide the migration option notice when:
-	 *  - The settings have finished saving.
-	 *  - The migration option notice is being displayed.
-	 *  - Stripe Billing is enabled (saved).
-	 */
-	useEffect( () => {
-		if (
-			hasFinishedSavingSettings &&
-			displayMigrationOptionNotice &&
-			isStripeBillingEnabled
-		) {
-			setDisplayMigrationNotice( false );
-		}
-	}, [
-		displayMigrationOptionNotice,
-		hasFinishedSavingSettings,
-		isStripeBillingEnabled,
-	] );
 
 	/**
 	 * The notice which contains information about a completed migration is shown when:
@@ -187,6 +169,16 @@ const Subscriptions: React.FC = () => {
 				<h4>
 					{ __( 'Subscription billing', 'woocommerce-payments' ) }
 				</h4>
+				{ displayCompletedMigrationNotice &&
+					! displayMigrationInProgressNotice &&
+					! displayMigrationOptionNotice && (
+						<MigrationCompletedNotice
+							completedMigrationCount={ completedMigrationCount }
+							onRemove={ () => {
+								setDisplayCompletedMigrationNotice( false );
+							} }
+						/>
+					) }
 				{ displayMigrationOptionNotice && (
 					<MigrateOptionNotice
 						stripeBillingSubscriptionCount={
@@ -216,15 +208,6 @@ const Subscriptions: React.FC = () => {
 							stripeBillingSubscriptionCount={
 								stripeBillingSubscriptionCount
 							}
-						/>
-					) }
-				{ displayCompletedMigrationNotice &&
-					! displayMigrationInProgressNotice && (
-						<MigrationCompletedNotice
-							completedMigrationCount={ completedMigrationCount }
-							onRemove={ () => {
-								setDisplayCompletedMigrationNotice( false );
-							} }
 						/>
 					) }
 				<CheckboxControl
