@@ -5,6 +5,7 @@
  */
 import React from 'react';
 import moment from 'moment';
+import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 
@@ -16,10 +17,8 @@ import { HorizontalList } from 'wcpay/components/horizontal-list';
 import { formatCurrency } from 'wcpay/utils/currency';
 import { reasons } from 'wcpay/disputes/strings';
 import { formatStringValue } from 'wcpay/utils';
-import { isAwaitingResponse } from 'wcpay/disputes/utils';
 import { ClickTooltip } from 'wcpay/components/tooltip';
 import Paragraphs from 'wcpay/components/paragraphs';
-import HelpOutlineIcon from 'gridicons/dist/help-outline';
 
 interface Props {
 	dispute: Dispute;
