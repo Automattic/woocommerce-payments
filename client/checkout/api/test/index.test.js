@@ -26,6 +26,7 @@ describe( 'WCPayAPI', () => {
 			_wpnonce: 'foo',
 			email: 'foo@bar.com',
 			user_session: 'qwerty123',
+			pay_for_order: null,
 		} );
 	} );
 } );
