@@ -103,7 +103,6 @@ export const WoopayExpressCheckoutButton = ( {
 
 			initWoopayRef.current = ( e ) => {
 				e.preventDefault();
-				setIsDisabled( true );
 
 				if ( isPreview ) {
 					return;
@@ -118,6 +117,8 @@ export const WoopayExpressCheckoutButton = ( {
 						getConfig( 'woopayHost' )
 					);
 				} );
+
+				setIsDisabled( true );
 			};
 		} );
 
