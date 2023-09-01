@@ -239,6 +239,30 @@ class MultiCurrency {
 			add_action( 'init', [ $this, 'update_selected_currency_by_geolocation' ], 12 );
 			add_action( 'init', [ $this, 'possible_simulation_activation' ], 13 );
 			add_action( 'woocommerce_created_customer', [ $this, 'set_new_customer_currency_meta' ] );
+			add_action( 'wp_login', [ $this, 'set_session_currency_on_login' ], 10, 2 );
+		}
+	}
+
+	public function set_session_currency_on_login( $user_name, \WP_User $user ) {
+		if ( ! empty( $_GET['currency'] ) ) {
+			// If the currency url parameter is set the customer just changed their currency
+			// and update_selected_currency_by_url will trigger and set the currency.
+			return;
+		}
+
+		// If no currency paremeter provided we make sure the user meta and the
+		// session match to prevent currency mismatches when using the Store API, e.g.
+		// for WooPay requests.
+		$currency = get_user_meta( $user->ID, self::CURRENCY_META_KEY, true );
+		$code     = strtoupper( $currency );
+
+		if ( empty( $code ) ) {
+			// No currency set.
+			return;
+		}
+
+		if ( WC()->session ) {
+			WC()->session->set( self::CURRENCY_SESSION_KEY, $code );
 		}
 	}
 
