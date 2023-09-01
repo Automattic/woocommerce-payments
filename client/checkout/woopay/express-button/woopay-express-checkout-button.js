@@ -119,11 +119,18 @@ export const WoopayExpressCheckoutButton = ( {
 				} );
 
 				setIsDisabled( true );
+
+				wcpayTracks.recordUserEvent(
+					wcpayTracks.events.WOOPAY_BUTTON_CLICK,
+					{
+						source: context,
+					}
+				);
 			};
 		} );
 
 		return iframe;
-	}, [ isPreview ] );
+	}, [ context, isPreview ] );
 
 	useEffect( () => {
 		if ( isPreview || isProductPage ) {
