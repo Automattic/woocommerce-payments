@@ -117,7 +117,33 @@ export const WoopayExpressCheckoutButton = ( {
 					}
 				);
 
-				if ( ! isProductPage ) {
+				if ( isProductPage ) {
+					const productData = getProductData();
+
+					if ( ! productData ) {
+						return;
+					}
+
+					addToCart( productData ).then( () => {
+						request(
+							buildAjaxURL(
+								getConfig( 'wcAjaxUrl' ),
+								'get_woopay_session'
+							),
+							{
+								_ajax_nonce: getConfig( 'woopaySessionNonce' ),
+							}
+						).then( ( response ) => {
+							iframe.contentWindow.postMessage(
+								{
+									action: 'setPreemptiveSessionData',
+									value: response,
+								},
+								getConfig( 'woopayHost' )
+							);
+						} );
+					} );
+				} else {
 					sessionDataPromiseRef.current.then( ( response ) => {
 						iframe.contentWindow.postMessage(
 							{
@@ -132,7 +158,7 @@ export const WoopayExpressCheckoutButton = ( {
 		} );
 
 		return iframe;
-	}, [ isProductPage, context, isPreview ] );
+	}, [ addToCart, getProductData, isProductPage, context, isPreview ] );
 
 	useEffect( () => {
 		if ( isPreview ) {
