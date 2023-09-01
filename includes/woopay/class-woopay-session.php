@@ -52,12 +52,31 @@ class WooPay_Session {
 	 * @return void
 	 */
 	public static function init() {
-		add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_woopay' ], 20 );
+		//add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_woopay' ], 20 );
 		add_filter( 'woocommerce_session_handler', [ __CLASS__, 'add_woopay_store_api_session_handler' ], 20 );
 		add_action( 'woocommerce_order_payment_status_changed', [ __CLASS__, 'remove_order_customer_id_on_requests_with_verified_email' ] );
 		add_action( 'woopay_restore_order_customer_id', [ __CLASS__, 'restore_order_customer_id_from_requests_with_verified_email' ] );
+		add_filter( 'rest_pre_dispatch', [ __CLASS__, 'set_current_user' ], 10, 3 );
 
 		register_deactivation_hook( WCPAY_PLUGIN_FILE, [ __CLASS__, 'run_and_remove_woopay_restore_order_customer_id_schedules' ] );
+	}
+
+	public static function set_current_user( $result, $server, $request ) {
+
+		if ( ! self::is_request_from_woopay() || ! self::is_store_api_request() ) {
+			return false;
+		}
+
+		if ( ! self::is_woopay_enabled() ) {
+			return false;
+		}
+
+		$user_id = self::get_user_id_from_cart_token();
+		wp_set_current_user( $user_id );
+		error_log('custom setting user to: ' . $user_id );
+		//error_log('using handler: ' . var_export( $handler, true) );
+
+		return $result;
 	}
 
 	/**

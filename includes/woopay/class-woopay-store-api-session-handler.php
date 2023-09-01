@@ -69,6 +69,7 @@ final class SessionHandler extends WC_Session {
 	protected function init_session_from_token() {
 		$payload = JsonWebToken::get_parts( $this->token )->payload;
 
+		error_log('Called WooPay Session Handler with user ID: ' . $payload->user_id);
 		$this->_customer_id       = $payload->user_id;
 		$this->session_expiration = $payload->exp;
 		$this->_data              = (array) $this->get_session( $this->_customer_id, [] );
