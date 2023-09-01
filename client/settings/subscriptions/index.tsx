@@ -70,7 +70,9 @@ const Subscriptions: React.FC = () => {
 	const [ hasStartedMigration, setHasStartedMigration ] = useState( false );
 
 	// We only offer the migration option if Stripe Billing is not enabled at the time of page load.
-	const [ offerMigrationOption ] = useState( ! isStripeBillingEnabled );
+	const [ offerMigrationOption, setOfferMigrationOption ] = useState(
+		! isStripeBillingEnabled
+	);
 
 	/**
 	 * The notice which contains the option to migrate to on-site billing is shown when:
@@ -86,6 +88,22 @@ const Subscriptions: React.FC = () => {
 		stripeBillingSubscriptionCount > 0 &&
 		! hasStartedMigration &&
 		offerMigrationOption;
+
+	// Retract the offer to migrate when the settings have finished saving, and Stripe Billing is enabled.
+	// If Stripe Billing is later disabled, automatic migration will occur.
+	useEffect( () => {
+		if (
+			offerMigrationOption &&
+			isStripeBillingEnabled &&
+			hasFinishedSavingSettings
+		) {
+			setOfferMigrationOption( false );
+		}
+	}, [
+		offerMigrationOption,
+		isStripeBillingEnabled,
+		hasFinishedSavingSettings,
+	] );
 
 	/**
 	 * The notice which contains a warning about migrating to on-site billing is shown when:
