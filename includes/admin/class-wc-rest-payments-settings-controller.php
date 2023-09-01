@@ -426,6 +426,8 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'is_subscriptions_plugin_active'      => $this->wcpay_gateway->is_subscriptions_plugin_active(),
 				'account_country'                     => $this->wcpay_gateway->get_option( 'account_country' ),
 				'account_statement_descriptor'        => $this->wcpay_gateway->get_option( 'account_statement_descriptor' ),
+				'account_statement_descriptor_kanji'  => $this->wcpay_gateway->get_option( 'account_statement_descriptor_kanji' ),
+				'account_statement_descriptor_kana'   => $this->wcpay_gateway->get_option( 'account_statement_descriptor_kana' ),
 				'account_business_name'               => $this->wcpay_gateway->get_option( 'account_business_name' ),
 				'account_business_url'                => $this->wcpay_gateway->get_option( 'account_business_url' ),
 				'account_business_support_address'    => $this->wcpay_gateway->get_option( 'account_business_support_address' ),
