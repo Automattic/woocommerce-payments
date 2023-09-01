@@ -123,6 +123,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 					$js_config['order_id']      = $order->get_id();
 					$js_config['pay_for_order'] = sanitize_text_field( wp_unslash( $_GET['pay_for_order'] ) );
 					$js_config['key']           = sanitize_text_field( wp_unslash( $_GET['key'] ) );
+					$js_config['billing_email'] = $order->get_billing_email();
 
 					return $js_config;
 				}
