@@ -108,16 +108,6 @@ export const WoopayExpressCheckoutButton = ( {
 					return;
 				}
 
-				sessionDataPromiseRef.current.then( ( response ) => {
-					iframe.contentWindow.postMessage(
-						{
-							action: 'setPreemptiveSessionData',
-							value: response,
-						},
-						getConfig( 'woopayHost' )
-					);
-				} );
-
 				setIsDisabled( true );
 
 				wcpayTracks.recordUserEvent(
@@ -126,23 +116,37 @@ export const WoopayExpressCheckoutButton = ( {
 						source: context,
 					}
 				);
+
+				if ( ! isProductPage ) {
+					sessionDataPromiseRef.current.then( ( response ) => {
+						iframe.contentWindow.postMessage(
+							{
+								action: 'setPreemptiveSessionData',
+								value: response,
+							},
+							getConfig( 'woopayHost' )
+						);
+					} );
+				}
 			};
 		} );
 
 		return iframe;
-	}, [ context, isPreview ] );
+	}, [ isProductPage, context, isPreview ] );
 
 	useEffect( () => {
-		if ( isPreview || isProductPage ) {
+		if ( isPreview ) {
 			return;
 		}
 
-		sessionDataPromiseRef.current = request(
-			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_session' ),
-			{
-				_ajax_nonce: getConfig( 'woopaySessionNonce' ),
-			}
-		).then( ( response ) => response );
+		if ( ! isProductPage ) {
+			sessionDataPromiseRef.current = request(
+				buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_session' ),
+				{
+					_ajax_nonce: getConfig( 'woopaySessionNonce' ),
+				}
+			).then( ( response ) => response );
+		}
 
 		buttonRef.current.parentElement.style.position = 'relative';
 		buttonRef.current.parentElement.appendChild( newIframe() );
