@@ -54,49 +54,49 @@
 	/* Specific styles for each variant */
 	&.is-info {
 		background-color: $wp-blue-0;
-		.wcpay-banner-notice__icon svg {
+		.wcpay-inline-notice__icon svg {
 			fill: $wp-blue-70;
 		}
-		button.wcpay-banner-notice__action {
+		button.wcpay-inline-notice__action {
 			box-shadow: inset 0 0 0 1px $wp-blue-70;
 		}
-		.wcpay-banner-notice__action {
+		.wcpay-inline-notice__action {
 			color: $wp-blue-70;
 		}
 	}
 	&.is-warning {
 		background-color: #fcf9e8;
-		.wcpay-banner-notice__icon svg {
+		.wcpay-inline-notice__icon svg {
 			fill: $wp-yellow-70;
 		}
-		button.wcpay-banner-notice__action {
+		button.wcpay-inline-notice__action {
 			box-shadow: inset 0 0 0 1px $wp-yellow-70;
 		}
-		.wcpay-banner-notice__action {
+		.wcpay-inline-notice__action {
 			color: $wp-yellow-70;
 		}
 	}
 	&.is-error {
 		background-color: $wp-red-0;
-		.wcpay-banner-notice__icon svg {
+		.wcpay-inline-notice__icon svg {
 			fill: $wp-red-70;
 		}
-		button.wcpay-banner-notice__action {
+		button.wcpay-inline-notice__action {
 			box-shadow: inset 0 0 0 1px $wp-red-70;
 		}
-		.wcpay-banner-notice__action {
+		.wcpay-inline-notice__action {
 			color: $wp-red-70;
 		}
 	}
 	&.is-success {
 		background-color: #edfaef;
-		.wcpay-banner-notice__icon svg {
+		.wcpay-inline-notice__icon svg {
 			fill: $wp-green-70;
 		}
-		button.wcpay-banner-notice__action {
+		button.wcpay-inline-notice__action {
 			box-shadow: inset 0 0 0 1px $wp-green-70;
 		}
-		.wcpay-banner-notice__action {
+		.wcpay-inline-notice__action {
 			color: $wp-green-70;
 		}
 	}
