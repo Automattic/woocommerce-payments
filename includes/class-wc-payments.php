@@ -625,19 +625,13 @@ class WC_Payments {
 		}
 
 		// Load WCPay Subscriptions.
-		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
+		if ( self::should_load_wcpay_subscriptions() ) {
 			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
 			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account );
 		}
 
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.9.0', '<' ) ) {
 			add_action( 'woocommerce_onboarding_profile_data_updated', 'WC_Payments_Features::maybe_enable_wcpay_subscriptions_after_onboarding', 10, 2 );
-		}
-
-		// Load the WCPay Subscriptions migration class.
-		if ( WC_Payments_Features::is_subscription_migration_enabled() ) {
-			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions-migrator.php';
-			new WC_Payments_Subscriptions_Migrator( self::$api_client );
 		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
@@ -1711,5 +1705,22 @@ class WC_Payments {
 			</p>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Determines whether we should load WCPay Subscription related classes.
+	 *
+	 * Return true when:
+	 *  - the WCPay Subscriptions feature flag is enabled, or
+	 *  - the migration feature flag is enabled && the store has WC Subscriptions activated
+	 *
+	 * @return bool
+	 */
+	private static function should_load_wcpay_subscriptions() {
+		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
+			return true;
+		}
+
+		return WC_Payments_Features::is_subscription_migration_enabled() && class_exists( 'WC_Subscriptions' );
 	}
 }
