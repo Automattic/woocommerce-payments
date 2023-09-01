@@ -8,18 +8,34 @@
 	.transaction-details-dispute-details-body {
 		padding: $grid-unit-20;
 
-		.woocommerce-list--horizontal {
+		.dispute-summary-row {
+			margin: 24px 0;
+			.woocommerce-list__item-text {
+				display: flex;
+				height: 40px;
+				flex-direction: column;
+				justify-content: space-between;
+				align-items: flex-start;
+			}
 			.woocommerce-list__item-title {
 				text-transform: uppercase;
+				color: $gray-700;
+				font-size: 11px;
+				font-style: normal;
+				font-weight: 600;
+				line-height: 16px; /* 145.455% */
 			}
-			.due-soon {
+			.response-date {
 				display: flex;
 				align-items: center;
-				color: $alert-red;
-				font-weight: 700;
-				.due-soon-icon {
-					fill: $alert-red;
-					margin-left: 5px;
+				gap: var( --grid-unit-05, 4px );
+				.dispute-warning {
+					color: $wp-yellow-30;
+					font-weight: 700;
+				}
+				.dispute-urgent {
+					font-weight: 700;
+					color: $alert-red;
 				}
 			}
 		}
@@ -27,4 +43,16 @@
 }
 .wcpay-banner-notice.dispute-notice {
 	margin: 0;
+}
+.dispute-reason-tooltip {
+	p {
+		&:first-child {
+			font-weight: bold;
+		}
+		&:last-child {
+			margin-bottom: 0;
+		}
+		margin: 0;
+		margin-bottom: 8px;
+	}
 }
