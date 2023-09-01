@@ -69,18 +69,23 @@ const Subscriptions: React.FC = () => {
 	// Tracks whether the user has started a migration.
 	const [ hasStartedMigration, setHasStartedMigration ] = useState( false );
 
+	// We only offer the migration option if Stripe Billing is not enabled at the time of page load.
+	const [ offerMigrationOption ] = useState( ! isStripeBillingEnabled );
+
 	/**
 	 * The notice which contains the option to migrate to on-site billing is shown when:
-	 *  - A migration is not in progress.
-	 * - There are subscriptions using Stripe Billing.
 	 *  - Stripe Billing is not enabled.
+	 *  - A migration is not in progress.
+	 *  - There are subscriptions using Stripe Billing.
 	 *  - The user has not started a migration.
+	 *  - We're offering the migrate option - ie Stripe Billing was not enabled at the time of page load.
 	 */
 	const displayMigrationOptionNotice =
+		! isStripeBillingEnabled &&
 		! isMigratingStripeBilling &&
 		stripeBillingSubscriptionCount > 0 &&
-		! isStripeBillingEnabled &&
-		! hasStartedMigration;
+		! hasStartedMigration &&
+		offerMigrationOption;
 
 	/**
 	 * The notice which contains a warning about migrating to on-site billing is shown when:
@@ -95,7 +100,6 @@ const Subscriptions: React.FC = () => {
 		! isMigratingStripeBilling &&
 		stripeBillingSubscriptionCount > 0 &&
 		! displayMigrationOptionNotice &&
-		hasFinishedSavingSettings &&
 		! migrationInProgressNoticeDismissed;
 
 	/**
@@ -150,6 +154,7 @@ const Subscriptions: React.FC = () => {
 	] = useState(
 		! isMigratingStripeBilling &&
 			completedMigrationCount > 0 &&
+			stripeBillingSubscriptionCount === 0 &&
 			! isStripeBillingEnabled
 	);
 
