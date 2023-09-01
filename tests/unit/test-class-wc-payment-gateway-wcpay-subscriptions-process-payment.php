@@ -445,14 +445,17 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 	}
 
 	public function test_saved_card_zero_dollar_subscription() {
-		$order = WC_Helper_Order::create_order( self::USER_ID, 0 );
+		$order         = WC_Helper_Order::create_order( self::USER_ID, 0 );
+		$subscriptions = [ new WC_Subscription() ];
+		$subscriptions[0]->set_parent( $order );
+
+		$this->mock_wcs_order_contains_subscription( true );
+		$this->mock_wcs_get_subscriptions_for_order( $subscriptions );
 
 		$_POST = [
 			'payment_method'        => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 			self::TOKEN_REQUEST_KEY => $this->token->get_id(),
 		];
-
-		$this->mock_wcs_order_contains_subscription( true );
 
 		// The card is already saved and there's no payment needed, so no Setup Intent needs to be created.
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class, 0 );
@@ -462,9 +465,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$this->mock_token_service
 			->expects( $this->never() )
 			->method( 'add_payment_method_to_user' );
-
-		$subscriptions = [ WC_Helper_Order::create_order( self::USER_ID ) ];
-		$this->mock_wcs_get_subscriptions_for_order( $subscriptions );
 
 		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
 		$result_order = wc_get_order( $order->get_id() );
