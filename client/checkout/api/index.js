@@ -690,10 +690,14 @@ export default class WCPayAPI {
 	initWooPay( userEmail, woopayUserSession ) {
 		const wcAjaxUrl = getConfig( 'wcAjaxUrl' );
 		const nonce = getConfig( 'initWooPayNonce' );
+		const urlParams = new URLSearchParams( window.location.search );
+		const isPayForOrder = urlParams.get( 'pay_for_order' );
+
 		return this.request( buildAjaxURL( wcAjaxUrl, 'init_woopay' ), {
 			_wpnonce: nonce,
 			email: userEmail,
 			user_session: woopayUserSession,
+			pay_for_order: isPayForOrder,
 		} );
 	}
 

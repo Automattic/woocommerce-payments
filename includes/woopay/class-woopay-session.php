@@ -321,9 +321,10 @@ class WooPay_Session {
 	/**
 	 * Returns the initial session request data.
 	 *
+	 * @param boolean $is_pay_for_order Pay for order.
 	 * @return array The initial session request data without email and user_session.
 	 */
-	private static function get_init_session_request() {
+	private static function get_init_session_request( $is_pay_for_order = false ) {
 		$user        = wp_get_current_user();
 		$customer_id = WC_Payments::get_customer_service()->get_customer_id_by_user_id( $user->ID );
 		if ( null === $customer_id ) {
@@ -391,10 +392,10 @@ class WooPay_Session {
 				'checkout_schema_namespaces'     => $blocks_data_extractor->get_checkout_schema_namespaces(),
 			],
 			'user_session'         => null,
-			'preloaded_requests'   => [
+			'preloaded_requests'   => ! $is_pay_for_order ? [
 				'cart'     => $cart_data,
 				'checkout' => $checkout_data,
-			],
+			] : [],
 			'tracks_user_identity' => WC_Payments::woopay_tracker()->tracks_get_identity( $user->ID ),
 		];
 
@@ -416,9 +417,10 @@ class WooPay_Session {
 			);
 		}
 
-		$email = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : '';
+		$email            = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : '';
+		$is_pay_for_order = ! empty( $_POST['pay_for_order'] ) ? wc_clean( wp_unslash( $_POST['pay_for_order'] ) ) : '';
 
-		$body                 = self::get_init_session_request();
+		$body                 = self::get_init_session_request( $is_pay_for_order );
 		$body['email']        = $email;
 		$body['user_session'] = isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null;
 
