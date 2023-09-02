@@ -321,12 +321,13 @@ class WooPay_Session {
 	/**
 	 * Returns the initial session request data.
 	 *
-	 * @param boolean $is_pay_for_order Pay for order.
+	 * @param int|null $order_id Pay-for-order order ID.
 	 * @return array The initial session request data without email and user_session.
 	 */
-	private static function get_init_session_request( $is_pay_for_order = false ) {
-		$user        = wp_get_current_user();
-		$customer_id = WC_Payments::get_customer_service()->get_customer_id_by_user_id( $user->ID );
+	private static function get_init_session_request( $order_id = null ) {
+		$user             = wp_get_current_user();
+		$is_pay_for_order = null !== $order_id;
+		$customer_id      = WC_Payments::get_customer_service()->get_customer_id_by_user_id( $user->ID );
 		if ( null === $customer_id ) {
 			// create customer.
 			$customer_data = WC_Payments_Customer_Service::map_customer_data( null, new WC_Customer( $user->ID ) );
@@ -352,7 +353,9 @@ class WooPay_Session {
 		$blocks_data_extractor = new Blocks_Data_Extractor();
 
 		// This uses the same logic as the Checkout block in hydrate_from_api to get the cart and checkout data.
-		$cart_data = rest_preload_api_request( [], '/wc/store/v1/cart' )['/wc/store/v1/cart']['body'];
+		$cart_data = ! $is_pay_for_order
+			? rest_preload_api_request( [], '/wc/store/v1/cart' )['/wc/store/v1/cart']['body']
+			: rest_preload_api_request( [], "/wc/store/v1/order/{$order_id}" )[ "/wc/store/v1/order/{$order_id}" ]['body'];
 		add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
 		$preloaded_checkout_data = rest_preload_api_request( [], '/wc/store/v1/checkout' );
 		remove_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
@@ -415,10 +418,10 @@ class WooPay_Session {
 			);
 		}
 
-		$email            = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : '';
-		$is_pay_for_order = ! empty( $_POST['pay_for_order'] ) ? filter_var( wp_unslash( $_POST['pay_for_order'] ), FILTER_VALIDATE_BOOLEAN ) : false;
+		$email    = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : '';
+		$order_id = ! empty( $_POST['order_id'] ) ? absint( wp_unslash( $_POST['order_id'] ) ) : null;
 
-		$body                 = self::get_init_session_request( $is_pay_for_order );
+		$body                 = self::get_init_session_request( $order_id );
 		$body['email']        = $email;
 		$body['user_session'] = isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null;
 
