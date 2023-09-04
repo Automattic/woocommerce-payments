@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-JavaScript is now correctly loaded on admin order screens when HPOS is enabled.
