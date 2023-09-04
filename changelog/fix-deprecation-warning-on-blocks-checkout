@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Fix deprecation warnings on blocks checkout.
