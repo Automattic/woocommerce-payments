@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Migrate DetailsLink component to TypeScript to improve code quality

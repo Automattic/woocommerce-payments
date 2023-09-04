@@ -1,4 +1,0 @@
-Significance: patch
-Type: add
-
-Fall back to site logo when a custom WooPay logo has not been defined

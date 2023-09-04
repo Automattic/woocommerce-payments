@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix Multi-currency exchange rate date format when using custom date or time settings.

@@ -94,6 +94,29 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 6.5.0-test-1 - unreleased =
+* Add - Added additional meta data to payment requests
+* Add - Add payment request class for loading, sanitizing, and escaping data (reengineering payment process)
+* Add - Fall back to site logo when a custom WooPay logo has not been defined
+* Add - Load payment methods through the request class (re-engineering payment process).
+* Add - Support kanji and kana statement descriptors for Japanese merchants
+* Fix - Allow request classes to be extended more than once.
+* Fix - Fix Currency Switcher Block flag rendering on Windows platform.
+* Fix - Fix deprecation warnings on blocks checkout.
+* Fix - Fixes the currency formatting for AED and SAR currencies.
+* Fix - Fix Multi-currency exchange rate date format when using custom date or time settings.
+* Fix - Fix the way request params are loaded between parent and child classes.
+* Fix - Modify title in task to continue with onboarding
+* Update - Improve the transaction details redirect user-experience by using client-side routing.
+* Update - Temporarily disable saving SEPA
+* Update - Update Multi-currency documentation links.
+* Dev - Adding factor flags to control when to enter the new payment process.
+* Dev - Migrate DetailsLink component to TypeScript to improve code quality
+* Dev - Migrate link-item.js to typescript
+* Dev - Migrate woopay-item to typescript
+* Dev - Remove reference to old experiment.
+* Dev - Update Base_Constant to return the singleton object for same static calls.
+
 = 6.4.0 - 2023-08-31 =
 * Add - Added the Transactions reporting endpoint
 * Add - Adjust WooPay "custom message" to be reused for T&C and privacy policy

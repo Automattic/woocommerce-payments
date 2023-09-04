@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-Improve the transaction details redirect user-experience by using client-side routing.
