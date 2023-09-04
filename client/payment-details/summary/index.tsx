@@ -229,7 +229,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 							{ balance.refunded ? (
 								<p>
 									{ `${ __(
-										'Refunded',
+										'Deducted',
 										'woocommerce-payments'
 									) }: ` }
 									{ formatExplicitCurrency(

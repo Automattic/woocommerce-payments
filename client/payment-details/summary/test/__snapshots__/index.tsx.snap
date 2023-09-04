@@ -1196,7 +1196,7 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
               class="payment-details-summary__breakdown"
             >
               <p>
-                Refunded: 
+                Deducted: 
                 $-20.00
               </p>
               <p>
@@ -1692,7 +1692,7 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
               class="payment-details-summary__breakdown"
             >
               <p>
-                Refunded: 
+                Deducted: 
                 $-12.00
               </p>
               <p>
@@ -2215,7 +2215,7 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
               class="payment-details-summary__breakdown"
             >
               <p>
-                Refunded: 
+                Deducted: 
                 $-15.00
               </p>
               <p>
