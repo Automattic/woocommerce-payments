@@ -336,6 +336,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/trait-use-test-mode-only-when-dev-mode.php';
 		include_once __DIR__ . '/core/server/request/class-generic.php';
 		include_once __DIR__ . '/core/server/request/class-get-intention.php';
+		include_once __DIR__ . '/core/server/request/class-get-payment-process-factors.php';
 		include_once __DIR__ . '/core/server/request/class-create-intention.php';
 		include_once __DIR__ . '/core/server/request/class-update-intention.php';
 		include_once __DIR__ . '/core/server/request/class-capture-intention.php';
@@ -505,7 +506,7 @@ class WC_Payments {
 			Afterpay_Payment_Method::class,
 			JCB_Payment_Method::class,
 		];
-		if ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 			$payment_methods = [];
 			foreach ( $payment_method_classes as $payment_method_class ) {
 				$payment_method                               = new $payment_method_class( self::$token_service );
@@ -524,11 +525,7 @@ class WC_Payments {
 				self::$upe_payment_gateway_map[ $payment_method->get_id() ] = $split_gateway;
 			}
 
-			self::$card_gateway = self::get_payment_gateway_by_id( 'card' );
-
-			$card_payments_checkout = new WC_Payments_Checkout( self::$legacy_card_gateway, self::$woopay_util, self::$account, self::$customer_service );
-			$card_payments_checkout->init_hooks();
-
+			self::$card_gateway         = self::get_payment_gateway_by_id( 'card' );
 			self::$wc_payments_checkout = new WC_Payments_UPE_Checkout( self::get_gateway(), self::$woopay_util, self::$account, self::$customer_service );
 		} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
 			$payment_methods = [];
@@ -628,19 +625,13 @@ class WC_Payments {
 		}
 
 		// Load WCPay Subscriptions.
-		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
+		if ( self::should_load_wcpay_subscriptions() ) {
 			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
 			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account );
 		}
 
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.9.0', '<' ) ) {
 			add_action( 'woocommerce_onboarding_profile_data_updated', 'WC_Payments_Features::maybe_enable_wcpay_subscriptions_after_onboarding', 10, 2 );
-		}
-
-		// Load the WCPay Subscriptions migration class.
-		if ( WC_Payments_Features::is_subscription_migration_enabled() ) {
-			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions-migrator.php';
-			new WC_Payments_Subscriptions_Migrator( self::$api_client );
 		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
@@ -728,7 +719,7 @@ class WC_Payments {
 	 * @return array The list of payment gateways that will be available, including WooPayments' Gateway class.
 	 */
 	public static function register_gateway( $gateways ) {
-		if ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 
 			$payment_methods = self::$card_gateway->get_payment_method_ids_enabled_at_checkout();
 
@@ -740,11 +731,8 @@ class WC_Payments {
 				self::get_gateway()->update_option( 'upe_enabled_payment_method_ids', $payment_methods );
 			}
 
-			if ( ! WC_Payments_Features::is_upe_deferred_intent_enabled() && WC_Payments_Features::is_woopay_enabled() ) {
-				self::$registered_card_gateway = self::$legacy_card_gateway;
-			} else {
-				self::$registered_card_gateway = self::$card_gateway;
-			}
+			self::$registered_card_gateway = self::$card_gateway;
+
 			$gateways[]       = self::$registered_card_gateway;
 			$all_upe_gateways = [];
 			$reusable_methods = [];
@@ -1287,7 +1275,7 @@ class WC_Payments {
 	 */
 	public static function register_checkout_gateway( $payment_method_registry ) {
 		require_once __DIR__ . '/class-wc-payments-blocks-payment-method.php';
-		if ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
+		if ( WC_Payments_Features::is_upe_deferred_intent_enabled() ) {
 			require_once __DIR__ . '/class-wc-payments-upe-split-blocks-payment-method.php';
 			$payment_method_registry->register( new WC_Payments_UPE_Split_Blocks_Payment_Method() );
 		} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
@@ -1717,5 +1705,22 @@ class WC_Payments {
 			</p>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Determines whether we should load WCPay Subscription related classes.
+	 *
+	 * Return true when:
+	 *  - the WCPay Subscriptions feature flag is enabled, or
+	 *  - the migration feature flag is enabled && the store has WC Subscriptions activated
+	 *
+	 * @return bool
+	 */
+	private static function should_load_wcpay_subscriptions() {
+		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
+			return true;
+		}
+
+		return WC_Payments_Features::is_subscription_migration_enabled() && class_exists( 'WC_Subscriptions' );
 	}
 }

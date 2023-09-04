@@ -23,10 +23,7 @@ const WCPayFields = ( {
 	stripe,
 	elements,
 	billing: { billingData },
-	eventRegistration: {
-		onPaymentProcessing,
-		onCheckoutAfterProcessingWithSuccess,
-	},
+	eventRegistration: { onPaymentProcessing, onCheckoutSuccess },
 	emitResponse,
 	shouldSavePayment,
 } ) => {
@@ -87,7 +84,7 @@ const WCPayFields = ( {
 		api,
 		stripe,
 		elements,
-		onCheckoutAfterProcessingWithSuccess,
+		onCheckoutSuccess,
 		emitResponse,
 		shouldSavePayment
 	);

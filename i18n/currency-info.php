@@ -794,8 +794,8 @@ return [
 		'rw_RW'   => $global_formats['ls_comma_dot_ltr'],
 	],
 	'SAR' => [
-		'ar_SA'   => $global_formats['rs_comma_dot_rtl'],
-		'default' => $global_formats['rs_comma_dot_rtl'],
+		'ar_SA'   => $global_formats['rs_dot_comma_rtl'],
+		'default' => $global_formats['rs_dot_comma_rtl'],
 	],
 	'SBD' => [
 		'default' => $global_formats['lx_dot_comma_ltr'],
