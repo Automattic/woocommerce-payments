@@ -246,7 +246,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 									placeholder="Fee amount"
 								>
 									{ `${ __(
-										'Fee',
+										'Fees',
 										'woocommerce-payments'
 									) }: ` }
 									{ formatCurrency(
