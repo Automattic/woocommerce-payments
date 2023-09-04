@@ -187,7 +187,14 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Returns whether WCPay Subscriptions is eligible, based on the stores base country.
+	 * Returns whether the store is eligible to use WCPay Subscriptions (the free subscriptions bundled in WooPayments)
+	 *
+	 * Stores are eligible for WCPay Subscriptions if:
+	 * 1. it's located in the US
+	 * 2. it doesn't have the WC Subscriptions extension active
+	 * 3. has either one of the following:
+	 *   - the store has existing WCPay Subscriptions or,
+	 *   - has subscriptions products in its catalog
 	 *
 	 * @return bool
 	 */
@@ -197,7 +204,42 @@ class WC_Payments_Features {
 		}
 
 		$store_base_location = wc_get_base_location();
-		return ! empty( $store_base_location['country'] ) && 'US' === $store_base_location['country'];
+
+		if ( empty( $store_base_location['country'] ) || 'US' !== $store_base_location['country'] ) {
+			return false;
+		}
+
+		if ( class_exists( 'WC_Subscriptions' ) ) {
+			return false;
+		}
+
+		$wcpay_subscriptions = function_exists( 'wcs_get_subscriptions' ) ? wcs_get_subscriptions(
+			[
+				'subscriptions_per_page' => 1,
+				'subscription_status'    => 'any',
+				'meta_query'             => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					[
+						'key'     => '_wcpay_subscription_id',
+						'compare' => 'EXISTS',
+					],
+				],
+			]
+		) : [];
+
+		if ( count( $wcpay_subscriptions ) > 0 ) {
+			return true;
+		}
+
+		$subscription_products = wc_get_products(
+			[
+				'limit'  => 1,
+				'type'   => [ 'subscription', 'variable-subscription' ],
+				'status' => 'publish',
+				'return' => 'ids',
+			]
+		);
+
+		return count( $subscription_products ) > 0;
 	}
 
 	/**
