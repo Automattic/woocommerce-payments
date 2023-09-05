@@ -296,13 +296,13 @@ addFilter(
 		const {
 			showUpdateDetailsTask,
 			wpcomReconnectUrl,
-			paymentMethods,
+			enabledPaymentMethods,
 		} = wcpaySettings;
 
 		const wcPayTasks = getTasks( {
 			showUpdateDetailsTask: showUpdateDetailsTask,
 			wpcomReconnectUrl: wpcomReconnectUrl,
-			enabledPaymentMethods: paymentMethods,
+			enabledPaymentMethods: enabledPaymentMethods,
 		} );
 
 		return [ ...tasks, ...wcPayTasks ];

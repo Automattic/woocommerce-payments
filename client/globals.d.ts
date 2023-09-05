@@ -84,7 +84,7 @@ declare global {
 			isEnabled: boolean;
 			isComplete: boolean;
 		};
-		paymentMethods: string[];
+		enabledPaymentMethods: string[];
 		accountDefaultCurrency: string;
 		isFRTReviewFeatureActive: boolean;
 		frtDiscoverBannerSettings: string;
