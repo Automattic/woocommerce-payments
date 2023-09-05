@@ -26,12 +26,14 @@ interface TaskListProps {
 	showUpdateDetailsTask: boolean;
 	wpcomReconnectUrl: string;
 	activeDisputes?: CachedDispute[];
+	enabledPaymentMethods?: string[];
 }
 
 export const getTasks = ( {
 	showUpdateDetailsTask,
 	wpcomReconnectUrl,
 	activeDisputes = [],
+	enabledPaymentMethods = [],
 }: TaskListProps ): TaskItemProps[] => {
 	const {
 		status,
@@ -64,7 +66,6 @@ export const getTasks = ( {
 	};
 
 	const isPoEnabled = progressiveOnboarding?.isEnabled;
-	const isPoComplete = progressiveOnboarding?.isComplete;
 	const errorMessages = getErrorMessagesFromRequirements();
 
 	const isUpdateDetailsTaskVisible =
@@ -75,6 +76,9 @@ export const getTasks = ( {
 		!! activeDisputes &&
 		// Only show the dispute task if there are disputes due within 7 days.
 		0 < getDisputesDueWithinDays( activeDisputes, 7 ).length;
+
+	const isAddApmsTaskVisible =
+		enabledPaymentMethods?.length <= 1 && detailsSubmitted;
 
 	return [
 		isUpdateDetailsTaskVisible &&
@@ -89,7 +93,7 @@ export const getTasks = ( {
 		wpcomReconnectUrl && getReconnectWpcomTask( wpcomReconnectUrl ),
 		isDisputeTaskVisible && getDisputeResolutionTask( activeDisputes ),
 		isPoEnabled && detailsSubmitted && getVerifyBankAccountTask(),
-		isPoEnabled && isPoComplete && getAddApmsTask(),
+		isAddApmsTaskVisible && getAddApmsTask(),
 	].filter( Boolean );
 };
 

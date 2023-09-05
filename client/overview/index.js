@@ -57,6 +57,7 @@ const OverviewPage = () => {
 		overviewTasksVisibility,
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
+		enabledPaymentMethods,
 	} = wcpaySettings;
 
 	const { isLoading: settingsIsLoading, settings } = useSettings();
@@ -70,6 +71,7 @@ const OverviewPage = () => {
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
 		activeDisputes,
+		enabledPaymentMethods,
 	} );
 	const tasks =
 		Array.isArray( tasksUnsorted ) && tasksUnsorted.sort( taskSort );

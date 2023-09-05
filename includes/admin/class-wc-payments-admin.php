@@ -829,6 +829,7 @@ class WC_Payments_Admin {
 			'fraudProtection'               => [
 				'isWelcomeTourDismissed' => WC_Payments_Features::is_fraud_protection_welcome_tour_dismissed(),
 			],
+			'paymentMethods'                => $this->get_enabled_payment_method_ids(),
 			'progressiveOnboarding'         => $this->account->get_progressive_onboarding_details(),
 			'accountDefaultCurrency'        => $this->account->get_account_default_currency(),
 			'frtDiscoverBannerSettings'     => get_option( 'wcpay_frt_discover_banner_settings', '' ),
@@ -838,6 +839,28 @@ class WC_Payments_Admin {
 		];
 
 		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );
+	}
+
+	/**
+	 * Helper function to retrieve enabled UPE payment methods.
+	 *
+	 * @return array
+	 */
+	private function get_enabled_payment_method_ids(): array {
+		$available_upe_payment_methods = $this->wcpay_gateway->get_upe_available_payment_methods();
+		/**
+		 * It might be possible that enabled payment methods settings have an invalid state. As an example,
+		 * if an account is switched to a new country and earlier country had PM's that are no longer valid; or if the PM is not available anymore.
+		 * To keep saving settings working, we are ensuring the enabled payment methods are yet available.
+		 */
+		$enabled_payment_methods = array_values(
+			array_intersect(
+				$this->wcpay_gateway->get_upe_enabled_payment_method_ids(),
+				$available_upe_payment_methods
+			)
+		);
+
+		return $enabled_payment_methods;
 	}
 
 	/**
