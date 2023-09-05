@@ -17,6 +17,7 @@ import { getReconnectWpcomTask } from './tasks/reconnect-task';
 import { getUpdateBusinessDetailsTask } from './tasks/update-business-details-task';
 import { CachedDispute } from 'wcpay/types/disputes';
 import { TaskItemProps } from './types';
+import { getAddApmsTask } from './tasks/add-apms-task';
 
 // Requirements we don't want to show to the user because they are too generic/not useful. These refer to Stripe error codes.
 const requirementBlacklist = [ 'invalid_value_other' ];
@@ -63,6 +64,7 @@ export const getTasks = ( {
 	};
 
 	const isPoEnabled = progressiveOnboarding?.isEnabled;
+	const isPoComplete = progressiveOnboarding?.isComplete;
 	const errorMessages = getErrorMessagesFromRequirements();
 
 	const isUpdateDetailsTaskVisible =
@@ -87,6 +89,7 @@ export const getTasks = ( {
 		wpcomReconnectUrl && getReconnectWpcomTask( wpcomReconnectUrl ),
 		isDisputeTaskVisible && getDisputeResolutionTask( activeDisputes ),
 		isPoEnabled && detailsSubmitted && getVerifyBankAccountTask(),
+		isPoEnabled && isPoComplete && getAddApmsTask(),
 	].filter( Boolean );
 };
 

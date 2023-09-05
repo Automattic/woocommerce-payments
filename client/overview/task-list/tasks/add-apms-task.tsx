@@ -8,24 +8,26 @@ import { __, sprintf } from '@wordpress/i18n';
  */
 import type { TaskItemProps } from '../types';
 import strings from '../strings';
+import { getAdminUrl } from 'wcpay/utils';
 
 export const getAddApmsTask = (): TaskItemProps | null => {
 	const handleClick = () => {
-		window.location.href = 'http://google.com';
+		window.location.href = getAdminUrl( {
+			page: 'wc-admin',
+			path: '/payments/additional-payment-methods',
+		} );
 	};
 
 	return {
 		key: 'add-apms',
-		level: 1,
+		level: 3,
 		content: '',
 		title: strings.tasks.add_apms.title,
 		additionalInfo: strings.tasks.add_apms.description,
 		completed: false,
 		onClick: handleClick,
 		action: handleClick,
-		actionLabel: strings.tasks.add_apms.action_label,
-		expandable: true,
-		expanded: true,
-		showActionButton: true,
+		expandable: false,
+		showActionButton: false,
 	};
 };

@@ -422,7 +422,6 @@ export default {
 				'Enable payment methods that work seamlessly with WooPayments.',
 				'woocommerce-payments'
 			),
-			action_label: __( 'Add payment methods', 'woocommerce-payments' ),
 		},
 	},
 };
