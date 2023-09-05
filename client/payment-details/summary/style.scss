@@ -37,9 +37,12 @@
 	.payment-details-summary__breakdown {
 		p {
 			@include font-size( 14 );
-			color: $gray-50;
+			color: $gray-700;
 			display: inline-flex;
 			margin: 0.25rem 1rem 0 0;
+			text-transform: uppercase;
+			font-weight: 600;
+			font-size: 11px;
 		}
 		p:last-child {
 			margin-right: 0;
@@ -50,6 +53,7 @@
 			flex-direction: column;
 			padding: $grid-unit-15;
 			gap: $grid-unit-10;
+			font-weight: 400;
 
 			& > *:last-child {
 				padding-top: $grid-unit-10;
