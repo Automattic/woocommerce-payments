@@ -1002,7 +1002,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 				$skip_currency_check       = ! $force_currency_check && is_admin();
 				$processing_payment_method = $this->payment_methods[ $payment_method_id ];
-				if ( $processing_payment_method->is_enabled_at_checkout() && ( $skip_currency_check || $processing_payment_method->is_currency_valid( $this->get_account_default_currency(), $order_id ) ) ) {
+				if ( $processing_payment_method->is_enabled_at_checkout() && ( $skip_currency_check || $processing_payment_method->is_currency_valid( $this->get_account_domestic_currency(), $order_id ) ) ) {
 					$status = $active_payment_methods[ $payment_method_capability_key ]['status'] ?? null;
 					if ( 'active' === $status ) {
 						$enabled_payment_methods[] = $payment_method_id;
@@ -1147,7 +1147,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return string Filtered gateway title.
 	 */
 	public function maybe_filter_gateway_title( $title, $id ) {
-		if ( ! ( WC_Payments_Features::is_upe_split_enabled() || WC_Payments_Features::is_upe_deferred_intent_enabled() ) && self::GATEWAY_ID === $id && $this->title === $title ) {
+		if ( ! WC_Payments_Features::is_upe_deferred_intent_enabled() && self::GATEWAY_ID === $id && $this->title === $title ) {
 			$title                   = $this->checkout_title;
 			$enabled_payment_methods = $this->get_payment_method_ids_enabled_at_checkout();
 
@@ -1166,9 +1166,17 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * Sets the payment method title on the order for emails.
 	 *
 	 * @param WC_Order $order   WC Order object.
+	 *
+	 * @return void
 	 */
 	public function set_payment_method_title_for_email( $order ) {
-		$payment_method_id      = $this->order_service->get_payment_method_id_for_order( $order );
+		$payment_method_id = $this->order_service->get_payment_method_id_for_order( $order );
+		if ( ! $payment_method_id ) {
+			$order->set_payment_method_title( $this->title );
+			$order->save();
+
+			return;
+		}
 		$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
 		$payment_method_type    = $this->get_payment_method_type_from_payment_details( $payment_method_details );
 		$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
@@ -1230,7 +1238,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			return false;
 		}
 		return $payment_method->is_reusable()
-			&& ( is_admin() || $payment_method->is_currency_valid( $this->get_account_default_currency() ) );
+			&& ( is_admin() || $payment_method->is_currency_valid( $this->get_account_domestic_currency() ) );
 	}
 
 	/**

@@ -59,6 +59,7 @@ class WC_Payments_API_Client {
 	const TRACKING_API                 = 'tracking';
 	const PRODUCTS_API                 = 'products';
 	const PRICES_API                   = 'products/prices';
+	const PAYMENT_PROCESS_CONFIG_API   = 'payment_process_config';
 	const INVOICES_API                 = 'invoices';
 	const SUBSCRIPTIONS_API            = 'subscriptions';
 	const SUBSCRIPTION_ITEMS_API       = 'subscriptions/items';
@@ -952,9 +953,16 @@ class WC_Payments_API_Client {
 	 *
 	 * @return array The link object with an url field.
 	 *
-	 * @throws API_Exception When something goes wrong with the request, or the link is not valid.
+	 * @throws API_Exception When something goes wrong with the request, when type is not defined or valid, or the link is not valid.
 	 */
 	public function get_link( array $args ) {
+		if ( ! isset( $args['type'] ) && ! in_array( $args['type'], [ 'login_link', 'complete_kyc_link' ], true ) ) {
+			throw new API_Exception(
+				__( 'Link type is required', 'woocommerce-payments' ),
+				'wcpay_unknown_link_type',
+				400
+			);
+		}
 		return $this->request(
 			$args,
 			self::LINKS_API,
