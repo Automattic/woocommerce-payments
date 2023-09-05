@@ -1379,6 +1379,10 @@ class WC_Payments_Payment_Request_Button_Handler {
 			define( 'WOOCOMMERCE_CHECKOUT', true );
 		}
 
+		if ( ! defined( 'WCPAY_PAYMENT_REQUEST_CHECKOUT' ) ) {
+			define( 'WCPAY_PAYMENT_REQUEST_CHECKOUT', true );
+		}
+
 		// In case the state is required, but is missing, add a more descriptive error notice.
 		$this->validate_state();
 

@@ -612,6 +612,9 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 		$mock_pending_invoice_id = 'wcpay_pending_invoice_idtest123';
 
 		$mock_subscription->update_meta_data( WC_Payments_Invoice_Service_Test::PENDING_INVOICE_ID_KEY, $mock_pending_invoice_id );
+		$mock_subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, 'sub_123' );
+		$mock_subscription->payment_method = 'woocommerce_payments';
+		$mock_subscription->save();
 
 		WC_Subscriptions::set_wcs_is_subscription(
 			function ( $subscription ) {
