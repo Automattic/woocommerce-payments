@@ -65,6 +65,14 @@ abstract class Request {
 	private $protected_mode = false;
 
 	/**
+	 * Stores the base class when `->apply_filters` is called.
+	 * This class will be checked when `::extend` is called.
+	 *
+	 * @var string
+	 */
+	private $base_class;
+
+	/**
 	 * Holds the API client of WCPay.
 	 *
 	 * @var WC_Payments_API_Client
@@ -101,43 +109,44 @@ abstract class Request {
 	 * @var string[]
 	 */
 	private $route_list = [
-		WC_Payments_API_Client::ACCOUNTS_API             => 'accounts',
-		WC_Payments_API_Client::CAPABILITIES_API         => 'accounts/capabilities',
-		WC_Payments_API_Client::WOOPAY_ACCOUNTS_API      => 'accounts/platform_checkout',
-		WC_Payments_API_Client::WOOPAY_COMPATIBILITY_API => 'woopay/compatibility',
-		WC_Payments_API_Client::APPLE_PAY_API            => 'apple_pay',
-		WC_Payments_API_Client::CHARGES_API              => 'charges',
-		WC_Payments_API_Client::CONN_TOKENS_API          => 'terminal/connection_tokens',
-		WC_Payments_API_Client::TERMINAL_LOCATIONS_API   => 'terminal/locations',
-		WC_Payments_API_Client::CUSTOMERS_API            => 'customers',
-		WC_Payments_API_Client::CURRENCY_API             => 'currency',
-		WC_Payments_API_Client::INTENTIONS_API           => 'intentions',
-		WC_Payments_API_Client::REFUNDS_API              => 'refunds',
-		WC_Payments_API_Client::DEPOSITS_API             => 'deposits',
-		WC_Payments_API_Client::TRANSACTIONS_API         => 'transactions',
-		WC_Payments_API_Client::DISPUTES_API             => 'disputes',
-		WC_Payments_API_Client::FILES_API                => 'files',
-		WC_Payments_API_Client::ONBOARDING_API           => 'onboarding',
-		WC_Payments_API_Client::TIMELINE_API             => 'timeline',
-		WC_Payments_API_Client::PAYMENT_METHODS_API      => 'payment_methods',
-		WC_Payments_API_Client::SETUP_INTENTS_API        => 'setup_intents',
-		WC_Payments_API_Client::TRACKING_API             => 'tracking',
-		WC_Payments_API_Client::PRODUCTS_API             => 'products',
-		WC_Payments_API_Client::PRICES_API               => 'products/prices',
-		WC_Payments_API_Client::INVOICES_API             => 'invoices',
-		WC_Payments_API_Client::SUBSCRIPTIONS_API        => 'subscriptions',
-		WC_Payments_API_Client::SUBSCRIPTION_ITEMS_API   => 'subscriptions/items',
-		WC_Payments_API_Client::READERS_CHARGE_SUMMARY   => 'reader-charges/summary',
-		WC_Payments_API_Client::TERMINAL_READERS_API     => 'terminal/readers',
+		WC_Payments_API_Client::ACCOUNTS_API               => 'accounts',
+		WC_Payments_API_Client::CAPABILITIES_API           => 'accounts/capabilities',
+		WC_Payments_API_Client::WOOPAY_ACCOUNTS_API        => 'accounts/platform_checkout',
+		WC_Payments_API_Client::WOOPAY_COMPATIBILITY_API   => 'woopay/compatibility',
+		WC_Payments_API_Client::APPLE_PAY_API              => 'apple_pay',
+		WC_Payments_API_Client::CHARGES_API                => 'charges',
+		WC_Payments_API_Client::CONN_TOKENS_API            => 'terminal/connection_tokens',
+		WC_Payments_API_Client::TERMINAL_LOCATIONS_API     => 'terminal/locations',
+		WC_Payments_API_Client::CUSTOMERS_API              => 'customers',
+		WC_Payments_API_Client::CURRENCY_API               => 'currency',
+		WC_Payments_API_Client::INTENTIONS_API             => 'intentions',
+		WC_Payments_API_Client::REFUNDS_API                => 'refunds',
+		WC_Payments_API_Client::DEPOSITS_API               => 'deposits',
+		WC_Payments_API_Client::TRANSACTIONS_API           => 'transactions',
+		WC_Payments_API_Client::DISPUTES_API               => 'disputes',
+		WC_Payments_API_Client::FILES_API                  => 'files',
+		WC_Payments_API_Client::ONBOARDING_API             => 'onboarding',
+		WC_Payments_API_Client::TIMELINE_API               => 'timeline',
+		WC_Payments_API_Client::PAYMENT_METHODS_API        => 'payment_methods',
+		WC_Payments_API_Client::SETUP_INTENTS_API          => 'setup_intents',
+		WC_Payments_API_Client::TRACKING_API               => 'tracking',
+		WC_Payments_API_Client::PAYMENT_PROCESS_CONFIG_API => 'payment_process_config',
+		WC_Payments_API_Client::PRODUCTS_API               => 'products',
+		WC_Payments_API_Client::PRICES_API                 => 'products/prices',
+		WC_Payments_API_Client::INVOICES_API               => 'invoices',
+		WC_Payments_API_Client::SUBSCRIPTIONS_API          => 'subscriptions',
+		WC_Payments_API_Client::SUBSCRIPTION_ITEMS_API     => 'subscriptions/items',
+		WC_Payments_API_Client::READERS_CHARGE_SUMMARY     => 'reader-charges/summary',
+		WC_Payments_API_Client::TERMINAL_READERS_API       => 'terminal/readers',
 		WC_Payments_API_Client::MINIMUM_RECURRING_AMOUNT_API => 'subscriptions/minimum_amount',
-		WC_Payments_API_Client::CAPITAL_API              => 'capital',
-		WC_Payments_API_Client::WEBHOOK_FETCH_API        => 'webhook/failed_events',
-		WC_Payments_API_Client::DOCUMENTS_API            => 'documents',
-		WC_Payments_API_Client::VAT_API                  => 'vat',
-		WC_Payments_API_Client::LINKS_API                => 'links',
-		WC_Payments_API_Client::AUTHORIZATIONS_API       => 'authorizations',
-		WC_Payments_API_Client::FRAUD_OUTCOMES_API       => 'fraud_outcomes',
-		WC_Payments_API_Client::FRAUD_RULESET_API        => 'fraud_ruleset',
+		WC_Payments_API_Client::CAPITAL_API                => 'capital',
+		WC_Payments_API_Client::WEBHOOK_FETCH_API          => 'webhook/failed_events',
+		WC_Payments_API_Client::DOCUMENTS_API              => 'documents',
+		WC_Payments_API_Client::VAT_API                    => 'vat',
+		WC_Payments_API_Client::LINKS_API                  => 'links',
+		WC_Payments_API_Client::AUTHORIZATIONS_API         => 'authorizations',
+		WC_Payments_API_Client::FRAUD_OUTCOMES_API         => 'fraud_outcomes',
+		WC_Payments_API_Client::FRAUD_RULESET_API          => 'fraud_ruleset',
 	];
 
 	/**
@@ -415,7 +424,7 @@ abstract class Request {
 	 */
 	final public static function extend( Request $base_request ) {
 		$current_class = static::class;
-		$base_request->validate_extended_class( $current_class, get_class( $base_request ) );
+		$base_request->validate_extended_class( $current_class, $base_request->base_class ?? get_class( $base_request ) );
 
 		if ( ! $base_request->protected_mode ) {
 			throw new Extend_Request_Exception(
@@ -424,7 +433,11 @@ abstract class Request {
 			);
 		}
 		$obj = new $current_class( $base_request->api_client, $base_request->http_interface );
-		$obj->set_params( $base_request->params );
+		$obj->set_params( array_merge( static::DEFAULT_PARAMS, $base_request->params ) );
+
+		// Carry over the base class and protected mode into the child request.
+		$obj->base_class     = $base_request->base_class;
+		$obj->protected_mode = true;
 
 		return $obj;
 	}
@@ -448,6 +461,7 @@ abstract class Request {
 	final public function apply_filters( $hook, ...$args ) {
 		// Lock the class in order to prevent `set_param` for protected props.
 		$this->protected_mode = true;
+		$this->base_class     = get_class( $this );
 
 		// Validate API route.
 		$this->validate_api_route( $this->get_api() );
@@ -544,7 +558,7 @@ abstract class Request {
 			$constant = "$class_name::$constant_name";
 
 			if ( defined( $constant ) ) {
-				$keys = array_merge( $keys, constant( $constant ) );
+				$keys = array_merge( constant( $constant ), $keys );
 			}
 
 			$class_name = get_parent_class( $class_name );
