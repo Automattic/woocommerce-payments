@@ -66,6 +66,8 @@ export const getTasks = ( {
 	};
 
 	const isPoEnabled = progressiveOnboarding?.isEnabled;
+	const isPoComplete = progressiveOnboarding?.isComplete;
+	const isPoInProgress = isPoEnabled && ! isPoComplete;
 	const errorMessages = getErrorMessagesFromRequirements();
 
 	const isUpdateDetailsTaskVisible =
@@ -78,7 +80,9 @@ export const getTasks = ( {
 		0 < getDisputesDueWithinDays( activeDisputes, 7 ).length;
 
 	const isAddApmsTaskVisible =
-		enabledPaymentMethods?.length === 1 && detailsSubmitted;
+		enabledPaymentMethods?.length === 1 &&
+		detailsSubmitted &&
+		! isPoInProgress;
 
 	return [
 		isUpdateDetailsTaskVisible &&

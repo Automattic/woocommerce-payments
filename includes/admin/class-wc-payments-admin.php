@@ -844,6 +844,9 @@ class WC_Payments_Admin {
 	/**
 	 * Helper function to retrieve enabled UPE payment methods.
 	 *
+	 * TODO: This is duplicating code located in the settings container, we should refactor so that
+	 * this is stored in a centralised place and can be retrieved from there.
+	 *
 	 * @return array
 	 */
 	private function get_enabled_payment_method_ids(): array {
