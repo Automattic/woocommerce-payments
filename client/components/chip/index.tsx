@@ -18,18 +18,26 @@ interface Props {
 	type?: ChipType;
 	className?: string;
 	tooltip?: string;
+	tooltipPostion?: string;
+	tooltipTheme?: string;
 }
 const Chip: React.FC< Props > = ( {
 	message,
 	type = 'primary',
 	className,
 	tooltip,
+	tooltipPostion = 'center',
+	tooltipTheme = 'black',
 } ) => {
 	const classNames = [ 'chip', `chip-${ type }`, className ?? '' ];
 
 	if ( tooltip ) {
 		return (
-			<HoverTooltip content={ tooltip }>
+			<HoverTooltip
+				content={ tooltip }
+				position={ tooltipPostion }
+				theme={ tooltipTheme }
+			>
 				<span className={ classNames.join( ' ' ).trim() }>
 					{ message }
 				</span>

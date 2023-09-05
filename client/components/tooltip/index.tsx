@@ -13,20 +13,33 @@ import TooltipBase, { TooltipBaseProps } from './tooltip-base';
 type TooltipProps = TooltipBaseProps & {
 	isVisible?: boolean;
 	onHide?: () => void;
+
 	/**
 	 * An icon that will be used as the tooltip button. Replaces the component children.
 	 */
 	buttonIcon?: Icon.IconType< unknown >;
+
 	/**
 	 * A label for the tooltip button, visible to screen readers.
 	 */
 	buttonLabel?: string;
+
 	/**
 	 * The size of the tooltip button.
 	 *
 	 * @default 16
 	 */
 	buttonSize?: number;
+
+	/**
+	 * Horizontal position of the tooltip.
+	 */
+	position?: string;
+
+	/**
+	 * Color theme of the tooltip.
+	 */
+	theme?: string;
 };
 
 /**
@@ -43,6 +56,8 @@ export const HoverTooltip: React.FC< TooltipProps > = ( {
 	buttonIcon,
 	buttonLabel,
 	buttonSize = 16,
+	position,
+	theme,
 	...props
 } ) => {
 	const [ isHovered, setIsHovered ] = useState( false );
@@ -82,6 +97,8 @@ export const HoverTooltip: React.FC< TooltipProps > = ( {
 			<TooltipBase
 				{ ...props }
 				onHide={ handleHide }
+				position={ position }
+				theme={ theme }
 				isVisible={ isVisible || isHovered || isClicked }
 			>
 				{ buttonIcon ? (

@@ -169,6 +169,8 @@ export type TooltipBaseProps = {
 	isVisible?: boolean;
 	onHide?: () => void;
 	maxWidth?: string;
+	position?: string;
+	theme?: string;
 };
 
 const TooltipBase: React.FC< TooltipBaseProps > = ( {
@@ -180,6 +182,8 @@ const TooltipBase: React.FC< TooltipBaseProps > = ( {
 	isVisible,
 	onHide,
 	maxWidth = '250px',
+	position = 'center',
+	theme = 'black',
 } ) => {
 	const wrapperRef = useRef< HTMLDivElement >( null );
 	const tooltipWrapperRef = useRef< HTMLDivElement >( null );
@@ -219,14 +223,42 @@ const TooltipBase: React.FC< TooltipBaseProps > = ( {
 			tooltipElement.style.top = `${
 				wrappedElementRect.top - tooltipHeight - 8
 			}px`;
-			const elementMiddle =
-				wrappedElement.offsetWidth / 2 + wrappedElementRect.left;
+
+			let tooltipLeft;
 			const tooltipWidth = tooltipElement.offsetWidth;
-			let tooltipLeft = elementMiddle - tooltipWidth / 2;
-			if ( tooltipLeft < 0 ) {
-				tooltipLeft = 10;
+
+			// Default position of the tooltip.
+			if ( position === 'center' ) {
+				const elementMiddle =
+					wrappedElement.offsetWidth / 2 + wrappedElementRect.left;
+
+				tooltipLeft = elementMiddle - tooltipWidth / 2;
+
+				// If the tooltip is cut off the left side, move it to the visible area.
+				if ( tooltipLeft < 0 ) {
+					tooltipLeft = 10;
+				}
+
+				tooltipElement.style.left = `${ tooltipLeft }px`;
 			}
-			tooltipElement.style.left = `${ tooltipLeft }px`;
+
+			// The tooltip will be left aligned with the element.
+			if ( position === 'left' ) {
+				tooltipLeft = wrappedElementRect.left;
+				tooltipElement.style.left = `${ tooltipLeft }px`;
+			}
+
+			// The tooltip will be right aligned with the element.
+			if ( position === 'right' ) {
+				tooltipLeft = wrappedElementRect.right - tooltipWidth;
+
+				// If the tooltip is cut off the left side, move it to the visible area.
+				if ( tooltipLeft < 0 ) {
+					tooltipLeft = 10;
+				}
+
+				tooltipElement.style.left = `${ tooltipLeft }px`;
+			}
 
 			// make it visible only after all the calculations are done.
 			tooltipElement.style.visibility = 'visible';
@@ -244,7 +276,7 @@ const TooltipBase: React.FC< TooltipBaseProps > = ( {
 			window.removeEventListener( 'resize', debouncedCalculation );
 			document.removeEventListener( 'scroll', debouncedCalculation );
 		};
-	}, [ isTooltipVisible, maxWidth ] );
+	}, [ isTooltipVisible, maxWidth, position ] );
 
 	return (
 		<>
@@ -264,6 +296,7 @@ const TooltipBase: React.FC< TooltipBaseProps > = ( {
 						<div
 							className={ classNames(
 								'wcpay-tooltip__tooltip',
+								'wcpay-tooltip__tooltip_' + theme,
 								className
 							) }
 						>

@@ -10,6 +10,7 @@ import React, { useContext } from 'react';
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { HoverTooltip } from 'components/tooltip';
+import Chip from 'components/chip';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 import { useManualCapture } from 'wcpay/data';
 import { FeeStructure } from 'wcpay/types/fees';
@@ -65,20 +66,27 @@ const PaymentMethodLabel = ( {
 				</span>
 			) }
 			{ upeCapabilityStatuses.PENDING_APPROVAL === status && (
-				<HoverTooltip
-					content={ __(
+				<Chip
+					message={ __( 'Pending approval', 'woocommerce-payments' ) }
+					type={ 'alert' }
+					tooltipPostion={ 'left' }
+					tooltipTheme={ 'white' }
+					tooltip={ __(
 						'This payment method is pending approval. Once approved, you will be able to use it.',
 						'woocommerce-payments'
 					) }
-				>
-					<Pill className={ 'payment-status-pending-approval' }>
-						{ __( 'Pending approval', 'woocommerce-payments' ) }
-					</Pill>
-				</HoverTooltip>
+				/>
 			) }
 			{ upeCapabilityStatuses.PENDING_VERIFICATION === status && (
-				<HoverTooltip
-					content={ sprintf(
+				<Chip
+					message={ __(
+						'Pending activation',
+						'woocommerce-payments'
+					) }
+					type={ 'warning' }
+					tooltipPostion={ 'left' }
+					tooltipTheme={ 'white' }
+					tooltip={ sprintf(
 						__(
 							"%s won't be visible to your customers until you provide the required " +
 								'information. Follow the instructions sent by our partner Stripe to %s.',
@@ -87,11 +95,7 @@ const PaymentMethodLabel = ( {
 						label,
 						wcpaySettings?.accountEmail ?? ''
 					) }
-				>
-					<Pill className={ 'payment-status-pending-verification' }>
-						{ __( 'Pending activation', 'woocommerce-payments' ) }
-					</Pill>
-				</HoverTooltip>
+				/>
 			) }
 			{ disabled && (
 				<PaymentMethodDisabledTooltip id={ id }>
@@ -135,6 +139,13 @@ const PaymentMethod = ( {
 		WCPaySettingsContext
 	);
 	const [ isManualCaptureEnabled ] = useManualCapture();
+
+	if (
+		upeCapabilityStatuses.PENDING_APPROVAL === status ||
+		upeCapabilityStatuses.PENDING_VERIFICATION === status
+	) {
+		isSetupRequired = true;
+	}
 
 	const needsOverlay =
 		( isManualCaptureEnabled && ! isAllowingManualCapture ) ||
@@ -212,6 +223,8 @@ const PaymentMethod = ( {
 						<div className="payment-method__fees">
 							<HoverTooltip
 								maxWidth={ '300px' }
+								position={ 'right' }
+								theme={ 'white' }
 								content={ formatMethodFeesTooltip(
 									accountFees[ id ]
 								) }

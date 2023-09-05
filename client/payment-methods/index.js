@@ -152,8 +152,6 @@ const PaymentMethods = () => {
 		( methodId ) => methodsConfiguration[ methodId ]
 	);
 
-	const isCreditCardEnabled = enabledMethodIds.includes( 'card' );
-
 	const [ activationModalParams, handleActivationModalOpen ] = useState(
 		null
 	);
@@ -225,6 +223,11 @@ const PaymentMethods = () => {
 
 	const { isUpeEnabled, status, upeType } = useContext( WcPayUpeContext );
 	const [ openModalIdentifier, setOpenModalIdentifier ] = useState( '' );
+	const isCreditCardEnabled = enabledMethodIds.includes( 'card' );
+	const isJCBEnabled =
+		enabledMethodIds.includes( 'jcb' ) &&
+		getStatusAndRequirements( 'jcb' ).status ===
+			upeCapabilityStatuses.ACTIVE;
 
 	return (
 		<>
@@ -309,9 +312,11 @@ const PaymentMethods = () => {
 										isUpeEnabled
 									}
 									locked={
-										PAYMENT_METHOD_IDS.CARD === id &&
-										isCreditCardEnabled &&
-										isUpeEnabled
+										( PAYMENT_METHOD_IDS.CARD === id &&
+											isCreditCardEnabled &&
+											isUpeEnabled ) ||
+										( PAYMENT_METHOD_IDS.JCB === id &&
+											isJCBEnabled )
 									}
 									Icon={ Icon }
 									status={

@@ -204,4 +204,32 @@
 			color: $studio-yellow-50;
 		}
 	}
+
+	.wcpay-pill {
+		margin-left: $gap-smaller;
+		padding: 2px $gap-smaller;
+
+		@include breakpoint( '<660px' ) {
+			margin-left: 0;
+		}
+
+		&.payment-status-pending-approval,
+		&.payment-status-pending-verification {
+			border: 0 solid transparent;
+			background: #f0b849;
+			color: #1f1f1f;
+		}
+
+		&.payment-status-inactive {
+			border: 0 solid transparent;
+			background: $studio-yellow-5;
+			color: $studio-yellow-50;
+		}
+	}
+
+	.chip {
+		margin-left: $gap-smaller;
+		position: relative;
+		z-index: 2;
+	}
 }
