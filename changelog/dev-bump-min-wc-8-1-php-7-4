@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Bump minimum required version of WooCommerce to 7.9 and PHP to 7.4.
