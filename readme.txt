@@ -3,7 +3,7 @@ Contributors: woocommerce, automattic
 Tags: payment gateway, payment, apple pay, credit card, google pay, woocommerce payments
 Requires at least: 6.1
 Tested up to: 6.3
-Requires PHP: 7.3
+Requires PHP: 7.4
 Stable tag: 6.4.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -39,8 +39,8 @@ Our global support team is available to answer questions you may have about WooP
 = Requirements =
 
 * WordPress 6.1 or newer.
-* WooCommerce 7.8 or newer.
-* PHP 7.3 or newer is recommended.
+* WooCommerce 7.9 or newer.
+* PHP 7.4 or newer is recommended.
 
 = Try it now =
 
