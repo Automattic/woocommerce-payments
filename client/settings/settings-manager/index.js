@@ -25,7 +25,6 @@ import WcPayUpeContextProvider from '../wcpay-upe-toggle/provider';
 import ErrorBoundary from '../../components/error-boundary';
 import { useDepositDelayDays, useSettings } from '../../data';
 import FraudProtection from '../fraud-protection';
-import Subscriptions from '../subscriptions';
 
 const PaymentMethodsDescription = () => (
 	<>
@@ -128,26 +127,6 @@ const FraudProtectionDescription = () => {
 			<ExternalLink href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/">
 				{ __(
 					'Learn more about risk filtering',
-					'woocommerce-payments'
-				) }
-			</ExternalLink>
-		</>
-	);
-};
-
-const SubscriptionsDescription = () => {
-	return (
-		<>
-			<h2>{ __( 'Subscriptions', 'woocommerce-payments' ) }</h2>
-			<p>
-				{ __(
-					"Configure how your customer's subscription payments are processed.",
-					'woocommerce-payments'
-				) }
-			</p>
-			<ExternalLink href="https://woocommerce.com/document/woocommerce-payments/subscriptions/">
-				{ __(
-					'Learn more about subscriptions',
 					'woocommerce-payments'
 				) }
 			</ExternalLink>
@@ -273,18 +252,6 @@ const SettingsManager = () => {
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			{ wcpaySettings.isSubscriptionsActive && (
-				<SettingsSection
-					description={ SubscriptionsDescription }
-					id="subscriptions"
-				>
-					<LoadableSettingsSection numLines={ 20 }>
-						<ErrorBoundary>
-							<Subscriptions />
-						</ErrorBoundary>
-					</LoadableSettingsSection>
-				</SettingsSection>
-			) }
 			<AdvancedSettings />
 			<SaveSettingsSection disabled={ ! isTransactionInputsValid } />
 		</SettingsLayout>

@@ -154,17 +154,13 @@ export const useWCPaySubscriptions = () => {
 			const {
 				getIsWCPaySubscriptionsEnabled,
 				getIsWCPaySubscriptionsEligible,
-				getIsSubscriptionsPluginActive,
 			} = select( STORE_NAME );
 
 			const isWCPaySubscriptionsEnabled = getIsWCPaySubscriptionsEnabled();
 			const isWCPaySubscriptionsEligible = getIsWCPaySubscriptionsEligible();
-			const isSubscriptionsPluginActive = getIsSubscriptionsPluginActive();
-
 			return [
 				isWCPaySubscriptionsEnabled,
 				isWCPaySubscriptionsEligible,
-				isSubscriptionsPluginActive,
 				updateIsWCPaySubscriptionsEnabled,
 			];
 		},
@@ -612,35 +608,41 @@ export const useWooPayShowIncompatibilityNotice = () => {
 
 export const useStripeBilling = () => {
 	const { updateIsStripeBillingEnabled } = useDispatch( STORE_NAME );
-	const { submitStripeBillingSubscriptionMigration } = useDispatch(
-		STORE_NAME
-	);
-	//const { getStripeBillingSubscriptionContext } = useDispatch( STORE_NAME );
 
 	return useSelect(
 		( select ) => {
 			const { getIsStripeBillingEnabled } = select( STORE_NAME );
-			const { getStripeBillingSubscriptionCount } = select( STORE_NAME );
-			const { getIsStripeBillingMigrationInProcess } = select(
-				STORE_NAME
-			);
-			const { isResolving } = select( STORE_NAME );
-			const hasResolved = select( STORE_NAME ).hasFinishedResolution(
-				'scheduleStripeBillingMigration'
-			);
-			const { getStripeBillingMigratedCount } = select( STORE_NAME );
 
 			return [
 				getIsStripeBillingEnabled(),
-				getIsStripeBillingMigrationInProcess(),
-				getStripeBillingSubscriptionCount(),
 				updateIsStripeBillingEnabled,
-				submitStripeBillingSubscriptionMigration,
-				isResolving( 'scheduleStripeBillingMigration' ),
-				hasResolved,
-				getStripeBillingMigratedCount(),
 			];
 		},
 		[ updateIsStripeBillingEnabled ]
 	);
+};
+
+export const useStripeBillingMigration = () => {
+	const { submitStripeBillingSubscriptionMigration } = useDispatch(
+		STORE_NAME
+	);
+
+	return useSelect( ( select ) => {
+		const { getStripeBillingSubscriptionCount } = select( STORE_NAME );
+		const { getIsStripeBillingMigrationInProcess } = select( STORE_NAME );
+		const { isResolving } = select( STORE_NAME );
+		const hasResolved = select( STORE_NAME ).hasFinishedResolution(
+			'scheduleStripeBillingMigration'
+		);
+		const { getStripeBillingMigratedCount } = select( STORE_NAME );
+
+		return [
+			getIsStripeBillingMigrationInProcess(),
+			getStripeBillingMigratedCount(),
+			getStripeBillingSubscriptionCount(),
+			submitStripeBillingSubscriptionMigration,
+			isResolving( 'scheduleStripeBillingMigration' ),
+			hasResolved,
+		];
+	}, [] );
 };

@@ -6,6 +6,8 @@ import React from 'react';
 import InlineNotice from 'wcpay/components/inline-notice';
 import { _n, sprintf } from '@wordpress/i18n';
 
+import Loadable from 'wcpay/components/loadable';
+
 interface Props {
 	/**
 	 * The number of subscriptions that are being migrated.
@@ -29,19 +31,24 @@ const MigrationInProgressNotice: React.FC< Props > = ( {
 			onRemove={ onRemove }
 			className="woopayments-stripe-billing-notice"
 		>
-			{ sprintf(
-				_n(
-					'%d customer subscription is being migrated from Stripe off-site billing to billing powered by' +
-						' %s and %s.',
-					'%d customer subscriptions are being migrated from Stripe off-site billing to billing powered by' +
-						' %s and %s.',
+			<Loadable
+				isLoading={ true }
+				display="inline"
+				placeholder={ sprintf(
+					_n(
+						'%d customer subscription is being migrated from Stripe off-site billing to billing powered by' +
+							' %s and %s.',
+						'%d customer subscriptions are being migrated from Stripe off-site billing to billing powered by' +
+							' %s and %s.',
+						stripeBillingSubscriptionCount,
+						'woocommerce-payments'
+					),
 					stripeBillingSubscriptionCount,
-					'woocommerce-payments'
-				),
-				stripeBillingSubscriptionCount,
-				'Woo Subscriptions',
-				'WooPayments'
-			) }
+					'Woo Subscriptions',
+					'WooPayments'
+				) }
+				value={ 'sds' }
+			/>
 		</InlineNotice>
 	);
 };

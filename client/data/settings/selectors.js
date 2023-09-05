@@ -243,9 +243,9 @@ export const getIsStripeBillingMigrationInProcess = ( state ) => {
 };
 
 export const getStripeBillingSubscriptionCount = ( state ) => {
-	return getSettings( state ).stripe_billing_subscription_count || false;
+	return getSettings( state ).stripe_billing_subscription_count || 0;
 };
 
 export const getStripeBillingMigratedCount = ( state ) => {
-	return getSettings( state ).stripe_billing_migrated_count || false;
+	return getSettings( state ).stripe_billing_migrated_count || 0;
 };

@@ -347,6 +347,22 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks if Stripe Billing is eligible.
+	 *
+	 * Only US merchants are eligible for Stripe Billing.
+	 *
+	 * @return bool
+	 */
+	public static function is_stripe_billing_eligible() {
+		if ( ! function_exists( 'wc_get_base_location' ) ) {
+			return false;
+		}
+
+		$store_base_location = wc_get_base_location();
+		return ! empty( $store_base_location['country'] ) && 'US' === $store_base_location['country'];
+	}
+
+	/**
 	 * Returns feature flags as an array suitable for display on the front-end.
 	 *
 	 * @return bool[]

@@ -18,9 +18,10 @@ import './style.scss';
 import CardBody from '../card-body';
 import ErrorBoundary from '../../components/error-boundary';
 import ClientSecretEncryptionToggle from './client-secret-encryption-toggle';
+import StripeBillingSection from './stripe-billing-section';
 
 const AdvancedSettings = () => {
-	const [ isSectionExpanded, toggleIsSectionExpanded ] = useToggle( false );
+	const [ isSectionExpanded, toggleIsSectionExpanded ] = useToggle( true );
 
 	return (
 		<>
@@ -41,7 +42,12 @@ const AdvancedSettings = () => {
 								{ wcpaySettings.isClientEncryptionEligible && (
 									<ClientSecretEncryptionToggle />
 								) }
-								<WCPaySubscriptionsToggle />
+								{ wcpaySettings.isSubscriptionsActive &&
+								wcpaySettings.isStripeBillingEligible ? (
+									<StripeBillingSection />
+								) : (
+									<WCPaySubscriptionsToggle />
+								) }
 								<DebugMode />
 							</CardBody>
 						</Card>

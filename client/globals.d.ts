@@ -108,6 +108,7 @@ declare global {
 		};
 		isWooPayStoreCountryAvailable: boolean;
 		isSubscriptionsPluginActive: boolean;
+		isStripeBillingEligible: boolean;
 	};
 
 	const wcTracks: any;

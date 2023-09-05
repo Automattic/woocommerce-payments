@@ -2,12 +2,17 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useContext, useState } from 'react';
 import InlineNotice from 'wcpay/components/inline-notice';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { ExternalLink } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 import { useEffect } from '@wordpress/element';
+
+/**
+ * Internal dependencies
+ */
+import StripeBillingMigrationNoticeContext from './context';
 
 interface Props {
 	/**
@@ -24,13 +29,28 @@ interface Props {
 	 * Whether the request to start a migration is loading.
 	 */
 	isLoading: boolean;
+
+	/**
+	 * Whether the request to start a migration has finished.
+	 */
+	hasResolved: boolean;
 }
 
 const MigrateOptionNotice: React.FC< Props > = ( {
 	stripeBillingSubscriptionCount,
 	startMigration,
 	isLoading,
+	hasResolved,
 } ) => {
+	const context = useContext( StripeBillingMigrationNoticeContext );
+
+	/**
+	 * Whether the notice is eligible to be shown.
+	 * We use `useState` here to snapshot the setting value on load.
+	 * The option notice should only be shown if Stripe billing is disabled on load and there are subscriptions to migrate.
+	 */
+	const [ isEligible ] = useState( ! context.isStripeBillingEnabled );
+
 	// The class name of the action which sends the request to migrate.
 	const noticeClassName = 'woopayments-migrate-stripe-billing-action';
 
@@ -48,6 +68,31 @@ const MigrateOptionNotice: React.FC< Props > = ( {
 			}
 		}
 	}, [ isLoading ] );
+
+	// Once the request is resolved, hide the notice and mark the migration as in progress.
+	if ( hasResolved ) {
+		context.isMigrationInProgress = true;
+		context.isMigrationOptionShown = false;
+		return null;
+	}
+
+	if ( context.isMigrationInProgress ) {
+		return null;
+	}
+
+	if ( stripeBillingSubscriptionCount === 0 ) {
+		return null;
+	}
+
+	if ( ! isEligible ) {
+		return null;
+	}
+
+	if ( context.isStripeBillingEnabled ) {
+		return null;
+	}
+
+	context.isMigrationOptionShown = true;
 
 	return (
 		<InlineNotice

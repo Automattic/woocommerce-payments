@@ -304,27 +304,3 @@ export function* submitStripeBillingSubscriptionMigration() {
 		'scheduleStripeBillingMigration'
 	);
 }
-
-export function* getStripeBillingSubscriptionContext() {
-	try {
-		yield dispatch( STORE_NAME ).startResolution(
-			'getStripeBillingMigrationStatus'
-		);
-
-		yield apiFetch( {
-			path: `${ NAMESPACE }/settings/stripe-billing-status`,
-			method: 'GET',
-		} );
-	} catch ( e ) {
-		yield dispatch( 'core/notices' ).createErrorNotice(
-			__(
-				'Error fetching the status of Stripe Billing.',
-				'woocommerce-payments'
-			)
-		);
-	}
-
-	yield dispatch( STORE_NAME ).finishResolution(
-		'getStripeBillingMigrationStatus'
-	);
-}
