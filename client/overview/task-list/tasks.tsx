@@ -78,7 +78,7 @@ export const getTasks = ( {
 		0 < getDisputesDueWithinDays( activeDisputes, 7 ).length;
 
 	const isAddApmsTaskVisible =
-		enabledPaymentMethods?.length <= 1 && detailsSubmitted;
+		enabledPaymentMethods?.length === 1 && detailsSubmitted;
 
 	return [
 		isUpdateDetailsTaskVisible &&
