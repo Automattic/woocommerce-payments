@@ -284,7 +284,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 																'woocommerce-payments'
 															) }
 														</label>
-														<span>
+														<span aria-label="Transaction fee">
 															{ formatCurrency(
 																transactionFee,
 																charge.currency
@@ -298,7 +298,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 																'woocommerce-payments'
 															) }
 														</label>
-														<span>
+														<span aria-label="Dispute fee">
 															{ formatCurrency(
 																disputeFee.fee,
 																disputeFee.currency
@@ -312,7 +312,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 																'woocommerce-payments'
 															) }
 														</label>
-														<span>
+														<span aria-label="Total fees">
 															{ formatCurrency(
 																balance.fee,
 																balance.currency
