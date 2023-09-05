@@ -5,10 +5,17 @@
  */
 import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
-import { Card, CardBody, CardFooter, CardDivider } from '@wordpress/components';
+import {
+	Card,
+	CardBody,
+	CardFooter,
+	CardDivider,
+	Flex,
+} from '@wordpress/components';
 import moment from 'moment';
 import React, { useContext } from 'react';
 import { createInterpolateElement } from '@wordpress/element';
+import HelpOutlineIcon from 'gridicons/dist/help-outline';
 
 /**
  * Internal dependencies.
@@ -38,6 +45,8 @@ import { FraudOutcome } from '../../types/fraud-outcome';
 import CancelAuthorizationButton from '../../components/cancel-authorization-button';
 import { PaymentIntent } from '../../types/payment-intents';
 import DisputeDetails from '../dispute-details';
+import { getDisputeFee } from 'wcpay/disputes/utils';
+import { ClickTooltip } from 'wcpay/components/tooltip';
 
 declare const window: any;
 
@@ -177,6 +186,11 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 
 	const isFraudOutcomeReview = isOnHoldByFraudTools( charge, paymentIntent );
 
+	const disputeFee = charge.dispute && getDisputeFee( charge.dispute );
+	const transactionFee = charge.balance_transaction
+		? charge.balance_transaction.fee
+		: charge.application_fee_amount;
+
 	// WP translation strings are injected into Moment.js for relative time terms, since Moment's own translation library increases the bundle size significantly.
 	moment.updateLocale( 'en', {
 		relativeTime: {
@@ -252,6 +266,62 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 									{ formatCurrency(
 										-balance.fee,
 										balance.currency
+									) }
+									{ disputeFee && (
+										<ClickTooltip
+											className="payment-details-summary__breakdown__fee-tooltip"
+											buttonIcon={ <HelpOutlineIcon /> }
+											buttonLabel={ __(
+												'Fee breakdown',
+												'woocommerce-payments'
+											) }
+											content={
+												<>
+													<Flex>
+														<label>
+															{ __(
+																'Transaction fee',
+																'woocommerce-payments'
+															) }
+														</label>
+														<span>
+															{ formatCurrency(
+																transactionFee,
+																charge.currency
+															) }
+														</span>
+													</Flex>
+													<Flex>
+														<label>
+															{ __(
+																'Dispute fee',
+																'woocommerce-payments'
+															) }
+														</label>
+														<span>
+															{ formatCurrency(
+																disputeFee.fee,
+																disputeFee.currency
+															) }
+														</span>
+													</Flex>
+													<Flex>
+														<label>
+															{ __(
+																'Total fees',
+																'woocommerce-payments'
+															) }
+														</label>
+														<span>
+															{ formatCurrency(
+																balance.fee,
+																balance.currency
+															) }
+														</span>
+													</Flex>
+												</>
+											}
+										/>
 									) }
 								</Loadable>
 							</p>

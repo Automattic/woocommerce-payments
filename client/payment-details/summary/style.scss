@@ -38,11 +38,28 @@
 		p {
 			@include font-size( 14 );
 			color: $gray-50;
-			display: inline-block;
+			display: inline-flex;
 			margin: 0.25rem 1rem 0 0;
 		}
 		p:last-child {
 			margin-right: 0;
+		}
+
+		&__fee-tooltip {
+			display: flex;
+			flex-direction: column;
+			padding: $grid-unit-15;
+			gap: $grid-unit-10;
+
+			& > *:last-child {
+				padding-top: $grid-unit-10;
+				border-top: 1px solid $gray-200;
+			}
+
+			label {
+				margin-right: $grid-unit-20;
+				color: $gray-700;
+			}
 		}
 	}
 
