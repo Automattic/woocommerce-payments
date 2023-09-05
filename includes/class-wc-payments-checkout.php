@@ -162,7 +162,7 @@ class WC_Payments_Checkout {
 		WC_Checkout::instance();
 
 		// The registered card gateway is more reliable than $this->gateway, but if it isn't available for any reason, fall back to the gateway provided to this checkout class.
-		$gateway = WC_Payments::get_registered_card_gateway() ? WC_Payments::get_registered_card_gateway() : $this->gateway;
+		$gateway = WC_Payments::get_registered_card_gateway() ?? $this->gateway;
 
 		$js_config = [
 			'publishableKey'                 => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
