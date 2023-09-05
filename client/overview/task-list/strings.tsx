@@ -414,7 +414,6 @@ export default {
 		},
 		add_apms: {
 			title: __(
-				// TODO: ask Elizabeth about buyers vs your customers
 				'Add more ways for buyers to pay',
 				'woocommerce-payments'
 			),
