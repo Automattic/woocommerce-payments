@@ -42,7 +42,7 @@ describe( 'ModeChoice', () => {
 		).toBeInTheDocument();
 		expect(
 			screen.getByText(
-				'Dev mode is enabled. With Dev mode, only test accounts can be created that process test transactions. If you want to process live transactions, please disable Dev mode.'
+				'Dev mode is enabled, only test accounts will be created. If you want to process live transactions, please disable it.'
 			)
 		).toBeInTheDocument();
 	} );
