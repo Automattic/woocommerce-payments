@@ -11,8 +11,6 @@ use Automattic\WooCommerce\Admin\Notes\NoteTraits;
 
 defined( 'ABSPATH' ) || exit;
 
-use WCPay\Tracker;
-
 /**
  * Class WC_Payments_Notes_Additional_Payment_Methods
  */
@@ -53,11 +51,24 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 			return;
 		}
 
+		// If we cannot find a valid account, do not add the note.
+		if ( ! self::$account instanceof WC_Payments_Account ) {
+			return;
+		}
+
 		// if the user hasn't connected their account (or the account got disconnected) do not add the note.
-		if ( self::$account instanceof WC_Payments_Account ) {
-			if ( ! self::$account->is_stripe_connected() ) {
-				return;
-			}
+		if ( ! self::$account->is_stripe_connected() ) {
+			return;
+		}
+
+		// If the account hasn't completed intitial Stripe onboarding, do not add the note.
+		if ( ! self::$account->is_account_partially_onboarded() ) {
+			return;
+		}
+
+		// If this is a PO account which has not yet completed full onboarding, do not add the note.
+		if ( ! self::$account->is_progressive_onboarding_in_progress() ) {
+			return;
 		}
 
 		$note = new Note();

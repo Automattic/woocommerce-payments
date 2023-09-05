@@ -11,7 +11,7 @@ use Automattic\WooCommerce\Admin\Notes\NoteTraits;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class WC_Payments_Notes_Set_Https_For_Checkout
+ * Class WC_Payments_Notes_Instant_Deposits_Eligible
  */
 class WC_Payments_Notes_Instant_Deposits_Eligible {
 	use NoteTraits;
