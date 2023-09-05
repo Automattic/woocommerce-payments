@@ -35,6 +35,8 @@ import riskMappings from 'components/risk-level/strings';
 import OrderLink from 'components/order-link';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import CustomerLink from 'components/customer-link';
+import { ClickTooltip } from 'components/tooltip';
+import { getDisputeFee } from 'wcpay/disputes/utils';
 import { useAuthorization } from 'wcpay/data';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
 import './style.scss';
@@ -45,8 +47,6 @@ import { FraudOutcome } from '../../types/fraud-outcome';
 import CancelAuthorizationButton from '../../components/cancel-authorization-button';
 import { PaymentIntent } from '../../types/payment-intents';
 import DisputeDetails from '../dispute-details';
-import { getDisputeFee } from 'wcpay/disputes/utils';
-import { ClickTooltip } from 'wcpay/components/tooltip';
 
 declare const window: any;
 
