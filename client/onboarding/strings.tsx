@@ -3,6 +3,8 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
+import interpolateComponents from '@automattic/interpolate-components';
+import React from 'react';
 
 export default {
 	steps: {
@@ -39,6 +41,25 @@ export default {
 					'WooPayments'
 				),
 			},
+			devModeNotice: interpolateComponents( {
+				mixedString: __(
+					'Dev mode is enabled. With Dev mode, only test accounts can be created that process test transactions. If you want to process live transactions, please disable Dev mode. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+					'woocommerce-payments'
+				),
+				components: {
+					learnMoreLink: (
+						// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
+						// eslint-disable-next-line jsx-a11y/anchor-has-content
+						<a
+							href={
+								'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/dev-mode/'
+							}
+							target="_blank"
+							rel="noreferrer"
+						/>
+					),
+				},
+			} ),
 		},
 		personal: {
 			heading: __(

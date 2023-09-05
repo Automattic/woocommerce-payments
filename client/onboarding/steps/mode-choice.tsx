@@ -13,8 +13,16 @@ import RadioCard from 'components/radio-card';
 import { useStepperContext } from 'components/stepper';
 import { trackModeSelected } from '../tracking';
 import strings from '../strings';
+import InlineNotice from 'components/inline-notice';
+
+const DevModeNotice = () => (
+	<InlineNotice icon status="warning" isDismissible={ false }>
+		{ strings.steps.mode.devModeNotice }
+	</InlineNotice>
+);
 
 const ModeChoice: React.FC = () => {
+	const { devMode } = wcpaySettings;
 	const liveStrings = strings.steps.mode.live;
 	const testStrings = strings.steps.mode.test;
 
@@ -35,6 +43,7 @@ const ModeChoice: React.FC = () => {
 
 	return (
 		<>
+			{ devMode && <DevModeNotice /> }
 			<RadioCard
 				name="onboarding-mode"
 				selected={ selected }

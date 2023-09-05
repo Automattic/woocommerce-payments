@@ -2341,4 +2341,22 @@ class WC_Payments_API_Client {
 			false
 		);
 	}
+
+	/**
+	 * Delete account.
+	 *
+	 * @return array
+	 * @throws API_Exception
+	 */
+	public function delete_account() {
+		return $this->request(
+			[
+				'test_mode' => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
+			],
+			self::ACCOUNTS_API . '/delete',
+			self::POST,
+			true,
+			true
+		);
+	}
 }

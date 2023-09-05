@@ -19,6 +19,7 @@ declare global {
 		};
 		fraudServices: unknown[];
 		testMode: boolean;
+		devMode: boolean;
 		isJetpackConnected: boolean;
 		isJetpackIdcActive: boolean;
 		accountStatus: {

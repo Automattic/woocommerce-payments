@@ -24,7 +24,12 @@ const PersonalDetails: React.FC = () => {
 			</Flex>
 			<OnboardingTextField name="email" />
 			<OnboardingPhoneNumberField name="phone" />
-			<InlineNotice status="info" icon isDismissible={ false }>
+			<InlineNotice
+				status="info"
+				className="personal-details-notice"
+				icon
+				isDismissible={ false }
+			>
 				{ strings.steps.personal.notice }
 			</InlineNotice>
 		</>

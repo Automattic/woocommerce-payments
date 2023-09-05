@@ -22,11 +22,16 @@ jest.mock( 'components/stepper', () => ( {
 declare const global: {
 	wcpaySettings: {
 		connectUrl: string;
+		devMode: boolean;
 	};
 };
 
 describe( 'ModeChoice', () => {
-	it( 'displays test and live radio cards', () => {
+	it( 'displays test and live radio cards, notice for dev mode', () => {
+		global.wcpaySettings = {
+			connectUrl: 'https://wcpay.test/connect',
+			devMode: true,
+		};
 		render( <ModeChoice /> );
 
 		expect(
@@ -34,6 +39,11 @@ describe( 'ModeChoice', () => {
 		).toBeInTheDocument();
 		expect(
 			screen.getByText( strings.steps.mode.test.label )
+		).toBeInTheDocument();
+		expect(
+			screen.getByText(
+				'Dev mode is enabled. With Dev mode, only test accounts can be created that process test transactions. If you want to process live transactions, please disable Dev mode.'
+			)
 		).toBeInTheDocument();
 	} );
 
@@ -50,6 +60,7 @@ describe( 'ModeChoice', () => {
 	it( 'redirects to `connectUrl` with `test_mode` enabled by clicking continue button when `test` is selected', () => {
 		global.wcpaySettings = {
 			connectUrl: 'https://wcpay.test/connect',
+			devMode: false,
 		};
 		Object.defineProperty( window, 'location', {
 			configurable: true,
