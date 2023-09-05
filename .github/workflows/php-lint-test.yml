@@ -44,7 +44,7 @@ jobs:
       - name: "Generate matrix"
         id: generate_matrix
         run: |
-          PHP_VERSIONS=$( echo "[\"$PHP_MIN_SUPPORTED_VERSION\", \"7.3\", \"7.4\"]" )
+          PHP_VERSIONS=$( echo "[\"$PHP_MIN_SUPPORTED_VERSION\", \"8.0\", \"8.1\"]" )
           echo "matrix={\"php\":$PHP_VERSIONS}" >> $GITHUB_OUTPUT
 
   test:
