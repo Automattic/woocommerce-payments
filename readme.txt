@@ -4,7 +4,7 @@ Tags: payment gateway, payment, apple pay, credit card, google pay, woocommerce 
 Requires at least: 6.1
 Tested up to: 6.3
 Requires PHP: 7.3
-Stable tag: 6.4.0
+Stable tag: 6.4.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,6 +93,10 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 6.4.1 - 2023-09-05 =
+* Fix - Potential fatal error when viewing WooCommerce home because we try to check if store has been fully onboarded but account service is not yet initialized.
+* Fix - Resolved an issue with WCPay Subscription orders being set to failed during payment processing when Woo Subscriptions plugin is active.
 
 = 6.4.0 - 2023-08-31 =
 * Add - Added the Transactions reporting endpoint

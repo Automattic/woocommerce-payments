@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Potential fatal error when viewing WooCommerce home because we try to check if store has been fully onboarded but account service is not yet initialized.
