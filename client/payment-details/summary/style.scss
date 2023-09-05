@@ -42,7 +42,7 @@
 			margin: 0.25rem 1rem 0 0;
 			text-transform: uppercase;
 			font-weight: 600;
-			font-size: 11px;
+			font-size: 12px;
 		}
 		p:last-child {
 			margin-right: 0;
@@ -54,6 +54,7 @@
 			padding: $grid-unit-15;
 			gap: $grid-unit-10;
 			font-weight: 400;
+			font-size: 14px;
 
 			& > *:last-child {
 				padding-top: $grid-unit-10;
