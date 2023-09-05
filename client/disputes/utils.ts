@@ -13,7 +13,10 @@ import type {
 	DisputeStatus,
 	EvidenceDetails,
 } from 'wcpay/types/disputes';
-import { disputeAwaitingResponseStatuses } from 'wcpay/disputes/filters/config';
+import {
+	disputeAwaitingResponseStatuses,
+	disputeUnderReviewStatuses,
+} from 'wcpay/disputes/filters/config';
 
 interface IsDueWithinProps {
 	dueBy: CachedDispute[ 'due_by' ] | EvidenceDetails[ 'due_by' ];
@@ -56,6 +59,10 @@ export const isAwaitingResponse = (
 	status: DisputeStatus | string
 ): boolean => {
 	return disputeAwaitingResponseStatuses.includes( status );
+};
+
+export const isUnderReview = ( status: DisputeStatus | string ): boolean => {
+	return disputeUnderReviewStatuses.includes( status );
 };
 
 export const isInquiry = ( dispute: Dispute | CachedDispute ): boolean => {
