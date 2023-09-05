@@ -159,21 +159,8 @@ const DisputeNotice = ( { chargeId } ) => {
 			refundButton.disabled = true;
 
 			const disputeDetailsLink = getDetailsURL( dispute.id, 'disputes' );
-			// TODO: finalize text copy after we come up with the final decision.
-			refundDisabledNotice = createInterpolateElement(
-				__(
-					'Refunds and order editing are disabled because this order was disputed. <a>View dispute</a>',
-					'woocommerce-payments'
-				),
-				{
-					// eslint-disable-next-line jsx-a11y/anchor-has-content
-					a: <a href={ disputeDetailsLink } />,
-				}
-			);
-			let tooltipText = __(
-				'Refunds and order editing are disabled because this order was disputed.',
-				'woocommerce-payments'
-			);
+
+			let tooltipText = '';
 
 			if ( isAwaitingResponse( dispute.status ) ) {
 				refundDisabledNotice = __(
