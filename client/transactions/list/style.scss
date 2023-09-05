@@ -16,9 +16,11 @@ $space-header-item: 12px;
 			fill: $studio-gray-30;
 		}
 
-		.components-popover__content {
-			position: relative;
-			top: -( $gap * 2 ); // Positioning the tooltip in a higher position to avoid having it cropped by the bottom of the table
+		&--fallback {
+			.components-popover__content {
+				position: relative;
+				top: -( $gap * 2 ); // Positioning the tooltip in a higher position to avoid having it cropped by the bottom of the table
+			}
 		}
 	}
 
