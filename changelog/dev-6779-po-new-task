@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Add a new task prompt to set up APMs after onboarding. Fixed an issue where a notice would show up in some unintended circumstances on the APM setup.
