@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Use the gateway from the Checkout class in case the main registered gateway isn't initialized for some reason.
