@@ -65,25 +65,17 @@ export const getTasks = ( {
 	const isPoEnabled = progressiveOnboarding?.isEnabled;
 	const errorMessages = getErrorMessagesFromRequirements();
 
+	const isUpdateDetailsTaskVisible =
+		showUpdateDetailsTask &&
+		( ! isPoEnabled || ( isPoEnabled && ! detailsSubmitted ) );
+
 	const isDisputeTaskVisible =
 		!! activeDisputes &&
 		// Only show the dispute task if there are disputes due within 7 days.
 		0 < getDisputesDueWithinDays( activeDisputes, 7 ).length;
 
 	return [
-		showUpdateDetailsTask &&
-			! isPoEnabled &&
-			getUpdateBusinessDetailsTask(
-				errorMessages,
-				status ?? '',
-				accountLink,
-				Number( currentDeadline ) ?? null,
-				pastDue ?? false,
-				detailsSubmitted ?? true
-			),
-		showUpdateDetailsTask &&
-			isPoEnabled &&
-			! detailsSubmitted &&
+		isUpdateDetailsTaskVisible &&
 			getUpdateBusinessDetailsTask(
 				errorMessages,
 				status ?? '',
