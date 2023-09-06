@@ -333,7 +333,7 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks if Stripe Billing is eligible.
+	 * Checks if the site is eligible for Stripe Billing.
 	 *
 	 * Only US merchants are eligible for Stripe Billing.
 	 *
