@@ -2051,7 +2051,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Map fields that need to be updated and update the fields server side.
 	 *
 	 * @param array $settings Plugin settings.
+	 *
 	 * @return array Updated fields.
+	 * @throws Exception
 	 */
 	public function update_account_settings( array $settings ) : array {
 		$account_settings = [];
@@ -2060,7 +2062,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$account_settings[ $account_key ] = $settings[ $name ];
 			}
 		}
-		$this->update_account( $account_settings );
+
+		try {
+			$this->update_account( $account_settings );
+		} catch ( Exception $e ) {
+			throw new Exception( $e->getMessage() );
+		}
 
 		return $account_settings;
 	}
@@ -2571,17 +2578,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Supported: statement_descriptor, business_name, business_url, business_support_address,
 	 * business_support_email, business_support_phone, branding_logo, branding_icon,
 	 * branding_primary_color, branding_secondary_color.
+	 *
+	 * @throws Exception
 	 */
 	public function update_account( $account_settings ) {
 		if ( empty( $account_settings ) ) {
 			return;
 		}
 
-		$error_message = $this->account->update_stripe_account( $account_settings );
-
-		if ( is_string( $error_message ) ) {
-			$msg = __( 'Failed to update Stripe account. ', 'woocommerce-payments' ) . $error_message;
+		try {
+			$this->account->update_stripe_account( $account_settings );
+		} catch ( Exception $e ) {
+			$msg = __( 'Failed to update Stripe account. ', 'woocommerce-payments' ) . $e->getMessage();
 			$this->add_error( $msg );
+			throw new Exception( $e->getMessage() );
 		}
 	}
 
