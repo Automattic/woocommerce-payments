@@ -26,10 +26,12 @@ const MigrationCompletedNotice: React.FC< Props > = ( {
 	/**
 	 * Whether the notice is eligible to be shown.
 	 *
-	 * We use `useState` here to snapshot the setting value on load.
-	 * This "completed" notice should only be shown if Stripe billing was disabled on load and there are completed migrations.
+	 * Note: We use `useState` here to snapshot the setting value on load.
+	 * This "completed" notice should only be shown if Stripe billing was disabled on load and there there's no migration in progress.
 	 */
-	const [ isEligible ] = useState( ! context.isStripeBillingEnabled );
+	const [ isEligible ] = useState(
+		! context.isStripeBillingEnabled && ! context.isMigrationInProgress
+	);
 
 	if ( ! isEligible || isDismissed || completedMigrationCount === 0 ) {
 		return null;
