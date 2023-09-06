@@ -272,29 +272,22 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'validate_callback' => 'rest_validate_request_arg',
 					],
 					'is_stripe_billing_enabled'         => [
-						'description'       => sprintf(
-						/* translators: %s: WooPayments */
-							__( 'If %s manual capture of charges should be enabled.', 'woocommerce-payments' ),
-							'WooPayments'
-						),
+						'description'       => __( 'If Stripe Billing is enabled.', 'woocommerce-payments' ),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
 					'is_migrating_stripe_billing'       => [
-						'description'       => sprintf(
-						/* translators: %s: WooPayments */
-							__( 'If %s manual capture of charges should be enabled.', 'woocommerce-payments' ),
-							'WooPayments'
-						),
+						'description'       => __( 'Whether there is a Stripe Billing off-site to on-site billing migration in progress.', 'woocommerce-payments' ),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
 					'stripe_billing_subscription_count' => [
-						'description'       => sprintf(
-						/* translators: %s: WooPayments */
-							__( 'If %s manual capture of charges should be enabled.', 'woocommerce-payments' ),
-							'WooPayments'
-						),
+						'description'       => __( 'The number of subscriptions using Stripe Billing', 'woocommerce-payments' ),
+						'type'              => 'int',
+						'validate_callback' => 'rest_validate_request_arg',
+					],
+					'stripe_billing_migrated_count'     => [
+						'description'       => __( 'The number of subscriptions migrated from Stripe Billing to on-site billing.', 'woocommerce-payments' ),
 						'type'              => 'int',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
