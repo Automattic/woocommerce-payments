@@ -37,7 +37,9 @@ export const WoopayExpressCheckoutButton = ( {
 	const [ buttonWidthType, setButtonWidthType ] = useState(
 		buttonWidthTypes.wide
 	);
-	const [ isDisabled, setIsDisabled ] = useState( true );
+	const [ isDisabled, setIsDisabled ] = useState(
+		getConfig( 'isWoopayFirstPartyAuthEnabled' )
+	);
 
 	const text =
 		buttonType !== 'default'
@@ -81,6 +83,10 @@ export const WoopayExpressCheckoutButton = ( {
 	}, [ isPreview, context ] );
 
 	const newIframe = useCallback( () => {
+		if ( ! getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
+			return;
+		}
+
 		const getWoopayOtpUrl = () => {
 			const tracksUserId = JSON.stringify(
 				getConfig( 'tracksUserIdentity' )
@@ -174,7 +180,7 @@ export const WoopayExpressCheckoutButton = ( {
 	}, [ isProductPage, context, isPreview, listenForCartChanges ] );
 
 	useEffect( () => {
-		if ( isPreview ) {
+		if ( isPreview || ! getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
 			return;
 		}
 
