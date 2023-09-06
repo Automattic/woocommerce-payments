@@ -13,7 +13,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  * WC Payments Features class
  */
 class WC_Payments_Features {
-
 	const UPE_FLAG_NAME                     = '_wcpay_feature_upe';
 	const UPE_SPLIT_FLAG_NAME               = '_wcpay_feature_upe_split';
 	const UPE_DEFERRED_INTENT_FLAG_NAME     = '_wcpay_feature_upe_deferred_intent';
@@ -325,24 +324,11 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether the Stripe billing feature is enabled.
-	 *
-	 * If the option hasn't been set yet, it will be set to false if Woo Subscriptions is active, otherwise it will fallback to the WCPay Subscriptions feature.
+	 * Checks whether the Stripe Billing feature is enabled.
 	 *
 	 * @return bool
 	 */
 	public static function is_stripe_billing_enabled(): bool {
-		return '1' === get_option( self::STRIPE_BILLING_FLAG_NAME, '0' );
-	}
-
-	/**
-	 * Checks whether the Stripe billing feature is enabled.
-	 *
-	 * If the option hasn't been set yet, it will be set to false if Woo Subscriptions is active, otherwise it will fallback to the WCPay Subscriptions feature.
-	 *
-	 * @return bool
-	 */
-	public static function is_migrating_stripe_billing(): bool {
 		return '1' === get_option( self::STRIPE_BILLING_FLAG_NAME, '0' );
 	}
 
