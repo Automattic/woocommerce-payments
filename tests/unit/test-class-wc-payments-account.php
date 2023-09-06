@@ -911,8 +911,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->willThrowException(
 				new API_Exception( 'test', 'bad_request', 400 )
 			);
-		$error_msg = $this->wcpay_account->update_stripe_account( [ 'statement_descriptor' => 'WCPAY_DEV' ] );
-		$this->assertEquals( 'test', $error_msg, 'Error message expected' );
+
+		$this->expectExceptionMessage( 'test' );
+
+		$this->wcpay_account->update_stripe_account( [ 'statement_descriptor' => 'WCPAY_DEV' ] );
 	}
 
 	/**
