@@ -17,7 +17,6 @@ import MigrationInProgressNotice from './migration-progress-notice';
 import MigrateOptionNotice from './migrate-option-notice';
 import MigrateAutomaticallyNotice from './migrate-automatically-notice';
 import MigrationCompletedNotice from './migrate-completed-notice';
-import Loadable from 'wcpay/components/loadable';
 
 /**
  * Renders a WooPayments subscriptions settings card.

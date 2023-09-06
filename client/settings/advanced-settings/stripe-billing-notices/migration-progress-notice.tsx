@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import InlineNotice from 'wcpay/components/inline-notice';
 import { _n, sprintf } from '@wordpress/i18n';
 
@@ -27,18 +27,47 @@ const MigrationInProgressNotice: React.FC< Props > = ( {
 
 	const context = useContext( StripeBillingMigrationNoticeContext );
 
+	/**
+	 * Whether the notice is eligible to be shown.
+	 *
+	 * Note: We use `useState` here to snapshot the setting value on load.
+	 *
+	 * This notice should only be shown if a migration is in progress.
+	 * The migration is in progress if the settings have been saved and Stripe Billing is disabled or if the migration option is clicked.
+	 */
+	const [ isEligible, setIsEligible ] = useState(
+		context.isMigrationInProgress
+	);
+
+	useEffect( () => {
+		if ( context.hasResolvedMigrateRequest ) {
+			setIsEligible( true );
+		}
+	}, [ context.hasResolvedMigrateRequest ] );
+
+	// Set the notice to be eligible if Stripe Billing is saved as disabled.
+	useEffect( () => {
+		if ( context.hasSavedSettings ) {
+			setIsEligible( ! context.savedIsStripeBillingEnabled );
+		}
+	}, [ context.hasSavedSettings, context.savedIsStripeBillingEnabled ] );
+
+	// Don't show the notice it's not eligible.
+	if ( ! isEligible ) {
+		return null;
+	}
+
 	// Don't show the notice if it has been dismissed.
 	if ( isDismissed ) {
 		return null;
 	}
 
-	// Don't show the notice if the migration option is shown.
-	if ( context.isMigrationOptionShown ) {
+	if ( context.subscriptionCount === 0 ) {
 		return null;
 	}
 
-	// Don't show the notice if no migration in progress.
-	if ( ! context.isMigrationInProgress ) {
+	// Don't show the notice if the migration option is shown.
+	if ( context.isMigrationOptionShown ) {
 		return null;
 	}
 

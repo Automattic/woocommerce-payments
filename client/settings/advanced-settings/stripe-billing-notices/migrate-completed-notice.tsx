@@ -31,19 +31,7 @@ const MigrationCompletedNotice: React.FC< Props > = ( {
 	 */
 	const [ isEligible ] = useState( ! context.isStripeBillingEnabled );
 
-	if ( isDismissed || completedMigrationCount === 0 ) {
-		return null;
-	}
-
-	if ( context.isMigrationOptionShown ) {
-		return null;
-	}
-
-	if ( context.isMigrationInProgressShown ) {
-		return null;
-	}
-
-	if ( context.isStripeBillingEnabled || ! isEligible ) {
+	if ( ! isEligible || isDismissed || completedMigrationCount === 0 ) {
 		return null;
 	}
 

@@ -36,7 +36,8 @@ const StripeBillingToggle: React.FC< Props > = ( { onChange } ) => {
 			) }
 			help={ interpolateComponents( {
 				mixedString: sprintf(
-					context.isMigrationOptionShown
+					context.isMigrationOptionShown &&
+						context.migratedCount === 0
 						? __(
 								'Alternatively, you can enable this setting and future %s subscription purchases will also utilize' +
 									' Stripe Billing for payment processing. Note: This feature supports card payments only and' +

@@ -49,7 +49,9 @@ const MigrateOptionNotice: React.FC< Props > = ( {
 	 * We use `useState` here to snapshot the setting value on load.
 	 * The option notice should only be shown if Stripe billing is disabled on load and there are subscriptions to migrate.
 	 */
-	const [ isEligible ] = useState( ! context.isStripeBillingEnabled );
+	const [ isEligible, setIsEligible ] = useState(
+		! context.isStripeBillingEnabled
+	);
 
 	// The class name of the action which sends the request to migrate.
 	const noticeClassName = 'woopayments-migrate-stripe-billing-action';
@@ -68,6 +70,13 @@ const MigrateOptionNotice: React.FC< Props > = ( {
 			}
 		}
 	}, [ isLoading ] );
+
+	// The notice is no longer eligible if the settings have been saved and Stripe billing is enabled.
+	useEffect( () => {
+		if ( context.savedIsStripeBillingEnabled ) {
+			setIsEligible( false );
+		}
+	}, [ context.savedIsStripeBillingEnabled ] );
 
 	// Once the request is resolved, hide the notice and mark the migration as in progress.
 	if ( hasResolved ) {
