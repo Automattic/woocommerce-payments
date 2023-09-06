@@ -443,7 +443,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		if ( class_exists( 'WC_Payments_Subscriptions' ) ) {
 			$stripe_billing_migrator = WC_Payments_Subscriptions::get_stripe_billing_migrator();
 
-			if ( is_a( $stripe_billing_migrator, 'WC_Payments_Subscriptions_Migrator' ) ) {
+			if ( $stripe_billing_migrator ) {
 				$is_migrating_stripe_billing       = $stripe_billing_migrator->is_migrating();
 				$stripe_billing_subscription_count = $stripe_billing_migrator->get_stripe_billing_subscription_count();
 				$stripe_billing_migrated_count     = $stripe_billing_migrator->get_subscription_migrated_count();
