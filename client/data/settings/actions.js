@@ -274,13 +274,6 @@ export function updateIsStripeBillingEnabled( isEnabled ) {
 	return updateSettingsValues( { is_stripe_billing_enabled: isEnabled } );
 }
 
-export function updateIsSchedulingMigration( isScheduling ) {
-	return {
-		type: ACTION_TYPES.SCHEDULING_SUBSCRIPTION_MIGRATION,
-		isScheduling,
-	};
-}
-
 export function* submitStripeBillingSubscriptionMigration() {
 	try {
 		yield dispatch( STORE_NAME ).startResolution(
