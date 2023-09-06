@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Resolved an issue with WCPay Subscription orders being set to failed during payment processing when Woo Subscriptions plugin is active.
