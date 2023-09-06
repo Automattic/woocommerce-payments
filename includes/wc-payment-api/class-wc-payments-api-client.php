@@ -18,6 +18,7 @@ use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
 use WCPay\Database_Cache;
 use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Request\List_Fraud_Outcome_Transactions;
+use WCPay\MultiCurrency\Analytics;
 
 /**
  * Communicates with WooCommerce Payments API.
@@ -2340,5 +2341,30 @@ class WC_Payments_API_Client {
 			self::GET,
 			false
 		);
+	}
+
+	/**
+	 * Updates the list of currencies that the customers have used.
+	 *
+	 * @param array $response The response from `WC_Payments_API_Client::request`.
+	 */
+	public function update_customer_currencies( $response ) {
+		$currency   = sanitize_key( $response['currency'] );
+		$currencies = get_option( Analytics::CURRENCIES_OPTION_NAME, false );
+
+		// Skip if the option is not set yet or if the currency is not a string.
+		if ( ! is_string( $currency ) || ! is_array( $currencies ) ) {
+			return;
+		}
+
+		$currency = strtoupper( $currency );
+
+		// If the currency is already in the list, we don't need to do anything.
+		if ( in_array( $currency, $currencies, true ) ) {
+			return;
+		}
+
+		$currencies[] = $currency;
+		update_option( Analytics::CURRENCIES_OPTION_NAME, $currencies );
 	}
 }

@@ -194,6 +194,8 @@ class Create_Intention extends Request {
 	 * @return mixed           Either the same response, or the correct object.
 	 */
 	public function format_response( $response ) {
+		$this->api_client->update_customer_currencies( $response );
+
 		return $this->api_client->deserialize_payment_intention_object_from_array( $response );
 	}
 }
