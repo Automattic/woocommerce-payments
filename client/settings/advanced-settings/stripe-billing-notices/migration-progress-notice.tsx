@@ -38,13 +38,14 @@ const MigrationInProgressNotice: React.FC< Props > = ( {
 		context.isMigrationInProgress
 	);
 
+	// Set the notice to be eligible if the user has chosen to migrate.
 	useEffect( () => {
 		if ( context.hasResolvedMigrateRequest ) {
 			setIsEligible( true );
 		}
 	}, [ context.hasResolvedMigrateRequest ] );
 
-	// Set the notice to be eligible if Stripe Billing is saved as disabled.
+	// Set the notice to be eligible if Stripe Billing is saved as disabled. When disabling Stripe Billing, the migration will automatically start.
 	useEffect( () => {
 		if ( context.hasSavedSettings ) {
 			setIsEligible( ! context.savedIsStripeBillingEnabled );
@@ -73,20 +74,6 @@ const MigrationInProgressNotice: React.FC< Props > = ( {
 	// Mark the notice as shown.
 	context.isMigrationInProgressShown = true;
 
-	const content = sprintf(
-		_n(
-			'%d customer subscription is being migrated from Stripe off-site billing to billing powered by' +
-				' %s and %s.',
-			'%d customer subscriptions are being migrated from Stripe off-site billing to billing powered by' +
-				' %s and %s.',
-			stripeBillingSubscriptionCount,
-			'woocommerce-payments'
-		),
-		stripeBillingSubscriptionCount,
-		'Woo Subscriptions',
-		'WooPayments'
-	);
-
 	return (
 		<InlineNotice
 			status="info"
@@ -94,12 +81,19 @@ const MigrationInProgressNotice: React.FC< Props > = ( {
 			onRemove={ () => setIsDismissed( true ) }
 			className="woopayments-stripe-billing-notice"
 		>
-			<Loadable
-				isLoading={ false }
-				display="inline"
-				placeholder={ content }
-				value={ content }
-			/>
+			{ sprintf(
+				_n(
+					'%d customer subscription is being migrated from Stripe off-site billing to billing powered by' +
+						' %s and %s.',
+					'%d customer subscriptions are being migrated from Stripe off-site billing to billing powered by' +
+						' %s and %s.',
+					stripeBillingSubscriptionCount,
+					'woocommerce-payments'
+				),
+				stripeBillingSubscriptionCount,
+				'Woo Subscriptions',
+				'WooPayments'
+			) }
 		</InlineNotice>
 	);
 };
