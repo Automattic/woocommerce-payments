@@ -1451,32 +1451,17 @@ class MultiCurrency {
 	 * @return array
 	 */
 	public function get_all_customer_currencies(): array {
-		$data = $this->database_cache->get_or_add(
-			Database_Cache::CUSTOMER_CURRENCIES_KEY,
-			function() {
-				global $wpdb;
-				if ( class_exists( 'Automattic\WooCommerce\Utilities\OrderUtil' ) &&
-						\Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
-					$currencies = $wpdb->get_col( "SELECT DISTINCT(currency) FROM {$wpdb->prefix}wc_orders" );
-				} else {
-					$currencies = $wpdb->get_col( "SELECT DISTINCT(meta_value) FROM {$wpdb->postmeta} WHERE meta_key = '_order_currency'" );
-				}
+		global $wpdb;
 
-				return [
-					'currencies' => $currencies,
-					'updated'    => time(),
-				];
-			},
-			function ( $data ) {
-				// Return true if the data looks valid and was updated an hour or less ago.
-				return is_array( $data ) &&
-					isset( $data['currencies'], $data['updated'] ) &&
-					$data['updated'] >= ( time() - ( 5 * MINUTE_IN_SECONDS ) );
-			}
-		);
+		if ( class_exists( 'Automattic\WooCommerce\Utilities\OrderUtil' ) &&
+				\Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
+			$currencies = $wpdb->get_col( "SELECT DISTINCT(currency) FROM {$wpdb->prefix}wc_orders" );
+		} else {
+			$currencies = $wpdb->get_col( "SELECT DISTINCT(meta_value) FROM {$wpdb->postmeta} WHERE meta_key = '_order_currency'" );
+		}
 
-		if ( ! empty( $data['currencies'] ) && is_array( $data['currencies'] ) ) {
-			return $data['currencies'];
+		if ( ! empty( $currencies ) && is_array( $currencies ) ) {
+			return $currencies;
 		}
 
 		return [];
