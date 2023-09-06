@@ -18,9 +18,9 @@ import StripeBillingToggle from './stripe-billing-toggle';
 import { StripeBillingHook, StripeBillingMigrationHook } from './interfaces';
 
 /**
- * Renders a WooPayments subscriptions settings card.
+ * Renders a WooPayments Subscriptions Advanced Settings Section.
  *
- * @return {JSX.Element} Rendered subscriptions element.
+ * @return {JSX.Element} Rendered subscriptions advanced settings section.
  */
 const StripeBillingSection: React.FC = () => {
 	const [

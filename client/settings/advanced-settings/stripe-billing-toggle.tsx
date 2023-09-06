@@ -19,9 +19,9 @@ interface Props {
 }
 
 /**
- * Renders a WooPayments subscriptions settings card.
+ * Renders the Stripe Billing toggle.
  *
- * @return {JSX.Element} Rendered subscriptions element.
+ * @return {JSX.Element} Rendered Stripe Billing toggle.
  */
 const StripeBillingToggle: React.FC< Props > = ( { onChange } ) => {
 	const context = useContext( StripeBillingMigrationNoticeContext );

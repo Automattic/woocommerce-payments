@@ -13,9 +13,9 @@ import MigrateAutomaticallyNotice from './migrate-automatically-notice';
 import MigrationCompletedNotice from './migrate-completed-notice';
 
 /**
- * Renders a WooPayments subscriptions settings card.
+ * Renders the Stripe Billing notices.
  *
- * @return {JSX.Element} Rendered subscriptions element.
+ * @return {JSX.Element} Rendered notices.
  */
 const Notices: React.FC = () => {
 	const context = useContext( StripeBillingMigrationNoticeContext );
