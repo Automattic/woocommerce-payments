@@ -50,7 +50,7 @@ class WC_Payments_Subscriptions {
 	private static $event_handler;
 
 	/**
-	 * Undocumented variable
+	 * Instance of WC_Payments_Subscriptions_Migrator, created in init function.
 	 *
 	 * @var WC_Payments_Subscriptions_Migrator
 	 */
