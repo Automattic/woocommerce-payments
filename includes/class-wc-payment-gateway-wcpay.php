@@ -42,6 +42,8 @@ use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Tracker;
 use WCPay\Internal\Service\PaymentProcessingService;
+use WCPay\Internal\Payment\Factor;
+use WCPay\Internal\Payment\Router;
 
 /**
  * Gateway class for WooPayments
@@ -707,6 +709,111 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Checks whether the new payment process should be used to pay for a given order.
+	 *
+	 * @param WC_Order $order Order that's being paid.
+	 * @return bool
+	 */
+	public function should_use_new_process( WC_Order $order ) {
+		$order_id = $order->get_id();
+
+		// The new process us under active development, and not ready for production yet.
+		if ( ! WC_Payments::mode()->is_dev() ) {
+			return false;
+		}
+
+		// This array will contain all factors, present during checkout.
+		$factors = [
+			/**
+			 * The new payment process is a factor itself.
+			 * Even if no other factors are present, this will make entering
+			 * the new payment process possible only if this factor is allowed.
+			 */
+			Factor::NEW_PAYMENT_PROCESS(),
+		];
+
+		// If there is a token in the request, we're using a saved PM.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$using_saved_payment_method = ! empty( Payment_Information::get_token_from_request( $_POST ) );
+		if ( $using_saved_payment_method ) {
+			$factors[] = Factor::USE_SAVED_PM();
+		}
+
+		// The PM should be saved when chosen, or when it's a recurrent payment, but not if already saved.
+		$save_payment_method = ! $using_saved_payment_method && (
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
+			! empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-payment-method' ] )
+			|| $this->is_payment_recurring( $order_id )
+		);
+		if ( $save_payment_method ) {
+			$factors[] = Factor::SAVE_PM();
+		}
+
+		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
+		if (
+			apply_filters(
+				'wcpay_confirm_without_payment_intent',
+				$order->get_total() <= 0 && ! $save_payment_method
+			)
+		) {
+			$factors[] = Factor::NO_PAYMENT();
+		}
+
+		// Subscription (both WCPay and WCSubs) if when the order contains one.
+		if ( function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order_id ) ) {
+			$factors[] = Factor::SUBSCRIPTION_SIGNUP();
+		}
+
+		// WooPay might change how payment fields were loaded.
+		if (
+			$this->woopay_util->should_enable_woopay( $this )
+			&& $this->woopay_util->should_enable_woopay_on_cart_or_checkout()
+		) {
+			$factors[] = Factor::WOOPAY_ENABLED();
+		}
+
+		// WooPay payments are indicated by the platform checkout intent.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( isset( $_POST['platform-checkout-intent'] ) ) {
+			$factors[] = Factor::WOOPAY_PAYMENT();
+		}
+
+		// Check whether the customer is signining up for a WCPay subscription.
+		if (
+			function_exists( 'wcs_order_contains_subscription' )
+			&& wcs_order_contains_subscription( $order_id )
+			&& WC_Payments_Features::is_wcpay_subscriptions_enabled()
+			&& ! $this->is_subscriptions_plugin_active()
+		) {
+			$factors[] = Factor::WCPAY_SUBSCRIPTION_SIGNUP();
+		}
+
+		if ( $this instanceof UPE_Split_Payment_Gateway ) {
+			$factors[] = Factor::DEFERRED_INTENT_SPLIT_UPE();
+		}
+
+		if ( defined( 'WCPAY_PAYMENT_REQUEST_CHECKOUT' ) && WCPAY_PAYMENT_REQUEST_CHECKOUT ) {
+			$factors[] = Factor::PAYMENT_REQUEST();
+		}
+
+		$router = wcpay_get_container()->get( Router::class );
+		return $router->should_use_new_payment_process( $factors );
+	}
+
+	/**
+	 * Checks whether the new payment process should be entered,
+	 * and if the answer is yes, uses it and returns the result.
+	 *
+	 * @param WC_Order $order Order that needs payment.
+	 * @return array|null     Array if processed, null if the new process is not supported.
+	 */
+	public function new_process_payment( WC_Order $order ) {
+		// Important: No factors are provided here, they were meant just for `Feature`.
+		$service = wcpay_get_container()->get( PaymentProcessingService::class );
+		return $service->process_payment( $order->get_id() );
+	}
+
+	/**
 	 * Process the payment for a given order.
 	 *
 	 * @param int $order_id Order ID to process the payment for.
@@ -716,13 +823,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @throws Exception Error processing the payment.
 	 */
 	public function process_payment( $order_id ) {
-
-		if ( defined( 'WCPAY_NEW_PROCESS' ) && true === WCPAY_NEW_PROCESS ) {
-			$new_process = wcpay_get_container()->get( PaymentProcessingService::class );
-			return $new_process->process_payment( $order_id );
-		}
-
 		$order = wc_get_order( $order_id );
+
+		// Use the new payment process if allowed.
+		if ( $this->should_use_new_process( $order ) ) {
+			return $this->new_process_payment( $order );
+		}
 
 		try {
 			if ( 20 < strlen( $order->get_billing_phone() ) ) {
