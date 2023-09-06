@@ -13,10 +13,10 @@ import { edit } from '@wordpress/icons';
  * Internal dependencies
  */
 import type { Dispute } from 'wcpay/types/disputes';
-import './style.scss';
 import DisputeNotice from './dispute-notice';
 import { isAwaitingResponse } from 'wcpay/disputes/utils';
 import InlineNotice from 'components/inline-notice';
+import './style.scss';
 
 interface DisputeDetailsProps {
 	dispute: Dispute;
