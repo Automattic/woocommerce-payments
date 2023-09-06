@@ -142,7 +142,8 @@ const PaymentMethod = ( {
 
 	if (
 		upeCapabilityStatuses.PENDING_APPROVAL === status ||
-		upeCapabilityStatuses.PENDING_VERIFICATION === status
+		upeCapabilityStatuses.PENDING_VERIFICATION === status ||
+		disabled
 	) {
 		isSetupRequired = true;
 	}
