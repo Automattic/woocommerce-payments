@@ -1,4 +1,3 @@
-/** @format */
 /**
  * External dependencies
  */
@@ -72,7 +71,7 @@ const MigrateOptionNotice: React.FC< Props > = ( {
 		}
 	}, [ isLoading ] );
 
-	// The notice is no longer eligible if the settings have been saved and Stripe billing is enabled.
+	// The notice is no longer eligible if the settings have been saved and Stripe Billing is enabled.
 	useEffect( () => {
 		if ( context.savedIsStripeBillingEnabled ) {
 			setIsEligible( false );
@@ -102,6 +101,7 @@ const MigrateOptionNotice: React.FC< Props > = ( {
 		return null;
 	}
 
+	// Update the context to note the Option Notice is being shown.
 	context.isMigrationOptionShown = true;
 
 	return (
