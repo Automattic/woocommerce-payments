@@ -46,8 +46,9 @@ const MigrateOptionNotice: React.FC< Props > = ( {
 
 	/**
 	 * Whether the notice is eligible to be shown.
-	 * We use `useState` here to snapshot the setting value on load.
-	 * The option notice should only be shown if Stripe billing is disabled on load and there are subscriptions to migrate.
+	 *
+	 * Note: We use `useState` here to snapshot the setting value on load.
+	 * The option notice should only be shown if Stripe Billing is disabled on load and there are subscriptions to migrate.
 	 */
 	const [ isEligible, setIsEligible ] = useState(
 		! context.isStripeBillingEnabled

@@ -35,7 +35,7 @@ const MigrateAutomaticallyNotice: React.FC< Props > = ( {
 		context.isStripeBillingEnabled
 	);
 
-	// Set the notice to be eligible if the setting if Stripe Billing is saved as enabled.
+	// Set the notice to be eligible if Stripe Billing is saved as enabled. ie disabling after it was enabled will now automatically migrate.
 	useEffect( () => {
 		if ( context.hasSavedSettings ) {
 			setIsEligible( context.savedIsStripeBillingEnabled );
