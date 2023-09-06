@@ -958,21 +958,10 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 		$mock_database_cache = $this->createMock( Database_Cache::class );
 		$mock_database_cache
-			->expects( $this->exactly( 2 ) )
+			->expects( $this->once() )
 			->method( 'get_or_add' )
-			->withConsecutive(
-				[ Database_Cache::CURRENCIES_KEY, $this->anything(), $this->anything() ],
-				[ Database_Cache::CUSTOMER_CURRENCIES_KEY, $this->anything(), $this->anything() ]
-			)->willReturnCallback(
-				function( $key, $generator, $validator ) {
-					if ( Database_Cache::CURRENCIES_KEY === $key ) {
-						return $this->mock_cached_currencies;
-					} else {
-						// If calling the get all customer currencies function, run the callback function.
-						return $generator();
-					}
-				}
-			);
+			->with( Database_Cache::CURRENCIES_KEY, $this->anything(), $this->anything() )
+			->willReturn( $this->mock_cached_currencies );
 
 		$this->init_multi_currency( null, true, null, $mock_database_cache );
 

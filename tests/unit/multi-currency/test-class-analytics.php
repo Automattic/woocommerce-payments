@@ -110,6 +110,8 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	}
 
 	public function test_register_customer_currencies() {
+		delete_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY );
+
 		$this->mock_multi_currency->expects( $this->once() )
 			->method( 'get_all_customer_currencies' )
 			->willReturn( $this->mock_customer_currencies );
@@ -131,7 +133,32 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		$this->assertTrue( $data_registry->exists( 'customerCurrencies' ) );
 	}
 
+	public function test_register_customer_currencies_with_currencies_option() {
+		update_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY, [ 'USD' ] );
+
+		$this->mock_multi_currency->expects( $this->never() )
+			->method( 'get_all_customer_currencies' );
+
+		$this->mock_multi_currency->expects( $this->once() )
+			->method( 'get_available_currencies' )
+			->willReturn( $this->get_mock_available_currencies() );
+
+		$this->mock_multi_currency->expects( $this->once() )
+			->method( 'get_default_currency' )
+			->willReturn( new Currency( 'USD', 1.0 ) );
+
+		$this->analytics->register_customer_currencies();
+
+		$data_registry = Package::container()->get( AssetDataRegistry::class );
+
+		$this->assertTrue( $data_registry->exists( 'customerCurrencies' ) );
+
+		delete_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY );
+	}
+
 	public function test_register_customer_currencies_for_empty_customer_currencies() {
+		delete_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY );
+
 		$this->mock_multi_currency->expects( $this->once() )
 			->method( 'get_all_customer_currencies' )
 			->willReturn( [] );
