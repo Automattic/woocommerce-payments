@@ -14,8 +14,18 @@ use WCPay\WooPay\WooPay_Scheduler;
  * WooPay_Session unit tests.
  */
 class WooPay_Session_Test extends WCPAY_UnitTestCase {
+	/**
+	 * @var Database_Cache|MockObject
+	 */
+	protected $mock_cache;
+
 	public function set_up() {
 		parent::set_up();
+
+		// Mock the main class's cache service.
+		$this->_cache     = WC_Payments::get_database_cache();
+		$this->mock_cache = $this->createMock( WCPay\Database_Cache::class );
+		WC_Payments::set_database_cache( $this->mock_cache );
 
 		// Enable woopay.
 		$this->set_is_woopay_eligible( true );
@@ -199,6 +209,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	private function set_is_woopay_eligible( $is_woopay_eligible ) {
-		update_option( 'wcpay_account_data', [ 'data' => [ 'platform_checkout_eligible' => $is_woopay_eligible ] ] );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => $is_woopay_eligible ] );
 	}
 }
