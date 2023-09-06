@@ -26,8 +26,7 @@ class Analytics {
 	const PRIORITY_LATEST  = 99999;
 	const SCRIPT_NAME      = 'WCPAY_MULTI_CURRENCY_ANALYTICS';
 
-	const SUPPORTED_CONTEXTS     = [ 'orders', 'products', 'variations', 'categories', 'coupons', 'taxes' ];
-	const CURRENCIES_OPTION_NAME = 'wcpay_customer_currencies';
+	const SUPPORTED_CONTEXTS = [ 'orders', 'products', 'variations', 'categories', 'coupons', 'taxes' ];
 
 	/**
 	 * SQL string replacements made by the analytics Multi-Currency extension.
@@ -115,11 +114,11 @@ class Analytics {
 	 * @return void
 	 */
 	public function register_customer_currencies() {
-		$currencies = get_option( self::CURRENCIES_OPTION_NAME, false );
+		$currencies = get_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY, false );
 
 		if ( ! $currencies ) {
 			$currencies = $this->multi_currency->get_all_customer_currencies();
-			update_option( self::CURRENCIES_OPTION_NAME, $currencies );
+			update_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY, $currencies );
 		}
 
 		$available_currencies = $this->multi_currency->get_available_currencies();

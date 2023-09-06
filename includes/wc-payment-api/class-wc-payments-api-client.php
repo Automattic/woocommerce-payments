@@ -18,7 +18,7 @@ use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
 use WCPay\Database_Cache;
 use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Request\List_Fraud_Outcome_Transactions;
-use WCPay\MultiCurrency\Analytics;
+use WCPay\MultiCurrency\MultiCurrency;
 
 /**
  * Communicates with WooCommerce Payments API.
@@ -2350,7 +2350,7 @@ class WC_Payments_API_Client {
 	 */
 	public function update_customer_currencies( $response ) {
 		$currency   = sanitize_key( $response['currency'] );
-		$currencies = get_option( Analytics::CURRENCIES_OPTION_NAME, false );
+		$currencies = get_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY, false );
 
 		// Skip if the option is not set yet or if the currency is not a string.
 		if ( ! is_string( $currency ) || ! is_array( $currencies ) ) {
@@ -2365,6 +2365,6 @@ class WC_Payments_API_Client {
 		}
 
 		$currencies[] = $currency;
-		update_option( Analytics::CURRENCIES_OPTION_NAME, $currencies );
+		update_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY, $currencies );
 	}
 }

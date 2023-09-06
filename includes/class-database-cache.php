@@ -17,7 +17,6 @@ class Database_Cache {
 	const ONBOARDING_FIELDS_DATA_KEY  = 'wcpay_onboarding_fields_data';
 	const BUSINESS_TYPES_KEY          = 'wcpay_business_types_data';
 	const CURRENCIES_KEY              = 'wcpay_multi_currency_cached_currencies';
-	const CUSTOMER_CURRENCIES_KEY     = 'wcpay_multi_currency_customer_currencies';
 	const PAYMENT_PROCESS_FACTORS_KEY = 'wcpay_payment_process_factors';
 
 	/**

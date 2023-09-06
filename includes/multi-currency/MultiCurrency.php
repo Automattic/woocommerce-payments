@@ -27,9 +27,10 @@ defined( 'ABSPATH' ) || exit;
  */
 class MultiCurrency {
 
-	const CURRENCY_SESSION_KEY = 'wcpay_currency';
-	const CURRENCY_META_KEY    = 'wcpay_currency';
-	const FILTER_PREFIX        = 'wcpay_multi_currency_';
+	const CURRENCY_SESSION_KEY    = 'wcpay_currency';
+	const CURRENCY_META_KEY       = 'wcpay_currency';
+	const FILTER_PREFIX           = 'wcpay_multi_currency_';
+	const CUSTOMER_CURRENCIES_KEY = self::FILTER_PREFIX . 'customer_currencies';
 
 	/**
 	 * The plugin's ID.
