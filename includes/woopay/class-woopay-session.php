@@ -289,7 +289,13 @@ class WooPay_Session {
 			return [];
 		}
 
-		$session = self::get_init_session_request();
+		// phpcs:disable WordPress.Security.NonceVerification.Missing
+		$order_id      = ! empty( $_POST['order_id'] ) ? absint( wp_unslash( $_POST['order_id'] ) ) : null;
+		$key           = ! empty( $_POST['key'] ) ? sanitize_text_field( wp_unslash( $_POST['key'] ) ) : null;
+		$billing_email = ! empty( $_POST['billing_email'] ) ? sanitize_text_field( wp_unslash( $_POST['billing_email'] ) ) : null;
+		// phpcs:enable
+
+		$session = self::get_init_session_request( $order_id, $key, $billing_email );
 
 		$store_blog_token = ( WooPay_Utilities::get_woopay_url() === WooPay_Utilities::DEFAULT_WOOPAY_URL ) ? Jetpack_Options::get_option( 'blog_token' ) : 'dev_mode';
 
