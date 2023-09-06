@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Revert bumping minimum required version of WooCommerce to 7.8.0 and WP to 6.0
