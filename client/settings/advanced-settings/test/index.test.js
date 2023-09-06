@@ -18,15 +18,16 @@ describe( 'AdvancedSettings', () => {
 		};
 		render( <AdvancedSettings /> );
 
-		expect( screen.queryByText( 'Debug mode' ) ).not.toBeInTheDocument();
-
-		userEvent.click( screen.getByText( 'Advanced settings' ) );
-
+		// The advanced settings section is expanded by default.
 		expect(
 			screen.queryByText( 'Enable Public Key Encryption' )
 		).toBeInTheDocument();
 		expect( screen.queryByText( 'Debug mode' ) ).toBeInTheDocument();
-		expect( screen.getByText( 'Debug mode' ) ).toHaveFocus();
+
+		// Collapse the advanced settings section.
+		userEvent.click( screen.getByText( 'Advanced settings' ) );
+
+		expect( screen.queryByText( 'Debug mode' ) ).not.toBeInTheDocument();
 	} );
 	it( 'hides the client encryption toggle when not eligible', () => {
 		global.wcpaySettings = {
