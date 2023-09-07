@@ -7,27 +7,39 @@
 import { initializeBnplSiteMessaging } from './bnpl-site-messaging';
 
 jQuery( function ( $ ) {
+	// Check for required global variables
+	if ( ! window.wcpayStripeSiteMessaging ) {
+		return;
+	}
 	const bnplPaymentMessageElement = initializeBnplSiteMessaging();
 	const { productVariations } = window.wcpayStripeSiteMessaging;
 	let { productId } = window.wcpayStripeSiteMessaging;
 
 	const resetBnplPaymentMessage = () => {
-		const quantity = $( '.quantity input[type=number]' ).val();
+		const quantityInput = $( '.quantity input[type=number]' );
+		const quantity = quantityInput.length
+			? parseInt( quantityInput.val(), 10 )
+			: 1;
+		const baseProductAmount = productVariations.base_product
+			? parseInt( productVariations.base_product.amount, 10 )
+			: 0;
+
 		productId = 'base_product';
 		bnplPaymentMessageElement.update( {
-			amount:
-				parseInt( productVariations.base_product.amount, 10 ) *
-				quantity,
-			currency: productVariations.base_product.currency,
+			amount: baseProductAmount * quantity,
+			currency: productVariations.base_product?.currency || 'USD',
 		} );
 	};
 
 	$( '.quantity input[type=number]' ).on( 'change', function ( event ) {
-		const newQuantity = event.target.value;
-		const price = productVariations[ productId ].amount;
+		const newQuantity = parseInt( event.target.value, 10 ) || 1;
+		const price = productVariations[ productId ]
+			? parseInt( productVariations[ productId ].amount, 10 )
+			: 0;
+
 		bnplPaymentMessageElement.update( {
-			amount: parseInt( price, 10 ) * newQuantity,
-			currency: productVariations[ productId ].currency,
+			amount: price * newQuantity,
+			currency: productVariations[ productId ]?.currency || 'USD',
 		} );
 	} );
 
@@ -37,13 +49,23 @@ jQuery( function ( $ ) {
 			event,
 			variation
 		) {
-			const quantity = $( '.quantity input[type=number]' ).val();
-			const variationPrice =
-				productVariations[ variation.variation_id ].amount;
+			const quantityInput = $( '.quantity input[type=number]' );
+			const quantity = quantityInput.length
+				? parseInt( quantityInput.val(), 10 )
+				: 1;
+			const variationPrice = productVariations[ variation.variation_id ]
+				? parseInt(
+						productVariations[ variation.variation_id ].amount,
+						10
+				  )
+				: 0;
+
 			productId = variation.variation_id;
 			bnplPaymentMessageElement.update( {
-				amount: parseInt( variationPrice, 10 ) * quantity,
-				currency: productVariations[ variation.variation_id ].currency,
+				amount: variationPrice * quantity,
+				currency:
+					productVariations[ variation.variation_id ]?.currency ||
+					'USD',
 			} );
 		} );
 
