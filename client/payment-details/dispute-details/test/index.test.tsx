@@ -170,12 +170,21 @@ describe( 'DisputeDetails', () => {
 			/The cardholder claims this is an unauthorized transaction/,
 			{ ignore: '.a11y-speak-region' }
 		);
+
 		screen.getByRole( 'button', {
 			name: /Challenge dispute/,
 		} );
 		screen.getByRole( 'button', {
 			name: /Accept dispute/,
 		} );
+
+		// Don't render the staged evidence message
+		expect(
+			screen.queryByText(
+				/You initiated a dispute a challenge to this dispute/,
+				{ ignore: '.a11y-speak-region' }
+			)
+		).toBeNull();
 	} );
 
 	test( 'correctly renders dispute details for a dispute with staged evidence', () => {
@@ -193,6 +202,13 @@ describe( 'DisputeDetails', () => {
 			/The cardholder claims this is an unauthorized transaction/,
 			{ ignore: '.a11y-speak-region' }
 		);
+
+    // Render the staged evidence message
+		screen.getByText(
+			/You initiated a dispute a challenge to this dispute/,
+			{ ignore: '.a11y-speak-region' }
+		);
+
 		screen.getByRole( 'button', {
 			name: /Continue with challenge/,
 		} );
