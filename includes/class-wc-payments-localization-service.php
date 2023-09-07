@@ -53,12 +53,17 @@ class WC_Payments_Localization_Service {
 			'negativity'   => '-',
 		];
 
-		$locale = $this->get_user_locale();
+		$locale  = $this->get_user_locale();
+		$country = strtoupper( end( explode( '_', $locale ) ) );
 
 		$currency_options = $this->currency_format[ $currency_code ] ?? null;
+		$locale_options   = $this->locale_info[ $country ] ?? null;
 		if ( $currency_options ) {
 			// If there's no locale-specific formatting, default to the 'default' entry in the array.
 			$currency_format = $currency_options[ $locale ] ?? $currency_options['default'] ?? $currency_format;
+			if ( $locale_options ) {
+				$currency_format['negativity'] = $locale_options['negativity'];
+			}
 		}
 
 		/**
@@ -88,7 +93,7 @@ class WC_Payments_Localization_Service {
 	 */
 	public function fix_negative_currency_format( string $return, string $price, array $args, float $unformatted_price, $original_price ) {
 		if ( 0 > $unformatted_price ) {
-			$currency_code = WC_Payments_Multi_Currency()->get_selected_currency();
+			$currency_code = WC_Payments_Multi_Currency()->get_selected_currency()->code;
 			$format        = $this->get_currency_format( $currency_code );
 			switch ( $format['negativity'] ) {
 				case '-':
