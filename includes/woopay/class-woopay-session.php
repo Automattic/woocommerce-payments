@@ -44,7 +44,9 @@ class WooPay_Session {
 		'@^\/wc\/store(\/v[\d]+)?\/cart\/update-customer$@',
 		'@^\/wc\/store(\/v[\d]+)?\/cart\/update-item$@',
 		'@^\/wc\/store(\/v[\d]+)?\/cart\/extensions$@',
+		'@^\/wc\/store(\/v[\d]+)?\/checkout\/(?P<id>[\d]+)@',
 		'@^\/wc\/store(\/v[\d]+)?\/checkout$@',
+		'@^\/wc\/store(\/v[\d]+)?\/order\/(?P<id>[\d]+)@',
 	];
 
 	/**
