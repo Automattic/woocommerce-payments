@@ -10,7 +10,6 @@ import {
 	Icon,
 } from '@wordpress/components';
 import { calendar } from '@wordpress/icons';
-import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import interpolateComponents from '@automattic/interpolate-components';
 import { __, sprintf } from '@wordpress/i18n';
 

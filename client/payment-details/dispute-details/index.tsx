@@ -5,15 +5,18 @@
  */
 import React from 'react';
 import moment from 'moment';
+import { __ } from '@wordpress/i18n';
 import { Card, CardBody } from '@wordpress/components';
+import { edit } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
 import type { Dispute } from 'wcpay/types/disputes';
-import { isAwaitingResponse } from 'wcpay/disputes/utils';
 import DisputeNotice from './dispute-notice';
 import DisputeFooter from './dispute-footer';
+import { isAwaitingResponse } from 'wcpay/disputes/utils';
+import InlineNotice from 'components/inline-notice';
 import './style.scss';
 
 interface DisputeDetailsProps {
@@ -24,6 +27,7 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 	const now = moment();
 	const dueBy = moment.unix( dispute.evidence_details?.due_by ?? 0 );
 	const countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
+	const hasStagedEvidence = dispute.evidence_details?.has_evidence;
 
 	if ( isAwaitingResponse( dispute.status ) ) {
 		return (
@@ -31,10 +35,23 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 				<Card>
 					<CardBody className="transaction-details-dispute-details-body">
 						{ countdownDays >= 0 && (
-							<DisputeNotice
-								dispute={ dispute }
-								urgent={ countdownDays <= 2 }
-							/>
+							<>
+								<DisputeNotice
+									dispute={ dispute }
+									urgent={ countdownDays <= 2 }
+								/>
+								{ hasStagedEvidence && (
+									<InlineNotice
+										icon={ edit }
+										isDismissible={ false }
+									>
+										{ __(
+											`You initiated a dispute a challenge to this dispute. Click 'Continue with challenge' to proceed with your drafted response.`,
+											'woocommerce-payments'
+										) }
+									</InlineNotice>
+								) }
+							</>
 						) }
 						<div></div>
 					</CardBody>
@@ -43,7 +60,6 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 		);
 	}
 
-	// Not actionable
 	return <DisputeFooter dispute={ dispute } />;
 };
 
