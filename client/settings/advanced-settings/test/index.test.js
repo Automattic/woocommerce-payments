@@ -10,12 +10,18 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import AdvancedSettings from '..';
+import { useSettings } from 'wcpay/data';
 
 describe( 'AdvancedSettings', () => {
 	it( 'toggles the advanced settings section', () => {
 		global.wcpaySettings = {
 			isClientEncryptionEligible: true,
 		};
+
+		useSettings.mockReturnValue( {
+			isLoading: false,
+		} );
+
 		render( <AdvancedSettings /> );
 
 		// The advanced settings section is expanded by default.
