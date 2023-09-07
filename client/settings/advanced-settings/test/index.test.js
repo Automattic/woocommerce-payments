@@ -10,9 +10,35 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import AdvancedSettings from '..';
+import {
+	useSettings,
+	useMultiCurrency,
+	useWCPaySubscriptions,
+	useDevMode,
+	useDebugLog,
+	useClientSecretEncryption,
+} from 'wcpay/data';
+
+jest.mock( '../../../data', () => ( {
+	useSettings: jest.fn(),
+	useMultiCurrency: jest.fn(),
+	useWCPaySubscriptions: jest.fn(),
+	useDevMode: jest.fn(),
+	useDebugLog: jest.fn(),
+	useClientSecretEncryption: jest.fn(),
+} ) );
 
 describe( 'AdvancedSettings', () => {
-	it( 'toggles the advanced settings section', () => {
+	beforeEach( () => {
+		// Set `isLoading` to false so `LoadableSettingsSection` can render.
+		useSettings.mockReturnValue( { isLoading: false } );
+		useMultiCurrency.mockReturnValue( [ false, jest.fn() ] );
+		useWCPaySubscriptions.mockReturnValue( [ false, jest.fn() ] );
+		useDevMode.mockReturnValue( false );
+		useDebugLog.mockReturnValue( [ false, jest.fn() ] );
+		useClientSecretEncryption.mockReturnValue( [ false, jest.fn() ] );
+	} );
+	test( 'toggles the advanced settings section', () => {
 		global.wcpaySettings = {
 			isClientEncryptionEligible: true,
 		};
@@ -30,10 +56,11 @@ describe( 'AdvancedSettings', () => {
 
 		expect( screen.queryByText( 'Debug mode' ) ).not.toBeInTheDocument();
 	} );
-	it( 'hides the client encryption toggle when not eligible', () => {
+	test( 'hides the client encryption toggle when not eligible', () => {
 		global.wcpaySettings = {
 			isClientEncryptionEligible: false,
 		};
+
 		render( <AdvancedSettings /> );
 
 		expect(
