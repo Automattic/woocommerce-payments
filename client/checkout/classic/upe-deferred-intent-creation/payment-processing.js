@@ -112,21 +112,25 @@ function createStripePaymentMethod(
 				name: document.querySelector( '#billing_first_name' )
 					? (
 							document.querySelector( '#billing_first_name' )
-								.value +
+								?.value +
 							' ' +
-							document.querySelector( '#billing_last_name' ).value
+							document.querySelector( '#billing_last_name' )
+								?.value
 					  ).trim()
 					: undefined,
-				email: document.querySelector( '#billing_email' ).value,
-				phone: document.querySelector( '#billing_phone' ).value,
+				email: document.querySelector( '#billing_email' )?.value,
+				phone: document.querySelector( '#billing_phone' )?.value,
 				address: {
-					city: document.querySelector( '#billing_city' ).value,
-					country: document.querySelector( '#billing_country' ).value,
-					line1: document.querySelector( '#billing_address_1' ).value,
-					line2: document.querySelector( '#billing_address_2' ).value,
+					city: document.querySelector( '#billing_city' )?.value,
+					country: document.querySelector( '#billing_country' )
+						?.value,
+					line1: document.querySelector( '#billing_address_1' )
+						?.value,
+					line2: document.querySelector( '#billing_address_2' )
+						?.value,
 					postal_code: document.querySelector( '#billing_postcode' )
-						.value,
-					state: document.querySelector( '#billing_state' ).value,
+						?.value,
+					state: document.querySelector( '#billing_state' )?.value,
 				},
 			},
 		};
