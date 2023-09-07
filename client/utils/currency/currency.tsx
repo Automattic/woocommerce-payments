@@ -114,6 +114,12 @@ const CurrencyFactory = function ( currencySetting?: CurrencyConfig ): any {
 						useCode ? code : symbol,
 						'-' + formattedNumber
 					);
+				case 'o -':
+					return sprintf(
+						priceFormat,
+						useCode ? code : symbol,
+						' -' + formattedNumber
+					);
 			}
 		}
 		return sprintf( priceFormat, useCode ? code : symbol, formattedNumber );

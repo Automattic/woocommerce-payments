@@ -33,6 +33,7 @@ class WC_Payments_Localization_Service {
 	 */
 	public function __construct() {
 		$this->load_locale_data();
+		add_filter( 'wc_price', [ $this, 'fix_negative_currency_format' ], 10, 5 );
 	}
 
 	/**
@@ -72,6 +73,41 @@ class WC_Payments_Localization_Service {
 		 * @param string $locale          The user's locale.
 		 */
 		return apply_filters( 'wcpay_' . strtolower( $currency_code ) . '_format', $currency_format, $locale );
+	}
+
+	/**
+	 * Fix formatted negative prices to match the negativity sign of the locale.
+	 *
+	 * @param string       $return            Price HTML markup.
+	 * @param string       $price             Formatted price.
+	 * @param array        $args              Pass on the args.
+	 * @param float        $unformatted_price Price as float to allow plugins custom formatting. Since 3.2.0.
+	 * @param float|string $original_price    Original price as float, or empty string. Since 5.0.0.
+	 *
+	 * @return string The fixed price.
+	 */
+	public function fix_negative_currency_format( string $return, string $price, array $args, float $unformatted_price, $original_price ) {
+		if ( 0 > $unformatted_price ) {
+			$currency_code = WC_Payments_Multi_Currency()->get_selected_currency();
+			$format        = $this->get_currency_format( $currency_code );
+			switch ( $format['negativity'] ) {
+				case '-':
+					return $return;
+				case 'o-':
+					$formatted_price = str_replace( '<bdi>-', '<bdi>', $return );
+					$formatted_price = str_replace( $price, '-' . $price, $formatted_price );
+					return $formatted_price;
+				case 'o -':
+					$formatted_price = str_replace( '<bdi>-', '<bdi>', $return );
+					$formatted_price = str_replace( $price, ' -' . $price, $formatted_price );
+					return $formatted_price;
+				case '()':
+					$formatted_price = str_replace( '<bdi>-', '<bdi>(', $return );
+					$formatted_price = str_replace( '</bdi>', ')</bdi>', $formatted_price );
+					return $formatted_price;
+			}
+		}
+		return $return;
 	}
 
 	/**
