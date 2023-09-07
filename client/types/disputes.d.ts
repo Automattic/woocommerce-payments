@@ -64,7 +64,7 @@ export interface Dispute {
 	evidence: Evidence;
 	fileSize?: Record< string, number >;
 	reason: DisputeReason;
-	charge: Charge;
+	charge: Charge | string;
 	amount: number;
 	currency: string;
 	created: number;
