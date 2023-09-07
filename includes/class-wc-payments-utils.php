@@ -813,12 +813,6 @@ class WC_Payments_Utils {
 		if ( $amount >= 0 ) {
 			return $formatted;
 		}
-
-		// Handle the subtle display difference for the negative amount between PHP wc_price `-$0.74` vs JavaScript formatCurrency `$-0.74` for the same input.
-		// Remove the minus sign, and then move it right before the number.
-		$formatted = str_replace( '-', '', $formatted );
-
-		return preg_replace( '/([0-9,\.]+)/', '-$1', $formatted );
 	}
 
 	/**
@@ -839,15 +833,17 @@ class WC_Payments_Utils {
 	): string {
 		$currency = strtoupper( $currency );
 
-		$formatted_amount = wc_price(
-			$amount,
-			wp_parse_args( $currency_format, self::get_currency_format_for_wc_price( $currency ) )
-		);
-
+		$currency_format  = wp_parse_args( $currency_format, self::get_currency_format_for_wc_price( $currency ) );
+		$formatted_amount = wc_price( $amount, $currency_format );
 		$formatted_amount = html_entity_decode( wp_strip_all_tags( $formatted_amount ) );
 
 		if ( $skip_symbol ) {
-			$formatted_amount = preg_replace( '/[^0-9,\.]+/', '', $formatted_amount );
+			// Use the decimal and thousand separator of the format to keep those intact.
+			$pattern          = '/[^0-9';
+			$pattern         .= preg_quote( $currency_format['thousand_separator'], '/' );
+			$pattern         .= preg_quote( $currency_format['decimal_separator'], '/' );
+			$pattern         .= ']+/';
+			$formatted_amount = preg_replace( $pattern, '', $formatted_amount );
 		}
 
 		if ( false === strpos( $formatted_amount, $currency ) ) {
