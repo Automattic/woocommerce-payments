@@ -1708,25 +1708,25 @@ class WC_Payments {
 	}
 
 	/**
-	 * Determines whether we should load WCPay Subscription related classes.
+	 * Determines whether we should load Stripe Billing integration classes.
 	 *
 	 * Return true when:
-	 *  - the WCPay Subscriptions or Stripe Billing feature is enabled, or
-	 *  - there are Stripe Billing Subscriptions.
+	 *  - the WCPay Subscriptions feature is enabled or
+	 *  - Woo Subscriptions plugin is active and Stripe Billing is enabled or there are Stripe Billing Subscriptions.
 	 *
 	 * @return bool
 	 */
 	private static function should_load_stripe_billing_integration() {
-		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() || WC_Payments_Features::is_stripe_billing_enabled() ) {
+		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
 			return true;
 		}
 
-		if ( ! function_exists( 'wcs_get_orders_with_meta_query' ) ) {
-			return false;
+		if ( WC_Payments_Features::is_stripe_billing_enabled() && class_exists( 'WC_Subscription' ) ) {
+			return true;
 		}
 
 		// If there are any Stripe Billing Subscriptions, we should load the Stripe Billing integration classes. eg while a migration is in progress, or to support legacy subscriptions.
-		return (bool) count(
+		return function_exists( 'wcs_get_orders_with_meta_query' ) && (bool) count(
 			wcs_get_orders_with_meta_query(
 				[
 					'status'     => 'any',
