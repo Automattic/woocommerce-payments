@@ -98,6 +98,7 @@ declare global {
 		};
 		storeCurrency: string;
 		isMultiCurrencyEnabled: string;
+		currencyData: any;
 		errorMessage: string;
 		onBoardingDisabled: boolean;
 		isBnplAffirmAfterpayEnabled: boolean;

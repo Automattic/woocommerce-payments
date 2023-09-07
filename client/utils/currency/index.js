@@ -2,8 +2,12 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import Currency from '@woocommerce/currency';
 import { endsWith, find, trimEnd } from 'lodash';
+
+/**
+ * Internal dependencies
+ */
+import Currency from './currency.tsx';
 
 const currencyNames = {
 	aud: __( 'Australian dollar', 'woocommerce-payments' ),
@@ -60,6 +64,7 @@ export const getCurrency = ( currencyCode, baseCurrencyCode = null ) => {
 				currency.decimalSeparator = baseCurrency.decimalSeparator;
 				currency.thousandSeparator = baseCurrency.thousandSeparator;
 				currency.symbolPosition = baseCurrency.symbolPosition;
+				currency.negativeFormat = baseCurrency.negativeFormat;
 			}
 		}
 		return Currency( currency );

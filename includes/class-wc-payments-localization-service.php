@@ -49,6 +49,7 @@ class WC_Payments_Localization_Service {
 			'thousand_sep' => ',',
 			'decimal_sep'  => '.',
 			'num_decimals' => 2,
+			'negativity'   => '-',
 		];
 
 		$locale = $this->get_user_locale();
@@ -135,6 +136,7 @@ class WC_Payments_Localization_Service {
 						'thousand_sep' => $locale_data['thousand_sep'],
 						'decimal_sep'  => $locale_data['decimal_sep'],
 						'num_decimals' => $country_data['num_decimals'],
+						'negativity'   => $country_data['negativity'],
 					];
 				}
 			}

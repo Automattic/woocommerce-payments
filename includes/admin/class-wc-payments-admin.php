@@ -740,13 +740,12 @@ class WC_Payments_Admin {
 		$current_user       = wp_get_current_user();
 		$current_user_email = $current_user && $current_user->user_email ? $current_user->user_email : get_option( 'admin_email' );
 
-		if ( version_compare( WC_VERSION, '6.0', '<' ) ) {
-			$path = WCPAY_ABSPATH . 'i18n/locale-info.php';
-		} else {
-			$path = WC()->plugin_path() . '/i18n/locale-info.php';
-		}
+		/**
+		 * This data is loaded to a transient in `WC_Payments_Localization_Service` construction, which happens in the `class-wc-payments.php:481`,
+		 * so it's better to get that transient, and use it here, instead of loading the file again.
+		 */
+		$locale_info = get_transient( WC_Payments_Localization_Service::WCPAY_LOCALE_INFO_TRANSIENT );
 
-		$locale_info = include $path;
 		// Get symbols for those currencies without a short one.
 		$symbols       = get_woocommerce_currency_symbols();
 		$currency_data = [];
@@ -760,6 +759,7 @@ class WC_Payments_Admin {
 				'thousandSeparator' => $value['thousand_sep'] ?? '',
 				'decimalSeparator'  => $value['decimal_sep'] ?? '',
 				'precision'         => $value['num_decimals'],
+				'negativeFormat'    => $value['negativity'] ?? '-',
 			];
 		}
 
