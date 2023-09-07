@@ -50,7 +50,7 @@ const MigrationInProgressNotice: React.FC< Props > = ( {
 		}
 	}, [ context.hasSavedSettings, context.savedIsStripeBillingEnabled ] );
 
-	// Don't show the notice it's not eligible.
+	// Don't show the notice if it's not eligible.
 	if ( ! isEligible ) {
 		return null;
 	}
