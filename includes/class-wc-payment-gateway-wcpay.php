@@ -1224,6 +1224,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( empty( $intent ) ) {
+				$intent_id_attached_to_order = $this->order_service->get_intent_id_for_order( $order );
+				if ( ! empty( $intent_id_attached_to_order ) ) {
+					$request = Cancel_Intention::create( $intent_id_attached_to_order );
+					$request->send( 'wcpay_cancel_intent_request', $order );
+					$this->order_service->remove_intent_id_for_order( $order );
+					$note = sprintf(
+						WC_Payments_Utils::esc_interpolated_html(
+						/* translators: %1: payment intent */
+							__( 'Payment cancelled, and removed from order. <code>%1$s</code>', 'woocommerce-payments' ),
+							[
+								'code' => '<code>',
+							]
+						),
+						$intent_id_attached_to_order
+					);
+					$order->add_order_note( $note );
+				}
+
 				$request = Create_And_Confirm_Intention::create();
 				$request->set_amount( $converted_amount );
 				$request->set_currency_code( $currency );

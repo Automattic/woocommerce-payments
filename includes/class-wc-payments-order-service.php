@@ -459,6 +459,18 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Remove intent_id for $order.
+	 *
+	 * @param WC_Order $order The order object.
+	 *
+	 * @return void
+	 */
+	public function remove_intent_id_for_order( WC_Order $order ) {
+		$order->delete_meta_data( self::INTENT_ID_META_KEY );
+		$order->save_meta_data();
+	}
+
+	/**
 	 * Get the payment metadata for payment method id.
 	 *
 	 * @param  mixed $order The order Id or order object.
