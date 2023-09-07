@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Prevent cache deletion during plugin update if minimum dependencies are not met.
