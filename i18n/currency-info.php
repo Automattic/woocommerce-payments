@@ -27,6 +27,12 @@ $global_formats = [
 		'direction'    => 'ltr',
 		'currency_pos' => 'left_space',
 	],
+	'ls_dot_apos_ltr'    => [
+		'thousand_sep' => '\'',
+		'decimal_sep'  => '.',
+		'direction'    => 'ltr',
+		'currency_pos' => 'left_space',
+	],
 	'ls_dot_comma_ltr'   => [
 		'thousand_sep' => ',',
 		'decimal_sep'  => '.',
@@ -37,6 +43,12 @@ $global_formats = [
 		'thousand_sep' => ',',
 		'decimal_sep'  => '.',
 		'direction'    => 'rtl',
+		'currency_pos' => 'left_space',
+	],
+	'ls_dot_space_ltr'   => [
+		'thousand_sep' => ' ',
+		'decimal_sep'  => '.',
+		'direction'    => 'ltr',
 		'currency_pos' => 'left_space',
 	],
 	'lx_comma_dot_ltr'   => [
@@ -117,35 +129,23 @@ $global_formats = [
 		'direction'    => 'ltr',
 		'currency_pos' => 'right',
 	],
-	'rx_comma_dot_rtl'   => [
-		'thousand_sep' => '.',
-		'decimal_sep'  => ',',
-		'direction'    => 'rtl',
-		'currency_pos' => 'right',
-	],
 	'rx_dot_comma_ltr'   => [
 		'thousand_sep' => ',',
 		'decimal_sep'  => '.',
 		'direction'    => 'ltr',
 		'currency_pos' => 'right',
 	],
-	'rx_dot_comma_rtl'   => [
-		'thousand_sep' => ',',
-		'decimal_sep'  => '.',
-		'direction'    => 'rtl',
-		'currency_pos' => 'right',
-	],
 ];
 
 return [
 	'AED' => [
-		'ar_AE'   => $global_formats['rx_dot_comma_rtl'],
-		'default' => $global_formats['rx_dot_comma_rtl'],
+		'ar_AE'   => $global_formats['rs_dot_comma_rtl'],
+		'default' => $global_formats['rs_dot_comma_rtl'],
 	],
 	'AFN' => [
 		'default'    => $global_formats['ls_comma_dot_rtl'],
 		'fa_AF'      => $global_formats['ls_comma_dot_rtl'],
-		'ps_AF'      => $global_formats['lx_comma_dot_rtl'],
+		'ps_AF'      => $global_formats['ls_comma_dot_rtl'],
 		'tk_AF'      => $global_formats['rs_comma_space_ltr'],
 		'uz_Arab_AF' => $global_formats['ls_comma_dot_rtl'],
 	],
@@ -227,9 +227,9 @@ return [
 		'en_BM'   => $global_formats['lx_dot_comma_ltr'],
 	],
 	'BND' => [
-		'default'    => $global_formats['lx_comma_dot_ltr'],
+		'default'    => $global_formats['ls_comma_dot_ltr'],
 		'ms_Arab_BN' => $global_formats['lx_dot_comma_rtl'],
-		'ms_BN'      => $global_formats['lx_comma_dot_ltr'],
+		'ms_BN'      => $global_formats['ls_comma_dot_ltr'],
 	],
 	'BOB' => [
 		'default' => $global_formats['lx_comma_dot_ltr'],
@@ -277,13 +277,13 @@ return [
 		'sw_CD'   => $global_formats['ls_comma_dot_ltr'],
 	],
 	'CHF' => [
-		'de_CH'   => $global_formats['rs_dot_apos_ltr'],
-		'de_LI'   => $global_formats['rs_dot_apos_ltr'],
-		'default' => $global_formats['rs_dot_apos_ltr'],
+		'de_CH'   => $global_formats['ls_dot_apos_ltr'],
+		'de_LI'   => $global_formats['ls_dot_apos_ltr'],
+		'default' => $global_formats['ls_dot_apos_ltr'],
 		'fr_CH'   => $global_formats['rs_comma_space_ltr'],
 		'gsw_CH'  => $global_formats['rs_dot_apos_ltr'],
 		'gsw_LI'  => $global_formats['rs_dot_apos_ltr'],
-		'it_CH'   => $global_formats['rs_dot_apos_ltr'],
+		'it_CH'   => $global_formats['ls_dot_apos_ltr'],
 		'rm_CH'   => $global_formats['rs_dot_apos_ltr'],
 	],
 	'CLP' => [
@@ -299,8 +299,8 @@ return [
 		'zh_CN'      => $global_formats['lx_dot_comma_ltr'],
 	],
 	'COP' => [
-		'default' => $global_formats['lx_comma_dot_ltr'],
-		'es_CO'   => $global_formats['lx_comma_dot_ltr'],
+		'default' => $global_formats['ls_comma_dot_ltr'],
+		'es_CO'   => $global_formats['ls_comma_dot_ltr'],
 	],
 	'CRC' => [
 		'default' => $global_formats['lx_comma_space_ltr'],
@@ -336,8 +336,8 @@ return [
 		'es_DO'   => $global_formats['lx_dot_comma_ltr'],
 	],
 	'DZD' => [
-		'ar_DZ'   => $global_formats['rx_comma_dot_rtl'],
-		'default' => $global_formats['rx_comma_dot_rtl'],
+		'ar_DZ'   => $global_formats['rs_comma_dot_rtl'],
+		'default' => $global_formats['rs_comma_dot_rtl'],
 		'fr_DZ'   => $global_formats['rs_comma_space_ltr'],
 	],
 	'EGP' => [
@@ -358,7 +358,7 @@ return [
 		'ast_ES'     => $global_formats['rs_comma_dot_ltr'],
 		'ca_AD'      => $global_formats['rs_comma_dot_ltr'],
 		'ca_ES'      => $global_formats['rs_comma_dot_ltr'],
-		'de_AT'      => $global_formats['rs_comma_space_ltr'],
+		'de_AT'      => $global_formats['ls_comma_space_ltr'],
 		'de_BE'      => $global_formats['rs_comma_dot_ltr'],
 		'de_DE'      => $global_formats['rs_comma_dot_ltr'],
 		'de_LU'      => $global_formats['rs_comma_dot_ltr'],
@@ -503,28 +503,28 @@ return [
 		'he_IL'   => $global_formats['rs_dot_comma_rtl'],
 	],
 	'INR' => [
-		'as_IN'      => $global_formats['lx_dot_comma_ltr'],
+		'as_IN'      => $global_formats['ls_dot_comma_ltr'],
 		'bn_IN'      => $global_formats['lx_dot_comma_ltr'],
 		'default'    => $global_formats['lx_dot_comma_ltr'],
 		'en_IN'      => $global_formats['lx_dot_comma_ltr'],
 		'gu_IN'      => $global_formats['lx_dot_comma_ltr'],
 		'hi_IN'      => $global_formats['lx_dot_comma_ltr'],
 		'kn_IN'      => $global_formats['lx_dot_comma_ltr'],
-		'kok_IN'     => $global_formats['lx_dot_comma_ltr'],
+		'kok_IN'     => $global_formats['ls_dot_comma_ltr'],
 		'ks_IN'      => $global_formats['lx_comma_dot_rtl'],
 		'mai_IN'     => $global_formats['ls_dot_comma_ltr'],
 		'ml_IN'      => $global_formats['lx_dot_comma_ltr'],
 		'mr_IN'      => $global_formats['lx_dot_comma_ltr'],
 		'ne_IN'      => $global_formats['ls_dot_comma_ltr'],
 		'or_IN'      => $global_formats['lx_dot_comma_ltr'],
-		'pa_IN'      => $global_formats['ls_dot_comma_ltr'],
-		'sa_IN'      => $global_formats['ls_dot_comma_ltr'],
+		'pa_IN'      => $global_formats['lx_dot_comma_ltr'],
+		'sa_IN'      => $global_formats['lx_dot_comma_ltr'],
 		'sat_IN'     => $global_formats['ls_dot_comma_ltr'],
 		'sd_Deva_IN' => $global_formats['ls_dot_comma_ltr'],
 		'sd_IN'      => $global_formats['rs_comma_dot_rtl'],
 		'ta_IN'      => $global_formats['lx_dot_comma_ltr'],
 		'te_IN'      => $global_formats['lx_dot_comma_ltr'],
-		'ur_IN'      => $global_formats['lx_comma_dot_rtl'],
+		'ur_IN'      => $global_formats['ls_comma_dot_rtl'],
 	],
 	'IQD' => [
 		'ar_IQ'      => $global_formats['rs_comma_dot_rtl'],
@@ -533,8 +533,8 @@ return [
 		'default'    => $global_formats['rs_comma_dot_rtl'],
 	],
 	'IRR' => [
-		'default' => $global_formats['ls_comma_dot_rtl'],
-		'fa_IR'   => $global_formats['ls_comma_dot_rtl'],
+		'default' => $global_formats['lx_comma_dot_rtl'],
+		'fa_IR'   => $global_formats['lx_comma_dot_rtl'],
 	],
 	'ISK' => [
 		'default' => $global_formats['rs_comma_dot_ltr'],
@@ -615,13 +615,13 @@ return [
 		'st_LS'   => $global_formats['lx_comma_space_ltr'],
 	],
 	'LYD' => [
-		'ar_LY'   => $global_formats['rx_comma_dot_rtl'],
-		'default' => $global_formats['rx_comma_dot_rtl'],
+		'ar_LY'   => $global_formats['rs_comma_dot_rtl'],
+		'default' => $global_formats['rs_comma_dot_rtl'],
 	],
 	'MAD' => [
-		'ar_EH'   => $global_formats['rx_dot_comma_rtl'],
-		'ar_MA'   => $global_formats['rx_comma_dot_rtl'],
-		'default' => $global_formats['rx_comma_dot_rtl'],
+		'ar_EH'   => $global_formats['rs_dot_comma_rtl'],
+		'ar_MA'   => $global_formats['rs_comma_dot_rtl'],
+		'default' => $global_formats['rs_comma_dot_rtl'],
 		'fr_MA'   => $global_formats['rs_comma_dot_ltr'],
 		'tzm_MA'  => $global_formats['rs_comma_space_ltr'],
 	],
@@ -630,10 +630,10 @@ return [
 		'ro_MD'   => $global_formats['rs_comma_dot_ltr'],
 	],
 	'MGA' => [
-		'default' => $global_formats['lx_dot_comma_ltr'],
+		'default' => $global_formats['ls_dot_comma_ltr'],
 		'en_MG'   => $global_formats['lx_dot_comma_ltr'],
 		'fr_MG'   => $global_formats['rs_comma_space_ltr'],
-		'mg_MG'   => $global_formats['lx_dot_comma_ltr'],
+		'mg_MG'   => $global_formats['ls_dot_comma_ltr'],
 	],
 	'MKD' => [
 		'default' => $global_formats['rs_comma_dot_ltr'],
@@ -641,8 +641,8 @@ return [
 		'sq_MK'   => $global_formats['rs_comma_space_ltr'],
 	],
 	'MMK' => [
-		'default' => $global_formats['ls_dot_comma_ltr'],
-		'my_MM'   => $global_formats['ls_dot_comma_ltr'],
+		'default' => $global_formats['rs_dot_comma_ltr'],
+		'my_MM'   => $global_formats['rs_dot_comma_ltr'],
 	],
 	'MNT' => [
 		'default' => $global_formats['ls_dot_comma_ltr'],
@@ -727,8 +727,8 @@ return [
 		'es_PA'   => $global_formats['lx_dot_comma_ltr'],
 	],
 	'PEN' => [
-		'default' => $global_formats['lx_dot_comma_ltr'],
-		'es_PE'   => $global_formats['lx_dot_comma_ltr'],
+		'default' => $global_formats['ls_dot_comma_ltr'],
+		'es_PE'   => $global_formats['ls_dot_comma_ltr'],
 		'qu_PE'   => $global_formats['ls_dot_comma_ltr'],
 	],
 	'PGK' => [
@@ -755,7 +755,7 @@ return [
 	],
 	'PYG' => [
 		'default' => $global_formats['ls_dot_comma_ltr'],
-		'es_PY'   => $global_formats['lx_comma_dot_ltr'],
+		'es_PY'   => $global_formats['ls_comma_dot_ltr'],
 		'gn_PY'   => $global_formats['ls_dot_comma_ltr'],
 	],
 	'QAR' => [
@@ -794,8 +794,8 @@ return [
 		'rw_RW'   => $global_formats['ls_comma_dot_ltr'],
 	],
 	'SAR' => [
-		'ar_SA'   => $global_formats['rs_dot_comma_rtl'],
-		'default' => $global_formats['rs_dot_comma_rtl'],
+		'ar_SA'   => $global_formats['rs_comma_dot_rtl'],
+		'default' => $global_formats['rs_comma_dot_rtl'],
 	],
 	'SBD' => [
 		'default' => $global_formats['lx_dot_comma_ltr'],
@@ -820,7 +820,7 @@ return [
 		'default' => $global_formats['lx_dot_comma_ltr'],
 		'en_SG'   => $global_formats['lx_dot_comma_ltr'],
 		'ms_SG'   => $global_formats['lx_dot_comma_ltr'],
-		'ta_SG'   => $global_formats['lx_dot_comma_ltr'],
+		'ta_SG'   => $global_formats['ls_dot_comma_ltr'],
 		'zh_SG'   => $global_formats['lx_dot_comma_ltr'],
 	],
 	'SHP' => [
@@ -872,8 +872,8 @@ return [
 		'tk_TM'   => $global_formats['rs_comma_space_ltr'],
 	],
 	'TND' => [
-		'ar_TN'   => $global_formats['rx_comma_dot_rtl'],
-		'default' => $global_formats['rx_comma_dot_rtl'],
+		'ar_TN'   => $global_formats['rs_comma_dot_rtl'],
+		'default' => $global_formats['rs_comma_dot_rtl'],
 		'fr_TN'   => $global_formats['rs_comma_space_ltr'],
 	],
 	'TOP' => [
@@ -943,9 +943,9 @@ return [
 		'es_UY'   => $global_formats['ls_comma_dot_ltr'],
 	],
 	'UZS' => [
-		'default'    => $global_formats['lx_comma_space_ltr'],
+		'default'    => $global_formats['rs_comma_space_ltr'],
 		'uz_Cyrl_UZ' => $global_formats['rs_comma_space_ltr'],
-		'uz_UZ'      => $global_formats['lx_comma_space_ltr'],
+		'uz_UZ'      => $global_formats['rs_comma_space_ltr'],
 	],
 	'VES' => [
 		'default' => $global_formats['lx_comma_dot_ltr'],
@@ -968,7 +968,7 @@ return [
 		'ar_TD'   => $global_formats['rs_comma_dot_rtl'],
 		'default' => $global_formats['rs_comma_space_ltr'],
 		'en_CM'   => $global_formats['lx_dot_comma_ltr'],
-		'es_GQ'   => $global_formats['rs_comma_dot_ltr'],
+		'es_GQ'   => $global_formats['lx_comma_dot_ltr'],
 		'fr_CF'   => $global_formats['rs_comma_space_ltr'],
 		'fr_CG'   => $global_formats['rs_comma_space_ltr'],
 		'fr_CM'   => $global_formats['rs_comma_space_ltr'],
@@ -1018,7 +1018,7 @@ return [
 		'default' => $global_formats['lx_dot_comma_ltr'],
 		'en_ZA'   => $global_formats['lx_dot_comma_ltr'],
 		'nr_ZA'   => $global_formats['lx_comma_space_ltr'],
-		'nso_ZA'  => $global_formats['lx_dot_space_ltr'],
+		'nso_ZA'  => $global_formats['ls_dot_space_ltr'],
 		'ss_ZA'   => $global_formats['lx_comma_space_ltr'],
 		'st_ZA'   => $global_formats['lx_comma_space_ltr'],
 		'tn_ZA'   => $global_formats['lx_dot_space_ltr'],
