@@ -87,12 +87,32 @@ class Compatibility extends BaseCompatibility {
 	}
 
 	/**
-	 * Checks to see if the widgets should be hidden.
+	 * Deprecated method, please use should_disable_currency_switching.
 	 *
 	 * @return bool False if it shouldn't be hidden, true if it should.
 	 */
 	public function should_hide_widgets(): bool {
-		return apply_filters( MultiCurrency::FILTER_PREFIX . 'should_hide_widgets', false );
+		return $this->should_disable_currency_switching( apply_filters( MultiCurrency::FILTER_PREFIX . 'should_hide_widgets', false ) );
+	}
+
+	/**
+	 * Checks to see if currency switching should be disabled, such as the widgets and the automatic geolocation switching.
+	 *
+	 * @return bool False if no, true if yes.
+	 */
+	public function should_disable_currency_switching(): bool {
+		/**
+		 * If the pay_for_order parameter is set, we disable currency switching.
+		 *
+		 * WooCommerce itself handles all the heavy lifting and verification on the Order Pay page, we just need to
+		 * make sure the currency switchers are not displayed. This is due to once the order is created, the currency
+		 * itself should remain static.
+		 */
+		if ( isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return true;
+		}
+
+		return apply_filters( MultiCurrency::FILTER_PREFIX . 'should_disable_currency_switching', false );
 	}
 
 	/**

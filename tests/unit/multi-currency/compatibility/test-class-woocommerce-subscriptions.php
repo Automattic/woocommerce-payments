@@ -109,7 +109,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 			[ 'wcpay_multi_currency_override_selected_currency', 'override_selected_currency' ],
 			[ 'wcpay_multi_currency_should_convert_product_price', 'should_convert_product_price' ],
 			[ 'wcpay_multi_currency_should_convert_coupon_amount', 'should_convert_coupon_amount' ],
-			[ 'wcpay_multi_currency_should_hide_widgets', 'should_hide_widgets' ],
+			[ 'wcpay_multi_currency_should_disable_currency_switching', 'should_disable_currency_switching' ],
 		];
 	}
 
@@ -709,15 +709,15 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 	}
 
 	// If true is passed to the method, true should be returned immediately.
-	public function test_should_hide_widgets_return_true_if_true_passed() {
+	public function test_should_disable_currency_switching_return_true_if_true_passed() {
 		// Act/Assert: Confirm the result value is true.
-		$this->assertTrue( $this->woocommerce_subscriptions->should_hide_widgets( true ) );
+		$this->assertTrue( $this->woocommerce_subscriptions->should_disable_currency_switching( true ) );
 	}
 
 	// If false is passed to the method and none of the checks are true, false is returned.
-	public function test_should_hide_widgets_return_false() {
+	public function test_should_disable_currency_switching_return_false() {
 		// Act/Assert: Confirm the result value is false.
-		$this->assertFalse( $this->woocommerce_subscriptions->should_hide_widgets( false ) );
+		$this->assertFalse( $this->woocommerce_subscriptions->should_disable_currency_switching( false ) );
 	}
 
 	/**
@@ -725,16 +725,16 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 	 *
 	 * @dataProvider provider_sub_types_renewal_resubscribe_switch
 	 */
-	public function test_should_hide_widgets_return_true_when_sub_type_in_cart( $sub_type ) {
+	public function test_should_disable_currency_switching_return_true_when_sub_type_in_cart( $sub_type ) {
 		// Arrange: Create a subscription and cart_items to be used.
 		[ $mock_subscription, $cart_items ] = $this->get_mock_subscription_and_session_cart_items( $sub_type );
 
 		// Act/Assert: Confirm the result value is true.
-		$this->assertTrue( $this->woocommerce_subscriptions->should_hide_widgets( false ) );
+		$this->assertTrue( $this->woocommerce_subscriptions->should_disable_currency_switching( false ) );
 	}
 
 	// Should return true if switch found in GET, for when a customer is doing a subscription switch.
-	public function test_should_hide_widgets_return_true_when_starting_subscription_switch() {
+	public function test_should_disable_currency_switching_return_true_when_starting_subscription_switch() {
 		// Arrange: Create a mock subscription to use.
 		$mock_subscription = $this->create_mock_subscription();
 
@@ -743,11 +743,11 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 		$_GET['_wcsnonce']           = wp_create_nonce( 'wcs_switch_request' );
 
 		// Act/Assert: Confirm that true is returned.
-		$this->assertTrue( $this->woocommerce_subscriptions->should_hide_widgets( false ) );
+		$this->assertTrue( $this->woocommerce_subscriptions->should_disable_currency_switching( false ) );
 	}
 
 	// Should return false since users will not match.
-	public function test_should_hide_widgets_return_false_when_starting_subscrition_switch_and_no_user_match() {
+	public function test_should_disable_currency_switching_return_false_when_starting_subscrition_switch_and_no_user_match() {
 		// Arrange: Create a mock subscription and assign its user.
 		$mock_subscription = $this->create_mock_subscription();
 		$mock_subscription->set_customer_id( 42 );
@@ -757,7 +757,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 		$_GET['_wcsnonce']           = wp_create_nonce( 'wcs_switch_request' );
 
 		// Act/Assert: Confirm that false is returned.
-		$this->assertFalse( $this->woocommerce_subscriptions->should_hide_widgets( false ) );
+		$this->assertFalse( $this->woocommerce_subscriptions->should_disable_currency_switching( false ) );
 	}
 
 	public function provider_sub_types_renewal_resubscribe_switch() {

@@ -77,7 +77,7 @@ class CurrencySwitcherWidget extends WC_Widget {
 	 * @param array $instance Saved values from database.
 	 */
 	public function widget( $args, $instance ) {
-		if ( $this->compatibility->should_hide_widgets() ) {
+		if ( $this->compatibility->should_disable_currency_switching() ) {
 			return;
 		}
 

@@ -201,4 +201,31 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WCPAY_UnitTestCase {
 
 		$this->assertEquals( $expected, $this->compatibility->convert_order_prices( $expected, [] ) );
 	}
+
+	// The should_disable_currency_switching should return false by default.
+	public function test_should_disable_currency_switching_return_false_by_default() {
+		// Act/Assert: Confirm false is returned by default.
+		$this->assertFalse( $this->compatibility->should_disable_currency_switching() );
+	}
+
+	// If on the pay_for_order page, then should_disable_currency_switching should return true.
+	public function test_should_disable_currency_switching_return_true_on_pay_for_order() {
+		// Arrange: Blatantly hack mock request params for the test.
+		$_GET['pay_for_order'] = true;
+
+		// Act/Assert: Confirm true is returned if on the pay_for_order page.
+		$this->assertTrue( $this->compatibility->should_disable_currency_switching() );
+	}
+
+	// If filtered to true, then should_disable_currency_switching should return true.
+	public function test_should_disable_currency_switching_return_true_on_filtered_true() {
+		// Arrange: Blatantly hack mock request params for the test.
+		add_filter( MultiCurrency::FILTER_PREFIX . 'should_disable_currency_switching', '__return_true' );
+
+		// Act/Assert: Confirm true is returned if filtered to true.
+		$this->assertTrue( $this->compatibility->should_disable_currency_switching() );
+
+		// Arrange: Remove our filter.
+		remove_all_filters( MultiCurrency::FILTER_PREFIX . 'should_disable_currency_switching' );
+	}
 }

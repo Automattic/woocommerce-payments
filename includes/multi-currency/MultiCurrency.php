@@ -781,8 +781,8 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function update_selected_currency_by_geolocation() {
-		// We only want to automatically set the currency if this option is enabled.
-		if ( ! $this->is_using_auto_currency_switching() ) {
+		// We only want to automatically set the currency if the option is enabled and it shouldn't be disabled for any reason.
+		if ( ! $this->is_using_auto_currency_switching() || $this->compatibility->should_disable_currency_switching() ) {
 			return;
 		}
 

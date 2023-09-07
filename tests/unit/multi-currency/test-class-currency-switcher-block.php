@@ -62,7 +62,7 @@ class WCPay_Multi_Currency_Currency_Switcher_Block_Tests extends WCPAY_UnitTestC
 		$symbol = $attributes['symbol'] ?? true;
 
 		$this->mock_compatibility->expects( $this->once() )
-			->method( 'should_hide_widgets' )
+			->method( 'should_disable_currency_switching' )
 			->willReturn( false );
 
 		$this->mock_multi_currency->expects( $this->once() )
@@ -184,7 +184,7 @@ class WCPay_Multi_Currency_Currency_Switcher_Block_Tests extends WCPAY_UnitTestC
 		];
 
 		$this->mock_compatibility->expects( $this->once() )
-			->method( 'should_hide_widgets' )
+			->method( 'should_disable_currency_switching' )
 			->willReturn( false );
 
 		$this->mock_multi_currency->expects( $this->once() )
@@ -195,5 +195,38 @@ class WCPay_Multi_Currency_Currency_Switcher_Block_Tests extends WCPAY_UnitTestC
 		$this->assertStringContainsString( '<input type="hidden" name="test_name" value="test_value" />', $result );
 		$this->assertStringContainsString( '<input type="hidden" name="test_array[0][0]" value="test_array_value" />', $result );
 		$this->assertStringContainsString( '<input type="hidden" name="named_key[key]" value="value" />', $result );
+	}
+
+	/**
+	 * The widget should not be displayed if should_disable_currency_switching returns true.
+	 */
+	public function test_widget_does_not_render_on_hide() {
+		// Arrange: Set the expected call and return value for should_disable_currency_switching.
+		$this->mock_compatibility
+			->expects( $this->once() )
+			->method( 'should_disable_currency_switching' )
+			->willReturn( true );
+
+		// Act/Assert: Confirm that when calling the renger method nothing is returned.
+		$this->assertSame( '', $this->currency_switcher_block->render_block_widget( [], '' ) );
+	}
+
+	/**
+	 * The widget should not be displayed if there's only a single currency enabled.
+	 */
+	public function test_widget_does_not_render_on_single_currency() {
+		// Arrange: Set the expected call and return values for should_disable_currency_switching  and get_enabled_currencies.
+		$this->mock_compatibility
+			->expects( $this->once() )
+			->method( 'should_disable_currency_switching' )
+			->willReturn( false );
+
+		$this->mock_multi_currency
+			->expects( $this->once() )
+			->method( 'get_enabled_currencies' )
+			->willReturn( [ new Currency( 'USD' ) ] );
+
+		// Act/Assert: Confirm that when calling the renger method nothing is returned.
+		$this->assertSame( '', $this->currency_switcher_block->render_block_widget( [], '' ) );
 	}
 }
