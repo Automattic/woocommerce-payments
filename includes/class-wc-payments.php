@@ -1291,7 +1291,15 @@ class WC_Payments {
 	 * Handles upgrade routines.
 	 */
 	public static function install_actions() {
-		if ( version_compare( WCPAY_VERSION_NUMBER, get_option( 'woocommerce_woocommerce_payments_version' ), '>' ) ) {
+		$dependency_service = self::$dependency_service;
+
+		// Make sure we have correct class.
+		if ( ! $dependency_service instanceof WC_Payments_Dependency_Service ) {
+			$dependency_service = new WC_Payments_Dependency_Service();
+		}
+
+		// Don't trigger any update plugin hook and don't bump current plugin version if there is a dependencies issues.
+		if ( version_compare( WCPAY_VERSION_NUMBER, get_option( 'woocommerce_woocommerce_payments_version' ), '>' ) && true === $dependency_service->has_valid_dependencies() ) {
 			do_action( 'woocommerce_woocommerce_payments_updated' );
 			self::update_plugin_version();
 		}
@@ -1378,7 +1386,9 @@ class WC_Payments {
 	 */
 	public static function remove_woo_admin_notes() {
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			self::$remote_note_service->delete_notes();
+			if ( class_exists( 'WC_Payments_Remote_Note_Service' ) && self::$remote_note_service instanceof WC_Payments_Remote_Note_Service ) {
+				self::$remote_note_service->delete_notes();
+			}
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-qualitative-feedback.php';
 			WC_Payments_Notes_Qualitative_Feedback::possibly_delete_note();
