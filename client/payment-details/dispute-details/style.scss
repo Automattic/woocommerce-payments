@@ -10,21 +10,7 @@
 
 		.dispute-summary-row {
 			margin: 24px 0;
-			.woocommerce-list__item-text {
-				display: flex;
-				height: 40px;
-				flex-direction: column;
-				justify-content: space-between;
-				align-items: flex-start;
-			}
-			.woocommerce-list__item-title {
-				text-transform: uppercase;
-				color: $gray-700;
-				font-size: 11px;
-				font-style: normal;
-				font-weight: 600;
-				line-height: 16px; /* 145.455% */
-			}
+
 			.response-date {
 				display: flex;
 				align-items: center;
