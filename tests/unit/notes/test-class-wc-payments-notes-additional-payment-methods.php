@@ -7,7 +7,6 @@
 
 /**
  * Class WC_Payments_Notes_Additional_Payment_Methods tests.
- * @group underTest
  */
 class WC_Payments_Notes_Additional_Payment_Methods_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
