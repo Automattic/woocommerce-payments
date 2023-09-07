@@ -495,29 +495,8 @@ class WC_Payments_Account {
 		return [
 			'isEnabled'        => $account['progressive_onboarding']['is_enabled'] ?? false,
 			'isComplete'       => $account['progressive_onboarding']['is_complete'] ?? false,
-			'isInProgress'     => $account['progressive_onboarding']['is_enabled'] && ! $account['progressive_onboarding']['is_complete'] ?? false,
 			'isNewFlowEnabled' => WC_Payments_Utils::should_use_progressive_onboarding_flow(),
 		];
-	}
-
-	/**
-	 * Determine whether Progressive Onboarding is enabled for this account.
-	 *
-	 * @return boolean
-	 */
-	public function is_progressive_onboarding_enabled(): bool {
-		$account = $this->get_cached_account_data();
-		return $account['progressive_onboarding']['is_enabled'] ?? false;
-	}
-
-	/**
-	 * Determine whether Progressive Onboarding is complete for this account.
-	 *
-	 * @return boolean
-	 */
-	public function is_progressive_onboarding_complete(): bool {
-		$account = $this->get_cached_account_data();
-		return $account['progressive_onboarding']['is_complete'] ?? false;
 	}
 
 	/**
@@ -527,7 +506,8 @@ class WC_Payments_Account {
 	 */
 	public function is_progressive_onboarding_in_progress(): bool {
 		$account = $this->get_cached_account_data();
-		return $account['progressive_onboarding']['is_enabled'] && ! $account['progressive_onboarding']['is_complete'] ?? false;
+		return $account['progressive_onboarding']['is_enabled'] ?? false
+			&& ! $account['progressive_onboarding']['is_complete'] ?? false;
 	}
 
 	/**

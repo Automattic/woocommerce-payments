@@ -62,12 +62,12 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 		}
 
 		// If the account hasn't completed intitial Stripe onboarding, do not add the note.
-		if ( ! self::$account->is_account_partially_onboarded() ) {
+		if ( self::$account->is_account_partially_onboarded() ) {
 			return;
 		}
 
 		// If this is a PO account which has not yet completed full onboarding, do not add the note.
-		if ( ! self::$account->is_progressive_onboarding_in_progress() ) {
+		if ( self::$account->is_progressive_onboarding_in_progress() ) {
 			return;
 		}
 
