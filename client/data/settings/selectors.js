@@ -238,7 +238,7 @@ export const getIsStripeBillingEnabled = ( state ) => {
 	return getSettings( state ).is_stripe_billing_enabled || false;
 };
 
-export const getIsStripeBillingMigrationInProcess = ( state ) => {
+export const getIsStripeBillingMigrationInProgress = ( state ) => {
 	return getSettings( state ).is_migrating_stripe_billing || false;
 };
 

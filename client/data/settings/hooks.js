@@ -629,7 +629,7 @@ export const useStripeBillingMigration = () => {
 
 	return useSelect( ( select ) => {
 		const { getStripeBillingSubscriptionCount } = select( STORE_NAME );
-		const { getIsStripeBillingMigrationInProcess } = select( STORE_NAME );
+		const { getIsStripeBillingMigrationInProgress } = select( STORE_NAME );
 		const { isResolving } = select( STORE_NAME );
 		const hasResolved = select( STORE_NAME ).hasFinishedResolution(
 			'scheduleStripeBillingMigration'
@@ -637,7 +637,7 @@ export const useStripeBillingMigration = () => {
 		const { getStripeBillingMigratedCount } = select( STORE_NAME );
 
 		return [
-			getIsStripeBillingMigrationInProcess(),
+			getIsStripeBillingMigrationInProgress(),
 			getStripeBillingMigratedCount(),
 			getStripeBillingSubscriptionCount(),
 			submitStripeBillingSubscriptionMigration,
