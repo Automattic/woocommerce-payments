@@ -161,6 +161,9 @@ class WC_Payments_Checkout {
 		// Needed to init the hooks.
 		WC_Checkout::instance();
 
+		// The registered card gateway is more reliable than $this->gateway, but if it isn't available for any reason, fall back to the gateway provided to this checkout class.
+		$gateway = WC_Payments::get_registered_card_gateway() ?? $this->gateway;
+
 		$js_config = [
 			'publishableKey'                 => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
 			'testMode'                       => WC_Payments::mode()->is_test(),
@@ -176,7 +179,7 @@ class WC_Payments_Checkout {
 			'genericErrorMessage'            => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
 			'fraudServices'                  => $this->account->get_fraud_services_config(),
 			'features'                       => $this->gateway->supports,
-			'forceNetworkSavedCards'         => WC_Payments::is_network_saved_cards_enabled() || WC_Payments::get_registered_card_gateway()->should_use_stripe_platform_on_checkout_page(),
+			'forceNetworkSavedCards'         => WC_Payments::is_network_saved_cards_enabled() || $gateway->should_use_stripe_platform_on_checkout_page(),
 			'locale'                         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 			'isPreview'                      => is_preview(),
 			'isUPEEnabled'                   => WC_Payments_Features::is_upe_enabled(),
