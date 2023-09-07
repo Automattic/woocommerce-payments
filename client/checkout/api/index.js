@@ -695,9 +695,9 @@ export default class WCPayAPI {
 			_wpnonce: nonce,
 			email: userEmail,
 			user_session: woopayUserSession,
-			order_id: window.wcpayConfig.order_id,
-			key: window.wcpayConfig.key,
-			billing_email: window.wcpayConfig.billing_email,
+			order_id: getConfig( 'order_id' ),
+			key: getConfig( 'key' ),
+			billing_email: getConfig( 'billing_email' ),
 		} );
 	}
 

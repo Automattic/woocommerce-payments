@@ -27,6 +27,9 @@ describe( 'WCPayAPI', () => {
 			email: 'foo@bar.com',
 			user_session: 'qwerty123',
 			pay_for_order: null,
+			order_id: 1,
+			key: 'testkey',
+			billing_email: 'test@example.com',
 		} );
 	} );
 } );
