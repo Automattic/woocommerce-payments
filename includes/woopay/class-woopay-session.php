@@ -333,6 +333,8 @@ class WooPay_Session {
 		}
 
 		if ( 0 !== $user->ID ) {
+			// Multicurrency selection is stored on user meta when logged in and WC session when logged out.
+			// This code just makes sure that currency selection is available on WC session for WooPay.
 			$currency      = get_user_meta( $user->ID, MultiCurrency::CURRENCY_META_KEY, true );
 			$currency_code = strtoupper( $currency );
 
