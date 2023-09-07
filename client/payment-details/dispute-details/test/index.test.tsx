@@ -202,8 +202,7 @@ describe( 'DisputeDetails', () => {
 			/The cardholder claims this is an unauthorized transaction/,
 			{ ignore: '.a11y-speak-region' }
 		);
-
-    // Render the staged evidence message
+		// Render the staged evidence message
 		screen.getByText(
 			/You initiated a dispute a challenge to this dispute/,
 			{ ignore: '.a11y-speak-region' }

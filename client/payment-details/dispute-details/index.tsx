@@ -29,14 +29,13 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 	const countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
 	const hasStagedEvidence = dispute.evidence_details?.has_evidence;
 
-  
 	if ( isAwaitingResponse( dispute.status ) ) {
 		return (
 			<div className="transaction-details-dispute-details-wrapper">
 				<Card>
 					<CardBody className="transaction-details-dispute-details-body">
 						{ countdownDays >= 0 && (
-              <>
+							<>
 								<DisputeNotice
 									dispute={ dispute }
 									urgent={ countdownDays <= 2 }
