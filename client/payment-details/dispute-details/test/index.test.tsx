@@ -145,6 +145,37 @@ describe( 'DisputeDetails', () => {
 			{ ignore: '.a11y-speak-region' }
 		);
 
+		// Don't render the staged evidence message
+		expect(
+			screen.queryByText(
+				/You initiated a dispute a challenge to this dispute/,
+				{ ignore: '.a11y-speak-region' }
+			)
+		).toBeNull();
+	} );
+
+	test( 'correctly renders dispute details for a dispute with staged evidence', () => {
+		const charge = getBaseCharge();
+		charge.dispute.evidence_details = {
+			has_evidence: true,
+			due_by: 1694303999,
+			past_due: false,
+			submission_count: 0,
+		};
+
+		render( <DisputeDetails dispute={ charge.dispute } /> );
+
+		screen.getByText(
+			/The cardholder claims this is an unauthorized transaction/,
+			{ ignore: '.a11y-speak-region' }
+		);
+
+    // Render the staged evidence message
+		screen.getByText(
+			/You initiated a dispute a challenge to this dispute/,
+			{ ignore: '.a11y-speak-region' }
+		);
+
 		// Dispute Summary Row
 		expect(
 			screen.getByText( /Dispute Amount/i ).nextSibling
