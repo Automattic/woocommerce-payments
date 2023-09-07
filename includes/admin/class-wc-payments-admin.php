@@ -1100,7 +1100,7 @@ class WC_Payments_Admin {
 			</td>
 			<td width="1%"></td>
 			<td class="total">
-				-<?php echo wp_kses( wc_price( $order->get_meta( '_wcpay_transaction_fee' ), [ 'currency' => $order->get_currency() ] ), 'post' ); ?>
+				<?php echo wp_kses( wc_price( -$order->get_meta( '_wcpay_transaction_fee' ), [ 'currency' => $order->get_currency() ] ), 'post' ); ?>
 			</td>
 		</tr>
 		<?php
