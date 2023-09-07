@@ -11,6 +11,7 @@ import MigrationInProgressNotice from './migration-progress-notice';
 import MigrateOptionNotice from './migrate-option-notice';
 import MigrateAutomaticallyNotice from './migrate-automatically-notice';
 import MigrationCompletedNotice from './migrate-completed-notice';
+import './style.scss';
 
 /**
  * Renders the Stripe Billing notices.
