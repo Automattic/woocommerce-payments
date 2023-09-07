@@ -121,6 +121,13 @@ class WC_Subscription extends WC_Mock_WC_Data {
 	public $has_product = false;
 
 	/**
+	 * The customer ID for the subscription.
+	 *
+	 * @var null|int
+	 */
+	public $customer_id = null;
+
+	/**
 	 * A helper function for handling function calls not yet implimented on this helper.
 	 *
 	 * Attempts to get the value by checking if it has been set as an object property.
@@ -214,6 +221,10 @@ class WC_Subscription extends WC_Mock_WC_Data {
 		return $this->currency;
 	}
 
+	public function set_currency( $currency = 'USD' ) {
+		$this->currency = $currency;
+	}
+
 	public function add_order_note( $note = '' ) {
 		// do nothing.
 	}
@@ -256,5 +267,14 @@ class WC_Subscription extends WC_Mock_WC_Data {
 
 	public function has_product() {
 		return $this->has_product;
+	}
+
+	public function get_customer_id() {
+		return $this->customer_id ?? get_current_user_id();
+	}
+
+	public function set_customer_id( $customer_id = null ) {
+		$this->customer_id = $customer_id ?? get_current_user_id();
+
 	}
 }
