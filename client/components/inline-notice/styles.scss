@@ -1,0 +1,136 @@
+$is-info: #007cba;
+$is-info-hover: #006ba1;
+$is-warning: #f0b849;
+$is-warning-hover: #a16f00;
+$is-error: #cc1818;
+$is-error-hover: #b30f0f;
+$is-success: #00a32a;
+$is-success-hover: #00982a;
+
+.wcpay-inline-notice.components-notice {
+	margin: $gap-large 0;
+	padding: 11px 0 11px 17px;
+	border-left: none;
+	border-radius: 2px;
+	justify-content: flex-start;
+
+	/* Margin exceptions */
+	@at-root .components-modal__header + &,
+		&:first-child {
+		margin-top: 0;
+	}
+
+	&:last-child {
+		margin-bottom: 0;
+	}
+
+	/* Shared styles for all variants */
+	.wcpay-inline-notice__icon {
+		display: flex;
+		align-items: center;
+		align-self: flex-start;
+		min-height: auto;
+		min-width: auto;
+		margin-right: 5px;
+		svg {
+			width: 22px;
+			height: 22px;
+		}
+	}
+	.components-notice__content {
+		margin-top: 2px;
+		margin-bottom: 2px;
+	}
+	.wcpay-inline-notice__content__actions {
+		padding-top: 12px;
+	}
+	a.wcpay-inline-notice__action {
+		text-decoration: none;
+	}
+	&.is-dismissible {
+		padding-right: 12px;
+	}
+	.components-notice__dismiss {
+		height: 24px;
+		width: 24px;
+		svg {
+			width: 15px;
+			height: 15px;
+			fill: $gray-900;
+		}
+	}
+
+	/* Specific styles for each variant */
+	&.is-info {
+		background-color: #f0f6fc;
+		.wcpay-inline-notice__icon svg {
+			fill: $is-info;
+		}
+		button.wcpay-inline-notice__action {
+			box-shadow: inset 0 0 0 1px $is-info;
+			&:hover {
+				box-shadow: inset 0 0 0 1px $is-info-hover;
+			}
+		}
+		.wcpay-inline-notice__action {
+			color: $is-info;
+			&:hover {
+				color: $is-info-hover;
+			}
+		}
+	}
+	&.is-warning {
+		background-color: #fcf9e8;
+		.wcpay-inline-notice__icon svg {
+			fill: $is-warning;
+		}
+		button.wcpay-inline-notice__action {
+			box-shadow: inset 0 0 0 1px $is-warning;
+			&:hover {
+				box-shadow: inset 0 0 0 1px $is-warning-hover;
+			}
+		}
+		.wcpay-inline-notice__action {
+			color: $is-warning;
+			&:hover {
+				color: $is-warning-hover;
+			}
+		}
+	}
+	&.is-error {
+		background-color: #fcf0f1;
+		.wcpay-inline-notice__icon svg {
+			fill: $is-error;
+		}
+		button.wcpay-inline-notice__action {
+			box-shadow: inset 0 0 0 1px $is-error;
+			&:hover {
+				box-shadow: inset 0 0 0 1px $is-error-hover;
+			}
+		}
+		.wcpay-inline-notice__action {
+			color: $is-error;
+			&:hover {
+				color: $is-error-hover;
+			}
+		}
+	}
+	&.is-success {
+		background-color: #edfaef;
+		.wcpay-inline-notice__icon svg {
+			fill: $is-success;
+		}
+		button.wcpay-inline-notice__action {
+			box-shadow: inset 0 0 0 1px $is-success;
+			&:hover {
+				box-shadow: inset 0 0 0 1px $is-success-hover;
+			}
+		}
+		.wcpay-inline-notice__action {
+			color: $is-success;
+			&:hover {
+				color: $is-success-hover;
+			}
+		}
+	}
+}

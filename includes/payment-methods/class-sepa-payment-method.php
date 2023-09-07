@@ -25,7 +25,7 @@ class Sepa_Payment_Method extends UPE_Payment_Method {
 		parent::__construct( $token_service );
 		$this->stripe_id   = self::PAYMENT_METHOD_STRIPE_ID;
 		$this->title       = 'SEPA Direct Debit';
-		$this->is_reusable = true;
+		$this->is_reusable = false;
 		$this->currencies  = [ 'EUR' ];
 		$this->icon_url    = plugins_url( 'assets/images/payment-methods/sepa-debit.svg', WCPAY_PLUGIN_FILE );
 	}

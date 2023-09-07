@@ -59,6 +59,7 @@ class WC_Payments_API_Client {
 	const TRACKING_API                 = 'tracking';
 	const PRODUCTS_API                 = 'products';
 	const PRICES_API                   = 'products/prices';
+	const PAYMENT_PROCESS_CONFIG_API   = 'payment_process_config';
 	const INVOICES_API                 = 'invoices';
 	const SUBSCRIPTIONS_API            = 'subscriptions';
 	const SUBSCRIPTION_ITEMS_API       = 'subscriptions/items';

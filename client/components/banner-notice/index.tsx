@@ -1,111 +1,197 @@
 /**
+ * Based on the @wordpress/components `Notice` component.
+ * Adjusted to meet WooCommerce Admin Design Library.
+ */
+
+/**
  * External dependencies
  */
-import * as React from 'react';
-import { Flex, FlexItem, Icon, Notice, Button } from '@wordpress/components';
+import React from 'react';
+
+import { __ } from '@wordpress/i18n';
+import { useEffect, renderToString } from '@wordpress/element';
+import { speak } from '@wordpress/a11y';
 import classNames from 'classnames';
+import { Icon, Button } from '@wordpress/components';
+import { check, info } from '@wordpress/icons';
+import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
+import CloseIcon from 'gridicons/dist/cross-small';
 
 /**
  * Internal dependencies.
  */
-import './styles.scss';
+import './style.scss';
+
+const statusIconMap = {
+	success: check,
+	error: NoticeOutlineIcon,
+	warning: NoticeOutlineIcon,
+	info: info,
+};
+
+type Status = keyof typeof statusIconMap;
 
 /**
- * Props for the BannerNotice component.
- *
- * @typedef {Object} BannerNoticeProps
- * @property {Icon.IconType<unknown>} icon The icon to display.
+ * Custom hook which announces the message with politeness based on status,
+ * if a valid message is provided.
  */
-interface BannerNoticeProps extends Notice.Props {
-	icon?: Icon.IconType< unknown >;
+const useSpokenMessage = ( status?: string, message?: React.ReactNode ) => {
+	const spokenMessage =
+		typeof message === 'string' ? message : renderToString( message );
+	const politeness = status === 'error' ? 'assertive' : 'polite';
+
+	useEffect( () => {
+		if ( spokenMessage ) {
+			speak( spokenMessage, politeness );
+		}
+	}, [ spokenMessage, politeness ] );
+};
+
+interface Props {
+	/**
+	 * A CSS `class` to give to the wrapper element.
+	 */
+	className?: string;
+	/**
+	 * The displayed message of a notice. Also used as the spoken message for
+	 * assistive technology, unless `spokenMessage` is provided as an alternative message.
+	 */
+	children: React.ReactNode;
+	/**
+	 * Determines the color of the notice: `warning` (yellow),
+	 * `success` (green), `error` (red), or `'info'`.
+	 * By default `'info'` will be blue, but if there is a parent Theme component
+	 * with an accent color prop, the notice will take on that color instead.
+	 *
+	 * @default 'info'
+	 */
+	status?: Status;
+	/**
+	 * Whether to display the default icon based on status or the icon to display.
+	 * Supported values are: boolean, JSX.Element and `undefined`.
+	 *
+	 * @default undefined
+	 */
+	icon?: boolean | JSX.Element;
+	/**
+	 * Whether the notice should be dismissible or not.
+	 *
+	 * @default true
+	 */
+	isDismissible?: boolean;
+	/**
+	 * An array of action objects. Each member object should contain:
+	 *
+	 * - `label`: `string` containing the text of the button/link
+	 * - `url`: `string` OR `onClick`: `( event: SyntheticEvent ) => void` to specify
+	 *    what the action does.
+	 * - `className`: `string` (optional) to add custom classes to the button styles.
+	 * - `variant`: `'primary' | 'secondary' | 'link'` (optional) You can denote a
+	 *    primary button action for a notice by passing a value of `primary`.
+	 *
+	 * The default appearance of an action button is inferred based on whether
+	 * `url` or `onClick` are provided, rendering the button as a link if
+	 * appropriate. If both props are provided, `url` takes precedence, and the
+	 * action button will render as an anchor tag.
+	 *
+	 * @default []
+	 */
+	actions?: ReadonlyArray< {
+		label: string;
+		className?: string;
+		variant?: Button.Props[ 'variant' ];
+		url?: string;
+		onClick?: React.MouseEventHandler< HTMLAnchorElement >;
+	} >;
+	/**
+	 * Function called when dismissing the notice
+	 *
+	 * @default undefined
+	 */
+	onRemove?: () => void;
 }
 
-/**
- * Renders a banner notice.
- *
- * @param {BannerNoticeProps} props                    Banner notice props.
- * @param {Icon.IconType<unknown>} props.icon          The icon to display. Supports all icons from @wordpress/icons.
- * @param {Notice.Props} props.noticeProps             The props for the Notice component.
- * @param {string} props.noticeProps.status            The status of the notice.
- * @param {boolean} props.noticeProps.isDismissible    Whether the notice is dismissible.
- * @param {string} props.noticeProps.className         The class name for the notice.
- * @param {React.ReactNode} props.noticeProps.children The children of the notice.
- * @param {Notice.Action[]} props.noticeProps.actions  The actions for the notice.
- *
- * @return {JSX.Element} Rendered banner notice.
- */
-function BannerNotice( props: BannerNoticeProps ): JSX.Element {
-	const { icon, ...noticeProps } = props;
+const BannerNotice: React.FC< Props > = ( {
+	icon,
+	children,
+	actions = [],
+	className,
+	status = 'info',
+	isDismissible = true,
+	onRemove,
+} ) => {
+	useSpokenMessage( status, children );
 
-	// Add the default class name to the notice.
-	noticeProps.className = classNames(
+	const iconToDisplay = icon === true ? statusIconMap[ status ] : icon;
+
+	const classes = classNames(
+		className,
 		'wcpay-banner-notice',
-		`wcpay-banner-${ noticeProps.status }-notice`,
-		noticeProps.className
+		'is-' + status
 	);
 
-	// Convert the notice actions to buttons or link elements.
-	let actions = null;
-	if ( noticeProps.actions ) {
-		const actionClass = 'wcpay-banner-notice__action';
-		actions = noticeProps.actions.map( ( action, index ) => {
-			// Actions that contain a URL will be rendered as a link.
-			// This matches WP Notice component behavior.
-			if ( 'url' in action ) {
-				return (
-					<a
-						key={ index }
-						className={ actionClass }
-						href={ action.url }
-					>
-						{ action.label }
-					</a>
-				);
-			}
-
-			return (
-				<Button
-					key={ index }
-					className={ actionClass }
-					onClick={ action.onClick }
-				>
-					{ action.label }
-				</Button>
-			);
-		} );
-
-		// We'll render the actions ourselves so we need to remove them from the props sent to the notice component.
-		delete noticeProps.actions;
-	}
+	const handleRemove = () => onRemove?.();
 
 	return (
-		<Notice { ...noticeProps }>
-			<Flex align="center" justify="flex-start">
-				{ icon && (
-					<FlexItem
-						className={ `wcpay-banner-notice__icon wcpay-banner-${ noticeProps.status }-notice__icon` }
-					>
-						<Icon icon={ icon } size={ 24 } />
-					</FlexItem>
+		<div className={ classes }>
+			{ iconToDisplay && (
+				<Icon
+					icon={ iconToDisplay }
+					className="wcpay-banner-notice__icon"
+				/>
+			) }
+			<div className="wcpay-banner-notice__content">
+				{ children }
+				{ actions.length > 0 && (
+					<div className="wcpay-banner-notice__actions">
+						{ actions.map(
+							(
+								{
+									className: buttonCustomClasses,
+									label,
+									variant,
+									onClick,
+									url,
+								},
+								index
+							) => {
+								let computedVariant = variant;
+								if ( variant !== 'primary' ) {
+									computedVariant = ! url
+										? 'secondary'
+										: 'link';
+								}
+
+								return (
+									<Button
+										key={ index }
+										href={ url }
+										variant={ computedVariant }
+										onClick={ url ? undefined : onClick }
+										className={ buttonCustomClasses }
+									>
+										{ label }
+									</Button>
+								);
+							}
+						) }
+					</div>
 				) }
-				<FlexItem
-					className={ `wcpay-banner-notice__content wcpay-banner-${ noticeProps.status }-notice__content` }
-				>
-					{ noticeProps.children }
-					{ actions && (
-						<Flex
-							className="wcpay-banner-notice__content__actions"
-							align="baseline"
-							justify="flex-start"
-							gap={ 4 }
-						>
-							{ actions }
-						</Flex>
+			</div>
+			{ isDismissible && (
+				<Button
+					className="wcpay-banner-notice__dismiss"
+					icon={ CloseIcon }
+					label={ __(
+						'Dismiss this notice',
+						'woocommerce-payments'
 					) }
-				</FlexItem>
-			</Flex>
-		</Notice>
+					onClick={ handleRemove }
+					showTooltip={ false }
+				/>
+			) }
+		</div>
 	);
-}
+};
 
 export default BannerNotice;

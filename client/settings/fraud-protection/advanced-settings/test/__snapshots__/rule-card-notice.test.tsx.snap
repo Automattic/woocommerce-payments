@@ -31,7 +31,7 @@ Object {
     />
     <div>
       <div
-        class="wcpay-banner-notice wcpay-banner-error-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-error components-notice is-error"
+        class="wcpay-inline-notice wcpay-inline-error-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-error components-notice is-error"
       >
         <div
           class="components-notice__content"
@@ -42,7 +42,7 @@ Object {
             data-wp-component="Flex"
           >
             <div
-              class="components-flex-item wcpay-banner-notice__icon wcpay-banner-error-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-error-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -61,7 +61,7 @@ Object {
               </svg>
             </div>
             <div
-              class="components-flex-item wcpay-banner-notice__content wcpay-banner-error-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__content wcpay-inline-error-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -77,7 +77,7 @@ Object {
   </body>,
   "container": <div>
     <div
-      class="wcpay-banner-notice wcpay-banner-error-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-error components-notice is-error"
+      class="wcpay-inline-notice wcpay-inline-error-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-error components-notice is-error"
     >
       <div
         class="components-notice__content"
@@ -88,7 +88,7 @@ Object {
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item wcpay-banner-notice__icon wcpay-banner-error-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-error-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -107,7 +107,7 @@ Object {
             </svg>
           </div>
           <div
-            class="components-flex-item wcpay-banner-notice__content wcpay-banner-error-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__content wcpay-inline-error-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -205,7 +205,7 @@ Object {
     </div>
     <div>
       <div
-        class="wcpay-banner-notice wcpay-banner-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
+        class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
       >
         <div
           class="components-notice__content"
@@ -216,7 +216,7 @@ Object {
             data-wp-component="Flex"
           >
             <div
-              class="components-flex-item wcpay-banner-notice__icon wcpay-banner-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -234,7 +234,7 @@ Object {
               </svg>
             </div>
             <div
-              class="components-flex-item wcpay-banner-notice__content wcpay-banner-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -250,7 +250,7 @@ Object {
   </body>,
   "container": <div>
     <div
-      class="wcpay-banner-notice wcpay-banner-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
+      class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
     >
       <div
         class="components-notice__content"
@@ -261,7 +261,7 @@ Object {
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item wcpay-banner-notice__icon wcpay-banner-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -279,7 +279,7 @@ Object {
             </svg>
           </div>
           <div
-            class="components-flex-item wcpay-banner-notice__content wcpay-banner-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -377,7 +377,7 @@ Object {
     </div>
     <div>
       <div
-        class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+        class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
       >
         <div
           class="components-notice__content"
@@ -388,7 +388,7 @@ Object {
             data-wp-component="Flex"
           >
             <div
-              class="components-flex-item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -407,7 +407,7 @@ Object {
               </svg>
             </div>
             <div
-              class="components-flex-item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -423,7 +423,7 @@ Object {
   </body>,
   "container": <div>
     <div
-      class="wcpay-banner-notice wcpay-banner-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+      class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
     >
       <div
         class="components-notice__content"
@@ -434,7 +434,7 @@ Object {
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item wcpay-banner-notice__icon wcpay-banner-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -453,7 +453,7 @@ Object {
             </svg>
           </div>
           <div
-            class="components-flex-item wcpay-banner-notice__content wcpay-banner-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >

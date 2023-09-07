@@ -4,11 +4,18 @@
  * External dependencies
  */
 import React from 'react';
+import moment from 'moment';
+import { __ } from '@wordpress/i18n';
+import { Card, CardBody } from '@wordpress/components';
+import { edit } from '@wordpress/icons';
+
 /**
  * Internal dependencies
  */
 import type { Dispute } from 'wcpay/types/disputes';
-import { Card, CardBody } from '@wordpress/components';
+import DisputeNotice from './dispute-notice';
+import { isAwaitingResponse } from 'wcpay/disputes/utils';
+import InlineNotice from 'components/inline-notice';
 import './style.scss';
 
 interface DisputeDetailsProps {
@@ -16,11 +23,35 @@ interface DisputeDetailsProps {
 }
 
 const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
+	const now = moment();
+	const dueBy = moment.unix( dispute.evidence_details?.due_by ?? 0 );
+	const countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
+	const hasStagedEvidence = dispute.evidence_details?.has_evidence;
+
 	return (
 		<div className="transaction-details-dispute-details-wrapper">
 			<Card>
-				<CardBody>
-					<div></div>
+				<CardBody className="transaction-details-dispute-details-body">
+					{ isAwaitingResponse( dispute.status ) &&
+						countdownDays >= 0 && (
+							<>
+								<DisputeNotice
+									dispute={ dispute }
+									urgent={ countdownDays <= 2 }
+								/>
+								{ hasStagedEvidence && (
+									<InlineNotice
+										icon={ edit }
+										isDismissible={ false }
+									>
+										{ __(
+											`You initiated a dispute a challenge to this dispute. Click 'Continue with challenge' to proceed with your drafted response.`,
+											'woocommerce-payments'
+										) }
+									</InlineNotice>
+								) }
+							</>
+						) }
 				</CardBody>
 			</Card>
 		</div>
