@@ -19,8 +19,6 @@ import interpolateComponents from '@automattic/interpolate-components';
 import './style.scss';
 import CardNotice from 'wcpay/components/card-notice';
 
-declare const window: any;
-
 interface MissingOrderNoticeProps {
 	isLoading: boolean;
 	amount: string;

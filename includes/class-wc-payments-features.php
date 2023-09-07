@@ -21,6 +21,7 @@ class WC_Payments_Features {
 	const AUTH_AND_CAPTURE_FLAG_NAME        = '_wcpay_feature_auth_and_capture';
 	const PROGRESSIVE_ONBOARDING_FLAG_NAME  = '_wcpay_feature_progressive_onboarding';
 	const MC_ORDER_META_HELPER_FLAG_NAME    = '_wcpay_feature_mc_order_meta_helper';
+	const STREAMLINE_REFUNDS_FLAG_NAME      = '_wcpay_feature_streamline_refunds';
 
 	/**
 	 * Checks whether any UPE gateway is enabled.
@@ -120,6 +121,15 @@ class WC_Payments_Features {
 		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
 
 		return is_array( $account ) && ( $account['payments_enabled'] ?? false );
+	}
+
+	/**
+	 * Checks whether streamline refunds is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_streamline_refunds_enabled(): bool {
+		return '1' === get_option( self::STREAMLINE_REFUNDS_FLAG_NAME, '0' );
 	}
 
 	/**
@@ -333,6 +343,7 @@ class WC_Payments_Features {
 				'isAuthAndCaptureEnabled' => self::is_auth_and_capture_enabled(),
 				'progressiveOnboarding'   => self::is_progressive_onboarding_enabled(),
 				'mcOrderMetaHelper'       => self::is_mc_order_meta_helper_enabled(),
+				'isRefundControlsEnabled' => self::is_streamline_refunds_enabled(),
 			]
 		);
 	}
