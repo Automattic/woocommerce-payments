@@ -12,15 +12,27 @@ import userEvent from '@testing-library/user-event';
 import AdvancedSettings from '..';
 import { useSettings } from 'wcpay/data';
 
+jest.mock( 'wcpay/data', () => ( {
+	useSettings: jest.fn(),
+} ) );
+
 describe( 'AdvancedSettings', () => {
+	beforeEach( () => {
+		useSettings.mockReturnValue( {
+			saveSettings: () => Promise.resolve( true ),
+			isSaving: false,
+			isLoading: false,
+		} );
+	} );
+
+	afterEach( () => {
+		jest.clearAllMocks();
+	} );
+
 	it( 'toggles the advanced settings section', () => {
 		global.wcpaySettings = {
 			isClientEncryptionEligible: true,
 		};
-
-		useSettings.mockReturnValue( {
-			isLoading: false,
-		} );
 
 		render( <AdvancedSettings /> );
 
