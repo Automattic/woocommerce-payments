@@ -1,10 +1,10 @@
 === WooPayments - Fully Integrated Solution Built and Supported by Woo ===
 Contributors: woocommerce, automattic
 Tags: payment gateway, payment, apple pay, credit card, google pay, woocommerce payments
-Requires at least: 6.1
-Tested up to: 6.3
+Requires at least: 6.0
+Tested up to: 6.2
 Requires PHP: 7.3
-Stable tag: 6.4.0
+Stable tag: 6.4.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -38,8 +38,8 @@ Our global support team is available to answer questions you may have about WooP
 
 = Requirements =
 
-* WordPress 6.1 or newer.
-* WooCommerce 7.8 or newer.
+* WordPress 6.0 or newer.
+* WooCommerce 7.6 or newer.
 * PHP 7.3 or newer is recommended.
 
 = Try it now =
@@ -93,6 +93,14 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 6.4.1 - 2023-09-06 =
+* Fix - checkout processing when fields are hidden via customizer
+* Fix - Potential fatal error when viewing WooCommerce home because we try to check if store has been fully onboarded but account service is not yet initialized.
+* Fix - Resolved an issue with WCPay Subscription orders being set to failed during payment processing when Woo Subscriptions plugin is active.
+* Fix - Use the gateway from the Checkout class in case the main registered gateway isn't initialized for some reason.
+* Dev - Revert - Bump minimum required version of WooCommerce to 8.0.0 and WP to 6.1
+* Dev - Setting the minimum required version of WooCommerce back to 7.8.0 and WP to 6.0
 
 = 6.4.0 - 2023-08-31 =
 * Add - Added the Transactions reporting endpoint
