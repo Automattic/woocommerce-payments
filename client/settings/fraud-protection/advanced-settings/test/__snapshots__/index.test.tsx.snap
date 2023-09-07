@@ -224,7 +224,7 @@ Object {
                     <p
                       class="fraud-protection-rule-card-description"
                     >
-                      This filter screens for 
+                      This filter screens for
                       <a
                         data-link-type="external"
                         href="https://simple.wikipedia.org/wiki/IP_address"
@@ -232,7 +232,7 @@ Object {
                       >
                         IP addresses
                       </a>
-                       outside of your 
+                       outside of your
                       <a
                         href="admin.php?page=wc-settings&tab=general"
                       >
@@ -382,7 +382,7 @@ Object {
                     <p
                       class="fraud-protection-rule-card-description"
                     >
-                      This filter screens for customer's 
+                      This filter screens for customer's
                       <a
                         data-link-type="external"
                         href="https://simple.wikipedia.org/wiki/IP_address"
@@ -976,10 +976,10 @@ Object {
                           data-wp-c16t="true"
                           data-wp-component="FlexItem"
                         >
-                          For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
+                          For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.
                           <a
                             data-link-type="external"
-                            href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                            href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/#advanced-configuration"
                             target="_blank"
                           >
                             Learn more
@@ -1222,7 +1222,7 @@ Object {
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens for 
+                    This filter screens for
                     <a
                       data-link-type="external"
                       href="https://simple.wikipedia.org/wiki/IP_address"
@@ -1230,7 +1230,7 @@ Object {
                     >
                       IP addresses
                     </a>
-                     outside of your 
+                     outside of your
                     <a
                       href="admin.php?page=wc-settings&tab=general"
                     >
@@ -1380,7 +1380,7 @@ Object {
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens for customer's 
+                    This filter screens for customer's
                     <a
                       data-link-type="external"
                       href="https://simple.wikipedia.org/wiki/IP_address"
@@ -1974,10 +1974,10 @@ Object {
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
-                        For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
+                        For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.
                         <a
                           data-link-type="external"
-                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/#advanced-configuration"
                           target="_blank"
                         >
                           Learn more
@@ -2105,7 +2105,7 @@ Object {
       id="a11y-speak-polite"
       style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
     >
-                For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.  Learn more   
+                For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.  Learn more
     </div>
     <div>
       <div>
@@ -2285,7 +2285,7 @@ Object {
                     <p
                       class="fraud-protection-rule-card-description"
                     >
-                      This filter screens for 
+                      This filter screens for
                       <a
                         data-link-type="external"
                         href="https://simple.wikipedia.org/wiki/IP_address"
@@ -2293,7 +2293,7 @@ Object {
                       >
                         IP addresses
                       </a>
-                       outside of your 
+                       outside of your
                       <a
                         href="admin.php?page=wc-settings&tab=general"
                       >
@@ -2443,7 +2443,7 @@ Object {
                     <p
                       class="fraud-protection-rule-card-description"
                     >
-                      This filter screens for customer's 
+                      This filter screens for customer's
                       <a
                         data-link-type="external"
                         href="https://simple.wikipedia.org/wiki/IP_address"
@@ -2910,10 +2910,10 @@ Object {
                           data-wp-c16t="true"
                           data-wp-component="FlexItem"
                         >
-                          For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
+                          For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.
                           <a
                             data-link-type="external"
-                            href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                            href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/#advanced-configuration"
                             target="_blank"
                           >
                             Learn more
@@ -3140,7 +3140,7 @@ Object {
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens for 
+                    This filter screens for
                     <a
                       data-link-type="external"
                       href="https://simple.wikipedia.org/wiki/IP_address"
@@ -3148,7 +3148,7 @@ Object {
                     >
                       IP addresses
                     </a>
-                     outside of your 
+                     outside of your
                     <a
                       href="admin.php?page=wc-settings&tab=general"
                     >
@@ -3298,7 +3298,7 @@ Object {
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens for customer's 
+                    This filter screens for customer's
                     <a
                       data-link-type="external"
                       href="https://simple.wikipedia.org/wiki/IP_address"
@@ -3765,10 +3765,10 @@ Object {
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
-                        For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
+                        For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.
                         <a
                           data-link-type="external"
-                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/#advanced-configuration"
                           target="_blank"
                         >
                           Learn more
@@ -3897,7 +3897,7 @@ Object {
       id="a11y-speak-polite"
       style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
     >
-                For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.  Learn more   
+                For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.  Learn more
     </div>
     <div>
       <div
@@ -4042,7 +4042,7 @@ Object {
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens for 
+                    This filter screens for
                     <a
                       data-link-type="external"
                       href="https://simple.wikipedia.org/wiki/IP_address"
@@ -4050,7 +4050,7 @@ Object {
                     >
                       IP addresses
                     </a>
-                     outside of your 
+                     outside of your
                     <a
                       href="admin.php?page=wc-settings&tab=general"
                     >
@@ -4200,7 +4200,7 @@ Object {
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens for customer's 
+                    This filter screens for customer's
                     <a
                       data-link-type="external"
                       href="https://simple.wikipedia.org/wiki/IP_address"
@@ -4667,10 +4667,10 @@ Object {
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
-                        For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
+                        For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.
                         <a
                           data-link-type="external"
-                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/#advanced-configuration"
                           target="_blank"
                         >
                           Learn more
@@ -4860,7 +4860,7 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for 
+                  This filter screens for
                   <a
                     data-link-type="external"
                     href="https://simple.wikipedia.org/wiki/IP_address"
@@ -4868,7 +4868,7 @@ Object {
                   >
                     IP addresses
                   </a>
-                   outside of your 
+                   outside of your
                   <a
                     href="admin.php?page=wc-settings&tab=general"
                   >
@@ -5018,7 +5018,7 @@ Object {
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for customer's 
+                  This filter screens for customer's
                   <a
                     data-link-type="external"
                     href="https://simple.wikipedia.org/wiki/IP_address"
@@ -5485,10 +5485,10 @@ Object {
                       data-wp-c16t="true"
                       data-wp-component="FlexItem"
                     >
-                      For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
+                      For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.
                       <a
                         data-link-type="external"
-                        href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                        href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/#advanced-configuration"
                         target="_blank"
                       >
                         Learn more
@@ -5615,7 +5615,7 @@ Object {
       id="a11y-speak-polite"
       style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
     >
-                For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.  Learn more   
+                For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.  Learn more
     </div>
     <div>
       <div>
@@ -5778,7 +5778,7 @@ Object {
                     <p
                       class="fraud-protection-rule-card-description"
                     >
-                      This filter screens for 
+                      This filter screens for
                       <a
                         data-link-type="external"
                         href="https://simple.wikipedia.org/wiki/IP_address"
@@ -5786,7 +5786,7 @@ Object {
                       >
                         IP addresses
                       </a>
-                       outside of your 
+                       outside of your
                       <a
                         href="admin.php?page=wc-settings&tab=general"
                       >
@@ -5936,7 +5936,7 @@ Object {
                     <p
                       class="fraud-protection-rule-card-description"
                     >
-                      This filter screens for customer's 
+                      This filter screens for customer's
                       <a
                         data-link-type="external"
                         href="https://simple.wikipedia.org/wiki/IP_address"
@@ -6484,10 +6484,10 @@ Object {
                           data-wp-c16t="true"
                           data-wp-component="FlexItem"
                         >
-                          For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
+                          For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.
                           <a
                             data-link-type="external"
-                            href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                            href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/#advanced-configuration"
                             target="_blank"
                           >
                             Learn more
@@ -6696,7 +6696,7 @@ Object {
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens for 
+                    This filter screens for
                     <a
                       data-link-type="external"
                       href="https://simple.wikipedia.org/wiki/IP_address"
@@ -6704,7 +6704,7 @@ Object {
                     >
                       IP addresses
                     </a>
-                     outside of your 
+                     outside of your
                     <a
                       href="admin.php?page=wc-settings&tab=general"
                     >
@@ -6854,7 +6854,7 @@ Object {
                   <p
                     class="fraud-protection-rule-card-description"
                   >
-                    This filter screens for customer's 
+                    This filter screens for customer's
                     <a
                       data-link-type="external"
                       href="https://simple.wikipedia.org/wiki/IP_address"
@@ -7402,10 +7402,10 @@ Object {
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
-                        For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
+                        For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.
                         <a
                           data-link-type="external"
-                          href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/#advanced-configuration"
                           target="_blank"
                         >
                           Learn more

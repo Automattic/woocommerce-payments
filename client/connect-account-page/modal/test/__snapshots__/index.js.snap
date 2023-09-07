@@ -51,7 +51,7 @@ exports[`Onboarding: location check dialog renders correctly when continue butto
       <div
         class="woocommerce-payments__onboarding_location_check-modal-message"
       >
-        It appears you're attempting to set up WooPayments from an unsupported country. In order to complete the set up of WooPayments, your store is required to have a business entity in one of the following countries: 
+        It appears you're attempting to set up WooPayments from an unsupported country. In order to complete the set up of WooPayments, your store is required to have a business entity in one of the following countries:
         <ul
           class="woocommerce-list"
           role="menu"
@@ -91,10 +91,10 @@ exports[`Onboarding: location check dialog renders correctly when continue butto
             </div>
           </li>
         </ul>
-         
+
         <a
           data-link-type="external"
-          href="https://woocommerce.com/document/woocommerce-payments/compatibility/countries/"
+          href="https://woocommerce.com/document/woopayments/compatibility/countries/"
           rel="noopener noreferrer"
           target="_blank"
         >
@@ -173,7 +173,7 @@ exports[`Onboarding: location check dialog renders correctly when opened 1`] = `
       <div
         class="woocommerce-payments__onboarding_location_check-modal-message"
       >
-        It appears you're attempting to set up WooPayments from an unsupported country. In order to complete the set up of WooPayments, your store is required to have a business entity in one of the following countries: 
+        It appears you're attempting to set up WooPayments from an unsupported country. In order to complete the set up of WooPayments, your store is required to have a business entity in one of the following countries:
         <ul
           class="woocommerce-list"
           role="menu"
@@ -213,10 +213,10 @@ exports[`Onboarding: location check dialog renders correctly when opened 1`] = `
             </div>
           </li>
         </ul>
-         
+
         <a
           data-link-type="external"
-          href="https://woocommerce.com/document/woocommerce-payments/compatibility/countries/"
+          href="https://woocommerce.com/document/woopayments/compatibility/countries/"
           rel="noopener noreferrer"
           target="_blank"
         >

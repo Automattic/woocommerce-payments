@@ -364,7 +364,7 @@ describe( 'Deposits Overview information', () => {
 			} )
 		).toHaveAttribute(
 			'href',
-			'https://woocommerce.com/document/woocommerce-payments/stripe-capital/overview'
+			'https://woocommerce.com/document/woopayments/stripe-capital/overview/'
 		);
 	} );
 
@@ -428,7 +428,7 @@ describe( 'Deposits Overview information', () => {
 		} );
 		expect( getByRole( 'link', { name: /Why\?/ } ) ).toHaveAttribute(
 			'href',
-			'https://woocommerce.com/document/woocommerce-payments/deposits/deposit-schedule/#section-1'
+			'https://woocommerce.com/document/woopayments/deposits/deposit-schedule/#new-accounts'
 		);
 	} );
 } );
