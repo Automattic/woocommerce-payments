@@ -5,8 +5,6 @@ import React, { useState, useContext, useEffect } from 'react';
 import InlineNotice from 'wcpay/components/inline-notice';
 import { _n, sprintf } from '@wordpress/i18n';
 
-import Loadable from 'wcpay/components/loadable';
-
 /**
  * Internal dependencies
  */
