@@ -201,11 +201,16 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								isLoading={ isLoading }
 								placeholder="Amount placeholder"
 							>
-								{ formatCurrency(
-									charge.amount,
-									charge.currency,
-									balance.currency
-								) }
+								{ renderStorePrice
+									? formatExplicitCurrency(
+											balance.amount,
+											balance.currency
+									  )
+									: formatCurrency(
+											charge.amount,
+											charge.currency,
+											balance.currency
+									  ) }
 								<span className="payment-details-summary__amount-currency">
 									{ charge.currency || 'USD' }
 								</span>
@@ -220,8 +225,9 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 						<div className="payment-details-summary__breakdown">
 							{ renderStorePrice ? (
 								<p>
-									{ formatExplicitCurrency(
-										balance.amount,
+									{ formatCurrency(
+										charge.amount,
+										charge.currency,
 										balance.currency
 									) }
 								</p>
