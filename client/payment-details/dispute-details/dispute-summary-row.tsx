@@ -84,7 +84,7 @@ const DisputeSummaryRow: React.FC< Props > = ( { dispute, daysRemaining } ) => {
 									</p>
 								</div>
 							}
-						></ClickTooltip>
+						/>
 					) }
 				</>
 			),
@@ -95,12 +95,11 @@ const DisputeSummaryRow: React.FC< Props > = ( { dispute, daysRemaining } ) => {
 				<span className="response-date">
 					{ respondByDate }
 					<span
-						className={
-							( daysRemaining < 3 ? 'dispute-urgent ' : '' ) +
-							( daysRemaining < 7 && daysRemaining > 2
-								? 'dispute-warning '
-								: '' )
-						}
+						className={ classNames( {
+							'dispute-urgent': daysRemaining < 3,
+							'dispute-warning':
+								daysRemaining < 7 && daysRemaining > 2,
+						} ) }
 					>
 						{ daysRemaining === 0
 							? __( '(Last day today)', 'woocommerce-payments' )
