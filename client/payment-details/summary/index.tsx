@@ -196,7 +196,13 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 			<CardBody>
 				<div className="payment-details-summary">
 					<div className="payment-details-summary__section">
-						<p className="payment-details-summary__amount">
+						<p
+							className="payment-details-summary__amount"
+							aria-label={ __(
+								'Payment amount',
+								'woocommerce-payments'
+							) }
+						>
 							<Loadable
 								isLoading={ isLoading }
 								placeholder="Amount placeholder"
@@ -234,7 +240,12 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 						</p>
 						<div className="payment-details-summary__breakdown">
 							{ renderStorePrice ? (
-								<p>
+								<p
+									aria-label={ __(
+										'Payment amount in original currency',
+										'woocommerce-payments'
+									) }
+								>
 									{ formatExplicitCurrency(
 										charge.amount,
 										charge.currency

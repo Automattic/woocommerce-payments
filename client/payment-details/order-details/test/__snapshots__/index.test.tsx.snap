@@ -26,6 +26,7 @@ exports[`Order details page should match the snapshot - Charge without payment i
               class="payment-details-summary__section"
             >
               <p
+                aria-label="Payment amount"
                 class="payment-details-summary__amount"
               >
                 $15.00

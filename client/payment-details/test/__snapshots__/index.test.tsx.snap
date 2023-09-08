@@ -26,6 +26,7 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
               class="payment-details-summary__section"
             >
               <p
+                aria-label="Payment amount"
                 class="payment-details-summary__amount"
               >
                 <span
@@ -464,6 +465,7 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
               class="payment-details-summary__section"
             >
               <p
+                aria-label="Payment amount"
                 class="payment-details-summary__amount"
               >
                 $1,500.00
