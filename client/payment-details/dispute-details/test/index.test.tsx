@@ -134,10 +134,17 @@ describe( 'DisputeDetails', () => {
 		const charge = getBaseCharge();
 		render( <DisputeDetails dispute={ charge.dispute } /> );
 
+		// Expect this warning to be logged to the console
+		expect( console ).toHaveWarnedWith(
+			'List with items prop is deprecated is deprecated and will be removed in version 9.0.0. Note: See ExperimentalList / ExperimentalListItem for the new API that will replace this component in future versions.'
+		);
+
+		// Dispute Notice
 		screen.getByText(
 			/The cardholder claims this is an unauthorized transaction/,
 			{ ignore: '.a11y-speak-region' }
 		);
+
 		// Don't render the staged evidence message
 		expect(
 			screen.queryByText(
@@ -145,10 +152,6 @@ describe( 'DisputeDetails', () => {
 				{ ignore: '.a11y-speak-region' }
 			)
 		).toBeNull();
-		expect( console ).toHaveWarnedWith(
-			// eslint-disable-next-line max-len
-			'List with items prop is deprecated is deprecated and will be removed in version 9.0.0. Note: See ExperimentalList / ExperimentalListItem for the new API that will replace this component in future versions.'
-		);
 	} );
 
 	test( 'correctly renders dispute details for a dispute with staged evidence', () => {
@@ -166,10 +169,25 @@ describe( 'DisputeDetails', () => {
 			/The cardholder claims this is an unauthorized transaction/,
 			{ ignore: '.a11y-speak-region' }
 		);
+
 		// Render the staged evidence message
 		screen.getByText(
 			/You initiated a dispute a challenge to this dispute/,
 			{ ignore: '.a11y-speak-region' }
 		);
+
+		// Dispute Summary Row
+		expect(
+			screen.getByText( /Dispute Amount/i ).nextSibling
+		).toHaveTextContent( /\$68.00/ );
+		expect(
+			screen.getByText( /Disputed On/i ).nextSibling
+		).toHaveTextContent( /Aug 30, 2023/ );
+		expect( screen.getByText( /Reason/i ).nextSibling ).toHaveTextContent(
+			/Transaction unauthorized/
+		);
+		expect(
+			screen.getByText( /Respond By/i ).nextSibling
+		).toHaveTextContent( /Sep 9, 2023/ );
 	} );
 } );
