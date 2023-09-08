@@ -2,6 +2,7 @@
  * External dependencies
  */
 import React, { useState, useRef } from 'react';
+import classNames from 'classnames';
 import { noop } from 'lodash';
 import { Icon } from '@wordpress/components';
 
@@ -112,6 +113,7 @@ export const ClickTooltip: React.FC< TooltipProps > = ( {
 	buttonLabel,
 	buttonSize = 16,
 	children,
+	className,
 	...props
 } ) => {
 	const [ isClicked, setIsClicked ] = useState( false );
@@ -144,7 +146,10 @@ export const ClickTooltip: React.FC< TooltipProps > = ( {
 				parentElement={ tooltipParentRef.current || undefined }
 				onHide={ handleHide }
 				isVisible={ isVisible || isClicked }
-				className="wcpay-tooltip--click__tooltip"
+				className={ classNames(
+					'wcpay-tooltip--click__tooltip',
+					className
+				) }
 			>
 				{ buttonIcon ? (
 					<div

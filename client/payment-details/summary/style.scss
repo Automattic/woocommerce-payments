@@ -37,9 +37,12 @@
 	.payment-details-summary__breakdown {
 		p {
 			@include font-size( 14 );
-			color: $gray-50;
-			display: inline-block;
+			color: $gray-700;
+			display: inline-flex;
 			margin: 0.25rem 1rem 0 0;
+			text-transform: uppercase;
+			font-weight: 600;
+			font-size: 12px;
 		}
 		p:last-child {
 			margin-right: 0;
@@ -49,6 +52,23 @@
 				content: '|';
 				color: #e0e0e0;
 				margin-left: 1rem;
+		}
+		&__fee-tooltip {
+			display: flex;
+			flex-direction: column;
+			padding: $grid-unit-15;
+			gap: $grid-unit-10;
+			font-weight: 400;
+			font-size: 14px;
+
+			& > *:last-child {
+				padding-top: $grid-unit-10;
+				border-top: 1px solid $gray-200;
+			}
+
+			label {
+				margin-right: $grid-unit-20;
+				color: $gray-700;
 			}
 		}
 	}

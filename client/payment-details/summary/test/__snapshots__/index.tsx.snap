@@ -42,7 +42,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
             >
               
               <p>
-                Fee: 
+                Fees: 
                 $-0.70
               </p>
               
@@ -344,7 +344,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
             >
               
               <p>
-                Fee: 
+                Fees: 
                 $-0.70
               </p>
               
@@ -653,7 +653,7 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
             >
               
               <p>
-                Fee: 
+                Fees: 
                 $-0.70
               </p>
               
@@ -914,7 +914,7 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
             >
               
               <p>
-                Fee: 
+                Fees: 
                 $-0.70
               </p>
               
@@ -1201,11 +1201,11 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
               class="payment-details-summary__breakdown"
             >
               <p>
-                Refunded: 
+                Deducted: 
                 $-20.00
               </p>
               <p>
-                Fee: 
+                Fees: 
                 $-0.70
               </p>
               
@@ -1462,7 +1462,7 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
             >
               
               <p>
-                Fee: 
+                Fees: 
                 $0.00
               </p>
               
@@ -1697,11 +1697,11 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
               class="payment-details-summary__breakdown"
             >
               <p>
-                Refunded: 
+                Deducted: 
                 $-12.00
               </p>
               <p>
-                Fee: 
+                Fees: 
                 $-0.70
               </p>
               
@@ -1962,7 +1962,7 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] 
             >
               
               <p>
-                Fee: 
+                Fees: 
                 $-0.70
               </p>
               
@@ -2222,11 +2222,11 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
               class="payment-details-summary__breakdown"
             >
               <p>
-                Refunded: 
+                Deducted: 
                 $-15.00
               </p>
               <p>
-                Fee: 
+                Fees: 
                 $-15.70
               </p>
               

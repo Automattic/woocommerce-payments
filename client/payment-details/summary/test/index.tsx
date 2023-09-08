@@ -3,14 +3,16 @@
  * External dependencies
  */
 import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
 import moment from 'moment';
 import '@wordpress/jest-console';
 /**
  * Internal dependencies
  */
+import type { Charge } from 'wcpay/types/charges';
+import type { BalanceTransaction } from 'wcpay/types/balance-transactions';
 import PaymentDetailsSummary from '../';
-import { Charge } from 'wcpay/types/charges';
 import { useAuthorization } from 'wcpay/data';
 import { paymentIntentMock } from 'wcpay/data/payment-intents/test/hooks';
 
@@ -214,6 +216,45 @@ describe( 'PaymentDetailsSummary', () => {
 		} as any;
 
 		expect( renderCharge( charge ) ).toMatchSnapshot();
+	} );
+
+	test( 'renders the fee breakdown tooltip of a disputed charge', () => {
+		const charge = getBaseCharge();
+		charge.disputed = true;
+		charge.dispute = {
+			amount: 1500,
+			status: 'under_review',
+			balance_transactions: [
+				{
+					amount: -1500,
+					fee: 1500,
+					currency: 'usd',
+					reporting_category: 'dispute',
+				} as BalanceTransaction,
+			],
+		} as any;
+
+		renderCharge( charge );
+
+		// Open tooltip content
+		const tooltipButton = screen.getByRole( 'button', {
+			name: /Fee breakdown/i,
+		} );
+		userEvent.click( tooltipButton );
+
+		// Check fee breakdown calculated correctly
+		const tooltipContent = screen.getByRole( 'tooltip' );
+		expect(
+			within( tooltipContent ).getByLabelText( /Transaction fee/ )
+		).toHaveTextContent( /\$0.70/ );
+
+		expect(
+			within( tooltipContent ).getByLabelText( /Dispute fee/ )
+		).toHaveTextContent( /\$15.00/ );
+
+		expect(
+			within( tooltipContent ).getByLabelText( /Total fees/ )
+		).toHaveTextContent( /\$15.70/ );
 	} );
 
 	test( 'renders the Tap to Pay channel from metadata', () => {
