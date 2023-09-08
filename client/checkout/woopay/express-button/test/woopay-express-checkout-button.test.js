@@ -29,6 +29,8 @@ jest.mock( 'tracks', () => ( {
 
 jest.mock( '../use-express-checkout-product-handler', () => jest.fn() );
 
+global.fetch = jest.fn( () => Promise.resolve( { json: () => ( {} ) } ) );
+
 describe( 'WoopayExpressCheckoutButton', () => {
 	const buttonSettings = {
 		type: 'default',
