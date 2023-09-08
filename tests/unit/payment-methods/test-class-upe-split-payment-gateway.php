@@ -408,13 +408,17 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'create_customer_for_user' );
 
 		$metadata = [
-			'customer_name'  => 'Jeroen Sormani',
-			'customer_email' => 'admin@example.org',
-			'site_url'       => 'http://example.org',
-			'order_id'       => $order_id,
-			'order_number'   => $order_number,
-			'order_key'      => $order->get_order_key(),
-			'payment_type'   => Payment_Type::SINGLE(),
+			'customer_name'        => 'Jeroen Sormani',
+			'customer_email'       => 'admin@example.org',
+			'site_url'             => 'http://example.org',
+			'order_id'             => $order_id,
+			'order_number'         => $order_number,
+			'order_key'            => $order->get_order_key(),
+			'payment_type'         => Payment_Type::SINGLE(),
+			'gateway_type'         => 'split_upe',
+			'checkout_type'        => '',
+			'client_version'       => WCPAY_VERSION_NUMBER,
+			'subscription_payment' => 'no',
 		];
 
 		$level3 = [
@@ -479,13 +483,18 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'create_customer_for_user' );
 
 		$metadata = [
-			'customer_name'  => 'Jeroen Sormani',
-			'customer_email' => 'admin@example.org',
-			'site_url'       => 'http://example.org',
-			'order_id'       => $order_id,
-			'order_number'   => $order_number,
-			'order_key'      => $order->get_order_key(),
-			'payment_type'   => Payment_Type::SINGLE(),
+			'customer_name'        => 'Jeroen Sormani',
+			'customer_email'       => 'admin@example.org',
+			'site_url'             => 'http://example.org',
+			'order_id'             => $order_id,
+			'order_number'         => $order_number,
+			'order_key'            => $order->get_order_key(),
+			'payment_type'         => Payment_Type::SINGLE(),
+			'gateway_type'         => 'split_upe',
+			'checkout_type'        => '',
+			'client_version'       => WCPAY_VERSION_NUMBER,
+			'subscription_payment' => 'no',
+
 		];
 
 		$level3 = [
@@ -553,13 +562,17 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'create_customer_for_user' );
 
 		$metadata = [
-			'customer_name'  => 'Jeroen Sormani',
-			'customer_email' => 'admin@example.org',
-			'site_url'       => 'http://example.org',
-			'order_id'       => $order_id,
-			'order_number'   => $order_number,
-			'order_key'      => $order->get_order_key(),
-			'payment_type'   => Payment_Type::SINGLE(),
+			'customer_name'        => 'Jeroen Sormani',
+			'customer_email'       => 'admin@example.org',
+			'site_url'             => 'http://example.org',
+			'order_id'             => $order_id,
+			'order_number'         => $order_number,
+			'order_key'            => $order->get_order_key(),
+			'payment_type'         => Payment_Type::SINGLE(),
+			'gateway_type'         => 'split_upe',
+			'checkout_type'        => '',
+			'client_version'       => WCPAY_VERSION_NUMBER,
+			'subscription_payment' => 'no',
 		];
 
 		$level3 = [
@@ -1546,7 +1559,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'SEPA Direct Debit', $sepa_method->get_title() );
 		$this->assertEquals( 'SEPA Direct Debit', $sepa_method->get_title( $mock_sepa_details ) );
 		$this->assertTrue( $sepa_method->is_enabled_at_checkout() );
-		$this->assertTrue( $sepa_method->is_reusable() );
+		$this->assertFalse( $sepa_method->is_reusable() );
 
 		$this->assertEquals( 'ideal', $ideal_method->get_id() );
 		$this->assertEquals( 'iDEAL', $ideal_method->get_title() );
@@ -1581,7 +1594,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $sofort_method->is_enabled_at_checkout() );
 		$this->assertFalse( $bancontact_method->is_enabled_at_checkout() );
 		$this->assertFalse( $eps_method->is_enabled_at_checkout() );
-		$this->assertTrue( $sepa_method->is_enabled_at_checkout() );
+		$this->assertFalse( $sepa_method->is_enabled_at_checkout() );
 		$this->assertFalse( $p24_method->is_enabled_at_checkout() );
 		$this->assertFalse( $ideal_method->is_enabled_at_checkout() );
 		$this->assertFalse( $becs_method->is_enabled_at_checkout() );
@@ -2031,7 +2044,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			$this->mock_customer_service
 		);
 
-		$this->assertSame( $upe_checkout->get_payment_fields_js_config()['paymentMethodsConfig'][ Payment_Method::SEPA ]['showSaveOption'], true );
+		$this->assertSame( $upe_checkout->get_payment_fields_js_config()['paymentMethodsConfig'][ Payment_Method::SEPA ]['showSaveOption'], false );
 	}
 
 	public function test_remove_link_payment_method_if_card_disabled() {

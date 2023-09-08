@@ -8,11 +8,11 @@
  * Woo: 5278104:bf3cf30871604e15eec560c962593c1f
  * Text Domain: woocommerce-payments
  * Domain Path: /languages
- * WC requires at least: 7.8
- * WC tested up to: 8.0.0
- * Requires at least: 6.1
+ * WC requires at least: 7.6
+ * WC tested up to: 7.8.0
+ * Requires at least: 6.0
  * Requires PHP: 7.3
- * Version: 6.3.2
+ * Version: 6.4.1
  *
  * @package WooCommerce\Payments
  */
@@ -134,12 +134,6 @@ function wcpay_jetpack_init() {
 // Jetpack's Rest_Authentication needs to be initialized even before plugins_loaded.
 Automattic\Jetpack\Connection\Rest_Authentication::init();
 
-/**
- * Needs to be loaded as soon as possible
- * Check https://github.com/Automattic/woocommerce-payments/issues/4759
- */
-\WCPay\WooPay\WooPay_Session::init();
-
 // Jetpack-config will initialize the modules on "plugins_loaded" with priority 2, so this code needs to be run before that.
 add_action( 'plugins_loaded', 'wcpay_jetpack_init', 1 );
 
@@ -150,6 +144,11 @@ add_action( 'plugins_loaded', 'wcpay_jetpack_init', 1 );
 function wcpay_init() {
 	require_once WCPAY_ABSPATH . '/includes/class-wc-payments.php';
 	WC_Payments::init();
+	/**
+	 * Needs to be loaded as soon as possible
+	 * Check https://github.com/Automattic/woocommerce-payments/issues/4759
+	 */
+	\WCPay\WooPay\WooPay_Session::init();
 }
 
 // Make sure this is run *after* WooCommerce has a chance to initialize its packages (wc-admin, etc). That is run with priority 10.
