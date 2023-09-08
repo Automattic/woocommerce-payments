@@ -145,6 +145,10 @@ describe( 'DisputeDetails', () => {
 				{ ignore: '.a11y-speak-region' }
 			)
 		).toBeNull();
+		expect( console ).toHaveWarnedWith(
+			// eslint-disable-next-line max-len
+			'List with items prop is deprecated is deprecated and will be removed in version 9.0.0. Note: See ExperimentalList / ExperimentalListItem for the new API that will replace this component in future versions.'
+		);
 	} );
 
 	test( 'correctly renders dispute details for a dispute with staged evidence', () => {
