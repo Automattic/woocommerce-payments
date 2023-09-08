@@ -19,15 +19,16 @@
 		.dispute-summary-row {
 			margin: 24px 0;
 
-			.response-date {
+			&__response-date {
 				display: flex;
 				align-items: center;
 				gap: var( --grid-unit-05, 4px );
-				.dispute-warning {
+				flex-wrap: wrap;
+				&--warning {
 					color: $wp-yellow-30;
 					font-weight: 700;
 				}
-				.dispute-urgent {
+				&--urgent {
 					font-weight: 700;
 					color: $alert-red;
 				}
