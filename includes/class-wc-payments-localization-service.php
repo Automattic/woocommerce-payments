@@ -88,8 +88,11 @@ class WC_Payments_Localization_Service {
 	 */
 	public function fix_negative_currency_format( string $return, string $price, $args, float $unformatted_price, $original_price ) {
 		if ( 0 > $unformatted_price ) {
-			$currency_code = WC_Payments_Multi_Currency()->get_selected_currency()->code;
-			$format        = $this->get_currency_format( $currency_code );
+			$currency_code = get_option( 'woocommerce_currency' );
+			if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
+				$currency_code = WC_Payments_Multi_Currency()->get_selected_currency()->code;
+			}
+			$format = $this->get_currency_format( $currency_code );
 			switch ( $format['negativity'] ) {
 				case '-':
 					return $return;
