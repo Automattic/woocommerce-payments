@@ -637,12 +637,23 @@ class WC_Payments_Subscription_Service {
 	 * @return bool
 	 */
 	public function prevent_wcpay_subscription_changes( bool $supported, string $feature, WC_Subscription $subscription ) {
+		$is_stripe_billing = self::is_wcpay_subscription( $subscription );
 
-		if ( ! self::is_wcpay_subscription( $subscription ) ) {
-			return $supported;
+		switch ( $feature ) {
+			case 'subscription_amount_changes':
+			case 'subscription_date_changes':
+				$supported = ! $is_stripe_billing;
+				break;
+			case 'gateway_scheduled_payments':
+				$supported = $is_stripe_billing;
+				break;
 		}
 
-		return in_array( $feature, $this->supports, true ) || isset( $this->feature_support_exceptions[ $subscription->get_id() ][ $feature ] );
+		if ( $is_stripe_billing ) {
+			$supported = in_array( $feature, $this->supports, true ) || isset( $this->feature_support_exceptions[ $subscription->get_id() ][ $feature ] );
+		}
+
+		return $supported;
 	}
 
 	/**
