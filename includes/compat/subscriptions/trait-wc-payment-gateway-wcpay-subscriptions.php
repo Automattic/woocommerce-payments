@@ -127,10 +127,10 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			'subscriptions',
 		];
 
-		if ( $this->is_subscriptions_plugin_active() ) {
+		if ( ! WC_Payments_Features::is_wcpay_subscriptions_enabled() && ! WC_Payments_Features::is_stripe_billing_enabled() ) {
 			/*
 			 * Subscription amount & date changes are only supported
-			 * when WooCommerce Subscriptions is active.
+			 * when Stripe Billing is not in use.
 			 */
 			$payment_gateway_features = array_merge(
 				$payment_gateway_features,

@@ -92,8 +92,8 @@ class WC_Payments_Product_Service {
 			return;
 		}
 
-		// Only create, update and restore/unarchive WCPay Subscription products when the WC Subscriptions plugin is not active.
-		if ( ! $this->is_subscriptions_plugin_active() ) {
+		// Only create, update and restore/unarchive WCPay Subscription products when Stripe Billing is active.
+		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() || WC_Payments_Features::is_stripe_billing_enabled() ) {
 			add_action( 'shutdown', [ $this, 'create_or_update_products' ] );
 			add_action( 'untrashed_post', [ $this, 'maybe_unarchive_product' ] );
 
@@ -447,7 +447,7 @@ class WC_Payments_Product_Service {
 	 * @param int $product_id ID of the product that's being saved.
 	 */
 	public function limit_subscription_product_intervals( $product_id ) {
-		if ( $this->is_subscriptions_plugin_active() ) {
+		if ( ! WC_Payments_Features::is_wcpay_subscriptions_enabled() && ! WC_Payments_Features::is_stripe_billing_enabled() ) {
 			return;
 		}
 

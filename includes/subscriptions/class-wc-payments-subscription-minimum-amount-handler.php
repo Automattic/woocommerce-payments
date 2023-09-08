@@ -41,7 +41,7 @@ class WC_Payments_Subscription_Minimum_Amount_Handler {
 	public function __construct( WC_Payments_API_Client $api_client ) {
 		$this->api_client = $api_client;
 
-		if ( ! $this->is_subscriptions_plugin_active() ) {
+		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() || WC_Payments_Features::is_stripe_billing_enabled() ) {
 			add_filter( 'woocommerce_subscriptions_minimum_processable_recurring_amount', [ $this, 'get_minimum_recurring_amount' ], 10, 2 );
 		}
 	}
