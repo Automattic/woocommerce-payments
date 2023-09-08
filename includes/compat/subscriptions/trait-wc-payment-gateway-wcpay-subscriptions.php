@@ -859,11 +859,6 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 */
 	private function is_wcpay_subscription_renewal_order( WC_Order $renewal_order ) {
 
-		// Exit early if WCPay subscriptions functionality isn't enabled.
-		if ( ! WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
-			return false;
-		}
-
 		// Check if the renewal order is linked to a subscription which is a WCPay Subscription.
 		foreach ( wcs_get_subscriptions_for_renewal_order( $renewal_order ) as $subscription ) {
 			if ( WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ) {
