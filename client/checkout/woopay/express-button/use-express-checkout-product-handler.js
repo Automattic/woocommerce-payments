@@ -67,20 +67,39 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 		let productId = document.querySelector( '.single_add_to_cart_button' )
 			.value;
 
-		// Check if product is a variable product.
-		const variation = document.querySelector( '.single_variation_wrap' );
-		if ( variation ) {
-			productId = variation.querySelector( 'input[name="product_id"]' )
-				.value;
-		}
+		// Check if product is a bundle product.
+		const bundle = document.querySelector( '.bundle_form' );
 
-		const data = {
+		let data = {
 			product_id: productId,
 			qty: document.querySelector( '.quantity .qty' ).value,
-			attributes: document.querySelector( '.variations_form' )
-				? getAttributes()
-				: [],
 		};
+
+		if ( bundle ) {
+			const formData = new FormData( bundle );
+
+			const attributes = {};
+
+			for ( const fields of formData.entries() ) {
+				attributes[ fields[ 0 ] ] = fields[ 1 ];
+			}
+
+			data = { ...data, ...attributes };
+		} else {
+			// Check if product is a variable product.
+			const variation = document.querySelector(
+				'.single_variation_wrap'
+			);
+			if ( variation ) {
+				productId = variation.querySelector(
+					'input[name="product_id"]'
+				).value;
+
+				data.attributes = document.querySelector( '.variations_form' )
+					? getAttributes()
+					: [];
+			}
+		}
 
 		const addOnForm = document.querySelector( 'form.cart' );
 
@@ -133,24 +152,36 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 				addToCartButton.classList.contains( 'disabled' )
 			);
 		};
-		setIsAddToCartDisabled( getIsAddToCartDisabled() );
 
-		const onVariationChange = () =>
+		const onVariationChange = () => {
 			setIsAddToCartDisabled( getIsAddToCartDisabled() );
+		};
 
-		const variationList = document.querySelector( '.variations_form' );
+		// eslint-disable-next-line no-undef
+		jQuery( '.variations_form' ).on( 'hide_variation', onVariationChange );
 
-		if ( variationList ) {
-			variationList.addEventListener( 'change', onVariationChange );
-		}
+		// eslint-disable-next-line no-undef
+		jQuery( '.variations_form' ).on( 'show_variation', () => {
+			// The event can take up to 200 milliseconds to be triggered
+			// eslint-disable-next-line max-len
+			// https://github.com/woocommerce/woocommerce/blob/850523284653ef66ce671815f12d4fa4e6f2cf50/plugins/woocommerce/client/legacy/js/frontend/add-to-cart-variation.js#L318
+			setTimeout( () => {
+				onVariationChange();
+			}, 200 );
+		} );
 
 		return () => {
-			if ( variationList ) {
-				variationList.removeEventListener(
-					'change',
-					onVariationChange
-				);
-			}
+			// eslint-disable-next-line no-undef
+			jQuery( '.variations_form' ).off(
+				'hide_variation',
+				onVariationChange
+			);
+
+			// eslint-disable-next-line no-undef
+			jQuery( '.variations_form' ).off(
+				'show_variation',
+				onVariationChange
+			);
 		};
 	}, [ isProductPage, setIsAddToCartDisabled ] );
 
