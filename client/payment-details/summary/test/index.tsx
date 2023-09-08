@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import React from 'react';
 import moment from 'moment';
 import '@wordpress/jest-console';
@@ -22,6 +22,7 @@ declare const global: {
 	};
 	wcpaySettings: {
 		isSubscriptionsActive: boolean;
+		shouldUseExplicitPrice: boolean;
 		zeroDecimalCurrencies: string[];
 		currencyData: Record< string, any >;
 		connect: {
@@ -114,6 +115,7 @@ describe( 'PaymentDetailsSummary', () => {
 
 		global.wcpaySettings = {
 			isSubscriptionsActive: false,
+			shouldUseExplicitPrice: false,
 			zeroDecimalCurrencies: [],
 			connect: {
 				country: 'US',
@@ -141,6 +143,32 @@ describe( 'PaymentDetailsSummary', () => {
 		expect( console ).toHaveWarnedWith(
 			'List with items prop is deprecated is deprecated and will be removed in version 9.0.0. Note: See ExperimentalList / ExperimentalListItem for the new API that will replace this component in future versions.'
 		);
+	} );
+
+	test( 'correctly renders a charge when the store/charge currency differ', () => {
+		// True when multi-currency is enabled.
+		global.wcpaySettings.shouldUseExplicitPrice = true;
+
+		// In this case, charge currency is AUD, but store currency is USD.
+		const charge = getBaseCharge();
+		charge.currency = 'aud';
+		charge.amount = 4768;
+		charge.balance_transaction = {
+			amount: 3080,
+			currency: 'usd',
+			exchange_rate: 1.5479,
+		} as any;
+		renderCharge( charge );
+
+		// Headline should show the store currency
+		const headlineAmount = screen.getByLabelText( /Payment amount$/i );
+		within( headlineAmount ).getByText( /\$30.80/ );
+		within( headlineAmount ).getByText( /USD/i );
+
+		// Breakdown should show the charge currency
+		within(
+			screen.getByLabelText( /Payment amount in original currency/i )
+		).getByText( /\$47.68 AUD/i );
 	} );
 
 	test( 'renders partially refunded information for a charge', () => {
