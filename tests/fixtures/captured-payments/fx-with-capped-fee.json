@@ -51,7 +51,7 @@
   },
   "expectation": {
     "fxString": "1.00 EUR → 1.05483 USD: $1,002.09 USD",
-    "feeString": "Fee (2.5% + $6.00): $-31.05",
+    "feeString": "Fee (2.5% + $6.00): -$31.05",
     "feeBreakdown": {
       "base": "Base fee: capped at $6.00",
       "additional-international": "International card fee: 1.5%",

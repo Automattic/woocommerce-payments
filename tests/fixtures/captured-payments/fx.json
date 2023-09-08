@@ -43,7 +43,7 @@
     },
   "expectation": {
     "fxString": "1 VND → 0.000044 USD: $100.04 USD",
-    "feeString": "Fee (3.9% + $0.30): $-4.20",
+    "feeString": "Fee (3.9% + $0.30): -$4.20",
     "feeBreakdown": {
       "base": "Base fee: 2.9% + $0.30",
       "additional-fx": "Foreign exchange fee: 1%"

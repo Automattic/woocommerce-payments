@@ -42,7 +42,7 @@
     }
   },
   "expectation": {
-    "feeString": "Fee (3.9% + $0.30): $-3.20",
+    "feeString": "Fee (3.9% + $0.30): -$3.20",
     "feeBreakdown": {
       "base": "Base fee: 2.9% + $0.30",
       "additional-international": "International card fee: 1%"

@@ -38,6 +38,7 @@ class WC_Payments_Localization_Service_Test extends WCPAY_UnitTestCase {
 				'thousand_sep' => ',',
 				'decimal_sep'  => '.',
 				'num_decimals' => 2,
+				'negativity'   => '-',
 			],
 			$this->localization_service->get_currency_format( 'FFF' )
 		);
@@ -50,6 +51,7 @@ class WC_Payments_Localization_Service_Test extends WCPAY_UnitTestCase {
 				'thousand_sep' => '.',
 				'decimal_sep'  => ',',
 				'num_decimals' => 2,
+				'negativity'   => '-',
 			],
 			$this->localization_service->get_currency_format( 'EUR' )
 		);
@@ -64,6 +66,7 @@ class WC_Payments_Localization_Service_Test extends WCPAY_UnitTestCase {
 				'thousand_sep' => '.',
 				'decimal_sep'  => ',',
 				'num_decimals' => 2,
+				'negativity'   => '-',
 			],
 			$this->localization_service->get_currency_format( 'EUR' )
 		);
@@ -89,6 +92,7 @@ class WC_Payments_Localization_Service_Test extends WCPAY_UnitTestCase {
 						'thousand_sep' => '.',
 						'decimal_sep'  => ',',
 						'num_decimals' => 2,
+						'negativity'   => '-',
 					],
 					$currency_format
 				);
@@ -147,12 +151,14 @@ class WC_Payments_Localization_Service_Test extends WCPAY_UnitTestCase {
 						'decimal_sep'  => ',',
 						'direction'    => 'ltr',
 						'currency_pos' => 'left_space',
+						'negativity'   => '-',
 					],
 					'pt_BR'   => [
 						'thousand_sep' => '.',
 						'decimal_sep'  => ',',
 						'direction'    => 'ltr',
 						'currency_pos' => 'left_space',
+						'negativity'   => '-',
 					],
 				],
 			],

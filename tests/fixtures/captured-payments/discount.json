@@ -61,7 +61,7 @@
       "discount": {
         "label": "Discount",
         "variable": "Variable fee: -4.9%",
-        "fixed": "Fixed fee: $-0.30"
+        "fixed": "Fixed fee: -$0.30"
       }
     },
     "netString": "Net deposit: $105.48 USD"

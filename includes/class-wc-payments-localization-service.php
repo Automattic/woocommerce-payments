@@ -162,13 +162,16 @@ class WC_Payments_Localization_Service {
 
 		if ( is_array( $this->locale_info ) && 0 < count( $this->locale_info ) ) {
 			// Extract the currency formatting options from the locale info.
-			foreach ( $this->locale_info as $country_data ) {
+			foreach ( $this->locale_info as &$country_data ) {
 				$currency_code = $country_data['currency_code'];
 
-				foreach ( $country_data['locales'] as $locale => $locale_data ) {
+				foreach ( $country_data['locales'] as $locale => &$locale_data ) {
 					if ( empty( $locale_data ) ) {
 						continue;
 					}
+
+					// Fix for older WC Core versions that don't contain the negativity key.
+					$locale_data['negativity'] = $locale_data['negativity'] ?? '-';
 
 					$this->currency_format[ $currency_code ][ $locale ] = [
 						'currency_pos' => $locale_data['currency_pos'],

@@ -50,7 +50,7 @@
 	},
 	"expectation": {
 		"fxString": "1.00 EUR → 159.13333 JPY: ¥4,774 JPY",
-		"feeString": "Fee (7.6% + ¥0): ¥-267",
+		"feeString": "Fee (7.6% + ¥0): -¥267",
 		"feeBreakdown": {
 			"base": "Base fee: 3.6%",
 			"additional-international": "International card fee: 2%",

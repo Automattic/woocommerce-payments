@@ -518,7 +518,7 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 	public function provider_format_currency(): array {
 		return [
 			'US dollar'                      => [ 123.456, 'USD', '$123.46' ],
-			'US dollar with negative amount' => [ -123.456, 'USD', '$-123.46' ],
+			'US dollar with negative amount' => [ -123.456, 'USD', '-$123.46' ],
 			'Euro'                           => [ 12000, 'EUR', '12.000,00 €' ],
 			'CHF - no currency symbol'       => [ 123, 'CHF', 'CHF 123.00' ],
 			'VND - decimal currency'         => [ 123456, 'VND', '123.456 ₫' ],
