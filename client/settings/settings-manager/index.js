@@ -134,6 +134,23 @@ const FraudProtectionDescription = () => {
 	);
 };
 
+const AdvancedDescription = () => {
+	return (
+		<>
+			<h2>{ __( 'Advanced settings', 'woocommerce-payments' ) }</h2>
+			<p>
+				{ __(
+					'More options for specific payment needs.',
+					'woocommerce-payments'
+				) }
+			</p>
+			<ExternalLink href="https://woocommerce.com/document/woopayments/settings-guide/#advanced-settings">
+				{ __( 'View our documentation', 'woocommerce-payments' ) }
+			</ExternalLink>
+		</>
+	);
+};
+
 const SettingsManager = () => {
 	const {
 		featureFlags: {
@@ -252,7 +269,16 @@ const SettingsManager = () => {
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			<AdvancedSettings />
+			<SettingsSection
+				description={ AdvancedDescription }
+				id="advanced-settings"
+			>
+				<LoadableSettingsSection numLines={ 20 }>
+					<ErrorBoundary>
+						<AdvancedSettings />
+					</ErrorBoundary>
+				</LoadableSettingsSection>
+			</SettingsSection>
 			<SaveSettingsSection disabled={ ! isTransactionInputsValid } />
 		</SettingsLayout>
 	);
