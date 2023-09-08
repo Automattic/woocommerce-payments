@@ -11,7 +11,9 @@ use Exception;
 use WC_Order;
 use WC_Payment_Gateway_WCPay;
 use WC_Payments_Order_Service;
+use WC_Payments_Utils;
 use WCPay\Constants\Intent_Status;
+use WCPay\Core\Server\Request\Cancel_Intention;
 use WCPay\Core\Server\Request\Get_Intention;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -223,6 +225,44 @@ class Duplicate_Payment_Prevention_Service {
 		if ( is_order_received_page() && isset( $wp->query_vars['order-received'] ) ) {
 			$order_id = absint( $wp->query_vars['order-received'] );
 			$this->remove_session_processing_order( $order_id );
+		}
+	}
+
+	/**
+	 * Remove and cancel attached intent ID to the order if exists.
+	 *
+	 * @param  WC_Order $order Order object.
+	 *
+	 * @return void
+	 */
+	public function remove_and_cancel_attached_intent_id( WC_Order $order ): void {
+		$intent_id_attached_to_order = $this->order_service->get_intent_id_for_order( $order );
+		if ( ! empty( $intent_id_attached_to_order ) ) {
+			try {
+				$request = Cancel_Intention::create( $intent_id_attached_to_order );
+				$request->send( 'wcpay_cancel_intent_request', $order );
+			} catch ( Exception $e ) {
+				Logger::error(
+					sprintf(
+						'Failed cancelling payment intent %1$s. Error: %2$s',
+						$intent_id_attached_to_order,
+						$e->getMessage()
+					)
+				);
+			}
+
+			$this->order_service->remove_intent_id_for_order( $order );
+			$note = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: Payment ID */
+					__( 'Payment cancelled, and removed from order. <code>%1$s</code>', 'woocommerce-payments' ),
+					[
+						'code' => '<code>',
+					]
+				),
+				$intent_id_attached_to_order
+			);
+			$order->add_order_note( $note );
 		}
 	}
 }
