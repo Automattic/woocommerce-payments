@@ -40,10 +40,11 @@ export const WoopayExpressCheckoutButton = ( {
 			: '';
 	const ThemedWooPayIcon = theme === 'dark' ? WoopayIcon : WoopayIconLight;
 
-	const { addToCart, getProductData } = useExpressCheckoutProductHandler(
-		api,
-		isProductPage
-	);
+	const {
+		addToCart,
+		getProductData,
+		isAddToCartDisabled,
+	} = useExpressCheckoutProductHandler( api, isProductPage );
 
 	useEffect( () => {
 		if ( ! buttonRef.current ) {
@@ -80,14 +81,8 @@ export const WoopayExpressCheckoutButton = ( {
 		} );
 
 		if ( isProductPage ) {
-			const addToCartButton = document.querySelector(
-				'.single_add_to_cart_button'
-			);
-
-			if (
-				addToCartButton.disabled ||
-				addToCartButton.classList.contains( 'disabled' )
-			) {
+			console.log( isAddToCartDisabled, 'a' );
+			if ( isAddToCartDisabled ) {
 				alert(
 					window.wc_add_to_cart_variation_params
 						.i18n_make_a_selection_text

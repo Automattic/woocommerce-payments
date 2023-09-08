@@ -1,9 +1,12 @@
 /**
  * External dependencies
  */
+import { useEffect, useState } from 'react';
 import validator from 'validator';
 
-const useExpressCheckoutProductHandler = ( api ) => {
+const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
+	const [ isAddToCartDisabled, setIsAddToCartDisabled ] = useState( false );
+
 	const getAttributes = () => {
 		const select = document
 			.querySelector( '.variations_form' )
@@ -65,15 +68,17 @@ const useExpressCheckoutProductHandler = ( api ) => {
 			.value;
 
 		// Check if product is a bundle product.
-		const bundle = document.querySelector( '.bundle_form' );
+		const bundleForm = document.querySelector( '.bundle_form' );
+		// Check if product is a variable product.
+		const variation = document.querySelector( '.single_variation_wrap' );
 
 		let data = {
 			product_id: productId,
 			qty: document.querySelector( '.quantity .qty' ).value,
 		};
 
-		if ( bundle ) {
-			const formData = new FormData( bundle );
+		if ( bundleForm ) {
+			const formData = new FormData( bundleForm );
 
 			const attributes = {};
 
@@ -85,19 +90,13 @@ const useExpressCheckoutProductHandler = ( api ) => {
 				...data,
 				...attributes,
 			};
-		} else {
-			// Check if product is a variable product.
-			const variation = document.querySelector(
-				'.single_variation_wrap'
-			);
-			if ( variation ) {
-				data.product_id = variation.querySelector(
-					'input[name="product_id"]'
-				).value;
-				data.attributes = document.querySelector( '.variations_form' )
-					? getAttributes()
-					: [];
-			}
+		} else if ( variation ) {
+			data.product_id = variation.querySelector(
+				'input[name="product_id"]'
+			).value;
+			data.attributes = document.querySelector( '.variations_form' )
+				? getAttributes()
+				: [];
 		}
 
 		const addOnForm = document.querySelector( 'form.cart' );
@@ -132,13 +131,86 @@ const useExpressCheckoutProductHandler = ( api ) => {
 		return data;
 	};
 
+	useEffect( () => {
+		if ( ! isProductPage ) {
+			return;
+		}
+
+		const getIsAddToCartDisabled = () => {
+			const addToCartButton = document.querySelector(
+				'.single_add_to_cart_button'
+			);
+
+			return (
+				addToCartButton.disabled ||
+				addToCartButton.classList.contains( 'disabled' )
+			);
+		};
+
+		setIsAddToCartDisabled( getIsAddToCartDisabled() );
+
+		const enableAddToCartButton = () => {
+			setIsAddToCartDisabled( false );
+		};
+
+		const disableAddToCartButton = () => {
+			setIsAddToCartDisabled( true );
+		};
+
+		const bundleForm = document.querySelector( '.bundle_form' );
+		const variationForm = document.querySelector( '.variations_form' );
+
+		if ( bundleForm ) {
+			// eslint-disable-next-line no-undef
+			jQuery( bundleForm ).on(
+				'woocommerce-product-bundle-show',
+				enableAddToCartButton
+			);
+
+			// eslint-disable-next-line no-undef
+			jQuery( bundleForm ).on(
+				'woocommerce-product-bundle-hide',
+				disableAddToCartButton
+			);
+		} else if ( variationForm ) {
+			// eslint-disable-next-line no-undef
+			jQuery( variationForm ).on(
+				'show_variation',
+				enableAddToCartButton
+			);
+
+			// eslint-disable-next-line no-undef
+			jQuery( variationForm ).on(
+				'hide_variation',
+				disableAddToCartButton
+			);
+		}
+
+		return () => {
+			if ( bundleForm ) {
+				// eslint-disable-next-line no-undef
+				jQuery( bundleForm ).off(
+					'woocommerce-product-bundle-show',
+					enableAddToCartButton
+				);
+			} else if ( variationForm ) {
+				// eslint-disable-next-line no-undef
+				jQuery( variationForm ).off(
+					'show_variation',
+					enableAddToCartButton
+				);
+			}
+		};
+	}, [ isProductPage, setIsAddToCartDisabled ] );
+
 	const addToCart = ( data ) => {
 		return api.expressCheckoutAddToCart( data );
 	};
 
 	return {
-		addToCart: addToCart,
-		getProductData: getProductData,
+		addToCart,
+		getProductData,
+		isAddToCartDisabled,
 	};
 };
 
