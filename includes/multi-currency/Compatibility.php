@@ -92,7 +92,8 @@ class Compatibility extends BaseCompatibility {
 	 * @return bool False if it shouldn't be hidden, true if it should.
 	 */
 	public function should_hide_widgets(): bool {
-		return $this->should_disable_currency_switching( apply_filters( MultiCurrency::FILTER_PREFIX . 'should_hide_widgets', false ) );
+		wc_deprecated_function( __FUNCTION__, '6.5.0', 'Compatibility::should_disable_currency_switching' );
+		return $this->should_disable_currency_switching();
 	}
 
 	/**
@@ -101,6 +102,8 @@ class Compatibility extends BaseCompatibility {
 	 * @return bool False if no, true if yes.
 	 */
 	public function should_disable_currency_switching(): bool {
+		$return = false;
+
 		/**
 		 * If the pay_for_order parameter is set, we disable currency switching.
 		 *
@@ -109,10 +112,16 @@ class Compatibility extends BaseCompatibility {
 		 * itself should remain static.
 		 */
 		if ( isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			return true;
+			$return = true;
 		}
 
-		return apply_filters( MultiCurrency::FILTER_PREFIX . 'should_disable_currency_switching', false );
+		// If someone has hooked into the deprecated filter, throw a notice and then apply the filtering.
+		if ( has_action( MultiCurrency::FILTER_PREFIX . 'should_hide_widgets' ) ) {
+			wc_deprecated_hook( MultiCurrency::FILTER_PREFIX . 'should_hide_widgets', '6.5.0', MultiCurrency::FILTER_PREFIX . 'should_disable_currency_switching' );
+			$return = apply_filters( MultiCurrency::FILTER_PREFIX . 'should_hide_widgets', $return );
+		}
+
+		return apply_filters( MultiCurrency::FILTER_PREFIX . 'should_disable_currency_switching', $return );
 	}
 
 	/**

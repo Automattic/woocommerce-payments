@@ -219,7 +219,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WCPAY_UnitTestCase {
 
 	// If filtered to true, then should_disable_currency_switching should return true.
 	public function test_should_disable_currency_switching_return_true_on_filtered_true() {
-		// Arrange: Blatantly hack mock request params for the test.
+		// Arrange: Add filter to return true.
 		add_filter( MultiCurrency::FILTER_PREFIX . 'should_disable_currency_switching', '__return_true' );
 
 		// Act/Assert: Confirm true is returned if filtered to true.
