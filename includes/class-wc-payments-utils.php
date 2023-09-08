@@ -810,9 +810,7 @@ class WC_Payments_Utils {
 			)
 		);
 
-		if ( $amount >= 0 ) {
-			return $formatted;
-		}
+		return $formatted;
 	}
 
 	/**
