@@ -357,13 +357,6 @@ class WooPay_Session {
 		include_once WCPAY_ABSPATH . 'includes/compat/blocks/class-blocks-data-extractor.php';
 		$blocks_data_extractor = new Blocks_Data_Extractor();
 
-		// This uses the same logic as the Checkout block in hydrate_from_api to get the cart and checkout data.
-		$cart_data = rest_preload_api_request( [], '/wc/store/v1/cart' )['/wc/store/v1/cart']['body'];
-		add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
-		$preloaded_checkout_data = rest_preload_api_request( [], '/wc/store/v1/checkout' );
-		remove_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
-		$checkout_data = isset( $preloaded_checkout_data['/wc/store/v1/checkout'] ) ? $preloaded_checkout_data['/wc/store/v1/checkout']['body'] : '';
-
 		$request = [
 			'wcpay_version'        => WCPAY_VERSION_NUMBER,
 			'user_id'              => $user->ID,
@@ -391,10 +384,6 @@ class WooPay_Session {
 				'checkout_schema_namespaces'     => $blocks_data_extractor->get_checkout_schema_namespaces(),
 			],
 			'user_session'         => null,
-			'preloaded_requests'   => [
-				'cart'     => $cart_data,
-				'checkout' => $checkout_data,
-			],
 			'tracks_user_identity' => WC_Payments::woopay_tracker()->tracks_get_identity( $user->ID ),
 		];
 
@@ -460,13 +449,59 @@ class WooPay_Session {
 		if ( is_wp_error( $response ) || ! is_array( $response ) ) {
 			Logger::error( 'HTTP_REQUEST_ERROR ' . var_export( $response, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
 			// Respond with same message platform would respond with on failure.
-			$response_body_json = wp_json_encode( [ 'result' => 'failure' ] );
+			$handled_response_json = wp_json_encode( [ 'result' => 'failure' ] );
 		} else {
 			$response_body_json = wp_remote_retrieve_body( $response );
+			Logger::log( $response_body_json );
+
+			$response_body         = json_decode( $response_body_json, true );
+			$handled_response_json = wp_json_encode( self::handle_default_address( $response_body ) );
 		}
 
-		Logger::log( $response_body_json );
-		wp_send_json( json_decode( $response_body_json ) );
+		Logger::log( $handled_response_json );
+		wp_send_json( json_decode( $handled_response_json ) );
+	}
+
+	public static function handle_default_address( array $response_body ): array {
+		if ( ! isset( $response_body['url'] ) ) {
+			return $response_body;
+		}
+
+		$update_body = array_filter(
+			[
+				'shipping_address' => $response_body['data']['shipping_address'] ?? null,
+				'billing_address'  => $response_body['data']['billing_address'] ?? null,
+			]
+		);
+
+		if ( ! empty( $update_body ) ) {
+			$request = new WP_REST_Request( 'POST', '/wc/store/v1/cart/update-customer' );
+			$request->set_body_params( $update_body );
+			add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+			$cart_response = rest_do_request( $request );
+			remove_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+			$cart_data = $cart_response->get_data();
+		} else {
+			$cart_data = rest_preload_api_request( [], '/wc/store/v1/cart' )['/wc/store/v1/cart']['body'];
+		}
+
+		// This logic is similar from the Checkout block in hydrate_from_api to get the cart and checkout data.
+		add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+		$preloaded_checkout_data = rest_preload_api_request( [], '/wc/store/v1/checkout' );
+		remove_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+		$checkout_data = isset( $preloaded_checkout_data['/wc/store/v1/checkout'] ) ? $preloaded_checkout_data['/wc/store/v1/checkout']['body'] : '';
+
+		$preloaded_requests_base64 = base64_encode(
+			wp_json_encode(
+				[
+					'cart'     => $cart_data,
+					'checkout' => $checkout_data,
+				]
+			)
+		);
+		$response_body['url']      = add_query_arg( 'preloaded_requests', rawurlencode( $preloaded_requests_base64 ), $response_body['url'] );
+
+		return $response_body;
 	}
 
 	/**
