@@ -8,6 +8,7 @@ import moment from 'moment';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies
@@ -92,12 +93,13 @@ const DisputeSummaryRow: React.FC< Props > = ( { dispute, daysRemaining } ) => {
 		{
 			title: __( 'Respond By', 'woocommerce-payments' ),
 			content: (
-				<span className="response-date">
+				<span className="dispute-summary-row__response-date">
 					{ respondByDate }
 					<span
 						className={ classNames( {
-							'dispute-urgent': daysRemaining < 3,
-							'dispute-warning':
+							'dispute-summary-row__response-date--urgent':
+								daysRemaining < 3,
+							'dispute-summary-row__response-date--warning':
 								daysRemaining < 7 && daysRemaining > 2,
 						} ) }
 					>
