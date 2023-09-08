@@ -49,7 +49,7 @@ describe( 'RadioCard Component', () => {
 			/>
 		);
 
-		user.click( screen.getByRole( 'radio', { name: /Pineapple/i } ) );
+		user.click( screen.getByLabelText( /Pineapple/i ) );
 		expect( mockOnChange ).toHaveBeenCalledWith( 'pineapple' );
 	} );
 } );
