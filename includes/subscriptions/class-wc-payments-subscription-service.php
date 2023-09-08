@@ -137,7 +137,7 @@ class WC_Payments_Subscription_Service {
 			return;
 		}
 
-		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() || WC_Payments_Features::is_stripe_billing_enabled() ) {
+		if ( WC_Payments_Features::should_use_stripe_billing() ) {
 			add_action( 'woocommerce_checkout_subscription_created', [ $this, 'create_subscription' ] );
 			add_action( 'woocommerce_renewal_order_payment_complete', [ $this, 'create_subscription_for_manual_renewal' ] );
 			add_action( 'woocommerce_subscription_payment_method_updated', [ $this, 'maybe_create_subscription_from_update_payment_method' ], 10, 2 );
