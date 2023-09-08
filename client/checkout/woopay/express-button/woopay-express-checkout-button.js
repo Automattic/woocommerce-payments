@@ -81,7 +81,6 @@ export const WoopayExpressCheckoutButton = ( {
 		} );
 
 		if ( isProductPage ) {
-			console.log( isAddToCartDisabled, 'a' );
 			if ( isAddToCartDisabled ) {
 				alert(
 					window.wc_add_to_cart_variation_params

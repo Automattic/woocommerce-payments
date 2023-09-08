@@ -131,6 +131,10 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 		return data;
 	};
 
+	const addToCart = ( data ) => {
+		return api.expressCheckoutAddToCart( data );
+	};
+
 	useEffect( () => {
 		if ( ! isProductPage ) {
 			return;
@@ -202,10 +206,6 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 			}
 		};
 	}, [ isProductPage, setIsAddToCartDisabled ] );
-
-	const addToCart = ( data ) => {
-		return api.expressCheckoutAddToCart( data );
-	};
 
 	return {
 		addToCart,
