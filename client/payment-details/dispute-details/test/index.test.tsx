@@ -152,6 +152,20 @@ describe( 'DisputeDetails', () => {
 				{ ignore: '.a11y-speak-region' }
 			)
 		).toBeNull();
+
+		// Dispute Summary Row
+		expect(
+			screen.getByText( /Dispute Amount/i ).nextSibling
+		).toHaveTextContent( /\$68.00/ );
+		expect(
+			screen.getByText( /Disputed On/i ).nextSibling
+		).toHaveTextContent( /Aug 30, 2023/ );
+		expect( screen.getByText( /Reason/i ).nextSibling ).toHaveTextContent(
+			/Transaction unauthorized/
+		);
+		expect(
+			screen.getByText( /Respond By/i ).nextSibling
+		).toHaveTextContent( /Sep 9, 2023/ );
 	} );
 
 	test( 'correctly renders dispute details for a dispute with staged evidence', () => {
@@ -175,19 +189,5 @@ describe( 'DisputeDetails', () => {
 			/You initiated a dispute a challenge to this dispute/,
 			{ ignore: '.a11y-speak-region' }
 		);
-
-		// Dispute Summary Row
-		expect(
-			screen.getByText( /Dispute Amount/i ).nextSibling
-		).toHaveTextContent( /\$68.00/ );
-		expect(
-			screen.getByText( /Disputed On/i ).nextSibling
-		).toHaveTextContent( /Aug 30, 2023/ );
-		expect( screen.getByText( /Reason/i ).nextSibling ).toHaveTextContent(
-			/Transaction unauthorized/
-		);
-		expect(
-			screen.getByText( /Respond By/i ).nextSibling
-		).toHaveTextContent( /Sep 9, 2023/ );
 	} );
 } );
