@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Cancel and remove the attached intent ID before creating and confirming a new one (non-UPE flow).
