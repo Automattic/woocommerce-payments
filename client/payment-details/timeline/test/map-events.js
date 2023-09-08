@@ -29,6 +29,7 @@ describe( 'mapTimelineEvents', () => {
 					thousandSeparator: ',',
 					decimalSeparator: '.',
 					precision: 2,
+					negativeFormat: '-',
 				},
 				FR: {
 					code: 'EUR',
@@ -37,6 +38,7 @@ describe( 'mapTimelineEvents', () => {
 					thousandSeparator: ' ',
 					decimalSeparator: ',',
 					precision: 2,
+					negativeFormat: '-',
 				},
 				GB: {
 					code: 'GBP',
@@ -45,6 +47,7 @@ describe( 'mapTimelineEvents', () => {
 					thousandSeparator: ',',
 					decimalSeparator: '.',
 					precision: 2,
+					negativeFormat: '-',
 				},
 			},
 		};

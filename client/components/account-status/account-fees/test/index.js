@@ -28,6 +28,7 @@ describe( 'AccountFees', () => {
 					thousandSeparator: ',',
 					decimalSeparator: '.',
 					precision: 2,
+					negativeFormat: '-',
 				},
 				FR: {
 					code: 'EUR',
@@ -36,6 +37,7 @@ describe( 'AccountFees', () => {
 					thousandSeparator: ' ',
 					decimalSeparator: ',',
 					precision: 2,
+					negativeFormat: '-',
 				},
 				GB: {
 					code: 'GBP',
@@ -44,6 +46,7 @@ describe( 'AccountFees', () => {
 					thousandSeparator: ',',
 					decimalSeparator: '.',
 					precision: 2,
+					negativeFormat: '-',
 				},
 			},
 		};

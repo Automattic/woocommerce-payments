@@ -25,6 +25,7 @@ describe( 'Currency utilities', () => {
 					thousandSeparator: ',',
 					decimalSeparator: '.',
 					precision: 2,
+					negativeFormat: '-',
 				},
 				JP: {
 					code: 'JPY',
@@ -33,6 +34,7 @@ describe( 'Currency utilities', () => {
 					thousandSeparator: ',',
 					decimalSeparator: '.',
 					precision: 0,
+					negativeFormat: '-',
 				},
 				FR: {
 					code: 'EUR',
@@ -41,6 +43,7 @@ describe( 'Currency utilities', () => {
 					thousandSeparator: ' ',
 					decimalSeparator: ',',
 					precision: 2,
+					negativeFormat: '-',
 				},
 				GB: {
 					code: 'GBP',
@@ -49,6 +52,7 @@ describe( 'Currency utilities', () => {
 					thousandSeparator: ',',
 					decimalSeparator: '.',
 					precision: 2,
+					negativeFormat: '-',
 				},
 				IN: {
 					code: 'INR',
@@ -57,6 +61,7 @@ describe( 'Currency utilities', () => {
 					thousandSeparator: ',',
 					decimalSeparator: '.',
 					precision: 2,
+					negativeFormat: '-',
 				},
 				RU: {
 					code: 'RUB',
@@ -65,6 +70,7 @@ describe( 'Currency utilities', () => {
 					thousandSeparator: ' ',
 					decimalSeparator: ',',
 					precision: 2,
+					negativeFormat: '-',
 				},
 			},
 		};

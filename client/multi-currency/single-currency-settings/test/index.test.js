@@ -157,6 +157,7 @@ describe( 'Single currency settings screen', () => {
 					thousandSeparator: ',',
 					decimalSeparator: '.',
 					precision: 2,
+					negativeFormat: '-',
 				},
 			},
 		};

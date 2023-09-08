@@ -32,6 +32,7 @@ declare const global: {
 				thousandSeparator: string;
 				decimalSeparator: string;
 				precision: number;
+				negativeFormat: string;
 			};
 		};
 	};
@@ -52,6 +53,7 @@ describe( 'Dispute details screen', () => {
 					thousandSeparator: ',',
 					decimalSeparator: '.',
 					precision: 2,
+					negativeFormat: '-',
 				},
 			},
 		};

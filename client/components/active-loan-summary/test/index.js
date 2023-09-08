@@ -32,6 +32,7 @@ describe( 'Active loan summary', () => {
 					thousandSeparator: ',',
 					decimalSeparator: '.',
 					precision: 2,
+					negativeFormat: '-',
 				},
 			},
 		};

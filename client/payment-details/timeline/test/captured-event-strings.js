@@ -31,6 +31,7 @@ describe( 'Strings in captured events', () => {
 					thousandSeparator: ',',
 					decimalSeparator: '.',
 					precision: 2,
+					negativeFormat: '-',
 				},
 				JP: {
 					code: 'JPY',
@@ -39,6 +40,7 @@ describe( 'Strings in captured events', () => {
 					thousandSeparator: ',',
 					decimalSeparator: '.',
 					precision: 0,
+					negativeFormat: '-',
 				},
 			},
 		};

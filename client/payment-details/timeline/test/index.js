@@ -32,6 +32,7 @@ describe( 'PaymentDetailsTimeline', () => {
 					thousandSeparator: ',',
 					decimalSeparator: '.',
 					precision: 2,
+					negativeFormat: '-',
 				},
 			},
 		};

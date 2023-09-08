@@ -50,6 +50,7 @@ describe( 'RenderPaymentCardReaderChargeDetails', () => {
 					thousandSeparator: ',',
 					decimalSeparator: '.',
 					precision: 2,
+					negativeFormat: '-',
 				},
 			},
 		};

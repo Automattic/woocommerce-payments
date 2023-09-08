@@ -1504,7 +1504,7 @@ exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
                   >
                     <span />
                     <span>
-                      Fee (3.9% + $0.30): $-0.34
+                      Fee (3.9% + $0.30): -$0.34
                     </span>
                     <span>
                       <ul

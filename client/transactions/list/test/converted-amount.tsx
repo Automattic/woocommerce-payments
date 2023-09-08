@@ -24,6 +24,7 @@ declare const global: {
 				thousandSeparator: string;
 				decimalSeparator: string;
 				precision: number;
+				negativeFormat: string;
 			};
 		};
 	};
@@ -44,6 +45,7 @@ describe( 'ConvertedAmount', () => {
 					thousandSeparator: ',',
 					decimalSeparator: '.',
 					precision: 2,
+					negativeFormat: '-',
 				},
 			},
 		};

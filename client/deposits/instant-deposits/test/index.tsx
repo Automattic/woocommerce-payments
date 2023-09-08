@@ -67,6 +67,7 @@ describe( 'Instant deposit button and modal', () => {
 					thousandSeparator: ',',
 					decimalSeparator: '.',
 					precision: 2,
+					negativeFormat: '-',
 				},
 			},
 		};

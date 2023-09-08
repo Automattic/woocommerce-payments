@@ -85,6 +85,7 @@ declare const global: {
 				thousandSeparator: string;
 				decimalSeparator: string;
 				precision: number;
+				negativeFormat: string;
 			};
 		};
 	};
@@ -217,6 +218,7 @@ describe( 'Transactions list', () => {
 					thousandSeparator: ',',
 					decimalSeparator: '.',
 					precision: 2,
+					negativeFormat: '-',
 				},
 			},
 		};

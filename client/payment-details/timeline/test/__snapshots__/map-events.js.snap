@@ -26,7 +26,7 @@ Array [
   Object {
     "body": Array [
       "1.00 EUR → 1.19944 USD: $21.59 USD",
-      "Fee (2.9% + $0.30): $-0.62",
+      "Fee (2.9% + $0.30): -$0.62",
       undefined,
       "Net deposit: $20.97 USD",
     ],
@@ -405,7 +405,7 @@ Array [
   Object {
     "body": Array [
       undefined,
-      "Fee (1.95% + $0.15): $-3.50",
+      "Fee (1.95% + $0.15): -$3.50",
       <ul
         className="fee-breakdown-list"
       >
@@ -428,7 +428,7 @@ Array [
               Variable fee: -4.9%
             </li>
             <li>
-              Fixed fee: £-0.20
+              Fixed fee: -£0.20
             </li>
           </ul>
         </li>
@@ -471,7 +471,7 @@ Array [
   Object {
     "body": Array [
       undefined,
-      "Base fee (1.95% + $0.15): $-3.50",
+      "Base fee (1.95% + $0.15): -$3.50",
       undefined,
       "Net deposit: $59.50 USD",
     ],
@@ -719,7 +719,7 @@ Array [
   Object {
     "body": Array [
       undefined,
-      "Fee (2.6% + $0.20): $-0.61",
+      "Fee (2.6% + $0.20): -$0.61",
       <ul
         className="fee-breakdown-list"
       >
@@ -769,7 +769,7 @@ Array [
   Object {
     "body": Array [
       undefined,
-      "Fee (1.95% + $0.15): $-3.50",
+      "Fee (1.95% + $0.15): -$3.50",
       undefined,
       "Net deposit: $59.50 USD",
     ],

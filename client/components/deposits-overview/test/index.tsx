@@ -228,6 +228,7 @@ describe( 'Deposits Overview information', () => {
 					thousandSeparator: ',',
 					decimalSeparator: '.',
 					precision: 2,
+					negativeFormat: '-',
 				},
 				EU: {
 					code: 'EUR',
@@ -236,6 +237,7 @@ describe( 'Deposits Overview information', () => {
 					thousandSeparator: '.',
 					decimalSeparator: ',',
 					precision: 2,
+					negativeFormat: '-',
 				},
 			},
 		};

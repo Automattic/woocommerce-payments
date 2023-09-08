@@ -129,6 +129,7 @@ describe( 'PaymentDetailsSummary', () => {
 					thousandSeparator: ',',
 					decimalSeparator: '.',
 					precision: 2,
+					negativeFormat: '-',
 				},
 			},
 		};

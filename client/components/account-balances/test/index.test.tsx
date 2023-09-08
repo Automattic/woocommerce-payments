@@ -50,6 +50,7 @@ const mockWcPaySettings = {
 			thousandSeparator: ',',
 			decimalSeparator: '.',
 			precision: 2,
+			negativeFormat: '-',
 		},
 	},
 };

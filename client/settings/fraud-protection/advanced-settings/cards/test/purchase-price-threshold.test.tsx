@@ -26,6 +26,7 @@ declare const global: {
 				thousandSeparator: string;
 				decimalSeparator: string;
 				precision: number;
+				negativeFormat: string;
 			};
 		};
 		isFRTReviewFeatureActive?: boolean;
@@ -47,6 +48,7 @@ describe( 'Purchase price threshold card', () => {
 					thousandSeparator: ',',
 					decimalSeparator: '.',
 					precision: 2,
+					negativeFormat: '-',
 				},
 			},
 			isFRTReviewFeatureActive: false,

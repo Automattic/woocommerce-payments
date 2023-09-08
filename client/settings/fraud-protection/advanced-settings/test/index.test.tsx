@@ -66,6 +66,7 @@ declare const global: {
 				thousandSeparator: string;
 				decimalSeparator: string;
 				precision: number;
+				negativeFormat: string;
 			}
 		>;
 		isMultiCurrencyEnabled: string;
@@ -131,6 +132,7 @@ describe( 'Advanced fraud protection settings', () => {
 					thousandSeparator: ',',
 					decimalSeparator: '.',
 					precision: 2,
+					negativeFormat: '-',
 				},
 			},
 			isMultiCurrencyEnabled: '1',

@@ -25,6 +25,7 @@ describe( 'AccountStatus', () => {
 					thousandSeparator: ' ',
 					decimalSeparator: ',',
 					precision: 2,
+					negativeFormat: '-',
 				},
 			},
 		};

@@ -188,6 +188,7 @@ describe( 'Dispute evidence page', () => {
 					thousandSeparator: ',',
 					decimalSeparator: '.',
 					precision: 2,
+					negativeFormat: '-',
 				},
 			},
 		};
