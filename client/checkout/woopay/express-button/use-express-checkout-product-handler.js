@@ -166,43 +166,36 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 
 		if ( bundleForm ) {
 			// eslint-disable-next-line no-undef
-			jQuery( bundleForm ).on(
-				'woocommerce-product-bundle-show',
-				enableAddToCartButton
-			);
-
-			// eslint-disable-next-line no-undef
-			jQuery( bundleForm ).on(
-				'woocommerce-product-bundle-hide',
-				disableAddToCartButton
-			);
+			jQuery( bundleForm )
+				.on( 'woocommerce-product-bundle-show', enableAddToCartButton )
+				.on(
+					'woocommerce-product-bundle-hide',
+					disableAddToCartButton
+				);
 		} else if ( variationForm ) {
 			// eslint-disable-next-line no-undef
-			jQuery( variationForm ).on(
-				'show_variation',
-				enableAddToCartButton
-			);
-
-			// eslint-disable-next-line no-undef
-			jQuery( variationForm ).on(
-				'hide_variation',
-				disableAddToCartButton
-			);
+			jQuery( variationForm )
+				.on( 'show_variation', enableAddToCartButton )
+				.on( 'hide_variation', disableAddToCartButton );
 		}
 
 		return () => {
 			if ( bundleForm ) {
 				// eslint-disable-next-line no-undef
-				jQuery( bundleForm ).off(
-					'woocommerce-product-bundle-show',
-					enableAddToCartButton
-				);
+				jQuery( bundleForm )
+					.off(
+						'woocommerce-product-bundle-show',
+						enableAddToCartButton
+					)
+					.off(
+						'woocommerce-product-bundle-hide',
+						disableAddToCartButton
+					);
 			} else if ( variationForm ) {
 				// eslint-disable-next-line no-undef
-				jQuery( variationForm ).off(
-					'show_variation',
-					enableAddToCartButton
-				);
+				jQuery( variationForm )
+					.off( 'show_variation', enableAddToCartButton )
+					.off( 'hide_variation', disableAddToCartButton );
 			}
 		};
 	}, [ isProductPage, setIsAddToCartDisabled ] );
