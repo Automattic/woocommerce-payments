@@ -1711,17 +1711,15 @@ class WC_Payments {
 	 * Determines whether we should load Stripe Billing integration classes.
 	 *
 	 * Return true when:
-	 *  - the WCPay Subscriptions feature is enabled or
+	 *  - the WCPay Subscriptions feature is enabled & the Woo Subscriptions plugin isn't active, or
 	 *  - Woo Subscriptions plugin is active and Stripe Billing is enabled or there are Stripe Billing Subscriptions.
+	 *
+	 * @see WC_Payments_Features::should_use_stripe_billing()
 	 *
 	 * @return bool
 	 */
 	private static function should_load_stripe_billing_integration() {
-		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
-			return true;
-		}
-
-		if ( WC_Payments_Features::is_stripe_billing_enabled() && class_exists( 'WC_Subscription' ) ) {
+		if ( WC_Payments_Features::should_use_stripe_billing() ) {
 			return true;
 		}
 

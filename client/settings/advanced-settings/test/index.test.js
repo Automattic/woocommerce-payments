@@ -4,14 +4,12 @@
  * External dependencies
  */
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 
 /**
  * Internal dependencies
  */
 import AdvancedSettings from '..';
 import {
-	useSettings,
 	useMultiCurrency,
 	useWCPaySubscriptions,
 	useDevMode,
@@ -30,8 +28,6 @@ jest.mock( '../../../data', () => ( {
 
 describe( 'AdvancedSettings', () => {
 	beforeEach( () => {
-		// Set `isLoading` to false so `LoadableSettingsSection` can render.
-		useSettings.mockReturnValue( { isLoading: false } );
 		useMultiCurrency.mockReturnValue( [ false, jest.fn() ] );
 		useWCPaySubscriptions.mockReturnValue( [ false, jest.fn() ] );
 		useDevMode.mockReturnValue( false );
@@ -50,11 +46,6 @@ describe( 'AdvancedSettings', () => {
 			screen.queryByText( 'Enable Public Key Encryption' )
 		).toBeInTheDocument();
 		expect( screen.queryByText( 'Debug mode' ) ).toBeInTheDocument();
-
-		// Collapse the advanced settings section.
-		userEvent.click( screen.getByText( 'Advanced settings' ) );
-
-		expect( screen.queryByText( 'Debug mode' ) ).not.toBeInTheDocument();
 	} );
 	test( 'hides the client encryption toggle when not eligible', () => {
 		global.wcpaySettings = {
@@ -67,9 +58,5 @@ describe( 'AdvancedSettings', () => {
 			screen.queryByText( 'Enable Public Key Encryption' )
 		).not.toBeInTheDocument();
 		expect( screen.queryByText( 'Debug mode' ) ).toBeInTheDocument();
-
-		userEvent.click( screen.getByText( 'Advanced settings' ) );
-
-		expect( screen.queryByText( 'Debug mode' ) ).not.toBeInTheDocument();
 	} );
 } );

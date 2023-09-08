@@ -127,7 +127,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			'subscriptions',
 		];
 
-		if ( ! WC_Payments_Features::is_wcpay_subscriptions_enabled() && ! WC_Payments_Features::is_stripe_billing_enabled() ) {
+		if ( $this->is_subscriptions_plugin_active() && ! WC_Payments_Features::should_use_stripe_billing() ) {
 			/*
 			 * Subscription amount & date changes are only supported
 			 * when Stripe Billing is not in use.

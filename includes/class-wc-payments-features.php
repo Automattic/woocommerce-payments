@@ -349,6 +349,25 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the merchant is using WCPay Subscription or opted into Stripe Billing.
+	 *
+	 * Note: Stripe Billing is only used when the merchant is using WooCommerce Subscriptions and turned it on or is still using WCPay Subscriptions.
+	 *
+	 * @return bool
+	 */
+	public static function should_use_stripe_billing() {
+		if ( self::is_wcpay_subscriptions_enabled() && ! class_exists( 'WC_Subscription' ) ) {
+			return true;
+		}
+
+		if ( self::is_stripe_billing_enabled() && class_exists( 'WC_Subscription' ) ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Returns feature flags as an array suitable for display on the front-end.
 	 *
 	 * @return bool[]
