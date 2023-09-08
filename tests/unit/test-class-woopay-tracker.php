@@ -25,6 +25,11 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 	private $http_client_stub;
 
 	/**
+	 * @var WC_Payments_Account|MockObject
+	 */
+	private $mock_account;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -37,6 +42,10 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$this->_cache     = WC_Payments::get_database_cache();
 		$this->mock_cache = $this->createMock( WCPay\Database_Cache::class );
 		WC_Payments::set_database_cache( $this->mock_cache );
+
+		$this->mock_account = $this->getMockBuilder( WC_Payments_Account::class )
+			->disableOriginalConstructor()
+			->getMock();
 	}
 
 	public function tear_down() {
@@ -74,6 +83,15 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
+	public function test_does_not_track_when_account_not_connected() {
+		wp_set_current_user( 1 );
+		$this->set_is_woopay_eligible( true );
+		$this->set_account_connected( false );
+		$is_admin_event      = false;
+		$track_on_all_stores = true;
+		$this->assertFalse( $this->tracker->should_enable_tracking( $is_admin_event, $track_on_all_stores ) );
+	}
+
 	/**
 	 * @param bool $is_admin
 	 */
@@ -100,5 +118,11 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 	 */
 	private function set_is_woopay_eligible( $is_woopay_eligible ) {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => $is_woopay_eligible ] );
+	}
+
+	private function set_account_connected( $is_stripe_connected ) {
+		$this->mock_account
+			->method( 'is_stripe_connected' )
+			->willReturn( $is_stripe_connected );
 	}
 }
