@@ -836,11 +836,15 @@ class WC_Payments_Utils {
 		$formatted_amount = html_entity_decode( wp_strip_all_tags( $formatted_amount ) );
 
 		if ( $skip_symbol ) {
-			// Use the decimal and thousand separator of the format to keep those intact.
-			$pattern          = '/[^0-9';
-			$pattern         .= preg_quote( $currency_format['thousand_separator'], '/' );
-			$pattern         .= preg_quote( $currency_format['decimal_separator'], '/' );
-			$pattern         .= ']+/';
+			if ( isset( $currency_format['thousand_separator'], $currency_format['decimal_separator'] ) ) {
+				// Use the decimal and thousand separator of the format to keep those intact.
+				$pattern  = '/[^0-9';
+				$pattern .= preg_quote( $currency_format['thousand_separator'], '/' );
+				$pattern .= preg_quote( $currency_format['decimal_separator'], '/' );
+				$pattern .= ']+/';
+			} else {
+				$pattern = '/[^0-9,\.]+/';
+			}
 			$formatted_amount = preg_replace( $pattern, '', $formatted_amount );
 		}
 
