@@ -29,6 +29,12 @@ jest.mock( 'tracks', () => ( {
 
 jest.mock( '../use-express-checkout-product-handler', () => jest.fn() );
 
+jest.spyOn( window, 'alert' ).mockImplementation( () => {} );
+
+global.window.wc_add_to_cart_variation_params = {
+	i18n_make_a_selection_text: 'Mock text',
+};
+
 describe( 'WoopayExpressCheckoutButton', () => {
 	const buttonSettings = {
 		type: 'default',
@@ -116,24 +122,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 	} );
 
 	describe( 'Product Page', () => {
-		test( 'should enable the button when add to cart button is enabled', () => {
-			render(
-				<WoopayExpressCheckoutButton
-					isPreview={ false }
-					buttonSettings={ buttonSettings }
-					api={ api }
-					isProductPage={ true }
-					emailSelector="#email"
-				/>
-			);
-
-			const expressButton = screen.queryByRole( 'button', {
-				name: 'WooPay',
-			} );
-			expect( expressButton ).toBeEnabled();
-		} );
-
-		test( 'should disable the button when add to cart button is disabled', () => {
+		test( 'should shown an alert when clicking the button when add to cart button is disabled', () => {
 			useExpressCheckoutProductHandler.mockImplementation( () => ( {
 				addToCart: mockAddToCart,
 				isAddToCartDisabled: true,
@@ -152,7 +141,13 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			const expressButton = screen.queryByRole( 'button', {
 				name: 'WooPay',
 			} );
-			expect( expressButton ).toBeDisabled();
+
+			userEvent.click( expressButton );
+
+			expect( window.alert ).toBeCalledWith(
+				window.wc_add_to_cart_variation_params
+					.i18n_make_a_selection_text
+			);
 		} );
 
 		test( 'call `addToCart` and `expressCheckoutIframe` on express button click on product page', async () => {
