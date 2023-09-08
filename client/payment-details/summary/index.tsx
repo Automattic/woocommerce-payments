@@ -201,19 +201,29 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								isLoading={ isLoading }
 								placeholder="Amount placeholder"
 							>
-								{ renderStorePrice
-									? formatExplicitCurrency(
+								{ renderStorePrice ? (
+									<>
+										{ formatCurrency(
 											balance.amount,
 											balance.currency
-									  )
-									: formatCurrency(
+										) }
+										<span className="payment-details-summary__amount-currency">
+											{ balance.currency }
+										</span>
+									</>
+								) : (
+									<>
+										{ formatCurrency(
 											charge.amount,
 											charge.currency,
 											balance.currency
-									  ) }
-								<span className="payment-details-summary__amount-currency">
-									{ charge.currency || 'USD' }
-								</span>
+										) }
+										<span className="payment-details-summary__amount-currency">
+											{ charge.currency }
+										</span>
+									</>
+								) }
+
 								<PaymentStatusChip
 									status={ getChargeStatus(
 										charge,
@@ -225,10 +235,9 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 						<div className="payment-details-summary__breakdown">
 							{ renderStorePrice ? (
 								<p>
-									{ formatCurrency(
+									{ formatExplicitCurrency(
 										charge.amount,
-										charge.currency,
-										balance.currency
+										charge.currency
 									) }
 								</p>
 							) : null }
