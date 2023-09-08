@@ -337,6 +337,7 @@ class WooPay_Session {
 	private static function get_init_session_request( $order_id = null, $key = null, $billing_email = null ) {
 		$user             = wp_get_current_user();
 		$is_pay_for_order = null !== $order_id;
+		$order            = wc_get_order( $order_id );
 		$customer_id      = WC_Payments::get_customer_service()->get_customer_id_by_user_id( $user->ID );
 		if ( null === $customer_id ) {
 			// create customer.
@@ -384,7 +385,7 @@ class WooPay_Session {
 				'custom_message'                 => WC_Payments::get_gateway()->get_option( 'platform_checkout_custom_message' ),
 				'blog_id'                        => Jetpack_Options::get_option( 'id' ),
 				'blog_url'                       => get_site_url(),
-				'blog_checkout_url'              => wc_get_checkout_url(),
+				'blog_checkout_url'              => ! $is_pay_for_order ? wc_get_checkout_url() : $order->get_checkout_payment_url(),
 				'blog_shop_url'                  => get_permalink( wc_get_page_id( 'shop' ) ),
 				'store_api_url'                  => self::get_store_api_url(),
 				'account_id'                     => $account_id,
@@ -393,7 +394,7 @@ class WooPay_Session {
 				'is_subscriptions_plugin_active' => WC_Payments::get_gateway()->is_subscriptions_plugin_active(),
 				'woocommerce_tax_display_cart'   => get_option( 'woocommerce_tax_display_cart' ),
 				'ship_to_billing_address_only'   => wc_ship_to_billing_address_only(),
-				'return_url'                     => wc_get_cart_url(),
+				'return_url'                     => ! $is_pay_for_order ? wc_get_cart_url() : $order->get_checkout_payment_url(),
 				'blocks_data'                    => $blocks_data_extractor->get_data(),
 				'checkout_schema_namespaces'     => $blocks_data_extractor->get_checkout_schema_namespaces(),
 			],
@@ -404,7 +405,7 @@ class WooPay_Session {
 			] : [
 				'cart'     => $cart_data,
 				'checkout' => [
-					'order_id' => -1, // This is a workaround for the checkout order error. https://github.com/woocommerce/woocommerce-blocks/blob/04f36065b34977f02079e6c2c8cb955200a783ff/assets/js/blocks/checkout/block.tsx#L81-L83.
+					'order_id' => $order_id, // This is a workaround for the checkout order error. https://github.com/woocommerce/woocommerce-blocks/blob/04f36065b34977f02079e6c2c8cb955200a783ff/assets/js/blocks/checkout/block.tsx#L81-L83.
 				],
 			],
 			'tracks_user_identity' => WC_Payments::woopay_tracker()->tracks_get_identity( $user->ID ),
