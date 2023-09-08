@@ -96,7 +96,7 @@ export const WoopayExpressCheckoutButton = ( {
 			}
 
 			const productData = getProductData();
-			console.log( productData );
+
 			if ( ! productData ) {
 				return;
 			}
