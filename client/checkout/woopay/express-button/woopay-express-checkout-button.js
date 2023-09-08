@@ -83,10 +83,7 @@ export const WoopayExpressCheckoutButton = ( {
 			const addToCartButton = document.querySelector(
 				'.single_add_to_cart_button'
 			);
-			console.log(
-				addToCartButton.disabled ||
-					addToCartButton.classList.contains( 'disabled' )
-			);
+
 			if (
 				addToCartButton.disabled ||
 				addToCartButton.classList.contains( 'disabled' )
