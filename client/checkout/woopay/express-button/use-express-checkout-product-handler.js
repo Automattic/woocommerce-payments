@@ -1,12 +1,9 @@
 /**
  * External dependencies
  */
-import { useEffect, useState } from 'react';
 import validator from 'validator';
 
-const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
-	const [ isAddToCartDisabled, setIsAddToCartDisabled ] = useState( false );
-
+const useExpressCheckoutProductHandler = ( api ) => {
 	const getAttributes = () => {
 		const select = document
 			.querySelector( '.variations_form' )
@@ -64,7 +61,7 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 	};
 
 	const getProductData = () => {
-		let productId = document.querySelector( '.single_add_to_cart_button' )
+		const productId = document.querySelector( '.single_add_to_cart_button' )
 			.value;
 
 		// Check if product is a bundle product.
@@ -84,17 +81,19 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 				attributes[ fields[ 0 ] ] = fields[ 1 ];
 			}
 
-			data = { ...data, ...attributes };
+			data = {
+				...data,
+				...attributes,
+			};
 		} else {
 			// Check if product is a variable product.
 			const variation = document.querySelector(
 				'.single_variation_wrap'
 			);
 			if ( variation ) {
-				productId = variation.querySelector(
+				data.product_id = variation.querySelector(
 					'input[name="product_id"]'
 				).value;
-
 				data.attributes = document.querySelector( '.variations_form' )
 					? getAttributes()
 					: [];
@@ -137,58 +136,9 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 		return api.expressCheckoutAddToCart( data );
 	};
 
-	useEffect( () => {
-		if ( ! isProductPage ) {
-			return;
-		}
-
-		const getIsAddToCartDisabled = () => {
-			const addToCartButton = document.querySelector(
-				'.single_add_to_cart_button'
-			);
-
-			return (
-				addToCartButton.disabled ||
-				addToCartButton.classList.contains( 'disabled' )
-			);
-		};
-
-		const onVariationChange = () => {
-			setIsAddToCartDisabled( getIsAddToCartDisabled() );
-		};
-
-		// eslint-disable-next-line no-undef
-		jQuery( '.variations_form' ).on( 'hide_variation', onVariationChange );
-
-		// eslint-disable-next-line no-undef
-		jQuery( '.variations_form' ).on( 'show_variation', () => {
-			// The event can take up to 200 milliseconds to be triggered
-			// eslint-disable-next-line max-len
-			// https://github.com/woocommerce/woocommerce/blob/850523284653ef66ce671815f12d4fa4e6f2cf50/plugins/woocommerce/client/legacy/js/frontend/add-to-cart-variation.js#L318
-			setTimeout( () => {
-				onVariationChange();
-			}, 200 );
-		} );
-
-		return () => {
-			// eslint-disable-next-line no-undef
-			jQuery( '.variations_form' ).off(
-				'hide_variation',
-				onVariationChange
-			);
-
-			// eslint-disable-next-line no-undef
-			jQuery( '.variations_form' ).off(
-				'show_variation',
-				onVariationChange
-			);
-		};
-	}, [ isProductPage, setIsAddToCartDisabled ] );
-
 	return {
 		addToCart: addToCart,
 		getProductData: getProductData,
-		isAddToCartDisabled: isAddToCartDisabled,
 	};
 };
 

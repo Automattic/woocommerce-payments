@@ -40,11 +40,10 @@ export const WoopayExpressCheckoutButton = ( {
 			: '';
 	const ThemedWooPayIcon = theme === 'dark' ? WoopayIcon : WoopayIconLight;
 
-	const {
-		addToCart,
-		getProductData,
-		isAddToCartDisabled,
-	} = useExpressCheckoutProductHandler( api, isProductPage );
+	const { addToCart, getProductData } = useExpressCheckoutProductHandler(
+		api,
+		isProductPage
+	);
 
 	useEffect( () => {
 		if ( ! buttonRef.current ) {
@@ -81,8 +80,26 @@ export const WoopayExpressCheckoutButton = ( {
 		} );
 
 		if ( isProductPage ) {
-			const productData = getProductData();
+			const addToCartButton = document.querySelector(
+				'.single_add_to_cart_button'
+			);
+			console.log(
+				addToCartButton.disabled ||
+					addToCartButton.classList.contains( 'disabled' )
+			);
+			if (
+				addToCartButton.disabled ||
+				addToCartButton.classList.contains( 'disabled' )
+			) {
+				alert(
+					window.wc_add_to_cart_variation_params
+						.i18n_make_a_selection_text
+				);
+				return;
+			}
 
+			const productData = getProductData();
+			console.log( productData );
 			if ( ! productData ) {
 				return;
 			}
@@ -106,7 +123,6 @@ export const WoopayExpressCheckoutButton = ( {
 			aria-label={ buttonType !== 'default' ? text : __( 'WooPay' ) }
 			onClick={ initWooPay }
 			className="woopay-express-button"
-			disabled={ isAddToCartDisabled }
 			data-type={ buttonType }
 			data-size={ size }
 			data-theme={ theme }
