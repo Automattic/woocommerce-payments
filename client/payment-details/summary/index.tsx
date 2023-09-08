@@ -241,6 +241,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 						<div className="payment-details-summary__breakdown">
 							{ renderStorePrice ? (
 								<p
+									className="payment-details-summary__breakdown__original-amount"
 									aria-label={ __(
 										'Payment amount in original currency',
 										'woocommerce-payments'
