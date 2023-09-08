@@ -23,6 +23,7 @@
 				display: flex;
 				align-items: center;
 				gap: var( --grid-unit-05, 4px );
+				flex-wrap: wrap;
 				&--warning {
 					color: $wp-yellow-30;
 					font-weight: 700;
