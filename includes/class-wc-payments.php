@@ -1299,7 +1299,7 @@ class WC_Payments {
 		}
 
 		// Don't trigger any update plugin hook and don't bump current plugin version if there is a dependencies issues.
-		if ( version_compare( WCPAY_VERSION_NUMBER, get_option( 'woocommerce_woocommerce_payments_version' ), '>' ) && true === $dependency_service->has_valid_dependencies() ) {
+		if ( version_compare( WCPAY_VERSION_NUMBER, get_option( 'woocommerce_woocommerce_payments_version' ), '>' ) && empty( $dependency_service->get_invalid_dependencies() ) ) {
 			do_action( 'woocommerce_woocommerce_payments_updated' );
 			self::update_plugin_version();
 		}
