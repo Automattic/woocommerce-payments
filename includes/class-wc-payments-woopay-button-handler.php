@@ -237,7 +237,7 @@ class WC_Payments_WooPay_Button_Handler {
 			WC()->cart->add_to_cart( $product->get_id(), $qty );
 		}
 
-		if ( 'bundle' === $product_type ) {
+		if ( 'bundle' === $product_type && function_exists( 'WC_PB' ) ) {
 			$configuration = WC_PB()->cart->get_posted_bundle_configuration( $product_id );
 
 			if ( WC_PB()->cart->validate_bundle_configuration( $product_id, $qty, $configuration, 'cart' ) ) {
