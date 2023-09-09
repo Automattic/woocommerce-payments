@@ -289,6 +289,9 @@ class MultiCurrency {
 			add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
 		}
 
+		// Update the customer currencies option after an order status change.
+		add_action( 'woocommerce_order_status_changed', [ $this, 'maybe_update_customer_currencies_option' ] );
+
 		static::$is_initialized = true;
 	}
 
@@ -543,6 +546,39 @@ class MultiCurrency {
 		if ( in_array( $exchange_rate_type, [ 'automatic', 'manual' ], true ) ) {
 			update_option( 'wcpay_multi_currency_exchange_rate_' . $currency_code, esc_attr( $exchange_rate_type ) );
 		}
+	}
+
+	/**
+	 * Updates the customer currencies option.
+	 *
+	 * @param int $order_id The order ID.
+	 *
+	 * @return void
+	 */
+	public function maybe_update_customer_currencies_option( $order_id ) {
+		$order = wc_get_order( $order_id );
+
+		if ( ! $order ) {
+			return;
+		}
+
+		$currency   = $order->get_currency();
+		$currencies = get_option( self::CUSTOMER_CURRENCIES_KEY );
+
+		// Skip if the currency is not a string or if the option is invalid.
+		if ( ! is_string( $currency ) || ! is_array( $currencies ) ) {
+			return;
+		}
+
+		$currency = strtoupper( $currency );
+
+		// Skip if the currency is already in the list.
+		if ( in_array( $currency, $currencies, true ) ) {
+			return;
+		}
+
+		$currencies[] = $currency;
+		update_option( self::CUSTOMER_CURRENCIES_KEY, $currencies );
 	}
 
 	/**
