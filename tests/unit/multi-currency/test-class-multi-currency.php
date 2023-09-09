@@ -1240,6 +1240,65 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		];
 	}
 
+	public function test_maybe_update_customer_currencies_option() {
+		$customer_currencies = [ 'EUR', 'USD' ];
+		update_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY, $customer_currencies );
+
+		$order = wc_create_order();
+		$order->set_currency( 'GBP' );
+		$order->save();
+
+		$this->multi_currency->maybe_update_customer_currencies_option( $order->get_id() );
+
+		$expected = array_merge( $customer_currencies, [ 'GBP' ] );
+
+		$this->assertEquals( $expected, get_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY ) );
+
+		delete_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY );
+	}
+
+	public function test_maybe_update_customer_currencies_option_currency_is_already_included() {
+		$customer_currencies = [ 'EUR', 'USD' ];
+		update_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY, $customer_currencies );
+
+		$order = wc_create_order();
+		$order->set_currency( 'USD' );
+		$order->save();
+
+		$this->multi_currency->maybe_update_customer_currencies_option( $order->get_id() );
+
+		$this->assertEquals( $customer_currencies, get_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY ) );
+
+		delete_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY );
+	}
+
+	public function test_maybe_update_customer_currencies_option_invalid() {
+		$customer_currencies = 'invalid-data';
+		update_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY, $customer_currencies );
+
+		$order = wc_create_order();
+		$order->set_currency( 'EUR' );
+		$order->save();
+
+		$this->multi_currency->maybe_update_customer_currencies_option( $order->get_id() );
+
+		$this->assertEquals( $customer_currencies, get_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY ) );
+
+		delete_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY );
+	}
+
+	public function test_maybe_update_customer_currencies_option_does_not_exist() {
+		delete_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY );
+
+		$order = wc_create_order();
+		$order->set_currency( 'EUR' );
+		$order->save();
+
+		$this->multi_currency->maybe_update_customer_currencies_option( $order->get_id() );
+
+		$this->assertEquals( false, get_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY ) );
+	}
+
 	private function mock_currency_settings( $currency_code, $settings ) {
 		foreach ( $settings as $setting => $value ) {
 			update_option( 'wcpay_multi_currency_' . $setting . '_' . strtolower( $currency_code ), $value );
