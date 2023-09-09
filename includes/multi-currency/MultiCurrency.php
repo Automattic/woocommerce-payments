@@ -1454,6 +1454,12 @@ class MultiCurrency {
 	public function get_all_customer_currencies(): array {
 		global $wpdb;
 
+		$currencies = get_option( self::CUSTOMER_CURRENCIES_KEY );
+
+		if ( self::is_customer_currencies_data_valid( $currencies ) ) {
+			return $currencies;
+		}
+
 		if ( class_exists( 'Automattic\WooCommerce\Utilities\OrderUtil' ) &&
 				\Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
 			$currencies = $wpdb->get_col( "SELECT DISTINCT(currency) FROM {$wpdb->prefix}wc_orders" );
@@ -1461,7 +1467,8 @@ class MultiCurrency {
 			$currencies = $wpdb->get_col( "SELECT DISTINCT(meta_value) FROM {$wpdb->postmeta} WHERE meta_key = '_order_currency'" );
 		}
 
-		if ( ! empty( $currencies ) && is_array( $currencies ) ) {
+		if ( self::is_customer_currencies_data_valid( $currencies ) ) {
+			update_option( self::CUSTOMER_CURRENCIES_KEY, $currencies );
 			return $currencies;
 		}
 
@@ -1485,5 +1492,16 @@ class MultiCurrency {
 	 */
 	public static function is_initialized() : bool {
 		return static::$is_initialized;
+	}
+
+	/**
+	 * Checks if the customer currencies data is valid.
+	 *
+	 * @param mixed $currencies The currencies to check.
+	 *
+	 * @return bool
+	 */
+	private function is_customer_currencies_data_valid( $currencies ) {
+		return ! empty( $currencies ) && is_array( $currencies );
 	}
 }

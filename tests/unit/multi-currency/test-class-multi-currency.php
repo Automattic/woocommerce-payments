@@ -950,6 +950,8 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_all_customer_currencies() {
+		delete_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY );
+
 		$mock_orders = [];
 
 		$mock_orders[] = $this->add_mock_order_with_currency_meta( 'GBP' );
@@ -972,6 +974,68 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		foreach ( $mock_orders as $order_id ) {
 			wp_delete_post( $order_id, true );
 		}
+	}
+
+	public function test_get_all_customer_currencies_with_option_data() {
+		$mock_option_data = [ 'GBP', 'EUR', 'USD' ];
+		update_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY, $mock_option_data );
+
+		$mock_database_cache = $this->createMock( Database_Cache::class );
+		$mock_database_cache
+			->expects( $this->once() )
+			->method( 'get_or_add' )
+			->with( Database_Cache::CURRENCIES_KEY, $this->anything(), $this->anything() )
+			->willReturn( $this->mock_cached_currencies );
+
+		$this->init_multi_currency( null, true, null, $mock_database_cache );
+
+		$result = $this->multi_currency->get_all_customer_currencies();
+
+		$this->assertEquals( [ 'GBP', 'EUR', 'USD' ], $result );
+
+		delete_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY );
+	}
+
+	/**
+	 * Tests that if the option data is invalid, the currencies are fetched from the database.
+	 *
+	 * @dataProvider get_all_customer_currencies_with_invalid_option_data_provider
+	 */
+	public function test_get_all_customer_currencies_with_invalid_option_data( $option_data ) {
+		update_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY, $option_data );
+
+		$mock_orders = [];
+
+		$mock_orders[] = $this->add_mock_order_with_currency_meta( 'GBP' );
+		$mock_orders[] = $this->add_mock_order_with_currency_meta( 'EUR' );
+		$mock_orders[] = $this->add_mock_order_with_currency_meta( 'USD' );
+
+		$mock_database_cache = $this->createMock( Database_Cache::class );
+		$mock_database_cache
+			->expects( $this->once() )
+			->method( 'get_or_add' )
+			->with( Database_Cache::CURRENCIES_KEY, $this->anything(), $this->anything() )
+			->willReturn( $this->mock_cached_currencies );
+
+		$this->init_multi_currency( null, true, null, $mock_database_cache );
+
+		$result = $this->multi_currency->get_all_customer_currencies();
+
+		$this->assertEquals( [ 'GBP', 'EUR', 'USD' ], $result );
+
+		foreach ( $mock_orders as $order_id ) {
+			wp_delete_post( $order_id, true );
+		}
+
+		delete_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY );
+	}
+
+	public function get_all_customer_currencies_with_invalid_option_data_provider() {
+		return [
+			'Empty string' => [ '' ],
+			'Invalid data' => [ 'invalid-data' ],
+			'Empty array'  => [ [] ],
+		];
 	}
 
 	public function test_get_store_currencies_returns_expected() {
