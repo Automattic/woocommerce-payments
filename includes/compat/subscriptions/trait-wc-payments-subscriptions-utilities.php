@@ -140,6 +140,10 @@ trait WC_Payments_Subscriptions_Utilities {
 	 * @return int The total number of subscriptions migrated.
 	 */
 	public function get_subscription_migrated_count() {
+		if ( function_exists( 'wcs_get_orders_with_meta_query' ) ) {
+			return 0;
+		}
+
 		return count(
 			wcs_get_orders_with_meta_query(
 				[
@@ -149,7 +153,7 @@ trait WC_Payments_Subscriptions_Utilities {
 					'limit'      => -1,
 					'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 						[
-							'key'     => '_migrated' . WC_Payments_Subscription_Service::SUBSCRIPTION_ID_META_KEY,
+							'key'     => '_migrated_wcpay_subscription_id',
 							'compare' => 'EXISTS',
 						],
 					],
