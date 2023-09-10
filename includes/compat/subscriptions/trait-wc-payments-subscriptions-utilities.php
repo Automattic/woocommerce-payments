@@ -140,7 +140,7 @@ trait WC_Payments_Subscriptions_Utilities {
 	 * @return int The total number of subscriptions migrated.
 	 */
 	public function get_subscription_migrated_count() {
-		if ( function_exists( 'wcs_get_orders_with_meta_query' ) ) {
+		if ( ! function_exists( 'wcs_get_orders_with_meta_query' ) ) {
 			return 0;
 		}
 
