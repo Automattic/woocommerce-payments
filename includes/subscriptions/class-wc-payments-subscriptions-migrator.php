@@ -542,7 +542,7 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	 * @return bool True if a migration is in progress, false otherwise.
 	 */
 	public function is_migrating() {
-		return is_numeric( as_next_scheduled_action( $this->scheduled_hook ) ) || is_numeric( as_next_scheduled_action( $this->migrate_hook ) || is_numeric( as_next_scheduled_action( $this->migrate_hook . '_retry' ) ) );
+		return is_numeric( as_next_scheduled_action( $this->scheduled_hook ) ) || is_numeric( as_next_scheduled_action( $this->migrate_hook ) ) || is_numeric( as_next_scheduled_action( $this->migrate_hook . '_retry' ) );
 	}
 
 	/**
