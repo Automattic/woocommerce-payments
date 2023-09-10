@@ -510,30 +510,6 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	}
 
 	/**
-	 * Gets the total number of subscriptions that have already been migrated.
-	 *
-	 * @return int The total number of subscriptions migrated.
-	 */
-	public function get_subscription_migrated_count() {
-		return count(
-			wcs_get_orders_with_meta_query(
-				[
-					'status'     => 'any',
-					'return'     => 'ids',
-					'type'       => 'shop_subscription',
-					'limit'      => -1,
-					'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-						[
-							'key'     => '_migrated' . WC_Payments_Subscription_Service::SUBSCRIPTION_ID_META_KEY,
-							'compare' => 'EXISTS',
-						],
-					],
-				]
-			)
-		);
-	}
-
-	/**
 	 * Determines if a migration is currently in progress.
 	 *
 	 * A migration is considered to be in progress if either the initial migration action or an individual subscription
