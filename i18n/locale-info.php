@@ -3,7 +3,7 @@
  * Locales information
  *
  * @package WooCommerce\Payments\i18n
- * @version 3.5.0
+ * @version 6.5.0
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -2839,11 +2839,11 @@ return [
 		'thousand_sep'   => ' ',
 		'decimal_sep'    => ',',
 		'negativity'     => 'o -',
-		'num_decimals'   => 0,
+		'num_decimals'   => 2,
 		'weight_unit'    => 'kg',
 		'dimension_unit' => 'cm',
 		'direction'      => 'ltr',
-		'default_locale' => 'no_NO',
+		'default_locale' => 'nb_NO',
 		'name'           => 'Norwegian Krone',
 		'singular'       => 'Norwegian krone',
 		'plural'         => 'Norwegian kroner',

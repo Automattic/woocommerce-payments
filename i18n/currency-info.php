@@ -3,7 +3,7 @@
  * Currency formatting information
  *
  * @package WooCommerce\Payments\i18n
- * @version 3.5.0
+ * @version 6.5.0
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -751,7 +751,6 @@ return [
 		'nb_NO'   => $global_formats['ls_comma_space_minus_after_symbol_with_space_ltr'],
 		'nb_SJ'   => $global_formats['ls_comma_space_minus_after_symbol_with_space_ltr'],
 		'nn_NO'   => $global_formats['rs_comma_space_minus_ltr'],
-		'no_NO'   => $global_formats['ls_comma_space_minus_after_symbol_with_space_ltr'],
 		'se_NO'   => $global_formats['rs_comma_space_minus_ltr'],
 	],
 	'NPR' => [
