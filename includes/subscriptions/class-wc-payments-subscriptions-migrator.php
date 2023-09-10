@@ -440,7 +440,7 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	private function get_migration_action_args( $action_id ) {
 		$action = ActionScheduler_Store::instance()->fetch_action( $action_id );
 
-		if ( ! $action || $this->migrate_hook !== $action->get_hook() ) {
+		if ( ! $action || ( $this->migrate_hook !== $action->get_hook() && $this->migrate_hook . '_retry' !== $action->get_hook() ) ) {
 			return [];
 		}
 
