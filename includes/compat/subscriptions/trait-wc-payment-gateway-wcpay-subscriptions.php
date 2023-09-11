@@ -127,10 +127,10 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			'subscriptions',
 		];
 
-		if ( $this->is_subscriptions_plugin_active() ) {
+		if ( ! WC_Payments_Features::should_use_stripe_billing() ) {
 			/*
 			 * Subscription amount & date changes are only supported
-			 * when WooCommerce Subscriptions is active.
+			 * when Stripe Billing is not in use.
 			 */
 			$payment_gateway_features = array_merge(
 				$payment_gateway_features,
@@ -308,16 +308,17 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @param WC_Order $renewal_order A WC_Order object created to record the renewal payment.
 	 */
 	public function scheduled_subscription_payment( $amount, $renewal_order ) {
+
+		// Exit early if the order belongs to a WCPay Subscription. The payment will be processed by the subscription via webhooks.
+		if ( $this->is_wcpay_subscription_renewal_order( $renewal_order ) ) {
+			return;
+		}
+
 		$token = $this->get_payment_token( $renewal_order );
 		if ( is_null( $token ) && ! WC_Payments::is_network_saved_cards_enabled() ) {
 			Logger::error( 'There is no saved payment token for order #' . $renewal_order->get_id() );
 			// TODO: Update to use Order_Service->mark_payment_failed.
 			$renewal_order->update_status( 'failed' );
-			return;
-		}
-
-		// Exit early if the order belongs to a WCPay Subscription. The payment will be processed by the subscription via webhooks.
-		if ( $this->is_wcpay_subscription_renewal_order( $renewal_order ) ) {
 			return;
 		}
 
@@ -854,12 +855,17 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * Checks if a renewal order is linked to a WCPay subscription.
 	 *
 	 * @param WC_Order $renewal_order The renewal order to check.
+	 *
 	 * @return bool True if the renewal order is linked to a renewal order. Otherwise false.
 	 */
 	private function is_wcpay_subscription_renewal_order( WC_Order $renewal_order ) {
-
-		// Exit early if WCPay subscriptions functionality isn't enabled.
-		if ( ! WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
+		/**
+		 * Check if WC_Payments_Subscription_Service class exists first before fetching the subscription for the renewal order.
+		 *
+		 * This class is only loaded when the store has the Stripe Billing feature turned on or has existing
+		 * WCPay Subscriptions @see WC_Payments::should_load_stripe_billing_integration().
+		 */
+		if ( ! class_exists( 'WC_Payments_Subscription_Service' ) ) {
 			return false;
 		}
 
