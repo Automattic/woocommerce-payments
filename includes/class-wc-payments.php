@@ -624,8 +624,8 @@ class WC_Payments {
 			new WCPay\Fraud_Prevention\Order_Fraud_And_Risk_Meta_Box( self::$order_service );
 		}
 
-		// Load WCPay Subscriptions.
-		if ( self::should_load_wcpay_subscriptions() ) {
+		// Load Stripe Billing subscription integration.
+		if ( self::should_load_stripe_billing_integration() ) {
 			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
 			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account );
 		}
@@ -1708,19 +1708,37 @@ class WC_Payments {
 	}
 
 	/**
-	 * Determines whether we should load WCPay Subscription related classes.
+	 * Determines whether we should load Stripe Billing integration classes.
 	 *
 	 * Return true when:
-	 *  - the WCPay Subscriptions feature flag is enabled, or
-	 *  - the migration feature flag is enabled && the store has WC Subscriptions activated
+	 *  - the WCPay Subscriptions feature is enabled & the Woo Subscriptions plugin isn't active, or
+	 *  - Woo Subscriptions plugin is active and Stripe Billing is enabled or there are Stripe Billing Subscriptions.
+	 *
+	 * @see WC_Payments_Features::should_use_stripe_billing()
 	 *
 	 * @return bool
 	 */
-	private static function should_load_wcpay_subscriptions() {
-		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
+	private static function should_load_stripe_billing_integration() {
+		if ( WC_Payments_Features::should_use_stripe_billing() ) {
 			return true;
 		}
 
-		return WC_Payments_Features::is_subscription_migration_enabled() && class_exists( 'WC_Subscriptions' );
+		// If there are any Stripe Billing Subscriptions, we should load the Stripe Billing integration classes. eg while a migration is in progress, or to support legacy subscriptions.
+		return function_exists( 'wcs_get_orders_with_meta_query' ) && (bool) count(
+			wcs_get_orders_with_meta_query(
+				[
+					'status'     => 'any',
+					'return'     => 'ids',
+					'type'       => 'shop_subscription',
+					'limit'      => 1, // We only need to know if there are any - at least 1.
+					'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+						[
+							'key'     => '_wcpay_subscription_id',
+							'compare' => 'EXISTS',
+						],
+					],
+				]
+			)
+		);
 	}
 }

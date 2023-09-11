@@ -354,34 +354,20 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 		}
 
 		// Get number of WCPay Subscriptions that can be migrated.
-		$wcpay_subscriptions_count = count(
-			wcs_get_orders_with_meta_query(
-				[
-					'status'     => 'any',
-					'return'     => 'ids',
-					'type'       => 'shop_subscription',
-					'limit'      => -1,
-					'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-						[
-							'key'     => WC_Payments_Subscription_Service::SUBSCRIPTION_ID_META_KEY,
-							'compare' => 'EXISTS',
-						],
-					],
-				]
-			)
-		);
+		$wcpay_subscriptions_count = $this->get_stripe_billing_subscription_count();
 
 		if ( $wcpay_subscriptions_count < 1 ) {
 			return $tools;
 		}
 
-		$disabled = as_next_scheduled_action( $this->scheduled_hook );
+		// Disable the button if a migration is currently in progress.
+		$disabled = $this->is_migrating();
 
 		$tools['migrate_wcpay_subscriptions'] = [
 			'name'             => __( 'Migrate Stripe Billing subscriptions', 'woocommerce-payments' ),
 			'button'           => $disabled ? __( 'Migration in progress', 'woocommerce-payments' ) . '&#8230;' : __( 'Migrate Subscriptions', 'woocommerce-payments' ),
 			'desc'             => sprintf(
-				// translators: %1$s is a new line character and %3$d is the number of subscriptions.
+				// translators: %1$s is a new line character and %2$d is the number of subscriptions.
 				__( 'This tool will migrate all Stripe Billing subscriptions to tokenized subscriptions with WooPayments.%1$sNumber of Stripe Billing subscriptions found: %2$d', 'woocommerce-payments' ),
 				'<br>',
 				$wcpay_subscriptions_count,
@@ -497,6 +483,42 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 		}
 
 		return $items_to_migrate;
+	}
+
+	/**
+	 * Gets the total number of subscriptions to migrate.
+	 *
+	 * @return int The total number of subscriptions to migrate.
+	 */
+	public function get_stripe_billing_subscription_count() {
+		return count(
+			wcs_get_orders_with_meta_query(
+				[
+					'status'     => 'any',
+					'return'     => 'ids',
+					'type'       => 'shop_subscription',
+					'limit'      => -1,
+					'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+						[
+							'key'     => WC_Payments_Subscription_Service::SUBSCRIPTION_ID_META_KEY,
+							'compare' => 'EXISTS',
+						],
+					],
+				]
+			)
+		);
+	}
+
+	/**
+	 * Determines if a migration is currently in progress.
+	 *
+	 * A migration is considered to be in progress if either the initial migration action or an individual subscription
+	 * actions are scheduled.
+	 *
+	 * @return bool True if a migration is in progress, false otherwise.
+	 */
+	public function is_migrating() {
+		return is_numeric( as_next_scheduled_action( $this->scheduled_hook ) ) || is_numeric( as_next_scheduled_action( $this->migrate_hook ) ) || is_numeric( as_next_scheduled_action( $this->migrate_hook . '_retry' ) );
 	}
 
 	/**

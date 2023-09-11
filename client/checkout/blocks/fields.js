@@ -33,7 +33,7 @@ const WCPayFields = ( {
 		<p>
 			<strong>Test mode:</strong> use the test VISA card 4242424242424242
 			with any expiry date and CVC, or any test card numbers listed{ ' ' }
-			<a href="https://woocommerce.com/document/woocommerce-payments/testing-and-troubleshooting/testing/#test-cards">
+			<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards">
 				here
 			</a>
 			.

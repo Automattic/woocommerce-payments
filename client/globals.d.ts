@@ -110,6 +110,8 @@ declare global {
 			task_badge?: string;
 		};
 		isWooPayStoreCountryAvailable: boolean;
+		isSubscriptionsPluginActive: boolean;
+		isStripeBillingEligible: boolean;
 	};
 
 	const wcTracks: any;
