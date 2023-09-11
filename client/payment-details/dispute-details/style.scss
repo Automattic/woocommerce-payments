@@ -15,5 +15,36 @@
 				margin-bottom: 24px;
 			}
 		}
+
+		.dispute-summary-row {
+			margin: 24px 0;
+
+			&__response-date {
+				display: flex;
+				align-items: center;
+				gap: var( --grid-unit-05, 4px );
+				flex-wrap: wrap;
+				&--warning {
+					color: $wp-yellow-30;
+					font-weight: 700;
+				}
+				&--urgent {
+					font-weight: 700;
+					color: $alert-red;
+				}
+			}
+		}
+	}
+}
+.dispute-reason-tooltip {
+	p {
+		&:first-child {
+			font-weight: bold;
+		}
+		&:last-child {
+			margin-bottom: 0;
+		}
+		margin: 0;
+		margin-bottom: 8px;
 	}
 }
