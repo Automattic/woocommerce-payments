@@ -105,8 +105,12 @@ declare global {
 			id: string;
 			description: string;
 			tc_url: string;
+			task_header_content?: string;
+			task_badge?: string;
 		};
 		isWooPayStoreCountryAvailable: boolean;
+		isSubscriptionsPluginActive: boolean;
+		isStripeBillingEligible: boolean;
 	};
 
 	const wcTracks: any;

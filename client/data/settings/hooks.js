@@ -154,17 +154,13 @@ export const useWCPaySubscriptions = () => {
 			const {
 				getIsWCPaySubscriptionsEnabled,
 				getIsWCPaySubscriptionsEligible,
-				getIsSubscriptionsPluginActive,
 			} = select( STORE_NAME );
 
 			const isWCPaySubscriptionsEnabled = getIsWCPaySubscriptionsEnabled();
 			const isWCPaySubscriptionsEligible = getIsWCPaySubscriptionsEligible();
-			const isSubscriptionsPluginActive = getIsSubscriptionsPluginActive();
-
 			return [
 				isWCPaySubscriptionsEnabled,
 				isWCPaySubscriptionsEligible,
-				isSubscriptionsPluginActive,
 				updateIsWCPaySubscriptionsEnabled,
 			];
 		},
@@ -608,4 +604,45 @@ export const useWooPayShowIncompatibilityNotice = () => {
 
 		return getShowWooPayIncompatibilityNotice();
 	} );
+};
+
+export const useStripeBilling = () => {
+	const { updateIsStripeBillingEnabled } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getIsStripeBillingEnabled } = select( STORE_NAME );
+
+			return [
+				getIsStripeBillingEnabled(),
+				updateIsStripeBillingEnabled,
+			];
+		},
+		[ updateIsStripeBillingEnabled ]
+	);
+};
+
+export const useStripeBillingMigration = () => {
+	const { submitStripeBillingSubscriptionMigration } = useDispatch(
+		STORE_NAME
+	);
+
+	return useSelect( ( select ) => {
+		const { getStripeBillingSubscriptionCount } = select( STORE_NAME );
+		const { getIsStripeBillingMigrationInProgress } = select( STORE_NAME );
+		const { isResolving } = select( STORE_NAME );
+		const hasResolved = select( STORE_NAME ).hasFinishedResolution(
+			'scheduleStripeBillingMigration'
+		);
+		const { getStripeBillingMigratedCount } = select( STORE_NAME );
+
+		return [
+			getIsStripeBillingMigrationInProgress(),
+			getStripeBillingMigratedCount(),
+			getStripeBillingSubscriptionCount(),
+			submitStripeBillingSubscriptionMigration,
+			isResolving( 'scheduleStripeBillingMigration' ),
+			hasResolved,
+		];
+	}, [] );
 };

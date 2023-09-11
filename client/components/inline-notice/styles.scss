@@ -1,12 +1,3 @@
-$is-info: #007cba;
-$is-info-hover: #006ba1;
-$is-warning: #f0b849;
-$is-warning-hover: #a16f00;
-$is-error: #cc1818;
-$is-error-hover: #b30f0f;
-$is-success: #00a32a;
-$is-success-hover: #00982a;
-
 .wcpay-inline-notice.components-notice {
 	margin: $gap-large 0;
 	padding: 11px 0 11px 17px;
@@ -62,75 +53,51 @@ $is-success-hover: #00982a;
 
 	/* Specific styles for each variant */
 	&.is-info {
-		background-color: #f0f6fc;
+		background-color: $wp-blue-0;
 		.wcpay-inline-notice__icon svg {
-			fill: $is-info;
+			fill: $wp-blue-70;
 		}
 		button.wcpay-inline-notice__action {
-			box-shadow: inset 0 0 0 1px $is-info;
-			&:hover {
-				box-shadow: inset 0 0 0 1px $is-info-hover;
-			}
+			box-shadow: inset 0 0 0 1px $wp-blue-70;
 		}
 		.wcpay-inline-notice__action {
-			color: $is-info;
-			&:hover {
-				color: $is-info-hover;
-			}
+			color: $wp-blue-70;
 		}
 	}
 	&.is-warning {
 		background-color: #fcf9e8;
 		.wcpay-inline-notice__icon svg {
-			fill: $is-warning;
+			fill: $wp-yellow-70;
 		}
 		button.wcpay-inline-notice__action {
-			box-shadow: inset 0 0 0 1px $is-warning;
-			&:hover {
-				box-shadow: inset 0 0 0 1px $is-warning-hover;
-			}
+			box-shadow: inset 0 0 0 1px $wp-yellow-70;
 		}
 		.wcpay-inline-notice__action {
-			color: $is-warning;
-			&:hover {
-				color: $is-warning-hover;
-			}
+			color: $wp-yellow-70;
 		}
 	}
 	&.is-error {
-		background-color: #fcf0f1;
+		background-color: $wp-red-0;
 		.wcpay-inline-notice__icon svg {
-			fill: $is-error;
+			fill: $wp-red-70;
 		}
 		button.wcpay-inline-notice__action {
-			box-shadow: inset 0 0 0 1px $is-error;
-			&:hover {
-				box-shadow: inset 0 0 0 1px $is-error-hover;
-			}
+			box-shadow: inset 0 0 0 1px $wp-red-70;
 		}
 		.wcpay-inline-notice__action {
-			color: $is-error;
-			&:hover {
-				color: $is-error-hover;
-			}
+			color: $wp-red-70;
 		}
 	}
 	&.is-success {
 		background-color: #edfaef;
 		.wcpay-inline-notice__icon svg {
-			fill: $is-success;
+			fill: $wp-green-70;
 		}
 		button.wcpay-inline-notice__action {
-			box-shadow: inset 0 0 0 1px $is-success;
-			&:hover {
-				box-shadow: inset 0 0 0 1px $is-success-hover;
-			}
+			box-shadow: inset 0 0 0 1px $wp-green-70;
 		}
 		.wcpay-inline-notice__action {
-			color: $is-success;
-			&:hover {
-				color: $is-success-hover;
-			}
+			color: $wp-green-70;
 		}
 	}
 }
