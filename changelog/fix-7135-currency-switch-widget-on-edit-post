@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix Multicurrency widget error on post/page edit screen

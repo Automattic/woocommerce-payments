@@ -167,7 +167,7 @@ const LinkExpressCheckoutItem = (): React.ReactElement => {
 													target="_blank"
 													rel="noreferrer"
 													/* eslint-disable-next-line max-len */
-													href="https://woocommerce.com/document/woocommerce-payments/payment-methods/link-by-stripe/"
+													href="https://woocommerce.com/document/woopayments/payment-methods/link-by-stripe/"
 												/>
 											),
 										},
