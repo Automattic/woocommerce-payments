@@ -113,7 +113,7 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 						strong: <strong />,
 						wooCommercePaymentsLink: (
 							// eslint-disable-next-line jsx-a11y/anchor-has-content
-							<a href="https://woocommerce.com/document/woocommerce-payments/" />
+							<a href="https://woocommerce.com/document/woopayments/" />
 						),
 						contactSupportLink: (
 							// eslint-disable-next-line jsx-a11y/anchor-has-content
