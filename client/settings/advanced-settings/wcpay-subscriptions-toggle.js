@@ -30,7 +30,8 @@ const WCPaySubscriptionsToggle = () => {
 		updateIsWCPaySubscriptionsEnabled( value );
 	};
 
-	return ! isSubscriptionsPluginActive && isWCPaySubscriptionsEligible ? (
+	return ! wcpaySettings.isSubscriptionsActive &&
+		isWCPaySubscriptionsEligible ? (
 		<CheckboxControl
 			label={ sprintf(
 				/* translators: %s: WooPayments */
