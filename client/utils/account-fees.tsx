@@ -18,9 +18,9 @@ import { PaymentMethod } from 'wcpay/types/payment-methods';
 import { createInterpolateElement } from '@wordpress/element';
 
 const countryFeeStripeDocsBaseLink =
-	'https://woocommerce.com/document/woocommerce-payments/fees-and-debits/fees/#';
+	'https://woocommerce.com/document/woopayments/fees-and-debits/fees/#';
 const countryFeeStripeDocsBaseLinkNoCountry =
-	'https://woocommerce.com/document/woocommerce-payments/fees-and-debits/fees/';
+	'https://woocommerce.com/document/woopayments/fees-and-debits/fees/';
 const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 	AE: 'united-arab-emirates',
 	AU: 'australia',

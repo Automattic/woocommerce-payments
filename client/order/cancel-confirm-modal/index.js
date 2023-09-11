@@ -60,7 +60,7 @@ const CancelConfirmationModal = ( { originalOrderStatus } ) => {
 			howtoIssueRefunds: (
 				<a
 					target="_blank"
-					href="https://woocommerce.com/document/woocommerce-payments/managing-money/#refunds"
+					href="https://woocommerce.com/document/woopayments/managing-money/#refunds"
 					rel="noopener noreferrer"
 				>
 					{ __( 'how to issue refunds', 'woocommerce-payments' ) }
