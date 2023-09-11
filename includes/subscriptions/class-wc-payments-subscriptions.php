@@ -144,7 +144,7 @@ class WC_Payments_Subscriptions {
 	}
 
 	/**
-	 * Disable the WCPay Subscriptions feature on Woo Payments plugin update if it's enabled and the store is not longer eligible.
+	 * Disable the WCPay Subscriptions feature on WooPayments plugin update if it's enabled and the store is no longer eligible.
 	 *
 	 * @see WC_Payments_Features::is_wcpay_subscriptions_eligible() for eligibility criteria.
 	 */

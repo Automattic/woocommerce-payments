@@ -189,11 +189,9 @@ class WC_Payments_Features {
 	/**
 	 * Returns whether the store is eligible to use WCPay Subscriptions (the free subscriptions bundled in WooPayments)
 	 *
-	 * Stores are eligible for WCPay Subscriptions if:
-	 * 1. it doesn't have the WC Subscriptions extension active
-	 * 2. has either one of the following:
-	 *   - the store has existing WCPay Subscriptions or,
-	 *   - has subscriptions products in its catalog
+	 * Stores are eligible for the WCPay Subscriptions feature if:
+	 * 1. The store has existing WCPay Subscriptions, or
+	 * 2. The store has Stripe Billing product metadata on at least 1 product subscription product.
 	 *
 	 * @return bool
 	 */
@@ -201,7 +199,7 @@ class WC_Payments_Features {
 		/**
 		 * Check if they have at least 1 WCPay Subscription.
 		 *
-		 * Note: this is only possible if WCPay is enabled, otherwise the wcs_get_subscriptions function wouldn't exist.
+		 * Note: this is only possible if WCPay Subscriptions is enabled, otherwise the wcs_get_subscriptions function wouldn't exist.
 		 */
 		if ( function_exists( 'wcs_get_subscriptions' ) ) {
 			$wcpay_subscriptions = wcs_get_subscriptions(
