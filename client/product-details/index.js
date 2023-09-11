@@ -40,9 +40,10 @@ jQuery( function ( $ ) {
 	const quantityInput = $( '.quantity input[type=number]' );
 
 	const resetBnplPaymentMessage = () => {
-		if ( ! productVariations.base_product ) return;
+		if ( ! quantityInput.length || ! productVariations.base_product )
+			return;
 
-		const quantity = safeParseInt( quantityInput.val() ) || 1;
+		const quantity = safeParseInt( quantityInput.val() );
 		const baseProductAmount = safeParseInt(
 			productVariations.base_product.amount
 		);
@@ -70,9 +71,13 @@ jQuery( function ( $ ) {
 		$( '.single_variation_wrap' ).on(
 			'show_variation',
 			( event, variation ) => {
-				if ( ! productVariations[ variation.variation_id ] ) return;
+				if (
+					! quantityInput.length ||
+					! productVariations[ variation.variation_id ]
+				)
+					return;
 
-				const quantity = safeParseInt( quantityInput.val() ) || 1;
+				const quantity = safeParseInt( quantityInput.val() );
 				const variationPrice = safeParseInt(
 					productVariations[ variation.variation_id ].amount
 				);
