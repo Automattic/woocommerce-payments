@@ -15,7 +15,6 @@ const WCPaySubscriptionsToggle = () => {
 	const [
 		isWCPaySubscriptionsEnabled,
 		isWCPaySubscriptionsEligible,
-		isSubscriptionsPluginActive,
 		updateIsWCPaySubscriptionsEnabled,
 	] = useWCPaySubscriptions();
 
