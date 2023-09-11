@@ -71,7 +71,7 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 					'WooPayments'
 				),
 				[
-					'a' => '<a href="https://woocommerce.com/document/woocommerce-payments/payment-methods/additional-payment-methods/" target="wcpay_upe_learn_more">',
+					'a' => '<a href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/" target="wcpay_upe_learn_more">',
 				]
 			)
 		);

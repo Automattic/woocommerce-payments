@@ -52,7 +52,7 @@ class WC_Payments_Notes_Set_Up_StripeLink_Test extends WCPAY_UnitTestCase {
 		list( $set_up_action ) = $note->get_actions();
 		$this->assertSame( 'wc-payments-notes-set-up-stripe-link', $set_up_action->name );
 		$this->assertSame( 'Set up now', $set_up_action->label );
-		$this->assertStringStartsWith( 'https://woocommerce.com/document/woocommerce-payments/payment-methods/link-by-stripe/', $set_up_action->query );
+		$this->assertStringStartsWith( 'https://woocommerce.com/document/woopayments/payment-methods/link-by-stripe/', $set_up_action->query );
 	}
 
 	public function test_stripelink_setup_note_null_when_upe_disabled() {
