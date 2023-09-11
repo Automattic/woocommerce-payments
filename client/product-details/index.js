@@ -7,73 +7,85 @@
 import { initializeBnplSiteMessaging } from './bnpl-site-messaging';
 
 jQuery( function ( $ ) {
-	// Check for required global variables
+	// Check for required configuration based on the global variable.
 	if ( ! window.wcpayStripeSiteMessaging ) {
 		return;
 	}
+
+	const { productVariations, productId } = window.wcpayStripeSiteMessaging;
 	const bnplPaymentMessageElement = initializeBnplSiteMessaging();
-	const { productVariations } = window.wcpayStripeSiteMessaging;
-	let { productId } = window.wcpayStripeSiteMessaging;
 
-	const resetBnplPaymentMessage = () => {
-		const quantityInput = $( '.quantity input[type=number]' );
-		const quantity = quantityInput.length
-			? parseInt( quantityInput.val(), 10 )
-			: 1;
-		const baseProductAmount = productVariations.base_product
-			? parseInt( productVariations.base_product.amount, 10 )
-			: 0;
-
-		productId = 'base_product';
-		bnplPaymentMessageElement.update( {
-			amount: baseProductAmount * quantity,
-			currency: productVariations.base_product?.currency || 'USD',
-		} );
+	// Utility function to safely parse integers and handle NaN
+	const safeParseInt = ( value ) => {
+		const result = parseInt( value, 10 );
+		return isNaN( result ) ? 0 : result;
 	};
 
-	$( '.quantity input[type=number]' ).on( 'change', function ( event ) {
-		const newQuantity = parseInt( event.target.value, 10 ) || 1;
-		const price = productVariations[ productId ]
-			? parseInt( productVariations[ productId ].amount, 10 )
-			: 0;
+	const updateBnplPaymentMessage = ( amount, currency ) => {
+		if ( amount > 0 && currency ) {
+			bnplPaymentMessageElement.update( { amount, currency } );
+		}
+	};
 
-		bnplPaymentMessageElement.update( {
-			amount: price * newQuantity,
-			currency: productVariations[ productId ]?.currency || 'USD',
-		} );
+	const quantityInput = $( '.quantity input[type=number]' );
+
+	const resetBnplPaymentMessage = () => {
+		if ( ! quantityInput.length || ! productVariations.base_product )
+			return;
+
+		const quantity = safeParseInt( quantityInput.val() );
+		const baseProductAmount = safeParseInt(
+			productVariations.base_product.amount
+		);
+
+		const amount = baseProductAmount * quantity;
+		const currency = productVariations.base_product.currency;
+
+		updateBnplPaymentMessage( amount, currency );
+	};
+
+	// Update BNPL message based on the quantity change
+	quantityInput.on( 'change', ( event ) => {
+		const newQuantity = safeParseInt( event.target.value );
+		const price = safeParseInt( productVariations[ productId ].amount );
+
+		const amount = price * newQuantity;
+		const currency = productVariations[ productId ]?.currency;
+
+		updateBnplPaymentMessage( amount, currency );
 	} );
 
 	// Handle BNPL messaging for variable products.
 	if ( Object.keys( productVariations ).length > 1 ) {
-		$( '.single_variation_wrap' ).on( 'show_variation', function (
-			event,
-			variation
-		) {
-			const quantityInput = $( '.quantity input[type=number]' );
-			const quantity = quantityInput.length
-				? parseInt( quantityInput.val(), 10 )
-				: 1;
-			const variationPrice = productVariations[ variation.variation_id ]
-				? parseInt(
-						productVariations[ variation.variation_id ].amount,
-						10
-				  )
-				: 0;
+		// Update BNPL message based on product variation
+		$( '.single_variation_wrap' ).on(
+			'show_variation',
+			( event, variation ) => {
+				if (
+					! quantityInput.length ||
+					! productVariations[ variation.variation_id ]
+				)
+					return;
 
-			productId = variation.variation_id;
-			bnplPaymentMessageElement.update( {
-				amount: variationPrice * quantity,
-				currency:
-					productVariations[ variation.variation_id ]?.currency ||
-					'USD',
-			} );
-		} );
+				const quantity = safeParseInt( quantityInput.val() );
+				const variationPrice = safeParseInt(
+					productVariations[ variation.variation_id ].amount
+				);
 
-		// If variation is changed back to default, reset BNPL messaging.
-		$( '.variations' ).on( 'change', function ( event ) {
+				const amount = variationPrice * quantity;
+				const currency =
+					productVariations[ variation.variation_id ]?.currency;
+
+				updateBnplPaymentMessage( amount, currency );
+			}
+		);
+
+		// Reset BNPL message if variation is changed back to default
+		$( '.variations' ).on( 'change', ( event ) => {
 			if ( event.target.value === '' ) resetBnplPaymentMessage();
 		} );
 
+		// Reset BNPL message on variations reset
 		$( '.reset_variations' ).on( 'click', resetBnplPaymentMessage );
 	}
 } );
