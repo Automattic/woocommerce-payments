@@ -35,7 +35,12 @@ export const getVerifyBankAccountTask = (): any => {
 	if ( ! poEnabled || poComplete || ! createdDate ) {
 		return null;
 	}
-	if ( status === 'pending' || status === 'complete' ) {
+
+	if (
+		status === 'pending' ||
+		status === 'complete' ||
+		status === 'enabled'
+	) {
 		return null;
 	}
 

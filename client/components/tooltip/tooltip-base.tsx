@@ -222,9 +222,11 @@ const TooltipBase: React.FC< TooltipBaseProps > = ( {
 			const elementMiddle =
 				wrappedElement.offsetWidth / 2 + wrappedElementRect.left;
 			const tooltipWidth = tooltipElement.offsetWidth;
-			tooltipElement.style.left = `${
-				elementMiddle - tooltipWidth / 2
-			}px`;
+			let tooltipLeft = elementMiddle - tooltipWidth / 2;
+			if ( tooltipLeft < 0 ) {
+				tooltipLeft = 10;
+			}
+			tooltipElement.style.left = `${ tooltipLeft }px`;
 
 			// make it visible only after all the calculations are done.
 			tooltipElement.style.visibility = 'visible';

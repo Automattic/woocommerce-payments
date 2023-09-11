@@ -94,6 +94,11 @@ describe( 'StatusChip', () => {
 		expect( statusChip ).toMatchSnapshot();
 	} );
 
+	test( 'renders enabled status', () => {
+		const { container: statusChip } = renderStatusChip( 'enabled' );
+		expect( statusChip ).toMatchSnapshot();
+	} );
+
 	test( 'renders restricted soon status', () => {
 		const { container: statusChip } = renderStatusChip( 'restricted_soon' );
 		expect( statusChip ).toMatchSnapshot();

@@ -15,12 +15,6 @@ import { __, sprintf } from '@wordpress/i18n';
 import Page from 'components/page';
 import TransactionsList from './list';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
-import {
-	EmptyStateList,
-	EmptyStateTableHeaders,
-} from '../empty-state-table/list';
-import EmptyStateTable from 'empty-state-table';
-import ListBanner from 'assets/images/transactions-banner.svg?asset';
 import Authorizations from './uncaptured';
 import './style.scss';
 import {
@@ -54,40 +48,12 @@ export const TransactionsPage: React.FC = () => {
 		);
 	};
 
-	const defaultExperience = (
-		<>
-			<TestModeNotice topic={ topics.transactions } />
-			<TransactionsList />
-		</>
-	);
-
-	const treatmentExperience = wcpaySettings.accountStatus.status ? (
-		defaultExperience
-	) : (
-		<EmptyStateTable
-			headers={ EmptyStateTableHeaders }
-			title="Transactions"
-			content={
-				<EmptyStateList
-					listBanner={ ( props ) => (
-						<img
-							src={ ListBanner }
-							alt="transaction banner"
-							{ ...props }
-						/>
-					) }
-				/>
-			}
-		/>
-	);
-
 	const tabsComponentMap = {
 		'transactions-page': (
-			<Experiment
-				name="wcpay_empty_state_preview_mode_v5"
-				treatmentExperience={ treatmentExperience }
-				defaultExperience={ defaultExperience }
-			/>
+			<>
+				<TestModeNotice topic={ topics.transactions } />
+				<TransactionsList />
+			</>
 		),
 		'uncaptured-page': (
 			<>

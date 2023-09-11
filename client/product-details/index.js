@@ -32,7 +32,7 @@ jQuery( function ( $ ) {
 	} );
 
 	// Handle BNPL messaging for variable products.
-	if ( 1 < Object.keys( productVariations ).length ) {
+	if ( Object.keys( productVariations ).length > 1 ) {
 		$( '.single_variation_wrap' ).on( 'show_variation', function (
 			event,
 			variation
@@ -49,7 +49,7 @@ jQuery( function ( $ ) {
 
 		// If variation is changed back to default, reset BNPL messaging.
 		$( '.variations' ).on( 'change', function ( event ) {
-			if ( '' === event.target.value ) resetBnplPaymentMessage();
+			if ( event.target.value === '' ) resetBnplPaymentMessage();
 		} );
 
 		$( '.reset_variations' ).on( 'click', resetBnplPaymentMessage );

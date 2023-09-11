@@ -36,108 +36,96 @@
 	height: 1.25rem;
 	width: 32px;
 	width: 2rem;
+	background-size: contain;
+	background-repeat: no-repeat;
 }
 
 .payment-method__brand--amex {
-	background: no-repeat url( '../images/cards/amex.svg' );
+	background-image: url( '../images/cards/amex.svg' );
 }
 
 .payment-method__brand--diners {
-	background: no-repeat url( '../images/cards/diners.svg' );
+	background-image: url( '../images/cards/diners.svg' );
 }
 
 .payment-method__brand--discover {
-	background: no-repeat url( '../images/cards/discover.svg' );
+	background-image: url( '../images/cards/discover.svg' );
 }
 
 .payment-method__brand--jcb {
-	background: no-repeat url( '../images/cards/jcb.svg' );
+	background-image: url( '../images/cards/jcb.svg' );
 }
 
 .payment-method__brand--mastercard {
-	background: no-repeat url( '../images/cards/mastercard.svg' );
+	background-image: url( '../images/cards/mastercard.svg' );
 }
 
 .payment-method__brand--unionpay {
-	background: no-repeat url( '../images/cards/unionpay.svg' );
+	background-image: url( '../images/cards/unionpay.svg' );
 }
 
 .payment-method__brand--visa {
-	background: no-repeat url( '../images/cards/visa.svg' );
+	background-image: url( '../images/cards/visa.svg' );
 }
 
 .payment-method__brand--unknown {
-	background: no-repeat url( '../images/cards/unknown.svg' );
+	background-image: url( '../images/cards/unknown.svg' );
 }
 
 .payment-method__brand--giropay {
-	background: no-repeat url( '../images/payment-methods/giropay.svg' );
-	background-size: contain;
+	background-image: url( '../images/payment-methods/giropay.svg' );
 }
 
 .payment-method__brand--eps {
-	background: no-repeat url( '../images/payment-methods/eps.svg' );
-	background-size: contain;
+	background-image: url( '../images/payment-methods/eps.svg' );
 }
 
 .payment-method__brand--p24 {
-	background: no-repeat url( '../images/payment-methods/p24.svg' );
-	background-size: contain;
+	background-image: url( '../images/payment-methods/p24.svg' );
 }
 
 .payment-method__brand--sepa_debit {
-	background: no-repeat url( '../images/cards/sepa.svg' );
-	background-size: contain;
+	background-image: url( '../images/cards/sepa.svg' );
 }
 
 .payment-method__brand--sofort {
-	background: no-repeat url( '../images/payment-methods/sofort.svg' );
-	background-size: contain;
+	background-image: url( '../images/payment-methods/sofort.svg' );
 }
 
 .payment-method__brand--ideal {
-	background: no-repeat url( '../images/payment-methods/ideal.svg' );
-	background-size: contain;
+	background-image: url( '../images/payment-methods/ideal.svg' );
 }
 
 .payment-method__brand--google-pay {
-	background: no-repeat url( '../images/cards/google-pay.svg' );
-	background-size: contain;
+	background-image: url( '../images/cards/google-pay.svg' );
 }
 
 .payment-method__brand--apple-pay {
-	background: no-repeat url( '../images/cards/apple-pay.svg' );
-	background-size: contain;
+	background-image: url( '../images/cards/apple-pay.svg' );
 }
 
 .payment-method__brand--bancontact {
-	background: no-repeat url( '../images/payment-methods/bancontact.svg' );
-	background-size: contain;
+	background-image: url( '../images/payment-methods/bancontact.svg' );
 }
 
 .payment-method__brand--sepa_debit {
-	background: no-repeat url( '../images/payment-methods/sepa-debit.svg' );
-	background-size: contain;
+	background-image: url( '../images/payment-methods/sepa-debit.svg' );
 }
 
 .payment-method__brand--au_becs_debit {
-	background: no-repeat url( '../images/payment-methods/bank-debit.svg' );
-	background-size: contain;
+	background-image: url( '../images/payment-methods/bank-debit.svg' );
 }
 
 .payment-method__brand--link {
-	background: no-repeat url( '../images/payment-methods/link.svg' );
-	background-size: contain;
+	background-image: url( '../images/payment-methods/link.svg' );
 }
 
 .payment-method__brand--afterpay_clearpay {
-	background: no-repeat url( '../images/payment-methods/afterpay-icon.svg' );
-	background-size: contain;
+	background-image: url( '../images/payment-methods/afterpay-icon.svg' );
 }
 
 .payment-method__brand--affirm {
-	background: no-repeat url( '../images/payment-methods/affirm-icon.svg' );
-	background-size: contain;
+	background-image: url( '../images/payment-methods/affirm-icon.svg' );
 }
 
 .wc_gateways tr[data-gateway_id='woocommerce_payments'] .payment-method__icon {

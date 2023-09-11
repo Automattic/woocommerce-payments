@@ -63,9 +63,20 @@ class WC_REST_UPE_Flag_Toggle_Controller_Test extends WCPAY_UnitTestCase {
 			$action_scheduler_service,
 			$rate_limiter,
 			$order_service,
-			$mock_dpps
+			$mock_dpps,
+			$this->createMock( WC_Payments_Localization_Service::class )
 		);
 		$this->controller = new WC_REST_UPE_Flag_Toggle_Controller( $this->gateway );
+		update_option( WC_Payments_Features::UPE_FLAG_NAME, '0' );
+		update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '0' );
+		update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '0' );
+	}
+
+	public function tear_down() {
+		parent::tear_down();
+		update_option( WC_Payments_Features::UPE_FLAG_NAME, '0' );
+		update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '0' );
+		update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '0' );
 	}
 
 	public function test_get_flag_fails_if_user_cannot_manage_woocommerce() {
@@ -92,28 +103,38 @@ class WC_REST_UPE_Flag_Toggle_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_set_flag_without_param_returns_status_code_200() {
-		$request = new WP_REST_Request( 'POST', self::ROUTE );
-		update_option( '_wcpay_feature_upe', '0' );
-		update_option( '_wcpay_feature_upe_split', '0' );
-
+		$request  = new WP_REST_Request( 'POST', self::ROUTE );
 		$response = $this->controller->set_flag( $request );
 
 		$this->assertEquals( 200, $response->get_status() );
 		// no change from the initial flag value.
-		$this->assertEquals( '0', get_option( '_wcpay_feature_upe' ) );
-		$this->assertEquals( '0', get_option( '_wcpay_feature_upe_split' ) );
+		$this->assertEquals( '0', get_option( WC_Payments_Features::UPE_FLAG_NAME ) );
+		$this->assertEquals( '0', get_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME ) );
+		$this->assertEquals( '0', get_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME ) );
 	}
 
 	public function test_set_flag_disabled_with_split_returns_status_code_200() {
-		update_option( '_wcpay_feature_upe', '0' );
+		update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '1' );
 		$request = new WP_REST_Request( 'POST', self::ROUTE );
 		$request->set_param( 'is_upe_enabled', false );
 
 		$response = $this->controller->set_flag( $request );
 
 		$this->assertEquals( 200, $response->get_status() );
-		$this->assertEquals( '0', get_option( '_wcpay_feature_upe' ) );
-		$this->assertEquals( 'disabled', get_option( '_wcpay_feature_upe_split' ) );
+		$this->assertEquals( '0', get_option( WC_Payments_Features::UPE_FLAG_NAME ) );
+		$this->assertEquals( 'disabled', get_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME ) );
+	}
+
+	public function test_set_flag_disabled_with_deferred_intent_returns_status_code_200() {
+		update_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, '1' );
+		$request = new WP_REST_Request( 'POST', self::ROUTE );
+		$request->set_param( 'is_upe_enabled', false );
+
+		$response = $this->controller->set_flag( $request );
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( '0', get_option( WC_Payments_Features::UPE_FLAG_NAME ) );
+		$this->assertEquals( 'disabled', get_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME ) );
 	}
 
 	public function test_set_flag_enabled_request_returns_status_code_200() {
@@ -123,7 +144,7 @@ class WC_REST_UPE_Flag_Toggle_Controller_Test extends WCPAY_UnitTestCase {
 		$response = $this->controller->set_flag( $request );
 
 		$this->assertEquals( 200, $response->get_status() );
-		$this->assertEquals( '1', get_option( '_wcpay_feature_upe_split' ) );
+		$this->assertEquals( '1', get_option( WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME ) );
 	}
 
 	public function test_set_flag_disabled_request_returns_status_code_200() {
@@ -134,8 +155,8 @@ class WC_REST_UPE_Flag_Toggle_Controller_Test extends WCPAY_UnitTestCase {
 				'giropay',
 			]
 		);
-		update_option( '_wcpay_feature_upe', '1' );
-		$this->assertEquals( '1', get_option( '_wcpay_feature_upe' ) );
+		update_option( WC_Payments_Features::UPE_FLAG_NAME, '1' );
+		$this->assertEquals( '1', get_option( WC_Payments_Features::UPE_FLAG_NAME ) );
 
 		$request = new WP_REST_Request( 'POST', self::ROUTE );
 		$request->set_param( 'is_upe_enabled', false );
@@ -143,7 +164,7 @@ class WC_REST_UPE_Flag_Toggle_Controller_Test extends WCPAY_UnitTestCase {
 		$response = $this->controller->set_flag( $request );
 
 		$this->assertEquals( 200, $response->get_status() );
-		$this->assertEquals( 'disabled', get_option( '_wcpay_feature_upe', null ) );
+		$this->assertEquals( 'disabled', get_option( WC_Payments_Features::UPE_FLAG_NAME, null ) );
 		$this->assertEquals(
 			[
 				'card',

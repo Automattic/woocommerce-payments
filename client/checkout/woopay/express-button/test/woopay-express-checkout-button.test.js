@@ -158,6 +158,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		test( 'call `addToCart` and `expressCheckoutIframe` on express button click on product page', async () => {
 			useExpressCheckoutProductHandler.mockImplementation( () => ( {
 				addToCart: mockAddToCart,
+				getProductData: jest.fn().mockReturnValue( {} ),
 				isAddToCartDisabled: false,
 			} ) );
 			render(
@@ -184,6 +185,35 @@ describe( 'WoopayExpressCheckoutButton', () => {
 					buttonSettings.context,
 					'#email'
 				);
+			} );
+		} );
+
+		test( 'do not call `addToCart` on express button click on product page when validation fails', async () => {
+			useExpressCheckoutProductHandler.mockImplementation( () => ( {
+				addToCart: mockAddToCart,
+				getProductData: jest.fn().mockReturnValue( false ),
+				isAddToCartDisabled: false,
+			} ) );
+			render(
+				<WoopayExpressCheckoutButton
+					isPreview={ false }
+					buttonSettings={ buttonSettings }
+					api={ api }
+					isProductPage={ true }
+					emailSelector="#email"
+				/>
+			);
+
+			const expressButton = screen.queryByRole( 'button', {
+				name: 'WooPay',
+			} );
+
+			userEvent.click( expressButton );
+
+			expect( mockAddToCart ).not.toHaveBeenCalled();
+
+			await waitFor( () => {
+				expect( expressCheckoutIframe ).not.toHaveBeenCalled();
 			} );
 		} );
 	} );

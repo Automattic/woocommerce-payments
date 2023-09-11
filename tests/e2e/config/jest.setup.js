@@ -51,7 +51,7 @@ function addPageDebugEvents() {
 	} );
 
 	page.on( 'response', ( response ) => {
-		if ( 200 !== response.status() && 204 !== response.status() ) {
+		if ( response.status() !== 200 && response.status() !== 204 ) {
 			// eslint-disable-next-line no-console
 			console.log( 'response: ' + response.status(), response.url() );
 		}

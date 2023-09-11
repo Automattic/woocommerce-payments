@@ -35,12 +35,12 @@ import { reasons } from './strings';
 import { formatStringValue } from 'utils';
 import { formatExplicitCurrency } from 'utils/currency';
 import DisputesFilters from './filters';
-import { disputeAwaitingResponseStatuses } from './filters/config';
 import DownloadButton from 'components/download-button';
 import disputeStatusMapping from 'components/dispute-status-chip/mappings';
 import { CachedDispute, DisputesTableHeader } from 'wcpay/types/disputes';
 import { getDisputesCSV } from 'wcpay/data/disputes/resolvers';
 import { applyThousandSeparator } from 'wcpay/utils';
+import { isAwaitingResponse } from 'wcpay/disputes/utils';
 
 import './style.scss';
 
@@ -127,8 +127,8 @@ const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 	},
 	{
 		key: 'dueBy',
-		label: __( 'Response date', 'woocommerce-payments' ),
-		screenReaderLabel: __( 'Response date', 'woocommerce-payments' ),
+		label: __( 'Respond by', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Respond by', 'woocommerce-payments' ),
 		required: true,
 		isLeftAligned: true,
 		isSortable: true,
@@ -153,7 +153,8 @@ const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
  * @return {JSX.Element | string} If dispute is due within 72 hours, return the element that display smart date. Otherwise, a date string.
  */
 const smartDueDate = ( dispute: CachedDispute ) => {
-	if ( dispute.due_by === '' ) {
+	// if dispute is not awaiting response, return an empty string.
+	if ( dispute.due_by === '' || ! isAwaitingResponse( dispute.status ) ) {
 		return '';
 	}
 	// Get current time in UTC.
@@ -161,7 +162,12 @@ const smartDueDate = ( dispute: CachedDispute ) => {
 	const dueBy = moment.utc( dispute.due_by );
 	const diffHours = dueBy.diff( now, 'hours', false );
 	const diffDays = dueBy.diff( now, 'days', false );
-	if ( diffHours > 0 && diffHours <= 72 ) {
+
+	// if the dispute is past due, return an empty string.
+	if ( diffHours <= 0 ) {
+		return '';
+	}
+	if ( diffHours <= 72 ) {
 		return (
 			<span className="due-soon">
 				{ diffHours <= 24
@@ -215,9 +221,7 @@ export const DisputesList = (): JSX.Element => {
 		const reasonDisplay = reasonMapping
 			? reasonMapping.display
 			: formatStringValue( dispute.reason );
-		const needsResponse = disputeAwaitingResponseStatuses.includes(
-			dispute.status
-		);
+		const needsResponse = isAwaitingResponse( dispute.status );
 		const data: {
 			[ key: string ]: {
 				value: number | string;
@@ -443,7 +447,7 @@ export const DisputesList = (): JSX.Element => {
 						),
 					},
 					{
-						// Response date.
+						// Respond by.
 						...row[ 11 ],
 						value: dateI18n(
 							'Y-m-d / g:iA',

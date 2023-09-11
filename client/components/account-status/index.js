@@ -102,7 +102,7 @@ const AccountStatusDetails = ( props ) => {
 					}
 				/>
 			</AccountStatusItem>
-			{ 0 < accountFees.length && (
+			{ accountFees.length > 0 && (
 				<AccountFees accountFees={ accountFees } />
 			) }
 		</AccountStatusCard>

@@ -7,7 +7,7 @@
 
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
-use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Intent_Status;
 use WCPay\Core\Server\Request;
 use WCPay\Exceptions\API_Exception;
 
@@ -276,7 +276,7 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 			/* Collect the data, available on the server side. */
 			$wcpay_request  = Get_Intention::create( $request->get_param( 'payment_intent_id' ) );
 			$payment_intent = $wcpay_request->send( 'wcpay_get_intent_request' );
-			if ( Payment_Intent_Status::SUCCEEDED !== $payment_intent->get_status() ) {
+			if ( Intent_Status::SUCCEEDED !== $payment_intent->get_status() ) {
 				throw new \RuntimeException( __( 'Invalid payment intent', 'woocommerce-payments' ) );
 			}
 

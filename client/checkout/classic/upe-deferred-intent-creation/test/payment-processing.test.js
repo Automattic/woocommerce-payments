@@ -21,7 +21,7 @@ jest.mock( 'wcpay/checkout/utils/upe' );
 jest.mock( 'wcpay/utils/checkout', () => {
 	return {
 		getUPEConfig: jest.fn( ( argument ) => {
-			if ( 'paymentMethodsConfig' === argument ) {
+			if ( argument === 'paymentMethodsConfig' ) {
 				return {
 					card: {
 						label: 'Card',
@@ -42,7 +42,7 @@ jest.mock( 'wcpay/utils/checkout', () => {
 				};
 			}
 
-			if ( 'currency' === argument ) {
+			if ( argument === 'currency' ) {
 				return 'eur';
 			}
 		} ),
@@ -160,17 +160,17 @@ describe( 'Stripe Payment Element mounting', () => {
 			return 'fingerprint';
 		} );
 		getUPEConfig.mockImplementation( ( argument ) => {
-			if ( 'currency' === argument ) {
+			if ( argument === 'currency' ) {
 				return 'eur';
 			}
 
-			if ( 'upeAppearance' === argument ) {
+			if ( argument === 'upeAppearance' ) {
 				return {
 					backgroundColor: '#fff',
 				};
 			}
 
-			if ( 'paymentMethodsConfig' === argument ) {
+			if ( argument === 'paymentMethodsConfig' ) {
 				return {
 					ideal: {
 						label: 'iDEAL',
@@ -243,11 +243,11 @@ describe( 'Stripe Payment Element mounting', () => {
 			},
 		};
 		getUPEConfig.mockImplementation( ( argument ) => {
-			if ( 'currency' === argument ) {
+			if ( argument === 'currency' ) {
 				return 'eur';
 			}
 
-			if ( 'isUPEEnabled' === argument ) {
+			if ( argument === 'isUPEEnabled' ) {
 				return true;
 			}
 		} );
@@ -276,11 +276,11 @@ describe( 'Stripe Payment Element mounting', () => {
 		} );
 
 		getUPEConfig.mockImplementation( ( argument ) => {
-			if ( 'currency' === argument ) {
+			if ( argument === 'currency' ) {
 				return 'eur';
 			}
 
-			if ( 'paymentMethodsConfig' === argument ) {
+			if ( argument === 'paymentMethodsConfig' ) {
 				return {
 					sepa: {
 						label: 'SEPA',
@@ -305,11 +305,11 @@ describe( 'Stripe Payment Element mounting', () => {
 describe( 'Payment processing', () => {
 	beforeEach( () => {
 		getUPEConfig.mockImplementation( ( argument ) => {
-			if ( 'currency' === argument ) {
+			if ( argument === 'currency' ) {
 				return 'eur';
 			}
 
-			if ( 'paymentMethodsConfig' === argument ) {
+			if ( argument === 'paymentMethodsConfig' ) {
 				return {
 					card: {
 						label: 'card',
@@ -336,13 +336,12 @@ describe( 'Payment processing', () => {
 
 		const mockJqueryForm = {
 			submit: jest.fn(),
-			addClass: jest.fn( () => {
-				return {
-					block: jest.fn(),
-				};
-			} ),
-			removeClass: jest.fn(),
-			unblock: jest.fn(),
+			addClass: jest.fn( () => ( {
+				block: jest.fn(),
+			} ) ),
+			removeClass: jest.fn( () => ( {
+				unblock: jest.fn(),
+			} ) ),
 			attr: jest.fn().mockReturnValue( 'checkout' ),
 		};
 
@@ -377,13 +376,46 @@ describe( 'Payment processing', () => {
 
 		const checkoutForm = {
 			submit: jest.fn(),
-			addClass: jest.fn( () => {
-				return {
-					block: jest.fn(),
-				};
-			} ),
-			removeClass: jest.fn(),
-			unblock: jest.fn(),
+			addClass: jest.fn( () => ( {
+				block: jest.fn(),
+			} ) ),
+			removeClass: jest.fn( () => ( {
+				unblock: jest.fn(),
+			} ) ),
+			attr: jest.fn().mockReturnValue( 'checkout' ),
+		};
+
+		await processPayment( apiMock, checkoutForm, 'card' );
+
+		expect( mockCreatePaymentMethod ).toHaveBeenCalledWith( {
+			elements: expect.any( Object ),
+			params: {
+				billing_details: expect.any( Object ),
+			},
+		} );
+	} );
+
+	test( 'Payment processing does not create error when some fields are hidden via customizer', async () => {
+		setupBillingDetailsFields();
+		// pretending that the customizer removed the billing phone field
+		document.body.removeChild( document.getElementById( 'billing_phone' ) );
+		getFingerprint.mockImplementation( () => {
+			return 'fingerprint';
+		} );
+
+		const mockDomElement = document.createElement( 'div' );
+		mockDomElement.dataset.paymentMethodType = 'card';
+
+		await mountStripePaymentElement( apiMock, mockDomElement );
+
+		const checkoutForm = {
+			submit: jest.fn(),
+			addClass: jest.fn( () => ( {
+				block: jest.fn(),
+			} ) ),
+			removeClass: jest.fn( () => ( {
+				unblock: jest.fn(),
+			} ) ),
 			attr: jest.fn().mockReturnValue( 'checkout' ),
 		};
 
@@ -410,13 +442,12 @@ describe( 'Payment processing', () => {
 
 		const addPaymentMethodForm = {
 			submit: jest.fn(),
-			addClass: jest.fn( () => {
-				return {
-					block: jest.fn(),
-				};
-			} ),
-			removeClass: jest.fn(),
-			unblock: jest.fn(),
+			addClass: jest.fn( () => ( {
+				block: jest.fn(),
+			} ) ),
+			removeClass: jest.fn( () => ( {
+				unblock: jest.fn(),
+			} ) ),
 			attr: jest.fn().mockReturnValue( 'add_payment_method' ),
 		};
 

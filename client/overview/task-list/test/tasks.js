@@ -122,6 +122,7 @@ describe( 'getTasks()', () => {
 				progressiveOnboarding: {
 					isEnabled: false,
 				},
+				detailsSubmitted: true,
 			},
 			zeroDecimalCurrencies: [],
 			connect: {
@@ -160,6 +161,25 @@ describe( 'getTasks()', () => {
 		);
 	} );
 
+	it( 'should include complete setup when flag is set and details submitted as false', () => {
+		global.wcpaySettings.accountStatus.status = 'restricted';
+		global.wcpaySettings.accountStatus.detailsSubmitted = false;
+		const actual = getTasks( {
+			showUpdateDetailsTask: true,
+		} );
+
+		expect( actual ).toEqual(
+			expect.arrayContaining( [
+				expect.objectContaining( {
+					key: 'complete-setup',
+					completed: false,
+					title: 'Finish setting up WooPayments',
+					actionLabel: 'Finish setup',
+				} ),
+			] )
+		);
+	} );
+
 	it( 'should omit business details when flag is not set', () => {
 		global.wcpaySettings.accountStatus.status = 'restricted';
 		global.wcpaySettings.accountStatus.pastDue = true;
@@ -179,6 +199,24 @@ describe( 'getTasks()', () => {
 
 	it( 'handles when account is complete', () => {
 		global.wcpaySettings.accountStatus.status = 'complete';
+		global.wcpaySettings.accountStatus.currentDeadline = 0;
+
+		const actual = getTasks( {
+			showUpdateDetailsTask: true,
+		} );
+
+		expect( actual ).toEqual(
+			expect.arrayContaining( [
+				expect.objectContaining( {
+					key: 'update-business-details',
+					completed: true,
+				} ),
+			] )
+		);
+	} );
+
+	it( 'handles when account is enabled', () => {
+		global.wcpaySettings.accountStatus.status = 'enabled';
 		global.wcpaySettings.accountStatus.currentDeadline = 0;
 
 		const actual = getTasks( {
@@ -390,6 +428,7 @@ describe( 'getTasks()', () => {
 		global.wcpaySettings = {
 			accountStatus: {
 				status: 'restricted_soon',
+				detailsSubmitted: true,
 				progressiveOnboarding: {
 					isEnabled: true,
 					isComplete: false,
@@ -481,6 +520,7 @@ describe( 'taskSort()', () => {
 		global.wcpaySettings = {
 			accountStatus: {
 				status: 'restricted_soon',
+				detailsSubmitted: true,
 				progressiveOnboarding: {
 					isEnabled: true,
 					isComplete: false,

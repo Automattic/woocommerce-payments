@@ -6,11 +6,26 @@
 	.express-checkouts-list {
 		.express-checkout {
 			margin: 0;
-			padding: 16px 24px 14px 24px;
+			padding: 24px;
 			background: #fff;
 
-			@include breakpoint( '>660px' ) {
-				padding: 24px 24px 24px 24px;
+			.gridicons-notice-outline {
+				fill: #f0b849;
+				margin-bottom: -5px;
+				margin-right: 16px;
+			}
+
+			&__label-container {
+				display: flex;
+				flex-wrap: wrap;
+			}
+
+			&__text-container {
+				display: flex;
+
+				@include breakpoint( '<660px' ) {
+					flex-direction: column;
+				}
 			}
 
 			&__row {
@@ -30,6 +45,11 @@
 				font-size: 12px;
 				padding: 1px;
 				margin-right: 17px;
+				line-height: 18px;
+
+				@include breakpoint( '<660px' ) {
+					margin-top: 10px;
+				}
 			}
 
 			&:not( :last-child ) {
@@ -48,11 +68,15 @@
 				.components-base-control__field {
 					margin: 0 4px 0 0;
 				}
+
+				@include breakpoint( '<660px' ) {
+					align-self: baseline;
+					margin-top: 3px;
+				}
 			}
 
 			&__icon {
 				border-radius: 2px;
-				display: none;
 				flex: 0 0 63.69px;
 				height: 40px;
 				margin: 1px 17px 1px 1px; // 1px to accommodate for box-shadow
@@ -60,6 +84,15 @@
 
 				@include breakpoint( '>660px' ) {
 					display: flex;
+				}
+
+				@include breakpoint( '<660px' ) {
+					height: 30px;
+					flex: 0;
+					margin: 0 10px 0 0;
+					img {
+						height: 30px;
+					}
 				}
 			}
 
@@ -86,16 +119,37 @@
 				margin-bottom: 4px;
 			}
 
+			&__label-mobile {
+				display: none;
+				@include breakpoint( '<660px' ) {
+					display: block;
+					align-self: flex-end;
+				}
+			}
+
+			&__label-desktop {
+				display: none;
+				@include breakpoint( '>660px' ) {
+					display: block;
+				}
+			}
+
 			&__link {
-				margin-left: auto;
 				padding: 12px;
 				border: 1px solid #007cba;
 				border-radius: 2px;
 				font-size: 12px;
+				height: 18px;
+				align-self: center;
 
 				a {
 					text-decoration: none;
 					white-space: nowrap;
+				}
+
+				@include breakpoint( '<660px' ) {
+					align-self: flex-start;
+					margin-top: 20px;
 				}
 			}
 			&__subgroup {
@@ -103,6 +157,11 @@
 				align-items: center;
 				&:not( :last-child ) {
 					margin-bottom: 1.4em;
+				}
+
+				@include breakpoint( '<660px' ) {
+					align-items: flex-start;
+					flex-wrap: wrap;
 				}
 			}
 		}

@@ -11,24 +11,21 @@ import React from 'react';
 import './style.scss';
 import { HoverTooltip } from 'wcpay/components/tooltip';
 
-const types = [ 'primary', 'success', 'light', 'warning', 'alert' ];
+export type ChipType = 'primary' | 'success' | 'light' | 'warning' | 'alert';
 
 interface Props {
 	message: string;
-	type?: string;
-	isCompact?: boolean;
+	type?: ChipType;
 	className?: string;
 	tooltip?: string;
 }
-const Chip: React.FC< Props > = ( props ) => {
-	const { message, type, isCompact, className, tooltip } = props;
-
-	const classNames = [
-		'chip',
-		`chip-${ types.find( ( t ) => t === type ) || 'primary' }`,
-		isCompact ? 'is-compact' : '',
-		className ?? '',
-	];
+const Chip: React.FC< Props > = ( {
+	message,
+	type = 'primary',
+	className,
+	tooltip,
+} ) => {
+	const classNames = [ 'chip', `chip-${ type }`, className ?? '' ];
 
 	if ( tooltip ) {
 		return (

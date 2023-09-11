@@ -35,7 +35,7 @@ const PaymentGatewaysConfirmation = () => {
 
 	useEffect( () => {
 		const handler = ( event, request, settings ) => {
-			if ( true === hasUserConfirmedDeactivation.current ) {
+			if ( hasUserConfirmedDeactivation.current === true ) {
 				// if the user does an "deactivate > confirm > activate > deactivate" step, we need to show the dialog again
 				hasUserConfirmedDeactivation.current = false;
 				return;
@@ -57,10 +57,9 @@ const PaymentGatewaysConfirmation = () => {
 			// Is the user trying to enable it or disable it?
 			// if they're trying to enable it (i.e.: it's currently disabled), no need to show the modal
 			if (
-				1 ===
 				jQuery(
 					'tr[data-gateway_id="woocommerce_payments"] .woocommerce-input-toggle--disabled'
-				).length
+				).length === 1
 			) {
 				return;
 			}

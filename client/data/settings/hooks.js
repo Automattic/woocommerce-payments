@@ -59,6 +59,14 @@ export const useEnabledPaymentMethodIds = () => {
 	);
 };
 
+export const useAccountDomesticCurrency = () => {
+	return useSelect( ( select ) => {
+		const { getAccountDomesticCurrency } = select( STORE_NAME );
+
+		return [ getAccountDomesticCurrency() ];
+	}, [] );
+};
+
 export const useSelectedPaymentMethod = () => {
 	const { updateSelectedPaymentMethod } = useDispatch( STORE_NAME );
 
@@ -146,17 +154,13 @@ export const useWCPaySubscriptions = () => {
 			const {
 				getIsWCPaySubscriptionsEnabled,
 				getIsWCPaySubscriptionsEligible,
-				getIsSubscriptionsPluginActive,
 			} = select( STORE_NAME );
 
 			const isWCPaySubscriptionsEnabled = getIsWCPaySubscriptionsEnabled();
 			const isWCPaySubscriptionsEligible = getIsWCPaySubscriptionsEligible();
-			const isSubscriptionsPluginActive = getIsSubscriptionsPluginActive();
-
 			return [
 				isWCPaySubscriptionsEnabled,
 				isWCPaySubscriptionsEligible,
-				isSubscriptionsPluginActive,
 				updateIsWCPaySubscriptionsEnabled,
 			];
 		},
@@ -177,6 +181,38 @@ export const useAccountStatementDescriptor = () => {
 			];
 		},
 		[ updateAccountStatementDescriptor ]
+	);
+};
+
+export const useAccountStatementDescriptorKanji = () => {
+	const { updateAccountStatementDescriptorKanji } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getAccountStatementDescriptorKanji } = select( STORE_NAME );
+
+			return [
+				getAccountStatementDescriptorKanji(),
+				updateAccountStatementDescriptorKanji,
+			];
+		},
+		[ updateAccountStatementDescriptorKanji ]
+	);
+};
+
+export const useAccountStatementDescriptorKana = () => {
+	const { updateAccountStatementDescriptorKana } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getAccountStatementDescriptorKana } = select( STORE_NAME );
+
+			return [
+				getAccountStatementDescriptorKana(),
+				updateAccountStatementDescriptorKana,
+			];
+		},
+		[ updateAccountStatementDescriptorKana ]
 	);
 };
 
@@ -568,4 +604,45 @@ export const useWooPayShowIncompatibilityNotice = () => {
 
 		return getShowWooPayIncompatibilityNotice();
 	} );
+};
+
+export const useStripeBilling = () => {
+	const { updateIsStripeBillingEnabled } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getIsStripeBillingEnabled } = select( STORE_NAME );
+
+			return [
+				getIsStripeBillingEnabled(),
+				updateIsStripeBillingEnabled,
+			];
+		},
+		[ updateIsStripeBillingEnabled ]
+	);
+};
+
+export const useStripeBillingMigration = () => {
+	const { submitStripeBillingSubscriptionMigration } = useDispatch(
+		STORE_NAME
+	);
+
+	return useSelect( ( select ) => {
+		const { getStripeBillingSubscriptionCount } = select( STORE_NAME );
+		const { getIsStripeBillingMigrationInProgress } = select( STORE_NAME );
+		const { isResolving } = select( STORE_NAME );
+		const hasResolved = select( STORE_NAME ).hasFinishedResolution(
+			'scheduleStripeBillingMigration'
+		);
+		const { getStripeBillingMigratedCount } = select( STORE_NAME );
+
+		return [
+			getIsStripeBillingMigrationInProgress(),
+			getStripeBillingMigratedCount(),
+			getStripeBillingSubscriptionCount(),
+			submitStripeBillingSubscriptionMigration,
+			isResolving( 'scheduleStripeBillingMigration' ),
+			hasResolved,
+		];
+	}, [] );
 };

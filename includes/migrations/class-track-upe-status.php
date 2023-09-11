@@ -31,10 +31,12 @@ class Track_Upe_Status {
 			return;
 		}
 
-		$upe_value = get_option( \WC_Payments_Features::UPE_SPLIT_FLAG_NAME, 'not-set' );
+		$upe_value                 = get_option( \WC_Payments_Features::UPE_FLAG_NAME, 'not-set' );
+		$upe_split_value           = get_option( \WC_Payments_Features::UPE_SPLIT_FLAG_NAME, 'not-set' );
+		$upe_deferred_intent_value = get_option( \WC_Payments_Features::UPE_DEFERRED_INTENT_FLAG_NAME, 'not-set' );
 
-		// Don't trigger the track event when the flag isn't set.
-		if ( 'not-set' !== $upe_value ) {
+		// Don't trigger the track event when no UPE flags are set.
+		if ( 'not-set' !== $upe_value || 'not-set' !== $upe_split_value || 'not-set' !== $upe_deferred_intent_value ) {
 			self::trigger_track_event();
 		}
 

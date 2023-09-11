@@ -36,6 +36,14 @@ jest.mock( '@wordpress/data', () => ( {
 	useDispatch: jest.fn( () => ( { createErrorNotice: jest.fn() } ) ),
 } ) );
 
+jest.mock( '@woocommerce/components', () => ( {
+	Link: jest
+		.fn()
+		.mockImplementation( ( { href, children } ) => (
+			<a href={ href }>{ children }</a>
+		) ),
+} ) );
+
 const getMockWooPayEnabledSettings = (
 	isEnabled,
 	updateIsWooPayEnabledHandler
@@ -137,7 +145,9 @@ describe( 'WooPaySettings', () => {
 
 		// confirm settings headings
 		expect(
-			screen.queryByRole( 'heading', { name: 'Custom message' } )
+			screen.queryByRole( 'heading', {
+				name: 'Policies and custom text',
+			} )
 		).toBeInTheDocument();
 
 		// confirm radio button groups displayed

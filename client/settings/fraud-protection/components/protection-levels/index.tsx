@@ -17,7 +17,7 @@ import {
 import { FraudProtectionHelpText, BasicFraudProtectionModal } from '../index';
 import { getAdminUrl } from 'wcpay/utils';
 import { ProtectionLevel } from '../../advanced-settings/constants';
-import InlineNotice from '../../../../components/inline-notice';
+import InlineNotice from 'components/inline-notice';
 import wcpayTracks from 'tracks';
 import { CurrentProtectionLevelHook } from '../../interfaces';
 
@@ -57,6 +57,7 @@ const ProtectionLevels: React.FC = () => {
 		<>
 			{ 'error' === advancedFraudProtectionSettings && (
 				<InlineNotice
+					icon
 					status="error"
 					isDismissible={ false }
 					className={ '' }

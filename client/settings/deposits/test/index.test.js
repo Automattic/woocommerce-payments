@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { render, screen, within } from '@testing-library/react';
+import { select } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -16,6 +17,8 @@ import {
 	useDepositScheduleWeeklyAnchor,
 	useDepositScheduleMonthlyAnchor,
 } from 'wcpay/data';
+
+jest.mock( '@wordpress/data' );
 
 jest.mock( 'wcpay/data', () => ( {
 	useAccountStatementDescriptor: jest.fn(),
@@ -46,6 +49,11 @@ describe( 'Deposits', () => {
 			'monday',
 			jest.fn(),
 		] );
+		select.mockImplementation( () => ( {
+			getSettings: jest.fn().mockReturnValue( {
+				account_country: 'US',
+			} ),
+		} ) );
 	} );
 
 	it( 'renders', () => {
@@ -152,6 +160,27 @@ describe( 'Deposits', () => {
 		expect( frequencySelect ).toHaveValue( 'daily' );
 
 		within( frequencySelect ).getByRole( 'option', { name: /Daily/ } );
+		within( frequencySelect ).getByRole( 'option', { name: /Weekly/ } );
+		within( frequencySelect ).getByRole( 'option', { name: /Monthly/ } );
+	} );
+
+	it( 'renders the frequency select without daily for Japan', () => {
+		useDepositScheduleInterval.mockReturnValue( [ 'daily', jest.fn() ] );
+
+		select.mockImplementation( () => ( {
+			getSettings: jest.fn().mockReturnValue( {
+				account_country: 'JP',
+			} ),
+		} ) );
+		render(
+			<WCPaySettingsContext.Provider value={ settingsContext }>
+				<Deposits />
+			</WCPaySettingsContext.Provider>
+		);
+
+		const frequencySelect = screen.getByLabelText( /Frequency/ );
+		expect( frequencySelect ).toHaveValue( 'weekly' );
+
 		within( frequencySelect ).getByRole( 'option', { name: /Weekly/ } );
 		within( frequencySelect ).getByRole( 'option', { name: /Monthly/ } );
 	} );

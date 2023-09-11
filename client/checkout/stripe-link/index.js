@@ -1,7 +1,7 @@
 const showLinkButton = ( linkAutofill ) => {
 	// Display StripeLink button if email field is prefilled.
 	const billingEmailInput = document.getElementById( 'billing_email' );
-	if ( '' !== billingEmailInput.value ) {
+	if ( billingEmailInput.value !== '' ) {
 		const linkButtonTop =
 			billingEmailInput.offsetTop +
 			( billingEmailInput.offsetHeight - 40 ) / 2;
@@ -28,7 +28,7 @@ export const autofill = ( event, options ) => {
 	const fillWith = options.fill_field_method
 		? options.fill_field_method
 		: ( address, nodeId, key ) => {
-				if ( null !== document.getElementById( nodeId ) ) {
+				if ( document.getElementById( nodeId ) !== null ) {
 					document.getElementById( nodeId ).value =
 						address.address[ key ];
 				}

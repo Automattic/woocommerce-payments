@@ -26,6 +26,7 @@ import {
 	useGetPaymentMethodStatuses,
 	useSelectedPaymentMethod,
 	useUnselectedPaymentMethod,
+	useAccountDomesticCurrency,
 } from 'wcpay/data';
 
 import useIsUpeEnabled from '../settings/wcpay-upe-toggle/hook.js';
@@ -46,6 +47,7 @@ import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants'
 import ConfirmPaymentMethodActivationModal from './activation-modal';
 import ConfirmPaymentMethodDeleteModal from './delete-modal';
 import { getAdminUrl } from 'wcpay/utils';
+import { getPaymentMethodDescription } from 'wcpay/utils/payment-methods';
 
 const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 	return (
@@ -109,7 +111,7 @@ const UpeSetupBanner = () => {
 							) }
 						</Button>
 					</span>
-					<ExternalLink href="https://woocommerce.com/document/woocommerce-payments/payment-methods/additional-payment-methods/">
+					<ExternalLink href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/">
 						{ __( 'Learn more', 'woocommerce-payments' ) }
 					</ExternalLink>
 				</div>
@@ -159,6 +161,8 @@ const PaymentMethods = () => {
 
 	const [ , updateSelectedPaymentMethod ] = useSelectedPaymentMethod();
 
+	const [ stripeAccountDomesticCurrency ] = useAccountDomesticCurrency();
+
 	const completeActivation = ( itemId ) => {
 		updateSelectedPaymentMethod( itemId );
 		handleActivationModalOpen( null );
@@ -189,8 +193,8 @@ const PaymentMethods = () => {
 	const handleCheckClick = ( itemId ) => {
 		const statusAndRequirements = getStatusAndRequirements( itemId );
 		if (
-			'unrequested' === statusAndRequirements.status &&
-			0 < statusAndRequirements.requirements.length
+			statusAndRequirements.status === 'unrequested' &&
+			statusAndRequirements.requirements.length > 0
 		) {
 			handleActivationModalOpen( {
 				id: itemId,
@@ -204,7 +208,7 @@ const PaymentMethods = () => {
 	const handleUncheckClick = ( itemId ) => {
 		const methodConfig = methodsConfiguration[ itemId ];
 		const statusAndRequirements = getStatusAndRequirements( itemId );
-		if ( methodConfig && 'active' === statusAndRequirements.status ) {
+		if ( methodConfig && statusAndRequirements.status === 'active' ) {
 			handleDeleteModalOpen( {
 				id: itemId,
 				label: methodConfig.label,
@@ -224,7 +228,7 @@ const PaymentMethods = () => {
 
 	return (
 		<>
-			{ 'disable' === openModalIdentifier ? (
+			{ openModalIdentifier === 'disable' ? (
 				<DisableUPEModal
 					setOpenModal={ setOpenModalIdentifier }
 					triggerAfterDisable={ () =>
@@ -232,7 +236,7 @@ const PaymentMethods = () => {
 					}
 				/>
 			) : null }
-			{ 'survey' === openModalIdentifier ? (
+			{ openModalIdentifier === 'survey' ? (
 				<WcPaySurveyContextProvider>
 					<SurveyModal
 						setOpenModal={ setOpenModalIdentifier }
@@ -244,7 +248,7 @@ const PaymentMethods = () => {
 
 			<Card
 				className={ classNames( 'payment-methods', {
-					'is-loading': 'pending' === status,
+					'is-loading': status === 'pending',
 				} ) }
 			>
 				{ isUpeEnabled && (
@@ -256,7 +260,7 @@ const PaymentMethods = () => {
 									'woocommerce-payments'
 								) }
 							</span>
-							{ 'split' !== upeType && (
+							{ upeType !== 'split' && (
 								<>
 									{ ' ' }
 									<Pill>
@@ -280,15 +284,19 @@ const PaymentMethods = () => {
 							( {
 								id,
 								label,
-								description,
 								icon: Icon,
 								allows_manual_capture: isAllowingManualCapture,
+								setup_required: isSetupRequired,
+								setup_tooltip: setupTooltip,
 							} ) => (
 								<PaymentMethod
 									id={ id }
 									key={ id }
 									label={ label }
-									description={ description }
+									description={ getPaymentMethodDescription(
+										id,
+										stripeAccountDomesticCurrency
+									) }
 									checked={
 										enabledMethodIds.includes( id ) &&
 										upeCapabilityStatuses.INACTIVE !==
@@ -309,6 +317,8 @@ const PaymentMethods = () => {
 									status={
 										getStatusAndRequirements( id ).status
 									}
+									isSetupRequired={ isSetupRequired }
+									setupTooltip={ setupTooltip }
 									isAllowingManualCapture={
 										isAllowingManualCapture
 									}
@@ -318,6 +328,14 @@ const PaymentMethods = () => {
 									onCheckClick={ () => {
 										handleCheckClick( id );
 									} }
+									isPoEnabled={
+										wcpaySettings?.progressiveOnboarding
+											?.isEnabled
+									}
+									isPoComplete={
+										wcpaySettings?.progressiveOnboarding
+											?.isComplete
+									}
 								/>
 							)
 						) }

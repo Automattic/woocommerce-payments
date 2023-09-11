@@ -14,6 +14,7 @@ import {
 	paymentMethodHandler,
 	payForOrderHandler,
 } from './event-handlers.js';
+import '../checkout/express-checkout-buttons.scss';
 
 import { getPaymentRequest, displayLoginConfirmation } from './utils';
 
@@ -62,7 +63,7 @@ jQuery( ( $ ) => {
 					$( this ).attr( 'name' );
 				const value = $( this ).val() || '';
 
-				if ( 0 < value.length ) {
+				if ( value.length > 0 ) {
 					chosen++;
 				}
 
@@ -366,7 +367,7 @@ jQuery( ( $ ) => {
 					return;
 				}
 
-				if ( 0 < paymentRequestError.length ) {
+				if ( paymentRequestError.length > 0 ) {
 					evt.preventDefault();
 					window.alert( paymentRequestError );
 					return;

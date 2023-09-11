@@ -33,7 +33,7 @@ export default {
 				note: sprintf(
 					/* translators: %s: WooPayments */
 					__(
-						'This option will set up %s in development mode. You can use our test data to set up. When you’re ready to launch your store, switching to live payments is easy.',
+						'This option will set up %s in development mode. You can use test data to set up, no personal information is required. When you’re ready to launch your store, switching to live payments is easy.',
 						'woocommerce-payments'
 					),
 					'WooPayments'
@@ -187,6 +187,10 @@ export default {
 		from_3_to_6months: __( '3 – 6 months', 'woocommerce-payments' ),
 		more_than_6months: __( '6+ months', 'woocommerce-payments' ),
 	},
+	restoredState: __(
+		'We have restored your previous session. You can pick up where you left off, or go back to a previous step to make changes. ',
+		'woocommerce-payments'
+	),
 	continue: __( 'Continue', 'woocommerce-payments' ),
 	back: __( 'Back', 'woocommerce-payments' ),
 };

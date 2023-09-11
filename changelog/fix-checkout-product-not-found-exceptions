@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Avoiding product-service exceptions during checkout, making debugging easier.

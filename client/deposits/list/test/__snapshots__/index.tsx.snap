@@ -379,9 +379,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                       tabindex="-1"
                     >
                       <span
-                        class="components-truncate components-text woocommerce-pill wcpay-pill__success css-1g4vivm-View-Text-sx-Base em57xhy0"
-                        data-wp-c16t="true"
-                        data-wp-component="Text"
+                        class="chip chip-success"
                       >
                         Paid
                       </span>
@@ -468,9 +466,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                       tabindex="-1"
                     >
                       <span
-                        class="components-truncate components-text woocommerce-pill wcpay-pill__alert css-1g4vivm-View-Text-sx-Base em57xhy0"
-                        data-wp-c16t="true"
-                        data-wp-component="Text"
+                        class="chip chip-warning"
                       >
                         Pending
                       </span>
@@ -929,9 +925,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                       tabindex="-1"
                     >
                       <span
-                        class="components-truncate components-text woocommerce-pill wcpay-pill__success css-1g4vivm-View-Text-sx-Base em57xhy0"
-                        data-wp-c16t="true"
-                        data-wp-component="Text"
+                        class="chip chip-success"
                       >
                         Paid
                       </span>
@@ -1018,9 +1012,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                       tabindex="-1"
                     >
                       <span
-                        class="components-truncate components-text woocommerce-pill wcpay-pill__alert css-1g4vivm-View-Text-sx-Base em57xhy0"
-                        data-wp-c16t="true"
-                        data-wp-component="Text"
+                        class="chip chip-warning"
                       >
                         Pending
                       </span>
