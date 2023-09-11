@@ -7,7 +7,17 @@
 import { initializeBnplSiteMessaging } from './bnpl-site-messaging';
 
 jQuery( function ( $ ) {
-	// Check for required configuration based on the global variable.
+	/**
+	 * Check for the existence of the `wcpayStripeSiteMessaging` variable on the window object.
+	 * This variable holds the configuration for Stripe site messaging and contains the following keys:
+	 *  - productId: The ID of the product.
+	 *  - productVariations: Variations of the product.
+	 *  - country: The country of the customer. Defaults to the store's country.
+	 *  - publishableKey: The key used for Stripe's API calls.
+	 *  - paymentMethods: Enabled BNPL payment methods.
+	 *
+	 * If this variable is not set, the script will exit early to prevent further execution.
+	 */
 	if ( ! window.wcpayStripeSiteMessaging ) {
 		return;
 	}
