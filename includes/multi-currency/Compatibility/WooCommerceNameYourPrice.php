@@ -33,6 +33,10 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 			add_action( 'woocommerce_add_cart_item_data', [ $this, 'add_initial_currency' ], 20, 3 );
 			add_filter( 'woocommerce_get_cart_item_from_session', [ $this, 'convert_cart_currency' ], 20, 2 );
 			add_filter( MultiCurrency::FILTER_PREFIX . 'should_convert_product_price', [ $this, 'should_convert_product_price' ], 50, 2 );
+			
+			// Convert cart editing price.
+		    add_filter( 'wc_nyp_edit_in_cart_args', [ $this, 'edit_in_cart_args' ], 10, 2 );
+		    add_filter( 'wc_nyp_get_initial_price', [ $this, 'get_initial_price' ], 10, 3 );
 		}
 	}
 
@@ -140,4 +144,53 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 
 		return $return;
 	}
+	
+	/**
+	 * Add currency to cart edit link.
+	 *
+	 * @param bool $remove_cart_item_from_session If true, the item will not be added to the cart. Default: false.
+	 * @param array $values Cart item values e.g. quantity and product_id.
+	 * @param string $key Cart item key.
+	 * @return array
+	 */
+	public function edit_in_cart_args( $args, $cart_item ) {
+		$args['nyp_currency'] = $this->multi_currency->get_selected_currency()->get_code();
+		return $args;
+	}
+
+
+  	/**
+	 * Maybe convert any prices being edited from the cart
+	 *
+     * @param string $initial_price
+	 * @param mixed WC_Product $product
+	 * @param string $suffix
+	 * @return string
+	 */
+	public function get_initial_price( $initial_price, $product, $suffix ) {
+
+		if ( isset( $_REQUEST[ 'nyp_raw' . $suffix ] ) && isset( $_REQUEST[ 'nyp_currency' ] ) ) {
+
+			$from_currency = wc_clean( wp_unslash( $_REQUEST[ 'nyp_currency' ] ) );
+            $raw_price     = wc_clean( wp_unslash( $_REQUEST[ 'nyp_raw' . $suffix ] ) );
+            
+            $selected_currency = $this->multi_currency->get_selected_currency();
+            
+            if ( $from_currency !== $selected_currency->get_code() ) {
+                $nyp_currency = $this->multi_currency->get_enabled_currencies()[ $from_currency ] ?? null;
+                
+                // Convert entered price back to default currency.
+				$converted_price = ( (float) $raw_price ) / $nyp_currency->get_rate();
+		
+				if ( ! $selected_currency->get_is_default() ) {
+					$converted_price = $this->multi_currency->get_price( $converted_price, 'product' );
+				}
+		
+				$initial_price = $converted_price;
+                
+            }
+		}
+
+		return $initial_price;
+	}  
 }
