@@ -8,7 +8,7 @@ import React from 'react';
 /**
  * Internal dependencies
  */
-import type { Dispute } from 'wcpay/types/disputes';
+import type { Dispute, EvidenceDetails } from 'wcpay/types/disputes';
 import type { Charge } from 'wcpay/types/charges';
 import DisputeDetails from '..';
 
@@ -52,11 +52,13 @@ global.wcpaySettings = {
 	},
 };
 
-interface ChargeWithDisputeRequired extends Charge {
-	dispute: Dispute;
+interface ChargeWithDisputeEvidenceDetails extends Charge {
+	dispute: Dispute & {
+		evidence_details: EvidenceDetails;
+	};
 }
 
-const getBaseCharge = (): ChargeWithDisputeRequired =>
+const getBaseCharge = (): ChargeWithDisputeEvidenceDetails =>
 	( {
 		id: 'ch_38jdHA39KKA',
 		/* Stripe data comes in seconds, instead of the default Date milliseconds */
@@ -150,12 +152,7 @@ describe( 'DisputeDetails', () => {
 
 	test( 'correctly renders dispute details for a dispute with staged evidence', () => {
 		const charge = getBaseCharge();
-		charge.dispute.evidence_details = {
-			has_evidence: true,
-			due_by: 1694303999,
-			past_due: false,
-			submission_count: 0,
-		};
+		charge.dispute.evidence_details.has_evidence = true;
 
 		render( <DisputeDetails dispute={ charge.dispute } /> );
 
