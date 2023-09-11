@@ -61,6 +61,10 @@ declare global {
 				declineOnCVCFailure: boolean;
 			};
 		};
+		additionalMethodsSetup?: {
+			isUpeEnabled: boolean;
+			upeType: string;
+		};
 		accountLoans: {
 			has_active_loan: boolean;
 			has_past_loans: boolean;

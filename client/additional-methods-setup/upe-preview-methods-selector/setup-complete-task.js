@@ -82,11 +82,6 @@ const SetupComplete = () => {
 			return;
 		}
 
-		updateOptions( {
-			// eslint-disable-next-line camelcase
-			wcpay_apm_setup_complete: 'yes',
-		} );
-
 		window.wcpaySettings.additionalMethodsSetup.isUpeEnabled = true;
 	}, [ isActive, updateOptions ] );
 
