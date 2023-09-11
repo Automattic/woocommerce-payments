@@ -15,7 +15,6 @@ const WCPaySubscriptionsToggle = () => {
 	const [
 		isWCPaySubscriptionsEnabled,
 		isWCPaySubscriptionsEligible,
-		isSubscriptionsPluginActive,
 		updateIsWCPaySubscriptionsEnabled,
 	] = useWCPaySubscriptions();
 
@@ -31,8 +30,11 @@ const WCPaySubscriptionsToggle = () => {
 		updateIsWCPaySubscriptionsEnabled( value );
 	};
 
-	return ! isSubscriptionsPluginActive &&
-		( isWCPaySubscriptionsEligible || isWCPaySubscriptionsEnabled ) ? (
+	/**
+	 * Only show the toggle if the site is eligible for wcpay subscriptions or
+	 * if wcpay subscriptions are already enabled.
+	 */
+	return isWCPaySubscriptionsEligible || isWCPaySubscriptionsEnabled ? (
 		<CheckboxControl
 			label={ sprintf(
 				/* translators: %s: WooPayments */
@@ -51,7 +53,7 @@ const WCPaySubscriptionsToggle = () => {
 				components: {
 					learnMoreLink: (
 						// eslint-disable-next-line max-len
-						<ExternalLink href="https://woocommerce.com/document/woocommerce-payments/built-in-subscriptions/" />
+						<ExternalLink href="https://woocommerce.com/document/woopayments/built-in-subscriptions/" />
 					),
 				},
 			} ) }
