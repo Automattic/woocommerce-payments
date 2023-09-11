@@ -176,7 +176,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
           <span
             class="wcpay-deposits-overview__heading__description__text"
           >
-            Your deposits are dispatched
+            Your deposits are dispatched 
             <strong>
               automatically every Monday
             </strong>
@@ -446,11 +446,11 @@ exports[`Suspended Deposit Notice Renders Component Renders 1`] = `
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
-          Your deposits are
+          Your deposits are 
           <strong>
             temporarily suspended
           </strong>
-          .
+          . 
           <a
             data-link-type="wc-admin"
             href="https://woocommerce.com/document/woopayments/deposits/why-deposits-suspended/"

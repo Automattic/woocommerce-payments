@@ -39,14 +39,14 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
             <div
               class="payment-details-summary__breakdown"
             >
-
+              
               <p>
-                Fee:
+                Fee: 
                 $-0.70
               </p>
-
+              
               <p>
-                Net:
+                Net: 
                 $19.30
               </p>
             </div>
@@ -57,7 +57,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
             <div
               class="payment-details-summary__id"
             >
-              Payment ID:
+              Payment ID: 
               ch_38jdHA39KKA
             </div>
           </div>
@@ -254,7 +254,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
           <div
             class="payment-details-capture-notice__text"
           >
-            You must
+            You must 
             <a
               href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
               rel="noreferer"
@@ -263,7 +263,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
               capture
             </a>
              this charge within the next
-
+             
             <abbr
               title="Jan 8, 2023 / 1:00AM"
             >
@@ -340,14 +340,14 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
             <div
               class="payment-details-summary__breakdown"
             >
-
+              
               <p>
-                Fee:
+                Fee: 
                 $-0.70
               </p>
-
+              
               <p>
-                Net:
+                Net: 
                 $19.30
               </p>
             </div>
@@ -374,7 +374,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
             <div
               class="payment-details-summary__id"
             >
-              Payment ID:
+              Payment ID: 
               ch_38jdHA39KKA
             </div>
           </div>
@@ -571,7 +571,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
           <div
             class="payment-details-capture-notice__text"
           >
-            You must
+            You must 
             <a
               href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
               rel="noreferer"
@@ -580,7 +580,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
               capture
             </a>
              this charge within the next
-
+             
             <abbr
               title="Jan 8, 2023 / 1:00AM"
             >
@@ -648,14 +648,14 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
             <div
               class="payment-details-summary__breakdown"
             >
-
+              
               <p>
-                Fee:
+                Fee: 
                 $-0.70
               </p>
-
+              
               <p>
-                Net:
+                Net: 
                 $19.30
               </p>
             </div>
@@ -666,7 +666,7 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
             <div
               class="payment-details-summary__id"
             >
-              Payment ID:
+              Payment ID: 
               ch_38jdHA39KKA
             </div>
           </div>
@@ -908,14 +908,14 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
             <div
               class="payment-details-summary__breakdown"
             >
-
+              
               <p>
-                Fee:
+                Fee: 
                 $-0.70
               </p>
-
+              
               <p>
-                Net:
+                Net: 
                 $19.30
               </p>
             </div>
@@ -926,7 +926,7 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
             <div
               class="payment-details-summary__id"
             >
-              Payment ID:
+              Payment ID: 
               ch_38jdHA39KKA
             </div>
           </div>
@@ -1196,16 +1196,16 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
               class="payment-details-summary__breakdown"
             >
               <p>
-                Refunded:
+                Refunded: 
                 $-20.00
               </p>
               <p>
-                Fee:
+                Fee: 
                 $-0.70
               </p>
-
+              
               <p>
-                Net:
+                Net: 
                 $-0.70
               </p>
             </div>
@@ -1216,7 +1216,7 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
             <div
               class="payment-details-summary__id"
             >
-              Payment ID:
+              Payment ID: 
               ch_38jdHA39KKA
             </div>
           </div>
@@ -1443,7 +1443,7 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
             <p
               class="payment-details-summary__amount"
             >
-
+              
               <span
                 class="payment-details-summary__amount-currency"
               >
@@ -1456,14 +1456,14 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
             <div
               class="payment-details-summary__breakdown"
             >
-
+              
               <p>
-                Fee:
+                Fee: 
                 $0.00
               </p>
-
+              
               <p>
-                Net:
+                Net: 
                 $0.00
               </p>
             </div>
@@ -1474,7 +1474,7 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
             <div
               class="payment-details-summary__id"
             >
-              Payment ID:
+              Payment ID: 
             </div>
           </div>
         </div>
@@ -1692,16 +1692,16 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
               class="payment-details-summary__breakdown"
             >
               <p>
-                Refunded:
+                Refunded: 
                 $-12.00
               </p>
               <p>
-                Fee:
+                Fee: 
                 $-0.70
               </p>
-
+              
               <p>
-                Net:
+                Net: 
                 $7.30
               </p>
             </div>
@@ -1712,7 +1712,7 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
             <div
               class="payment-details-summary__id"
             >
-              Payment ID:
+              Payment ID: 
               ch_38jdHA39KKA
             </div>
           </div>
@@ -1954,14 +1954,14 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] 
             <div
               class="payment-details-summary__breakdown"
             >
-
+              
               <p>
-                Fee:
+                Fee: 
                 $-0.70
               </p>
-
+              
               <p>
-                Net:
+                Net: 
                 $19.30
               </p>
             </div>
@@ -1972,7 +1972,7 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] 
             <div
               class="payment-details-summary__id"
             >
-              Payment ID:
+              Payment ID: 
               ch_38jdHA39KKA
             </div>
           </div>
@@ -2215,16 +2215,16 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
               class="payment-details-summary__breakdown"
             >
               <p>
-                Refunded:
+                Refunded: 
                 $-15.00
               </p>
               <p>
-                Fee:
+                Fee: 
                 $-15.70
               </p>
-
+              
               <p>
-                Net:
+                Net: 
                 $-10.70
               </p>
             </div>
@@ -2235,7 +2235,7 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
             <div
               class="payment-details-summary__id"
             >
-              Payment ID:
+              Payment ID: 
               ch_38jdHA39KKA
             </div>
           </div>
