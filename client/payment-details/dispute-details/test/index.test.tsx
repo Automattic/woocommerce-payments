@@ -130,6 +130,16 @@ const getBaseCharge = (): ChargeWithDisputeRequired =>
 	} as any );
 
 describe( 'DisputeDetails', () => {
+	beforeEach( () => {
+		// mock Date.now that moment library uses to get current date for testing purposes
+		Date.now = jest.fn( () =>
+			new Date( '2023-09-08T12:33:37.000Z' ).getTime()
+		);
+	} );
+	afterEach( () => {
+		// roll it back
+		Date.now = () => new Date().getTime();
+	} );
 	test( 'correctly renders dispute details', () => {
 		const charge = getBaseCharge();
 		render( <DisputeDetails dispute={ charge.dispute } /> );
