@@ -89,7 +89,7 @@ class WC_Payments_Subscriptions {
 			new WC_Payments_Subscriptions_Migrator( $api_client );
 		}
 
-		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'handle_wc_payments_updated' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'maybe_disable_wcpay_subscriptions_on_update' ] );
 	}
 
 	/**
@@ -148,7 +148,7 @@ class WC_Payments_Subscriptions {
 	 *
 	 * @see WC_Payments_Features::is_wcpay_subscriptions_eligible() for eligibility criteria.
 	 */
-	public static function handle_wc_payments_updated() {
+	public static function maybe_disable_wcpay_subscriptions_on_update() {
 		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() && ! WC_Payments_Features::is_wcpay_subscriptions_eligible() ) {
 			update_option( WC_Payments_Features::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '0' );
 		}
