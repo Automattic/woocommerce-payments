@@ -2,6 +2,7 @@
  * External dependencies
  */
 import React, { useEffect } from 'react';
+import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -54,7 +55,7 @@ const PaymentChargeDetails: React.FC< PaymentChargeDetailsProps > = ( {
 				id: data.payment_intent,
 			} );
 
-			window.location.href = url;
+			getHistory().replace( url );
 		}
 	}, [ data, isChargeId ] );
 

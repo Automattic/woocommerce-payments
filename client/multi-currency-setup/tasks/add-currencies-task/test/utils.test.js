@@ -146,7 +146,7 @@ describe( 'Multi-currency setup utility functions', () => {
 			availableCurrencies
 		);
 		const results = [];
-		for ( let runCount = 0; 5 > runCount; runCount++ ) {
+		for ( let runCount = 0; runCount < 5; runCount++ ) {
 			results.push(
 				ConcatenateCurrencyStrings(
 					Object.keys( availableCurrencies ).slice( 0, runCount ),

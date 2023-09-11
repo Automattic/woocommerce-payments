@@ -1,38 +1,38 @@
 /** @format */
 
 .chip {
-	@include font-size( 14 );
-	display: inline-block;
-	padding: 0.25rem 0.75rem;
-	border-radius: 1rem;
+	@include font-size( 13 );
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: 300;
+	padding: 0.25rem 0.5rem;
+	border-radius: 0.2rem;
+	line-height: 1.5;
 	white-space: nowrap;
 
 	&.chip-primary {
-		background: $studio-blue-5;
-		color: $studio-blue-80;
+		background: $wp-blue-0;
+		color: $wp-blue-70;
 	}
 
 	&.chip-success {
-		background: $studio-green-5;
-		color: $studio-green-80;
+		background: $wp-green-0;
+		color: $wp-green-70;
 	}
 
 	&.chip-light {
-		background: $studio-gray-5;
-		color: $studio-gray-80;
+		background: $wp-gray-0;
+		color: $wp-gray-80;
 	}
 
 	&.chip-alert {
-		background: $studio-red-5;
-		color: $studio-red-80;
+		background: $wp-red-0;
+		color: $wp-red-70;
 	}
 
 	&.chip-warning {
-		background: $studio-yellow-5;
-		color: $studio-yellow-50;
-	}
-
-	&.is-compact {
-		padding: 0.06rem 0.65rem 0.1rem;
+		background: $wp-yellow-0;
+		color: $wp-yellow-70;
 	}
 }

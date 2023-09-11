@@ -12,7 +12,7 @@ jQuery( function ( $ ) {
 	let { productId } = window.wcpayStripeSiteMessaging;
 
 	const resetBnplPaymentMessage = () => {
-		const quantity = $( '.quantity input' ).val();
+		const quantity = $( '.quantity input[type=number]' ).val();
 		productId = 'base_product';
 		bnplPaymentMessageElement.update( {
 			amount:
@@ -22,7 +22,7 @@ jQuery( function ( $ ) {
 		} );
 	};
 
-	$( '.quantity input' ).on( 'change', function ( event ) {
+	$( '.quantity input[type=number]' ).on( 'change', function ( event ) {
 		const newQuantity = event.target.value;
 		const price = productVariations[ productId ].amount;
 		bnplPaymentMessageElement.update( {
@@ -32,12 +32,12 @@ jQuery( function ( $ ) {
 	} );
 
 	// Handle BNPL messaging for variable products.
-	if ( 1 < Object.keys( productVariations ).length ) {
+	if ( Object.keys( productVariations ).length > 1 ) {
 		$( '.single_variation_wrap' ).on( 'show_variation', function (
 			event,
 			variation
 		) {
-			const quantity = $( '.quantity input' ).val();
+			const quantity = $( '.quantity input[type=number]' ).val();
 			const variationPrice =
 				productVariations[ variation.variation_id ].amount;
 			productId = variation.variation_id;
@@ -49,7 +49,7 @@ jQuery( function ( $ ) {
 
 		// If variation is changed back to default, reset BNPL messaging.
 		$( '.variations' ).on( 'change', function ( event ) {
-			if ( '' === event.target.value ) resetBnplPaymentMessage();
+			if ( event.target.value === '' ) resetBnplPaymentMessage();
 		} );
 
 		$( '.reset_variations' ).on( 'click', resetBnplPaymentMessage );

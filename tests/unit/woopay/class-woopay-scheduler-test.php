@@ -6,6 +6,7 @@
  */
 
 use WCPay\WooPay\WooPay_Scheduler;
+use WCPay\WooPay\WooPay_Utilities;
 
 /**
  * WooPay_Scheduler_Test unit tests.
@@ -52,7 +53,7 @@ class WooPay_Scheduler_Test extends WP_UnitTestCase {
 
 		delete_option( WooPay_Scheduler::INVALID_EXTENSIONS_FOUND_OPTION_NAME );
 
-		$this->scheduler->update_incompatible_extensions_list_and_maybe_show_warning();
+		$this->scheduler->update_compatibility_and_maybe_show_incompatibility_warning();
 
 		$this->assertTrue( get_option( WooPay_Scheduler::INVALID_EXTENSIONS_FOUND_OPTION_NAME, null ) );
 	}
@@ -77,7 +78,7 @@ class WooPay_Scheduler_Test extends WP_UnitTestCase {
 
 		add_filter( 'pre_option_active_plugins', $active_plugins_mock, 10, 3 );
 
-		$this->scheduler->update_incompatible_extensions_list_and_maybe_show_warning();
+		$this->scheduler->update_compatibility_and_maybe_show_incompatibility_warning();
 
 		$this->assertNull( get_option( WooPay_Scheduler::INVALID_EXTENSIONS_FOUND_OPTION_NAME, null ) );
 	}
@@ -168,9 +169,9 @@ class WooPay_Scheduler_Test extends WP_UnitTestCase {
 			'test-extension-2',
 		];
 
-		$found = $this->scheduler->contains_incompatible_extension( $active_plugins_mock, $incompatible_extensions );
+		$extensions_in_list = $this->scheduler->get_extensions_in_list( $active_plugins_mock, $incompatible_extensions );
 
-		$this->assertTrue( $found );
+		$this->assertEquals( $extensions_in_list, [ 'test-extension-3' ] );
 	}
 
 	/**
@@ -184,16 +185,52 @@ class WooPay_Scheduler_Test extends WP_UnitTestCase {
 
 		$incompatible_extensions = [ 'test-extension-2' ];
 
-		$found = $this->scheduler->contains_incompatible_extension( $active_plugins_mock, $incompatible_extensions );
-		$this->assertFalse( $found );
+		$extensions_in_list = $this->scheduler->get_extensions_in_list( $active_plugins_mock, $incompatible_extensions );
+		$this->assertEquals( $extensions_in_list, [] );
 	}
 
 	/**
-	 * Mocks the return of WC_Payments_API_Client::get_woopay_incompatible_extensions.
+	 * Checks if the adapted extensions and available countries options are updating.
+	 */
+	public function test_update_adapted_extensions_and_available_countries_list() {
+
+		$adapted_extensions  = [
+			'test-extension',
+			'test-extension-2',
+		];
+		$available_countries = [ 'US', 'BR' ];
+
+		$this->mock_api_response( [], $adapted_extensions, $available_countries );
+
+		$active_plugins_mock = function () {
+			return [ 'test-extension/test-extension.php' ];
+		};
+
+		add_filter( 'pre_option_active_plugins', $active_plugins_mock, 10, 3 );
+
+		delete_option( WooPay_Scheduler::ADAPTED_EXTENSIONS_LIST_OPTION_NAME );
+		delete_option( WooPay_Utilities::AVAILABLE_COUNTRIES_OPTION_NAME );
+		delete_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME );
+
+		$this->scheduler->update_compatibility_and_maybe_show_incompatibility_warning();
+
+		$this->assertEquals( get_option( WooPay_Scheduler::ADAPTED_EXTENSIONS_LIST_OPTION_NAME ), $adapted_extensions );
+		$this->assertEquals( get_option( WooPay_Utilities::AVAILABLE_COUNTRIES_OPTION_NAME ), '["US","BR"]' );
+		$this->assertEquals( get_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, [] ), [ 'test-extension' ] );
+	}
+
+	/**
+	 * Mocks the return of WC_Payments_API_Client::get_woopay_compatibility.
 	 *
 	 * @param array $incompatible_extensions
 	 */
-	private function mock_api_response( $incompatible_extensions ) {
-		$this->mock_api->method( 'get_woopay_incompatible_extensions' )->willReturn( [ 'incompatible_extensions' => $incompatible_extensions ] );
+	private function mock_api_response( $incompatible_extensions, $adapted_extensions = [], $available_countries = [] ) {
+		$this->mock_api->method( 'get_woopay_compatibility' )->willReturn(
+			[
+				'incompatible_extensions' => $incompatible_extensions,
+				'adapted_extensions'      => $adapted_extensions,
+				'available_countries'     => $available_countries,
+			]
+		);
 	}
 }

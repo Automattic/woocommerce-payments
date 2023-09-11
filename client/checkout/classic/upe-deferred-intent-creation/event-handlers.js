@@ -7,6 +7,7 @@ import { getUPEConfig } from 'wcpay/utils/checkout';
 import {
 	generateCheckoutEventNames,
 	getSelectedUPEGatewayPaymentMethod,
+	isLinkEnabled,
 	isUsingSavedPaymentMethod,
 } from '../../utils/upe';
 import {
@@ -14,11 +15,14 @@ import {
 	mountStripePaymentElement,
 	renderTerms,
 	createAndConfirmSetupIntent,
+	maybeEnableStripeLink,
 } from './payment-processing';
 import enqueueFraudScripts from 'fraud-scripts';
 import { showAuthenticationModalIfRequired } from './3ds-flow-handling';
 import WCPayAPI from 'wcpay/checkout/api';
 import apiRequest from '../../utils/request';
+import { handleWooPayEmailInput } from 'wcpay/checkout/woopay/email-input-iframe';
+import { isPreviewing } from 'wcpay/checkout/preview';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
@@ -28,6 +32,11 @@ jQuery( function ( $ ) {
 			accountId: getUPEConfig( 'accountId' ),
 			forceNetworkSavedCards: getUPEConfig( 'forceNetworkSavedCards' ),
 			locale: getUPEConfig( 'locale' ),
+			isUPEEnabled: getUPEConfig( 'isUPEEnabled' ),
+			isStripeLinkEnabled: isLinkEnabled(
+				getUPEConfig( 'paymentMethodsConfig' )
+			),
+			isUPEDeferredEnabled: getUPEConfig( 'isUPEDeferredEnabled' ),
 		},
 		apiRequest
 	);
@@ -50,7 +59,7 @@ jQuery( function ( $ ) {
 	document.addEventListener( 'change', function ( event ) {
 		if (
 			event.target &&
-			'wc-woocommerce_payments-new-payment-method' === event.target.id
+			event.target.id === 'wc-woocommerce_payments-new-payment-method'
 		) {
 			renderTerms( event );
 		}
@@ -82,6 +91,10 @@ jQuery( function ( $ ) {
 		return processPaymentIfNotUsingSavedMethod( $( 'form#order_review' ) );
 	} );
 
+	if ( getUPEConfig( 'isWooPayEnabled' ) && ! isPreviewing() ) {
+		handleWooPayEmailInput( '#billing_email', api );
+	}
+
 	function processPaymentIfNotUsingSavedMethod( $form ) {
 		const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
 		if ( ! isUsingSavedPaymentMethod( paymentMethodType ) ) {
@@ -89,16 +102,15 @@ jQuery( function ( $ ) {
 		}
 	}
 
-	function maybeMountStripePaymentElement() {
+	async function maybeMountStripePaymentElement() {
 		if (
 			$( '.wcpay-upe-element' ).length &&
 			! $( '.wcpay-upe-element' ).children().length
 		) {
-			$( '.wcpay-upe-element' )
-				.toArray()
-				.forEach( ( domElement ) =>
-					mountStripePaymentElement( api, domElement )
-				);
+			for ( const upeElement of $( '.wcpay-upe-element' ).toArray() ) {
+				await mountStripePaymentElement( api, upeElement );
+			}
+			maybeEnableStripeLink( api );
 		}
 	}
 } );

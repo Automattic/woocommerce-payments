@@ -1,60 +1,63 @@
-declare namespace AccountOverview {
-	interface Account {
-		default_currency: string;
-		deposits_blocked: boolean;
-		deposits_disabled: boolean;
-		deposits_schedule: {
-			delay_days: number;
-			interval: string;
-			weekly_anchor: string;
-			monthly_anchor: number;
-		};
-	}
+/**
+ * Internal dependencies
+ */
+import { DepositStatus } from './deposits';
 
-	interface Balance {
-		amount: number;
-		currency: string;
-		deposits_count?: number;
-		source_types: Record< string, never >[];
-	}
+export interface Account {
+	default_currency: string;
+	deposits_blocked: boolean;
+	deposits_disabled: boolean;
+	deposits_schedule: {
+		delay_days: number;
+		interval: string;
+		weekly_anchor: string;
+		monthly_anchor: number;
+	};
+}
 
-	interface Deposit {
-		id: string;
-		type: string;
-		amount: number;
-		automatic: boolean;
-		currency: string | null;
-		bankAccount: string | null;
-		created: number;
-		date: number;
-		fee: number;
-		fee_percentage: number;
-		status: string;
-	}
+export interface Balance {
+	amount: number;
+	currency: string;
+	deposits_count?: number;
+	source_types: Record< string, never >[];
+}
 
-	interface InstantBalance {
-		currency: string;
-		amount: number;
-		fee: number;
-		net: number;
-		fee_percentage: number;
-		transaction_ids: Array< string >;
-	}
+export interface Deposit {
+	id: string;
+	type: string;
+	amount: number;
+	automatic: boolean;
+	currency: string | null;
+	bankAccount: string | null;
+	created: number;
+	date: number;
+	fee: number;
+	fee_percentage: number;
+	status: DepositStatus;
+}
 
-	interface Overview {
-		currency: string;
-		lastPaid: Deposit | undefined;
-		nextScheduled: Deposit | undefined;
-		pending: Balance | undefined;
-		available: Balance | undefined;
-		instant: InstantBalance | undefined;
-	}
+export interface InstantBalance {
+	currency: string;
+	amount: number;
+	fee: number;
+	net: number;
+	fee_percentage: number;
+	transaction_ids: Array< string >;
+}
 
-	interface OverviewsResponse {
-		overviews: {
-			account: Account;
-			currencies: Array< Overview >;
-		};
-		isLoading: boolean;
-	}
+export interface Overview {
+	currency: string;
+	lastPaid: Deposit | undefined;
+	nextScheduled: Deposit | undefined;
+	pending: Balance | undefined;
+	available: Balance | undefined;
+	instant: InstantBalance | undefined;
+}
+
+export interface OverviewsResponse {
+	overviews: {
+		account: Account;
+		currencies: Array< Overview >;
+	};
+	isLoading: boolean;
 }

@@ -217,4 +217,24 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 
 		delete_option( 'wcpay_onboarding_test_mode' );
 	}
+
+	public function test_get_onboarding_flow_state() {
+		$this->assertNull( $this->onboarding_service->get_onboarding_flow_state() );
+
+		update_option( WC_Payments_Onboarding_Service::ONBOARDING_FLOW_STATE_OPTION, [] );
+
+		$this->assertEquals( [], $this->onboarding_service->get_onboarding_flow_state() );
+
+		delete_option( WC_Payments_Onboarding_Service::ONBOARDING_FLOW_STATE_OPTION );
+	}
+
+	public function test_set_onboarding_flow_state() {
+		$this->assertFalse( get_option( WC_Payments_Onboarding_Service::ONBOARDING_FLOW_STATE_OPTION ) );
+
+		$this->onboarding_service->set_onboarding_flow_state( [] );
+
+		$this->assertEquals( [], get_option( WC_Payments_Onboarding_Service::ONBOARDING_FLOW_STATE_OPTION ) );
+
+		delete_option( WC_Payments_Onboarding_Service::ONBOARDING_FLOW_STATE_OPTION );
+	}
 }

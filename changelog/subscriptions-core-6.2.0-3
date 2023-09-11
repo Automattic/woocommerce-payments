@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Deprecated the 'woocommerce_subscriptions_not_found_label' filter.

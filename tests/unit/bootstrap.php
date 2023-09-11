@@ -5,6 +5,9 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Container;
+use WCPay\Internal\DependencyManagement\ExtendedContainer;
+
 $_tests_dir = getenv( 'WP_TESTS_DIR' );
 
 if ( ! $_tests_dir ) {
@@ -51,13 +54,17 @@ function _manually_load_plugin() {
 		}
 	);
 
+	update_option( '_wcpay_feature_allow_subscription_migrations', '1' );
+
 	$_plugin_dir = dirname( __FILE__ ) . '/../../';
 
 	require $_plugin_dir . 'woocommerce-payments.php';
 
 	require_once $_plugin_dir . 'includes/class-wc-payments-db.php';
 	require_once $_plugin_dir . 'includes/wc-payment-api/models/class-wc-payments-api-charge.php';
-	require_once $_plugin_dir . 'includes/wc-payment-api/models/class-wc-payments-api-intention.php';
+	require_once $_plugin_dir . 'includes/wc-payment-api/models/class-wc-payments-api-abstract-intention.php';
+	require_once $_plugin_dir . 'includes/wc-payment-api/models/class-wc-payments-api-payment-intention.php';
+	require_once $_plugin_dir . 'includes/wc-payment-api/models/class-wc-payments-api-setup-intention.php';
 	require_once $_plugin_dir . 'includes/wc-payment-api/class-wc-payments-api-client.php';
 	require_once $_plugin_dir . 'includes/wc-payment-api/class-wc-payments-http-interface.php';
 	require_once $_plugin_dir . 'includes/wc-payment-api/class-wc-payments-http.php';
@@ -86,6 +93,7 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/notes/class-wc-payments-notes-additional-payment-methods.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-reader-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-files-controller.php';
+	require_once $_plugin_dir . 'includes/reports/class-wc-rest-payments-reports-transactions-controller.php';
 	require_once $_plugin_dir . 'includes/class-woopay-tracker.php';
 }
 
@@ -108,6 +116,43 @@ if ( defined( 'PHP_VERSION_ID' ) && PHP_VERSION_ID >= 70400 ) {
  *
  * Init'ing the subscriptions-core loads all subscriptions class and hooks, which breaks existing WCPAY unit tests.
  * WCPAY already mocks the WC Subscriptions classes/functions it needs so there's no need to load them anyway.
+ *
+ * This function should only be used to load any mocked Subscriptions Core classes that need to be loaded before the PHPUnit FileLoader.
  */
 function wcpay_init_subscriptions_core() {
+	require_once __DIR__ . '/helpers/class-wcs-helper-background-repairer.php';
+}
+
+// Placeholder for the test container.
+$GLOBALS['wcpay_test_container'] = null;
+
+/**
+ * Extracts the internal ExtendedContainer instance of the WCPay container.
+ *
+ * This allows full access to the full ExtendedContainer functionality,
+ * rather than only to the non-test `get` and `has` methods of the container.
+ *
+ * @throws Exception In case the container is not available.
+ * @return ExtendedContainer The extended container.
+ */
+function wcpay_get_test_container() {
+	if ( $GLOBALS['wcpay_test_container'] instanceof ExtendedContainer ) {
+		return $GLOBALS['wcpay_test_container'];
+	}
+
+	$container = $GLOBALS['wcpay_container'] ?? null;
+	if ( ! $container instanceof Container ) {
+		if ( is_null( $container ) ) {
+			$container = wcpay_get_container();
+		} else {
+			throw new Exception( 'Tests require the WCPay dependency container to be set up.' );
+		}
+	}
+
+	// Load the property through reflection.
+	$property = new ReflectionProperty( $container, 'container' );
+	$property->setAccessible( true );
+	$extended_container = $property->getValue( $container );
+
+	return $extended_container;
 }

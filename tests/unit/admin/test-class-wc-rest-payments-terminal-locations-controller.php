@@ -7,6 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_REST_Payments_Terminal_Locations_Controller as Controller;
+use WCPay\Core\Server\Request\Get_Request;
 use WCPay\Exceptions\API_Exception;
 
 /**
@@ -78,9 +79,7 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WCPAY_UnitTest
 		delete_option( 'woocommerce_store_address' );
 		delete_option( 'woocommerce_store_postcode' );
 
-		$this->mock_api_client
-			->expects( $this->never() )
-			->method( 'get_terminal_locations' );
+		$this->mock_wcpay_request( Get_Request::class, 0 );
 		$this->mock_api_client
 			->expects( $this->never() )
 			->method( 'create_terminal_location' );
@@ -103,9 +102,15 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WCPAY_UnitTest
 		// Set the store location settings for running the test case as intended.
 		update_option( 'woocommerce_default_country', 'US:InvalidState' );
 
-		$this->mock_api_client
-			->method( 'get_terminal_locations' )
+		$request = $this->mock_wcpay_request( Get_Request::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_api' )
+			->with( WC_Payments_API_Client::TERMINAL_LOCATIONS_API );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( [] );
+
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'create_terminal_location' )
@@ -133,10 +138,16 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WCPAY_UnitTest
 
 	public function test_creates_location_from_scratch() {
 		// First call is to populate empty cache, force fetching the location individually and repopulate cache.
-		$this->mock_api_client
-			->expects( $this->exactly( 2 ) )
-			->method( 'get_terminal_locations' )
-			->willReturnOnConsecutiveCalls( [], [ $this->location ] );
+
+		$request = $this->mock_wcpay_request( Get_Request::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_api' )
+			->with( WC_Payments_API_Client::TERMINAL_LOCATIONS_API );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturnOnConsecutiveCalls( [] );
+
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'create_terminal_location' )
@@ -144,10 +155,18 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WCPAY_UnitTest
 			->willReturn( $this->location );
 
 		// Setup the request.
-		$request = new WP_REST_Request(
+		$request       = new WP_REST_Request(
 			'GET',
 			'/wc/v3/payments/terminal/locations'
 		);
+		$wcpay_request = $this->mock_wcpay_request( Get_Request::class );
+
+		$wcpay_request->expects( $this->once() )
+			->method( 'set_api' )
+			->with( WC_Payments_API_Client::TERMINAL_LOCATIONS_API );
+		$wcpay_request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturnOnConsecutiveCalls( [ $this->location ] );
 		$request->set_header( 'Content-Type', 'application/json' );
 
 		$result = $this->controller->get_store_location( $request );
@@ -161,9 +180,13 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WCPAY_UnitTest
 		set_transient( Controller::STORE_LOCATIONS_TRANSIENT_KEY, [ $mismatched_location ] );
 
 		// Ensures the transient will be re-populated on mismatch.
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_terminal_locations' )
+		$request = $this->mock_wcpay_request( Get_Request::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_api' )
+			->with( WC_Payments_API_Client::TERMINAL_LOCATIONS_API );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( [ $mismatched_location, $this->location ] );
 		$this->mock_api_client
 			->expects( $this->once() )
@@ -185,11 +208,15 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WCPAY_UnitTest
 
 	public function test_uses_existing_location_without_cache() {
 		delete_transient( Controller::STORE_LOCATIONS_TRANSIENT_KEY );
+		$request = $this->mock_wcpay_request( Get_Request::class );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_terminal_locations' )
+		$request->expects( $this->once() )
+			->method( 'set_api' )
+			->with( WC_Payments_API_Client::TERMINAL_LOCATIONS_API );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( [ $this->location ] );
+
 		$this->mock_api_client
 			->expects( $this->never() )
 			->method( 'create_terminal_location' );
@@ -209,9 +236,8 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WCPAY_UnitTest
 	public function test_uses_existing_location_with_cache() {
 		set_transient( Controller::STORE_LOCATIONS_TRANSIENT_KEY, [ $this->location ] );
 
-		$this->mock_api_client
-			->expects( $this->never() )
-			->method( 'get_terminal_locations' );
+		$this->mock_wcpay_request( Get_Request::class, 0 );
+
 		$this->mock_api_client
 			->expects( $this->never() )
 			->method( 'create_terminal_location' );
@@ -231,9 +257,13 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WCPAY_UnitTest
 		set_transient( Controller::STORE_LOCATIONS_TRANSIENT_KEY, [] );
 
 		// Repopulate cache after deletion.
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_terminal_locations' )
+		$request = $this->mock_wcpay_request( Get_Request::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_api' )
+			->with( WC_Payments_API_Client::TERMINAL_LOCATIONS_API );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( [ $this->location ] );
 		$this->mock_api_client
 			->expects( $this->once() )
@@ -262,10 +292,15 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WCPAY_UnitTest
 		set_transient( Controller::STORE_LOCATIONS_TRANSIENT_KEY, [] );
 
 		// Repopulate cache after update.
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_terminal_locations' )
+		$request = $this->mock_wcpay_request( Get_Request::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_api' )
+			->with( WC_Payments_API_Client::TERMINAL_LOCATIONS_API );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( [ $this->location ] );
+
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'update_terminal_location' )
@@ -288,20 +323,38 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WCPAY_UnitTest
 		set_transient( Controller::STORE_LOCATIONS_TRANSIENT_KEY, [] );
 
 		// First call is to populate empty cache, force fetching the location individually and repopulate cache.
-		$this->mock_api_client
-			->expects( $this->exactly( 2 ) )
-			->method( 'get_terminal_locations' )
-			->willReturnOnConsecutiveCalls( [], [ $this->location ] );
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_terminal_location' )
-			->willReturn( $this->location );
+
+		$request = $this->mock_wcpay_request( Get_Request::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_api' )
+			->with( WC_Payments_API_Client::TERMINAL_LOCATIONS_API );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( [] );
 
 		// Setup the request.
-		$request = new WP_REST_Request(
+		$request              = new WP_REST_Request(
 			'GET',
 			'/wc/v3/payments/terminal/locations'
 		);
+		$get_location_request = $this->mock_wcpay_request( Get_Request::class, 1, $this->location['id'] );
+
+		$get_location_request->expects( $this->once() )
+			->method( 'set_api' )
+			->with( WC_Payments_API_Client::TERMINAL_LOCATIONS_API );
+		$get_location_request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $this->location );
+		$get_locations_request = $this->mock_wcpay_request( Get_Request::class );
+
+		$get_locations_request->expects( $this->once() )
+			->method( 'set_api' )
+			->with( WC_Payments_API_Client::TERMINAL_LOCATIONS_API );
+		$get_locations_request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( [ $this->location ] );
+
 		$request->set_param( 'location_id', $this->location['id'] );
 		$request->set_header( 'Content-Type', 'application/json' );
 
@@ -312,9 +365,7 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WCPAY_UnitTest
 	public function test_retreive_uses_cache_for_existing_location() {
 		set_transient( Controller::STORE_LOCATIONS_TRANSIENT_KEY, [ $this->location ] );
 
-		$this->mock_api_client
-			->expects( $this->never() )
-			->method( 'get_terminal_location' );
+		$this->mock_wcpay_request( Get_Request::class, 0, $this->location['id'] );
 
 		// Setup the request.
 		$request = new WP_REST_Request(
@@ -332,10 +383,15 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WCPAY_UnitTest
 		set_transient( Controller::STORE_LOCATIONS_TRANSIENT_KEY, [] );
 
 		// Ensures the transient will be re-populated upon creation.
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_terminal_locations' )
+		$request = $this->mock_wcpay_request( Get_Request::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_api' )
+			->with( WC_Payments_API_Client::TERMINAL_LOCATIONS_API );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( [ $this->location ] );
+
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'create_terminal_location' )
@@ -359,9 +415,7 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WCPAY_UnitTest
 	public function test_fetching_all_uses_cache_for_existing_locations() {
 		set_transient( Controller::STORE_LOCATIONS_TRANSIENT_KEY, [ $this->location ] );
 
-		$this->mock_api_client
-			->expects( $this->never() )
-			->method( 'get_terminal_locations' );
+		$this->mock_wcpay_request( Get_Request::class, 0 );
 
 		// Setup the request.
 		$request = new WP_REST_Request(

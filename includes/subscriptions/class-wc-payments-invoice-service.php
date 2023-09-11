@@ -8,6 +8,7 @@
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
+use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Logger;
 
 defined( 'ABSPATH' ) || exit;
@@ -188,11 +189,6 @@ class WC_Payments_Invoice_Service {
 	 * @throws API_Exception If the request to mark the invoice as paid fails.
 	 */
 	public function maybe_record_invoice_payment( int $order_id ) {
-
-		if ( WC_Payments_Subscriptions::is_duplicate_site() ) {
-			return;
-		}
-
 		$order = wc_get_order( $order_id );
 
 		if ( ! $order || self::get_order_invoice_id( $order ) ) {
@@ -202,7 +198,7 @@ class WC_Payments_Invoice_Service {
 		foreach ( wcs_get_subscriptions_for_order( $order, [ 'order_type' => [ 'parent', 'renewal' ] ] ) as $subscription ) {
 			$invoice_id = self::get_subscription_invoice_id( $subscription );
 
-			if ( ! $invoice_id ) {
+			if ( ! $invoice_id || ! WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ) {
 				continue;
 			}
 

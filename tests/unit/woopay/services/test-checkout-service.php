@@ -51,14 +51,17 @@ class Checkout_Service_Test extends WCPAY_UnitTestCase {
 		$this->checkout_service->create_intention_request( $this->request, $this->payment_information );
 	}
 	public function test_is_platform_payment_method_will_return_if_saved_payment_method_is_used() {
-		$this->assertFalse( $this->checkout_service->is_platform_payment_method( true ) );
+		$this->payment_information = new Payment_Information( 'pm_mock', wc_create_order(), Payment_Type::SINGLE(), new WC_Payment_Token_WCPay_SEPA(), null, null, null, '', 'card' );
+		$this->assertFalse( $this->checkout_service->is_platform_payment_method( $this->payment_information ) );
 	}
 	public function test_is_platform_payment_method_will_return_if_is_platform_payment_method_parameter_is_missing() {
-		$this->assertFalse( $this->checkout_service->is_platform_payment_method( false ) );
+		$this->payment_information = new Payment_Information( 'pm_mock', wc_create_order(), Payment_Type::SINGLE(), null, null, null, null, '', 'card' );
+		$this->checkout_service->is_platform_payment_method( $this->payment_information );
+		$this->assertFalse( $this->checkout_service->is_platform_payment_method( $this->payment_information ) );
 	}
 	public function test_is_platform_payment_method_will_return_if_is_platform_payment_method_parameter_is_not_boolean() {
 		$_POST['wcpay-is-platform-payment-method'] = 'foo';
-		$this->assertFalse( $this->checkout_service->is_platform_payment_method( false ) );
+		$this->assertFalse( $this->checkout_service->is_platform_payment_method( $this->payment_information ) );
 	}
 
 	public function test_create_intention_request_will_create_request() {
@@ -75,7 +78,7 @@ class Checkout_Service_Test extends WCPAY_UnitTestCase {
 		// Simulate behavior that current request is platform payment.
 		$class = new class() extends Checkout_Service
 		{
-			public function is_platform_payment_method( bool $is_using_saved_payment_method ) {
+			public function is_platform_payment_method( Payment_Information $payment_information ) {
 				return true;
 			}
 		};
@@ -104,7 +107,7 @@ class Checkout_Service_Test extends WCPAY_UnitTestCase {
 
 		$class = new class() extends Checkout_Service
 		{
-			public function is_platform_payment_method( bool $is_using_saved_payment_method ) {
+			public function is_platform_payment_method( Payment_Information $payment_information ) {
 				return true;
 			}
 		};

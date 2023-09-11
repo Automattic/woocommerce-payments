@@ -28,6 +28,9 @@ describe( 'Card Reader Business Details section', () => {
 					},
 				],
 			},
+			accountStatus: {
+				country: 'US',
+			},
 		};
 	} );
 

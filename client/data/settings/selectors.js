@@ -52,6 +52,14 @@ export const getAccountStatementDescriptor = ( state ) => {
 	return getSettings( state ).account_statement_descriptor || '';
 };
 
+export const getAccountStatementDescriptorKanji = ( state ) => {
+	return getSettings( state ).account_statement_descriptor_kanji || '';
+};
+
+export const getAccountStatementDescriptorKana = ( state ) => {
+	return getSettings( state ).account_statement_descriptor_kana || '';
+};
+
 export const getAccountBusinessName = ( state ) => {
 	return getSettings( state ).account_business_name || '';
 };
@@ -98,6 +106,10 @@ export const getAccountBusinessSupportPhone = ( state ) => {
 
 export const getAccountBrandingLogo = ( state ) => {
 	return getSettings( state ).account_branding_logo || '';
+};
+
+export const getAccountDomesticCurrency = ( state ) => {
+	return getSettings( state ).account_domestic_currency || '';
 };
 
 export const getDepositScheduleInterval = ( state ) => {
@@ -220,4 +232,20 @@ export const getAdvancedFraudProtectionSettings = ( state ) => {
 
 export const getShowWooPayIncompatibilityNotice = ( state ) => {
 	return getSettings( state ).show_woopay_incompatibility_notice || false;
+};
+
+export const getIsStripeBillingEnabled = ( state ) => {
+	return getSettings( state ).is_stripe_billing_enabled || false;
+};
+
+export const getIsStripeBillingMigrationInProgress = ( state ) => {
+	return getSettings( state ).is_migrating_stripe_billing || false;
+};
+
+export const getStripeBillingSubscriptionCount = ( state ) => {
+	return getSettings( state ).stripe_billing_subscription_count || 0;
+};
+
+export const getStripeBillingMigratedCount = ( state ) => {
+	return getSettings( state ).stripe_billing_migrated_count || 0;
 };

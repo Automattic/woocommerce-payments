@@ -2,7 +2,7 @@
 . "$(dirname "$0")/_/husky.sh"
 
 # Load local env variables if present.
-if [[ -f "$(pwd)/local.env" ]]; then
+if [ -f "$(pwd)/local.env" ]; then
 	. "$(pwd)/local.env"
 fi
 
@@ -17,7 +17,7 @@ if [ ! -d $DEV_TOOLS_PLUGIN_PATH ]; then
 	echo
     echo "\033[33mCouldn't find the '$DEV_TOOLS_PLUGIN_PATH' directory. Skipping the auto-update for the WCPay Dev Tools plugin...\033[0m"
 else
-	if [[ "$(cd $DEV_TOOLS_PLUGIN_PATH && git rev-parse --show-toplevel 2>/dev/null)" = "$(cd $DEV_TOOLS_PLUGIN_PATH && pwd)" ]]; then
+	if [ "$(cd $DEV_TOOLS_PLUGIN_PATH && git rev-parse --show-toplevel 2>/dev/null)" = "$(cd $DEV_TOOLS_PLUGIN_PATH && pwd)" ]; then
 		echo
 		echo "\033[32mDetermining if there is an update for the WCPay Dev Tools plugin...\033[0m"
 

@@ -50,12 +50,12 @@ const WCPAY_DEV_TOOLS = baseUrl + 'wp-admin/admin.php?page=wcpaydev';
 const SHOP_CART_PAGE = baseUrl + 'cart/';
 
 export const RUN_SUBSCRIPTIONS_TESTS =
-	'1' !== process.env.SKIP_WC_SUBSCRIPTIONS_TESTS;
+	process.env.SKIP_WC_SUBSCRIPTIONS_TESTS !== '1';
 
 export const RUN_ACTION_SCHEDULER_TESTS =
-	'1' !== process.env.SKIP_WC_ACTION_SCHEDULER_TESTS;
+	process.env.SKIP_WC_ACTION_SCHEDULER_TESTS !== '1';
 
-export const RUN_WC_BLOCKS_TESTS = '1' !== process.env.SKIP_WC_BLOCKS_TESTS;
+export const RUN_WC_BLOCKS_TESTS = process.env.SKIP_WC_BLOCKS_TESTS !== '1';
 
 // The generic flows will be moved to their own package soon (more details in p7bje6-2gV-p2), so we're
 // keeping our customizations grouped here so it's easier to extend the flows once the move happens.
@@ -96,8 +96,8 @@ export const shopperWCP = {
 
 	selectNewPaymentMethod: async () => {
 		if (
-			null !==
-			( await page.$( '#wc-woocommerce_payments-payment-token-new' ) )
+			( await page.$( '#wc-woocommerce_payments-payment-token-new' ) ) !==
+			null
 		) {
 			await expect( page ).toClick(
 				'#wc-woocommerce_payments-payment-token-new'
@@ -152,8 +152,8 @@ export const shopperWCP = {
 		} );
 
 		if (
-			null !==
-			( await page.$( '#wc-woocommerce_payments-payment-token-new' ) )
+			( await page.$( '#wc-woocommerce_payments-payment-token-new' ) ) !==
+			null
 		) {
 			await setCheckbox( '#wc-woocommerce_payments-payment-token-new' );
 		}
@@ -242,9 +242,9 @@ export const shopperWCP = {
 		} );
 
 		// Remove products if they exist
-		if ( null !== ( await page.$$( '.remove' ) ) ) {
+		if ( ( await page.$$( '.remove' ) ) !== null ) {
 			let products = await page.$$( '.remove' );
-			while ( products && 0 < products.length ) {
+			while ( products && products.length > 0 ) {
 				for ( const product of products ) {
 					await product.click();
 					await uiUnblocked();
@@ -254,7 +254,7 @@ export const shopperWCP = {
 		}
 
 		// Remove coupons if they exist
-		if ( null !== ( await page.$( '.woocommerce-remove-coupon' ) ) ) {
+		if ( ( await page.$( '.woocommerce-remove-coupon' ) ) !== null ) {
 			await page.click( '.woocommerce-remove-coupon' );
 			await uiUnblocked();
 		}
@@ -613,11 +613,11 @@ export const merchantWCP = {
 	openActionScheduler: async ( status, search ) => {
 		let pageUrl = ACTION_SCHEDULER;
 
-		if ( 'undefined' !== typeof status ) {
+		if ( typeof status !== 'undefined' ) {
 			pageUrl += '&status=' + status;
 		}
 
-		if ( 'undefined' !== typeof search ) {
+		if ( typeof search !== 'undefined' ) {
 			pageUrl += '&s=' + search;
 		}
 
@@ -695,7 +695,7 @@ export const merchantWCP = {
 		const checkboxStatus = await (
 			await checkbox.getProperty( 'checked' )
 		 ).jsonValue();
-		if ( true !== checkboxStatus ) {
+		if ( checkboxStatus !== true ) {
 			await checkbox.click();
 		}
 	},
@@ -705,7 +705,7 @@ export const merchantWCP = {
 		const checkboxStatus = await (
 			await checkbox.getProperty( 'checked' )
 		 ).jsonValue();
-		if ( true === checkboxStatus ) {
+		if ( checkboxStatus === true ) {
 			await checkbox.click();
 		}
 	},

@@ -1,6 +1,6 @@
 {
   "name": "woocommerce-payments",
-  "version": "6.2.2",
+  "version": "6.4.1",
   "main": "webpack.config.js",
   "author": "Automattic",
   "license": "GPL-3.0-or-later",
@@ -64,7 +64,8 @@
     "tube:stop": "./docker/bin/jt/tunnel.sh break",
     "psalm": "./bin/run-psalm.sh",
     "xdebug:toggle": "docker-compose exec -u root wordpress /var/www/html/wp-content/plugins/woocommerce-payments/bin/xdebug-toggle.sh",
-    "changelog": "./vendor/bin/changelogger add"
+    "changelog": "./vendor/bin/changelogger add",
+    "cli": "./bin/cli.sh"
   },
   "dependencies": {
     "@automattic/interpolate-components": "1.2.1",
@@ -181,6 +182,7 @@
     "webpack-cli": "4.10.0",
     "webpack-dev-server": "4.9.3",
     "webpack-merge": "5.8.0",
+    "webpack-rtl-plugin": "2.0.0",
     "yarnhook": "0.5.1"
   },
   "overrides": {

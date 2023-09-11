@@ -4,11 +4,12 @@
 	}
 }
 
-.components-custom-select-control.has-error {
+.components-custom-select-control.has-error,
+.wcpay-component-grouped-select-control.has-error {
 	margin-bottom: $gap-smaller;
 
 	button {
-		border-color: $alert-red;
+		border-color: $alert-red !important;
 	}
 }
 

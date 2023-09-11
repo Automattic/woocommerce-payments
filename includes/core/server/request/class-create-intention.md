@@ -17,6 +17,7 @@ The `WCPay\Core\Server\Request\Create_Intention` class is used to construct the 
 | `customer`             | `set_customer( string $customer_id )`                |     -     |    -     |       -       |
 | `metadata`             | `set_fingerprint( string $fingerprint = '' )`        |     -     |    -     |       -       |
 | `mandate`              | `set_mandate( string $mandate )`                     |     -     |    -     |       -       |
+| `mandate_data`         | `set_mandate_data( array $mandate_data )`            |     -     |    -     |       -       |
 | `description`          | `set_metadata( array $metadata )`                    |     -     |    -     |       -       |
 | `payment_method`       | `set_payment_method( string $payment_method_id )`    |     -     |    -     |       -       |
 | `payment_method_types` | `set_payment_method_types( array $payment_methods )` |     -     |    -     |       -       |
@@ -39,6 +40,7 @@ $request->set_currency_code( $currency_code );
 $request->set_customer( $customer_id );
 $request->set_fingerprint( $fingerprint );
 $request->set_mandate( $mandate );
+$request->set_mandate_data( $mandate_data );
 $request->set_metadata( $metadata );
 $request->set_payment_method( $payment_method_id );
 $request->set_payment_method_types( $payment_methods );

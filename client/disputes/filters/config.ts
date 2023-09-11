@@ -36,6 +36,11 @@ export const disputeAwaitingResponseStatuses = [
 	'warning_needs_response',
 ];
 
+export const disputeUnderReviewStatuses = [
+	'under_review',
+	'warning_under_review',
+];
+
 export const filters: [ DisputesFilterType, DisputesFilterType ] = [
 	{
 		label: __( 'Dispute currency', 'woocommerce-payments' ),

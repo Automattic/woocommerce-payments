@@ -5,7 +5,8 @@
 		margin-bottom: 1em;
 	}
 
-	&__customer-support {
+	&__customer-support,
+	&__customer-statements {
 		max-width: 500px;
 		position: relative;
 
@@ -26,4 +27,10 @@
 			}
 		}
 	}
+}
+
+.transactions-customer-details {
+	font-size: 12px;
+	font-style: normal;
+	color: #757575;
 }

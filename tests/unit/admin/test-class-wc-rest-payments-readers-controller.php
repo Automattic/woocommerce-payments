@@ -9,7 +9,8 @@ use PHPUnit\Framework\MockObject\MockObject;
 use WC_REST_Payments_Reader_Controller as Controller;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
-use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Intent_Status;
+use WCPay\Core\Server\Request\Get_Request;
 use WCPay\Exceptions\API_Exception;
 
 require_once WCPAY_ABSPATH . 'includes/in-person-payments/class-wc-payments-printed-receipt-sample-order.php';
@@ -156,9 +157,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 	public function test_getting_all_readers_uses_cache_for_existing_readers() {
 		set_transient( Controller::STORE_READERS_TRANSIENT_KEY, [ $this->reader ] );
 
-		$this->mock_api_client
-			->expects( $this->never() )
-			->method( 'get_terminal_readers' );
+		$this->mock_wcpay_request( Get_Request::class, 0 );
 
 		$this->mock_api_client
 			->expects( $this->never() )
@@ -424,7 +423,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
-			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::PROCESSING ] ) );
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::PROCESSING ] ) );
 
 		$charge_request = $this->mock_wcpay_request( Get_Charge::class, 0, 'ch_mock' );
 		$this->mock_wcpay_gateway

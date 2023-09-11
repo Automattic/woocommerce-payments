@@ -83,7 +83,7 @@ class Create_Intention extends Request {
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
 	public function set_amount( int $amount ) {
-		$this->validate_is_larger_then( $amount, 0 );
+		$this->validate_is_larger_than( $amount, 0 );
 		$this->set_param( 'amount', $amount );
 	}
 
@@ -164,6 +164,17 @@ class Create_Intention extends Request {
 	}
 
 	/**
+	 * Mandate data setter.
+	 *
+	 * @param array $mandate_data Array containing details about mandate to create.
+	 *
+	 * @return void
+	 */
+	public function set_mandate_data( array $mandate_data ) {
+		$this->set_param( 'mandate_data', $mandate_data );
+	}
+
+	/**
 	 * Shipping data setter.
 	 *
 	 * @param array $shipping Shipping data.
@@ -183,6 +194,6 @@ class Create_Intention extends Request {
 	 * @return mixed           Either the same response, or the correct object.
 	 */
 	public function format_response( $response ) {
-		return WC_Payments::get_payments_api_client()->deserialize_intention_object_from_array( $response );
+		return $this->api_client->deserialize_payment_intention_object_from_array( $response );
 	}
 }

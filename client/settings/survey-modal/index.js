@@ -14,8 +14,8 @@ import ConfirmationModal from 'components/confirmation-modal';
 import useIsUpeEnabled from 'settings/wcpay-upe-toggle/hook';
 import { wcPaySurveys } from './questions';
 import WcPaySurveyContext from './context';
-import InlineNotice from '../../components/inline-notice';
-import { LoadableBlock } from '../../components/loadable';
+import InlineNotice from 'components/inline-notice';
+import { LoadableBlock } from 'components/loadable';
 
 const SurveyModalBody = ( { options, surveyQuestion } ) => {
 	const [ isUpeEnabled ] = useIsUpeEnabled();
@@ -26,7 +26,7 @@ const SurveyModalBody = ( { options, surveyQuestion } ) => {
 	return (
 		<>
 			{ ! isUpeEnabled && (
-				<InlineNotice status="success" isDismissible={ false }>
+				<InlineNotice icon status="success" isDismissible={ false }>
 					{ __(
 						"You've disabled the new payments experience in your store.",
 						'woocommerce-payments'
@@ -153,7 +153,7 @@ const SurveyModal = ( { setOpenModal, surveyKey, surveyQuestion } ) => {
 	useEffect( () => {
 		if ( ! surveyKey || ! surveyQuestion ) {
 			surveyCannotBeLoadedNotice();
-		} else if ( 'error' === status ) {
+		} else if ( status === 'error' ) {
 			submissionErrorNotice();
 		} else if ( isSurveySubmitted ) {
 			surveySubmittedConfirmation();
@@ -161,7 +161,7 @@ const SurveyModal = ( { setOpenModal, surveyKey, surveyQuestion } ) => {
 		}
 	}, [ status, isSurveySubmitted, surveyKey, surveyQuestion, setOpenModal ] );
 
-	if ( 1 > optionsArray ) return null;
+	if ( optionsArray < 1 ) return null;
 
 	return (
 		<>
@@ -176,15 +176,15 @@ const SurveyModal = ( { setOpenModal, surveyKey, surveyQuestion } ) => {
 					<>
 						<Button
 							isSecondary
-							disabled={ 'pending' === status }
+							disabled={ status === 'pending' }
 							onClick={ () => setOpenModal( '' ) }
 						>
 							{ __( 'Cancel', 'woocommerce-payments' ) }
 						</Button>
 						<Button
 							isPrimary
-							isBusy={ 'pending' === status }
-							disabled={ 'pending' === status }
+							isBusy={ status === 'pending' }
+							disabled={ status === 'pending' }
 							onClick={ () => submitSurvey() }
 						>
 							{ __( 'Send feedback', 'woocommerce-payments' ) }

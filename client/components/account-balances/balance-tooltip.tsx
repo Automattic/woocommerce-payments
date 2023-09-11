@@ -22,19 +22,9 @@ const BalanceTooltip: React.FC< BalanceTooltipProps > = ( {
 		<ClickTooltip
 			content={ content }
 			className="wcpay-account-balances__balances__item__tooltip"
-		>
-			<div
-				className="wcpay-account-balances__balances__item__tooltip-button"
-				role="button"
-				aria-label={ label }
-				tabIndex={ 0 }
-			>
-				<HelpOutlineIcon
-					size={ 18 }
-					className="wcpay-account-balances__balances__item__tooltip-button__icon"
-				/>
-			</div>
-		</ClickTooltip>
+			buttonIcon={ <HelpOutlineIcon /> }
+			buttonLabel={ label }
+		/>
 	);
 };
 

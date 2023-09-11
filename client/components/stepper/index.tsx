@@ -9,6 +9,7 @@ import React, { createContext, useContext, useState } from 'react';
 
 interface UseContextValueParams {
 	steps: Record< string, React.ReactElement >;
+	initialStep?: string;
 	onStepChange?: ( step: string ) => void;
 	onComplete?: () => void;
 	onExit?: () => void;
@@ -16,12 +17,15 @@ interface UseContextValueParams {
 
 const useContextValue = ( {
 	steps,
+	initialStep,
 	onStepChange,
 	onComplete,
 	onExit,
 }: UseContextValueParams ) => {
 	const keys = Object.keys( steps );
-	const [ currentStep, setCurrentStep ] = useState( keys[ 0 ] );
+	const [ currentStep, setCurrentStep ] = useState(
+		initialStep ?? keys[ 0 ]
+	);
 
 	const progress = ( keys.indexOf( currentStep ) + 1 ) / keys.length;
 
@@ -66,6 +70,7 @@ const StepperContext = createContext< ContextValue | null >( null );
 
 interface StepperProps {
 	children: React.ReactElement< { name: string } >[];
+	initialStep?: string;
 	onStepChange?: ( step: string ) => void;
 	onComplete?: () => void;
 	onExit?: () => void;

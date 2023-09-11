@@ -7,7 +7,7 @@
 
 use WCPay\Constants\Fraud_Meta_Box_Type;
 use WCPay\Constants\Order_Status;
-use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Intent_Status;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Fraud_Prevention\Models\Rule;
 use WCPay\Logger;
@@ -116,8 +116,8 @@ class WC_Payments_Order_Service {
 	/**
 	 * Parse the payment intent data and add any necessary notes to the order and update the order status accordingly.
 	 *
-	 * @param WC_Order     $order  The order to update.
-	 * @param object|array $intent The intent.
+	 * @param WC_Order                           $order   The order to update.
+	 * @param WC_Payments_API_Abstract_Intention $intent  Setup or payment intent to pull the data from.
 	 */
 	public function update_order_status_from_intent( $order, $intent ) {
 		$intent_data = $this->get_intent_data( $intent );
@@ -127,26 +127,26 @@ class WC_Payments_Order_Service {
 		}
 
 		switch ( $intent_data['intent_status'] ) {
-			case Payment_Intent_Status::CANCELED:
+			case Intent_Status::CANCELED:
 				$this->mark_payment_capture_cancelled( $order, $intent_data );
 				break;
-			case Payment_Intent_Status::SUCCEEDED:
-				if ( Payment_Intent_Status::REQUIRES_CAPTURE === $this->get_intention_status_for_order( $order ) ) {
+			case Intent_Status::SUCCEEDED:
+				if ( Intent_Status::REQUIRES_CAPTURE === $this->get_intention_status_for_order( $order ) ) {
 					$this->mark_payment_capture_completed( $order, $intent_data );
 				} else {
 					$this->mark_payment_completed( $order, $intent_data );
 				}
 				break;
-			case Payment_Intent_Status::PROCESSING:
-			case Payment_Intent_Status::REQUIRES_CAPTURE:
+			case Intent_Status::PROCESSING:
+			case Intent_Status::REQUIRES_CAPTURE:
 				if ( Rule::FRAUD_OUTCOME_REVIEW === $intent_data['fraud_outcome'] ) {
 					$this->mark_order_held_for_review_for_fraud( $order, $intent_data );
 				} else {
 					$this->mark_payment_authorized( $order, $intent_data );
 				}
 				break;
-			case Payment_Intent_Status::REQUIRES_ACTION:
-			case Payment_Intent_Status::REQUIRES_PAYMENT_METHOD:
+			case Intent_Status::REQUIRES_ACTION:
+			case Intent_Status::REQUIRES_PAYMENT_METHOD:
 				$this->mark_payment_started( $order, $intent_data );
 				break;
 			default:
@@ -1446,32 +1446,25 @@ class WC_Payments_Order_Service {
 	 * Takes an intent object or array and returns our needed data as an array.
 	 * This is needed due to intents can either be objects or arrays.
 	 *
-	 * @param object|array $intent The intent to pull the data from.
+	 * @param WC_Payments_API_Abstract_Intention $intent  Setup or payment intent to pull the data from.
 	 *
 	 * @return array The data we need to continue processing.
 	 */
-	private function get_intent_data( $intent ): array {
-		$intent_data = [];
-		if ( is_array( $intent ) ) {
-			$intent_data = [
-				'intent_id'           => $intent['id'],
-				'intent_status'       => $intent['status'],
-				'charge_id'           => $intent['charge_id'] ?? '',
-				'fraud_outcome'       => $intent['fraud_outcome'] ?? '',
-				'payment_method_type' => $intent['payment_method_type'] ?? '',
-			];
-		} elseif ( is_object( $intent ) ) {
-			$charge               = $intent->get_charge();
-			$payment_method_types = $intent->get_payment_method_types();
+	private function get_intent_data( WC_Payments_API_Abstract_Intention $intent ): array {
 
-			$intent_data = [
-				'intent_id'           => $intent->get_id(),
-				'intent_status'       => $intent->get_status(),
-				'charge_id'           => $charge ? $charge->get_id() : null,
-				'fraud_outcome'       => $intent->get_metadata()['fraud_outcome'] ?? '',
-				'payment_method_type' => 1 === count( $payment_method_types ) ? $payment_method_types[0] : '',
-			];
+		$intent_data = [
+			'intent_id'           => $intent->get_id(),
+			'intent_status'       => $intent->get_status(),
+			'charge_id'           => '',
+			'fraud_outcome'       => $intent->get_metadata()['fraud_outcome'] ?? '',
+			'payment_method_type' => $intent->get_payment_method_type(),
+		];
+
+		if ( $intent instanceof WC_Payments_API_Payment_Intention ) {
+			$charge                   = $intent->get_charge();
+			$intent_data['charge_id'] = $charge ? $charge->get_id() : null;
 		}
+
 		return $intent_data;
 	}
 

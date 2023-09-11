@@ -9,6 +9,8 @@ const WCPaySettingsContext = createContext( {
 	accountStatus: {},
 	featureFlags: {
 		isAuthAndCaptureEnabled: false,
+		isDisputeOnTransactionPageEnabled: false,
+		woopay: false,
 		isRefundControlsEnabled: false,
 	},
 } );

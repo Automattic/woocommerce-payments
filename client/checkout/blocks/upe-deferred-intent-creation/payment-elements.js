@@ -8,9 +8,10 @@ import { LoadableBlock } from 'wcpay/components/loadable';
 import { Elements } from '@stripe/react-stripe-js';
 import { useEffect, useState } from 'react';
 import PaymentProcessor from './payment-processor';
+import { getPaymentMethodTypes } from 'wcpay/checkout/utils/upe';
 
 const PaymentElements = ( { api, ...props } ) => {
-	const stripe = api.getStripe();
+	const stripe = api.getStripeForUPE( props.paymentMethodId );
 	const [ errorMessage, setErrorMessage ] = useState( null );
 	const [ appearance, setAppearance ] = useState(
 		getUPEConfig( 'wcBlocksUPEAppearance' )
@@ -18,6 +19,7 @@ const PaymentElements = ( { api, ...props } ) => {
 	const [ fingerprint, fingerprintErrorMessage ] = useFingerprint();
 	const amount = Number( getUPEConfig( 'cartTotal' ) );
 	const currency = getUPEConfig( 'currency' ).toLowerCase();
+	const paymentMethodTypes = getPaymentMethodTypes( props.paymentMethodId );
 
 	useEffect( () => {
 		async function generateUPEAppearance() {
@@ -47,11 +49,11 @@ const PaymentElements = ( { api, ...props } ) => {
 			<Elements
 				stripe={ stripe }
 				options={ {
-					mode: 1 > amount ? 'setup' : 'payment',
+					mode: amount < 1 ? 'setup' : 'payment',
 					amount: amount,
 					currency: currency,
 					paymentMethodCreation: 'manual',
-					paymentMethodTypes: [ props.paymentMethodId ],
+					paymentMethodTypes: paymentMethodTypes,
 					appearance: appearance,
 				} }
 			>

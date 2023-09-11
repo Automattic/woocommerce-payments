@@ -7,6 +7,7 @@
 
 use Automattic\WooCommerce\Admin\Notes\Notes;
 use WCPay\Core\Server\Request\Get_Account;
+use WCPay\Core\Server\Request\Get_Request;
 use WCPay\Core\Server\Request\Update_Account;
 use WCPay\Core\Server\Response;
 use WCPay\Exceptions\API_Exception;
@@ -753,7 +754,56 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->wcpay_account->is_account_rejected() );
 	}
 
-	public function test_refresh_account_data_passes_refresh_arg_to_cache() {
+	public function test_is_account_partially_onboarded_returns_true() {
+		$this->mock_database_cache->expects( $this->exactly( 2 ) )->method( 'get_or_add' )->willReturn(
+			[
+				'account_id'               => 'acc_test',
+				'live_publishable_key'     => 'pk_test_',
+				'test_publishable_key'     => 'pk_live_',
+				'has_pending_requirements' => true,
+				'current_deadline'         => 12345,
+				'is_live'                  => true,
+				'status'                   => 'restricted',
+				'details_submitted'        => false,
+			]
+		);
+
+		$this->assertTrue( $this->wcpay_account->is_account_partially_onboarded() );
+
+	}
+
+	public function test_is_account_partially_onboarded_returns_false() {
+		$this->mock_database_cache->expects( $this->exactly( 2 ) )->method( 'get_or_add' )->willReturn(
+			[
+				'account_id'               => 'acc_test',
+				'live_publishable_key'     => 'pk_test_',
+				'test_publishable_key'     => 'pk_live_',
+				'has_pending_requirements' => true,
+				'current_deadline'         => 12345,
+				'is_live'                  => true,
+				'status'                   => 'restricted',
+				'details_submitted'        => true,
+			]
+		);
+
+		$this->assertFalse( $this->wcpay_account->is_account_partially_onboarded() );
+
+	}
+
+	public function test_is_account_partially_onboarded_returns_false_when_stripe_not_connected() {
+		$this->mock_empty_cache();
+
+		$this->mock_wcpay_request( Get_Account::class )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willThrowException(
+				new API_Exception( 'test', 'wcpay_account_not_found', 401 )
+			);
+
+		$this->assertFalse( $this->wcpay_account->is_account_partially_onboarded() );
+	}
+
+	public function test_is_account_partially_onboarded_returns_false_if_account_not_connected() {
 		$expected_account = [
 			'account_id'               => 'acc_test',
 			'live_publishable_key'     => 'pk_test_',
@@ -1022,10 +1072,11 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			return;
 		}
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_active_loan_summary' )
+		$request = $this->mock_wcpay_request( Get_Request::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willThrowException( new API_Exception( 'test_exception', 0, 400 ) );
+
 		$this->wcpay_account->handle_loan_approved_inbox_note( $this->get_cached_account_loan_data() );
 		$note_id = WC_Payments_Notes_Loan_Approved::NOTE_NAME;
 		$this->assertSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
@@ -1037,10 +1088,15 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			return;
 		}
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_active_loan_summary' )
+		$request = $this->mock_wcpay_request( Get_Request::class );
+		$request->expects( $this->once() )
+			->method( 'set_api' )
+			->with( WC_Payments_API_Client::CAPITAL_API . '/active_loan_summary' );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( [ 'test' ] );
+
 		$this->wcpay_account->handle_loan_approved_inbox_note( $this->get_cached_account_loan_data() );
 		$note_id = WC_Payments_Notes_Loan_Approved::NOTE_NAME;
 		$this->assertSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
@@ -1055,9 +1111,11 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$advance_amount           = 1234567;
 		$formatted_advance_amount = wp_kses_normalize_entities( wp_strip_all_tags( wc_price( $advance_amount / 100 ) ) ); // Match it with note content sanitization process.
 		$time                     = time();
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_active_loan_summary' )
+
+		$request = $this->mock_wcpay_request( Get_Request::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn(
 				[
 					'details' => [
@@ -1090,9 +1148,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$advance_amount           = 1234567;
 		$formatted_advance_amount = wp_kses_normalize_entities( wp_strip_all_tags( wc_price( $advance_amount / 100, [ 'currency' => 'CHF' ] ) ) ); // Match it with note content sanitization process.
 		$time                     = time();
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_active_loan_summary' )
+
+		$request = $this->mock_wcpay_request( Get_Request::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn(
 				[
 					'details' => [

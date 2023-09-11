@@ -37,6 +37,7 @@ import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import { FraudOutcome } from '../../types/fraud-outcome';
 import CancelAuthorizationButton from '../../components/cancel-authorization-button';
 import { PaymentIntent } from '../../types/payment-intents';
+import DisputeDetails from '../dispute-details';
 import MissingOrderNotice from 'wcpay/payment-details/summary/missing-order-notice';
 import CardNotice from 'wcpay/components/card-notice';
 import { chevronRight } from '@wordpress/icons';
@@ -156,7 +157,11 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		charge.currency && balance.currency !== charge.currency;
 
 	const {
-		featureFlags: { isAuthAndCaptureEnabled, isRefundControlsEnabled },
+		featureFlags: {
+			isAuthAndCaptureEnabled,
+			isDisputeOnTransactionPageEnabled,
+			isRefundControlsEnabled,
+		},
 	} = useContext( WCPaySettingsContext );
 
 	// We should only fetch the authorization data if the payment is marked for manual capture and it is not already captured.
@@ -376,6 +381,9 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					/>
 				</LoadableBlock>
 			</CardBody>
+			{ isDisputeOnTransactionPageEnabled && charge.dispute && (
+				<DisputeDetails dispute={ charge.dispute } />
+			) }
 			{ isRefundControlsEnabled &&
 				Object.keys( charge ).length > 0 &&
 				! charge.order && (
@@ -388,67 +396,73 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 				authorization &&
 				! authorization.captured && (
 					<Loadable isLoading={ isLoading } placeholder="">
-						<CardNotice
-							actions={
-								! isFraudOutcomeReview ? (
-									<CaptureAuthorizationButton
-										orderId={ charge.order?.number || 0 }
-										paymentIntentId={
-											charge.payment_intent || ''
+						<CardFooter className="payment-details-capture-notice">
+							<div className="payment-details-capture-notice__section">
+								<div className="payment-details-capture-notice__text">
+									{ createInterpolateElement(
+										__(
+											'You must <a>capture</a> this charge within the next',
+											'woocommerce-payments'
+										),
+										{
+											a: (
+												// eslint-disable-next-line jsx-a11y/anchor-has-content, react/jsx-no-target-blank
+												<a
+													href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
+													target="_blank"
+													rel="noreferer"
+												/>
+											),
 										}
-										buttonIsPrimary={ true }
-										buttonIsSmall={ false }
-										onClick={ () => {
-											wcpayTracks.recordEvent(
-												'payments_transactions_details_capture_charge_button_click',
-												{
-													payment_intent_id:
-														charge.payment_intent,
-												}
-											);
-										} }
-									/>
-								) : undefined
-							}
-						>
-							{ createInterpolateElement(
-								__(
-									'You must <a>capture</a> this charge within the next',
-									'woocommerce-payments'
-								),
-								{
-									a: (
-										// eslint-disable-next-line jsx-a11y/anchor-has-content, react/jsx-no-target-blank
-										<a
-											href="https://woocommerce.com/document/woocommerce-payments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
-											target="_blank"
-											rel="noreferer"
+									) }{ ' ' }
+									<abbr
+										title={ dateI18n(
+											'M j, Y / g:iA',
+											moment
+												.utc( authorization.created )
+												.add( 7, 'days' ),
+											'UTC'
+										) }
+									>
+										<b>
+											{ moment
+												.utc( authorization.created )
+												.add( 7, 'days' )
+												.fromNow( true ) }
+										</b>
+									</abbr>
+									{ isFraudOutcomeReview &&
+										`. ${ __(
+											'Approving this transaction will capture the charge.',
+											'woocommerce-payments'
+										) }` }
+								</div>
+
+								{ ! isFraudOutcomeReview && (
+									<div className="payment-details-capture-notice__button">
+										<CaptureAuthorizationButton
+											orderId={
+												charge.order?.number || 0
+											}
+											paymentIntentId={
+												charge.payment_intent || ''
+											}
+											buttonIsPrimary={ true }
+											buttonIsSmall={ false }
+											onClick={ () => {
+												wcpayTracks.recordEvent(
+													'payments_transactions_details_capture_charge_button_click',
+													{
+														payment_intent_id:
+															charge.payment_intent,
+													}
+												);
+											} }
 										/>
-									),
-								}
-							) }{ ' ' }
-							<abbr
-								title={ dateI18n(
-									'M j, Y / g:iA',
-									moment
-										.utc( authorization.created )
-										.add( 7, 'days' ),
-									'UTC'
+									</div>
 								) }
-							>
-								<b>
-									{ moment
-										.utc( authorization.created )
-										.add( 7, 'days' )
-										.fromNow( true ) }
-								</b>
-							</abbr>
-							{ isFraudOutcomeReview &&
-								`. ${ __(
-									'Approving this transaction will capture the charge.',
-									'woocommerce-payments'
-								) }` }
-						</CardNotice>
+							</div>
+						</CardFooter>
 					</Loadable>
 				) }
 		</Card>
