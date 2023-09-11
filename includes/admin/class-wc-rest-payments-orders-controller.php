@@ -157,7 +157,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 			// Do not process already processed orders to prevent double-charging.
 			$stored_intent_id = $order->get_meta( '_intent_id' );
-			if ( $stored_intent_id !== $intent_id && ( Order_Status::COMPLETED === $order->get_status() || Order_Status::PROCESSING === $order->get_status() ) ) {
+			if ( ! empty( $stored_intent_id ) && $stored_intent_id !== $intent_id ) {
 				return new WP_Error( 'wcpay_payment_uncapturable', __( 'The payment cannot be captured for completed or processed orders.', 'woocommerce-payments' ), [ 'status' => 409 ] );
 			}
 
