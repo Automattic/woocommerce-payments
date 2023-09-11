@@ -16,6 +16,8 @@ import type { Dispute } from 'wcpay/types/disputes';
 import DisputeNotice from './dispute-notice';
 import DisputeFooter from './dispute-footer';
 import { isAwaitingResponse } from 'wcpay/disputes/utils';
+import DisputeNotice from './dispute-notice';
+import DisputeSummaryRow from './dispute-summary-row';
 import InlineNotice from 'components/inline-notice';
 import './style.scss';
 
@@ -51,6 +53,10 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 										) }
 									</InlineNotice>
 								) }
+								<DisputeSummaryRow
+									dispute={ dispute }
+									daysRemaining={ countdownDays }
+								/>
 							</>
 						) }
 						<div></div>

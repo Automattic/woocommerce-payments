@@ -15,7 +15,7 @@ import './style.scss';
 const LearnMoreLink = ( props ) => (
 	<Link
 		{ ...props }
-		href="https://woocommerce.com/document/woocommerce-payments/compatibility/countries/"
+		href="https://woocommerce.com/document/woopayments/compatibility/countries/"
 		target="_blank"
 		rel="noopener noreferrer"
 		type="external"
