@@ -88,6 +88,8 @@ class WC_Payments_Subscriptions {
 			include_once __DIR__ . '/class-wc-payments-subscriptions-migrator.php';
 			new WC_Payments_Subscriptions_Migrator( $api_client );
 		}
+
+		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'handle_wc_payments_updated' ] );
 	}
 
 	/**
@@ -139,5 +141,16 @@ class WC_Payments_Subscriptions {
 		}
 
 		return class_exists( 'WCS_Staging' ) && WCS_Staging::is_duplicate_site();
+	}
+
+	/**
+	 * Disable the WCPay Subscriptions feature on Woo Payments plugin update if it's enabled and the store is not longer eligible.
+	 *
+	 * @see WC_Payments_Features::is_wcpay_subscriptions_eligible() for eligibility criteria.
+	 */
+	public static function handle_wc_payments_updated() {
+		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() && ! WC_Payments_Features::is_wcpay_subscriptions_eligible() ) {
+			update_option( WC_Payments_Features::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '0' );
+		}
 	}
 }
