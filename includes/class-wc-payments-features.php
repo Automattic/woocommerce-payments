@@ -356,11 +356,12 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function should_use_stripe_billing() {
-		if ( self::is_wcpay_subscriptions_enabled() && ! class_exists( 'WC_Subscription' ) ) {
+		// We intentionally check for the existence of the 'WC_Subscriptions' class here as we want to confirm the Plugin is active.
+		if ( self::is_wcpay_subscriptions_enabled() && ! class_exists( 'WC_Subscriptions' ) ) {
 			return true;
 		}
 
-		if ( self::is_stripe_billing_enabled() && class_exists( 'WC_Subscription' ) ) {
+		if ( self::is_stripe_billing_enabled() && class_exists( 'WC_Subscriptions' ) ) {
 			return true;
 		}
 

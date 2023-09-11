@@ -440,7 +440,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		);
 
 		// Gather the status of the Stripe Billing migration for use on the settings page.
-		if ( class_exists( 'WC_Subscription' ) ) {
+		if ( class_exists( 'WC_Subscriptions' ) ) {
 			$stripe_billing_migrated_count = $this->wcpay_gateway->get_subscription_migrated_count();
 
 			if ( class_exists( 'WC_Payments_Subscriptions' ) ) {
