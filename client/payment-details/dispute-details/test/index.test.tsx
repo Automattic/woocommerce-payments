@@ -86,7 +86,8 @@ const getBaseCharge = (): ChargeWithDisputeRequired =>
 				shipping_address: '123 test address',
 			},
 			evidence_details: {
-				due_by: 1694303999,
+				// Create a unix timestamp for 7 days from now.
+				due_by: Date.now() / 1000 + 604800,
 				has_evidence: false,
 				past_due: false,
 				submission_count: 0,
