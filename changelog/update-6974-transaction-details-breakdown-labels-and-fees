@@ -1,5 +1,4 @@
-Significance: patch
-Type: add
-Comment: Behind feature flag: update Transaction Details summary breakdown styles and fee breakdown tooltip.
+Significance: minor
+Type: update
 
-
+Updated Transaction Details summary with added fee breakdown tooltip for disputed transactions.
