@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import React from 'react';
 
 /**
@@ -14,22 +14,24 @@ import { Button } from '@wordpress/components';
 describe( 'CardNotice component', () => {
 	test( 'should render child', () => {
 		const noticeText = 'Notice text';
-		const container = render( <CardNotice>{ noticeText }</CardNotice> );
+		const { container, getByText } = render(
+			<CardNotice>{ noticeText }</CardNotice>
+		);
 
-		expect( screen.getByText( noticeText ) ).toBeInTheDocument();
+		expect( getByText( noticeText ) ).toBeInTheDocument();
 		expect( container ).toMatchSnapshot();
 	} );
 
-	test( 'should render actions', () => {
+	test( 'should render a button when actions prop is provided', () => {
 		const buttonText = 'Notice text';
 
 		const actions = <Button>{ buttonText }</Button>;
-		const container = render(
+		const { container, getByRole } = render(
 			<CardNotice actions={ actions }>{ 'Notice text' }</CardNotice>
 		);
 
 		expect(
-			screen.getByRole( 'button', {
+			getByRole( 'button', {
 				name: buttonText,
 			} )
 		).toBeInTheDocument();
