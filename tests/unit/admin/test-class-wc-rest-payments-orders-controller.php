@@ -1605,11 +1605,82 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->controller->get_terminal_intent_payment_method( $request );
 	}
 
-	public function test_capture_terminal_payment_completed_order_new_intent() {
+	public function test_capture_terminal_payment_allows_charging_order_with_intent_meta() {
 		$order = $this->create_mock_order();
-		$order->update_status( Order_Status::COMPLETED );
+		$order->update_meta_data( WC_Payments_Order_Service::INTENT_ID_META_KEY, $this->mock_intent_id );
+		$order->update_meta_data( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY, Intent_Status::REQUIRES_CAPTURE );
+		$order->save_meta_data();
 
-		$request = $this->mock_wcpay_request( Get_Intention::class, 0, $this->mock_intent_id );
+		$mock_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'   => Intent_Status::REQUIRES_CAPTURE,
+				'metadata' => [
+					'order_id' => $order->get_id(),
+				],
+			]
+		);
+
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $this->mock_intent_id );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $mock_intent );
+
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'capture_charge' )
+			->with( $this->isInstanceOf( WC_Order::class ) )
+			->willReturn(
+				[
+					'status' => Intent_Status::SUCCEEDED,
+					'id'     => $this->mock_intent_id,
+				]
+			);
+
+		$this->order_service
+			->expects( $this->once() )
+			->method( 'attach_intent_info_to_order' )
+			->with(
+				$this->isInstanceOf( WC_Order::class ),
+				$this->mock_intent_id,
+				Intent_Status::REQUIRES_CAPTURE,
+				'pm_mock',
+				'cus_mock',
+				$this->mock_charge_id,
+				'USD'
+			);
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => $this->mock_intent_id,
+			]
+		);
+
+		$response      = $this->controller->capture_terminal_payment( $request );
+		$response_data = $response->get_data();
+
+		$this->assertEquals( 200, $response->status );
+		$this->assertEquals(
+			[
+				'status' => Intent_Status::SUCCEEDED,
+				'id'     => $this->mock_intent_id,
+			],
+			$response_data
+		);
+	}
+
+	/**
+	 * @dataProvider provider_capture_terminal_payment_prevents_double_charging_order_with_intent_meta
+	 */
+	public function test_capture_terminal_payment_prevents_double_charging_order_with_intent_meta( string $order_meta_intent_id, string $order_meta_intent_status, string $request_intent_id ) {
+		$order = $this->create_mock_order();
+		$order->update_meta_data( WC_Payments_Order_Service::INTENT_ID_META_KEY, $order_meta_intent_id );
+		$order->update_meta_data( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY, $order_meta_intent_status );
+		$order->save_meta_data();
+
+		$request = $this->mock_wcpay_request( Get_Intention::class, 0, $request_intent_id );
 
 		$this->mock_gateway
 			->expects( $this->never() )
@@ -1623,7 +1694,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$request->set_body_params(
 			[
 				'order_id'          => $order->get_id(),
-				'payment_intent_id' => 'pi_newintent',
+				'payment_intent_id' => $request_intent_id,
 			]
 		);
 
@@ -1633,6 +1704,14 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$data = $response->get_error_data();
 		$this->assertArrayHasKey( 'status', $data );
 		$this->assertSame( 409, $data['status'] );
+	}
+
+	public function provider_capture_terminal_payment_prevents_double_charging_order_with_intent_meta(): array {
+		return [
+			[ 'pi_abc', Intent_Status::REQUIRES_CAPTURE, 'pi_xyz' ],
+			[ 'pi_abc', Intent_Status::SUCCEEDED, 'pi_abc' ],
+			[ 'pi_abc', Intent_Status::SUCCEEDED, 'pi_xyz' ],
+		];
 	}
 
 	/**
