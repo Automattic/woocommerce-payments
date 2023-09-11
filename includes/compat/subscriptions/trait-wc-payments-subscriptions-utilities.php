@@ -133,4 +133,32 @@ trait WC_Payments_Subscriptions_Utilities {
 		}
 		return $subscriptions_core_instance ? $subscriptions_core_instance->get_plugin_version() : null;
 	}
+
+	/**
+	 * Gets the total number of subscriptions that have already been migrated.
+	 *
+	 * @return int The total number of subscriptions migrated.
+	 */
+	public function get_subscription_migrated_count() {
+		if ( ! function_exists( 'wcs_get_orders_with_meta_query' ) ) {
+			return 0;
+		}
+
+		return count(
+			wcs_get_orders_with_meta_query(
+				[
+					'status'     => 'any',
+					'return'     => 'ids',
+					'type'       => 'shop_subscription',
+					'limit'      => -1,
+					'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+						[
+							'key'     => '_migrated_wcpay_subscription_id',
+							'compare' => 'EXISTS',
+						],
+					],
+				]
+			)
+		);
+	}
 }

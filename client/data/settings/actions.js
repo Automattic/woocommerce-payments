@@ -269,3 +269,31 @@ export function updateAdvancedFraudProtectionSettings( settings ) {
 		advanced_fraud_protection_settings: settings,
 	} );
 }
+
+export function updateIsStripeBillingEnabled( isEnabled ) {
+	return updateSettingsValues( { is_stripe_billing_enabled: isEnabled } );
+}
+
+export function* submitStripeBillingSubscriptionMigration() {
+	try {
+		yield dispatch( STORE_NAME ).startResolution(
+			'scheduleStripeBillingMigration'
+		);
+
+		yield apiFetch( {
+			path: `${ NAMESPACE }/settings/schedule-stripe-billing-migration`,
+			method: 'post',
+		} );
+	} catch ( e ) {
+		yield dispatch( 'core/notices' ).createErrorNotice(
+			__(
+				'Error starting the Stripe Billing migration.',
+				'woocommerce-payments'
+			)
+		);
+	}
+
+	yield dispatch( STORE_NAME ).finishResolution(
+		'scheduleStripeBillingMigration'
+	);
+}

@@ -92,8 +92,8 @@ class WC_Payments_Product_Service {
 			return;
 		}
 
-		// Only create, update and restore/unarchive WCPay Subscription products when the WC Subscriptions plugin is not active.
-		if ( ! $this->is_subscriptions_plugin_active() ) {
+		// Only create, update and restore/unarchive WCPay Subscription products when Stripe Billing is active.
+		if ( WC_Payments_Features::should_use_stripe_billing() ) {
 			add_action( 'shutdown', [ $this, 'create_or_update_products' ] );
 			add_action( 'untrashed_post', [ $this, 'maybe_unarchive_product' ] );
 
