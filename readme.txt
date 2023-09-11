@@ -94,6 +94,44 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 6.5.0-test-2 - unreleased =
+* Add - Add a new task prompt to set up APMs after onboarding. Fixed an issue where a notice would show up in some unintended circumstances on the APM setup.
+* Add - Add an option on the Settings screen to enable merchants to migrate their Stripe Billing subscriptions to on-site billing.
+* Add - Added additional meta data to payment requests
+* Add - Add onboarding task incentive badge.
+* Add - Add payment request class for loading, sanitizing, and escaping data (reengineering payment process)
+* Add - Fall back to site logo when a custom WooPay logo has not been defined
+* Add - Introduce a new setting that enables store to opt into Subscription off-site billing via Stripe Billing.
+* Add - Load payment methods through the request class (re-engineering payment process).
+* Add - Support kanji and kana statement descriptors for Japanese merchants
+* Fix - Allow request classes to be extended more than once.
+* Fix - Corrected an issue causing incorrect responses at the cancel authorization API endpoint.
+* Fix - Ensure the shipping phone number field is copied to subscriptions and their orders when copying address meta.
+* Fix - Fix Currency Switcher Block flag rendering on Windows platform.
+* Fix - Fix deprecation warnings on blocks checkout.
+* Fix - Fixes the currency formatting for AED and SAR currencies.
+* Fix - Fix Multi-currency exchange rate date format when using custom date or time settings.
+* Fix - Fix Multicurrency widget error on post/page edit screen
+* Fix - Fix the way request params are loaded between parent and child classes.
+* Fix - Fix WooPay Session Handler in Store API requests.
+* Fix - Modify title in task to continue with onboarding
+* Fix - Refactor Woo Subscriptions compatibility to fix currency being able to be updated during renewals, resubscribes, or switches.
+* Fix - Update inbox note logic to prevent prompt to set up payment methods from showing on not fully onboarded account.
+* Update - Disable refund button on order edit page when there is active or lost dispute.
+* Update - Improve the transaction details redirect user-experience by using client-side routing.
+* Update - Temporarily disable saving SEPA
+* Update - Update Multi-currency documentation links.
+* Update - Update outdated public documentation links on WooCommerce.com
+* Update - When HPOS is disabled, fetch subscriptions by customer_id using the user's subscription cache to improve performance.
+* Dev - Adding factor flags to control when to enter the new payment process.
+* Dev - Deprecated the 'woocommerce_subscriptions_not_found_label' filter.
+* Dev - Migrate DetailsLink component to TypeScript to improve code quality
+* Dev - Migrate link-item.js to typescript
+* Dev - Migrate woopay-item to typescript
+* Dev - Remove reference to old experiment.
+* Dev - Update Base_Constant to return the singleton object for same static calls.
+* Dev - Updated subscriptions-core to 6.2.0
+
 = 6.4.1 - 2023-09-06 =
 * Fix - checkout processing when fields are hidden via customizer
 * Fix - Potential fatal error when viewing WooCommerce home because we try to check if store has been fully onboarded but account service is not yet initialized.
