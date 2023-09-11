@@ -76,7 +76,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Trait_Test extends WCPAY_UnitTestCa
 		$this->assertSame( $expected, $this->mock_wcpay_subscriptions_trait->supports );
 	}
 
-	public function test_maybe_init_subscriptions_with_wcs_disabled() {
+	public function test_maybe_init_subscriptions_with_stripe_billing_enabled() {
 		$this->mock_wcpay_subscriptions_trait
 			->method( 'is_subscriptions_enabled' )
 			->willReturn( true );
@@ -84,6 +84,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Trait_Test extends WCPAY_UnitTestCa
 		$this->mock_wcpay_subscriptions_trait
 			->method( 'is_subscriptions_plugin_active' )
 			->willReturn( false );
+
+		update_option( '_wcpay_feature_subscriptions', '1' );
 
 		$this->mock_wcpay_subscriptions_trait->maybe_init_subscriptions();
 
@@ -100,5 +102,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Trait_Test extends WCPAY_UnitTestCa
 		];
 
 		$this->assertSame( $expected, $this->mock_wcpay_subscriptions_trait->supports );
+
+		delete_option( '_wcpay_feature_subscriptions' );
 	}
 }
