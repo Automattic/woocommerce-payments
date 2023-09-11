@@ -91,7 +91,7 @@ const getBaseCharge = (): ChargeWithDisputeRequired =>
 				past_due: false,
 				submission_count: 0,
 			},
-			// issuer_evidence: null,
+			issuer_evidence: null,
 			metadata: [],
 			payment_intent: 'pi_1',
 			reason: 'fraudulent',
