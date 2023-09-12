@@ -9,7 +9,7 @@ import { Flex, FlexBlock } from '@wordpress/components';
  */
 import strings from '../strings';
 import { OnboardingTextField, OnboardingPhoneNumberField } from '../form';
-import InlineNotice from 'components/inline-notice';
+import BannerNotice from 'components/banner-notice';
 
 const PersonalDetails: React.FC = () => {
 	return (
@@ -24,14 +24,14 @@ const PersonalDetails: React.FC = () => {
 			</Flex>
 			<OnboardingTextField name="email" />
 			<OnboardingPhoneNumberField name="phone" />
-			<InlineNotice
+			<BannerNotice
 				status="info"
 				className="personal-details-notice"
 				icon
 				isDismissible={ false }
 			>
 				{ strings.steps.personal.notice }
-			</InlineNotice>
+			</BannerNotice>
 		</>
 	);
 };
