@@ -296,8 +296,8 @@ addFilter(
 		const { showUpdateDetailsTask, wpcomReconnectUrl } = wcpaySettings;
 
 		const wcPayTasks = getTasks( {
-			showUpdateDetailsTask,
-			wpcomReconnectUrl,
+			showUpdateDetailsTask: showUpdateDetailsTask,
+			wpcomReconnectUrl: wpcomReconnectUrl,
 		} );
 
 		return [ ...tasks, ...wcPayTasks ];
