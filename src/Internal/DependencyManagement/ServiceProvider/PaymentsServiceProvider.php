@@ -8,13 +8,19 @@
 namespace WCPay\Internal\DependencyManagement\ServiceProvider;
 
 use Automattic\WooCommerce\Utilities\PluginUtil;
+use WCPay\Container;
 use WCPay\Core\Mode;
 use WCPay\Database_Cache;
 use WCPay\Internal\DependencyManagement\AbstractServiceProvider;
 use WCPay\Internal\Payment\Router;
+use WCPay\Internal\Payment\State\InitialState;
+use WCPay\Internal\Payment\State\CompletedState;
+use WCPay\Internal\Payment\StateFactory;
+use WCPay\Internal\Proxy\LegacyProxy;
 use WCPay\Internal\Service\PaymentProcessingService;
 use WCPay\Internal\Service\ExampleService;
 use WCPay\Internal\Service\ExampleServiceWithDependencies;
+use WCPay\Internal\Service\GatewayService;
 
 /**
  * WCPay payments service provider.
@@ -26,8 +32,12 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 	 * @var string[]
 	 */
 	protected $provides = [
+		StateFactory::class,
 		PaymentProcessingService::class,
 		Router::class,
+		InitialState::class,
+		CompletedState::class,
+		GatewayService::class,
 		ExampleService::class,
 		ExampleServiceWithDependencies::class,
 	];
@@ -38,10 +48,22 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 	public function register(): void {
 		$container = $this->getContainer();
 
-		$container->addShared( PaymentProcessingService::class );
+		// ToDo: This belongs in a different provider.
+		$container->addShared( GatewayService::class )
+			->addArgument( Container::class );
 
 		$container->addShared( Router::class )
 			->addArgument( Database_Cache::class );
+
+		$container->addShared( StateFactory::class )
+			->addArgument( Container::class );
+		$container->add( InitialState::class );
+		$container->add( CompletedState::class )
+			->addArgument( GatewayService::class );
+
+		$container->addShared( PaymentProcessingService::class )
+			->addArgument( StateFactory::class )
+			->addArgument( LegacyProxy::class );
 
 		$container->addShared( ExampleService::class );
 		$container->addShared( ExampleServiceWithDependencies::class )

@@ -77,6 +77,7 @@ class ExtendedContainer extends Container {
 	 *
 	 * @param string $id ID/name of the class.
 	 * @return mixed
+	 * @psalm-suppress MissingThrowsDocblock All exceptions are caught by `WCPay\Container`.
 	 */
 	public function get( $id ) {
 		if ( isset( $this->replacements[ $id ] ) ) {

@@ -399,3 +399,20 @@ add_action(
 		}
 	}
 );
+
+/**
+ * A temporary function to test the payment process.
+ * In further commits, this will be converted to tests.
+ */
+add_action(
+	'template_redirect',
+	function() {
+		// phpcs:disable
+		$service = wcpay_get_container()->get( WCPay\Internal\Service\PaymentProcessingService::class );
+		$result  = $service->process_payment( 1564 );
+		echo '<pre>';
+		var_dump( $result );
+		exit;
+		// phpcs:enable
+	}
+);
