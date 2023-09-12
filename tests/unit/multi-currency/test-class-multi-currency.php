@@ -1277,12 +1277,17 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		update_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY, $customer_currencies );
 
 		$order = wc_create_order();
+		$order->set_currency( 'USD' );
+		$order->save();
+
+		$order = wc_create_order();
 		$order->set_currency( 'EUR' );
 		$order->save();
 
 		$this->multi_currency->maybe_update_customer_currencies_option( $order->get_id() );
+		$expected = [ 'EUR', 'USD' ];
 
-		$this->assertEquals( $customer_currencies, get_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY ) );
+		$this->assertEquals( $expected, get_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY ) );
 
 		delete_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY );
 	}
@@ -1296,7 +1301,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 		$this->multi_currency->maybe_update_customer_currencies_option( $order->get_id() );
 
-		$this->assertEquals( false, get_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY ) );
+		$this->assertEquals( [], get_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY ) );
 	}
 
 	private function mock_currency_settings( $currency_code, $settings ) {

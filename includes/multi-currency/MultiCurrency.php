@@ -563,7 +563,7 @@ class MultiCurrency {
 		}
 
 		$currency   = $order->get_currency();
-		$currencies = get_option( self::CUSTOMER_CURRENCIES_KEY );
+		$currencies = self::get_all_customer_currencies();
 
 		// Skip if the currency is not a string or if the option is invalid.
 		if ( ! is_string( $currency ) || ! is_array( $currencies ) ) {
