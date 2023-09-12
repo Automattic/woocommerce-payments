@@ -691,6 +691,19 @@ class WC_Payments_Admin {
 
 			if ( $order && WC_Payment_Gateway_WCPay::GATEWAY_ID === $order->get_payment_method() ) {
 				$refund_amount = $order->get_remaining_refund_amount();
+
+				$dispute    = null;
+				$dispute_id = $this->order_service->get_dispute_id_for_order( $order );
+
+				if ( $dispute_id ) {
+					try {
+						$dispute = $this->payments_api_client->get_dispute( $dispute_id );
+					} catch ( Exception $e ) {
+						// Do nothing.
+						$dispute = null;
+					}
+				}
+
 				wp_localize_script(
 					'WCPAY_ADMIN_ORDER_ACTIONS',
 					'wcpay_order_config',
@@ -702,6 +715,7 @@ class WC_Payments_Admin {
 						'refundedAmount'        => $order->get_total_refunded(),
 						'canRefund'             => $this->wcpay_gateway->can_refund_order( $order ),
 						'chargeId'              => $this->order_service->get_charge_id_for_order( $order ),
+						'dispute'               => $dispute,
 					]
 				);
 				wp_localize_script(
