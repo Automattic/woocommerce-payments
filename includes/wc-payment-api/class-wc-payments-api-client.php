@@ -887,7 +887,11 @@ class WC_Payments_API_Client {
 		);
 
 		if ( ! is_array( $fields_data ) ) {
-			return [];
+			throw new API_Exception(
+				__( 'Onboarding field data could not be retrieved', 'woocommerce-payments' ),
+				'wcpay_onboarding_fields_data_error',
+				400
+			);
 		}
 
 		return $fields_data;
