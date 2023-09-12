@@ -22,6 +22,7 @@ runs:
         key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
 
     - name: "Get minimum PHP version"
+      shell: bash
       id: get_min_php_version
       run: |
         MIN_PHP_VERSION=$(sed -n 's/.*PHP: //p' woocommerce-payments.php)
