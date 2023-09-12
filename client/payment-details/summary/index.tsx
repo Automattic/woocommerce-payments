@@ -41,6 +41,7 @@ import DisputeDetails from '../dispute-details';
 import MissingOrderNotice from 'wcpay/payment-details/summary/missing-order-notice';
 import CardNotice from 'wcpay/components/card-notice';
 import { chevronRight } from '@wordpress/icons';
+import _ from 'lodash';
 
 declare const window: any;
 
@@ -385,11 +386,11 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 				<DisputeDetails dispute={ charge.dispute } />
 			) }
 			{ isRefundControlsEnabled &&
-				Object.keys( charge ).length > 0 &&
+				! _.isEmpty( charge ) &&
 				! charge.order && (
 					<MissingOrderNotice
 						isLoading={ isLoading }
-						amount={ formattedAmount }
+						formattedAmount={ formattedAmount }
 					/>
 				) }
 			{ isAuthAndCaptureEnabled &&

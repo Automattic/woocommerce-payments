@@ -21,12 +21,12 @@ import CardNotice from 'wcpay/components/card-notice';
 
 interface MissingOrderNoticeProps {
 	isLoading: boolean;
-	amount: string;
+	formattedAmount: string;
 }
 
 const MissingOrderNotice: React.FC< MissingOrderNoticeProps > = ( {
 	isLoading,
-	amount,
+	formattedAmount,
 } ) => {
 	const [ isModalOpen, setIsModalOpen ] = useState( false );
 
@@ -92,7 +92,7 @@ const MissingOrderNotice: React.FC< MissingOrderNoticeProps > = ( {
 									'This will issue a full refund of {{strong}}%s{{/strong}} to the customer.',
 									'woocommerce-payments'
 								),
-								amount
+								formattedAmount
 							),
 							components: {
 								strong: <strong />,
