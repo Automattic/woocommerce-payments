@@ -170,7 +170,9 @@ describe( 'PaymentDetailsSummary', () => {
 			} as any,
 		} );
 
-		expect( renderCharge( charge ) ).toMatchSnapshot();
+		const container = renderCharge( charge );
+		screen.getByText( /Refunded: \$-20.00/i );
+		expect( container ).toMatchSnapshot();
 	} );
 
 	test( 'renders the information of a disputed charge', () => {
@@ -189,7 +191,9 @@ describe( 'PaymentDetailsSummary', () => {
 			],
 		} as any;
 
-		expect( renderCharge( charge ) ).toMatchSnapshot();
+		const container = renderCharge( charge );
+		screen.getByText( /Deducted: \$-15.00/i );
+		expect( container ).toMatchSnapshot();
 	} );
 
 	test( 'renders the fee breakdown tooltip of a disputed charge', () => {
