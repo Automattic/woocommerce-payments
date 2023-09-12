@@ -26,6 +26,21 @@ import { useCharge } from 'wcpay/data';
 import wcpayTracks from 'tracks';
 import './style.scss';
 
+try {
+	// Create the performance observer.
+	const po = new PerformanceObserver( ( entryList ) => {
+		for ( const entry of entryList.getEntries() ) {
+			// Log the entry and all associated details.
+			console.log( entry.toJSON() );
+		}
+	} );
+	// Start listening for `element` entries to be dispatched.
+	po.observe( { type: 'element', buffered: true } );
+	console.log( 'PerformanceObserver init.' );
+} catch ( e ) {
+	// Do nothing if the browser doesn't support this API.
+}
+
 jQuery( function ( $ ) {
 	const disableManualRefunds = getConfig( 'disableManualRefunds' ) ?? false;
 	const manualRefundsTip = getConfig( 'manualRefundsTip' ) ?? '';
@@ -336,9 +351,11 @@ const DisputeNotice = ( { chargeId } ) => {
 			isDismissible={ false }
 			actions={ actions }
 		>
-			{ showWarning && <strong>{ warningText }</strong> }
+			<div elementtiming="disputed-order-notice">
+				{ showWarning && <strong>{ warningText }</strong> }
 
-			{ disableRefund && <div>{ refundDisabledNotice }</div> }
+				{ disableRefund && <div>{ refundDisabledNotice }</div> }
+			</div>
 		</InlineNotice>
 	);
 };
