@@ -1296,12 +1296,17 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		delete_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY );
 
 		$order = wc_create_order();
+		$order->set_currency( 'BRL' );
+		$order->save();
+
+		$order = wc_create_order();
 		$order->set_currency( 'EUR' );
 		$order->save();
 
 		$this->multi_currency->maybe_update_customer_currencies_option( $order->get_id() );
+		$expected = [ 'BRL', 'EUR' ];
 
-		$this->assertEquals( [], get_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY ) );
+		$this->assertEquals( $expected, get_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY ) );
 	}
 
 	private function mock_currency_settings( $currency_code, $settings ) {
