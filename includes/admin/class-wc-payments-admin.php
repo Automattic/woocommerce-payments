@@ -10,6 +10,7 @@ use Automattic\WooCommerce\Admin\PageController;
 use WCPay\Core\Server\Request;
 use WCPay\Database_Cache;
 use WCPay\Logger;
+use WCPay\Tracker;
 use WCPay\WooPay\WooPay_Utilities;
 
 defined( 'ABSPATH' ) || exit;
@@ -703,6 +704,14 @@ class WC_Payments_Admin {
 						$dispute = null;
 					}
 				}
+
+				Tracker::track_admin(
+					'wcpay_order_view',
+					[
+						'is_disputed'    => $dispute ? true : false,
+						'dispute_status' => $dispute['status'] ?? null,
+					]
+				);
 
 				wp_localize_script(
 					'WCPAY_ADMIN_ORDER_ACTIONS',
