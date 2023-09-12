@@ -1,4 +1,4 @@
 Significance: patch
 Type: dev
 
-Update GH workflows to use PHP version from plugin file.
+Comment: Update GH workflows to use PHP version from plugin file.

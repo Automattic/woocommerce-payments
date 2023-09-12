@@ -1,4 +1,4 @@
-name: "Setup PHP"
+name: "Set up PHP"
 description: "Extracts the required PHP version from plugin file and uses it to build PHP."
 
 runs:
