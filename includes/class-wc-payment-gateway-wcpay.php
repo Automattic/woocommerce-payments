@@ -782,8 +782,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if (
 			function_exists( 'wcs_order_contains_subscription' )
 			&& wcs_order_contains_subscription( $order_id )
-			&& WC_Payments_Features::is_wcpay_subscriptions_enabled()
-			&& ! $this->is_subscriptions_plugin_active()
+			&& WC_Payments_Features::should_use_stripe_billing()
 		) {
 			$factors[] = Factor::WCPAY_SUBSCRIPTION_SIGNUP();
 		}

@@ -264,29 +264,31 @@ const AddPaymentMethodsTask = () => {
 					} ) }
 				</p>
 
-				<Notice
-					status="warning"
-					isDismissible={ false }
-					className="po__notice"
-				>
-					<span>
-						{ __(
-							'Some payment methods cannot be enabled because more information is needed about your account. ',
-							'woocommerce-payments'
-						) }
-					</span>
-					<a
-						// eslint-disable-next-line max-len
-						href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/#method-cant-be-enabled"
-						target="_blank"
-						rel="external noreferrer noopener"
+				{ isPoInProgress && (
+					<Notice
+						status="warning"
+						isDismissible={ false }
+						className="po__notice"
 					>
-						{ __(
-							'Learn more about enabling additional payment methods.',
-							'woocommerce-payments'
-						) }
-					</a>
-				</Notice>
+						<span>
+							{ __(
+								'Some payment methods cannot be enabled because more information is needed about your account. ',
+								'woocommerce-payments'
+							) }
+						</span>
+						<a
+							// eslint-disable-next-line max-len
+							href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/#method-cant-be-enabled"
+							target="_blank"
+							rel="external noreferrer noopener"
+						>
+							{ __(
+								'Learn more about enabling additional payment methods.',
+								'woocommerce-payments'
+							) }
+						</a>
+					</Notice>
+				) }
 
 				<Card
 					className="add-payment-methods-task__payment-selector-wrapper"
