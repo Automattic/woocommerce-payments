@@ -30,9 +30,7 @@ runs:
 
     - name: "Setup PHP"
       uses: shivammathur/setup-php@v2
-      env:
-        MIN_PHP_VERSION: ${{ steps.get_min_php_version.outputs.MIN_PHP_VERSION }}
       with:
-        php-version: $MIN_PHP_VERSION
+        php-version: ${{ steps.get_min_php_version.outputs.MIN_PHP_VERSION }}
         tools: composer
         coverage: none
