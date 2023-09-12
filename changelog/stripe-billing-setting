@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Introduce a new setting that enables store to opt into Subscription off-site billing via Stripe Billing.

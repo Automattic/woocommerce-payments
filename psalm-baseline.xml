@@ -88,4 +88,16 @@
       <code>CheckoutSchema</code>
     </UndefinedClass>
   </file>
+  <file src="includes/admin/class-wc-rest-payments-settings-controller.php">
+    <MissingDependency occurrences="8">
+      <code>WC_Payments_Subscriptions::get_stripe_billing_migrator()</code>
+      <code>$stripe_billing_migrator</code>
+      <code>$stripe_billing_migrator</code>
+      <code>$stripe_billing_migrator</code>
+      <code>WC_Payments_Subscriptions::get_stripe_billing_migrator()</code>
+      <code>$stripe_billing_migrator</code>
+      <code>$stripe_billing_migrator</code>
+      <code>$stripe_billing_migrator</code>
+    </MissingDependency>
+  </file>
 </files>
