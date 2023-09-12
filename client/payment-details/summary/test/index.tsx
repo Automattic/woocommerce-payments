@@ -198,24 +198,64 @@ describe( 'PaymentDetailsSummary', () => {
 			} as any,
 		} );
 
-		expect( renderCharge( charge ) ).toMatchSnapshot();
+		const container = renderCharge( charge );
+		screen.getByText( /Refunded: \$-20.00/i );
+		expect( container ).toMatchSnapshot();
 	} );
 
 	test( 'renders the information of a disputed charge', () => {
 		const charge = getBaseCharge();
 		charge.disputed = true;
 		charge.dispute = {
-			amount: 1500,
+			amount: 2000,
 			status: 'under_review',
 			balance_transactions: [
 				{
-					amount: -1500,
+					amount: -2000,
 					fee: 1500,
+					currency: 'usd',
+					reporting_category: 'dispute',
 				} as any,
 			],
 		} as any;
 
-		expect( renderCharge( charge ) ).toMatchSnapshot();
+		const container = renderCharge( charge );
+		screen.getByText( /Deducted: \$-20.00/i );
+		expect( container ).toMatchSnapshot();
+	} );
+
+	test( 'renders the information of a dispute-reversal charge', () => {
+		const charge = getBaseCharge();
+		charge.disputed = true;
+		charge.dispute = {
+			amount: 2000,
+			status: 'won',
+			balance_transactions: [
+				{
+					amount: -2000,
+					fee: 1500,
+					currency: 'usd',
+					reporting_category: 'dispute',
+				} as any,
+				{
+					amount: 2000,
+					fee: -1500,
+					currency: 'usd',
+					reporting_category: 'dispute_reversal',
+				},
+			],
+		} as any;
+
+		const container = renderCharge( charge );
+		expect(
+			screen.queryByText( /Deducted: \$-15.00/i )
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'button', {
+				name: /Fee breakdown/i,
+			} )
+		).not.toBeInTheDocument();
+		expect( container ).toMatchSnapshot();
 	} );
 
 	test( 'renders the fee breakdown tooltip of a disputed charge', () => {
