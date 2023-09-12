@@ -116,20 +116,17 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 
 			$this->maybe_cancel_wcpay_subscription( $wcpay_subscription );
 
-			/**
-			 * There's a scenario where a WCPay subscription is active but has no pending renewal scheduled action.
-			 * Once migrated, this results in an active subscription that will remain active forever, without processing a renewal order.
-			 *
-			 * To ensure that all migrated subscriptions have a pending scheduled action, we need to reschedule the next payment date by
-			 * updating the date on the subscription.
-			 */
-			if ( $subscription->has_status( 'active' ) ) {
-				$this->update_next_payment_date( $subscription, $wcpay_subscription );
+			if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $subscription->get_payment_method() ) {
+				if ( $subscription->has_status( 'active' ) ) {
+					$this->update_next_payment_date( $subscription, $wcpay_subscription );
+				}
 			}
 
 			$this->update_wcpay_subscription_meta( $subscription );
 
-			$subscription->add_order_note( __( 'This subscription has been successfully migrated to a WooPayments tokenized subscription.', 'woocommerce-payments' ) );
+			if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $subscription->get_payment_method() ) {
+				$subscription->add_order_note( __( 'This subscription has been successfully migrated to a WooPayments tokenized subscription.', 'woocommerce-payments' ) );
+			}
 
 			$this->logger->log( sprintf( '---- SUCCESS: Subscription #%d migrated.', $subscription_id ) );
 		} catch ( \Exception $e ) {
