@@ -256,7 +256,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
           >
             You must 
             <a
-              href="https://woocommerce.com/document/woocommerce-payments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
+              href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
               rel="noreferer"
               target="_blank"
             >
@@ -573,7 +573,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
           >
             You must 
             <a
-              href="https://woocommerce.com/document/woocommerce-payments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
+              href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
               rel="noreferer"
               target="_blank"
             >
