@@ -1709,6 +1709,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 	public function provider_capture_terminal_payment_prevents_double_charging_order_with_intent_meta(): array {
 		return [
 			[ 'pi_abc', Intent_Status::REQUIRES_CAPTURE, 'pi_xyz' ],
+			[ 'pi_abc', '', 'pi_xyz' ],
 			[ 'pi_abc', Intent_Status::SUCCEEDED, 'pi_abc' ],
 			[ 'pi_abc', Intent_Status::SUCCEEDED, 'pi_xyz' ],
 		];
