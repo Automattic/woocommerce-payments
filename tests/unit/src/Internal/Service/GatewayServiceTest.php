@@ -8,7 +8,7 @@
 namespace WCPay\Tests\Internal\Service;
 
 use PHPUnit\Framework\MockObject\MockObject;
-use WC_Helper_Order;
+use WC_Order;
 use WC_Payment_Gateway_WCPay as Gateway;
 use WCPay\Container;
 use WCPay\Internal\Service\GatewayService;
@@ -65,15 +65,18 @@ class GatewayServiceTest extends WCPAY_UnitTestCase {
 	 * Test for the `get_return_url()` method.
 	 */
 	public function test_get_return_url_works() {
-		$order      = WC_Helper_Order::create_order();
+		/**
+		 * @var WC_Order|MockObject
+		 */
+		$mock_order = $this->createMock( WC_Order::class );
 		$return_url = 'https://example.com/thank-you';
 
 		$this->mock_gateway->expects( $this->once() )
 			->method( 'get_return_url' )
-			->with( $order )
+			->with( $mock_order )
 			->willReturn( $return_url );
 
-		$result = $this->sut->get_return_url( $order );
+		$result = $this->sut->get_return_url( $mock_order );
 		$this->assertSame( $return_url, $result );
 	}
 }

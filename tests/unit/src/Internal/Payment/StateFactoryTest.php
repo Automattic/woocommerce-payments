@@ -10,6 +10,7 @@ namespace WCPay\Tests\Internal\Payment;
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPAY_UnitTestCase;
 use WCPay\Container;
+use WCPay\Internal\DependencyManagement\ContainerException;
 use WCPay\Internal\Payment\Exception\StateTransitionException;
 use WCPay\Internal\Payment\State\InitialState;
 use WCPay\Internal\Payment\State\State;
@@ -78,7 +79,7 @@ class StateFactoryTest extends WCPAY_UnitTestCase {
 		$this->mock_container->expects( $this->once() )
 			->method( 'get' )
 			->with( RandomState::class )
-			->willThrowException( new StateTransitionException( 'Cannot resolve class.' ) );
+			->willThrowException( new ContainerException( 'Cannot resolve class.' ) );
 
 		$this->expectException( StateTransitionException::class );
 		$this->sut->create_state( RandomState::class );
