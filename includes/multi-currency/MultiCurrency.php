@@ -1483,11 +1483,11 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Function used to compute the customer used currencies, used as internal callable for get_all_customer_currencies function.
+	 * Computes the customer used currencies.
 	 *
 	 * @return array
 	 */
-	public function callable_get_customer_currencies() {
+	public function get_customer_currencies() {
 		global $wpdb;
 
 		$currencies  = $this->get_available_currencies();
@@ -1517,10 +1517,7 @@ class MultiCurrency {
 		$query      = "SELECT currency_code FROM ( $sub_query ) as subquery WHERE subquery.exists_in_orders=1 ORDER BY currency_code ASC";
 		$currencies = $wpdb->get_col( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
-		return [
-			'currencies' => $currencies,
-			'updated'    => time(),
-		];
+		return $currencies;
 	}
 
 	/**
@@ -1535,7 +1532,7 @@ class MultiCurrency {
 			return $currencies;
 		}
 
-		$currencies = $this->callable_get_customer_currencies();
+		$currencies = $this->get_customer_currencies();
 
 		if ( self::is_customer_currencies_data_valid( $currencies ) ) {
 			update_option( self::CUSTOMER_CURRENCIES_KEY, $currencies );
