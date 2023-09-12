@@ -73,6 +73,7 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 	public function test_filters_registered_properly() {
 		$this->assertNotFalse( has_action( 'admin_menu', [ $this->incentives_service, 'add_payments_menu_badge' ] ) );
 		$this->assertNotFalse( has_filter( 'woocommerce_admin_allowed_promo_notes', [ $this->incentives_service, 'allowed_promo_notes' ] ) );
+		$this->assertNotFalse( has_filter( 'woocommerce_admin_woopayments_onboarding_task_badge', [ $this->incentives_service, 'onboarding_task_badge' ] ) );
 	}
 
 	public function test_add_payments_menu_badge_without_incentive() {
@@ -109,6 +110,32 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 		$promo_notes = $this->incentives_service->allowed_promo_notes();
 
 		$this->assertContains( $this->mock_incentive_data['incentive']['id'], $promo_notes );
+	}
+
+	public function test_onboarding_task_badge_without_incentive() {
+		$this->mock_database_cache_with();
+
+		$badge = $this->incentives_service->onboarding_task_badge( '' );
+
+		$this->assertEmpty( $badge );
+	}
+
+	public function test_onboarding_task_badge_with_incentive_no_task_badge() {
+		$this->mock_database_cache_with( $this->mock_incentive_data );
+
+		$badge = $this->incentives_service->onboarding_task_badge( '' );
+
+		$this->assertEmpty( $badge );
+	}
+
+	public function test_onboarding_task_badge_with_incentive_and_task_badge() {
+		$incentive_data                            = $this->mock_incentive_data;
+		$incentive_data['incentive']['task_badge'] = 'task_badge';
+		$this->mock_database_cache_with( $incentive_data );
+
+		$badge = $this->incentives_service->onboarding_task_badge( '' );
+
+		$this->assertEquals( $badge, 'task_badge' );
 	}
 
 	public function test_get_cached_connect_incentive_non_supported_country() {

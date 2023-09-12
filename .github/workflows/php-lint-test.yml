@@ -6,7 +6,7 @@ on:
 
 env:
   WP_VERSION:        latest
-  WC_MIN_SUPPORTED_VERSION: '7.8.0'
+  WC_MIN_SUPPORTED_VERSION: '7.6.0'
   GUTENBERG_VERSION: latest
   PHP_MIN_SUPPORTED_VERSION: '7.3'
 
@@ -27,11 +27,8 @@ jobs:
           path: ~/.cache/composer/
           key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
       # setup PHP, but without debug extensions for reasonable performance
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: '7.4'
-          tools: composer
-          coverage: none
+      - name: "Set up PHP"
+        uses: ./.github/actions/setup-php
       # install dependencies and run linter
       - run: composer self-update && composer install --no-progress && ./vendor/bin/phpcs --standard=phpcs.xml.dist $(git ls-files | grep .php$) && ./vendor/bin/psalm
 
