@@ -242,10 +242,17 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 							) : null }
 							{ balance.refunded ? (
 								<p>
-									{ `${ __(
-										'Deducted',
-										'woocommerce-payments'
-									) }: ` }
+									{ `${
+										disputeFee
+											? __(
+													'Deducted',
+													'woocommerce-payments'
+											  )
+											: __(
+													'Refunded',
+													'woocommerce-payments'
+											  )
+									}: ` }
 									{ formatExplicitCurrency(
 										-balance.refunded,
 										balance.currency

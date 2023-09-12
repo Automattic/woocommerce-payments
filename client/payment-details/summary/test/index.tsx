@@ -183,6 +183,8 @@ describe( 'PaymentDetailsSummary', () => {
 				{
 					amount: -1500,
 					fee: 1500,
+					currency: 'usd',
+					reporting_category: 'dispute',
 				} as any,
 			],
 		} as any;
