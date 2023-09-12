@@ -12,18 +12,26 @@ runs:
     - name: "Setup Node"
       uses: actions/setup-node@v3
       with:
-        node-version-file: '.nvmrc'
-        cache: 'npm'
+        node-version-file: ".nvmrc"
+        cache: "npm"
 
     - name: "Enable composer dependencies caching"
       uses: actions/cache@v3
       with:
         path: ~/.cache/composer/
         key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
-    
+
+    - name: "Get minimum PHP version"
+      id: get_min_php_version
+      run: |
+        MIN_PHP_VERSION=$(sed -n 's/.*PHP: //p' woocommerce-payments.php)
+        echo "MIN_PHP_VERSION=$MIN_PHP_VERSION" >> $GITHUB_OUTPUT
+
     - name: "Setup PHP"
       uses: shivammathur/setup-php@v2
+      env:
+        MIN_PHP_VERSION: ${{ steps.get_min_php_version.outputs.MIN_PHP_VERSION }}
       with:
-        php-version: ${{ inputs.php-version }}
+        php-version: $MIN_PHP_VERSION
         tools: composer
         coverage: none
