@@ -84,6 +84,7 @@ declare global {
 			isEnabled: boolean;
 			isComplete: boolean;
 		};
+		enabledPaymentMethods: string[];
 		accountDefaultCurrency: string;
 		isFRTReviewFeatureActive: boolean;
 		frtDiscoverBannerSettings: string;
@@ -109,6 +110,8 @@ declare global {
 			task_badge?: string;
 		};
 		isWooPayStoreCountryAvailable: boolean;
+		isSubscriptionsPluginActive: boolean;
+		isStripeBillingEligible: boolean;
 	};
 
 	const wcTracks: any;

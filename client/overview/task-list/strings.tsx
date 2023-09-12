@@ -285,7 +285,7 @@ export default {
 		),
 	},
 	// Strings needed for the progressive onboarding related tasks.
-	po_tasks: {
+	tasks: {
 		no_payment_14_days: {
 			title: __(
 				'Please add your bank details to keep selling',
@@ -411,6 +411,16 @@ export default {
 				);
 			},
 			action_label: __( 'Verify bank details', 'woocommerce-payments' ),
+		},
+		add_apms: {
+			title: __(
+				'Add more ways for buyers to pay',
+				'woocommerce-payments'
+			),
+			description: __(
+				'Enable payment methods that work seamlessly with WooPayments.',
+				'woocommerce-payments'
+			),
 		},
 	},
 };

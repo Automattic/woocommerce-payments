@@ -35,7 +35,7 @@ function SuspendedDepositNotice(): JSX.Element {
 					suspendLink: (
 						<Link
 							href={
-								'https://woocommerce.com/document/woocommerce-payments/deposits/why-deposits-suspended/'
+								'https://woocommerce.com/document/woopayments/deposits/why-deposits-suspended/'
 							}
 						/>
 					),
