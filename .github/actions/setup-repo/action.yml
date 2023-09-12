@@ -1,11 +1,6 @@
 name: "Setup WooCommerce Payments repository"
 description: "Handles the installation, building, and caching of the projects within the repository."
 
-inputs:
-  php-version:
-    description: "The version of PHP that the action should set up."
-    default: "7.4"
-
 runs:
   using: composite
   steps:
