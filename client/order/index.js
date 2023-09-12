@@ -22,14 +22,13 @@ import {
 	isInquiry,
 	isUnderReview,
 } from 'wcpay/disputes/utils';
-import { useCharge } from 'wcpay/data';
 import wcpayTracks from 'tracks';
 import './style.scss';
 
 jQuery( function ( $ ) {
 	const disableManualRefunds = getConfig( 'disableManualRefunds' ) ?? false;
 	const manualRefundsTip = getConfig( 'manualRefundsTip' ) ?? '';
-	const chargeId = getConfig( 'chargeId' );
+	const dispute = getConfig( 'dispute' );
 
 	maybeShowDisputeNotice();
 
@@ -122,23 +121,19 @@ jQuery( function ( $ ) {
 			'#wcpay-order-payment-details-container'
 		);
 
-		// If the container doesn't exist (WC < 7.9), or the charge ID isn't present, don't render the notice.
-		if ( ! container || ! chargeId ) {
+		// If the container doesn't exist (WC < 7.9), or the dispute isn't present, don't render the notice.
+		if ( ! container || ! dispute ) {
 			return;
 		}
 
-		ReactDOM.render( <DisputeNotice chargeId={ chargeId } />, container );
+		ReactDOM.render( <DisputeNotice dispute={ dispute } />, container );
 	}
 } );
 
-const DisputeNotice = ( { chargeId } ) => {
-	const { data: charge } = useCharge( chargeId );
-
-	if ( ! charge?.dispute ) {
+const DisputeNotice = ( { dispute } ) => {
+	if ( ! dispute ) {
 		return null;
 	}
-
-	const { dispute } = charge;
 
 	let urgency = 'warning';
 	let actions;
