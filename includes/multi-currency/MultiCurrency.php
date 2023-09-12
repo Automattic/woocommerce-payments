@@ -570,7 +570,8 @@ class MultiCurrency {
 			return;
 		}
 
-		$currency = strtoupper( $currency );
+		$currency   = strtoupper( $currency );
+		$currencies = array_map( 'strtoupper', $currencies );
 
 		// Skip if the currency is already in the list.
 		if ( in_array( $currency, $currencies, true ) ) {
