@@ -388,6 +388,8 @@ class WC_Payments_Subscription_Service {
 			$subscription_data = $this->prepare_wcpay_subscription_data( $wcpay_customer_id, $subscription );
 			$this->validate_subscription_data( $subscription_data );
 
+			$subscription_data['metadata']['source'] = $this->is_subscriptions_plugin_active() ? 'woo_subscriptions' : 'wcpay_subscriptions';
+
 			$response = $this->payments_api_client->create_subscription( $subscription_data );
 
 			$this->set_wcpay_subscription_id( $subscription, $response['id'] );
