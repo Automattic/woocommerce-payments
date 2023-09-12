@@ -50,6 +50,13 @@ class WC_Payments_Subscriptions {
 	private static $event_handler;
 
 	/**
+	 * Instance of WC_Payments_Subscriptions_Migrator, created in init function.
+	 *
+	 * @var WC_Payments_Subscriptions_Migrator
+	 */
+	private static $stripe_billing_migrator;
+
+	/**
 	 * Initialize WooCommerce Payments subscriptions. (Stripe Billing)
 	 *
 	 * @param WC_Payments_API_Client       $api_client       WCPay API client.
@@ -84,10 +91,12 @@ class WC_Payments_Subscriptions {
 		new WC_Payments_Subscriptions_Onboarding_Handler( $account );
 		new WC_Payments_Subscription_Minimum_Amount_Handler( $api_client );
 
-		if ( WC_Payments_Features::is_subscription_migration_enabled() && class_exists( 'WCS_Background_Repairer' ) ) {
+		if ( class_exists( 'WCS_Background_Repairer' ) ) {
 			include_once __DIR__ . '/class-wc-payments-subscriptions-migrator.php';
-			new WC_Payments_Subscriptions_Migrator( $api_client );
+			self::$stripe_billing_migrator = new WC_Payments_Subscriptions_Migrator( $api_client );
 		}
+
+		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'maybe_disable_wcpay_subscriptions_on_update' ] );
 	}
 
 	/**
@@ -127,6 +136,15 @@ class WC_Payments_Subscriptions {
 	}
 
 	/**
+	 * Returns the the Stripe Billing migrator instance.
+	 *
+	 * @return WC_Payments_Subscriptions_Migrator
+	 */
+	public static function get_stripe_billing_migrator() {
+		return self::$stripe_billing_migrator;
+	}
+
+	/**
 	 * Determines if this is a duplicate/staging site.
 	 *
 	 * This function is a wrapper for WCS_Staging::is_duplicate_site().
@@ -139,5 +157,16 @@ class WC_Payments_Subscriptions {
 		}
 
 		return class_exists( 'WCS_Staging' ) && WCS_Staging::is_duplicate_site();
+	}
+
+	/**
+	 * Disable the WCPay Subscriptions feature on WooPayments plugin update if it's enabled and the store is no longer eligible.
+	 *
+	 * @see WC_Payments_Features::is_wcpay_subscriptions_eligible() for eligibility criteria.
+	 */
+	public static function maybe_disable_wcpay_subscriptions_on_update() {
+		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() && ! WC_Payments_Features::is_wcpay_subscriptions_eligible() ) {
+			update_option( WC_Payments_Features::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '0' );
+		}
 	}
 }
