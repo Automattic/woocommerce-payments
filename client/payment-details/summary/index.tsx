@@ -186,7 +186,10 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 
 	const isFraudOutcomeReview = isOnHoldByFraudTools( charge, paymentIntent );
 
-	const disputeFee = charge.dispute && getDisputeFee( charge.dispute );
+	const disputeFee =
+		charge.dispute &&
+		charge.dispute.status !== 'won' &&
+		getDisputeFee( charge.dispute );
 
 	// Use the balance_transaction fee if available. If not (e.g. authorized but not captured), use the application_fee_amount.
 	const transactionFee = charge.balance_transaction
