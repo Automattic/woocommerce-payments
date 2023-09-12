@@ -116,10 +116,8 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 
 			$this->maybe_cancel_wcpay_subscription( $wcpay_subscription );
 
-			if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $subscription->get_payment_method() ) {
-				if ( $subscription->has_status( 'active' ) ) {
-					$this->update_next_payment_date( $subscription, $wcpay_subscription );
-				}
+			if ( $subscription->has_status( 'active' ) ) {
+				$this->update_next_payment_date( $subscription, $wcpay_subscription );
 			}
 
 			$this->update_wcpay_subscription_meta( $subscription );
@@ -304,8 +302,8 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 			return;
 		}
 
-		// Use the Stripe subscription's next payment time (current_period_end) if it's in the future.
-		if ( isset( $wcpay_subscription['current_period_end'] ) && absint( $wcpay_subscription['current_period_end'] ) > time() ) {
+		// If the subscription was still using WooPayments, use the Stripe subscription's next payment time (current_period_end) if it's in the future.
+		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $subscription->get_payment_method() && isset( $wcpay_subscription['current_period_end'] ) && absint( $wcpay_subscription['current_period_end'] ) > time() ) {
 			$new_next_payment = gmdate( 'Y-m-d H:i:s', absint( $wcpay_subscription['current_period_end'] ) );
 
 			$subscription->update_dates( [ 'next_payment' => $new_next_payment ] );
