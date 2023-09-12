@@ -723,7 +723,6 @@ class WC_Payments_Admin {
 						'formattedRefundAmount' => wp_strip_all_tags( wc_price( $refund_amount, [ 'currency' => $order->get_currency() ] ) ),
 						'refundedAmount'        => $order->get_total_refunded(),
 						'canRefund'             => $this->wcpay_gateway->can_refund_order( $order ),
-						'chargeId'              => $this->order_service->get_charge_id_for_order( $order ),
 						'dispute'               => $dispute,
 					]
 				);
