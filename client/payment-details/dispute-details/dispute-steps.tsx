@@ -32,11 +32,6 @@ const DisputeSteps: React.FC< Props > = ( {
 	chargeCreated,
 	daysRemaining,
 } ) => {
-	const formattedDisputeAmount = formatExplicitCurrency(
-		dispute.amount,
-		dispute.currency
-	);
-
 	let emailLink;
 	if ( customer?.email ) {
 		const chargeDate = dateI18n(
@@ -50,7 +45,10 @@ const DisputeSteps: React.FC< Props > = ( {
 		const emailSubject = `Problem with your purchase from ${ wcpaySettings.storeName } on ${ chargeDate }?`;
 		const emailBody =
 			`Hello ${ customer?.name }\n\n` +
-			`We noticed that on ${ disputeDate }, you disputed a ${ formattedDisputeAmount } from ${ chargeDate }. We wanted to contact you to make sure everything was all right with your purchase and see if there's anything else we can do to resolve any problems you might have had.\n\n` +
+			`We noticed that on ${ disputeDate }, you disputed a ${ formatExplicitCurrency(
+				dispute.amount,
+				dispute.currency
+			) } from ${ chargeDate }. We wanted to contact you to make sure everything was all right with your purchase and see if there's anything else we can do to resolve any problems you might have had.\n\n` +
 			`Alternatively, if the dispute was a mistake, you could easily withdraw it by calling the number on the back of your card. Thank you so much - we appreciate your business and look forward to working with you.`;
 
 		emailLink = `mailto:${ customer.email }?subject=${ encodeURIComponent(
@@ -145,7 +143,8 @@ const DisputeSteps: React.FC< Props > = ( {
 											`Accepting this dispute will automatically close it. Your account will be charged a %s fee, and the disputed amount will be refunded to the cardholder.`,
 											'woocommerce-payments'
 										),
-										formattedDisputeAmount
+										// TODO: use getDisputeFee() from https://github.com/Automattic/woocommerce-payments/pull/7118.
+										''
 									) }
 								/>
 							),
