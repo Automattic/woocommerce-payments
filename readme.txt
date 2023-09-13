@@ -39,7 +39,7 @@ Our global support team is available to answer questions you may have about WooP
 = Requirements =
 
 * WordPress 6.1 or newer.
-* WooCommerce 7.9 or newer.
+* WooCommerce 7.7 or newer.
 * PHP 7.4 or newer is recommended.
 
 = Try it now =
