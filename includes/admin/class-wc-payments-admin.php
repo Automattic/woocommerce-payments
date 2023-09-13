@@ -772,6 +772,13 @@ class WC_Payments_Admin {
 			Logger::log( sprintf( 'WCPay JS settings: Could not determine if WCPay should be in test mode! Message: %s', $e->getMessage() ), 'warning' );
 		}
 
+		$dev_mode = false;
+		try {
+			$dev_mode = WC_Payments::mode()->is_dev();
+		} catch ( Exception $e ) {
+			Logger::log( sprintf( 'WCPay JS settings: Could not determine if WCPay should be in dev mode! Message: %s', $e->getMessage() ), 'warning' );
+		}
+
 		$connect_url       = WC_Payments_Account::get_connect_url();
 		$connect_incentive = $this->incentives_service->get_cached_connect_incentive();
 		// If we have an incentive ID, attach it to the connect URL.
@@ -787,6 +794,7 @@ class WC_Payments_Admin {
 				'availableStates'    => WC()->countries->get_states(),
 			],
 			'connectIncentive'              => $connect_incentive,
+			'devMode'                       => $dev_mode,
 			'testMode'                      => $test_mode,
 			'onboardingTestMode'            => WC_Payments_Onboarding_Service::is_test_mode_enabled(),
 			// Set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
