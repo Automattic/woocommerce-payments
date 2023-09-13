@@ -35,6 +35,16 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 
 		register_rest_route(
 			$this->namespace,
+			'/' . $this->rest_base . '/detail/(?P<file_id>\w+)',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_file_detail' ],
+				'permission_callback' => [],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
 			'/' . $this->rest_base . '/(?P<file_id>\w+)',
 			[
 				'methods'             => WP_REST_Server::READABLE,
@@ -42,6 +52,7 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 				'permission_callback' => [],
 			]
 		);
+
 	}
 
 	/**
@@ -114,6 +125,21 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 			]
 		);
 
+	}
+
+	public function get_file_detail( WP_REST_Request $request ) {
+		$file_id    = $request->get_param( 'file_id' );
+		$as_account = (bool) $request->get_param( 'as_account' );
+
+		if ( ! $this->check_permission() ) {
+			return new WP_Error(
+				'rest_forbidden',
+				__( 'Sorry, you are not allowed to do that.', 'woocommerce-payments' ),
+				[ 'status' => rest_authorization_required_code() ]
+			);
+		}
+
+		return $this->forward_request( 'get_file', [ $file_id, $as_account ] );
 	}
 
 	/**
