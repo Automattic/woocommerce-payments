@@ -49,10 +49,10 @@
 	}
 }
 .dispute-steps {
-	.dispute-steps__header {
+	&__header {
 		font-weight: 600;
 	}
-	.dispute-steps__steps {
+	&__steps {
 		list-style-position: inside;
 		margin-left: 0;
 
@@ -67,6 +67,21 @@
 			> .wcpay-tooltip__content-wrapper
 			+ div {
 			display: inline;
+		}
+
+		&__response-date {
+			display: inline-flex;
+			align-items: center;
+			gap: var( --grid-unit-05, 4px );
+			flex-wrap: wrap;
+			&--warning {
+				color: $wp-yellow-30;
+				font-weight: 700;
+			}
+			&--urgent {
+				font-weight: 700;
+				color: $alert-red;
+			}
 		}
 	}
 }

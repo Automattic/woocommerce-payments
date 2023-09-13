@@ -4,11 +4,12 @@
  * External dependencies
  */
 import React from 'react';
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies
@@ -22,12 +23,14 @@ interface Props {
 	dispute: Dispute;
 	customer: ChargeBillingDetails | null;
 	chargeCreated: number;
+	daysRemaining: number;
 }
 
 const DisputeSteps: React.FC< Props > = ( {
 	dispute,
 	customer,
 	chargeCreated,
+	daysRemaining,
 } ) => {
 	const formattedDisputeAmount = formatExplicitCurrency(
 		dispute.amount,
@@ -54,6 +57,13 @@ const DisputeSteps: React.FC< Props > = ( {
 			emailSubject
 		) }&body=${ encodeURIComponent( emailBody ) }`;
 	}
+
+	const respondByDate = dispute.evidence_details?.due_by
+		? dateI18n(
+				'M j, Y, g:ia',
+				moment( dispute.evidence_details?.due_by * 1000 ).toISOString()
+		  )
+		: '–';
 
 	return (
 		<div className="dispute-steps">
@@ -135,7 +145,36 @@ const DisputeSteps: React.FC< Props > = ( {
 									) }
 								/>
 							),
-							disputeduedate: <></>,
+							disputeduedate: (
+								<span className="dispute-steps__steps__response-date">
+									{ respondByDate }
+									<span
+										className={ classNames( {
+											'dispute-steps__steps__response-date--urgent':
+												daysRemaining < 3,
+											'dispute-steps__steps__response-date--warning':
+												daysRemaining < 7 &&
+												daysRemaining > 2,
+										} ) }
+									>
+										{ daysRemaining === 0
+											? __(
+													'(Last day today)',
+													'woocommerce-payments'
+											  )
+											: sprintf(
+													// Translators: %s is the number of days left to respond to the dispute.
+													_n(
+														'(%s day left to respond)',
+														'(%s days left to respond)',
+														daysRemaining,
+														'woocommerce-payments'
+													),
+													daysRemaining
+											  ) }
+									</span>
+								</span>
+							),
 						}
 					) }
 				</li>

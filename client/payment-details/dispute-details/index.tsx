@@ -67,6 +67,7 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( {
 									dispute={ dispute }
 									customer={ customer }
 									chargeCreated={ chargeCreated }
+									daysRemaining={ countdownDays }
 								/>
 							</>
 						) }
