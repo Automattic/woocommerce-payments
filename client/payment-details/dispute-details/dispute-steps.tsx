@@ -72,10 +72,13 @@ const DisputeSteps: React.FC< Props > = ( {
 			</div>
 			<ol className="dispute-steps__steps">
 				<li>
-					{ __(
-						"Review the claim issued by the cardholder's bank.",
-						'woocommerce-payments'
-					) }
+					{
+						// TODO: add link to the issuer evidence files link. See https://github.com/Automattic/woocommerce-payments/pull/7192.
+						__(
+							"Review the claim issued by the cardholder's bank.",
+							'woocommerce-payments'
+						)
+					}
 				</li>
 				<li>
 					{ customer?.email
