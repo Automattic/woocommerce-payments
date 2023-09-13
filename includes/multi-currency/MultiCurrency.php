@@ -1446,27 +1446,56 @@ class MultiCurrency {
 	}
 
 	/**
+	 * Function used to compute the customer used currencies, used as internal callable for get_all_customer_currencies function.
+	 *
+	 * @return array
+	 */
+	public function callable_get_customer_currencies() {
+		global $wpdb;
+
+		$currencies  = $this->get_available_currencies();
+		$query_union = [];
+
+		if ( class_exists( 'Automattic\WooCommerce\Utilities\OrderUtil' ) &&
+					\Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
+			foreach ( $currencies as $currency ) {
+				$query_union[] = $wpdb->prepare(
+					"SELECT %s AS currency_code, EXISTS(SELECT currency FROM {$wpdb->prefix}wc_orders WHERE currency=%s LIMIT 1) AS exists_in_orders",
+					$currency->code,
+					$currency->code
+				);
+			}
+		} else {
+			foreach ( $currencies as $currency ) {
+				$query_union[] = $wpdb->prepare(
+					"SELECT %s AS currency_code, EXISTS(SELECT meta_value FROM {$wpdb->postmeta} WHERE meta_key=%s AND meta_value=%s LIMIT 1) AS exists_in_orders",
+					$currency->code,
+					'_order_currency',
+					$currency->code
+				);
+			}
+		}
+
+		$sub_query  = join( ' UNION ALL ', $query_union );
+		$query      = "SELECT currency_code FROM ( $sub_query ) as subquery WHERE subquery.exists_in_orders=1 ORDER BY currency_code ASC";
+		$currencies = $wpdb->get_col( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+
+		return [
+			'currencies' => $currencies,
+			'updated'    => time(),
+		];
+	}
+
+	/**
 	 * Get all the currencies that have been used in the store.
 	 *
 	 * @return array
 	 */
 	public function get_all_customer_currencies(): array {
+
 		$data = $this->database_cache->get_or_add(
 			Database_Cache::CUSTOMER_CURRENCIES_KEY,
-			function() {
-				global $wpdb;
-				if ( class_exists( 'Automattic\WooCommerce\Utilities\OrderUtil' ) &&
-						\Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
-					$currencies = $wpdb->get_col( "SELECT DISTINCT(currency) FROM {$wpdb->prefix}wc_orders" );
-				} else {
-					$currencies = $wpdb->get_col( "SELECT DISTINCT(meta_value) FROM {$wpdb->postmeta} WHERE meta_key = '_order_currency'" );
-				}
-
-				return [
-					'currencies' => $currencies,
-					'updated'    => time(),
-				];
-			},
+			[ $this, 'callable_get_customer_currencies' ],
 			function ( $data ) {
 				// Return true if the data looks valid and was updated an hour or less ago.
 				return is_array( $data ) &&
