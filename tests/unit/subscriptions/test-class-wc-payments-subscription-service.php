@@ -172,7 +172,7 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 				],
 			],
 			'metadata' => [
-				'source' => 'woo_subscriptions',
+				'subscription_source' => 'woo_subscriptions',
 			],
 		];
 
