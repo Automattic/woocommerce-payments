@@ -160,8 +160,6 @@ const DisputeFooter: React.FC< DisputeFooterProps > = ( { dispute } ) => {
 			} );
 			const history = getHistory();
 			history.push( challengeUrl );
-		} else {
-			// TODO: Open issuer_evidence PDF in a new window
 		}
 	};
 
@@ -174,11 +172,13 @@ const DisputeFooter: React.FC< DisputeFooterProps > = ( { dispute } ) => {
 		>
 			<Flex justify="space-between">
 				<FlexItem>{ message }</FlexItem>
-				<FlexItem className="transaction-details-dispute-footer__actions">
-					<Button variant="secondary" onClick={ handleClick }>
-						{ buttonLabel }
-					</Button>
-				</FlexItem>
+				{ isSubmitted && (
+					<FlexItem className="transaction-details-dispute-footer__actions">
+						<Button variant="secondary" onClick={ handleClick }>
+							{ buttonLabel }
+						</Button>
+					</FlexItem>
+				) }
 			</Flex>
 		</CardFooter>
 	);
