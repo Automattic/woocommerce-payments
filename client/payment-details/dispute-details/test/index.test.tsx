@@ -214,7 +214,6 @@ describe( 'DisputeDetails', () => {
 	test( 'correctly renders dispute details for "under_review" disputes', () => {
 		const charge = getBaseCharge();
 		charge.dispute.status = 'under_review';
-
 		render( <DisputeDetails dispute={ charge.dispute } /> );
 
 		screen.getByText( /reviewing the case/i, {
@@ -226,7 +225,6 @@ describe( 'DisputeDetails', () => {
 		const charge = getBaseCharge();
 		charge.dispute.status = 'lost';
 		charge.dispute.metadata.__closed_by_merchant = '1';
-
 		render( <DisputeDetails dispute={ charge.dispute } /> );
 
 		screen.getByText( /This dispute was accepted/i, {
@@ -237,7 +235,6 @@ describe( 'DisputeDetails', () => {
 	test( 'correctly renders dispute details for "lost" disputes', () => {
 		const charge = getBaseCharge();
 		charge.dispute.status = 'lost';
-
 		render( <DisputeDetails dispute={ charge.dispute } /> );
 
 		screen.getByText( /This dispute was lost/i, {
