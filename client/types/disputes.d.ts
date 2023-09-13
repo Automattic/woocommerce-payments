@@ -29,24 +29,6 @@ interface EvidenceDetails {
 	submission_count: number;
 }
 
-/**
- * See https://stripe.com/docs/api/disputes/object#dispute_object-issuer_evidence
- */
-interface IssuerEvidence {
-	/**
-	 * Type of issuer evidence supplied.
-	 */
-	evidence_type: 'retrieval' | 'chargeback' | 'response';
-	/**
-	 * List of up to 5 (ID of a file upload) File-based issuer evidence.
-	 */
-	file_evidence: string[];
-	/**
-	 * Free-form, text-based issuer evidence.
-	 */
-	text_evidence: string;
-}
-
 export type DisputeReason =
 	| 'bank_cannot_process'
 	| 'check_returned'
@@ -78,7 +60,7 @@ export interface Dispute {
 	id: string;
 	evidence_details?: EvidenceDetails;
 	metadata: {
-		/* eslint-disable @typescript-eslint/naming-convention */
+		/* eslint-disable @typescript-eslint/naming-convention -- required to allow underscores in keys */
 		/**
 		 * '1' if the dispute was closed/accepted by the merchant, '0' if the dispute was closed by Stripe.
 		 */
@@ -95,7 +77,6 @@ export interface Dispute {
 	};
 	order: null | OrderDetails;
 	evidence: Evidence;
-	issuer_evidence: IssuerEvidence | null;
 	fileSize?: Record< string, number >;
 	reason: DisputeReason;
 	charge: Charge | string;
