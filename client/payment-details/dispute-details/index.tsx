@@ -58,7 +58,6 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 								/>
 							</>
 						) }
-						<div></div>
 					</CardBody>
 				</Card>
 			</div>
