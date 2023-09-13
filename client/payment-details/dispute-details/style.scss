@@ -55,5 +55,18 @@
 	.dispute-steps__steps {
 		list-style-position: inside;
 		margin-left: 0;
+
+		.wcpay-tooltip__content-wrapper.wcpay-tooltip--click__content-wrapper
+			> .wcpay-tooltip__content-wrapper
+			> [role='button'] {
+			margin-left: 0;
+			margin-right: 0;
+		}
+
+		.wcpay-tooltip__content-wrapper.wcpay-tooltip--click__content-wrapper
+			> .wcpay-tooltip__content-wrapper
+			+ div {
+			display: inline;
+		}
 	}
 }

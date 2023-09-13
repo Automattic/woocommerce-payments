@@ -4,10 +4,11 @@
  * External dependencies
  */
 import React from 'react';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
+import HelpOutlineIcon from 'gridicons/dist/help-outline';
 
 /**
  * Internal dependencies
@@ -15,6 +16,7 @@ import moment from 'moment';
 import type { Dispute } from 'wcpay/types/disputes';
 import { ChargeBillingDetails } from 'wcpay/types/charges';
 import { formatExplicitCurrency } from 'utils/currency';
+import { ClickTooltip } from 'wcpay/components/tooltip';
 
 interface Props {
 	dispute: Dispute;
@@ -27,6 +29,11 @@ const DisputeSteps: React.FC< Props > = ( {
 	customer,
 	chargeCreated,
 } ) => {
+	const formattedDisputeAmount = formatExplicitCurrency(
+		dispute.amount,
+		dispute.currency
+	);
+
 	let emailLink;
 	if ( customer?.email ) {
 		const chargeDate = dateI18n(
@@ -40,10 +47,7 @@ const DisputeSteps: React.FC< Props > = ( {
 		const emailSubject = `Problem with your purchase from ${ wcpaySettings.storeName } on ${ chargeDate }?`;
 		const emailBody =
 			`Hello ${ customer?.name }\n\n` +
-			`We noticed that on ${ disputeDate }, you disputed a ${ formatExplicitCurrency(
-				dispute.amount,
-				dispute.currency
-			) } from ${ chargeDate }. We wanted to contact you to make sure everything was all right with your purchase and see if there's anything else we can do to resolve any problems you might have had.\n\n` +
+			`We noticed that on ${ disputeDate }, you disputed a ${ formattedDisputeAmount } from ${ chargeDate }. We wanted to contact you to make sure everything was all right with your purchase and see if there's anything else we can do to resolve any problems you might have had.\n\n` +
 			`Alternatively, if the dispute was a mistake, you could easily withdraw it by calling the number on the back of your card. Thank you so much - we appreciate your business and look forward to working with you.`;
 
 		emailLink = `mailto:${ customer.email }?subject=${ encodeURIComponent(
@@ -93,9 +97,45 @@ const DisputeSteps: React.FC< Props > = ( {
 					) }
 				</li>
 				<li>
-					{ __(
-						'Challenge or accept the dispute by',
-						'woocommerce-payments'
+					{ createInterpolateElement(
+						__(
+							'Challenge <challengeicon/> or accept <accepticon/> the dispute by <disputeduedate/>.',
+							'woocommerce-payments'
+						),
+						{
+							challengeicon: (
+								<ClickTooltip
+									className="abc"
+									buttonIcon={ <HelpOutlineIcon /> }
+									buttonLabel={ __(
+										'Challenge the dispute',
+										'woocommerce-payments'
+									) }
+									content={ __(
+										"Challenge the dispute if you consider the claim invalid. You'll need to provide evidence to back your claim. Keep in mind that challenging doesn't ensure a resolution in your favor.",
+										'woocommerce-payments'
+									) }
+								/>
+							),
+							accepticon: (
+								<ClickTooltip
+									className="def"
+									buttonIcon={ <HelpOutlineIcon /> }
+									buttonLabel={ __(
+										'Accept the dispute',
+										'woocommerce-payments'
+									) }
+									content={ sprintf(
+										__(
+											`Accepting this dispute will automatically close it. Your account will be charged a %s fee, and the disputed amount will be refunded to the cardholder.`,
+											'woocommerce-payments'
+										),
+										formattedDisputeAmount
+									) }
+								/>
+							),
+							disputeduedate: <></>,
+						}
 					) }
 				</li>
 			</ol>
