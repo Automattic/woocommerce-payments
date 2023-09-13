@@ -214,7 +214,6 @@ describe( 'DisputeDetails', () => {
 	test( 'correctly renders dispute details for "under_review" disputes', () => {
 		const charge = getBaseCharge();
 		charge.dispute.status = 'under_review';
-		charge.dispute.metadata.__closed_by_merchant = '1';
 
 		render( <DisputeDetails dispute={ charge.dispute } /> );
 
