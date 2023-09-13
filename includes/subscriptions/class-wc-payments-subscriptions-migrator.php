@@ -327,18 +327,18 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	 * 1. If the subscription doesn't have a WooPayments payment token, set it to the default payment method from Stripe Billing.
 	 * 2. If the subscription has a token, verify the token matches the token on the Stripe Billing subscription
 	 *
-	 * @param WC_Subscription $subscription The subscription to verify the payment token on.
+	 * @param WC_Subscription $subscription       The subscription to verify the payment token on.
 	 * @param array           $wcpay_subscription The subscription data from Stripe.
 	 */
 	private function verify_subscription_payment_token( $subscription, $wcpay_subscription ) {
-		// if Subscription's payment method isn't set to WooPayments.
+		// If the subscription's payment method isn't set to WooPayments, we skip this token step.
 		if ( $subscription->get_payment_method() !== WC_Payment_Gateway_WCPay::GATEWAY_ID ) {
-			$this->logger->log( sprintf( '---- Skipped verifying the payment token. Subscription #%1$d is not longer set to "woocommerce_payments".', $subscription->get_id() ) );
+			$this->logger->log( sprintf( '---- Skipped verifying the payment token. Subscription #%1$d is no longer set to "woocommerce_payments".', $subscription->get_id() ) );
 			return;
 		}
 
 		if ( empty( $wcpay_subscription['default_payment_method'] ) ) {
-			$this->logger->log( sprintf( '---- Could not verify the payment method. Stripe Billing subscription (%2$s) does not have a default payment method.', $subscription->get_id(), $wcpay_subscription['id'] ?? 'unknown' ) );
+			$this->logger->log( sprintf( '---- Could not verify the payment method. Stripe Billing subscription (%2$s) does not have a default payment method.', $wcpay_subscription['id'] ?? 'unknown' ) );
 			return;
 		}
 
@@ -346,12 +346,13 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 		$token_id = end( $tokens );
 		$token    = ! $token_id ? null : WC_Payment_Tokens::get( $token_id );
 
-		// If the subscription doesn't have a token or the token doesn't match, add one using the default payment method on the WCPay Subscription.
+		// If the token matches the default payment method on the Stripe Billing subscription, we're done here.
 		if ( $token && $token->get_token() === $wcpay_subscription['default_payment_method'] ) {
 			$this->logger->log( sprintf( '---- Payment token on subscription #%1$d matches the payment method on the Stripe Billing subscription (%2$s).', $subscription->get_id(), $wcpay_subscription['id'] ?? 'unknown' ) );
 			return;
 		}
 
+		// At this point we know the subscription doesn't have a token or the token doesn't match, add one using the default payment method on the WCPay Subscription.
 		$new_token = $this->maybe_create_and_update_payment_token( $subscription, $wcpay_subscription );
 
 		if ( $new_token ) {
@@ -362,7 +363,7 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 	/**
 	 * Locates a payment token or creates one if it doesn't exist, then updates the subscription with the new token.
 	 *
-	 * @param WC_Subscription $subscription The subscription to add the payment token to.
+	 * @param WC_Subscription $subscription       The subscription to add the payment token to.
 	 * @param array           $wcpay_subscription The subscription data from Stripe.
 	 *
 	 * @return WC_Payment_Token|false The new payment token or false if the token couldn't be created.
