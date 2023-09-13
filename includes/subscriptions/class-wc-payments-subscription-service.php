@@ -833,8 +833,15 @@ class WC_Payments_Subscription_Service {
 	 * @param string          $new_payment_method The subscription's new payment method ID.
 	 */
 	public function maybe_cancel_subscription( $subscription, $new_payment_method ) {
-		if ( (bool) self::get_wcpay_subscription_id( $subscription ) && WC_Payment_Gateway_WCPay::GATEWAY_ID !== $new_payment_method ) {
+		$wcpay_subscription_id = self::get_wcpay_subscription_id( $subscription );
+
+		if ( (bool) $wcpay_subscription_id && WC_Payment_Gateway_WCPay::GATEWAY_ID !== $new_payment_method ) {
 			$this->cancel_subscription( $subscription );
+
+			// Delete the WCPay Subscription meta but keep a record of it.
+			$subscription->update_meta_data( '_cancelled' . self::SUBSCRIPTION_ID_META_KEY, $wcpay_subscription_id );
+			$subscription->delete_meta_data( self::SUBSCRIPTION_ID_META_KEY );
+			$subscription->save();
 		}
 	}
 
