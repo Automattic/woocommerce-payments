@@ -314,7 +314,7 @@ class WC_Payments_Invoice_Service {
 	 *
 	 * @param string $invoice_id The subscription invoice ID.
 	 */
-	public function record_invoice_payment_context( string $invoice_id ) {
+	public function record_subscription_payment_context( string $invoice_id ) {
 		$this->payments_api_client->update_invoice(
 			$invoice_id,
 			[
