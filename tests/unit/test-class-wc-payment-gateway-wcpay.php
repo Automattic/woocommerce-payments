@@ -2226,6 +2226,27 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		WC_Payments::set_registered_card_gateway( $registered_card_gateway );
 	}
 
+	public function test_registered_gateway_replaced_by_gateway_if_not_initialized() {
+		// Set the registered gateway to null to simulate the case where the gateway is not initialized and thus should be replaced by $mock_wcpay_gateway.
+		WC_Payments::set_registered_card_gateway( null );
+
+		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'should_use_stripe_platform_on_checkout_page' ] );
+
+		$mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'should_use_stripe_platform_on_checkout_page' )
+			->willReturn( true );
+
+		$payments_checkout = new WC_Payments_Checkout(
+			$mock_wcpay_gateway,
+			$this->woopay_utilities,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service
+		);
+
+		$this->assertTrue( $payments_checkout->get_payment_fields_js_config()['forceNetworkSavedCards'] );
+	}
+
 	public function test_force_network_saved_cards_is_returned_as_false_if_should_not_use_stripe_platform() {
 		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'should_use_stripe_platform_on_checkout_page' ] );
 

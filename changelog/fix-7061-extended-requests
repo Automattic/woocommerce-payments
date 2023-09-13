@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Allow request classes to be extended more than once.

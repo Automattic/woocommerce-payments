@@ -250,7 +250,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'title'       => __( 'Customer bank statement', 'woocommerce-payments' ),
 				'description' => WC_Payments_Utils::esc_interpolated_html(
 					__( 'Edit the way your store name appears on your customers’ bank statements (read more about requirements <a>here</a>).', 'woocommerce-payments' ),
-					[ 'a' => '<a href="https://woocommerce.com/document/woocommerce-payments/customization-and-translation/bank-statement-descriptor/" target="_blank" rel="noopener noreferrer">' ]
+					[ 'a' => '<a href="https://woocommerce.com/document/woopayments/customization-and-translation/bank-statement-descriptor/" target="_blank" rel="noopener noreferrer">' ]
 				),
 			],
 			'manual_capture'                   => [
@@ -782,8 +782,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if (
 			function_exists( 'wcs_order_contains_subscription' )
 			&& wcs_order_contains_subscription( $order_id )
-			&& WC_Payments_Features::is_wcpay_subscriptions_enabled()
-			&& ! $this->is_subscriptions_plugin_active()
+			&& WC_Payments_Features::should_use_stripe_billing()
 		) {
 			$factors[] = Factor::WCPAY_SUBSCRIPTION_SIGNUP();
 		}

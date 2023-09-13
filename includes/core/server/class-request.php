@@ -65,6 +65,14 @@ abstract class Request {
 	private $protected_mode = false;
 
 	/**
+	 * Stores the base class when `->apply_filters` is called.
+	 * This class will be checked when `::extend` is called.
+	 *
+	 * @var string
+	 */
+	private $base_class;
+
+	/**
 	 * Holds the API client of WCPay.
 	 *
 	 * @var WC_Payments_API_Client
@@ -416,7 +424,7 @@ abstract class Request {
 	 */
 	final public static function extend( Request $base_request ) {
 		$current_class = static::class;
-		$base_request->validate_extended_class( $current_class, get_class( $base_request ) );
+		$base_request->validate_extended_class( $current_class, $base_request->base_class ?? get_class( $base_request ) );
 
 		if ( ! $base_request->protected_mode ) {
 			throw new Extend_Request_Exception(
@@ -425,7 +433,11 @@ abstract class Request {
 			);
 		}
 		$obj = new $current_class( $base_request->api_client, $base_request->http_interface );
-		$obj->set_params( $base_request->params );
+		$obj->set_params( array_merge( static::DEFAULT_PARAMS, $base_request->params ) );
+
+		// Carry over the base class and protected mode into the child request.
+		$obj->base_class     = $base_request->base_class;
+		$obj->protected_mode = true;
 
 		return $obj;
 	}
@@ -449,6 +461,7 @@ abstract class Request {
 	final public function apply_filters( $hook, ...$args ) {
 		// Lock the class in order to prevent `set_param` for protected props.
 		$this->protected_mode = true;
+		$this->base_class     = get_class( $this );
 
 		// Validate API route.
 		$this->validate_api_route( $this->get_api() );
