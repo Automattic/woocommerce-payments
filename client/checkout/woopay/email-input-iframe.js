@@ -6,7 +6,11 @@ import { getConfig } from 'wcpay/utils/checkout';
 import wcpayTracks from 'tracks';
 import request from '../utils/request';
 import { buildAjaxURL } from '../../payment-request/utils';
-import { getTargetElement, validateEmail } from './utils';
+import {
+	getTargetElement,
+	validateEmail,
+	appendRedirectionParams,
+} from './utils';
 
 export const handleWooPayEmailInput = async (
 	field,
@@ -534,7 +538,9 @@ export const handleWooPayEmailInput = async (
 					true
 				);
 				if ( e.data.redirectUrl ) {
-					window.location = e.data.redirectUrl;
+					window.location = appendRedirectionParams(
+						e.data.redirectUrl
+					);
 				}
 				break;
 			case 'redirect_to_platform_checkout':
