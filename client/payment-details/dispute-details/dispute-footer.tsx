@@ -31,14 +31,9 @@ interface DisputeFooterProps {
 }
 
 const DisputeFooter: React.FC< DisputeFooterProps > = ( { dispute } ) => {
-	const isValidStatus = [
-		'won',
-		'lost',
-		'under_review',
-		'warning_under_review',
-		// TODO: confirm if the following should render:
-		// 'charge_refunded', 'warning_closed'
-	].includes( dispute.status );
+	const isValidStatus = [ 'won', 'lost', 'under_review' ].includes(
+		dispute.status
+	);
 
 	if ( ! isValidStatus ) {
 		return null;
@@ -82,7 +77,6 @@ const DisputeFooter: React.FC< DisputeFooterProps > = ( { dispute } ) => {
 			);
 			break;
 		case 'under_review':
-		case 'warning_under_review':
 			const submissionDateFormatted = formatUnixTimestamp(
 				dispute.metadata.__evidence_submitted_at,
 				'M j, Y'
