@@ -31,14 +31,6 @@ interface DisputeFooterProps {
 }
 
 const DisputeFooter: React.FC< DisputeFooterProps > = ( { dispute } ) => {
-	const isValidStatus = [ 'won', 'lost', 'under_review' ].includes(
-		dispute.status
-	);
-
-	if ( ! isValidStatus ) {
-		return null;
-	}
-
 	const isSubmitted = !! dispute.metadata.__evidence_submitted_at;
 	const isAccepted = dispute.metadata.__closed_by_merchant === '1';
 	const closedDateFormatted = formatUnixTimestamp(

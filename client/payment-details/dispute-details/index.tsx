@@ -64,7 +64,11 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 		);
 	}
 
-	return <DisputeFooter dispute={ dispute } />;
+	if ( [ 'won', 'lost', 'under_review' ].includes( dispute.status ) ) {
+		return <DisputeFooter dispute={ dispute } />;
+	}
+
+	return null;
 };
 
 export default DisputeDetails;
