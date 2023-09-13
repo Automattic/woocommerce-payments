@@ -355,7 +355,7 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 		$new_token = $this->maybe_create_and_update_payment_token( $subscription, $wcpay_subscription );
 
 		if ( $new_token ) {
-			$this->logger->log( sprintf( '---- Payment token on subscription #%1$d has been updated (from #%2$s to #%3$s) to match the payment method on the Stripe Billing subscription.', $subscription->get_id(), $token ? $token->get_token() : 'missing', $wcpay_subscription['default_payment_method'] ) );
+			$this->logger->log( sprintf( '---- Payment token on subscription #%1$d has been updated (from %2$s to %3$s) to match the payment method on the Stripe Billing subscription.', $subscription->get_id(), $token ? $token->get_token() : 'missing', $wcpay_subscription['default_payment_method'] ) );
 		}
 	}
 
