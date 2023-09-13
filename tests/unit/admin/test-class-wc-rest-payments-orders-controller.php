@@ -1605,10 +1605,13 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->controller->get_terminal_intent_payment_method( $request );
 	}
 
-	public function test_capture_terminal_payment_allows_charging_order_with_intent_meta() {
+	/**
+	 * @dataProvider provider_capture_terminal_payment_allows_charging_order_with_intent_meta
+	 */
+	public function test_capture_terminal_payment_allows_charging_order_with_intent_meta( string $order_meta_intent_status ) {
 		$order = $this->create_mock_order();
 		$order->update_meta_data( WC_Payments_Order_Service::INTENT_ID_META_KEY, $this->mock_intent_id );
-		$order->update_meta_data( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY, Intent_Status::REQUIRES_CAPTURE );
+		$order->update_meta_data( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY, $order_meta_intent_status );
 		$order->save_meta_data();
 
 		$mock_intent = WC_Helper_Intention::create_intention(
@@ -1663,6 +1666,13 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	public function provider_capture_terminal_payment_allows_charging_order_with_intent_meta(): array {
+		return [
+			[ '' ],
+			[ Intent_Status::REQUIRES_CAPTURE ],
+		];
+	}
+
 	/**
 	 * @dataProvider provider_capture_terminal_payment_prevents_double_charging_order_with_intent_meta
 	 */
@@ -1706,6 +1716,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			[ 'pi_abc', Intent_Status::SUCCEEDED, 'pi_xyz' ],
 			[ 'pi_abc', Intent_Status::CANCELED, 'pi_abc' ],
 			[ 'pi_abc', Intent_Status::CANCELED, 'pi_xyz' ],
+			[ 'pi_abc', Intent_Status::PROCESSING, 'pi_abc' ],
 		];
 	}
 
