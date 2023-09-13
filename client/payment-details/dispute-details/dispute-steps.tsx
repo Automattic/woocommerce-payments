@@ -104,10 +104,13 @@ const DisputeSteps: React.FC< Props > = ( {
 						  ) }
 				</li>
 				<li>
-					{ __(
-						'Provide guidance on dispute withdrawal if the customer agrees.',
-						'woocommerce-payments'
-					) }
+					{
+						// TODO: link 'guidance on dispute withdrawal' to the docs when it's ready.
+						__(
+							'Provide guidance on dispute withdrawal if the customer agrees.',
+							'woocommerce-payments'
+						)
+					}
 				</li>
 				<li>
 					{ createInterpolateElement(
