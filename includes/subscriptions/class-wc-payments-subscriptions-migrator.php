@@ -139,12 +139,12 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 				$this->logger->log( sprintf( '---- Next payment date updated to %1$s to ensure subscription #%2$d has a pending scheduled payment.', $new_next_payment, $subscription_id ) );
 			}
 
-			$this->update_wcpay_subscription_meta( $subscription );
-
 			// If the subscription is active or on-hold, verify the payment method is valid and set correctly that it continues to renew.
 			if ( $subscription->has_status( [ 'active', 'on-hold' ] ) ) {
 				$this->verify_subscription_payment_token( $subscription, $wcpay_subscription );
 			}
+
+			$this->update_wcpay_subscription_meta( $subscription );
 
 			$subscription->add_order_note( __( 'This subscription has been successfully migrated to a WooPayments tokenized subscription.', 'woocommerce-payments' ) );
 
