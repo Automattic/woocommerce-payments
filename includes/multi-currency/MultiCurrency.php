@@ -562,15 +562,8 @@ class MultiCurrency {
 			return;
 		}
 
-		$currency   = $order->get_currency();
+		$currency   = strtoupper( $order->get_currency() );
 		$currencies = self::get_all_customer_currencies();
-
-		// Skip if the currency is not a string or if the option is invalid.
-		if ( ! is_string( $currency ) || ! is_array( $currencies ) ) {
-			return;
-		}
-
-		$currency = strtoupper( $currency );
 
 		// Skip if the currency is already in the list.
 		if ( in_array( $currency, $currencies, true ) ) {
