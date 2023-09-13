@@ -204,21 +204,25 @@ describe( 'DisputeDetails', () => {
 	test( 'correctly renders dispute details for "won" disputes', () => {
 		const charge = getBaseCharge();
 		charge.dispute.status = 'won';
+		charge.dispute.metadata.__evidence_submitted_at = '1693453017';
 		render( <DisputeDetails dispute={ charge.dispute } /> );
 
 		screen.getByText( /You won this dispute on/i, {
 			ignore: '.a11y-speak-region',
 		} );
+		screen.getByRole( 'button', { name: /View dispute details/i } );
 	} );
 
 	test( 'correctly renders dispute details for "under_review" disputes', () => {
 		const charge = getBaseCharge();
 		charge.dispute.status = 'under_review';
+		charge.dispute.metadata.__evidence_submitted_at = '1693453017';
 		render( <DisputeDetails dispute={ charge.dispute } /> );
 
 		screen.getByText( /reviewing the case/i, {
 			ignore: '.a11y-speak-region',
 		} );
+		screen.getByRole( 'button', { name: /View submitted evidence/i } );
 	} );
 
 	test( 'correctly renders dispute details for "accepted" disputes', () => {
@@ -235,10 +239,12 @@ describe( 'DisputeDetails', () => {
 	test( 'correctly renders dispute details for "lost" disputes', () => {
 		const charge = getBaseCharge();
 		charge.dispute.status = 'lost';
+		charge.dispute.metadata.__evidence_submitted_at = '1693453017';
 		render( <DisputeDetails dispute={ charge.dispute } /> );
 
 		screen.getByText( /This dispute was lost/i, {
 			ignore: '.a11y-speak-region',
 		} );
+		screen.getByRole( 'button', { name: /View dispute details/i } );
 	} );
 } );
