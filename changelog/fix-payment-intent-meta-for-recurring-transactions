@@ -1,4 +1,4 @@
 Significance: minor
 Type: dev
 
-Fix payment context and subscription payment metadata stored on subscription recurring transactions
+Fix payment context and subscription payment metadata stored on subscription recurring transactions.
