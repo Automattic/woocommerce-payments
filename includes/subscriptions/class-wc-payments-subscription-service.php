@@ -559,16 +559,14 @@ class WC_Payments_Subscription_Service {
 	 *
 	 * If the WCPay subscription's payment method was updated while there's a failed invoice, trigger a retry.
 	 *
-	 * @param int              $post_id  Post ID (WC subscription ID) that had its payment method updated.
-	 * @param int              $token_id Payment Token post ID stored in DB.
-	 * @param WC_Payment_Token $token    Payment Token object.
-	 *
-	 * @return void
+	 * @param int              $subscription_id Post ID (WC subscription ID) that had its payment method updated.
+	 * @param int              $token_id        Payment Token post ID stored in DB.
+	 * @param WC_Payment_Token $token           Payment Token object.
 	 */
-	public function update_wcpay_subscription_payment_method( int $post_id, int $token_id, WC_Payment_Token $token ) {
-		$subscription = wcs_get_subscription( $post_id );
+	public function update_wcpay_subscription_payment_method( int $subscription_id, int $token_id, WC_Payment_Token $token ) {
+		$subscription = wcs_get_subscription( $subscription_id );
 
-		if ( $subscription ) {
+		if ( $subscription && self::is_wcpay_subscription( $subscription ) ) {
 			$wcpay_subscription_id   = $this->get_wcpay_subscription_id( $subscription );
 			$wcpay_payment_method_id = $token->get_token();
 
