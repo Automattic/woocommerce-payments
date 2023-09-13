@@ -40,3 +40,19 @@ if ( ! function_exists( 'wc_get_currency_switcher_markup' ) ) {
 		return WC_Payments_Multi_Currency()->get_switcher_widget_markup( $instance, $args );
 	}
 }
+
+if ( ! function_exists( 'wcpay_multicurrency_get_raw_conversion' ) ) {
+	/**
+	 * Gets a raw converted amount based on the amount and currency codes passed.
+	 * This is a helper method for external conversions, if needed.
+	 *
+	 * @param float  $amount        The amount to be converted.
+	 * @param string $to_currency   The 3 letter currency code to convert the amount to.
+	 * @param string $from_currency The 3 letter currency code to convert the amount from.
+	 *
+	 * @return float The converted amount.
+	 */
+	function wcpay_multicurrency_get_raw_conversion( float $amount, string $to_currency, string $from_currency = '' ): float {
+		return WC_Payments_Multi_Currency()->get_raw_conversion( $amount, $to_currency, $from_currency );
+	}
+}

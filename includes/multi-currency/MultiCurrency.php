@@ -845,6 +845,45 @@ class MultiCurrency {
 	}
 
 	/**
+	 * Gets a raw converted amount based on the amount and currency codes passed.
+	 * This is a helper method for external conversions, if needed.
+	 *
+	 * @param float  $amount        The amount to be converted.
+	 * @param string $to_currency   The 3 letter currency code to convert the amount to.
+	 * @param string $from_currency The 3 letter currency code to convert the amount from.
+	 *
+	 * @return float The converted amount.
+	 */
+	public function get_raw_conversion( float $amount, string $to_currency, string $from_currency = '' ): float {
+		$enabled_currencies = $this->get_enabled_currencies();
+
+		// We return the amount if the to_currency is not enabled.
+		$to_currency = strtoupper( $to_currency );
+		if ( ! isset( $enabled_currencies[ $to_currency ] ) ) {
+			return $amount;
+		}
+
+		if ( '' !== $from_currency ) {
+			$from_currency = strtoupper( $from_currency );
+
+			// We return the amount if the from_currency is not enabled.
+			if ( ! isset( $enabled_currencies[ $from_currency ] ) ) {
+				return $amount;
+			}
+
+			// Get the from_currency rate and convert the amount into the store currency.
+			$from_currency_rate = $enabled_currencies[ $from_currency ]->get_rate();
+			$amount             = $amount * ( 1 / $from_currency_rate );
+		}
+
+		// Get the to_currency rate and convert the amount to that currency.
+		$to_currency_rate = $enabled_currencies[ $to_currency ]->get_rate();
+		$amount           = $amount * $to_currency_rate;
+
+		return (float) $amount;
+	}
+
+	/**
 	 * Recalculates WooCommerce cart totals.
 	 *
 	 * @return void
