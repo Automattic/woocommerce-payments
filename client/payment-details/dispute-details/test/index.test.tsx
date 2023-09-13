@@ -211,7 +211,7 @@ describe( 'DisputeDetails', () => {
 	test( 'correctly renders dispute details for "won" disputes', () => {
 		const charge = getBaseCharge();
 		charge.dispute.status = 'won';
-		charge.dispute.metadata.__evidence_submitted_at = '1693453017';
+		charge.dispute.metadata.__evidence_submitted_at = '1693400000';
 		render( <DisputeDetails dispute={ charge.dispute } /> );
 
 		screen.getByText( /You won this dispute on/i, {
@@ -223,7 +223,7 @@ describe( 'DisputeDetails', () => {
 	test( 'correctly renders dispute details for "under_review" disputes', () => {
 		const charge = getBaseCharge();
 		charge.dispute.status = 'under_review';
-		charge.dispute.metadata.__evidence_submitted_at = '1693453017';
+		charge.dispute.metadata.__evidence_submitted_at = '1693400000';
 		render( <DisputeDetails dispute={ charge.dispute } /> );
 
 		screen.getByText( /reviewing the case/i, {
@@ -251,7 +251,7 @@ describe( 'DisputeDetails', () => {
 	test( 'correctly renders dispute details for "lost" disputes', () => {
 		const charge = getBaseCharge();
 		charge.dispute.status = 'lost';
-		charge.dispute.metadata.__evidence_submitted_at = '1693453017';
+		charge.dispute.metadata.__evidence_submitted_at = '1693400000';
 		charge.dispute.metadata.__dispute_closed_at = '1693453017';
 		render( <DisputeDetails dispute={ charge.dispute } /> );
 
