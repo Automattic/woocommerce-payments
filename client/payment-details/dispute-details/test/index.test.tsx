@@ -72,9 +72,16 @@ const getBaseCharge = (): ChargeWithDisputeRequired =>
 			order: null,
 			balance_transactions: [
 				{
+					amount: 2000,
+					currency: 'usd',
+					fee: 1500,
+					reporting_category: 'dispute_reversal',
+				},
+				{
 					amount: -2000,
 					currency: 'usd',
 					fee: 1500,
+					reporting_category: 'dispute',
 				},
 			],
 			created: 1693453017,
@@ -229,9 +236,14 @@ describe( 'DisputeDetails', () => {
 		const charge = getBaseCharge();
 		charge.dispute.status = 'lost';
 		charge.dispute.metadata.__closed_by_merchant = '1';
+		charge.dispute.metadata.__dispute_closed_at = '1693453017';
 		render( <DisputeDetails dispute={ charge.dispute } /> );
 
 		screen.getByText( /This dispute was accepted/i, {
+			ignore: '.a11y-speak-region',
+		} );
+		// Check for the correct fee amount
+		screen.getByText( /\$15.00 fee/i, {
 			ignore: '.a11y-speak-region',
 		} );
 	} );
@@ -240,9 +252,14 @@ describe( 'DisputeDetails', () => {
 		const charge = getBaseCharge();
 		charge.dispute.status = 'lost';
 		charge.dispute.metadata.__evidence_submitted_at = '1693453017';
+		charge.dispute.metadata.__dispute_closed_at = '1693453017';
 		render( <DisputeDetails dispute={ charge.dispute } /> );
 
 		screen.getByText( /This dispute was lost/i, {
+			ignore: '.a11y-speak-region',
+		} );
+		// Check for the correct fee amount
+		screen.getByText( /\$15.00 fee/i, {
 			ignore: '.a11y-speak-region',
 		} );
 		screen.getByRole( 'button', { name: /View dispute details/i } );
