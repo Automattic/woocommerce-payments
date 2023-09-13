@@ -121,7 +121,6 @@ const DisputeSteps: React.FC< Props > = ( {
 						{
 							challengeicon: (
 								<ClickTooltip
-									className="abc"
 									buttonIcon={ <HelpOutlineIcon /> }
 									buttonLabel={ __(
 										'Challenge the dispute',
@@ -135,7 +134,6 @@ const DisputeSteps: React.FC< Props > = ( {
 							),
 							accepticon: (
 								<ClickTooltip
-									className="def"
 									buttonIcon={ <HelpOutlineIcon /> }
 									buttonLabel={ __(
 										'Accept the dispute',
