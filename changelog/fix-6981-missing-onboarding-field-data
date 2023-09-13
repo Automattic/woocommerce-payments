@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Avoid empty fields in new onboarding flow
