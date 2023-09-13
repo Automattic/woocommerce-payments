@@ -12,6 +12,7 @@ import WoopayIconLight from './woopay-icon-light';
 import { expressCheckoutIframe } from './express-checkout-iframe';
 import useExpressCheckoutProductHandler from './use-express-checkout-product-handler';
 import wcpayTracks from 'tracks';
+const BUTTON_WIDTH_THRESHOLD = 140;
 
 export const WoopayExpressCheckoutButton = ( {
 	isPreview = false,
@@ -52,7 +53,7 @@ export const WoopayExpressCheckoutButton = ( {
 		}
 
 		const buttonWidth = buttonRef.current.getBoundingClientRect().width;
-		const isButtonWide = buttonWidth > 140;
+		const isButtonWide = buttonWidth > BUTTON_WIDTH_THRESHOLD;
 		setButtonWidthType(
 			isButtonWide ? buttonWidthTypes.wide : buttonWidthTypes.narrow
 		);
