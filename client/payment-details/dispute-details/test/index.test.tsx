@@ -200,4 +200,49 @@ describe( 'DisputeDetails', () => {
 			{ ignore: '.a11y-speak-region' }
 		);
 	} );
+
+	test( 'correctly renders dispute details for "won" disputes', () => {
+		const charge = getBaseCharge();
+		charge.dispute.status = 'won';
+		render( <DisputeDetails dispute={ charge.dispute } /> );
+
+		screen.getByText( /You won this dispute on/i, {
+			ignore: '.a11y-speak-region',
+		} );
+	} );
+
+	test( 'correctly renders dispute details for "under_review" disputes', () => {
+		const charge = getBaseCharge();
+		charge.dispute.status = 'under_review';
+		charge.dispute.metadata.__closed_by_merchant = '1';
+
+		render( <DisputeDetails dispute={ charge.dispute } /> );
+
+		screen.getByText( /reviewing the case/i, {
+			ignore: '.a11y-speak-region',
+		} );
+	} );
+
+	test( 'correctly renders dispute details for "accepted" disputes', () => {
+		const charge = getBaseCharge();
+		charge.dispute.status = 'lost';
+		charge.dispute.metadata.__closed_by_merchant = '1';
+
+		render( <DisputeDetails dispute={ charge.dispute } /> );
+
+		screen.getByText( /This dispute was accepted/i, {
+			ignore: '.a11y-speak-region',
+		} );
+	} );
+
+	test( 'correctly renders dispute details for "lost" disputes', () => {
+		const charge = getBaseCharge();
+		charge.dispute.status = 'lost';
+
+		render( <DisputeDetails dispute={ charge.dispute } /> );
+
+		screen.getByText( /This dispute was lost/i, {
+			ignore: '.a11y-speak-region',
+		} );
+	} );
 } );
