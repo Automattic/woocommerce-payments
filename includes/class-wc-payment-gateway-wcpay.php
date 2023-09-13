@@ -1235,6 +1235,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_payment_methods( $payment_methods );
 				$request->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
 
+				if ( Payment_Method::AFTERPAY === $this->get_selected_stripe_payment_type_id() && $this instanceof UPE_Split_Payment_Gateway ) {
+					$request->set_shipping( $this->get_shipping_data_from_order( $order ) );
+				}
+
 				// The below if-statement ensures the support for UPE payment methods.
 				if ( $this->upe_needs_redirection( $payment_methods ) ) {
 					$request->set_return_url(
