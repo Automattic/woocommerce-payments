@@ -1484,12 +1484,18 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Computes the customer used currencies.
+	 * Get all the currencies that have been used in the store.
 	 *
 	 * @return array
 	 */
-	public function get_customer_currencies() {
+	public function get_all_customer_currencies(): array {
 		global $wpdb;
+
+		$currencies = get_option( self::CUSTOMER_CURRENCIES_KEY );
+
+		if ( self::is_customer_currencies_data_valid( $currencies ) ) {
+			return $currencies;
+		}
 
 		$currencies  = $this->get_available_currencies();
 		$query_union = [];
@@ -1517,23 +1523,6 @@ class MultiCurrency {
 		$sub_query  = join( ' UNION ALL ', $query_union );
 		$query      = "SELECT currency_code FROM ( $sub_query ) as subquery WHERE subquery.exists_in_orders=1 ORDER BY currency_code ASC";
 		$currencies = $wpdb->get_col( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-
-		return $currencies;
-	}
-
-	/**
-	 * Get all the currencies that have been used in the store.
-	 *
-	 * @return array
-	 */
-	public function get_all_customer_currencies(): array {
-		$currencies = get_option( self::CUSTOMER_CURRENCIES_KEY );
-
-		if ( self::is_customer_currencies_data_valid( $currencies ) ) {
-			return $currencies;
-		}
-
-		$currencies = $this->get_customer_currencies();
 
 		if ( self::is_customer_currencies_data_valid( $currencies ) ) {
 			update_option( self::CUSTOMER_CURRENCIES_KEY, $currencies );
