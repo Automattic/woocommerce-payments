@@ -126,7 +126,7 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 				$subscription->add_order_note( __( 'This subscription has been successfully migrated to a WooPayments tokenized subscription.', 'woocommerce-payments' ) );
 			}
 
-			$this->logger->log( sprintf( '---- SUCCESS: Subscription #%d migrated.', $subscription_id ) );
+			$this->logger->log( sprintf( '---- Subscription #%d migration complete.', $subscription_id ) );
 		} catch ( \Exception $e ) {
 			$this->logger->log( $e->getMessage() );
 
