@@ -159,8 +159,7 @@ const DisputeFooter: React.FC< DisputeFooterProps > = ( { dispute } ) => {
 				path: '/payments/disputes/challenge',
 				id: dispute.id,
 			} );
-			const history = getHistory();
-			history.push( challengeUrl );
+			getHistory().push( challengeUrl );
 		}
 	};
 
