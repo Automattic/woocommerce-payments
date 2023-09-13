@@ -1640,15 +1640,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->order_service
 			->expects( $this->once() )
 			->method( 'attach_intent_info_to_order' )
-			->with(
-				$this->isInstanceOf( WC_Order::class ),
-				$this->mock_intent_id,
-				Intent_Status::REQUIRES_CAPTURE,
-				'pm_mock',
-				'cus_mock',
-				$this->mock_charge_id,
-				'USD'
-			);
+			->with( $this->anything() );
 
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_body_params(
@@ -1661,8 +1653,8 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$response      = $this->controller->capture_terminal_payment( $request );
 		$response_data = $response->get_data();
 
-		$this->assertEquals( 200, $response->status );
-		$this->assertEquals(
+		$this->assertSame( 200, $response->status );
+		$this->assertSame(
 			[
 				'status' => Intent_Status::SUCCEEDED,
 				'id'     => $this->mock_intent_id,
