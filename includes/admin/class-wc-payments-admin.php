@@ -956,10 +956,7 @@ class WC_Payments_Admin {
 
 		$badge = self::MENU_NOTIFICATION_BADGE;
 		foreach ( $menu as $index => $menu_item ) {
-			if ( false === strpos( $menu_item[0], $badge )
-				&& ( 'wc-admin&path=/payments/connect' === $menu_item[2]
-					|| 'admin.php?page=wc-admin&path=/payments/connect' === $menu_item[2] )
-			) {
+			if ( false === strpos( $menu_item[0], $badge ) && ( 'wc-admin&path=/payments/connect' === $menu_item[2] ) ) {
 				$menu[ $index ][0] .= $badge; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 
 				// One menu item with a badge is more than enough.
