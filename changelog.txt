@@ -1,5 +1,13 @@
 *** WooPayments Changelog ***
 
+= 6.4.1 - 2023-09-06 =
+* Fix - checkout processing when fields are hidden via customizer
+* Fix - Potential fatal error when viewing WooCommerce home because we try to check if store has been fully onboarded but account service is not yet initialized.
+* Fix - Resolved an issue with WCPay Subscription orders being set to failed during payment processing when Woo Subscriptions plugin is active.
+* Fix - Use the gateway from the Checkout class in case the main registered gateway isn't initialized for some reason.
+* Dev - Revert - Bump minimum required version of WooCommerce to 8.0.0 and WP to 6.1
+* Dev - Setting the minimum required version of WooCommerce back to 7.8.0 and WP to 6.0
+
 = 6.4.0 - 2023-08-31 =
 * Add - Added the Transactions reporting endpoint
 * Add - Adjust WooPay "custom message" to be reused for T&C and privacy policy

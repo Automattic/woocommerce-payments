@@ -57,11 +57,11 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 			add_action( 'woocommerce_after_add_to_cart_form', [ $this, 'display_express_checkout_buttons' ], 1 );
 			add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_express_checkout_buttons' ], 21 );
 			add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_express_checkout_buttons' ], 1 );
+		}
 
-			if ( $is_payment_request_enabled ) {
-				// Load separator on the Pay for Order page.
-				add_action( 'before_woocommerce_pay_form', [ $this, 'display_express_checkout_buttons' ], 1 );
-			}
+		if ( class_exists( '\Automattic\WooCommerce\Blocks\Package' ) && version_compare( \Automattic\WooCommerce\Blocks\Package::get_version(), '10.8.0', '>=' ) ) {
+			add_action( 'before_woocommerce_pay_form', [ $this, 'add_pay_for_order_params_to_js_config' ] );
+			add_action( 'woocommerce_pay_order_before_payment', [ $this, 'display_express_checkout_buttons' ], 1 );
 		}
 	}
 
@@ -110,5 +110,28 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 */
 	public function is_woopay_enabled() {
 		return $this->platform_checkout_button_handler->is_woopay_enabled();
+	}
+
+	/**
+	 * Add the Pay for order params to the JS config.
+	 *
+	 * @param WC_Order $order The pay-for-order order.
+	 */
+	public function add_pay_for_order_params_to_js_config( $order ) {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_GET['pay_for_order'] ) && isset( $_GET['key'] ) ) {
+			add_filter(
+				'wcpay_payment_fields_js_config',
+				function( $js_config ) use ( $order ) {
+					$js_config['order_id']      = $order->get_id();
+					$js_config['pay_for_order'] = sanitize_text_field( wp_unslash( $_GET['pay_for_order'] ) );
+					$js_config['key']           = sanitize_text_field( wp_unslash( $_GET['key'] ) );
+					$js_config['billing_email'] = $order->get_billing_email();
+
+					return $js_config;
+				}
+			);
+		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 	}
 }
