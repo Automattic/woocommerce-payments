@@ -625,6 +625,29 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->assertSame( $expected, $this->multi_currency->get_price( 1, 'shipping' ) );
 	}
 
+	/**
+	 * @dataProvider get_raw_conversion_provider
+	 */
+	public function test_get_raw_conversion( $amount, $to_currency, $from_currency ) {
+		// Arrange: Get the expected amount.
+		$expected = $amount;
+		if ( '' !== $from_currency ) {
+			$expected = $expected * ( 1 / $this->mock_available_currencies[ $from_currency ] );
+		}
+		$expected = $expected * $this->mock_available_currencies[ $to_currency ];
+
+		// Act/Assert: Confirm the expected amount is returned.
+		$this->assertSame( $expected, $this->multi_currency->get_raw_conversion( $amount, $to_currency, $from_currency ) );
+	}
+
+	public function get_raw_conversion_provider() {
+		return [
+			'CAD'     => [ 10.00, 'CAD', '' ],
+			'GBP CAD' => [ 10.00, 'GBP', 'CAD' ],
+			'CAD GBP' => [ 10.00, 'CAD', 'GBP' ],
+		];
+	}
+
 	public function test_get_cached_currencies_with_no_server_connection() {
 		// Need to create a new instance of MultiCurrency with a different $mock_api_client
 		// Because the mock return value of 'is_server_connected' cannot be overridden.
