@@ -570,8 +570,7 @@ class MultiCurrency {
 			return;
 		}
 
-		$currency   = strtoupper( $currency );
-		$currencies = array_map( 'strtoupper', $currencies );
+		$currency = strtoupper( $currency );
 
 		// Skip if the currency is already in the list.
 		if ( in_array( $currency, $currencies, true ) ) {
@@ -1525,6 +1524,7 @@ class MultiCurrency {
 		$currencies = $wpdb->get_col( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 		if ( self::is_customer_currencies_data_valid( $currencies ) ) {
+			$currencies = array_map( 'strtoupper', $currencies );
 			update_option( self::CUSTOMER_CURRENCIES_KEY, $currencies );
 			return $currencies;
 		}
