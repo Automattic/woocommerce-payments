@@ -13,6 +13,7 @@ import type {
 	DisputeStatus,
 	EvidenceDetails,
 } from 'wcpay/types/disputes';
+import type { BalanceTransaction } from 'wcpay/types/balance-transactions';
 import {
 	disputeAwaitingResponseStatuses,
 	disputeUnderReviewStatuses,
@@ -68,4 +69,16 @@ export const isUnderReview = ( status: DisputeStatus | string ): boolean => {
 export const isInquiry = ( dispute: Dispute | CachedDispute ): boolean => {
 	// Inquiry dispute statuses are one of `warning_needs_response`, `warning_under_review` or `warning_closed`.
 	return dispute.status.startsWith( 'warning' );
+};
+
+/**
+ * Returns the dispute fee balance transaction for a dispute if it exists.
+ */
+export const getDisputeFee = (
+	dispute: Dispute
+): BalanceTransaction | undefined => {
+	const disputeFee = dispute.balance_transactions.find(
+		( transaction ) => transaction.reporting_category === 'dispute'
+	);
+	return disputeFee;
 };

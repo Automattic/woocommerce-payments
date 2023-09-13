@@ -19,7 +19,7 @@ import wcpayTracks from 'tracks';
 import type { Dispute } from 'wcpay/types/disputes';
 import { getAdminUrl } from 'wcpay/utils';
 import { formatExplicitCurrency } from 'wcpay/utils/currency';
-import { isInquiry } from 'wcpay/disputes/utils';
+import { getDisputeFee, isInquiry } from 'wcpay/disputes/utils';
 import './style.scss';
 
 const formatUnixTimestamp = ( date: string | undefined, format: string ) =>
@@ -51,9 +51,7 @@ const DisputeFooter: React.FC< DisputeFooterProps > = ( { dispute } ) => {
 		'M j, Y'
 	);
 
-	const disputeFee = dispute.balance_transactions.find(
-		( transaction ) => transaction.reporting_category === 'dispute'
-	);
+	const disputeFee = getDisputeFee( dispute );
 	const disputeFeeFormatted =
 		disputeFee &&
 		formatExplicitCurrency( disputeFee.fee, disputeFee.currency );
