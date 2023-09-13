@@ -157,6 +157,8 @@ class WC_Payments_Subscription_Service {
 
 		add_action( 'woocommerce_payments_changed_subscription_payment_method', [ $this, 'maybe_attempt_payment_for_subscription' ], 10, 2 );
 		add_action( 'woocommerce_admin_order_data_after_billing_address', [ $this, 'show_wcpay_subscription_id' ] );
+
+		add_action( 'woocommerce_subscription_payment_method_updated_from_' . WC_Payment_Gateway_WCPay::GATEWAY_ID, [ $this, 'maybe_cancel_subscription' ], 10, 2 );
 	}
 
 	/**
@@ -824,6 +826,18 @@ class WC_Payments_Subscription_Service {
 		}
 
 		return $data;
+	}
+
+	/**
+	 * Cancels a WCPay subscription when a customer changes their payment method
+	 *
+	 * @param WC_Subscription $subscription       The subscription that was updated.
+	 * @param string          $new_payment_method The subscription's new payment method ID.
+	 */
+	public function maybe_cancel_subscription( $subscription, $new_payment_method ) {
+		if ( (bool) self::get_wcpay_subscription_id( $subscription ) && WC_Payment_Gateway_WCPay::GATEWAY_ID !== $new_payment_method ) {
+			$this->cancel_subscription( $subscription );
+		}
 	}
 
 	/**
