@@ -15,7 +15,7 @@ import '../../express-checkout-buttons.scss';
 
 const oldWoopayContainers = [];
 
-const renderWooPayExpressCheckoutButton = () => {
+const renderWooPayExpressCheckoutButton = ( listenForCartChanges = {} ) => {
 	// Create an API object, which will be used throughout the checkout.
 	const api = new WCPayAPI(
 		{
@@ -40,6 +40,7 @@ const renderWooPayExpressCheckoutButton = () => {
 
 		ReactDOM.render(
 			<WoopayExpressCheckoutButton
+				listenForCartChanges={ listenForCartChanges }
 				buttonSettings={ getConfig( 'woopayButton' ) }
 				api={ api }
 				isProductPage={
@@ -52,10 +53,31 @@ const renderWooPayExpressCheckoutButton = () => {
 	}
 };
 
-window.addEventListener( 'load', renderWooPayExpressCheckoutButton );
+let listenForCartChanges = null;
+const renderWooPayExpressCheckoutButtonWithCallbacks = () => {
+	renderWooPayExpressCheckoutButton( listenForCartChanges );
+};
 
 jQuery( ( $ ) => {
-	$( document.body ).on( 'updated_cart_totals', () => {
-		renderWooPayExpressCheckoutButton();
-	} );
+	listenForCartChanges = {
+		start: () => {
+			$( document.body ).on(
+				'updated_cart_totals',
+				renderWooPayExpressCheckoutButtonWithCallbacks
+			);
+		},
+		stop: () => {
+			$( document.body ).off(
+				'updated_cart_totals',
+				renderWooPayExpressCheckoutButtonWithCallbacks
+			);
+		},
+	};
+
+	listenForCartChanges.start();
 } );
+
+window.addEventListener(
+	'load',
+	renderWooPayExpressCheckoutButtonWithCallbacks
+);

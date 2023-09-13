@@ -19,6 +19,7 @@ import { buildAjaxURL } from 'wcpay/payment-request/utils';
 const BUTTON_WIDTH_THRESHOLD = 140;
 
 export const WoopayExpressCheckoutButton = ( {
+	listenForCartChanges = {},
 	isPreview = false,
 	buttonSettings,
 	api,
@@ -122,7 +123,17 @@ export const WoopayExpressCheckoutButton = ( {
 						return;
 					}
 
+					if ( listenForCartChanges.stop ) {
+						// Temporarily stop listening for cart changes to prevent
+						// rendering a new button + iFrame when the cart is updated.
+						listenForCartChanges.stop();
+					}
+
 					addToCartRef.current( productData ).then( () => {
+						if ( listenForCartChanges.start ) {
+							// Start listening for cart changes, again.
+							listenForCartChanges.start();
+						}
 						request(
 							buildAjaxURL(
 								getConfig( 'wcAjaxUrl' ),
@@ -157,7 +168,7 @@ export const WoopayExpressCheckoutButton = ( {
 		} );
 
 		return iframe;
-	}, [ isProductPage, context, isPreview ] );
+	}, [ isProductPage, context, isPreview, listenForCartChanges ] );
 
 	useEffect( () => {
 		if ( isPreview ) {
