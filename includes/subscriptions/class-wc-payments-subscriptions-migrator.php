@@ -389,6 +389,7 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 		if ( ! $token ) {
 			try {
 				$token = $this->token_service->add_payment_method_to_user( $wcpay_subscription['default_payment_method'], $user );
+				$this->logger->log( sprintf( '---- Created a new payment token (%1$s) for subscription #%2$d.', $token->get_token(), $subscription->get_id() ) );
 			} catch ( \Exception $e ) {
 				$this->logger->log( sprintf( '---- WARNING: Subscription #%1$d is missing a payment token and we failed to create one. Error: %2$s', $subscription->get_id(), $e->getMessage() ) );
 				return;
