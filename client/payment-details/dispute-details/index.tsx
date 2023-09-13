@@ -16,14 +16,22 @@ import type { Dispute } from 'wcpay/types/disputes';
 import { isAwaitingResponse } from 'wcpay/disputes/utils';
 import DisputeNotice from './dispute-notice';
 import DisputeSummaryRow from './dispute-summary-row';
+import DisputeSteps from './dispute-steps';
 import InlineNotice from 'components/inline-notice';
 import './style.scss';
+import { ChargeBillingDetails } from 'wcpay/types/charges';
 
 interface DisputeDetailsProps {
 	dispute: Dispute;
+	customer: ChargeBillingDetails | null;
+	chargeCreated: number;
 }
 
-const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
+const DisputeDetails: React.FC< DisputeDetailsProps > = ( {
+	dispute,
+	customer,
+	chargeCreated,
+} ) => {
 	const now = moment();
 	const dueBy = moment.unix( dispute.evidence_details?.due_by ?? 0 );
 	const countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
@@ -54,6 +62,11 @@ const DisputeDetails: React.FC< DisputeDetailsProps > = ( { dispute } ) => {
 								<DisputeSummaryRow
 									dispute={ dispute }
 									daysRemaining={ countdownDays }
+								/>
+								<DisputeSteps
+									dispute={ dispute }
+									customer={ customer }
+									chargeCreated={ chargeCreated }
 								/>
 							</>
 						) }

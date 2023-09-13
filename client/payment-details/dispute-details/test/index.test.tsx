@@ -142,7 +142,13 @@ describe( 'DisputeDetails', () => {
 	} );
 	test( 'correctly renders dispute details', () => {
 		const charge = getBaseCharge();
-		render( <DisputeDetails dispute={ charge.dispute } /> );
+		render(
+			<DisputeDetails
+				dispute={ charge.dispute }
+				customer={ charge.billing_details }
+				chargeCreated={ charge.created }
+			/>
+		);
 
 		// Expect this warning to be logged to the console
 		expect( console ).toHaveWarnedWith(
@@ -187,7 +193,13 @@ describe( 'DisputeDetails', () => {
 			submission_count: 0,
 		};
 
-		render( <DisputeDetails dispute={ charge.dispute } /> );
+		render(
+			<DisputeDetails
+				dispute={ charge.dispute }
+				customer={ charge.billing_details }
+				chargeCreated={ charge.created }
+			/>
+		);
 
 		screen.getByText(
 			/The cardholder claims this is an unauthorized transaction/,
