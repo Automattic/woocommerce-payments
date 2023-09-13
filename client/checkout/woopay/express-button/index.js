@@ -13,6 +13,8 @@ import WCPayAPI from '../../api';
 import request from '../../utils/request';
 import '../../express-checkout-buttons.scss';
 
+const oldWoopayContainers = [];
+
 const renderWooPayExpressCheckoutButton = () => {
 	// Create an API object, which will be used throughout the checkout.
 	const api = new WCPayAPI(
@@ -28,6 +30,14 @@ const renderWooPayExpressCheckoutButton = () => {
 	const woopayContainer = document.getElementById( 'wcpay-woopay-button' );
 
 	if ( woopayContainer ) {
+		while ( oldWoopayContainers.length > 0 ) {
+			// Ensure previous buttons are unmounted and cleaned up.
+			const oldWoopayContainer = oldWoopayContainers.pop();
+			ReactDOM.unmountComponentAtNode( oldWoopayContainer );
+		}
+
+		oldWoopayContainers.push( woopayContainer );
+
 		ReactDOM.render(
 			<WoopayExpressCheckoutButton
 				buttonSettings={ getConfig( 'woopayButton' ) }
