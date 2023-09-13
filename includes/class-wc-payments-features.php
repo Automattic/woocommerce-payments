@@ -188,17 +188,72 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Returns whether WCPay Subscriptions is eligible, based on the stores base country.
+	 * Returns whether the store is eligible to use WCPay Subscriptions (the free subscriptions bundled in WooPayments)
+	 *
+	 * Stores are eligible for the WCPay Subscriptions feature if:
+	 * 1. The store has existing WCPay Subscriptions, or
+	 * 2. The store has Stripe Billing product metadata on at least 1 product subscription product.
 	 *
 	 * @return bool
 	 */
 	public static function is_wcpay_subscriptions_eligible() {
-		if ( ! function_exists( 'wc_get_base_location' ) ) {
-			return false;
+		/**
+		 * Check if they have at least 1 WCPay Subscription.
+		 *
+		 * Note: this is only possible if WCPay Subscriptions is enabled, otherwise the wcs_get_subscriptions function wouldn't exist.
+		 */
+		if ( function_exists( 'wcs_get_subscriptions' ) ) {
+			$wcpay_subscriptions = wcs_get_subscriptions(
+				[
+					'subscriptions_per_page' => 1,
+					'subscription_status'    => 'any',
+					'meta_query'             => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+						[
+							'key'     => '_wcpay_subscription_id',
+							'compare' => 'EXISTS',
+						],
+					],
+				]
+			);
+
+			if ( count( $wcpay_subscriptions ) > 0 ) {
+				return true;
+			}
 		}
 
-		$store_base_location = wc_get_base_location();
-		return ! empty( $store_base_location['country'] ) && 'US' === $store_base_location['country'];
+		/**
+		 * Check if they have at least 1 Stripe Billing enabled product.
+		 */
+		$stripe_billing_meta_query_handler = function ( $query, $query_vars ) {
+			if ( ! empty( $query_vars['stripe_billing_product'] ) ) {
+				$query['meta_query'][] = [
+					'key'     => '_wcpay_product_hash',
+					'compare' => 'EXISTS',
+				];
+			}
+
+			return $query;
+		};
+
+		add_filter( 'woocommerce_product_data_store_cpt_get_products_query', $stripe_billing_meta_query_handler, 10, 2 );
+
+		$subscription_products = wc_get_products(
+			[
+				'limit'                  => 1,
+				'type'                   => [ 'subscription', 'variable-subscription' ],
+				'status'                 => 'publish',
+				'return'                 => 'ids',
+				'stripe_billing_product' => 'true',
+			]
+		);
+
+		remove_filter( 'woocommerce_product_data_store_cpt_get_products_query', $stripe_billing_meta_query_handler, 10, 2 );
+
+		if ( count( $subscription_products ) > 0 ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
