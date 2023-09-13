@@ -80,6 +80,10 @@ export const WoopayExpressCheckoutButton = ( {
 	}, [ isPreview, context ] );
 
 	const newIframe = useCallback( () => {
+		if ( ! getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
+			return;
+		}
+
 		const getWoopayOtpUrl = () => {
 			const tracksUserId = JSON.stringify(
 				getConfig( 'tracksUserIdentity' )
@@ -171,7 +175,7 @@ export const WoopayExpressCheckoutButton = ( {
 	}, [ isProductPage, context, isPreview, listenForCartChanges ] );
 
 	useEffect( () => {
-		if ( isPreview ) {
+		if ( isPreview || ! getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
 			return;
 		}
 
