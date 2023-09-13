@@ -1704,6 +1704,8 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			[ 'pi_abc', '', 'pi_xyz' ],
 			[ 'pi_abc', Intent_Status::SUCCEEDED, 'pi_abc' ],
 			[ 'pi_abc', Intent_Status::SUCCEEDED, 'pi_xyz' ],
+			[ 'pi_abc', Intent_Status::CANCELED, 'pi_abc' ],
+			[ 'pi_abc', Intent_Status::CANCELED, 'pi_xyz' ],
 		];
 	}
 
