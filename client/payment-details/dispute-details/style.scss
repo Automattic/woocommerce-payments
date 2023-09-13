@@ -59,4 +59,15 @@
 	&--primary {
 		background-color: $wp-blue-0;
 	}
+
+	@media screen and ( max-width: $break-small ) {
+		.components-flex {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+
+		.components-flex-item {
+			margin: 10px 0;
+		}
+	}
 }
