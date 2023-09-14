@@ -543,7 +543,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 *
 	 * @return void
 	 */
-	protected function modify_create_intent_parameters_when_processing_payment( Create_And_Confirm_Intention $request, Payment_Information $payment_information, $order ): void {
+	protected function modify_create_intent_parameters_when_processing_payment( Create_And_Confirm_Intention $request, Payment_Information $payment_information, $order ) {
 		if ( Payment_Method::AFTERPAY === $this->get_selected_stripe_payment_type_id() ) {
 			$request->set_shipping( $this->get_shipping_data_from_order( $order ) );
 		}
