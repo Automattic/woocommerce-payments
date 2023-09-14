@@ -91,8 +91,13 @@ export function* acceptDispute( id ) {
 }
 
 // This function handles the dispute acceptance flow from the Transaction Details screen.
-// It will become the default acceptDispute function once the feature flag
-// '_wcpay_feature_dispute_on_transaction_page' is enabled by default.
+// It differs from the `acceptDispute` function above in that it also fetches and updates
+// the payment intent associated with the dispute to reflect changes to the dispute
+// on the Transaction Details screen.
+//
+// Once the '_wcpay_feature_dispute_on_transaction_page' is enabled by default,
+// the `acceptDispute` function above can be removed and this function can be renamed
+// to `acceptDispute`.
 export function* acceptTransactionDetailsDispute( dispute ) {
 	const { id, payment_intent: paymentIntent } = dispute;
 
