@@ -94,7 +94,8 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 6.4.2 - 2023-09-20 =
+= 6.4.2 - 2023-09-14 =
+* Fix - Fix an error in the checkout when Afterpay is selected as payment method.
 
 
 = 6.4.1 - 2023-09-06 =
