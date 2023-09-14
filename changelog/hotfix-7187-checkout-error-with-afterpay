@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix an error in the checkout when Afterpay is selected as payment method.

@@ -45,7 +45,8 @@ use WC_Payments_Features;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WP_User;
 use WC_Payments_Localization_Service;
-
+use WCPay\Payment_Information;
+use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 
 /**
  * UPE Payment method extended from WCPay generic Gateway.
