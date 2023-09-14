@@ -19,8 +19,6 @@ import { HoverTooltip } from 'components/tooltip';
 import LinkIcon from 'assets/images/payment-methods/link.svg?asset';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import { EnabledMethodIdsHook } from './interfaces';
-import { getAdminUrl } from 'wcpay/utils';
-import { ProtectionLevel } from 'wcpay/settings/fraud-protection/advanced-settings/constants';
 
 const LinkExpressCheckoutItem = (): React.ReactElement => {
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds() as Array<
