@@ -42,25 +42,24 @@ const DisputeActions: React.FC< Props > = ( { dispute } ) => {
 		doAccept();
 	};
 
+	const onChallenge = () => {
+		wcpayTracks.recordEvent( wcpayTracks.events.DISPUTE_CHALLENGE_CLICK, {
+			dispute_status: dispute.status,
+		} );
+		const challengeUrl = getAdminUrl( {
+			page: 'wc-admin',
+			path: '/payments/disputes/challenge',
+			id: dispute.id,
+		} );
+		getHistory().push( challengeUrl );
+	};
+
 	return (
 		<Flex justify="start">
 			<Button
 				variant="primary"
 				disabled={ isLoading }
-				onClick={ () => {
-					wcpayTracks.recordEvent(
-						wcpayTracks.events.DISPUTE_CHALLENGE_CLICK,
-						{
-							dispute_status: dispute.status,
-						}
-					);
-					const challengeUrl = getAdminUrl( {
-						page: 'wc-admin',
-						path: '/payments/disputes/challenge',
-						id: dispute.id,
-					} );
-					getHistory().push( challengeUrl );
-				} }
+				onClick={ onChallenge }
 			>
 				{ hasStagedEvidence
 					? __( 'Continue with challenge', 'woocommerce-payments' )
