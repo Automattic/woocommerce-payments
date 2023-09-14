@@ -10,7 +10,6 @@ import { Button, CardFooter, Flex, FlexItem } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-
 import './style.scss';
 
 interface Props {

@@ -6,11 +6,13 @@ import { render, screen } from '@testing-library/react';
 import React from 'react';
 import moment from 'moment';
 import '@wordpress/jest-console';
+
 /**
  * Internal dependencies
  */
+import type { Charge } from 'wcpay/types/charges';
+import type { Dispute } from 'wcpay/types/disputes';
 import PaymentDetailsSummary from '../';
-import { Charge } from 'wcpay/types/charges';
 import { useAuthorization } from 'wcpay/data';
 import { paymentIntentMock } from 'wcpay/data/payment-intents/test/hooks';
 
@@ -84,6 +86,41 @@ const getBaseCharge = (): Charge =>
 			risk_level: 'normal',
 		},
 	} as any );
+
+const getBaseDispute = (): Dispute =>
+	( {
+		id: 'dp_1',
+		amount: 2000,
+		charge: 'ch_38jdHA39KKA',
+		order: null,
+		balance_transactions: [
+			{
+				amount: -1500,
+				currency: 'usd',
+				fee: 1500,
+				reporting_category: 'dispute',
+			},
+		],
+		created: 1693453017,
+		currency: 'usd',
+		evidence: {
+			billing_address: '123 test address',
+			customer_email_address: 'test@email.com',
+			customer_name: 'Test customer',
+			shipping_address: '123 test address',
+		},
+		evidence_details: {
+			due_by: 1694303999,
+			has_evidence: false,
+			past_due: false,
+			submission_count: 0,
+		},
+		issuer_evidence: null,
+		metadata: {},
+		payment_intent: 'pi_1',
+		reason: 'fraudulent',
+		status: 'needs_response',
+	} as Dispute );
 
 const getBaseMetadata = () => ( {
 	platform: 'ios',
@@ -174,16 +211,8 @@ describe( 'PaymentDetailsSummary', () => {
 	test( 'renders the information of a disputed charge', () => {
 		const charge = getBaseCharge();
 		charge.disputed = true;
-		charge.dispute = {
-			amount: 1500,
-			status: 'under_review',
-			balance_transactions: [
-				{
-					amount: -1500,
-					fee: 1500,
-				} as any,
-			],
-		} as any;
+		charge.dispute = getBaseDispute();
+		charge.dispute.status = 'under_review';
 
 		expect( renderCharge( charge ) ).toMatchSnapshot();
 	} );
