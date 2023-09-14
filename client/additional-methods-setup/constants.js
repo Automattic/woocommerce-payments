@@ -9,7 +9,6 @@ export const upeMethods = [
 	'sofort',
 	'affirm',
 	'afterpay_clearpay',
-	'jcb',
 ];
 
 export const upeCapabilityStatuses = {
