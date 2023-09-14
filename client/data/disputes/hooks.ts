@@ -18,6 +18,10 @@ import type {
 import { STORE_NAME } from '../constants';
 import { disputeAwaitingResponseStatuses } from 'wcpay/disputes/filters/config';
 
+/**
+ * Returns the dispute object, loading state, and accept function.
+ * Fetches the dispute object if it is not already cached.
+ */
 export const useDispute = (
 	id: string
 ): {
@@ -43,6 +47,10 @@ export const useDispute = (
 	return { dispute, isLoading, doAccept };
 };
 
+/**
+ * Returns the dispute accept function and loading state.
+ * Does not return or fetch the dispute object.
+ */
 export const useDisputeAccept = (
 	dispute: Dispute
 ): {
