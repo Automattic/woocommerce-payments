@@ -90,7 +90,7 @@ const UpeSetupBanner = () => {
 			>
 				<h3>
 					{ __(
-						'Enable the new WooPayments checkout experience, which will become the default on October 23, 2023',
+						'Enable the new WooPayments checkout experience, which will become the default on November 1, 2023',
 						'woocommerce-payments'
 					) }
 				</h3>
@@ -287,7 +287,7 @@ const PaymentMethods = () => {
 						>
 							{ interpolateComponents( {
 								mixedString: __(
-									'The new WooPayments checkout experience will become the default on October 2, 2023.' +
+									'The new WooPayments checkout experience will become the default on October 11, 2023.' +
 										' {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 									'woocommerce-payments'
 								),

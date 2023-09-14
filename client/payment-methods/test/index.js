@@ -227,7 +227,7 @@ describe( 'PaymentMethods', () => {
 		);
 
 		const enableWooCommercePaymentText = screen.getByText(
-			'Enable the new WooPayments checkout experience, which will become the default on October 23, 2023'
+			'Enable the new WooPayments checkout experience, which will become the default on November 1, 2023'
 		);
 
 		expect( enableWooCommercePaymentText ).toBeInTheDocument();
@@ -342,7 +342,7 @@ describe( 'PaymentMethods', () => {
 		);
 
 		const enableWooCommercePaymentText = screen.getByText(
-			'Enable the new WooPayments checkout experience, which will become the default on October 23, 2023'
+			'Enable the new WooPayments checkout experience, which will become the default on November 1, 2023'
 		);
 
 		expect( enableWooCommercePaymentText.parentElement ).not.toHaveClass(
@@ -371,7 +371,7 @@ describe( 'PaymentMethods', () => {
 		);
 
 		const enableWooCommercePaymentText = screen.getByText(
-			'Enable the new WooPayments checkout experience, which will become the default on October 23, 2023'
+			'Enable the new WooPayments checkout experience, which will become the default on November 1, 2023'
 		);
 
 		expect( enableWooCommercePaymentText.parentElement ).toHaveClass(
@@ -404,7 +404,7 @@ describe( 'PaymentMethods', () => {
 			);
 
 			const enableWooCommercePaymentText = screen.queryByText(
-				'Enable the new WooPayments checkout experience, which will become the default on October 23, 2023'
+				'Enable the new WooPayments checkout experience, which will become the default on November 1, 2023'
 			);
 
 			expect( enableWooCommercePaymentText ).toBeNull();
