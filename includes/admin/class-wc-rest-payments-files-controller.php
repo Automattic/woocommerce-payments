@@ -140,6 +140,7 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 	public function get_file_detail( WP_REST_Request $request ) {
 		$file_id    = $request->get_param( 'file_id' );
 		$as_account = (bool) $request->get_param( 'as_account' );
+
 		return $this->forward_request( 'get_file', [ $file_id, $as_account ] );
 	}
 
