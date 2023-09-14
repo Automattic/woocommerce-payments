@@ -1285,7 +1285,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$merged_metadata = [
 			'customer_name'        => 'Test',
-      'reader_ID'            => 'wisepad',
+			'reader_ID'            => 'wisepad',
 			'customer_email'       => $order->get_billing_email(),
 			'site_url'             => esc_url( get_site_url() ),
 			'order_id'             => $order->get_id(),
