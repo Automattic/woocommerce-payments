@@ -48,6 +48,7 @@ import ConfirmPaymentMethodActivationModal from './activation-modal';
 import ConfirmPaymentMethodDeleteModal from './delete-modal';
 import { getAdminUrl } from 'wcpay/utils';
 import { getPaymentMethodDescription } from 'wcpay/utils/payment-methods';
+import InlineNotice from 'wcpay/components/inline-notice';
 
 const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 	return (
@@ -275,6 +276,31 @@ const PaymentMethods = () => {
 						<PaymentMethodsDropdownMenu
 							setOpenModal={ setOpenModalIdentifier }
 						/>
+					</CardHeader>
+				) }
+
+				{ isUpeEnabled && upeType === 'legacy' && (
+					<CardHeader className="payment-methods__header">
+						<InlineNotice
+							icon
+							status="warning"
+							isDismissible={ false }
+						>
+							<div>
+								{ __(
+									'The new WooPayments checkout experience will become the default on October 2, 2023.',
+									'woocommerce-payments'
+								) }
+								<br />
+								{ /* eslint-disable-next-line max-len */ }
+								<ExternalLink href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/">
+									{ __(
+										'Learn more',
+										'woocommerce-payments'
+									) }
+								</ExternalLink>
+							</div>
+						</InlineNotice>
 					</CardHeader>
 				) }
 
