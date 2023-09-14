@@ -366,16 +366,20 @@ const PaymentMethods = () => {
 					</PaymentMethodsList>
 				</CardBody>
 			</Card>
-			<br />
-			<Card
-				className={ classNames( 'payment-methods', {
-					'is-loading': status === 'pending',
-				} ) }
-			>
-				{ isUpeSettingsPreviewEnabled && ! isUpeEnabled && (
-					<UpeSetupBanner />
-				) }
-			</Card>
+
+			{ isUpeSettingsPreviewEnabled && ! isUpeEnabled && (
+				<>
+					<br />
+					<Card
+						className={ classNames( 'payment-methods', {
+							'is-loading': status === 'pending',
+						} ) }
+					>
+						<UpeSetupBanner />
+					</Card>
+				</>
+			) }
+
 			{ activationModalParams && (
 				<ConfirmPaymentMethodActivationModal
 					onClose={ () => {
