@@ -35,7 +35,9 @@ const DisputeActions: React.FC< Props > = ( { dispute } ) => {
 	};
 
 	const onAccept = () => {
-		wcpayTracks.recordEvent( wcpayTracks.events.DISPUTE_ACCEPT_CLICK );
+		wcpayTracks.recordEvent( wcpayTracks.events.DISPUTE_ACCEPT_CLICK, {
+			dispute_status: dispute.status,
+		} );
 		setModalOpen( false );
 		doAccept();
 	};
@@ -47,7 +49,10 @@ const DisputeActions: React.FC< Props > = ( { dispute } ) => {
 				disabled={ isLoading }
 				onClick={ () => {
 					wcpayTracks.recordEvent(
-						wcpayTracks.events.DISPUTE_CHALLENGE_CLICK
+						wcpayTracks.events.DISPUTE_CHALLENGE_CLICK,
+						{
+							dispute_status: dispute.status,
+						}
 					);
 					const challengeUrl = getAdminUrl( {
 						page: 'wc-admin',
@@ -67,7 +72,10 @@ const DisputeActions: React.FC< Props > = ( { dispute } ) => {
 				disabled={ isLoading }
 				onClick={ () => {
 					wcpayTracks.recordEvent(
-						wcpayTracks.events.DISPUTE_ACCEPT_MODAL_VIEW
+						wcpayTracks.events.DISPUTE_ACCEPT_MODAL_VIEW,
+						{
+							dispute_status: dispute.status,
+						}
 					);
 					setModalOpen( true );
 				} }
