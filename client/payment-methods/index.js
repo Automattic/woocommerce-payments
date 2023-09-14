@@ -294,7 +294,7 @@ const PaymentMethods = () => {
 								components: {
 									learnMoreLink: (
 										// eslint-disable-next-line max-len
-										<ExternalLink href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/" />
+										<ExternalLink href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/#popular-payment-methods" />
 									),
 								},
 							} ) }
