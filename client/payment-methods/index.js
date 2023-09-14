@@ -8,7 +8,6 @@ import { __ } from '@wordpress/i18n';
 import {
 	Button,
 	Card,
-	CardDivider,
 	CardHeader,
 	DropdownMenu,
 	ExternalLink,
@@ -83,7 +82,6 @@ const UpeSetupBanner = () => {
 
 	return (
 		<>
-			<CardDivider />
 			<CardBody
 				className={ classNames( 'payment-methods__express-checkouts', {
 					'background-local-payment-methods': ! wcpaySettings.isBnplAffirmAfterpayEnabled,
@@ -367,6 +365,13 @@ const PaymentMethods = () => {
 						) }
 					</PaymentMethodsList>
 				</CardBody>
+			</Card>
+			<br />
+			<Card
+				className={ classNames( 'payment-methods', {
+					'is-loading': status === 'pending',
+				} ) }
+			>
 				{ isUpeSettingsPreviewEnabled && ! isUpeEnabled && (
 					<UpeSetupBanner />
 				) }
